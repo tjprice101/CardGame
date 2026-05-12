@@ -1,0 +1,107 @@
+/* ── Prevent text selection across the whole game ── */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Shimmer sweep across a card surface ── */
+@keyframes shimmer {
+  0%   { transform: translateX(-120%) skewX(-15deg); }
+  100% { transform: translateX(220%) skewX(-15deg); }
+}
+
+/* ── Angel card subtle breathing ── */
+@keyframes angelBreath {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.012); }
+}
+
+/* ── Seraphim placement bounce ── */
+@keyframes seraphimPop {
+  0%   { transform: scale(0) rotate(-6deg); opacity: 0; }
+  60%  { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  80%  { transform: scale(0.96) rotate(-1deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* ── Active seraphim synergy glow pulse ── */
+@keyframes synergyPulse {
+  0%, 100% { box-shadow: var(--seraph-glow-base, 0 0 18px rgba(255,215,0,0.35)); }
+  50%       { box-shadow: var(--seraph-glow-peak, 0 0 32px rgba(255,215,0,0.6)); }
+}
+
+/* ── Score tick pop ── */
+@keyframes scorePop {
+  0%   { transform: translateX(-50%) scale(1); }
+  40%  { transform: translateX(-50%) scale(1.07); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+/* ── Modal panel slide up ── */
+@keyframes panelSlideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Backdrop fade ── */
+@keyframes backdropFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── New badge bounce-in ── */
+@keyframes badgeBounce {
+  0%   { transform: scale(0); opacity: 0; }
+  65%  { transform: scale(1.25); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+/* ── Tooltip fade-drop ── */
+@keyframes tooltipFadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Card play fly-out ── */
+@keyframes cardPlayOut {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-72px) scale(0.82); opacity: 0; }
+}
+
+/* ── Radiance orb gain flash ── */
+@keyframes radianceFlash {
+  0%   { box-shadow: 0 0 16px 4px rgba(255,215,0,0.55), 0 0 32px 8px rgba(255,215,0,0.2); }
+  50%  { box-shadow: 0 0 30px 12px rgba(255,215,0,0.9), 0 0 60px 20px rgba(255,215,0,0.5); }
+  100% { box-shadow: 0 0 16px 4px rgba(255,215,0,0.55), 0 0 32px 8px rgba(255,215,0,0.2); }
+}
+
+/* ── Utility classes ── */
+.anim-panel-slide-up {
+  animation: panelSlideUp 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.anim-backdrop-fade {
+  animation: backdropFade 0.2s ease both;
+}
+.anim-seraphim-pop {
+  animation: seraphimPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both !important;
+}
+.anim-card-play-out {
+  animation: cardPlayOut 0.28s ease-in both;
+  pointer-events: none;
+}
+.anim-badge-bounce {
+  animation: badgeBounce 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  display: inline-block;
+}
+.anim-score-pop {
+  animation: scorePop 0.25s ease-out both;
+}
+.anim-radiance-flash {
+  animation: radianceFlash 0.42s ease-out;
+}
+.anim-angel-breath {
+  animation: angelBreath 3.5s ease-in-out infinite;
+}
+.anim-synergy-pulse {
+  animation: synergyPulse 2.2s ease-in-out infinite;
+}
