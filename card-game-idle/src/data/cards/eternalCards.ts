@@ -147,7 +147,7 @@ export const eternalAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Convergence of Eternity',
-    description: 'Summon: requires 2+ Seraphim on the board (no sacrifice). Gain 15 of your dominant resource. Draw 4 cards. Set the chain floor to ×3.5. While on board: +130 Oblivion per card played.',
+    description: 'Summon: requires 2+ Seraphim on the board. Gain 15 of your dominant resource, draw 4, and set the chain floor to ×3.5. After 5 cards: right-click to gain 30 of your dominant resource, draw 4, set the chain floor to ×4.5, and empower the next card. While on board: +130 Oblivion per card played.',
     artKey: 'btei_convergence_of_eternity',
     summonCost: [],
     extraSummonConditions: [
@@ -158,6 +158,17 @@ export const eternalAngels: AngelDefinition[] = [
       { type: 'draw', value: 4 },
       { type: 'set_chain_floor', value: 3.5 },
     ],
+    activatedAbility: {
+      name: 'Infinite Merge',
+      cardsPlayedRequirement: 5,
+      description: 'Gain 30 of your dominant resource, draw 4 cards, set the chain floor to ×4.5, and empower the next card.',
+      effects: [
+        { type: 'dominant_stack_gain', value: 30 },
+        { type: 'draw', value: 4 },
+        { type: 'set_chain_floor', value: 4.5 },
+        { type: 'multiply_next' },
+      ],
+    },
     baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 130 },
   },
   {
@@ -166,7 +177,7 @@ export const eternalAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Omniscient Fracture',
-    description: 'Summon: requires 3+ Seraphim on the board (no sacrifice). Gain 20 of your dominant resource. Draw 5 cards. Set the chain floor to ×5.5. While on board: +200 Oblivion per card played.',
+    description: 'Summon: requires 3+ Seraphim on the board. Gain 20 of your dominant resource, draw 5, and set the chain floor to ×5.5. After 6 cards: right-click to gain 40 of your dominant resource, draw 5, set the chain floor to ×6.5, empower the next card, and gain +600 Oblivion. While on board: +200 Oblivion per card played.',
     artKey: 'btei_omniscient_fracture',
     summonCost: [],
     extraSummonConditions: [
@@ -177,6 +188,18 @@ export const eternalAngels: AngelDefinition[] = [
       { type: 'draw', value: 5 },
       { type: 'set_chain_floor', value: 5.5 },
     ],
+    activatedAbility: {
+      name: 'Parallax Collapse',
+      cardsPlayedRequirement: 6,
+      description: 'Gain 40 of your dominant resource, draw 5 cards, set the chain floor to ×6.5, empower the next card, and gain +600 Oblivion.',
+      effects: [
+        { type: 'dominant_stack_gain', value: 40 },
+        { type: 'draw', value: 5 },
+        { type: 'set_chain_floor', value: 6.5 },
+        { type: 'multiply_next' },
+        { type: 'oblivion_flat', value: 600 },
+      ],
+    },
     baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 200 },
   },
 ];

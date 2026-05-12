@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useStore, selectBossFight, selectTurn } from '@/state/store';
-import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { warmTheme } from '@/ui/theme';
 
 export default function BossFightArena() {
@@ -26,8 +26,11 @@ export default function BossFightArena() {
   if (!boss) return null;
 
   const hpPercent = Math.max(0, bossFight.bossCurrentHp / bossFight.bossMaxHp);
-  const timePercent = bossFight.fightTimeRemaining / 30;
+  const timePercent = bossFight.fightTimeRemaining / BOSS_FIGHT_ROUND_SECONDS;
   const timeColor = timePercent > 0.5 ? '#4dff91' : timePercent > 0.25 ? '#ffcc00' : '#ff4d4d';
+  const remainingSeconds = Math.max(0, Math.ceil(bossFight.fightTimeRemaining));
+  const timerMinutes = Math.floor(remainingSeconds / 60);
+  const timerSeconds = String(remainingSeconds % 60).padStart(2, '0');
 
   const hpColor = hpPercent > 0.5 ? '#ff6b6b' : hpPercent > 0.25 ? '#ff9944' : '#ff2222';
 
@@ -52,7 +55,7 @@ export default function BossFightArena() {
           <div style={{
             fontSize: 13, color: timeColor, fontFamily: 'Georgia, serif', fontWeight: 'bold',
           }}>
-            {Math.ceil(bossFight.fightTimeRemaining)}s
+            {timerMinutes}:{timerSeconds}
           </div>
         </div>
 

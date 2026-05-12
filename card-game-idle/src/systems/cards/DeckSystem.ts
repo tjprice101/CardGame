@@ -12,6 +12,22 @@ export interface DeckValidationResult {
 }
 
 export class DeckSystem {
+  static addDeckEntry(deckList: DeckEntry[], definitionId: string, ownedCopies: number): DeckEntry[] {
+    const cap = Math.min(4, ownedCopies);
+    if (cap <= 0) return deckList;
+
+    const totalCards = deckList.reduce((sum, entry) => sum + entry.copies, 0);
+    if (totalCards >= 50) return deckList;
+
+    const idx = deckList.findIndex(entry => entry.definitionId === definitionId);
+    if (idx === -1) return [...deckList, { definitionId, copies: 1 }];
+    if (deckList[idx].copies >= cap) return deckList;
+
+    const next = [...deckList];
+    next[idx] = { ...next[idx], copies: (next[idx].copies + 1) as DeckEntry['copies'] };
+    return next;
+  }
+
   static shuffle(cards: DeckCard[]): DeckCard[] {
     const out = [...cards];
     for (let i = out.length - 1; i > 0; i--) {

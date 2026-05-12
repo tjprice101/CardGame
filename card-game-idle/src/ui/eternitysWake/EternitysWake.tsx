@@ -1,11 +1,30 @@
 import { useState } from 'react';
 import { useStore, selectBossFight, selectProgress } from '@/state/store';
-import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b',
 };
+
+const BOSS_ART_ROOT = '/assets/card-backgrounds/neutrality';
+const BOSS_ART_FILES: Record<string, string> = {
+  boss_hollow_queen: 'Hollow Queen.png',
+  boss_immortal_warden: 'Immortal Warden.png',
+  boss_chaos_sovereign: 'Chaos Sovereign.png',
+  boss_eternal_seraph: 'Eternal Seraph.png',
+  boss_time_eater: 'The Time Eater.png',
+  boss_void_architect: 'The Void Architect.png',
+  boss_null_sovereign: 'Null Sovereign.png',
+  boss_shattered_oracle: 'Shattered Oracle.png',
+  boss_abyssal_colossus: 'Abyssal Colossus.png',
+  boss_eternal_null: 'Eternal Null.png',
+};
+
+function getBossArtUrl(keyArt: string): string | null {
+  const fileName = BOSS_ART_FILES[keyArt];
+  return fileName ? `${BOSS_ART_ROOT}/${encodeURIComponent(fileName)}` : null;
+}
 
 interface Props { onClose: () => void; }
 
@@ -65,6 +84,7 @@ export default function EternitysWake({ onClose }: Props) {
           const cooldown = getCooldownRemaining(boss.id);
           const onCooldown = cooldown > 0;
           const rewardDef = CardRegistry.get(boss.rewardCardId);
+          const bossArtUrl = getBossArtUrl(boss.keyArt);
           const isSelected = selectedBossId === boss.id;
 
           return (
@@ -74,6 +94,19 @@ export default function EternitysWake({ onClose }: Props) {
               borderRadius: 12, padding: '20px', display: 'flex', flexDirection: 'column', gap: 12,
               opacity: onCooldown ? 0.65 : 1,
             }}>
+              {bossArtUrl && (
+                <div style={{
+                  height: 156,
+                  borderRadius: 10,
+                  border: '1px solid rgba(255,107,107,0.28)',
+                  backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.08) 0%, rgba(10,4,16,0.42) 100%), url("${bossArtUrl}")`,
+                  backgroundPosition: 'center',
+                  backgroundSize: 'cover',
+                  backgroundRepeat: 'no-repeat',
+                  boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)',
+                }} />
+              )}
+
               {/* Boss info */}
               <div style={{ borderBottom: '1px solid rgba(255,107,107,0.2)', paddingBottom: 10 }}>
                 <div style={{ fontSize: 16, fontWeight: 'bold', color: '#ff6b6b' }}>{boss.name}</div>
@@ -83,7 +116,7 @@ export default function EternitysWake({ onClose }: Props) {
               {/* Stats */}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                 <div style={{ color: 'rgba(255,150,150,0.8)' }}>HP: <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>{boss.hp.toLocaleString()}</span></div>
-                <div style={{ color: 'rgba(255,150,150,0.6)' }}>30 second round</div>
+                <div style={{ color: 'rgba(255,150,150,0.6)' }}>{Math.floor(BOSS_FIGHT_ROUND_SECONDS / 60)} minute round · 1 turn only</div>
               </div>
 
               {/* Reward card */}
@@ -106,7 +139,7 @@ export default function EternitysWake({ onClose }: Props) {
               {/* Collection count */}
               {rewardDef && (
                 <div style={{ fontSize: 11, color: 'rgba(255,150,150,0.5)' }}>
-                  Owned: {progress.collection[boss.rewardCardId] ?? 0} / 4
+                  Owned: {progress.collection[boss.rewardCardId] ?? 0}
                 </div>
               )}
 
@@ -168,7 +201,7 @@ export default function EternitysWake({ onClose }: Props) {
         padding: '12px 24px', borderTop: '1px solid rgba(255,107,107,0.15)',
         fontSize: 11, color: 'rgba(255,150,150,0.4)', flexShrink: 0,
       }}>
-        Boss fights last 30 seconds. All Oblivion earned deals damage instead. 60-second cooldown on success or failure.
+        Boss fights last {Math.floor(BOSS_FIGHT_ROUND_SECONDS / 60)} minutes, and you only get one turn. All Oblivion earned deals damage instead. 60-second cooldown on success or failure.
       </div>
     </div>
   );

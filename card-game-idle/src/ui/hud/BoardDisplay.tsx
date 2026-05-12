@@ -1,8 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore, selectBoard, selectCanEmbraceInfinite, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
+import {
+  cardFacePalette,
+  getCardFaceBackgroundStyle,
+  getCardFaceMetrics,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
-import type { ChaosInstance } from '@/types/cards';
+import type { AngelDefinition, ChaosInstance } from '@/types/cards';
 
 const RARITY_BORDER: Record<string, string> = {
   Common:    'rgba(180,180,180,0.75)',
@@ -27,15 +34,17 @@ const RARITY_GLOW_PEAK: Record<string, string> = {
 
 const SLOT_W = 102;
 const SLOT_H = 144;
-const CHAOS_W = 90;
-const CHAOS_H = 70;
+const CHAOS_W = 94;
+const CHAOS_H = 126;
+const FRONT_FACE_METRICS = getCardFaceMetrics('board');
+const CHAOS_FACE_METRICS = getCardFaceMetrics('boardMini');
 
 export default function BoardDisplay() {
   const board = useStore(selectBoard);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
   const turn = useStore(selectTurn);
   const hand = useStore(s => s.deck.hand);
-  const { removeSeraphim, placeSeraphimFromHand, placeChaos, removeChaos, playCard, embraceInfinite } = useStore.getState();
+  const { removeSeraphim, placeSeraphimFromHand, placeChaos, removeChaos, playCard, embraceInfinite, activateAngel } = useStore.getState();
 
   const hasSeraphimInHand = hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Seraphim');
   const hasChaosInHand = hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Chaos');
@@ -140,34 +149,69 @@ export default function BoardDisplay() {
           const isDragTarget = dragOverFront === slotIndex && !slot && canPlay;
 
           if (slot?.type === 'Angel') {
-            const angelDef = CardRegistry.get(slot.definitionId);
+            const angelDef = CardRegistry.get(slot.definitionId) as AngelDefinition | undefined;
+            const awakenRequirement = angelDef?.activatedAbility.cardsPlayedRequirement ?? 0;
+            const progress = Math.min(slot.cardsPlayedSinceSummon, awakenRequirement);
+            const isReady = Boolean(angelDef) && !slot.activated && slot.cardsPlayedSinceSummon >= awakenRequirement;
+            const statusText = slot.activated
+              ? 'Awakened'
+              : isReady
+                ? 'Right-click'
+                : `Awaken ${progress}/${awakenRequirement}`;
+            const detailText = slot.activated
+              ? angelDef?.activatedAbility.name ?? 'Ability spent'
+              : isReady
+                ? angelDef?.activatedAbility.name ?? 'Ability ready'
+                : angelDef?.activatedAbility.name ?? 'Awakening';
             return (
               <div
                 key={slotIndex}
                 className="anim-angel-breath"
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  if (canPlay && isReady) activateAngel(slotIndex);
+                }}
+                title={slot.activated
+                  ? `${angelDef?.name ?? 'Angel'} — awakened ability already used`
+                  : isReady
+                    ? `${angelDef?.name ?? 'Angel'} — right-click to activate ${angelDef?.activatedAbility.name ?? 'its awakened ability'}`
+                    : `${angelDef?.name ?? 'Angel'} — awaken after ${awakenRequirement} cards played`}
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
-                    background: warmTheme.surfaceStrong,
-                    border: `2px solid ${warmTheme.borderStrong}`,
-                    borderRadius: 14,
-                    boxShadow: warmTheme.shadow,
+                  ...getCardFaceBackgroundStyle(angelDef),
+                  border: `2px solid ${isReady ? warmTheme.accent : warmTheme.borderStrong}`,
+                  borderRadius: 14,
+                  boxShadow: isReady ? `${warmTheme.glow}, ${cardFacePalette.shadow}` : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
                   display: 'flex',
                   flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '8px 6px',
+                  alignItems: 'stretch',
+                  justifyContent: 'flex-start',
+                  padding: 0,
                   fontFamily: 'Georgia, serif',
-                  cursor: 'default',
+                  cursor: canPlay && isReady ? 'context-menu' : 'default',
                   pointerEvents: 'auto',
+                  overflow: 'hidden',
                 }}
               >
-                <div style={{ fontSize: 7, color: warmTheme.textMuted, letterSpacing: 2, marginBottom: 6, textTransform: 'uppercase' }}>
-                  Angel
+                <div style={getCardNameRibbonStyle('board')}>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
+                    Angel
+                  </div>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
+                    {angelDef?.name ?? 'Angel'}
+                  </div>
                 </div>
-                <div style={{ fontSize: 22, color: warmTheme.accent, marginBottom: 6 }}>✦</div>
-                <div style={{ fontSize: 10, fontWeight: 'bold', color: warmTheme.accentDeep, textAlign: 'center', lineHeight: 1.3 }}>
-                  {angelDef?.name ?? 'Angel'}
+                <div style={getCardRulesPanelStyle('board')}>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: isReady ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' }}>
+                    {statusText}
+                  </div>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: cardFacePalette.textSoft, marginTop: 5, lineHeight: 1.35, textAlign: 'center' }}>
+                    {detailText}
+                  </div>
+                  <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, lineHeight: 1.35, textAlign: 'center' }}>
+                    {slot.activated ? 'Awakened effect spent this turn.' : isReady ? 'Right-click to fire the awakened effect.' : `Charge ${progress}/${awakenRequirement}`}
+                  </div>
                 </div>
               </div>
             );
@@ -184,35 +228,49 @@ export default function BoardDisplay() {
             return (
               <div
                 key={slotIndex}
-                style={{ width: SLOT_W, height: SLOT_H, pointerEvents: 'auto', cursor: 'pointer' }}
+                className={[
+                  isNewlyPlaced ? 'anim-seraphim-pop' : undefined,
+                  isActive && !isNewlyPlaced ? 'anim-synergy-pulse' : undefined,
+                ].filter(Boolean).join(' ') || undefined}
+                style={{
+                  width: SLOT_W,
+                  height: SLOT_H,
+                  pointerEvents: 'auto',
+                  cursor: 'pointer',
+                  ...getCardFaceBackgroundStyle(serDef),
+                  border: `1px solid ${borderColor}`,
+                  borderRadius: 12,
+                  boxShadow: isActive
+                    ? `${warmTheme.shadow}, 0 0 18px ${glowColor}, 0 0 28px ${glowColorPeak}`
+                    : `${warmTheme.shadow}, 0 0 8px ${glowColor}`,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                  justifyContent: 'flex-start',
+                  padding: 0,
+                  overflow: 'hidden',
+                  fontFamily: 'Georgia, serif',
+                  transition: 'box-shadow 0.4s, border-color 0.4s',
+                }}
                 onClick={() => handleFrontSlotClick(slotIndex)}
                 title={`${serDef?.name ?? 'Seraphim'} — click to return to discard`}
               >
-                <div
-                  className={[
-                    isNewlyPlaced ? 'anim-seraphim-pop' : undefined,
-                    isActive && !isNewlyPlaced ? 'anim-synergy-pulse' : undefined,
-                  ].filter(Boolean).join(' ') || undefined}
-                  style={{
-                    width: '100%', height: '100%',
-                    background: warmTheme.surfaceStrong,
-                    border: `1px solid ${borderColor}`,
-                    borderRadius: 12,
-                    boxShadow: isActive ? `${warmTheme.shadow}, 0 0 18px ${glowColor}` : `0 0 8px ${glowColor}`,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    padding: '6px 4px', fontFamily: 'Georgia, serif', transition: 'box-shadow 0.4s',
-                    ['--seraph-glow-base' as string]: `${warmTheme.shadow}, 0 0 18px ${glowColor}`,
-                    ['--seraph-glow-peak' as string]: `${warmTheme.shadow}, 0 0 28px ${glowColorPeak}`,
-                  }}
-                >
-                  <div style={{ fontSize: 16, color: isActive ? warmTheme.accent : warmTheme.textMuted, marginBottom: 4, transition: 'filter 0.4s' }}>✦</div>
-                  <div style={{ fontSize: 9, fontWeight: 'bold', color: isActive ? warmTheme.accentDeep : warmTheme.textSoft, textAlign: 'center', lineHeight: 1.3 }}>
+                <div style={getCardNameRibbonStyle('board')}>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
+                    Seraphim
+                  </div>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
                     {serDef?.name ?? 'Seraphim'}
                   </div>
-                  <div style={{ fontSize: 8, marginTop: 5, letterSpacing: 1, color: isActive ? warmTheme.success : warmTheme.textFaint, textTransform: 'uppercase' }}>
+                </div>
+                <div style={getCardRulesPanelStyle('board')}>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, marginTop: 1, letterSpacing: 1, color: isActive ? warmTheme.success : cardFacePalette.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>
                     {isActive ? 'Synergy' : 'Inactive'}
                   </div>
-                  <div style={{ fontSize: 7, color: warmTheme.textFaint, marginTop: 4, letterSpacing: 0.5 }}>tap to remove</div>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: cardFacePalette.textSoft, marginTop: 5, lineHeight: 1.35, textAlign: 'center' }}>
+                    {isActive ? 'Its elemental bonus is live on the board.' : 'Summon a matching angel to awaken synergy.'}
+                  </div>
+                  <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, letterSpacing: 0.5, textAlign: 'center' }}>tap to remove</div>
                 </div>
               </div>
             );
@@ -281,23 +339,34 @@ export default function BoardDisplay() {
                 key={backSlot}
                 style={{
                   width: CHAOS_W, height: CHAOS_H,
-                  background: warmTheme.surfaceStrong,
+                  ...getCardFaceBackgroundStyle(chaosDef),
                   border: `1px solid rgba(143,116,169,0.5)`,
                   borderRadius: 12,
-                  boxShadow: warmTheme.shadow,
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
+                  display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start',
                   fontFamily: 'Georgia, serif', pointerEvents: 'auto', cursor: 'pointer',
-                  padding: '6px 4px',
+                  padding: 0,
+                  overflow: 'hidden',
                 }}
                 onClick={() => handleBackSlotClick(backSlot)}
                 title={`${chaosDef?.name ?? 'Chaos'} — ${chaos.durability} play${chaos.durability !== 1 ? 's' : ''} remaining — click to discard`}
               >
-                <div style={{ fontSize: 8, color: warmTheme.textMuted, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 3 }}>Chaos</div>
-                <div style={{ fontSize: 9, fontWeight: 'bold', color: warmTheme.chaos, textAlign: 'center', lineHeight: 1.3 }}>
-                  {chaosDef?.name ?? 'Chaos'}
+                <div style={getCardNameRibbonStyle('boardMini')}>
+                  <div style={{ fontSize: CHAOS_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>Chaos</div>
+                  <div style={{ fontSize: CHAOS_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
+                    {chaosDef?.name ?? 'Chaos'}
+                  </div>
                 </div>
-                <div style={{ fontSize: 9, color: durabilityColor, marginTop: 4, letterSpacing: 0.5 }}>
-                  {chaos.durability} left
+                <div style={getCardRulesPanelStyle('boardMini')}>
+                  <div style={{ fontSize: CHAOS_FACE_METRICS.descSize, color: durabilityColor, letterSpacing: 0.4, textAlign: 'center' }}>
+                    {chaos.durability} play{chaos.durability !== 1 ? 's' : ''} left
+                  </div>
+                  <div style={{ fontSize: CHAOS_FACE_METRICS.descSize, color: cardFacePalette.textSoft, marginTop: 4, lineHeight: 1.3, textAlign: 'center' }}>
+                    Back-row effect remains active until expiry.
+                  </div>
+                  <div style={{ fontSize: 6, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
+                    tap to remove
+                  </div>
                 </div>
               </div>
             );

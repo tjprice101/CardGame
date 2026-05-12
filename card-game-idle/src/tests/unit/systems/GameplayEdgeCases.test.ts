@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
-import { defaultGameState, useStore } from '@/state/store';
-import type { BoardState, DeckCard, DeckState, TurnState } from '@/types/game';
+import { defaultGameState, selectCanEmbraceInfinite, useStore } from '@/state/store';
+import type { SeraphimInstance } from '@/types/cards';
+import type { BoardState, DeckCard, DeckEntry, DeckState, TurnState } from '@/types/game';
 
 const emptyBoard: BoardState = {
   frontSlots: [null, null, null, null, null],
@@ -9,8 +10,8 @@ const emptyBoard: BoardState = {
   activeBoardEffects: [],
 };
 
-function makePlayingTurn(): TurnState {
-  return { ...defaultGameState.turn, phase: 'playing' };
+function makePlayingTurn(overrides: Partial<TurnState> = {}): TurnState {
+  return { ...defaultGameState.turn, phase: 'playing', ...overrides };
 }
 
 function makeDeck(definitionId: string): DeckState {
@@ -60,9 +61,9 @@ describe('Embrace the Infinite', () => {
     resetStore();
   });
 
-  it('awards oblivion, keeps three cards, and reshuffles the rest', () => {
-    const hand: DeckCard[] = Array.from({ length: 25 }, (_, index) => ({
-      instanceId: `infinite_${index}`,
+  it('does not become available below 40 cards in hand', () => {
+    const hand: DeckCard[] = Array.from({ length: 39 }, (_, index) => ({
+      instanceId: `infinite_gate_low_${index}`,
       definitionId: 'seek-neutral-void-surge',
     }));
 
@@ -70,9 +71,66 @@ describe('Embrace the Infinite', () => {
       ...state,
       deck: {
         ...state.deck,
+        drawPile: [{ instanceId: 'draw_1', definitionId: 'seek-neutral-void-surge' }],
+        hand,
+        discardPile: [{ instanceId: 'discard_1', definitionId: 'seek-neutral-void-surge' }],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'playing',
+        pendingEffect: null,
+      },
+    }));
+
+    expect(selectCanEmbraceInfinite(useStore.getState())).toBe(false);
+  });
+
+  it('is available at 40 cards even when the draw pile still has cards', () => {
+    const hand: DeckCard[] = Array.from({ length: 40 }, (_, index) => ({
+      instanceId: `infinite_gate_${index}`,
+      definitionId: 'seek-neutral-void-surge',
+    }));
+
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        drawPile: [
+          { instanceId: 'draw_1', definitionId: 'seek-neutral-void-surge' },
+          { instanceId: 'draw_2', definitionId: 'seek-neutral-void-surge' },
+          { instanceId: 'draw_3', definitionId: 'seek-neutral-void-surge' },
+        ],
+        hand,
+        discardPile: [{ instanceId: 'discard_1', definitionId: 'seek-neutral-void-surge' }],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'playing',
+        pendingEffect: null,
+      },
+    }));
+
+    expect(selectCanEmbraceInfinite(useStore.getState())).toBe(true);
+  });
+
+  it('awards oblivion, keeps three cards, and reshuffles the rest back with the remaining draw pile', () => {
+    const hand: DeckCard[] = Array.from({ length: 40 }, (_, index) => ({
+      instanceId: `infinite_${index}`,
+      definitionId: 'seek-neutral-void-surge',
+    }));
+    const existingDrawPile: DeckCard[] = [
+      { instanceId: 'draw_a', definitionId: 'seek-neutral-void-surge' },
+      { instanceId: 'draw_b', definitionId: 'seek-neutral-void-surge' },
+      { instanceId: 'draw_c', definitionId: 'seek-neutral-void-surge' },
+    ];
+
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
         deckList: [],
         extraDeck: [],
-        drawPile: [],
+        drawPile: existingDrawPile,
         hand,
         discardPile: [],
       },
@@ -90,7 +148,7 @@ describe('Embrace the Infinite', () => {
     useStore.getState().embraceInfinite();
 
     let state = useStore.getState();
-    expect(state.progress.oblivion).toBe(25 * 50);
+  expect(state.progress.oblivion).toBe(40 * 50);
     expect(state.turn.pendingEffect?.type).toBe('embrace_infinite');
 
     const keepIds = hand.slice(0, 3).map(card => card.instanceId);
@@ -99,9 +157,84 @@ describe('Embrace the Infinite', () => {
     state = useStore.getState();
     expect(state.turn.pendingEffect).toBeNull();
     expect(state.deck.hand.map(card => card.instanceId)).toEqual(keepIds);
-    expect(state.deck.drawPile).toHaveLength(22);
+    expect(state.deck.drawPile).toHaveLength(40);
     expect(new Set(state.deck.drawPile.map(card => card.instanceId))).toEqual(
-      new Set(hand.slice(3).map(card => card.instanceId))
+      new Set([...existingDrawPile.map(card => card.instanceId), ...hand.slice(3).map(card => card.instanceId)])
     );
+  });
+});
+
+describe('Custom deck activation', () => {
+  beforeEach(() => {
+    resetStore();
+  });
+
+  it('makes a newly saved custom deck the live playable deck immediately', () => {
+    const customDeckList: DeckEntry[] = [
+      { definitionId: 'ser-neutral-first-light', copies: 4 },
+      { definitionId: 'seek-neutral-null-seek', copies: 4 },
+    ];
+    const customExtraDeck = ['angel-light-seraphiel', 'angel-light-aurelion'];
+
+    const deckId = useStore.getState().saveCurrentDeck('Fresh Custom Deck', customDeckList, customExtraDeck);
+
+    const state = useStore.getState();
+    expect(state.progress.activeDeckId).toBe(deckId);
+    expect(state.deck.deckList).toEqual(customDeckList);
+    expect(state.deck.extraDeck).toEqual(customExtraDeck);
+    expect(state.deck.hand).toEqual([]);
+    expect(state.deck.discardPile).toEqual([]);
+    expect(state.deck.drawPile).toHaveLength(8);
+  });
+});
+
+describe('Heavenly Light balance', () => {
+  it('does not let Thorncrown amplify Radiance doubling and uses the reduced Revelation payout', () => {
+    const throne: SeraphimInstance = {
+      instanceId: 'ser_throne_1',
+      definitionId: 'ser-light-throne',
+      type: 'Seraphim',
+      element: 'Light',
+      rarity: 'Rare',
+      level: 1,
+      isActive: true,
+      boardSlot: 0,
+    };
+
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'hr-light-grand-illumination' },
+      makePlayingTurn({ radiance: 4 }),
+      {
+        frontSlots: [throne, null, null, null, null],
+        backSlots: [null, null, null, null],
+        activeBoardEffects: [],
+      },
+      makeDeck('hr-light-grand-illumination'),
+    );
+
+    expect(result.turn.radiance).toBe(8);
+    expect(result.oblivionBonus).toBe(64);
+  });
+
+  it('uses the reduced Light Radiance-to-Oblivion conversion and multiplier values', () => {
+    const sunforgedResult = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'hr-light-sunforged' },
+      makePlayingTurn({ radiance: 6 }),
+      emptyBoard,
+      makeDeck('hr-light-sunforged'),
+    );
+
+    expect(sunforgedResult.turn.radiance).toBe(0);
+    expect(sunforgedResult.oblivionBonus).toBe(150);
+
+    const spireResult = CardEffectExecutor.execute(
+      { instanceId: 'play_2', definitionId: 'hr-light-pillar-of-heaven' },
+      makePlayingTurn({ radiance: 6 }),
+      emptyBoard,
+      makeDeck('hr-light-pillar-of-heaven'),
+    );
+
+    expect(spireResult.turn.radiance).toBe(0);
+    expect(spireResult.board.activeBoardEffects).toContainEqual({ type: 'score_multiplier', value: 250 });
   });
 });

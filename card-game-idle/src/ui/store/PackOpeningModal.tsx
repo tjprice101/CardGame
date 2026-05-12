@@ -1,6 +1,13 @@
 import { useState, useRef, useCallback } from 'react';
 import { gsap } from 'gsap';
 import { CardRegistry } from '@/cards/CardRegistry';
+import {
+  cardFacePalette,
+  getCardFaceBackgroundStyle,
+  getCardFaceMetrics,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -27,12 +34,11 @@ const cardFaceStyle: React.CSSProperties = {
   borderRadius: 10,
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
-  padding: '14px 10px 10px',
-  gap: 6,
+  alignItems: 'stretch',
   backfaceVisibility: 'hidden',
   WebkitBackfaceVisibility: 'hidden',
   background: warmTheme.surfaceStrong,
+  overflow: 'hidden',
 };
 
 const styles: Record<string, React.CSSProperties> = {
@@ -79,25 +85,24 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
   },
   cardType: {
-    fontSize: 8,
     letterSpacing: 2,
     textTransform: 'uppercase',
-    opacity: 0.5,
-    color: warmTheme.textMuted,
+    color: cardFacePalette.textMuted,
+    textAlign: 'center',
+    marginBottom: 4,
   },
   cardName: {
-    fontSize: 12,
     fontWeight: 'bold',
-    color: warmTheme.accentDeep,
+    color: cardFacePalette.text,
     textAlign: 'center',
     lineHeight: 1.4,
   },
   cardDesc: {
-    fontSize: 9,
-    color: warmTheme.textSoft,
+    color: cardFacePalette.textSoft,
     textAlign: 'center',
-    lineHeight: 1.5,
-    flexGrow: 1,
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
   },
   cardRarity: {
     fontSize: 9,
@@ -125,6 +130,7 @@ interface Props {
 }
 
 export default function PackOpeningModal({ cards, packName, newCards, onClose }: Props) {
+  const faceMetrics = getCardFaceMetrics('pack');
   const [revealed, setRevealed] = useState<boolean[]>(new Array(cards.length).fill(false));
   const cardRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
@@ -213,23 +219,35 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
                   {/* Front face */}
                   <div style={{
                     ...cardFaceStyle,
+                    ...getCardFaceBackgroundStyle(def),
                     border: `2px solid ${RARITY_COLORS[rarity]}`,
                     transform: 'rotateY(180deg)',
                   }}>
-                    <div style={styles.cardType}>
-                      {def?.type === 'Seraphim' ? 'Seraphim' : def?.type === 'Seeker' ? 'Seeker' : def?.type === 'Chaos' ? 'Chaos' : 'Card'}
+                    <div style={getCardNameRibbonStyle('pack')}>
+                      <div style={{ ...styles.cardType, fontSize: faceMetrics.typeSize }}>
+                        {def?.type === 'Seraphim' ? 'Seraphim' : def?.type === 'Seeker' ? 'Seeker' : def?.type === 'Chaos' ? 'Chaos' : 'Card'}
+                      </div>
+                      <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def?.name ?? defId}</div>
                     </div>
-                    <div style={styles.cardName}>{def?.name ?? defId}</div>
-                    <div style={styles.cardDesc}>{def?.description ?? ''}</div>
-                    <div style={{ ...styles.cardRarity, color: RARITY_COLORS[rarity] }}>{rarity}</div>
-                    {isNew && (
-                      <span className="anim-badge-bounce" style={{
-                        fontSize: 8, color: '#80e860', letterSpacing: 2,
-                        textTransform: 'uppercase', fontWeight: 'bold',
-                      }}>
-                        ✦ New!
-                      </span>
-                    )}
+                    <div style={getCardRulesPanelStyle('pack')}>
+                      <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: faceMetrics.descLines }}>
+                        {def?.description ?? ''}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
+                        <div style={{ ...styles.cardRarity, color: cardFacePalette.textMuted }}>{rarity}</div>
+                        {isNew && (
+                          <span className="anim-badge-bounce" style={{
+                            fontSize: 8,
+                            color: warmTheme.success,
+                            letterSpacing: 2,
+                            textTransform: 'uppercase',
+                            fontWeight: 'bold',
+                          }}>
+                            New
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>

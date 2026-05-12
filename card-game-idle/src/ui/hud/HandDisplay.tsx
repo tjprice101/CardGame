@@ -3,6 +3,13 @@ import { useStore, selectDeck, selectTurn, selectBoard } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
+import {
+  cardFacePalette,
+  getCardFaceBackgroundStyle,
+  getCardFaceMetrics,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
 import type { SeraphimDefinition, AngelDefinition } from '@/types/cards';
 
@@ -47,8 +54,7 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 14,
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    padding: '12px 10px 9px',
+    alignItems: 'stretch',
     cursor: 'pointer',
     transition: 'transform 0.15s, box-shadow 0.15s, border-color 0.15s',
     fontFamily: 'Georgia, serif',
@@ -65,25 +71,24 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: warmTheme.glow,
   },
   subtype: {
-    fontSize: 10,
-    letterSpacing: 1.5,
+    letterSpacing: 1.8,
     textTransform: 'uppercase',
     marginBottom: 4,
+    textAlign: 'center',
   },
   name: {
-    fontSize: 14,
     fontWeight: 'bold',
-    color: warmTheme.accentDeep,
+    color: cardFacePalette.text,
     lineHeight: 1.25,
     textAlign: 'center',
   },
   desc: {
-    fontSize: 11,
-    color: warmTheme.textSoft,
-    lineHeight: 1.4,
+    color: cardFacePalette.textSoft,
     textAlign: 'center',
-    marginTop: 6,
-    flexGrow: 1,
+    marginTop: 0,
+    display: '-webkit-box',
+    WebkitBoxOrient: 'vertical',
+    overflow: 'hidden',
   },
   tooltip: {
     position: 'absolute',
@@ -129,6 +134,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function HandDisplay() {
+  const faceMetrics = getCardFaceMetrics('hand');
   const hand = useStore(selectDeck).hand;
   const turn = useStore(selectTurn);
   const board = useStore(selectBoard);
@@ -233,7 +239,6 @@ export default function HandDisplay() {
           {hand.filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'Angel').map(deckCard => {
           const def = CardRegistry.get(deckCard.definitionId);
           const selected = turn.mulliganSelected.includes(deckCard.instanceId);
-          const subtypeColor = TYPE_COLORS[def?.type ?? ''] ?? '#aaa';
           const isHovered = hoveredId === deckCard.instanceId;
           const isAnimatingOut = playingCardId === deckCard.instanceId;
           const isPlayable = !isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board);
@@ -253,12 +258,13 @@ export default function HandDisplay() {
               draggable={isDraggable}
               style={{
                 ...styles.card,
+                ...getCardFaceBackgroundStyle(def),
                 ...(selected ? styles.cardMulligan : {}),
                 ...(!isPlayable ? { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.5)' } : {}),
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
                 ...(isHovered && !selected && !isAnimatingOut && isPlayable && !isDragging ? {
                   transform: 'translateY(-12px)',
-                  boxShadow: warmTheme.shadow,
+                  boxShadow: `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
                   borderColor: warmTheme.borderStrong,
                 } : {}),
               }}
@@ -277,11 +283,26 @@ export default function HandDisplay() {
               }}
               onDragEnd={() => setDraggingId(null)}
             >
-              {def?.type && (
-                <div style={{ ...styles.subtype, color: subtypeColor }}>{def.type}</div>
-              )}
-              <div style={styles.name}>{def?.name ?? deckCard.definitionId}</div>
-              <div style={styles.desc}>{def?.description ?? ''}</div>
+              <div style={getCardNameRibbonStyle('hand')}>
+                {def?.type && (
+                  <div style={{ ...styles.subtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>{def.type}</div>
+                )}
+                <div style={{ ...styles.name, fontSize: faceMetrics.nameSize }}>{def?.name ?? deckCard.definitionId}</div>
+              </div>
+
+              <div style={getCardRulesPanelStyle('hand')}>
+                <div
+                  style={{
+                    ...styles.desc,
+                    fontSize: faceMetrics.descSize,
+                    lineHeight: faceMetrics.descLineHeight,
+                    WebkitLineClamp: faceMetrics.descLines,
+                  }}
+                >
+                  {def?.description ?? ''}
+                </div>
+              </div>
+
               {selected && (
                 <div style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, color: warmTheme.danger }}>✕</div>
               )}

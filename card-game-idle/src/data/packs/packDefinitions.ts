@@ -62,6 +62,10 @@ export const HEAVENLY_LIGHT_PACK_POOL: string[] = [
   'ser-light-vigil',
   'ser-light-throne',
   'ser-light-warden',
+  // Light Angels
+  'angel-light-seraphiel',
+  'angel-light-aurelion',
+  'angel-light-solarius',
   // Light HR cards
   'hr-light-divine-smite',
   'hr-light-holy-radiance',

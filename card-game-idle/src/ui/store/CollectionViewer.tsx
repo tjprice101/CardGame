@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { ELEMENT_SET_NAMES, ELEMENT_COLORS } from '@/data/elements';
+import { ELEMENT_SET_NAMES, ELEMENT_COLORS, getCardCategoryKey } from '@/data/elements';
+import {
+  cardFacePalette,
+  getCardFaceBackgroundStyle,
+  getCardFaceMetrics,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -12,25 +19,26 @@ const RARITY_ORDER: Record<string, number> = {
   Common: 0, Rare: 1, Epic: 2, Legendary: 3,
 };
 
-const TYPE_COLORS: Record<string, string> = {
-  Seraphim: '#FFD700', Chaos: '#b87de8', Seeker: '#c888f0', Angel: '#FFD700',
-};
-
 interface Props { onClose: () => void }
 
 export default function CollectionViewer({ onClose }: Props) {
+  const faceMetrics = getCardFaceMetrics('grid');
   const collection = useStore(s => s.progress.collection);
   const [activeElement, setActiveElement] = useState<string>('All');
 
   const allCards = CardRegistry.getAll().sort((a, b) => {
-    if (a.element !== b.element) return a.element.localeCompare(b.element);
+    const categoryA = getCardCategoryKey(a);
+    const categoryB = getCardCategoryKey(b);
+    if (categoryA !== categoryB) return categoryA.localeCompare(categoryB);
     if (RARITY_ORDER[a.rarity] !== RARITY_ORDER[b.rarity])
       return RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity];
     return a.name.localeCompare(b.name);
   });
 
-  const elements = ['All', ...Array.from(new Set(allCards.map(c => c.element)))];
-  const filtered = activeElement === 'All' ? allCards : allCards.filter(c => c.element === activeElement);
+  const elements = ['All', ...Array.from(new Set(allCards.map(card => getCardCategoryKey(card))))];
+  const filtered = activeElement === 'All'
+    ? allCards
+    : allCards.filter(card => getCardCategoryKey(card) === activeElement);
 
   const totalOwned = Object.keys(collection).length;
   const totalCards = allCards.length;
@@ -102,62 +110,69 @@ export default function CollectionViewer({ onClose }: Props) {
         {filtered.map(card => {
           const owned = collection[card.definitionId] ?? 0;
           const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
-          const typeColor = TYPE_COLORS[card.type] ?? '#aaa';
 
           return (
             <div
               key={card.definitionId}
               style={{
                 width: 148,
-                background: owned > 0 ? warmTheme.surfaceStrong : warmTheme.surfaceMuted,
+                ...getCardFaceBackgroundStyle(card),
+                backgroundColor: owned > 0 ? warmTheme.surfaceStrong : warmTheme.surfaceMuted,
                 border: owned > 0
                   ? `1px solid ${rarityColor}55`
                   : `1px solid ${warmTheme.border}`,
                 borderRadius: 12,
-                padding: '10px 10px 8px',
+                height: 204,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 4,
+                alignItems: 'stretch',
                 opacity: owned > 0 ? 1 : 0.45,
                 transition: 'opacity 0.15s',
+                overflow: 'hidden',
               }}
             >
-              {/* Rarity + type row */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: 8, color: rarityColor, letterSpacing: 1, textTransform: 'uppercase' }}>
-                  {card.rarity}
-                </span>
-                <span style={{ fontSize: 8, color: typeColor, letterSpacing: 1, textTransform: 'uppercase' }}>
+              <div style={getCardNameRibbonStyle('grid')}>
+                <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
                   {card.type}
-                </span>
+                </div>
+                <div style={{
+                  fontSize: faceMetrics.nameSize,
+                  fontWeight: 'bold',
+                  color: cardFacePalette.text,
+                  lineHeight: 1.25,
+                  minHeight: 24,
+                  textAlign: 'center',
+                }}>
+                  {card.name}
+                </div>
               </div>
 
-              {/* Name */}
-              <div style={{
-                fontSize: 11, fontWeight: 'bold',
-                color: owned > 0 ? warmTheme.accentDeep : warmTheme.textMuted,
-                lineHeight: 1.3,
-                minHeight: 28,
-              }}>
-                {card.name}
-              </div>
-
-              {/* Description */}
-              <div style={{
-                fontSize: 9, color: warmTheme.textSoft, lineHeight: 1.4,
-                display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical',
-                overflow: 'hidden', flexGrow: 1,
-              }}>
-                {owned > 0 ? card.description : '???'}
-              </div>
-
-              {/* Owned count */}
-              <div style={{
-                marginTop: 4, fontSize: 9, letterSpacing: 1,
-                color: owned > 0 ? warmTheme.textMuted : warmTheme.textFaint,
-                textAlign: 'right',
-              }}>
-                {owned > 0 ? `×${owned} owned` : 'Not owned'}
+              <div style={getCardRulesPanelStyle('grid')}>
+                <div style={{
+                  fontSize: faceMetrics.descSize,
+                  color: cardFacePalette.textSoft,
+                  lineHeight: faceMetrics.descLineHeight,
+                  display: '-webkit-box',
+                  WebkitLineClamp: faceMetrics.descLines,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textAlign: 'center',
+                }}>
+                  {owned > 0 ? card.description : '???'}
+                </div>
+                <div style={{
+                  marginTop: 6,
+                  fontSize: 8,
+                  letterSpacing: 1,
+                  color: owned > 0 ? cardFacePalette.textMuted : warmTheme.textFaint,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: 8,
+                }}>
+                  <span style={{ color: cardFacePalette.textMuted, textTransform: 'uppercase' }}>{card.rarity}</span>
+                  <span>{owned > 0 ? `×${owned} owned` : 'Not owned'}</span>
+                </div>
               </div>
             </div>
           );

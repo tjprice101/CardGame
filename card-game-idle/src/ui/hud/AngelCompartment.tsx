@@ -1,16 +1,21 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useStore, selectBoard, selectTurn, selectExtraDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
+import {
+  cardFacePalette,
+  getCardBackgroundUrl,
+  getCardFaceBackgroundStyle,
+  getCardFaceMetrics,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
 import type { AngelDefinition } from '@/types/cards';
 
-type AngelLocation = 'available' | 'on_board';
-
-const LOCATION_LABEL: Record<AngelLocation, { text: string; color: string }> = {
-  available: { text: 'AVAILABLE', color: warmTheme.textMuted },
-  on_board:  { text: 'ON BOARD',  color: warmTheme.success },
-};
+const faceMetrics = getCardFaceMetrics('hand');
+const ANGEL_DRAWER_WIDTH = 'min(380px, calc(100vw - 52px))';
+const ANGEL_ART_HEIGHT = 120;
 
 export default function AngelCompartment() {
   const [open, setOpen] = useState(false);
@@ -21,6 +26,13 @@ export default function AngelCompartment() {
 
   const isPlaying = turn.phase === 'playing';
   const angelsOnBoard = board.frontSlots.filter(s => s?.type === 'Angel').length;
+  const angelEntries = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const definitionId of extraDeck) {
+      counts.set(definitionId, (counts.get(definitionId) ?? 0) + 1);
+    }
+    return Array.from(counts.entries()).map(([definitionId, totalCopies]) => ({ definitionId, totalCopies }));
+  }, [extraDeck]);
 
   return (
     <div style={{
@@ -35,7 +47,7 @@ export default function AngelCompartment() {
     }}>
       {/* Slide-in panel */}
       <div style={{
-        width: open ? 260 : 0,
+        width: open ? ANGEL_DRAWER_WIDTH : 0,
         overflow: 'hidden',
         transition: 'width 0.22s ease',
         background: warmTheme.surfaceStrong,
@@ -47,12 +59,12 @@ export default function AngelCompartment() {
         boxShadow: open ? warmTheme.shadow : 'none',
       }}>
         <div style={{
-          width: 260,
-          padding: '14px 12px',
+          width: '100%',
+          padding: '18px 16px',
           display: 'flex',
           flexDirection: 'column',
-          gap: 10,
-          maxHeight: '70vh',
+          gap: 14,
+          maxHeight: '76vh',
           overflowY: 'auto',
         }}>
           <div style={{
@@ -78,43 +90,57 @@ export default function AngelCompartment() {
             </div>
           )}
 
-          {extraDeck.map(definitionId => {
+          {angelEntries.map(({ definitionId, totalCopies }) => {
             const def = CardRegistry.get(definitionId);
             if (!def || def.type !== 'Angel') return null;
             const angelDef = def as AngelDefinition;
+            const artStyle = getCardFaceBackgroundStyle(angelDef);
+            const artUrl = getCardBackgroundUrl(angelDef);
 
-            const isOnBoard = board.frontSlots.some(sl => sl?.definitionId === definitionId);
-            const location: AngelLocation = isOnBoard ? 'on_board' : 'available';
-            const playable = !isOnBoard && isPlaying &&
+            const onBoardCopies = board.frontSlots.filter(
+              sl => sl?.type === 'Angel' && sl.definitionId === definitionId
+            ).length;
+            const availableCopies = totalCopies - onBoardCopies;
+            const playable = availableCopies > 0 && isPlaying &&
               CardEffectExecutor.checkPlayable(angelDef, 0, turn, board);
 
-            const boardSerCount: Record<string, number> = {};
+            const boardMaterialCount: Record<string, number> = {};
             for (const slot of board.frontSlots) {
-              if (slot?.type === 'Seraphim') {
-                boardSerCount[slot.definitionId] = (boardSerCount[slot.definitionId] ?? 0) + 1;
+              if (slot) {
+                boardMaterialCount[slot.definitionId] = (boardMaterialCount[slot.definitionId] ?? 0) + 1;
               }
             }
             const costProgress: Record<string, number> = {};
             for (const id of angelDef.summonCost) {
               costProgress[id] = (costProgress[id] ?? 0) + 1;
             }
+            const statusLabel = availableCopies === 0
+              ? `${onBoardCopies}/${totalCopies} summoned`
+              : onBoardCopies > 0
+                ? `${availableCopies}/${totalCopies} ready`
+                : `${availableCopies} ready`;
+            const statusColor = availableCopies === 0 ? warmTheme.success : warmTheme.textMuted;
 
             return (
               <div
                 key={definitionId}
                 style={{
-                  background: warmTheme.surface,
                   border: playable
                     ? `1px solid ${warmTheme.borderStrong}`
-                    : isOnBoard
+                    : availableCopies === 0
                       ? `1px solid rgba(79,138,71,0.35)`
                       : `1px solid ${warmTheme.border}`,
-                  borderRadius: 12,
-                  padding: '10px 10px 8px',
+                  background: 'linear-gradient(180deg, rgba(255,250,245,0.98) 0%, rgba(246,237,226,0.98) 100%)',
+                  borderRadius: 16,
+                  padding: 0,
                   fontFamily: 'Georgia, serif',
                   cursor: playable ? 'pointer' : 'default',
-                  transition: 'border-color 0.2s, box-shadow 0.2s',
-                  boxShadow: playable ? warmTheme.glow : 'none',
+                  transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
+                  boxShadow: playable ? `${warmTheme.glow}, ${cardFacePalette.shadow}` : cardFacePalette.shadow,
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  minHeight: 320,
                 }}
                 onClick={() => {
                   if (playable) {
@@ -123,71 +149,186 @@ export default function AngelCompartment() {
                   }
                 }}
               >
-                {/* Header row */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                  <div style={{ fontSize: 12, fontWeight: 'bold', color: warmTheme.accentDeep }}>
+                <div style={getCardNameRibbonStyle('hand')}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
+                    <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                      Angel
+                    </div>
+                    <div style={{
+                      fontSize: 9,
+                      letterSpacing: 1,
+                      color: statusColor,
+                      textTransform: 'uppercase',
+                    }}>
+                      {statusLabel}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, lineHeight: 1.25, marginTop: 3 }}>
                     {angelDef.name}
                   </div>
-                  <div style={{
-                    fontSize: 8,
-                    letterSpacing: 1,
-                    color: LOCATION_LABEL[location].color,
-                    textTransform: 'uppercase',
-                  }}>
-                    {LOCATION_LABEL[location].text}
-                  </div>
                 </div>
 
-                {/* Description */}
                 <div style={{
-                  fontSize: 10, color: warmTheme.textSoft, lineHeight: 1.45, marginBottom: 8,
-                  display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                  ...artStyle,
+                  position: 'relative',
+                  minHeight: ANGEL_ART_HEIGHT,
+                  backgroundPosition: artUrl ? 'center center' : 'center',
+                  backgroundSize: artUrl ? 'cover' : 'cover',
+                  backgroundRepeat: 'no-repeat',
+                  borderTop: `1px solid ${cardFacePalette.border}`,
+                  borderBottom: `1px solid ${cardFacePalette.border}`,
+                  overflow: 'hidden',
                 }}>
-                  {angelDef.description}
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    background: 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 35%, rgba(53,34,19,0.12) 78%, rgba(53,34,19,0.26) 100%)',
+                  }} />
+                  <div style={{
+                    position: 'absolute',
+                    left: 10,
+                    right: 10,
+                    bottom: 10,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}>
+                    <div style={{
+                      fontSize: 9,
+                      letterSpacing: 1,
+                      color: '#fff8f0',
+                      textTransform: 'uppercase',
+                      padding: '4px 7px',
+                      borderRadius: 999,
+                      background: 'rgba(32, 21, 13, 0.45)',
+                      backdropFilter: 'blur(3px)',
+                    }}>
+                      {angelDef.rarity}
+                    </div>
+                    <div style={{
+                      fontSize: 9,
+                      letterSpacing: 1,
+                      color: '#fff8f0',
+                      textTransform: 'uppercase',
+                      padding: '4px 7px',
+                      borderRadius: 999,
+                      background: 'rgba(32, 21, 13, 0.45)',
+                      backdropFilter: 'blur(3px)',
+                    }}>
+                      Awaken {angelDef.activatedAbility.cardsPlayedRequirement}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Summon cost */}
-                {!isOnBoard && (
-                  <>
-                    <div style={{ fontSize: 9, color: warmTheme.textMuted, marginBottom: 4, letterSpacing: 0.5 }}>
-                      SUMMON COST
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                      {Object.entries(costProgress).map(([costId, needed]) => {
-                        const costDef = CardRegistry.get(costId);
-                        const have = boardSerCount[costId] ?? 0;
-                        const met = have >= needed;
-                        return (
-                          <div key={costId} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <span style={{ fontSize: 10, color: met ? warmTheme.success : 'rgba(255,80,80,0.8)' }}>
-                              {met ? '✓' : '✕'}
-                            </span>
-                            <span style={{ fontSize: 9, color: warmTheme.textSoft }}>
-                              {needed > 1 ? `${needed}× ` : ''}{costDef?.name ?? costId}
-                            </span>
-                            <span style={{ fontSize: 8, color: warmTheme.textFaint, marginLeft: 'auto' }}>
-                              {have}/{needed}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
-
-                {playable && (
+                <div style={getCardRulesPanelStyle('hand')}>
                   <div style={{
-                    marginTop: 8,
-                    textAlign: 'center',
-                    fontSize: 9,
-                    color: warmTheme.accentDeep,
-                    letterSpacing: 1.5,
-                    textTransform: 'uppercase',
-                    opacity: 0.8,
+                    fontSize: faceMetrics.descSize,
+                    color: cardFacePalette.textSoft,
+                    lineHeight: faceMetrics.descLineHeight,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 5,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
                   }}>
-                    Click to Summon
+                    {angelDef.description}
                   </div>
-                )}
+
+                  <div style={{ fontSize: 10, color: warmTheme.accentDeep, marginTop: 12, marginBottom: 4, letterSpacing: 0.5 }}>
+                    AWAKEN {angelDef.activatedAbility.cardsPlayedRequirement}
+                  </div>
+                  <div style={{
+                    fontSize: 10,
+                    color: cardFacePalette.textSoft,
+                    lineHeight: 1.45,
+                    marginBottom: 10,
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}>
+                    {angelDef.activatedAbility.name}: {angelDef.activatedAbility.description}
+                  </div>
+
+                  {availableCopies > 0 && (
+                    <>
+                      <div style={{ fontSize: 9, color: cardFacePalette.textMuted, marginBottom: 6, letterSpacing: 0.5 }}>
+                        SUMMON MATERIALS
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                        {Object.entries(costProgress).map(([costId, needed]) => {
+                          const costDef = CardRegistry.get(costId);
+                          const have = boardMaterialCount[costId] ?? 0;
+                          const met = have >= needed;
+                          return (
+                            <div key={costId} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <span style={{ fontSize: 11, color: met ? warmTheme.success : 'rgba(255,80,80,0.8)' }}>
+                                {met ? '✓' : '✕'}
+                              </span>
+                              <span style={{ fontSize: 10, color: cardFacePalette.textSoft }}>
+                                {needed > 1 ? `${needed}× ` : ''}{costDef?.name ?? costId}
+                              </span>
+                              <span style={{ fontSize: 9, color: cardFacePalette.textMuted, marginLeft: 'auto' }}>
+                                {have}/{needed}
+                              </span>
+                            </div>
+                          );
+                        })}
+                        {angelDef.extraSummonConditions?.map((condition, index) => {
+                          if (condition.type === 'chaos_active_gte') {
+                            const activeChaos = board.backSlots.filter(slot => slot !== null).length;
+                            const met = activeChaos >= condition.value;
+                            return (
+                              <div key={`${definitionId}-cond-${index}`} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ fontSize: 11, color: met ? warmTheme.success : 'rgba(255,80,80,0.8)' }}>
+                                  {met ? '✓' : '✕'}
+                                </span>
+                                <span style={{ fontSize: 10, color: cardFacePalette.textSoft }}>
+                                  Active Chaos cards
+                                </span>
+                                <span style={{ fontSize: 9, color: cardFacePalette.textMuted, marginLeft: 'auto' }}>
+                                  {activeChaos}/{condition.value}
+                                </span>
+                              </div>
+                            );
+                          }
+                          if (condition.type === 'seraphim_on_board_gte') {
+                            const activeSeraphim = board.frontSlots.filter(slot => slot?.type === 'Seraphim').length;
+                            const met = activeSeraphim >= condition.value;
+                            return (
+                              <div key={`${definitionId}-cond-${index}`} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ fontSize: 11, color: met ? warmTheme.success : 'rgba(255,80,80,0.8)' }}>
+                                  {met ? '✓' : '✕'}
+                                </span>
+                                <span style={{ fontSize: 10, color: cardFacePalette.textSoft }}>
+                                  Front-row Seraphim
+                                </span>
+                                <span style={{ fontSize: 9, color: cardFacePalette.textMuted, marginLeft: 'auto' }}>
+                                  {activeSeraphim}/{condition.value}
+                                </span>
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+                    </>
+                  )}
+
+                  {playable && (
+                    <div style={{
+                      marginTop: 10,
+                      textAlign: 'center',
+                      fontSize: 10,
+                      color: warmTheme.accentDeep,
+                      letterSpacing: 1.5,
+                      textTransform: 'uppercase',
+                      opacity: 0.8,
+                    }}>
+                      Click to Summon
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}

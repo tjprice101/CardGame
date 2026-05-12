@@ -2,7 +2,14 @@ import { useState, useMemo } from 'react';
 import { useStore, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
-import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
+import { ELEMENT_COLORS, ELEMENT_SET_NAMES, getCardCategoryKey } from '@/data/elements';
+import {
+  cardFacePalette,
+  getCardFaceBackgroundStyle,
+  getCardFaceMetrics,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
 import type { DeckEntry } from '@/types/game';
 import type { AngelDefinition } from '@/types/cards';
@@ -47,17 +54,17 @@ const styles: Record<string, React.CSSProperties> = {
   sectionCount: { fontSize: 9, color: warmTheme.textFaint, letterSpacing: 1 },
   sectionGrid: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
   card: {
-    width: 100, height: 136, background: warmTheme.surfaceStrong,
+    width: 100, height: 148, background: warmTheme.surfaceStrong,
     border: `1px solid ${warmTheme.border}`, borderRadius: 12, cursor: 'pointer',
-    display: 'flex', flexDirection: 'column', alignItems: 'center',
-    padding: '8px 6px 6px', transition: 'border-color 0.15s, box-shadow 0.15s',
-    position: 'relative',
+    display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+    transition: 'border-color 0.15s, box-shadow 0.15s',
+    position: 'relative', overflow: 'hidden',
   },
   cardAdded: { borderColor: warmTheme.borderStrong, boxShadow: warmTheme.glow },
   cardFull: { opacity: 0.4, cursor: 'not-allowed' },
-  cardName: { fontSize: 10, fontWeight: 'bold', color: warmTheme.accentDeep, textAlign: 'center', lineHeight: 1.3 },
-  cardDesc: { fontSize: 8, color: warmTheme.textSoft, textAlign: 'center', lineHeight: 1.3, marginTop: 4, flexGrow: 1 },
-  cardSubtype: { fontSize: 7, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4 },
+  cardName: { fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 },
+  cardDesc: { color: cardFacePalette.textSoft, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  cardSubtype: { letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4, textAlign: 'center' },
   badge: {
     position: 'absolute', top: 4, right: 4, width: 18, height: 18,
     borderRadius: '50%', background: warmTheme.button, color: warmTheme.accentDeep,
@@ -117,6 +124,9 @@ const styles: Record<string, React.CSSProperties> = {
   miniBtnDanger: {
     borderColor: 'rgba(184,92,79,0.35)', color: warmTheme.danger,
   },
+  sidebarActionRow: {
+    display: 'flex', gap: 6, flexWrap: 'wrap',
+  },
   empty: {
     width: '100%', textAlign: 'center', marginTop: 40,
     fontSize: 13, color: warmTheme.textFaint, fontStyle: 'italic',
@@ -131,6 +141,7 @@ const styles: Record<string, React.CSSProperties> = {
 interface Props { onClose: () => void }
 
 export default function DeckBuilder({ onClose }: Props) {
+  const faceMetrics = getCardFaceMetrics('grid');
   const { initDeck, saveCurrentDeck, updateSavedDeck, loadSavedDeck, deleteSavedDeck } = useStore.getState();
   const currentDeck = useStore(selectDeck);
   const collection = useStore(s => s.progress.collection);
@@ -158,9 +169,9 @@ export default function DeckBuilder({ onClose }: Props) {
       d => (collection[d.definitionId] ?? 0) > 0
     );
     const availableElements = [...new Set(
-      ownedCards.filter(d => d.type !== 'Angel').map(d => d.element)
+      ownedCards.map(d => getCardCategoryKey(d))
     )].sort();
-    const filtered = ownedCards.filter(d => elementFilter === null || d.element === elementFilter);
+    const filtered = ownedCards.filter(d => elementFilter === null || getCardCategoryKey(d) === elementFilter);
 
     const byRarity = (a: { rarity: string }, b: { rarity: string }) =>
       (RARITY_ORDER[a.rarity as keyof typeof RARITY_ORDER] ?? 0) -
@@ -178,6 +189,17 @@ export default function DeckBuilder({ onClose }: Props) {
   }, [collection, elementFilter]);
 
   const deckMap = new Map<string, number>(deckList.map(e => [e.definitionId, e.copies]));
+  const extraDeckCountMap = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const definitionId of extraDeckList) {
+      counts.set(definitionId, (counts.get(definitionId) ?? 0) + 1);
+    }
+    return counts;
+  }, [extraDeckList]);
+  const extraDeckEntries = useMemo(
+    () => Array.from(extraDeckCountMap.entries()).map(([definitionId, copies]) => ({ definitionId, copies })),
+    [extraDeckCountMap],
+  );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
   const validation = DeckSystem.validate(deckList);
 
@@ -186,23 +208,17 @@ export default function DeckBuilder({ onClose }: Props) {
     if (!def) return;
 
     if (def.type === 'Angel') {
-      // Extra deck: max 5, max 1 copy per definition
-      if (extraDeckList.includes(defId)) return;
-      if (extraDeckList.length >= 5) return;
-      setExtraDeckList(prev => [...prev, defId]);
+      setExtraDeckList(prev => {
+        const owned = collection[defId] ?? 0;
+        const cap = Math.min(4, owned);
+        const count = prev.filter(id => id === defId).length;
+        if (cap <= 0 || count >= cap || prev.length >= 10) return prev;
+        return [...prev, defId];
+      });
       return;
     }
 
-    const cap = Math.min(4, collection[defId] ?? 0);
-    if ((deckMap.get(defId) ?? 0) >= cap) return;
-    if (totalCards >= 50) return;
-    setDeckList(prev => {
-      const idx = prev.findIndex(e => e.definitionId === defId);
-      if (idx === -1) return [...prev, { definitionId: defId, copies: 1 }];
-      const next = [...prev];
-      next[idx] = { ...next[idx], copies: Math.min(cap, next[idx].copies + 1) as 1 | 2 | 3 | 4 };
-      return next;
-    });
+    setDeckList(prev => DeckSystem.addDeckEntry(prev, defId, collection[defId] ?? 0));
   }
 
   function removeCard(defId: string) {
@@ -210,7 +226,13 @@ export default function DeckBuilder({ onClose }: Props) {
     if (!def) return;
 
     if (def.type === 'Angel') {
-      setExtraDeckList(prev => prev.filter(id => id !== defId));
+      setExtraDeckList(prev => {
+        const idx = prev.lastIndexOf(defId);
+        if (idx === -1) return prev;
+        const next = [...prev];
+        next.splice(idx, 1);
+        return next;
+      });
       return;
     }
 
@@ -235,7 +257,7 @@ export default function DeckBuilder({ onClose }: Props) {
 
   function handleSaveNew() {
     if (!newDeckName.trim() || !validation.valid) return;
-    saveCurrentDeck(newDeckName.trim());
+    saveCurrentDeck(newDeckName.trim(), deckList, extraDeckList);
     setSaveMode(false);
     setNewDeckName('');
   }
@@ -248,6 +270,11 @@ export default function DeckBuilder({ onClose }: Props) {
   function handleStart() {
     initDeck(deckList, extraDeckList);
     onClose();
+  }
+
+  function handleClearDeck() {
+    setDeckList([]);
+    setExtraDeckList([]);
   }
 
   return (
@@ -289,7 +316,7 @@ export default function DeckBuilder({ onClose }: Props) {
           </div>
           <div style={{ ...styles.deckCount, fontSize: 11 }}>
             <span style={{ color: '#FFD700' }}>{extraDeckList.length}</span>
-            <span style={{ opacity: 0.5 }}> / 5 extra deck</span>
+            <span style={{ opacity: 0.5 }}> / 10 extra deck</span>
           </div>
         </div>
       </div>
@@ -325,33 +352,42 @@ export default function DeckBuilder({ onClose }: Props) {
                 <span style={{ ...styles.sectionLabel, color: SECTION_COLORS['Angel'] }}>
                   Extra Deck (Angels)
                 </span>
-                <span style={styles.sectionCount}>{extraDeckList.length} / 5 selected</span>
+                <span style={styles.sectionCount}>{extraDeckList.length} / 10 selected</span>
               </div>
               <div style={styles.sectionGrid}>
                 {angelSection.map(def => {
-                  const inExtra = extraDeckList.includes(def.definitionId);
-                  const full = inExtra || extraDeckList.length >= 5;
+                  const count = extraDeckCountMap.get(def.definitionId) ?? 0;
+                  const owned = collection[def.definitionId] ?? 0;
+                  const cap = Math.min(4, owned);
+                  const canAdd = count < cap && extraDeckList.length < 10;
                   return (
                     <div
                       key={def.definitionId}
                       style={{
                         ...styles.card,
-                        ...(inExtra ? styles.cardAdded : {}),
-                        ...(!inExtra && full ? styles.cardFull : {}),
-                        border: `1px solid ${inExtra ? 'rgba(255,215,0,0.65)' : 'rgba(255,215,0,0.3)'}`,
+                        ...getCardFaceBackgroundStyle(def),
+                        ...(count > 0 ? styles.cardAdded : {}),
+                        ...(count === 0 && !canAdd ? styles.cardFull : {}),
+                        border: `1px solid ${count > 0 ? 'rgba(255,215,0,0.65)' : 'rgba(255,215,0,0.3)'}`,
                       }}
                       onClick={() => addCard(def.definitionId)}
                       title={def.description}
                     >
-                      <div style={{ ...styles.cardSubtype, color: '#FFD700' }}>Angel</div>
-                      <div style={styles.cardName}>{def.name}</div>
-                      <div style={styles.cardDesc}>{def.description}</div>
-                      {def.type === 'Angel' && (
-                        <div style={{ fontSize: 7, color: 'rgba(255,215,0,0.4)', marginTop: 3, textAlign: 'center' }}>
-                          Cost: {(def as AngelDefinition).summonCost.length} Seraphim
+                      <div style={getCardNameRibbonStyle('grid')}>
+                        <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>Angel</div>
+                        <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.name}</div>
+                      </div>
+                      <div style={getCardRulesPanelStyle('grid')}>
+                        <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 2 }}>
+                          {def.description}
                         </div>
-                      )}
-                      {inExtra && <div style={styles.badge}>✓</div>}
+                        {def.type === 'Angel' && (
+                          <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
+                            Cost: {(def as AngelDefinition).summonCost.length} materials
+                          </div>
+                        )}
+                      </div>
+                      {count > 0 && <div style={styles.badge}>{count}</div>}
                       <div style={styles.ownedLabel}>owns {collection[def.definitionId] ?? 0}</div>
                     </div>
                   );
@@ -380,23 +416,29 @@ export default function DeckBuilder({ onClose }: Props) {
                   const owned = collection[def.definitionId] ?? 0;
                   const cap = Math.min(4, owned);
                   const full = count >= cap;
-                  const subtypeColor = SECTION_COLORS[def.type] ?? '#aaa';
                   return (
                     <div
                       key={def.definitionId}
                       style={{
                         ...styles.card,
+                        ...getCardFaceBackgroundStyle(def),
                         ...(count > 0 ? styles.cardAdded : {}),
                         ...(full ? styles.cardFull : {}),
                       }}
                       onClick={() => addCard(def.definitionId)}
                       title={def.description}
                     >
-                      <div style={{ ...styles.cardSubtype, color: subtypeColor }}>
-                        {def.type}
+                      <div style={getCardNameRibbonStyle('grid')}>
+                        <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
+                          {def.type}
+                        </div>
+                        <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.name}</div>
                       </div>
-                      <div style={styles.cardName}>{def.name}</div>
-                      <div style={styles.cardDesc}>{def.description}</div>
+                      <div style={getCardRulesPanelStyle('grid')}>
+                        <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 3 }}>
+                          {def.description}
+                        </div>
+                      </div>
                       {count > 0 && <div style={styles.badge}>{count}</div>}
                       <div style={styles.ownedLabel}>owns {owned}</div>
                     </div>
@@ -447,6 +489,20 @@ export default function DeckBuilder({ onClose }: Props) {
                 Update "{activeDeck?.name}"
               </button>
             )}
+            <div style={{ ...styles.sidebarActionRow, marginBottom: 6 }}>
+              <button
+                style={{
+                  ...styles.miniBtn,
+                  ...styles.miniBtnDanger,
+                  opacity: deckList.length > 0 || extraDeckList.length > 0 ? 1 : 0.35,
+                  cursor: deckList.length > 0 || extraDeckList.length > 0 ? 'pointer' : 'not-allowed',
+                }}
+                onClick={handleClearDeck}
+                disabled={deckList.length === 0 && extraDeckList.length === 0}
+              >
+                Remove All Cards
+              </button>
+            </div>
             {saveMode ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <input
@@ -477,16 +533,23 @@ export default function DeckBuilder({ onClose }: Props) {
 
           {/* Extra deck list */}
           <div style={{ ...styles.sidebarSection, flexShrink: 0 }}>
-            <div style={styles.sidebarSectionTitle}>Extra Deck ({extraDeckList.length} / 5)</div>
+            <div style={styles.sidebarSectionTitle}>Extra Deck ({extraDeckList.length} / 10)</div>
             {extraDeckList.length === 0 && (
               <div style={{ fontSize: 10, opacity: 0.3, fontStyle: 'italic' }}>No angels selected</div>
             )}
-            {extraDeckList.map(defId => {
-              const def = CardRegistry.get(defId);
+            {extraDeckEntries.map(entry => {
+              const def = CardRegistry.get(entry.definitionId);
+              const cap = Math.min(4, collection[entry.definitionId] ?? 0);
+              const canAdd = entry.copies < cap && extraDeckList.length < 10;
               return (
-                <div key={defId} style={styles.entryRow}>
-                  <div style={styles.entryName}>{def?.name ?? defId}</div>
-                  <button style={styles.entryBtn} onClick={() => removeCard(defId)}>−</button>
+                <div key={entry.definitionId} style={styles.entryRow}>
+                  <div style={styles.entryName}>{def?.name ?? entry.definitionId}</div>
+                  <button style={styles.entryBtn} onClick={() => removeCard(entry.definitionId)}>−</button>
+                  <div style={styles.entryCount}>×{entry.copies}</div>
+                  <button
+                    style={{ ...styles.entryBtn, opacity: canAdd ? 1 : 0.3 }}
+                    onClick={() => canAdd && addCard(entry.definitionId)}
+                  >+</button>
                 </div>
               );
             })}

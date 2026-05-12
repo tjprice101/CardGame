@@ -14,6 +14,8 @@ export const CardFactory = {
       element: def.element,
       rarity: def.rarity,
       level: 1,
+      cardsPlayedSinceSummon: 0,
+      activated: false,
       boardSlot: null,
     };
   },

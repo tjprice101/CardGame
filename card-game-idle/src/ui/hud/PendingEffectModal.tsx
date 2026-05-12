@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useStore, selectTurn, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
+import {
+  cardFacePalette,
+  getCardFaceBackgroundStyle,
+  getCardFaceMetrics,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
 
 const styles: Record<string, React.CSSProperties> = {
@@ -52,18 +59,18 @@ const styles: Record<string, React.CSSProperties> = {
     minHeight: 0,
   },
   card: {
-    width: 84,
-    height: 112,
+    width: 92,
+    height: 124,
     background: warmTheme.surface,
     border: `1px solid ${warmTheme.border}`,
     borderRadius: 7,
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    padding: '7px 5px 5px',
+    alignItems: 'stretch',
     cursor: 'pointer',
     transition: 'border-color 0.15s, box-shadow 0.15s, transform 0.15s',
     userSelect: 'none',
+    overflow: 'hidden',
   },
   cardSelected: {
     border: '2px solid rgba(255,100,100,0.8)',
@@ -75,8 +82,8 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 0 14px rgba(80,200,100,0.35)',
     transform: 'translateY(-4px)',
   },
-  cardName: { fontSize: 9, fontWeight: 'bold', color: warmTheme.accentDeep, textAlign: 'center', lineHeight: 1.3 },
-  cardDesc: { fontSize: 7.5, color: warmTheme.textSoft, textAlign: 'center', lineHeight: 1.3, marginTop: 3, flexGrow: 1 },
+  cardName: { fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.2 },
+  cardDesc: { color: cardFacePalette.textSoft, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' },
   cardRarity: { fontSize: 7, letterSpacing: 1, marginTop: 3 },
   footer: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   info: { fontSize: 11, color: warmTheme.textMuted, flex: 1 },
@@ -96,6 +103,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function PendingEffectModal() {
+  const faceMetrics = getCardFaceMetrics('compact');
   const turn = useStore(selectTurn);
   const deck = useStore(selectDeck);
   const { resolvePending } = useStore.getState();
@@ -108,6 +116,42 @@ export default function PendingEffectModal() {
   if (!pending || turn.phase !== 'playing') return null;
 
   const confirm = () => { resolvePending(selected); setSelected([]); };
+  const buildCardStyle = (
+    definitionId: string,
+    stateStyle?: React.CSSProperties,
+  ): React.CSSProperties => ({
+    ...styles.card,
+    ...getCardFaceBackgroundStyle(CardRegistry.get(definitionId)),
+    ...(stateStyle ?? {}),
+  });
+
+  const renderCardFace = (
+    definitionId: string,
+    footerLabel?: string,
+    footerColor?: string,
+  ) => {
+    const def = CardRegistry.get(definitionId);
+    return (
+      <>
+        <div style={getCardNameRibbonStyle('compact')}>
+          <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 3 }}>
+            {def?.type ?? 'Card'}
+          </div>
+          <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def?.name ?? definitionId}</div>
+        </div>
+        <div style={getCardRulesPanelStyle('compact')}>
+          <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: faceMetrics.descLines }}>
+            {def?.description ?? ''}
+          </div>
+          {footerLabel && (
+            <div style={{ fontSize: 7, color: footerColor ?? cardFacePalette.textMuted, marginTop: 4, textAlign: 'center' }}>
+              {footerLabel}
+            </div>
+          )}
+        </div>
+      </>
+    );
+  };
 
   if (pending.type === 'discard_choice') {
     const maxDiscard = pending.count;
@@ -139,19 +183,14 @@ export default function PendingEffectModal() {
           <div style={styles.subtitle}>{subtitle}</div>
           <div style={styles.cardGrid}>
             {deck.hand.map(c => {
-              const def = CardRegistry.get(c.definitionId);
               const isSel = selected.includes(c.instanceId);
               return (
                 <div
                   key={c.instanceId}
-                  style={{ ...styles.card, ...(isSel ? styles.cardSelected : {}) }}
+                  style={buildCardStyle(c.definitionId, isSel ? styles.cardSelected : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  <div style={styles.cardName}>{def?.name ?? c.definitionId}</div>
-                  <div style={styles.cardDesc}>{def?.description ?? ''}</div>
-                  {isSel && (
-                    <div style={{ fontSize: 9, color: '#ff6060', marginTop: 2 }}>✕ Discard</div>
-                  )}
+                  {renderCardFace(c.definitionId, isSel ? 'Discard' : undefined, warmTheme.danger)}
                 </div>
               );
             })}
@@ -195,19 +234,14 @@ export default function PendingEffectModal() {
           </div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
-              const def = CardRegistry.get(c.definitionId);
               const isKept = selected.includes(c.instanceId);
               return (
                 <div
                   key={c.instanceId}
-                  style={{ ...styles.card, ...(isKept ? styles.cardTake : {}) }}
+                  style={buildCardStyle(c.definitionId, isKept ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  <div style={styles.cardName}>{def?.name ?? c.definitionId}</div>
-                  <div style={styles.cardDesc}>{def?.description ?? ''}</div>
-                  {isKept && (
-                    <div style={{ fontSize: 9, color: '#50c864', marginTop: 2 }}>✓ Keep</div>
-                  )}
+                  {renderCardFace(c.definitionId, isKept ? 'Keep' : undefined, warmTheme.success)}
                 </div>
               );
             })}
@@ -248,19 +282,14 @@ export default function PendingEffectModal() {
           </div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
-              const def = CardRegistry.get(c.definitionId);
               const isTake = selected.includes(c.instanceId);
               return (
                 <div
                   key={c.instanceId}
-                  style={{ ...styles.card, ...(isTake ? styles.cardTake : {}) }}
+                  style={buildCardStyle(c.definitionId, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  <div style={styles.cardName}>{def?.name ?? c.definitionId}</div>
-                  <div style={styles.cardDesc}>{def?.description ?? ''}</div>
-                  {isTake && (
-                    <div style={{ fontSize: 9, color: '#50c864', marginTop: 2 }}>✓ Take</div>
-                  )}
+                  {renderCardFace(c.definitionId, isTake ? 'Take' : undefined, warmTheme.success)}
                 </div>
               );
             })}
@@ -328,20 +357,16 @@ export default function PendingEffectModal() {
           </div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
-              const def = CardRegistry.get(c.definitionId);
               const isTake = c.instanceId === takeId;
               const isDrop = c.instanceId === dropId;
               const cardStyle = isTake
-                ? { ...styles.card, ...styles.cardTake }
+                ? buildCardStyle(c.definitionId, styles.cardTake)
                 : isDrop
-                  ? { ...styles.card, border: '2px solid rgba(255,200,80,0.8)', boxShadow: '0 0 14px rgba(255,200,80,0.35)', transform: 'translateY(-4px)' as const }
-                  : styles.card;
+                  ? buildCardStyle(c.definitionId, { border: '2px solid rgba(255,200,80,0.8)', boxShadow: '0 0 14px rgba(255,200,80,0.35)', transform: 'translateY(-4px)' as const })
+                  : buildCardStyle(c.definitionId);
               return (
                 <div key={c.instanceId} style={cardStyle} onClick={() => handleClick(c.instanceId)}>
-                  <div style={styles.cardName}>{def?.name ?? c.definitionId}</div>
-                  <div style={styles.cardDesc}>{def?.description ?? ''}</div>
-                  {isTake && <div style={{ fontSize: 9, color: '#50c864', marginTop: 2 }}>✓ Take</div>}
-                  {isDrop && <div style={{ fontSize: 9, color: '#ffc850', marginTop: 2 }}>↓ Return</div>}
+                  {renderCardFace(c.definitionId, isTake ? 'Take' : isDrop ? 'Return' : undefined, isTake ? warmTheme.success : 'rgba(255,200,80,0.92)')}
                 </div>
               );
             })}
@@ -373,17 +398,14 @@ export default function PendingEffectModal() {
           <div style={styles.subtitle}>Take 1 matching card into your hand. The rest return to the bottom of your deck.</div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
-              const def = CardRegistry.get(c.definitionId);
               const isTake = selected.includes(c.instanceId);
               return (
                 <div
                   key={c.instanceId}
-                  style={{ ...styles.card, ...(isTake ? styles.cardTake : {}) }}
+                  style={buildCardStyle(c.definitionId, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  <div style={styles.cardName}>{def?.name ?? c.definitionId}</div>
-                  <div style={styles.cardDesc}>{def?.description ?? ''}</div>
-                  {isTake && <div style={{ fontSize: 9, color: '#50c864', marginTop: 2 }}>✓ Take</div>}
+                  {renderCardFace(c.definitionId, isTake ? 'Take' : undefined, warmTheme.success)}
                 </div>
               );
             })}
@@ -420,17 +442,14 @@ export default function PendingEffectModal() {
           <div style={styles.subtitle}>Choose 1 card to add to your hand. Your deck will be shuffled afterward.</div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
-              const def = CardRegistry.get(c.definitionId);
               const isTake = selected.includes(c.instanceId);
               return (
                 <div
                   key={c.instanceId}
-                  style={{ ...styles.card, ...(isTake ? styles.cardTake : {}) }}
+                  style={buildCardStyle(c.definitionId, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  <div style={styles.cardName}>{def?.name ?? c.definitionId}</div>
-                  <div style={styles.cardDesc}>{def?.description ?? ''}</div>
-                  {isTake && <div style={{ fontSize: 9, color: '#50c864', marginTop: 2 }}>✓ Take</div>}
+                  {renderCardFace(c.definitionId, isTake ? 'Salvage' : undefined, warmTheme.success)}
                 </div>
               );
             })}
@@ -482,17 +501,14 @@ export default function PendingEffectModal() {
           <div style={styles.subtitle}>Choose 1 card to salvage from your discard pile.</div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
-              const def = CardRegistry.get(c.definitionId);
               const isTake = selected.includes(c.instanceId);
               return (
                 <div
                   key={c.instanceId}
-                  style={{ ...styles.card, ...(isTake ? styles.cardTake : {}) }}
+                  style={buildCardStyle(c.definitionId, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  <div style={styles.cardName}>{def?.name ?? c.definitionId}</div>
-                  <div style={styles.cardDesc}>{def?.description ?? ''}</div>
-                  {isTake && <div style={{ fontSize: 9, color: '#50c864', marginTop: 2 }}>✓ Salvage</div>}
+                  {renderCardFace(c.definitionId, isTake ? 'Salvage' : undefined, warmTheme.success)}
                 </div>
               );
             })}

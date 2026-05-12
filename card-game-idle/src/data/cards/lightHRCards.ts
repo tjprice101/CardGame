@@ -8,7 +8,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Divine Smite',
+    name: 'Embersmite',
     description: '+30 Oblivion. Gain 1 Radiance.',
     artKey: 'hr_light_divine_smite',
     effects: [
@@ -21,16 +21,16 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Holy Radiance',
-    description: '+25% Seraphim bonuses. Gain 1 Radiance. If you have 5+ Radiance: +40% Seraphim bonuses instead.',
+    name: 'Hallowed Flame',
+    description: '+15% Seraphim bonuses. Gain 1 Radiance. If you have 5+ Radiance: +25% Seraphim bonuses instead.',
     artKey: 'hr_light_holy_radiance',
     effects: [
-      { type: 'seraphim_bonus_amplifier', value: 25 },
+      { type: 'seraphim_bonus_amplifier', value: 15 },
       { type: 'radiance_gain', value: 1 },
       {
         type: 'conditional',
         condition: { type: 'radiance_gte', value: 5 },
-        then: [{ type: 'seraphim_bonus_amplifier', value: 15 }],
+        then: [{ type: 'seraphim_bonus_amplifier', value: 10 }],
       },
     ],
   },
@@ -39,12 +39,12 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Sacred Fury',
-    description: 'Spend 3 Radiance: +50% Seraphim bonuses.',
+    name: 'Thornfire Fury',
+    description: 'Spend 3 Radiance: +25% Seraphim bonuses.',
     artKey: 'hr_light_sacred_fury',
     effects: [
       { type: 'radiance_spend', value: 3 },
-      { type: 'seraphim_bonus_amplifier', value: 50 },
+      { type: 'seraphim_bonus_amplifier', value: 25 },
     ],
   },
   {
@@ -52,7 +52,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Luminous Strike',
+    name: 'Cinderstrike',
     description: '+40 Oblivion. If any Seraphim is in synergy: +40 more Oblivion.',
     artKey: 'hr_light_luminous_strike',
     effects: [
@@ -69,11 +69,11 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Radiant Surge',
-    description: '+15 Oblivion per Radiance (max 150 Oblivion).',
+    name: 'Ember Surge',
+    description: '+8 Oblivion per Radiance (max 80 Oblivion).',
     artKey: 'hr_light_radiant_surge',
     effects: [
-      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: min(radiance * 15, 150)
+      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: min(radiance * 8, 80)
     ],
   },
   {
@@ -81,12 +81,12 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Epic',
-    name: 'Sunforged',
-    description: 'Spend all your Radiance: +50 Oblivion per Radiance spent.',
+    name: 'Emberforged',
+    description: 'Spend all your Radiance: +25 Oblivion per Radiance spent.',
     artKey: 'hr_light_sunforged',
     effects: [
       { type: 'radiance_spend', value: 9999 },
-      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: radianceDrained * 50
+      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: radianceDrained * 25
     ],
   },
   {
@@ -94,7 +94,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Angelic Wrath',
+    name: 'Seraphfire Wrath',
     description: '+60 Oblivion. Gain 2 Radiance.',
     artKey: 'hr_light_angelic_wrath',
     effects: [
@@ -107,7 +107,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Epic',
-    name: 'Exalted Mantle',
+    name: 'Emberthorn Mantle',
     description: 'The next card you play this turn has doubled effects.',
     artKey: 'hr_light_exalted_mantle',
     effects: [
@@ -119,15 +119,15 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Aureate Blessing',
-    description: '+45 Oblivion. If you have played 3+ cards this turn: gain 3 Radiance.',
+    name: 'Silverthorn Blessing',
+    description: '+35 Oblivion. If you have played 3+ cards this turn: gain 2 Radiance.',
     artKey: 'hr_light_aureate_blessing',
     effects: [
-      { type: 'oblivion_flat', value: 45 },
+      { type: 'oblivion_flat', value: 35 },
       {
         type: 'conditional',
         condition: { type: 'cards_played_gte', value: 3 },
-        then: [{ type: 'radiance_gain', value: 3 }],
+        then: [{ type: 'radiance_gain', value: 2 }],
       },
     ],
   },
@@ -136,15 +136,15 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Gilded Mandate',
-    description: '+40% Seraphim bonuses. If you have 8+ Radiance: draw 2 cards.',
+    name: 'Thorncrown Mandate',
+    description: '+25% Seraphim bonuses. If you have 8+ Radiance: draw 1 card.',
     artKey: 'hr_light_gilded_mandate',
     effects: [
-      { type: 'seraphim_bonus_amplifier', value: 40 },
+      { type: 'seraphim_bonus_amplifier', value: 25 },
       {
         type: 'conditional',
         condition: { type: 'radiance_gte', value: 8 },
-        then: [{ type: 'draw', value: 2 }],
+        then: [{ type: 'draw', value: 1 }],
       },
     ],
   },
@@ -156,11 +156,11 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Celestial Grace',
-    description: 'Oblivion earned this turn is doubled. Gain 1 Radiance.',
+    name: 'Emberwing Grace',
+    description: 'Oblivion earned this turn is increased by 60%. Gain 1 Radiance.',
     artKey: 'hr_light_celestial_grace',
     effects: [
-      { type: 'score_multiplier', value: 100 },
+      { type: 'score_multiplier', value: 60 },
       { type: 'radiance_gain', value: 1 },
     ],
   },
@@ -169,7 +169,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Heavenly Tithe',
+    name: 'Pyre Tithe',
     description: '+100 Oblivion. Gain 1 Radiance.',
     artKey: 'hr_light_heavenly_tithe',
     effects: [
@@ -182,12 +182,12 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Epic',
-    name: 'Sanctified Offering',
-    description: 'Spend 3 Radiance: Oblivion earned this turn is tripled.',
+    name: 'Hallowed Pyre',
+    description: 'Spend 3 Radiance: Oblivion earned this turn is doubled.',
     artKey: 'hr_light_sanctified_offering',
     effects: [
       { type: 'radiance_spend', value: 3 },
-      { type: 'score_multiplier', value: 200 },
+      { type: 'score_multiplier', value: 100 },
     ],
   },
   {
@@ -195,12 +195,12 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Legendary',
-    name: 'Celestial Dividend',
-    description: 'Spend all your Radiance: +40 Oblivion per Radiance spent.',
+    name: 'Emberthorn Dividend',
+    description: 'Spend all your Radiance: +18 Oblivion per Radiance spent.',
     artKey: 'hr_light_celestial_dividend',
     effects: [
       { type: 'radiance_spend', value: 9999 },
-      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: radianceDrained * 40
+      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: radianceDrained * 18
     ],
   },
   {
@@ -208,12 +208,12 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Legendary',
-    name: 'Pillar of Heaven',
-    description: 'Spend 6 Radiance: Oblivion earned this turn is ×10.',
+    name: 'Silverthorn Spire',
+    description: 'Spend 6 Radiance: Oblivion earned this turn is ×3.5.',
     artKey: 'hr_light_pillar_of_heaven',
     effects: [
       { type: 'radiance_spend', value: 6 },
-      { type: 'score_multiplier', value: 900 },
+      { type: 'score_multiplier', value: 250 },
     ],
   },
 
@@ -224,7 +224,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Hastened Judgment',
+    name: 'Flashfire Judgment',
     description: 'Gain 1 Radiance.',
     artKey: 'hr_light_hastened_judgment',
     effects: [
@@ -236,12 +236,12 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Epic',
-    name: 'Seraphic Bond',
-    description: '+30% Seraphim bonuses. Gain 2 Radiance per active Seraphim.',
+    name: 'Emberthorn Bond',
+    description: '+15% Seraphim bonuses. Gain 1 Radiance per active Seraphim.',
     artKey: 'hr_light_seraphic_bond',
     effects: [
-      { type: 'seraphim_bonus_amplifier', value: 30 },
-      { type: 'radiance_gain', value: 0 },  // executor: activeSynergies * 2 (hr-light-seraphic-bond)
+      { type: 'seraphim_bonus_amplifier', value: 15 },
+      { type: 'radiance_gain', value: 0 },  // executor: activeSynergies * 1 (hr-light-seraphic-bond)
     ],
   },
   {
@@ -249,7 +249,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Undying Vigil',
+    name: 'Undying Thornwatch',
     description: 'Gain 2 Radiance.',
     artKey: 'hr_light_undying_vigil',
     effects: [
@@ -264,7 +264,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Celestial Scroll',
+    name: 'Cinderscript',
     description: 'Draw 2 cards.',
     artKey: 'hr_light_celestial_scroll',
     effects: [
@@ -276,7 +276,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Angelic Vision',
+    name: 'Thornhalo Vision',
     description: 'Draw 3 cards. Then discard 1 card (your choice).',
     artKey: 'hr_light_angelic_vision',
     effects: [
@@ -289,7 +289,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Holy Insight',
+    name: 'Silverthorn Insight',
     description: 'Look at the top 5 cards. Take 2 into your hand; return the rest to the bottom.',
     artKey: 'hr_light_holy_insight',
     effects: [
@@ -301,7 +301,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Sacred Memory',
+    name: 'Ashen Remembrance',
     description: 'Shuffle your discard pile into the deck. Draw 1 card.',
     artKey: 'hr_light_sacred_memory',
     effects: [
@@ -314,7 +314,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Radiant Echo',
+    name: 'Ember Echo',
     description: 'Replay the last Seeker card you played this turn. Gain 1 Radiance.',
     artKey: 'hr_light_radiant_echo',
     effects: [
@@ -327,7 +327,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Luminous Cycle',
+    name: 'Ember Cycle',
     description: 'Discard up to 3 cards (your choice). Draw that many +1.',
     artKey: 'hr_light_luminous_cycle',
     effects: [
@@ -339,7 +339,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Divine Clarity',
+    name: 'Whiteflame Clarity',
     description: 'Draw 4 cards. Gain 1 Radiance per card drawn.',
     artKey: 'hr_light_divine_clarity',
     effects: [
@@ -351,7 +351,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: "Morning's Grace",
+    name: 'Emberdawn Grace',
     description: 'If this is the first card you play this turn: draw 2 cards and gain 2 Radiance. Otherwise: draw 1.',
     artKey: 'hr_light_mornings_grace',
     effects: [
@@ -375,7 +375,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Common',
-    name: 'Gleaming Passage',
+    name: 'Thorngate Passage',
     description: 'Discard 2 cards (your choice). Draw 3 cards.',
     artKey: 'hr_light_gleaming_passage',
     effects: [
@@ -390,7 +390,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Aureate Chain',
+    name: 'Silverthorn Chain',
     description: 'Gain Radiance equal to the number of Seeker cards currently in your hand.',
     artKey: 'hr_light_aureate_chain',
     effects: [
@@ -402,7 +402,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Epic',
-    name: 'Transcendent Surge',
+    name: 'Ascendant Blaze',
     description: 'Gain Radiance equal to the number of cards you have played this turn. Draw 1 card.',
     artKey: 'hr_light_transcendent_surge',
     effects: [
@@ -415,7 +415,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Epic',
-    name: 'Sacred Covenant',
+    name: 'Thornfire Covenant',
     description: 'Until end of turn: every Seeker card you play grants +1 Radiance.',
     artKey: 'hr_light_sacred_covenant',
     effects: [
@@ -427,12 +427,12 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Legendary',
-    name: 'The Grand Illumination',
-    description: 'Double your current Radiance. Then gain +20 Oblivion per point of Radiance.',
+    name: 'The Emberthorn Revelation',
+    description: 'Double your current Radiance. Then gain +8 Oblivion per point of Radiance.',
     artKey: 'hr_light_grand_illumination',
     effects: [
       { type: 'radiance_double' },
-      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: mutableTurn.radiance * 20 (after doubling)
+      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: mutableTurn.radiance * 8 (after doubling)
     ],
   },
 ];

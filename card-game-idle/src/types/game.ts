@@ -35,7 +35,7 @@ export interface DeckCard {
 
 export interface DeckState {
   deckList: DeckEntry[];
-  extraDeck: string[];        // Angel definitionIds always accessible for summoning
+  extraDeck: string[];        // Angel definitionIds; up to 10 total, max 4 copies of each unique angel
   drawPile: DeckCard[];
   hand: DeckCard[];
   discardPile: DeckCard[];
@@ -74,7 +74,7 @@ export interface SavedDeck {
   id: string;
   name: string;
   deckList: DeckEntry[];
-  extraDeck: string[];        // up to 5 Angel definitionIds, max 2 of each
+  extraDeck: string[];        // up to 10 Angel definitionIds, max 4 of each
   isStarter: boolean;
 }
 

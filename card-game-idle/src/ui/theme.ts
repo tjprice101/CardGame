@@ -1,5 +1,5 @@
 export const warmTheme = {
-  appBackground: 'linear-gradient(180deg, #fffdf8 0%, #f8ead9 58%, #f2dfc3 100%)',
+  appBackground: 'linear-gradient(180deg, #f0e7db 0%, #dfc6a5 58%, #cda376 100%)',
   overlay: 'rgba(255, 249, 239, 0.94)',
   backdrop: 'rgba(92, 63, 31, 0.22)',
   surface: 'rgba(255, 252, 247, 0.88)',

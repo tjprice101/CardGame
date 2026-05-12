@@ -1,7 +1,7 @@
 import type { Element } from './elements';
 import type { CardEffect, ChaosPassiveEffect, ChaosRitualEffect } from './effects';
 
-export type CardType = 'Seeker' | 'Chaos' | 'Seraphim';
+export type CardType = 'Seeker' | 'Chaos' | 'Seraphim' | 'Angel';
 export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal';
 
 export const SERAPHIM_BONUS_TYPES = [
@@ -30,6 +30,13 @@ export interface AngelBoardStats {
   bonusValue: number;
 }
 
+export interface AngelActivatedAbility {
+  readonly name: string;
+  readonly cardsPlayedRequirement: number;
+  readonly description: string;
+  readonly effects: CardEffect[];
+}
+
 export interface AngelDefinition {
   readonly definitionId: string;
   readonly type: 'Angel';
@@ -38,9 +45,10 @@ export interface AngelDefinition {
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
-  readonly summonCost: string[];              // Seraphim definitionIds required on board (dupes = multiple)
+  readonly summonCost: string[];              // front-row definitionIds required on board (dupes = multiple)
   readonly extraSummonConditions?: SummonCondition[];  // additional board conditions beyond Seraphim cost
   readonly onSummonEffects: CardEffect[];     // fires immediately on summoning
+  readonly activatedAbility: AngelActivatedAbility;
   readonly baseStats: AngelBoardStats;
 }
 
@@ -56,6 +64,8 @@ export interface AngelInstance {
   readonly element: Element;
   readonly rarity: CardRarity;
   level: number;
+  cardsPlayedSinceSummon: number;
+  activated: boolean;
   boardSlot: 0 | 1 | 2 | 3 | 4 | null;
 }
 

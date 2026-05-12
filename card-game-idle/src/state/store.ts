@@ -16,10 +16,11 @@ import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { PackSystem } from '@/systems/cards/PackSystem';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
-import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { eventBus } from '@/core/events/EventBus';
 
 const BASE_OBLIVION_PER_CARD = 5;
+const EMBRACE_INFINITE_MIN_HAND = 40;
 
 // ── Defaults ──────────────────────────────────────────────────────────────────
 
@@ -90,7 +91,7 @@ const defaultBossFight: BossFightState = {
 };
 
 export const defaultGameState: GameState = {
-  version: 4,
+  version: 5,
   startedAt: NOW,
   lastSavedAt: NOW,
   board: defaultBoard,
@@ -110,9 +111,10 @@ interface StoreActions {
   placeChaos: (backSlotIndex: 0 | 1 | 2 | 3, instanceId?: string) => void;
   removeChaos: (backSlotIndex: 0 | 1 | 2 | 3) => void;
   summonAngel: (definitionId: string) => void;
+  activateAngel: (slot: 0 | 1 | 2 | 3 | 4) => void;
   initDeck: (deckList: DeckEntry[], extraDeck?: string[]) => void;
   saveDeckList: (deckList: DeckEntry[]) => void;
-  saveCurrentDeck: (name: string) => string;
+  saveCurrentDeck: (name: string, deckList?: DeckEntry[], extraDeck?: string[]) => string;
   updateSavedDeck: (id: string, deckList: DeckEntry[], extraDeck?: string[]) => void;
   loadSavedDeck: (id: string) => void;
   deleteSavedDeck: (id: string) => void;
@@ -144,6 +146,33 @@ function recompute(state: Store): void {
   eventBus.emit('board:recomputed', state.computedStats);
 }
 
+function cloneDeckList(deckList: DeckEntry[]): DeckEntry[] {
+  return deckList.map(entry => ({ ...entry }));
+}
+
+function cloneExtraDeck(extraDeck?: string[]): string[] {
+  return extraDeck ? [...extraDeck] : [];
+}
+
+function createDeckState(deckList: DeckEntry[], extraDeck?: string[]): DeckState {
+  const nextDeckList = cloneDeckList(deckList);
+  return {
+    deckList: nextDeckList,
+    extraDeck: cloneExtraDeck(extraDeck),
+    drawPile: DeckSystem.buildFromList(nextDeckList),
+    hand: [],
+    discardPile: [],
+  };
+}
+
+function addCollectionCard(progress: ProgressState, definitionId: string): void {
+  const definition = CardRegistry.get(definitionId);
+  const nextCopies = (progress.collection[definitionId] ?? 0) + 1;
+  progress.collection[definitionId] = definition?.rarity === 'Eternal'
+    ? nextCopies
+    : Math.min(nextCopies, 4);
+}
+
 // ── Boss fight helpers ────────────────────────────────────────────────────────
 
 function completeBossFight(s: Store, victory: boolean): void {
@@ -163,9 +192,7 @@ function completeBossFight(s: Store, victory: boolean): void {
   if (victory && bossId) {
     const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
     if (boss) {
-      s.progress.collection[boss.rewardCardId] = Math.min(
-        (s.progress.collection[boss.rewardCardId] ?? 0) + 1, 4
-      );
+      addCollectionCard(s.progress, boss.rewardCardId);
     }
   }
 
@@ -207,9 +234,40 @@ function checkBossDefeated(s: Store): void {
 function canEmbraceInfinite(state: Pick<GameState, 'deck' | 'turn'>): boolean {
   return state.turn.phase === 'playing'
     && state.turn.pendingEffect === null
-    && state.deck.drawPile.length === 0
-    && state.deck.discardPile.length === 0
-    && state.deck.hand.length >= 25;
+    && state.deck.hand.length >= EMBRACE_INFINITE_MIN_HAND;
+}
+
+function countFrontDefinitionIds(board: BoardState): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const slot of board.frontSlots) {
+    if (!slot) continue;
+    counts[slot.definitionId] = (counts[slot.definitionId] ?? 0) + 1;
+  }
+  return counts;
+}
+
+function countExtraDeckCopies(extraDeck: string[], definitionId: string): number {
+  return extraDeck.filter(id => id === definitionId).length;
+}
+
+function hasAvailableAngelCopy(board: BoardState, extraDeck: string[], definitionId: string): boolean {
+  const copiesOnBoard = board.frontSlots.filter(
+    slot => slot?.type === 'Angel' && slot.definitionId === definitionId
+  ).length;
+  return copiesOnBoard < countExtraDeckCopies(extraDeck, definitionId);
+}
+
+function incrementAngelProgress(board: BoardState): void {
+  for (const slot of board.frontSlots) {
+    if (slot?.type === 'Angel' && !slot.activated) {
+      slot.cardsPlayedSinceSummon += 1;
+    }
+  }
+}
+
+function canActivateAngelAbility(angel: AngelInstance, definition: AngelDefinition): boolean {
+  return !angel.activated
+    && angel.cardsPlayedSinceSummon >= definition.activatedAbility.cardsPlayedRequirement;
 }
 
 // ── Chaos helpers ─────────────────────────────────────────────────────────────
@@ -393,6 +451,7 @@ export const useStore = create<Store>()(
         }
 
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
+        incrementAngelProgress(s.board);
         const newInst = s.board.frontSlots[slot];
         if (newInst?.type === 'Seraphim' && newInst.isActive) {
           eventBus.emit('seraphim:synergy-gained', { slot, instanceId: deckCard.instanceId });
@@ -453,6 +512,7 @@ export const useStore = create<Store>()(
           }
         }
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
+        incrementAngelProgress(s.board);
         s.progress.totalCardsPlayed += 1;
         checkBossDefeated(s);
         recompute(s);
@@ -505,6 +565,7 @@ export const useStore = create<Store>()(
           1.0 + s.turn.cardsPlayedThisTurn * 0.1,
           s.turn.chainFloor,
         );
+        incrementAngelProgress(s.board);
         s.progress.totalCardsPlayed += 1;
         checkBossDefeated(s);
         recompute(s);
@@ -527,19 +588,14 @@ export const useStore = create<Store>()(
     summonAngel: (definitionId) => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
-        if (!s.deck.extraDeck.includes(definitionId)) return;
+        if (!hasAvailableAngelCopy(s.board, s.deck.extraDeck, definitionId)) return;
         const def = ScoreSystem.getDefinition(definitionId);
         if (!def || def.type !== 'Angel') return;
         const angelDef = def as AngelDefinition;
 
-        if (s.board.frontSlots.some(sl => sl?.definitionId === definitionId)) return;
-
         const costCount: Record<string, number> = {};
         for (const id of angelDef.summonCost) costCount[id] = (costCount[id] ?? 0) + 1;
-        const boardCount: Record<string, number> = {};
-        for (const slot of s.board.frontSlots) {
-          if (slot?.type === 'Seraphim') boardCount[slot.definitionId] = (boardCount[slot.definitionId] ?? 0) + 1;
-        }
+        const boardCount = countFrontDefinitionIds(s.board);
         for (const [id, needed] of Object.entries(costCount)) {
           if ((boardCount[id] ?? 0) < needed) return;
         }
@@ -555,7 +611,7 @@ export const useStore = create<Store>()(
         const usedSlots = new Set<number>();
         for (const reqId of angelDef.summonCost) {
           const slotIdx = s.board.frontSlots.findIndex(
-            (sl, idx) => sl?.type === 'Seraphim' && sl.definitionId === reqId && !usedSlots.has(idx)
+            (sl, idx) => sl?.definitionId === reqId && !usedSlots.has(idx)
           );
           if (slotIdx === -1) return;
           usedSlots.add(slotIdx);
@@ -564,7 +620,10 @@ export const useStore = create<Store>()(
         }
 
         for (const { slotIdx, instanceId, definitionId: defId } of toSacrifice) {
-          s.deck.discardPile.push({ instanceId, definitionId: defId });
+          const material = s.board.frontSlots[slotIdx];
+          if (material?.type === 'Seraphim') {
+            s.deck.discardPile.push({ instanceId, definitionId: defId });
+          }
           (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[slotIdx] = null;
         }
         s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
@@ -580,24 +639,23 @@ export const useStore = create<Store>()(
           element: angelDef.element,
           rarity: angelDef.rarity,
           level: 1,
+          cardsPlayedSinceSummon: 0,
+          activated: false,
           boardSlot: slot,
         };
         s.board.frontSlots[slot] = angelInst;
         s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
 
-        const prevCardsPlayed = s.turn.cardsPlayedThisTurn;
         const result = CardEffectExecutor.execute(
           { instanceId: angelInst.instanceId, definitionId },
-          s.turn, s.board, s.deck, true
+          s.turn,
+          s.board,
+          s.deck,
+          false,
+          { countAsPlay: false, removeFromHand: false, useNextCardMultiplier: false }
         );
         if (result.canPlay) {
           s.turn = result.turn;
-          // Angel summon doesn't count as a card played — undo executor's increment
-          s.turn.cardsPlayedThisTurn = prevCardsPlayed;
-          s.turn.chainMultiplier = Math.max(
-            1.0 + prevCardsPlayed * 0.1,
-            s.turn.chainFloor,
-          );
           s.board = result.board;
           s.deck = result.deck;
           if (result.oblivionBonus > 0) {
@@ -611,24 +669,88 @@ export const useStore = create<Store>()(
       });
     },
 
+    activateAngel: (slot) => {
+      set(s => {
+        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null) return;
+        const angel = s.board.frontSlots[slot];
+        if (!angel || angel.type !== 'Angel') return;
+        const def = ScoreSystem.getDefinition(angel.definitionId);
+        if (!def || def.type !== 'Angel') return;
+        const angelDef = def as AngelDefinition;
+        if (!canActivateAngelAbility(angel, angelDef)) return;
+
+        const result = CardEffectExecutor.execute(
+          { instanceId: angel.instanceId, definitionId: angel.definitionId },
+          s.turn,
+          s.board,
+          s.deck,
+          false,
+          {
+            effects: angelDef.activatedAbility.effects,
+            countAsPlay: false,
+            removeFromHand: false,
+            useNextCardMultiplier: false,
+          }
+        );
+        if (!result.canPlay) return;
+
+        s.turn = result.turn;
+        s.board = result.board;
+        s.deck = result.deck;
+
+        for (const frontSlot of s.board.frontSlots) {
+          if (frontSlot?.type === 'Angel' && frontSlot.instanceId === angel.instanceId) {
+            frontSlot.activated = true;
+            break;
+          }
+        }
+
+        if (result.oblivionBonus > 0) {
+          grantOblivion(s, result.oblivionBonus, s.turn.chainMultiplier);
+        }
+        if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+
+        checkBossDefeated(s);
+        recompute(s);
+      });
+    },
+
     // ── Deck management ───────────────────────────────────────────────────────
 
     initDeck: (deckList, extraDeck?) => {
       set(s => {
-        s.deck = { deckList, extraDeck: extraDeck ?? s.deck.extraDeck, drawPile: DeckSystem.buildFromList(deckList), hand: [], discardPile: [] };
+        const nextDeckList = cloneDeckList(deckList);
+        const nextExtraDeck = cloneExtraDeck(extraDeck ?? s.deck.extraDeck);
+
+        s.deck = createDeckState(nextDeckList, nextExtraDeck);
+
+        const activeSavedDeck = s.progress.savedDecks.find(
+          deck => deck.id === s.progress.activeDeckId && !deck.isStarter,
+        );
+        if (activeSavedDeck) {
+          activeSavedDeck.deckList = cloneDeckList(nextDeckList);
+          activeSavedDeck.extraDeck = cloneExtraDeck(nextExtraDeck);
+        }
       });
     },
 
     saveDeckList: (deckList) => {
-      set(s => { s.deck.deckList = deckList; });
+      set(s => { s.deck.deckList = cloneDeckList(deckList); });
     },
 
-    saveCurrentDeck: (name) => {
+    saveCurrentDeck: (name, deckList = get().deck.deckList, extraDeck = get().deck.extraDeck) => {
       const id = `deck_${Date.now()}`;
-      const newDeck: SavedDeck = { id, name, deckList: get().deck.deckList, extraDeck: get().deck.extraDeck, isStarter: false };
+      const newDeck: SavedDeck = {
+        id,
+        name,
+        deckList: cloneDeckList(deckList),
+        extraDeck: cloneExtraDeck(extraDeck),
+        isStarter: false,
+      };
       set(s => {
         s.progress.savedDecks.push(newDeck);
         s.progress.activeDeckId = id;
+        s.deck = createDeckState(newDeck.deckList, newDeck.extraDeck);
       });
       return id;
     },
@@ -637,10 +759,19 @@ export const useStore = create<Store>()(
       set(s => {
         const deck = s.progress.savedDecks.find(d => d.id === id);
         if (deck && !deck.isStarter) {
-          deck.deckList = deckList;
-          if (extraDeck !== undefined) deck.extraDeck = extraDeck;
-          s.deck.deckList = deckList;
-          if (extraDeck !== undefined) s.deck.extraDeck = extraDeck;
+          const nextDeckList = cloneDeckList(deckList);
+          deck.deckList = nextDeckList;
+          const nextExtraDeck = extraDeck !== undefined
+            ? cloneExtraDeck(extraDeck)
+            : cloneExtraDeck(deck.extraDeck);
+
+          if (extraDeck !== undefined) {
+            deck.extraDeck = nextExtraDeck;
+          }
+
+          if (s.progress.activeDeckId === id) {
+            s.deck = createDeckState(nextDeckList, nextExtraDeck);
+          }
         }
       });
     },
@@ -649,7 +780,7 @@ export const useStore = create<Store>()(
       set(s => {
         const saved = s.progress.savedDecks.find(d => d.id === id);
         if (!saved) return;
-        s.deck = { deckList: saved.deckList, extraDeck: saved.extraDeck ?? s.deck.extraDeck, drawPile: DeckSystem.buildFromList(saved.deckList), hand: [], discardPile: [] };
+        s.deck = createDeckState(saved.deckList, saved.extraDeck ?? s.deck.extraDeck);
         s.progress.activeDeckId = id;
       });
     },
@@ -758,6 +889,7 @@ export const useStore = create<Store>()(
             }
           }
           s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
+          incrementAngelProgress(s.board);
           s.progress.totalCardsPlayed += 1;
           checkBossDefeated(s);
           recompute(s);
@@ -795,6 +927,7 @@ export const useStore = create<Store>()(
           tickChaosDurability(s);
           s.turn.cardsPlayedThisTurn += 1;
           s.turn.chainMultiplier = Math.max(1.0 + s.turn.cardsPlayedThisTurn * 0.1, s.turn.chainFloor);
+          incrementAngelProgress(s.board);
           s.progress.totalCardsPlayed += 1;
           checkBossDefeated(s);
           recompute(s);
@@ -813,6 +946,7 @@ export const useStore = create<Store>()(
         tickChaosDurability(s);
 
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+        incrementAngelProgress(s.board);
         s.progress.totalCardsPlayed += 1;
         eventBus.emit('card:played', { card: deckCard as never, board: s.board });
         checkBossDefeated(s);
@@ -867,6 +1001,10 @@ export const useStore = create<Store>()(
     endTurn: () => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
+        if (s.bossFight.mode === 'active') {
+          completeBossFight(s, false);
+          return;
+        }
         // Seraphim → discard; Angels → cleared from board (extra deck, not discarded)
         for (let i = 0; i < s.board.frontSlots.length; i++) {
           const slot = s.board.frontSlots[i];
@@ -916,7 +1054,7 @@ export const useStore = create<Store>()(
       set(state => {
         state.progress.oblivion -= pack.cost;
         for (const defId of drawn) {
-          state.progress.collection[defId] = Math.min((state.progress.collection[defId] ?? 0) + 1, 4);
+          addCollectionCard(state.progress, defId);
         }
       });
       return drawn.map(id => ({ id, isNew: !preOpen[id] })).map(x => x.id);
@@ -936,7 +1074,7 @@ export const useStore = create<Store>()(
       set(state => {
         state.progress.oblivion -= cost;
         for (const defId of drawn) {
-          state.progress.collection[defId] = Math.min((state.progress.collection[defId] ?? 0) + 1, 4);
+          addCollectionCard(state.progress, defId);
         }
       });
       return drawn;
@@ -956,7 +1094,7 @@ export const useStore = create<Store>()(
       set(state => {
         state.progress.oblivion -= cost;
         for (const defId of drawn) {
-          state.progress.collection[defId] = Math.min((state.progress.collection[defId] ?? 0) + 1, 4);
+          addCollectionCard(state.progress, defId);
         }
       });
       return drawn;
@@ -989,8 +1127,7 @@ export const useStore = create<Store>()(
           settings: { ...s.settings },
         };
 
-        const fightDeck = DeckSystem.buildFromList(savedDeck.deckList);
-        s.deck = { deckList: savedDeck.deckList, extraDeck: savedDeck.extraDeck ?? [], drawPile: fightDeck, hand: [], discardPile: [] };
+        s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
         s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
         s.bossFight = {
@@ -999,7 +1136,7 @@ export const useStore = create<Store>()(
           bossCurrentHp: boss.hp,
           bossMaxHp: boss.hp,
           damageDealtThisFight: 0,
-          fightTimeRemaining: 30,
+          fightTimeRemaining: BOSS_FIGHT_ROUND_SECONDS,
           cooldowns: { ...s.bossFight.cooldowns },
           savedGameState: savedState,
         };
@@ -1112,6 +1249,17 @@ export const useStore = create<Store>()(
             });
           }
           loaded.version = 4;
+        }
+
+        if ((loaded.version ?? 0) < 5) {
+          for (const slot of loaded.board.frontSlots) {
+            if (slot?.type === 'Angel') {
+              const angel = slot as AngelInstance & Record<string, unknown>;
+              if (angel['cardsPlayedSinceSummon'] === undefined) angel['cardsPlayedSinceSummon'] = 0;
+              if (angel['activated'] === undefined) angel['activated'] = false;
+            }
+          }
+          loaded.version = 5;
         }
 
         // Migrate bossFight: add if missing from saved state

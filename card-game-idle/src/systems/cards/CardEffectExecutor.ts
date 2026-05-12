@@ -13,6 +13,13 @@ export interface ExecutionResult {
   canPlay: boolean;         // false if radiance_spend failed
 }
 
+interface ExecuteOptions {
+  effects?: CardEffect[];
+  countAsPlay?: boolean;
+  removeFromHand?: boolean;
+  useNextCardMultiplier?: boolean;
+}
+
 function cloneBoard(board: BoardState): BoardState {
   return {
     ...board,
@@ -28,18 +35,23 @@ export class CardEffectExecutor {
     turn: TurnState,
     board: BoardState,
     deck: DeckState,
-    isSeraphim = false
+    isSeraphim = false,
+    options: ExecuteOptions = {}
   ): ExecutionResult {
     const def = CardRegistry.get(deckCard.definitionId);
     if (!def) {
       return { deck, turn, board, oblivionBonus: 0, pendingEffect: null, canPlay: true };
     }
 
-    const effects: CardEffect[] =
+    const effects: CardEffect[] = options.effects ?? (
       def.type === 'Seraphim'  ? (def as SeraphimDefinition).onPlayEffects
       : def.type === 'Angel'   ? (def as AngelDefinition).onSummonEffects
       : def.type === 'Chaos'   ? []
-      : (def as SeekerDefinition).effects;
+      : (def as SeekerDefinition).effects
+    );
+    const countAsPlay = options.countAsPlay ?? true;
+    const removeFromHand = options.removeFromHand ?? (deckCard.instanceId !== 'echo' && !isSeraphim);
+    const useNextCardMultiplier = options.useNextCardMultiplier ?? countAsPlay;
 
     let mutableDeck = { ...deck, hand: [...deck.hand] };
     let mutableTurn = { ...turn };
@@ -49,8 +61,8 @@ export class CardEffectExecutor {
     let embersDrained = 0;  // tracks embers before ember_spend:9999 for dynamic sentinels
     let radianceDrained = 0; // tracks radiance before radiance_spend:9999 for dynamic sentinels
 
-    const multiplier = mutableTurn.nextCardMultiplied ? 2 : 1;
-    if (mutableTurn.nextCardMultiplied) {
+    const multiplier = useNextCardMultiplier && mutableTurn.nextCardMultiplied ? 2 : 1;
+    if (useNextCardMultiplier && mutableTurn.nextCardMultiplied) {
       mutableTurn.nextCardMultiplied = false;
     }
 
@@ -61,10 +73,10 @@ export class CardEffectExecutor {
     const throneActive = board.frontSlots.some(
       s => s?.type === 'Seraphim' && s.isActive && s.definitionId === 'ser-light-throne'
     );
-    const radianceGainMultiplier = throneActive ? 2 : 1;
 
     function applyRadianceGain(base: number): void {
-      mutableTurn.radiance += base * radianceGainMultiplier;
+      const adjusted = throneActive ? Math.ceil(base * 1.5) : base;
+      mutableTurn.radiance += adjusted;
     }
 
     function processEffect(effect: CardEffect): boolean {
@@ -92,21 +104,21 @@ export class CardEffectExecutor {
           if (deckCard.definitionId === 'seek-fire-void-apocalypse') {
             val = embersDrained * 30 * multiplier;
           }
-          // Radiant Surge — +15 Oblivion per Radiance (max 150)
+          // Radiant Surge — +8 Oblivion per Radiance (max 80)
           if (deckCard.definitionId === 'hr-light-radiant-surge') {
-            val = Math.min(mutableTurn.radiance * 15, 150) * multiplier;
+            val = Math.min(mutableTurn.radiance * 8, 80) * multiplier;
           }
-          // Sunforged — +50 Oblivion per Radiance drained
+          // Sunforged — +25 Oblivion per Radiance drained
           if (deckCard.definitionId === 'hr-light-sunforged') {
-            val = radianceDrained * 50 * multiplier;
+            val = radianceDrained * 25 * multiplier;
           }
-          // Celestial Dividend — +40 Oblivion per Radiance drained
+          // Celestial Dividend — +18 Oblivion per Radiance drained
           if (deckCard.definitionId === 'hr-light-celestial-dividend') {
-            val = radianceDrained * 40 * multiplier;
+            val = radianceDrained * 18 * multiplier;
           }
-          // Grand Illumination — +20 Oblivion per Radiance (after doubling)
+          // Grand Illumination — +8 Oblivion per Radiance (after doubling)
           if (deckCard.definitionId === 'hr-light-grand-illumination') {
-            val = mutableTurn.radiance * 20 * multiplier;
+            val = mutableTurn.radiance * 8 * multiplier;
           }
           oblivionBonus += val;
           break;
@@ -151,7 +163,7 @@ export class CardEffectExecutor {
         // ── Radiance effects (Light) ──────────────────────────────────────────────
         case 'radiance_gain': {
           let gain = effect.value;
-          if (deckCard.definitionId === 'hr-light-seraphic-bond') gain = activeSynergies * 2;
+          if (deckCard.definitionId === 'hr-light-seraphic-bond') gain = activeSynergies;
           else if (deckCard.definitionId === 'hr-light-aureate-chain') {
             gain = deck.hand.filter(c => {
               const d = CardRegistry.get(c.definitionId);
@@ -162,7 +174,7 @@ export class CardEffectExecutor {
             gain = mutableTurn.cardsPlayedThisTurn;
           }
           else if (deckCard.definitionId === 'ser-light-warden') {
-            gain = deck.hand.length;
+            gain = Math.ceil(deck.hand.length / 2);
           }
           applyRadianceGain(gain * multiplier);
           break;
@@ -180,7 +192,7 @@ export class CardEffectExecutor {
         }
 
         case 'radiance_double':
-          mutableTurn.radiance = mutableTurn.radiance * 2 * radianceGainMultiplier;
+          mutableTurn.radiance = mutableTurn.radiance * 2;
           break;
 
         // ── Ember effects (Pyroabyss) ─────────────────────────────────────────────
@@ -372,7 +384,7 @@ export class CardEffectExecutor {
     }
 
     // Remove played card from hand (for non-Seraphim, non-virtual cards)
-    if (deckCard.instanceId !== 'echo' && !isSeraphim) {
+    if (removeFromHand) {
       mutableDeck = {
         ...mutableDeck,
         hand: mutableDeck.hand.filter(c => c.instanceId !== deckCard.instanceId),
@@ -380,13 +392,15 @@ export class CardEffectExecutor {
       };
     }
 
-    mutableTurn.cardsPlayedThisTurn += 1;
-    mutableTurn.chainMultiplier = Math.max(
-      1.0 + mutableTurn.cardsPlayedThisTurn * 0.1,
-      mutableTurn.chainFloor
-    );
+    if (countAsPlay) {
+      mutableTurn.cardsPlayedThisTurn += 1;
+      mutableTurn.chainMultiplier = Math.max(
+        1.0 + mutableTurn.cardsPlayedThisTurn * 0.1,
+        mutableTurn.chainFloor
+      );
+    }
 
-    if (def.type === 'Seeker') {
+    if (countAsPlay && def.type === 'Seeker') {
       mutableTurn.lastPlayedDefinitionId = deckCard.definitionId;
     }
 
@@ -423,7 +437,7 @@ export class CardEffectExecutor {
       for (const id of angelDef.summonCost) costCount[id] = (costCount[id] ?? 0) + 1;
       const boardCount: Record<string, number> = {};
       for (const slot of board.frontSlots) {
-        if (slot?.type === 'Seraphim') boardCount[slot.definitionId] = (boardCount[slot.definitionId] ?? 0) + 1;
+        if (slot) boardCount[slot.definitionId] = (boardCount[slot.definitionId] ?? 0) + 1;
       }
       for (const [id, needed] of Object.entries(costCount)) {
         if ((boardCount[id] ?? 0) < needed) return false;
