@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectBoard, selectTurn, selectExtraDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -11,11 +11,13 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
-import type { AngelDefinition } from '@/types/cards';
+import type { AngelDefinition, CardFinish } from '@/types/cards';
 
 const faceMetrics = getCardFaceMetrics('hand');
-const ANGEL_DRAWER_WIDTH = 'min(380px, calc(100vw - 52px))';
+const ANGEL_DRAWER_WIDTH = 'min(340px, calc(100vw - 52px))';
 const ANGEL_ART_HEIGHT = 120;
+const HAND_RESERVED_WHEN_CLOSED = '34px';
+const HAND_RESERVED_WHEN_OPEN = 'min(374px, calc(100vw - 18px))';
 
 export default function AngelCompartment() {
   const [open, setOpen] = useState(false);
@@ -27,22 +29,36 @@ export default function AngelCompartment() {
   const isPlaying = turn.phase === 'playing';
   const angelsOnBoard = board.frontSlots.filter(s => s?.type === 'Angel').length;
   const angelEntries = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const definitionId of extraDeck) {
-      counts.set(definitionId, (counts.get(definitionId) ?? 0) + 1);
+    const counts = new Map<string, { definitionId: string; finish: CardFinish; totalCopies: number }>();
+    for (const entry of extraDeck) {
+      const key = `${entry.definitionId}::${entry.finish}`;
+      const existing = counts.get(key);
+      if (existing) {
+        existing.totalCopies += 1;
+      } else {
+        counts.set(key, { definitionId: entry.definitionId, finish: entry.finish, totalCopies: 1 });
+      }
     }
-    return Array.from(counts.entries()).map(([definitionId, totalCopies]) => ({ definitionId, totalCopies }));
+    return Array.from(counts.values());
   }, [extraDeck]);
+
+  useEffect(() => {
+    const offset = open ? HAND_RESERVED_WHEN_OPEN : HAND_RESERVED_WHEN_CLOSED;
+    document.documentElement.style.setProperty('--angel-drawer-hand-offset', offset);
+    return () => {
+      document.documentElement.style.setProperty('--angel-drawer-hand-offset', HAND_RESERVED_WHEN_CLOSED);
+    };
+  }, [open]);
 
   return (
     <div style={{
       position: 'absolute',
       right: 0,
-      top: '50%',
-      transform: 'translateY(-50%)',
+      top: 'clamp(340px, 46vh, 420px)',
+      transform: 'none',
       display: 'flex',
       alignItems: 'stretch',
-      zIndex: 30,
+      zIndex: 12,
       pointerEvents: 'auto',
     }}>
       {/* Slide-in panel */}
@@ -58,13 +74,13 @@ export default function AngelCompartment() {
         flexDirection: 'column',
         boxShadow: open ? warmTheme.shadow : 'none',
       }}>
-        <div style={{
+        <div className="ornate-scroll" style={{
           width: '100%',
           padding: '18px 16px',
           display: 'flex',
           flexDirection: 'column',
           gap: 14,
-          maxHeight: '76vh',
+          maxHeight: 'clamp(220px, 38vh, 340px)',
           overflowY: 'auto',
         }}>
           <div style={{
@@ -90,15 +106,15 @@ export default function AngelCompartment() {
             </div>
           )}
 
-          {angelEntries.map(({ definitionId, totalCopies }) => {
+          {angelEntries.map(({ definitionId, finish, totalCopies }) => {
             const def = CardRegistry.get(definitionId);
             if (!def || def.type !== 'Angel') return null;
             const angelDef = def as AngelDefinition;
-            const artStyle = getCardFaceBackgroundStyle(angelDef);
+            const artStyle = getCardFaceBackgroundStyle(angelDef, finish);
             const artUrl = getCardBackgroundUrl(angelDef);
 
             const onBoardCopies = board.frontSlots.filter(
-              sl => sl?.type === 'Angel' && sl.definitionId === definitionId
+              sl => sl?.type === 'Angel' && sl.definitionId === definitionId && sl.finish === finish
             ).length;
             const availableCopies = totalCopies - onBoardCopies;
             const playable = availableCopies > 0 && isPlaying &&
@@ -123,7 +139,7 @@ export default function AngelCompartment() {
 
             return (
               <div
-                key={definitionId}
+                key={`${definitionId}::${finish}`}
                 style={{
                   border: playable
                     ? `1px solid ${warmTheme.borderStrong}`
@@ -144,7 +160,7 @@ export default function AngelCompartment() {
                 }}
                 onClick={() => {
                   if (playable) {
-                    summonAngel(definitionId);
+                    summonAngel(definitionId, finish);
                     setOpen(false);
                   }
                 }}
@@ -152,7 +168,7 @@ export default function AngelCompartment() {
                 <div style={getCardNameRibbonStyle('hand')}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
                     <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-                      Angel
+                      Angel · {finish === 'holo' ? 'Holofoil' : 'Normal'}
                     </div>
                     <div style={{
                       fontSize: 9,

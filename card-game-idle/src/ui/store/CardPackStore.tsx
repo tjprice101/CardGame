@@ -6,6 +6,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme } from '@/ui/theme';
 import PackOpeningModal from './PackOpeningModal';
 import CollectionViewer from './CollectionViewer';
+import HolofoilWorkshop from './HolofoilWorkshop';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12',
@@ -15,13 +16,13 @@ const styles: Record<string, React.CSSProperties> = {
   overlay: {
     position: 'absolute',
     inset: 0,
-    background: warmTheme.overlay,
+    background: 'radial-gradient(circle at 16% 8%, rgba(248, 203, 140, 0.16) 0%, rgba(248, 203, 140, 0) 34%), radial-gradient(circle at 84% 90%, rgba(110, 76, 38, 0.35) 0%, rgba(110, 76, 38, 0) 42%), repeating-linear-gradient(135deg, rgba(241, 191, 122, 0.06) 0px, rgba(241, 191, 122, 0.06) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 22px), linear-gradient(180deg, rgba(24, 18, 13, 0.97) 0%, rgba(37, 27, 19, 0.97) 100%)',
     zIndex: 50,
     display: 'flex',
     flexDirection: 'column',
     pointerEvents: 'auto',
     fontFamily: 'Georgia, serif',
-    color: warmTheme.text,
+    color: '#ead9c0',
   },
   header: {
     padding: '16px 24px',
@@ -30,9 +31,10 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     flexShrink: 0,
+    background: 'rgba(9, 12, 16, 0.42)',
   },
-  title: { fontSize: 20, fontWeight: 'bold', color: warmTheme.accentDeep, letterSpacing: 2 },
-  score: { fontSize: 13, color: warmTheme.textSoft },
+  title: { fontSize: 20, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 2 },
+  score: { fontSize: 13, color: 'rgba(234, 217, 192, 0.82)' },
   body: {
     flex: 1,
     overflowY: 'auto',
@@ -45,8 +47,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   packCard: {
     width: 280,
-    background: warmTheme.surfaceStrong,
-    border: `1px solid ${warmTheme.border}`,
+    background: 'linear-gradient(180deg, rgba(28, 22, 17, 0.94) 0%, rgba(37, 29, 22, 0.94) 100%)',
+    border: '1px solid rgba(218, 167, 109, 0.34)',
     borderRadius: 16,
     padding: '20px',
     display: 'flex',
@@ -58,9 +60,9 @@ const styles: Record<string, React.CSSProperties> = {
     opacity: 0.5,
     filter: 'grayscale(0.6)',
   },
-  packName: { fontSize: 16, fontWeight: 'bold', color: warmTheme.accentDeep },
-  packDesc: { fontSize: 12, color: warmTheme.textSoft, lineHeight: 1.5 },
-  packCost: { fontSize: 13, color: warmTheme.accentDeep },
+  packName: { fontSize: 16, fontWeight: 'bold', color: '#f1c486' },
+  packDesc: { fontSize: 12, color: 'rgba(235, 220, 197, 0.84)', lineHeight: 1.5 },
+  packCost: { fontSize: 13, color: '#f1c486' },
   openBtn: {
     padding: '8px 16px',
     borderRadius: 10,
@@ -95,7 +97,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 9,
     padding: '2px 6px',
     borderRadius: 3,
-    background: warmTheme.surface,
+    background: 'rgba(255, 241, 221, 0.9)',
     letterSpacing: 1,
   },
   footer: {
@@ -105,19 +107,38 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'flex-end',
     flexShrink: 0,
   },
+  tabBar: {
+    display: 'flex',
+    gap: 8,
+    padding: '12px 24px',
+    borderBottom: `1px solid ${warmTheme.border}`,
+    flexShrink: 0,
+    background: 'rgba(9, 12, 16, 0.32)',
+  },
+  tabBtn: {
+    padding: '6px 16px',
+    borderRadius: 999,
+    border: `1px solid ${warmTheme.border}`,
+    background: 'rgba(255, 236, 209, 0.88)',
+    color: '#61401d',
+    fontSize: 11,
+    cursor: 'pointer',
+    fontFamily: 'Georgia, serif',
+    letterSpacing: 1,
+  },
   closeBtn: {
     padding: '8px 20px',
     borderRadius: 10,
     border: `1px solid ${warmTheme.border}`,
-    background: warmTheme.surface,
-    color: warmTheme.textMuted,
+    background: 'rgba(255, 237, 213, 0.94)',
+    color: '#5f3a17',
     fontSize: 12,
     cursor: 'pointer',
     fontFamily: 'Georgia, serif',
   },
   collectionBar: {
     fontSize: 11,
-    color: warmTheme.textMuted,
+    color: 'rgba(234, 217, 192, 0.8)',
   },
 };
 
@@ -125,9 +146,11 @@ interface Props { onClose: () => void }
 
 export default function CardPackStore({ onClose }: Props) {
   const score = useStore(s => s.progress.oblivion);
+  const shards = useStore(s => s.progress.aberratedShards);
   const collection = useStore(s => s.progress.collection);
   const [openingResult, setOpeningResult] = useState<{ cards: string[]; packName: string; newCards: Set<string> } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
+  const [activeTab, setActiveTab] = useState<'packs' | 'holofoils'>('packs');
 
   const handleOpen = (packId: string, tier: 'pack' | 'box' | 'case') => {
     const preOpenCollection = new Set(Object.keys(useStore.getState().progress.collection));
@@ -149,9 +172,10 @@ export default function CardPackStore({ onClose }: Props) {
   return (
     <div style={styles.overlay}>
       <div style={styles.header}>
-        <div style={styles.title}>Card Pack Store</div>
+        <div style={styles.title}>Card Store</div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <div style={styles.score}>Score: {Math.floor(score).toLocaleString()}</div>
+          <div style={styles.score}>Oblivion: {Math.floor(score).toLocaleString()}</div>
+          <div style={styles.score}>Aberrated Shards: {shards.toLocaleString()}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
             <div style={styles.collectionBar}>{Object.keys(collection).length} unique cards collected</div>
             <button
@@ -169,8 +193,34 @@ export default function CardPackStore({ onClose }: Props) {
         </div>
       </div>
 
-      <div style={styles.body}>
-        {PACK_DEFINITIONS.map(pack => {
+      <div style={styles.tabBar}>
+        <button
+          style={{
+            ...styles.tabBtn,
+            ...(activeTab === 'packs'
+              ? { color: warmTheme.accentDeep, borderColor: warmTheme.borderStrong, background: 'rgba(255,215,0,0.08)' }
+              : {}),
+          }}
+          onClick={() => setActiveTab('packs')}
+        >
+          Packs
+        </button>
+        <button
+          style={{
+            ...styles.tabBtn,
+            ...(activeTab === 'holofoils'
+              ? { color: warmTheme.accentDeep, borderColor: warmTheme.borderStrong, background: 'rgba(255,215,0,0.08)' }
+              : {}),
+          }}
+          onClick={() => setActiveTab('holofoils')}
+        >
+          Holofoils
+        </button>
+      </div>
+
+      {activeTab === 'packs' ? (
+        <div style={styles.body}>
+          {PACK_DEFINITIONS.map(pack => {
           const elementColor = ELEMENT_COLORS[pack.element] ?? '#aaa';
           const setName = ELEMENT_SET_NAMES[pack.element] ?? pack.element;
           const boxCost = Math.round(pack.cost * 5 * 0.98);
@@ -260,7 +310,10 @@ export default function CardPackStore({ onClose }: Props) {
             </div>
           );
         })}
-      </div>
+        </div>
+      ) : (
+        <HolofoilWorkshop />
+      )}
 
       <div style={styles.footer}>
         <button style={styles.closeBtn} onClick={onClose}>Close</button>

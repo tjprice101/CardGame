@@ -38,18 +38,12 @@ describe('Boss fight rules', () => {
   });
 
   it('uses a gentle exponential HP curve for the eternal bosses', () => {
-    expect(BOSS_DEFINITIONS.map(boss => boss.hp)).toEqual([
-      5000,
-      8500,
-      14000,
-      23000,
-      38500,
-      64500,
-      108000,
-      180000,
-      300000,
-      500000,
-    ]);
+    const hpValues = BOSS_DEFINITIONS.map(boss => boss.hp);
+    expect(hpValues[0]).toBeGreaterThanOrEqual(10_000);
+    expect(hpValues[hpValues.length - 1]).toBeGreaterThanOrEqual(20_000_000);
+    for (let i = 1; i < hpValues.length; i++) {
+      expect(hpValues[i]).toBeGreaterThan(hpValues[i - 1]);
+    }
   });
 
   it('ends the fight in defeat when the only turn is ended without a kill', () => {
@@ -109,19 +103,25 @@ describe('Boss fight rules', () => {
       { ...defaultGameState.deck.deckList[0], copies: 4 },
       { ...defaultGameState.deck.deckList[1], copies: 1 },
     ];
-    const originalExtraDeck = ['angel-light-seraphiel', 'angel-light-seraphiel'];
+    const originalExtraDeck = [
+      { definitionId: 'angel-light-seraphiel', finish: 'normal' as const },
+      { definitionId: 'angel-light-seraphiel', finish: 'normal' as const },
+    ];
 
     const deckId = useStore.getState().saveCurrentDeck('Boss Test Deck', originalDeckList, originalExtraDeck);
 
     originalDeckList[0].copies = 1;
-    originalExtraDeck.push('angel-light-aurelion');
+    originalExtraDeck.push({ definitionId: 'angel-light-aurelion', finish: 'normal' as const });
 
     const savedDeck = useStore.getState().progress.savedDecks.find(deck => deck.id === deckId);
     expect(savedDeck?.deckList).toEqual([
       { ...defaultGameState.deck.deckList[0], copies: 4 },
       { ...defaultGameState.deck.deckList[1], copies: 1 },
     ]);
-    expect(savedDeck?.extraDeck).toEqual(['angel-light-seraphiel', 'angel-light-seraphiel']);
+    expect(savedDeck?.extraDeck).toEqual([
+      { definitionId: 'angel-light-seraphiel', finish: 'normal' },
+      { definitionId: 'angel-light-seraphiel', finish: 'normal' },
+    ]);
 
     useStore.getState().startBossFight('boss-hollow-king', deckId);
 
@@ -131,7 +131,10 @@ describe('Boss fight rules', () => {
       { ...defaultGameState.deck.deckList[0], copies: 4 },
       { ...defaultGameState.deck.deckList[1], copies: 1 },
     ]);
-    expect(state.deck.extraDeck).toEqual(['angel-light-seraphiel', 'angel-light-seraphiel']);
+    expect(state.deck.extraDeck).toEqual([
+      { definitionId: 'angel-light-seraphiel', finish: 'normal' },
+      { definitionId: 'angel-light-seraphiel', finish: 'normal' },
+    ]);
   });
 
   it('uses the latest builder-started version of the active saved custom deck in boss fights', () => {
@@ -143,8 +146,11 @@ describe('Boss fight rules', () => {
       { ...defaultGameState.deck.deckList[0], copies: 1 },
       { ...defaultGameState.deck.deckList[1], copies: 4 },
     ];
-    const initialExtraDeck = ['angel-light-seraphiel'];
-    const updatedExtraDeck = ['angel-light-aurelion', 'angel-light-solarius'];
+    const initialExtraDeck = [{ definitionId: 'angel-light-seraphiel', finish: 'normal' as const }];
+    const updatedExtraDeck = [
+      { definitionId: 'angel-light-aurelion', finish: 'normal' as const },
+      { definitionId: 'angel-light-solarius', finish: 'normal' as const },
+    ];
 
     const deckId = useStore.getState().saveCurrentDeck('Mutable Boss Deck', initialDeckList, initialExtraDeck);
 

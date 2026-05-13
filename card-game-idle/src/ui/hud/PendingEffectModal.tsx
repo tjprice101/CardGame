@@ -9,6 +9,7 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
+import type { DeckCard } from '@/types/game';
 
 const styles: Record<string, React.CSSProperties> = {
   backdrop: {
@@ -117,27 +118,27 @@ export default function PendingEffectModal() {
 
   const confirm = () => { resolvePending(selected); setSelected([]); };
   const buildCardStyle = (
-    definitionId: string,
+    card: Pick<DeckCard, 'definitionId' | 'finish'>,
     stateStyle?: React.CSSProperties,
   ): React.CSSProperties => ({
     ...styles.card,
-    ...getCardFaceBackgroundStyle(CardRegistry.get(definitionId)),
+    ...getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish),
     ...(stateStyle ?? {}),
   });
 
   const renderCardFace = (
-    definitionId: string,
+    card: Pick<DeckCard, 'definitionId' | 'finish'>,
     footerLabel?: string,
     footerColor?: string,
   ) => {
-    const def = CardRegistry.get(definitionId);
+    const def = CardRegistry.get(card.definitionId);
     return (
       <>
         <div style={getCardNameRibbonStyle('compact')}>
           <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 3 }}>
             {def?.type ?? 'Card'}
           </div>
-          <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def?.name ?? definitionId}</div>
+          <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def?.name ?? card.definitionId}</div>
         </div>
         <div style={getCardRulesPanelStyle('compact')}>
           <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: faceMetrics.descLines }}>
@@ -187,10 +188,10 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
-                  style={buildCardStyle(c.definitionId, isSel ? styles.cardSelected : undefined)}
+                  style={buildCardStyle(c, isSel ? styles.cardSelected : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  {renderCardFace(c.definitionId, isSel ? 'Discard' : undefined, warmTheme.danger)}
+                  {renderCardFace(c, isSel ? 'Discard' : undefined, warmTheme.danger)}
                 </div>
               );
             })}
@@ -238,10 +239,10 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
-                  style={buildCardStyle(c.definitionId, isKept ? styles.cardTake : undefined)}
+                  style={buildCardStyle(c, isKept ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  {renderCardFace(c.definitionId, isKept ? 'Keep' : undefined, warmTheme.success)}
+                  {renderCardFace(c, isKept ? 'Keep' : undefined, warmTheme.success)}
                 </div>
               );
             })}
@@ -286,10 +287,10 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
-                  style={buildCardStyle(c.definitionId, isTake ? styles.cardTake : undefined)}
+                  style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  {renderCardFace(c.definitionId, isTake ? 'Take' : undefined, warmTheme.success)}
+                  {renderCardFace(c, isTake ? 'Take' : undefined, warmTheme.success)}
                 </div>
               );
             })}
@@ -360,13 +361,13 @@ export default function PendingEffectModal() {
               const isTake = c.instanceId === takeId;
               const isDrop = c.instanceId === dropId;
               const cardStyle = isTake
-                ? buildCardStyle(c.definitionId, styles.cardTake)
+                ? buildCardStyle(c, styles.cardTake)
                 : isDrop
-                  ? buildCardStyle(c.definitionId, { border: '2px solid rgba(255,200,80,0.8)', boxShadow: '0 0 14px rgba(255,200,80,0.35)', transform: 'translateY(-4px)' as const })
-                  : buildCardStyle(c.definitionId);
+                  ? buildCardStyle(c, { border: '2px solid rgba(255,200,80,0.8)', boxShadow: '0 0 14px rgba(255,200,80,0.35)', transform: 'translateY(-4px)' as const })
+                  : buildCardStyle(c);
               return (
                 <div key={c.instanceId} style={cardStyle} onClick={() => handleClick(c.instanceId)}>
-                  {renderCardFace(c.definitionId, isTake ? 'Take' : isDrop ? 'Return' : undefined, isTake ? warmTheme.success : 'rgba(255,200,80,0.92)')}
+                  {renderCardFace(c, isTake ? 'Take' : isDrop ? 'Return' : undefined, isTake ? warmTheme.success : 'rgba(255,200,80,0.92)')}
                 </div>
               );
             })}
@@ -402,10 +403,10 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
-                  style={buildCardStyle(c.definitionId, isTake ? styles.cardTake : undefined)}
+                  style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  {renderCardFace(c.definitionId, isTake ? 'Take' : undefined, warmTheme.success)}
+                  {renderCardFace(c, isTake ? 'Take' : undefined, warmTheme.success)}
                 </div>
               );
             })}
@@ -446,10 +447,10 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
-                  style={buildCardStyle(c.definitionId, isTake ? styles.cardTake : undefined)}
+                  style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  {renderCardFace(c.definitionId, isTake ? 'Salvage' : undefined, warmTheme.success)}
+                  {renderCardFace(c, isTake ? 'Salvage' : undefined, warmTheme.success)}
                 </div>
               );
             })}
@@ -505,10 +506,10 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
-                  style={buildCardStyle(c.definitionId, isTake ? styles.cardTake : undefined)}
+                  style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  {renderCardFace(c.definitionId, isTake ? 'Salvage' : undefined, warmTheme.success)}
+                  {renderCardFace(c, isTake ? 'Salvage' : undefined, warmTheme.success)}
                 </div>
               );
             })}

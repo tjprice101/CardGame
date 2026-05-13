@@ -5,7 +5,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'absolute',
-    bottom: 230,
+    bottom: 'clamp(330px, 42vh, 440px)',
     left: 16,
     display: 'flex',
     flexDirection: 'column',

@@ -1,21 +1,26 @@
 import type { CSSProperties } from 'react';
 import type { CardDefinition } from '@/types/cards';
+import type { CardFinish } from '@/types/cards';
 import { warmTheme } from '@/ui/theme';
 
 const CARD_BACKGROUND_ROOT = '/assets/card-backgrounds';
 const CARD_BACKGROUND_FOLDERS: Partial<Record<string, string>> = {
   Fire: 'pyroabyss',
+  Mechanical: 'mechanical-dreams',
+  Light: 'heavenly-light',
   Neutrality: 'neutrality',
+  Thornbound: 'thornbound-plains',
+  Prismatic: 'prismatic-accord',
 };
 
 export type CardFaceVariant = 'hand' | 'pack' | 'grid' | 'compact' | 'board' | 'boardMini';
 
 export const cardFacePalette = {
-  text: '#1d1713',
-  textSoft: 'rgba(29, 23, 19, 0.88)',
-  textMuted: 'rgba(29, 23, 19, 0.72)',
-  ribbon: 'rgba(255, 248, 241, 0.94)',
-  panel: 'rgba(251, 244, 236, 0.93)',
+  text: '#17110d',
+  textSoft: 'rgba(23, 17, 13, 0.9)',
+  textMuted: 'rgba(23, 17, 13, 0.76)',
+  ribbon: 'rgba(255, 249, 242, 0.96)',
+  panel: 'rgba(252, 246, 238, 0.95)',
   border: 'rgba(68, 49, 32, 0.16)',
   shadow: '0 10px 24px rgba(68, 49, 32, 0.12)',
 };
@@ -30,13 +35,13 @@ const CARD_FACE_METRICS: Record<CardFaceVariant, {
   descLines: number;
 }> = {
   hand: {
-    ribbonPadding: '10px 12px 8px',
-    panelPadding: '10px 12px 12px',
+    ribbonPadding: '8px 10px 6px',
+    panelPadding: '7px 10px 8px',
     typeSize: 9,
     nameSize: 15,
     descSize: 11,
     descLineHeight: 1.45,
-    descLines: 4,
+    descLines: 3,
   },
   pack: {
     ribbonPadding: '10px 11px 8px',
@@ -86,7 +91,6 @@ const CARD_FACE_METRICS: Record<CardFaceVariant, {
 };
 
 const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
-  'angel-neutral-beginning': 'The Beginning and the End.png',
   'ser-fire-voidflame': 'Void-flame Seraphim.png',
   'btei-voids-reaping': 'Hollow Queen.png',
   'btei-eternal-vigil': 'Immortal Warden.png',
@@ -98,7 +102,36 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'btei-omniscient-fracture': 'Shattered Oracle.png',
   'btei-colossus-advent': 'Abyssal Colossus.png',
   'btei-axiom-of-oblivion': 'Eternal Null.png',
+  'tbp-ser-scar-mantle-reclaimer': 'Scar-mantle Reclaimer.png',
+  'tbp-angel-velmora-harrowed-crown': 'Velmora Crown of Harrowed Plains.png',
 };
+
+function hashDefinitionId(definitionId: string): number {
+  let hash = 0;
+  for (let i = 0; i < definitionId.length; i++) {
+    hash = ((hash << 5) - hash) + definitionId.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function getBossHoloAnimationStyle(definitionId: string): CSSProperties {
+  const hash = hashDefinitionId(definitionId);
+  const hueShift = 40 + (hash % 260);
+  const driftSeconds = (7 + (hash % 6)) / 2;
+  const pulseSeconds = (8 + ((hash >> 2) % 8)) / 2;
+  const glintSeconds = (6 + ((hash >> 4) % 7)) / 2;
+  const direction = hash % 2 === 0 ? 'normal' : 'alternate';
+
+  return {
+    animationName: 'bossHoloShift, bossHoloPulse, bossHoloGlint',
+    animationDuration: `${driftSeconds}s, ${pulseSeconds}s, ${glintSeconds}s`,
+    animationTimingFunction: 'linear, ease-in-out, linear',
+    animationIterationCount: 'infinite, infinite, infinite',
+    animationDirection: `${direction}, alternate, normal`,
+    filter: `hue-rotate(${hueShift}deg) saturate(1.22)`,
+  };
+}
 
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
@@ -110,24 +143,45 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
   return `${CARD_BACKGROUND_ROOT}/${folder}/${encodeURIComponent(fileName)}`;
 }
 
-export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined): CSSProperties {
+export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal'): CSSProperties {
+  const bossHoloStyle = finish === 'holo' && card?.definitionId.startsWith('btei-')
+    ? getBossHoloAnimationStyle(card.definitionId)
+    : {};
   const imageUrl = getCardBackgroundUrl(card);
+  const holoLayers = [
+    'linear-gradient(140deg, rgba(255, 104, 192, 0.12) 0%, rgba(255, 193, 82, 0.08) 24%, rgba(98, 205, 255, 0.12) 48%, rgba(122, 246, 181, 0.1) 72%, rgba(255, 255, 255, 0.14) 100%)',
+    'radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0) 30%)',
+    'linear-gradient(120deg, rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0.2) 48%, rgba(255, 255, 255, 0.05) 56%, rgba(255, 255, 255, 0) 70%)',
+    'linear-gradient(180deg, rgba(26, 18, 12, 0.16) 0%, rgba(26, 18, 12, 0.04) 55%, rgba(26, 18, 12, 0.1) 100%)',
+  ];
+
   if (!imageUrl) {
     return {
-      backgroundImage: 'linear-gradient(180deg, rgba(255, 247, 236, 0.98) 0%, rgba(243, 228, 207, 0.98) 100%)',
+      backgroundImage: finish === 'holo'
+        ? [
+            ...holoLayers,
+            'linear-gradient(180deg, rgba(255, 247, 236, 0.98) 0%, rgba(243, 228, 207, 0.98) 100%)',
+          ].join(', ')
+        : 'linear-gradient(180deg, rgba(255, 247, 236, 0.98) 0%, rgba(243, 228, 207, 0.98) 100%)',
       backgroundColor: warmTheme.surfaceStrong,
-      backgroundPosition: 'center',
-      backgroundSize: 'cover',
+      backgroundPosition: finish === 'holo' ? 'center, center, center, center, center' : 'center',
+      backgroundSize: finish === 'holo' ? '215% 215%, 140% 140%, 180% 180%, cover, cover' : 'cover',
       backgroundRepeat: 'no-repeat',
+      backgroundBlendMode: finish === 'holo' ? 'screen, overlay, soft-light, multiply, normal' : undefined,
+      ...bossHoloStyle,
     };
   }
 
   return {
-    backgroundImage: `url("${imageUrl}")`,
+    backgroundImage: finish === 'holo'
+      ? [...holoLayers, `url("${imageUrl}")`].join(', ')
+      : `url("${imageUrl}")`,
     backgroundColor: warmTheme.surfaceStrong,
-    backgroundPosition: 'center',
-    backgroundSize: 'cover',
+    backgroundPosition: finish === 'holo' ? 'center, center, center, center, center' : 'center',
+    backgroundSize: finish === 'holo' ? '215% 215%, 140% 140%, 180% 180%, cover, cover' : 'cover',
     backgroundRepeat: 'no-repeat',
+    backgroundBlendMode: finish === 'holo' ? 'screen, overlay, soft-light, multiply, normal' : undefined,
+    ...bossHoloStyle,
   };
 }
 
@@ -154,4 +208,29 @@ export function getCardRulesPanelStyle(variant: CardFaceVariant): CSSProperties 
     padding: CARD_FACE_METRICS[variant].panelPadding,
     marginTop: 'auto',
   };
+}
+
+export function getAdaptiveDescriptionMetrics(variant: CardFaceVariant, text: string) {
+  const base = CARD_FACE_METRICS[variant];
+  const length = text.trim().length;
+
+  if (variant === 'hand') {
+    if (length > 180) return { fontSize: base.descSize - 2.6, lineHeight: 1.12, lineClamp: 2 };
+    if (length > 120) return { fontSize: base.descSize - 1.8, lineHeight: 1.16, lineClamp: 2 };
+    if (length > 80) return { fontSize: base.descSize - 1.0, lineHeight: 1.2, lineClamp: 3 };
+    return { fontSize: base.descSize, lineHeight: base.descLineHeight, lineClamp: base.descLines };
+  }
+
+  if (variant === 'board') {
+    if (length > 170) return { fontSize: base.descSize - 1.3, lineHeight: 1.2, lineClamp: 2 };
+    if (length > 110) return { fontSize: base.descSize - 0.8, lineHeight: 1.24, lineClamp: 2 };
+    return { fontSize: base.descSize, lineHeight: 1.28, lineClamp: 2 };
+  }
+
+  if (variant === 'boardMini') {
+    if (length > 130) return { fontSize: base.descSize - 1.1, lineHeight: 1.18, lineClamp: 2 };
+    return { fontSize: base.descSize, lineHeight: 1.24, lineClamp: 2 };
+  }
+
+  return { fontSize: base.descSize, lineHeight: base.descLineHeight, lineClamp: base.descLines };
 }

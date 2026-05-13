@@ -2,28 +2,65 @@ import { useState } from 'react';
 import { useStore, selectBossFight, selectProgress } from '@/state/store';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
+import type { BossCategory } from '@/types/bossFight';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b',
 };
 
-const BOSS_ART_ROOT = '/assets/card-backgrounds/neutrality';
-const BOSS_ART_FILES: Record<string, string> = {
-  boss_hollow_queen: 'Hollow Queen.png',
-  boss_immortal_warden: 'Immortal Warden.png',
-  boss_chaos_sovereign: 'Chaos Sovereign.png',
-  boss_eternal_seraph: 'Eternal Seraph.png',
-  boss_time_eater: 'The Time Eater.png',
-  boss_void_architect: 'The Void Architect.png',
-  boss_null_sovereign: 'Null Sovereign.png',
-  boss_shattered_oracle: 'Shattered Oracle.png',
-  boss_abyssal_colossus: 'Abyssal Colossus.png',
-  boss_eternal_null: 'Eternal Null.png',
+const BOSS_ART_ROOT = '/assets/card-backgrounds';
+const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
+  boss_hollow_queen: { folder: 'neutrality', file: 'Hollow Queen.png' },
+  boss_immortal_warden: { folder: 'neutrality', file: 'Immortal Warden.png' },
+  boss_chaos_sovereign: { folder: 'neutrality', file: 'Chaos Sovereign.png' },
+  boss_eternal_seraph: { folder: 'neutrality', file: 'Eternal Seraph.png' },
+  boss_time_eater: { folder: 'neutrality', file: 'The Time Eater.png' },
+  boss_void_architect: { folder: 'neutrality', file: 'The Void Architect.png' },
+  boss_null_sovereign: { folder: 'neutrality', file: 'Null Sovereign.png' },
+  boss_shattered_oracle: { folder: 'neutrality', file: 'Shattered Oracle.png' },
+  boss_abyssal_colossus: { folder: 'neutrality', file: 'Abyssal Colossus.png' },
+  boss_eternal_null: { folder: 'neutrality', file: 'Eternal Null.png' },
+  // Neutrality expansion
+  boss_neutrality_paradox_throne: { folder: 'neutrality', file: 'Paradox Throne.png' },
+  boss_neutrality_void_exchequer: { folder: 'neutrality', file: 'Void Exchequer.png' },
+  boss_neutrality_equilibrium_rex: { folder: 'neutrality', file: 'Equilibrium Rex.png' },
+  boss_neutrality_axiom_maw: { folder: 'neutrality', file: 'Axiom Maw.png' },
+  boss_neutrality_prime_judge: { folder: 'neutrality', file: 'Prime Judge of Silence.png' },
+  // Pyroabyss
+  boss_pyroabyss_cinder_leviathan: { folder: 'pyroabyss', file: 'Cinder Leviathan.png' },
+  boss_pyroabyss_ash_kings: { folder: 'pyroabyss', file: 'Ash Kings Unbound.png' },
+  boss_pyroabyss_infernal_sun: { folder: 'pyroabyss', file: 'Infernal Suncore.png' },
+  boss_pyroabyss_rift_bell: { folder: 'pyroabyss', file: 'Riftbell Catastrophe.png' },
+  boss_pyroabyss_phoenix_judge: { folder: 'pyroabyss', file: 'Phoenix Judge of the Abyss.png' },
+  // Heavenly Light
+  boss_light_aurora_throne: { folder: 'heavenly-light', file: 'Aurora Throne.png' },
+  boss_light_sanctum_breaker: { folder: 'heavenly-light', file: 'Sanctum Breaker.png' },
+  boss_light_choral_tyrant: { folder: 'heavenly-light', file: 'Choral Tyrant.png' },
+  boss_light_halo_legion: { folder: 'heavenly-light', file: 'Halo Legion Prime.png' },
+  boss_light_morning_crown: { folder: 'heavenly-light', file: 'Morning Crown Absolute.png' },
+  // Thornbound Plains
+  boss_thornbound_bleeding_road: { folder: 'thornbound-plains', file: 'Bleeding Road Matriarch.png' },
+  boss_thornbound_ragged_banner: { folder: 'thornbound-plains', file: 'Ragged Banner Host.png' },
+  boss_thornbound_cathedral_lance: { folder: 'thornbound-plains', file: 'Cathedral Lance.png' },
+  boss_thornbound_grave_hedge: { folder: 'thornbound-plains', file: 'Grave Hedge Reliquary.png' },
+  boss_thornbound_gallowcrown: { folder: 'thornbound-plains', file: 'Gallowcrown Matron.png' },
+  // Mechanical Dreams
+  boss_mech_overclock_arch: { folder: 'mechanical-dreams', file: 'Overclock Arch-Engine.png' },
+  boss_mech_furnace_mind: { folder: 'mechanical-dreams', file: 'Furnace Mind Helix.png' },
+  boss_mech_brass_tribunal: { folder: 'mechanical-dreams', file: 'Brass Tribunal.png' },
+  boss_mech_reactor_psalm: { folder: 'mechanical-dreams', file: 'Reactor Psalm Engine.png' },
+  boss_mech_primevector: { folder: 'mechanical-dreams', file: 'Primevector Thaumiel.png' },
+  // Prismatic Accord
+  boss_prismatic_mirror_regent: { folder: 'prismatic-accord', file: 'Vorthum Mirror Regent.png' },
+  boss_prismatic_fracture_hierophant: { folder: 'prismatic-accord', file: 'Fracture Road Hierophant.png' },
+  boss_prismatic_drift_leviathan: { folder: 'prismatic-accord', file: 'Drift Canopy Leviathan.png' },
+  boss_prismatic_blindwars_reliquary: { folder: 'prismatic-accord', file: 'Reliquary of Blind Wars.png' },
+  boss_prismatic_whitebeam_concordat: { folder: 'prismatic-accord', file: 'Whitebeam Concordat.png' },
 };
 
 function getBossArtUrl(keyArt: string): string | null {
-  const fileName = BOSS_ART_FILES[keyArt];
-  return fileName ? `${BOSS_ART_ROOT}/${encodeURIComponent(fileName)}` : null;
+  const artData = BOSS_ART_FILES[keyArt];
+  return artData ? `${BOSS_ART_ROOT}/${artData.folder}/${encodeURIComponent(artData.file)}` : null;
 }
 
 interface Props { onClose: () => void; }
@@ -33,6 +70,7 @@ export default function EternitysWake({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const startBossFight = useStore(s => s.startBossFight);
   const [selectedBossId, setSelectedBossId] = useState<string | null>(null);
+  const [activeBossTab, setActiveBossTab] = useState<BossCategory>('Neutrality');
 
   const now = Date.now();
 
@@ -47,10 +85,22 @@ export default function EternitysWake({ onClose }: Props) {
   }
 
   const hasSavedDecks = progress.savedDecks.length > 0;
+  const bossTabs: BossCategory[] = [
+    'Neutrality',
+    'Pyroabyss',
+    'Heavenly Light',
+    'Thornbound Plains',
+    'Mechanical Dreams',
+    'Prismatic Accord',
+  ];
+  const visibleBosses = BOSS_DEFINITIONS.filter(boss => boss.category === activeBossTab);
 
   return (
     <div style={{
-      position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 50,
+      position: 'absolute',
+      inset: 0,
+      background: 'radial-gradient(circle at 50% -8%, rgba(255, 108, 108, 0.22) 0%, rgba(255, 108, 108, 0) 35%), radial-gradient(circle at 18% 86%, rgba(149, 62, 95, 0.22) 0%, rgba(149, 62, 95, 0) 44%), repeating-linear-gradient(126deg, rgba(255, 130, 130, 0.08) 0px, rgba(255, 130, 130, 0.08) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 24px), linear-gradient(180deg, rgba(8, 4, 12, 0.985) 0%, rgba(18, 9, 20, 0.985) 100%)',
+      zIndex: 50,
       display: 'flex', flexDirection: 'column', fontFamily: 'Georgia, serif', color: '#FFF8DC',
     }}>
       {/* Header */}
@@ -63,7 +113,7 @@ export default function EternitysWake({ onClose }: Props) {
             ETERNITY'S WAKE
           </div>
           <div style={{ fontSize: 11, color: 'rgba(255,107,107,0.6)', marginTop: 2, letterSpacing: 1 }}>
-            BOSS CHALLENGES — EARN BY THE ETERNAL INFINITY CARDS
+            BOSS CHALLENGES — EARN "ETERNAL" CARDS
           </div>
         </div>
         <button onClick={onClose} style={{
@@ -75,12 +125,59 @@ export default function EternitysWake({ onClose }: Props) {
         </button>
       </div>
 
+      <div style={{
+        padding: '10px 24px 0',
+        display: 'flex',
+        gap: 8,
+        flexWrap: 'wrap',
+        flexShrink: 0,
+      }}>
+        {bossTabs.map(tab => {
+          const active = tab === activeBossTab;
+          return (
+            <button
+              key={tab}
+              onClick={() => {
+                setActiveBossTab(tab);
+                setSelectedBossId(null);
+              }}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 999,
+                border: `1px solid ${active ? 'rgba(255,107,107,0.6)' : 'rgba(255,107,107,0.28)'}`,
+                background: active ? 'rgba(255,107,107,0.16)' : 'rgba(255,107,107,0.06)',
+                color: active ? '#ff9a9a' : 'rgba(255,180,180,0.65)',
+                fontSize: 11,
+                letterSpacing: 1,
+                cursor: 'pointer',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              {tab}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Boss grid */}
       <div style={{
         flex: 1, overflowY: 'auto', padding: '24px',
         display: 'flex', flexWrap: 'wrap', gap: 20, alignContent: 'flex-start', justifyContent: 'center',
       }}>
-        {BOSS_DEFINITIONS.map(boss => {
+        {visibleBosses.length === 0 && (
+          <div style={{
+            width: '100%',
+            textAlign: 'center',
+            color: 'rgba(255,180,180,0.6)',
+            fontSize: 13,
+            fontStyle: 'italic',
+            paddingTop: 36,
+          }}>
+            No bosses added for {activeBossTab} yet.
+          </div>
+        )}
+
+        {visibleBosses.map(boss => {
           const cooldown = getCooldownRemaining(boss.id);
           const onCooldown = cooldown > 0;
           const rewardDef = CardRegistry.get(boss.rewardCardId);
@@ -117,6 +214,10 @@ export default function EternitysWake({ onClose }: Props) {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
                 <div style={{ color: 'rgba(255,150,150,0.8)' }}>HP: <span style={{ color: '#ff6b6b', fontWeight: 'bold' }}>{boss.hp.toLocaleString()}</span></div>
                 <div style={{ color: 'rgba(255,150,150,0.6)' }}>{Math.floor(BOSS_FIGHT_ROUND_SECONDS / 60)} minute round · 1 turn only</div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,180,180,0.62)' }}>
+                <div>Category: {boss.category}</div>
+                <div>Shards: {boss.firstClearShards} first / {boss.repeatClearShards} repeat</div>
               </div>
 
               {/* Reward card */}

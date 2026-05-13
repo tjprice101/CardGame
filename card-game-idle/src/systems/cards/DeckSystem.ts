@@ -1,4 +1,5 @@
 import type { DeckCard, DeckEntry, DeckState } from '@/types/game';
+import type { CardFinish } from '@/types/cards';
 
 let deckInstanceCounter = 0;
 function nextDeckId(): string {
@@ -12,15 +13,31 @@ export interface DeckValidationResult {
 }
 
 export class DeckSystem {
-  static addDeckEntry(deckList: DeckEntry[], definitionId: string, ownedCopies: number): DeckEntry[] {
+  static addDeckEntry(
+    deckList: DeckEntry[],
+    definitionId: string,
+    finish: CardFinish,
+    ownedCopies: number,
+    ownedFinishCopies = ownedCopies,
+  ): DeckEntry[] {
     const cap = Math.min(4, ownedCopies);
     if (cap <= 0) return deckList;
 
     const totalCards = deckList.reduce((sum, entry) => sum + entry.copies, 0);
     if (totalCards >= 50) return deckList;
 
-    const idx = deckList.findIndex(entry => entry.definitionId === definitionId);
-    if (idx === -1) return [...deckList, { definitionId, copies: 1 }];
+    const totalCopiesForDefinition = deckList
+      .filter(entry => entry.definitionId === definitionId)
+      .reduce((sum, entry) => sum + entry.copies, 0);
+    if (totalCopiesForDefinition >= cap) return deckList;
+
+    const totalCopiesForFinish = deckList
+      .filter(entry => entry.definitionId === definitionId && entry.finish === finish)
+      .reduce((sum, entry) => sum + entry.copies, 0);
+    if (totalCopiesForFinish >= ownedFinishCopies) return deckList;
+
+    const idx = deckList.findIndex(entry => entry.definitionId === definitionId && entry.finish === finish);
+    if (idx === -1) return [...deckList, { definitionId, copies: 1, finish }];
     if (deckList[idx].copies >= cap) return deckList;
 
     const next = [...deckList];
@@ -41,7 +58,7 @@ export class DeckSystem {
     const cards: DeckCard[] = [];
     for (const entry of deckList) {
       for (let i = 0; i < entry.copies; i++) {
-        cards.push({ instanceId: nextDeckId(), definitionId: entry.definitionId });
+        cards.push({ instanceId: nextDeckId(), definitionId: entry.definitionId, finish: entry.finish });
       }
     }
     return DeckSystem.shuffle(cards);

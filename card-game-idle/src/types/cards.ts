@@ -3,6 +3,7 @@ import type { CardEffect, ChaosPassiveEffect, ChaosRitualEffect } from './effect
 
 export type CardType = 'Seeker' | 'Chaos' | 'Seraphim' | 'Angel';
 export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal';
+export type CardFinish = 'normal' | 'holo';
 
 export const SERAPHIM_BONUS_TYPES = [
   // Neutrality bonus types
@@ -63,6 +64,7 @@ export interface AngelInstance {
   readonly type: 'Angel';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly finish: CardFinish;
   level: number;
   cardsPlayedSinceSummon: number;
   activated: boolean;
@@ -99,6 +101,7 @@ export interface ChaosInstance {
   readonly type: 'Chaos';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly finish: CardFinish;
   readonly level: 1;
   durability: number;               // remaining plays before expiry
   readonly maxDurability: number;
@@ -124,6 +127,7 @@ export interface SeekerInstance {
   readonly type: 'Seeker';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly finish: CardFinish;
   level: number;
 }
 
@@ -147,6 +151,7 @@ export interface SeraphimInstance {
   readonly type: 'Seraphim';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly finish: CardFinish;
   level: number;
   isActive: boolean;
   boardSlot: 0 | 1 | 2 | 3 | 4 | null;

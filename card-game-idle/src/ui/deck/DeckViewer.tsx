@@ -11,23 +11,28 @@ const RARITY_COLORS: Record<string, string> = {
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
-    position: 'absolute', inset: 0, background: warmTheme.overlay, zIndex: 50,
+    position: 'absolute', inset: 0,
+    background: 'radial-gradient(circle at 12% 10%, rgba(221, 195, 146, 0.18) 0%, rgba(221, 195, 146, 0) 34%), radial-gradient(circle at 86% 84%, rgba(92, 127, 163, 0.18) 0%, rgba(92, 127, 163, 0) 40%), repeating-linear-gradient(115deg, rgba(227, 205, 163, 0.07) 0px, rgba(227, 205, 163, 0.07) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 26px), linear-gradient(180deg, rgba(19, 23, 26, 0.97) 0%, rgba(27, 34, 38, 0.97) 100%)',
+    zIndex: 50,
     display: 'flex', flexDirection: 'column', pointerEvents: 'auto',
-    fontFamily: 'Georgia, serif', color: warmTheme.text,
+    fontFamily: 'Georgia, serif', color: '#ead9c0',
   },
   header: {
     padding: '14px 24px', borderBottom: `1px solid ${warmTheme.border}`,
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+    background: 'rgba(9, 14, 20, 0.42)',
   },
-  title: { fontSize: 20, fontWeight: 'bold', color: warmTheme.accentDeep, letterSpacing: 2 },
+  title: { fontSize: 20, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 2 },
   body: { display: 'flex', flex: 1, overflow: 'hidden' },
   deckList: {
     width: 240, borderRight: `1px solid ${warmTheme.border}`,
     display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    background: 'rgba(9, 14, 20, 0.36)',
   },
   deckListHeader: {
     padding: '10px 14px', fontSize: 9, letterSpacing: 2,
-    textTransform: 'uppercase', opacity: 0.5, borderBottom: `1px solid ${warmTheme.border}`,
+    textTransform: 'uppercase', opacity: 0.85, borderBottom: `1px solid ${warmTheme.border}`,
+    color: '#f0bd78',
     flexShrink: 0,
   },
   deckListScroll: { flex: 1, overflowY: 'auto', padding: '8px 0' },
@@ -37,28 +42,29 @@ const styles: Record<string, React.CSSProperties> = {
     borderBottom: `1px solid ${warmTheme.border}`,
     transition: 'background 0.12s',
   },
-  deckRowActive: { background: warmTheme.surfaceMuted },
+  deckRowActive: { background: 'rgba(255, 208, 140, 0.16)' },
   deckName: {
-    flex: 1, fontSize: 12, color: warmTheme.text,
+    flex: 1, fontSize: 12, color: '#ead9c0',
     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
   },
-  deckMeta: { fontSize: 10, color: warmTheme.textMuted },
+  deckMeta: { fontSize: 10, color: 'rgba(234, 217, 192, 0.72)' },
   preview: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
   previewHeader: {
     padding: '12px 18px', borderBottom: `1px solid ${warmTheme.border}`,
     display: 'flex', alignItems: 'baseline', gap: 10, flexShrink: 0,
+    background: 'rgba(9, 14, 20, 0.3)',
   },
-  previewTitle: { fontSize: 16, fontWeight: 'bold', color: warmTheme.accentDeep },
+  previewTitle: { fontSize: 16, fontWeight: 'bold', color: '#f0bd78' },
   previewScroll: { flex: 1, overflowY: 'auto', padding: 16 },
   sectionHeader: {
     fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-    opacity: 0.45, marginBottom: 6, marginTop: 12,
+    opacity: 0.9, marginBottom: 6, marginTop: 12, color: '#f0bd78',
   },
   cardRow: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     padding: '4px 0', borderBottom: `1px solid ${warmTheme.border}`,
   },
-  cardName: { fontSize: 11, color: warmTheme.text, flex: 1 },
+  cardName: { fontSize: 11, color: '#ead9c0', flex: 1 },
   cardRarity: { fontSize: 10, marginRight: 8 },
   cardCopies: { fontSize: 11, color: warmTheme.accentDeep, minWidth: 24, textAlign: 'right' },
   footer: {
@@ -72,7 +78,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   closeBtn: {
     padding: '8px 18px', borderRadius: 10, border: `1px solid ${warmTheme.border}`,
-    background: warmTheme.surface, color: warmTheme.textMuted, fontSize: 12,
+    background: 'rgba(255, 237, 213, 0.94)', color: '#5f3a17', fontSize: 12,
     cursor: 'pointer', fontFamily: 'Georgia, serif',
   },
   emptyPreview: {

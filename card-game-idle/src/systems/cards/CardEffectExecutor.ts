@@ -31,7 +31,7 @@ function cloneBoard(board: BoardState): BoardState {
 
 export class CardEffectExecutor {
   static execute(
-    deckCard: { instanceId: string; definitionId: string },
+    deckCard: { instanceId: string; definitionId: string; finish?: import('@/types/cards').CardFinish },
     turn: TurnState,
     board: BoardState,
     deck: DeckState,
@@ -138,6 +138,43 @@ export class CardEffectExecutor {
             mutableTurn.embers += gain;
           } else {
             mutableTurn.radiance += gain;
+          }
+          break;
+        }
+
+        // ── Thornbound / Mechanical Dreams resources ───────────────────────────
+        case 'trail_gain':
+          mutableTurn.trail += effect.value * multiplier;
+          break;
+
+        case 'trail_spend': {
+          if (effect.value >= 9999) {
+            mutableTurn.trail = 0;
+          } else {
+            if (mutableTurn.trail < effect.value) return false;
+            mutableTurn.trail -= effect.value;
+          }
+          break;
+        }
+
+        case 'strain_gain':
+          mutableTurn.strain += effect.value * multiplier;
+          break;
+
+        case 'strain_vent': {
+          if (effect.value >= 9999) {
+            mutableTurn.strain = 0;
+          } else {
+            mutableTurn.strain = Math.max(0, mutableTurn.strain - effect.value);
+          }
+          break;
+        }
+
+        case 'overclock': {
+          mutableTurn.strain += effect.strain * multiplier;
+          for (const subEffect of effect.then) {
+            const ok = processEffect(subEffect);
+            if (!ok) return false;
           }
           break;
         }
@@ -260,7 +297,7 @@ export class CardEffectExecutor {
             const lastDef = CardRegistry.get(lastId);
             if (lastDef?.type === 'Seeker') {
               const echoResult = CardEffectExecutor.execute(
-                { instanceId: 'echo', definitionId: lastId },
+                { instanceId: 'echo', definitionId: lastId, finish: 'normal' },
                 mutableTurn, mutableBoard, mutableDeck
               );
               if (echoResult.canPlay) {
@@ -388,7 +425,14 @@ export class CardEffectExecutor {
       mutableDeck = {
         ...mutableDeck,
         hand: mutableDeck.hand.filter(c => c.instanceId !== deckCard.instanceId),
-        discardPile: [...mutableDeck.discardPile, { instanceId: deckCard.instanceId, definitionId: deckCard.definitionId }],
+        discardPile: [
+          ...mutableDeck.discardPile,
+          {
+            instanceId: deckCard.instanceId,
+            definitionId: deckCard.definitionId,
+            finish: deckCard.finish ?? 'normal',
+          },
+        ],
       };
     }
 
@@ -415,6 +459,9 @@ export class CardEffectExecutor {
     switch (condition.type) {
       case 'radiance_gte':      return turn.radiance >= condition.value;
       case 'ember_gte':         return turn.embers >= condition.value;
+      case 'trail_gte':         return turn.trail >= condition.value;
+      case 'strain_gte':        return turn.strain >= condition.value;
+      case 'strain_lte':        return turn.strain <= condition.value;
       case 'cards_played_gte':  return turn.cardsPlayedThisTurn >= condition.value;
       case 'first_card_this_turn': return turn.cardsPlayedThisTurn === 0;
       case 'seraphim_active_gte':
@@ -474,6 +521,7 @@ export class CardEffectExecutor {
       if (effect.type === 'discard_draw' && handSize - 1 < effect.discard) return false;
       if (effect.type === 'radiance_spend' && effect.value < 9999 && turn.radiance < effect.value) return false;
       if (effect.type === 'ember_spend' && effect.value < 9999 && turn.embers < effect.value) return false;
+      if (effect.type === 'trail_spend' && effect.value < 9999 && turn.trail < effect.value) return false;
     }
     return true;
   }

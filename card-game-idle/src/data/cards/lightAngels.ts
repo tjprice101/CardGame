@@ -57,7 +57,7 @@ export const lightAngels: AngelDefinition[] = [
     type: 'Angel',
     element: 'Light',
     rarity: 'Legendary',
-    name: 'Solarius, Emberthorn Ascendant',
+    name: 'Solarius Emberthorn Ascendant',
     description: 'Summon: sacrifice Aurelion Thorncrowned + Thorncrown + Cinderherald. Gain 10 Radiance, draw 3, and set chain multiplier to ×1.8. After 5 cards: right-click to double Radiance, draw 3, empower the next card, and gain +150 Oblivion. While on board: +24 Oblivion per card played.',
     artKey: 'angel_light_solarius',
     summonCost: ['angel-light-aurelion', 'ser-light-throne', 'ser-light-herald'],

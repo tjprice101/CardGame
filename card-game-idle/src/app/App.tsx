@@ -24,6 +24,7 @@ export default function App() {
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
+  const endTurn = useStore(s => s.endTurn);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -45,14 +46,15 @@ export default function App() {
   const noDecklist = deck.deckList.length === 0;
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showEternitysWake;
 
   const menuButtonStyle: React.CSSProperties = {
     padding: '8px 16px',
     fontFamily: 'Georgia, serif',
     fontSize: 12,
-    background: warmTheme.surfaceStrong,
+    background: warmTheme.button,
     border: `1px solid ${warmTheme.borderStrong}`,
-    color: warmTheme.text,
+    color: warmTheme.accentDeep,
     borderRadius: 10,
     cursor: 'pointer',
     letterSpacing: 1,
@@ -60,22 +62,34 @@ export default function App() {
   };
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', background: warmTheme.appBackground, color: warmTheme.text }}>
+    <div style={{ position: 'relative', width: '100%', height: '100%', background: warmTheme.appBackground, color: warmTheme.text, overflow: 'hidden' }}>
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+      <div className="game-bg-pattern game-bg-pattern--grain" />
+      <div className="game-bg-pattern game-bg-pattern--sigils" />
 
-      {/* Boss fight HP bar overlay — shown during fights */}
-      <BossFightArena />
+      {/* Boss fight HP bar overlay — hidden while full-screen menus are open */}
+      {!isMenuOpen && <BossFightArena />}
 
       {/* HUD overlay */}
-      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
-        <HUD />
-      </div>
+      {!isMenuOpen && (
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+          <HUD />
+        </div>
+      )}
 
-      {/* Top-right buttons (visible when idle and not in a boss fight) */}
+      {/* Top-right navigation buttons (visible when idle and not in a boss fight) */}
       {idlePhase && !inBossFight && !showDeckBuilder && !showCardStore && !showDeckViewer && !showSettings && !showEternitysWake && (
         <div style={{
-          position: 'absolute', top: 16, right: 16, zIndex: 20, pointerEvents: 'auto',
-          display: 'flex', gap: 8,
+          position: 'absolute',
+          top: 16,
+          right: 16,
+          zIndex: 20,
+          pointerEvents: 'auto',
+          display: 'flex',
+          gap: 8,
+          maxWidth: 'min(560px, calc(100vw - 32px))',
+          justifyContent: 'flex-end',
+          flexWrap: 'wrap',
         }}>
           <button
             onClick={() => setShowCardStore(true)}
@@ -99,11 +113,24 @@ export default function App() {
           >
             My Decks
           </button>
+        </div>
+      )}
+
+      {/* Deck tools row kept separate from navigation to avoid overlap */}
+      {idlePhase && !inBossFight && !showDeckBuilder && !showCardStore && !showDeckViewer && !showSettings && !showEternitysWake && (
+        <div style={{
+          position: 'absolute',
+          top: 66,
+          right: 16,
+          zIndex: 20,
+          pointerEvents: 'auto',
+          display: 'flex',
+          gap: 8,
+        }}>
           <button
             onClick={() => setShowDeckBuilder(true)}
             style={{
               ...menuButtonStyle,
-              background: warmTheme.button,
               border: `1px solid ${warmTheme.borderStrong}`,
               color: warmTheme.accentDeep,
             }}
@@ -161,6 +188,37 @@ export default function App() {
           <BossResultModal />
         </div>
       </div>
+
+      {/* Emergency end turn — intentionally above menu overlays */}
+      {turn.phase === 'playing' && !inBossFight && !isMenuOpen && (
+        <div style={{
+          position: 'absolute',
+          top: 'clamp(48px, 6vh, 72px)',
+          left: '50%',
+          transform: 'translateX(calc(-50% - clamp(160px, 22vw, 240px)))',
+          zIndex: 70,
+          pointerEvents: 'auto',
+        }}>
+          <button
+            onClick={endTurn}
+            style={{
+              padding: '8px 18px',
+              borderRadius: 999,
+              border: `1px solid ${warmTheme.danger}`,
+              background: 'rgba(184,92,79,0.2)',
+              color: warmTheme.danger,
+              fontFamily: 'Georgia, serif',
+              fontSize: 11,
+              letterSpacing: 1.4,
+              cursor: 'pointer',
+              boxShadow: warmTheme.shadow,
+            }}
+            title="Force end the current turn"
+          >
+            Emergency End Turn
+          </button>
+        </div>
+      )}
 
       {/* Settings modal */}
       {showSettings && (

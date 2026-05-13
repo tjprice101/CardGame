@@ -4,13 +4,14 @@ import { warmTheme } from '@/ui/theme';
 const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'absolute',
-    bottom: 160,
+    top: 124,
     right: 16,
     display: 'flex',
     flexDirection: 'column',
     gap: 6,
     pointerEvents: 'none',
     fontFamily: 'Georgia, serif',
+    zIndex: 14,
   },
   pill: {
     display: 'flex',

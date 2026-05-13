@@ -4,13 +4,14 @@ import { warmTheme } from '@/ui/theme';
 const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'absolute',
-    bottom: 16,
+    top: 278,
     right: 16,
     display: 'flex',
     flexDirection: 'column',
     gap: 8,
     pointerEvents: 'auto',
     fontFamily: 'Georgia, serif',
+    zIndex: 15,
   },
   btn: {
     padding: '12px 28px',

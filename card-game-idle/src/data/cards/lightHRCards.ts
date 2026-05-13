@@ -224,7 +224,7 @@ export const lightHRCards: SeekerDefinition[] = [
     type: 'Seeker',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Flashfire Judgment',
+    name: 'Flashfire Judgement',
     description: 'Gain 1 Radiance.',
     artKey: 'hr_light_hastened_judgment',
     effects: [

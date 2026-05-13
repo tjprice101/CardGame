@@ -1,8 +1,17 @@
-import type { DeckEntry } from '@/types/game';
+import type { CardFinish } from '@/types/cards';
+import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
+
+function normalDeckEntry(definitionId: string, copies: DeckEntry['copies']): DeckEntry {
+  return { definitionId, copies, finish: 'normal' };
+}
+
+function normalExtraDeckEntry(definitionId: string, finish: CardFinish = 'normal'): ExtraDeckEntry {
+  return { definitionId, finish };
+}
 
 // Angels are held in the extra deck — not shuffled into the main draw pile.
-export const STARTER_EXTRA_DECK: string[] = [
-  'angel-neutral-beginning',
+export const STARTER_EXTRA_DECK: ExtraDeckEntry[] = [
+  normalExtraDeckEntry('angel-neutral-beginning'),
 ];
 
 // 50-card Neutrality Standard deck
@@ -11,27 +20,27 @@ export const STARTER_EXTRA_DECK: string[] = [
 // Seeker (28): tuned for consistent angel summon + Chaos board presence
 export const STARTER_DECK_LIST: DeckEntry[] = [
   // Seraphim
-  { definitionId: 'ser-neutral-null',        copies: 4 },
-  { definitionId: 'ser-neutral-void',        copies: 3 },
-  { definitionId: 'ser-neutral-balance',     copies: 2 },
-  { definitionId: 'ser-neutral-equilibrium', copies: 2 },
-  { definitionId: 'ser-neutral-still',       copies: 1 },
+  normalDeckEntry('ser-neutral-null', 4),
+  normalDeckEntry('ser-neutral-void', 3),
+  normalDeckEntry('ser-neutral-balance', 2),
+  normalDeckEntry('ser-neutral-equilibrium', 2),
+  normalDeckEntry('ser-neutral-still', 1),
   // Chaos
-  { definitionId: 'chaos-neutral-null-veil',         copies: 3 },
-  { definitionId: 'chaos-neutral-void-shroud',       copies: 2 },
-  { definitionId: 'chaos-neutral-balance-mantle',    copies: 2 },
-  { definitionId: 'chaos-neutral-equilibrium-ward',  copies: 2 },
-  { definitionId: 'chaos-neutral-still-shell',       copies: 1 },
+  normalDeckEntry('chaos-neutral-null-veil', 3),
+  normalDeckEntry('chaos-neutral-void-shroud', 2),
+  normalDeckEntry('chaos-neutral-balance-mantle', 2),
+  normalDeckEntry('chaos-neutral-equilibrium-ward', 2),
+  normalDeckEntry('chaos-neutral-still-shell', 1),
   // Seeker
-  { definitionId: 'seek-neutral-null-seek',      copies: 4 },
-  { definitionId: 'seek-neutral-seraph-recall',  copies: 4 },
-  { definitionId: 'seek-neutral-neutral-cycle',  copies: 3 },
-  { definitionId: 'seek-neutral-measured-seek',  copies: 3 },
-  { definitionId: 'seek-neutral-void-surge',     copies: 3 },
-  { definitionId: 'seek-neutral-still-pulse',    copies: 3 },
-  { definitionId: 'seek-neutral-chain-pulse',    copies: 3 },
-  { definitionId: 'seek-neutral-chaos-recall',   copies: 3 },
-  { definitionId: 'seek-neutral-deep-seek',      copies: 2 },
+  normalDeckEntry('seek-neutral-null-seek', 4),
+  normalDeckEntry('seek-neutral-seraph-recall', 4),
+  normalDeckEntry('seek-neutral-neutral-cycle', 3),
+  normalDeckEntry('seek-neutral-measured-seek', 3),
+  normalDeckEntry('seek-neutral-void-surge', 3),
+  normalDeckEntry('seek-neutral-still-pulse', 3),
+  normalDeckEntry('seek-neutral-chain-pulse', 3),
+  normalDeckEntry('seek-neutral-chaos-recall', 3),
+  normalDeckEntry('seek-neutral-deep-seek', 2),
 ];
 
 // Full Neutrality collection — enough copies to fill the starter deck

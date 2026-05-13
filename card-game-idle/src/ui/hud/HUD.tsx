@@ -3,6 +3,8 @@ import AngelStatPanel from './AngelStatPanel';
 import HandDisplay from './HandDisplay';
 import RadianceDisplay from './RadianceDisplay';
 import EmberDisplay from './EmberDisplay';
+import TrailDisplay from './TrailDisplay';
+import StrainDisplay from './StrainDisplay';
 import DeckStatus from './DeckStatus';
 import TurnControls from './TurnControls';
 import BoardDisplay from './BoardDisplay';
@@ -17,6 +19,8 @@ export default function HUD() {
       <AngelStatPanel />
       <RadianceDisplay />
       <EmberDisplay />
+      <TrailDisplay />
+      <StrainDisplay />
       <DeckStatus />
       <TurnControls />
       <HandDisplay />

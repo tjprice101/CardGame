@@ -47,11 +47,11 @@ export const neutralityStarterChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Mantle',
-    description: 'On play: search your deck for a Seraphim in an adjacent front slot and add it to your hand. While active: adjacent Seraphim gain +30 Oblivion per card played. On expiry: +30 Oblivion. Expires after 5 plays.',
+    description: 'On play: search your deck for a Seraphim in an adjacent front slot and add it to your hand. While active: adjacent Seraphim gain +18 Oblivion per card played. On expiry: +30 Oblivion. Expires after 5 plays.',
     artKey: 'chaos_neutral_balance_mantle',
     maxDurability: 5,
     effects: [
-      { type: 'chaos_oblivion_per_card', value: 30 },
+      { type: 'chaos_oblivion_per_card', value: 18 },
     ],
     enthalpy: [
       { type: 'search_adjacent_seraphim' },
@@ -86,11 +86,11 @@ export const neutralityStarterChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Shell',
-    description: 'On play: +50 Oblivion. While active: adjacent Seraphim\'s Oblivion-per-card bonus is doubled. On expiry: draw 2 cards. Expires after 6 plays.',
+    description: 'On play: +50 Oblivion. While active: adjacent Seraphim\'s Oblivion-per-card bonus is increased by 60%. On expiry: draw 2 cards. Expires after 6 plays.',
     artKey: 'chaos_neutral_still_shell',
     maxDurability: 6,
     effects: [
-      { type: 'chaos_seraphim_amp', value: 2 },
+      { type: 'chaos_seraphim_amp', value: 1.6 },
     ],
     enthalpy: [
       { type: 'oblivion_flat', value: 50 },

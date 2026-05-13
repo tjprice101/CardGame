@@ -1,4 +1,4 @@
-export const ELEMENTS = ['Neutrality', 'Light', 'Dark', 'Fire', 'Water', 'Earth', 'Wind'] as const;
+export const ELEMENTS = ['Neutrality', 'Light', 'Dark', 'Fire', 'Water', 'Earth', 'Wind', 'Thornbound', 'Mechanical', 'Prismatic'] as const;
 export type Element = typeof ELEMENTS[number];
 
 export interface ParticleConfig {

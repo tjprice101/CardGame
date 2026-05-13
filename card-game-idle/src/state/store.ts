@@ -2,10 +2,10 @@ import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
-  DeckState, GameState, ProgressState, SavedDeck, SettingsState, TurnState,
+  DeckState, ExtraDeckEntry, GameState, ProgressState, SavedDeck, SettingsState, TurnState,
 } from '@/types/game';
-import type { AngelInstance, AngelDefinition, ChaosDefinition, ChaosInstance, SeraphimInstance } from '@/types/cards';
-import type { ChaosRitualEffect } from '@/types/effects';
+import type { AngelDefinition, AngelInstance, CardFinish, ChaosDefinition, ChaosInstance, SeraphimInstance } from '@/types/cards';
+import type { CardEffect, ChaosRitualEffect } from '@/types/effects';
 import type { BossFightState, SavedGameState } from '@/types/bossFight';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
@@ -15,6 +15,7 @@ import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { PackSystem } from '@/systems/cards/PackSystem';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
+import { canConvertCardToHolo, getHolofoilConversionCost } from '@/systems/progression/HolofoilSystem';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { eventBus } from '@/core/events/EventBus';
@@ -45,6 +46,8 @@ const defaultTurn: TurnState = {
   phase: 'idle',
   radiance: 0,
   embers: 0,
+  trail: 0,
+  strain: 0,
   cardsPlayedThisTurn: 0,
   chainMultiplier: 1.0,
   chainFloor: 1.0,
@@ -57,9 +60,12 @@ const defaultTurn: TurnState = {
 
 const defaultProgress: ProgressState = {
   oblivion: 0,
+  aberratedShards: 0,
   prestige: 0,
   totalCardsPlayed: 0,
   collection: { ...STARTER_COLLECTION },
+  holoCollection: {},
+  bossClearCounts: {},
   savedDecks: [
     {
       id: 'starter-neutrality',
@@ -91,7 +97,7 @@ const defaultBossFight: BossFightState = {
 };
 
 export const defaultGameState: GameState = {
-  version: 5,
+  version: 6,
   startedAt: NOW,
   lastSavedAt: NOW,
   board: defaultBoard,
@@ -110,12 +116,12 @@ interface StoreActions {
   removeSeraphim: (slot: 0 | 1 | 2 | 3 | 4) => void;
   placeChaos: (backSlotIndex: 0 | 1 | 2 | 3, instanceId?: string) => void;
   removeChaos: (backSlotIndex: 0 | 1 | 2 | 3) => void;
-  summonAngel: (definitionId: string) => void;
+  summonAngel: (definitionId: string, finish?: CardFinish) => void;
   activateAngel: (slot: 0 | 1 | 2 | 3 | 4) => void;
-  initDeck: (deckList: DeckEntry[], extraDeck?: string[]) => void;
+  initDeck: (deckList: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => void;
   saveDeckList: (deckList: DeckEntry[]) => void;
-  saveCurrentDeck: (name: string, deckList?: DeckEntry[], extraDeck?: string[]) => string;
-  updateSavedDeck: (id: string, deckList: DeckEntry[], extraDeck?: string[]) => void;
+  saveCurrentDeck: (name: string, deckList?: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => string;
+  updateSavedDeck: (id: string, deckList: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => void;
   loadSavedDeck: (id: string) => void;
   deleteSavedDeck: (id: string) => void;
   beginTurn: () => void;
@@ -129,6 +135,7 @@ interface StoreActions {
   openPack: (packId: string) => string[] | null;
   openBox: (packId: string) => string[] | null;
   openCase: (packId: string) => string[] | null;
+  convertCardToHolo: (definitionId: string) => boolean;
   updateSettings: (patch: Partial<SettingsState>) => void;
   loadState: (state: GameState) => void;
   resetToDefault: () => void;
@@ -146,15 +153,47 @@ function recompute(state: Store): void {
   eventBus.emit('board:recomputed', state.computedStats);
 }
 
-function cloneDeckList(deckList: DeckEntry[]): DeckEntry[] {
-  return deckList.map(entry => ({ ...entry }));
+function normalizeFinish(finish?: CardFinish): CardFinish {
+  return finish === 'holo' ? 'holo' : 'normal';
 }
 
-function cloneExtraDeck(extraDeck?: string[]): string[] {
-  return extraDeck ? [...extraDeck] : [];
+function createDeckEntry(definitionId: string, copies: DeckEntry['copies'], finish: CardFinish = 'normal'): DeckEntry {
+  return { definitionId, copies, finish };
 }
 
-function createDeckState(deckList: DeckEntry[], extraDeck?: string[]): DeckState {
+function createExtraDeckEntry(definitionId: string, finish: CardFinish = 'normal'): ExtraDeckEntry {
+  return { definitionId, finish };
+}
+
+function cloneDeckList(deckList: Array<DeckEntry | { definitionId: string; copies: DeckEntry['copies']; finish?: CardFinish }>): DeckEntry[] {
+  return deckList.map(entry => createDeckEntry(entry.definitionId, entry.copies, normalizeFinish(entry.finish)));
+}
+
+function cloneExtraDeck(extraDeck?: Array<ExtraDeckEntry | string>): ExtraDeckEntry[] {
+  return extraDeck
+    ? extraDeck.map(entry => typeof entry === 'string'
+      ? createExtraDeckEntry(entry)
+      : createExtraDeckEntry(entry.definitionId, normalizeFinish(entry.finish)))
+    : [];
+}
+
+function cloneDeckCards(cards: Array<DeckCard | { instanceId: string; definitionId: string; finish?: CardFinish }>): DeckCard[] {
+  return cards.map(card => ({
+    instanceId: card.instanceId,
+    definitionId: card.definitionId,
+    finish: normalizeFinish(card.finish),
+  }));
+}
+
+function toDeckCard(card: { instanceId: string; definitionId: string; finish?: CardFinish }): DeckCard {
+  return {
+    instanceId: card.instanceId,
+    definitionId: card.definitionId,
+    finish: normalizeFinish(card.finish),
+  };
+}
+
+function createDeckState(deckList: DeckEntry[], extraDeck?: Array<ExtraDeckEntry | string>): DeckState {
   const nextDeckList = cloneDeckList(deckList);
   return {
     deckList: nextDeckList,
@@ -165,12 +204,24 @@ function createDeckState(deckList: DeckEntry[], extraDeck?: string[]): DeckState
   };
 }
 
-function addCollectionCard(progress: ProgressState, definitionId: string): void {
+function addCollectionCard(progress: ProgressState, definitionId: string, finish: CardFinish = 'normal'): void {
   const definition = CardRegistry.get(definitionId);
   const nextCopies = (progress.collection[definitionId] ?? 0) + 1;
   progress.collection[definitionId] = definition?.rarity === 'Eternal'
     ? nextCopies
     : Math.min(nextCopies, 4);
+
+  if (finish === 'holo') {
+    const nextHoloCopies = (progress.holoCollection[definitionId] ?? 0) + 1;
+    progress.holoCollection[definitionId] = Math.min(nextHoloCopies, progress.collection[definitionId]);
+  }
+}
+
+function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEFINITIONS)[number]): void {
+  const priorClears = progress.bossClearCounts[boss.id] ?? 0;
+  progress.bossClearCounts[boss.id] = priorClears + 1;
+  progress.aberratedShards += priorClears === 0 ? boss.firstClearShards : boss.repeatClearShards;
+  addCollectionCard(progress, boss.rewardCardId, 'holo');
 }
 
 // ── Boss fight helpers ────────────────────────────────────────────────────────
@@ -192,7 +243,7 @@ function completeBossFight(s: Store, victory: boolean): void {
   if (victory && bossId) {
     const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
     if (boss) {
-      addCollectionCard(s.progress, boss.rewardCardId);
+      awardBossVictoryRewards(s.progress, boss);
     }
   }
 
@@ -237,6 +288,74 @@ function canEmbraceInfinite(state: Pick<GameState, 'deck' | 'turn'>): boolean {
     && state.deck.hand.length >= EMBRACE_INFINITE_MIN_HAND;
 }
 
+function effectCanDraw(effect: CardEffect | ChaosRitualEffect): boolean {
+  switch (effect.type) {
+    case 'draw':
+    case 'discard_draw':
+    case 'look_top_take':
+    case 'look_top_take_drop':
+    case 'look_top_take_type':
+    case 'search_deck_by_type':
+    case 'salvage_by_type':
+    case 'salvage_any':
+    case 'search_adjacent_seraphim':
+      return true;
+    case 'conditional':
+      return effect.then.some(sub => effectCanDraw(sub));
+    case 'overclock':
+      return effect.then.some(sub => effectCanDraw(sub));
+    default:
+      return false;
+  }
+}
+
+function cardCanDraw(definitionId: string): boolean {
+  const def = CardRegistry.get(definitionId);
+  if (!def) return false;
+  if (def.type === 'Seeker') return def.effects.some(effect => effectCanDraw(effect));
+  if (def.type === 'Seraphim') return def.onPlayEffects.some(effect => effectCanDraw(effect));
+  if (def.type === 'Chaos') {
+    const enthalpy = def.enthalpy ?? [];
+    const entropy = def.entropy ?? [];
+    return enthalpy.some(effect => effectCanDraw(effect)) || entropy.some(effect => effectCanDraw(effect));
+  }
+  return false;
+}
+
+function endTurnInternal(s: Store): void {
+  if (s.turn.phase !== 'playing') return;
+  if (s.bossFight.mode === 'active') {
+    completeBossFight(s, false);
+    return;
+  }
+  // Seraphim → discard; Angels → cleared from board (extra deck, not discarded)
+  for (let i = 0; i < s.board.frontSlots.length; i++) {
+    const slot = s.board.frontSlots[i];
+    if (slot?.type === 'Seraphim') {
+      s.deck.discardPile.push(toDeckCard(slot));
+    }
+    (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[i] = null;
+  }
+  // All Chaos → discard at turn end
+  for (let i = 0; i < s.board.backSlots.length; i++) {
+    const chaos = s.board.backSlots[i];
+    if (chaos) {
+      s.deck.discardPile.push(toDeckCard(chaos));
+      s.board.backSlots[i] = null;
+    }
+  }
+  for (const card of s.deck.hand) s.deck.discardPile.push(card);
+  s.deck.hand = [];
+  if (s.deck.discardPile.length > 0) {
+    s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
+    s.deck.discardPile = [];
+  }
+  s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
+  s.board.activeBoardEffects = [];
+  s.turn = { ...defaultTurn, phase: 'idle' };
+  recompute(s);
+}
+
 function countFrontDefinitionIds(board: BoardState): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const slot of board.frontSlots) {
@@ -246,15 +365,41 @@ function countFrontDefinitionIds(board: BoardState): Record<string, number> {
   return counts;
 }
 
-function countExtraDeckCopies(extraDeck: string[], definitionId: string): number {
-  return extraDeck.filter(id => id === definitionId).length;
+function countExtraDeckCopies(extraDeck: ExtraDeckEntry[], definitionId: string, finish?: CardFinish): number {
+  return extraDeck.filter(entry => entry.definitionId === definitionId && (finish === undefined || entry.finish === finish)).length;
 }
 
-function hasAvailableAngelCopy(board: BoardState, extraDeck: string[], definitionId: string): boolean {
-  const copiesOnBoard = board.frontSlots.filter(
-    slot => slot?.type === 'Angel' && slot.definitionId === definitionId
+function countAngelsOnBoard(board: BoardState, definitionId: string, finish?: CardFinish): number {
+  return board.frontSlots.filter(
+    slot => slot?.type === 'Angel' && slot.definitionId === definitionId && (finish === undefined || slot.finish === finish)
   ).length;
-  return copiesOnBoard < countExtraDeckCopies(extraDeck, definitionId);
+}
+
+function getAvailableAngelEntry(
+  board: BoardState,
+  extraDeck: ExtraDeckEntry[],
+  definitionId: string,
+  preferredFinish?: CardFinish,
+): ExtraDeckEntry | null {
+  const matching = extraDeck.filter(entry => entry.definitionId === definitionId);
+  if (matching.length === 0) return null;
+
+  const orderedFinishes: CardFinish[] = [];
+  if (preferredFinish) orderedFinishes.push(preferredFinish);
+  for (const entry of matching) {
+    if (!orderedFinishes.includes(entry.finish)) {
+      orderedFinishes.push(entry.finish);
+    }
+  }
+
+  for (const finish of orderedFinishes) {
+    const copiesOnBoard = countAngelsOnBoard(board, definitionId, finish);
+    if (copiesOnBoard < countExtraDeckCopies(extraDeck, definitionId, finish)) {
+      return createExtraDeckEntry(definitionId, finish);
+    }
+  }
+
+  return null;
 }
 
 function incrementAngelProgress(board: BoardState): void {
@@ -353,7 +498,7 @@ function tickChaosDurability(s: Store): void {
       if (expiredDef?.entropy?.length) {
         fireChaosRitual(s, expiredDef.entropy, i as 0 | 1 | 2 | 3);
       }
-      s.deck.discardPile.push({ instanceId: chaos.instanceId, definitionId: chaos.definitionId });
+      s.deck.discardPile.push(toDeckCard(chaos));
       s.board.backSlots[i] = null;
       const stillActive = s.board.frontSlots.some(
         sl => sl?.type === 'Seraphim' && (sl as SeraphimInstance).isActive && sl.definitionId === 'ser-neutral-still'
@@ -419,7 +564,7 @@ export const useStore = create<Store>()(
       set(s => {
         const prevInSlot = s.board.frontSlots[slot];
         if (prevInSlot) {
-          s.deck.discardPile.push({ instanceId: prevInSlot.instanceId, definitionId: prevInSlot.definitionId });
+          s.deck.discardPile.push(toDeckCard(prevInSlot));
         }
         const def = ScoreSystem.getDefinition(deckCard.definitionId);
         const seraphimInst: SeraphimInstance = {
@@ -428,6 +573,7 @@ export const useStore = create<Store>()(
           type: 'Seraphim',
           element: def?.type === 'Seraphim' ? def.element : 'Neutrality',
           rarity: def?.type === 'Seraphim' ? def.rarity : 'Common',
+          finish: deckCard.finish,
           level: 1,
           isActive: false,
           boardSlot: slot,
@@ -468,7 +614,7 @@ export const useStore = create<Store>()(
           eventBus.emit('seraphim:synergy-lost', { slot, instanceId: occupant.instanceId });
         }
         if (occupant) {
-          s.deck.discardPile.push({ instanceId: occupant.instanceId, definitionId: occupant.definitionId });
+          s.deck.discardPile.push(toDeckCard(occupant));
         }
         s.board.frontSlots[slot] = null;
         recompute(s);
@@ -492,6 +638,7 @@ export const useStore = create<Store>()(
           type: 'Seraphim',
           element: def.element,
           rarity: def.rarity,
+          finish: deckCard.finish,
           level: 1,
           isActive: false,
           boardSlot: targetSlot,
@@ -534,7 +681,7 @@ export const useStore = create<Store>()(
 
         const existing = s.board.backSlots[backSlotIndex];
         if (existing) {
-          s.deck.discardPile.push({ instanceId: existing.instanceId, definitionId: existing.definitionId });
+          s.deck.discardPile.push(toDeckCard(existing));
         }
         const chaosInst: ChaosInstance = {
           instanceId: deckCard.instanceId,
@@ -542,6 +689,7 @@ export const useStore = create<Store>()(
           type: 'Chaos',
           element: chaosDef.element,
           rarity: chaosDef.rarity,
+          finish: deckCard.finish,
           level: 1,
           durability: chaosDef.maxDurability + s.computedStats.chaosExtraPlays,
           maxDurability: chaosDef.maxDurability,
@@ -553,7 +701,7 @@ export const useStore = create<Store>()(
         if (chaosDef.enthalpy?.length) {
           const { sacrificed } = fireChaosRitual(s, chaosDef.enthalpy, backSlotIndex);
           if (sacrificed) {
-            s.deck.discardPile.push({ instanceId: deckCard.instanceId, definitionId: deckCard.definitionId });
+            s.deck.discardPile.push(toDeckCard(deckCard));
             s.board.backSlots[backSlotIndex] = null;
           }
         }
@@ -576,7 +724,7 @@ export const useStore = create<Store>()(
       set(s => {
         const chaos = s.board.backSlots[backSlotIndex];
         if (chaos) {
-          s.deck.discardPile.push({ instanceId: chaos.instanceId, definitionId: chaos.definitionId });
+          s.deck.discardPile.push(toDeckCard(chaos));
           s.board.backSlots[backSlotIndex] = null;
         }
         recompute(s);
@@ -585,10 +733,11 @@ export const useStore = create<Store>()(
 
     // ── Angels ────────────────────────────────────────────────────────────────
 
-    summonAngel: (definitionId) => {
+    summonAngel: (definitionId, finish) => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
-        if (!hasAvailableAngelCopy(s.board, s.deck.extraDeck, definitionId)) return;
+        const summonedEntry = getAvailableAngelEntry(s.board, s.deck.extraDeck, definitionId, finish);
+        if (!summonedEntry) return;
         const def = ScoreSystem.getDefinition(definitionId);
         if (!def || def.type !== 'Angel') return;
         const angelDef = def as AngelDefinition;
@@ -619,10 +768,10 @@ export const useStore = create<Store>()(
           toSacrifice.push({ slotIdx, instanceId: sl.instanceId, definitionId: sl.definitionId });
         }
 
-        for (const { slotIdx, instanceId, definitionId: defId } of toSacrifice) {
+        for (const { slotIdx } of toSacrifice) {
           const material = s.board.frontSlots[slotIdx];
           if (material?.type === 'Seraphim') {
-            s.deck.discardPile.push({ instanceId, definitionId: defId });
+            s.deck.discardPile.push(toDeckCard(material));
           }
           (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[slotIdx] = null;
         }
@@ -638,6 +787,7 @@ export const useStore = create<Store>()(
           type: 'Angel',
           element: angelDef.element,
           rarity: angelDef.rarity,
+          finish: summonedEntry.finish,
           level: 1,
           cardsPlayedSinceSummon: 0,
           activated: false,
@@ -647,7 +797,7 @@ export const useStore = create<Store>()(
         s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
 
         const result = CardEffectExecutor.execute(
-          { instanceId: angelInst.instanceId, definitionId },
+          { instanceId: angelInst.instanceId, definitionId, finish: angelInst.finish },
           s.turn,
           s.board,
           s.deck,
@@ -680,7 +830,7 @@ export const useStore = create<Store>()(
         if (!canActivateAngelAbility(angel, angelDef)) return;
 
         const result = CardEffectExecutor.execute(
-          { instanceId: angel.instanceId, definitionId: angel.definitionId },
+          { instanceId: angel.instanceId, definitionId: angel.definitionId, finish: angel.finish },
           s.turn,
           s.board,
           s.deck,
@@ -843,11 +993,29 @@ export const useStore = create<Store>()(
       set(s => {
         if (!canEmbraceInfinite(s)) return;
         const handSnapshot = [...s.deck.hand];
+        const drawCapableCards = handSnapshot.filter(card => cardCanDraw(card.definitionId));
         const wasBossFight = s.bossFight.mode === 'active';
         grantOblivion(s, handSnapshot.length * 50, s.turn.chainMultiplier);
         checkBossDefeated(s);
         if (wasBossFight && s.bossFight.mode !== 'active') return;
-        s.turn.pendingEffect = { type: 'embrace_infinite', cards: handSnapshot, keep: 3 };
+
+        if (drawCapableCards.length <= 1) {
+          const keptCards = drawCapableCards.slice(0, 1);
+          const keptIds = new Set(keptCards.map(card => card.instanceId));
+          const reshuffledCards = handSnapshot.filter(card => !keptIds.has(card.instanceId));
+          s.deck.hand = keptCards;
+          s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, ...reshuffledCards]);
+          s.turn.pendingEffect = null;
+          endTurnInternal(s);
+          return;
+        }
+
+        s.turn.pendingEffect = {
+          type: 'embrace_infinite',
+          cards: drawCapableCards,
+          allCards: handSnapshot,
+          keep: 1,
+        };
       });
     },
 
@@ -869,6 +1037,7 @@ export const useStore = create<Store>()(
             type: 'Seraphim',
             element: def.element,
             rarity: def.rarity,
+            finish: deckCard.finish,
             level: 1,
             isActive: false,
             boardSlot: slot,
@@ -907,6 +1076,7 @@ export const useStore = create<Store>()(
             type: 'Chaos',
             element: chaosDef.element,
             rarity: chaosDef.rarity,
+            finish: deckCard.finish,
             level: 1,
             durability: chaosDef.maxDurability + s.computedStats.chaosExtraPlays,
             maxDurability: chaosDef.maxDurability,
@@ -918,7 +1088,7 @@ export const useStore = create<Store>()(
           if (chaosDef.enthalpy?.length) {
             const { sacrificed } = fireChaosRitual(s, chaosDef.enthalpy, backSlotIndex);
             if (sacrificed) {
-              s.deck.discardPile.push({ instanceId: deckCard.instanceId, definitionId: deckCard.definitionId });
+              s.deck.discardPile.push(toDeckCard(deckCard));
               s.board.backSlots[backSlotIndex] = null;
             }
           }
@@ -989,7 +1159,7 @@ export const useStore = create<Store>()(
         } else if (pending.type === 'embrace_infinite') {
           const keptIds = new Set(selected.slice(0, pending.keep));
           const keptCards = pending.cards.filter(c => keptIds.has(c.instanceId));
-          const reshuffledCards = pending.cards.filter(c => !keptIds.has(c.instanceId));
+          const reshuffledCards = pending.allCards.filter(c => !keptIds.has(c.instanceId));
           s.deck.hand = keptCards;
           s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, ...reshuffledCards]);
         }
@@ -1000,37 +1170,7 @@ export const useStore = create<Store>()(
 
     endTurn: () => {
       set(s => {
-        if (s.turn.phase !== 'playing') return;
-        if (s.bossFight.mode === 'active') {
-          completeBossFight(s, false);
-          return;
-        }
-        // Seraphim → discard; Angels → cleared from board (extra deck, not discarded)
-        for (let i = 0; i < s.board.frontSlots.length; i++) {
-          const slot = s.board.frontSlots[i];
-          if (slot?.type === 'Seraphim') {
-            s.deck.discardPile.push({ instanceId: slot.instanceId, definitionId: slot.definitionId });
-          }
-          (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[i] = null;
-        }
-        // All Chaos → discard at turn end
-        for (let i = 0; i < s.board.backSlots.length; i++) {
-          const chaos = s.board.backSlots[i];
-          if (chaos) {
-            s.deck.discardPile.push({ instanceId: chaos.instanceId, definitionId: chaos.definitionId });
-            s.board.backSlots[i] = null;
-          }
-        }
-        for (const card of s.deck.hand) s.deck.discardPile.push(card);
-        s.deck.hand = [];
-        if (s.deck.discardPile.length > 0) {
-          s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
-          s.deck.discardPile = [];
-        }
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        s.board.activeBoardEffects = [];
-        s.turn = { ...defaultTurn, phase: 'idle' };
-        recompute(s);
+        endTurnInternal(s);
       });
     },
 
@@ -1098,6 +1238,23 @@ export const useStore = create<Store>()(
         }
       });
       return drawn;
+    },
+
+    convertCardToHolo: (definitionId) => {
+      const state = get();
+      const definition = CardRegistry.get(definitionId);
+      const cost = getHolofoilConversionCost(definition);
+      if (!canConvertCardToHolo(definition, state.progress.collection, state.progress.holoCollection)) return false;
+      if (cost === null || state.progress.aberratedShards < cost) return false;
+
+      set(s => {
+        s.progress.aberratedShards -= cost;
+        const currentHolo = s.progress.holoCollection[definitionId] ?? 0;
+        const totalOwned = s.progress.collection[definitionId] ?? 0;
+        s.progress.holoCollection[definitionId] = Math.min(totalOwned, currentHolo + 1);
+      });
+
+      return true;
     },
 
     // ── Settings ──────────────────────────────────────────────────────────────
@@ -1183,6 +1340,9 @@ export const useStore = create<Store>()(
         delete op['totalTicksElapsed'];
         delete op['scoreBoostTicks'];
         delete op['scoreBoostMultiplier'];
+        if (op['aberratedShards'] === undefined) op['aberratedShards'] = 0;
+        if (op['holoCollection'] === undefined) op['holoCollection'] = {};
+        if (op['bossClearCounts'] === undefined) op['bossClearCounts'] = {};
 
         // Migrate board: old slots → frontSlots + backSlots
         const ob = loaded.board as unknown as Record<string, unknown>;
@@ -1198,6 +1358,12 @@ export const useStore = create<Store>()(
           delete ob['angel'];
           delete ob['seraphimSlots'];
         }
+        for (const slot of ob['frontSlots'] as Array<Record<string, unknown> | null>) {
+          if (slot && slot['finish'] === undefined) slot['finish'] = 'normal';
+        }
+        for (const slot of ob['backSlots'] as Array<Record<string, unknown> | null>) {
+          if (slot && slot['finish'] === undefined) slot['finish'] = 'normal';
+        }
 
         // Migrate turn: add new fields, strip removed ones
         const ot = loaded.turn as unknown as Record<string, unknown>;
@@ -1207,13 +1373,22 @@ export const useStore = create<Store>()(
         if (ot['chainFloor'] === undefined) ot['chainFloor'] = 1.0;
         if (ot['oblivionEarnedThisTurn'] === undefined) ot['oblivionEarnedThisTurn'] = 0;
         if (ot['embers'] === undefined) ot['embers'] = 0;
+        if (ot['trail'] === undefined) ot['trail'] = 0;
+        if (ot['strain'] === undefined) ot['strain'] = 0;
 
         // Migrate savedDecks
+        loaded.deck.deckList = cloneDeckList(loaded.deck.deckList as DeckEntry[]);
+        loaded.deck.extraDeck = cloneExtraDeck(loaded.deck.extraDeck as Array<ExtraDeckEntry | string>);
+        loaded.deck.drawPile = cloneDeckCards(loaded.deck.drawPile);
+        loaded.deck.hand = cloneDeckCards(loaded.deck.hand);
+        loaded.deck.discardPile = cloneDeckCards(loaded.deck.discardPile);
+
         for (const d of loaded.progress.savedDecks) {
           if ('angelId' in d) delete (d as Record<string, unknown>)['angelId'];
-          if (!d.extraDeck) d.extraDeck = STARTER_EXTRA_DECK;
+          d.deckList = cloneDeckList(d.deckList as DeckEntry[]);
+          d.extraDeck = d.extraDeck ? cloneExtraDeck(d.extraDeck as Array<ExtraDeckEntry | string>) : cloneExtraDeck(STARTER_EXTRA_DECK);
         }
-        if (!loaded.deck.extraDeck) loaded.deck.extraDeck = STARTER_EXTRA_DECK;
+        if (!loaded.deck.extraDeck) loaded.deck.extraDeck = cloneExtraDeck(STARTER_EXTRA_DECK);
 
         // Remove legacy root fields
         delete (loaded as unknown as Record<string, unknown>)['lastTickAt'];
@@ -1223,7 +1398,7 @@ export const useStore = create<Store>()(
           const deckValid = loaded.deck.deckList.every(e => CardRegistry.get(e.definitionId) !== undefined);
           if (!deckValid) {
             loaded.deck.deckList = [...STARTER_DECK_LIST];
-            loaded.deck.extraDeck = [...STARTER_EXTRA_DECK];
+            loaded.deck.extraDeck = cloneExtraDeck(STARTER_EXTRA_DECK);
             loaded.deck.drawPile = DeckSystem.buildFromList(STARTER_DECK_LIST);
             loaded.deck.hand = [];
             loaded.deck.discardPile = [];
@@ -1262,6 +1437,19 @@ export const useStore = create<Store>()(
           loaded.version = 5;
         }
 
+        if ((loaded.version ?? 0) < 6) {
+          for (const eternalBoss of BOSS_DEFINITIONS) {
+            const ownedCopies = loaded.progress.collection[eternalBoss.rewardCardId] ?? 0;
+            if (ownedCopies > 0) {
+              loaded.progress.holoCollection[eternalBoss.rewardCardId] = Math.max(
+                loaded.progress.holoCollection[eternalBoss.rewardCardId] ?? 0,
+                ownedCopies,
+              );
+            }
+          }
+          loaded.version = 6;
+        }
+
         // Migrate bossFight: add if missing from saved state
         if (!loaded.bossFight) {
           (loaded as unknown as Record<string, unknown>)['bossFight'] = { ...defaultBossFight };
@@ -1289,7 +1477,7 @@ export const selectSettings = (s: Store): SettingsState => s.settings;
 export const selectHand = (s: Store): DeckCard[] => s.deck.hand;
 export const selectRadiance = (s: Store): number => s.turn.radiance;
 export const selectPhase = (s: Store): TurnState['phase'] => s.turn.phase;
-export const selectExtraDeck = (s: Store): string[] => s.deck.extraDeck;
+export const selectExtraDeck = (s: Store): ExtraDeckEntry[] => s.deck.extraDeck;
 export const selectBossFight = (s: Store): BossFightState => s.bossFight;
 export const selectProgress = (s: Store): ProgressState => s.progress;
 export const selectCanEmbraceInfinite = (s: Store): boolean => canEmbraceInfinite(s);

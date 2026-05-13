@@ -24,7 +24,9 @@ export default function SettingsPanel({ onClose, onSave, onWipe }: Props) {
 
   return (
     <div style={{
-      position: 'absolute', inset: 0, background: warmTheme.backdrop,
+      position: 'absolute',
+      inset: 0,
+      background: 'radial-gradient(circle at 50% 14%, rgba(201, 170, 112, 0.2) 0%, rgba(201, 170, 112, 0) 36%), radial-gradient(circle at 10% 86%, rgba(104, 134, 174, 0.2) 0%, rgba(104, 134, 174, 0) 40%), repeating-linear-gradient(35deg, rgba(222, 196, 148, 0.06) 0px, rgba(222, 196, 148, 0.06) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 20px), linear-gradient(180deg, rgba(16, 18, 23, 0.965) 0%, rgba(19, 24, 31, 0.965) 100%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 50, pointerEvents: 'auto', fontFamily: 'Georgia, serif',
     }}>

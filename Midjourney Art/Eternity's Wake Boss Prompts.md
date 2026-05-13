@@ -1,5 +1,7 @@
 # Eternity's Wake — Boss Art Prompts
 
+Note: Additional expansion boss prompts (new set bosses and Neutrality expansion bosses) are in `Eternity's Wake Expansion Boss Prompts.md`.
+
 **Visual Identity:** The five Eternal bosses share a monochromatic base — deep obsidian blacks, bone whites, and painted gray midtones — identical to the Neutrality set's ink-and-brushwork foundation. But every surface that catches light is glass, crystal, or prism: rainbow caustic light refractions scatter across armor plates, crystal formations refract the full visible spectrum, iridescent holographic sheens blaze across obsidian glass surfaces. The effect is monochromatic structure with explosions of prismatic rainbow light blazing through it — uniquely spectacular and unlike any other set.
 **Parameters on every prompt:** `--ar 2:3 --niji 6 --stylize 900`
 

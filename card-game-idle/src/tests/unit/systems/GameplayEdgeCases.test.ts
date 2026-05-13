@@ -113,15 +113,16 @@ describe('Embrace the Infinite', () => {
     expect(selectCanEmbraceInfinite(useStore.getState())).toBe(true);
   });
 
-  it('awards oblivion, keeps three cards, and reshuffles the rest back with the remaining draw pile', () => {
+  it('awards oblivion, lets you keep one draw-capable card, and reshuffles the rest', () => {
     const hand: DeckCard[] = Array.from({ length: 40 }, (_, index) => ({
       instanceId: `infinite_${index}`,
-      definitionId: 'seek-neutral-void-surge',
+      definitionId: index < 2 ? 'seek-neutral-still-pulse' : 'seek-neutral-void-surge',
+      finish: 'normal',
     }));
     const existingDrawPile: DeckCard[] = [
-      { instanceId: 'draw_a', definitionId: 'seek-neutral-void-surge' },
-      { instanceId: 'draw_b', definitionId: 'seek-neutral-void-surge' },
-      { instanceId: 'draw_c', definitionId: 'seek-neutral-void-surge' },
+      { instanceId: 'draw_a', definitionId: 'seek-neutral-void-surge', finish: 'normal' },
+      { instanceId: 'draw_b', definitionId: 'seek-neutral-void-surge', finish: 'normal' },
+      { instanceId: 'draw_c', definitionId: 'seek-neutral-void-surge', finish: 'normal' },
     ];
 
     useStore.setState(state => ({
@@ -148,19 +149,58 @@ describe('Embrace the Infinite', () => {
     useStore.getState().embraceInfinite();
 
     let state = useStore.getState();
-  expect(state.progress.oblivion).toBe(40 * 50);
+    expect(state.progress.oblivion).toBe(40 * 50);
     expect(state.turn.pendingEffect?.type).toBe('embrace_infinite');
+    expect(state.turn.pendingEffect?.keep).toBe(1);
+    expect(state.turn.pendingEffect?.cards).toHaveLength(2);
 
-    const keepIds = hand.slice(0, 3).map(card => card.instanceId);
+    const keepIds = [hand[0].instanceId];
     useStore.getState().resolvePending(keepIds);
 
     state = useStore.getState();
     expect(state.turn.pendingEffect).toBeNull();
     expect(state.deck.hand.map(card => card.instanceId)).toEqual(keepIds);
-    expect(state.deck.drawPile).toHaveLength(40);
+    expect(state.deck.drawPile).toHaveLength(42);
     expect(new Set(state.deck.drawPile.map(card => card.instanceId))).toEqual(
-      new Set([...existingDrawPile.map(card => card.instanceId), ...hand.slice(3).map(card => card.instanceId)])
+      new Set([...existingDrawPile.map(card => card.instanceId), ...hand.slice(1).map(card => card.instanceId)])
     );
+  });
+
+  it('auto-resolves and immediately ends the turn when only one draw-capable card exists', () => {
+    const hand: DeckCard[] = Array.from({ length: 40 }, (_, index) => ({
+      instanceId: `single_draw_${index}`,
+      definitionId: index === 0 ? 'seek-neutral-still-pulse' : 'seek-neutral-void-surge',
+      finish: 'normal',
+    }));
+
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [],
+        drawPile: [],
+        hand,
+        discardPile: [],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'playing',
+        pendingEffect: null,
+      },
+      progress: {
+        ...state.progress,
+        oblivion: 0,
+      },
+    }));
+
+    useStore.getState().embraceInfinite();
+
+    const state = useStore.getState();
+    expect(state.progress.oblivion).toBe(40 * 50);
+    expect(state.turn.phase).toBe('idle');
+    expect(state.turn.pendingEffect).toBeNull();
+    expect(state.deck.hand).toEqual([]);
   });
 });
 
@@ -170,11 +210,11 @@ describe('Custom deck activation', () => {
   });
 
   it('makes a newly saved custom deck the live playable deck immediately', () => {
-    const customDeckList: DeckEntry[] = [
-      { definitionId: 'ser-neutral-first-light', copies: 4 },
-      { definitionId: 'seek-neutral-null-seek', copies: 4 },
-    ];
-    const customExtraDeck = ['angel-light-seraphiel', 'angel-light-aurelion'];
+      const customDeckList: DeckEntry[] = [
+        { definitionId: 'ser-neutral-first-light', copies: 4, finish: 'normal' as const },
+        { definitionId: 'seek-neutral-null-seek', copies: 4, finish: 'normal' as const },
+      ];
+      const customExtraDeck = [{ definitionId: 'angel-neutral-beginning', finish: 'normal' as const }];
 
     const deckId = useStore.getState().saveCurrentDeck('Fresh Custom Deck', customDeckList, customExtraDeck);
 

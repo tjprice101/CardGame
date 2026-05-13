@@ -25,6 +25,7 @@ function makeSeraphim(instanceId: string, definitionId: string, slot: 0 | 1 | 2 
     type: 'Seraphim',
     element: def.element,
     rarity: def.rarity,
+    finish: 'normal',
     level: 1,
     isActive: false,
     boardSlot: slot,
@@ -47,6 +48,7 @@ function makeAngel(
     type: 'Angel',
     element: def.element,
     rarity: def.rarity,
+    finish: 'normal',
     level: 1,
     cardsPlayedSinceSummon: overrides.cardsPlayedSinceSummon ?? 0,
     activated: overrides.activated ?? false,
@@ -75,7 +77,10 @@ describe('Angel mechanics', () => {
       deck: {
         ...state.deck,
         deckList: [],
-        extraDeck: ['angel-neutral-beginning', 'angel-neutral-beginning'],
+        extraDeck: [
+          { definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { definitionId: 'angel-neutral-beginning', finish: 'normal' },
+        ],
         drawPile: [],
         hand: [],
         discardPile: [],
@@ -118,7 +123,7 @@ describe('Angel mechanics', () => {
       deck: {
         ...state.deck,
         deckList: [],
-        extraDeck: ['angel-neutral-presence'],
+        extraDeck: [{ definitionId: 'angel-neutral-presence', finish: 'normal' }],
         drawPile: [],
         hand: [],
         discardPile: [],
@@ -164,9 +169,9 @@ describe('Angel mechanics', () => {
       deck: {
         ...state.deck,
         deckList: [],
-        extraDeck: ['angel-light-seraphiel'],
+        extraDeck: [{ definitionId: 'angel-light-seraphiel', finish: 'normal' }],
         drawPile,
-        hand: [{ instanceId: 'play_1', definitionId: 'seek-fire-pyre-ignite' }],
+        hand: [{ instanceId: 'play_1', definitionId: 'seek-fire-pyre-ignite', finish: 'normal' }],
         discardPile: [],
       },
       turn: makePlayingTurn({ radiance: 4, chainFloor: 1.0 }),

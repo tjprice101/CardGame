@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_SET_NAMES, ELEMENT_COLORS, getCardCategoryKey } from '@/data/elements';
+import { getCardFinishKey, getCardFinishLabel, getOwnedCopiesForFinish, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import {
   cardFacePalette,
   getCardFaceBackgroundStyle,
@@ -21,52 +22,85 @@ const RARITY_ORDER: Record<string, number> = {
 
 interface Props { onClose: () => void }
 
+interface CollectionVariantEntry {
+  key: string;
+  finish: 'normal' | 'holo';
+  owned: number;
+  card: ReturnType<typeof CardRegistry.getAll>[number];
+}
+
 export default function CollectionViewer({ onClose }: Props) {
   const faceMetrics = getCardFaceMetrics('grid');
   const collection = useStore(s => s.progress.collection);
+  const holoCollection = useStore(s => s.progress.holoCollection);
   const [activeElement, setActiveElement] = useState<string>('All');
 
-  const allCards = CardRegistry.getAll().sort((a, b) => {
-    const categoryA = getCardCategoryKey(a);
-    const categoryB = getCardCategoryKey(b);
+  const allCards = CardRegistry.getAll().flatMap(card => {
+    const variants: CollectionVariantEntry[] = [];
+    if (!isHoloOnlyCard(card)) {
+      variants.push({
+        key: getCardFinishKey(card.definitionId, 'normal'),
+        finish: 'normal',
+        owned: getOwnedCopiesForFinish(card, 'normal', collection, holoCollection),
+        card,
+      });
+    }
+    variants.push({
+      key: getCardFinishKey(card.definitionId, 'holo'),
+      finish: 'holo',
+      owned: getOwnedCopiesForFinish(card, 'holo', collection, holoCollection),
+      card,
+    });
+    return variants;
+  }).sort((a, b) => {
+    const categoryA = getCardCategoryKey(a.card);
+    const categoryB = getCardCategoryKey(b.card);
     if (categoryA !== categoryB) return categoryA.localeCompare(categoryB);
-    if (RARITY_ORDER[a.rarity] !== RARITY_ORDER[b.rarity])
-      return RARITY_ORDER[a.rarity] - RARITY_ORDER[b.rarity];
-    return a.name.localeCompare(b.name);
+    if (RARITY_ORDER[a.card.rarity] !== RARITY_ORDER[b.card.rarity])
+      return RARITY_ORDER[a.card.rarity] - RARITY_ORDER[b.card.rarity];
+    if (a.card.name !== b.card.name) return a.card.name.localeCompare(b.card.name);
+    return a.finish.localeCompare(b.finish);
   });
 
-  const elements = ['All', ...Array.from(new Set(allCards.map(card => getCardCategoryKey(card))))];
+  const elements = ['All', ...Array.from(new Set(allCards.map(card => getCardCategoryKey(card.card))))];
   const filtered = activeElement === 'All'
     ? allCards
-    : allCards.filter(card => getCardCategoryKey(card) === activeElement);
+    : allCards.filter(card => getCardCategoryKey(card.card) === activeElement);
 
-  const totalOwned = Object.keys(collection).length;
+  const totalOwned = allCards.filter(card => card.owned > 0).length;
   const totalCards = allCards.length;
 
   return (
     <div style={{
-      position: 'absolute', inset: 0, background: warmTheme.overlay, zIndex: 60,
-      display: 'flex', flexDirection: 'column', fontFamily: 'Georgia, serif', color: warmTheme.text,
+      position: 'absolute',
+      inset: 0,
+      background: 'radial-gradient(circle at 18% 10%, rgba(236, 192, 128, 0.14) 0%, rgba(236, 192, 128, 0) 38%), linear-gradient(180deg, #0c0f15 0%, #10151e 100%)',
+      zIndex: 60,
+      display: 'flex',
+      flexDirection: 'column',
+      fontFamily: 'Georgia, serif',
+      color: '#ead9c0',
       pointerEvents: 'auto',
     }}>
       {/* Header */}
       <div style={{
         padding: '16px 24px', borderBottom: `1px solid ${warmTheme.border}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+        background: 'rgba(9, 14, 20, 0.4)',
       }}>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 'bold', color: warmTheme.accentDeep, letterSpacing: 2 }}>
+          <div style={{ fontSize: 20, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 2 }}>
             Collection
           </div>
-          <div style={{ fontSize: 11, color: warmTheme.textMuted, marginTop: 3 }}>
+          <div style={{ fontSize: 11, color: 'rgba(234, 217, 192, 0.75)', marginTop: 3 }}>
             {totalOwned} / {totalCards} unique cards collected
           </div>
         </div>
         <button
           onClick={onClose}
           style={{
-            background: warmTheme.surface, border: `1px solid ${warmTheme.border}`,
-            color: warmTheme.textMuted, borderRadius: 10, padding: '6px 16px',
+            background: 'rgba(255, 237, 213, 0.94)', border: `1px solid ${warmTheme.border}`,
+            color: '#5f3a17', borderRadius: 10, padding: '6px 16px',
             fontSize: 12, cursor: 'pointer', fontFamily: 'Georgia, serif',
           }}
         >
@@ -78,6 +112,7 @@ export default function CollectionViewer({ onClose }: Props) {
       <div style={{
         display: 'flex', gap: 6, padding: '12px 24px', flexShrink: 0,
         borderBottom: `1px solid ${warmTheme.border}`,
+        background: 'rgba(9, 14, 20, 0.3)',
       }}>
         {elements.map(el => {
           const isActive = activeElement === el;
@@ -90,9 +125,9 @@ export default function CollectionViewer({ onClose }: Props) {
               style={{
                 padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
                 fontFamily: 'Georgia, serif', letterSpacing: 1,
-                background: isActive ? `rgba(${hexToRgb(color)},0.12)` : warmTheme.surface,
+                background: isActive ? `rgba(${hexToRgb(color)},0.18)` : 'rgba(255, 236, 209, 0.9)',
                 border: isActive ? `1px solid ${color}` : `1px solid ${warmTheme.border}`,
-                color: isActive ? color : warmTheme.textMuted,
+                color: isActive ? color : '#5f3a17',
                 transition: 'all 0.15s',
               }}
             >
@@ -107,16 +142,17 @@ export default function CollectionViewer({ onClose }: Props) {
         flex: 1, overflowY: 'auto', padding: '20px 24px',
         display: 'flex', flexWrap: 'wrap', gap: 10, alignContent: 'flex-start',
       }}>
-        {filtered.map(card => {
-          const owned = collection[card.definitionId] ?? 0;
+        {filtered.map(entry => {
+          const { card, finish, owned } = entry;
           const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
 
           return (
             <div
-              key={card.definitionId}
+              key={entry.key}
+              className={finish === 'holo' ? 'holofoil-menu-card' : undefined}
               style={{
                 width: 148,
-                ...getCardFaceBackgroundStyle(card),
+                ...getCardFaceBackgroundStyle(card, finish),
                 backgroundColor: owned > 0 ? warmTheme.surfaceStrong : warmTheme.surfaceMuted,
                 border: owned > 0
                   ? `1px solid ${rarityColor}55`
@@ -133,7 +169,7 @@ export default function CollectionViewer({ onClose }: Props) {
             >
               <div style={getCardNameRibbonStyle('grid')}>
                 <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
-                  {card.type}
+                  {card.type} · {getCardFinishLabel(finish)}
                 </div>
                 <div style={{
                   fontSize: faceMetrics.nameSize,

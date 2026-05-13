@@ -1,4 +1,4 @@
-import type { AngelInstance, SeraphimInstance, ChaosInstance } from './cards';
+import type { AngelInstance, CardFinish, ChaosInstance, SeraphimInstance } from './cards';
 import type { ActiveBoardEffect, CardSubtypeFilter } from './effects';
 import type { BossFightState } from './bossFight';
 
@@ -26,16 +26,23 @@ export interface ComputedBoardStats {
 export interface DeckEntry {
   definitionId: string;
   copies: 1 | 2 | 3 | 4;
+  finish: CardFinish;
+}
+
+export interface ExtraDeckEntry {
+  definitionId: string;
+  finish: CardFinish;
 }
 
 export interface DeckCard {
   instanceId: string;
   definitionId: string;
+  finish: CardFinish;
 }
 
 export interface DeckState {
   deckList: DeckEntry[];
-  extraDeck: string[];        // Angel definitionIds; up to 10 total, max 4 copies of each unique angel
+  extraDeck: ExtraDeckEntry[]; // Angel entries; up to 10 total, max 4 copies of each unique angel across finishes
   drawPile: DeckCard[];
   hand: DeckCard[];
   discardPile: DeckCard[];
@@ -52,12 +59,14 @@ export type PendingEffect =
   | { type: 'look_top_take_type'; cards: DeckCard[]; filter: CardSubtypeFilter[] }
   | { type: 'search_deck'; cards: DeckCard[]; filter: CardSubtypeFilter[] }
   | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null }
-  | { type: 'embrace_infinite'; cards: DeckCard[]; keep: number };
+  | { type: 'embrace_infinite'; cards: DeckCard[]; allCards: DeckCard[]; keep: number };
 
 export interface TurnState {
   phase: TurnPhase;
   radiance: number;
   embers: number;
+  trail: number;
+  strain: number;
   cardsPlayedThisTurn: number;
   chainMultiplier: number;          // 1.0 + cardsPlayedThisTurn * 0.1; grows as cards are played
   chainFloor: number;               // minimum chain multiplier (Angels can set a floor)
@@ -74,7 +83,7 @@ export interface SavedDeck {
   id: string;
   name: string;
   deckList: DeckEntry[];
-  extraDeck: string[];        // up to 10 Angel definitionIds, max 4 of each
+  extraDeck: ExtraDeckEntry[]; // up to 10 Angel entries, max 4 of each definition across finishes
   isStarter: boolean;
 }
 
@@ -82,9 +91,12 @@ export interface SavedDeck {
 
 export interface ProgressState {
   oblivion: number;
+  aberratedShards: number;
   prestige: number;
   totalCardsPlayed: number;
-  collection: Record<string, number>;  // definitionId → copy count owned
+  collection: Record<string, number>;    // definitionId → total copy count owned
+  holoCollection: Record<string, number>; // definitionId → holo copy count owned
+  bossClearCounts: Record<string, number>;
   savedDecks: SavedDeck[];
   activeDeckId: string | null;
 }

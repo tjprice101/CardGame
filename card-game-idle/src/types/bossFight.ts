@@ -1,11 +1,16 @@
 import type { BoardState, DeckState, ProgressState, SettingsState, TurnState } from './game';
 
+export type BossCategory = 'Neutrality' | 'Pyroabyss' | 'Heavenly Light' | 'Thornbound Plains' | 'Mechanical Dreams' | 'Prismatic Accord';
+
 export interface BossDefinition {
   id: string;
   name: string;
+  category: BossCategory;
   hp: number;
   keyArt: string;
   rewardCardId: string;
+  firstClearShards: number;
+  repeatClearShards: number;
   description: string;
 }
 

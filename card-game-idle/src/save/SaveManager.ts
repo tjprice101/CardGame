@@ -2,7 +2,7 @@ import LZString from 'lz-string';
 import type { GameState } from '@/types/game';
 
 const SAVE_KEY = 'heavenly-retribution-save';
-const CURRENT_VERSION = 4;
+const CURRENT_VERSION = 6;
 const AUTO_SAVE_INTERVAL_MS = 30_000;
 
 type Migration = (data: Partial<GameState>) => Partial<GameState>;

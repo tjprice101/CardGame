@@ -3,6 +3,7 @@ import { useStore, selectBoard, selectCanEmbraceInfinite, selectTurn } from '@/s
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
+  getAdaptiveDescriptionMetrics,
   getCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
@@ -36,6 +37,10 @@ const SLOT_W = 102;
 const SLOT_H = 144;
 const CHAOS_W = 94;
 const CHAOS_H = 126;
+const FRONT_ROW_GAP = 'clamp(10px, 1.2vw, 16px)';
+const BACK_ROW_GAP = 'clamp(10px, 1.2vw, 16px)';
+const ROW_SEPARATION = 'clamp(12px, 1.8vh, 22px)';
+const BACK_ROW_STAGGER = 'clamp(52px, 5vw, 62px)';
 const FRONT_FACE_METRICS = getCardFaceMetrics('board');
 const CHAOS_FACE_METRICS = getCardFaceMetrics('boardMini');
 
@@ -102,13 +107,14 @@ export default function BoardDisplay() {
     <div style={{
       position: 'absolute',
       left: '50%',
-      top: '40%',
+      top: '42%',
       transform: 'translate(-50%, -50%)',
       pointerEvents: 'none',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       gap: 0,
+      width: 'fit-content',
     }}>
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
@@ -139,7 +145,7 @@ export default function BoardDisplay() {
       {/* Front row: 5 Seraphim/Angel slots */}
       <div style={{
         display: 'flex',
-        gap: 12,
+        gap: FRONT_ROW_GAP,
         alignItems: 'center',
         justifyContent: 'center',
       }}>
@@ -163,10 +169,14 @@ export default function BoardDisplay() {
               : isReady
                 ? angelDef?.activatedAbility.name ?? 'Ability ready'
                 : angelDef?.activatedAbility.name ?? 'Awakening';
+            const angelDescMetrics = getAdaptiveDescriptionMetrics('board', detailText);
             return (
               <div
                 key={slotIndex}
-                className="anim-angel-breath"
+                className={[
+                  'anim-angel-breath',
+                  slot.finish === 'holo' ? 'holofoil-live-card' : undefined,
+                ].filter(Boolean).join(' ')}
                 onContextMenu={(event) => {
                   event.preventDefault();
                   if (canPlay && isReady) activateAngel(slotIndex);
@@ -179,7 +189,7 @@ export default function BoardDisplay() {
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
-                  ...getCardFaceBackgroundStyle(angelDef),
+                  ...getCardFaceBackgroundStyle(angelDef, slot.finish),
                   border: `2px solid ${isReady ? warmTheme.accent : warmTheme.borderStrong}`,
                   borderRadius: 14,
                   boxShadow: isReady ? `${warmTheme.glow}, ${cardFacePalette.shadow}` : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
@@ -206,7 +216,17 @@ export default function BoardDisplay() {
                   <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: isReady ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' }}>
                     {statusText}
                   </div>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: cardFacePalette.textSoft, marginTop: 5, lineHeight: 1.35, textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: angelDescMetrics.fontSize,
+                    color: cardFacePalette.textSoft,
+                    marginTop: 5,
+                    lineHeight: angelDescMetrics.lineHeight,
+                    textAlign: 'center',
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: angelDescMetrics.lineClamp,
+                    overflow: 'hidden',
+                  }}>
                     {detailText}
                   </div>
                   <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, lineHeight: 1.35, textAlign: 'center' }}>
@@ -224,6 +244,8 @@ export default function BoardDisplay() {
             const borderColor = isActive ? 'rgba(255,215,0,0.95)' : RARITY_BORDER[rarity];
             const glowColor = RARITY_GLOW[rarity] ?? 'transparent';
             const glowColorPeak = RARITY_GLOW_PEAK[rarity] ?? 'transparent';
+            const seraphimText = serDef?.description ?? 'Its elemental bonus is live on the board.';
+            const seraphimDescMetrics = getAdaptiveDescriptionMetrics('board', seraphimText);
 
             return (
               <div
@@ -231,13 +253,14 @@ export default function BoardDisplay() {
                 className={[
                   isNewlyPlaced ? 'anim-seraphim-pop' : undefined,
                   isActive && !isNewlyPlaced ? 'anim-synergy-pulse' : undefined,
+                  slot.finish === 'holo' ? 'holofoil-live-card' : undefined,
                 ].filter(Boolean).join(' ') || undefined}
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
                   pointerEvents: 'auto',
                   cursor: 'pointer',
-                  ...getCardFaceBackgroundStyle(serDef),
+                  ...getCardFaceBackgroundStyle(serDef, slot.finish),
                   border: `1px solid ${borderColor}`,
                   borderRadius: 12,
                   boxShadow: isActive
@@ -267,8 +290,18 @@ export default function BoardDisplay() {
                   <div style={{ fontSize: FRONT_FACE_METRICS.descSize, marginTop: 1, letterSpacing: 1, color: isActive ? warmTheme.success : cardFacePalette.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>
                     {isActive ? 'Synergy' : 'Inactive'}
                   </div>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: cardFacePalette.textSoft, marginTop: 5, lineHeight: 1.35, textAlign: 'center' }}>
-                    {isActive ? 'Its elemental bonus is live on the board.' : 'Summon a matching angel to awaken synergy.'}
+                  <div style={{
+                    fontSize: seraphimDescMetrics.fontSize,
+                    color: cardFacePalette.textSoft,
+                    marginTop: 5,
+                    lineHeight: seraphimDescMetrics.lineHeight,
+                    textAlign: 'center',
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: seraphimDescMetrics.lineClamp,
+                    overflow: 'hidden',
+                  }}>
+                    {isActive ? (serDef?.description ?? 'Its elemental bonus is live on the board.') : 'Summon a matching angel to awaken synergy.'}
                   </div>
                   <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, letterSpacing: 0.5, textAlign: 'center' }}>tap to remove</div>
                 </div>
@@ -320,11 +353,11 @@ export default function BoardDisplay() {
       {/* Back row: 4 Chaos slots, staggered between front slots */}
       <div style={{
         display: 'flex',
-        gap: 12,
+        gap: BACK_ROW_GAP,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 8,
-        paddingLeft: (SLOT_W + 12) / 2,
+        marginTop: ROW_SEPARATION,
+        paddingLeft: BACK_ROW_STAGGER,
       }}>
         {board.backSlots.map((chaos, i) => {
           const backSlot = i as 0 | 1 | 2 | 3;
@@ -334,12 +367,14 @@ export default function BoardDisplay() {
           if (chaos) {
             const durabilityRatio = chaos.durability / (chaos as ChaosInstance).maxDurability;
             const durabilityColor = durabilityRatio > 0.5 ? '#c888f0' : durabilityRatio > 0.25 ? '#e8a040' : '#e86060';
+            const chaosDescMetrics = getAdaptiveDescriptionMetrics('boardMini', chaosDef?.description ?? '');
             return (
               <div
                 key={backSlot}
+                className={chaos.finish === 'holo' ? 'holofoil-live-card' : undefined}
                 style={{
                   width: CHAOS_W, height: CHAOS_H,
-                  ...getCardFaceBackgroundStyle(chaosDef),
+                  ...getCardFaceBackgroundStyle(chaosDef, chaos.finish),
                   border: `1px solid rgba(143,116,169,0.5)`,
                   borderRadius: 12,
                   boxShadow: `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
@@ -361,8 +396,18 @@ export default function BoardDisplay() {
                   <div style={{ fontSize: CHAOS_FACE_METRICS.descSize, color: durabilityColor, letterSpacing: 0.4, textAlign: 'center' }}>
                     {chaos.durability} play{chaos.durability !== 1 ? 's' : ''} left
                   </div>
-                  <div style={{ fontSize: CHAOS_FACE_METRICS.descSize, color: cardFacePalette.textSoft, marginTop: 4, lineHeight: 1.3, textAlign: 'center' }}>
-                    Back-row effect remains active until expiry.
+                  <div style={{
+                    fontSize: chaosDescMetrics.fontSize,
+                    color: cardFacePalette.textSoft,
+                    marginTop: 4,
+                    lineHeight: chaosDescMetrics.lineHeight,
+                    textAlign: 'center',
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: chaosDescMetrics.lineClamp,
+                    overflow: 'hidden',
+                  }}>
+                    {chaosDef?.description ?? 'Back-row effect remains active until expiry.'}
                   </div>
                   <div style={{ fontSize: 6, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
                     tap to remove

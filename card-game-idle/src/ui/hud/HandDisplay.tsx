@@ -5,6 +5,7 @@ import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
   cardFacePalette,
+  getAdaptiveDescriptionMetrics,
   getCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
@@ -30,12 +31,13 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute',
     bottom: 16,
     left: 0,
-    right: 0,
+    right: 'var(--angel-drawer-hand-offset, 34px)',
     display: 'flex',
     justifyContent: 'center',
     pointerEvents: 'none',
     paddingLeft: 8,
     paddingRight: 8,
+    transition: 'right 0.22s ease',
   },
   hand: {
     display: 'flex',
@@ -47,8 +49,9 @@ const styles: Record<string, React.CSSProperties> = {
     paddingBottom: 6,
   },
   card: {
-    width: 148,
-    height: 210,
+    width: 'clamp(132px, 9.2vw, 148px)',
+    height: 'clamp(188px, 13vw, 210px)',
+    flex: '0 0 auto',
     background: warmTheme.surfaceStrong,
     border: `1px solid ${warmTheme.border}`,
     borderRadius: 14,
@@ -235,13 +238,27 @@ export default function HandDisplay() {
       )}
 
       <div style={styles.handWrapper}>
-        <div style={styles.hand}>
+        <div
+          className="ornate-scroll"
+          style={styles.hand}
+          onWheel={(e) => {
+            const target = e.currentTarget;
+            const hasHorizontalOverflow = target.scrollWidth > target.clientWidth;
+            if (!hasHorizontalOverflow) return;
+            if (Math.abs(e.deltaY) < Math.abs(e.deltaX)) return;
+            target.scrollLeft += e.deltaY;
+            e.preventDefault();
+          }}
+        >
           {hand.filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'Angel').map(deckCard => {
           const def = CardRegistry.get(deckCard.definitionId);
           const selected = turn.mulliganSelected.includes(deckCard.instanceId);
           const isHovered = hoveredId === deckCard.instanceId;
           const isAnimatingOut = playingCardId === deckCard.instanceId;
           const isPlayable = !isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board);
+          const descMetrics = getAdaptiveDescriptionMetrics('hand', def?.description ?? '');
+          const nameLength = (def?.name ?? '').length;
+          const adaptiveNameSize = nameLength > 24 ? faceMetrics.nameSize - 2.2 : nameLength > 16 ? faceMetrics.nameSize - 1.0 : faceMetrics.nameSize;
 
           // Neutrality cards get a cool silver shimmer, others get warm white
           const shimmerColor = def?.element === 'Neutrality'
@@ -254,11 +271,14 @@ export default function HandDisplay() {
           return (
             <div
               key={deckCard.instanceId}
-              className={isAnimatingOut ? 'anim-card-play-out' : undefined}
+              className={[
+                isAnimatingOut ? 'anim-card-play-out' : undefined,
+                deckCard.finish === 'holo' ? 'holofoil-live-card' : undefined,
+              ].filter(Boolean).join(' ') || undefined}
               draggable={isDraggable}
               style={{
                 ...styles.card,
-                ...getCardFaceBackgroundStyle(def),
+                ...getCardFaceBackgroundStyle(def, deckCard.finish),
                 ...(selected ? styles.cardMulligan : {}),
                 ...(!isPlayable ? { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.5)' } : {}),
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
@@ -287,16 +307,25 @@ export default function HandDisplay() {
                 {def?.type && (
                   <div style={{ ...styles.subtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>{def.type}</div>
                 )}
-                <div style={{ ...styles.name, fontSize: faceMetrics.nameSize }}>{def?.name ?? deckCard.definitionId}</div>
+                <div style={{
+                  ...styles.name,
+                  fontSize: adaptiveNameSize,
+                  display: '-webkit-box',
+                  WebkitBoxOrient: 'vertical',
+                  WebkitLineClamp: 2,
+                  overflow: 'hidden',
+                }}>
+                  {def?.name ?? deckCard.definitionId}
+                </div>
               </div>
 
               <div style={getCardRulesPanelStyle('hand')}>
                 <div
                   style={{
                     ...styles.desc,
-                    fontSize: faceMetrics.descSize,
-                    lineHeight: faceMetrics.descLineHeight,
-                    WebkitLineClamp: faceMetrics.descLines,
+                    fontSize: descMetrics.fontSize,
+                    lineHeight: descMetrics.lineHeight,
+                    WebkitLineClamp: descMetrics.lineClamp,
                   }}
                 >
                   {def?.description ?? ''}

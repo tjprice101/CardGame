@@ -38,7 +38,12 @@ export type ImmediateEffect =
   | { type: 'salvage_any' }
   | { type: 'radiance_double' }
   | { type: 'sacred_covenant' }
-  | { type: 'dominant_stack_gain'; value: number };  // give value Embers if embers >= radiance, else give value Radiance
+  | { type: 'dominant_stack_gain'; value: number }    // give value Embers if embers >= radiance, else give value Radiance
+  | { type: 'trail_gain'; value: number }             // Thornbound mechanic: gain Trail
+  | { type: 'trail_spend'; value: number }            // spend Trail (9999 = drain all)
+  | { type: 'strain_gain'; value: number }            // Mechanical Dreams mechanic: gain Strain
+  | { type: 'strain_vent'; value: number }            // remove Strain (9999 = vent all)
+  | { type: 'overclock'; strain: number; then: CardEffect[] }; // apply stronger mode effects and add Strain
 
 // Condition for conditional effects
 export type EffectCondition =
@@ -47,7 +52,10 @@ export type EffectCondition =
   | { type: 'seraphim_active_gte'; value: number }
   | { type: 'chaos_active_gte'; value: number }     // N or more Chaos cards in backSlots
   | { type: 'first_card_this_turn' }
-  | { type: 'ember_gte'; value: number };
+  | { type: 'ember_gte'; value: number }
+  | { type: 'trail_gte'; value: number }
+  | { type: 'strain_gte'; value: number }
+  | { type: 'strain_lte'; value: number };
 
 // Conditional wrapper: evaluate condition, then run effects if met
 export interface ConditionalEffect {

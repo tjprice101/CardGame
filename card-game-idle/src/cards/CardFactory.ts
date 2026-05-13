@@ -1,4 +1,4 @@
-import type { AngelDefinition, AngelInstance } from '@/types/cards';
+import type { AngelDefinition, AngelInstance, CardFinish } from '@/types/cards';
 
 let instanceCounter = 0;
 function nextId(): string {
@@ -6,13 +6,14 @@ function nextId(): string {
 }
 
 export const CardFactory = {
-  create(def: AngelDefinition): AngelInstance {
+  create(def: AngelDefinition, finish: CardFinish = 'normal'): AngelInstance {
     return {
       instanceId: nextId(),
       definitionId: def.definitionId,
       type: 'Angel',
       element: def.element,
       rarity: def.rarity,
+      finish,
       level: 1,
       cardsPlayedSinceSummon: 0,
       activated: false,
