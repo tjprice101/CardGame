@@ -15,7 +15,7 @@ import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { PackSystem } from '@/systems/cards/PackSystem';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { canConvertCardToHolo, getHolofoilConversionCost } from '@/systems/progression/HolofoilSystem';
+import { canConvertCardToHolo, getCardFinishKey, getHolofoilConversionCost } from '@/systems/progression/HolofoilSystem';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { eventBus } from '@/core/events/EventBus';
@@ -65,6 +65,8 @@ const defaultProgress: ProgressState = {
   totalCardsPlayed: 0,
   collection: { ...STARTER_COLLECTION },
   holoCollection: {},
+  infiniteCollection: {},
+  favoriteCollection: {},
   bossClearCounts: {},
   savedDecks: [
     {
@@ -129,6 +131,7 @@ interface StoreActions {
   confirmMulligan: () => void;
   embraceInfinite: () => void;
   playCard: (instanceId: string) => void;
+  activateChaosEntropyFromHand: (instanceId: string) => void;
   resolvePending: (selected: string[]) => void;
   endTurn: () => void;
   addOblivion: (delta: number) => void;
@@ -136,6 +139,8 @@ interface StoreActions {
   openBox: (packId: string) => string[] | null;
   openCase: (packId: string) => string[] | null;
   convertCardToHolo: (definitionId: string) => boolean;
+  toggleFavoriteCard: (definitionId: string, finish: CardFinish) => void;
+  combineForInfinite: (recipe: import('@/data/cards/infiniteCards').InfiniteRecipe) => boolean;
   updateSettings: (patch: Partial<SettingsState>) => void;
   loadState: (state: GameState) => void;
   resetToDefault: () => void;
@@ -494,10 +499,6 @@ function tickChaosDurability(s: Store): void {
     if (!chaos) continue;
     chaos.durability -= 1;
     if (chaos.durability <= 0) {
-      const expiredDef = ScoreSystem.getDefinition(chaos.definitionId) as ChaosDefinition | undefined;
-      if (expiredDef?.entropy?.length) {
-        fireChaosRitual(s, expiredDef.entropy, i as 0 | 1 | 2 | 3);
-      }
       s.deck.discardPile.push(toDeckCard(chaos));
       s.board.backSlots[i] = null;
       const stillActive = s.board.frontSlots.some(
@@ -511,10 +512,11 @@ function tickChaosDurability(s: Store): void {
   }
 }
 
-// Fires Chaos enthalpy (on-play) or entropy (on-expiration) ritual effects directly on draft state.
+// Fires Chaos enthalpy (on-play from hand to board) or entropy (right-click in hand) ritual effects.
 // Returns whether the card should be sacrificed (removed from its back slot without going to discard again).
 function fireChaosRitual(s: Store, effects: ChaosRitualEffect[], backSlot: 0 | 1 | 2 | 3): { sacrificed: boolean } {
   let sacrificed = false;
+  const ritualSource = s.board.backSlots[backSlot];
   for (const effect of effects) {
     if (effect.type === 'search_adjacent_seraphim') {
       if (s.turn.pendingEffect !== null) continue;
@@ -534,16 +536,33 @@ function fireChaosRitual(s: Store, effects: ChaosRitualEffect[], backSlot: 0 | 1
         grantOblivion(s, effect.value, s.turn.chainMultiplier);
       }
       sacrificed = true;
-    } else if (effect.type === 'oblivion_flat') {
-      grantOblivion(s, effect.value, s.turn.chainMultiplier);
-    } else if (effect.type === 'draw') {
-      s.deck = TurnSystem.drawCards(s.deck, effect.value);
-    } else if (effect.type === 'shuffle_discard') {
-      s.deck = TurnSystem.shuffleDiscard(s.deck);
-    } else if (effect.type === 'ember_gain') {
-      s.turn.embers += effect.value;
-    } else if (effect.type === 'radiance_gain') {
-      s.turn.radiance += effect.value;
+    } else {
+      const sourceCard = {
+        instanceId: ritualSource?.instanceId ?? `ritual-${backSlot}`,
+        definitionId: ritualSource?.definitionId ?? '',
+        finish: ritualSource?.finish ?? 'normal' as CardFinish,
+      };
+      const result = CardEffectExecutor.execute(
+        sourceCard,
+        s.turn,
+        s.board,
+        s.deck,
+        false,
+        {
+          effects: [effect],
+          countAsPlay: false,
+          removeFromHand: false,
+          useNextCardMultiplier: false,
+        },
+      );
+      if (!result.canPlay) continue;
+      s.turn = result.turn;
+      s.board = result.board;
+      s.deck = result.deck;
+      if (result.oblivionBonus > 0) {
+        grantOblivion(s, result.oblivionBonus, s.turn.chainMultiplier);
+      }
+      if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
     }
   }
   return { sacrificed };
@@ -1124,6 +1143,33 @@ export const useStore = create<Store>()(
       });
     },
 
+    activateChaosEntropyFromHand: (instanceId) => {
+      set(s => {
+        if (s.turn.phase !== 'playing') return;
+        if (s.turn.pendingEffect !== null) return;
+
+        const deckCard = s.deck.hand.find(c => c.instanceId === instanceId);
+        if (!deckCard) return;
+
+        const def = ScoreSystem.getDefinition(deckCard.definitionId);
+        if (!def || def.type !== 'Chaos') return;
+        const chaosDef = def as ChaosDefinition;
+        if (!chaosDef.entropy?.length) return;
+
+        const fallbackBackSlot = (s.board.backSlots.findIndex(slot => slot === null) >= 0
+          ? s.board.backSlots.findIndex(slot => slot === null)
+          : 0) as 0 | 1 | 2 | 3;
+
+        fireChaosRitual(s, chaosDef.entropy, fallbackBackSlot);
+
+        s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
+        s.deck.discardPile.push(deckCard);
+
+        checkBossDefeated(s);
+        recompute(s);
+      });
+    },
+
     resolvePending: (selected) => {
       set(s => {
         const pending = s.turn.pendingEffect;
@@ -1257,6 +1303,54 @@ export const useStore = create<Store>()(
       return true;
     },
 
+    toggleFavoriteCard: (definitionId, finish) => {
+      set(s => {
+        const definition = CardRegistry.get(definitionId);
+        if (!definition) return;
+
+        const totalOwned = s.progress.collection[definitionId] ?? 0;
+        const holoOwned = Math.min(s.progress.holoCollection[definitionId] ?? 0, totalOwned);
+        const normalOwned = Math.max(0, totalOwned - holoOwned);
+        const ownedForFinish = finish === 'holo' ? holoOwned : normalOwned;
+        const key = getCardFinishKey(definitionId, finish);
+
+        if (ownedForFinish <= 0) {
+          delete s.progress.favoriteCollection[key];
+          return;
+        }
+
+        if (s.progress.favoriteCollection[key]) {
+          delete s.progress.favoriteCollection[key];
+        } else {
+          s.progress.favoriteCollection[key] = true;
+        }
+      });
+    },
+
+    combineForInfinite: (recipe) => {
+      const state = get();
+      // Verify the player owns enough copies of each ingredient
+      for (const ingredient of recipe.ingredients) {
+        const owned = state.progress.collection[ingredient.definitionId] ?? 0;
+        if (owned < ingredient.count) return false;
+      }
+      set(s => {
+        // Consume ingredient copies
+        for (const ingredient of recipe.ingredients) {
+          s.progress.collection[ingredient.definitionId] = (s.progress.collection[ingredient.definitionId] ?? 0) - ingredient.count;
+          // Also reduce holoCollection so it can't exceed total
+          const holoOwned = s.progress.holoCollection[ingredient.definitionId] ?? 0;
+          const totalAfter = s.progress.collection[ingredient.definitionId];
+          s.progress.holoCollection[ingredient.definitionId] = Math.min(holoOwned, totalAfter);
+        }
+        // Grant the Infinite card
+        s.progress.infiniteCollection[recipe.resultId] = (s.progress.infiniteCollection[recipe.resultId] ?? 0) + 1;
+        // Also add to main collection so it shows in deck builder / collection viewer
+        s.progress.collection[recipe.resultId] = (s.progress.collection[recipe.resultId] ?? 0) + 1;
+      });
+      return true;
+    },
+
     // ── Settings ──────────────────────────────────────────────────────────────
 
     updateSettings: (patch) => {
@@ -1342,6 +1436,8 @@ export const useStore = create<Store>()(
         delete op['scoreBoostMultiplier'];
         if (op['aberratedShards'] === undefined) op['aberratedShards'] = 0;
         if (op['holoCollection'] === undefined) op['holoCollection'] = {};
+        if (op['infiniteCollection'] === undefined) op['infiniteCollection'] = {};
+        if (op['favoriteCollection'] === undefined) op['favoriteCollection'] = {};
         if (op['bossClearCounts'] === undefined) op['bossClearCounts'] = {};
 
         // Migrate board: old slots → frontSlots + backSlots
@@ -1449,6 +1545,24 @@ export const useStore = create<Store>()(
           }
           loaded.version = 6;
         }
+
+        const cleanedFavorites: Record<string, boolean> = {};
+        for (const [favoriteKey, isFavorited] of Object.entries(loaded.progress.favoriteCollection ?? {})) {
+          if (!isFavorited) continue;
+          const [definitionId, finishPart] = favoriteKey.split('::');
+          if (!definitionId || (finishPart !== 'normal' && finishPart !== 'holo')) continue;
+          const definition = CardRegistry.get(definitionId);
+          if (!definition) continue;
+
+          const totalOwned = loaded.progress.collection[definitionId] ?? 0;
+          const holoOwned = Math.min(loaded.progress.holoCollection[definitionId] ?? 0, totalOwned);
+          const normalOwned = Math.max(0, totalOwned - holoOwned);
+          const ownedForFinish = finishPart === 'holo' ? holoOwned : normalOwned;
+          if (ownedForFinish <= 0) continue;
+
+          cleanedFavorites[favoriteKey] = true;
+        }
+        loaded.progress.favoriteCollection = cleanedFavorites;
 
         // Migrate bossFight: add if missing from saved state
         if (!loaded.bossFight) {

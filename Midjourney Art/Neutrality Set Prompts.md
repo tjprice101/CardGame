@@ -273,3 +273,98 @@ aegis of equilibrium, legendary symmetry deity, monochromatic trading card illus
 ```
 
 ---
+
+
+## BOSSES
+
+---
+
+### Paradox Throne | Boss | Neutrality Expansion
+`bossId: boss-neutrality-paradox-throne`
+
+```
+paradox throne, timeline-overlap monarch, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, centered throne composition where five simultaneous versions of the same queen overlap in transparent crystal echoes, obsidian and bone monochrome body forms with prismatic rainbow seam refractions, stacked hourglass cathedrals collapsing upward in background, glass crown shards casting spectrum caustics across the frame, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Void Exchequer | Boss | Neutrality Expansion
+`bossId: boss-neutrality-void-exchequer`
+
+```
+void exchequer, cosmic tax collector, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, high-angle ledger chamber composition with colossal armored treasurer seated behind floating crystal account-slabs, each slab drains light from player sigils and re-emits rainbow prismatic debt beams, baroque counting cathedral of obsidian glass and bone-white script pillars in background, monochrome framework with violent spectrum highlights, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Equilibrium Rex | Boss | Neutrality Expansion
+`bossId: boss-neutrality-equilibrium-rex`
+
+```
+equilibrium rex, weaponized balance sovereign, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, frontal symmetrical composition split into mirror halves of perfect equal force, crystal-obsidian armor with central white fracture seam, twelve suspended scale-blades hovering in exact geometric equilibrium around the ruler, every edge refracting full-spectrum rainbow caustics against monochrome stone, cathedral court background dissolving into mirrored void, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Axiom Maw | Boss | Neutrality Expansion
+`bossId: boss-neutrality-axiom-maw`
+
+```
+axiom maw, theorem-devouring horror, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, worm's-eye composition into a massive impossible mouth formed from rotating crystal scripture plates, humanoid void core suspended inside jaws as if speaking axioms that erase matter, monochrome obsidian-bone geometry lit by prismatic rainbow fissures, ruined lecture-cathedral and shattered logic diagrams in background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Prime Judge of Silence | Boss | Neutrality Expansion
+`bossId: boss-neutrality-prime-judge`
+
+```
+prime judge of silence, final neutrality arbiter, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, monumental courtroom composition with faceless judge in crystalline gavel armor presiding over frozen reality, all sound visualized as shattered glass rings arrested in mid-air, monochrome obsidian and bone planes pierced by prismatic rainbow verdict rays, endless tribunal columns fading into void behind, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+## BOSSES
+
+---
+
+### Paradox Throne | Boss | Neutrality Expansion
+`bossId: boss-neutrality-paradox-throne`
+
+```
+paradox throne, timeline-overlap monarch, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, centered throne composition where five simultaneous versions of the same queen overlap in transparent crystal echoes, obsidian and bone monochrome body forms with prismatic rainbow seam refractions, stacked hourglass cathedrals collapsing upward in background, glass crown shards casting spectrum caustics across the frame, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Void Exchequer | Boss | Neutrality Expansion
+`bossId: boss-neutrality-void-exchequer`
+
+```
+void exchequer, cosmic tax collector, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, high-angle ledger chamber composition with colossal armored treasurer seated behind floating crystal account-slabs, each slab drains light from player sigils and re-emits rainbow prismatic debt beams, baroque counting cathedral of obsidian glass and bone-white script pillars in background, monochrome framework with violent spectrum highlights, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Equilibrium Rex | Boss | Neutrality Expansion
+`bossId: boss-neutrality-equilibrium-rex`
+
+```
+equilibrium rex, weaponized balance sovereign, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, frontal symmetrical composition split into mirror halves of perfect equal force, crystal-obsidian armor with central white fracture seam, twelve suspended scale-blades hovering in exact geometric equilibrium around the ruler, every edge refracting full-spectrum rainbow caustics against monochrome stone, cathedral court background dissolving into mirrored void, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Axiom Maw | Boss | Neutrality Expansion
+`bossId: boss-neutrality-axiom-maw`
+
+```
+axiom maw, theorem-devouring horror, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, worm's-eye composition into a massive impossible mouth formed from rotating crystal scripture plates, humanoid void core suspended inside jaws as if speaking axioms that erase matter, monochrome obsidian-bone geometry lit by prismatic rainbow fissures, ruined lecture-cathedral and shattered logic diagrams in background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Prime Judge of Silence | Boss | Neutrality Expansion
+`bossId: boss-neutrality-prime-judge`
+
+```
+prime judge of silence, final neutrality arbiter, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, monumental courtroom composition with faceless judge in crystalline gavel armor presiding over frozen reality, all sound visualized as shattered glass rings arrested in mid-air, monochrome obsidian and bone planes pierced by prismatic rainbow verdict rays, endless tribunal columns fading into void behind, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```

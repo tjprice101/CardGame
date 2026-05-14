@@ -68,6 +68,35 @@
   100% { transform: translateY(-72px) scale(0.82); opacity: 0; }
 }
 
+/* ── Idle profile staple fade swap ── */
+@keyframes idleStapleFadeOut {
+  from { opacity: 0.92; }
+  to { opacity: 0.08; }
+}
+
+@keyframes idleStapleFadeIn {
+  from { opacity: 0.08; }
+  to { opacity: 0.92; }
+}
+
+/* ── Black screen transition between states ── */
+@keyframes screenBlackFade {
+  0% { opacity: 0; }
+  35% { opacity: 0.58; }
+  100% { opacity: 0; }
+}
+
+/* ── Generic cross-fade helpers for screen/state transitions ── */
+@keyframes screenFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes screenFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 /* ── Radiance orb gain flash ── */
 @keyframes radianceFlash {
   0%   { box-shadow: 0 0 16px 4px rgba(255,215,0,0.55), 0 0 32px 8px rgba(255,215,0,0.2); }
@@ -138,13 +167,13 @@
 
 @keyframes bossHoloShift {
   0% {
-    background-position: 0% 0%, 0% 0%, 50% 50%, center, center;
+    background-position: 0% 0%, 0% 0%, 50% 50%, center, 50% -8%;
   }
   50% {
-    background-position: 22% 15%, -18% 20%, 50% 50%, center, center;
+    background-position: 22% 15%, -18% 20%, 50% 50%, center, 50% 50%;
   }
   100% {
-    background-position: 44% 30%, -34% 42%, 50% 50%, center, center;
+    background-position: 44% 30%, -34% 42%, 50% 50%, center, 50% 108%;
   }
 }
 
@@ -167,6 +196,28 @@
   100% {
     box-shadow: inset 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(255,218,140,0);
   }
+}
+
+/* ── Infinite rarity — deep white & black glass shimmer ── */
+@keyframes infiniteGlassShift {
+  0%   { background-position: 0% 0%, 0% 0%, 50% 50%, center, 50% -8%; }
+  33%  { background-position: 30% 20%, -20% 30%, 50% 50%, center, 50% 35%; }
+  66%  { background-position: 60% 40%, -40% 60%, 50% 50%, center, 50% 70%; }
+  100% { background-position: 0% 0%, 0% 0%, 50% 50%, center, 50% 108%; }
+}
+
+@keyframes infiniteGlassPulse {
+  0%, 100% { filter: brightness(1.0) contrast(1.08) saturate(0.0); }
+  25%       { filter: brightness(1.22) contrast(1.18) saturate(0.0); }
+  50%       { filter: brightness(0.88) contrast(1.30) saturate(0.0); }
+  75%       { filter: brightness(1.14) contrast(1.12) saturate(0.0); }
+}
+
+@keyframes infiniteGlassGlint {
+  0%   { box-shadow: inset 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(255,255,255,0); }
+  40%  { box-shadow: inset 0 0 28px rgba(255,255,255,0.28), 0 0 18px rgba(200,220,255,0.30); }
+  60%  { box-shadow: inset 0 0 10px rgba(0,0,0,0.18), 0 0 8px rgba(180,200,230,0.20); }
+  100% { box-shadow: inset 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(255,255,255,0); }
 }
 
 @keyframes gamePatternDrift {
@@ -296,6 +347,51 @@
 .holofoil-menu-card:hover::after {
   opacity: 0.62;
   animation: holoEtchShift 1.35s linear infinite alternate;
+}
+
+.holofoil-menu-card.infinite-holo-bw-hover::before {
+  background-image:
+    repeating-conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(255, 255, 255, 0.42) 0deg 12deg,
+      rgba(0, 0, 0, 0.34) 12deg 24deg,
+      rgba(255, 255, 255, 0.42) 24deg 36deg,
+      rgba(0, 0, 0, 0.34) 36deg 48deg,
+      rgba(255, 255, 255, 0.42) 48deg 60deg,
+      rgba(0, 0, 0, 0.34) 60deg 72deg
+    ),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 255, 0.24) 0 2px,
+      rgba(255, 255, 255, 0) 2px 8px,
+      rgba(0, 0, 0, 0.2) 8px 10px,
+      rgba(255, 255, 255, 0) 10px 16px
+    ),
+    linear-gradient(130deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.06) 30%, rgba(0, 0, 0, 0.18) 55%, rgba(0, 0, 0, 0.04) 100%);
+  mix-blend-mode: luminosity;
+}
+
+.holofoil-menu-card.infinite-holo-bw-hover::after {
+  background-image:
+    repeating-linear-gradient(
+      130deg,
+      rgba(0, 0, 0, 0.36) 0px,
+      rgba(0, 0, 0, 0.36) 1px,
+      rgba(255, 255, 255, 0.28) 1px,
+      rgba(255, 255, 255, 0.28) 2px,
+      rgba(255, 255, 255, 0) 2px,
+      rgba(255, 255, 255, 0) 6px
+    ),
+    repeating-linear-gradient(
+      38deg,
+      rgba(255, 255, 255, 0.24) 0px,
+      rgba(255, 255, 255, 0.24) 1px,
+      rgba(0, 0, 0, 0.3) 1px,
+      rgba(0, 0, 0, 0.3) 2px,
+      rgba(255, 255, 255, 0) 2px,
+      rgba(255, 255, 255, 0) 7px
+    );
+  mix-blend-mode: overlay;
 }
 
 /* ── Gameplay holo overlay for hand and board visibility ── */
@@ -429,6 +525,21 @@
 }
 .anim-radiance-flash {
   animation: radianceFlash 0.42s ease-out;
+}
+.anim-idle-staple-fade-out {
+  animation: idleStapleFadeOut 0.18s ease both;
+}
+.anim-idle-staple-fade-in {
+  animation: idleStapleFadeIn 0.24s ease both;
+}
+.anim-screen-fade-in {
+  animation: screenFadeIn 0.3s ease both;
+}
+.anim-screen-fade-out {
+  animation: screenFadeOut 0.3s ease both;
+}
+.anim-screen-black-fade {
+  animation: screenBlackFade 0.42s ease both;
 }
 .anim-angel-breath {
   animation: angelBreath 3.5s ease-in-out infinite;

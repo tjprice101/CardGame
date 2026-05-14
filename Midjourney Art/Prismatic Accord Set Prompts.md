@@ -194,3 +194,51 @@ aurelith seer of the ninth beam, prophetic still-light angel, prismatic accord t
 ```
 vorthum whitebeam arbiter, eternal shardborn accord angel, prismatic accord trading card illustration, palette lock: vorthum graphite, mirror silver, spectrum cyan, fracture violet, accord gold, white beam-light only; no lush greens, furnace orange, abyss magenta, or holy gold dominance, apocalyptic judgment composition at the center of the Vorthum plains, colossal angelic shardborn formed from monochrome steel plates and one blinding white beam body-core, three required seraph marks and two active chaos reflections orbiting the frame, on-summon sequence shows double draw sigils, accord floor 1.6 calibration, and an oblivion crest, awakened ability depicted as whitebeam expansion followed by mirrored next-strike amplification, the entire world reflected in fractured silver beneath it, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
 ```
+
+
+## BOSSES
+
+---
+
+### Vorthum Mirror Regent | Boss | Prismatic Accord Expansion
+`bossId: boss-prismatic-mirror-regent`
+
+```
+vorthum mirror regent, sovereign of reflected steel, prismatic accord eternal boss trading card illustration, palette lock: vorthum graphite, mirror silver, spectrum cyan, fracture violet, accord gold, white beam-light only; no lush greens, furnace orange, abyss magenta, or holy gold dominance, monumental throne composition on a mirror-bright steel plain, regal shardborn monarch with colorless armor-plates erupting into prismatic bands only where white noon light strikes, crown of fracture mirrors orbiting the head and body reflected infinitely beneath, distant horizon cut by silent silver pylons and cyan-violet caustics, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Fracture Road Hierophant | Boss | Prismatic Accord Expansion
+`bossId: boss-prismatic-fracture-hierophant`
+
+```
+fracture road hierophant, split-causality priest, prismatic accord eternal boss trading card illustration, palette lock: vorthum graphite, mirror silver, spectrum cyan, fracture violet, accord gold, white beam-light only; no lush greens, furnace orange, abyss magenta, or holy gold dominance, high-angle ritual composition over a vast crevasse of crystallized light-memory, towering shardborn hierophant walking several branching roads at once in transparent mirrored afterimages, white beam scripture rings and cyan-violet omen paths crossing beneath talons, steel desert and fault-cathedral background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Drift Canopy Leviathan | Boss | Prismatic Accord Expansion
+`bossId: boss-prismatic-drift-leviathan`
+
+```
+drift canopy leviathan, storm-ceiling shardborn titan, prismatic accord eternal boss trading card illustration, palette lock: vorthum graphite, mirror silver, spectrum cyan, fracture violet, accord gold, white beam-light only; no lush greens, furnace orange, abyss magenta, or holy gold dominance, extreme low-angle storm composition with colossal veltharion body coiling through thundercloud strata above the world, monochrome steel scales flashing into cyan violet and gold under repeated lightning impacts, white eyes burning through rain haze while entire cloudbanks mirror its movements, abyssal altitude and reflected world below, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Reliquary of Blind Wars | Boss | Prismatic Accord Expansion
+`bossId: boss-prismatic-blindwars-reliquary`
+
+```
+reliquary of blind wars, oath-mausoleum war engine, prismatic accord eternal boss trading card illustration, palette lock: vorthum graphite, mirror silver, spectrum cyan, fracture violet, accord gold, white beam-light only; no lush greens, furnace orange, abyss magenta, or holy gold dominance, impossible mausoleum composition with walking shrine built from mirrored tomb-plates and suspended scale relics, old battlefield reflections waking inside every silver panel, violet-cyan scars and white beam ruptures spilling from sealed seams, ranks of forgotten shardborn standards half-buried across the steel plain, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Whitebeam Concordat | Boss | Prismatic Accord Expansion
+`bossId: boss-prismatic-whitebeam-concordat`
+
+```
+whitebeam concordat, nine-day treaty made flesh, prismatic accord eternal boss trading card illustration, palette lock: vorthum graphite, mirror silver, spectrum cyan, fracture violet, accord gold, white beam-light only; no lush greens, furnace orange, abyss magenta, or holy gold dominance, apocalyptic vertical composition with a colossal humanoid shardborn formed around a blinding central white beam, four category emblems and nine concentric treaty rings orbiting the body as prismatic light breaks across mirror plains below, storm canopy torn open overhead and fracture roads igniting at the horizon, cyan-violet-gold fringe light around an overwhelming white core, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```

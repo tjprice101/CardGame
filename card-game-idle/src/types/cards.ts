@@ -2,7 +2,7 @@ import type { Element } from './elements';
 import type { CardEffect, ChaosPassiveEffect, ChaosRitualEffect } from './effects';
 
 export type CardType = 'Seeker' | 'Chaos' | 'Seraphim' | 'Angel';
-export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal';
+export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal' | 'Infinite';
 export type CardFinish = 'normal' | 'holo';
 
 export const SERAPHIM_BONUS_TYPES = [
@@ -92,7 +92,7 @@ export interface ChaosDefinition {
   readonly maxDurability: number;   // cards-played until auto-expiry
   readonly effects: ChaosPassiveEffect[];  // passive bonuses applied to adjacent frontSlots Seraphim
   readonly enthalpy?: ChaosRitualEffect[]; // on-play: fires immediately when placed on the back row
-  readonly entropy?: ChaosRitualEffect[];  // on-expiration: fires when durability reaches 0
+  readonly entropy?: ChaosRitualEffect[];  // right-click in hand
 }
 
 export interface ChaosInstance {

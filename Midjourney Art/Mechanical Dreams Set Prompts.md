@@ -194,3 +194,51 @@ ori-9 archon of broken sleep, machine-saint angel, mechanical dreams trading car
 ```
 thaumiel prime furnace of unwritten futures, eternal machine-angel, mechanical dreams trading card illustration, palette lock: blackglass obsidian, ivory ceramic, furnace yellow, hazard amber, cinder red only; no nature greens, ocean blues, or holy gold dominance, apocalyptic frontal composition at center of a world-engine, three required seraph marks and two chaos cores orbiting the throne reactor, on-summon sequence shows three strain ignitions plus chain floor 1.6 calibration and oblivion crest, awakened ability depicted as four-strain threshold flare followed by total venting superplume, impossible reactor megacity background collapsing into holy machinery light, white-yellow furnace core with inferno red and abyssal blackglass palette, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
 ```
+
+
+## BOSSES
+
+---
+
+### Overclock Arch-Engine | Boss | Mechanical Dreams Expansion
+`bossId: boss-mech-overclock-arch`
+
+```
+overclock arch-engine, machine cathedral accelerator, mechanical dreams eternal boss trading card illustration, palette lock: blackglass obsidian, ivory alloy, furnace yellow, hazard amber, cinder red; no natural forest palettes or clean oceanic blues, low-angle reactor-arch composition with giant engine-seraph fused into gothic machinery gate, overclock rings igniting in sequence and vent steam crossing frame, blackglass structure with ivory trim and furnace yellow glyphs, sprawling forge metropolis background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Furnace Mind Helix | Boss | Mechanical Dreams Expansion
+`bossId: boss-mech-furnace-mind`
+
+```
+furnace mind helix, prophetic processor tyrant, mechanical dreams eternal boss trading card illustration, palette lock: blackglass obsidian, ivory alloy, furnace yellow, hazard amber, cinder red; no natural forest palettes or clean oceanic blues, helix core composition with humanoid machine intellect suspended in spiraling data coils, thought-streams rendered as molten script ribbons, strain converted into prediction shards around crown, computational sanctum background of stacked server choirs and brass reliquaries, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Brass Tribunal | Boss | Mechanical Dreams Expansion
+`bossId: boss-mech-brass-tribunal`
+
+```
+brass tribunal, tri-judge verdict loop, mechanical dreams eternal boss trading card illustration, palette lock: blackglass obsidian, ivory alloy, furnace yellow, hazard amber, cinder red; no natural forest palettes or clean oceanic blues, triptych composition with three synchronized brass judges seated in rotating court machine, one speaks verdict, one computes recursion, one executes sentence, continuous loop sigils encircle chamber, blackglass courtroom and piston galleries in background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, bosses fill 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Reactor Psalm Engine | Boss | Mechanical Dreams Expansion
+`bossId: boss-mech-reactor-psalm`
+
+```
+reactor psalm engine, liturgical vent colossus, mechanical dreams eternal boss trading card illustration, palette lock: blackglass obsidian, ivory alloy, furnace yellow, hazard amber, cinder red; no natural forest palettes or clean oceanic blues, cathedral reactor composition with giant hymn engine emitting synchronized vent pillars like choir voices, armored cantors integrated into turbine ribs, red-yellow psalm waves rolling over battlefield floor, machine basilica skyline in heat haze background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Primevector Thaumiel | Boss | Mechanical Dreams Expansion
+`bossId: boss-mech-primevector`
+
+```
+primevector thaumiel, terminal overclock archangel, mechanical dreams eternal boss trading card illustration, palette lock: blackglass obsidian, ivory alloy, furnace yellow, hazard amber, cinder red; no natural forest palettes or clean oceanic blues, apocalyptic frontal composition with supreme machine-angel at center of converging vector lines, every overclock path in the sky and ground terminating at its reactor heart, twelve blade halos of blackglass and white furnace light, collapsing future-city rails and singularity turbines behind, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```

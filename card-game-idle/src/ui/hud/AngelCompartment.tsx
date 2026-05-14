@@ -4,7 +4,6 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
   cardFacePalette,
-  getCardBackgroundUrl,
   getCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
@@ -111,7 +110,6 @@ export default function AngelCompartment() {
             if (!def || def.type !== 'Angel') return null;
             const angelDef = def as AngelDefinition;
             const artStyle = getCardFaceBackgroundStyle(angelDef, finish);
-            const artUrl = getCardBackgroundUrl(angelDef);
 
             const onBoardCopies = board.frontSlots.filter(
               sl => sl?.type === 'Angel' && sl.definitionId === definitionId && sl.finish === finish
@@ -188,8 +186,6 @@ export default function AngelCompartment() {
                   ...artStyle,
                   position: 'relative',
                   minHeight: ANGEL_ART_HEIGHT,
-                  backgroundPosition: artUrl ? 'center center' : 'center',
-                  backgroundSize: artUrl ? 'cover' : 'cover',
                   backgroundRepeat: 'no-repeat',
                   borderTop: `1px solid ${cardFacePalette.border}`,
                   borderBottom: `1px solid ${cardFacePalette.border}`,

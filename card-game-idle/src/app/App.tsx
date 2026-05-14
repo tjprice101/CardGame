@@ -9,6 +9,7 @@ import SettingsPanel from '@/ui/settings/SettingsPanel';
 import EternitysWake from '@/ui/eternitysWake/EternitysWake';
 import BossFightArena from '@/ui/eternitysWake/BossFightArena';
 import BossResultModal from '@/ui/eternitysWake/BossResultModal';
+import Infinitude from '@/ui/infinitude/Infinitude';
 import { warmTheme } from '@/ui/theme';
 import { useStore, selectDeck, selectTurn, selectBossFight } from '@/state/store';
 
@@ -16,11 +17,14 @@ const engine = new GameEngine();
 
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const previousScreenSignatureRef = useRef<string>('');
   const [showDeckBuilder, setShowDeckBuilder] = useState(false);
   const [showCardStore, setShowCardStore] = useState(false);
   const [showDeckViewer, setShowDeckViewer] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showEternitysWake, setShowEternitysWake] = useState(false);
+  const [showInfinitude, setShowInfinitude] = useState(false);
+  const [screenFadeKey, setScreenFadeKey] = useState(0);
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
@@ -46,7 +50,19 @@ export default function App() {
   const noDecklist = deck.deckList.length === 0;
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showEternitysWake;
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showEternitysWake || showInfinitude;
+  const screenSignature = `${turn.phase}|${bossFight.mode}|${isMenuOpen ? 'menu' : 'game'}`;
+
+  useEffect(() => {
+    if (!previousScreenSignatureRef.current) {
+      previousScreenSignatureRef.current = screenSignature;
+      return;
+    }
+    if (previousScreenSignatureRef.current !== screenSignature) {
+      previousScreenSignatureRef.current = screenSignature;
+      setScreenFadeKey(k => k + 1);
+    }
+  }, [screenSignature]);
 
   const menuButtonStyle: React.CSSProperties = {
     padding: '8px 16px',
@@ -78,7 +94,7 @@ export default function App() {
       )}
 
       {/* Top-right navigation buttons (visible when idle and not in a boss fight) */}
-      {idlePhase && !inBossFight && !showDeckBuilder && !showCardStore && !showDeckViewer && !showSettings && !showEternitysWake && (
+      {idlePhase && !inBossFight && !showDeckBuilder && !showCardStore && !showDeckViewer && !showSettings && !showEternitysWake && !showInfinitude && (
         <div style={{
           position: 'absolute',
           top: 16,
@@ -108,6 +124,17 @@ export default function App() {
             Eternity's Wake
           </button>
           <button
+            onClick={() => setShowInfinitude(true)}
+            style={{
+              ...menuButtonStyle,
+              border: `1px solid rgba(180,190,255,0.38)`,
+              color: '#d8d8f8',
+              background: 'rgba(14,14,26,0.82)',
+            }}
+          >
+            Infinitude
+          </button>
+          <button
             onClick={() => setShowDeckViewer(true)}
             style={menuButtonStyle}
           >
@@ -117,7 +144,7 @@ export default function App() {
       )}
 
       {/* Deck tools row kept separate from navigation to avoid overlap */}
-      {idlePhase && !inBossFight && !showDeckBuilder && !showCardStore && !showDeckViewer && !showSettings && !showEternitysWake && (
+      {idlePhase && !inBossFight && !showDeckBuilder && !showCardStore && !showDeckViewer && !showSettings && !showEternitysWake && !showInfinitude && (
         <div style={{
           position: 'absolute',
           top: 66,
@@ -182,6 +209,13 @@ export default function App() {
         </div>
       )}
 
+      {/* Infinitude modal */}
+      {showInfinitude && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
+          <Infinitude onClose={() => setShowInfinitude(false)} />
+        </div>
+      )}
+
       {/* Boss result modal (victory / defeat) */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
         <div style={{ pointerEvents: 'auto' }}>
@@ -229,6 +263,20 @@ export default function App() {
             onWipe={() => engine.wipeData()}
           />
         </div>
+      )}
+
+      {screenFadeKey > 0 && (
+        <div
+          key={`screen-fade-${screenFadeKey}`}
+          className="anim-screen-black-fade"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: '#000',
+            pointerEvents: 'none',
+            zIndex: 120,
+          }}
+        />
       )}
     </div>
   );

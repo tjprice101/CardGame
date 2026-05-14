@@ -316,3 +316,51 @@ pyroclast wraith, ascending divine being, pyroabyss trading card illustration, d
 ```
 obliteron, legendary divine destroyer, pyroabyss trading card illustration, colossal low-angle upward perspective, enormous compressed obsidian sphere with a blazing crimson core visible through a network of cracks spreading across its surface like a dying star, eight immense void-purple tentacle-wings arranged in perfect bilateral symmetry erupting from the sphere's equator and arcing past the frame edges, each tentacle-wing covered in crimson bioluminescent markings pulsing in sequence along their length, a crown of eight sharp crimson energy spines radiating from the sphere's apex like a dark halo, the void around the creature visibly bent and warped suggesting immense gravitational mass, distant crimson lightning arcing between tentacle-tips across the background, a faint crimson nebula-glow deep in the absolute void behind, the viewer positioned far below looking upward to convey the creature's impossible scale, cosmic void background in loose expressive dark brushwork, tentacle pulse markings painted as gestural flares, deep void purples in tentacle wing surfaces and warped void, blazing crimsons at the core cracks and bioluminescent markings, pale ash whites at lightning arc discharge points, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, legendary awe-inspiring composition, creature fills 80% of frame --ar 2:3 --niji 6 --stylize 900
 ```
+
+
+## BOSSES
+
+---
+
+### Cinder Leviathan | Boss | Pyroabyss Expansion
+`bossId: boss-pyroabyss-cinder-leviathan`
+
+```
+cinder leviathan, abyss furnace serpent, pyroabyss eternal boss trading card illustration, palette lock: abyss black-purple, volcanic crimson, magma red, ash white only; no verdant greens or clean celestial blues, deep low-angle composition of colossal serpentine beast coiling around a volcanic cathedral crater, body plated in black obsidian scales with blazing red magma veins and ash-white core vents, ember storms spiraling off fins, abyssal sea of fire and void-smoke sky background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Ash Kings Unbound | Boss | Pyroabyss Expansion
+`bossId: boss-pyroabyss-ash-kings`
+
+```
+ash kings unbound, twin monarch catastrophe, pyroabyss eternal boss trading card illustration, palette lock: abyss black-purple, volcanic crimson, magma red, ash white only; no verdant greens or clean celestial blues, dual-figure split composition with two crowned infernal rulers marching from opposite sides toward center collision, one wrapped in purple abyss flame and one in crimson pyre fire, synchronized throne-armors cracking the battlefield beneath them, collapsing citadel furnace background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, bosses fill 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Infernal Suncore | Boss | Pyroabyss Expansion
+`bossId: boss-pyroabyss-infernal-sun`
+
+```
+infernal suncore, black star tyrant, pyroabyss eternal boss trading card illustration, palette lock: abyss black-purple, volcanic crimson, magma red, ash white only; no verdant greens or clean celestial blues, centered stellar composition with humanoid core figure suspended inside a ringed burning sun, concentric cinder halos and plasma shards orbiting at high speed, red-yellow-white blast gradients over abyss purple space, shattered fire temples drifting around core, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Riftbell Catastrophe | Boss | Pyroabyss Expansion
+`bossId: boss-pyroabyss-rift-bell`
+
+```
+riftbell catastrophe, apocalypse toll-bell entity, pyroabyss eternal boss trading card illustration, palette lock: abyss black-purple, volcanic crimson, magma red, ash white only; no verdant greens or clean celestial blues, dramatic overhead composition with gigantic cracked bell forged from volcanic glass suspended above a flaming abyss city, each bell toll creates expanding ring-shockwaves of red and violet fire, chained execution towers and molten chasms below, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Phoenix Judge of the Abyss | Boss | Pyroabyss Expansion
+`bossId: boss-pyroabyss-phoenix-judge`
+
+```
+phoenix judge of the abyss, rebirth executioner, pyroabyss eternal boss trading card illustration, palette lock: abyss black-purple, volcanic crimson, magma red, ash white only; no verdant greens or clean celestial blues, ascending diagonal composition of colossal judge-phoenix erupting from its own ashes with tribunal armor and burning law tablets as wings, layered resurrection forms visible behind as afterimages, infernal courtroom volcano background, red-gold-white combustion palette over void-black shadows, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```

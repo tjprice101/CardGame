@@ -13,11 +13,11 @@ import {
 import { warmTheme } from '@/ui/theme';
 
 const RARITY_COLORS: Record<string, string> = {
-  Common: '#888', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12',
+  Common: '#888', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
 };
 
 const RARITY_ORDER: Record<string, number> = {
-  Common: 0, Rare: 1, Epic: 2, Legendary: 3,
+  Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5,
 };
 
 interface Props { onClose: () => void }
@@ -33,6 +33,8 @@ export default function CollectionViewer({ onClose }: Props) {
   const faceMetrics = getCardFaceMetrics('grid');
   const collection = useStore(s => s.progress.collection);
   const holoCollection = useStore(s => s.progress.holoCollection);
+  const favoriteCollection = useStore(s => s.progress.favoriteCollection);
+  const toggleFavoriteCard = useStore(s => s.toggleFavoriteCard);
   const [activeElement, setActiveElement] = useState<string>('All');
 
   const allCards = CardRegistry.getAll().flatMap(card => {
@@ -149,7 +151,9 @@ export default function CollectionViewer({ onClose }: Props) {
           return (
             <div
               key={entry.key}
-              className={finish === 'holo' ? 'holofoil-menu-card' : undefined}
+              className={finish === 'holo'
+                ? `holofoil-menu-card${card.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}`
+                : undefined}
               style={{
                 width: 148,
                 ...getCardFaceBackgroundStyle(card, finish),
@@ -159,6 +163,7 @@ export default function CollectionViewer({ onClose }: Props) {
                   : `1px solid ${warmTheme.border}`,
                 borderRadius: 12,
                 height: 204,
+                position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'stretch',
@@ -167,6 +172,39 @@ export default function CollectionViewer({ onClose }: Props) {
                 overflow: 'hidden',
               }}
             >
+              {owned > 0 && (
+                <button
+                  onClick={() => toggleFavoriteCard(card.definitionId, finish)}
+                  title={favoriteCollection[entry.key] ? 'Unfavorite card' : 'Favorite card'}
+                  style={{
+                    position: 'absolute',
+                    top: 6,
+                    right: 6,
+                    zIndex: 3,
+                    width: 22,
+                    height: 22,
+                    borderRadius: 999,
+                    border: favoriteCollection[entry.key]
+                      ? '1px solid rgba(255, 215, 100, 0.9)'
+                      : '1px solid rgba(255, 238, 212, 0.55)',
+                    background: favoriteCollection[entry.key]
+                      ? 'rgba(120, 84, 36, 0.86)'
+                      : 'rgba(42, 27, 14, 0.62)',
+                    color: favoriteCollection[entry.key] ? '#ffd86b' : 'rgba(255, 241, 220, 0.8)',
+                    fontSize: 12,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: favoriteCollection[entry.key]
+                      ? '0 0 8px rgba(255, 215, 100, 0.45)'
+                      : 'none',
+                  }}
+                >
+                  ★
+                </button>
+              )}
+
               <div style={getCardNameRibbonStyle('grid')}>
                 <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
                   {card.type} · {getCardFinishLabel(finish)}

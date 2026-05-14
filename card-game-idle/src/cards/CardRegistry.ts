@@ -15,6 +15,7 @@ import { mechanicalDreamsAngels } from '@/data/cards/mechanicalDreamsAngels';
 import { mechanicalDreamsChaos, mechanicalDreamsSeekers, mechanicalDreamsSeraphims } from '@/data/cards/mechanicalDreamsCards';
 import { prismaticAccordAngels } from '@/data/cards/prismaticAccordAngels';
 import { prismaticAccordChaos, prismaticAccordSeekers, prismaticAccordSeraphims } from '@/data/cards/prismaticAccordCards';
+import { infiniteCards } from '@/data/cards/infiniteCards';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 
 const registry = new Map<string, CardDefinition>();
@@ -48,6 +49,7 @@ registerAll(prismaticAccordAngels as unknown as CardDefinition[]);
 registerAll(prismaticAccordChaos as unknown as CardDefinition[]);
 registerAll(prismaticAccordSeekers as unknown as CardDefinition[]);
 registerAll(prismaticAccordSeraphims as unknown as CardDefinition[]);
+registerAll(infiniteCards as unknown as CardDefinition[]);
 
 ScoreSystem.getDefinition = (id: string) => registry.get(id);
 

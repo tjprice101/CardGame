@@ -94,8 +94,10 @@ export interface ProgressState {
   aberratedShards: number;
   prestige: number;
   totalCardsPlayed: number;
-  collection: Record<string, number>;    // definitionId → total copy count owned
-  holoCollection: Record<string, number>; // definitionId → holo copy count owned
+  collection: Record<string, number>;         // definitionId → total copy count owned
+  holoCollection: Record<string, number>;      // definitionId → holo copy count owned
+  infiniteCollection: Record<string, number>;  // definitionId → Infinite card count owned
+  favoriteCollection: Record<string, boolean>; // `${definitionId}::${finish}` → favorited
   bossClearCounts: Record<string, number>;
   savedDecks: SavedDeck[];
   activeDeckId: string | null;

@@ -456,7 +456,9 @@ export default function DeckBuilder({ onClose }: Props) {
                   return (
                     <div
                       key={def.key}
-                      className={def.finish === 'holo' ? 'holofoil-menu-card' : undefined}
+                      className={def.finish === 'holo'
+                        ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}`
+                        : undefined}
                       style={{
                         ...styles.card,
                         ...getCardFaceBackgroundStyle(def.def, def.finish),
@@ -517,7 +519,9 @@ export default function DeckBuilder({ onClose }: Props) {
                   return (
                     <div
                       key={def.key}
-                      className={def.finish === 'holo' ? 'holofoil-menu-card' : undefined}
+                      className={def.finish === 'holo'
+                        ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}`
+                        : undefined}
                       style={{
                         ...styles.card,
                         ...getCardFaceBackgroundStyle(def.def, def.finish),

@@ -343,7 +343,11 @@ export default function HolofoilWorkshop() {
           const canAfford = shards >= cost;
 
           return (
-            <div key={def.definitionId} className="holofoil-menu-card" style={{ ...styles.card, ...getCardFaceBackgroundStyle(def, 'holo') }}>
+            <div
+              key={def.definitionId}
+              className={`holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}`}
+              style={{ ...styles.card, ...getCardFaceBackgroundStyle(def, 'holo') }}
+            >
               <div style={getCardNameRibbonStyle('grid')}>
                 <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.3, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
                   {def.type} · {getCardFinishLabel('holo')}

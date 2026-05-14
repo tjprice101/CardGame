@@ -36,21 +36,21 @@ const CARD_FACE_METRICS: Record<CardFaceVariant, {
 }> = {
   hand: {
     ribbonPadding: '8px 10px 6px',
-    panelPadding: '7px 10px 8px',
+    panelPadding: '6px 9px 7px',
     typeSize: 9,
     nameSize: 15,
-    descSize: 11,
-    descLineHeight: 1.45,
-    descLines: 3,
+    descSize: 10,
+    descLineHeight: 1.3,
+    descLines: 2,
   },
   pack: {
     ribbonPadding: '10px 11px 8px',
-    panelPadding: '10px 11px 11px',
+    panelPadding: '8px 10px 9px',
     typeSize: 8,
     nameSize: 12,
     descSize: 9,
-    descLineHeight: 1.45,
-    descLines: 4,
+    descLineHeight: 1.3,
+    descLines: 3,
   },
   grid: {
     ribbonPadding: '8px 9px 6px',
@@ -102,6 +102,8 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'btei-omniscient-fracture': 'Shattered Oracle.png',
   'btei-colossus-advent': 'Abyssal Colossus.png',
   'btei-axiom-of-oblivion': 'Eternal Null.png',
+  'btei-prismatic-blindwars-reliquary': 'Reliquary of Blind Wars.png',
+  'inf-ash-kings-apocalypse': 'Ash Kings Apocalypse.png',
   'tbp-ser-scar-mantle-reclaimer': 'Scar-mantle Reclaimer.png',
   'tbp-angel-velmora-harrowed-crown': 'Velmora Crown of Harrowed Plains.png',
 };
@@ -115,26 +117,37 @@ function hashDefinitionId(definitionId: string): number {
   return Math.abs(hash);
 }
 
-function getBossHoloAnimationStyle(definitionId: string): CSSProperties {
+function getInfiniteGlassAnimationStyle(): CSSProperties {
+  return {
+    animationName: 'infiniteGlassShift, infiniteGlassPulse, infiniteGlassGlint',
+    animationDuration: '7.2s, 7.2s, 7.2s',
+    animationTimingFunction: 'ease-in-out, ease-in-out, ease-in-out',
+    animationIterationCount: 'infinite, infinite, infinite',
+    animationDirection: 'alternate, alternate, alternate',
+  };
+}
+
+function getHolofoilAnimationStyle(definitionId: string): CSSProperties {
   const hash = hashDefinitionId(definitionId);
   const hueShift = 40 + (hash % 260);
-  const driftSeconds = (7 + (hash % 6)) / 2;
-  const pulseSeconds = (8 + ((hash >> 2) % 8)) / 2;
-  const glintSeconds = (6 + ((hash >> 4) % 7)) / 2;
-  const direction = hash % 2 === 0 ? 'normal' : 'alternate';
 
   return {
     animationName: 'bossHoloShift, bossHoloPulse, bossHoloGlint',
-    animationDuration: `${driftSeconds}s, ${pulseSeconds}s, ${glintSeconds}s`,
-    animationTimingFunction: 'linear, ease-in-out, linear',
+    animationDuration: '7.2s, 7.2s, 7.2s',
+    animationTimingFunction: 'ease-in-out, ease-in-out, ease-in-out',
     animationIterationCount: 'infinite, infinite, infinite',
-    animationDirection: `${direction}, alternate, normal`,
+    animationDirection: 'alternate, alternate, alternate',
     filter: `hue-rotate(${hueShift}deg) saturate(1.22)`,
   };
 }
 
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
+
+  if (card.rarity === 'Infinite') {
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURIComponent(fileName)}`;
+  }
 
   const folder = CARD_BACKGROUND_FOLDERS[card.element];
   if (!folder) return null;
@@ -144,10 +157,27 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
 }
 
 export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal'): CSSProperties {
-  const bossHoloStyle = finish === 'holo' && card?.definitionId.startsWith('btei-')
-    ? getBossHoloAnimationStyle(card.definitionId)
+  const isInfinite = card?.rarity === 'Infinite';
+  const isInfiniteHolo = isInfinite && finish === 'holo';
+  const infiniteGlassStyle = isInfinite && !isInfiniteHolo ? getInfiniteGlassAnimationStyle() : {};
+
+  const holofoilStyle = finish === 'holo' && card
+    ? getHolofoilAnimationStyle(card.definitionId)
     : {};
+
+  // Infinite cards always get their glass shimmer regardless of finish
+  const animStyle = isInfiniteHolo ? holofoilStyle : (isInfinite ? infiniteGlassStyle : holofoilStyle);
+
   const imageUrl = getCardBackgroundUrl(card);
+
+  // Infinite shimmer layers: deep white/black glass with no colour
+  const infiniteLayers = [
+    'linear-gradient(140deg, rgba(255,255,255,0.22) 0%, rgba(0,0,0,0.18) 30%, rgba(255,255,255,0.30) 55%, rgba(0,0,0,0.14) 75%, rgba(255,255,255,0.20) 100%)',
+    'radial-gradient(ellipse at 20% 15%, rgba(255,255,255,0.30) 0%, rgba(0,0,0,0) 40%)',
+    'linear-gradient(220deg, rgba(255,255,255,0) 30%, rgba(255,255,255,0.36) 50%, rgba(0,0,0,0.12) 58%, rgba(255,255,255,0) 72%)',
+    'linear-gradient(180deg, rgba(10,10,14,0.20) 0%, rgba(10,10,14,0.06) 50%, rgba(10,10,14,0.18) 100%)',
+  ];
+
   const holoLayers = [
     'linear-gradient(140deg, rgba(255, 104, 192, 0.12) 0%, rgba(255, 193, 82, 0.08) 24%, rgba(98, 205, 255, 0.12) 48%, rgba(122, 246, 181, 0.1) 72%, rgba(255, 255, 255, 0.14) 100%)',
     'radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0) 30%)',
@@ -155,33 +185,38 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     'linear-gradient(180deg, rgba(26, 18, 12, 0.16) 0%, rgba(26, 18, 12, 0.04) 55%, rgba(26, 18, 12, 0.1) 100%)',
   ];
 
+  // Infinite holo cards keep full-color art by default; hover fractal is handled in CSS.
+  const overlayLayers = isInfiniteHolo ? [] : (isInfinite ? infiniteLayers : (finish === 'holo' ? holoLayers : []));
+
   if (!imageUrl) {
+    const baseGrad = isInfinite
+      ? 'linear-gradient(180deg, rgba(18,18,22,0.97) 0%, rgba(38,38,46,0.97) 100%)'
+      : 'linear-gradient(180deg, rgba(255, 247, 236, 0.98) 0%, rgba(243, 228, 207, 0.98) 100%)';
+    const showOverlay = overlayLayers.length > 0;
     return {
-      backgroundImage: finish === 'holo'
-        ? [
-            ...holoLayers,
-            'linear-gradient(180deg, rgba(255, 247, 236, 0.98) 0%, rgba(243, 228, 207, 0.98) 100%)',
-          ].join(', ')
-        : 'linear-gradient(180deg, rgba(255, 247, 236, 0.98) 0%, rgba(243, 228, 207, 0.98) 100%)',
-      backgroundColor: warmTheme.surfaceStrong,
-      backgroundPosition: finish === 'holo' ? 'center, center, center, center, center' : 'center',
-      backgroundSize: finish === 'holo' ? '215% 215%, 140% 140%, 180% 180%, cover, cover' : 'cover',
+      backgroundImage: showOverlay
+        ? [...overlayLayers, baseGrad].join(', ')
+        : baseGrad,
+      backgroundColor: isInfinite ? '#0e0e12' : warmTheme.surfaceStrong,
+      backgroundPosition: showOverlay ? 'center, center, center, center, center' : 'center',
+      backgroundSize: showOverlay ? '215% 215%, 140% 140%, 180% 180%, cover, cover' : 'cover',
       backgroundRepeat: 'no-repeat',
-      backgroundBlendMode: finish === 'holo' ? 'screen, overlay, soft-light, multiply, normal' : undefined,
-      ...bossHoloStyle,
+      backgroundBlendMode: showOverlay ? 'screen, overlay, soft-light, multiply, normal' : undefined,
+      ...animStyle,
     };
   }
 
+  const showOverlay = overlayLayers.length > 0;
   return {
-    backgroundImage: finish === 'holo'
-      ? [...holoLayers, `url("${imageUrl}")`].join(', ')
+    backgroundImage: showOverlay
+      ? [...overlayLayers, `url("${imageUrl}")`].join(', ')
       : `url("${imageUrl}")`,
-    backgroundColor: warmTheme.surfaceStrong,
-    backgroundPosition: finish === 'holo' ? 'center, center, center, center, center' : 'center',
-    backgroundSize: finish === 'holo' ? '215% 215%, 140% 140%, 180% 180%, cover, cover' : 'cover',
+    backgroundColor: isInfinite ? '#0e0e12' : warmTheme.surfaceStrong,
+    backgroundPosition: showOverlay ? 'center, center, center, center, center' : 'center',
+    backgroundSize: showOverlay ? '215% 215%, 140% 140%, 180% 180%, cover, cover' : 'cover',
     backgroundRepeat: 'no-repeat',
-    backgroundBlendMode: finish === 'holo' ? 'screen, overlay, soft-light, multiply, normal' : undefined,
-    ...bossHoloStyle,
+    backgroundBlendMode: showOverlay ? 'screen, overlay, soft-light, multiply, normal' : undefined,
+    ...animStyle,
   };
 }
 
@@ -200,6 +235,13 @@ export function getCardNameRibbonStyle(variant: CardFaceVariant): CSSProperties 
 }
 
 export function getCardRulesPanelStyle(variant: CardFaceVariant): CSSProperties {
+  const maxHeights: Partial<Record<CardFaceVariant, string>> = {
+    hand: '41%',
+    pack: '43%',
+    grid: '44%',
+    board: '46%',
+    boardMini: '48%',
+  };
   return {
     alignSelf: 'stretch',
     background: cardFacePalette.panel,
@@ -207,6 +249,8 @@ export function getCardRulesPanelStyle(variant: CardFaceVariant): CSSProperties 
     boxShadow: '0 -10px 22px rgba(68, 49, 32, 0.12)',
     padding: CARD_FACE_METRICS[variant].panelPadding,
     marginTop: 'auto',
+    maxHeight: maxHeights[variant],
+    overflow: 'hidden',
   };
 }
 

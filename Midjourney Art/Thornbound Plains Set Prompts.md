@@ -194,3 +194,51 @@ irielle thorn-saint of the last road, martyr commander angel, thornbound plains 
 ```
 velmora crown of harrowed plains, eternal sovereign angel, thornbound plains trading card illustration, palette lock: blood-red briar fire, bone-ash parchment, weathered iron, moonlit marsh black only; no bright tropical hues, clean sci-fi cyan, or polished heavenly gold dominance, monumental throne-road composition, towering angelic queen in cathedral plate and living thorn crown, three seraph sigils and two chaos cores orbiting as summon prerequisites, four trail constellations igniting beneath cloak hem, apotheosis aura spilling into endless war roads and gallows cities, blood-red royal fire, ivory thorns, and abyssal black marsh palette, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
 ```
+
+
+## BOSSES
+
+---
+
+### Bleeding Road Matriarch | Boss | Thornbound Expansion
+`bossId: boss-thornbound-bleeding-road`
+
+```
+bleeding road matriarch, war-caravan sovereign, thornbound plains eternal boss trading card illustration, palette lock: blood-red road fire, briar scarlet, bone-ash parchment, iron black-marsh tones; no polished chrome palettes or tropical saturation, wide road-dominant composition with armored matriarch leading endless thorn caravans over blood-red causeway, giant banner-lances and reliquary wagons stretching to horizon, white briars growing through broken empires, stormy crimson sky over black marshlands, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Ragged Banner Host | Boss | Thornbound Expansion
+`bossId: boss-thornbound-ragged-banner`
+
+```
+ragged banner host, attrition war-choir, thornbound plains eternal boss trading card illustration, palette lock: blood-red road fire, briar scarlet, bone-ash parchment, iron black-marsh tones; no polished chrome palettes or tropical saturation, massed formation composition with faceless host beneath shredded standards singing battle liturgy, each chorus pulse hardens into thorn wavefronts, funeral drums and ossuary towers in background, scarlet dust storms and bone parchment flags palette, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, host fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Cathedral Lance | Boss | Thornbound Expansion
+`bossId: boss-thornbound-cathedral-lance`
+
+```
+cathedral lance, timeline-piercing siege relic, thornbound plains eternal boss trading card illustration, palette lock: blood-red road fire, briar scarlet, bone-ash parchment, iron black-marsh tones; no polished chrome palettes or tropical saturation, extreme perspective of a colossal lance structure launched from a mobile cathedral chassis, tip carving through stacked horizon layers like pages, briar lightning and prayer script flares along shaft, red fog battlefield and shattered basilica remains in background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Grave Hedge Reliquary | Boss | Thornbound Expansion
+`bossId: boss-thornbound-grave-hedge`
+
+```
+grave hedge reliquary, memory maze tyrant, thornbound plains eternal boss trading card illustration, palette lock: blood-red road fire, briar scarlet, bone-ash parchment, iron black-marsh tones; no polished chrome palettes or tropical saturation, labyrinth composition viewed from above and within simultaneously, living hedge walls of white thorns and coffin wood folding into impossible paths around a central reliquary heart, ghost processions trapped in repeating loops, crimson moonlight and marsh mist background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Gallowcrown Matron | Boss | Thornbound Expansion
+`bossId: boss-thornbound-gallowcrown`
+
+```
+gallowcrown matron, harrow-road empress, thornbound plains eternal boss trading card illustration, palette lock: blood-red road fire, briar scarlet, bone-ash parchment, iron black-marsh tones; no polished chrome palettes or tropical saturation, towering throne-road composition with matron wearing gallows halo and mile-long thorn mantle, execution bells and relic cages orbiting like moons, surviving pilgrims kneeling on cracked red road below, cathedral gallows skyline in storm haze, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```

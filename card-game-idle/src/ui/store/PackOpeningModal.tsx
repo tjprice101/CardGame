@@ -11,7 +11,7 @@ import {
 import { warmTheme } from '@/ui/theme';
 
 const RARITY_COLORS: Record<string, string> = {
-  Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12',
+  Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
 };
 
 const RARITY_GLOW: Record<string, string> = {

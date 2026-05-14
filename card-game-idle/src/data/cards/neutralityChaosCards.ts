@@ -9,7 +9,7 @@ export const neutralityStarterChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Veil',
-    description: 'On play: draw 1 card. While active: adjacent Seraphim gain +10 Oblivion per card played. On expiry: +20 Oblivion. Expires after 3 plays.',
+    description: 'Enthalpy: draw 1 card. While active: adjacent Seraphim gain +10 Oblivion per card played. Entropy (right-click in hand): +20 Oblivion.',
     artKey: 'chaos_neutral_null_veil',
     maxDurability: 3,
     effects: [
@@ -28,7 +28,7 @@ export const neutralityStarterChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Shroud',
-    description: 'On play: shuffle your discard pile into your deck. While active: adjacent Seraphim grant +10 bonus Oblivion when you play a Seeker. On expiry: draw 1 card. Expires after 4 plays.',
+    description: 'Enthalpy: shuffle your discard pile into your deck. While active: adjacent Seraphim grant +10 bonus Oblivion when you play a Seeker. Entropy (right-click in hand): draw 1 card.',
     artKey: 'chaos_neutral_void_shroud',
     maxDurability: 4,
     effects: [
@@ -47,7 +47,7 @@ export const neutralityStarterChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Mantle',
-    description: 'On play: search your deck for a Seraphim in an adjacent front slot and add it to your hand. While active: adjacent Seraphim gain +18 Oblivion per card played. On expiry: +30 Oblivion. Expires after 5 plays.',
+    description: 'Enthalpy: search your deck for a Seraphim in an adjacent front slot and add it to your hand. While active: adjacent Seraphim gain +18 Oblivion per card played. Entropy (right-click in hand): +30 Oblivion.',
     artKey: 'chaos_neutral_balance_mantle',
     maxDurability: 5,
     effects: [
@@ -66,7 +66,7 @@ export const neutralityStarterChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Equilibrium Ward',
-    description: 'On play: +30 Oblivion. While active: adjacent Seraphim grow the chain multiplier +0.05 faster per card. On expiry: shuffle your discard pile into your deck, then draw 1 card. Expires after 4 plays.',
+    description: 'Enthalpy: +30 Oblivion. While active: adjacent Seraphim grow the chain multiplier +0.05 faster per card. Entropy (right-click in hand): shuffle your discard pile into your deck, then draw 1 card.',
     artKey: 'chaos_neutral_equilibrium_ward',
     maxDurability: 4,
     effects: [
@@ -86,7 +86,7 @@ export const neutralityStarterChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Shell',
-    description: 'On play: +50 Oblivion. While active: adjacent Seraphim\'s Oblivion-per-card bonus is increased by 60%. On expiry: draw 2 cards. Expires after 6 plays.',
+    description: 'Enthalpy: +50 Oblivion. While active: adjacent Seraphim\'s Oblivion-per-card bonus is increased by 60%. Entropy (right-click in hand): draw 2 cards.',
     artKey: 'chaos_neutral_still_shell',
     maxDurability: 6,
     effects: [
@@ -110,7 +110,7 @@ export const neutralityPackChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Null Fortification',
-    description: 'On play: search your deck for a Seraphim in an adjacent front slot and add it to your hand. While active: adjacent Seraphim gain +15 Oblivion per card played. On expiry: +40 Oblivion. Expires after 6 plays.',
+    description: 'Enthalpy: search your deck for a Seraphim in an adjacent front slot and add it to your hand. While active: adjacent Seraphim gain +15 Oblivion per card played. Entropy (right-click in hand): +40 Oblivion.',
     artKey: 'chaos_neutral_null_fortify',
     maxDurability: 6,
     effects: [
@@ -129,12 +129,15 @@ export const neutralityPackChaosCards: ChaosDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Void Amplifier',
-    description: 'On play: sacrifice this card to gain +200 Oblivion.',
+    description: 'Enthalpy: sacrifice this card to gain +200 Oblivion. Entropy (right-click in hand): draw 2 cards.',
     artKey: 'chaos_neutral_void_amp',
     maxDurability: 1,
     effects: [],
     enthalpy: [
       { type: 'chaos_sacrifice_oblivion', value: 200 },
+    ],
+    entropy: [
+      { type: 'draw', value: 2 },
     ],
   },
 ];

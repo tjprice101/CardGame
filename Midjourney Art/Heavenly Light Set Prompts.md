@@ -377,3 +377,51 @@ the emberthorn revelation, total heavenly detonation, heavenly light trading car
 ```
 
 ---
+
+
+## BOSSES
+
+---
+
+### Aurora Throne | Boss | Heavenly Light Expansion
+`bossId: boss-light-aurora-throne`
+
+```
+aurora throne, dawn-forge sovereign, heavenly light eternal boss trading card illustration, palette lock: sanctified ember red, dawn yellow, white-hot highlights, silver thorn accents; avoid cool industrial cyan and swamp-green dominance, regal frontal composition with angelic ruler seated on a throne forged from sunrise fire and silver thorns, mantle of red-yellow aurora bands cascading across frame, radiant cathedral sky and floating sanctum platforms behind, white-hot focal crown and ember cloud seas, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Sanctum Breaker | Boss | Heavenly Light Expansion
+`bossId: boss-light-sanctum-breaker`
+
+```
+sanctum breaker, holy siege engine saint, heavenly light eternal boss trading card illustration, palette lock: sanctified ember red, dawn yellow, white-hot highlights, silver thorn accents; avoid cool industrial cyan and swamp-green dominance, low-angle impact composition of armored angelic titan smashing sanctum gates with a radiant maul, shockwave of yellow fire and red glass fragments radiating outward, silver thorn buttresses collapsing behind, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Choral Tyrant | Boss | Heavenly Light Expansion
+`bossId: boss-light-choral-tyrant`
+
+```
+choral tyrant, choir-command archon, heavenly light eternal boss trading card illustration, palette lock: sanctified ember red, dawn yellow, white-hot highlights, silver thorn accents; avoid cool industrial cyan and swamp-green dominance, amphitheater composition with conductor tyrant at center commanding concentric angelic choirs through baton of living flame, harmonic rings and script notes become weaponized light lances, ember opera-house architecture and thorn resonators in background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Halo Legion Prime | Boss | Heavenly Light Expansion
+`bossId: boss-light-halo-legion`
+
+```
+halo legion prime, duplication nucleus general, heavenly light eternal boss trading card illustration, palette lock: sanctified ember red, dawn yellow, white-hot highlights, silver thorn accents; avoid cool industrial cyan and swamp-green dominance, layered battle composition where prime commander stands center while dozens of radiant afterimage legions unfold from halo rings, each clone carrying mirrored flame-armaments, celestial war boulevard and ember fortresses behind, red-yellow legion light with silver discipline motifs, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+---
+
+### Morning Crown Absolute | Boss | Heavenly Light Expansion
+`bossId: boss-light-morning-crown`
+
+```
+morning crown absolute, terminal mercy sovereign, heavenly light eternal boss trading card illustration, palette lock: sanctified ember red, dawn yellow, white-hot highlights, silver thorn accents; avoid cool industrial cyan and swamp-green dominance, transcendent vertical composition with crowned angelic ruler descending from a blinding morning aperture, twelve thorn-lit wings and judgment rays converting battlefield into sanctified fire, city-scale shrine towers and cloud oceans below, white-hot yellow core with inferno scarlet edges and silver thorn details, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```

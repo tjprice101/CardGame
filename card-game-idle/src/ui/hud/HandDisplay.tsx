@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useStore, selectDeck, selectTurn, selectBoard } from '@/state/store';
+import { useEffect, useMemo, useState } from 'react';
+import { useStore, selectDeck, selectTurn, selectBoard, selectProgress } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -12,7 +12,15 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import { warmTheme } from '@/ui/theme';
-import type { SeraphimDefinition, AngelDefinition } from '@/types/cards';
+import type { CardFinish, SeraphimDefinition, AngelDefinition } from '@/types/cards';
+
+const IDLE_SHOWCASE_SLOTS = 6;
+const IDLE_SHOWCASE_INTERVAL_MS = 2600;
+
+interface IdleShowcaseCard {
+  definitionId: string;
+  finish: CardFinish;
+}
 
 const TYPE_COLORS: Record<string, string> = {
   Seraphim: '#FFD700',
@@ -37,7 +45,54 @@ const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'none',
     paddingLeft: 8,
     paddingRight: 8,
-    transition: 'right 0.22s ease',
+    transition: 'right 0.22s ease, opacity 0.34s ease',
+  },
+  idleShowcaseWrapper: {
+    position: 'absolute',
+    bottom: 16,
+    left: 0,
+    right: 'var(--angel-drawer-hand-offset, 34px)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 8,
+    pointerEvents: 'none',
+    paddingLeft: 8,
+    paddingRight: 8,
+    transition: 'right 0.22s ease, opacity 0.34s ease',
+  },
+  idleShowcaseLabel: {
+    fontSize: 10,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: 'rgba(245, 232, 214, 0.74)',
+    fontFamily: 'Georgia, serif',
+    background: 'rgba(26, 18, 12, 0.64)',
+    border: `1px solid ${warmTheme.border}`,
+    borderRadius: 999,
+    padding: '4px 10px',
+    boxShadow: warmTheme.glow,
+  },
+  idleShowcase: {
+    display: 'flex',
+    gap: 10,
+    maxWidth: '100%',
+    overflowX: 'auto',
+    paddingBottom: 6,
+  },
+  idleCard: {
+    width: 'clamp(108px, 7.3vw, 124px)',
+    height: 'clamp(156px, 10.8vw, 176px)',
+    flex: '0 0 auto',
+    borderRadius: 12,
+    border: `1px solid ${warmTheme.border}`,
+    boxShadow: cardFacePalette.shadow,
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    background: warmTheme.surfaceStrong,
+    opacity: 0.92,
+    transition: 'opacity 0.24s ease',
   },
   hand: {
     display: 'flex',
@@ -138,34 +193,87 @@ const styles: Record<string, React.CSSProperties> = {
 
 export default function HandDisplay() {
   const faceMetrics = getCardFaceMetrics('hand');
-  const hand = useStore(selectDeck).hand;
+  const deck = useStore(selectDeck);
+  const hand = deck.hand;
   const turn = useStore(selectTurn);
   const board = useStore(selectBoard);
-  const { playCard, toggleMulliganCard } = useStore.getState();
+  const progress = useStore(selectProgress);
+  const { playCard, toggleMulliganCard, activateChaosEntropyFromHand } = useStore.getState();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [idleShowcaseCards, setIdleShowcaseCards] = useState<IdleShowcaseCard[]>([]);
+  const [idleSwapState, setIdleSwapState] = useState<{ slot: number; phase: 'out' | 'in' } | null>(null);
 
   const isMulligan = turn.phase === 'mulligan';
   const isPlaying = turn.phase === 'playing';
+  const isIdle = turn.phase === 'idle';
 
-  if ((!isMulligan && !isPlaying) || hand.length === 0) {
-    if (isPlaying && hand.length === 0) {
-      return (
-        <div style={{ ...styles.overlay, background: 'transparent' }}>
-          <div style={{
-              color: warmTheme.textSoft, fontSize: 13, fontFamily: 'Georgia, serif',
-              background: warmTheme.surface, padding: '8px 18px', borderRadius: 20,
-              border: `1px solid ${warmTheme.border}`,
-              boxShadow: warmTheme.glow,
-          }}>
-            Hand empty — End Turn to continue
-          </div>
-        </div>
-      );
+  const favoriteShowcasePool = useMemo(() => {
+    const pool: IdleShowcaseCard[] = [];
+    for (const [favoriteKey, isFavorited] of Object.entries(progress.favoriteCollection)) {
+      if (!isFavorited) continue;
+      const [definitionId, finishPart] = favoriteKey.split('::');
+      if (!definitionId || (finishPart !== 'normal' && finishPart !== 'holo')) continue;
+
+      const definition = CardRegistry.get(definitionId);
+      if (!definition) continue;
+
+      const totalOwned = progress.collection[definitionId] ?? 0;
+      const holoOwned = Math.min(progress.holoCollection[definitionId] ?? 0, totalOwned);
+      const normalOwned = Math.max(0, totalOwned - holoOwned);
+      const ownedForFinish = finishPart === 'holo' ? holoOwned : normalOwned;
+      if (ownedForFinish <= 0) continue;
+
+      pool.push({ definitionId, finish: finishPart });
     }
-    return null;
+    return pool;
+  }, [progress.favoriteCollection, progress.collection, progress.holoCollection]);
+
+  function pickRandomShowcase(cards: IdleShowcaseCard[]): IdleShowcaseCard[] {
+    if (cards.length === 0) return [];
+    if (cards.length <= IDLE_SHOWCASE_SLOTS) return [...cards];
+    const shuffled = [...cards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled.slice(0, IDLE_SHOWCASE_SLOTS);
   }
+
+  useEffect(() => {
+    if (!isIdle) return;
+    setIdleShowcaseCards(pickRandomShowcase(favoriteShowcasePool));
+  }, [isIdle, favoriteShowcasePool]);
+
+  useEffect(() => {
+    if (!isIdle || favoriteShowcasePool.length === 0) return;
+    const timer = window.setInterval(() => {
+      setIdleShowcaseCards(prev => {
+        const next = [...prev];
+        if (next.length === 0) return pickRandomShowcase(favoriteShowcasePool);
+        const slotIndex = Math.floor(Math.random() * next.length);
+        const current = next[slotIndex];
+        const replacementOptions = favoriteShowcasePool.filter(card =>
+          card.definitionId !== current.definitionId || card.finish !== current.finish
+        );
+        if (replacementOptions.length === 0) return next;
+        const replacement = replacementOptions[Math.floor(Math.random() * replacementOptions.length)];
+        setIdleSwapState({ slot: slotIndex, phase: 'out' });
+        window.setTimeout(() => {
+          setIdleShowcaseCards(cards => {
+            const updated = [...cards];
+            if (slotIndex < updated.length) updated[slotIndex] = replacement;
+            return updated;
+          });
+          setIdleSwapState({ slot: slotIndex, phase: 'in' });
+          window.setTimeout(() => setIdleSwapState(null), 240);
+        }, 180);
+        return next;
+      });
+    }, IDLE_SHOWCASE_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [isIdle, favoriteShowcasePool]);
 
   function handleClick(instanceId: string) {
     if (isMulligan) {
@@ -185,6 +293,13 @@ export default function HandDisplay() {
 
   const hoveredDeckCard = hoveredId ? hand.find(c => c.instanceId === hoveredId) : null;
   const hoveredDef = hoveredDeckCard ? CardRegistry.get(hoveredDeckCard.definitionId) : null;
+
+  const showActiveHand = isMulligan || isPlaying;
+  const showIdleShowcase = isIdle;
+  const hasActiveHandCards = hand.length > 0;
+  const idleCards = idleShowcaseCards
+    .map(card => ({ card, def: CardRegistry.get(card.definitionId) }))
+    .filter(entry => entry.def !== undefined);
 
   return (
     <div style={{ ...styles.overlay, background: isMulligan ? 'rgba(92,63,31,0.14)' : 'transparent' }}>
@@ -237,10 +352,99 @@ export default function HandDisplay() {
         </div>
       )}
 
-      <div style={styles.handWrapper}>
+      <div
+        style={{
+          ...styles.idleShowcaseWrapper,
+          opacity: showIdleShowcase ? 1 : 0,
+          pointerEvents: 'none',
+        }}
+      >
+        {idleCards.length > 0 && (
+          <>
+            <div style={styles.idleShowcaseLabel}>Profile Staples</div>
+            <div className="ornate-scroll" style={styles.idleShowcase}>
+              {idleCards.map(({ card, def }, idx) => {
+                if (!def) return null;
+                const showHolo = card.finish === 'holo';
+                const descMetrics = getAdaptiveDescriptionMetrics('pack', def.description);
+                const cardClass = [
+                  showHolo ? 'holofoil-live-card' : undefined,
+                  idleSwapState?.slot === idx && idleSwapState.phase === 'out' ? 'anim-idle-staple-fade-out' : undefined,
+                  idleSwapState?.slot === idx && idleSwapState.phase === 'in' ? 'anim-idle-staple-fade-in' : undefined,
+                ].filter(Boolean).join(' ');
+
+                return (
+                  <div
+                    key={`${card.definitionId}_${card.finish}_${idx}`}
+                    className={cardClass || undefined}
+                    style={{
+                      ...styles.idleCard,
+                      ...getCardFaceBackgroundStyle(def, showHolo ? 'holo' : 'normal'),
+                    }}
+                  >
+                    <div style={getCardNameRibbonStyle('pack')}>
+                      <div style={{ ...styles.subtype, fontSize: 8, color: cardFacePalette.textMuted }}>{def.type}</div>
+                      <div style={{ ...styles.name, fontSize: 10 }}>{def.name}</div>
+                    </div>
+                    <div style={getCardRulesPanelStyle('pack')}>
+                      <div
+                        style={{
+                          ...styles.desc,
+                          fontSize: descMetrics.fontSize,
+                          lineHeight: descMetrics.lineHeight,
+                          WebkitLineClamp: 4,
+                        }}
+                      >
+                        {def.description}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+        {idleCards.length === 0 && (
+          <div style={{
+            fontSize: 12,
+            color: 'rgba(235, 224, 206, 0.78)',
+            fontFamily: 'Georgia, serif',
+            background: 'rgba(20, 14, 10, 0.72)',
+            border: `1px solid ${warmTheme.border}`,
+            borderRadius: 10,
+            padding: '10px 14px',
+            boxShadow: warmTheme.glow,
+          }}>
+            No Favorited Cards. Favorite owned cards to have them appear here.
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          ...styles.handWrapper,
+          opacity: showActiveHand ? 1 : 0,
+          pointerEvents: showActiveHand ? 'none' : 'none',
+        }}
+      >
+        {isPlaying && !hasActiveHandCards && (
+          <div style={{
+            color: warmTheme.textSoft, fontSize: 13, fontFamily: 'Georgia, serif',
+            background: warmTheme.surface, padding: '8px 18px', borderRadius: 20,
+            border: `1px solid ${warmTheme.border}`,
+            boxShadow: warmTheme.glow,
+            marginBottom: 8,
+          }}>
+            Hand empty - End Turn to continue
+          </div>
+        )}
         <div
           className="ornate-scroll"
-          style={styles.hand}
+          style={{
+            ...styles.hand,
+            opacity: hasActiveHandCards ? 1 : 0,
+            transition: 'opacity 0.24s ease',
+          }}
           onWheel={(e) => {
             const target = e.currentTarget;
             const hasHorizontalOverflow = target.scrollWidth > target.clientWidth;
@@ -289,6 +493,11 @@ export default function HandDisplay() {
                 } : {}),
               }}
               onClick={() => handleClick(deckCard.instanceId)}
+              onContextMenu={(e) => {
+                if (!isPlaying || !def || def.type !== 'Chaos') return;
+                e.preventDefault();
+                activateChaosEntropyFromHand(deckCard.instanceId);
+              }}
               onMouseEnter={() => setHoveredId(deckCard.instanceId)}
               onMouseLeave={() => setHoveredId(null)}
               onDragStart={(e) => {
