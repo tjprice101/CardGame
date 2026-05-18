@@ -9,7 +9,7 @@ import CollectionViewer from './CollectionViewer';
 import HolofoilWorkshop from './HolofoilWorkshop';
 
 const RARITY_COLORS: Record<string, string> = {
-  Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
+  Common: '#b8bcc6', Rare: '#7cbcff', Epic: '#c58bff', Legendary: '#ffd38a', Eternal: '#ff9f9f', Infinite: '#f2f4ff',
 };
 
 const styles: Record<string, React.CSSProperties> = {
@@ -38,22 +38,31 @@ const styles: Record<string, React.CSSProperties> = {
   body: {
     flex: 1,
     overflowY: 'auto',
-    padding: '24px',
+    padding: '14px 18px 18px',
     display: 'flex',
-    flexWrap: 'wrap',
-    gap: 20,
-    alignContent: 'flex-start',
     justifyContent: 'center',
   },
-  packCard: {
-    width: 280,
-    background: 'linear-gradient(180deg, rgba(28, 22, 17, 0.94) 0%, rgba(37, 29, 22, 0.94) 100%)',
-    border: '1px solid rgba(218, 167, 109, 0.34)',
-    borderRadius: 16,
-    padding: '20px',
+  packsColumn: {
+    width: 'min(1220px, 100%)',
     display: 'flex',
     flexDirection: 'column',
     gap: 12,
+  },
+  packGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))',
+    gap: 12,
+    alignItems: 'start',
+  },
+  packCard: {
+    width: '100%',
+    background: 'linear-gradient(180deg, rgba(28, 22, 17, 0.94) 0%, rgba(37, 29, 22, 0.94) 100%)',
+    border: '1px solid rgba(218, 167, 109, 0.34)',
+    borderRadius: 16,
+    padding: '14px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 10,
     boxShadow: warmTheme.shadow,
   },
   packLocked: {
@@ -61,15 +70,16 @@ const styles: Record<string, React.CSSProperties> = {
     filter: 'grayscale(0.6)',
   },
   packName: { fontSize: 16, fontWeight: 'bold', color: '#f1c486' },
-  packDesc: { fontSize: 12, color: 'rgba(235, 220, 197, 0.84)', lineHeight: 1.5 },
+  packDesc: { fontSize: 11, color: 'rgba(235, 220, 197, 0.84)', lineHeight: 1.42 },
   packCost: { fontSize: 13, color: '#f1c486' },
   openBtn: {
     padding: '8px 16px',
     borderRadius: 10,
     border: `1px solid ${warmTheme.borderStrong}`,
     background: warmTheme.button,
-    color: warmTheme.accentDeep,
+    color: '#2b1709',
     fontSize: 12,
+    fontWeight: 600,
     fontFamily: 'Georgia, serif',
     cursor: 'pointer',
     letterSpacing: 1,
@@ -95,9 +105,11 @@ const styles: Record<string, React.CSSProperties> = {
   },
   rarityChip: {
     fontSize: 9,
-    padding: '2px 6px',
+    padding: '2px 7px',
     borderRadius: 3,
-    background: 'rgba(255, 241, 221, 0.9)',
+    background: 'linear-gradient(180deg, rgba(44, 33, 26, 0.94) 0%, rgba(30, 22, 17, 0.94) 100%)',
+    border: '1px solid rgba(194, 151, 102, 0.35)',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.7)',
     letterSpacing: 1,
   },
   footer: {
@@ -119,8 +131,8 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '6px 16px',
     borderRadius: 999,
     border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(255, 236, 209, 0.88)',
-    color: '#61401d',
+    background: 'rgba(247, 212, 162, 0.9)',
+    color: '#3a220f',
     fontSize: 11,
     cursor: 'pointer',
     fontFamily: 'Georgia, serif',
@@ -130,8 +142,8 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 20px',
     borderRadius: 10,
     border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(255, 237, 213, 0.94)',
-    color: '#5f3a17',
+    background: 'rgba(245, 206, 153, 0.94)',
+    color: '#2e190b',
     fontSize: 12,
     cursor: 'pointer',
     fontFamily: 'Georgia, serif',
@@ -140,14 +152,46 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 11,
     color: 'rgba(234, 217, 192, 0.8)',
   },
+  helpPanel: {
+    width: '100%',
+    background: 'linear-gradient(180deg, rgba(43, 31, 21, 0.9) 0%, rgba(32, 24, 17, 0.9) 100%)',
+    border: '1px solid rgba(218, 167, 109, 0.34)',
+    borderRadius: 14,
+    padding: '10px 12px',
+    fontSize: 10,
+    color: 'rgba(235, 220, 197, 0.9)',
+    lineHeight: 1.4,
+    boxShadow: warmTheme.shadow,
+  },
+  helpGrid: {
+    marginTop: 6,
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+    gap: 6,
+  },
+  helpItem: {
+    border: '1px solid rgba(218, 167, 109, 0.24)',
+    borderRadius: 8,
+    padding: '6px 8px',
+    background: 'rgba(22, 16, 12, 0.36)',
+  },
+  pityNote: {
+    marginTop: 4,
+    borderTop: '1px solid rgba(218, 167, 109, 0.28)',
+    paddingTop: 7,
+    fontSize: 9,
+    color: 'rgba(247, 214, 165, 0.88)',
+    lineHeight: 1.45,
+  },
 };
 
 interface Props { onClose: () => void }
 
 export default function CardPackStore({ onClose }: Props) {
-  const score = useStore(s => s.progress.oblivion);
+  const oblivion = useStore(s => s.progress.oblivion);
   const shards = useStore(s => s.progress.aberratedShards);
   const collection = useStore(s => s.progress.collection);
+  const pityCounters = useStore(s => s.progress.pityCounters);
   const [openingResult, setOpeningResult] = useState<{ cards: string[]; packName: string; newCards: Set<string> } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
   const [activeTab, setActiveTab] = useState<'packs' | 'holofoils'>('packs');
@@ -174,7 +218,7 @@ export default function CardPackStore({ onClose }: Props) {
       <div style={styles.header}>
         <div style={styles.title}>Card Store</div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <div style={styles.score}>Oblivion: {Math.floor(score).toLocaleString()}</div>
+          <div style={styles.score}>Oblivion: {Math.floor(oblivion).toLocaleString()}</div>
           <div style={styles.score}>Aberrated Shards: {shards.toLocaleString()}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
             <div style={styles.collectionBar}>{Object.keys(collection).length} unique cards collected</div>
@@ -198,7 +242,7 @@ export default function CardPackStore({ onClose }: Props) {
           style={{
             ...styles.tabBtn,
             ...(activeTab === 'packs'
-              ? { color: warmTheme.accentDeep, borderColor: warmTheme.borderStrong, background: 'rgba(255,215,0,0.08)' }
+              ? { color: '#2b1709', borderColor: warmTheme.borderStrong, background: 'rgba(247, 212, 162, 0.96)' }
               : {}),
           }}
           onClick={() => setActiveTab('packs')}
@@ -209,7 +253,7 @@ export default function CardPackStore({ onClose }: Props) {
           style={{
             ...styles.tabBtn,
             ...(activeTab === 'holofoils'
-              ? { color: warmTheme.accentDeep, borderColor: warmTheme.borderStrong, background: 'rgba(255,215,0,0.08)' }
+              ? { color: '#2b1709', borderColor: warmTheme.borderStrong, background: 'rgba(247, 212, 162, 0.96)' }
               : {}),
           }}
           onClick={() => setActiveTab('holofoils')}
@@ -220,15 +264,32 @@ export default function CardPackStore({ onClose }: Props) {
 
       {activeTab === 'packs' ? (
         <div style={styles.body}>
-          {PACK_DEFINITIONS.map(pack => {
+          <div style={styles.packsColumn}>
+            <div style={styles.helpPanel}>
+              <strong style={{ color: '#f2c787', letterSpacing: 1 }}>How Opening Works</strong>
+              <div style={styles.helpGrid}>
+                <div style={styles.helpItem}><strong>Pack:</strong> 5 cards with normal rarity odds.</div>
+                <div style={styles.helpItem}><strong>Box:</strong> 25 cards (5 packs), 2% discount, Legendary pity for that set.</div>
+                <div style={styles.helpItem}><strong>Case:</strong> 50 cards (10 packs), 4% discount, at least 1 guaranteed Legendary.</div>
+                <div style={styles.helpItem}>
+                  <strong>Legendary Box Pity:</strong> 2 no-Legendary Boxes in a set makes the next Box guaranteed.
+                </div>
+              </div>
+            </div>
+
+            <div style={styles.packGrid}>
+            {PACK_DEFINITIONS.map(pack => {
           const elementColor = ELEMENT_COLORS[pack.element] ?? '#aaa';
           const setName = ELEMENT_SET_NAMES[pack.element] ?? pack.element;
           const boxCost = Math.round(pack.cost * 5 * 0.98);
           const caseCost = Math.round(boxCost * 2 * 0.96);
+          const boxPityMisses = pityCounters[pack.id] ?? 0;
+          const boxGuaranteedNext = boxPityMisses >= 2;
+          const boxesUntilPity = Math.max(0, 3 - boxPityMisses);
 
           // Compute effective locked state from oblivionUnlock milestone
           const isLocked = pack.oblivionUnlock !== undefined
-            ? score < pack.oblivionUnlock
+            ? oblivion < pack.oblivionUnlock
             : pack.locked;
 
           const tiers = [
@@ -270,21 +331,15 @@ export default function CardPackStore({ onClose }: Props) {
                   {pack.oblivionUnlock !== undefined ? (
                     <>
                       <div style={{ marginBottom: 4 }}>
-                        🔒 {setName} — Earn {pack.oblivionUnlock.toLocaleString()} Oblivion to unlock
+                        🔒 {setName} — Unlocks at {pack.oblivionUnlock.toLocaleString()} Oblivion
                       </div>
-                      {score < pack.oblivionUnlock && (
-                        <div style={{ fontSize: 11, color: 'rgba(255,180,80,0.6)' }}>
-                          {(pack.oblivionUnlock - Math.floor(score)).toLocaleString()} more needed
-                        </div>
-                      )}
                     </>
                   ) : '🔒 Coming Soon'}
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {tiers.map(({ tier, label, cards, cost, discount }) => {
-                    const canAfford = score >= cost;
-                    const deficit = cost - Math.floor(score);
+                    const canAfford = oblivion >= cost;
                     return (
                       <button
                         key={tier}
@@ -292,24 +347,30 @@ export default function CardPackStore({ onClose }: Props) {
                         onClick={canAfford ? () => handleOpen(pack.id, tier) : undefined}
                       >
                         <span style={{ fontWeight: 'bold' }}>{label}</span>
-                        <span style={{ color: 'rgba(255,215,0,0.7)', marginLeft: 6 }}>({cards} cards)</span>
-                        <span style={{ float: 'right', fontSize: 11 }}>
-                          {cost.toLocaleString()} score
+                        <span style={{ color: '#4a2c11', marginLeft: 6, fontWeight: 700 }}>({cards} cards)</span>
+                        <span style={{ float: 'right', fontSize: 11, color: '#3e230e', fontWeight: 700 }}>
+                          {cost.toLocaleString()} Oblivion
                           {discount && <span style={{ color: 'rgba(100,220,100,0.8)', marginLeft: 5 }}>{discount}</span>}
                         </span>
-                        {!canAfford && (
-                          <div style={{ fontSize: 10, color: '#e86060', marginTop: 2 }}>
-                            Need {deficit.toLocaleString()} more
-                          </div>
-                        )}
                       </button>
                     );
                   })}
+
+                  <div style={styles.pityNote}>
+                    <div>
+                      Legendary Box Pity: {boxGuaranteedNext
+                        ? 'Next Box guaranteed Legendary.'
+                        : `${boxesUntilPity} Box${boxesUntilPity === 1 ? '' : 'es'} until guaranteed (if no Legendary appears first).`}
+                    </div>
+                    <div>Current no-Legendary Box streak for this set: {boxPityMisses}</div>
+                  </div>
                 </div>
               )}
             </div>
           );
         })}
+            </div>
+          </div>
         </div>
       ) : (
         <HolofoilWorkshop />

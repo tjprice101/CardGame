@@ -10,13 +10,16 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { AngelDefinition, CardDefinition, CardFinish } from '@/types/cards';
 
 const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
 const SECTION_COLORS: Record<string, string> = {
-  Angel: warmTheme.accentDeep, Seraphim: warmTheme.accentDeep, Chaos: warmTheme.chaos, Seeker: '#7f629f',
+  Angel: warmTheme.accentDeep, Seraphim: '#f0bd78', Cherubim: warmTheme.cherubim, Ophanim: '#7f629f',
 };
 
 const styles: Record<string, React.CSSProperties> = {
@@ -58,6 +61,12 @@ const styles: Record<string, React.CSSProperties> = {
   sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2, textTransform: 'uppercase' },
   sectionCount: { fontSize: 9, color: 'rgba(232, 215, 191, 0.72)', letterSpacing: 1 },
   sectionGrid: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+  cardWithMeta: {
+    width: 100,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+  },
   card: {
     width: 100, height: 148, background: warmTheme.surfaceStrong,
     border: `1px solid ${warmTheme.border}`, borderRadius: 12, cursor: 'pointer',
@@ -75,9 +84,16 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '50%', background: warmTheme.button, color: warmTheme.accentDeep,
     fontSize: 10, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  ownedLabel: {
-    fontSize: 7, color: warmTheme.textFaint, letterSpacing: 0.5,
-    position: 'absolute', bottom: 4, left: 0, right: 0, textAlign: 'center',
+  ownedLabelBelow: {
+    fontSize: 9, color: 'rgba(255, 255, 255, 0.96)', letterSpacing: 0.5,
+    textAlign: 'center',
+    opacity: 1,
+    pointerEvents: 'none',
+    textShadow: '0 1px 2px rgba(0,0,0,0.7)',
+    background: 'rgba(13, 20, 32, 0.42)',
+    border: `1px solid ${warmTheme.border}`,
+    borderRadius: 6,
+    padding: '2px 4px',
   },
   sidebar: {
     width: 260, borderLeft: `1px solid ${warmTheme.border}`,
@@ -243,8 +259,8 @@ export default function DeckBuilder({ onClose }: Props) {
     return {
       mainSections: [
         { label: 'Seraphim', cards: filtered.filter(d => d.def.type === 'Seraphim').sort(byRarity) },
-        { label: 'Chaos', cards: filtered.filter(d => d.def.type === 'Chaos').sort(byRarity) },
-        { label: 'Seeker', cards: filtered.filter(d => d.def.type === 'Seeker').sort(byRarity) },
+        { label: 'Cherubim', cards: filtered.filter(d => isDisplayCherubimType(d.def.type)).sort(byRarity) },
+        { label: 'Ophanim', cards: filtered.filter(d => isDisplayOphanimType(d.def.type)).sort(byRarity) },
       ].filter(s => s.cards.length > 0),
       angelSection: filtered.filter(d => d.def.type === 'Angel').sort(byRarity),
       availableElements,
@@ -385,7 +401,7 @@ export default function DeckBuilder({ onClose }: Props) {
           <div style={{ fontSize: 16, color: '#FFD700', marginTop: 8 }}>
             {uniqueOwned} <span style={{ opacity: 0.5, fontSize: 13 }}>/ 15 unique cards</span>
           </div>
-          <button style={styles.closeBtn} onClick={onClose}>Close</button>
+          <button className="menu-tactile-btn" style={styles.closeBtn} onClick={onClose}>Close</button>
         </div>
       )}
 
@@ -414,12 +430,12 @@ export default function DeckBuilder({ onClose }: Props) {
 
       {/* Element filter tabs */}
       <div style={styles.filterBar}>
-        <button
+        <button className="menu-tactile-btn"
           style={{ ...styles.filterBtn, ...(elementFilter === null ? styles.filterBtnActive : {}) }}
           onClick={() => setElementFilter(null)}
         >All</button>
         {availableElements.map(el => (
-          <button
+          <button className="menu-tactile-btn"
             key={el}
             style={{
               ...styles.filterBtn,
@@ -454,39 +470,50 @@ export default function DeckBuilder({ onClose }: Props) {
                   const totalForDefinition = extraDeckDefinitionCountMap.get(def.def.definitionId) ?? 0;
                   const canAdd = count < owned && totalForDefinition < cap && extraDeckList.length < 10;
                   return (
-                    <div
-                      key={def.key}
-                      className={def.finish === 'holo'
-                        ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}`
-                        : undefined}
-                      style={{
-                        ...styles.card,
-                        ...getCardFaceBackgroundStyle(def.def, def.finish),
-                        ...(count > 0 ? styles.cardAdded : {}),
-                        ...(count === 0 && !canAdd ? styles.cardFull : {}),
-                        border: `1px solid ${count > 0 ? 'rgba(255,215,0,0.65)' : 'rgba(255,215,0,0.3)'}`,
-                      }}
-                      onClick={() => addCard(def.def.definitionId, def.finish)}
-                      title={def.def.description}
-                    >
-                      <div style={getCardNameRibbonStyle('grid')}>
-                        <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
-                          Angel · {getFinishLabel(def.finish)}
-                        </div>
-                        <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
-                      </div>
-                      <div style={getCardRulesPanelStyle('grid')}>
-                        <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 2 }}>
-                          {def.def.description}
-                        </div>
-                        {def.def.type === 'Angel' && (
-                          <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
-                            Cost: {(def.def as AngelDefinition).summonCost.length} materials
+                    <div key={def.key} style={styles.cardWithMeta}>
+                      <div
+                        className={def.finish === 'holo' || def.def.rarity === 'Infinite' || def.def.rarity === 'Eternal'
+                          ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
+                          : undefined}
+                        style={{
+                          ...styles.card,
+                          ...getCardFaceBackgroundStyle(def.def, def.finish),
+                          ...(count > 0 ? styles.cardAdded : {}),
+                          ...(count === 0 && !canAdd ? styles.cardFull : {}),
+                          border: `1px solid ${count > 0 ? 'rgba(255,215,0,0.65)' : 'rgba(255,215,0,0.3)'}`,
+                        }}
+                        onClick={() => addCard(def.def.definitionId, def.finish)}
+                        title={getCardPreviewLines(def.def, 4).join('\n')}
+                      >
+                        <div style={getCardNameRibbonStyle('grid')}>
+                          <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
+                            Angel · {getFinishLabel(def.finish)}
                           </div>
-                        )}
+                          <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
+                        </div>
+                        <div style={getCardRulesPanelStyle('grid')}>
+                          <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
+                            <CardRulesDigest
+                              card={def.def}
+                              variant="preview"
+                              maxSections={2}
+                              maxLinesPerSection={1}
+                              lineClamp={1}
+                              labelColor={cardFacePalette.textMuted}
+                              textColor={cardFacePalette.textSoft}
+                              sectionBackground="transparent"
+                              sectionBorder="transparent"
+                            />
+                          </div>
+                          {def.def.type === 'Angel' && (
+                            <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
+                              Cost: {(def.def as AngelDefinition).summonCost.length} materials
+                            </div>
+                          )}
+                        </div>
+                        {count > 0 && <div style={styles.badge}>{count}</div>}
                       </div>
-                      {count > 0 && <div style={styles.badge}>{count}</div>}
-                      <div style={styles.ownedLabel}>owns {owned}</div>
+                      <div style={styles.ownedLabelBelow}>owns {owned}</div>
                     </div>
                   );
                 })}
@@ -517,33 +544,44 @@ export default function DeckBuilder({ onClose }: Props) {
                   const totalForDefinition = deckDefinitionCountMap.get(def.def.definitionId) ?? 0;
                   const full = count >= owned || totalForDefinition >= cap;
                   return (
-                    <div
-                      key={def.key}
-                      className={def.finish === 'holo'
-                        ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}`
-                        : undefined}
-                      style={{
-                        ...styles.card,
-                        ...getCardFaceBackgroundStyle(def.def, def.finish),
-                        ...(count > 0 ? styles.cardAdded : {}),
-                        ...(full ? styles.cardFull : {}),
-                      }}
-                      onClick={() => addCard(def.def.definitionId, def.finish)}
-                      title={def.def.description}
-                    >
-                      <div style={getCardNameRibbonStyle('grid')}>
-                        <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
-                          {def.def.type} · {getFinishLabel(def.finish)}
+                    <div key={def.key} style={styles.cardWithMeta}>
+                      <div
+                        className={def.finish === 'holo' || def.def.rarity === 'Infinite' || def.def.rarity === 'Eternal'
+                          ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
+                          : undefined}
+                        style={{
+                          ...styles.card,
+                          ...getCardFaceBackgroundStyle(def.def, def.finish),
+                          ...(count > 0 ? styles.cardAdded : {}),
+                          ...(full ? styles.cardFull : {}),
+                        }}
+                        onClick={() => addCard(def.def.definitionId, def.finish)}
+                        title={getCardPreviewLines(def.def, 4).join('\n')}
+                      >
+                        <div style={getCardNameRibbonStyle('grid')}>
+                          <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
+                            {getDisplayCardTypeLabel(def.def.type)} · {getFinishLabel(def.finish)}
+                          </div>
+                          <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
                         </div>
-                        <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
-                      </div>
-                      <div style={getCardRulesPanelStyle('grid')}>
-                        <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 3 }}>
-                          {def.def.description}
+                        <div style={getCardRulesPanelStyle('grid')}>
+                          <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
+                            <CardRulesDigest
+                              card={def.def}
+                              variant="preview"
+                              maxSections={2}
+                              maxLinesPerSection={1}
+                              lineClamp={1}
+                              labelColor={cardFacePalette.textMuted}
+                              textColor={cardFacePalette.textSoft}
+                              sectionBackground="transparent"
+                              sectionBorder="transparent"
+                            />
+                          </div>
                         </div>
+                        {count > 0 && <div style={styles.badge}>{count}</div>}
                       </div>
-                      {count > 0 && <div style={styles.badge}>{count}</div>}
-                      <div style={styles.ownedLabel}>owns {owned}</div>
+                      <div style={styles.ownedLabelBelow}>owns {owned}</div>
                     </div>
                   );
                 })}
@@ -565,12 +603,12 @@ export default function DeckBuilder({ onClose }: Props) {
                 <div style={styles.savedDeckName} title={sd.name}>
                   {sd.isStarter ? '🔒 ' : ''}{sd.name}
                 </div>
-                <button style={styles.miniBtn} onClick={() => handleLoadSaved(sd.id)}>Load</button>
+                <button className="menu-tactile-btn" style={styles.miniBtn} onClick={() => handleLoadSaved(sd.id)}>Load</button>
                 {!sd.isStarter && (
-                  <button
+                  <button className="menu-tactile-btn"
                     style={{ ...styles.miniBtn, ...styles.miniBtnDanger }}
                     onClick={() => deleteSavedDeck(sd.id)}
-                  >✕</button>
+                  >Delete</button>
                 )}
               </div>
             ))}
@@ -585,7 +623,7 @@ export default function DeckBuilder({ onClose }: Props) {
           <div style={styles.sidebarSection}>
             <div style={styles.sidebarSectionTitle}>Save</div>
             {!isEditingStarter && activeDeckId && (
-              <button
+              <button className="menu-tactile-btn"
                 style={{ ...styles.miniBtn, marginBottom: 6, opacity: validation.valid ? 1 : 0.35, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
                 onClick={handleUpdateCurrent}
               >
@@ -593,7 +631,7 @@ export default function DeckBuilder({ onClose }: Props) {
               </button>
             )}
             <div style={{ ...styles.sidebarActionRow, marginBottom: 6 }}>
-              <button
+              <button className="menu-tactile-btn"
                 style={{
                   ...styles.miniBtn,
                   ...styles.miniBtnDanger,
@@ -617,15 +655,15 @@ export default function DeckBuilder({ onClose }: Props) {
                   autoFocus
                 />
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <button
+                  <button className="menu-tactile-btn"
                     style={{ ...styles.miniBtn, opacity: (validation.valid && newDeckName.trim()) ? 1 : 0.35 }}
                     onClick={handleSaveNew}
                   >Save</button>
-                  <button style={{ ...styles.miniBtn, ...styles.miniBtnDanger }} onClick={() => { setSaveMode(false); setNewDeckName(''); }}>Cancel</button>
+                  <button className="menu-tactile-btn" style={{ ...styles.miniBtn, ...styles.miniBtnDanger }} onClick={() => { setSaveMode(false); setNewDeckName(''); }}>Cancel</button>
                 </div>
               </div>
             ) : (
-              <button
+              <button className="menu-tactile-btn"
                 style={{ ...styles.miniBtn, opacity: validation.valid ? 1 : 0.35, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
                 onClick={() => validation.valid && setSaveMode(true)}
               >
@@ -649,9 +687,9 @@ export default function DeckBuilder({ onClose }: Props) {
               return (
                 <div key={entry.key} style={styles.entryRow}>
                   <div style={styles.entryName}>{def?.name ?? entry.definitionId} ({getFinishLabel(entry.finish)})</div>
-                  <button style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>−</button>
+                  <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>-</button>
                   <div style={styles.entryCount}>×{entry.copies}</div>
-                  <button
+                  <button className="menu-tactile-btn"
                     style={{ ...styles.entryBtn, opacity: canAdd ? 1 : 0.3 }}
                     onClick={() => canAdd && addCard(entry.definitionId, entry.finish)}
                   >+</button>
@@ -678,9 +716,9 @@ export default function DeckBuilder({ onClose }: Props) {
               return (
                 <div key={getVariantKey(entry.definitionId, entry.finish)} style={styles.entryRow}>
                   <div style={styles.entryName}>{def?.name ?? entry.definitionId} ({getFinishLabel(entry.finish)})</div>
-                  <button style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>−</button>
+                  <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>-</button>
                   <div style={styles.entryCount}>×{entry.copies}</div>
-                  <button
+                  <button className="menu-tactile-btn"
                     style={{ ...styles.entryBtn, opacity: entry.copies >= owned || totalForDefinition >= cap ? 0.3 : 1 }}
                     onClick={() => addCard(entry.definitionId, entry.finish)}
                   >+</button>
@@ -694,11 +732,11 @@ export default function DeckBuilder({ onClose }: Props) {
       <div style={styles.footer}>
         <div>
           {!validation.valid && <div style={{ color: '#e86060', fontSize: 11 }}>{validation.errors[0]}</div>}
-          {validation.valid && <div style={{ color: '#80e860', fontSize: 11 }}>Deck is valid — 50 cards</div>}
+          {validation.valid && <div style={{ color: '#80e860', fontSize: 11 }}>Deck is valid - 50 cards</div>}
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button style={styles.closeBtn} onClick={onClose}>Close</button>
-          <button
+          <button className="menu-tactile-btn" style={styles.closeBtn} onClick={onClose}>Close</button>
+          <button className="menu-tactile-btn"
             style={{ ...styles.startBtn, opacity: validation.valid ? 1 : 0.4, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
             onClick={validation.valid ? handleStart : undefined}
           >

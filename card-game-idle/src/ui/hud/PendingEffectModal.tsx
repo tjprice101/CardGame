@@ -8,70 +8,83 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import { warmTheme } from '@/ui/theme';
+import { getCardPreviewText } from '@/ui/cardStatSummary';
+import { uiTypography, warmTheme } from '@/ui/theme';
+import type { CardSubtypeFilter } from '@/types/effects';
 import type { DeckCard } from '@/types/game';
+
+const DISPLAY_FONT = uiTypography.display;
+const BODY_FONT = uiTypography.body;
 
 const styles: Record<string, React.CSSProperties> = {
   backdrop: {
-    position: 'absolute',
+    position: 'fixed',
     inset: 0,
-    background: warmTheme.backdrop,
+    background:
+      'radial-gradient(circle at 14% 12%, rgba(227, 150, 82, 0.22) 0%, rgba(227, 150, 82, 0) 36%), radial-gradient(circle at 86% 22%, rgba(173, 126, 82, 0.18) 0%, rgba(173, 126, 82, 0) 34%), rgba(8, 7, 8, 0.8)',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 40,
+    zIndex: 160,
     pointerEvents: 'auto',
-    fontFamily: 'Georgia, serif',
+    fontFamily: BODY_FONT,
+    backdropFilter: 'blur(2px)',
   },
   panel: {
-    background: warmTheme.surfaceStrong,
-    border: `1px solid ${warmTheme.borderStrong}`,
-    borderRadius: 16,
-    padding: '20px 24px',
+    background: 'linear-gradient(180deg, rgba(248, 240, 225, 0.98) 0%, rgba(240, 224, 198, 0.96) 100%)',
+    border: '1px solid rgba(138, 94, 58, 0.42)',
+    borderRadius: 18,
+    padding: '22px 24px',
     maxWidth: 680,
     width: '90%',
     maxHeight: '85vh',
-    boxShadow: warmTheme.shadow,
+    boxShadow: '0 26px 48px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.4)',
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
   },
   title: {
-    fontSize: 14,
-    color: warmTheme.accentDeep,
-    letterSpacing: 2,
+    fontSize: 15,
+    color: '#5e2f16',
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
     marginBottom: 6,
+    fontFamily: DISPLAY_FONT,
+    fontWeight: 700,
   },
   subtitle: {
-    fontSize: 11,
-    color: warmTheme.textMuted,
-    marginBottom: 16,
+    fontSize: 12,
+    color: '#704022',
+    marginBottom: 14,
+    lineHeight: 1.45,
+    fontFamily: BODY_FONT,
   },
   cardGrid: {
     display: 'flex',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 9,
     marginBottom: 16,
     justifyContent: 'center',
     overflowY: 'auto',
     flex: 1,
     minHeight: 0,
+    padding: '3px 2px',
   },
   card: {
-    width: 92,
-    height: 124,
+    width: 104,
+    aspectRatio: '0.73',
     background: warmTheme.surface,
-    border: `1px solid ${warmTheme.border}`,
-    borderRadius: 7,
+    border: `1px solid rgba(121, 84, 50, 0.45)`,
+    borderRadius: 8,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'stretch',
     cursor: 'pointer',
-    transition: 'border-color 0.15s, box-shadow 0.15s, transform 0.15s',
+    transition: 'border-color 0.15s, box-shadow 0.15s, transform 0.15s, filter 0.15s',
     userSelect: 'none',
     overflow: 'hidden',
+    boxShadow: '0 3px 10px rgba(0,0,0,0.2)',
   },
   cardSelected: {
     border: '2px solid rgba(255,100,100,0.8)',
@@ -83,22 +96,33 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 0 14px rgba(80,200,100,0.35)',
     transform: 'translateY(-4px)',
   },
-  cardName: { fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.2 },
-  cardDesc: { color: cardFacePalette.textSoft, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  cardName: { fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.2, fontFamily: DISPLAY_FONT },
+  cardDesc: { color: cardFacePalette.textSoft, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden', fontFamily: BODY_FONT },
   cardRarity: { fontSize: 7, letterSpacing: 1, marginTop: 3 },
   footer: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  info: { fontSize: 11, color: warmTheme.textMuted, flex: 1 },
+  info: { fontSize: 11.5, color: '#6e3e21', flex: 1, fontFamily: BODY_FONT },
   confirmBtn: {
     padding: '9px 22px',
     borderRadius: 10,
-    border: `1px solid ${warmTheme.borderStrong}`,
-    background: warmTheme.button,
-    color: warmTheme.accentDeep,
-    fontSize: 12,
-    fontFamily: 'Georgia, serif',
+    border: '1px solid rgba(126, 86, 48, 0.44)',
+    background: 'linear-gradient(180deg, rgba(251, 243, 228, 0.96) 0%, rgba(240, 218, 184, 0.94) 100%)',
+    color: '#56280f',
+    fontSize: 12.5,
+    fontFamily: DISPLAY_FONT,
     cursor: 'pointer',
-    letterSpacing: 1,
-    boxShadow: warmTheme.glow,
+    letterSpacing: 0.8,
+    boxShadow: '0 8px 16px rgba(64, 33, 14, 0.28)',
+  },
+  secondaryBtn: {
+    padding: '9px 18px',
+    borderRadius: 10,
+    border: '1px solid rgba(126, 86, 48, 0.34)',
+    background: 'rgba(253, 244, 225, 0.72)',
+    color: '#69402a',
+    fontSize: 12,
+    fontFamily: BODY_FONT,
+    cursor: 'pointer',
+    letterSpacing: 0.4,
   },
   confirmDisabled: { opacity: 0.3, cursor: 'not-allowed' },
 };
@@ -117,6 +141,7 @@ export default function PendingEffectModal() {
   if (!pending || turn.phase !== 'playing') return null;
 
   const confirm = () => { resolvePending(selected); setSelected([]); };
+  const failToFind = () => { resolvePending([]); setSelected([]); };
   const buildCardStyle = (
     card: Pick<DeckCard, 'definitionId' | 'finish'>,
     stateStyle?: React.CSSProperties,
@@ -135,17 +160,17 @@ export default function PendingEffectModal() {
     return (
       <>
         <div style={getCardNameRibbonStyle('compact')}>
-          <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 3 }}>
+          <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 3, fontFamily: DISPLAY_FONT }}>
             {def?.type ?? 'Card'}
           </div>
           <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def?.name ?? card.definitionId}</div>
         </div>
         <div style={getCardRulesPanelStyle('compact')}>
           <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: faceMetrics.descLines }}>
-            {def?.description ?? ''}
+            {def ? getCardPreviewText(def, 2) : ''}
           </div>
           {footerLabel && (
-            <div style={{ fontSize: 7, color: footerColor ?? cardFacePalette.textMuted, marginTop: 4, textAlign: 'center' }}>
+            <div style={{ fontSize: 7, color: footerColor ?? cardFacePalette.textMuted, marginTop: 4, textAlign: 'center', fontFamily: BODY_FONT }}>
               {footerLabel}
             </div>
           )}
@@ -167,7 +192,9 @@ export default function PendingEffectModal() {
       );
     };
 
-    let subtitle = `Select up to ${maxDiscard} card${maxDiscard > 1 ? 's' : ''} to discard.`;
+    let subtitle = isLuminousCycle
+      ? `Select up to ${maxDiscard} card${maxDiscard > 1 ? 's' : ''} to discard.`
+      : `Select ${Math.min(maxDiscard, deck.hand.length)} card${Math.min(maxDiscard, deck.hand.length) !== 1 ? 's' : ''} to discard.`;
     if (isLuminousCycle) subtitle += ` You will then draw ${selected.length + 1} card${selected.length + 1 !== 1 ? 's' : ''}.`;
     else if (isGleamingPassage) {
       const drawCount = parseInt(pending.sourceCard.split(':draw:')[1]);
@@ -199,14 +226,16 @@ export default function PendingEffectModal() {
           <div style={styles.footer}>
             <div style={styles.info}>
               {selected.length} / {effectiveMax} selected
-              {!canConfirm && ` — select ${effectiveMax - selected.length} more`}
+              {!canConfirm && ` ? select ${effectiveMax - selected.length} more`}
             </div>
-            <button
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="menu-tactile-btn"
+                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                onClick={canConfirm ? confirm : undefined}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -249,12 +278,17 @@ export default function PendingEffectModal() {
           </div>
           <div style={styles.footer}>
             <div style={styles.info}>{selected.length} / {keepCount} chosen</div>
-            <button
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>
+                Fail to Find
+              </button>
+              <button className="menu-tactile-btn"
+                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                onClick={canConfirm ? confirm : undefined}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -297,12 +331,17 @@ export default function PendingEffectModal() {
           </div>
           <div style={styles.footer}>
             <div style={styles.info}>{selected.length} / {maxTake} chosen</div>
-            <button
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>
+                Fail to Find
+              </button>
+              <button className="menu-tactile-btn"
+                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                onClick={canConfirm ? confirm : undefined}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -314,52 +353,61 @@ export default function PendingEffectModal() {
       return (
         <div className="anim-backdrop-fade" style={styles.backdrop}>
           <div className="anim-panel-slide-up" style={styles.panel}>
-            <div style={styles.title}>Look — Take & Drop</div>
+            <div style={styles.title}>Look ? Take & Drop</div>
             <div style={styles.subtitle}>There are no cards left in your deck to inspect.</div>
             <div style={styles.footer}>
               <div style={styles.info} />
-              <button style={styles.confirmBtn} onClick={() => resolvePending([])}>Dismiss</button>
+              <button className="menu-tactile-btn" style={styles.confirmBtn} onClick={() => resolvePending([])}>Dismiss</button>
             </div>
           </div>
         </div>
       );
     }
 
-    // selected[0] = instanceId to take into hand; selected[1] = instanceId to drop to bottom
-    const takeId = selected[0] ?? null;
-    const dropId = selected[1] ?? null;
-    const canConfirm = takeId !== null && (pending.cards.length <= 1 || dropId !== null);
+    const takeCount = Math.min(pending.take, pending.cards.length);
+    const dropCount = Math.min(pending.drop, Math.max(0, pending.cards.length - takeCount));
+    const totalSelections = takeCount + dropCount;
+    const takeIds = new Set(selected.slice(0, takeCount));
+    const dropIds = new Set(selected.slice(takeCount, totalSelections));
+    const canConfirm = selected.length === totalSelections;
 
     const handleClick = (id: string) => {
-      if (takeId === null) {
-        setSelected([id]);
-      } else if (dropId === null && id !== takeId) {
-        setSelected([takeId, id]);
-      } else if (id === takeId) {
-        setSelected([]);
-      } else if (id === dropId) {
-        setSelected([takeId]);
-      }
+      setSelected(prev => {
+        if (prev.includes(id)) return prev.filter(x => x !== id);
+        if (prev.length >= totalSelections) return prev;
+        return [...prev, id];
+      });
     };
 
     const handleConfirm = () => {
       if (!canConfirm) return;
-      resolvePending([takeId!, ...(dropId ? [dropId] : [])]);
+      resolvePending(selected);
       setSelected([]);
     };
+
+    const subtitle =
+      `Take ${takeCount} into your hand.`
+      + (dropCount > 0 ? ` Return ${dropCount} to the bottom.` : '')
+      + ' The remaining cards are discarded.'
+      + (selected.length < takeCount
+        ? ` Select ${takeCount - selected.length} more card${takeCount - selected.length === 1 ? '' : 's'} to take.`
+        : selected.length < totalSelections
+          ? ` Select ${totalSelections - selected.length} more card${totalSelections - selected.length === 1 ? '' : 's'} to return.`
+          : '');
+
+    const info = selected.length >= totalSelections
+      ? 'Ready'
+      : `${selected.length} / ${totalSelections} chosen`;
 
     return (
       <div className="anim-backdrop-fade" style={styles.backdrop}>
         <div className="anim-panel-slide-up" style={styles.panel}>
-          <div style={styles.title}>Look — Take & Drop</div>
-          <div style={styles.subtitle}>
-            Take 1 into your hand. Return 1 to the bottom. The remaining cards are discarded.
-            {takeId === null ? ' Select a card to take.' : dropId === null && pending.cards.length > 1 ? ' Now select a card to return to the bottom.' : ''}
-          </div>
+          <div style={styles.title}>Look ? Take & Drop</div>
+          <div style={styles.subtitle}>{subtitle}</div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
-              const isTake = c.instanceId === takeId;
-              const isDrop = c.instanceId === dropId;
+              const isTake = takeIds.has(c.instanceId);
+              const isDrop = dropIds.has(c.instanceId);
               const cardStyle = isTake
                 ? buildCardStyle(c, styles.cardTake)
                 : isDrop
@@ -373,8 +421,8 @@ export default function PendingEffectModal() {
             })}
           </div>
           <div style={styles.footer}>
-            <div style={styles.info}>{takeId ? (dropId || pending.cards.length <= 1 ? 'Ready' : 'Select card to return') : 'Select card to take'}</div>
-            <button
+            <div style={styles.info}>{info}</div>
+            <button className="menu-tactile-btn"
               style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
               onClick={canConfirm ? handleConfirm : undefined}
             >
@@ -387,16 +435,19 @@ export default function PendingEffectModal() {
   }
 
   if (pending.type === 'look_top_take_type') {
+    const maxTake = Math.min(pending.take, pending.cards.length);
+
     const toggleCard = (id: string) => {
-      setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 1 ? [...prev, id] : prev);
+      setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < maxTake ? [...prev, id] : prev);
     };
-    const canConfirm = selected.length >= Math.min(1, pending.cards.length);
+    const canConfirm = selected.length >= maxTake;
+    const filterText = pending.filter.join(' / ');
 
     return (
       <div className="anim-backdrop-fade" style={styles.backdrop}>
         <div className="anim-panel-slide-up" style={styles.panel}>
-          <div style={styles.title}>Look — Take 1 (Filtered)</div>
-          <div style={styles.subtitle}>Take 1 matching card into your hand. The rest return to the bottom of your deck.</div>
+          <div style={styles.title}>Look ? Take {maxTake} (Filtered)</div>
+          <div style={styles.subtitle}>Take {maxTake} matching card{maxTake === 1 ? '' : 's'} ({filterText}) into your hand. The rest return to the bottom of your deck.</div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
               const isTake = selected.includes(c.instanceId);
@@ -411,19 +462,24 @@ export default function PendingEffectModal() {
               );
             })}
             {pending.cards.length === 0 && (
-              <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, padding: '20px 0' }}>
+              <div style={{ color: '#7a4a2a', fontSize: 11, padding: '20px 0', fontFamily: BODY_FONT }}>
                 No matching cards found in the top cards.
               </div>
             )}
           </div>
           <div style={styles.footer}>
-            <div style={styles.info}>{selected.length} / 1 chosen</div>
-            <button
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
+            <div style={styles.info}>{selected.length} / {maxTake} chosen</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>
+                Fail to Find
+              </button>
+              <button className="menu-tactile-btn"
+                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                onClick={canConfirm ? confirm : undefined}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -431,16 +487,18 @@ export default function PendingEffectModal() {
   }
 
   if (pending.type === 'search_deck') {
+    const maxTake = Math.min(pending.take, pending.cards.length);
+
     const toggleCard = (id: string) => {
-      setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 1 ? [...prev, id] : prev);
+      setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < maxTake ? [...prev, id] : prev);
     };
-    const canConfirm = selected.length >= Math.min(1, pending.cards.length);
+    const canConfirm = selected.length >= maxTake;
 
     return (
       <div className="anim-backdrop-fade" style={styles.backdrop}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Search Deck</div>
-          <div style={styles.subtitle}>Choose 1 card to add to your hand. Your deck will be shuffled afterward.</div>
+          <div style={styles.subtitle}>Choose {maxTake} card{maxTake === 1 ? '' : 's'} to add to your hand. Your deck will be shuffled afterward.</div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
               const isTake = selected.includes(c.instanceId);
@@ -450,24 +508,29 @@ export default function PendingEffectModal() {
                   style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
-                  {renderCardFace(c, isTake ? 'Salvage' : undefined, warmTheme.success)}
+                  {renderCardFace(c, isTake ? 'Take' : undefined, warmTheme.success)}
                 </div>
               );
             })}
             {pending.cards.length === 0 && (
-              <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11, padding: '20px 0' }}>
+              <div style={{ color: '#7a4a2a', fontSize: 11, padding: '20px 0', fontFamily: BODY_FONT }}>
                 No matching cards found in your deck.
               </div>
             )}
           </div>
           <div style={styles.footer}>
-            <div style={styles.info}>{selected.length} / 1 chosen</div>
-            <button
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
+            <div style={styles.info}>{selected.length} / {maxTake} chosen</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>
+                Fail to Find
+              </button>
+              <button className="menu-tactile-btn"
+                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                onClick={canConfirm ? confirm : undefined}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -475,6 +538,23 @@ export default function PendingEffectModal() {
   }
 
   if (pending.type === 'salvage') {
+    const requiredCount = Math.min(pending.count, pending.cards.length);
+
+    const selectedTypes = new Set<CardSubtypeFilter>(
+      selected
+        .map(id => pending.cards.find(card => card.instanceId === id))
+        .filter((card): card is typeof pending.cards[number] => Boolean(card))
+        .map(card => CardRegistry.get(card.definitionId)?.type)
+        .filter((type): type is CardSubtypeFilter => type === 'Seraphim' || type === 'Cherubim' || type === 'Ophanim'),
+    );
+
+    const requiredTypes = new Set<CardSubtypeFilter>(pending.filter ?? ['Ophanim']);
+    const hasRequiredTypes = pending.filter
+      ? [...requiredTypes].every(type => selectedTypes.has(type))
+      : true;
+
+    const canConfirm = selected.length >= requiredCount && hasRequiredTypes;
+
     if (pending.cards.length === 0) {
       return (
         <div className="anim-backdrop-fade" style={styles.backdrop}>
@@ -483,7 +563,7 @@ export default function PendingEffectModal() {
             <div style={styles.subtitle}>No valid cards in your discard pile.</div>
             <div style={styles.footer}>
               <div style={styles.info} />
-              <button style={styles.confirmBtn} onClick={() => resolvePending([])}>Dismiss</button>
+                <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>Fail to Find</button>
             </div>
           </div>
         </div>
@@ -491,15 +571,22 @@ export default function PendingEffectModal() {
     }
 
     const toggleCard = (id: string) => {
-      setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < 1 ? [...prev, id] : prev);
+      setSelected(prev => {
+        if (prev.includes(id)) return prev.filter(x => x !== id);
+        if (prev.length >= requiredCount) return prev;
+        return [...prev, id];
+      });
     };
-    const canConfirm = selected.length >= 1;
+
+    const subtitle = requiredCount > 1
+      ? `Choose ${requiredCount} cards, including ${pending.filter?.join(' and ') ?? 'the required types'}, from your discard pile.`
+      : 'Choose 1 card to salvage from your discard pile.';
 
     return (
       <div className="anim-backdrop-fade" style={styles.backdrop}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Salvage</div>
-          <div style={styles.subtitle}>Choose 1 card to salvage from your discard pile.</div>
+          <div style={styles.subtitle}>{subtitle}</div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
               const isTake = selected.includes(c.instanceId);
@@ -515,13 +602,18 @@ export default function PendingEffectModal() {
             })}
           </div>
           <div style={styles.footer}>
-            <div style={styles.info}>{selected.length} / 1 chosen</div>
-            <button
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
+            <div style={styles.info}>{selected.length} / {requiredCount} chosen</div>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>
+                Fail to Find
+              </button>
+              <button className="menu-tactile-btn"
+                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                onClick={canConfirm ? confirm : undefined}
+              >
+                Confirm
+              </button>
+            </div>
           </div>
         </div>
       </div>

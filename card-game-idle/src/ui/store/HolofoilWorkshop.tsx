@@ -10,6 +10,8 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
 
 const faceMetrics = getCardFaceMetrics('grid');
@@ -96,7 +98,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '0 24px 24px',
     display: 'flex',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 14,
     alignContent: 'flex-start',
   },
   empty: {
@@ -106,9 +108,16 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'rgba(234, 217, 192, 0.75)',
     fontStyle: 'italic',
   },
+  cardTile: {
+    width: 148,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
   card: {
-    width: 156,
-    minHeight: 252,
+    width: '100%',
+    height: 'auto',
+    aspectRatio: '148 / 204',
     borderRadius: 14,
     overflow: 'hidden',
     border: `1px solid ${warmTheme.borderStrong}`,
@@ -133,8 +142,15 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: 'space-between',
     gap: 6,
   },
+  infoPanel: {
+    border: `1px solid ${warmTheme.border}`,
+    borderRadius: 10,
+    padding: '7px 8px 8px',
+    background: 'rgba(12, 18, 28, 0.48)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+  },
   convertBtn: {
-    marginTop: 8,
+    marginTop: 6,
     width: '100%',
     padding: '7px 8px',
     borderRadius: 8,
@@ -258,7 +274,7 @@ export default function HolofoilWorkshop() {
           const isActive = activeElement === element;
           const color = element === 'All' ? warmTheme.accentDeep : (ELEMENT_COLORS[element] ?? warmTheme.textMuted);
           return (
-            <button
+            <button className="menu-tactile-btn"
               key={element}
               style={{
                 ...styles.filterBtn,
@@ -298,7 +314,7 @@ export default function HolofoilWorkshop() {
           ))}
         </select>
 
-        <button
+        <button className="menu-tactile-btn"
           style={{
             ...styles.filterBtn,
             borderColor: affordableOnly ? warmTheme.borderStrong : warmTheme.border,
@@ -310,7 +326,7 @@ export default function HolofoilWorkshop() {
           Affordable Only
         </button>
 
-        <button
+        <button className="menu-tactile-btn"
           style={{
             ...styles.filterBtn,
             borderColor: multiCopyOnly ? warmTheme.borderStrong : warmTheme.border,
@@ -319,7 +335,7 @@ export default function HolofoilWorkshop() {
           }}
           onClick={() => setMultiCopyOnly(prev => !prev)}
         >
-          Bulk Preview (2+ Normal)
+          Show Convertible (2+ Normal)
         </button>
 
         <div style={styles.statusPill}>
@@ -343,33 +359,48 @@ export default function HolofoilWorkshop() {
           const canAfford = shards >= cost;
 
           return (
-            <div
-              key={def.definitionId}
-              className={`holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}`}
-              style={{ ...styles.card, ...getCardFaceBackgroundStyle(def, 'holo') }}
-            >
-              <div style={getCardNameRibbonStyle('grid')}>
-                <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.3, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
-                  {def.type} · {getCardFinishLabel('holo')}
+            <div key={def.definitionId} style={styles.cardTile}>
+              <div
+                className={`holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`}
+                style={{ ...styles.card, ...getCardFaceBackgroundStyle(def, 'holo') }}
+                title={getCardPreviewLines(def, 4).join('\n')}
+              >
+                <div style={getCardNameRibbonStyle('grid')}>
+                  <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.3, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
+                    {def.type} · {getCardFinishLabel('holo')}
+                  </div>
+                  <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 }}>
+                    {def.name}
+                  </div>
                 </div>
-                <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 }}>
-                  {def.name}
+
+                <div style={getCardRulesPanelStyle('grid')}>
+                  <div style={{ ...styles.desc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
+                    <CardRulesDigest
+                      card={def}
+                      variant="preview"
+                      maxSections={2}
+                      maxLinesPerSection={1}
+                      lineClamp={1}
+                      labelColor={cardFacePalette.textMuted}
+                      textColor={cardFacePalette.textSoft}
+                      sectionBackground="transparent"
+                      sectionBorder="transparent"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div style={getCardRulesPanelStyle('grid')}>
-                <div style={{ ...styles.desc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: faceMetrics.descLines }}>
-                  {def.description}
-                </div>
+              <div style={styles.infoPanel}>
                 <div style={styles.countRow}>
                   <span>Normal: {normalOwned}</span>
                   <span>Holo: {holoOwned}</span>
                 </div>
-                <div style={styles.countRow}>
+                <div style={{ ...styles.countRow, marginTop: 4 }}>
                   <span>{def.rarity}</span>
-                  <span>{cost} shards</span>
+                  <span>{cost} Shards</span>
                 </div>
-                <button
+                <button className="menu-tactile-btn"
                   style={{
                     ...styles.convertBtn,
                     opacity: canAfford ? 1 : 0.4,
@@ -378,7 +409,7 @@ export default function HolofoilWorkshop() {
                   onClick={() => canAfford && handleConvert(def.definitionId, def.name)}
                   disabled={!canAfford}
                 >
-                  {canAfford ? 'Convert 1 Copy to Holofoil' : `Need ${cost - shards} More Shards`}
+                  {canAfford ? 'Convert to Holo' : `Need ${cost - shards} More`}
                 </button>
               </div>
             </div>

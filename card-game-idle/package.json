@@ -3,9 +3,13 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "electron/main.mjs",
   "scripts": {
     "dev": "vite",
+    "dev:desktop": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "generate:card-balance": "tsx scripts/generate-card-balance-overrides.mts",
     "build": "tsc -b && vite build",
+    "build:desktop": "npm run build && electron-builder",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -27,10 +31,38 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.2.1",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
     "jsdom": "^29.1.1",
+    "tsx": "^4.22.0",
     "typescript": "^5.7.3",
     "vite": "^6.3.3",
     "vite-plugin-glsl": "^1.3.1",
-    "vitest": "^3.1.3"
+    "vitest": "^3.1.3",
+    "wait-on": "^8.0.5"
+  },
+  "build": {
+    "appId": "com.heavenlyretribution.game",
+    "productName": "Heavenly Retribution",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "electron/**",
+      "package.json"
+    ],
+    "asar": true,
+    "portable": {
+      "artifactName": "${productName}-${version}-Portable.${ext}"
+    },
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "signAndEditExecutable": false,
+      "signDlls": false
+    }
   }
 }

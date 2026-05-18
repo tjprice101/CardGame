@@ -1,7 +1,12 @@
 import { useState } from 'react';
 import { useStore, selectBossFight, selectProgress } from '@/state/store';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
+import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
+import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
+import CardEngineCallout from '@/ui/components/CardEngineCallout';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import type { BossCategory } from '@/types/bossFight';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -12,7 +17,7 @@ const BOSS_ART_ROOT = '/assets/card-backgrounds';
 const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
   boss_hollow_queen: { folder: 'neutrality', file: 'Hollow Queen.png' },
   boss_immortal_warden: { folder: 'neutrality', file: 'Immortal Warden.png' },
-  boss_chaos_sovereign: { folder: 'neutrality', file: 'Chaos Sovereign.png' },
+  boss_cherubim_sovereign: { folder: 'neutrality', file: 'Cherubim Sovereign.png' },
   boss_eternal_seraph: { folder: 'neutrality', file: 'Eternal Seraph.png' },
   boss_time_eater: { folder: 'neutrality', file: 'The Time Eater.png' },
   boss_void_architect: { folder: 'neutrality', file: 'The Void Architect.png' },
@@ -56,12 +61,50 @@ const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
   boss_prismatic_drift_leviathan: { folder: 'prismatic-accord', file: 'Drift Canopy Leviathan.png' },
   boss_prismatic_blindwars_reliquary: { folder: 'prismatic-accord', file: 'Reliquary of Blind Wars.png' },
   boss_prismatic_whitebeam_concordat: { folder: 'prismatic-accord', file: 'Whitebeam Concordat.png' },
+  // Black Glass Inferno
+  boss_inferno_vaelthorax_grief: { folder: 'black-glass-inferno', file: 'Vaelthorax Grieffire.png' },
+  boss_inferno_morvakael_answer: { folder: 'black-glass-inferno', file: 'Morvakael the Twice-Scarred.png' },
+  boss_inferno_sorveth_flame: { folder: 'black-glass-inferno', file: 'Sorveth Bifurcated Flame.png' },
+  boss_inferno_cinderborn_court: { folder: 'black-glass-inferno', file: 'Cinderborn Matriarch.png' },
+  boss_inferno_ashen_sovereign: { folder: 'black-glass-inferno', file: 'Ashen Court Regent.png' },
 };
 
 function getBossArtUrl(keyArt: string): string | null {
   const artData = BOSS_ART_FILES[keyArt];
   return artData ? `${BOSS_ART_ROOT}/${artData.folder}/${encodeURIComponent(artData.file)}` : null;
 }
+
+function mapPackToBossCategory(packId: string, packElement: string): BossCategory {
+  if (packId === 'pack-snowbound-voltage') return 'Snowbound Voltage';
+  switch (packElement) {
+    case 'Neutrality':
+      return 'Neutrality';
+    case 'Fire':
+      return 'Pyroabyss';
+    case 'Light':
+      return 'Heavenly Light';
+    case 'Thornbound':
+      return 'Thornbound Plains';
+    case 'Mechanical':
+      return 'Mechanical Dreams';
+    case 'Prismatic':
+      return 'Prismatic Accord';
+    case 'GlassAbsolute':
+      return 'Glass Absolute';
+    case 'BlazingGarden':
+      return 'The Blazing Garden';
+    case 'Dark':
+      return 'Black Glass Inferno';
+    default:
+      return 'Neutrality';
+  }
+}
+
+const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));
+const STORE_BOSS_TAB_ORDER: BossCategory[] = STORE_PACK_ORDER.map(packId => {
+  const pack = PACK_BY_ID.get(packId);
+  return pack ? mapPackToBossCategory(pack.id, pack.element) : 'Neutrality';
+});
 
 interface Props { onClose: () => void; }
 
@@ -85,14 +128,7 @@ export default function EternitysWake({ onClose }: Props) {
   }
 
   const hasSavedDecks = progress.savedDecks.length > 0;
-  const bossTabs: BossCategory[] = [
-    'Neutrality',
-    'Pyroabyss',
-    'Heavenly Light',
-    'Thornbound Plains',
-    'Mechanical Dreams',
-    'Prismatic Accord',
-  ];
+  const bossTabs: BossCategory[] = STORE_BOSS_TAB_ORDER;
   const visibleBosses = BOSS_DEFINITIONS.filter(boss => boss.category === activeBossTab);
 
   return (
@@ -113,7 +149,7 @@ export default function EternitysWake({ onClose }: Props) {
             ETERNITY'S WAKE
           </div>
           <div style={{ fontSize: 11, color: 'rgba(255,107,107,0.6)', marginTop: 2, letterSpacing: 1 }}>
-            BOSS CHALLENGES — EARN "ETERNAL" CARDS
+            BOSS CHALLENGES - EARN "ETERNAL" CARDS
           </div>
         </div>
         <button onClick={onClose} style={{
@@ -182,7 +218,10 @@ export default function EternitysWake({ onClose }: Props) {
           const onCooldown = cooldown > 0;
           const rewardDef = CardRegistry.get(boss.rewardCardId);
           const bossArtUrl = getBossArtUrl(boss.keyArt);
+          const rewardCardArtUrl = rewardDef ? getCardBackgroundUrl(rewardDef) : null;
+          const displayBossArtUrl = bossArtUrl ?? rewardCardArtUrl;
           const isSelected = selectedBossId === boss.id;
+          const rewardDisplayName = boss.category === 'Black Glass Inferno' ? boss.name : rewardDef?.name ?? '';
 
           return (
             <div key={boss.id} style={{
@@ -191,12 +230,12 @@ export default function EternitysWake({ onClose }: Props) {
               borderRadius: 12, padding: '20px', display: 'flex', flexDirection: 'column', gap: 12,
               opacity: onCooldown ? 0.65 : 1,
             }}>
-              {bossArtUrl && (
+              {displayBossArtUrl && (
                 <div style={{
                   height: 156,
                   borderRadius: 10,
                   border: '1px solid rgba(255,107,107,0.28)',
-                  backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.08) 0%, rgba(10,4,16,0.42) 100%), url("${bossArtUrl}")`,
+                  backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.08) 0%, rgba(10,4,16,0.42) 100%), url("${displayBossArtUrl}")`,
                   backgroundPosition: 'center',
                   backgroundSize: 'cover',
                   backgroundRepeat: 'no-repeat',
@@ -224,15 +263,43 @@ export default function EternitysWake({ onClose }: Props) {
               {rewardDef && (
                 <div style={{
                   background: 'rgba(255,107,107,0.08)', border: '1px solid rgba(255,107,107,0.2)',
-                  borderRadius: 8, padding: '8px 12px',
-                }}>
-                  <div style={{ fontSize: 10, color: 'rgba(255,150,150,0.5)', letterSpacing: 1 }}>REWARD</div>
-                  <div style={{ fontSize: 13, color: '#ff6b6b', marginTop: 2 }}>{rewardDef.name}</div>
-                  <div style={{ fontSize: 10, color: RARITY_COLORS[rewardDef.rarity], marginTop: 2 }}>
-                    {rewardDef.rarity} · {rewardDef.type}
-                  </div>
-                  <div style={{ fontSize: 10, color: 'rgba(255,200,200,0.5)', marginTop: 4 }}>
-                    {rewardDef.description}
+                  borderRadius: 12,
+                  overflow: 'hidden',
+                }}
+                title={getCardPreviewLines(rewardDef, 4).join('\n')}
+                >
+                  <div style={{
+                    height: 156,
+                    backgroundImage: rewardCardArtUrl
+                      ? `linear-gradient(180deg, rgba(10,4,16,0.06) 0%, rgba(10,4,16,0.18) 100%), url("${rewardCardArtUrl}")`
+                      : 'linear-gradient(180deg, rgba(255,107,107,0.12) 0%, rgba(255,107,107,0.04) 100%)',
+                    backgroundPosition: 'center',
+                    backgroundSize: 'cover',
+                    backgroundRepeat: 'no-repeat',
+                    borderBottom: '1px solid rgba(255,107,107,0.18)',
+                  }} />
+                  <div style={{ padding: '10px 12px 12px' }}>
+                    <div style={{ fontSize: 10, color: 'rgba(255,150,150,0.5)', letterSpacing: 1 }}>REWARD</div>
+                    <div style={{ fontSize: 13, color: '#ff6b6b', marginTop: 2, fontWeight: 'bold', lineHeight: 1.15 }}>{rewardDisplayName}</div>
+                    <div style={{ fontSize: 10, color: RARITY_COLORS[rewardDef.rarity], marginTop: 2 }}>
+                      {rewardDef.rarity} · {rewardDef.type}
+                    </div>
+                    <div style={{ marginTop: 8 }}>
+                      <CardEngineCallout card={rewardDef} variant="compact" />
+                    </div>
+                    <div style={{ marginTop: 6 }}>
+                      <CardRulesDigest
+                        card={rewardDef}
+                        variant="preview"
+                        maxSections={2}
+                        maxLinesPerSection={1}
+                        lineClamp={1}
+                        labelColor="rgba(255,150,150,0.5)"
+                        textColor="rgba(255,200,200,0.68)"
+                        sectionBackground="transparent"
+                        sectionBorder="transparent"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

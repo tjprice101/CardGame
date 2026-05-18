@@ -29,7 +29,7 @@ There is **no idle tick loop**. Oblivion is earned exclusively by playing cards.
 | Type | Zone | Behavior |
 |---|---|---|
 | **Angel** | Extra deck | Summoned from extra deck when conditions met. Stays on board. |
-| **Seraphim** | Main deck | Placed to front row. On-play effect fires. In-synergy passive while on board. Discarded at turn end. |
+| **Seraphim** | Main deck | Placed to front row. On-play effect fires. Passive bonus while on board. Discarded at turn end. |
 | **Chaos** | Main deck | Placed to back row. Passive effect applies to adjacent front slots. Durability decrements per card played. |
 | **Seeker** | Main deck | Played from hand. Immediate effect. No board presence. |
 
@@ -52,8 +52,8 @@ There are **no `cardSubtype` fields** on any card definition. The `HeavenlyRetri
 
 - **Oblivion** is the primary currency (replaces Score). Earned by playing cards. Spent in the Card Pack Store.
 - **Chain multiplier** = `1.0 + cardsPlayedThisTurn × 0.1`. Each card played this turn earns more Oblivion than the last.
-- Base Oblivion per card = `5 × chainMultiplier + synergy bonuses + Chaos adjacency bonuses + card-specific bonuses`.
-- Some Seraphim have `chain_bonus` synergy: adds +0.05 to chain growth rate per card while in synergy.
+- Base Oblivion per card = `5 × chainMultiplier + Seraphim bonuses + Chaos adjacency bonuses + card-specific bonuses`.
+- Some Seraphim have `chain_bonus`: adds +0.05 to chain growth rate per card while on board.
 - Chain resets to 1.0 at turn end.
 
 ---

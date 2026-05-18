@@ -15,6 +15,12 @@ export class BoardEffectsRenderer {
   private canvasWidth: number;
   private canvasHeight: number;
 
+  // Cached board state — updated via store subscription, not read per frame
+  private angelElement: string | null = null;
+  private seraphimExists: [boolean, boolean, boolean] = [false, false, false];
+  private seraphimActive: [boolean, boolean, boolean] = [false, false, false];
+  private readonly unsubscribe: () => void;
+
   constructor(layers: LayerManager, canvasWidth: number, canvasHeight: number) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
@@ -48,6 +54,19 @@ export class BoardEffectsRenderer {
       this.haloContainers[i].alpha = 0;
       layers.get('effects').addChild(this.haloContainers[i]);
     });
+
+    // Subscribe to board changes once rather than reading store every frame
+    this.unsubscribe = useStore.subscribe(state => {
+      const slots = state.board.frontSlots;
+      const angelSlot = slots.find(s => s?.type === 'Angel');
+      this.angelElement = angelSlot?.element ?? null;
+      const seraphims = slots.filter(s => s?.type === 'Seraphim').slice(0, 3);
+      for (let i = 0; i < 3; i++) {
+        const s = seraphims[i];
+        this.seraphimExists[i] = !!s;
+        this.seraphimActive[i] = !!(s?.type === 'Seraphim' && (s as { isActive?: boolean }).isActive);
+      }
+    });
   }
 
   positionForBoard(centerX: number, centerY: number): void {
@@ -63,37 +82,40 @@ export class BoardEffectsRenderer {
     });
   }
 
+  destroy(): void {
+    this.unsubscribe();
+  }
+
   update(deltaMs: number): void {
     this.elapsed += deltaMs / 1000;
-    this.godRaysFilter.time = this.elapsed;
 
-    const { board } = useStore.getState();
-    const angelSlot = board.frontSlots.find(s => s?.type === 'Angel');
-    const isNeutrality = angelSlot?.element === 'Neutrality';
-
-    // Update god rays color to match angel element
-    if (isNeutrality) {
-      this.godRaysFilter.setRayColor(0.7, 0.75, 1.0);
-    } else {
-      this.godRaysFilter.setRayColor(1.0, 0.84, 0.0);
+    const hasAngel = this.angelElement !== null;
+    // Disable the filter entirely when no angel is on board — skips GPU shader execution
+    this.godRaysFilter.enabled = hasAngel;
+    if (hasAngel) {
+      this.godRaysFilter.time = this.elapsed;
+      const isNeutrality = this.angelElement === 'Neutrality';
+      if (isNeutrality) {
+        this.godRaysFilter.setRayColor(0.7, 0.75, 1.0);
+      } else {
+        this.godRaysFilter.setRayColor(1.0, 0.84, 0.0);
+      }
+      this.godRaysFilter.intensity = 0.22;
     }
-    this.godRaysFilter.intensity = angelSlot ? 0.22 : 0;
 
-    // Get up to 3 seraphim slots for the halo containers
-    const seraphims = board.frontSlots.filter(s => s?.type === 'Seraphim').slice(0, 3);
     for (let i = 0; i < 3; i++) {
       const halo = this.haloFilters[i];
       const container = this.haloContainers[i];
       halo.time = this.elapsed;
 
-      const slot = seraphims[i];
-      if (slot?.type === 'Seraphim' && slot.isActive) {
+      const active = this.seraphimActive[i];
+      if (active) {
         halo.setGlowColor(1.0, 0.85, 0.2);
       } else {
         halo.setGlowColor(0.6, 0.6, 0.7);
       }
 
-      const target = slot ? (slot.type === 'Seraphim' && slot.isActive ? 0.55 : 0.15) : 0;
+      const target = this.seraphimExists[i] ? (active ? 0.55 : 0.15) : 0;
       container.alpha += (target - container.alpha) * 0.06;
     }
   }

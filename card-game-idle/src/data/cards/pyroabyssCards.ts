@@ -1,6 +1,6 @@
-import type { SeraphimDefinition, SeekerDefinition } from '@/types/cards';
+import type { SeraphimDefinition, OphanimDefinition } from '@/types/cards';
 
-// ── Seraphim ──────────────────────────────────────────────────────────────────
+// Seraphim
 
 export const pyroabyssSeraphims: SeraphimDefinition[] = [
   {
@@ -9,8 +9,33 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinder Seraphim',
-    description: 'On play: +20 Oblivion. Gain 2 Embers. In synergy: +1 Ember per card played.',
+    description: 'On play: +20 Oblivion; Gain 2 Embers. While on board: Gain 1 Ember per card played while active',
     artKey: 'ser_fire_cinder',
+    attacks: {
+      unsynergized: {
+        id: 'ser-fire-cinder:unsynergized',
+        label: 'Unsynergized',
+        name: 'Cinder Seraphim Vector Break',
+        description: '141 base Oblivion, 2 cards cooldown, x0.94 chain scaling, Cost: spend 1 Ember',
+        baseOblivion: 200,
+        cooldownCards: 4,
+        chainScaling: 1.18,
+        costs: [],
+        tags: ['seraphim', 'unsynergized', 'fire'],
+      },
+      synergized: {
+        id: 'ser-fire-cinder:synergized',
+        label: 'Synergized',
+        name: 'Cinder Seraphim Angelic Verdict',
+        description: '284 base Oblivion, 8 cards cooldown, x1.13 chain scaling, Angel required',
+        baseOblivion: 340,
+        cooldownCards: 5,
+        chainScaling: 1.34,
+        costs: [],
+        requiresAngelOnBoard: true,
+        tags: ['seraphim', 'synergized', 'fire'],
+      },
+    },
     baseStats: { bonusType: 'ember_per_card', bonusValue: 1, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 20 },
@@ -23,9 +48,34 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Seraphim',
-    description: 'On play: Draw 1 card. Gain 1 Ember. In synergy: +15 Oblivion when you play a Seeker card.',
+    description: 'On play: Draw 1 card; Gain 1 Ember. While on board: +15 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_fire_abyssal',
-    baseStats: { bonusType: 'seeker_bonus', bonusValue: 15, synergyRequirement: 'Fire' },
+    attacks: {
+      unsynergized: {
+        id: 'ser-fire-abyssal:unsynergized',
+        label: 'Unsynergized',
+        name: 'Abyssal Seraphim Vector Break',
+        description: '141 base Oblivion, 2 cards cooldown, x0.94 chain scaling, Cost: spend 1 Ember',
+        baseOblivion: 225,
+        cooldownCards: 4,
+        chainScaling: 1.18,
+        costs: [],
+        tags: ['seraphim', 'unsynergized', 'fire'],
+      },
+      synergized: {
+        id: 'ser-fire-abyssal:synergized',
+        label: 'Synergized',
+        name: 'Abyssal Seraphim Angelic Verdict',
+        description: '270 base Oblivion, 6 cards cooldown, x1.22 chain scaling, Angel required',
+        baseOblivion: 383,
+        cooldownCards: 5,
+        chainScaling: 1.34,
+        costs: [],
+        requiresAngelOnBoard: true,
+        tags: ['seraphim', 'synergized', 'fire'],
+      },
+    },
+    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 15, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'draw', value: 1 },
       { type: 'ember_gain', value: 1 },
@@ -37,8 +87,33 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyre Seraphim',
-    description: 'On play: +45 Oblivion. In synergy: +12 Oblivion per card played.',
+    description: 'On play: +45 Oblivion. While on board: +12 Oblivion per card played while active',
     artKey: 'ser_fire_pyre',
+    attacks: {
+      unsynergized: {
+        id: 'ser-fire-pyre:unsynergized',
+        label: 'Unsynergized',
+        name: 'Pyre Seraphim Vector Break',
+        description: '193 base Oblivion, 3 cards cooldown, x1.06 chain scaling, Cost: spend 1 Ember',
+        baseOblivion: 360,
+        cooldownCards: 4,
+        chainScaling: 1.24,
+        costs: [],
+        tags: ['seraphim', 'unsynergized', 'fire'],
+      },
+      synergized: {
+        id: 'ser-fire-pyre:synergized',
+        label: 'Synergized',
+        name: 'Pyre Seraphim Angelic Verdict',
+        description: '329 base Oblivion, 8 cards cooldown, x1.23 chain scaling, Angel required',
+        baseOblivion: 612,
+        cooldownCards: 5,
+        chainScaling: 1.40,
+        costs: [],
+        requiresAngelOnBoard: true,
+        tags: ['seraphim', 'synergized', 'fire'],
+      },
+    },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 12, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 45 },
@@ -50,8 +125,33 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Infernal Seraphim',
-    description: 'On play: +30 Oblivion. Gain 3 Embers. In synergy: +2 Embers per card played.',
+    description: 'On play: +30 Oblivion; Gain 3 Embers. While on board: Gain 2 Embers per card played while active',
     artKey: 'ser_fire_infernal',
+    attacks: {
+      unsynergized: {
+        id: 'ser-fire-infernal:unsynergized',
+        label: 'Unsynergized',
+        name: 'Infernal Seraphim Vector Break',
+        description: '170 base Oblivion, 2 cards cooldown, x0.96 chain scaling, Cost: spend 1 Ember',
+        baseOblivion: 325,
+        cooldownCards: 4,
+        chainScaling: 1.24,
+        costs: [],
+        tags: ['seraphim', 'unsynergized', 'fire'],
+      },
+      synergized: {
+        id: 'ser-fire-infernal:synergized',
+        label: 'Synergized',
+        name: 'Infernal Seraphim Angelic Verdict',
+        description: '326 base Oblivion, 7 cards cooldown, x1.16 chain scaling, Angel required',
+        baseOblivion: 553,
+        cooldownCards: 5,
+        chainScaling: 1.40,
+        costs: [],
+        requiresAngelOnBoard: true,
+        tags: ['seraphim', 'synergized', 'fire'],
+      },
+    },
     baseStats: { bonusType: 'ember_per_card', bonusValue: 2, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 30 },
@@ -64,8 +164,33 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void-Flame Seraphim',
-    description: 'On play: +60 Oblivion. Gain 5 Embers. Draw 1 card. In synergy: +3 Embers per card played.',
+    description: 'On play: +60 Oblivion; Gain 5 Embers; Draw 1 card. While on board: Gain 3 Embers per card played while active',
     artKey: 'ser_fire_voidflame',
+    attacks: {
+      unsynergized: {
+        id: 'ser-fire-voidflame:unsynergized',
+        label: 'Unsynergized',
+        name: 'Void-Flame Seraphim Vector Break',
+        description: '202 base Oblivion, 2 cards cooldown, x0.98 chain scaling, Cost: spend 1 Ember',
+        baseOblivion: 530,
+        cooldownCards: 5,
+        chainScaling: 1.32,
+        costs: [],
+        tags: ['seraphim', 'unsynergized', 'fire'],
+      },
+      synergized: {
+        id: 'ser-fire-voidflame:synergized',
+        label: 'Synergized',
+        name: 'Void-Flame Seraphim Angelic Verdict',
+        description: '380 base Oblivion, 7 cards cooldown, x1.19 chain scaling, Angel required',
+        baseOblivion: 901,
+        cooldownCards: 6,
+        chainScaling: 1.48,
+        costs: [],
+        requiresAngelOnBoard: true,
+        tags: ['seraphim', 'synergized', 'fire'],
+      },
+    },
     baseStats: { bonusType: 'ember_per_card', bonusValue: 3, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 60 },
@@ -75,17 +200,17 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
   },
 ];
 
-// ── Seeker cards ──────────────────────────────────────────────────────────────
+// Ophanim cards
 
-export const pyroabyssSeekerCards: SeekerDefinition[] = [
+export const pyroabyssOphanimCards: OphanimDefinition[] = [
   // Commons
   {
-    definitionId: 'seek-fire-cinder-draw',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-cinder-draw',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinder Draw',
-    description: 'Gain 2 Embers. Draw 1 card.',
+    description: 'Gain 2 Embers; Draw 1 card',
     artKey: 'seek_fire_cinder_draw',
     effects: [
       { type: 'ember_gain', value: 2 },
@@ -93,12 +218,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-abyssal-kindle',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-abyssal-kindle',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Kindle',
-    description: '+20 Oblivion. Gain 1 Ember.',
+    description: '+20 Oblivion; Gain 1 Ember; Draw 1 card',
     artKey: 'seek_fire_abyssal_kindle',
     effects: [
       { type: 'oblivion_flat', value: 20 },
@@ -106,37 +231,37 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-pyre-ignite',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-pyre-ignite',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Common',
     name: 'Pyre Ignite',
-    description: 'Gain 3 Embers.',
+    description: 'Gain 3 Embers; Set chain floor to x1.2',
     artKey: 'seek_fire_pyre_ignite',
     effects: [
       { type: 'ember_gain', value: 3 },
     ],
   },
   {
-    definitionId: 'seek-fire-infernal-surge',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-infernal-surge',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Common',
     name: 'Infernal Surge',
-    description: '+30 Oblivion. If any Chaos card is active: gain 2 Embers.',
+    description: '+30 Oblivion; If you control 1+ active Cherubim, Gain 2 Embers; Empower the next card you play; Draw 1 card',
     artKey: 'seek_fire_infernal_surge',
     effects: [
       { type: 'oblivion_flat', value: 30 },
-      { type: 'conditional', condition: { type: 'chaos_active_gte', value: 1 }, then: [{ type: 'ember_gain', value: 2 }] },
+      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'ember_gain', value: 2 }] },
     ],
   },
   {
-    definitionId: 'seek-fire-void-kindling',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-void-kindling',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Common',
     name: 'Void Kindling',
-    description: 'Draw 2 cards. Gain 1 Ember.',
+    description: 'Draw 2 cards; Gain 1 Ember',
     artKey: 'seek_fire_void_kindling',
     effects: [
       { type: 'draw', value: 2 },
@@ -144,12 +269,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-void-flare',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-void-flare',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Common',
     name: 'Void Flare',
-    description: '+25 Oblivion. If you have 3 or more Embers: gain 1 Ember.',
+    description: '+25 Oblivion; If you have 3+ Embers, Gain 1 Ember; Shuffle discard into deck; Draw 1 card',
     artKey: 'seek_fire_void_flare',
     effects: [
       { type: 'oblivion_flat', value: 25 },
@@ -157,12 +282,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-smoldering-cycle',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-smoldering-cycle',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Common',
     name: 'Smoldering Cycle',
-    description: 'Shuffle your discard pile into the deck. Gain 2 Embers.',
+    description: 'Shuffle discard into deck; Gain 2 Embers',
     artKey: 'seek_fire_smoldering_cycle',
     effects: [
       { type: 'shuffle_discard' },
@@ -170,12 +295,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-abyssal-recall',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-abyssal-recall',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Recall',
-    description: 'Salvage 1 Seraphim card from your discard pile. Gain 1 Ember.',
+    description: 'Salvage 1 card matching Seraphim; Gain 1 Ember',
     artKey: 'seek_fire_abyssal_recall',
     effects: [
       { type: 'salvage_by_type', filter: ['Seraphim'] },
@@ -184,12 +309,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
   },
   // Rares
   {
-    definitionId: 'seek-fire-flame-burst',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-flame-burst',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Rare',
     name: 'Flame Burst',
-    description: 'Spend 3 Embers: +60 Oblivion.',
+    description: 'Spend 3 Embers; +60 Oblivion; Shuffle discard into deck; Draw 1 card',
     artKey: 'seek_fire_flame_burst',
     effects: [
       { type: 'ember_spend', value: 3 },
@@ -197,12 +322,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-abyssal-detonation',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-abyssal-detonation',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Rare',
     name: 'Abyssal Detonation',
-    description: 'Spend 5 Embers: +120 Oblivion. Draw 1 card.',
+    description: 'Spend 5 Embers; +120 Oblivion; Draw 1 card',
     artKey: 'seek_fire_abyssal_detonation',
     effects: [
       { type: 'ember_spend', value: 5 },
@@ -211,12 +336,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-pyroclast',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-pyroclast',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyroclast',
-    description: 'Spend 4 Embers: +80 Oblivion. If 3 or more Seraphim are in synergy: draw 2 cards.',
+    description: 'Spend 4 Embers; +80 Oblivion; If you control 3+ active Seraphim, Draw 2 cards; Empower the next card you play; Draw 1 card',
     artKey: 'seek_fire_pyroclast',
     effects: [
       { type: 'ember_spend', value: 4 },
@@ -225,12 +350,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-ember-threshold',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-ember-threshold',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Rare',
     name: 'Ember Threshold',
-    description: '+40 Oblivion. If you have 5 or more Embers: +30 additional Oblivion.',
+    description: '+40 Oblivion; If you have 5+ Embers, +30 Oblivion; Empower the next card you play; Draw 1 card',
     artKey: 'seek_fire_ember_threshold',
     effects: [
       { type: 'oblivion_flat', value: 40 },
@@ -238,12 +363,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-conflagration',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-conflagration',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Rare',
     name: 'Conflagration',
-    description: '+10 Oblivion per card played this turn (including this one). Gain 1 Ember.',
+    description: '+0 Oblivion; Gain 1 Ember; Draw 1 card',
     artKey: 'seek_fire_conflagration',
     effects: [
       { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: (cardsPlayedThisTurn + 1) * 10
@@ -251,37 +376,37 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-pyre-hunt',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-pyre-hunt',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyre Hunt',
-    description: 'Search your deck for any Chaos card. Add it to your hand. Shuffle your deck.',
+    description: 'Search your deck for 1 matching Cherubim',
     artKey: 'seek_fire_pyre_hunt',
     effects: [
-      { type: 'search_deck_by_type', filter: ['Chaos'] },
+      { type: 'search_deck_by_type', filter: ['Cherubim'] },
     ],
   },
   {
-    definitionId: 'seek-fire-ember-chain',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-ember-chain',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Rare',
     name: 'Ember Chain',
-    description: 'Gain Embers equal to the number of Seeker cards in your hand.',
+    description: 'Gain 0 Embers; Set chain floor to x1.3',
     artKey: 'seek_fire_ember_chain',
     effects: [
-      { type: 'ember_gain', value: 0 },  // dynamic sentinel: Seeker count in hand
+      { type: 'ember_gain', value: 0 },  // dynamic sentinel: Ophanim count in hand
     ],
   },
   // Epics
   {
-    definitionId: 'seek-fire-void-combustion',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-void-combustion',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void Combustion',
-    description: 'Spend all your Embers: +25 Oblivion per Ember spent.',
+    description: 'Spend 9999 Embers; +0 Oblivion; Set chain floor to x1.4',
     artKey: 'seek_fire_void_combustion',
     effects: [
       { type: 'ember_spend', value: 9999 },
@@ -289,12 +414,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
     ],
   },
   {
-    definitionId: 'seek-fire-inferno',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-inferno',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Epic',
     name: 'Inferno',
-    description: 'Spend 6 Embers: Set the chain multiplier to ×3.0.',
+    description: 'Spend 6 Embers; Set chain multiplier to x3.0; Draw 1 card',
     artKey: 'seek_fire_inferno',
     effects: [
       { type: 'ember_spend', value: 6 },
@@ -303,12 +428,12 @@ export const pyroabyssSeekerCards: SeekerDefinition[] = [
   },
   // Legendary
   {
-    definitionId: 'seek-fire-void-apocalypse',
-    type: 'Seeker',
+    definitionId: 'ophanim-fire-void-apocalypse',
+    type: 'Ophanim',
     element: 'Fire',
     rarity: 'Legendary',
     name: 'Void Apocalypse',
-    description: 'Draw 2 cards. Spend all your Embers: +30 Oblivion per Ember spent.',
+    description: 'Draw 2 cards; Spend 9999 Embers; +0 Oblivion',
     artKey: 'seek_fire_void_apocalypse',
     effects: [
       { type: 'draw', value: 2 },

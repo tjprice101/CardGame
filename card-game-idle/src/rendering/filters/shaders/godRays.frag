@@ -12,7 +12,7 @@ uniform float uIntensity;   // overall brightness
 
 out vec4 fragColor;
 
-#define NUM_SAMPLES 16
+#define NUM_SAMPLES 8
 #define DECAY 0.96
 #define WEIGHT 0.5
 

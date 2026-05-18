@@ -14,9 +14,12 @@ export const CardFactory = {
       element: def.element,
       rarity: def.rarity,
       finish,
+      prismaticDepth: def.prismaticDepth,
+      spectrumTokens: 0,
       level: 1,
       cardsPlayedSinceSummon: 0,
       activated: false,
+      attackCooldowns: {},
       boardSlot: null,
     };
   },

@@ -1,14 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { OfflineProgress } from '@/core/loop/OfflineProgress';
-import type { ComputedBoardStats } from '@/types/game';
+import type { OfflineProgressStats } from '@/core/loop/OfflineProgress';
 
-const baseStats: ComputedBoardStats = {
-  effectivePower: 100,
+const baseStats: OfflineProgressStats = {
   scorePerTick: 100,
   tickIntervalMs: 1000,
-  activeSynergies: 0,
-  synergyMultiplier: 1,
-  resourcePerTick: 0,
 };
 
 describe('OfflineProgress', () => {

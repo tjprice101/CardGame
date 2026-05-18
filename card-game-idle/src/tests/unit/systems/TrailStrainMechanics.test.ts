@@ -22,7 +22,7 @@ function makeDeck(drawPile: DeckCard[] = []): DeckState {
     deckList: [],
     extraDeck: [],
     drawPile,
-    hand: [{ instanceId: 'play_1', definitionId: 'md-seek-gearwake-courier', finish: 'normal' }],
+    hand: [{ instanceId: 'play_1', definitionId: 'md-ophanim-gearwake-courier', finish: 'normal' }],
     discardPile: [],
   };
 }
@@ -40,7 +40,7 @@ describe('Trail / Strain / Overclock mechanics', () => {
 
   it('overclock effects apply bonus payload and add strain', () => {
     const result = CardEffectExecutor.execute(
-      { instanceId: 'play_1', definitionId: 'md-seek-gearwake-courier', finish: 'normal' },
+      { instanceId: 'play_1', definitionId: 'md-ophanim-gearwake-courier', finish: 'normal' },
       makeTurn({ strain: 0 }),
       emptyBoard,
       makeDeck([
@@ -56,14 +56,14 @@ describe('Trail / Strain / Overclock mechanics', () => {
 
   it('trail_spend blocks card resolution when trail is insufficient', () => {
     const result = CardEffectExecutor.execute(
-      { instanceId: 'play_1', definitionId: 'tbp-seek-harrow-psalm', finish: 'normal' },
+      { instanceId: 'play_1', definitionId: 'tbp-ophanim-harrow-psalm', finish: 'normal' },
       makeTurn({ trail: 1 }),
       emptyBoard,
       {
         deckList: [],
         extraDeck: [],
         drawPile: [],
-        hand: [{ instanceId: 'play_1', definitionId: 'tbp-seek-harrow-psalm', finish: 'normal' }],
+        hand: [{ instanceId: 'play_1', definitionId: 'tbp-ophanim-harrow-psalm', finish: 'normal' }],
         discardPile: [],
       },
     );
@@ -75,14 +75,14 @@ describe('Trail / Strain / Overclock mechanics', () => {
 
   it('strain-based conditional effects trigger after strain gain in the same card', () => {
     const result = CardEffectExecutor.execute(
-      { instanceId: 'play_1', definitionId: 'md-seek-flareline-primer', finish: 'normal' },
+      { instanceId: 'play_1', definitionId: 'md-ophanim-flareline-primer', finish: 'normal' },
       makeTurn({ strain: 2 }),
       emptyBoard,
       {
         deckList: [],
         extraDeck: [],
         drawPile: [],
-        hand: [{ instanceId: 'play_1', definitionId: 'md-seek-flareline-primer', finish: 'normal' }],
+        hand: [{ instanceId: 'play_1', definitionId: 'md-ophanim-flareline-primer', finish: 'normal' }],
         discardPile: [],
       },
     );

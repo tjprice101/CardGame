@@ -17,8 +17,9 @@ export class Renderer {
       resizeTo: canvas.parentElement ?? canvas,
       backgroundAlpha: 0,
       antialias: true,
-      resolution: window.devicePixelRatio || 1,
+      resolution: Math.min(window.devicePixelRatio || 1, 1.5),
       autoDensity: true,
+      powerPreference: 'high-performance',
     });
 
     const layers = new LayerManager(app.stage);

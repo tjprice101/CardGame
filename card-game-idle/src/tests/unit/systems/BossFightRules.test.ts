@@ -65,7 +65,7 @@ describe('Boss fight rules', () => {
       deckList: [],
       extraDeck: [],
       drawPile: [],
-      hand: [{ instanceId: 'play_1', definitionId: 'seek-neutral-null-seek' }],
+      hand: [{ instanceId: 'play_1', definitionId: 'ser-neutral-null', finish: 'normal' }],
       discardPile: [],
     };
 

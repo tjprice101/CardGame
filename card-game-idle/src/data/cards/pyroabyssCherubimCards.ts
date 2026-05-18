@@ -1,0 +1,127 @@
+import type { CherubimDefinition } from '@/types/cards';
+
+export const pyroabyssCherubimCards: CherubimDefinition[] = [
+  {
+    definitionId: 'cherubim-fire-ember-shroud',
+    type: 'Cherubim',
+    element: 'Fire',
+    rarity: 'Common',
+    name: 'Ember Shroud',
+    description: 'On play: Gain 3 Embers; Draw 1 card. While on board: Gain 2 Embers per card played; Buffs Seraphim attacks: base +31, chain scaling +0.04, cooldown -1, multiplier x1.00',
+    artKey: 'cherubim_fire_ember_shroud',
+    maxDurability: 2,
+    effects: [
+      { type: 'cherubim_resource_per_card', resource: 'ember', value: 2 },
+    ],
+    onPlayEffects: [
+      { type: 'ember_gain', value: 3 },
+      { type: 'draw', value: 1 },
+    ],
+  },
+  {
+    definitionId: 'cherubim-fire-abyssal-veil',
+    type: 'Cherubim',
+    element: 'Fire',
+    rarity: 'Common',
+    name: 'Abyssal Veil',
+    description: 'On play: +40 Oblivion; Gain 2 Embers; Draw 1 card. While on board: +10 Oblivion per card played; Buffs Seraphim attacks: base +10, chain scaling +0.04, cooldown +0, multiplier x1.00',
+    artKey: 'cherubim_fire_abyssal_veil',
+    maxDurability: 3,
+    effects: [
+      { type: 'cherubim_oblivion_per_card', value: 10 },
+    ],
+    onPlayEffects: [
+      { type: 'oblivion_flat', value: 40 },
+      { type: 'ember_gain', value: 2 },
+      { type: 'draw', value: 1 },
+    ],
+  },
+  {
+    definitionId: 'cherubim-fire-pyre-mantle',
+    type: 'Cherubim',
+    element: 'Fire',
+    rarity: 'Rare',
+    name: 'Pyre Mantle',
+    description: 'On play: Gain 6 Embers; +50 Oblivion. While on board: Gain 3 Embers per card played; Buffs Seraphim and Angel attacks: base +38, chain scaling +0.06, cooldown +0, multiplier x1.00',
+    artKey: 'cherubim_fire_pyre_mantle',
+    maxDurability: 3,
+    effects: [
+      { type: 'cherubim_resource_per_card', resource: 'ember', value: 3 },
+    ],
+    onPlayEffects: [
+      { type: 'ember_gain', value: 6 },
+      { type: 'oblivion_flat', value: 50 },
+    ],
+  },
+  {
+    definitionId: 'cherubim-fire-infernal-ward',
+    type: 'Cherubim',
+    element: 'Fire',
+    rarity: 'Rare',
+    name: 'Infernal Ward',
+    description: 'On play: +60 Oblivion; Gain 4 Embers. While on board: Chain grows +0.07 per card played; Buffs Seraphim and Angel attacks: base +38, chain scaling +0.02, cooldown +0, multiplier x1.00',
+    artKey: 'cherubim_fire_infernal_ward',
+    maxDurability: 3,
+    effects: [
+      { type: 'cherubim_chain_bonus', value: 0.07 },
+    ],
+    onPlayEffects: [
+      { type: 'oblivion_flat', value: 60 },
+      { type: 'ember_gain', value: 4 },
+    ],
+  },
+  {
+    definitionId: 'cherubim-fire-void-cinder-shell',
+    type: 'Cherubim',
+    element: 'Fire',
+    rarity: 'Epic',
+    name: 'Void Cinder Shell',
+    description: 'On play: +100 Oblivion; Draw 2 cards; Empower the next card you play. While on board: If you control 2+ active Cherubim, this Cherubim grants +1.35 bonus power; Buffs Seraphim and Angel attacks: base +48, chain scaling +0.07, cooldown +0, multiplier x1.35; Buffs Angel attacks: base +37, chain scaling +0.05, cooldown +0, multiplier x1.26',
+    artKey: 'cherubim_fire_void_cinder_shell',
+    maxDurability: 4,
+    effects: [
+      { type: 'cherubim_conditional_buff', condition: { type: 'cherubim_active_gte', value: 2 }, value: 1.35 },
+    ],
+    onPlayEffects: [
+      { type: 'oblivion_flat', value: 100 },
+      { type: 'draw', value: 2 },
+      { type: 'multiply_next' },
+    ],
+  },
+  {
+    definitionId: 'cherubim-fire-flame-fortify',
+    type: 'Cherubim',
+    element: 'Fire',
+    rarity: 'Rare',
+    name: 'Flame Fortification',
+    description: 'On play: Search your deck for 1 matching Seraphim; Gain 6 Embers; Draw 1 card. While on board: +14 Oblivion per card played; Buffs Seraphim attacks: base +17, chain scaling +0.05, cooldown -1, multiplier x1.00',
+    artKey: 'cherubim_fire_flame_fortify',
+    maxDurability: 3,
+    effects: [
+      { type: 'cherubim_oblivion_per_card', value: 14 },
+    ],
+    onPlayEffects: [
+      { type: 'search_deck_by_type', filter: ['Seraphim'] },
+      { type: 'ember_gain', value: 6 },
+      { type: 'draw', value: 1 },
+    ],
+  },
+  {
+    definitionId: 'cherubim-fire-abyss-amp',
+    type: 'Cherubim',
+    element: 'Fire',
+    rarity: 'Epic',
+    name: 'Abyss Amplifier',
+    description: 'On play: Gain 10 Embers; Draw 2 cards; +80 Oblivion. While on board: Ophanim plays gain +26 Oblivion; Buffs Seraphim and Angel attacks: base +27, chain scaling +0.07, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +21, chain scaling +0.05, cooldown +0, multiplier x1.00',
+    artKey: 'cherubim_fire_abyss_amp',
+    maxDurability: 4,
+    effects: [
+      { type: 'cherubim_ophanim_bonus', value: 26 },
+    ],
+    onPlayEffects: [
+      { type: 'ember_gain', value: 10 },
+      { type: 'draw', value: 2 },
+      { type: 'oblivion_flat', value: 80 },
+    ],
+  },
+];

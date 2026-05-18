@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useStore, selectBoard, selectTurn, selectComputedStats } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 import { warmTheme } from '@/ui/theme';
@@ -47,10 +48,20 @@ export default function AngelStatPanel() {
   const turn = useStore(selectTurn);
   const stats = useStore(selectComputedStats);
 
-  const angelCount = board.frontSlots.filter(s => s?.type === 'Angel').length;
-  const totalSeraphimCount = board.frontSlots.filter(s => s?.type === 'Seraphim').length;
-  const activeSeraphimCount = board.frontSlots.filter(s => s?.type === 'Seraphim' && s.isActive).length;
-  const chaosCount = board.backSlots.filter(s => s !== null).length;
+  // Single pass over board slots instead of four separate .filter() calls
+  const { angelCount, totalSeraphimCount, activeSeraphimCount, cherubimCount } = useMemo(() => {
+    let angelCount = 0, totalSeraphimCount = 0, activeSeraphimCount = 0;
+    for (const slot of board.frontSlots) {
+      if (slot?.type === 'Angel') { angelCount++; }
+      else if (slot?.type === 'Seraphim') {
+        totalSeraphimCount++;
+        if (slot.isActive) activeSeraphimCount++;
+      }
+    }
+    const cherubimCount = board.backSlots.filter(s => s !== null).length;
+    return { angelCount, totalSeraphimCount, activeSeraphimCount, cherubimCount };
+  }, [board.frontSlots, board.backSlots]);
+
   const hasAnything = angelCount > 0 || totalSeraphimCount > 0;
 
   return (
@@ -80,9 +91,9 @@ export default function AngelStatPanel() {
               {activeSeraphimCount}/{totalSeraphimCount} Seraphim{totalSeraphimCount > 1 ? 's' : ''} active
             </div>
           )}
-          {chaosCount > 0 && (
-            <div style={{ ...styles.synergy, color: warmTheme.chaos }}>
-              {chaosCount} Chaos card{chaosCount > 1 ? 's' : ''} active
+          {cherubimCount > 0 && (
+            <div style={{ ...styles.synergy, color: warmTheme.cherubim }}>
+              {cherubimCount} Cherubim card{cherubimCount > 1 ? 's' : ''} active
             </div>
           )}
         </>

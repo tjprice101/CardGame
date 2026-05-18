@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
-import { useStore, selectBoard, selectCanEmbraceInfinite, selectTurn } from '@/state/store';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { useStore, selectBoard, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
   cardFacePalette,
   getAdaptiveDescriptionMetrics,
@@ -9,56 +10,300 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import { warmTheme } from '@/ui/theme';
-import type { AngelDefinition, ChaosInstance } from '@/types/cards';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
+import { getCardPreviewText } from '@/ui/cardStatSummary';
+import { uiTypography, warmTheme } from '@/ui/theme';
+import type { DeckCard } from '@/types/game';
+import type {
+  AngelDefinition,
+  AngelInstance,
+  CherubimInstance,
+  CherubimDefinition,
+  SeraphimDefinition,
+  SeraphimInstance,
+} from '@/types/cards';
 
-const RARITY_BORDER: Record<string, string> = {
-  Common:    'rgba(180,180,180,0.75)',
-  Rare:      'rgba(91,155,213,0.95)',
-  Epic:      'rgba(185,100,220,0.95)',
-  Legendary: 'rgba(243,156,18,1.0)',
-};
-
-const RARITY_GLOW: Record<string, string> = {
-  Common:    'rgba(180,180,180,0.4)',
-  Rare:      'rgba(91,155,213,0.5)',
-  Epic:      'rgba(185,100,220,0.5)',
-  Legendary: 'rgba(243,156,18,0.6)',
-};
-
-const RARITY_GLOW_PEAK: Record<string, string> = {
-  Common:    'rgba(180,180,180,0.7)',
-  Rare:      'rgba(91,155,213,0.85)',
-  Epic:      'rgba(185,100,220,0.85)',
-  Legendary: 'rgba(243,156,18,0.95)',
-};
-
-const SLOT_W = 102;
-const SLOT_H = 144;
-const CHAOS_W = 94;
-const CHAOS_H = 126;
-const FRONT_ROW_GAP = 'clamp(10px, 1.2vw, 16px)';
-const BACK_ROW_GAP = 'clamp(10px, 1.2vw, 16px)';
-const ROW_SEPARATION = 'clamp(12px, 1.8vh, 22px)';
-const BACK_ROW_STAGGER = 'clamp(52px, 5vw, 62px)';
+const SLOT_W = 118;
+const SLOT_H = 162;
+const CHERUBIM_W = 104;
+const CHERUBIM_H = 140;
+const FRONT_ROW_GAP = 'clamp(12px, 1.4vw, 18px)';
+const BACK_ROW_GAP = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
+const ROW_SEPARATION = 'clamp(14px, 2vh, 24px)';
+const BACK_ROW_STAGGER = `calc(${SLOT_W - CHERUBIM_W / 2}px + (${FRONT_ROW_GAP} / 2))`;
+const ATTACK_PANEL_WIDTH = 'min(900px, 94vw)';
 const FRONT_FACE_METRICS = getCardFaceMetrics('board');
-const CHAOS_FACE_METRICS = getCardFaceMetrics('boardMini');
+const CHERUBIM_FACE_METRICS = getCardFaceMetrics('boardMini');
+const ATTACK_CARD_FACE_METRICS = getCardFaceMetrics('compact');
+const DISPLAY_FONT = uiTypography.display;
+const BODY_FONT = uiTypography.body;
+const ATTACK_MODAL_BACKDROP = 'radial-gradient(circle at 14% 12%, rgba(227, 150, 82, 0.22) 0%, rgba(227, 150, 82, 0) 36%), radial-gradient(circle at 86% 22%, rgba(173, 126, 82, 0.18) 0%, rgba(173, 126, 82, 0) 34%), rgba(8, 7, 8, 0.8)';
+const ATTACK_MODAL_PANEL_BG = 'linear-gradient(180deg, rgba(248, 240, 225, 0.98) 0%, rgba(240, 224, 198, 0.96) 100%)';
+const ATTACK_MODAL_PANEL_BORDER = '1px solid rgba(138, 94, 58, 0.42)';
+const ATTACK_MODAL_PANEL_SHADOW = '0 26px 48px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.4)';
+
+function getSeraphimUiAttacks(def: SeraphimDefinition) {
+  if (def.attacks) return def.attacks;
+
+  const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
+  const bonusLabelByType: Record<string, string> = {
+    oblivion_per_card: 'steady per-card pressure',
+    chain_bonus: 'accelerated chain growth',
+    ophanim_bonus: 'Ophanim-linked burst conversion',
+    cherubim_extra_plays: 'expanded Cherubim sequencing',
+    cherubim_expire_bonus: 'Cherubim expiry detonations',
+    ember_per_card: 'ember overflow scaling',
+    power_amplifier: 'board power amplification',
+    score_per_second: 'passive score accumulation',
+    resource_generation: 'resource generation pressure',
+    tick_acceleration: 'faster system cadence',
+  };
+
+  const elementLabelByElement: Record<string, string> = {
+    Neutrality: 'null-law',
+    Fire: 'emberforged',
+    Light: 'luminous',
+    Dark: 'blackglass',
+    Prismatic: 'prismatic',
+    Mechanical: 'clockwork',
+    Thornbound: 'thornbound',
+  };
+
+  const firstOnPlay = def.onPlayEffects[0]?.type ?? 'board_setup';
+  const onPlayLeadByType: Record<string, string> = {
+    draw: 'draw tempo',
+    oblivion_flat: 'immediate Oblivion injection',
+    set_chain_floor: 'chain-floor anchoring',
+    chain_multiplier_set: 'chain snapline setup',
+    multiply_next: 'next-card amplification',
+    salvage_any: 'discard reclamation',
+    look_top_take: 'topdeck sculpting',
+    look_top_take_drop: 'selection routing',
+    conditional: 'conditional conversion',
+    dominant_stack_gain: 'resource stack growth',
+    ember_gain: 'ember loading',
+    radiance_gain: 'radiance loading',
+    trail_gain: 'trail loading',
+    strain_gain: 'strain loading',
+    overclock: 'overclock priming',
+  };
+
+  const bonusPitch = bonusLabelByType[def.baseStats.bonusType] ?? 'board scaling';
+  const elementPitch = elementLabelByElement[def.element] ?? 'arcane';
+  const onPlayPitch = onPlayLeadByType[firstOnPlay] ?? 'setup momentum';
+  const baseOblivion = Math.max(90, Math.round(80 + def.baseStats.bonusValue * 2.2));
+  const unsyncedCooldown = def.rarity === 'Legendary' || def.rarity === 'Eternal' || def.rarity === 'Infinite' ? 4 : 3;
+  const unsyncedScaling = def.baseStats.bonusType === 'chain_bonus' ? 0.98 : 0.9;
+
+  return {
+    unsynergized: {
+      id: `${def.definitionId}:unsynergized`,
+      label: 'Unsynergized',
+      name: `${crest} Vector Break`,
+      description: `${def.name} executes a ${elementPitch} opener that leans on ${onPlayPitch} and converts into ${bonusPitch}.`,
+      baseOblivion,
+      cooldownCards: unsyncedCooldown,
+      chainScaling: unsyncedScaling,
+      costs: [],
+      tags: ['seraphim', 'unsynergized'],
+    },
+    synergized: {
+      id: `${def.definitionId}:synergized`,
+      label: 'Synergized',
+      name: `${crest} Angelic Verdict`,
+      description: `With an Angel aligned, ${def.name} escalates into its ${elementPitch} finisher and over-converts ${bonusPitch}.`,
+      baseOblivion: Math.round(baseOblivion * 1.95),
+      cooldownCards: unsyncedCooldown + 2,
+      chainScaling: Math.round((unsyncedScaling + 0.27) * 100) / 100,
+      costs: [],
+      requiresAngelOnBoard: true,
+      tags: ['seraphim', 'synergized'],
+    },
+  };
+}
+
+function getAngelUiAttacks(def: AngelDefinition) {
+  if (def.attacks) return def.attacks;
+
+  const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
+  const auraByBonusType: Record<string, string> = {
+    oblivion_per_card: 'steady field pressure',
+    chain_bonus: 'chain acceleration',
+    ophanim_bonus: 'Ophanim-linked burst pressure',
+    power_per_seraphim: 'seraphim-linked scaling',
+    oblivion_per_seraphim: 'formation-linked conversion',
+  };
+  const aura = auraByBonusType[def.baseStats.bonusType] ?? 'battlefield pressure';
+  const summonTax = Math.max(1, def.summonCost.length);
+  const baseOblivion = Math.max(150, Math.round(140 + def.baseStats.bonusValue * 2 + summonTax * 28));
+
+  return {
+    primary: {
+      id: `${def.definitionId}:primary`,
+      label: 'Primary',
+      name: `${crest} Ordinance`,
+      description: `${def.name} applies disciplined pressure and stabilizes your ${aura}.`,
+      baseOblivion,
+      cooldownCards: summonTax + 2,
+      chainScaling: 0.98,
+      costs: [],
+      tags: ['angel', 'primary'],
+    },
+    exalted: {
+      id: `${def.definitionId}:exalted`,
+      label: 'Exalted',
+      name: `${crest} Throne Decree`,
+      description: `Exalted channel of ${def.activatedAbility.name}; converts ${aura} into a decisive finisher window.`,
+      baseOblivion: Math.round(baseOblivion * 2.05),
+      cooldownCards: summonTax + 5,
+      chainScaling: 1.24,
+      costs: [],
+      tags: ['angel', 'exalted'],
+    },
+  };
+}
+
+function getAttackCostCount(
+  costs: ReadonlyArray<{ type: string; value: number }> | undefined,
+  costType: string,
+): number {
+  return (costs ?? [])
+    .filter(cost => cost.type === costType)
+    .reduce((sum, cost) => sum + cost.value, 0);
+}
+
+function toggleSelectedId(current: string[], id: string, maxCount: number): string[] {
+  if (current.includes(id)) return current.filter(value => value !== id);
+  if (maxCount <= 0) return current;
+  if (current.length >= maxCount) return [...current.slice(1), id];
+  return [...current, id];
+}
+
+function renderPrismaticBadge(depth?: number, tokens?: number) {
+  if (depth === undefined && (tokens ?? 0) <= 0) return null;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 7,
+      right: 7,
+      zIndex: 8,
+      padding: '2px 6px',
+      borderRadius: 999,
+      border: '1px solid rgba(255,255,255,0.36)',
+      background: 'rgba(19, 16, 20, 0.76)',
+      color: 'rgba(255,255,255,0.94)',
+      fontSize: 9,
+      lineHeight: 1,
+      letterSpacing: 0.5,
+      fontFamily: DISPLAY_FONT,
+      fontWeight: 700,
+      pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`D${depth ?? '?'} / T${tokens ?? 0}`}
+    </div>
+  );
+}
+
+function renderBurningGardenBadge(phase?: string, counters?: number, isEcho?: boolean) {
+  if (!phase && (counters ?? 0) <= 0 && !isEcho) return null;
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: 7,
+      left: 7,
+      zIndex: 8,
+      padding: '2px 6px',
+      borderRadius: 999,
+      border: '1px solid rgba(255,214,180,0.34)',
+      background: phase === 'Burn' ? 'rgba(93, 30, 10, 0.82)' : 'rgba(34, 66, 30, 0.72)',
+      color: 'rgba(255,246,233,0.96)',
+      fontSize: 9,
+      lineHeight: 1,
+      letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT,
+      fontWeight: 700,
+      pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`${phase ?? 'Bloom'}${isEcho ? ' Echo' : ''} · C${counters ?? 0}`}
+    </div>
+  );
+}
+
+interface PendingAngelAttack {
+  slot: 0 | 1 | 2 | 3 | 4;
+  attackId: 'primary' | 'exalted';
+  title: string;
+  description: string;
+}
+
+interface PendingSeraphimAttack {
+  slot: 0 | 1 | 2 | 3 | 4;
+  attackId: 'unsynergized' | 'synergized';
+  title: string;
+  description: string;
+}
+
+function formatAttackCosts(costs: ReadonlyArray<{ type: string; value: number }> | undefined): string {
+  if (!costs || costs.length === 0) return 'No additional cost';
+  return costs.map(cost => `${cost.type.replace(/_/g, ' ')} ${cost.value}`).join(', ');
+}
+
+function formatAttackSummary(attack: {
+  baseOblivion: number;
+  cooldownCards: number;
+  chainScaling: number;
+  costs?: ReadonlyArray<{ type: string; value: number }>;
+  requiresAngelOnBoard?: boolean;
+}): string {
+  const requirement = attack.requiresAngelOnBoard ? 'Requires Angel on board · ' : '';
+  return `${requirement}Base ${attack.baseOblivion} · Cooldown ${attack.cooldownCards} cards · Chain +${attack.chainScaling.toFixed(2)} · Cost ${formatAttackCosts(attack.costs)}`;
+}
 
 export default function BoardDisplay() {
   const board = useStore(selectBoard);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
+  const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
-  const hand = useStore(s => s.deck.hand);
-  const { removeSeraphim, placeSeraphimFromHand, placeChaos, removeChaos, playCard, embraceInfinite, activateAngel } = useStore.getState();
+  const {
+    removeSeraphim,
+    placeSeraphimFromHand,
+    placeCherubim,
+    removeCherubim,
+    playCard,
+    embraceInfinite,
+    echoEmberGroveCard,
+    igniteBurningGardenCard,
+    activateAngel,
+    activateSeraphimAttack,
+    activateAngelAttack,
+  } = useStore.getState();
 
-  const hasSeraphimInHand = hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Seraphim');
-  const hasChaosInHand = hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Chaos');
+  const hand = deck.hand;
+
+  // Memoize hand-type checks to avoid O(n) CardRegistry scans on every render
+  const { hasSeraphimInHand, hasCherubimInHand } = useMemo(() => ({
+    hasSeraphimInHand: hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Seraphim'),
+    hasCherubimInHand: hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Cherubim'),
+  }), [hand]);
+  const hasEmberGroveCards = (board.emberGrove?.length ?? 0) > 0;
   const canPlay = turn.phase === 'playing';
 
   const prevSlotsRef = useRef(board.frontSlots);
   const [lastPlacedInstanceId, setLastPlacedInstanceId] = useState<string | null>(null);
   const [dragOverFront, setDragOverFront] = useState<number | null>(null);
   const [dragOverBack, setDragOverBack] = useState<number | null>(null);
+  const [hoveredFrontSlot, setHoveredFrontSlot] = useState<number | null>(null);
+  const [hoveredBackSlot, setHoveredBackSlot] = useState<number | null>(null);
+  const [attackPanelSlot, setAttackPanelSlot] = useState<number | null>(null);
+  const [selectedDiscardIds, setSelectedDiscardIds] = useState<string[]>([]);
+  const [selectedSacrificeSeraphimIds, setSelectedSacrificeSeraphimIds] = useState<string[]>([]);
+  const [selectedSacrificeAngelIds, setSelectedSacrificeAngelIds] = useState<string[]>([]);
+  const [pendingAngelAttack, setPendingAngelAttack] = useState<PendingAngelAttack | null>(null);
+  const [pendingSeraphimAttack, setPendingSeraphimAttack] = useState<PendingSeraphimAttack | null>(null);
 
   useEffect(() => {
     const prev = prevSlotsRef.current;
@@ -80,45 +325,219 @@ export default function BoardDisplay() {
   function handleFrontSlotClick(slotIndex: 0 | 1 | 2 | 3 | 4) {
     const slot = board.frontSlots[slotIndex];
     if (slot?.type === 'Seraphim') {
-      removeSeraphim(slotIndex);
+      if (canPlay) {
+        setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
+      } else {
+        removeSeraphim(slotIndex);
+      }
+    } else if (slot?.type === 'Angel') {
+      if (canPlay) {
+        setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
+      }
     } else if (!slot && canPlay && hasSeraphimInHand) {
       placeSeraphimFromHand(slotIndex);
+      setAttackPanelSlot(null);
     }
   }
 
   function handleBackSlotClick(backSlot: 0 | 1 | 2 | 3) {
-    const chaos = board.backSlots[backSlot];
-    if (chaos) {
-      removeChaos(backSlot);
-    } else if (canPlay && hasChaosInHand) {
-      const chaosCard = hand.find(c => CardRegistry.get(c.definitionId)?.type === 'Chaos');
-      if (chaosCard) {
+    const cherubim = board.backSlots[backSlot];
+    if (cherubim) {
+      const cherubimDef = CardRegistry.get(cherubim.definitionId);
+      if (cherubimDef?.element === 'BlazingGarden' && cherubim.burningGardenPhase !== 'Burn') {
+        igniteBurningGardenCard(cherubim.instanceId);
+      } else {
+        removeCherubim(backSlot);
+      }
+    } else if (canPlay && hasCherubimInHand) {
+      const backCard = hand.find(c => CardRegistry.get(c.definitionId)?.type === 'Cherubim');
+      if (backCard) {
         const firstEmpty = board.backSlots.findIndex(s => s === null);
         if (firstEmpty === backSlot) {
-          playCard(chaosCard.instanceId);
+          playCard(backCard.instanceId);
         } else {
-          placeChaos(backSlot);
+          placeCherubim(backSlot);
         }
       }
     }
   }
 
+  const selectedFront = attackPanelSlot !== null ? board.frontSlots[attackPanelSlot] : null;
+  const selectedDef = selectedFront ? CardRegistry.get(selectedFront.definitionId) : null;
+
+  const getBoardFocusPalette = (element: string | undefined) => {
+    if (element === 'Neutrality') {
+      return {
+        rim: 'rgba(166, 198, 255, 0.96)',
+        glow: 'rgba(136, 173, 245, 0.48)',
+        corner: 'rgba(218, 232, 255, 0.96)',
+        sweep: 'linear-gradient(110deg, transparent 22%, rgba(178, 206, 255, 0.64) 48%, rgba(102, 146, 232, 0.5) 62%, transparent 86%)',
+      };
+    }
+
+    return {
+      rim: 'rgba(255, 178, 112, 0.96)',
+      glow: 'rgba(242, 132, 78, 0.46)',
+      corner: 'rgba(255, 228, 196, 0.96)',
+      sweep: 'linear-gradient(110deg, transparent 22%, rgba(255, 230, 184, 0.66) 48%, rgba(242, 138, 92, 0.5) 62%, transparent 86%)',
+    };
+  };
+
+  const renderBoardFocusOverlay = (radius: number, element: string | undefined) => {
+    const palette = getBoardFocusPalette(element);
+    const corners = [
+      { top: 5, left: 5 },
+      { top: 5, right: 5 },
+      { bottom: 5, left: 5 },
+      { bottom: 5, right: 5 },
+    ];
+
+    return (
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        borderRadius: radius,
+        pointerEvents: 'none',
+      }}>
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          borderRadius: radius,
+          boxShadow: `inset 0 0 0 1px ${palette.rim}, inset 0 0 0 3px ${palette.glow}`,
+          animation: 'boardFocusPulse 0.9s ease-in-out infinite',
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '-22%',
+          bottom: '-22%',
+          width: '64%',
+          left: '-70%',
+          background: palette.sweep,
+          filter: 'blur(0.2px)',
+          transform: 'skewX(-18deg)',
+          animation: 'boardFocusSweep 0.9s cubic-bezier(0.22, 0.61, 0.36, 1) infinite',
+        }} />
+        {corners.map((corner, idx) => (
+          <div
+            key={idx}
+            style={{
+              position: 'absolute',
+              width: 15,
+              height: 15,
+              borderTop: `2px solid ${palette.corner}`,
+              borderLeft: `2px solid ${palette.corner}`,
+              borderRadius: 2,
+              opacity: 0.94,
+              transform:
+                corner.top !== undefined && corner.left !== undefined
+                  ? 'none'
+                  : corner.top !== undefined && corner.right !== undefined
+                    ? 'scaleX(-1)'
+                    : corner.bottom !== undefined && corner.left !== undefined
+                      ? 'scaleY(-1)'
+                      : 'scale(-1)',
+              animation: 'boardFocusPulse 0.9s ease-in-out infinite',
+              animationDelay: `${idx * 0.08}s`,
+              ...corner,
+            }}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const renderAttackCostCard = (
+    card: Pick<DeckCard, 'definitionId' | 'finish'>,
+    selected: boolean,
+    actionLabel: string,
+    accentColor: string,
+  ) => {
+    const def = CardRegistry.get(card.definitionId);
+    return (
+      <>
+        <div style={getCardNameRibbonStyle('compact')}>
+          <div style={{ fontSize: Math.max(8.8, ATTACK_CARD_FACE_METRICS.typeSize), color: '#5c3b2b', letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 2, fontFamily: DISPLAY_FONT, fontWeight: 700 }}>
+            {def?.type ?? 'Card'}
+          </div>
+          <div style={{
+            fontSize: Math.max(10.8, ATTACK_CARD_FACE_METRICS.nameSize),
+            fontWeight: 'bold',
+            color: '#2b1a12',
+            textAlign: 'center',
+            lineHeight: 1.15,
+            fontFamily: DISPLAY_FONT,
+          }}>
+            {def?.name ?? card.definitionId}
+          </div>
+        </div>
+        <div style={getCardRulesPanelStyle('compact')}>
+          <div style={{
+            fontSize: Math.max(9.2, ATTACK_CARD_FACE_METRICS.descSize),
+            lineHeight: Math.max(1.3, ATTACK_CARD_FACE_METRICS.descLineHeight),
+            WebkitLineClamp: ATTACK_CARD_FACE_METRICS.descLines,
+            color: '#3a251b',
+            textAlign: 'center',
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            fontFamily: BODY_FONT,
+          }}>
+            {def ? getCardPreviewText(def, 2) : ''}
+          </div>
+          <div style={{ fontSize: 9, color: selected ? accentColor : '#6f4734', marginTop: 5, textAlign: 'center', fontFamily: DISPLAY_FONT, letterSpacing: 0.4, fontWeight: 700 }}>
+            {actionLabel}
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  const selectableSeraphimSacrificeUnits = useMemo(
+    () => board.frontSlots.filter(
+      (unit): unit is SeraphimInstance => unit?.type === 'Seraphim' && unit.instanceId !== selectedFront?.instanceId,
+    ),
+    [board.frontSlots, selectedFront?.instanceId],
+  );
+
+  const selectableAngelSacrificeUnits = useMemo(
+    () => board.frontSlots.filter(
+      (unit): unit is AngelInstance => unit?.type === 'Angel' && unit.instanceId !== selectedFront?.instanceId,
+    ),
+    [board.frontSlots, selectedFront?.instanceId],
+  );
+
+  useEffect(() => {
+    setSelectedDiscardIds([]);
+    setSelectedSacrificeSeraphimIds([]);
+    setSelectedSacrificeAngelIds([]);
+    setPendingAngelAttack(null);
+    setPendingSeraphimAttack(null);
+  }, [attackPanelSlot, selectedFront?.instanceId, selectedDef?.definitionId]);
+
+  const playfieldRightInset = turn.phase === 'playing' || turn.phase === 'mulligan'
+    ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(392px, 36vw))'
+    : 'var(--angel-drawer-hand-offset, 34px)';
+
   return (
     <div style={{
       position: 'absolute',
-      left: '50%',
-      top: '42%',
-      transform: 'translate(-50%, -50%)',
+      left: 0,
+      right: playfieldRightInset,
+      top: 'clamp(118px, 16vh, 216px)',
+      marginInline: 'auto',
       pointerEvents: 'none',
+      zIndex: 60,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       gap: 0,
-      width: 'fit-content',
+      width: 'max-content',
     }}>
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
           <button
+            className="attack-embrace-button"
             onClick={embraceInfinite}
             style={{
               padding: '10px 22px',
@@ -129,7 +548,7 @@ export default function BoardDisplay() {
               fontSize: 13,
               fontWeight: 'bold',
               letterSpacing: 1.2,
-              fontFamily: 'Georgia, serif',
+              fontFamily: BODY_FONT,
               cursor: 'pointer',
               boxShadow: '0 10px 24px rgba(191,126,63,0.18)',
             }}
@@ -138,6 +557,33 @@ export default function BoardDisplay() {
           </button>
           <div style={{ fontSize: 10, color: 'rgba(107,63,24,0.74)', letterSpacing: 0.4 }}>
             Gain 50 Oblivion per card, keep 3, reshuffle the rest.
+          </div>
+        </div>
+      )}
+
+      {hasEmberGroveCards && canPlay && (
+        <div style={{ marginBottom: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
+          <button
+            className="attack-embrace-button"
+            onClick={() => echoEmberGroveCard()}
+            style={{
+              padding: '10px 18px',
+              borderRadius: 999,
+              border: '1px solid rgba(255,160,96,0.78)',
+              background: 'linear-gradient(180deg, rgba(92,49,28,0.96), rgba(51,28,18,0.96))',
+              color: '#ffe8cd',
+              fontSize: 13,
+              fontWeight: 'bold',
+              letterSpacing: 1.1,
+              fontFamily: BODY_FONT,
+              cursor: 'pointer',
+              boxShadow: '0 10px 24px rgba(146,72,38,0.18)',
+            }}
+          >
+            Draw Echo from Ember Grove
+          </button>
+          <div style={{ fontSize: 10, color: 'rgba(255,224,200,0.78)', letterSpacing: 0.4 }}>
+            One per turn. Returns a charred Burning Garden card to Bloom.
           </div>
         </div>
       )}
@@ -156,54 +602,91 @@ export default function BoardDisplay() {
 
           if (slot?.type === 'Angel') {
             const angelDef = CardRegistry.get(slot.definitionId) as AngelDefinition | undefined;
+            const angelAttacks = angelDef ? getAngelUiAttacks(angelDef) : null;
+            const primaryCd = angelAttacks ? (slot.attackCooldowns?.[angelAttacks.primary.id] ?? 0) : 0;
+            const exaltedCd = angelAttacks ? (slot.attackCooldowns?.[angelAttacks.exalted.id] ?? 0) : 0;
             const awakenRequirement = angelDef?.activatedAbility.cardsPlayedRequirement ?? 0;
             const progress = Math.min(slot.cardsPlayedSinceSummon, awakenRequirement);
-            const isReady = Boolean(angelDef) && !slot.activated && slot.cardsPlayedSinceSummon >= awakenRequirement;
+            const hasAwakenRequirement = Boolean(angelDef) && !slot.activated && slot.cardsPlayedSinceSummon >= awakenRequirement;
+            const canPayAwakenCost = Boolean(angelDef) && CardEffectExecutor.execute(
+              { instanceId: slot.instanceId, definitionId: slot.definitionId, finish: slot.finish },
+              turn,
+              board,
+              deck,
+              false,
+              {
+                effects: angelDef?.activatedAbility.effects,
+                countAsPlay: false,
+                removeFromHand: false,
+                useNextCardMultiplier: false,
+              },
+            ).canPlay;
+            const isReady = hasAwakenRequirement && canPayAwakenCost;
             const statusText = slot.activated
               ? 'Awakened'
               : isReady
                 ? 'Right-click'
-                : `Awaken ${progress}/${awakenRequirement}`;
+                : hasAwakenRequirement
+                  ? 'Insufficient resources'
+                  : `Awaken ${progress}/${awakenRequirement}`;
             const detailText = slot.activated
               ? angelDef?.activatedAbility.name ?? 'Ability spent'
               : isReady
                 ? angelDef?.activatedAbility.name ?? 'Ability ready'
                 : angelDef?.activatedAbility.name ?? 'Awakening';
+            const isHovered = hoveredFrontSlot === slotIndex;
+            const isSelected = attackPanelSlot === slotIndex;
+            const isFocused = isHovered || isSelected;
+            const focusPalette = getBoardFocusPalette(angelDef?.element);
             const angelDescMetrics = getAdaptiveDescriptionMetrics('board', detailText);
             return (
               <div
                 key={slotIndex}
                 className={[
-                  'anim-angel-breath',
-                  slot.finish === 'holo' ? 'holofoil-live-card' : undefined,
+                  isNewlyPlaced && angelDef?.element === 'Neutrality' ? 'anim-angel-summon-pop' : 'anim-angel-breath',
+                  slot.finish === 'holo'
+                    ? `holofoil-live-card${angelDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${angelDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                    : undefined,
                 ].filter(Boolean).join(' ')}
                 onContextMenu={(event) => {
                   event.preventDefault();
                   if (canPlay && isReady) activateAngel(slotIndex);
                 }}
+                onClick={() => {
+                  if (canPlay) setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
+                }}
+                onMouseEnter={() => setHoveredFrontSlot(slotIndex)}
+                onMouseLeave={() => setHoveredFrontSlot(current => (current === slotIndex ? null : current))}
                 title={slot.activated
-                  ? `${angelDef?.name ?? 'Angel'} — awakened ability already used`
+                  ? `${angelDef?.name ?? 'Angel'} - awakened ability already used`
                   : isReady
-                    ? `${angelDef?.name ?? 'Angel'} — right-click to activate ${angelDef?.activatedAbility.name ?? 'its awakened ability'}`
-                    : `${angelDef?.name ?? 'Angel'} — awaken after ${awakenRequirement} cards played`}
+                    ? `${angelDef?.name ?? 'Angel'} - right-click to activate ${angelDef?.activatedAbility.name ?? 'its awakened ability'}`
+                    : `${angelDef?.name ?? 'Angel'} - awaken after ${awakenRequirement} cards played`}
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
                   ...getCardFaceBackgroundStyle(angelDef, slot.finish),
-                  border: `2px solid ${isReady ? warmTheme.accent : warmTheme.borderStrong}`,
+                  border: `2px solid ${isFocused ? focusPalette.rim : isReady ? warmTheme.accent : warmTheme.borderStrong}`,
                   borderRadius: 14,
-                  boxShadow: isReady ? `${warmTheme.glow}, ${cardFacePalette.shadow}` : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
+                  boxShadow: isFocused
+                    ? `0 0 0 1px ${focusPalette.rim}, 0 0 0 4px ${focusPalette.glow}, 0 0 26px ${focusPalette.glow}, ${cardFacePalette.shadow}`
+                    : isReady
+                      ? `${warmTheme.glow}, ${cardFacePalette.shadow}`
+                      : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'stretch',
                   justifyContent: 'flex-start',
                   padding: 0,
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: BODY_FONT,
                   cursor: canPlay && isReady ? 'context-menu' : 'default',
                   pointerEvents: 'auto',
                   overflow: 'hidden',
+                  position: 'relative',
                 }}
               >
+                {renderBurningGardenBadge(angelDef?.element === 'BlazingGarden' ? slot.burningGardenPhase : undefined, slot.chromaticCounters, slot.isEcho)}
+                {renderPrismaticBadge(angelDef?.prismaticDepth, slot.spectrumTokens)}
                 <div style={getCardNameRibbonStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
                     Angel
@@ -229,23 +712,42 @@ export default function BoardDisplay() {
                   }}>
                     {detailText}
                   </div>
+                  <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 4, textAlign: 'center' }}>
+                    Primary: {primaryCd <= 0 ? 'Ready' : primaryCd} · Exalted: {exaltedCd <= 0 ? 'Ready' : exaltedCd}
+                  </div>
                   <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, lineHeight: 1.35, textAlign: 'center' }}>
-                    {slot.activated ? 'Awakened effect spent this turn.' : isReady ? 'Right-click to fire the awakened effect.' : `Charge ${progress}/${awakenRequirement}`}
+                    {slot.activated
+                      ? 'Awakened effect spent this turn.'
+                      : isReady
+                        ? 'Right-click to fire the awakened effect.'
+                        : hasAwakenRequirement
+                          ? 'Need effect costs before awakening.'
+                          : `Charge ${progress}/${awakenRequirement}`}
                   </div>
                 </div>
+                {isFocused && (
+                  renderBoardFocusOverlay(14, angelDef?.element)
+                )}
               </div>
             );
           }
 
           if (slot?.type === 'Seraphim') {
-            const serDef = CardRegistry.get(slot.definitionId);
+            const serDef = CardRegistry.get(slot.definitionId) as SeraphimDefinition | undefined;
             const isActive = slot.isActive;
-            const rarity = serDef?.rarity ?? 'Common';
-            const borderColor = isActive ? 'rgba(255,215,0,0.95)' : RARITY_BORDER[rarity];
-            const glowColor = RARITY_GLOW[rarity] ?? 'transparent';
-            const glowColorPeak = RARITY_GLOW_PEAK[rarity] ?? 'transparent';
-            const seraphimText = serDef?.description ?? 'Its elemental bonus is live on the board.';
+            const borderColor = isActive ? 'rgba(245, 245, 245, 0.95)' : 'rgba(16, 12, 12, 0.96)';
+            const seraphimText = serDef
+              ? getCardPreviewText(serDef, 2)
+              : 'Its elemental bonus is live on the board.';
             const seraphimDescMetrics = getAdaptiveDescriptionMetrics('board', seraphimText);
+            const attacks = serDef ? getSeraphimUiAttacks(serDef) : null;
+            const unsyncedCd = attacks ? (slot.attackCooldowns?.[attacks.unsynergized.id] ?? 0) : 0;
+            const syncedCd = attacks ? (slot.attackCooldowns?.[attacks.synergized.id] ?? 0) : 0;
+            const hasAngel = board.frontSlots.some(front => front?.type === 'Angel');
+            const isHovered = hoveredFrontSlot === slotIndex;
+            const isSelected = attackPanelSlot === slotIndex;
+            const isFocused = isHovered || isSelected;
+            const focusPalette = getBoardFocusPalette(serDef?.element);
 
             return (
               <div
@@ -253,7 +755,9 @@ export default function BoardDisplay() {
                 className={[
                   isNewlyPlaced ? 'anim-seraphim-pop' : undefined,
                   isActive && !isNewlyPlaced ? 'anim-synergy-pulse' : undefined,
-                  slot.finish === 'holo' ? 'holofoil-live-card' : undefined,
+                  slot.finish === 'holo'
+                    ? `holofoil-live-card${serDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${serDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                    : undefined,
                 ].filter(Boolean).join(' ') || undefined}
                 style={{
                   width: SLOT_W,
@@ -261,34 +765,55 @@ export default function BoardDisplay() {
                   pointerEvents: 'auto',
                   cursor: 'pointer',
                   ...getCardFaceBackgroundStyle(serDef, slot.finish),
-                  border: `1px solid ${borderColor}`,
+                  border: `1px solid ${isFocused ? focusPalette.rim : borderColor}`,
                   borderRadius: 12,
-                  boxShadow: isActive
-                    ? `${warmTheme.shadow}, 0 0 18px ${glowColor}, 0 0 28px ${glowColorPeak}`
-                    : `${warmTheme.shadow}, 0 0 8px ${glowColor}`,
+                  boxShadow: isFocused
+                    ? `0 0 0 1px ${focusPalette.rim}, 0 0 0 4px ${focusPalette.glow}, 0 0 24px ${focusPalette.glow}, ${cardFacePalette.shadow}`
+                    : isActive
+                      ? `${warmTheme.shadow}, 0 0 12px rgba(255, 255, 255, 0.72), 0 0 28px rgba(255, 255, 255, 0.38)`
+                      : `${warmTheme.shadow}, 0 0 12px rgba(0, 0, 0, 0.72), 0 0 24px rgba(0, 0, 0, 0.55) inset`,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'stretch',
                   justifyContent: 'flex-start',
                   padding: 0,
                   overflow: 'hidden',
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: BODY_FONT,
                   transition: 'box-shadow 0.4s, border-color 0.4s',
+                  position: 'relative',
                 }}
                 onClick={() => handleFrontSlotClick(slotIndex)}
-                title={`${serDef?.name ?? 'Seraphim'} — click to return to discard`}
+                onMouseEnter={() => setHoveredFrontSlot(slotIndex)}
+                onMouseLeave={() => setHoveredFrontSlot(current => (current === slotIndex ? null : current))}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  if (!canPlay) return;
+                  if (serDef?.element === 'BlazingGarden' && slot.burningGardenPhase !== 'Burn') {
+                    igniteBurningGardenCard(slot.instanceId);
+                  } else {
+                    removeSeraphim(slotIndex);
+                  }
+                  setAttackPanelSlot(prev => (prev === slotIndex ? null : prev));
+                  setPendingSeraphimAttack(current => (current?.slot === slotIndex ? null : current));
+                }}
+                title={`${serDef?.name ?? 'Seraphim'} · Left-click attacks panel · Right-click remove from board`}
               >
+                {renderBurningGardenBadge(serDef?.element === 'BlazingGarden' ? slot.burningGardenPhase : undefined, slot.chromaticCounters, slot.isEcho)}
+                {renderPrismaticBadge(serDef?.prismaticDepth, slot.spectrumTokens)}
                 <div style={getCardNameRibbonStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
-                    Seraphim
+                    {getDisplayCardTypeLabel('Seraphim')}
                   </div>
                   <div style={{ fontSize: FRONT_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
                     {serDef?.name ?? 'Seraphim'}
                   </div>
                 </div>
                 <div style={getCardRulesPanelStyle('board')}>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, marginTop: 1, letterSpacing: 1, color: isActive ? warmTheme.success : cardFacePalette.textMuted, textTransform: 'uppercase', textAlign: 'center' }}>
-                    {isActive ? 'Synergy' : 'Inactive'}
+                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, marginTop: 1, letterSpacing: 0.7, color: isActive ? warmTheme.success : 'rgba(36, 28, 28, 0.92)', textTransform: 'uppercase', textAlign: 'center' }}>
+                    Unsynergized: {unsyncedCd <= 0 ? 'Ready' : unsyncedCd} · Synergized: {!hasAngel ? 'Needs Angel' : syncedCd <= 0 ? 'Ready' : syncedCd}
+                  </div>
+                  <div style={{ fontSize: 7, color: isActive ? 'rgba(250, 250, 250, 0.95)' : 'rgba(18, 12, 12, 0.92)', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.7, textAlign: 'center' }}>
+                    {isActive ? 'Synergy Online' : 'Synergy Offline'}
                   </div>
                   <div style={{
                     fontSize: seraphimDescMetrics.fontSize,
@@ -301,15 +826,18 @@ export default function BoardDisplay() {
                     WebkitLineClamp: seraphimDescMetrics.lineClamp,
                     overflow: 'hidden',
                   }}>
-                    {isActive ? (serDef?.description ?? 'Its elemental bonus is live on the board.') : 'Summon a matching angel to awaken synergy.'}
+                    {seraphimText}
                   </div>
-                  <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, letterSpacing: 0.5, textAlign: 'center' }}>tap to remove</div>
+                  <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, letterSpacing: 0.5, textAlign: 'center' }}>left-click attacks · right-click remove</div>
                 </div>
+                {isFocused && (
+                  renderBoardFocusOverlay(12, serDef?.element)
+                )}
               </div>
             );
           }
 
-          // Empty front slot — accepts Seraphim drops
+          // Empty front slot ? accepts Seraphim drops
           const hasAction = canPlay && hasSeraphimInHand;
           const accentColor = isDragTarget
             ? 'rgba(255,215,0,0.9)'
@@ -324,7 +852,7 @@ export default function BoardDisplay() {
                 background: isDragTarget ? 'rgba(213,154,82,0.18)' : hasAction ? warmTheme.surface : 'rgba(246,235,218,0.7)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
-                fontFamily: 'Georgia, serif', transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+                fontFamily: BODY_FONT, transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
                 boxShadow: isDragTarget ? warmTheme.glow : 'none',
               }}
               onClick={() => handleFrontSlotClick(slotIndex)}
@@ -343,14 +871,608 @@ export default function BoardDisplay() {
             >
               <div style={{ fontSize: 16, color: accentColor }}>+</div>
               <div style={{ fontSize: 7, color: accentColor, marginTop: 6, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
-                {isDragTarget ? 'Drop Here' : hasSeraphimInHand ? 'Place Seraphim' : 'Slot'}
+                {isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click Or Drop' : 'Not Clickable'}
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Back row: 4 Chaos slots, staggered between front slots */}
+      {canPlay && selectedFront && selectedDef && (selectedFront.type === 'Seraphim' || selectedFront.type === 'Angel') && (
+        <div
+          style={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 'clamp(88px, 12vh, 150px)',
+            marginInline: 'auto',
+            pointerEvents: 'auto',
+            width: 'min(960px, 96vw)',
+            maxHeight: 'min(62vh, 560px)',
+            overflowY: 'auto',
+            border: ATTACK_MODAL_PANEL_BORDER,
+            borderRadius: 16,
+            background: ATTACK_MODAL_PANEL_BG,
+            boxShadow: ATTACK_MODAL_PANEL_SHADOW,
+            padding: '10px 12px',
+            fontFamily: BODY_FONT,
+            zIndex: 140,
+          }}
+        >
+          <div style={{ fontSize: 14, color: '#4f2813', letterSpacing: 0.35, marginBottom: 7, fontFamily: DISPLAY_FONT, fontWeight: 700 }}>
+            {selectedDef.name} · Attack Panel
+          </div>
+
+          {selectedFront.type === 'Seraphim' && selectedDef.type === 'Seraphim' && (() => {
+            const attacks = getSeraphimUiAttacks(selectedDef);
+            const unsyncedCd = selectedFront.attackCooldowns?.[attacks.unsynergized.id] ?? 0;
+            const syncedCd = selectedFront.attackCooldowns?.[attacks.synergized.id] ?? 0;
+            const hasAngel = board.frontSlots.some(slot => slot?.type === 'Angel');
+            const openSeraphimAttackCostModal = (attackId: 'unsynergized' | 'synergized') => {
+              const attack = attackId === 'synergized' ? attacks.synergized : attacks.unsynergized;
+              const discardCost = getAttackCostCount(attack.costs, 'discard_from_hand');
+              if (discardCost <= 0) {
+                activateSeraphimAttack(attackPanelSlot as 0 | 1 | 2 | 3 | 4, attackId);
+                return;
+              }
+
+              setSelectedDiscardIds([]);
+              setPendingSeraphimAttack({
+                slot: attackPanelSlot as 0 | 1 | 2 | 3 | 4,
+                attackId,
+                title: `${attack.label} · ${attack.name}`,
+                description: formatAttackSummary(attack),
+              });
+            };
+            const buildAttackTileStyle = (ready: boolean): React.CSSProperties => ({
+              minHeight: 96,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: 8,
+              borderRadius: 10,
+              border: `1px solid ${ready ? 'rgba(109, 154, 93, 0.66)' : 'rgba(130, 90, 67, 0.5)'}`,
+              background: ready ? 'rgba(247, 243, 234, 0.96)' : 'rgba(236, 225, 207, 0.95)',
+              color: '#2f1d14',
+              padding: '9px 10px',
+              cursor: ready ? 'pointer' : 'not-allowed',
+              textAlign: 'left',
+              fontFamily: BODY_FONT,
+              boxShadow: ready ? '0 8px 14px rgba(55, 75, 44, 0.16)' : 'none',
+            });
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                {[
+                  { attack: attacks.unsynergized, cd: unsyncedCd, readyText: 'Ready', enabled: true, attackId: 'unsynergized' as const },
+                  { attack: attacks.synergized, cd: syncedCd, readyText: 'Ready', enabled: hasAngel, attackId: 'synergized' as const },
+                ].map(({ attack, cd, readyText, enabled, attackId }) => (
+                  <button
+                    key={attack.id}
+                    className="attack-screen-tile"
+                    onClick={() => openSeraphimAttackCostModal(attackId)}
+                    disabled={cd > 0 || !enabled}
+                    style={buildAttackTileStyle(cd <= 0 && enabled)}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#7a3f1a', fontFamily: DISPLAY_FONT }}>{attack.label}</div>
+                        <div style={{ fontSize: 11.5, color: cd <= 0 && enabled ? '#3f6e37' : '#7c493a', fontWeight: 800 }}>{cd <= 0 ? (enabled ? readyText : 'Needs Angel') : `Cooldown ${cd}`}</div>
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#2b1a12', marginTop: 1, lineHeight: 1.2, fontFamily: DISPLAY_FONT }}>{attack.name}</div>
+                    </div>
+                    <div style={{ fontSize: 10.5, color: '#523326' }}>
+                      {formatAttackSummary(attack)}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+
+          {selectedFront.type === 'Angel' && selectedDef.type === 'Angel' && (() => {
+            const attacks = getAngelUiAttacks(selectedDef);
+            const primaryCd = selectedFront.attackCooldowns?.[attacks.primary.id] ?? 0;
+            const exaltedCd = selectedFront.attackCooldowns?.[attacks.exalted.id] ?? 0;
+            const primaryReady = primaryCd <= 0;
+            const exaltedReady = exaltedCd <= 0;
+
+            const openAttackCostModal = (attackId: 'primary' | 'exalted') => {
+              const attack = attackId === 'exalted' ? attacks.exalted : attacks.primary;
+              if ((attack.costs?.length ?? 0) === 0) {
+                activateAngelAttack(attackPanelSlot as 0 | 1 | 2 | 3 | 4, attackId);
+                return;
+              }
+
+              setSelectedDiscardIds([]);
+              setSelectedSacrificeSeraphimIds([]);
+              setSelectedSacrificeAngelIds([]);
+              setPendingAngelAttack({
+                slot: attackPanelSlot as 0 | 1 | 2 | 3 | 4,
+                attackId,
+                title: `${attack.label} · ${attack.name}`,
+                description: formatAttackSummary(attack),
+              });
+            };
+
+            const buildAttackTileStyle = (ready: boolean): React.CSSProperties => ({
+              minHeight: 96,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: 8,
+              borderRadius: 10,
+              border: `1px solid ${ready ? 'rgba(109, 154, 93, 0.66)' : 'rgba(130, 90, 67, 0.5)'}`,
+              background: ready ? 'rgba(247, 243, 234, 0.96)' : 'rgba(236, 225, 207, 0.95)',
+              color: '#2f1d14',
+              padding: '9px 10px',
+              cursor: ready ? 'pointer' : 'not-allowed',
+              textAlign: 'left',
+              fontFamily: BODY_FONT,
+              boxShadow: ready ? '0 8px 14px rgba(55, 75, 44, 0.16)' : 'none',
+            });
+
+            return (
+              <div style={{ display: 'grid', gap: 10 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
+                  <button
+                    className="attack-screen-tile"
+                    onClick={() => openAttackCostModal('primary')}
+                    disabled={!primaryReady}
+                    style={buildAttackTileStyle(primaryReady)}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#7a3f1a', fontFamily: DISPLAY_FONT }}>{attacks.primary.label}</div>
+                        <div style={{ fontSize: 11.5, color: primaryReady ? '#3f6e37' : '#7c493a', fontWeight: 800 }}>{primaryReady ? 'Ready' : `Cooldown ${primaryCd}`}</div>
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#2b1a12', marginTop: 1, lineHeight: 1.2, fontFamily: DISPLAY_FONT }}>{attacks.primary.name}</div>
+                    </div>
+                    <div style={{ fontSize: 10.5, color: '#523326' }}>{formatAttackSummary(attacks.primary)}</div>
+                  </button>
+
+                  <button
+                    className="attack-screen-tile"
+                    onClick={() => openAttackCostModal('exalted')}
+                    disabled={!exaltedReady}
+                    style={buildAttackTileStyle(exaltedReady)}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#7a3f1a', fontFamily: DISPLAY_FONT }}>{attacks.exalted.label}</div>
+                        <div style={{ fontSize: 11.5, color: exaltedReady ? '#3f6e37' : '#7c493a', fontWeight: 800 }}>{exaltedReady ? 'Ready' : `Cooldown ${exaltedCd}`}</div>
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#2b1a12', marginTop: 1, lineHeight: 1.2, fontFamily: DISPLAY_FONT }}>{attacks.exalted.name}</div>
+                    </div>
+                    <div style={{ fontSize: 10.5, color: '#523326' }}>{formatAttackSummary(attacks.exalted)}</div>
+                  </button>
+                </div>
+
+                <div style={{ fontSize: 12, color: '#5b392b', textAlign: 'center' }}>
+                  Angel attacks now open a separate payment modal when they need discards or sacrifices.
+                </div>
+              </div>
+            );
+          })()}
+
+          {pendingAngelAttack && selectedFront?.type === 'Angel' && selectedDef?.type === 'Angel' && (() => {
+            const attacks = getAngelUiAttacks(selectedDef);
+            const activeAttack = pendingAngelAttack.attackId === 'exalted' ? attacks.exalted : attacks.primary;
+            const discardCost = getAttackCostCount(activeAttack.costs, 'discard_from_hand');
+            const seraphimSacCost = getAttackCostCount(activeAttack.costs, 'sacrifice_seraphim');
+            const angelSacCost = getAttackCostCount(activeAttack.costs, 'sacrifice_angel');
+            const canConfirmAttack =
+              selectedDiscardIds.length === discardCost
+              && selectedSacrificeSeraphimIds.length === seraphimSacCost
+              && selectedSacrificeAngelIds.length === angelSacCost;
+
+            return (
+              <div style={{
+                position: 'fixed',
+                inset: 0,
+                background: ATTACK_MODAL_BACKDROP,
+                backdropFilter: 'blur(3px)',
+                zIndex: 220,
+                pointerEvents: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 'clamp(14px, 3.2vh, 28px)',
+              }}>
+                <div style={{
+                  width: ATTACK_PANEL_WIDTH,
+                  maxHeight: 'min(88vh, 820px)',
+                  overflowY: 'auto',
+                  borderRadius: 18,
+                  border: ATTACK_MODAL_PANEL_BORDER,
+                  background: ATTACK_MODAL_PANEL_BG,
+                  boxShadow: ATTACK_MODAL_PANEL_SHADOW,
+                  padding: 20,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 13,
+                  color: '#2f1a10',
+                  fontFamily: BODY_FONT,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 12.5, letterSpacing: 1.25, textTransform: 'uppercase', color: '#522811', fontFamily: DISPLAY_FONT }}>Pay Attack Cost</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: '#5d2d14', marginTop: 4, fontFamily: DISPLAY_FONT }}>{pendingAngelAttack.title}</div>
+                      <div style={{ fontSize: 13, color: '#5a3119', marginTop: 6, lineHeight: 1.5 }}>{pendingAngelAttack.description}</div>
+                    </div>
+                    <button
+                      className="attack-modal-close"
+                      onClick={() => {
+                        setPendingAngelAttack(null);
+                        setSelectedDiscardIds([]);
+                        setSelectedSacrificeSeraphimIds([]);
+                        setSelectedSacrificeAngelIds([]);
+                      }}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 999,
+                        border: '1px solid rgba(126, 86, 48, 0.35)',
+                        background: 'rgba(255, 247, 232, 0.88)',
+                        color: '#6d3f23',
+                        cursor: 'pointer',
+                        fontSize: 16,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {discardCost > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Discard from hand ({selectedDiscardIds.length}/{discardCost})</div>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 104px))',
+                        justifyContent: 'center',
+                        gap: 10,
+                        maxHeight: 'min(36vh, 340px)',
+                        overflowY: 'auto',
+                        paddingRight: 4,
+                      }}>
+                        {hand.map(card => {
+                          const def = CardRegistry.get(card.definitionId);
+                          const selected = selectedDiscardIds.includes(card.instanceId);
+                          return (
+                            <button
+                              key={card.instanceId}
+                              className="attack-cost-choice"
+                              onClick={() => setSelectedDiscardIds(current => toggleSelectedId(current, card.instanceId, discardCost))}
+                              style={{
+                                ...getCardFaceBackgroundStyle(def, card.finish),
+                                width: '100%',
+                                aspectRatio: '0.73',
+                                borderRadius: 7,
+                                border: `1px solid ${selected ? '#c9773f' : 'rgba(124, 86, 49, 0.45)'}`,
+                                color: warmTheme.text,
+                                padding: 0,
+                                cursor: 'pointer',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'stretch',
+                                justifyContent: 'stretch',
+                                boxShadow: selected ? `0 0 0 2px rgba(236, 192, 128, 0.3), 0 8px 14px rgba(108, 61, 30, 0.2)` : 'none',
+                              }}
+                            >
+                              {renderAttackCostCard(card, selected, selected ? 'Discard' : 'Select', warmTheme.accentDeep)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {seraphimSacCost > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Sacrifice Seraphim ({selectedSacrificeSeraphimIds.length}/{seraphimSacCost})</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 104px))', justifyContent: 'center', gap: 10, maxHeight: 'min(36vh, 340px)', overflowY: 'auto', paddingRight: 4 }}>
+                        {selectableSeraphimSacrificeUnits.map(unit => {
+                          const def = CardRegistry.get(unit.definitionId);
+                          const selected = selectedSacrificeSeraphimIds.includes(unit.instanceId);
+                          return (
+                            <button
+                              key={unit.instanceId}
+                              className="attack-cost-choice"
+                              onClick={() => setSelectedSacrificeSeraphimIds(current => toggleSelectedId(current, unit.instanceId, seraphimSacCost))}
+                              style={{
+                                ...getCardFaceBackgroundStyle(def, unit.finish),
+                                width: '100%',
+                                aspectRatio: '0.73',
+                                borderRadius: 7,
+                                border: `1px solid ${selected ? '#c9773f' : 'rgba(124, 86, 49, 0.45)'}`,
+                                color: warmTheme.text,
+                                padding: 0,
+                                cursor: 'pointer',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'stretch',
+                                boxShadow: selected ? `0 0 0 2px rgba(224, 124, 92, 0.28), 0 8px 14px rgba(108, 61, 30, 0.2)` : 'none',
+                              }}
+                            >
+                              {renderAttackCostCard(unit, selected, selected ? 'Sacrifice' : 'Select', warmTheme.accentDeep)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {angelSacCost > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Sacrifice Angel ({selectedSacrificeAngelIds.length}/{angelSacCost})</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 104px))', justifyContent: 'center', gap: 10, maxHeight: 'min(36vh, 340px)', overflowY: 'auto', paddingRight: 4 }}>
+                        {selectableAngelSacrificeUnits.map(unit => {
+                          const def = CardRegistry.get(unit.definitionId);
+                          const selected = selectedSacrificeAngelIds.includes(unit.instanceId);
+                          return (
+                            <button
+                              key={unit.instanceId}
+                              className="attack-cost-choice"
+                              onClick={() => setSelectedSacrificeAngelIds(current => toggleSelectedId(current, unit.instanceId, angelSacCost))}
+                              style={{
+                                ...getCardFaceBackgroundStyle(def, unit.finish),
+                                width: '100%',
+                                aspectRatio: '0.73',
+                                borderRadius: 7,
+                                border: `1px solid ${selected ? '#c9773f' : 'rgba(124, 86, 49, 0.45)'}`,
+                                color: warmTheme.text,
+                                padding: 0,
+                                cursor: 'pointer',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'stretch',
+                                boxShadow: selected ? `0 0 0 2px rgba(168, 216, 109, 0.28), 0 8px 14px rgba(108, 61, 30, 0.2)` : 'none',
+                              }}
+                            >
+                              {renderAttackCostCard(unit, selected, selected ? 'Sacrifice' : 'Select', warmTheme.accentDeep)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 'auto' }}>
+                    <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.35 }}>Select the required cards, then confirm the attack.</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        className="attack-modal-secondary"
+                        onClick={() => {
+                          setPendingAngelAttack(null);
+                          setSelectedDiscardIds([]);
+                          setSelectedSacrificeSeraphimIds([]);
+                          setSelectedSacrificeAngelIds([]);
+                        }}
+                        style={{
+                          borderRadius: 8,
+                          border: '1px solid rgba(126, 86, 48, 0.33)',
+                          background: 'rgba(254, 245, 229, 0.74)',
+                          color: '#6a3d22',
+                          padding: '9px 14px',
+                          cursor: 'pointer',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          fontFamily: BODY_FONT,
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="attack-modal-primary"
+                        onClick={() => {
+                          if (!canConfirmAttack) return;
+                          activateAngelAttack(pendingAngelAttack.slot, pendingAngelAttack.attackId, {
+                            discardInstanceIds: selectedDiscardIds,
+                            sacrificeSeraphimInstanceIds: selectedSacrificeSeraphimIds,
+                            sacrificeAngelInstanceIds: selectedSacrificeAngelIds,
+                          });
+                          setPendingAngelAttack(null);
+                          setAttackPanelSlot(null);
+                          setSelectedDiscardIds([]);
+                          setSelectedSacrificeSeraphimIds([]);
+                          setSelectedSacrificeAngelIds([]);
+                        }}
+                        disabled={!canConfirmAttack}
+                        style={{
+                          borderRadius: 8,
+                          border: '1px solid rgba(126, 86, 48, 0.44)',
+                          background: canConfirmAttack
+                            ? 'linear-gradient(180deg, rgba(250, 242, 227, 0.96) 0%, rgba(238, 216, 181, 0.94) 100%)'
+                            : 'rgba(236, 222, 197, 0.82)',
+                          color: '#56280f',
+                          padding: '9px 16px',
+                          cursor: canConfirmAttack ? 'pointer' : 'not-allowed',
+                          fontSize: 13,
+                          fontWeight: 'bold',
+                          fontFamily: DISPLAY_FONT,
+                        }}
+                      >
+                        Confirm Attack
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {pendingSeraphimAttack && selectedFront?.type === 'Seraphim' && selectedDef?.type === 'Seraphim' && (() => {
+            const attacks = getSeraphimUiAttacks(selectedDef);
+            const activeAttack = pendingSeraphimAttack.attackId === 'synergized' ? attacks.synergized : attacks.unsynergized;
+            const discardCost = getAttackCostCount(activeAttack.costs, 'discard_from_hand');
+            const canConfirmAttack = selectedDiscardIds.length === discardCost;
+
+            return (
+              <div style={{
+                position: 'fixed',
+                inset: 0,
+                background: ATTACK_MODAL_BACKDROP,
+                backdropFilter: 'blur(3px)',
+                zIndex: 220,
+                pointerEvents: 'auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: 'clamp(14px, 3.2vh, 28px)',
+              }}>
+                <div style={{
+                  width: ATTACK_PANEL_WIDTH,
+                  maxHeight: 'min(88vh, 820px)',
+                  overflowY: 'auto',
+                  borderRadius: 18,
+                  border: ATTACK_MODAL_PANEL_BORDER,
+                  background: ATTACK_MODAL_PANEL_BG,
+                  boxShadow: ATTACK_MODAL_PANEL_SHADOW,
+                  padding: 20,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 13,
+                  color: '#2f1a10',
+                  fontFamily: BODY_FONT,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                    <div>
+                      <div style={{ fontSize: 12.5, letterSpacing: 1.25, textTransform: 'uppercase', color: '#522811', fontFamily: DISPLAY_FONT }}>Pay Attack Cost</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: '#5d2d14', marginTop: 4, fontFamily: DISPLAY_FONT }}>{pendingSeraphimAttack.title}</div>
+                      <div style={{ fontSize: 13, color: '#5a3119', marginTop: 6, lineHeight: 1.5 }}>{pendingSeraphimAttack.description}</div>
+                    </div>
+                    <button
+                      className="attack-modal-close"
+                      onClick={() => {
+                        setPendingSeraphimAttack(null);
+                        setSelectedDiscardIds([]);
+                      }}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 999,
+                        border: '1px solid rgba(126, 86, 48, 0.35)',
+                        background: 'rgba(255, 247, 232, 0.88)',
+                        color: '#6d3f23',
+                        cursor: 'pointer',
+                        fontSize: 16,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+
+                  {discardCost > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Discard from hand ({selectedDiscardIds.length}/{discardCost})</div>
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 104px))',
+                        justifyContent: 'center',
+                        gap: 10,
+                        maxHeight: 'min(36vh, 340px)',
+                        overflowY: 'auto',
+                        paddingRight: 4,
+                      }}>
+                        {hand.map(card => {
+                          const def = CardRegistry.get(card.definitionId);
+                          const selected = selectedDiscardIds.includes(card.instanceId);
+                          return (
+                            <button
+                              key={card.instanceId}
+                              className="attack-cost-choice"
+                              onClick={() => setSelectedDiscardIds(current => toggleSelectedId(current, card.instanceId, discardCost))}
+                              style={{
+                                ...getCardFaceBackgroundStyle(def, card.finish),
+                                width: '100%',
+                                aspectRatio: '0.73',
+                                borderRadius: 7,
+                                border: `1px solid ${selected ? '#c9773f' : 'rgba(124, 86, 49, 0.45)'}`,
+                                color: warmTheme.text,
+                                padding: 0,
+                                cursor: 'pointer',
+                                overflow: 'hidden',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'stretch',
+                                justifyContent: 'stretch',
+                                boxShadow: selected ? `0 0 0 2px rgba(236, 192, 128, 0.3), 0 8px 14px rgba(108, 61, 30, 0.2)` : 'none',
+                              }}
+                            >
+                              {renderAttackCostCard(card, selected, selected ? 'Discard' : 'Select', warmTheme.accentDeep)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 'auto' }}>
+                    <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.35 }}>Select the discard card(s), then confirm the attack.</div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button
+                        className="attack-modal-secondary"
+                        onClick={() => {
+                          setPendingSeraphimAttack(null);
+                          setSelectedDiscardIds([]);
+                        }}
+                        style={{
+                          borderRadius: 8,
+                          border: '1px solid rgba(126, 86, 48, 0.33)',
+                          background: 'rgba(254, 245, 229, 0.74)',
+                          color: '#6a3d22',
+                          padding: '9px 14px',
+                          cursor: 'pointer',
+                          fontSize: 13,
+                          fontWeight: 700,
+                          fontFamily: BODY_FONT,
+                        }}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        className="attack-modal-primary"
+                        onClick={() => {
+                          if (!canConfirmAttack) return;
+                          activateSeraphimAttack(pendingSeraphimAttack.slot, pendingSeraphimAttack.attackId, {
+                            discardInstanceIds: selectedDiscardIds,
+                            sacrificeSeraphimInstanceIds: [],
+                            sacrificeAngelInstanceIds: [],
+                          });
+                          setPendingSeraphimAttack(null);
+                          setAttackPanelSlot(null);
+                          setSelectedDiscardIds([]);
+                        }}
+                        disabled={!canConfirmAttack}
+                        style={{
+                          borderRadius: 8,
+                          border: '1px solid rgba(126, 86, 48, 0.44)',
+                          background: canConfirmAttack
+                            ? 'linear-gradient(180deg, rgba(250, 242, 227, 0.96) 0%, rgba(238, 216, 181, 0.94) 100%)'
+                            : 'rgba(236, 222, 197, 0.82)',
+                          color: '#56280f',
+                          padding: '9px 16px',
+                          cursor: canConfirmAttack ? 'pointer' : 'not-allowed',
+                          fontSize: 13,
+                          fontWeight: 'bold',
+                          fontFamily: DISPLAY_FONT,
+                        }}
+                      >
+                        Confirm Attack
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+
+      {/* Back row: 4 Cherubim slots, staggered between front slots */}
       <div style={{
         display: 'flex',
         gap: BACK_ROW_GAP,
@@ -359,99 +1481,139 @@ export default function BoardDisplay() {
         marginTop: ROW_SEPARATION,
         paddingLeft: BACK_ROW_STAGGER,
       }}>
-        {board.backSlots.map((chaos, i) => {
+        {board.backSlots.map((card, i) => {
           const backSlot = i as 0 | 1 | 2 | 3;
-          const chaosDef = chaos ? CardRegistry.get(chaos.definitionId) : null;
+          const cardDef = card ? CardRegistry.get(card.definitionId) : null;
           const isDragTarget = dragOverBack === backSlot && canPlay;
 
-          if (chaos) {
-            const durabilityRatio = chaos.durability / (chaos as ChaosInstance).maxDurability;
+          // Cherubim card rendering
+          if (card && card.type === 'Cherubim') {
+            const cherubim = card as CherubimInstance;
+            const hasDurability = cherubim.durability !== undefined && cherubim.maxDurability !== undefined;
+            const durabilityRatio = hasDurability
+              ? (cherubim.durability as number) / (cherubim.maxDurability as number)
+              : 1;
             const durabilityColor = durabilityRatio > 0.5 ? '#c888f0' : durabilityRatio > 0.25 ? '#e8a040' : '#e86060';
-            const chaosDescMetrics = getAdaptiveDescriptionMetrics('boardMini', chaosDef?.description ?? '');
+            const cherubimText = cardDef ? getCardPreviewText(cardDef, 2) : '';
+            const cherubimDescMetrics = getAdaptiveDescriptionMetrics('boardMini', cherubimText);
+            const def = CardRegistry.get(cherubim.definitionId) as CherubimDefinition | null;
+            const condition = def?.discardCondition;
+            const conditionDescMap: Record<string, string> = {
+              hand_size_lte: 'Discard when hand <= {val}',
+              chain_lte: 'Discard when chain <= {val}',
+              oblivion_lte: 'Discard when Oblivion <= {val}',
+              embers_lte: 'Discard when embers <= {val}',
+              radiance_lte: 'Discard when radiance <= {val}',
+              cards_played_gte: 'Discard after {val}+ cards',
+              seraphim_count_lte: 'Discard when Seraphim <= {val}',
+              trail_lte: 'Discard when trail <= {val}',
+              strain_gte: 'Discard when strain >= {val}',
+            };
+            const conditionText = condition
+              ? (conditionDescMap[condition.type] ?? 'Auto-discard').replace('{val}', String(condition.value))
+              : 'Persists indefinitely';
+            const isHovered = hoveredBackSlot === backSlot;
+            const focusPalette = getBoardFocusPalette(cardDef?.element);
             return (
               <div
                 key={backSlot}
-                className={chaos.finish === 'holo' ? 'holofoil-live-card' : undefined}
+                className={cherubim.finish === 'holo'
+                  ? `holofoil-live-card${cardDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${cardDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                  : undefined}
                 style={{
-                  width: CHAOS_W, height: CHAOS_H,
-                  ...getCardFaceBackgroundStyle(chaosDef, chaos.finish),
-                  border: `1px solid rgba(143,116,169,0.5)`,
+                  width: CHERUBIM_W, height: CHERUBIM_H,
+                  ...getCardFaceBackgroundStyle(cardDef, cherubim.finish),
+                  border: `1px solid ${isHovered ? focusPalette.rim : 'rgba(143,116,169,0.5)'}`,
                   borderRadius: 12,
-                  boxShadow: `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
+                  boxShadow: isHovered
+                    ? `0 0 0 1px ${focusPalette.rim}, 0 0 0 3px ${focusPalette.glow}, 0 0 18px ${focusPalette.glow}, ${cardFacePalette.shadow}`
+                    : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
                   display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start',
-                  fontFamily: 'Georgia, serif', pointerEvents: 'auto', cursor: 'pointer',
+                  fontFamily: BODY_FONT, pointerEvents: 'auto', cursor: 'pointer',
                   padding: 0,
                   overflow: 'hidden',
+                  position: 'relative',
                 }}
                 onClick={() => handleBackSlotClick(backSlot)}
-                title={`${chaosDef?.name ?? 'Chaos'} — ${chaos.durability} play${chaos.durability !== 1 ? 's' : ''} remaining — click to discard`}
+                onMouseEnter={() => setHoveredBackSlot(backSlot)}
+                onMouseLeave={() => setHoveredBackSlot(current => (current === backSlot ? null : current))}
+                title={hasDurability
+                  ? `${cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')} - ${cherubim.durability} play${cherubim.durability !== 1 ? 's' : ''} remaining - click to discard`
+                  : `${cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')} - ${conditionText} - click to discard`}
               >
+                {renderBurningGardenBadge(cardDef?.element === 'BlazingGarden' ? cherubim.burningGardenPhase : undefined, cherubim.chromaticCounters, cherubim.isEcho)}
+                {renderPrismaticBadge(cardDef?.prismaticDepth, cherubim.spectrumTokens)}
                 <div style={getCardNameRibbonStyle('boardMini')}>
-                  <div style={{ fontSize: CHAOS_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>Chaos</div>
-                  <div style={{ fontSize: CHAOS_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
-                    {chaosDef?.name ?? 'Chaos'}
+                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>{getDisplayCardTypeLabel('Cherubim')}</div>
+                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
+                    {cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')}
                   </div>
                 </div>
                 <div style={getCardRulesPanelStyle('boardMini')}>
-                  <div style={{ fontSize: CHAOS_FACE_METRICS.descSize, color: durabilityColor, letterSpacing: 0.4, textAlign: 'center' }}>
-                    {chaos.durability} play{chaos.durability !== 1 ? 's' : ''} left
+                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: hasDurability ? durabilityColor : '#a8d5a8', letterSpacing: 0.4, textAlign: 'center' }}>
+                    {hasDurability
+                      ? `${cherubim.durability} play${cherubim.durability !== 1 ? 's' : ''} left`
+                      : conditionText}
                   </div>
                   <div style={{
-                    fontSize: chaosDescMetrics.fontSize,
+                    fontSize: cherubimDescMetrics.fontSize,
                     color: cardFacePalette.textSoft,
                     marginTop: 4,
-                    lineHeight: chaosDescMetrics.lineHeight,
+                    lineHeight: cherubimDescMetrics.lineHeight,
                     textAlign: 'center',
                     display: '-webkit-box',
                     WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: chaosDescMetrics.lineClamp,
+                    WebkitLineClamp: cherubimDescMetrics.lineClamp,
                     overflow: 'hidden',
                   }}>
-                    {chaosDef?.description ?? 'Back-row effect remains active until expiry.'}
+                    {cherubimText}
                   </div>
                   <div style={{ fontSize: 6, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
-                    tap to remove
+                    click to remove
                   </div>
                 </div>
+                {isHovered && (
+                  renderBoardFocusOverlay(12, cardDef?.element)
+                )}
               </div>
             );
           }
 
-          // Empty back slot — accepts Chaos drops
-          const hasAction = canPlay && hasChaosInHand;
+          // Empty back slot ? accepts Cherubim drops
+          const hasAction = canPlay && hasCherubimInHand;
           const accentColor = isDragTarget
             ? 'rgba(200,136,240,0.9)'
-            : hasChaosInHand ? 'rgba(200,136,240,0.55)' : 'rgba(200,136,240,0.2)';
+            : hasCherubimInHand ? 'rgba(200,136,240,0.55)' : 'rgba(200,136,240,0.2)';
           return (
             <div
               key={backSlot}
               style={{
-                width: CHAOS_W, height: CHAOS_H,
+                width: CHERUBIM_W, height: CHERUBIM_H,
                 border: `${isDragTarget ? '2px' : '1px'} dashed ${accentColor}`,
                 borderRadius: 12,
                 background: isDragTarget ? 'rgba(143,116,169,0.18)' : hasAction ? warmTheme.surface : 'rgba(246,235,218,0.7)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
-                fontFamily: 'Georgia, serif', transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
+                fontFamily: BODY_FONT, transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
                 boxShadow: isDragTarget ? warmTheme.glow : 'none',
               }}
               onClick={() => handleBackSlotClick(backSlot)}
               onDragOver={(e) => {
-                if (!canPlay || !e.dataTransfer.types.includes('application/x-chaos-card')) return;
+                if (!canPlay || !e.dataTransfer.types.includes('application/x-cherubim-card')) return;
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
                 setDragOverBack(backSlot);
               }}
               onDragLeave={() => setDragOverBack(null)}
               onDrop={(e) => {
-                const id = e.dataTransfer.getData('application/x-chaos-card');
-                if (id && canPlay) placeChaos(backSlot, id);
+                const id = e.dataTransfer.getData('application/x-cherubim-card');
+                if (id && canPlay) placeCherubim(backSlot, id);
                 setDragOverBack(null);
               }}
             >
               <div style={{ fontSize: 12, color: accentColor }}>+</div>
               <div style={{ fontSize: 7, color: accentColor, marginTop: 4, letterSpacing: 1, textTransform: 'uppercase' }}>
-                {isDragTarget ? 'Drop Here' : hasChaosInHand ? 'Place Chaos' : 'Chaos'}
+                {isDragTarget ? 'Drop Cherubim' : hasCherubimInHand ? 'Click Or Drop' : 'Not Clickable'}
               </div>
             </div>
           );

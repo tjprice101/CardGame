@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useStore, selectDeck, selectTurn, selectBoard, selectProgress } from '@/state/store';
+import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -11,6 +11,11 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
+import CardEngineCallout from '@/ui/components/CardEngineCallout';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
+import { getCardPreviewText } from '@/ui/cardStatSummary';
+import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
 import { warmTheme } from '@/ui/theme';
 import type { CardFinish, SeraphimDefinition, AngelDefinition } from '@/types/cards';
 
@@ -24,10 +29,13 @@ interface IdleShowcaseCard {
 
 const TYPE_COLORS: Record<string, string> = {
   Seraphim: '#FFD700',
-  Seeker:   '#c888f0',
-  Chaos:    '#b87de8',
+  Ophanim:   '#c888f0',
+  Cherubim:    '#b87de8',
   Angel:    '#FFD700',
 };
+
+const TOOLTIP_META_COLOR = 'rgba(58, 40, 24, 0.86)';
+const TOOLTIP_DETAIL_COLOR = 'rgba(52, 36, 20, 0.94)';
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
@@ -100,12 +108,14 @@ const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'auto',
     position: 'relative',
     overflowX: 'auto',
+    overflowY: 'visible',
     maxWidth: '100%',
     paddingBottom: 6,
+    paddingTop: 14,
   },
   card: {
-    width: 'clamp(132px, 9.2vw, 148px)',
-    height: 'clamp(188px, 13vw, 210px)',
+    width: 'clamp(116px, 8.2vw, 132px)',
+    height: 'clamp(168px, 11.8vw, 188px)',
     flex: '0 0 auto',
     background: warmTheme.surfaceStrong,
     border: `1px solid ${warmTheme.border}`,
@@ -153,13 +163,14 @@ const styles: Record<string, React.CSSProperties> = {
     bottom: 242,
     left: '50%',
     width: 270,
-    background: warmTheme.surfaceStrong,
+    background: 'linear-gradient(180deg, rgba(247, 239, 226, 0.995) 0%, rgba(235, 218, 190, 0.99) 100%)',
     border: `1px solid ${warmTheme.borderStrong}`,
     borderRadius: 14,
     padding: '14px 16px',
     pointerEvents: 'none',
-    zIndex: 20,
-    boxShadow: warmTheme.shadow,
+    zIndex: 90,
+    boxShadow: '0 22px 40px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.38)',
+    backdropFilter: 'blur(10px)',
     fontFamily: 'Georgia, serif',
   },
   tooltipSubtype: {
@@ -184,12 +195,40 @@ const styles: Record<string, React.CSSProperties> = {
   },
   tooltipFooter: {
     display: 'flex',
-    gap: 10,
-    alignItems: 'center',
+    flexDirection: 'column',
+    gap: 6,
+    alignItems: 'flex-start',
     fontSize: 10,
-    opacity: 0.65,
+    opacity: 1,
+    color: TOOLTIP_META_COLOR,
+    lineHeight: 1.35,
   },
 };
+
+function formatAttackCosts(costs: ReadonlyArray<{ type: string; value: number }> | undefined): string {
+  if (!costs || costs.length === 0) return 'none';
+  return costs.map(cost => `${cost.type.replace(/_/g, ' ')} ${cost.value}`).join(', ');
+}
+
+function formatSeraphimSynergyLine(def: SeraphimDefinition): string {
+  const { bonusType, bonusValue } = def.baseStats;
+  switch (bonusType) {
+    case 'cherubim_expire_bonus':
+      return `Synergy: whenever a Cherubim expires, gain +${bonusValue} Oblivion`;
+    case 'cherubim_extra_plays':
+      return `Synergy: Cherubim gain +${bonusValue} durability`;
+    case 'ophanim_bonus':
+      return `Synergy: Ophanim plays gain +${bonusValue} Oblivion`;
+    case 'chain_bonus':
+      return `Synergy: chain growth +${bonusValue.toFixed(2)} per card played`;
+    case 'ember_per_card':
+      return `Synergy: +${bonusValue} embers per card played`;
+    case 'oblivion_per_card':
+      return `Synergy: attack profile scales with card-play Oblivion focus (+${bonusValue})`;
+    default:
+      return `Synergy: ${bonusType.replace(/_/g, ' ')} +${bonusValue}`;
+  }
+}
 
 export default function HandDisplay() {
   const faceMetrics = getCardFaceMetrics('hand');
@@ -198,7 +237,12 @@ export default function HandDisplay() {
   const turn = useStore(selectTurn);
   const board = useStore(selectBoard);
   const progress = useStore(selectProgress);
-  const { playCard, toggleMulliganCard, activateChaosEntropyFromHand } = useStore.getState();
+  const settings = useStore(selectSettings);
+  const cardArtDisplay = settings.cardArtDisplay ?? 'both';
+  const showTopPanel = cardArtDisplay === 'both' || cardArtDisplay === 'top-only';
+  const showBottomPanel = cardArtDisplay === 'both' || cardArtDisplay === 'bottom-only';
+  const artOnlyMode = cardArtDisplay === 'art-only';
+  const { playCard, toggleMulliganCard } = useStore.getState();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -293,6 +337,10 @@ export default function HandDisplay() {
 
   const hoveredDeckCard = hoveredId ? hand.find(c => c.instanceId === hoveredId) : null;
   const hoveredDef = hoveredDeckCard ? CardRegistry.get(hoveredDeckCard.definitionId) : null;
+  const hoveredEngine = hoveredDef ? getSetEngineSnapshotForCard(hoveredDef, turn, board) : null;
+  const handRightInset = isPlaying || isMulligan
+    ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(392px, 36vw))'
+    : 'var(--angel-drawer-hand-offset, 34px)';
 
   const showActiveHand = isMulligan || isPlaying;
   const showIdleShowcase = isIdle;
@@ -313,39 +361,81 @@ export default function HandDisplay() {
           padding: '8px 16px',
           boxShadow: warmTheme.glow,
         }}>
-          MULLIGAN — Click cards to swap them out
+          MULLIGAN ? Click cards to swap them out
         </div>
       )}
 
-      {/* Tooltip — positioned relative to overlay so it is never clipped by hand overflow */}
+      {/* Tooltip ? positioned relative to overlay so it is never clipped by hand overflow */}
       {hoveredDef && (
         <div key={hoveredId} style={{ ...styles.tooltip, animation: 'tooltipFadeIn 0.18s ease both' }}>
           <div style={{
             ...styles.tooltipSubtype,
             color: TYPE_COLORS[hoveredDef.type] ?? '#aaa',
           }}>
-            {hoveredDef.type}
+            {getDisplayCardTypeLabel(hoveredDef.type)}
           </div>
           <div style={styles.tooltipName}>{hoveredDef.name}</div>
-          <div style={styles.tooltipDesc}>{hoveredDef.description}</div>
+          <div style={styles.tooltipDesc}>
+            <CardRulesDigest
+              card={hoveredDef}
+              variant="preview"
+              maxSections={3}
+              maxLinesPerSection={1}
+              lineClamp={2}
+              labelColor="rgba(74, 48, 21, 0.82)"
+              textColor={warmTheme.accentDeep}
+              sectionBackground="transparent"
+              sectionBorder="transparent"
+            />
+          </div>
+          <CardEngineCallout card={hoveredDef} variant="detail" tone="light" />
           <div style={styles.tooltipFooter}>
             <span style={{ color: ELEMENT_COLORS[hoveredDef.element] ?? '#aaa' }}>
               {ELEMENT_SET_NAMES[hoveredDef.element] ?? hoveredDef.element}
             </span>
+            {hoveredEngine && (
+              <span style={{ color: hoveredEngine.accent, fontWeight: 700 }}>
+                {hoveredEngine.label} engine: {hoveredEngine.compact}
+              </span>
+            )}
             {hoveredDef.type === 'Angel' && (
               <>
-                <span>·</span>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>
+                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
                   Cost: {(hoveredDef as AngelDefinition).summonCost.map(id => CardRegistry.get(id)?.name ?? id).join(', ')}
+                </span>
+                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                  Attacks: Primary + Exalted (cards-play cooldown)
                 </span>
               </>
             )}
             {hoveredDef.type === 'Seraphim' && (
               <>
-                <span>·</span>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>
-                  Synergy: {(hoveredDef as SeraphimDefinition).baseStats.bonusType.replace(/_/g, ' ')} +{(hoveredDef as SeraphimDefinition).baseStats.bonusValue}
+                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                  {formatSeraphimSynergyLine(hoveredDef as SeraphimDefinition)}
                 </span>
+                {(() => {
+                  const attacks = (hoveredDef as SeraphimDefinition).attacks;
+                  if (!attacks) {
+                    return (
+                      <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                        Attacks: Unsynergized + Synergized (Angel required)
+                      </span>
+                    );
+                  }
+                  return (
+                    <>
+                      <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                        Unsynergized - {attacks.unsynergized.name} | Oblivion {attacks.unsynergized.baseOblivion} | Cooldown {attacks.unsynergized.cooldownCards} cards | Chain +{attacks.unsynergized.chainScaling.toFixed(2)}
+                      </span>
+                      <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                        Synergized - {attacks.synergized.name} | Oblivion {attacks.synergized.baseOblivion} | Cooldown {attacks.synergized.cooldownCards} cards | Chain +{attacks.synergized.chainScaling.toFixed(2)}
+                      </span>
+                      <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                        Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} | Cost: {formatAttackCosts(attacks.synergized.costs)}
+                      </span>
+                    </>
+                  );
+                })()}
               </>
             )}
           </div>
@@ -366,9 +456,12 @@ export default function HandDisplay() {
               {idleCards.map(({ card, def }, idx) => {
                 if (!def) return null;
                 const showHolo = card.finish === 'holo';
-                const descMetrics = getAdaptiveDescriptionMetrics('pack', def.description);
+                const previewText = getCardPreviewText(def, 2);
+                const descMetrics = getAdaptiveDescriptionMetrics('pack', previewText);
                 const cardClass = [
-                  showHolo ? 'holofoil-live-card' : undefined,
+                  showHolo
+                    ? `holofoil-live-card${def.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${def.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                    : undefined,
                   idleSwapState?.slot === idx && idleSwapState.phase === 'out' ? 'anim-idle-staple-fade-out' : undefined,
                   idleSwapState?.slot === idx && idleSwapState.phase === 'in' ? 'anim-idle-staple-fade-in' : undefined,
                 ].filter(Boolean).join(' ');
@@ -380,24 +473,29 @@ export default function HandDisplay() {
                     style={{
                       ...styles.idleCard,
                       ...getCardFaceBackgroundStyle(def, showHolo ? 'holo' : 'normal'),
+                      ...(artOnlyMode ? { boxShadow: '0 0 0 2px rgba(255,255,255,0.7), 0 4px 16px rgba(0,0,0,0.5)' } : {}),
                     }}
                   >
-                    <div style={getCardNameRibbonStyle('pack')}>
-                      <div style={{ ...styles.subtype, fontSize: 8, color: cardFacePalette.textMuted }}>{def.type}</div>
-                      <div style={{ ...styles.name, fontSize: 10 }}>{def.name}</div>
-                    </div>
-                    <div style={getCardRulesPanelStyle('pack')}>
-                      <div
-                        style={{
-                          ...styles.desc,
-                          fontSize: descMetrics.fontSize,
-                          lineHeight: descMetrics.lineHeight,
-                          WebkitLineClamp: 4,
-                        }}
-                      >
-                        {def.description}
+                    {showTopPanel && (
+                      <div style={getCardNameRibbonStyle('pack')}>
+                        <div style={{ ...styles.subtype, fontSize: 8, color: cardFacePalette.textMuted }}>{getDisplayCardTypeLabel(def.type)}</div>
+                        <div style={{ ...styles.name, fontSize: 10 }}>{def.name}</div>
                       </div>
-                    </div>
+                    )}
+                    {showBottomPanel && (
+                      <div style={getCardRulesPanelStyle('pack')}>
+                        <div
+                          style={{
+                            ...styles.desc,
+                            fontSize: descMetrics.fontSize,
+                            lineHeight: descMetrics.lineHeight,
+                            WebkitLineClamp: 4,
+                          }}
+                        >
+                          {previewText}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -423,6 +521,7 @@ export default function HandDisplay() {
       <div
         style={{
           ...styles.handWrapper,
+          right: handRightInset,
           opacity: showActiveHand ? 1 : 0,
           pointerEvents: showActiveHand ? 'none' : 'none',
         }}
@@ -454,13 +553,14 @@ export default function HandDisplay() {
             e.preventDefault();
           }}
         >
-          {hand.filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'Angel').map(deckCard => {
+          {hand.filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'Angel').map((deckCard, idx) => {
           const def = CardRegistry.get(deckCard.definitionId);
           const selected = turn.mulliganSelected.includes(deckCard.instanceId);
           const isHovered = hoveredId === deckCard.instanceId;
           const isAnimatingOut = playingCardId === deckCard.instanceId;
           const isPlayable = !isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board);
-          const descMetrics = getAdaptiveDescriptionMetrics('hand', def?.description ?? '');
+          const previewText = def ? getCardPreviewText(def, 2) : 'Card data unavailable';
+          const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);
           const nameLength = (def?.name ?? '').length;
           const adaptiveNameSize = nameLength > 24 ? faceMetrics.nameSize - 2.2 : nameLength > 16 ? faceMetrics.nameSize - 1.0 : faceMetrics.nameSize;
 
@@ -469,15 +569,17 @@ export default function HandDisplay() {
             ? 'linear-gradient(90deg, transparent, rgba(200,210,255,0.09), transparent)'
             : 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)';
 
-          const isDraggable = isPlaying && isPlayable && (def?.type === 'Seraphim' || def?.type === 'Chaos');
+          const isDraggable = isPlaying && isPlayable && (def?.type === 'Seraphim' || def?.type === 'Ophanim' || def?.type === 'Cherubim');
           const isDragging = draggingId === deckCard.instanceId;
 
           return (
             <div
-              key={deckCard.instanceId}
+              key={`${deckCard.instanceId}_${deckCard.definitionId}_${idx}`}
               className={[
                 isAnimatingOut ? 'anim-card-play-out' : undefined,
-                deckCard.finish === 'holo' ? 'holofoil-live-card' : undefined,
+                deckCard.finish === 'holo'
+                  ? `holofoil-live-card${def?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${def?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                  : undefined,
               ].filter(Boolean).join(' ') || undefined}
               draggable={isDraggable}
               style={{
@@ -486,25 +588,23 @@ export default function HandDisplay() {
                 ...(selected ? styles.cardMulligan : {}),
                 ...(!isPlayable ? { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.5)' } : {}),
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
+                ...(artOnlyMode ? { boxShadow: '0 0 0 2px rgba(255,255,255,0.65), 0 4px 16px rgba(0,0,0,0.5)' } : {}),
                 ...(isHovered && !selected && !isAnimatingOut && isPlayable && !isDragging ? {
                   transform: 'translateY(-12px)',
-                  boxShadow: `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
-                  borderColor: warmTheme.borderStrong,
+                  boxShadow: artOnlyMode
+                    ? '0 0 0 2px rgba(255,255,255,0.9), 0 8px 24px rgba(0,0,0,0.6)'
+                    : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
+                  borderColor: artOnlyMode ? 'rgba(255,255,255,0.8)' : warmTheme.borderStrong,
                 } : {}),
               }}
               onClick={() => handleClick(deckCard.instanceId)}
-              onContextMenu={(e) => {
-                if (!isPlaying || !def || def.type !== 'Chaos') return;
-                e.preventDefault();
-                activateChaosEntropyFromHand(deckCard.instanceId);
-              }}
               onMouseEnter={() => setHoveredId(deckCard.instanceId)}
               onMouseLeave={() => setHoveredId(null)}
               onDragStart={(e) => {
                 if (!isDraggable || !def) return;
                 const mimeType = def.type === 'Seraphim'
                   ? 'application/x-seraphim-card'
-                  : 'application/x-chaos-card';
+                  : 'application/x-cherubim-card';
                 e.dataTransfer.setData(mimeType, deckCard.instanceId);
                 e.dataTransfer.effectAllowed = 'move';
                 setDraggingId(deckCard.instanceId);
@@ -512,37 +612,41 @@ export default function HandDisplay() {
               }}
               onDragEnd={() => setDraggingId(null)}
             >
-              <div style={getCardNameRibbonStyle('hand')}>
-                {def?.type && (
-                  <div style={{ ...styles.subtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>{def.type}</div>
-                )}
-                <div style={{
-                  ...styles.name,
-                  fontSize: adaptiveNameSize,
-                  display: '-webkit-box',
-                  WebkitBoxOrient: 'vertical',
-                  WebkitLineClamp: 2,
-                  overflow: 'hidden',
-                }}>
-                  {def?.name ?? deckCard.definitionId}
+              {showTopPanel && (
+                <div style={getCardNameRibbonStyle('hand')}>
+                  {def?.type && (
+                    <div style={{ ...styles.subtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>{getDisplayCardTypeLabel(def.type)}</div>
+                  )}
+                  <div style={{
+                    ...styles.name,
+                    fontSize: adaptiveNameSize,
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: 2,
+                    overflow: 'hidden',
+                  }}>
+                    {def?.name ?? deckCard.definitionId}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              <div style={getCardRulesPanelStyle('hand')}>
-                <div
-                  style={{
-                    ...styles.desc,
-                    fontSize: descMetrics.fontSize,
-                    lineHeight: descMetrics.lineHeight,
-                    WebkitLineClamp: descMetrics.lineClamp,
-                  }}
-                >
-                  {def?.description ?? ''}
+              {showBottomPanel && (
+                <div style={getCardRulesPanelStyle('hand')}>
+                  <div
+                    style={{
+                      ...styles.desc,
+                      fontSize: descMetrics.fontSize,
+                      lineHeight: descMetrics.lineHeight,
+                      WebkitLineClamp: descMetrics.lineClamp,
+                    }}
+                  >
+                    {previewText}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {selected && (
-                <div style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, color: warmTheme.danger }}>✕</div>
+                <div style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, color: warmTheme.danger }}>?</div>
               )}
 
               {/* Shimmer sweep on hover */}
@@ -552,7 +656,7 @@ export default function HandDisplay() {
                   borderRadius: 10, pointerEvents: 'none',
                 }}>
                   <div style={{
-                    position: 'absolute', top: 0, bottom: 0, width: '45%',
+                      position: 'absolute', left: 0, right: 0, height: '45%',
                     background: shimmerColor,
                     animation: 'shimmer 0.55s ease-in-out',
                   }} />

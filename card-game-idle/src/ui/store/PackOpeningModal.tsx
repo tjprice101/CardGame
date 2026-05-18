@@ -3,11 +3,15 @@ import { gsap } from 'gsap';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
+  getCardBackBackgroundStyle,
   getCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -209,10 +213,13 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
                   {/* Back face */}
                   <div style={{
                     ...cardFaceStyle,
+                    ...getCardBackBackgroundStyle(def),
                     border: `2px solid ${warmTheme.border}`,
                     alignItems: 'center',
                     justifyContent: 'center',
-                  }}>
+                  }}
+                  title={def ? getCardPreviewLines(def, 4).join('\n') : defId}
+                  >
                     <div style={{ fontSize: 32, opacity: 0.3 }}>?</div>
                   </div>
 
@@ -225,13 +232,25 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
                   }}>
                     <div style={getCardNameRibbonStyle('pack')}>
                       <div style={{ ...styles.cardType, fontSize: faceMetrics.typeSize }}>
-                        {def?.type === 'Seraphim' ? 'Seraphim' : def?.type === 'Seeker' ? 'Seeker' : def?.type === 'Chaos' ? 'Chaos' : 'Card'}
+                        {getDisplayCardTypeLabel(def?.type ?? 'Card')}
                       </div>
                       <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def?.name ?? defId}</div>
                     </div>
                     <div style={getCardRulesPanelStyle('pack')}>
-                      <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: faceMetrics.descLines }}>
-                        {def?.description ?? ''}
+                      <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
+                        {def && (
+                          <CardRulesDigest
+                            card={def}
+                            variant="preview"
+                            maxSections={2}
+                            maxLinesPerSection={1}
+                            lineClamp={1}
+                            labelColor={cardFacePalette.textMuted}
+                            textColor={cardFacePalette.textSoft}
+                            sectionBackground="transparent"
+                            sectionBorder="transparent"
+                          />
+                        )}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
                         <div style={{ ...styles.cardRarity, color: cardFacePalette.textMuted }}>{rarity}</div>

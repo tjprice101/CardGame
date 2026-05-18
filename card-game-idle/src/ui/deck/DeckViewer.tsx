@@ -1,12 +1,30 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { warmTheme } from '@/ui/theme';
+import { t } from '@/ui/preferences';
+import type { CardDefinition } from '@/types/cards';
 import type { SavedDeck } from '@/types/game';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
+};
+
+const TYPE_ORDER: CardDefinition['type'][] = ['Ophanim', 'Seraphim', 'Cherubim', 'Angel'];
+const TYPE_LABELS: Record<CardDefinition['type'], string> = {
+  Ophanim: 'Ophanim',
+  Seraphim: 'Seraphim',
+  Cherubim: 'Cherubim',
+  Angel: 'Angel',
+};
+const RARITY_ORDER: Record<string, number> = {
+  Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5,
+};
+
+type PreviewSection = {
+  label: string;
+  entries: Array<{ definitionId: string; copies: number; def: CardDefinition }>;
 };
 
 const styles: Record<string, React.CSSProperties> = {
@@ -108,39 +126,60 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
   }
 
   function buildPreview(deck: SavedDeck) {
-    const seraphims = deck.deckList.filter(e => {
-      const def = CardRegistry.get(e.definitionId);
-      return def?.type === 'Seraphim';
-    });
-    const hrs = deck.deckList.filter(e => {
-      const def = CardRegistry.get(e.definitionId);
-      return def?.type === 'Seeker' || def?.type === 'Chaos';
-    });
-    const totalCards = deck.deckList.reduce((s, e) => s + e.copies, 0);
+    const grouped = new Map<string, { definitionId: string; copies: number; def: CardDefinition }>();
+
+    const pushEntry = (definitionId: string, copies: number) => {
+      const def = CardRegistry.get(definitionId);
+      if (!def) return;
+
+      const existing = grouped.get(definitionId);
+      if (existing) {
+        existing.copies += copies;
+        return;
+      }
+
+      grouped.set(definitionId, { definitionId, copies, def });
+    };
+
+    deck.deckList.forEach(entry => pushEntry(entry.definitionId, entry.copies));
+    (deck.extraDeck ?? []).forEach(entry => pushEntry(entry.definitionId, 1));
+
+    const totalCards = deck.deckList.reduce((s, e) => s + e.copies, 0) + (deck.extraDeck?.length ?? 0);
 
     const elements = new Set<string>();
-    deck.deckList.forEach(e => {
-      const def = CardRegistry.get(e.definitionId);
-      if (def) elements.add(def.element);
+    grouped.forEach(entry => {
+      elements.add(entry.def.element);
     });
 
-    return { seraphims, hrs, totalCards, elements };
+    const sections: PreviewSection[] = TYPE_ORDER.map(typeLabel => ({
+      label: TYPE_LABELS[typeLabel],
+      entries: Array.from(grouped.values())
+        .filter(entry => entry.def.type === typeLabel)
+        .sort((left, right) => {
+          const rarityDelta = (RARITY_ORDER[left.def.rarity] ?? Number.MAX_SAFE_INTEGER)
+            - (RARITY_ORDER[right.def.rarity] ?? Number.MAX_SAFE_INTEGER);
+          if (rarityDelta !== 0) return rarityDelta;
+          return left.def.name.localeCompare(right.def.name);
+        }),
+    })).filter(section => section.entries.length > 0);
+
+    return { sections, totalCards, elements };
   }
 
   return (
     <div style={styles.overlay}>
       <div style={styles.header}>
-        <div style={styles.title}>My Decks</div>
-        <button style={styles.closeBtn} onClick={onClose}>Close</button>
+        <div style={styles.title}>{t('myDecks')}</div>
+        <button style={styles.closeBtn} onClick={onClose}>{t('close')}</button>
       </div>
 
       <div style={styles.body}>
         {/* Deck list column */}
         <div style={styles.deckList}>
-          <div style={styles.deckListHeader}>Saved Decks ({savedDecks.length})</div>
+          <div style={styles.deckListHeader}>{t('savedDecks')} ({savedDecks.length})</div>
           <div style={styles.deckListScroll}>
             {savedDecks.map(deck => {
-              const totalCards = deck.deckList.reduce((s, e) => s + e.copies, 0);
+              const totalCards = deck.deckList.reduce((s, e) => s + e.copies, 0) + (deck.extraDeck?.length ?? 0);
               return (
                 <div
                   key={deck.id}
@@ -157,7 +196,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                     <div style={styles.deckMeta}>{totalCards} cards</div>
                   </div>
                   {deck.id === activeDeckId && (
-                    <div style={styles.loadedBadge}>Active</div>
+                    <div style={styles.loadedBadge}>{t('activeDeck')}</div>
                   )}
                 </div>
               );
@@ -169,7 +208,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
         {selectedDeck ? (
           <div style={styles.preview}>
             {(() => {
-              const { seraphims, hrs, totalCards, elements } = buildPreview(selectedDeck);
+              const { sections, totalCards, elements } = buildPreview(selectedDeck);
               return (
                 <>
                   <div style={styles.previewHeader}>
@@ -189,43 +228,22 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                   </div>
 
                   <div style={styles.previewScroll}>
-                    {seraphims.length > 0 && (
+                    {sections.map((section, index) => (
                       <>
-                        <div style={styles.sectionHeader}>Seraphim</div>
-                        {seraphims.map(entry => {
-                          const def = CardRegistry.get(entry.definitionId);
-                          return (
-                            <div key={entry.definitionId} style={styles.cardRow}>
-                              <div style={styles.cardName}>{def?.name ?? entry.definitionId}</div>
-                              <div style={{ ...styles.cardRarity, color: RARITY_COLORS[def?.rarity ?? ''] ?? '#aaa' }}>
-                                {def?.rarity}
-                              </div>
-                              <div style={styles.cardCopies}>×{entry.copies}</div>
-                            </div>
-                          );
-                        })}
-                      </>
-                    )}
-
-                    {hrs.length > 0 && (
-                      <>
-                        <div style={{ ...styles.sectionHeader, marginTop: seraphims.length > 0 ? 16 : 12 }}>
-                          HR Cards
+                        <div style={{ ...styles.sectionHeader, marginTop: index === 0 ? 12 : 16 }}>
+                          {section.label}
                         </div>
-                        {hrs.map(entry => {
-                          const def = CardRegistry.get(entry.definitionId);
-                          return (
-                            <div key={entry.definitionId} style={styles.cardRow}>
-                              <div style={styles.cardName}>{def?.name ?? entry.definitionId}</div>
-                              <div style={{ ...styles.cardRarity, color: RARITY_COLORS[def?.rarity ?? ''] ?? '#aaa' }}>
-                                {def?.rarity}
-                              </div>
-                              <div style={styles.cardCopies}>×{entry.copies}</div>
+                        {section.entries.map(entry => (
+                          <div key={entry.definitionId} style={styles.cardRow}>
+                            <div style={styles.cardName}>{entry.def.name}</div>
+                            <div style={{ ...styles.cardRarity, color: RARITY_COLORS[entry.def.rarity] ?? '#aaa' }}>
+                              {entry.def.rarity}
                             </div>
-                          );
-                        })}
+                            <div style={styles.cardCopies}>×{entry.copies}</div>
+                          </div>
+                        ))}
                       </>
-                    )}
+                    ))}
                   </div>
                 </>
               );
@@ -248,7 +266,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
             Delete
           </button>
         )}
-        <button style={styles.closeBtn} onClick={onOpenDeckBuilder}>Edit in Builder</button>
+        <button style={styles.closeBtn} onClick={onOpenDeckBuilder}>{t('deckBuilder')}</button>
         {selectedDeck && selectedDeck.id !== activeDeckId && (
           <button style={styles.loadBtn} onClick={() => handleLoad(selectedDeck)}>
             Load Deck

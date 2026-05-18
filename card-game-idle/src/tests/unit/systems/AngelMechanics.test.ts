@@ -171,7 +171,7 @@ describe('Angel mechanics', () => {
         deckList: [],
         extraDeck: [{ definitionId: 'angel-light-seraphiel', finish: 'normal' }],
         drawPile,
-        hand: [{ instanceId: 'play_1', definitionId: 'seek-fire-pyre-ignite', finish: 'normal' }],
+        hand: [{ instanceId: 'play_1', definitionId: 'ophanim-fire-pyre-ignite', finish: 'normal' }],
         discardPile: [],
       },
       turn: makePlayingTurn({ radiance: 4, chainFloor: 1.0 }),

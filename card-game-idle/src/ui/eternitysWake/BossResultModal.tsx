@@ -1,6 +1,8 @@
 import { useStore, selectBossFight } from '@/state/store';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
+import CardEngineCallout from '@/ui/components/CardEngineCallout';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { warmTheme } from '@/ui/theme';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -65,8 +67,21 @@ export default function BossResultModal() {
             <div style={{ fontSize: 11, color: RARITY_COLORS[rewardDef.rarity], marginTop: 4 }}>
               {rewardDef.rarity} · {rewardDef.type}
             </div>
-            <div style={{ fontSize: 11, color: warmTheme.textSoft, marginTop: 8, lineHeight: 1.5 }}>
-              {rewardDef.description}
+              <div style={{ marginTop: 10 }}>
+                <CardEngineCallout card={rewardDef} variant="compact" />
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <CardRulesDigest
+                  card={rewardDef}
+                  variant="preview"
+                  maxSections={3}
+                  maxLinesPerSection={1}
+                  lineClamp={2}
+                  labelColor={warmTheme.textMuted}
+                  textColor={warmTheme.textSoft}
+                  sectionBackground="transparent"
+                  sectionBorder="transparent"
+                />
             </div>
           </div>
         )}

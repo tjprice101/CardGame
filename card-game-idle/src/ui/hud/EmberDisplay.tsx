@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useStore, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 
@@ -66,10 +66,11 @@ export default function EmberDisplay() {
     prevEmbersRef.current = turn.embers;
   });
 
-  const hasFireCards = deckList.some(e => {
-    const def = CardRegistry.get(e.definitionId);
-    return def?.element === 'Fire';
-  });
+  // Memoize: only re-scan when deckList reference changes (deck edits), not on every card play
+  const hasFireCards = useMemo(
+    () => deckList.some(e => CardRegistry.get(e.definitionId)?.element === 'Fire'),
+    [deckList],
+  );
 
   if (turn.phase === 'idle' || !hasFireCards) return null;
 

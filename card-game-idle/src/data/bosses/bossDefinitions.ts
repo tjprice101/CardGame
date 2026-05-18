@@ -4,6 +4,7 @@ export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
 const FIRST_ETERNAL_BOSS_HP = 12_000;
 const FINAL_ETERNAL_BOSS_HP = 25_000_000;
+const FIRST_ETERNAL_BONUS_HP = 5_000;
 
 function roundBossHp(value: number): number {
   if (value >= 10_000_000) return Math.round(value / 25_000) * 25_000;
@@ -13,12 +14,13 @@ function roundBossHp(value: number): number {
 }
 
 function getScaledBossHp(index: number, totalBosses: number): number {
-  if (index <= 0 || totalBosses <= 1) return FIRST_ETERNAL_BOSS_HP;
-  if (index >= totalBosses - 1) return FINAL_ETERNAL_BOSS_HP;
+  if (index <= 0 || totalBosses <= 1) return FIRST_ETERNAL_BOSS_HP + FIRST_ETERNAL_BONUS_HP;
 
-  const progress = index / (totalBosses - 1);
+  const clampedIndex = Math.min(index, totalBosses - 1);
+  const progress = clampedIndex / (totalBosses - 1);
   const scaled = FIRST_ETERNAL_BOSS_HP * Math.pow(FINAL_ETERNAL_BOSS_HP / FIRST_ETERNAL_BOSS_HP, progress);
-  return roundBossHp(scaled);
+  const scaledBonus = FIRST_ETERNAL_BONUS_HP * Math.pow(FINAL_ETERNAL_BOSS_HP / FIRST_ETERNAL_BOSS_HP, progress);
+  return roundBossHp(scaled + scaledBonus);
 }
 
 type BossBlueprint = Omit<BossDefinition, 'hp'>;
@@ -55,7 +57,7 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   // Neutrality legacy arc
   createBoss(0, 'boss-hollow-king', 'The Hollow Queen', 'Neutrality', 'btei-voids-reaping', 'A shattered queen of void whose broken regalia still bends reality around every strike.', 'boss_hollow_queen'),
   createBoss(1, 'boss-immortal-warden', 'The Immortal Warden', 'Neutrality', 'btei-eternal-vigil', 'A sentinel that has never blinked across epochs; each heartbeat is a verdict.', 'boss_immortal_warden'),
-  createBoss(2, 'boss-chaos-sovereign', 'The Chaos Sovereign', 'Neutrality', 'btei-sovereign-domain', 'Formed from colliding entropy stacks, it turns stable lines into catastrophic gambles.', 'boss_chaos_sovereign'),
+  createBoss(2, 'boss-cherubim-sovereign', 'The Cherubim Sovereign', 'Neutrality', 'btei-sovereign-domain', 'Formed from colliding entropy stacks, it turns stable lines into catastrophic gambles.', 'boss_cherubim_sovereign'),
   createBoss(3, 'boss-eternal-seraph', 'The Eternal Seraph', 'Neutrality', 'btei-convergence-of-eternity', 'The first chorus and the final silence, condensed into one impossible wingbeat.', 'boss_eternal_seraph'),
   createBoss(4, 'boss-time-eater', 'The Time Eater', 'Neutrality', 'btei-temporal-ruin', 'It consumes turns before they exist; haste itself becomes prey.', 'boss_time_eater'),
   createBoss(5, 'boss-void-architect', 'The Void Architect', 'Neutrality', 'btei-architects-manifold', 'A cosmic engineer that drafts your defeat as if it were structural law.', 'boss_void_architect'),
@@ -105,6 +107,34 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(37, 'boss-prismatic-drift-leviathan', 'Drift Canopy Leviathan', 'Prismatic Accord', 'btei-prismatic-storm-memory', 'An altitude-born shardborn titan carrying entire weather systems inside its mirrored spine.', 'boss_prismatic_drift_leviathan'),
   createBoss(38, 'boss-prismatic-blindwars-reliquary', 'Reliquary of Blind Wars', 'Prismatic Accord', 'btei-prismatic-blindwars-reliquary', 'A living mausoleum of old accords, where every buried oath wakes up armed.', 'boss_prismatic_blindwars_reliquary'),
   createBoss(39, 'boss-prismatic-whitebeam-concordat', 'Whitebeam Concordat', 'Prismatic Accord', 'btei-prismatic-ninefold-accord', 'The nine-day beam given judgmental will, still holding the truce together by force of light.', 'boss_prismatic_whitebeam_concordat'),
+
+  // Snowbound Voltage (5)
+  createBoss(40, 'boss-snowbound-polar-conductor', 'Frostborn Surge Sovereign', 'Snowbound Voltage', 'sv-eternal-frost-charge', 'A legendary maestro of frozen symphonies whose baton directs both storm and stasis.', 'boss_snowbound_polar_conductor'),
+  createBoss(41, 'boss-snowbound-aurora-nexus', 'Aurora Nexus Core', 'Snowbound Voltage', 'sv-eternal-aurora-battery', 'A convergence point where all polar auroras collapse into a singularity of voltage.', 'boss_snowbound_aurora_nexus'),
+  createBoss(42, 'boss-snowbound-glacier-beacon', 'Glacier Beacon Sentinel', 'Snowbound Voltage', 'sv-eternal-glacier-signal', 'An ancient relay guardian whose signal illuminates frozen chasms and frozen time alike.', 'boss_snowbound_glacier_beacon'),
+  createBoss(43, 'boss-snowbound-white-requiem', 'White Requiem Choir', 'Snowbound Voltage', 'sv-eternal-white-static', 'A ghost chorus singing the final lament of all voltage, all heat, all motion.', 'boss_snowbound_white_requiem'),
+  createBoss(44, 'boss-snowbound-blizzard-requiem', 'Blizzard Requiem Symphony', 'Snowbound Voltage', 'sv-eternal-sleet-choir', 'The convergence of all frozen storms, each note a new ice age unfurling.', 'boss_snowbound_blizzard_requiem'),
+
+  // Black Glass Inferno (5)
+  createBoss(45, 'boss-inferno-vaelthorax-grief', 'Vaelthorax the Grieffire', 'Black Glass Inferno', 'btei-bgi-cindershard-lexicon', 'An ancient white-scaled tyrant whose flame names and burns truth into blackened glass.', 'boss_inferno_vaelthorax_grief'),
+  createBoss(46, 'boss-inferno-morvakael-answer', 'Morvakael Thrice-Scarred', 'Black Glass Inferno', 'btei-bgi-blackglass-catastrophe', 'A draconic sovereign whose scars are treaties written in chromatic ruin and sorrow.', 'boss_inferno_morvakael_answer'),
+  createBoss(47, 'boss-inferno-sorveth-flame', 'Sorveth, Twin-Scaled Herald', 'Black Glass Inferno', 'btei-bgi-inferborn-prophecy', 'A dual-scaled messenger holding both truth and lie in perfect equilibrium within one breath.', 'boss_inferno_sorveth_flame'),
+  createBoss(48, 'boss-inferno-cinderborn-court', 'Cinderborn Matriarch Court', 'Black Glass Inferno', 'btei-bgi-velplane-ossuary', 'A council of infernal queens crowned in inverted black-glass roses and void promises.', 'boss_inferno_cinderborn_court'),
+  createBoss(49, 'boss-inferno-ashen-sovereign', 'Ashen Court Regent', 'Black Glass Inferno', 'btei-bgi-rosecrown-annihilator', 'The monarch of all ash and sorrow, ruling the blackglass kingdoms from a throne of grief-fire.', 'boss_inferno_ashen_sovereign'),
+
+  // Glass Absolute (5)
+  createBoss(50, 'boss-glass-lattice-archive', 'Lattice Archive Seraph', 'Glass Absolute', 'ga-et-lattice-archive-seraph', 'A vault-seraph forged from recursive panes that catalog every beam crossing Vyrel.', 'boss_glass_lattice_archive'),
+  createBoss(51, 'boss-glass-angled-infinity', 'Angled Infinity', 'Glass Absolute', 'ga-et-angled-infinity', 'An impossible custodian whose mirrored angles fold corridors through themselves.', 'boss_glass_angled_infinity'),
+  createBoss(52, 'boss-glass-first-white', 'First White', 'Glass Absolute', 'ga-et-first-white', 'The origin flash where all spectrum begins and every refraction takes oath.', 'boss_glass_first_white'),
+  createBoss(53, 'boss-glass-center-everywhere', 'The Center That Is Everywhere', 'Glass Absolute', 'ga-et-center-everywhere', 'A transcendent axis-body that turns any point in space into a central throne.', 'boss_glass_center_everywhere'),
+  createBoss(54, 'boss-glass-perfect-refraction', 'Perfect Refraction', 'Glass Absolute', 'ga-et-perfect-refraction', 'A flawless splitter of white light that judges by geometric certainty.', 'boss_glass_perfect_refraction'),
+
+  // The Blazing Garden (5)
+  createBoss(55, 'boss-garden-proofflame', 'Serevathi Proofflame', 'The Blazing Garden', 'bg-et-serevathi-proofflame', 'A rose-sovereign proving every grief can be burned into living growth.', 'boss_garden_proofflame'),
+  createBoss(56, 'boss-garden-evernoon', 'Aureveth Evernoon', 'The Blazing Garden', 'bg-et-aureveth-evernoon', 'A sunflower colossus whose noonfire never sets and never yields.', 'boss_garden_evernoon'),
+  createBoss(57, 'boss-garden-seven-crown', 'Vethkorath Seven-Crown Proof', 'The Blazing Garden', 'bg-et-vethkorath-seven-crown-proof', 'A thistle theorem embodied, crowned seven times in violet flame.', 'boss_garden_seven_crown'),
+  createBoss(58, 'boss-garden-codex', 'Embergrove Codex', 'The Blazing Garden', 'bg-et-embergrove-codex', 'An archive-garden where every lost color is preserved for rekindling.', 'boss_garden_codex'),
+  createBoss(59, 'boss-garden-noonproof-transit', 'Noonproof Transit', 'The Blazing Garden', 'bg-et-noonproof-transit', 'A blazing corridor through petal megastructures where motion and ritual are one.', 'boss_garden_noonproof_transit'),
 ];
 
 export const BOSS_DEFINITIONS: BossDefinition[] = BOSS_BLUEPRINTS.map((boss, index, bosses) => ({

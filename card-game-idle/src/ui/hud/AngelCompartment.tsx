@@ -9,10 +9,11 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { warmTheme } from '@/ui/theme';
 import type { AngelDefinition, CardFinish } from '@/types/cards';
 
-const faceMetrics = getCardFaceMetrics('hand');
+const faceMetrics = getCardFaceMetrics('grid');
 const ANGEL_DRAWER_WIDTH = 'min(340px, calc(100vw - 52px))';
 const ANGEL_ART_HEIGHT = 120;
 const HAND_RESERVED_WHEN_CLOSED = '34px';
@@ -49,6 +50,8 @@ export default function AngelCompartment() {
     };
   }, [open]);
 
+  if (!isPlaying) return null;
+
   return (
     <div style={{
       position: 'absolute',
@@ -79,7 +82,7 @@ export default function AngelCompartment() {
           display: 'flex',
           flexDirection: 'column',
           gap: 14,
-          maxHeight: 'clamp(220px, 38vh, 340px)',
+          maxHeight: 'clamp(220px, 44vh, 420px)',
           overflowY: 'auto',
         }}>
           <div style={{
@@ -90,7 +93,7 @@ export default function AngelCompartment() {
             textTransform: 'uppercase',
             marginBottom: 2,
           }}>
-            Extra Deck — {angelsOnBoard} / {extraDeck.length} on board
+            Extra Deck - {angelsOnBoard} / {extraDeck.length} on board
           </div>
 
           {extraDeck.length === 0 && (
@@ -130,10 +133,14 @@ export default function AngelCompartment() {
             }
             const statusLabel = availableCopies === 0
               ? `${onBoardCopies}/${totalCopies} summoned`
-              : onBoardCopies > 0
-                ? `${availableCopies}/${totalCopies} ready`
-                : `${availableCopies} ready`;
-            const statusColor = availableCopies === 0 ? warmTheme.success : warmTheme.textMuted;
+              : playable
+                ? 'Angel Summon Ready'
+                : 'Need materials';
+            const statusColor = availableCopies === 0
+              ? warmTheme.success
+              : playable
+                ? '#83f7b6'
+                : warmTheme.textMuted;
 
             return (
               <div
@@ -163,7 +170,7 @@ export default function AngelCompartment() {
                   }
                 }}
               >
-                <div style={getCardNameRibbonStyle('hand')}>
+                  <div style={getCardNameRibbonStyle('grid')}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
                     <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
                       Angel · {finish === 'holo' ? 'Holofoil' : 'Normal'}
@@ -173,6 +180,11 @@ export default function AngelCompartment() {
                       letterSpacing: 1,
                       color: statusColor,
                       textTransform: 'uppercase',
+                      fontWeight: 700,
+                      padding: '3px 6px',
+                      borderRadius: 999,
+                      background: playable ? 'rgba(79,138,71,0.18)' : 'transparent',
+                      boxShadow: playable ? '0 0 10px rgba(79,138,71,0.28)' : 'none',
                     }}>
                       {statusLabel}
                     </div>
@@ -233,33 +245,31 @@ export default function AngelCompartment() {
                   </div>
                 </div>
 
-                <div style={getCardRulesPanelStyle('hand')}>
-                  <div style={{
-                    fontSize: faceMetrics.descSize,
-                    color: cardFacePalette.textSoft,
-                    lineHeight: faceMetrics.descLineHeight,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 5,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}>
-                    {angelDef.description}
+                <div style={getCardRulesPanelStyle('grid')}>
+                  <div style={{ marginBottom: 10 }}>
+                    <CardRulesDigest
+                      card={angelDef}
+                      variant="preview"
+                      maxSections={3}
+                      maxLinesPerSection={1}
+                      lineClamp={2}
+                      labelColor={cardFacePalette.textMuted}
+                      textColor={cardFacePalette.textSoft}
+                      sectionBackground="transparent"
+                      sectionBorder="transparent"
+                    />
                   </div>
 
-                  <div style={{ fontSize: 10, color: warmTheme.accentDeep, marginTop: 12, marginBottom: 4, letterSpacing: 0.5 }}>
-                    AWAKEN {angelDef.activatedAbility.cardsPlayedRequirement}
+                  <div style={{ fontSize: 9, color: cardFacePalette.textMuted, marginBottom: 4, letterSpacing: 0.5 }}>
+                    ATTACKS
                   </div>
                   <div style={{
                     fontSize: 10,
                     color: cardFacePalette.textSoft,
                     lineHeight: 1.45,
                     marginBottom: 10,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
                   }}>
-                    {angelDef.activatedAbility.name}: {angelDef.activatedAbility.description}
+                    Primary and Exalted attacks are available on-board with cards-play cooldowns. Exalted attacks can require additional costs.
                   </div>
 
                   {availableCopies > 0 && (
@@ -275,10 +285,10 @@ export default function AngelCompartment() {
                           return (
                             <div key={costId} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                               <span style={{ fontSize: 11, color: met ? warmTheme.success : 'rgba(255,80,80,0.8)' }}>
-                                {met ? '✓' : '✕'}
+                                {met ? '[OK]' : '[X]'}
                               </span>
                               <span style={{ fontSize: 10, color: cardFacePalette.textSoft }}>
-                                {needed > 1 ? `${needed}× ` : ''}{costDef?.name ?? costId}
+                                {needed > 1 ? `${needed}x ` : ''}{costDef?.name ?? costId}
                               </span>
                               <span style={{ fontSize: 9, color: cardFacePalette.textMuted, marginLeft: 'auto' }}>
                                 {have}/{needed}
@@ -287,19 +297,19 @@ export default function AngelCompartment() {
                           );
                         })}
                         {angelDef.extraSummonConditions?.map((condition, index) => {
-                          if (condition.type === 'chaos_active_gte') {
-                            const activeChaos = board.backSlots.filter(slot => slot !== null).length;
-                            const met = activeChaos >= condition.value;
+                          if (condition.type === 'cherubim_active_gte') {
+                            const activeCherubim = board.backSlots.filter(slot => slot !== null).length;
+                            const met = activeCherubim >= condition.value;
                             return (
                               <div key={`${definitionId}-cond-${index}`} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span style={{ fontSize: 11, color: met ? warmTheme.success : 'rgba(255,80,80,0.8)' }}>
-                                  {met ? '✓' : '✕'}
+                                  {met ? '[OK]' : '[X]'}
                                 </span>
                                 <span style={{ fontSize: 10, color: cardFacePalette.textSoft }}>
-                                  Active Chaos cards
+                                  Active Cherubim cards
                                 </span>
                                 <span style={{ fontSize: 9, color: cardFacePalette.textMuted, marginLeft: 'auto' }}>
-                                  {activeChaos}/{condition.value}
+                                  {activeCherubim}/{condition.value}
                                 </span>
                               </div>
                             );
@@ -310,7 +320,7 @@ export default function AngelCompartment() {
                             return (
                               <div key={`${definitionId}-cond-${index}`} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span style={{ fontSize: 11, color: met ? warmTheme.success : 'rgba(255,80,80,0.8)' }}>
-                                  {met ? '✓' : '✕'}
+                                  {met ? '[OK]' : '[X]'}
                                 </span>
                                 <span style={{ fontSize: 10, color: cardFacePalette.textSoft }}>
                                   Front-row Seraphim

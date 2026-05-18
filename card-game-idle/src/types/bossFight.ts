@@ -1,6 +1,6 @@
 import type { BoardState, DeckState, ProgressState, SettingsState, TurnState } from './game';
 
-export type BossCategory = 'Neutrality' | 'Pyroabyss' | 'Heavenly Light' | 'Thornbound Plains' | 'Mechanical Dreams' | 'Prismatic Accord';
+export type BossCategory = 'Neutrality' | 'Pyroabyss' | 'Heavenly Light' | 'Thornbound Plains' | 'Mechanical Dreams' | 'Prismatic Accord' | 'Snowbound Voltage' | 'Black Glass Inferno' | 'Glass Absolute' | 'The Blazing Garden';
 
 export interface BossDefinition {
   id: string;

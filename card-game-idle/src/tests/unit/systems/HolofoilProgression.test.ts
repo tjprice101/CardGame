@@ -33,7 +33,7 @@ describe('Holofoil progression', () => {
   });
 
   it('converts one normal copy into holo and spends Aberrated Shards', () => {
-    const definitionId = 'seek-neutral-null-seek';
+    const definitionId = 'ophanim-neutral-null-seek';
     const definition = CardRegistry.get(definitionId);
     const cost = getHolofoilConversionCost(definition);
     expect(cost).not.toBeNull();
@@ -58,7 +58,7 @@ describe('Holofoil progression', () => {
   });
 
   it('does not convert when the player cannot afford the shard cost', () => {
-    const definitionId = 'seek-neutral-null-seek';
+    const definitionId = 'ophanim-neutral-null-seek';
 
     useStore.setState(state => ({
       ...state,
@@ -93,7 +93,7 @@ describe('Holofoil progression', () => {
         deckList: [],
         extraDeck: [],
         drawPile: [],
-        hand: [{ instanceId: 'play_1', definitionId: 'seek-neutral-null-seek', finish: 'normal' }],
+        hand: [{ instanceId: 'play_1', definitionId: 'ser-neutral-null', finish: 'normal' }],
         discardPile: [],
       },
       board: { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] },
@@ -127,7 +127,7 @@ describe('Holofoil progression', () => {
         deckList: [],
         extraDeck: [],
         drawPile: [],
-        hand: [{ instanceId: 'play_2', definitionId: 'seek-neutral-null-seek', finish: 'normal' }],
+        hand: [{ instanceId: 'play_2', definitionId: 'ser-neutral-null', finish: 'normal' }],
         discardPile: [],
       },
       board: { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] },
@@ -167,7 +167,7 @@ describe('Holofoil progression', () => {
 
     const loadedDeck = loaded.deck as DeckState & Record<string, unknown>;
     loadedDeck.extraDeck = ['angel-light-seraphiel'] as unknown as DeckState['extraDeck'];
-    loadedDeck.hand = [{ instanceId: 'legacy_1', definitionId: 'seek-neutral-null-seek' }] as unknown as DeckState['hand'];
+    loadedDeck.hand = [{ instanceId: 'legacy_1', definitionId: 'ophanim-neutral-null-seek' }] as unknown as DeckState['hand'];
 
     useStore.getState().loadState(loaded as unknown as typeof defaultGameState);
 

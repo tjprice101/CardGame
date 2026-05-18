@@ -1,34 +1,72 @@
-import { useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
+import { ELEMENT_SET_NAMES, getCardCategoryKey } from '@/data/elements';
 import { INFINITE_RECIPES, type InfiniteRecipe } from '@/data/cards/infiniteCards';
+import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
-  getAdaptiveDescriptionMetrics,
   getCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
+import CardEngineCallout from '@/ui/components/CardEngineCallout';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
 
 const INFINITE_COLOR = '#e8e8f0';
 const INFINITE_GLOW = 'rgba(220, 224, 255, 0.55)';
 
+type RecipeListEntry = {
+  recipe: InfiniteRecipe;
+  definition: CardDefinition | null;
+  setKey: string;
+  setLabel: string;
+  originalIndex: number;
+};
+
+const INFINITE_SET_ORDER = PACK_DEFINITIONS.map(pack => (
+  pack.id === 'pack-snowbound-voltage' ? 'SnowboundVoltage' : pack.element
+));
+
 
 interface Props { onClose: () => void }
 
-const previewFaceMetrics = getCardFaceMetrics('hand');
+const previewFaceMetrics = getCardFaceMetrics('grid');
 
 export default function Infinitude({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const combineForInfinite = useStore(s => s.combineForInfinite);
+  const orderedRecipes = useMemo<RecipeListEntry[]>(() => {
+    const setRank = new Map(INFINITE_SET_ORDER.map((setKey, index) => [setKey, index]));
+
+    return INFINITE_RECIPES
+      .map((recipe, originalIndex) => {
+        const definition = CardRegistry.get(recipe.resultId) ?? null;
+        const setKey = definition ? getCardCategoryKey(definition) : 'Unknown';
+        return {
+          recipe,
+          definition,
+          setKey,
+          setLabel: ELEMENT_SET_NAMES[setKey] ?? setKey,
+          originalIndex,
+        };
+      })
+      .sort((left, right) => {
+        const rankDelta = (setRank.get(left.setKey) ?? Number.MAX_SAFE_INTEGER)
+          - (setRank.get(right.setKey) ?? Number.MAX_SAFE_INTEGER);
+        if (rankDelta !== 0) return rankDelta;
+        return left.originalIndex - right.originalIndex;
+      });
+  }, []);
   const [selectedRecipeId, setSelectedRecipeId] = useState<string | null>(
-    INFINITE_RECIPES[0]?.resultId ?? null,
+    orderedRecipes[0]?.recipe.resultId ?? null,
   );
   const [justCombined, setJustCombined] = useState<string | null>(null);
 
-  const selectedRecipe = INFINITE_RECIPES.find(r => r.resultId === selectedRecipeId) ?? null;
+  const selectedRecipe = orderedRecipes.find(entry => entry.recipe.resultId === selectedRecipeId)?.recipe ?? null;
   const resultDef = selectedRecipe ? CardRegistry.get(selectedRecipe.resultId) : null;
 
   function canCombine(recipe: InfiniteRecipe): boolean {
@@ -61,54 +99,61 @@ export default function Infinitude({ onClose }: Props) {
           {/* ── Left: recipe list ── */}
           <div style={styles.recipeList}>
             <div style={styles.listHeading}>SELECT FORMULA</div>
-            {INFINITE_RECIPES.map(recipe => {
-              const def = CardRegistry.get(recipe.resultId);
+            {orderedRecipes.map((entry, index) => {
+              const { recipe, definition: def, setLabel } = entry;
               const ready = canCombine(recipe);
               const owned = progress.infiniteCollection[recipe.resultId] ?? 0;
               const isSelected = recipe.resultId === selectedRecipeId;
+              const previousSetLabel = index > 0 ? orderedRecipes[index - 1]?.setLabel : null;
+              const showSetHeading = index === 0 || previousSetLabel !== setLabel;
 
               return (
-                <button
-                  key={recipe.resultId}
-                  onClick={() => setSelectedRecipeId(recipe.resultId)}
-                  style={{
-                    ...styles.recipeRow,
-                    background: isSelected
-                      ? 'linear-gradient(90deg, rgba(220,224,255,0.14) 0%, rgba(30,30,46,0.96) 100%)'
-                      : 'rgba(18,18,26,0.7)',
-                    borderLeft: isSelected ? `3px solid ${INFINITE_COLOR}` : '3px solid transparent',
-                    boxShadow: isSelected ? `0 0 8px ${INFINITE_GLOW}` : 'none',
-                  }}
-                >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: INFINITE_COLOR,
-                      letterSpacing: 0.5,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}>
-                      {def?.name ?? recipe.resultId}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'rgba(200,200,220,0.65)', marginTop: 1 }}>
-                      {def?.type ?? '—'}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
-                    {owned > 0 && (
-                      <div style={{ fontSize: 9, background: 'rgba(232,232,240,0.18)', borderRadius: 4, padding: '1px 5px', color: INFINITE_COLOR }}>
-                        ×{owned}
+                <Fragment key={recipe.resultId}>
+                  {showSetHeading && (
+                    <div style={styles.setHeading}>{setLabel}</div>
+                  )}
+                  <button
+                    onClick={() => setSelectedRecipeId(recipe.resultId)}
+                    title={def ? getCardPreviewLines(def, 4).join('\n') : recipe.resultId}
+                    style={{
+                      ...styles.recipeRow,
+                      background: isSelected
+                        ? 'linear-gradient(90deg, rgba(220,224,255,0.14) 0%, rgba(30,30,46,0.96) 100%)'
+                        : 'rgba(18,18,26,0.7)',
+                      borderLeft: isSelected ? `3px solid ${INFINITE_COLOR}` : '3px solid transparent',
+                      boxShadow: isSelected ? `0 0 8px ${INFINITE_GLOW}` : 'none',
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: INFINITE_COLOR,
+                        letterSpacing: 0.5,
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
+                        {def?.name ?? recipe.resultId}
                       </div>
-                    )}
-                    <div style={{
-                      width: 7, height: 7, borderRadius: '50%',
-                      background: ready ? '#8cf0a0' : 'rgba(180,180,200,0.25)',
-                      boxShadow: ready ? '0 0 5px #8cf0a0' : 'none',
-                    }} />
-                  </div>
-                </button>
+                      <div style={{ fontSize: 10, color: 'rgba(200,200,220,0.65)', marginTop: 1 }}>
+                        {setLabel}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 3 }}>
+                      {owned > 0 && (
+                        <div style={{ fontSize: 9, background: 'rgba(232,232,240,0.18)', borderRadius: 4, padding: '1px 5px', color: INFINITE_COLOR }}>
+                          ×{owned}
+                        </div>
+                      )}
+                      <div style={{
+                        width: 7, height: 7, borderRadius: '50%',
+                        background: ready ? '#8cf0a0' : 'rgba(180,180,200,0.25)',
+                        boxShadow: ready ? '0 0 5px #8cf0a0' : 'none',
+                      }} />
+                    </div>
+                  </button>
+                </Fragment>
               );
             })}
           </div>
@@ -130,11 +175,21 @@ export default function Infinitude({ onClose }: Props) {
                   <div style={{ fontSize: 10, color: 'rgba(200,200,220,0.6)', marginTop: 2, letterSpacing: 1 }}>
                     {resultDef.type.toUpperCase()} · {resultDef.element.toUpperCase()} · INFINITE
                   </div>
+                  <div style={{ marginTop: 10 }}>
+                    <CardEngineCallout card={resultDef} variant="detail" />
+                  </div>
                   <div style={styles.loreLine}>
                     "{selectedRecipe.lore}"
                   </div>
-                  <div style={{ fontSize: 11, color: 'rgba(220,220,240,0.85)', marginTop: 10, lineHeight: 1.55 }}>
-                    {resultDef.description}
+                  <div style={{ marginTop: 10 }}>
+                    <CardRulesDigest
+                      card={resultDef}
+                      variant="detail"
+                      labelColor="rgba(200,200,220,0.54)"
+                      textColor="rgba(220,220,240,0.86)"
+                      sectionBackground="rgba(255,255,255,0.03)"
+                      sectionBorder="rgba(255,255,255,0.12)"
+                    />
                   </div>
                 </div>
 
@@ -214,23 +269,24 @@ export default function Infinitude({ onClose }: Props) {
 
 function InfiniteCardFace({ def }: { def: CardDefinition }) {
   if (!def) return null;
-  const descMetrics = getAdaptiveDescriptionMetrics('hand', def.description);
 
   return (
     <div
+      className={`holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`}
+      title={getCardPreviewLines(def, 4).join('\n')}
       style={{
-        width: 160,
-        height: 230,
+        width: 'clamp(148px, 10vw, 164px)',
+        height: 'clamp(212px, 14.2vw, 232px)',
         borderRadius: 12,
-        border: `1px solid rgba(200,210,255,0.35)`,
-        boxShadow: `0 0 32px rgba(180,190,255,0.22), ${cardFacePalette.shadow}`,
+        border: `1px solid rgba(214,226,255,0.58)`,
+        boxShadow: `0 0 36px rgba(188,202,255,0.34), ${cardFacePalette.shadow}`,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        ...getCardFaceBackgroundStyle(def, 'normal'),
+        ...getCardFaceBackgroundStyle(def, 'holo'),
       }}
     >
-      <div style={getCardNameRibbonStyle('hand')}>
+      <div style={getCardNameRibbonStyle('grid')}>
         <div style={{ fontSize: previewFaceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
           {def.type} · {def.element} · Infinite
         </div>
@@ -239,24 +295,24 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
         </div>
       </div>
 
-      <div style={getCardRulesPanelStyle('hand')}>
-        <div style={{ fontSize: 8, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
+      <div style={{ ...getCardRulesPanelStyle('grid'), maxHeight: '31%' }}>
+        <div style={{ fontSize: 7, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 3 }}>
           ✦ Infinite ✦
         </div>
-        <div
-          style={{
-            fontSize: descMetrics.fontSize,
-            color: cardFacePalette.textSoft,
-            lineHeight: descMetrics.lineHeight,
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: 3,
-            overflow: 'hidden',
-            textAlign: 'center',
-          }}
-        >
-          {def.description}
+        <div style={{ marginBottom: 4 }}>
+          <CardEngineCallout card={def} variant="compact" />
         </div>
+        <CardRulesDigest
+          card={def}
+          variant="preview"
+          maxSections={2}
+          maxLinesPerSection={1}
+          lineClamp={1}
+          labelColor={cardFacePalette.textMuted}
+          textColor={cardFacePalette.textSoft}
+          sectionBackground="transparent"
+          sectionBorder="transparent"
+        />
       </div>
     </div>
   );
@@ -337,6 +393,15 @@ const styles: Record<string, React.CSSProperties> = {
     letterSpacing: 2,
     color: 'rgba(180,190,255,0.45)',
     padding: '4px 14px 8px',
+  },
+  setHeading: {
+    marginTop: 10,
+    marginBottom: 4,
+    padding: '0 14px',
+    fontSize: 9,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    color: 'rgba(220,224,255,0.82)',
   },
   recipeRow: {
     width: '100%',

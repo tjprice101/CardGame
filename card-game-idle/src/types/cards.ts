@@ -1,20 +1,19 @@
 import type { Element } from './elements';
-import type { CardEffect, ChaosPassiveEffect, ChaosRitualEffect } from './effects';
+import type { CardEffect, CherubimPassiveEffect } from './effects';
 
-export type CardType = 'Seeker' | 'Chaos' | 'Seraphim' | 'Angel';
+export type CardType = 'Ophanim' | 'Cherubim' | 'Seraphim' | 'Angel';
 export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal' | 'Infinite';
 export type CardFinish = 'normal' | 'holo';
+export type PrismaticDepth = 1 | 2 | 3 | 4 | 5;
+export type BurningGardenPhase = 'Bloom' | 'Burn';
 
 export const SERAPHIM_BONUS_TYPES = [
-  // Neutrality bonus types
   'oblivion_per_card',
   'chain_bonus',
-  'seeker_bonus',
-  'chaos_extra_plays',
-  'chaos_expire_bonus',
-  // Pyroabyss bonus types
+  'ophanim_bonus',
+  'cherubim_extra_plays',
+  'cherubim_expire_bonus',
   'ember_per_card',
-  // Legacy Light bonus types (no-op until Light rework)
   'power_amplifier',
   'score_per_second',
   'resource_generation',
@@ -23,10 +22,8 @@ export const SERAPHIM_BONUS_TYPES = [
 export type SeraphimBonusType = typeof SERAPHIM_BONUS_TYPES[number];
 export type AngelBonusType = SeraphimBonusType | 'power_per_seraphim' | 'oblivion_per_card' | 'oblivion_per_seraphim';
 
-// ── Angel (summoned from extra deck, occupies a front board slot) ─────────────
-
 export interface AngelBoardStats {
-  basePower: number;       // legacy field; used for on-board Oblivion bonus
+  basePower: number;
   bonusType: AngelBonusType;
   bonusValue: number;
 }
@@ -38,25 +35,67 @@ export interface AngelActivatedAbility {
   readonly effects: CardEffect[];
 }
 
+export type AttackCostType =
+  | 'discard_from_hand'
+  | 'sacrifice_seraphim'
+  | 'sacrifice_angel'
+  | 'spend_embers'
+  | 'spend_radiance'
+  | 'spend_trail'
+  | 'spend_strain';
+
+export interface AttackCost {
+  readonly type: AttackCostType;
+  readonly value: number;
+}
+
+export type SeraphimAttackLabel = 'Synergized' | 'Unsynergized';
+export type AngelAttackLabel = 'Primary' | 'Exalted';
+
+export interface AttackDefinition<TLabel extends string = string> {
+  readonly id: string;
+  readonly label: TLabel;
+  readonly name: string;
+  readonly description: string;
+  readonly baseOblivion: number;
+  readonly cooldownCards: number;
+  readonly chainScaling: number;
+  readonly costs?: AttackCost[];
+  readonly requiresAngelOnBoard?: boolean;
+  readonly tags?: string[];
+}
+
+export interface SeraphimAttackSet {
+  readonly unsynergized: AttackDefinition<SeraphimAttackLabel>;
+  readonly synergized: AttackDefinition<SeraphimAttackLabel>;
+}
+
+export interface AngelAttackSet {
+  readonly primary: AttackDefinition<AngelAttackLabel>;
+  readonly exalted: AttackDefinition<AngelAttackLabel>;
+}
+
+export type SummonCondition =
+  | { type: 'cherubim_active_gte'; value: number }
+  | { type: 'seraphim_on_board_gte'; value: number };
+
 export interface AngelDefinition {
   readonly definitionId: string;
   readonly type: 'Angel';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
-  readonly summonCost: string[];              // front-row definitionIds required on board (dupes = multiple)
-  readonly extraSummonConditions?: SummonCondition[];  // additional board conditions beyond Seraphim cost
-  readonly onSummonEffects: CardEffect[];     // fires immediately on summoning
+  readonly summonCost: string[];
+  readonly extraSummonConditions?: SummonCondition[];
+  readonly onSummonEffects: CardEffect[];
   readonly activatedAbility: AngelActivatedAbility;
+  readonly attacks?: AngelAttackSet;
+  readonly attackTags?: string[];
   readonly baseStats: AngelBoardStats;
 }
-
-// Additional summon conditions beyond seraphimIds in summonCost
-export type SummonCondition =
-  | { type: 'chaos_active_gte'; value: number }   // N or more Chaos cards in backSlots
-  | { type: 'seraphim_on_board_gte'; value: number }; // N or more Seraphim on frontSlots (total)
 
 export interface AngelInstance {
   readonly instanceId: string;
@@ -65,13 +104,19 @@ export interface AngelInstance {
   readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
+  prismaticDepth?: PrismaticDepth;
+  spectrumTokens?: number;
+  burningGardenPhase?: BurningGardenPhase;
+  chromaticCounters?: number;
+  chromaticSources?: string[];
+  burnTurnsRemaining?: number;
+  isEcho?: boolean;
   level: number;
   cardsPlayedSinceSummon: number;
   activated: boolean;
+  attackCooldowns: Record<string, number>;
   boardSlot: 0 | 1 | 2 | 3 | 4 | null;
 }
-
-// ── Seraphim stats (passive bonuses when in synergy) ─────────────────────────
 
 export interface SeraphimStats {
   bonusType: SeraphimBonusType;
@@ -79,69 +124,18 @@ export interface SeraphimStats {
   synergyRequirement: Element;
 }
 
-// ── Chaos Definition (placed in back row, expires after N card plays) ─────────
-
-export interface ChaosDefinition {
-  readonly definitionId: string;
-  readonly type: 'Chaos';
-  readonly element: Element;
-  readonly rarity: CardRarity;
-  readonly name: string;
-  readonly description: string;
-  readonly artKey: string;
-  readonly maxDurability: number;   // cards-played until auto-expiry
-  readonly effects: ChaosPassiveEffect[];  // passive bonuses applied to adjacent frontSlots Seraphim
-  readonly enthalpy?: ChaosRitualEffect[]; // on-play: fires immediately when placed on the back row
-  readonly entropy?: ChaosRitualEffect[];  // right-click in hand
-}
-
-export interface ChaosInstance {
-  instanceId: string;
-  definitionId: string;
-  readonly type: 'Chaos';
-  readonly element: Element;
-  readonly rarity: CardRarity;
-  readonly finish: CardFinish;
-  readonly level: 1;
-  durability: number;               // remaining plays before expiry
-  readonly maxDurability: number;
-  backSlot: 0 | 1 | 2 | 3 | null;
-}
-
-// ── Seeker Definition (hand-played utility cards, sent to discard after play) ──
-
-export interface SeekerDefinition {
-  readonly definitionId: string;
-  readonly type: 'Seeker';
-  readonly element: Element;
-  readonly rarity: CardRarity;
-  readonly name: string;
-  readonly description: string;
-  readonly artKey: string;
-  readonly effects: CardEffect[];
-}
-
-export interface SeekerInstance {
-  readonly instanceId: string;
-  readonly definitionId: string;
-  readonly type: 'Seeker';
-  readonly element: Element;
-  readonly rarity: CardRarity;
-  readonly finish: CardFinish;
-  level: number;
-}
-
-// ── Seraphim Definition ───────────────────────────────────────────────────────
-
 export interface SeraphimDefinition {
   readonly definitionId: string;
   readonly type: 'Seraphim';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
   readonly baseStats: SeraphimStats;
+  readonly attacks?: SeraphimAttackSet;
+  readonly attackTags?: string[];
   readonly onPlayEffects: CardEffect[];
 }
 
@@ -152,11 +146,86 @@ export interface SeraphimInstance {
   readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
+  prismaticDepth?: PrismaticDepth;
+  spectrumTokens?: number;
+  burningGardenPhase?: BurningGardenPhase;
+  chromaticCounters?: number;
+  chromaticSources?: string[];
+  burnTurnsRemaining?: number;
+  isEcho?: boolean;
   level: number;
   isActive: boolean;
+  attackCooldowns: Record<string, number>;
   boardSlot: 0 | 1 | 2 | 3 | 4 | null;
 }
 
-export type CardDefinition = AngelDefinition | SeekerDefinition | ChaosDefinition | SeraphimDefinition;
+export interface CherubimDiscardCondition {
+  readonly type: 'hand_size_lte' | 'chain_lte' | 'oblivion_lte' | 'embers_lte' | 'radiance_lte' | 'cards_played_gte' | 'seraphim_count_lte' | 'trail_lte' | 'strain_gte';
+  readonly value: number;
+  readonly description: string;
+}
 
-export type DeckCardInstance = SeekerInstance | SeraphimInstance;
+export interface CherubimDefinition {
+  readonly definitionId: string;
+  readonly type: 'Cherubim';
+  readonly element: Element;
+  readonly rarity: CardRarity;
+  readonly prismaticDepth?: PrismaticDepth;
+  readonly name: string;
+  readonly description: string;
+  readonly artKey: string;
+  readonly effects: CherubimPassiveEffect[];
+  readonly onPlayEffects: CardEffect[];
+  readonly maxDurability?: number;
+  readonly discardCondition?: CherubimDiscardCondition;
+}
+
+export interface CherubimInstance {
+  instanceId: string;
+  definitionId: string;
+  readonly type: 'Cherubim';
+  readonly element: Element;
+  readonly rarity: CardRarity;
+  readonly finish: CardFinish;
+  prismaticDepth?: PrismaticDepth;
+  spectrumTokens?: number;
+  burningGardenPhase?: BurningGardenPhase;
+  chromaticCounters?: number;
+  chromaticSources?: string[];
+  burnTurnsRemaining?: number;
+  isEcho?: boolean;
+  readonly level: 1;
+  backSlot: 0 | 1 | 2 | 3 | null;
+  durability?: number;
+  readonly maxDurability?: number;
+}
+
+export interface OphanimDefinition {
+  readonly definitionId: string;
+  readonly type: 'Ophanim';
+  readonly element: Element;
+  readonly rarity: CardRarity;
+  readonly prismaticDepth?: PrismaticDepth;
+  readonly name: string;
+  readonly description: string;
+  readonly artKey: string;
+  readonly effects: CardEffect[];
+}
+
+export interface OphanimInstance {
+  readonly instanceId: string;
+  readonly definitionId: string;
+  readonly type: 'Ophanim';
+  readonly element: Element;
+  readonly rarity: CardRarity;
+  readonly finish: CardFinish;
+  burningGardenPhase?: BurningGardenPhase;
+  chromaticCounters?: number;
+  chromaticSources?: string[];
+  burnTurnsRemaining?: number;
+  isEcho?: boolean;
+  level: number;
+}
+
+export type CardDefinition = AngelDefinition | OphanimDefinition | CherubimDefinition | SeraphimDefinition;
+export type DeckCardInstance = OphanimInstance | SeraphimInstance | CherubimInstance;

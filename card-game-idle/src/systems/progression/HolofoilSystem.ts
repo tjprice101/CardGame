@@ -17,7 +17,7 @@ export function getCardFinishLabel(finish: CardFinish): string {
 }
 
 export function isHoloOnlyCard(definition: CardDefinition): boolean {
-  return definition.rarity === 'Eternal';
+  return definition.rarity === 'Eternal' || definition.rarity === 'Infinite';
 }
 
 export function getHoloOwnedCopies(

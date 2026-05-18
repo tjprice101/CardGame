@@ -14,7 +14,11 @@ export class GameEngine {
 
   async init(canvas: HTMLCanvasElement): Promise<void> {
     this.saveManager = new SaveManager(
-      () => useStore.getState() as unknown as GameState
+      () => useStore.getState() as unknown as GameState,
+      undefined,
+      (savedAt) => {
+        useStore.setState({ lastSavedAt: savedAt });
+      },
     );
 
     const saved = this.saveManager.load();
@@ -80,6 +84,7 @@ export class GameEngine {
     this.stopLoop();
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
     this.saveManager.stopAutoSave();
+    this.boardEffects?.destroy();
     this.renderer?.destroy();
     eventBus.clear();
   }

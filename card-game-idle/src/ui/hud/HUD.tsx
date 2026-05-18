@@ -6,10 +6,26 @@ import EmberDisplay from './EmberDisplay';
 import TrailDisplay from './TrailDisplay';
 import StrainDisplay from './StrainDisplay';
 import DeckStatus from './DeckStatus';
+import SetEngineDisplay from './SetEngineDisplay';
 import TurnControls from './TurnControls';
 import BoardDisplay from './BoardDisplay';
 import PendingEffectModal from './PendingEffectModal';
 import AngelCompartment from './AngelCompartment';
+
+const styles: Record<string, React.CSSProperties> = {
+  rightRail: {
+    position: 'absolute',
+    top: 120,
+    right: 'calc(var(--angel-drawer-hand-offset, 34px) + 16px)',
+    width: 'min(356px, calc(100vw - var(--angel-drawer-hand-offset, 34px) - 32px))',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+    alignItems: 'stretch',
+    pointerEvents: 'none',
+    zIndex: 14,
+  },
+};
 
 export default function HUD() {
   return (
@@ -21,8 +37,11 @@ export default function HUD() {
       <EmberDisplay />
       <TrailDisplay />
       <StrainDisplay />
-      <DeckStatus />
-      <TurnControls />
+      <div style={styles.rightRail}>
+        <DeckStatus />
+        <TurnControls />
+        <SetEngineDisplay />
+      </div>
       <HandDisplay />
       <AngelCompartment />
       <PendingEffectModal />

@@ -6,10 +6,13 @@ export const ELEMENT_SET_NAMES: Record<string, string> = {
   Eternal: 'Eternal',
   Neutrality: 'Neutrality',
   Light: 'Heavenly Light',
+  Dark: 'Black Glass Inferno',
   Thornbound: 'Thornbound Plains',
   Mechanical: 'Mechanical Dreams',
+  SnowboundVoltage: 'Snowbound Voltage',
   Prismatic: 'Prismatic Accord',
-  Dark: 'Dark',
+  GlassAbsolute: 'Glass Absolute',
+  BlazingGarden: 'The Blazing Garden',
   Fire: 'Pyroabyss',
   Water: 'Water',
   Earth: 'Earth',
@@ -22,14 +25,26 @@ export const ELEMENT_COLORS: Record<string, string> = {
   Light: '#FFD700',
   Thornbound: '#b63030',
   Mechanical: '#f0a018',
+  SnowboundVoltage: '#87ceeb',
   Prismatic: '#7ecfcf',
-  Dark: '#9b59b6',
+  GlassAbsolute: '#cfefff',
+  BlazingGarden: '#ff8d3a',
+  Dark: '#8d7f8f',
   Fire: '#b04aff',
   Water: '#3498db',
   Earth: '#8b6914',
   Wind: '#2ecc71',
 };
 
-export function getCardCategoryKey(card: Pick<CardDefinition, 'element' | 'rarity'>): string {
-  return card.rarity === 'Eternal' ? 'Eternal' : card.element;
+export function isSnowboundCard(card: Pick<CardDefinition, 'definitionId'>): boolean {
+  return card.definitionId.startsWith('sv-');
+}
+
+export function getCardCategoryKey(card: Pick<CardDefinition, 'element' | 'rarity' | 'definitionId' | any>): string {
+  // Snowbound Voltage cards are a distinct set across all rarities
+  if (card.definitionId && isSnowboundCard(card)) {
+    return 'SnowboundVoltage';
+  }
+  // Eternal cards now show under their element instead of a generic "Eternal" category
+  return card.element;
 }

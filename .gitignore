@@ -1,5 +1,6 @@
 card-game-idle/node_modules/
 card-game-idle/dist/
+card-game-idle/release/
 card-game-idle/tsconfig.tsbuildinfo
 *.log
 Thumbs.db

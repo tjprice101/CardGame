@@ -1,26 +1,34 @@
 import type { BoardState } from '@/types/game';
-import type { AngelInstance, SeraphimInstance } from '@/types/cards';
+import type { SeraphimInstance } from '@/types/cards';
+import { CardRegistry } from '@/cards/CardRegistry';
+
+function hasMatchingAngel(
+  board: BoardState,
+  requiredElement: SeraphimInstance['element'],
+): boolean {
+  return board.frontSlots.some(slot => (
+    slot !== null
+    && slot.type === 'Angel'
+    && slot.element === requiredElement
+  ));
+}
 
 export class SynergySystem {
   static computeActiveSlots(board: BoardState): BoardState['frontSlots'] {
-    const angels = board.frontSlots.filter((s): s is AngelInstance => s?.type === 'Angel');
-    const universalSynergy = angels.some(a => a.element === 'Neutrality');
-
-    return board.frontSlots.map(slot => {
+    return board.frontSlots.map((slot) => {
       if (!slot || slot.type !== 'Seraphim') return slot;
-      const isActive = universalSynergy || angels.some(a => a.element === slot.element);
-      return { ...slot, isActive };
+      const def = CardRegistry.get(slot.definitionId);
+      const requirement = def?.type === 'Seraphim' ? def.baseStats.synergyRequirement : slot.element;
+      return {
+        ...slot,
+        isActive: hasMatchingAngel(board, requirement),
+      };
     }) as BoardState['frontSlots'];
   }
 
   static countActiveSynergies(board: BoardState): number {
-    const angels = board.frontSlots.filter((s): s is AngelInstance => s?.type === 'Angel');
-    if (angels.length === 0) return 0;
-    const universalSynergy = angels.some(a => a.element === 'Neutrality');
     return board.frontSlots.filter(
-      (s): s is SeraphimInstance =>
-        s?.type === 'Seraphim' &&
-        (universalSynergy || angels.some(a => a.element === s.element))
+      (s): s is SeraphimInstance => s?.type === 'Seraphim' && s.isActive
     ).length;
   }
 }

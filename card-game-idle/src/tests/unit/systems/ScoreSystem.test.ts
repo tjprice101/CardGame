@@ -1,181 +1,294 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { SynergySystem } from '@/systems/cards/SynergySystem';
 import type { BoardState } from '@/types/game';
-import type { AngelInstance, SeraphimInstance, CardDefinition } from '@/types/cards';
+import type { AngelInstance, CardDefinition, CherubimInstance, SeraphimInstance } from '@/types/cards';
 
-// Minimal card definitions for testing
 const defs: CardDefinition[] = [
   {
-    definitionId: 'angel-light-1',
+    definitionId: 'angel-light-card-bonus',
     type: 'Angel',
     element: 'Light',
     rarity: 'Common',
-    name: 'Seraphiel Embermane',
+    name: 'Card Bonus Angel',
     description: '',
-    artKey: 'angel_light_1',
+    artKey: 'angel_light_card_bonus',
     summonCost: [],
     onSummonEffects: [],
-    baseStats: { basePower: 10, bonusType: 'power_amplifier', bonusValue: 0 },
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 11 },
   },
   {
-    definitionId: 'ser-light-power',
+    definitionId: 'angel-light-seraph-bonus',
+    type: 'Angel',
+    element: 'Light',
+    rarity: 'Common',
+    name: 'Seraph Bonus Angel',
+    description: '',
+    artKey: 'angel_light_seraph_bonus',
+    summonCost: [],
+    onSummonEffects: [],
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_seraphim', bonusValue: 7 },
+  },
+  {
+    definitionId: 'ser-light-oblivion',
     type: 'Seraphim',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Dawnfire Seraphim',
+    name: 'Light Oblivion Seraph',
     description: '',
-    artKey: 'ser_light_power',
-    baseStats: { bonusType: 'power_amplifier', bonusValue: 20, synergyRequirement: 'Light' },
+    artKey: 'ser_light_oblivion',
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 8, synergyRequirement: 'Light' },
     onPlayEffects: [],
   },
   {
-    definitionId: 'ser-dark-power',
+    definitionId: 'ser-light-ophanim',
     type: 'Seraphim',
-    element: 'Dark',
+    element: 'Light',
     rarity: 'Rare',
-    name: 'Dusk Seraphim',
+    name: 'Light Ophanim Seraph',
     description: '',
-    artKey: 'ser_dark_power',
-    baseStats: { bonusType: 'power_amplifier', bonusValue: 30, synergyRequirement: 'Dark' },
+    artKey: 'ser_light_ophanim',
+    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 15, synergyRequirement: 'Light' },
+    onPlayEffects: [],
+  },
+  {
+    definitionId: 'ser-light-cherubim',
+    type: 'Seraphim',
+    element: 'Light',
+    rarity: 'Rare',
+    name: 'Light Cherubim Seraph',
+    description: '',
+    artKey: 'ser_light_cherubim',
+    baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 2, synergyRequirement: 'Light' },
+    onPlayEffects: [],
+  },
+  {
+    definitionId: 'ser-fire-ember',
+    type: 'Seraphim',
+    element: 'Fire',
+    rarity: 'Rare',
+    name: 'Fire Ember Seraph',
+    description: '',
+    artKey: 'ser_fire_ember',
+    baseStats: { bonusType: 'ember_per_card', bonusValue: 3, synergyRequirement: 'Fire' },
     onPlayEffects: [],
   },
 ];
 
-const defMap = new Map(defs.map(d => [d.definitionId, d]));
+const defMap = new Map(defs.map(def => [def.definitionId, def]));
 ScoreSystem.getDefinition = (id: string) => defMap.get(id);
 
-function makeAngel(): AngelInstance {
-  return { instanceId: 'a1', definitionId: 'angel-light-1', type: 'Angel', element: 'Light', rarity: 'Common', level: 1, boardSlot: 0 };
+function makeBoard(overrides: Partial<BoardState> = {}): BoardState {
+  return {
+    frontSlots: [null, null, null, null, null],
+    backSlots: [null, null, null, null],
+    activeBoardEffects: [],
+    ...overrides,
+  };
 }
 
-function makeSeraphim(defId: string, slot: 0 | 1 | 2 | 3 | 4, element: 'Light' | 'Dark', active: boolean): SeraphimInstance {
-  return { instanceId: `ser${slot}`, definitionId: defId, type: 'Seraphim', element, rarity: 'Rare', level: 1, isActive: active, boardSlot: slot };
+function makeAngel(
+  definitionId: string,
+  slot: 0 | 1 | 2 | 3 | 4,
+  element: 'Light' | 'Fire' = 'Light',
+): AngelInstance {
+  return {
+    instanceId: `angel_${slot}_${definitionId}`,
+    definitionId,
+    type: 'Angel',
+    element,
+    rarity: 'Common',
+    finish: 'normal',
+    level: 1,
+    boardSlot: slot,
+    cardsPlayedSinceSummon: 0,
+    activated: false,
+  };
 }
 
-const emptyBoard: BoardState = {
-  slots: [null, null, null, null, null],
-  activeBoardEffects: [],
-};
+function makeSeraphim(
+  definitionId: string,
+  slot: 0 | 1 | 2 | 3 | 4,
+  element: 'Light' | 'Fire' | 'Dark',
+  isActive: boolean,
+): SeraphimInstance {
+  return {
+    instanceId: `ser_${slot}_${definitionId}`,
+    definitionId,
+    type: 'Seraphim',
+    element,
+    rarity: 'Rare',
+    finish: 'normal',
+    level: 1,
+    isActive,
+    boardSlot: slot,
+  };
+}
+
+function makeCherubim(slot: 0 | 1 | 2 | 3): CherubimInstance {
+  return {
+    instanceId: `cher_${slot}`,
+    definitionId: 'cherubim-test',
+    type: 'Cherubim',
+    element: 'Light',
+    rarity: 'Common',
+    finish: 'normal',
+    level: 1,
+    boardSlot: slot,
+    durability: 2,
+  };
+}
 
 describe('ScoreSystem', () => {
-  it('returns zero stats when no angel is placed', () => {
-    const stats = ScoreSystem.compute(emptyBoard);
-    expect(stats.scorePerTick).toBe(0);
-    expect(stats.effectivePower).toBe(0);
-    expect(stats.tickIntervalMs).toBe(1000);
+  it('returns zeroed stats for an empty board', () => {
+    expect(ScoreSystem.compute(makeBoard())).toEqual({
+      activeSynergies: 0,
+      oblivionPerCardBonus: 0,
+      ophanimOblivionBonus: 0,
+      cherubimExtraPlays: 0,
+      embersPerCardBonus: 0,
+    });
   });
 
-  it('computes base power from angel definition', () => {
-    const board: BoardState = { ...emptyBoard, slots: [makeAngel(), null, null, null, null] };
-    const stats = ScoreSystem.compute(board);
-    expect(stats.effectivePower).toBe(10);
-    expect(stats.scorePerTick).toBe(10);
-  });
+  it('adds active seraphim per-card oblivion bonuses', () => {
+    const board = makeBoard({
+      frontSlots: [
+        makeAngel('angel-light-card-bonus', 0),
+        makeSeraphim('ser-light-oblivion', 1, 'Light', true),
+        null,
+        null,
+        null,
+      ],
+    });
 
-  it('applies flat power bonus additively from activeBoardEffects', () => {
-    const board: BoardState = {
-      slots: [makeAngel(), null, null, null, null],
-      activeBoardEffects: [{ type: 'power_flat', value: 5 }, { type: 'power_flat', value: 5 }],
-    };
-    const stats = ScoreSystem.compute(board);
-    expect(stats.effectivePower).toBe(20); // 10 + 5 + 5
-  });
-
-  it('applies percent power bonus after flat', () => {
-    const board: BoardState = {
-      slots: [makeAngel(), null, null, null, null],
-      activeBoardEffects: [{ type: 'power_percent', value: 50 }],
-    };
-    const stats = ScoreSystem.compute(board);
-    expect(stats.effectivePower).toBe(15); // 10 * 1.5
-  });
-
-  it('applies score multiplier multiplicatively', () => {
-    const board: BoardState = {
-      slots: [makeAngel(), null, null, null, null],
-      activeBoardEffects: [{ type: 'score_multiplier', value: 100 }],
-    };
-    const stats = ScoreSystem.compute(board);
-    expect(stats.scorePerTick).toBeCloseTo(20); // 10 * (1 + 100/100)
-  });
-
-  it('counts active synergies from matching seraphims', () => {
-    const board: BoardState = {
-      slots: [makeAngel(), makeSeraphim('ser-light-power', 1, 'Light', true), null, null, null],
-      activeBoardEffects: [],
-    };
     const stats = ScoreSystem.compute(board);
     expect(stats.activeSynergies).toBe(1);
+    expect(stats.oblivionPerCardBonus).toBe(19);
   });
 
-  it('does not count non-matching seraphim as synergy', () => {
-    const board: BoardState = {
-      slots: [makeAngel(), makeSeraphim('ser-dark-power', 1, 'Dark', false), null, null, null],
-      activeBoardEffects: [],
-    };
+  it('adds ophanim bonus, cherubim extra plays, and ember gain from active seraphim', () => {
+    const board = makeBoard({
+      frontSlots: [
+        makeAngel('angel-light-card-bonus', 0),
+        makeSeraphim('ser-light-ophanim', 1, 'Light', true),
+        makeSeraphim('ser-light-cherubim', 2, 'Light', true),
+        null,
+        null,
+      ],
+      backSlots: [makeCherubim(0), null, null, null],
+    });
+
+    const fireBoard = makeBoard({
+      frontSlots: [
+        makeAngel('angel-light-card-bonus', 0, 'Fire'),
+        makeSeraphim('ser-fire-ember', 1, 'Fire', true),
+        null,
+        null,
+        null,
+      ],
+    });
+
     const stats = ScoreSystem.compute(board);
-    expect(stats.activeSynergies).toBe(0);
+    expect(stats.ophanimOblivionBonus).toBe(15);
+    expect(stats.cherubimExtraPlays).toBe(2);
+
+    const fireStats = ScoreSystem.compute(fireBoard);
+    expect(fireStats.embersPerCardBonus).toBe(3);
   });
 
-  it('applies seraphim power_amplifier only when active', () => {
-    const boardActive: BoardState = {
-      slots: [makeAngel(), makeSeraphim('ser-light-power', 1, 'Light', true), null, null, null],
-      activeBoardEffects: [],
-    };
-    const boardInactive: BoardState = {
-      slots: [makeAngel(), makeSeraphim('ser-dark-power', 1, 'Dark', false), null, null, null],
-      activeBoardEffects: [],
-    };
-    const activeStats = ScoreSystem.compute(boardActive);
-    const inactiveStats = ScoreSystem.compute(boardInactive);
-    expect(activeStats.effectivePower).toBeGreaterThan(inactiveStats.effectivePower);
-    expect(activeStats.effectivePower).toBeCloseTo(12); // 10 * 1.2
+  it('scales angel per-seraphim bonuses by active synergy count', () => {
+    const board = makeBoard({
+      frontSlots: [
+        makeAngel('angel-light-seraph-bonus', 0),
+        makeSeraphim('ser-light-oblivion', 1, 'Light', true),
+        makeSeraphim('ser-light-ophanim', 2, 'Light', true),
+        null,
+        null,
+      ],
+    });
+
+    const stats = ScoreSystem.compute(board);
+    expect(stats.activeSynergies).toBe(2);
+    expect(stats.oblivionPerCardBonus).toBe(14 + 8);
+  });
+
+  it('counts prismatic chord clusters as additional oblivion-per-card bonus', () => {
+    const prismaticBoard = makeBoard({
+      frontSlots: [
+        {
+          ...makeSeraphim('ser-light-oblivion', 0, 'Light', true),
+          prismaticDepth: 1,
+          spectrumTokens: 1,
+        },
+        {
+          ...makeAngel('angel-light-card-bonus', 1),
+          prismaticDepth: 2,
+          spectrumTokens: 1,
+        },
+        {
+          ...makeSeraphim('ser-light-ophanim', 2, 'Light', true),
+          prismaticDepth: 3,
+          spectrumTokens: 1,
+        },
+        null,
+        null,
+      ],
+    });
+
+    const stats = ScoreSystem.compute(prismaticBoard);
+    expect(stats.oblivionPerCardBonus).toBeGreaterThanOrEqual(29);
   });
 });
 
 describe('SynergySystem', () => {
-  it('marks seraphims inactive when no angel', () => {
-    const board: BoardState = {
-      slots: [makeSeraphim('ser-light-power', 0, 'Light', true), null, null, null, null],
-      activeBoardEffects: [],
-    };
+  it('marks seraphims inactive when no angel is present', () => {
+    const board = makeBoard({
+      frontSlots: [makeSeraphim('ser-light-oblivion', 0, 'Light', true), null, null, null, null],
+    });
+
     const result = SynergySystem.computeActiveSlots(board);
-    const ser = result[0];
-    expect(ser?.type === 'Seraphim' ? ser.isActive : true).toBe(false);
+    const seraphim = result[0];
+    expect(seraphim?.type === 'Seraphim' ? seraphim.isActive : true).toBe(false);
   });
 
-  it('marks seraphim active when element matches angel', () => {
-    const board: BoardState = {
-      slots: [makeAngel(), makeSeraphim('ser-light-power', 1, 'Light', false), null, null, null],
-      activeBoardEffects: [],
-    };
-    const result = SynergySystem.computeActiveSlots(board);
-    const ser = result[1];
-    expect(ser?.type === 'Seraphim' ? ser.isActive : false).toBe(true);
-  });
-
-  it('marks seraphim inactive when element does not match angel', () => {
-    const board: BoardState = {
-      slots: [makeAngel(), makeSeraphim('ser-dark-power', 1, 'Dark', false), null, null, null],
-      activeBoardEffects: [],
-    };
-    const result = SynergySystem.computeActiveSlots(board);
-    const ser = result[1];
-    expect(ser?.type === 'Seraphim' ? ser.isActive : true).toBe(false);
-  });
-
-  it('counts active synergies correctly', () => {
-    const board: BoardState = {
-      slots: [
-        makeAngel(),
-        makeSeraphim('ser-light-power', 1, 'Light', true),
-        makeSeraphim('ser-light-power', 2, 'Light', true),
-        makeSeraphim('ser-dark-power', 3, 'Dark', false),
+  it('marks seraphims active only when an angel of the matching element exists', () => {
+    const matchBoard = makeBoard({
+      frontSlots: [
+        makeAngel('angel-light-card-bonus', 0),
+        makeSeraphim('ser-light-oblivion', 1, 'Light', false),
+        null,
+        null,
         null,
       ],
-      activeBoardEffects: [],
-    };
+    });
+    const mismatchBoard = makeBoard({
+      frontSlots: [
+        makeAngel('angel-light-card-bonus', 0),
+        makeSeraphim('ser-dark-test', 1, 'Dark', false),
+        null,
+        null,
+        null,
+      ],
+    });
+
+    const matched = SynergySystem.computeActiveSlots(matchBoard);
+    const mismatched = SynergySystem.computeActiveSlots(mismatchBoard);
+
+    expect(matched[1]?.type === 'Seraphim' ? matched[1].isActive : false).toBe(true);
+    expect(mismatched[1]?.type === 'Seraphim' ? mismatched[1].isActive : true).toBe(false);
+  });
+
+  it('counts active synergies from current front slots', () => {
+    const board = makeBoard({
+      frontSlots: [
+        makeAngel('angel-light-card-bonus', 0),
+        makeSeraphim('ser-light-oblivion', 1, 'Light', true),
+        makeSeraphim('ser-light-ophanim', 2, 'Light', true),
+        makeSeraphim('ser-dark-test', 3, 'Dark', false),
+        null,
+      ],
+    });
+
     expect(SynergySystem.countActiveSynergies(board)).toBe(2);
   });
 });
