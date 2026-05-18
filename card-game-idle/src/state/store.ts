@@ -1384,7 +1384,7 @@ function applyLightPlayState(
     s.turn.lightCadenceNotes = [...(s.turn.lightCadenceNotes ?? []), note].slice(-6);
     s.turn.lightDistinctNotes = appendDistinct(s.turn.lightDistinctNotes, note, 4);
     s.turn.lightResonance = Math.min(6, (s.turn.lightResonance ?? 0) + 1 + (actionClass === 'multiplier' ? 1 : 0));
-    s.turn.chainFloor = Math.max(s.turn.chainFloor, s.turn.chainMultiplier + Math.min(0.35, (s.turn.lightResonance ?? 0) * 0.05));
+    s.turn.chainFloor = Math.max(s.turn.chainFloor, s.turn.chainMultiplier + Math.min(1.0, (s.turn.lightResonance ?? 0) * 0.167));
   }
 
   if (def.rarity === 'Eternal') {

@@ -763,7 +763,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Resonance',
-        body: 'Resonance is the core power meter for Heavenly Light (max 6). Every new note added to the cadence increases Resonance by +1. Playing a Multiplier-class card (one that modifies chain or amplifies it) adds +2 Resonance instead.\n\nHowever, if you play the same note type as the one you just played (a repeated note), Resonance drops by −1 and the cadence resets back to just that one note.\n\nResonance directly amplifies chain: the engine adds up to +0.35 to your current chain multiplier (from Resonance × 0.05, capped at 0.35), and locks in that value as the minimum chain for the rest of the turn. High Resonance gives you a guaranteed chain minimum.',
+        body: 'Resonance is the core power meter for Heavenly Light (max 6). Every new note added to the cadence increases Resonance by +1. Playing a Multiplier-class card (one that modifies chain or amplifies it) adds +2 Resonance instead.\n\nHowever, if you play the same note type as the one you just played (a repeated note), Resonance drops by −1 and the cadence resets back to just that one note.\n\nResonance directly amplifies chain: the engine adds up to +1.0 to your current chain multiplier (from Resonance × 0.167, capped at 1.0), and locks in that value as the minimum chain for the rest of the turn. High Resonance gives you a guaranteed chain minimum.',
       },
       {
         heading: 'Chorus Anchors',

@@ -284,12 +284,22 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
   }
 
   // Secondary cost creates sought-after uniqueness between Angels.
+  const archetype2Cost: AttackCost = (() => {
+    const v = Math.max(1, Math.floor(costValue / 2));
+    switch (def.element) {
+      case 'Light':      return { type: 'spend_radiance' as const, value: v };
+      case 'Fire':       return { type: 'spend_embers' as const, value: v };
+      case 'Thornbound': return { type: 'spend_trail' as const, value: Math.max(1, Math.floor(v / 2)) };
+      case 'Mechanical': return { type: 'spend_strain' as const, value: v };
+      default:           return { type: 'discard_from_hand' as const, value: 1 };
+    }
+  })();
   const secondaryCost: AttackCost | null = uniqueArchetype === 0
     ? { type: 'discard_from_hand', value: 1 }
     : uniqueArchetype === 1
       ? { type: 'sacrifice_seraphim', value: 1 }
       : uniqueArchetype === 2
-        ? { type: 'spend_strain', value: Math.max(1, Math.floor(costValue / 2)) }
+        ? archetype2Cost
         : null;
 
   const primaryTunedBase = uniqueArchetype === 1

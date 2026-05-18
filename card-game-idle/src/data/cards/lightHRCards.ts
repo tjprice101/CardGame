@@ -225,10 +225,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Flashfire Judgement',
-    description: 'Gain 1 Radiance',
+    description: 'Gain 3 Radiance; Empower the next card you play',
     artKey: 'hr_light_hastened_judgment',
     effects: [
-      { type: 'radiance_gain', value: 1 },
+      { type: 'radiance_gain', value: 3 },
+      { type: 'multiply_next' },
     ],
   },
   {
@@ -250,10 +251,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Undying Thornwatch',
-    description: 'Gain 2 Radiance',
+    description: 'Gain 3 Radiance; Salvage any 1 card',
     artKey: 'hr_light_undying_vigil',
     effects: [
-      { type: 'radiance_gain', value: 2 },
+      { type: 'radiance_gain', value: 3 },
+      { type: 'salvage_any' },
     ],
   },
 
