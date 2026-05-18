@@ -3522,6 +3522,11 @@ export const useStore = create<Store>()(
             s.deck = result.deck;
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
+            // Handle patience effects (CardEffectExecutor leaves these to the store)
+            for (const effect of def.onPlayEffects) {
+              if (effect.type === 'patience_gain_all') applyPatienceGainAll(s, effect.value);
+              else if (effect.type === 'patience_double_all') applyPatienceDoubleAll(s);
+            }
           }
           s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
           incrementAngelProgress(s.board);
@@ -3606,6 +3611,11 @@ export const useStore = create<Store>()(
         applyAllSetPlayStates(s, def, turnBefore, actionClass);
 
         awardOblivionForCardPlay(s, result.oblivionBonus, true, prePlayChain, def, actionClass);
+        // Handle patience effects (CardEffectExecutor leaves these to the store)
+        for (const effect of getDefinitionOnPlayEffects(def)) {
+          if (effect.type === 'patience_gain_all') applyPatienceGainAll(s, effect.value);
+          else if (effect.type === 'patience_double_all') applyPatienceDoubleAll(s);
+        }
         applyCherubimPassiveEffects(s);
         tickCherubimDurability(s);
 

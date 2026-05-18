@@ -25,13 +25,13 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Oblivion Absolute',
-    description: 'Draw 7 cards; Amplify Chain by +15.0; +6000 Oblivion; Gain 60 of your dominant resource',
+    description: 'Draw 7 cards; Amplify Chain by +15.0; +6000 Oblivion; All active Seraphim gain +12 Patience',
     artKey: 'inf_oblivion_absolute',
     effects: [
       { type: 'draw', value: 7 },
       { type: 'set_chain_floor', value: 15.0 },
       { type: 'oblivion_flat', value: 6000 },
-      { type: 'dominant_stack_gain', value: 60 },
+      { type: 'patience_gain_all', value: 12 },
     ],
   },
   {
@@ -134,7 +134,8 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Genesis Throne',
-    description: 'On play: +3000 Oblivion; Draw 5 cards; Amplify Chain by +12.0. While on board: +1000 Oblivion per card played while active',
+    description: 'On play: +3000 Oblivion; Draw 5 cards; Amplify Chain by +12.0. While on board: +1000 Oblivion per card played. On attack: consumes Patience for +15 Oblivion each; at 8+ Patience, draw 5 cards.',
+
     artKey: 'inf_genesis_throne',
     attacks: {
       unsynergized: {
@@ -162,6 +163,8 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 1000, synergyRequirement: 'Neutrality' },
+    patienceThreshold: 8,
+    patienceThresholdDraw: 5,
     onPlayEffects: [
       { type: 'oblivion_flat', value: 3000 },
       { type: 'draw', value: 5 },
@@ -174,7 +177,8 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Null Apex',
-    description: 'On play: Draw 4 cards; Amplify Chain by +8.0; Gain 50 of your dominant resource; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Draw 4 cards; Amplify Chain by +8.0; All active Seraphim gain +15 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim. On attack: consumes Patience for +15 Oblivion each; at 8+ Patience, draw 5 cards.',
+
     artKey: 'inf_null_apex',
     attacks: {
       unsynergized: {
@@ -202,10 +206,12 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 1500, synergyRequirement: 'Neutrality' },
+    patienceThreshold: 8,
+    patienceThresholdDraw: 5,
     onPlayEffects: [
       { type: 'draw', value: 4 },
       { type: 'set_chain_floor', value: 8.0 },
-      { type: 'dominant_stack_gain', value: 50 },
+      { type: 'patience_gain_all', value: 15 },
       { type: 'oblivion_flat', value: 1500 },
     ],
   },
@@ -423,10 +429,10 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Entropic Crown',
-      description: 'On play: +1200 Oblivion; Draw 4 cards; Amplify Chain by +10.0; +2000 Oblivion. While on board: Adjacent active Seraphim gain +350 Oblivion per card played; Buffs Seraphim and Angel attacks: base +331, chain scaling +0.11, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +258, chain scaling +0.07, cooldown -1, multiplier x1.00',
+      description: 'On play: +3200 Oblivion; Draw 4 cards; Amplify Chain by +10.0. While on board: Adjacent Seraphim gain +8 Patience per card played.',
     artKey: 'inf_entropic_crown',
-      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 350 }],
-      onPlayEffects: [{ type: 'oblivion_flat', value: 1200 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 10.0 }, { type: 'oblivion_flat', value: 2000 }],
+      effects: [{ type: 'cherubim_patience_per_card', value: 8 }],
+      onPlayEffects: [{ type: 'oblivion_flat', value: 3200 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 10.0 }],
   },
   {
     definitionId: 'inf-annihilation-field',
@@ -434,9 +440,9 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Annihilation Field',
-      description: 'On play: Draw 3 cards; Amplify Chain by +5.0; Shuffle discard into deck; Draw 4 cards. While on board: Adjacent active Seraphim gain +48 Oblivion per card played; Buffs Seraphim attacks: base +51, chain scaling +0.09, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +40, chain scaling +0.06, cooldown -1, multiplier x1.00',
+      description: 'On play: Draw 3 cards; Amplify Chain by +5.0; Shuffle discard into deck; Draw 4 cards. While on board: Adjacent Seraphim gain +6 Patience per card played.',
     artKey: 'inf_annihilation_field',
-      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 48 }],
+      effects: [{ type: 'cherubim_patience_per_card', value: 6 }],
       onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 5.0 }, { type: 'shuffle_discard' }, { type: 'draw', value: 4 }],
   },
   {
@@ -505,22 +511,23 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: Gain 60 of your dominant resource; Draw 6 cards; Amplify Chain by +10.0. After 4 cards played: Draw 7 cards; +3500 Oblivion; Amplify Chain by +12.0; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
+    description: 'On summon: All active Seraphim gain +20 Patience; Draw 6 cards; Amplify Chain by +10.0. After 4 cards played: Double Patience on all active Seraphim; Draw 7 cards; +3500 Oblivion; Amplify Chain by +12.0; Empower the next card you play. While on board: +500 Oblivion per card played.',
     artKey: 'inf_sovereign_void',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 3 },
     ],
     onSummonEffects: [
-      { type: 'dominant_stack_gain', value: 60 },
+      { type: 'patience_gain_all', value: 20 },
       { type: 'draw', value: 6 },
       { type: 'set_chain_floor', value: 10.0 },
     ],
     activatedAbility: {
       name: 'Null Dominion',
       cardsPlayedRequirement: 4,
-      description: 'Draw 7 cards; +3500 Oblivion; Amplify Chain by +12.0; Empower the next card you play',
+      description: 'Double Patience on all active Seraphim; Draw 7 cards; +3500 Oblivion; Amplify Chain by +12.0; Empower the next card you play',
       effects: [
+        { type: 'patience_double_all' },
         { type: 'draw', value: 7 },
         { type: 'oblivion_flat', value: 3500 },
         { type: 'set_chain_floor', value: 12.0 },
@@ -559,7 +566,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Eternity Rupture',
-    description: 'On summon: Draw 5 cards; +2000 Oblivion; Amplify Chain by +7.0. After 4 cards played: Draw 5 cards; +3000 Oblivion; Amplify Chain by +10.0; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
+    description: 'On summon: All active Seraphim gain +15 Patience; Draw 5 cards; +2000 Oblivion; Amplify Chain by +7.0. After 4 cards played: Double Patience on all active Seraphim; Draw 5 cards; +3000 Oblivion; Amplify Chain by +10.0; Empower the next card you play. While on board: +600 Oblivion per card played.',
     artKey: 'inf_eternity_rupture',
     summonCost: [],
     extraSummonConditions: [
@@ -567,6 +574,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
       { type: 'cherubim_active_gte', value: 2 },
     ],
     onSummonEffects: [
+      { type: 'patience_gain_all', value: 15 },
       { type: 'draw', value: 5 },
       { type: 'oblivion_flat', value: 2000 },
       { type: 'set_chain_floor', value: 7.0 },
@@ -574,8 +582,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Rupture Convergence',
       cardsPlayedRequirement: 4,
-      description: 'Draw 5 cards; +3000 Oblivion; Amplify Chain by +10.0; Empower the next card you play',
+      description: 'Double Patience on all active Seraphim; Draw 5 cards; +3000 Oblivion; Amplify Chain by +10.0; Empower the next card you play',
       effects: [
+        { type: 'patience_double_all' },
         { type: 'draw', value: 5 },
         { type: 'oblivion_flat', value: 3000 },
         { type: 'set_chain_floor', value: 10.0 },

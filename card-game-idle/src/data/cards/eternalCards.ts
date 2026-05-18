@@ -7,11 +7,11 @@ export const eternalOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: "Void's Reaping",
-    description: 'Draw 3 cards; Gain 5 of your dominant resource; Amplify Chain by +2.0',
+    description: 'Draw 3 cards; All active Seraphim gain +3 Patience; Amplify Chain by +2.0',
     artKey: 'btei_voids_reaping',
     effects: [
       { type: 'draw', value: 3 },
-      { type: 'dominant_stack_gain', value: 5 },
+      { type: 'patience_gain_all', value: 3 },
       { type: 'set_chain_floor', value: 2.0 },
     ],
   },
@@ -49,13 +49,13 @@ export const eternalOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Axiom of Oblivion',
-    description: 'Draw 5 cards; Amplify Chain by +8.0; +1000 Oblivion; Gain 20 of your dominant resource',
+    description: 'Draw 5 cards; Amplify Chain by +8.0; +1000 Oblivion; All active Seraphim gain +8 Patience',
     artKey: 'btei_axiom_of_oblivion',
     effects: [
       { type: 'draw', value: 5 },
       { type: 'set_chain_floor', value: 8.0 },
       { type: 'oblivion_flat', value: 1000 },
-      { type: 'dominant_stack_gain', value: 20 },
+      { type: 'patience_gain_all', value: 8 },
     ],
   },
 ];
@@ -67,7 +67,8 @@ export const eternalSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Eternal Vigil',
-    description: 'On play: +120 Oblivion; Draw 2 cards; Amplify Chain by +2.0. While on board: +50 Oblivion per card played while active',
+    description: 'On play: +120 Oblivion; Draw 2 cards; Amplify Chain by +2.0. While on board: +50 Oblivion per card played. On attack: consumes Patience for +15 Oblivion each; at 6+ Patience, draw 3 cards.',
+
     artKey: 'btei_eternal_vigil',
     attacks: {
       unsynergized: {
@@ -95,6 +96,8 @@ export const eternalSeraphimCards: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 50, synergyRequirement: 'Neutrality' },
+    patienceThreshold: 6,
+    patienceThresholdDraw: 3,
     onPlayEffects: [
       { type: 'oblivion_flat', value: 120 },
       { type: 'draw', value: 2 },
@@ -107,7 +110,8 @@ export const eternalSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Colossus Advent',
-    description: 'On play: +350 Oblivion; Draw 4 cards; Amplify Chain by +6.0. While on board: +200 Oblivion per card played while active',
+    description: 'On play: +350 Oblivion; Draw 4 cards; Amplify Chain by +6.0. While on board: +200 Oblivion per card played. On attack: consumes Patience for +15 Oblivion each; at 6+ Patience, draw 3 cards.',
+
     artKey: 'btei_colossus_advent',
     attacks: {
       unsynergized: {
@@ -135,6 +139,8 @@ export const eternalSeraphimCards: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 200, synergyRequirement: 'Neutrality' },
+    patienceThreshold: 6,
+    patienceThresholdDraw: 3,
     onPlayEffects: [
       { type: 'oblivion_flat', value: 350 },
       { type: 'draw', value: 4 },
@@ -150,10 +156,10 @@ export const eternalCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Sovereign Domain',
-    description: 'On play: +150 Oblivion; Draw 2 cards; Amplify Chain by +3.0; +150 Oblivion. While on board: Adjacent active Seraphim gain +80 Oblivion per card played; Buffs Seraphim attacks: base +85, chain scaling +0.08, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +66, chain scaling +0.05, cooldown -1, multiplier x1.00',
+    description: 'On play: +300 Oblivion; Draw 2 cards; Amplify Chain by +3.0. While on board: Adjacent Seraphim gain +4 Patience per card played.',
     artKey: 'btei_sovereign_domain',
-    effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 80 }],
-    onPlayEffects: [{ type: 'oblivion_flat', value: 150 }, { type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 3.0 }, { type: 'oblivion_flat', value: 150 }],
+    effects: [{ type: 'cherubim_patience_per_card', value: 4 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 300 }, { type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 3.0 }],
   },
   {
     definitionId: 'btei-architects-manifold',
@@ -161,10 +167,10 @@ export const eternalCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: "Architect's Manifold",
-    description: 'On play: +250 Oblivion; Draw 3 cards; Amplify Chain by +4.0; Amplify Chain by +4.5; +250 Oblivion. While on board: Adjacent active Seraphim gain +110 Oblivion per card played; Adjacent active Seraphim gain +0.05 chain growth; Buffs Seraphim attacks: base +99, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +77, chain scaling +0.00, cooldown -1, multiplier x1.00',
+    description: 'On play: +500 Oblivion; Draw 3 cards; Amplify Chain by +4.5. While on board: Adjacent Seraphim gain +5 Patience per card played.',
     artKey: 'btei_architects_manifold',
-    effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 110 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.05 }],
-    onPlayEffects: [{ type: 'oblivion_flat', value: 250 }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 4.0 }, { type: 'set_chain_floor', value: 4.5 }, { type: 'oblivion_flat', value: 250 }],
+    effects: [{ type: 'cherubim_patience_per_card', value: 5 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 500 }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 4.5 }],
   },
 ];
 
@@ -175,23 +181,23 @@ export const eternalAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Convergence of Eternity',
-    description: 'On summon: Gain 15 of your dominant resource; Draw 4 cards; Amplify Chain by +3.5. After 5 cards played: Gain 30 of your dominant resource; Draw 4 cards; Amplify Chain by +4.5; Empower the next card you play. While on board: +130 Oblivion per card played while on board',
+    description: 'On summon: All active Seraphim gain +10 Patience; Draw 4 cards; Amplify Chain by +3.5. After 5 cards played: Double Patience on all active Seraphim; Draw 4 cards; Amplify Chain by +4.5; Empower the next card you play. While on board: +130 Oblivion per card played.',
     artKey: 'btei_convergence_of_eternity',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },
     ],
     onSummonEffects: [
-      { type: 'dominant_stack_gain', value: 15 },
+      { type: 'patience_gain_all', value: 10 },
       { type: 'draw', value: 4 },
       { type: 'set_chain_floor', value: 3.5 },
     ],
     activatedAbility: {
       name: 'Infinite Merge',
       cardsPlayedRequirement: 5,
-      description: 'Gain 30 of your dominant resource; Draw 4 cards; Amplify Chain by +4.5; Empower the next card you play',
+      description: 'Double Patience on all active Seraphim; Draw 4 cards; Amplify Chain by +4.5; Empower the next card you play',
       effects: [
-        { type: 'dominant_stack_gain', value: 30 },
+        { type: 'patience_double_all' },
         { type: 'draw', value: 4 },
         { type: 'set_chain_floor', value: 4.5 },
         { type: 'multiply_next' },
@@ -229,23 +235,23 @@ export const eternalAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Omniscient Fracture',
-    description: 'On summon: Gain 20 of your dominant resource; Draw 5 cards; Amplify Chain by +5.5. After 6 cards played: Gain 40 of your dominant resource; Draw 5 cards; Amplify Chain by +6.5; Empower the next card you play; +600 Oblivion. While on board: +200 Oblivion per card played while on board',
+    description: 'On summon: All active Seraphim gain +15 Patience; Draw 5 cards; Amplify Chain by +5.5. After 6 cards played: Double Patience on all active Seraphim; Draw 5 cards; Amplify Chain by +6.5; Empower the next card you play; +600 Oblivion. While on board: +200 Oblivion per card played.',
     artKey: 'btei_omniscient_fracture',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 3 },
     ],
     onSummonEffects: [
-      { type: 'dominant_stack_gain', value: 20 },
+      { type: 'patience_gain_all', value: 15 },
       { type: 'draw', value: 5 },
       { type: 'set_chain_floor', value: 5.5 },
     ],
     activatedAbility: {
       name: 'Parallax Collapse',
       cardsPlayedRequirement: 6,
-      description: 'Gain 40 of your dominant resource; Draw 5 cards; Amplify Chain by +6.5; Empower the next card you play; +600 Oblivion',
+      description: 'Double Patience on all active Seraphim; Draw 5 cards; Amplify Chain by +6.5; Empower the next card you play; +600 Oblivion',
       effects: [
-        { type: 'dominant_stack_gain', value: 40 },
+        { type: 'patience_double_all' },
         { type: 'draw', value: 5 },
         { type: 'set_chain_floor', value: 6.5 },
         { type: 'multiply_next' },
@@ -301,9 +307,9 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Void Exchequer',
-    description: 'On play: Draw 2 cards; Amplify Chain by +3.8. While on board: Adjacent active Seraphim gain +160 Oblivion per card played; Buffs Angel attacks: base +144, chain scaling +0.12, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +112, chain scaling +0.07, cooldown -1, multiplier x1.00',
+    description: 'On play: Draw 2 cards; Amplify Chain by +3.8. While on board: Adjacent Seraphim gain +5 Patience per card played.',
     artKey: 'btei_neutrality_zero_edict',
-    effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 160 }],
+    effects: [{ type: 'cherubim_patience_per_card', value: 5 }],
     onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 3.8 }],
   },
   {
@@ -312,7 +318,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Equilibrium Rex',
-    description: 'On play: Set chain multiplier to x2.6; Draw 2 cards; Salvage any 1 card. While on board: +180 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Set chain multiplier to x2.6; Draw 2 cards; Salvage any 1 card. While on board: +180 Oblivion whenever you play an Ophanim. On attack: consumes Patience for +15 Oblivion each; at 6+ Patience, draw 3 cards.',
     artKey: 'btei_neutrality_void_throne',
     attacks: {
       unsynergized: {
@@ -340,6 +346,8 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 180, synergyRequirement: 'Neutrality' },
+    patienceThreshold: 6,
+    patienceThresholdDraw: 3,
     onPlayEffects: [{ type: 'chain_multiplier_set', value: 2.6 }, { type: 'draw', value: 2 }, { type: 'salvage_any' }],
   },
   {
@@ -348,16 +356,16 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Axiom Maw',
-    description: 'On summon: Draw 3 cards; Amplify Chain by +4.5; Empower the next card you play. After 4 cards played: Discard 2 cards, then draw 5 cards; Amplify Chain by +6.0; +1400 Oblivion. While on board: +190 Oblivion per card played while on board',
+    description: 'On summon: All active Seraphim gain +8 Patience; Draw 3 cards; Amplify Chain by +4.5; Empower the next card you play. After 4 cards played: Double Patience on all active Seraphim; Discard 2 cards, then draw 5 cards; Amplify Chain by +6.0; +1400 Oblivion. While on board: +190 Oblivion per card played.',
     artKey: 'btei_neutrality_axiom_maw',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }],
-    onSummonEffects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 4.5 }, { type: 'multiply_next' }],
+    onSummonEffects: [{ type: 'patience_gain_all', value: 8 }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 4.5 }, { type: 'multiply_next' }],
     activatedAbility: {
       name: 'Axiom Devour',
       cardsPlayedRequirement: 4,
-      description: 'Discard 2 cards, then draw 5 cards; Amplify Chain by +6.0; +1400 Oblivion',
-      effects: [{ type: 'discard_draw', discard: 2, draw: 5 }, { type: 'set_chain_floor', value: 6.0 }, { type: 'oblivion_flat', value: 1400 }],
+      description: 'Double Patience on all active Seraphim; Discard 2 cards, then draw 5 cards; Amplify Chain by +6.0; +1400 Oblivion',
+      effects: [{ type: 'patience_double_all' }, { type: 'discard_draw', discard: 2, draw: 5 }, { type: 'set_chain_floor', value: 6.0 }, { type: 'oblivion_flat', value: 1400 }],
     },
     attacks: {
       primary: {
@@ -391,10 +399,11 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Prime Judge of Silence',
-    description: 'Amplify Chain by +4.0; If this is the first card you played this turn, Draw 4 cards; +1200 Oblivion; If you have played 1+ cards this turn, Draw 2 cards; +500 Oblivion; Gain 6 of your dominant resource; Draw 1 card',
+    description: 'Amplify Chain by +4.0; All active Seraphim gain +3 Patience; If this is the first card you played this turn: Draw 4 cards, +1200 Oblivion; If you have played 1+ cards this turn: Draw 2 cards, +500 Oblivion',
     artKey: 'btei_neutrality_prime_equilibrium',
     effects: [
       { type: 'set_chain_floor', value: 4.0 },
+      { type: 'patience_gain_all', value: 3 },
       { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'draw', value: 4 }, { type: 'oblivion_flat', value: 1200 }] },
       { type: 'conditional', condition: { type: 'cards_played_gte', value: 1 }, then: [{ type: 'draw', value: 2 }, { type: 'oblivion_flat', value: 500 }] },
     ],
