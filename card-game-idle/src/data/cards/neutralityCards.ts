@@ -336,11 +336,11 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Grand Seek',
-    description: 'Draw 3 cards; +10 Oblivion',
+    description: 'Draw 2 cards; All active Seraphim gain +2 Patience',
     artKey: 'seek_neutral_grand_seek',
     effects: [
-      { type: 'draw', value: 3 },
-      { type: 'oblivion_flat', value: 10 },
+      { type: 'draw', value: 2 },
+      { type: 'patience_gain_all', value: 2 },
     ],
   },
   {
@@ -349,11 +349,11 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Echo Pulse',
-    description: '(Cards played this turn + 1) × 15 Oblivion; Draw 1 card',
+    description: 'Empower the next card you play; Draw 2 cards',
     artKey: 'seek_neutral_echo_pulse',
     effects: [
-      { type: 'oblivion_flat', value: 0 }, // executor: (cardsPlayedThisTurn + 1) * 15
-      { type: 'draw', value: 1 },
+      { type: 'multiply_next' },
+      { type: 'draw', value: 2 },
     ],
   },
   {

@@ -98,15 +98,14 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Null Fortification',
-    description: 'On play: Search your deck for 1 Seraphim; Draw 1 card; +40 Oblivion. While on board: Adjacent Seraphim gain +2 Patience per card played.',
+    description: 'On play: Draw 2 cards; +40 Oblivion. While on board: Adjacent Seraphim gain +2 Patience per card played.',
     artKey: 'cherubim_neutral_null_fortify',
     maxDurability: 3,
     effects: [
       { type: 'cherubim_patience_per_card', value: 2 },
     ],
     onPlayEffects: [
-      { type: 'search_deck_by_type', filter: ['Seraphim'] },
-      { type: 'draw', value: 1 },
+      { type: 'draw', value: 2 },
       { type: 'oblivion_flat', value: 40 },
     ],
   },

@@ -7,7 +7,7 @@ export const neutralityAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'The Beginning and the End',
-    description: 'On summon: All Seraphim gain +5 Patience; Draw 3 cards; Amplify Chain by +1.4. After 3 cards played: Double Patience on all Seraphim; Draw 4 cards; Shuffle discard into deck; Amplify Chain by +2.0. While on board: +20 Oblivion per card played.',
+    description: 'On summon: All Seraphim gain +5 Patience; Draw 3 cards; Amplify Chain by +1.4. After 3 cards played: Draw 4 cards; Shuffle discard into deck; Amplify Chain by +2.0. While on board: +20 Oblivion per card played.',
     artKey: 'angel_neutral_beginning',
     summonCost: ['ser-neutral-null', 'ser-neutral-null'],
     onSummonEffects: [
@@ -18,9 +18,8 @@ export const neutralityAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Paradox Bloom',
       cardsPlayedRequirement: 3,
-      description: 'Double Patience on all Seraphim; Draw 4 cards; Shuffle discard into deck; Amplify Chain by +2.0',
+      description: 'Draw 4 cards; Shuffle discard into deck; Amplify Chain by +2.0',
       effects: [
-        { type: 'patience_double_all' },
         { type: 'draw', value: 4 },
         { type: 'shuffle_discard' },
         { type: 'set_chain_floor', value: 2.0 },
