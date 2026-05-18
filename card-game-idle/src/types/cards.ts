@@ -116,6 +116,7 @@ export interface AngelInstance {
   activated: boolean;
   attackCooldowns: Record<string, number>;
   boardSlot: 0 | 1 | 2 | 3 | 4 | null;
+  patienceStacks?: number;
 }
 
 export interface SeraphimStats {
@@ -137,6 +138,8 @@ export interface SeraphimDefinition {
   readonly attacks?: SeraphimAttackSet;
   readonly attackTags?: string[];
   readonly onPlayEffects: CardEffect[];
+  readonly patienceThreshold?: number;
+  readonly patienceThresholdDraw?: number;
 }
 
 export interface SeraphimInstance {
@@ -157,6 +160,7 @@ export interface SeraphimInstance {
   isActive: boolean;
   attackCooldowns: Record<string, number>;
   boardSlot: 0 | 1 | 2 | 3 | 4 | null;
+  patienceStacks?: number;
 }
 
 export interface CherubimDiscardCondition {

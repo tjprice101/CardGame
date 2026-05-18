@@ -9,11 +9,11 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Veil',
-    description: 'On play: Draw 1 card; Search your deck for 1 matching Seraphim. While on board: Buffs Seraphim attacks: base +31, chain scaling +0.04, cooldown -1, multiplier x1.00',
+    description: 'On play: Draw 1 card; Search your deck for 1 Seraphim. While on board: Adjacent Seraphim gain +1 Patience per card played.',
     artKey: 'cherubim_neutral_null_veil',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_resource_per_card', resource: 'radiance', value: 1 },
+      { type: 'cherubim_patience_per_card', value: 1 },
     ],
     onPlayEffects: [
       { type: 'draw', value: 1 },
@@ -26,11 +26,11 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Shroud',
-    description: 'On play: Shuffle discard into deck; Draw 1 card. While on board: Buffs Seraphim and Angel attacks: base +24, chain scaling +0.04, cooldown +0, multiplier x1.00',
+    description: 'On play: Shuffle discard into deck; Draw 1 card. While on board: Adjacent Seraphim gain +1 Patience per card played.',
     artKey: 'cherubim_neutral_void_shroud',
     maxDurability: 2,
     effects: [
-      { type: 'cherubim_draw_per_card', value: 0.34 },
+      { type: 'cherubim_patience_per_card', value: 1 },
     ],
     onPlayEffects: [
       { type: 'shuffle_discard' },
@@ -43,11 +43,11 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Mantle',
-    description: 'On play: Search your deck for 1 matching Seraphim or Cherubim; Draw 1 card. While on board: Buffs Seraphim attacks: base +36, chain scaling +0.05, cooldown +0, multiplier x1.00',
+    description: 'On play: Search your deck for 1 Seraphim or Cherubim; Draw 1 card. While on board: Adjacent Seraphim gain +2 Patience per card played.',
     artKey: 'cherubim_neutral_balance_mantle',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_ophanim_bonus', value: 10 },
+      { type: 'cherubim_patience_per_card', value: 2 },
     ],
     onPlayEffects: [
       { type: 'search_deck_by_type', filter: ['Seraphim', 'Cherubim'] },
@@ -60,11 +60,11 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Equilibrium Ward',
-    description: 'On play: Look at the top 4 cards, take 1 card, and put the rest on the bottom. While on board: Buffs Seraphim attacks: base +36, chain scaling +0.05, cooldown +0, multiplier x1.00',
+    description: 'On play: Look at the top 4 cards, take 1, put the rest on the bottom. While on board: Adjacent Seraphim gain +2 Patience per card played.',
     artKey: 'cherubim_neutral_equilibrium_ward',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_chain_bonus', value: 0.05 },
+      { type: 'cherubim_patience_per_card', value: 2 },
     ],
     onPlayEffects: [
       { type: 'look_top_take', look: 4, take: 1 },
@@ -76,11 +76,11 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Shell',
-    description: 'On play: Salvage any 1 card; Draw 1 card. While on board: Buffs Seraphim attacks: base +54, chain scaling +0.06, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +42, chain scaling +0.04, cooldown +0, multiplier x1.00',
+    description: 'On play: Salvage any 1 card; Draw 1 card. While on board: Adjacent Seraphim gain +3 Patience per card played.',
     artKey: 'cherubim_neutral_still_shell',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_oblivion_per_card', value: 12 },
+      { type: 'cherubim_patience_per_card', value: 3 },
     ],
     onPlayEffects: [
       { type: 'salvage_any' },
@@ -98,11 +98,11 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Null Fortification',
-    description: 'On play: Search your deck for 1 matching Seraphim; Draw 1 card; +40 Oblivion. While on board: Buffs Seraphim attacks: base +36, chain scaling +0.05, cooldown +0, multiplier x1.00',
+    description: 'On play: Search your deck for 1 Seraphim; Draw 1 card; +40 Oblivion. While on board: Adjacent Seraphim gain +2 Patience per card played.',
     artKey: 'cherubim_neutral_null_fortify',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_resource_per_card', resource: 'trail', value: 1 },
+      { type: 'cherubim_patience_per_card', value: 2 },
     ],
     onPlayEffects: [
       { type: 'search_deck_by_type', filter: ['Seraphim'] },
@@ -116,11 +116,11 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Void Amplifier',
-    description: 'On play: +140 Oblivion; Draw 2 cards; Salvage any 1 card. While on board: Buffs Seraphim attacks: base +46, chain scaling +0.06, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +36, chain scaling +0.04, cooldown +0, multiplier x1.00',
+    description: 'On play: +140 Oblivion; Draw 2 cards; Salvage any 1 card. While on board: Adjacent Seraphim gain +3 Patience per card played.',
     artKey: 'cherubim_neutral_void_amp',
     maxDurability: 2,
     effects: [
-      { type: 'cherubim_conditional_buff', condition: { type: 'cards_played_gte', value: 3 }, value: 1.08 },
+      { type: 'cherubim_patience_per_card', value: 3 },
     ],
     onPlayEffects: [
       { type: 'oblivion_flat', value: 140 },

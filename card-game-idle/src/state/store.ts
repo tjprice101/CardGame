@@ -2648,6 +2648,24 @@ function tickCherubimDurability(s: Store): void {
   applyCherubimExpireBonuses(s, expiredCount);
 }
 
+function applyPatienceGainAll(s: Store, value: number): void {
+  for (const unit of s.board.frontSlots) {
+    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
+    if (unit.type === 'Seraphim' && !unit.isActive) continue;
+    unit.patienceStacks = (unit.patienceStacks ?? 0) + value;
+  }
+}
+
+function applyPatienceDoubleAll(s: Store): void {
+  for (const unit of s.board.frontSlots) {
+    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
+    if (unit.type === 'Seraphim' && !unit.isActive) continue;
+    if ((unit.patienceStacks ?? 0) > 0) {
+      unit.patienceStacks = (unit.patienceStacks ?? 0) * 2;
+    }
+  }
+}
+
 function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
   if (drawValue <= 0) return;
   const totalDraw = s.turn.cherubimDrawFraction + drawValue;
@@ -2659,8 +2677,18 @@ function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
 }
 
 // Apply per-card Cherubim passive effects. Called after each card is played.
-// Handles: resource generation, conditional buffs.
+// Handles: resource generation, conditional buffs, patience accumulation.
 function applyCherubimPassiveEffects(s: Store): void {
+  // Auto-accumulate +1 Patience for every active Seraphim/Angel that has patienceThreshold set.
+  for (const unit of s.board.frontSlots) {
+    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
+    if (unit.type === 'Seraphim' && !unit.isActive) continue;
+    const unitDef = ScoreSystem.getDefinition(unit.definitionId);
+    if (unitDef?.type === 'Seraphim' && (unitDef as import('@/types/cards').SeraphimDefinition).patienceThreshold !== undefined) {
+      unit.patienceStacks = (unit.patienceStacks ?? 0) + 1;
+    }
+  }
+
   // Adjacent draw bonuses are represented as a Cherubim passive but resolved once per card play.
   const adjacentDrawBonus = computeCherubimAdjacentBonus(s.board, 'draw');
   if (adjacentDrawBonus > 0) {
@@ -2696,6 +2724,18 @@ function applyCherubimPassiveEffects(s: Store): void {
 
         case 'cherubim_draw_per_card': {
           applyCherubimDrawPerCard(s, effect.value);
+          break;
+        }
+
+        case 'cherubim_patience_per_card': {
+          // Give adjacent active Seraphim (and Angels) +value Patience per card played.
+          const leftFront = s.board.frontSlots[i];
+          const rightFront = s.board.frontSlots[i + 1];
+          for (const frontUnit of [leftFront, rightFront]) {
+            if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
+            if (frontUnit.type === 'Seraphim' && !frontUnit.isActive) continue;
+            frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + effect.value;
+          }
           break;
         }
 
@@ -3057,6 +3097,11 @@ export const useStore = create<Store>()(
           s.deck = result.deck;
           applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
           awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
+          // Handle patience effects that CardEffectExecutor leaves to the store
+          for (const effect of angelDef.onSummonEffects) {
+            if (effect.type === 'patience_gain_all') applyPatienceGainAll(s, effect.value);
+            else if (effect.type === 'patience_double_all') applyPatienceDoubleAll(s);
+          }
           if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
         }
 
@@ -3106,6 +3151,11 @@ export const useStore = create<Store>()(
         }
 
         awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
+        // Handle patience effects that CardEffectExecutor leaves to the store
+        for (const effect of angelDef.activatedAbility.effects) {
+          if (effect.type === 'patience_gain_all') applyPatienceGainAll(s, effect.value);
+          else if (effect.type === 'patience_double_all') applyPatienceDoubleAll(s);
+        }
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
 
         checkBossDefeated(s);
@@ -3149,8 +3199,13 @@ export const useStore = create<Store>()(
         s.turn.chainMultiplier += chainIncrease;
         s.turn.chainFloor = Math.max(s.turn.chainFloor, s.turn.chainMultiplier);
 
+        // Patience mechanic: consume stacks for bonus Oblivion
+        const seraphimDef = def as import('@/types/cards').SeraphimDefinition;
+        const capturedPatience = seraphimDef.patienceThreshold !== undefined ? (unit.patienceStacks ?? 0) : 0;
+        const patienceOblivion = capturedPatience * 15;
+
         let amount = Math.round(
-          Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus)
+          Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + patienceOblivion)
           * Math.max(1, s.turn.chainMultiplier)
           * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit)),
         );
@@ -3162,6 +3217,13 @@ export const useStore = create<Store>()(
         if (refreshed && refreshed.type === 'Seraphim') {
           const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
+          // Reset patience after consuming it; draw bonus if threshold met
+          if (seraphimDef.patienceThreshold !== undefined) {
+            if (seraphimDef.patienceThresholdDraw && capturedPatience >= seraphimDef.patienceThreshold) {
+              s.deck = TurnSystem.drawCards(s.deck, seraphimDef.patienceThresholdDraw);
+            }
+            refreshed.patienceStacks = 0;
+          }
         }
 
         applyLateGameAttackIdentity(s, def.definitionId, def.rarity, attack.label, amount);

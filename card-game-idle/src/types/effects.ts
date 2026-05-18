@@ -40,7 +40,9 @@ export type ImmediateEffect =
   | { type: 'trail_spend'; value: number }
   | { type: 'strain_gain'; value: number }
   | { type: 'strain_vent'; value: number }
-  | { type: 'overclock'; strain: number; then: CardEffect[] };
+  | { type: 'overclock'; strain: number; then: CardEffect[] }
+  | { type: 'patience_gain_all'; value: number }
+  | { type: 'patience_double_all' };
 
 export type EffectCondition =
   | { type: 'radiance_gte'; value: number }
@@ -69,6 +71,7 @@ export type CherubimPassiveEffect =
   | { type: 'cherubim_resource_per_card'; resource: 'ember' | 'radiance' | 'trail' | 'strain'; value: number }
   | { type: 'cherubim_adjacent_seraphim_bonus'; value: number; bonusType: 'oblivion' | 'draw' | 'chain' }
   | { type: 'cherubim_conditional_buff'; condition: EffectCondition; value: number }
+  | { type: 'cherubim_patience_per_card'; value: number }
   | {
       type: 'cherubim_attack_buff';
       targetUnitType: 'Seraphim' | 'Angel' | 'Any';
