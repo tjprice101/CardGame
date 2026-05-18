@@ -242,7 +242,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Neutral Cycle',
-    description: 'Shuffle discard into deck; Draw 1 card',
+    description: 'Shuffle discard into deck; +18 Oblivion',
     artKey: 'seek_neutral_neutral_cycle',
     effects: [
       { type: 'shuffle_discard' },
@@ -267,7 +267,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Surge',
-    description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion; Empower the next card you play; Draw 1 card',
+    description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion',
     artKey: 'seek_neutral_void_surge',
     effects: [
       { type: 'oblivion_flat', value: 25 },
@@ -293,7 +293,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Chain Pulse',
-    description: '+0 Oblivion; Gain 4 of your dominant resource; Draw 1 card',
+    description: '(Cards played this turn + 1) × 10 Oblivion',
     artKey: 'seek_neutral_chain_pulse',
     effects: [
       { type: 'oblivion_flat', value: 0 }, // executor: (cardsPlayedThisTurn + 1) * 10
@@ -349,7 +349,7 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Echo Pulse',
-    description: '+0 Oblivion; Draw 1 card',
+    description: '(Cards played this turn + 1) × 15 Oblivion; Draw 1 card',
     artKey: 'seek_neutral_echo_pulse',
     effects: [
       { type: 'oblivion_flat', value: 0 }, // executor: (cardsPlayedThisTurn + 1) * 15

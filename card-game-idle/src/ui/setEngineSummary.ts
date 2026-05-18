@@ -97,12 +97,12 @@ const ROLE_BADGES: Record<CardRolePattern, string> = {
 
 const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
   neutrality: {
-    setup: 'Builds Drift offset and Stability stacks so the Equilibrium Engine can mature safely.',
-    support: 'Sustains Stability and guards attenuation while the parity window stays open.',
-    resource: 'Feeds the equilibrium loop so Drift keeps shifting without collapsing the line.',
-    payoff: 'Cashes Stability and corrected Drift into Oblivion once parity is restored.',
-    amplifier: 'Pushes established Equilibrium boards harder once multiple signatures are recorded.',
-    finisher: 'Triggers Equilibrium Collapse after Drift has run high and snapped back to zero.',
+    setup: 'Draws cards or searches the deck — keeping the play chain flowing accelerates Patience on every waiting Seraphim.',
+    support: 'Sits on the board and grants extra Patience to adjacent Seraphim each time any card is played.',
+    resource: 'Plays frequently and cheaply, triggering Patience accumulation across all active Seraphim.',
+    payoff: 'Fires the Patience burst — consuming all stored stacks for +15 Oblivion each on attack.',
+    amplifier: 'Gives an instant Patience injection to all Seraphim or doubles current stacks in one activation.',
+    finisher: 'Cashes a fully charged Patience payoff, meeting the threshold for a bonus draw alongside maximum Oblivion.',
   },
   light: {
     setup: 'Adds Hymn Notes and opens Cadence setup so Resonance tiers can build.',
@@ -383,39 +383,49 @@ function buildEngineSnapshot(
 
   switch (key) {
     case 'neutrality': {
-      const signatures = turn.neutralityEngineSignatures ?? [];
-      const brokenClasses = turn.attenuationBrokenClasses ?? [];
-      const usedClasses = Object.entries(turn.attenuationClassUses ?? {})
-        .filter(([, uses]) => (uses ?? 0) > 0)
-        .map(([cls, uses]) => `${capitalize(cls)} ${uses}`);
-      const setupCount = turn.neutralitySetupCount ?? 0;
-      const stability = turn.equilibriumStability ?? 0;
-      const drift = turn.equilibriumDrift ?? 0;
+      const frontSlots = board?.frontSlots ?? [];
+      const totalPatience = frontSlots.reduce((acc, unit) => {
+        if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return acc;
+        if (unit.type === 'Seraphim' && !unit.isActive) return acc;
+        return acc + (unit.patienceStacks ?? 0);
+      }, 0);
+      const patienceUnits = frontSlots.filter(u =>
+        u && (u.type === 'Seraphim' || u.type === 'Angel') &&
+        (u.type !== 'Seraphim' || u.isActive) &&
+        (u.patienceStacks ?? 0) > 0,
+      ).length;
+      const maxPatience = frontSlots.reduce((acc, unit) => {
+        if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return acc;
+        if (unit.type === 'Seraphim' && !unit.isActive) return acc;
+        return Math.max(acc, unit.patienceStacks ?? 0);
+      }, 0);
+      const activeCherubim = (board?.backSlots ?? []).filter(b => b !== null).length;
+      const potentialBonus = totalPatience * 15;
 
       return {
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: `Drift ${turn.equilibriumDrift ?? 0} | Stability ${turn.equilibriumStability ?? 0} | Setup ${turn.neutralitySetupCount ?? 0} | Signatures ${signatures.length}`,
-        detail: `Attenuation ${formatPreview(usedClasses, 'fresh')} | Breaks ${turn.attenuationBreaksUsed ?? 0} | Broken ${formatPreview(brokenClasses.map(capitalize))} | Cross ${formatPreview(turn.crossSetConversionDistinctSources ?? [])}`,
-        tagline: 'Diversify classes, build Stability, and let the engine automatically protect your biggest plays.',
-        summary: 'Vary card classes to avoid attenuation decay and build Stability for passive Oblivion bonuses. If your deck includes Infinite cards, meeting 3 Setup + 3 Signatures amplifies them to ×1.2. Open the Guide for full details.',
+        compact: `Patience ${totalPatience} total | Peak ${maxPatience} | ${patienceUnits} unit${patienceUnits !== 1 ? 's' : ''} charged`,
+        detail: `Pending Bonus Oblivion ≈ +${potentialBonus} | ${activeCherubim} Cherubim amplifying`,
+        tagline: 'Keep playing cards to charge Patience, then let your Seraphim unload.',
+        summary: 'Every card you play adds +1 Patience to each eligible Seraphim. On attack, Seraphim consume all Patience for +15 Oblivion each. Cherubim on the board double or triple that rate for adjacent Seraphim. Open the Guide for full details.',
         metrics: [
-          createMetric('Drift', drift, 'Moves toward zero when gains and spends balance. Direction controls Stability gain or loss.'),
-          createMetric('Stability', stability, 'Each stack adds +4 flat Oblivion to every card you play.'),
-          createMetric('Setup', setupCount, 'Non-Infinite cards played this turn. At 3+ (with 3 Signatures), Infinite cards gain ×1.2 amplification.'),
-          createMetric('Signatures', signatures.length, 'Unique card type × action class combos. At 3+ (with 3 Setup), Infinite cards gain ×1.2 amplification.'),
+          createMetric('Total Patience', totalPatience, 'Sum of all Patience stacks across active Seraphim. Each stack = +15 Oblivion on next attack.'),
+          createMetric('Peak Patience', maxPatience, 'Highest Patience on any single Seraphim. Determines which threshold bonuses are reachable.'),
+          createMetric('Units Charged', patienceUnits, 'Number of active Seraphim with at least 1 Patience stack built up.'),
+          createMetric('Bonus Oblivion', `+${potentialBonus}`, 'Estimated Oblivion bonus if all Patience is consumed now (15 per stack total).'),
         ],
         nextSteps: [
-          createStep('Vary your classes', signatures.length >= 3, signatures.length >= 3
-            ? `${signatures.length} class combos recorded. Attenuation spread across classes — keep diversifying.`
-            : `${signatures.length} class combos used. Repeating the same class decays it: 75% → 55% → 40%. Mix setup (draw/search), conversion (Oblivion/resources), multiplier (chain effects), and refund (salvage/copy) cards.`),
-          createStep('Build Stability (passive)', stability >= 3, stability >= 3
-            ? `Stability ${stability} — passively adds +${stability * 4} flat Oblivion to every card. Auto-Break armed: if a class decays below 100%, the engine will silently reset it to 100% and deduct 3 Stability automatically.`
-            : `Stability ${stability} — each stack passively adds +4 Oblivion per play. At 3+, the engine arms the Auto-Break (no input needed — it fires on its own when a class would decay).`),
-          createStep('Prime Infinite cards', setupCount >= 3 && signatures.length >= 3, setupCount >= 3 && signatures.length >= 3
-            ? 'Setup ≥ 3 and Signatures ≥ 3 met. Infinite Neutrality cards fire at ×1.2 power.'
-            : `Need Setup ≥ 3 (${setupCount}/3) and Signatures ≥ 3 (${signatures.length}/3) to unlock Infinite cards at ×1.2 instead of ×0.45.`),
+          createStep('Build Patience stacks', totalPatience >= 3, totalPatience >= 3
+            ? `${totalPatience} total Patience built. Each stack adds +15 Oblivion to the next Seraphim attack.`
+            : 'Keep playing cards — every card played automatically adds +1 Patience to each eligible Seraphim.'),
+          createStep('Amplify with Cherubim', activeCherubim >= 1, activeCherubim >= 1
+            ? `${activeCherubim} Cherubim on board — granting +1 to +3 extra Patience per card played to adjacent Seraphim.`
+            : 'Place Neutrality Cherubim to grant +1–3 extra Patience per card played to adjacent Seraphim.'),
+          createStep('Hit the threshold', maxPatience >= 3, maxPatience >= 3
+            ? `Peak Patience is ${maxPatience} — at least one Seraphim can trigger its threshold draw bonus on next attack.`
+            : 'Reach your Seraphim\'s Patience threshold (3–5 depending on rarity) to draw bonus cards when it attacks.'),
         ],
       };
     }
@@ -723,31 +733,31 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   neutrality: {
     engineKey: 'neutrality',
     title: 'User Guide to: Neutrality',
-    intro: 'The Neutrality engine is called the Equilibrium Engine. It has three layered systems working together: Attenuation, Stability, and Drift. Understanding all three is the key to making Neutrality cards hit hard.',
+    intro: 'The Neutrality engine is called the Patience Engine. One rule drives everything: every card you play charges your waiting Seraphim. When a Seraphim attacks, it consumes every Patience stack it has built — and each stack adds +15 Oblivion to that attack. The longer you wait, the harder it hits.',
     sections: [
       {
-        heading: 'The Five Action Classes',
-        body: 'Every Neutrality card is automatically sorted into one of five action classes when you play it:\n\n• Setup — cards that draw, search the deck, look at the top card, or shuffle the discard pile back.\n• Multiplier — cards that amplify chain or modify the chain multiplier.\n• Refund — cards that salvage played cards or copy the last card played.\n• Conversion — cards that deal Oblivion damage or gain/spend resources (Radiance, Embers, Trail, Strain).\n• Finisher — all Infinite-rarity Neutrality cards, regardless of what they do.\n\nThe class is determined automatically — you do not choose it.',
+        heading: 'How Patience Builds',
+        body: 'Every time you play ANY card while a Neutrality Seraphim is on the board and waiting to attack, that Seraphim gains +1 Patience automatically. You do not need to activate anything — Patience accumulates in the background with every single card played.\n\nPatience is stored per Seraphim individually. A Seraphim that has been waiting for 8 cards has 8 Patience. A Seraphim that just fired has 0 Patience and starts building again.\n\nOnly Neutrality Seraphim (those with a defined Patience threshold) participate in this system.',
       },
       {
-        heading: 'Attenuation',
-        body: 'Attenuation tracks how many times you have played cards in each class this turn. The more you repeat a class, the weaker those cards become:\n\n• 1st play in a class: 100% power\n• 2nd play in a class: 75% power\n• 3rd play in a class: 55% power\n• 4th+ play in a class: 40% power\n\nThis penalty only applies to cards in that class. Other classes are unaffected. The fix is to vary the types of cards you play so no single class gets used too often in one turn.',
+        heading: 'Seraphim Attack Payoff',
+        body: 'When a Neutrality Seraphim attacks, it consumes ALL of its Patience stacks in one burst:\n\n• Each Patience stack adds +15 Oblivion to that attack.\n• 5 Patience = +75 Oblivion bonus. 10 Patience = +150 Oblivion bonus.\n• After firing, Patience resets to 0 and starts building again for the next attack cycle.\n\nNeutrality Seraphim have longer cooldowns by design (5–8 cards depending on rarity). That waiting time IS the engine — the delayed attack arrives loaded with stacked Patience.',
       },
       {
-        heading: 'Stability and the Auto-Break',
-        body: 'Stability is a stack counter (max 12). Each Stability stack passively adds +4 flat Oblivion to every Neutrality card you play — no button, no activation. A Stability of 3 means every card you play hits for +12 Oblivion on top of its base damage.\n\nAt 3 or more Stability, the Auto-Break becomes armed. When you would play a card in a class that has already decayed below 100%, the engine automatically resets that class back to 100% and silently deducts 3 Stability from your counter. You do not choose when this fires — it fires automatically the moment a decayed class is triggered.\n\nImportant rules of the Auto-Break:\n• Each class can only be auto-reset once per turn.\n• Total Auto-Breaks per turn are capped at 1 (or 2 if your deck contains cards from 2 or more different sets).\n• After a class is reset, playing it a third time still incurs decay — the break does not give infinite resets.',
+        heading: 'Patience Thresholds (Bonus Draw)',
+        body: 'Each Neutrality Seraphim has a Patience threshold. If it fires with Patience at or above that threshold, it draws bonus cards in addition to the Oblivion hit:\n\n• Common Seraphim (Null, Void): threshold 3 Patience → draw 1 card.\n• Rare Seraphim (Balance): threshold 4 Patience → draw 1 card.\n• Rare Seraphim (Equilibrium): threshold 4 Patience → draw 2 cards.\n• Epic Seraphim (Still): threshold 5 Patience → draw 2 cards.\n\nThe bonus draw fires automatically when the threshold is met. If you attack before reaching it, you still get the full +15 Oblivion per stack — you just miss the draw.',
       },
       {
-        heading: 'Drift',
-        body: 'Drift is a running total that tracks (resource gains − resource spends) across all your Neutrality plays this turn. The resources tracked are Radiance, Embers, Trail, and Strain.\n\nThe Drift counter ranges from −60 to +60. What matters is the direction it moves:\n\n• If Drift moves closer to zero after a play → you gain +1 Stability.\n• If Drift moves further from zero after a play → you lose 1 Stability.\n\nAdditionally, if a single card both gains AND spends resources (e.g., gains Radiance but also spends Embers), you get a bonus +1 Stability on top of the direction bonus.\n\nSetup-class cards always give +1 Stability regardless of Drift movement. Eternal-rarity cards also give +1 Stability regardless.\n\nTo maximise Stability, play cards that both gain and spend resources in the same play, and alternate between plays that push Drift in different directions so it keeps snapping back toward zero.',
+        heading: 'Cherubim: Patience Amplifiers',
+        body: 'Neutrality Cherubim have one job: grant extra Patience to the Seraphim directly in front of them, every card you play.\n\n• Common Cherubim: +1 extra Patience per card (adjacent Seraphim gain +2 total instead of +1).\n• Rare Cherubim: +2 extra Patience per card (+3 total per card played).\n• Epic Cherubim: +3 extra Patience per card (+4 total per card played).\n\nA Seraphim sitting adjacent to an Epic Cherubim with a 6-card cooldown has 24 Patience before it fires — that is +360 Oblivion added to the attack before any chain multipliers.\n\nPlace Cherubim next to your highest-rarity Seraphim first to maximise their amplification window.',
       },
       {
-        heading: 'Infinite Card Amplification',
-        body: 'The Neutrality engine works fully with any mix of cards — Attenuation, Stability, and the Auto-Break all benefit every card you play. Infinite-rarity cards are not required.\n\nHowever, Infinite cards are deeply tied to the engine: they read how well you have engaged it and adjust their power accordingly.\n\n• ×1.2 multiplier (amplified): Setup Count ≥ 3 AND Signatures ≥ 3 are both met.\n• ×0.45 multiplier (reduced): either condition is below 3.\n\nThese thresholds are natural results of good engine play — varied classes and enough cards played. If Infinite cards are in your deck, meeting them is a bonus reward on top of everything the engine already gives you.',
+        heading: 'Ophanim: The Draw Engine',
+        body: 'Neutrality Ophanim are the fuel that runs the patience engine. Every Ophanim you play counts as a card played — adding Patience to every waiting Seraphim automatically.\n\nOphanim also draw cards, recycle your deck, and search for Seraphim and Cherubim. A turn full of Ophanim plays means more Patience stacked and a harder-hitting Seraphim attack when the cooldown fires.\n\nDo not hoard Ophanim. The engine rewards playing them early and often.',
       },
       {
-        heading: 'Cross-Set Conversion Bonus',
-        body: 'If you play a Neutrality Conversion-class card immediately after playing a card from a different set (e.g., you play a Heavenly Light card and then immediately play a Neutrality conversion card), the engine records that cross-set source. Up to 3 distinct cross-set sources can be tracked per turn. This improves conversion efficiency for mixed-set decks.',
+        heading: 'Angels: Patience Bursts',
+        body: 'Neutrality Angels manipulate Patience directly rather than waiting for it to accumulate naturally:\n\n• On summon: all active Seraphim gain a flat Patience bonus instantly (+5 for The Beginning and the End, +6 for Aegis of Presence, +8 for Scales of Eternity\'s Wake).\n• Activated ability: doubles all current Patience on every active Seraphim simultaneously.\n\nA Seraphim sitting at 6 Patience when an Angel summons and immediately activates goes to 22 Patience after the summon bonus and the doubling — that is +330 Oblivion from Patience alone, added to the next attack.',
       },
     ],
   },
