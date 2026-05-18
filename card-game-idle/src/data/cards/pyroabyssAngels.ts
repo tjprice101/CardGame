@@ -7,7 +7,7 @@ export const pyroabyssAngels: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinderwing',
-    description: 'On summon: Gain 8 Embers; Draw 2 cards; +80 Oblivion. After 3 cards played: Gain 12 Embers; Draw 2 cards; Set chain floor to x1.8. While on board: +20 Oblivion per card played while on board',
+    description: 'On summon: Gain 8 Embers; Draw 2 cards; +80 Oblivion. After 3 cards played: Gain 12 Embers; Draw 2 cards; Amplify Chain by +1.8. While on board: +20 Oblivion per card played while on board',
     artKey: 'angel_fire_cinderwing',
     summonCost: ['ser-fire-cinder', 'ser-fire-cinder'],
     onSummonEffects: [
@@ -18,7 +18,7 @@ export const pyroabyssAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Ashen Wingbeat',
       cardsPlayedRequirement: 3,
-      description: 'Gain 12 Embers; Draw 2 cards; Set chain floor to x1.8',
+      description: 'Gain 12 Embers; Draw 2 cards; Amplify Chain by +1.8',
       effects: [
         { type: 'ember_gain', value: 12 },
         { type: 'draw', value: 2 },
@@ -107,7 +107,7 @@ export const pyroabyssAngels: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Legendary',
     name: 'Obliteron',
-    description: 'On summon: Gain 14 Embers; Draw 3 cards; Set chain floor to x2.1; +120 Oblivion. After 5 cards played: Gain 18 Embers; Draw 3 cards; Set chain floor to x2.7; +300 Oblivion. While on board: +36 Oblivion per card played while on board',
+    description: 'On summon: Gain 14 Embers; Draw 3 cards; Amplify Chain by +2.1; +120 Oblivion. After 5 cards played: Gain 18 Embers; Draw 3 cards; Amplify Chain by +2.7; +300 Oblivion. While on board: +36 Oblivion per card played while on board',
     artKey: 'angel_fire_obliteron',
     summonCost: ['angel-fire-pyroclast-wraith', 'ser-fire-voidflame'],
     extraSummonConditions: [
@@ -122,7 +122,7 @@ export const pyroabyssAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Cataclysm Engine',
       cardsPlayedRequirement: 5,
-      description: 'Gain 18 Embers; Draw 3 cards; Set chain floor to x2.7; +300 Oblivion',
+      description: 'Gain 18 Embers; Draw 3 cards; Amplify Chain by +2.7; +300 Oblivion',
       effects: [
         { type: 'ember_gain', value: 18 },
         { type: 'draw', value: 3 },

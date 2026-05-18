@@ -307,7 +307,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose }: P
           {/* Type explanation */}
           <div>
             <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
-              {getDisplayCardTypeLabel(card.type)} Overview
+              {getDisplayCardTypeLabel(card.type)} Ability
             </div>
             <div
               style={{

@@ -25,7 +25,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Oblivion Absolute',
-    description: 'Draw 7 cards; Set chain floor to x15.0; +6000 Oblivion; Gain 60 of your dominant resource',
+    description: 'Draw 7 cards; Amplify Chain by +15.0; +6000 Oblivion; Gain 60 of your dominant resource',
     artKey: 'inf_oblivion_absolute',
     effects: [
       { type: 'draw', value: 7 },
@@ -40,7 +40,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Void Cascade',
-    description: 'Draw 6 cards; Shuffle discard into deck; Set chain floor to x12.0; Empower the next card you play',
+    description: 'Draw 6 cards; Shuffle discard into deck; Amplify Chain by +12.0; Empower the next card you play',
     artKey: 'inf_void_cascade',
     effects: [
       { type: 'draw', value: 6 },
@@ -71,7 +71,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Axiom Rain',
-    description: 'Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Draw 2 cards; Set chain floor to x11.0; Gain 40 of your dominant resource',
+    description: 'Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Draw 2 cards; Amplify Chain by +11.0; Gain 40 of your dominant resource',
     artKey: 'inf_prismatic_axiom_rain',
     effects: [
       { type: 'look_top_take_drop', look: 10, take: 3, drop: 2 },
@@ -116,7 +116,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Machina Eternal Loop',
-    description: 'Overclock: gain 4 Strain, then Draw 4 cards; Set chain floor to x9.0; Empower the next card you play; +2500 Oblivion; Empower the next card you play; Draw 2 cards',
+    description: 'Overclock: gain 4 Strain, then Draw 4 cards; Amplify Chain by +9.0; Empower the next card you play; +2500 Oblivion; Empower the next card you play; Draw 2 cards',
     artKey: 'inf_machina_eternal_loop',
     effects: [
       { type: 'overclock', strain: 4, then: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 9.0 }, { type: 'multiply_next' }] },
@@ -134,7 +134,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Genesis Throne',
-    description: 'On play: +3000 Oblivion; Draw 5 cards; Set chain floor to x12.0. While on board: +1000 Oblivion per card played while active',
+    description: 'On play: +3000 Oblivion; Draw 5 cards; Amplify Chain by +12.0. While on board: +1000 Oblivion per card played while active',
     artKey: 'inf_genesis_throne',
     attacks: {
       unsynergized: {
@@ -174,7 +174,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Null Apex',
-    description: 'On play: Draw 4 cards; Set chain floor to x8.0; Gain 50 of your dominant resource; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Draw 4 cards; Amplify Chain by +8.0; Gain 50 of your dominant resource; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active',
     artKey: 'inf_null_apex',
     attacks: {
       unsynergized: {
@@ -215,7 +215,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyraxis Colossus',
-    description: 'On play: Gain 100 Embers; Draw 4 cards; +1800 Oblivion; Set chain floor to x6.0. While on board: Gain 80 Embers per card played while active',
+    description: 'On play: Gain 100 Embers; Draw 4 cards; +1800 Oblivion; Amplify Chain by +6.0. While on board: Gain 80 Embers per card played while active',
     artKey: 'inf_pyraxis_colossus',
     attacks: {
       unsynergized: {
@@ -256,7 +256,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Choir Splinter',
-    description: 'On play: Draw 3 cards; Set chain floor to x8.5; Empower the next card you play; +1200 Oblivion. While on board: Chain grows +0.75 per card played while active',
+    description: 'On play: Draw 3 cards; Amplify Chain by +8.5; Empower the next card you play; +1200 Oblivion. While on board: Chain grows +0.75 per card played while active',
     artKey: 'inf_prismatic_choir_splinter',
     attacks: {
       unsynergized: {
@@ -337,7 +337,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Lucent Cataclysm Archon',
-    description: 'On play: Gain 90 Radiance; Draw 4 cards; Set chain floor to x9.0. While on board: +720 Oblivion per card played while active',
+    description: 'On play: Gain 90 Radiance; Draw 4 cards; Amplify Chain by +9.0. While on board: +720 Oblivion per card played while active',
     artKey: 'inf_lucent_cataclysm_archon',
     attacks: {
       unsynergized: {
@@ -377,7 +377,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Brass Eidolon Prime',
-    description: 'On play: Gain 3 Strain; Draw 4 cards; Set chain floor to x7.5; +1500 Oblivion. While on board: +1200 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 3 Strain; Draw 4 cards; Amplify Chain by +7.5; +1500 Oblivion. While on board: +1200 Oblivion whenever you play an Ophanim while active',
     artKey: 'inf_brass_eidolon_prime',
     attacks: {
       unsynergized: {
@@ -423,7 +423,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Entropic Crown',
-      description: 'On play: +1200 Oblivion; Draw 4 cards; Set chain floor to x10.0; +2000 Oblivion. While on board: Adjacent active Seraphim gain +350 Oblivion per card played; Buffs Seraphim and Angel attacks: base +331, chain scaling +0.11, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +258, chain scaling +0.07, cooldown -1, multiplier x1.00',
+      description: 'On play: +1200 Oblivion; Draw 4 cards; Amplify Chain by +10.0; +2000 Oblivion. While on board: Adjacent active Seraphim gain +350 Oblivion per card played; Buffs Seraphim and Angel attacks: base +331, chain scaling +0.11, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +258, chain scaling +0.07, cooldown -1, multiplier x1.00',
     artKey: 'inf_entropic_crown',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 350 }],
       onPlayEffects: [{ type: 'oblivion_flat', value: 1200 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 10.0 }, { type: 'oblivion_flat', value: 2000 }],
@@ -434,7 +434,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Annihilation Field',
-      description: 'On play: Draw 3 cards; Set chain floor to x5.0; Shuffle discard into deck; Draw 4 cards. While on board: Adjacent active Seraphim gain +48 Oblivion per card played; Buffs Seraphim attacks: base +51, chain scaling +0.09, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +40, chain scaling +0.06, cooldown -1, multiplier x1.00',
+      description: 'On play: Draw 3 cards; Amplify Chain by +5.0; Shuffle discard into deck; Draw 4 cards. While on board: Adjacent active Seraphim gain +48 Oblivion per card played; Buffs Seraphim attacks: base +51, chain scaling +0.09, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +40, chain scaling +0.06, cooldown -1, multiplier x1.00',
     artKey: 'inf_annihilation_field',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 48 }],
       onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 5.0 }, { type: 'shuffle_discard' }, { type: 'draw', value: 4 }],
@@ -456,7 +456,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Collapse Lattice',
-      description: 'On play: Draw 4 cards; Set chain floor to x7.0; Draw 3 cards; +2500 Oblivion. While on board: Adjacent active Seraphim gain +38 Oblivion per card played; Adjacent active Seraphim gain +0.22 chain growth; Buffs Angel attacks: base +34, chain scaling +0.04, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +27, chain scaling +0.03, cooldown -1, multiplier x1.00',
+      description: 'On play: Draw 4 cards; Amplify Chain by +7.0; Draw 3 cards; +2500 Oblivion. While on board: Adjacent active Seraphim gain +38 Oblivion per card played; Adjacent active Seraphim gain +0.22 chain growth; Buffs Angel attacks: base +34, chain scaling +0.04, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +27, chain scaling +0.03, cooldown -1, multiplier x1.00',
     artKey: 'inf_prismatic_collapse_lattice',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 38 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.22 }],
       onPlayEffects: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 7.0 }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 2500 }],
@@ -467,7 +467,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Gravebloom Singularity',
-      description: 'On play: Gain 90 Trail; Discard 2 cards, then draw 4 cards; Set chain floor to x9.0; Salvage any 1 card. While on board: Adjacent active Seraphim gain +280 Oblivion per card played; Buffs Seraphim and Angel attacks: base +232, chain scaling +0.10, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +181, chain scaling +0.06, cooldown -1, multiplier x1.00',
+      description: 'On play: Gain 90 Trail; Discard 2 cards, then draw 4 cards; Amplify Chain by +9.0; Salvage any 1 card. While on board: Adjacent active Seraphim gain +280 Oblivion per card played; Buffs Seraphim and Angel attacks: base +232, chain scaling +0.10, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +181, chain scaling +0.06, cooldown -1, multiplier x1.00',
     artKey: 'inf_gravebloom_singularity',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 280 }],
       onPlayEffects: [{ type: 'trail_gain', value: 90 }, { type: 'discard_draw', discard: 2, draw: 4 }, { type: 'set_chain_floor', value: 9.0 }, { type: 'salvage_any' }],
@@ -489,7 +489,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Mech Entropy Foundry',
-      description: 'On play: Gain 4 Strain; Draw 3 cards; Vent 9999 Strain; Set chain floor to x8.5. While on board: Adjacent active Seraphim gain +260 Oblivion per card played; Buffs Seraphim attacks: base +276, chain scaling +0.09, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +215, chain scaling +0.06, cooldown -1, multiplier x1.00',
+      description: 'On play: Gain 4 Strain; Draw 3 cards; Vent 9999 Strain; Amplify Chain by +8.5. While on board: Adjacent active Seraphim gain +260 Oblivion per card played; Buffs Seraphim attacks: base +276, chain scaling +0.09, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +215, chain scaling +0.06, cooldown -1, multiplier x1.00',
     artKey: 'inf_mech_entropy_foundry',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 260 }],
       onPlayEffects: [{ type: 'strain_gain', value: 4 }, { type: 'draw', value: 3 }, { type: 'strain_vent', value: 9999 }, { type: 'set_chain_floor', value: 8.5 }],
@@ -505,7 +505,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: Gain 60 of your dominant resource; Draw 6 cards; Set chain floor to x10.0. After 4 cards played: Draw 7 cards; +3500 Oblivion; Set chain floor to x12.0; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
+    description: 'On summon: Gain 60 of your dominant resource; Draw 6 cards; Amplify Chain by +10.0. After 4 cards played: Draw 7 cards; +3500 Oblivion; Amplify Chain by +12.0; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
     artKey: 'inf_sovereign_void',
     summonCost: [],
     extraSummonConditions: [
@@ -519,7 +519,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Null Dominion',
       cardsPlayedRequirement: 4,
-      description: 'Draw 7 cards; +3500 Oblivion; Set chain floor to x12.0; Empower the next card you play',
+      description: 'Draw 7 cards; +3500 Oblivion; Amplify Chain by +12.0; Empower the next card you play',
       effects: [
         { type: 'draw', value: 7 },
         { type: 'oblivion_flat', value: 3500 },
@@ -559,7 +559,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Eternity Rupture',
-    description: 'On summon: Draw 5 cards; +2000 Oblivion; Set chain floor to x7.0. After 4 cards played: Draw 5 cards; +3000 Oblivion; Set chain floor to x10.0; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
+    description: 'On summon: Draw 5 cards; +2000 Oblivion; Amplify Chain by +7.0. After 4 cards played: Draw 5 cards; +3000 Oblivion; Amplify Chain by +10.0; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
     artKey: 'inf_eternity_rupture',
     summonCost: [],
     extraSummonConditions: [
@@ -574,7 +574,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Rupture Convergence',
       cardsPlayedRequirement: 4,
-      description: 'Draw 5 cards; +3000 Oblivion; Set chain floor to x10.0; Empower the next card you play',
+      description: 'Draw 5 cards; +3000 Oblivion; Amplify Chain by +10.0; Empower the next card you play',
       effects: [
         { type: 'draw', value: 5 },
         { type: 'oblivion_flat', value: 3000 },
@@ -614,7 +614,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Riftborn Sovereign',
-    description: 'On summon: Gain 120 Embers; Draw 5 cards; +1500 Oblivion; Set chain floor to x6.0. After 5 cards played: Spend 9999 Embers; Draw 4 cards; +4000 Oblivion; Empower the next card you play. While on board: +400 Oblivion per card played while on board',
+    description: 'On summon: Gain 120 Embers; Draw 5 cards; +1500 Oblivion; Amplify Chain by +6.0. After 5 cards played: Spend 9999 Embers; Draw 4 cards; +4000 Oblivion; Empower the next card you play. While on board: +400 Oblivion per card played while on board',
     artKey: 'inf_riftborn_sovereign',
     summonCost: [],
     extraSummonConditions: [
@@ -669,7 +669,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Judgement Array',
-    description: 'On summon: Draw 5 cards; Gain 40 of your dominant resource; Set chain floor to x8.5. After 4 cards played: Search your deck for 1 matching Ophanim or Cherubim; Draw 4 cards; Empower the next card you play; +2800 Oblivion. While on board: +470 Oblivion per card played while on board',
+    description: 'On summon: Draw 5 cards; Gain 40 of your dominant resource; Amplify Chain by +8.5. After 4 cards played: Search your deck for 1 matching Ophanim or Cherubim; Draw 4 cards; Empower the next card you play; +2800 Oblivion. While on board: +470 Oblivion per card played while on board',
     artKey: 'inf_prismatic_judgement_array',
     summonCost: [],
     extraSummonConditions: [
@@ -724,7 +724,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Elegy Titan',
-    description: 'On summon: Gain 120 Trail; Draw 4 cards; Gain +120% total Oblivion this turn; Set chain floor to x6.8. After 5 cards played: Salvage any 1 card; Draw 4 cards; Set chain floor to x9.6; +3200 Oblivion. While on board: +520 Oblivion per card played while on board',
+    description: 'On summon: Gain 120 Trail; Draw 4 cards; Gain +120% total Oblivion this turn; Amplify Chain by +6.8. After 5 cards played: Salvage any 1 card; Draw 4 cards; Amplify Chain by +9.6; +3200 Oblivion. While on board: +520 Oblivion per card played while on board',
     artKey: 'inf_thornbound_elegy_titan',
     summonCost: [],
     extraSummonConditions: [
@@ -739,7 +739,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Funeral Surge',
       cardsPlayedRequirement: 5,
-      description: 'Salvage any 1 card; Draw 4 cards; Set chain floor to x9.6; +3200 Oblivion',
+      description: 'Salvage any 1 card; Draw 4 cards; Amplify Chain by +9.6; +3200 Oblivion',
       effects: [
         { type: 'salvage_any' },
         { type: 'draw', value: 4 },
@@ -779,7 +779,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Mechanical Apotheosis Core',
-    description: 'On summon: Gain 4 Strain; Draw 5 cards; Set chain floor to x7.8; +1800 Oblivion. After 4 cards played: Overclock: gain 3 Strain, then Draw 5 cards; Empower the next card you play; Set chain floor to x10.5; +3500 Oblivion. While on board: +560 Oblivion per card played while on board',
+    description: 'On summon: Gain 4 Strain; Draw 5 cards; Amplify Chain by +7.8; +1800 Oblivion. After 4 cards played: Overclock: gain 3 Strain, then Draw 5 cards; Empower the next card you play; Amplify Chain by +10.5; +3500 Oblivion. While on board: +560 Oblivion per card played while on board',
     artKey: 'inf_mechanical_apotheosis_core',
     summonCost: [],
     extraSummonConditions: [
@@ -795,7 +795,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Core Singularity',
       cardsPlayedRequirement: 4,
-      description: 'Overclock: gain 3 Strain, then Draw 5 cards; Empower the next card you play; Set chain floor to x10.5; +3500 Oblivion',
+      description: 'Overclock: gain 3 Strain, then Draw 5 cards; Empower the next card you play; Amplify Chain by +10.5; +3500 Oblivion',
       effects: [
         { type: 'overclock', strain: 3, then: [{ type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'set_chain_floor', value: 10.5 }] },
         { type: 'oblivion_flat', value: 3500 },
@@ -836,7 +836,7 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: "Sorveth's Final Breath",
-    description: 'Draw 7 cards; Set chain floor to x12.0; Empower the next card you play; +3400 Oblivion',
+    description: 'Draw 7 cards; Amplify Chain by +12.0; Empower the next card you play; +3400 Oblivion',
     artKey: 'inf_bgi_sorveths_final_breath',
     effects: [
       { type: 'draw', value: 7 },
@@ -869,7 +869,7 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Obsidian Covenant Colossus',
-    description: 'On play: Draw 4 cards; Set chain floor to x9.2; +1900 Oblivion. While on board: +900 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Draw 4 cards; Amplify Chain by +9.2; +1900 Oblivion. While on board: +900 Oblivion whenever you play an Ophanim while active',
     artKey: 'inf_bgi_obsidian_covenant_colossus',
     attacks: {
       unsynergized: {
@@ -909,7 +909,7 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Glassrose Leviathan',
-    description: 'On play: Draw 4 cards; Empower the next card you play; Set chain floor to x8.4. While on board: +780 Oblivion per card played while active',
+    description: 'On play: Draw 4 cards; Empower the next card you play; Amplify Chain by +8.4. While on board: +780 Oblivion per card played while active',
     artKey: 'inf_bgi_glassrose_leviathan',
     attacks: {
       unsynergized: {
@@ -952,7 +952,7 @@ export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Inferno of Two Truths',
-      description: 'On play: Draw 4 cards; Set chain floor to x8.0; Set chain multiplier to x4.5; +2200 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played; Buffs Seraphim and Angel attacks: base +248, chain scaling +0.10, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +193, chain scaling +0.06, cooldown -1, multiplier x1.00',
+      description: 'On play: Draw 4 cards; Amplify Chain by +8.0; Set chain multiplier to x4.5; +2200 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played; Buffs Seraphim and Angel attacks: base +248, chain scaling +0.10, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +193, chain scaling +0.06, cooldown -1, multiplier x1.00',
     artKey: 'inf_bgi_inferno_of_two_truths',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 300 }],
       onPlayEffects: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 8.0 }, { type: 'chain_multiplier_set', value: 4.5 }, { type: 'oblivion_flat', value: 2200 }],
@@ -977,7 +977,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Vaelmor, Umbra Sovereign',
-    description: 'On summon: Draw 6 cards; Set chain floor to x10.0; +2500 Oblivion. After 4 cards played: Draw 6 cards; Set chain multiplier to x6.0; +3800 Oblivion. While on board: +640 Oblivion per card played while on board',
+    description: 'On summon: Draw 6 cards; Amplify Chain by +10.0; +2500 Oblivion. After 4 cards played: Draw 6 cards; Set chain multiplier to x6.0; +3800 Oblivion. While on board: +640 Oblivion per card played while on board',
     artKey: 'inf_bgi_vaelmor_umbra_sovereign',
     summonCost: [],
     extraSummonConditions: [
@@ -1031,7 +1031,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Midplace Apocalypse',
-    description: 'On summon: Draw 5 cards; Empower the next card you play; Set chain floor to x9.4. After 5 cards played: Salvage any 1 card; Draw 5 cards; Set chain floor to x11.2; +3500 Oblivion. While on board: +620 Oblivion per card played while on board',
+    description: 'On summon: Draw 5 cards; Empower the next card you play; Amplify Chain by +9.4. After 5 cards played: Salvage any 1 card; Draw 5 cards; Amplify Chain by +11.2; +3500 Oblivion. While on board: +620 Oblivion per card played while on board',
     artKey: 'inf_bgi_midplace_apocalypse',
     summonCost: [],
     extraSummonConditions: [
@@ -1046,7 +1046,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Plateau of Ruin',
       cardsPlayedRequirement: 5,
-      description: 'Salvage any 1 card; Draw 5 cards; Set chain floor to x11.2; +3500 Oblivion',
+      description: 'Salvage any 1 card; Draw 5 cards; Amplify Chain by +11.2; +3500 Oblivion',
       effects: [
         { type: 'salvage_any' },
         { type: 'draw', value: 5 },
@@ -1086,7 +1086,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Polar Cataclysm',
-    description: 'On summon: Draw 5 cards; Set chain floor to x4.2. After 6 cards played: Draw 5 cards; Empower the next card you play; +720 Oblivion. While on board: +760 Oblivion per card played while on board',
+    description: 'On summon: Draw 5 cards; Amplify Chain by +4.2. After 6 cards played: Draw 5 cards; Empower the next card you play; +720 Oblivion. While on board: +760 Oblivion per card played while on board',
     artKey: 'sv_infinite_polar_fission',
     summonCost: ['sv-ser-polar-circuit', 'sv-ser-icegrid'],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }, { type: 'cherubim_active_gte', value: 2 }],
@@ -1129,7 +1129,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Neon Deluge',
-    description: 'On summon: Draw 6 cards; Set chain multiplier to x4.4. After 6 cards played: Draw 5 cards; +840 Oblivion; Set chain floor to x5.1. While on board: Chain grows +0.16 per card played while on board',
+    description: 'On summon: Draw 6 cards; Set chain multiplier to x4.4. After 6 cards played: Draw 5 cards; +840 Oblivion; Amplify Chain by +5.1. While on board: Chain grows +0.16 per card played while on board',
     artKey: 'sv_infinite_neon_snowfall',
     summonCost: ['sv-cher-station-nullpoint', 'sv-cher-aeldris'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
@@ -1137,7 +1137,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Aurora Shock',
       cardsPlayedRequirement: 6,
-      description: 'Draw 5 cards; +840 Oblivion; Set chain floor to x5.1',
+      description: 'Draw 5 cards; +840 Oblivion; Amplify Chain by +5.1',
       effects: [{ type: 'draw', value: 5 }, { type: 'oblivion_flat', value: 840 }, { type: 'set_chain_floor', value: 5.1 }],
     },
     attacks: {
@@ -1215,7 +1215,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Dominion',
-    description: 'On summon: Draw 5 cards; Set chain floor to x5.6; +1020 Oblivion. After 6 cards played: Draw 5 cards; Empower the next card you play; +1080 Oblivion. While on board: +880 Oblivion per card played while on board',
+    description: 'On summon: Draw 5 cards; Amplify Chain by +5.6; +1020 Oblivion. After 6 cards played: Draw 5 cards; Empower the next card you play; +1080 Oblivion. While on board: +880 Oblivion per card played while on board',
     artKey: 'sv_infinite_black_ice_throne',
     summonCost: ['sv-eternal-white-static', 'sv-cher-station-nullpoint'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
@@ -1304,7 +1304,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Polar Cataclysm',
-    description: 'Draw 6 cards; Set chain floor to x10.5; Empower the next card you play; +3200 Oblivion',
+    description: 'Draw 6 cards; Amplify Chain by +10.5; Empower the next card you play; +3200 Oblivion',
     artKey: 'inf_sv_polar_cataclysm',
     effects: [
       { type: 'draw', value: 6 },
@@ -1334,7 +1334,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Crystal Maelstrom',
-    description: 'Draw 5 cards; Set chain floor to x11.2; +3300 Oblivion',
+    description: 'Draw 5 cards; Amplify Chain by +11.2; +3300 Oblivion',
     artKey: 'inf_sv_crystal_maelstrom',
     effects: [
       { type: 'draw', value: 5 },
@@ -1348,7 +1348,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Dominion',
-    description: 'Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Draw 3 cards; Set chain floor to x9.8; +3100 Oblivion',
+    description: 'Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Draw 3 cards; Amplify Chain by +9.8; +3100 Oblivion',
     artKey: 'inf_sv_black_ice_dominion',
     effects: [
       { type: 'look_top_take_drop', look: 12, take: 4, drop: 1 },
@@ -1363,7 +1363,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Aurora Singularity',
-    description: 'Draw 8 cards; Empower the next card you play; Set chain floor to x12.5; +3600 Oblivion',
+    description: 'Draw 8 cards; Empower the next card you play; Amplify Chain by +12.5; +3600 Oblivion',
     artKey: 'inf_sv_aurora_singularity',
     effects: [
       { type: 'draw', value: 8 },

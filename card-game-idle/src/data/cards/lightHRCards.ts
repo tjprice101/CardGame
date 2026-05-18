@@ -70,7 +70,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Ember Surge',
-    description: '+0 Oblivion (scales with Radiance — up to +80)',
+    description: '+0 Oblivion (scales with Radiance  Eup to +80)',
     artKey: 'hr_light_radiant_surge',
     effects: [
       { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: min(radiance * 8, 80)
@@ -82,7 +82,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberforged',
-    description: 'Spend all Radiance; +0 Oblivion (scales with Radiance drained — 25 Oblivion per Radiance spent)',
+    description: 'Spend all Radiance; +0 Oblivion (scales with Radiance drained  E25 Oblivion per Radiance spent)',
     artKey: 'hr_light_sunforged',
     effects: [
       { type: 'radiance_spend', value: 9999 },
@@ -196,7 +196,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'Emberthorn Dividend',
-    description: 'Spend all Radiance; +0 Oblivion (scales with Radiance drained — 18 Oblivion per Radiance spent)',
+    description: 'Spend all Radiance; +0 Oblivion (scales with Radiance drained  E18 Oblivion per Radiance spent)',
     artKey: 'hr_light_celestial_dividend',
     effects: [
       { type: 'radiance_spend', value: 9999 },
@@ -328,7 +328,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Ember Cycle',
-    description: 'Choose and discard 3 cards; Set chain floor to x1.2',
+    description: 'Choose and discard 3 cards; Amplify Chain by +1.2',
     artKey: 'hr_light_luminous_cycle',
     effects: [
       { type: 'discard_choice', value: 3 },
@@ -428,7 +428,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'The Emberthorn Revelation',
-    description: 'Double current Radiance; +0 Oblivion; Set chain floor to x1.5',
+    description: 'Double current Radiance; +0 Oblivion; Amplify Chain by +1.5',
     artKey: 'hr_light_grand_illumination',
     effects: [
       { type: 'radiance_double' },

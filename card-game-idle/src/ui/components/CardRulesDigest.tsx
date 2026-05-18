@@ -25,10 +25,15 @@ function CardRulesDigest({
   sectionBackground?: string;
   sectionBorder?: string;
 }) {
-  const sections = useMemo(
-    () => getCardSummarySections(card).slice(0, maxSections ?? (variant === 'preview' ? 3 : Number.MAX_SAFE_INTEGER)),
-    [card, maxSections, variant],
-  );
+  const sections = useMemo(() => {
+    const all = getCardSummarySections(card);
+    // In preview mode, filter out 'On Play' and 'Play' — the 'Ability' section already
+    // contains the canonical description which includes on-play text.
+    const visible = variant === 'preview'
+      ? all.filter(s => s.title !== 'On Play' && s.title !== 'Play')
+      : all;
+    return visible.slice(0, maxSections ?? (variant === 'preview' ? 3 : Number.MAX_SAFE_INTEGER));
+  }, [card, maxSections, variant]);
   if (sections.length === 0) return null;
 
   if (variant === 'preview') {
@@ -46,7 +51,7 @@ function CardRulesDigest({
               }}
             >
               <div style={{
-                fontSize: 8.5,
+                fontSize: 7,
                 letterSpacing: 0.9,
                 textTransform: 'uppercase',
                 color: labelColor,
@@ -56,7 +61,7 @@ function CardRulesDigest({
                 {section.title}
               </div>
               <div style={{
-                fontSize: 11,
+                fontSize: 9,
                 lineHeight: 1.35,
                 color: textColor,
                 display: '-webkit-box',

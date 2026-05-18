@@ -236,7 +236,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Pyre Ignite',
-    description: 'Gain 3 Embers; Set chain floor to x1.2',
+    description: 'Gain 3 Embers; Amplify Chain by +1.2',
     artKey: 'seek_fire_pyre_ignite',
     effects: [
       { type: 'ember_gain', value: 3 },
@@ -393,7 +393,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Ember Chain',
-    description: 'Gain 0 Embers; Set chain floor to x1.3',
+    description: 'Gain 0 Embers; Amplify Chain by +1.3',
     artKey: 'seek_fire_ember_chain',
     effects: [
       { type: 'ember_gain', value: 0 },  // dynamic sentinel: Ophanim count in hand
@@ -406,7 +406,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void Combustion',
-    description: 'Spend 9999 Embers; +0 Oblivion; Set chain floor to x1.4',
+    description: 'Spend 9999 Embers; +0 Oblivion; Amplify Chain by +1.4',
     artKey: 'seek_fire_void_combustion',
     effects: [
       { type: 'ember_spend', value: 9999 },

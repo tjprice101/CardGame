@@ -7,7 +7,7 @@ export const neutralityAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'The Beginning and the End',
-    description: 'On summon: Draw 3 cards; Set chain floor to x1.4. After 3 cards played: Draw 4 cards; Shuffle discard into deck; Set chain floor to x2.0. While on board: +20 Oblivion per card played while on board',
+    description: 'On summon: Draw 3 cards; Amplify Chain by +1.4. After 3 cards played: Draw 4 cards; Shuffle discard into deck; Amplify Chain by +2.0. While on board: +20 Oblivion per card played while on board',
     artKey: 'angel_neutral_beginning',
     summonCost: ['ser-neutral-null', 'ser-neutral-null'],
     onSummonEffects: [
@@ -17,7 +17,7 @@ export const neutralityAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Paradox Bloom',
       cardsPlayedRequirement: 3,
-      description: 'Draw 4 cards; Shuffle discard into deck; Set chain floor to x2.0',
+      description: 'Draw 4 cards; Shuffle discard into deck; Amplify Chain by +2.0',
       effects: [
         { type: 'draw', value: 4 },
         { type: 'shuffle_discard' },
@@ -56,7 +56,7 @@ export const neutralityAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Legendary',
     name: 'Aegis of Presence',
-    description: 'On summon: Draw 4 cards; +120 Oblivion. After 4 cards played: Draw 5 cards; Salvage any 1 card; Set chain floor to x2.4. While on board: +35 Oblivion whenever you play an Ophanim while on board',
+    description: 'On summon: Draw 4 cards; +120 Oblivion. After 4 cards played: Draw 5 cards; Salvage any 1 card; Amplify Chain by +2.4. While on board: +35 Oblivion whenever you play an Ophanim while on board',
     artKey: 'angel_neutral_presence',
     summonCost: ['angel-neutral-beginning', 'ser-neutral-equilibrium'],
     onSummonEffects: [
@@ -66,7 +66,7 @@ export const neutralityAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Presence Absolute',
       cardsPlayedRequirement: 4,
-      description: 'Draw 5 cards; Salvage any 1 card; Set chain floor to x2.4',
+      description: 'Draw 5 cards; Salvage any 1 card; Amplify Chain by +2.4',
       effects: [
         { type: 'draw', value: 5 },
         { type: 'salvage_any' },
@@ -105,7 +105,7 @@ export const neutralityAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Legendary',
     name: 'Aegis of Equilibrium',
-    description: 'On summon: Draw 4 cards; Shuffle discard into deck; Set chain multiplier to x2.2. After 5 cards played: Draw 4 cards; Empower the next card you play; Set chain floor to x2.5; +250 Oblivion. While on board: Chain grows +0.14 per card played while on board',
+    description: 'On summon: Draw 4 cards; Shuffle discard into deck; Set chain multiplier to x2.2. After 5 cards played: Draw 4 cards; Empower the next card you play; Amplify Chain by +2.5; +250 Oblivion. While on board: Chain grows +0.14 per card played while on board',
     artKey: 'angel_neutral_equilibrium',
     summonCost: ['angel-neutral-presence', 'ser-neutral-still'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
@@ -117,7 +117,7 @@ export const neutralityAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Final Measure',
       cardsPlayedRequirement: 5,
-      description: 'Draw 4 cards; Empower the next card you play; Set chain floor to x2.5; +250 Oblivion',
+      description: 'Draw 4 cards; Empower the next card you play; Amplify Chain by +2.5; +250 Oblivion',
       effects: [
         { type: 'draw', value: 4 },
         { type: 'multiply_next' },

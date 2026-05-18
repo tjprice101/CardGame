@@ -159,7 +159,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'bg-ser-vethkorath-starspine',
     name: 'Vethkorath Starspine',
-    description: 'On play: Gain 2 Strain; Draw 2 cards; Set chain floor to x1.9. While on board: +22 Oblivion per card played while active',
+    description: 'On play: Gain 2 Strain; Draw 2 cards; Amplify Chain by +1.9. While on board: +22 Oblivion per card played while active',
     rarity: 'Epic',
     artKey: 'bg_ser_vethkorath_starspine',
     bonusType: 'oblivion_per_card',
@@ -302,7 +302,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-oph-violet-crown-drift',
     name: 'Violet Crown Drift',
-    description: 'Gain 2 Strain; Set chain floor to x1.7; Empower the next card you play; Draw 1 card',
+    description: 'Gain 2 Strain; Amplify Chain by +1.7; Empower the next card you play; Draw 1 card',
     rarity: 'Rare',
     artKey: 'bg_oph_violet_crown_drift',
     effects: [{ type: 'strain_gain', value: 2 }, { type: 'set_chain_floor', value: 1.7 }],
@@ -334,7 +334,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-oph-chordbearing-migration',
     name: 'Chordbearing Migration',
-    description: 'Draw 4 cards; Gain 16 Radiance; Set chain floor to x2.2',
+    description: 'Draw 4 cards; Gain 16 Radiance; Amplify Chain by +2.2',
     rarity: 'Legendary',
     artKey: 'bg_oph_chordbearing_migration',
     effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 16 }, { type: 'set_chain_floor', value: 2.2 }],
@@ -402,7 +402,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-et-noonproof-transit',
     name: 'Noonproof Transit',
-    description: 'Draw 4 cards; Set chain floor to x3.0; Gain 20 Radiance',
+    description: 'Draw 4 cards; Amplify Chain by +3.0; Gain 20 Radiance',
     rarity: 'Eternal',
     artKey: 'bg_et_noonproof_transit',
     effects: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 3.0 }, { type: 'radiance_gain', value: 20 }],
@@ -432,7 +432,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'bg-inf-soleth-vair-worldflower',
     name: 'Soleth Vair Worldflower',
-    description: 'On play: Draw 3 cards; Salvage any 1 card; Set chain floor to x4.5. While on board: Resource generation +36 while active',
+    description: 'On play: Draw 3 cards; Salvage any 1 card; Amplify Chain by +4.5. While on board: Resource generation +36 while active',
     rarity: 'Infinite',
     artKey: 'bg_inf_soleth_vair_worldflower',
     bonusType: 'resource_generation',

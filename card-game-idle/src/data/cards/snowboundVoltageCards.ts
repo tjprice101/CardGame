@@ -217,7 +217,7 @@ const SNOWBOUND_SERAPHIM_SPECS: SnowboundSeraphimSpec[] = [
   {
     definitionId: 'sv-ser-glacier-relay',
     name: 'Glacier Relay Seraphim',
-    description: 'On play: Gain 1 Radiance; Set chain floor to x1.25. While on board: Chain grows +0.05 per card played while active',
+    description: 'On play: Gain 1 Radiance; Amplify Chain by +1.25. While on board: Chain grows +0.05 per card played while active',
     rarity: 'Rare',
     artKey: 'sv_ser_glacier_relay',
     bonusType: 'chain_bonus',
@@ -429,7 +429,7 @@ const SNOWBOUND_CHERUBIM_SPECS: SnowboundCherubimSpec[] = [
   {
     definitionId: 'sv-cher-last-transmission',
     name: 'The Last Transmission',
-    description: 'On play: Draw 2 cards; Set chain floor to x1.4. While on board: +18 Oblivion per card played; Buffs Angel attacks: base +18, chain scaling +0.10, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +14, chain scaling +0.07, cooldown -1, multiplier x1.00',
+    description: 'On play: Draw 2 cards; Amplify Chain by +1.4. While on board: +18 Oblivion per card played; Buffs Angel attacks: base +18, chain scaling +0.10, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +14, chain scaling +0.07, cooldown -1, multiplier x1.00',
     rarity: 'Legendary',
     artKey: 'sv_cher_last_transmission',
     maxDurability: 4,
@@ -450,7 +450,7 @@ const SNOWBOUND_OPHANIM_SPECS: SnowboundOphanimSpec[] = [
   {
     definitionId: 'sv-oph-glacier-abyss',
     name: 'The Glacier Abyss',
-    description: 'Gain 3 Strain; Set chain floor to x1.3; Gain 3 of your dominant resource; Draw 1 card',
+    description: 'Gain 3 Strain; Amplify Chain by +1.3; Gain 3 of your dominant resource; Draw 1 card',
     rarity: 'Common',
     artKey: 'sv_oph_glacier_abyss',
     effects: [{ type: 'strain_gain', value: 3 }, { type: 'set_chain_floor', value: 1.3 }],
@@ -474,7 +474,7 @@ const SNOWBOUND_OPHANIM_SPECS: SnowboundOphanimSpec[] = [
   {
     definitionId: 'sv-oph-first-static',
     name: 'The First Static',
-    description: 'Gain 4 Strain; Empower the next card you play; Set chain floor to x1.4',
+    description: 'Gain 4 Strain; Empower the next card you play; Amplify Chain by +1.4',
     rarity: 'Epic',
     artKey: 'sv_oph_first_static',
     effects: [{ type: 'strain_gain', value: 4 }, { type: 'multiply_next' }],
@@ -498,7 +498,7 @@ const SNOWBOUND_OPHANIM_SPECS: SnowboundOphanimSpec[] = [
   {
     definitionId: 'sv-oph-drifting-relay',
     name: 'The Drifting Relay',
-    description: 'Gain 5 Radiance; Draw 2 cards; Set chain floor to x1.7',
+    description: 'Gain 5 Radiance; Draw 2 cards; Amplify Chain by +1.7',
     rarity: 'Legendary',
     artKey: 'sv_oph_drifting_relay',
     effects: [{ type: 'radiance_gain', value: 5 }, { type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 1.7 }],
@@ -509,7 +509,7 @@ const SNOWBOUND_ANGEL_SPECS: SnowboundAngelSpec[] = [
   {
     definitionId: 'sv-angel-overcurrent-chorus',
     name: 'Overcurrent Chorus',
-    description: 'On summon: Gain 5 Strain; Draw 2 cards; Set chain floor to x1.5. After 3 cards played: Draw 2 cards; +80 Oblivion. While on board: +16 Oblivion per card played while on board',
+    description: 'On summon: Gain 5 Strain; Draw 2 cards; Amplify Chain by +1.5. After 3 cards played: Draw 2 cards; +80 Oblivion. While on board: +16 Oblivion per card played while on board',
     rarity: 'Common',
     artKey: 'sv_angel_overcurrent_chorus',
     summonCost: ['sv-ser-frostcoil', 'sv-ser-static-sleet'],
@@ -562,7 +562,7 @@ const SNOWBOUND_ANGEL_SPECS: SnowboundAngelSpec[] = [
   {
     definitionId: 'sv-angel-icebound-conductor',
     name: 'Icebound Conductor',
-    description: 'On summon: Draw 4 cards; Set chain multiplier to x1.8. After 4 cards played: Draw 3 cards; Gain 1 Radiance; Set chain floor to x2.1. While on board: +18 Oblivion per card played while on board',
+    description: 'On summon: Draw 4 cards; Set chain multiplier to x1.8. After 4 cards played: Draw 3 cards; Gain 1 Radiance; Amplify Chain by +2.1. While on board: +18 Oblivion per card played while on board',
     rarity: 'Rare',
     artKey: 'sv_angel_icebound_conductor',
     summonCost: ['sv-angel-whiteout-judicator', 'sv-ser-icegrid'],
@@ -570,7 +570,7 @@ const SNOWBOUND_ANGEL_SPECS: SnowboundAngelSpec[] = [
     activatedAbility: {
       name: 'Frozen Current',
       cardsPlayedRequirement: 4,
-      description: 'Draw 3 cards; Gain 1 Radiance; Set chain floor to x2.1',
+      description: 'Draw 3 cards; Gain 1 Radiance; Amplify Chain by +2.1',
       effects: [{ type: 'draw', value: 3 }, { type: 'radiance_gain', value: 1 }, { type: 'set_chain_floor', value: 2.1 }],
     },
     primaryName: 'Icebound Conductor Ordinance',
@@ -588,7 +588,7 @@ const SNOWBOUND_ANGEL_SPECS: SnowboundAngelSpec[] = [
   {
     definitionId: 'sv-angel-voltage-patriarch',
     name: 'Voltage Patriarch',
-    description: 'On summon: Draw 3 cards; +180 Oblivion; Set chain floor to x1.9. After 5 cards played: Draw 4 cards; Empower the next card you play; +220 Oblivion. While on board: +24 Oblivion per card played while on board',
+    description: 'On summon: Draw 3 cards; +180 Oblivion; Amplify Chain by +1.9. After 5 cards played: Draw 4 cards; Empower the next card you play; +220 Oblivion. While on board: +24 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'sv_angel_voltage_patriarch',
     summonCost: ['sv-angel-icebound-conductor', 'sv-ser-polar-circuit', 'sv-ser-thunder-arch'],

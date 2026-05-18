@@ -7,7 +7,7 @@ export const eternalOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: "Void's Reaping",
-    description: 'Draw 3 cards; Gain 5 of your dominant resource; Set chain floor to x2.0',
+    description: 'Draw 3 cards; Gain 5 of your dominant resource; Amplify Chain by +2.0',
     artKey: 'btei_voids_reaping',
     effects: [
       { type: 'draw', value: 3 },
@@ -21,7 +21,7 @@ export const eternalOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Temporal Ruin',
-    description: 'Draw 3 cards; Set chain floor to x5.0; +500 Oblivion',
+    description: 'Draw 3 cards; Amplify Chain by +5.0; +500 Oblivion',
     artKey: 'btei_temporal_ruin',
     effects: [
       { type: 'draw', value: 3 },
@@ -35,7 +35,7 @@ export const eternalOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Null Edict',
-    description: 'Draw 4 cards; Set chain floor to x6.0; +700 Oblivion',
+    description: 'Draw 4 cards; Amplify Chain by +6.0; +700 Oblivion',
     artKey: 'btei_null_edict',
     effects: [
       { type: 'draw', value: 4 },
@@ -49,7 +49,7 @@ export const eternalOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Axiom of Oblivion',
-    description: 'Draw 5 cards; Set chain floor to x8.0; +1000 Oblivion; Gain 20 of your dominant resource',
+    description: 'Draw 5 cards; Amplify Chain by +8.0; +1000 Oblivion; Gain 20 of your dominant resource',
     artKey: 'btei_axiom_of_oblivion',
     effects: [
       { type: 'draw', value: 5 },
@@ -67,7 +67,7 @@ export const eternalSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Eternal Vigil',
-    description: 'On play: +120 Oblivion; Draw 2 cards; Set chain floor to x2.0. While on board: +50 Oblivion per card played while active',
+    description: 'On play: +120 Oblivion; Draw 2 cards; Amplify Chain by +2.0. While on board: +50 Oblivion per card played while active',
     artKey: 'btei_eternal_vigil',
     attacks: {
       unsynergized: {
@@ -107,7 +107,7 @@ export const eternalSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Colossus Advent',
-    description: 'On play: +350 Oblivion; Draw 4 cards; Set chain floor to x6.0. While on board: +200 Oblivion per card played while active',
+    description: 'On play: +350 Oblivion; Draw 4 cards; Amplify Chain by +6.0. While on board: +200 Oblivion per card played while active',
     artKey: 'btei_colossus_advent',
     attacks: {
       unsynergized: {
@@ -150,7 +150,7 @@ export const eternalCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Sovereign Domain',
-    description: 'On play: +150 Oblivion; Draw 2 cards; Set chain floor to x3.0; +150 Oblivion. While on board: Adjacent active Seraphim gain +80 Oblivion per card played; Buffs Seraphim attacks: base +85, chain scaling +0.08, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +66, chain scaling +0.05, cooldown -1, multiplier x1.00',
+    description: 'On play: +150 Oblivion; Draw 2 cards; Amplify Chain by +3.0; +150 Oblivion. While on board: Adjacent active Seraphim gain +80 Oblivion per card played; Buffs Seraphim attacks: base +85, chain scaling +0.08, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +66, chain scaling +0.05, cooldown -1, multiplier x1.00',
     artKey: 'btei_sovereign_domain',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 80 }],
     onPlayEffects: [{ type: 'oblivion_flat', value: 150 }, { type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 3.0 }, { type: 'oblivion_flat', value: 150 }],
@@ -161,7 +161,7 @@ export const eternalCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: "Architect's Manifold",
-    description: 'On play: +250 Oblivion; Draw 3 cards; Set chain floor to x4.0; Set chain floor to x4.5; +250 Oblivion. While on board: Adjacent active Seraphim gain +110 Oblivion per card played; Adjacent active Seraphim gain +0.05 chain growth; Buffs Seraphim attacks: base +99, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +77, chain scaling +0.00, cooldown -1, multiplier x1.00',
+    description: 'On play: +250 Oblivion; Draw 3 cards; Amplify Chain by +4.0; Amplify Chain by +4.5; +250 Oblivion. While on board: Adjacent active Seraphim gain +110 Oblivion per card played; Adjacent active Seraphim gain +0.05 chain growth; Buffs Seraphim attacks: base +99, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +77, chain scaling +0.00, cooldown -1, multiplier x1.00',
     artKey: 'btei_architects_manifold',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 110 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.05 }],
     onPlayEffects: [{ type: 'oblivion_flat', value: 250 }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 4.0 }, { type: 'set_chain_floor', value: 4.5 }, { type: 'oblivion_flat', value: 250 }],
@@ -175,7 +175,7 @@ export const eternalAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Convergence of Eternity',
-    description: 'On summon: Gain 15 of your dominant resource; Draw 4 cards; Set chain floor to x3.5. After 5 cards played: Gain 30 of your dominant resource; Draw 4 cards; Set chain floor to x4.5; Empower the next card you play. While on board: +130 Oblivion per card played while on board',
+    description: 'On summon: Gain 15 of your dominant resource; Draw 4 cards; Amplify Chain by +3.5. After 5 cards played: Gain 30 of your dominant resource; Draw 4 cards; Amplify Chain by +4.5; Empower the next card you play. While on board: +130 Oblivion per card played while on board',
     artKey: 'btei_convergence_of_eternity',
     summonCost: [],
     extraSummonConditions: [
@@ -189,7 +189,7 @@ export const eternalAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Infinite Merge',
       cardsPlayedRequirement: 5,
-      description: 'Gain 30 of your dominant resource; Draw 4 cards; Set chain floor to x4.5; Empower the next card you play',
+      description: 'Gain 30 of your dominant resource; Draw 4 cards; Amplify Chain by +4.5; Empower the next card you play',
       effects: [
         { type: 'dominant_stack_gain', value: 30 },
         { type: 'draw', value: 4 },
@@ -229,7 +229,7 @@ export const eternalAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Omniscient Fracture',
-    description: 'On summon: Gain 20 of your dominant resource; Draw 5 cards; Set chain floor to x5.5. After 6 cards played: Gain 40 of your dominant resource; Draw 5 cards; Set chain floor to x6.5; Empower the next card you play; +600 Oblivion. While on board: +200 Oblivion per card played while on board',
+    description: 'On summon: Gain 20 of your dominant resource; Draw 5 cards; Amplify Chain by +5.5. After 6 cards played: Gain 40 of your dominant resource; Draw 5 cards; Amplify Chain by +6.5; Empower the next card you play; +600 Oblivion. While on board: +200 Oblivion per card played while on board',
     artKey: 'btei_omniscient_fracture',
     summonCost: [],
     extraSummonConditions: [
@@ -243,7 +243,7 @@ export const eternalAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Parallax Collapse',
       cardsPlayedRequirement: 6,
-      description: 'Gain 40 of your dominant resource; Draw 5 cards; Set chain floor to x6.5; Empower the next card you play; +600 Oblivion',
+      description: 'Gain 40 of your dominant resource; Draw 5 cards; Amplify Chain by +6.5; Empower the next card you play; +600 Oblivion',
       effects: [
         { type: 'dominant_stack_gain', value: 40 },
         { type: 'draw', value: 5 },
@@ -287,7 +287,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Paradox Throne',
-    description: 'Look at the top 8 cards, take 2 cards, put 2 cards on the bottom, and discard the rest; Empower the next card you play; Set chain floor to x5.5',
+    description: 'Look at the top 8 cards, take 2 cards, put 2 cards on the bottom, and discard the rest; Empower the next card you play; Amplify Chain by +5.5',
     artKey: 'btei_neutrality_paradox_crown',
     effects: [
       { type: 'look_top_take_drop', look: 8, take: 2, drop: 2 },
@@ -301,7 +301,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Void Exchequer',
-    description: 'On play: Draw 2 cards; Set chain floor to x3.8. While on board: Adjacent active Seraphim gain +160 Oblivion per card played; Buffs Angel attacks: base +144, chain scaling +0.12, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +112, chain scaling +0.07, cooldown -1, multiplier x1.00',
+    description: 'On play: Draw 2 cards; Amplify Chain by +3.8. While on board: Adjacent active Seraphim gain +160 Oblivion per card played; Buffs Angel attacks: base +144, chain scaling +0.12, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +112, chain scaling +0.07, cooldown -1, multiplier x1.00',
     artKey: 'btei_neutrality_zero_edict',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 160 }],
     onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 3.8 }],
@@ -348,7 +348,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Axiom Maw',
-    description: 'On summon: Draw 3 cards; Set chain floor to x4.5; Empower the next card you play. After 4 cards played: Discard 2 cards, then draw 5 cards; Set chain floor to x6.0; +1400 Oblivion. While on board: +190 Oblivion per card played while on board',
+    description: 'On summon: Draw 3 cards; Amplify Chain by +4.5; Empower the next card you play. After 4 cards played: Discard 2 cards, then draw 5 cards; Amplify Chain by +6.0; +1400 Oblivion. While on board: +190 Oblivion per card played while on board',
     artKey: 'btei_neutrality_axiom_maw',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }],
@@ -356,7 +356,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     activatedAbility: {
       name: 'Axiom Devour',
       cardsPlayedRequirement: 4,
-      description: 'Discard 2 cards, then draw 5 cards; Set chain floor to x6.0; +1400 Oblivion',
+      description: 'Discard 2 cards, then draw 5 cards; Amplify Chain by +6.0; +1400 Oblivion',
       effects: [{ type: 'discard_draw', discard: 2, draw: 5 }, { type: 'set_chain_floor', value: 6.0 }, { type: 'oblivion_flat', value: 1400 }],
     },
     attacks: {
@@ -391,7 +391,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Prime Judge of Silence',
-    description: 'Set chain floor to x4.0; If this is the first card you played this turn, Draw 4 cards; +1200 Oblivion; If you have played 1+ cards this turn, Draw 2 cards; +500 Oblivion; Gain 6 of your dominant resource; Draw 1 card',
+    description: 'Amplify Chain by +4.0; If this is the first card you played this turn, Draw 4 cards; +1200 Oblivion; If you have played 1+ cards this turn, Draw 2 cards; +500 Oblivion; Gain 6 of your dominant resource; Draw 1 card',
     artKey: 'btei_neutrality_prime_equilibrium',
     effects: [
       { type: 'set_chain_floor', value: 4.0 },
@@ -405,7 +405,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Fire',
     rarity: 'Eternal',
     name: 'Cinder Leviathan',
-    description: 'On play: Draw 3 cards; Set chain floor to x4.2. While on board: Adjacent active Seraphim gain +90 Oblivion per card played; Adjacent active Seraphim gain +0.12 chain growth; Buffs Seraphim attacks: base +96, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +75, chain scaling +0.01, cooldown -1, multiplier x1.00',
+    description: 'On play: Draw 3 cards; Amplify Chain by +4.2. While on board: Adjacent active Seraphim gain +90 Oblivion per card played; Adjacent active Seraphim gain +0.12 chain growth; Buffs Seraphim attacks: base +96, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +75, chain scaling +0.01, cooldown -1, multiplier x1.00',
     artKey: 'btei_pyroabyss_cinder_cataclysm',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 90 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.12 }],
     onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 4.2 }],
@@ -426,7 +426,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Fire',
     rarity: 'Eternal',
     name: 'Infernal Suncore',
-    description: 'On play: Draw 3 cards; Empower the next card you play; Set chain floor to x4.4. While on board: Chain grows +0.28 per card played while active',
+    description: 'On play: Draw 3 cards; Empower the next card you play; Amplify Chain by +4.4. While on board: Chain grows +0.28 per card played while active',
     artKey: 'btei_pyroabyss_infernal_archon',
     attacks: {
       unsynergized: {
@@ -462,7 +462,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Fire',
     rarity: 'Eternal',
     name: 'Riftbell Catastrophe',
-    description: 'On summon: Draw 4 cards; Set chain floor to x5.2. After 5 cards played: Search your deck for 1 matching Ophanim or Cherubim; Draw 2 cards; Empower the next card you play. While on board: +175 Oblivion per card played while on board',
+    description: 'On summon: Draw 4 cards; Amplify Chain by +5.2. After 5 cards played: Search your deck for 1 matching Ophanim or Cherubim; Draw 2 cards; Empower the next card you play. While on board: +175 Oblivion per card played while on board',
     artKey: 'btei_pyroabyss_hellrift_mandala',
     summonCost: [],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
@@ -519,7 +519,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Aurora Throne',
-    description: 'Look at the top 7 cards and take 1 matching Ophanim or Seraphim; Draw 1 card; Set chain floor to x4.2',
+    description: 'Look at the top 7 cards and take 1 matching Ophanim or Seraphim; Draw 1 card; Amplify Chain by +4.2',
     artKey: 'btei_light_sunbreak_canon',
     effects: [{ type: 'look_top_take_type', look: 7, filter: ['Ophanim', 'Seraphim'] }, { type: 'draw', value: 1 }, { type: 'set_chain_floor', value: 4.2 }],
   },
@@ -529,7 +529,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Sanctum Breaker',
-    description: 'On play: Draw 2 cards; Search your deck for 1 matching Ophanim or Cherubim; Set chain floor to x4.0. While on board: +170 Oblivion per card played while active',
+    description: 'On play: Draw 2 cards; Search your deck for 1 matching Ophanim or Cherubim; Amplify Chain by +4.0. While on board: +170 Oblivion per card played while active',
     artKey: 'btei_light_aureate_rapture',
     attacks: {
       unsynergized: {
@@ -576,7 +576,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Halo Legion Prime',
-    description: 'On summon: Draw 5 cards; Set chain floor to x5.8. After 6 cards played: Set chain multiplier to x6.2; Draw 3 cards; +1800 Oblivion. While on board: +210 Oblivion per card played while on board',
+    description: 'On summon: Draw 5 cards; Amplify Chain by +5.8. After 6 cards played: Set chain multiplier to x6.2; Draw 3 cards; +1800 Oblivion. While on board: +210 Oblivion per card played while on board',
     artKey: 'btei_light_halo_dominion',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 3 }],
@@ -619,7 +619,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Morning Crown Absolute',
-    description: 'Draw 4 cards; Set chain floor to x4.6; If you control 3+ active Seraphim, +2000 Oblivion; Empower the next card you play',
+    description: 'Draw 4 cards; Amplify Chain by +4.6; If you control 3+ active Seraphim, +2000 Oblivion; Empower the next card you play',
     artKey: 'btei_light_throne_of_morning',
     effects: [
       { type: 'draw', value: 4 },
@@ -633,7 +633,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Thornbound',
     rarity: 'Eternal',
     name: 'Bleeding Road Matriarch',
-    description: 'Salvage any 1 card; Draw 3 cards; Set chain floor to x4.3',
+    description: 'Salvage any 1 card; Draw 3 cards; Amplify Chain by +4.3',
     artKey: 'btei_thornbound_briar_siege',
     effects: [{ type: 'salvage_any' }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 4.3 }],
   },
@@ -690,7 +690,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Thornbound',
     rarity: 'Eternal',
     name: 'Grave Hedge Reliquary',
-    description: 'On summon: Look at the top 6 cards, take 2 cards, put 2 cards on the bottom, and discard the rest. After 5 cards played: Salvage any 1 card; Draw 3 cards; Set chain floor to x7.0. While on board: +205 Oblivion per card played while on board',
+    description: 'On summon: Look at the top 6 cards, take 2 cards, put 2 cards on the bottom, and discard the rest. After 5 cards played: Salvage any 1 card; Draw 3 cards; Amplify Chain by +7.0. While on board: +205 Oblivion per card played while on board',
     artKey: 'btei_thornbound_funeral_bramble',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }],
@@ -698,7 +698,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     activatedAbility: {
       name: 'Dirge Corridor',
       cardsPlayedRequirement: 5,
-      description: 'Salvage any 1 card; Draw 3 cards; Set chain floor to x7.0',
+      description: 'Salvage any 1 card; Draw 3 cards; Amplify Chain by +7.0',
       effects: [{ type: 'salvage_any' }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 7.0 }],
     },
     attacks: {
@@ -753,7 +753,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Mechanical',
     rarity: 'Eternal',
     name: 'Furnace Mind Helix',
-    description: 'On play: Gain 2 Strain; Draw 2 cards; Set chain floor to x4.8. While on board: +220 Oblivion per card played while active',
+    description: 'On play: Gain 2 Strain; Draw 2 cards; Amplify Chain by +4.8. While on board: +220 Oblivion per card played while active',
     artKey: 'btei_mech_furnace_ascension',
     attacks: {
       unsynergized: {
@@ -800,7 +800,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Mechanical',
     rarity: 'Eternal',
     name: 'Reactor Psalm Engine',
-    description: 'On summon: Overclock: gain 2 Strain, then Draw 3 cards; Set chain floor to x5.0. After 5 cards played: Vent 9999 Strain; Draw 4 cards; Set chain floor to x7.4; +1700 Oblivion. While on board: +230 Oblivion per card played while on board',
+    description: 'On summon: Overclock: gain 2 Strain, then Draw 3 cards; Amplify Chain by +5.0. After 5 cards played: Vent 9999 Strain; Draw 4 cards; Amplify Chain by +7.4; +1700 Oblivion. While on board: +230 Oblivion per card played while on board',
     artKey: 'btei_mech_reactor_paradigm',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }, { type: 'cherubim_active_gte', value: 1 }],
@@ -808,7 +808,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     activatedAbility: {
       name: 'Terminal Vent',
       cardsPlayedRequirement: 5,
-      description: 'Vent 9999 Strain; Draw 4 cards; Set chain floor to x7.4; +1700 Oblivion',
+      description: 'Vent 9999 Strain; Draw 4 cards; Amplify Chain by +7.4; +1700 Oblivion',
       effects: [{ type: 'strain_vent', value: 9999 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 7.4 }, { type: 'oblivion_flat', value: 1700 }],
     },
     attacks: {
@@ -843,7 +843,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Mechanical',
     rarity: 'Eternal',
     name: 'Primevector Thaumiel',
-    description: 'Overclock: gain 4 Strain, then Draw 6 cards; Set chain floor to x8.5; +2200 Oblivion; If you have 4+ Strain, Empower the next card you play; Gain 6 of your dominant resource; Draw 1 card',
+    description: 'Overclock: gain 4 Strain, then Draw 6 cards; Amplify Chain by +8.5; +2200 Oblivion; If you have 4+ Strain, Empower the next card you play; Gain 6 of your dominant resource; Draw 1 card',
     artKey: 'btei_mech_thaumic_primevector',
     effects: [
       { type: 'overclock', strain: 4, then: [{ type: 'draw', value: 6 }, { type: 'set_chain_floor', value: 8.5 }, { type: 'oblivion_flat', value: 2200 }] },
@@ -856,7 +856,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Prismatic',
     rarity: 'Eternal',
     name: 'Vorthum Mirror Regent',
-    description: 'Look at the top 8 cards, take 2 cards, put 2 cards on the bottom, and discard the rest; Set chain floor to x4.8; Draw 1 card',
+    description: 'Look at the top 8 cards, take 2 cards, put 2 cards on the bottom, and discard the rest; Amplify Chain by +4.8; Draw 1 card',
     artKey: 'btei_prismatic_vorthum_edict',
     effects: [{ type: 'look_top_take_drop', look: 8, take: 2, drop: 2 }, { type: 'set_chain_floor', value: 4.8 }, { type: 'draw', value: 1 }],
   },
@@ -913,7 +913,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Prismatic',
     rarity: 'Eternal',
     name: 'Blind Wars Reliquary',
-    description: 'On summon: Look at the top 7 cards, take 2 cards, and put the rest on the bottom; Set chain floor to x5.4. After 5 cards played: Salvage any 1 card; Draw 3 cards; Empower the next card you play; +1600 Oblivion. While on board: +215 Oblivion per card played while on board',
+    description: 'On summon: Look at the top 7 cards, take 2 cards, and put the rest on the bottom; Amplify Chain by +5.4. After 5 cards played: Salvage any 1 card; Draw 3 cards; Empower the next card you play; +1600 Oblivion. While on board: +215 Oblivion per card played while on board',
     artKey: 'btei_prismatic_blindwars_reliquary',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }, { type: 'cherubim_active_gte', value: 1 }],
@@ -956,7 +956,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Prismatic',
     rarity: 'Eternal',
     name: 'Whitebeam Concordat',
-    description: 'Draw 4 cards; Set chain floor to x6.6; If you control 2+ active Cherubim, +2000 Oblivion; Empower the next card you play',
+    description: 'Draw 4 cards; Amplify Chain by +6.6; If you control 2+ active Cherubim, +2000 Oblivion; Empower the next card you play',
     artKey: 'btei_prismatic_ninefold_accord',
     effects: [
       { type: 'draw', value: 4 },
@@ -970,7 +970,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Dark',
     rarity: 'Eternal',
     name: 'Cindershard Lexicon',
-    description: 'Draw 3 cards; Set chain floor to x4.4; +1200 Oblivion',
+    description: 'Draw 3 cards; Amplify Chain by +4.4; +1200 Oblivion',
     artKey: 'btei_bgi_cindershard_lexicon',
     effects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 4.4 }, { type: 'oblivion_flat', value: 1200 }],
   },
@@ -1003,7 +1003,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Dark',
     rarity: 'Eternal',
     name: 'Veilplane Ossuary',
-    description: 'On play: Draw 2 cards; Set chain floor to x4.6. While on board: +190 Oblivion per card played while active',
+    description: 'On play: Draw 2 cards; Amplify Chain by +4.6. While on board: +190 Oblivion per card played while active',
     artKey: 'btei_bgi_velplane_ossuary',
     attacks: {
       unsynergized: {
@@ -1122,7 +1122,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Dark',
     rarity: 'Eternal',
     name: 'Nocturne of Embers',
-    description: 'On play: Set chain floor to x4.0; Draw 2 cards. While on board: Adjacent active Seraphim gain +110 Oblivion per card played; Adjacent active Seraphim gain +0.1 chain growth; Buffs Seraphim attacks: base +99, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +77, chain scaling +0.01, cooldown -1, multiplier x1.00',
+    description: 'On play: Amplify Chain by +4.0; Draw 2 cards. While on board: Adjacent active Seraphim gain +110 Oblivion per card played; Adjacent active Seraphim gain +0.1 chain growth; Buffs Seraphim attacks: base +99, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +77, chain scaling +0.01, cooldown -1, multiplier x1.00',
     artKey: 'btei_bgi_nocturne_of_embers',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 110 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.1 }],
     onPlayEffects: [{ type: 'set_chain_floor', value: 4.0 }, { type: 'draw', value: 2 }],
@@ -1133,7 +1133,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Dark',
     rarity: 'Eternal',
     name: 'Throne of Cinders',
-    description: 'On summon: Draw 4 cards; Set chain floor to x5.4. After 5 cards played: Draw 3 cards; Set chain floor to x6.8; +1700 Oblivion. While on board: +210 Oblivion per card played while on board',
+    description: 'On summon: Draw 4 cards; Amplify Chain by +5.4. After 5 cards played: Draw 3 cards; Amplify Chain by +6.8; +1700 Oblivion. While on board: +210 Oblivion per card played while on board',
     artKey: 'btei_bgi_throne_of_cinders',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }, { type: 'cherubim_active_gte', value: 1 }],
@@ -1141,7 +1141,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     activatedAbility: {
       name: 'Cinder Decree',
       cardsPlayedRequirement: 5,
-      description: 'Draw 3 cards; Set chain floor to x6.8; +1700 Oblivion',
+      description: 'Draw 3 cards; Amplify Chain by +6.8; +1700 Oblivion',
       effects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 6.8 }, { type: 'oblivion_flat', value: 1700 }],
     },
     attacks: {
@@ -1176,7 +1176,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Dark',
     rarity: 'Eternal',
     name: 'Elegy of Veth Serath',
-    description: 'On summon: Look at the top 7 cards, take 2 cards, and put the rest on the bottom; Set chain floor to x5.8. After 6 cards played: Salvage any 1 card; Draw 3 cards; Empower the next card you play; +1900 Oblivion. While on board: +230 Oblivion per card played while on board',
+    description: 'On summon: Look at the top 7 cards, take 2 cards, and put the rest on the bottom; Amplify Chain by +5.8. After 6 cards played: Salvage any 1 card; Draw 3 cards; Empower the next card you play; +1900 Oblivion. While on board: +230 Oblivion per card played while on board',
     artKey: 'btei_bgi_elegy_of_veth_serath',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 3 }],
@@ -1219,7 +1219,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Mechanical',
     rarity: 'Eternal',
     name: 'Frostborne Surge',
-    description: 'On summon: Draw 3 cards; Set chain floor to x2.2; +220 Oblivion. After 5 cards played: Draw 3 cards; Empower the next card you play; +260 Oblivion. While on board: +260 Oblivion per card played while on board',
+    description: 'On summon: Draw 3 cards; Amplify Chain by +2.2; +220 Oblivion. After 5 cards played: Draw 3 cards; Empower the next card you play; +260 Oblivion. While on board: +260 Oblivion per card played while on board',
     artKey: 'sv_eternal_frost_charge',
     summonCost: ['sv-ser-frostcoil', 'sv-ser-glacier-relay'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
@@ -1262,14 +1262,14 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Mechanical',
     rarity: 'Eternal',
     name: 'Aurora Nexus',
-    description: 'On summon: Gain 8 Radiance; Draw 3 cards; Set chain multiplier to x2.4. After 5 cards played: Draw 4 cards; Gain 2 Radiance; Set chain floor to x2.9. While on board: Chain grows +0.1 per card played while on board',
+    description: 'On summon: Gain 8 Radiance; Draw 3 cards; Set chain multiplier to x2.4. After 5 cards played: Draw 4 cards; Gain 2 Radiance; Amplify Chain by +2.9. While on board: Chain grows +0.1 per card played while on board',
     artKey: 'sv_eternal_aurora_battery',
     summonCost: ['sv-ser-static-sleet', 'sv-ser-icegrid'],
     onSummonEffects: [{ type: 'radiance_gain', value: 8 }, { type: 'draw', value: 3 }, { type: 'chain_multiplier_set', value: 2.4 }],
     activatedAbility: {
       name: 'Aurora Recharge',
       cardsPlayedRequirement: 5,
-      description: 'Draw 4 cards; Gain 2 Radiance; Set chain floor to x2.9',
+      description: 'Draw 4 cards; Gain 2 Radiance; Amplify Chain by +2.9',
       effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 2 }, { type: 'set_chain_floor', value: 2.9 }],
     },
     attacks: {
@@ -1347,7 +1347,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Mechanical',
     rarity: 'Eternal',
     name: 'White Requiem',
-    description: 'On summon: Draw 3 cards; Set chain floor to x2.6. After 5 cards played: Draw 4 cards; Gain 2 Strain; +300 Oblivion. While on board: Chain grows +0.12 per card played while on board',
+    description: 'On summon: Draw 3 cards; Amplify Chain by +2.6. After 5 cards played: Draw 4 cards; Gain 2 Strain; +300 Oblivion. While on board: Chain grows +0.12 per card played while on board',
     artKey: 'sv_eternal_white_static',
     summonCost: ['sv-angel-whiteout-judicator', 'sv-cher-station-nullpoint'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],

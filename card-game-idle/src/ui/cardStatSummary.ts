@@ -335,7 +335,7 @@ export function getCardSummarySections(card: CardDefinition): CardSummarySection
   const sections: CardSummarySection[] = [];
   const hooks: string[] = [];
 
-  pushSummarySection(sections, 'Overview', [getCanonicalCardDescription(card)]);
+  pushSummarySection(sections, 'Ability', [getCanonicalCardDescription(card)]);
 
   if (card.prismaticDepth !== undefined) {
     hooks.push(`Prismatic depth ${card.prismaticDepth}`);
@@ -408,13 +408,13 @@ export function getCardPreviewLines(card: CardDefinition, limit = 3): string[] {
   const seenFingerprints: string[] = [];
 
   const sections = [
-    ...getCardSummarySections(card).filter(section => section.title !== 'Overview'),
-    ...getCardSummarySections(card).filter(section => section.title === 'Overview'),
+    ...getCardSummarySections(card).filter(section => section.title !== 'Ability'),
+    ...getCardSummarySections(card).filter(section => section.title === 'Ability'),
   ];
 
   for (const section of sections) {
     for (const [index, line] of section.lines.entries()) {
-      const candidate = section.title === 'Overview' && index === 0 ? line : `${section.title}: ${line}`;
+      const candidate = section.title === 'Ability' && index === 0 ? line : `${section.title}: ${line}`;
       const fingerprint = normalizePreviewFingerprint(candidate);
       if (
         fingerprint.length > 0

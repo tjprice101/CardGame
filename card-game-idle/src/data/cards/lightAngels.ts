@@ -7,7 +7,7 @@ export const lightAngels: AngelDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Seraphiel Embermane',
-    description: 'On summon: Gain 5 Radiance; Draw 2 cards. After 3 cards played: Double current Radiance; Draw 2 cards; Set chain floor to x1.8. While on board: +20 Oblivion whenever you play an Ophanim while on board',
+    description: 'On summon: Gain 5 Radiance; Draw 2 cards. After 3 cards played: Double current Radiance; Draw 2 cards; Amplify Chain by +1.8. While on board: +20 Oblivion whenever you play an Ophanim while on board',
     artKey: 'angel_light_seraphiel',
     summonCost: ['ser-light-dawn', 'ser-light-vigil'],
     onSummonEffects: [
@@ -17,7 +17,7 @@ export const lightAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Canticle of First Flame',
       cardsPlayedRequirement: 3,
-      description: 'Double current Radiance; Draw 2 cards; Set chain floor to x1.8',
+      description: 'Double current Radiance; Draw 2 cards; Amplify Chain by +1.8',
       effects: [
         { type: 'radiance_double' },
         { type: 'draw', value: 2 },
@@ -56,7 +56,7 @@ export const lightAngels: AngelDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Aurelion Thorncrowned',
-    description: 'On summon: Gain 8 Radiance; Draw 2 cards; Set chain floor to x1.4. After 4 cards played: Double current Radiance; Draw 3 cards; +100 Oblivion. While on board: Chain grows +0.06 per card played while on board',
+    description: 'On summon: Gain 8 Radiance; Draw 2 cards; Amplify Chain by +1.4. After 4 cards played: Double current Radiance; Draw 3 cards; +100 Oblivion. While on board: Chain grows +0.06 per card played while on board',
     artKey: 'angel_light_aurelion',
     summonCost: ['angel-light-seraphiel', 'ser-light-choir'],
     onSummonEffects: [

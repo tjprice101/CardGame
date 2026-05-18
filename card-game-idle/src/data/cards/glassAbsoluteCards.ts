@@ -136,7 +136,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-ser-prismwake',
     name: 'Prismwake Seraph',
-    description: 'On play: Draw 1 card; Set chain floor to x1.5. While on board: +12 Oblivion per card played while active',
+    description: 'On play: Draw 1 card; Amplify Chain by +1.5. While on board: +12 Oblivion per card played while active',
     rarity: 'Common',
     artKey: 'ga_ser_prismwake',
     bonusType: 'oblivion_per_card',
@@ -176,7 +176,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-ser-white-edge',
     name: 'White Edge Herald',
-    description: 'On play: Gain 14 of your dominant resource; Set chain floor to x2.0. While on board: Resource generation +14 while active',
+    description: 'On play: Gain 14 of your dominant resource; Amplify Chain by +2.0. While on board: Resource generation +14 while active',
     rarity: 'Rare',
     artKey: 'ga_ser_white_edge',
     bonusType: 'resource_generation',
@@ -246,7 +246,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-facet-gate-ward',
     name: 'Facet Gate Ward',
-    description: 'On play: Set chain floor to x1.8. While on board: Adjacent active Seraphim gain +0.05 chain growth; Buffs Seraphim attacks: base +42, chain scaling +0.01, cooldown -1, multiplier x1.00',
+    description: 'On play: Amplify Chain by +1.8. While on board: Adjacent active Seraphim gain +0.05 chain growth; Buffs Seraphim attacks: base +42, chain scaling +0.01, cooldown -1, multiplier x1.00',
     rarity: 'Rare',
     artKey: 'ga_cher_facet_gate_ward',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.05 }],
@@ -319,7 +319,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-spectral-current',
     name: 'Spectral Current',
-    description: 'Draw 1 card; Set chain floor to x1.5',
+    description: 'Draw 1 card; Amplify Chain by +1.5',
     rarity: 'Common',
     artKey: 'ga_oph_spectral_current',
     effects: [{ type: 'draw', value: 1 }, { type: 'set_chain_floor', value: 1.5 }],
@@ -383,7 +383,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-lattice-horizon',
     name: 'Lattice Horizon',
-    description: 'Set chain floor to x2.0; Gain 18 of your dominant resource; Set chain floor to x1.4',
+    description: 'Amplify Chain by +2.0; Gain 18 of your dominant resource; Amplify Chain by +1.4',
     rarity: 'Epic',
     artKey: 'ga_oph_lattice_horizon',
     effects: [{ type: 'set_chain_floor', value: 2.0 }, { type: 'dominant_stack_gain', value: 18 }],
@@ -428,7 +428,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-et-angled-infinity',
     name: 'Angled Infinity',
-    description: 'On play: Set chain floor to x3.0; Draw 2 cards. While on board: Adjacent active Seraphim gain +0.08 chain growth; Buffs Seraphim attacks: base +78, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +61, chain scaling +0.01, cooldown -1, multiplier x1.00',
+    description: 'On play: Amplify Chain by +3.0; Draw 2 cards. While on board: Adjacent active Seraphim gain +0.08 chain growth; Buffs Seraphim attacks: base +78, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +61, chain scaling +0.01, cooldown -1, multiplier x1.00',
     rarity: 'Eternal',
     artKey: 'ga_et_angled_infinity',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.08 }],
@@ -445,7 +445,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-et-center-everywhere',
     name: 'The Center That Is Everywhere',
-    description: 'On play: Draw 3 cards; Set chain floor to x3.5; Empower the next card you play. While on board: +78 Oblivion per card played while active',
+    description: 'On play: Draw 3 cards; Amplify Chain by +3.5; Empower the next card you play. While on board: +78 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'ga_et_center_everywhere',
     bonusType: 'oblivion_per_card',
@@ -495,7 +495,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-inf-refracted-sovereign',
     name: 'Refracted Sovereign',
-    description: 'On play: +1100 Oblivion; Draw 4 cards; Set chain floor to x5.0. While on board: Adjacent active Seraphim gain +0.16 chain growth; Buffs Seraphim and Angel attacks: base +70, chain scaling +0.02, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +55, chain scaling +0.01, cooldown -1, multiplier x1.00',
+    description: 'On play: +1100 Oblivion; Draw 4 cards; Amplify Chain by +5.0. While on board: Adjacent active Seraphim gain +0.16 chain growth; Buffs Seraphim and Angel attacks: base +70, chain scaling +0.02, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +55, chain scaling +0.01, cooldown -1, multiplier x1.00',
     rarity: 'Infinite',
     artKey: 'ga_inf_refracted_sovereign',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.16 }],
@@ -541,7 +541,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-inf-color-after-white',
     name: 'Color After White',
-    description: 'Draw 6 cards; Set chain floor to x6.0; Gain 60 Radiance',
+    description: 'Draw 6 cards; Amplify Chain by +6.0; Gain 60 Radiance',
     rarity: 'Infinite',
     artKey: 'ga_inf_color_after_white',
     effects: [{ type: 'draw', value: 6 }, { type: 'set_chain_floor', value: 6.0 }, { type: 'radiance_gain', value: 60 }],
