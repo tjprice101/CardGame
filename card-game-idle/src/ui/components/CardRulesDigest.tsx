@@ -27,11 +27,12 @@ function CardRulesDigest({
 }) {
   const sections = useMemo(() => {
     const all = getCardSummarySections(card);
-    // In preview mode, filter out 'On Play', 'Play', and 'Hooks' — the 'Ability' section already
-    // contains the canonical description. Hiding Hooks keeps room for Passive/On Board sections.
+    // Preview: hide 'On Play'/'Play'/'Hooks' — 'Ability' already summarises them.
+    // Detail: hide 'Ability' — individual sections (On Play, On Board, Attacks, etc.)
+    //   show the same data without duplication.
     const visible = variant === 'preview'
       ? all.filter(s => s.title !== 'On Play' && s.title !== 'Play' && s.title !== 'Hooks')
-      : all;
+      : all.filter(s => s.title !== 'Ability');
     return visible.slice(0, maxSections ?? (variant === 'preview' ? 3 : Number.MAX_SAFE_INTEGER));
   }, [card, maxSections, variant]);
   if (sections.length === 0) return null;
