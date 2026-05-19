@@ -2695,10 +2695,9 @@ function applyCherubimPassiveEffects(s: Store): void {
   // Reset conditional multiplier — it's recomputed fresh from board state each card play.
   s.turn.cherubimConditionalMult = 1;
 
-  // Auto-accumulate +1 Patience for every active Seraphim/Angel that has patienceThreshold set.
+  // Auto-accumulate +1 Patience for every Seraphim on board that has patienceThreshold set.
   for (const unit of s.board.frontSlots) {
-    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
-    if (unit.type === 'Seraphim' && !unit.isActive) continue;
+    if (!unit || unit.type !== 'Seraphim') continue;
     const unitDef = ScoreSystem.getDefinition(unit.definitionId);
     if (unitDef?.type === 'Seraphim' && (unitDef as import('@/types/cards').SeraphimDefinition).patienceThreshold !== undefined) {
       unit.patienceStacks = (unit.patienceStacks ?? 0) + 1;
