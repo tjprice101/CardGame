@@ -2618,6 +2618,12 @@ function awardOblivionForCardPlay(
     }
   }
 
+  // Apply conditional Cherubim board-presence multiplier (capped to prevent runaway scaling).
+  const cherubimCondMult = Math.min(1.6, s.turn.cherubimConditionalMult ?? 1);
+  if (cherubimCondMult > 1 && totalAward > 0) {
+    totalAward = Math.round(totalAward * cherubimCondMult);
+  }
+
   if (totalAward > 0) {
     grantOblivion(s, totalAward, chainOverride ?? s.turn.chainMultiplier);
   }
@@ -2679,6 +2685,9 @@ function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
 // Apply per-card Cherubim passive effects. Called after each card is played.
 // Handles: resource generation, conditional buffs, patience accumulation.
 function applyCherubimPassiveEffects(s: Store): void {
+  // Reset conditional multiplier — it's recomputed fresh from board state each card play.
+  s.turn.cherubimConditionalMult = 1;
+
   // Auto-accumulate +1 Patience for every active Seraphim/Angel that has patienceThreshold set.
   for (const unit of s.board.frontSlots) {
     if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
@@ -2761,10 +2770,13 @@ function applyCherubimPassiveEffects(s: Store): void {
             }
           }
           if (conditionMet && effect.value > 1) {
-            // Apply multiplier to oblivion bonus
-            const currentOblivion = s.progress.oblivion;
-            const bonus = Math.round(currentOblivion * (effect.value - 1));
-            if (bonus > 0) grantOblivion(s, bonus, 1);
+            // Record the highest conditional multiplier active this card play.
+            // Applied in awardOblivionForCardPlay — NOT a direct Oblivion grant to avoid
+            // exponential feedback with s.progress.oblivion.
+            s.turn.cherubimConditionalMult = Math.max(
+              s.turn.cherubimConditionalMult ?? 1,
+              effect.value,
+            );
           }
           break;
         }

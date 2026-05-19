@@ -146,6 +146,7 @@ export interface TurnState {
   burningGardenLineagesPlayed?: Array<'Rose' | 'Sunflower' | 'Thistle'>;
   burningGardenEchoesBloomed?: number;
   lastPlayedElement?: string | null;
+  cherubimConditionalMult?: number; // multiplier from cherubim_conditional_buff passives, applied per card play
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────

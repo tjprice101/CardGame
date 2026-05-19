@@ -178,6 +178,8 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'cherubim-dark-grieffire-ascent': 'Veth Serath Midplace.png',
   'cherubim-dark-mourning-mantle': 'Veth Serath Midplace.png',
   'cherubim-dark-abyss-throne': 'Vaelthorax Grieffire.png',
+  // Glass Absolute Infinite cards with punctuation in their names
+  'ga-inf-yreth-prism-at-center': 'Yreth, Prism at Center.png',
 };
 
 function getSnowboundEternalFileName(card: CardDefinition): string {

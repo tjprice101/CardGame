@@ -275,10 +275,6 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
 }
 
 function getCardRoleDetail(def: CardDefinition): string {
-  if (hasSomeEffect(def, ['draw', 'look_top_take', 'look_top_take_drop', 'look_top_take_type', 'search_deck_by_type', 'salvage_any', 'salvage_by_type'])) {
-    return 'It finds the next piece and keeps the turn moving.';
-  }
-
   if (hasSomeEffect(def, ['radiance_gain', 'ember_gain', 'trail_gain', 'strain_gain', 'dominant_stack_gain', 'radiance_double'])) {
     return 'It stocks the resources this engine spends to stay online.';
   }

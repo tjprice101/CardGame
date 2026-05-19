@@ -269,13 +269,7 @@ export default function EternitysWake({ onClose }: Props) {
                 title={getCardPreviewLines(rewardDef, 4).join('\n')}
                 >
                   <div style={{
-                    height: 156,
-                    backgroundImage: rewardCardArtUrl
-                      ? `linear-gradient(180deg, rgba(10,4,16,0.06) 0%, rgba(10,4,16,0.18) 100%), url("${rewardCardArtUrl}")`
-                      : 'linear-gradient(180deg, rgba(255,107,107,0.12) 0%, rgba(255,107,107,0.04) 100%)',
-                    backgroundPosition: 'center',
-                    backgroundSize: 'cover',
-                    backgroundRepeat: 'no-repeat',
+                    height: 4,
                     borderBottom: '1px solid rgba(255,107,107,0.18)',
                   }} />
                   <div style={{ padding: '10px 12px 12px' }}>
