@@ -262,7 +262,7 @@ const SNOWBOUND_SERAPHIM_SPECS: SnowboundSeraphimSpec[] = [
     artKey: 'sv_ser_whiteout_engine',
     bonusType: 'ophanim_bonus',
     bonusValue: 24,
-    onPlayEffects: [{ type: 'ember_gain', value: 2 }, { type: 'strain_gain', value: 1 }, { type: 'arctic_charge_gain', value: 4 }],
+    onPlayEffects: [{ type: 'strain_gain', value: 1 }, { type: 'arctic_charge_gain', value: 4 }],
     unsynergizedName: 'Whiteout Engine Vector Break',
     synergizedName: 'Whiteout Engine Angelic Verdict',
     unsynergizedDescription: '526 base Oblivion, 4 cards cooldown, x1.25 chain scaling, Cost: spend 2 Strain',
