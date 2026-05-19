@@ -176,6 +176,21 @@ function getAttackCostCount(
     .reduce((sum, cost) => sum + cost.value, 0);
 }
 
+function hasRequiredAttackResources(
+  costs: ReadonlyArray<{ type: string; value: number }> | undefined,
+  resources: { embers: number; radiance: number; trail: number; strain: number },
+): boolean {
+  const emberCost = getAttackCostCount(costs, 'spend_embers');
+  const radianceCost = getAttackCostCount(costs, 'spend_radiance');
+  const trailCost = getAttackCostCount(costs, 'spend_trail');
+  const strainCost = getAttackCostCount(costs, 'spend_strain');
+
+  return resources.embers >= emberCost
+    && resources.radiance >= radianceCost
+    && resources.trail >= trailCost
+    && resources.strain >= strainCost;
+}
+
 function toggleSelectedId(current: string[], id: string, maxCount: number): string[] {
   if (current.includes(id)) return current.filter(value => value !== id);
   if (maxCount <= 0) return current;
@@ -914,8 +929,7 @@ export default function BoardDisplay() {
             const hasAngel = board.frontSlots.some(slot => slot?.type === 'Angel');
             const openSeraphimAttackCostModal = (attackId: 'unsynergized' | 'synergized') => {
               const attack = attackId === 'synergized' ? attacks.synergized : attacks.unsynergized;
-              const discardCost = getAttackCostCount(attack.costs, 'discard_from_hand');
-              if (discardCost <= 0) {
+              if ((attack.costs?.length ?? 0) === 0) {
                 activateSeraphimAttack(attackPanelSlot as 0 | 1 | 2 | 3 | 4, attackId);
                 return;
               }
@@ -1064,10 +1078,21 @@ export default function BoardDisplay() {
             const discardCost = getAttackCostCount(activeAttack.costs, 'discard_from_hand');
             const seraphimSacCost = getAttackCostCount(activeAttack.costs, 'sacrifice_seraphim');
             const angelSacCost = getAttackCostCount(activeAttack.costs, 'sacrifice_angel');
+            const emberCost = getAttackCostCount(activeAttack.costs, 'spend_embers');
+            const radianceCost = getAttackCostCount(activeAttack.costs, 'spend_radiance');
+            const trailCost = getAttackCostCount(activeAttack.costs, 'spend_trail');
+            const strainCost = getAttackCostCount(activeAttack.costs, 'spend_strain');
+            const hasResourceBudget = hasRequiredAttackResources(activeAttack.costs, {
+              embers: turn.embers,
+              radiance: turn.radiance,
+              trail: turn.trail,
+              strain: turn.strain,
+            });
             const canConfirmAttack =
               selectedDiscardIds.length === discardCost
               && selectedSacrificeSeraphimIds.length === seraphimSacCost
-              && selectedSacrificeAngelIds.length === angelSacCost;
+              && selectedSacrificeAngelIds.length === angelSacCost
+              && hasResourceBudget;
 
             return (
               <div style={{
@@ -1243,6 +1268,23 @@ export default function BoardDisplay() {
                     </div>
                   )}
 
+                  {(emberCost > 0 || radianceCost > 0 || trailCost > 0 || strainCost > 0) && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Spend resources</div>
+                      <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.45 }}>
+                        {emberCost > 0 && <div>Embers: {turn.embers}/{emberCost}</div>}
+                        {radianceCost > 0 && <div>Radiance: {turn.radiance}/{radianceCost}</div>}
+                        {trailCost > 0 && <div>Trail: {turn.trail}/{trailCost}</div>}
+                        {strainCost > 0 && <div>Strain: {turn.strain}/{strainCost}</div>}
+                      </div>
+                      {!hasResourceBudget && (
+                        <div style={{ fontSize: 11.5, color: '#9a3d2f', lineHeight: 1.35 }}>
+                          Insufficient resources to pay this attack cost.
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 'auto' }}>
                     <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.35 }}>Select the required cards, then confirm the attack.</div>
                     <div style={{ display: 'flex', gap: 8 }}>
@@ -1311,7 +1353,17 @@ export default function BoardDisplay() {
             const attacks = getSeraphimUiAttacks(selectedDef);
             const activeAttack = pendingSeraphimAttack.attackId === 'synergized' ? attacks.synergized : attacks.unsynergized;
             const discardCost = getAttackCostCount(activeAttack.costs, 'discard_from_hand');
-            const canConfirmAttack = selectedDiscardIds.length === discardCost;
+            const emberCost = getAttackCostCount(activeAttack.costs, 'spend_embers');
+            const radianceCost = getAttackCostCount(activeAttack.costs, 'spend_radiance');
+            const trailCost = getAttackCostCount(activeAttack.costs, 'spend_trail');
+            const strainCost = getAttackCostCount(activeAttack.costs, 'spend_strain');
+            const hasResourceBudget = hasRequiredAttackResources(activeAttack.costs, {
+              embers: turn.embers,
+              radiance: turn.radiance,
+              trail: turn.trail,
+              strain: turn.strain,
+            });
+            const canConfirmAttack = selectedDiscardIds.length === discardCost && hasResourceBudget;
 
             return (
               <div style={{
@@ -1410,6 +1462,23 @@ export default function BoardDisplay() {
                           );
                         })}
                       </div>
+                    </div>
+                  )}
+
+                  {(emberCost > 0 || radianceCost > 0 || trailCost > 0 || strainCost > 0) && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Spend resources</div>
+                      <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.45 }}>
+                        {emberCost > 0 && <div>Embers: {turn.embers}/{emberCost}</div>}
+                        {radianceCost > 0 && <div>Radiance: {turn.radiance}/{radianceCost}</div>}
+                        {trailCost > 0 && <div>Trail: {turn.trail}/{trailCost}</div>}
+                        {strainCost > 0 && <div>Strain: {turn.strain}/{strainCost}</div>}
+                      </div>
+                      {!hasResourceBudget && (
+                        <div style={{ fontSize: 11.5, color: '#9a3d2f', lineHeight: 1.35 }}>
+                          Insufficient resources to pay this attack cost.
+                        </div>
+                      )}
                     </div>
                   )}
 

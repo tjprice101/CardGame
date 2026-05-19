@@ -353,6 +353,104 @@ function dominantAngelCostForElement(element: string, value: number): AttackCost
   }
 }
 
+function parseAttackCostsFromDescription(description: string): AttackCost[] {
+  const match = description.match(/cost:\s*([^.]*)/i);
+  if (!match || !match[1]) return [];
+
+  const clauses = match[1].split(',').map(part => part.trim()).filter(Boolean);
+  const parsed: AttackCost[] = [];
+
+  for (const clause of clauses) {
+    const discard = clause.match(/^discard\s+(\d+)\s+cards?$/i);
+    if (discard) {
+      parsed.push({ type: 'discard_from_hand', value: Number(discard[1]) });
+      continue;
+    }
+
+    const sacrificeSeraphim = clause.match(/^sacrifice\s+(\d+)\s+seraphims?$/i);
+    if (sacrificeSeraphim) {
+      parsed.push({ type: 'sacrifice_seraphim', value: Number(sacrificeSeraphim[1]) });
+      continue;
+    }
+
+    const sacrificeAngel = clause.match(/^sacrifice\s+(\d+)\s+angels?$/i);
+    if (sacrificeAngel) {
+      parsed.push({ type: 'sacrifice_angel', value: Number(sacrificeAngel[1]) });
+      continue;
+    }
+
+    const spend = clause.match(/^spend\s+(\d+)\s+(.+)$/i);
+    if (spend) {
+      const value = Number(spend[1]);
+      const resource = spend[2].trim().toLowerCase();
+      if (resource === 'ember' || resource === 'embers') {
+        parsed.push({ type: 'spend_embers', value });
+        continue;
+      }
+      if (resource === 'radiance' || resource === 'radiances') {
+        parsed.push({ type: 'spend_radiance', value });
+        continue;
+      }
+      if (resource === 'trail' || resource === 'trails') {
+        parsed.push({ type: 'spend_trail', value });
+        continue;
+      }
+      if (resource === 'strain' || resource === 'strains') {
+        parsed.push({ type: 'spend_strain', value });
+        continue;
+      }
+    }
+  }
+
+  if (parsed.length === 0) return parsed;
+
+  const merged = new Map<AttackCost['type'], number>();
+  for (const cost of parsed) {
+    merged.set(cost.type, (merged.get(cost.type) ?? 0) + cost.value);
+  }
+
+  return Array.from(merged.entries()).map(([type, value]) => ({ type, value }));
+}
+
+function resolveAttackCosts(
+  authoredCosts: AttackCost[] | undefined,
+  description: string,
+  fallbackCosts: AttackCost[] = [],
+): AttackCost[] {
+  if ((authoredCosts?.length ?? 0) > 0) return authoredCosts ?? [];
+  const parsedCosts = parseAttackCostsFromDescription(description);
+  if (parsedCosts.length > 0) return parsedCosts;
+  return fallbackCosts;
+}
+
+function isStackingResourceCost(type: AttackCost['type']): boolean {
+  return type === 'spend_embers'
+    || type === 'spend_radiance'
+    || type === 'spend_trail'
+    || type === 'spend_strain';
+}
+
+function tuneResourceCostAttackPressure<T extends { baseOblivion: number; costs?: AttackCost[] }>(attack: T): T {
+  const costs = attack.costs ?? [];
+  const hasDiscardCost = costs.some(cost => cost.type === 'discard_from_hand');
+  const hasStackingResourceCost = costs.some(cost => isStackingResourceCost(cost.type));
+
+  // Only scale attacks that have no discard tax and instead spend stacking resources.
+  if (hasDiscardCost || !hasStackingResourceCost) return attack;
+
+  const boostedCosts = costs.map(cost => (
+    isStackingResourceCost(cost.type)
+      ? { ...cost, value: cost.value + 8 }
+      : cost
+  ));
+
+  return {
+    ...attack,
+    baseOblivion: Math.round(attack.baseOblivion * 1.15),
+    costs: boostedCosts,
+  };
+}
+
 function firstSeraphimCostForDefinition(def: SeraphimDefinition, weight: number): AttackCost[] {
   const variant = archetypeIndex(def.definitionId, 5);
   const boost = hashString(`${def.definitionId}:first-cost`) % 2;
@@ -533,32 +631,40 @@ function tuneSeraphimAttackSet(def: SeraphimDefinition, attacks: SeraphimAttackS
     }
   }
 
-  const tunedUnsynergizedCosts = (attacks.unsynergized.costs?.length ?? 0) > 0
-    ? attacks.unsynergized.costs
-    : firstSeraphimCostForDefinition(def, weight);
+  const tunedUnsynergizedCosts = resolveAttackCosts(
+    attacks.unsynergized.costs,
+    attacks.unsynergized.description,
+    firstSeraphimCostForDefinition(def, weight),
+  );
+  const tunedSynergizedCosts = resolveAttackCosts(attacks.synergized.costs, attacks.synergized.description);
 
   // Global pacing pass: all Seraphim attacks now fire slightly slower.
   unsynCooldown = Math.min(6, unsynCooldown + 1);
   synCooldown = Math.min(9, synCooldown + 1);
   synCooldown = Math.max(synCooldown, unsynCooldown + 1);
 
+  const tunedUnsynergizedAttack = tuneResourceCostAttackPressure({
+    ...attacks.unsynergized,
+    description: buildSeraphimAttackDescription(def, attacks.unsynergized.name, 'unsynergized'),
+    baseOblivion: unsynBase,
+    cooldownCards: unsynCooldown,
+    chainScaling: Number(unsynScaling.toFixed(3)),
+    costs: tunedUnsynergizedCosts,
+  });
+
+  const tunedSynergizedAttack = tuneResourceCostAttackPressure({
+    ...attacks.synergized,
+    description: buildSeraphimAttackDescription(def, attacks.synergized.name, 'synergized'),
+    baseOblivion: synBase,
+    cooldownCards: synCooldown,
+    chainScaling: Number(synScaling.toFixed(3)),
+    costs: tunedSynergizedCosts,
+    requiresAngelOnBoard: true,
+  });
+
   return {
-    unsynergized: {
-      ...attacks.unsynergized,
-      description: buildSeraphimAttackDescription(def, attacks.unsynergized.name, 'unsynergized'),
-      baseOblivion: unsynBase,
-      cooldownCards: unsynCooldown,
-      chainScaling: Number(unsynScaling.toFixed(3)),
-      costs: tunedUnsynergizedCosts,
-    },
-    synergized: {
-      ...attacks.synergized,
-      description: buildSeraphimAttackDescription(def, attacks.synergized.name, 'synergized'),
-      baseOblivion: synBase,
-      cooldownCards: synCooldown,
-      chainScaling: Number(synScaling.toFixed(3)),
-      requiresAngelOnBoard: true,
-    },
+    unsynergized: tunedUnsynergizedAttack,
+    synergized: tunedSynergizedAttack,
   };
 }
 
@@ -592,27 +698,34 @@ function tuneAngelAttackSet(def: AngelDefinition, attacks: AngelAttackSet): Ange
     1.65,
   );
 
-  const currentCosts = attacks.exalted.costs ?? [];
-  const tunedCosts = currentCosts.length > 0
-    ? currentCosts
-    : [dominantAngelCostForElement(def.element, 2 + Math.min(6, weight + Math.floor(summonPressure / 2)))];
+  const tunedPrimaryCosts = resolveAttackCosts(attacks.primary.costs, attacks.primary.description);
+  const tunedExaltedCosts = resolveAttackCosts(
+    attacks.exalted.costs,
+    attacks.exalted.description,
+    [dominantAngelCostForElement(def.element, 2 + Math.min(6, weight + Math.floor(summonPressure / 2)))],
+  );
+
+  const tunedPrimaryAttack = tuneResourceCostAttackPressure({
+    ...attacks.primary,
+    description: buildAngelAttackDescription(def, attacks.primary.name, 'primary'),
+    baseOblivion: primaryBase,
+    cooldownCards: primaryCooldown,
+    chainScaling: Number(primaryScaling.toFixed(3)),
+    costs: tunedPrimaryCosts,
+  });
+
+  const tunedExaltedAttack = tuneResourceCostAttackPressure({
+    ...attacks.exalted,
+    description: buildAngelAttackDescription(def, attacks.exalted.name, 'exalted'),
+    baseOblivion: exaltedBase,
+    cooldownCards: exaltedCooldown,
+    chainScaling: Number(exaltedScaling.toFixed(3)),
+    costs: tunedExaltedCosts,
+  });
 
   return {
-    primary: {
-      ...attacks.primary,
-      description: buildAngelAttackDescription(def, attacks.primary.name, 'primary'),
-      baseOblivion: primaryBase,
-      cooldownCards: primaryCooldown,
-      chainScaling: Number(primaryScaling.toFixed(3)),
-    },
-    exalted: {
-      ...attacks.exalted,
-      description: buildAngelAttackDescription(def, attacks.exalted.name, 'exalted'),
-      baseOblivion: exaltedBase,
-      cooldownCards: exaltedCooldown,
-      chainScaling: Number(exaltedScaling.toFixed(3)),
-      costs: tunedCosts,
-    },
+    primary: tunedPrimaryAttack,
+    exalted: tunedExaltedAttack,
   };
 }
 

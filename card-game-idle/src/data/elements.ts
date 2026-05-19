@@ -37,7 +37,7 @@ export const ELEMENT_COLORS: Record<string, string> = {
 };
 
 export function isSnowboundCard(card: Pick<CardDefinition, 'definitionId'>): boolean {
-  return card.definitionId.startsWith('sv-');
+  return card.definitionId.startsWith('sv-') || card.definitionId.startsWith('inf-sv-');
 }
 
 export function getCardCategoryKey(card: Pick<CardDefinition, 'element' | 'rarity' | 'definitionId' | any>): string {
