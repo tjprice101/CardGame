@@ -27,10 +27,10 @@ function CardRulesDigest({
 }) {
   const sections = useMemo(() => {
     const all = getCardSummarySections(card);
-    // In preview mode, filter out 'On Play' and 'Play' — the 'Ability' section already
-    // contains the canonical description which includes on-play text.
+    // In preview mode, filter out 'On Play', 'Play', and 'Hooks' — the 'Ability' section already
+    // contains the canonical description. Hiding Hooks keeps room for Passive/On Board sections.
     const visible = variant === 'preview'
-      ? all.filter(s => s.title !== 'On Play' && s.title !== 'Play')
+      ? all.filter(s => s.title !== 'On Play' && s.title !== 'Play' && s.title !== 'Hooks')
       : all;
     return visible.slice(0, maxSections ?? (variant === 'preview' ? 3 : Number.MAX_SAFE_INTEGER));
   }, [card, maxSections, variant]);
@@ -57,6 +57,7 @@ function CardRulesDigest({
                 color: labelColor,
                 fontWeight: 700,
                 marginTop: 1,
+                fontFamily: 'Georgia, serif',
               }}>
                 {section.title}
               </div>
@@ -68,6 +69,7 @@ function CardRulesDigest({
                 WebkitBoxOrient: 'vertical',
                 WebkitLineClamp: lineClamp,
                 overflow: 'hidden',
+                fontFamily: 'Georgia, serif',
               }}>
                 {line}
               </div>
@@ -97,6 +99,7 @@ function CardRulesDigest({
             color: labelColor,
             fontWeight: 700,
             marginBottom: 6,
+            fontFamily: 'Georgia, serif',
           }}>
             {section.title}
           </div>
@@ -108,6 +111,7 @@ function CardRulesDigest({
                   fontSize: 11.5,
                   lineHeight: 1.45,
                   color: textColor,
+                  fontFamily: 'Georgia, serif',
                 }}
               >
                 {line}

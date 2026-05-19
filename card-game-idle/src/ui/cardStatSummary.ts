@@ -167,6 +167,8 @@ function formatEffect(effect: CardEffect): string {
     case 'power_percent': return `Your board gains +${effect.value}% power`;
     case 'score_multiplier': return `Gain +${effect.value}% total Oblivion this turn`;
     case 'seraphim_bonus_amplifier': return `Seraphim bonuses are amplified by +${effect.value}`;
+    case 'patience_gain_all': return `All active Seraphim gain +${effect.value} Patience`;
+    case 'patience_double_all': return 'Double all Patience on the board';
     case 'overclock':
       return `Overclock: gain ${effect.strain} Strain, then ${effect.then.map(formatEffect).join('; ')}`;
     case 'conditional':
@@ -205,6 +207,7 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
       }
     }
     case 'cherubim_conditional_buff': return `If ${formatCondition(effect.condition)}, this Cherubim grants +${effect.value} bonus power`;
+    case 'cherubim_patience_per_card': return `Adjacent Seraphim gain +${effect.value} Patience per card played`;
     case 'cherubim_attack_buff': {
       const parts: string[] = [];
       if (effect.bonusBaseOblivion !== undefined) parts.push(`base +${effect.bonusBaseOblivion}`);

@@ -57,6 +57,7 @@ export default function CardEngineCallout({
         textTransform: 'uppercase',
         color: role.accent,
         fontWeight: 700,
+        fontFamily: 'Georgia, serif',
       }}>
         {role.engineLabel} - {role.badge}
       </div>
@@ -69,6 +70,7 @@ export default function CardEngineCallout({
         WebkitBoxOrient: 'vertical',
         WebkitLineClamp: isDetail ? 3 : 2,
         overflow: 'hidden',
+        fontFamily: 'Georgia, serif',
       }}>
         {role.text}
       </div>
