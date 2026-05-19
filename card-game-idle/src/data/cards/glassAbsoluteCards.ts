@@ -181,7 +181,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     artKey: 'ga_ser_white_edge',
     bonusType: 'oblivion_per_card',
     bonusValue: 14,
-    onPlayEffects: [{ type: 'dominant_stack_gain', value: 14 }, { type: 'set_chain_floor', value: 2.0 }],
+    onPlayEffects: [{ type: 'proof_gain', value: 14 }, { type: 'set_chain_floor', value: 2.0 }],
     unsynergizedName: 'White Edge Vector Break',
     synergizedName: 'White Edge Angelic Verdict',
     unsynergizedDescription: '366 base Oblivion, 5 cards cooldown, x1.21 chain scaling, Cost: discard 1 card',
@@ -221,7 +221,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     artKey: 'ga_ser_yrethborn',
     bonusType: 'oblivion_per_card',
     bonusValue: 22,
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'chain_multiplier_set', value: 2.0 }, { type: 'dominant_stack_gain', value: 22 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'chain_multiplier_set', value: 2.0 }, { type: 'proof_gain', value: 22 }],
     unsynergizedName: 'Yrethborn Vector Break',
     synergizedName: 'Yrethborn Angelic Verdict',
     unsynergizedDescription: '690 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -259,7 +259,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     rarity: 'Rare',
     artKey: 'ga_cher_prismatic_reliquary',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 38 }],
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'dominant_stack_gain', value: 8 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'proof_gain', value: 8 }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-shard-choir-keeper',
@@ -338,7 +338,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Salvage any 1 card; Gain 10 of your dominant resource',
     rarity: 'Rare',
     artKey: 'ga_oph_glassroad_oracle',
-    effects: [{ type: 'salvage_any' }, { type: 'dominant_stack_gain', value: 10 }],
+    effects: [{ type: 'salvage_any' }, { type: 'proof_gain', value: 10 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-radiant-splinter-map',
@@ -362,7 +362,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Shuffle discard into deck; Gain 12 of your dominant resource',
     rarity: 'Epic',
     artKey: 'ga_oph_crystal_echo_archive',
-    effects: [{ type: 'shuffle_discard' }, { type: 'dominant_stack_gain', value: 12 }],
+    effects: [{ type: 'shuffle_discard' }, { type: 'proof_gain', value: 12 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-white-transit',
@@ -370,7 +370,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Draw 4 cards; Gain 24 Radiance; Set chain multiplier to x2.5',
     rarity: 'Legendary',
     artKey: 'ga_oph_white_transit',
-    effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 24 }, { type: 'chain_multiplier_set', value: 2.5 }],
+    effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 24 }, { type: 'chain_multiplier_set', value: 2.5 }, { type: 'proof_gain', value: 20 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-prism-veil-drift',
@@ -386,7 +386,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Amplify Chain by +2.0; Gain 18 of your dominant resource; Amplify Chain by +1.4',
     rarity: 'Epic',
     artKey: 'ga_oph_lattice_horizon',
-    effects: [{ type: 'set_chain_floor', value: 2.0 }, { type: 'dominant_stack_gain', value: 18 }],
+    effects: [{ type: 'set_chain_floor', value: 2.0 }, { type: 'proof_gain', value: 18 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-spectral-afterimage',
@@ -394,7 +394,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Replay last Ophanim played this turn; Draw 1 card',
     rarity: 'Legendary',
     artKey: 'ga_oph_spectral_afterimage',
-    effects: [{ type: 'copy_last_hr' }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'copy_last_hr' }, { type: 'draw', value: 1 }, { type: 'proof_gain', value: 8 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-clear-beyond',
@@ -413,7 +413,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     artKey: 'ga_et_lattice_archive_seraph',
     bonusType: 'oblivion_per_card',
     bonusValue: 16,
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'dominant_stack_gain', value: 16 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'proof_gain', value: 16 }],
     unsynergizedName: 'Lattice Archive Vector Break',
     synergizedName: 'Lattice Archive Angelic Verdict',
     unsynergizedDescription: '920 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -432,7 +432,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     rarity: 'Eternal',
     artKey: 'ga_et_angled_infinity',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.08 }],
-    onPlayEffects: [{ type: 'set_chain_floor', value: 3.0 }, { type: 'draw', value: 2 }],
+    onPlayEffects: [{ type: 'set_chain_floor', value: 3.0 }, { type: 'draw', value: 2 }, { type: 'proof_gain', value: 15 }],
   }),
   buildOphanim({
     definitionId: 'ga-et-first-white',
@@ -440,7 +440,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Gain 24 of your dominant resource; Set chain multiplier to x2.8; Empower the next card you play; Draw 2 cards',
     rarity: 'Eternal',
     artKey: 'ga_et_first_white',
-    effects: [{ type: 'dominant_stack_gain', value: 24 }, { type: 'chain_multiplier_set', value: 2.8 }],
+    effects: [{ type: 'proof_gain', value: 24 }, { type: 'chain_multiplier_set', value: 2.8 }],
   }),
   buildSeraphim({
     definitionId: 'ga-et-center-everywhere',
@@ -450,7 +450,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     artKey: 'ga_et_center_everywhere',
     bonusType: 'oblivion_per_card',
     bonusValue: 78,
-    onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 3.5 }, { type: 'multiply_next' }],
+    onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 3.5 }, { type: 'multiply_next' }, { type: 'proof_gain', value: 25 }],
     unsynergizedName: 'Center Everywhere Vector Break',
     synergizedName: 'Center Everywhere Angelic Verdict',
     unsynergizedDescription: '1040 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -469,7 +469,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     rarity: 'Eternal',
     artKey: 'ga_et_perfect_refraction',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.10 }],
-    onPlayEffects: [{ type: 'look_top_take_drop', look: 7, take: 3, drop: 1 }, { type: 'salvage_any' }],
+    onPlayEffects: [{ type: 'look_top_take_drop', look: 7, take: 3, drop: 1 }, { type: 'salvage_any' }, { type: 'proof_gain', value: 20 }],
   }),
 
   buildSeraphim({
@@ -480,7 +480,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     artKey: 'ga_inf_glass_absolute',
     bonusType: 'oblivion_per_card',
     bonusValue: 140,
-    onPlayEffects: [{ type: 'draw', value: 4 }, { type: 'chain_multiplier_set', value: 4.0 }, { type: 'dominant_stack_gain', value: 30 }],
+    onPlayEffects: [{ type: 'draw', value: 4 }, { type: 'chain_multiplier_set', value: 4.0 }, { type: 'proof_gain', value: 30 }],
     unsynergizedName: 'Glass Absolute Vector Break',
     synergizedName: 'Glass Absolute Angelic Verdict',
     unsynergizedDescription: '1880 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -499,7 +499,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     rarity: 'Infinite',
     artKey: 'ga_inf_refracted_sovereign',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.16 }],
-    onPlayEffects: [{ type: 'oblivion_flat', value: 1100 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 5.0 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 1100 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 5.0 }, { type: 'proof_gain', value: 40 }],
   }),
   buildOphanim({
     definitionId: 'ga-inf-yreth-prism-at-center',
@@ -507,7 +507,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Draw 5 cards; Set chain multiplier to x5.0; Gain 42 of your dominant resource',
     rarity: 'Infinite',
     artKey: 'ga_inf_yreth_prism_at_center',
-    effects: [{ type: 'draw', value: 5 }, { type: 'chain_multiplier_set', value: 5.0 }, { type: 'dominant_stack_gain', value: 42 }],
+    effects: [{ type: 'draw', value: 5 }, { type: 'chain_multiplier_set', value: 5.0 }, { type: 'proof_gain', value: 42 }],
   }),
   buildSeraphim({
     definitionId: 'ga-inf-chorus-unbroken-spectrum',
@@ -517,7 +517,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     artKey: 'ga_inf_chorus_unbroken_spectrum',
     bonusType: 'oblivion_per_card',
     bonusValue: 180,
-    onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'dominant_stack_gain', value: 42 }, { type: 'multiply_next' }],
+    onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'proof_gain', value: 42 }, { type: 'multiply_next' }],
     unsynergizedName: 'Unbroken Spectrum Vector Break',
     synergizedName: 'Unbroken Spectrum Angelic Verdict',
     unsynergizedDescription: '2460 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -536,7 +536,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     rarity: 'Infinite',
     artKey: 'ga_inf_shattered_without_shattering',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.18 }],
-    onPlayEffects: [{ type: 'salvage_any' }, { type: 'draw', value: 4 }, { type: 'dominant_stack_gain', value: 36 }],
+    onPlayEffects: [{ type: 'salvage_any' }, { type: 'draw', value: 4 }, { type: 'proof_gain', value: 36 }],
   }),
   buildOphanim({
     definitionId: 'ga-inf-color-after-white',
@@ -544,7 +544,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Draw 6 cards; Amplify Chain by +6.0; Gain 60 Radiance',
     rarity: 'Infinite',
     artKey: 'ga_inf_color_after_white',
-    effects: [{ type: 'draw', value: 6 }, { type: 'set_chain_floor', value: 6.0 }, { type: 'radiance_gain', value: 60 }],
+    effects: [{ type: 'draw', value: 6 }, { type: 'set_chain_floor', value: 6.0 }, { type: 'radiance_gain', value: 60 }, { type: 'proof_gain', value: 50 }],
   }),
 ];
 

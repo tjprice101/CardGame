@@ -134,6 +134,11 @@ const defaultTurn: TurnState = {
   burningGardenLineagesPlayed: [],
   burningGardenEchoesBloomed: 0,
   lastPlayedElement: null,
+  prismaticLight: 0,
+  monochromaticShards: 0,
+  arcticCharge: 0,
+  proof: 0,
+  bloom: 0,
 };
 
 const defaultProgress: ProgressState = {
@@ -1068,7 +1073,7 @@ function classifyActionClass(def: CardDefinition, effects: CardEffect[]): Attenu
   if (effects.some(effect => effect.type === 'draw' || effect.type === 'look_top_take' || effect.type === 'look_top_take_drop' || effect.type === 'look_top_take_type' || effect.type === 'search_deck_by_type' || effect.type === 'shuffle_discard')) {
     return 'setup';
   }
-  if (effects.some(effect => effect.type === 'oblivion_flat' || effect.type === 'score_flat' || effect.type === 'radiance_gain' || effect.type === 'radiance_spend' || effect.type === 'ember_gain' || effect.type === 'ember_spend' || effect.type === 'dominant_stack_gain' || effect.type === 'trail_gain' || effect.type === 'trail_spend' || effect.type === 'strain_gain' || effect.type === 'strain_vent' || effect.type === 'overclock')) {
+  if (effects.some(effect => effect.type === 'oblivion_flat' || effect.type === 'score_flat' || effect.type === 'radiance_gain' || effect.type === 'radiance_spend' || effect.type === 'ember_gain' || effect.type === 'ember_spend' || effect.type === 'prismatic_light_gain' || effect.type === 'prismatic_light_spend' || effect.type === 'monochromatic_shards_gain' || effect.type === 'arctic_charge_gain' || effect.type === 'arctic_charge_discharge' || effect.type === 'proof_gain' || effect.type === 'bloom_gain' || effect.type === 'bloom_harvest' || effect.type === 'trail_gain' || effect.type === 'trail_spend' || effect.type === 'strain_gain' || effect.type === 'strain_vent' || effect.type === 'overclock')) {
     return 'conversion';
   }
   return 'conversion';

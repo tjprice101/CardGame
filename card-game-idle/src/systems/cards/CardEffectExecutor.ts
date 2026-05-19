@@ -159,12 +159,92 @@ export class CardEffectExecutor {
           mutableTurn.chainFloor = Math.max(mutableTurn.chainFloor ?? 0, effect.value);
           break;
 
-        case 'dominant_stack_gain': {
+        case 'prismatic_light_gain': {
           const gain = effect.value * multiplier;
-          if (mutableTurn.embers >= mutableTurn.radiance) {
-            mutableTurn.embers += gain;
+          mutableTurn.prismaticLight = (mutableTurn.prismaticLight ?? 0) + gain;
+          // Each point of Prismatic Light lifts the chain floor slightly
+          const lightFloor = 1.0 + (mutableTurn.prismaticLight ?? 0) * 0.005;
+          mutableTurn.chainFloor = Math.max(mutableTurn.chainFloor ?? 1, lightFloor);
+          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainFloor);
+          break;
+        }
+
+        case 'prismatic_light_spend': {
+          if (effect.value >= 9999) {
+            mutableTurn.prismaticLight = 0;
           } else {
-            mutableTurn.radiance += gain;
+            if ((mutableTurn.prismaticLight ?? 0) < effect.value) return false;
+            mutableTurn.prismaticLight = (mutableTurn.prismaticLight ?? 0) - effect.value;
+          }
+          break;
+        }
+
+        case 'monochromatic_shards_gain': {
+          const gain = effect.value * multiplier;
+          mutableTurn.monochromaticShards = (mutableTurn.monochromaticShards ?? 0) + gain;
+          oblivionBonus += gain * 2;
+          break;
+        }
+
+        case 'monochromatic_shards_spend': {
+          if (effect.value >= 9999) {
+            const shards = mutableTurn.monochromaticShards ?? 0;
+            oblivionBonus += shards * 6;
+            mutableTurn.monochromaticShards = 0;
+          } else {
+            if ((mutableTurn.monochromaticShards ?? 0) < effect.value) return false;
+            mutableTurn.monochromaticShards = (mutableTurn.monochromaticShards ?? 0) - effect.value;
+          }
+          break;
+        }
+
+        case 'arctic_charge_gain': {
+          const gain = effect.value * multiplier;
+          mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + gain;
+          break;
+        }
+
+        case 'arctic_charge_discharge': {
+          const charge = mutableTurn.arcticCharge ?? 0;
+          if (charge > 0) {
+            oblivionBonus += charge * 8 * multiplier;
+            mutableTurn.arcticCharge = 0;
+          }
+          break;
+        }
+
+        case 'proof_gain': {
+          const gain = effect.value * multiplier;
+          mutableTurn.proof = (mutableTurn.proof ?? 0) + gain;
+          // Proof builds chain floor — glass absolute\'s sustained precision
+          const proofFloor = 1.0 + (mutableTurn.proof ?? 0) * 0.012;
+          mutableTurn.chainFloor = Math.max(mutableTurn.chainFloor ?? 1, proofFloor);
+          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainFloor);
+          break;
+        }
+
+        case 'proof_spend': {
+          if (effect.value >= 9999) {
+            mutableTurn.proof = 0;
+          } else {
+            if ((mutableTurn.proof ?? 0) < effect.value) return false;
+            mutableTurn.proof = (mutableTurn.proof ?? 0) - effect.value;
+          }
+          break;
+        }
+
+        case 'bloom_gain': {
+          const gain = effect.value * multiplier;
+          mutableTurn.bloom = (mutableTurn.bloom ?? 0) + gain;
+          break;
+        }
+
+        case 'bloom_harvest': {
+          const bloom = mutableTurn.bloom ?? 0;
+          if (bloom > 0) {
+            const bonus = Math.min(bloom * 0.015, 0.5);
+            mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: 1 + bonus });
+            mutableTurn.bloom = 0;
           }
           break;
         }
@@ -503,6 +583,11 @@ export class CardEffectExecutor {
       case 'trail_gte':         return turn.trail >= condition.value;
       case 'strain_gte':        return turn.strain >= condition.value;
       case 'strain_lte':        return turn.strain <= condition.value;
+      case 'prismatic_light_gte': return (turn.prismaticLight ?? 0) >= condition.value;
+      case 'shards_gte':        return (turn.monochromaticShards ?? 0) >= condition.value;
+      case 'arctic_charge_gte': return (turn.arcticCharge ?? 0) >= condition.value;
+      case 'proof_gte':         return (turn.proof ?? 0) >= condition.value;
+      case 'bloom_gte':         return (turn.bloom ?? 0) >= condition.value;
       case 'cards_played_gte':  return turn.cardsPlayedThisTurn >= condition.value;
       case 'first_card_this_turn': return turn.cardsPlayedThisTurn === 0;
       case 'seraphim_active_gte':

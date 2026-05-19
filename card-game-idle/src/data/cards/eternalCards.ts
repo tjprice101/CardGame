@@ -872,7 +872,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     name: 'Vorthum Mirror Regent',
     description: 'Gain 20 of your dominant resource; Look at the top 8 cards, take 2 cards, put 2 cards on the bottom, and discard the rest; Amplify Chain by +4.8; Draw 1 card',
     artKey: 'btei_prismatic_vorthum_edict',
-    effects: [{ type: 'dominant_stack_gain', value: 20 }, { type: 'look_top_take_drop', look: 8, take: 2, drop: 2 }, { type: 'set_chain_floor', value: 4.8 }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'prismatic_light_gain', value: 20 }, { type: 'look_top_take_drop', look: 8, take: 2, drop: 2 }, { type: 'set_chain_floor', value: 4.8 }, { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'btei-prismatic-fracture-archive',
@@ -883,7 +883,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     description: 'On play: Draw 2 cards; Salvage any 1 card. While on board: Adjacent active Seraphim gain +135 Oblivion per card played; Adjacent active Seraphim gain +0.09 chain growth; Buffs Seraphim and Angel attacks: base +112, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +87, chain scaling +0.01, cooldown -1, multiplier x1.00',
     artKey: 'btei_prismatic_fracture_archive',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 135 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.09 }],
-    onPlayEffects: [{ type: 'dominant_stack_gain', value: 20 }, { type: 'draw', value: 2 }, { type: 'salvage_any' }],
+    onPlayEffects: [{ type: 'prismatic_light_gain', value: 20 }, { type: 'draw', value: 2 }, { type: 'salvage_any' }],
   },
   {
     definitionId: 'btei-prismatic-storm-memory',
@@ -919,7 +919,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 190, synergyRequirement: 'Prismatic' },
-    onPlayEffects: [{ type: 'dominant_stack_gain', value: 20 }, { type: 'draw', value: 3 }, { type: 'chain_multiplier_set', value: 2.7 }],
+    onPlayEffects: [{ type: 'prismatic_light_gain', value: 20 }, { type: 'draw', value: 3 }, { type: 'chain_multiplier_set', value: 2.7 }],
   },
   {
     definitionId: 'btei-prismatic-blindwars-reliquary',
@@ -931,7 +931,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     artKey: 'btei_prismatic_blindwars_reliquary',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }, { type: 'cherubim_active_gte', value: 1 }],
-    onSummonEffects: [{ type: 'dominant_stack_gain', value: 25 }, { type: 'look_top_take', look: 7, take: 2 }, { type: 'set_chain_floor', value: 5.4 }],
+    onSummonEffects: [{ type: 'prismatic_light_gain', value: 25 }, { type: 'look_top_take', look: 7, take: 2 }, { type: 'set_chain_floor', value: 5.4 }],
     activatedAbility: {
       name: 'War of Reflections',
       cardsPlayedRequirement: 5,
@@ -973,7 +973,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     description: 'Gain 25 of your dominant resource; Draw 4 cards; Amplify Chain by +6.6; If you control 2+ active Cherubim, +2000 Oblivion; Empower the next card you play',
     artKey: 'btei_prismatic_ninefold_accord',
     effects: [
-      { type: 'dominant_stack_gain', value: 25 },
+      { type: 'prismatic_light_gain', value: 25 },
       { type: 'draw', value: 4 },
       { type: 'set_chain_floor', value: 6.6 },
       { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 2000 }, { type: 'multiply_next' }] },
@@ -987,7 +987,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     name: 'Cindershard Lexicon',
     description: 'Discard 2 cards, then draw 4 cards; Amplify Chain by +4.4; +1200 Oblivion',
     artKey: 'btei_bgi_cindershard_lexicon',
-    effects: [{ type: 'discard_draw', discard: 2, draw: 4 }, { type: 'set_chain_floor', value: 4.4 }, { type: 'oblivion_flat', value: 1200 }],
+    effects: [{ type: 'discard_draw', discard: 2, draw: 4 }, { type: 'set_chain_floor', value: 4.4 }, { type: 'oblivion_flat', value: 1200 }, { type: 'monochromatic_shards_gain', value: 10 }],
   },
   {
     definitionId: 'btei-bgi-blackglass-catastrophe',
@@ -997,7 +997,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     name: 'Blackglass Catastrophe',
     description: 'Discard 1 card, then draw 5 cards; Set chain multiplier to x2.8',
     artKey: 'btei_bgi_blackglass_catastrophe',
-    effects: [{ type: 'discard_draw', discard: 1, draw: 5 }, { type: 'chain_multiplier_set', value: 2.8 }],
+    effects: [{ type: 'discard_draw', discard: 1, draw: 5 }, { type: 'chain_multiplier_set', value: 2.8 }, { type: 'monochromatic_shards_gain', value: 8 }],
   },
   {
     definitionId: 'btei-bgi-inferborn-prophecy',
@@ -1046,7 +1046,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 190, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'discard_draw', discard: 1, draw: 3 }, { type: 'set_chain_floor', value: 4.6 }],
+    onPlayEffects: [{ type: 'discard_draw', discard: 1, draw: 3 }, { type: 'set_chain_floor', value: 4.6 }, { type: 'monochromatic_shards_gain', value: 8 }],
   },
   {
     definitionId: 'btei-bgi-rosecrown-annihilator',
@@ -1082,7 +1082,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 200, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'chain_multiplier_set', value: 2.7 }, { type: 'discard_draw', discard: 1, draw: 2 }, { type: 'salvage_any' }],
+    onPlayEffects: [{ type: 'chain_multiplier_set', value: 2.7 }, { type: 'discard_draw', discard: 1, draw: 2 }, { type: 'salvage_any' }, { type: 'monochromatic_shards_gain', value: 10 }],
   },
   {
     definitionId: 'btei-bgi-silver-sorrow-archwyrm',
@@ -1118,7 +1118,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
       },
     },
     baseStats: { bonusType: 'chain_bonus', bonusValue: 0.3, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'discard_draw', discard: 2, draw: 5 }, { type: 'multiply_next' }],
+    onPlayEffects: [{ type: 'discard_draw', discard: 2, draw: 5 }, { type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 12 }],
   },
   {
     definitionId: 'btei-bgi-crystal-war-sutures',
@@ -1129,7 +1129,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     description: 'On play: Draw 2 cards; Salvage 1 card matching Ophanim. While on board: Adjacent active Seraphim gain +140 Oblivion per card played; Buffs Seraphim and Angel attacks: base +132, chain scaling +0.10, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +103, chain scaling +0.06, cooldown -1, multiplier x1.00',
     artKey: 'btei_bgi_crystal_war_sutures',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 140 }],
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'salvage_by_type', filter: ['Ophanim'] }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'salvage_by_type', filter: ['Ophanim'] }, { type: 'monochromatic_shards_gain', value: 8 }],
   },
   {
     definitionId: 'btei-bgi-nocturne-of-embers',
@@ -1140,7 +1140,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     description: 'On play: Amplify Chain by +4.0; Draw 2 cards. While on board: Adjacent active Seraphim gain +110 Oblivion per card played; Adjacent active Seraphim gain +0.1 chain growth; Buffs Seraphim attacks: base +99, chain scaling +0.01, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +77, chain scaling +0.01, cooldown -1, multiplier x1.00',
     artKey: 'btei_bgi_nocturne_of_embers',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 110 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.1 }],
-    onPlayEffects: [{ type: 'set_chain_floor', value: 4.0 }, { type: 'discard_draw', discard: 1, draw: 3 }],
+    onPlayEffects: [{ type: 'set_chain_floor', value: 4.0 }, { type: 'discard_draw', discard: 1, draw: 3 }, { type: 'monochromatic_shards_gain', value: 8 }],
   },
   {
     definitionId: 'btei-bgi-throne-of-cinders',
@@ -1238,12 +1238,12 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     artKey: 'sv_eternal_frost_charge',
     summonCost: ['sv-ser-frostcoil', 'sv-ser-glacier-relay'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 8 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 2.2 }, { type: 'oblivion_flat', value: 220 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 8 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 2.2 }, { type: 'oblivion_flat', value: 220 }, { type: 'arctic_charge_gain', value: 10 }],
     activatedAbility: {
       name: 'Winter Surge',
       cardsPlayedRequirement: 5,
-      description: 'Gain 4 Radiance; Gain 1 Strain; Draw 3 cards; Empower the next card you play; +260 Oblivion',
-      effects: [{ type: 'radiance_gain', value: 4 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 3 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 260 }],
+      description: 'Gain 4 Radiance; Gain 1 Strain; Draw 3 cards; Empower the next card you play; +260 Oblivion; Discharge Arctic Charge',
+      effects: [{ type: 'radiance_gain', value: 4 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 3 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 260 }, { type: 'arctic_charge_discharge' }],
     },
     attacks: {
       primary: {
@@ -1280,12 +1280,12 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     description: 'On summon: Gain 8 Radiance; Draw 3 cards; Set chain multiplier to x2.4. After 5 cards played: Draw 4 cards; Gain 2 Radiance; Amplify Chain by +2.9. While on board: Chain grows +0.1 per card played while on board',
     artKey: 'sv_eternal_aurora_battery',
     summonCost: ['sv-ser-static-sleet', 'sv-ser-icegrid'],
-    onSummonEffects: [{ type: 'radiance_gain', value: 8 }, { type: 'draw', value: 3 }, { type: 'chain_multiplier_set', value: 2.4 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 8 }, { type: 'draw', value: 3 }, { type: 'chain_multiplier_set', value: 2.4 }, { type: 'arctic_charge_gain', value: 10 }],
     activatedAbility: {
       name: 'Aurora Recharge',
       cardsPlayedRequirement: 5,
-      description: 'Draw 4 cards; Gain 2 Radiance; Amplify Chain by +2.9',
-      effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 2 }, { type: 'set_chain_floor', value: 2.9 }],
+      description: 'Draw 4 cards; Gain 2 Radiance; Amplify Chain by +2.9; Gain 5 Arctic Charge',
+      effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 2 }, { type: 'set_chain_floor', value: 2.9 }, { type: 'arctic_charge_gain', value: 5 }],
     },
     attacks: {
       primary: {
@@ -1323,12 +1323,12 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     artKey: 'sv_eternal_glacier_signal',
     summonCost: ['sv-angel-overcurrent-chorus', 'sv-ser-whiteout-engine'],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 10 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 4 }, { type: 'oblivion_flat', value: 280 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 10 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 4 }, { type: 'oblivion_flat', value: 280 }, { type: 'arctic_charge_gain', value: 12 }],
     activatedAbility: {
       name: 'Signal Override',
       cardsPlayedRequirement: 6,
-      description: 'Gain 2 Strain; Gain 5 Radiance; Draw 4 cards; Empower the next card you play; +320 Oblivion',
-      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 5 }, { type: 'draw', value: 4 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 320 }],
+      description: 'Gain 2 Strain; Gain 5 Radiance; Draw 4 cards; Empower the next card you play; +320 Oblivion; Discharge Arctic Charge',
+      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 5 }, { type: 'draw', value: 4 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 320 }, { type: 'arctic_charge_discharge' }],
     },
     attacks: {
       primary: {
@@ -1366,12 +1366,12 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     artKey: 'sv_eternal_white_static',
     summonCost: ['sv-angel-whiteout-judicator', 'sv-cher-station-nullpoint'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 6 }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 2.6 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 6 }, { type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 2.6 }, { type: 'arctic_charge_gain', value: 10 }],
     activatedAbility: {
       name: 'Static Crown',
       cardsPlayedRequirement: 5,
-      description: 'Draw 4 cards; Gain 2 Strain; +300 Oblivion',
-      effects: [{ type: 'draw', value: 4 }, { type: 'strain_gain', value: 2 }, { type: 'oblivion_flat', value: 300 }],
+      description: 'Draw 4 cards; Gain 2 Strain; +300 Oblivion; Discharge Arctic Charge',
+      effects: [{ type: 'draw', value: 4 }, { type: 'strain_gain', value: 2 }, { type: 'oblivion_flat', value: 300 }, { type: 'arctic_charge_discharge' }],
     },
     attacks: {
       primary: {
@@ -1409,12 +1409,12 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     artKey: 'sv_eternal_sleet_choir',
     summonCost: ['sv-angel-icebound-conductor', 'sv-cher-last-transmission'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 12 }, { type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'chain_multiplier_set', value: 2.8 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 12 }, { type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'chain_multiplier_set', value: 2.8 }, { type: 'arctic_charge_gain', value: 14 }],
     activatedAbility: {
       name: 'Choir of Static',
       cardsPlayedRequirement: 6,
-      description: 'Gain 2 Strain; Gain 6 Radiance; Draw 4 cards; Empower the next card you play; +360 Oblivion',
-      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 6 }, { type: 'draw', value: 4 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 360 }],
+      description: 'Gain 2 Strain; Gain 6 Radiance; Draw 4 cards; Empower the next card you play; +360 Oblivion; Discharge Arctic Charge',
+      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 6 }, { type: 'draw', value: 4 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 360 }, { type: 'arctic_charge_discharge' }],
     },
     attacks: {
       primary: {

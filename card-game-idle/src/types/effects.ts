@@ -35,7 +35,16 @@ export type ImmediateEffect =
   | { type: 'salvage_any' }
   | { type: 'radiance_double' }
   | { type: 'sacred_covenant' }
-  | { type: 'dominant_stack_gain'; value: number }
+  | { type: 'prismatic_light_gain'; value: number }
+  | { type: 'prismatic_light_spend'; value: number }
+  | { type: 'monochromatic_shards_gain'; value: number }
+  | { type: 'monochromatic_shards_spend'; value: number }
+  | { type: 'arctic_charge_gain'; value: number }
+  | { type: 'arctic_charge_discharge' }
+  | { type: 'proof_gain'; value: number }
+  | { type: 'proof_spend'; value: number }
+  | { type: 'bloom_gain'; value: number }
+  | { type: 'bloom_harvest' }
   | { type: 'trail_gain'; value: number }
   | { type: 'trail_spend'; value: number }
   | { type: 'strain_gain'; value: number }
@@ -53,7 +62,12 @@ export type EffectCondition =
   | { type: 'ember_gte'; value: number }
   | { type: 'trail_gte'; value: number }
   | { type: 'strain_gte'; value: number }
-  | { type: 'strain_lte'; value: number };
+  | { type: 'strain_lte'; value: number }
+  | { type: 'prismatic_light_gte'; value: number }
+  | { type: 'shards_gte'; value: number }
+  | { type: 'arctic_charge_gte'; value: number }
+  | { type: 'proof_gte'; value: number }
+  | { type: 'bloom_gte'; value: number };
 
 export interface ConditionalEffect {
   type: 'conditional';

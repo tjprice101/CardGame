@@ -124,7 +124,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_ser_serevathi_ember_spiral',
     bonusType: 'ember_per_card',
     bonusValue: 3,
-    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'ember_gain', value: 6 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'ember_gain', value: 6 }, { type: 'bloom_gain', value: 4 }],
     unsynergizedName: 'Petal Circuit Slash',
     synergizedName: 'Blazing Choir Slash',
     unsynergizedDescription: '236 base Oblivion, 5 cards cooldown, x1.14 chain scaling, Cost: discard 1 card',
@@ -144,7 +144,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_ser_aureveth_noon_petal',
     bonusType: 'chain_bonus',
     bonusValue: 0.04,
-    onPlayEffects: [{ type: 'ember_gain', value: 10 }, { type: 'multiply_next' }],
+    onPlayEffects: [{ type: 'ember_gain', value: 10 }, { type: 'multiply_next' }, { type: 'bloom_gain', value: 6 }],
     unsynergizedName: 'Sunfloret Vector',
     synergizedName: 'Noon-That-Does-Not-End',
     unsynergizedDescription: '300 base Oblivion, 4 cards cooldown, x1.22 chain scaling, Cost: discard 1 card',
@@ -164,7 +164,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_ser_vethkorath_starspine',
     bonusType: 'oblivion_per_card',
     bonusValue: 22,
-    onPlayEffects: [{ type: 'ember_gain', value: 8 }, { type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 1.9 }],
+    onPlayEffects: [{ type: 'ember_gain', value: 8 }, { type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 1.9 }, { type: 'bloom_gain', value: 5 }],
     unsynergizedName: 'Thistle Proof Cut',
     synergizedName: 'Proof Completed Cut',
     unsynergizedDescription: '418 base Oblivion, 5 cards cooldown, x1.24 chain scaling, Cost: discard 1 card',
@@ -184,7 +184,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_ser_embergrove_cantor',
     bonusType: 'ember_per_card',
     bonusValue: 14,
-    onPlayEffects: [{ type: 'salvage_any' }, { type: 'dominant_stack_gain', value: 14 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'salvage_any' }, { type: 'bloom_gain', value: 14 }, { type: 'draw', value: 1 }],
     unsynergizedName: 'Ember Echo Rend',
     synergizedName: 'Echo Chord Rend',
     unsynergizedDescription: '516 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -234,7 +234,7 @@ export const blazingGardenCards: CardDefinition[] = [
     rarity: 'Rare',
     artKey: 'bg_cher_auric_floret_keeper',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.05 }],
-    onPlayEffects: [{ type: 'ember_gain', value: 12 }],
+    onPlayEffects: [{ type: 'ember_gain', value: 12 }, { type: 'bloom_gain', value: 7 }],
   }),
   buildCherubim({
     definitionId: 'bg-cher-thistleproof-chorister',
@@ -243,7 +243,7 @@ export const blazingGardenCards: CardDefinition[] = [
     rarity: 'Rare',
     artKey: 'bg_cher_thistleproof_chorister',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.08 }],
-    onPlayEffects: [{ type: 'ember_gain', value: 5 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'ember_gain', value: 5 }, { type: 'draw', value: 1 }, { type: 'bloom_gain', value: 4 }],
   }),
   buildCherubim({
     definitionId: 'bg-cher-embergrove-historian',
@@ -270,7 +270,7 @@ export const blazingGardenCards: CardDefinition[] = [
     rarity: 'Legendary',
     artKey: 'bg_cher_golden_petal_vicar',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.06 }],
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'dominant_stack_gain', value: 10 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'bloom_gain', value: 10 }],
   }),
   buildCherubim({
     definitionId: 'bg-cher-charred-choir-reclaimer',
@@ -289,7 +289,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Draw 1 card; Gain 5 Embers',
     rarity: 'Common',
     artKey: 'bg_oph_petal_route_initiate',
-    effects: [{ type: 'draw', value: 1 }, { type: 'ember_gain', value: 5 }],
+    effects: [{ type: 'draw', value: 1 }, { type: 'ember_gain', value: 5 }, { type: 'bloom_gain', value: 3 }],
   }),
   buildOphanim({
     definitionId: 'bg-oph-sunvein-wayfinder',
@@ -305,7 +305,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Gain 8 Embers; Amplify Chain by +1.7; Empower the next card you play; Draw 1 card',
     rarity: 'Rare',
     artKey: 'bg_oph_violet_crown_drift',
-    effects: [{ type: 'ember_gain', value: 8 }, { type: 'set_chain_floor', value: 1.7 }],
+    effects: [{ type: 'ember_gain', value: 8 }, { type: 'set_chain_floor', value: 1.7 }, { type: 'bloom_gain', value: 5 }],
   }),
   buildOphanim({
     definitionId: 'bg-oph-embergrove-cartographer',
@@ -337,7 +337,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Draw 4 cards; Gain 16 Embers; Amplify Chain by +2.2',
     rarity: 'Legendary',
     artKey: 'bg_oph_chordbearing_migration',
-    effects: [{ type: 'draw', value: 4 }, { type: 'ember_gain', value: 16 }, { type: 'set_chain_floor', value: 2.2 }],
+    effects: [{ type: 'draw', value: 4 }, { type: 'ember_gain', value: 16 }, { type: 'set_chain_floor', value: 2.2 }, { type: 'bloom_gain', value: 10 }],
   }),
 
   // Eternal (5)
@@ -349,7 +349,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_et_serevathi_proofflame',
     bonusType: 'ember_per_card',
     bonusValue: 6,
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'ember_gain', value: 14 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'ember_gain', value: 14 }, { type: 'bloom_gain', value: 12 }],
     unsynergizedName: 'Proofflame Vector',
     synergizedName: 'Proofflame Choir Verdict',
     unsynergizedDescription: '980 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -369,7 +369,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_et_aureveth_evernoon',
     bonusType: 'oblivion_per_card',
     bonusValue: 64,
-    onPlayEffects: [{ type: 'chain_multiplier_set', value: 2.8 }, { type: 'draw', value: 2 }],
+    onPlayEffects: [{ type: 'chain_multiplier_set', value: 2.8 }, { type: 'draw', value: 2 }, { type: 'bloom_gain', value: 12 }],
     unsynergizedName: 'Evernoon Lance',
     synergizedName: 'Noon Without End Lance',
     unsynergizedDescription: '1044 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -388,7 +388,7 @@ export const blazingGardenCards: CardDefinition[] = [
     rarity: 'Eternal',
     artKey: 'bg_et_vethkorath_seven_crown',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.09 }],
-    onPlayEffects: [{ type: 'ember_gain', value: 8 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'ember_gain', value: 8 }, { type: 'draw', value: 1 }, { type: 'bloom_gain', value: 8 }],
   }),
   buildCherubim({
     definitionId: 'bg-et-embergrove-codex',
@@ -405,7 +405,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Draw 4 cards; Amplify Chain by +3.0; Gain 20 Embers',
     rarity: 'Eternal',
     artKey: 'bg_et_noonproof_transit',
-    effects: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 3.0 }, { type: 'ember_gain', value: 20 }],
+    effects: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 3.0 }, { type: 'ember_gain', value: 20 }, { type: 'bloom_gain', value: 14 }],
   }),
 
   // Infinite (6)
@@ -417,7 +417,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_inf_final_chord_incandescent',
     bonusType: 'oblivion_per_card',
     bonusValue: 138,
-    onPlayEffects: [{ type: 'draw', value: 4 }, { type: 'ember_gain', value: 30 }, { type: 'chain_multiplier_set', value: 4.0 }],
+    onPlayEffects: [{ type: 'draw', value: 4 }, { type: 'ember_gain', value: 30 }, { type: 'chain_multiplier_set', value: 4.0 }, { type: 'bloom_gain', value: 20 }],
     unsynergizedName: 'Incandescent Rift',
     synergizedName: 'Final Chord Rift',
     unsynergizedDescription: '1900 base Oblivion, 5 cards cooldown, x1.25 chain scaling, Cost: discard 1 card',
@@ -473,7 +473,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Draw 5 cards; Gain 42 Embers; Set chain multiplier to x5.0',
     rarity: 'Infinite',
     artKey: 'bg_inf_noon_that_never_sets',
-    effects: [{ type: 'draw', value: 5 }, { type: 'ember_gain', value: 42 }, { type: 'chain_multiplier_set', value: 5.0 }],
+    effects: [{ type: 'draw', value: 5 }, { type: 'ember_gain', value: 42 }, { type: 'chain_multiplier_set', value: 5.0 }, { type: 'bloom_gain', value: 28 }],
   }),
   buildOphanim({
     definitionId: 'bg-inf-proof-completed-sky',
@@ -481,7 +481,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Replay last Ophanim played this turn; Draw 4 cards; Gain 30 of your dominant resource',
     rarity: 'Infinite',
     artKey: 'bg_inf_proof_completed_sky',
-    effects: [{ type: 'copy_last_hr' }, { type: 'draw', value: 4 }, { type: 'dominant_stack_gain', value: 30 }],
+    effects: [{ type: 'copy_last_hr' }, { type: 'draw', value: 4 }, { type: 'bloom_gain', value: 30 }],
   }),
 ];
 

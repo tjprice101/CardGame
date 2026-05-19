@@ -77,7 +77,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'look_top_take_drop', look: 10, take: 3, drop: 2 },
       { type: 'draw', value: 2 },
       { type: 'set_chain_floor', value: 11.0 },
-      { type: 'dominant_stack_gain', value: 40 },
+      { type: 'prismatic_light_gain', value: 40 },
     ],
   },
   {
@@ -465,7 +465,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
       description: 'On play: Gain 30 of your dominant resource; Draw 4 cards; Amplify Chain by +7.0; Draw 3 cards; +2500 Oblivion. While on board: Adjacent active Seraphim gain +220 Oblivion per card played; Adjacent active Seraphim gain +0.22 chain growth; Buffs Angel attacks: base +198, chain scaling +0.04, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +154, chain scaling +0.03, cooldown -1, multiplier x1.00',
     artKey: 'inf_prismatic_collapse_lattice',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 220 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.22 }],
-      onPlayEffects: [{ type: 'dominant_stack_gain', value: 30 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 7.0 }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 2500 }],
+      onPlayEffects: [{ type: 'prismatic_light_gain', value: 30 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 7.0 }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 2500 }],
   },
   {
     definitionId: 'inf-gravebloom-singularity',
@@ -687,7 +687,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     ],
     onSummonEffects: [
       { type: 'draw', value: 5 },
-      { type: 'dominant_stack_gain', value: 40 },
+      { type: 'prismatic_light_gain', value: 40 },
       { type: 'set_chain_floor', value: 8.5 },
     ],
     activatedAbility: {
@@ -912,6 +912,7 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
       { type: 'salvage_any' },
       { type: 'set_chain_floor', value: 9.2 },
       { type: 'oblivion_flat', value: 1900 },
+      { type: 'monochromatic_shards_gain', value: 15 },
     ],
   },
   {
@@ -953,6 +954,7 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
       { type: 'salvage_any' },
       { type: 'multiply_next' },
       { type: 'set_chain_floor', value: 8.4 },
+      { type: 'monochromatic_shards_gain', value: 15 },
     ],
   },
 ];
@@ -967,7 +969,7 @@ export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
       description: 'On play: Draw 4 cards; Amplify Chain by +8.0; Set chain multiplier to x4.5; +2200 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played; Buffs Seraphim and Angel attacks: base +248, chain scaling +0.10, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +193, chain scaling +0.06, cooldown -1, multiplier x1.00',
     artKey: 'inf_bgi_inferno_of_two_truths',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 300 }],
-      onPlayEffects: [{ type: 'discard_draw', discard: 2, draw: 4 }, { type: 'salvage_any' }, { type: 'set_chain_floor', value: 8.0 }, { type: 'chain_multiplier_set', value: 4.5 }, { type: 'oblivion_flat', value: 2200 }],
+      onPlayEffects: [{ type: 'discard_draw', discard: 2, draw: 4 }, { type: 'salvage_any' }, { type: 'set_chain_floor', value: 8.0 }, { type: 'chain_multiplier_set', value: 4.5 }, { type: 'oblivion_flat', value: 2200 }, { type: 'monochromatic_shards_gain', value: 12 }],
   },
   {
     definitionId: 'inf-bgi-ashen-cinder-cathedral',
@@ -978,7 +980,7 @@ export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
       description: 'On play: Salvage any 1 card; Draw 6 cards; Empower the next card you play. While on board: Adjacent active Seraphim gain +240 Oblivion per card played; Buffs Seraphim attacks: base +228, chain scaling +0.09, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +178, chain scaling +0.06, cooldown -1, multiplier x1.00',
     artKey: 'inf_bgi_ashen_cinder_cathedral',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 240 }],
-      onPlayEffects: [{ type: 'salvage_any' }, { type: 'draw', value: 6 }, { type: 'multiply_next' }],
+      onPlayEffects: [{ type: 'salvage_any' }, { type: 'draw', value: 6 }, { type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 12 }],
   },
 ];
 
@@ -1001,6 +1003,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       { type: 'salvage_any' },
       { type: 'set_chain_floor', value: 10.0 },
       { type: 'oblivion_flat', value: 2500 },
+      { type: 'monochromatic_shards_gain', value: 18 },
     ],
     activatedAbility: {
       name: 'Sovereign Scission',
@@ -1011,6 +1014,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         { type: 'shuffle_discard' },
         { type: 'chain_multiplier_set', value: 6.0 },
         { type: 'oblivion_flat', value: 3800 },
+        { type: 'monochromatic_shards_gain', value: 15 },
       ],
     },
     attacks: {
@@ -1105,12 +1109,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     artKey: 'sv_infinite_polar_fission',
     summonCost: ['sv-ser-polar-circuit', 'sv-ser-icegrid'],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }, { type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 15 }, { type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'set_chain_floor', value: 4.2 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 15 }, { type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'set_chain_floor', value: 4.2 }, { type: 'arctic_charge_gain', value: 16 }],
     activatedAbility: {
       name: 'Fission Crown',
       cardsPlayedRequirement: 6,
-      description: 'Vent all Strain; Gain 10 Radiance; Draw 5 cards; Empower the next card you play; +720 Oblivion',
-      effects: [{ type: 'strain_vent', value: 9999 }, { type: 'radiance_gain', value: 10 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 720 }],
+      description: 'Vent all Strain; Gain 10 Radiance; Draw 5 cards; Empower the next card you play; +720 Oblivion; Discharge Arctic Charge',
+      effects: [{ type: 'strain_vent', value: 9999 }, { type: 'radiance_gain', value: 10 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 720 }, { type: 'arctic_charge_discharge' }],
     },
     attacks: {
       primary: {
@@ -1148,12 +1152,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     artKey: 'sv_infinite_neon_snowfall',
     summonCost: ['sv-cher-station-nullpoint', 'sv-cher-aeldris'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 12 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 6 }, { type: 'chain_multiplier_set', value: 4.4 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 12 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 6 }, { type: 'chain_multiplier_set', value: 4.4 }, { type: 'arctic_charge_gain', value: 16 }],
     activatedAbility: {
       name: 'Aurora Shock',
       cardsPlayedRequirement: 6,
-      description: 'Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Amplify Chain by +5.1',
-      effects: [{ type: 'radiance_gain', value: 8 }, { type: 'draw', value: 5 }, { type: 'oblivion_flat', value: 840 }, { type: 'set_chain_floor', value: 5.1 }],
+      description: 'Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Amplify Chain by +5.1; Gain 8 Arctic Charge',
+      effects: [{ type: 'radiance_gain', value: 8 }, { type: 'draw', value: 5 }, { type: 'oblivion_flat', value: 840 }, { type: 'set_chain_floor', value: 5.1 }, { type: 'arctic_charge_gain', value: 8 }],
     },
     attacks: {
       primary: {
@@ -1191,12 +1195,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     artKey: 'sv_infinite_crystal_storm',
     summonCost: ['sv-angel-sleet-choir', 'sv-ser-snow-lattice'],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 3 }],
-    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 12 }, { type: 'draw', value: 6 }, { type: 'oblivion_flat', value: 900 }],
+    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 12 }, { type: 'draw', value: 6 }, { type: 'oblivion_flat', value: 900 }, { type: 'arctic_charge_gain', value: 18 }],
     activatedAbility: {
       name: 'Storm Break',
       cardsPlayedRequirement: 7,
-      description: 'Gain 2 Strain; Draw 5 cards; Empower the next card you play; +960 Oblivion',
-      effects: [{ type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 960 }],
+      description: 'Gain 2 Strain; Draw 5 cards; Empower the next card you play; +960 Oblivion; Discharge Arctic Charge',
+      effects: [{ type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 960 }, { type: 'arctic_charge_discharge' }],
     },
     attacks: {
       primary: {
@@ -1234,12 +1238,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     artKey: 'sv_infinite_black_ice_throne',
     summonCost: ['sv-eternal-white-static', 'sv-cher-station-nullpoint'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 14 }, { type: 'draw', value: 5 }, { type: 'set_chain_floor', value: 5.6 }, { type: 'oblivion_flat', value: 1020 }],
+    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 14 }, { type: 'draw', value: 5 }, { type: 'set_chain_floor', value: 5.6 }, { type: 'oblivion_flat', value: 1020 }, { type: 'arctic_charge_gain', value: 18 }],
     activatedAbility: {
       name: 'Throne Freeze',
       cardsPlayedRequirement: 6,
-      description: 'Gain 2 Strain; Gain 8 Radiance; Draw 5 cards; Empower the next card you play; +1080 Oblivion',
-      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 8 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1080 }],
+      description: 'Gain 2 Strain; Gain 8 Radiance; Draw 5 cards; Empower the next card you play; +1080 Oblivion; Discharge Arctic Charge',
+      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 8 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1080 }, { type: 'arctic_charge_discharge' }],
     },
     attacks: {
       primary: {
@@ -1277,12 +1281,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     artKey: 'sv_infinite_aurora_collapse',
     summonCost: ['sv-angel-voltage-patriarch', 'sv-eternal-frost-charge'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 3 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'strain_gain', value: 3 }, { type: 'draw', value: 7 }, { type: 'chain_multiplier_set', value: 5.2 }, { type: 'oblivion_flat', value: 1200 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'strain_gain', value: 3 }, { type: 'draw', value: 7 }, { type: 'chain_multiplier_set', value: 5.2 }, { type: 'oblivion_flat', value: 1200 }, { type: 'arctic_charge_gain', value: 20 }],
     activatedAbility: {
       name: 'Collapse Horizon',
       cardsPlayedRequirement: 7,
-      description: 'Vent all Strain; Gain 15 Radiance; Draw 6 cards; Empower the next card you play; +1260 Oblivion',
-      effects: [{ type: 'strain_vent', value: 9999 }, { type: 'radiance_gain', value: 15 }, { type: 'draw', value: 6 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1260 }],
+      description: 'Vent all Strain; Gain 15 Radiance; Draw 6 cards; Empower the next card you play; +1260 Oblivion; Discharge Arctic Charge',
+      effects: [{ type: 'strain_vent', value: 9999 }, { type: 'radiance_gain', value: 15 }, { type: 'draw', value: 6 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1260 }, { type: 'arctic_charge_discharge' }],
     },
     attacks: {
       primary: {
@@ -1328,6 +1332,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'set_chain_floor', value: 10.5 },
       { type: 'multiply_next' },
       { type: 'oblivion_flat', value: 3200 },
+      { type: 'arctic_charge_gain', value: 20 },
     ],
   },
   {
@@ -1345,6 +1350,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'draw', value: 2 },
       { type: 'chain_multiplier_set', value: 4.8 },
       { type: 'oblivion_flat', value: 2800 },
+      { type: 'arctic_charge_gain', value: 15 },
     ],
   },
   {
@@ -1361,6 +1367,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'draw', value: 5 },
       { type: 'set_chain_floor', value: 11.2 },
       { type: 'oblivion_flat', value: 3300 },
+      { type: 'arctic_charge_gain', value: 18 },
     ],
   },
   {
@@ -1378,6 +1385,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'draw', value: 3 },
       { type: 'set_chain_floor', value: 9.8 },
       { type: 'oblivion_flat', value: 3100 },
+      { type: 'arctic_charge_gain', value: 18 },
     ],
   },
   {
@@ -1395,6 +1403,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'multiply_next' },
       { type: 'set_chain_floor', value: 12.5 },
       { type: 'oblivion_flat', value: 3600 },
+      { type: 'arctic_charge_gain', value: 22 },
     ],
   },
 ];
@@ -1945,3 +1954,4 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ],
   },
 ];
+

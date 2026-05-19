@@ -147,6 +147,11 @@ export interface TurnState {
   burningGardenEchoesBloomed?: number;
   lastPlayedElement?: string | null;
   cherubimConditionalMult?: number; // multiplier from cherubim_conditional_buff passives, applied per card play
+  prismaticLight?: number;
+  monochromaticShards?: number;
+  arcticCharge?: number;
+  proof?: number;
+  bloom?: number;
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────

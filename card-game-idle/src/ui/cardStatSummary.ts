@@ -129,6 +129,16 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ Strain`;
     case 'strain_lte':
       return `you have ${condition.value} or less Strain`;
+    case 'prismatic_light_gte':
+      return `you have ${condition.value}+ Prismatic Light`;
+    case 'shards_gte':
+      return `you have ${condition.value}+ Monochromatic Shards`;
+    case 'arctic_charge_gte':
+      return `you have ${condition.value}+ Arctic Charge`;
+    case 'proof_gte':
+      return `you have ${condition.value}+ Proof`;
+    case 'bloom_gte':
+      return `you have ${condition.value}+ Bloom`;
     default:
       return `${(condition as { type: string; value?: number }).type.replace(/_/g, ' ')} ${'value' in (condition as { value?: number }) ? (condition as { value?: number }).value ?? '' : ''}`.trim();
   }
@@ -158,7 +168,16 @@ function formatEffect(effect: CardEffect): string {
     case 'salvage_any': return 'Salvage any 1 card';
     case 'radiance_double': return 'Double current Radiance';
     case 'sacred_covenant': return 'Sacred Covenant';
-    case 'dominant_stack_gain': return `Gain ${effect.value} of your dominant resource`;
+    case 'prismatic_light_gain': return `Gain ${effect.value} Prismatic Light`;
+    case 'prismatic_light_spend': return `Spend ${effect.value} Prismatic Light`;
+    case 'monochromatic_shards_gain': return `Gain ${effect.value} Monochromatic Shards`;
+    case 'monochromatic_shards_spend': return `Spend ${effect.value} Monochromatic Shards`;
+    case 'arctic_charge_gain': return `Gain ${effect.value} Arctic Charge`;
+    case 'arctic_charge_discharge': return 'Discharge Arctic Charge';
+    case 'proof_gain': return `Gain ${effect.value} Proof`;
+    case 'proof_spend': return `Spend ${effect.value} Proof`;
+    case 'bloom_gain': return `Gain ${effect.value} Bloom`;
+    case 'bloom_harvest': return 'Harvest Bloom';
     case 'trail_gain': return `Gain ${effect.value} Trail`;
     case 'trail_spend': return `Spend ${effect.value} Trail`;
     case 'strain_gain': return `Gain ${effect.value} Strain`;

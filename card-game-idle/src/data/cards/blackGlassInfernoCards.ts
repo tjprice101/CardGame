@@ -35,7 +35,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 10, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'monochromatic_shards_gain', value: 2 }],
   },
   {
     definitionId: 'bgi-ser-ashen-helix',
@@ -71,7 +71,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 24, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'set_chain_floor', value: 1.35 }],
+    onPlayEffects: [{ type: 'set_chain_floor', value: 1.35 }, { type: 'monochromatic_shards_gain', value: 2 }],
   },
   {
     definitionId: 'bgi-ser-rose-spine-drake',
@@ -107,7 +107,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'chain_bonus', bonusValue: 0.08, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'oblivion_flat', value: 35 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 35 }, { type: 'monochromatic_shards_gain', value: 2 }],
   },
   {
     definitionId: 'bgi-ser-chromatic-ashwarden',
@@ -143,7 +143,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 1, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'oblivion_flat', value: 45 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 45 }, { type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ser-mourning-crest',
@@ -179,7 +179,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'cherubim_expire_bonus', bonusValue: 120, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ser-void-mandible-archon',
@@ -215,7 +215,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 30, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'multiply_next' }],
+    onPlayEffects: [{ type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ser-cinder-vow-leviathan',
@@ -251,7 +251,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'chain_bonus', bonusValue: 0.12, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'look_top_take', look: 3, take: 1 }],
+    onPlayEffects: [{ type: 'look_top_take', look: 3, take: 1 }, { type: 'monochromatic_shards_gain', value: 4 }],
   },
   {
     definitionId: 'bgi-ser-blackglass-cathedral',
@@ -287,7 +287,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 22, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'set_chain_floor', value: 1.55 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'set_chain_floor', value: 1.55 }, { type: 'monochromatic_shards_gain', value: 4 }],
   },
   {
     definitionId: 'bgi-ser-hatred-astralwyrm',
@@ -323,7 +323,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'chain_bonus', bonusValue: 0.16, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'chain_multiplier_set', value: 1.8 }],
+    onPlayEffects: [{ type: 'chain_multiplier_set', value: 1.8 }, { type: 'monochromatic_shards_gain', value: 4 }],
   },
   {
     definitionId: 'bgi-ser-infernal-griefforge',
@@ -359,7 +359,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'cherubim_expire_bonus', bonusValue: 260, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 1.8 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'set_chain_floor', value: 1.8 }, { type: 'monochromatic_shards_gain', value: 5 }],
   },
 ];
 
@@ -392,7 +392,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Rose Echo',
     description: 'Discard 1 card, then draw 2 cards',
     artKey: 'bgi_seek_rose_echo',
-    effects: [{ type: 'discard_draw', discard: 1, draw: 2 }],
+    effects: [{ type: 'discard_draw', discard: 1, draw: 2 }, { type: 'monochromatic_shards_gain', value: 4 }],
   },
   {
     definitionId: 'bgi-ophanim-ashen-memory',
@@ -445,7 +445,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Scorchglass Route',
     description: 'Draw 2 cards; Choose and discard 1 card',
     artKey: 'bgi_seek_scorchglass_route',
-    effects: [{ type: 'draw', value: 2 }, { type: 'discard_choice', value: 1 }],
+    effects: [{ type: 'draw', value: 2 }, { type: 'discard_choice', value: 1 }, { type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ophanim-lament-siphon',
@@ -455,7 +455,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Lament Siphon',
     description: 'Salvage any 1 card; +70 Oblivion',
     artKey: 'bgi_seek_lament_siphon',
-    effects: [{ type: 'salvage_any' }, { type: 'oblivion_flat', value: 70 }],
+    effects: [{ type: 'salvage_any' }, { type: 'oblivion_flat', value: 70 }, { type: 'monochromatic_shards_gain', value: 5 }],
   },
   {
     definitionId: 'bgi-ophanim-covenant-split',
@@ -511,7 +511,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Violet Dirge',
     description: 'Discard 2 cards, then draw 4 cards',
     artKey: 'bgi_seek_violet_dirge',
-    effects: [{ type: 'discard_draw', discard: 2, draw: 4 }],
+    effects: [{ type: 'discard_draw', discard: 2, draw: 4 }, { type: 'monochromatic_shards_gain', value: 6 }],
   },
   {
     definitionId: 'bgi-ophanim-copper-hate-psalm',
@@ -531,7 +531,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Blue Mourning Rift',
     description: 'Look at the top 8 cards, take 2 cards, put 2 cards on the bottom, and discard the rest',
     artKey: 'bgi_seek_blue_mourning_rift',
-    effects: [{ type: 'look_top_take_drop', look: 8, take: 2, drop: 2 }],
+    effects: [{ type: 'look_top_take_drop', look: 8, take: 2, drop: 2 }, { type: 'monochromatic_shards_gain', value: 4 }],
   },
   {
     definitionId: 'bgi-ophanim-whiteblack-supernova',
@@ -551,7 +551,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Dracovyr Warcry',
     description: 'Search your deck for 1 matching Seraphim or Cherubim',
     artKey: 'bgi_seek_dracovyr_warcry',
-    effects: [{ type: 'search_deck_by_type', filter: ['Seraphim', 'Cherubim'] }],
+    effects: [{ type: 'search_deck_by_type', filter: ['Seraphim', 'Cherubim'] }, { type: 'monochromatic_shards_gain', value: 4 }],
   },
   {
     definitionId: 'bgi-ophanim-sorveths-eleventh-second',
@@ -561,7 +561,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: "Sorveth's Eleventh Second",
     description: 'Draw 4 cards; Amplify Chain by +2.0; Empower the next card you play',
     artKey: 'bgi_seek_sorveths_eleventh_second',
-    effects: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 2.0 }, { type: 'multiply_next' }],
+    effects: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 2.0 }, { type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 8 }],
   },
   {
     definitionId: 'bgi-ophanim-shadows-of-the-inferno',
@@ -574,6 +574,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     effects: [
       { type: 'draw', value: 3 },
       { type: 'oblivion_flat', value: 220 },
+      { type: 'monochromatic_shards_gain', value: 6 },
       { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 220 }] },
     ],
   },

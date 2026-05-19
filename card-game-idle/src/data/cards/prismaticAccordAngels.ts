@@ -15,6 +15,7 @@ export const prismaticAccordAngels: AngelDefinition[] = [
       { type: 'draw', value: 2 },
       { type: 'look_top_take', look: 4, take: 1 },
       { type: 'set_chain_floor', value: 1.45 },
+      { type: 'prismatic_light_gain', value: 6 },
     ],
     activatedAbility: {
       name: 'Frozen Future',
@@ -24,6 +25,7 @@ export const prismaticAccordAngels: AngelDefinition[] = [
         { type: 'chain_multiplier_set', value: 2.1 },
         { type: 'salvage_any' },
         { type: 'draw', value: 1 },
+        { type: 'prismatic_light_gain', value: 5 },
       ],
     },
     attacks: {
@@ -70,6 +72,7 @@ export const prismaticAccordAngels: AngelDefinition[] = [
       { type: 'draw', value: 2 },
       { type: 'oblivion_flat', value: 170 },
       { type: 'set_chain_floor', value: 1.6 },
+      { type: 'prismatic_light_gain', value: 7 },
     ],
     activatedAbility: {
       name: 'Accord Without End',
@@ -79,6 +82,7 @@ export const prismaticAccordAngels: AngelDefinition[] = [
         { type: 'chain_multiplier_set', value: 2.4 },
         { type: 'multiply_next' },
         { type: 'salvage_any' },
+        { type: 'prismatic_light_gain', value: 5 },
       ],
     },
     attacks: {

@@ -2018,7 +2018,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 1000
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "prismatic_light_gain",
         "value": 20
       }
     ]
@@ -3018,7 +3018,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "trail_gain",
         "value": 6
       },
       {
@@ -3135,7 +3135,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "radiance_gain",
         "value": 6
       },
       {
@@ -4000,7 +4000,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 3
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "monochromatic_shards_gain",
         "value": 5
       },
       {
@@ -5901,7 +5901,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 1
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "radiance_gain",
         "value": 4
       },
       {
@@ -5940,7 +5940,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 1
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "radiance_gain",
         "value": 3
       },
       {
@@ -6167,7 +6167,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "radiance_gain",
         "value": 3
       },
       {
@@ -6188,7 +6188,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 250
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "radiance_gain",
         "value": 6
       },
       {
@@ -7398,7 +7398,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 6000
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "prismatic_light_gain",
         "value": 60
       }
     ]
@@ -7421,7 +7421,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 11
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "prismatic_light_gain",
         "value": 40
       }
     ]
@@ -9174,7 +9174,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 0
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "radiance_gain",
         "value": 4
       },
       {
@@ -11443,7 +11443,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 70
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "trail_gain",
         "value": 3
       },
       {
@@ -11553,7 +11553,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       },
       {
-        "type": "dominant_stack_gain",
+        "type": "trail_gain",
         "value": 3
       },
       {

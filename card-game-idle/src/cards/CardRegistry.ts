@@ -775,7 +775,7 @@ function injectOphanimUtility(def: OphanimDefinition): OphanimDefinition {
       extraEffects.push({ type: 'draw', value: weight >= 5 ? 2 : 1 });
       break;
     default:
-      extraEffects.push({ type: 'dominant_stack_gain', value: 2 + Math.min(4, weight) });
+      extraEffects.push({ type: 'prismatic_light_gain', value: 2 + Math.min(4, weight) });
       extraEffects.push({ type: 'draw', value: 1 });
       break;
   }
@@ -924,3 +924,4 @@ export const CardRegistry = {
     Array.from(registry.values()).filter(d => d.type === type).map(displayCardDefinition),
   has: (id: string): boolean => registry.has(resolveCardId(id)),
 };
+
