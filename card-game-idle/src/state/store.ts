@@ -1186,6 +1186,13 @@ function getBlazingGardenFullFireMultiplier(s: Store, def: CardDefinition): numb
   return setupReady && enginesReady ? 1.24 : 0.45;
 }
 
+function getIgnitionTierMultiplier(element: string, embers: number): number {
+  if (element !== 'Fire') return 1;
+  if (embers >= 16) return 1.70;
+  if (embers >= 6) return 1.30;
+  return 1;
+}
+
 function getSetFullFireMultiplier(s: Store, def: CardDefinition): number {
   return getNeutralityFullFireMultiplier(s, def)
     * getPyroFullFireMultiplier(s, def)
@@ -3223,6 +3230,13 @@ export const useStore = create<Store>()(
         );
         amount = Math.round(amount * getBurningGardenEchoPenalty(unit));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
+        // Pyroabyssal Ignition Threshold
+        const embers = s.turn.embers ?? 0;
+        amount = Math.round(amount * getIgnitionTierMultiplier(def.element, embers));
+        if (def.element === 'Fire' && embers >= 16) {
+          s.turn.embers = Math.max(0, embers - 10);
+          s.deck = TurnSystem.drawCards(s.deck, 1);
+        }
         grantOblivion(s, amount, s.turn.chainMultiplier);
 
         const refreshed = s.board.frontSlots[slot];
@@ -3288,6 +3302,13 @@ export const useStore = create<Store>()(
         );
         amount = Math.round(amount * getBurningGardenEchoPenalty(unit));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
+        // Pyroabyssal Ignition Threshold
+        const angelEmbers = s.turn.embers ?? 0;
+        amount = Math.round(amount * getIgnitionTierMultiplier(def.element, angelEmbers));
+        if (def.element === 'Fire' && angelEmbers >= 16) {
+          s.turn.embers = Math.max(0, angelEmbers - 10);
+          s.deck = TurnSystem.drawCards(s.deck, 1);
+        }
         grantOblivion(s, amount, s.turn.chainMultiplier);
 
         const refreshed = s.board.frontSlots[slot];

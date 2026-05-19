@@ -462,10 +462,10 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Collapse Lattice',
-      description: 'On play: Draw 4 cards; Amplify Chain by +7.0; Draw 3 cards; +2500 Oblivion. While on board: Adjacent active Seraphim gain +38 Oblivion per card played; Adjacent active Seraphim gain +0.22 chain growth; Buffs Angel attacks: base +34, chain scaling +0.04, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +27, chain scaling +0.03, cooldown -1, multiplier x1.00',
+      description: 'On play: Gain 30 of your dominant resource; Draw 4 cards; Amplify Chain by +7.0; Draw 3 cards; +2500 Oblivion. While on board: Adjacent active Seraphim gain +220 Oblivion per card played; Adjacent active Seraphim gain +0.22 chain growth; Buffs Angel attacks: base +198, chain scaling +0.04, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +154, chain scaling +0.03, cooldown -1, multiplier x1.00',
     artKey: 'inf_prismatic_collapse_lattice',
-      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 38 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.22 }],
-      onPlayEffects: [{ type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 7.0 }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 2500 }],
+      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 220 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.22 }],
+      onPlayEffects: [{ type: 'dominant_stack_gain', value: 30 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 7.0 }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 2500 }],
   },
   {
     definitionId: 'inf-gravebloom-singularity',
@@ -972,10 +972,10 @@ export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Ashen Cinder Cathedral',
-      description: 'On play: Salvage any 1 card; Draw 3 cards; Draw 3 cards; Empower the next card you play. While on board: Adjacent active Seraphim gain +23 Oblivion per card played; Buffs Seraphim attacks: base +21, chain scaling +0.09, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +16, chain scaling +0.06, cooldown -1, multiplier x1.00',
+      description: 'On play: Salvage any 1 card; Draw 6 cards; Empower the next card you play. While on board: Adjacent active Seraphim gain +240 Oblivion per card played; Buffs Seraphim attacks: base +228, chain scaling +0.09, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +178, chain scaling +0.06, cooldown -1, multiplier x1.00',
     artKey: 'inf_bgi_ashen_cinder_cathedral',
-      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 23 }],
-      onPlayEffects: [{ type: 'salvage_any' }, { type: 'draw', value: 3 }, { type: 'draw', value: 3 }, { type: 'multiply_next' }],
+      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 240 }],
+      onPlayEffects: [{ type: 'salvage_any' }, { type: 'draw', value: 6 }, { type: 'multiply_next' }],
   },
 ];
 
