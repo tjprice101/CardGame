@@ -71,6 +71,8 @@ export type GlassAxiom = 'multiplier' | 'bridge' | 'cascade';
 
 export type PendingEffect =
   | { type: 'discard_choice'; count: number; sourceCard: string }
+  | { type: 'prismatic_channel_choice'; sourceCard: string }
+  | { type: 'prismatic_sentence_choice'; cards: DeckCard[]; chainGainIfAccordMatch: number; draw: number; drawPerfect: number }
   | { type: 'look_top_take'; cards: DeckCard[]; take: number }
   | { type: 'look_top_take_drop'; cards: DeckCard[]; take: number; drop: number }
   | { type: 'look_top_take_type'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number }
@@ -87,7 +89,7 @@ export interface TurnState {
   cherubimDrawFraction: number;
   cardsPlayedThisTurn: number;
   chainMultiplier: number;          // 1.0 + cardsPlayedThisTurn * 0.1; grows as cards are played
-  chainFloor: number;               // minimum chain multiplier (Angels can set a floor)
+  chainBaseline: number;               // minimum chain multiplier (Angels can set a floor)
   oblivionEarnedThisTurn: number;
   lastPlayedDefinitionId: string | null;
   turnNumber?: number;
@@ -103,6 +105,18 @@ export interface TurnState {
   attenuationBrokenClasses?: Array<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher'>;
   crossSetConversionDistinctSources?: string[];
   neutralityEngineSignatures?: string[];
+  neutralityPatienceChargedThisTurn?: number;
+  neutralityPatienceConsumedThisTurn?: number;
+  neutralityChainGainedThisTurn?: number;
+  neutralityTriggeredEffects?: string[];
+  neutralityVesselInstanceId?: string | null;
+  neutralityVesselCopyPercent?: number;
+  neutralityMarkedCardIds?: string[];
+  neutralityMarkedPatienceGain?: number;
+  neutralityAttackPreservePercent?: number;
+  neutralityAttackRestorePercent?: number;
+  neutralityLinkedGainBonus?: number;
+  neutralityLinkedRetainPercent?: number;
   pyroHeat?: number;
   pyroBurnDebt?: number;
   pyroStability?: number;
@@ -112,6 +126,20 @@ export interface TurnState {
   pyroAttenuationBrokenClasses?: Array<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher'>;
   pyroCrossSetConversionDistinctSources?: string[];
   pyroEngineSignatures?: string[];
+  pyroFurnacePressure?: number;
+  pyroAbyssFault?: number;
+  pyroRuinWindows?: number;
+    pyroFervor?: number;
+    pyroRupture?: number;
+    pyroUnstableFervorTokens?: number;
+    pyroAshTokens?: number;
+    pyroResonanceStacks?: number;
+    pyroConvergenceLocked?: boolean;
+    pyroEquilibriumState?: 'fervor' | 'rupture' | 'balanced' | null;
+    pyroFurnaceLoopCounter?: number;
+    pyroCascadeTuningRatio?: { fervor: number; rupture: number };
+    pyroRuptureSingularityActive?: boolean;
+    pyroAbsoluteConvergenceActive?: boolean;
   lightCadenceNotes?: HeavenlyNote[];
   lightDistinctNotes?: HeavenlyNote[];
   lightResonance?: number;
@@ -126,8 +154,37 @@ export interface TurnState {
   mechanicalKernelLocked?: boolean;
   prismaticCurrentChannel?: PrismaticChannel | null;
   prismaticDistinctChannels?: PrismaticChannel[];
+  prismaticRecentChannels?: PrismaticChannel[];
   prismaticRefractionDepth?: number;
   prismaticNodeCharges?: number;
+  prismaticChannelLocks?: number;
+  prismaticMemoryShards?: number;
+  prismaticStormMemories?: PrismaticChannel[];
+  prismaticStormMemoryEnabled?: boolean;
+  prismaticPendingSwitchDepthMark?: number;
+  prismaticSwitchMarkedCardIds?: string[];
+  prismaticAccordChannel?: PrismaticChannel | null;
+  prismaticDistinctNonAccordChannels?: PrismaticChannel[];
+  prismaticRefractionEchoes?: number;
+  prismaticEchoCascadeArmed?: boolean;
+  prismaticEchoCascadeDepthThreshold?: number;
+  prismaticEchoCascadeGainPerToken?: number;
+  prismaticEchoCascadeDrawRefund?: number;
+  prismaticChordTokens?: number;
+  prismaticChordPermanent?: boolean;
+  prismaticChordAttackBaseBonus?: number;
+  prismaticChordAttackChainBonus?: number;
+  prismaticRefractionSpikes?: number;
+  prismaticRefractionSpikeMax?: number;
+  prismaticRefractionSpikesPersistent?: boolean;
+  prismaticLastPlaySwitchedChannel?: boolean;
+  prismaticLatticeResonant?: boolean;
+  prismaticSentencedCardIds?: string[];
+  prismaticSentencingPerfect?: boolean;
+  prismaticSentencingChainGainBonus?: number;
+  prismaticSentencingDraw?: number;
+  prismaticSentencingDrawPerfect?: number;
+  prismaticNextOphanimRefund?: number;
   blackGlassWhiteFlame?: number;
   blackGlassBlackFlame?: number;
   blackGlassFracture?: number;
@@ -138,13 +195,43 @@ export interface TurnState {
   snowboundPotential?: number;
   snowboundAlternations?: number;
   snowboundConduits?: number;
+  snowboundPreviousPhase?: SnowboundPhase | null;
+  snowboundAlternatedThisTurn?: boolean;
+  snowboundOnBoardEffects?: Array<{ trigger: import('@/types/effects').EffectCondition; effects: import('@/types/effects').CardEffect[]; sourceId: string }>;
   glassProofFragments?: number;
   glassProofDepth?: number;
   glassProofCascade?: number;
   glassAxioms?: GlassAxiom[];
+  glassArchiveSeals?: number;
+  glassAngleCharges?: number;
+  glassOriginPulseUsed?: boolean;
+  glassAxiomFocus?: GlassAxiom | null;
+  glassSnapshotFragments?: number;
+  glassSnapshotDepth?: number;
+  glassSnapshotCascade?: number;
+  glassSnapshotAxioms?: number;
+  glassWaveQueue?: number;
+  glassDepthFloor?: number;
+  glassDepthFloorIncreased?: boolean;
+  glassWhiteLedger?: number;
+  glassWhiteLedgerActive?: boolean;
+  glassSyntheticFragments?: number;
+  glassSyntheticCascade?: number;
   burningGardenLaw?: 'Rose' | 'Sunflower' | 'Thistle' | null;
   burningGardenLineagesPlayed?: Array<'Rose' | 'Sunflower' | 'Thistle'>;
   burningGardenEchoesBloomed?: number;
+  burningGardenNextFinalChordScaleBonus?: number;
+  burningGardenSunSigils?: number;
+  burningGardenCrownStacks?: number;
+  burningGardenCodexLineage?: 'Rose' | 'Sunflower' | 'Thistle' | null;
+  burningGardenCodexCopiesRemaining?: number;
+  burningGardenTransitGateCredit?: number;
+  burningGardenIncandescentSnapshot?: Array<'Rose' | 'Sunflower' | 'Thistle'>;
+  burningGardenWorldflowerGrowth?: number;
+  burningGardenArrayFreeEchoes?: number;
+  burningGardenGeometryMode?: boolean;
+  burningGardenZenithNextInfinite?: boolean;
+  burningGardenSkyLaw?: 'Rose' | 'Sunflower' | 'Thistle' | null;
   lastPlayedElement?: string | null;
   cherubimConditionalMult?: number; // multiplier from cherubim_conditional_buff passives, applied per card play
   prismaticLight?: number;
@@ -152,6 +239,20 @@ export interface TurnState {
   arcticCharge?: number;
   proof?: number;
   bloom?: number;
+  butterflySpectrum?: number;
+  butterflyStance?: 'Reflect' | 'Absorb' | 'Dual' | null;
+  butterflyFlutterLevel?: number;
+  eternalSeasCurrent?: number;
+  eternalSeasPolarity?: 'White' | 'Black' | null;
+  eternalSeasWhiteFlow?: number;
+  eternalSeasBlackFlow?: number;
+  eternalSeasMarginCharge?: number;
+  // Eternal/Infinity per-set amplifier stacks. Keyed by EternalStackKind.
+  eternalStacks?: Partial<Record<import('./effects').EternalStackKind, number>>;
+  // Per-set secondary keyword counters (gain/spend/cashout). One per set.
+  secondaryCounters?: Partial<Record<import('./effects').SetSecondaryKind, number>>;
+  // Wing Pulse: number of pending spectrum gains to be doubled.
+  flutterWingPulseDoubles?: number;
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────

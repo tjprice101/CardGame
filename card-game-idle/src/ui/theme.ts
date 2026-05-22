@@ -8,9 +8,9 @@ export const warmTheme = {
   border: 'rgba(128, 81, 32, 0.32)',
   borderStrong: 'rgba(128, 81, 32, 0.56)',
   text: '#2f1b0d',
-  textSoft: 'rgba(47, 27, 13, 0.84)',
-  textMuted: 'rgba(47, 27, 13, 0.7)',
-  textFaint: 'rgba(47, 27, 13, 0.56)',
+  textSoft: 'rgba(47, 27, 13, 0.88)',
+  textMuted: 'rgba(47, 27, 13, 0.78)',
+  textFaint: 'rgba(47, 27, 13, 0.64)',
   accent: '#b56a2e',
   accentSoft: '#d59a52',
   accentDeep: '#3a220f',
@@ -23,6 +23,6 @@ export const warmTheme = {
 };
 
 export const uiTypography = {
-  display: 'Georgia, serif',
-  body: 'Georgia, serif',
+  display: 'Georgia, "Iowan Old Style", "Cambria", "Times New Roman", serif',
+  body: 'Georgia, "Iowan Old Style", "Cambria", "Times New Roman", serif',
 };

@@ -185,6 +185,7 @@ export default function Infinitude({ onClose }: Props) {
                     <CardRulesDigest
                       card={resultDef}
                       variant="detail"
+                      abilityTextMode="canonical"
                       labelColor="rgba(200,200,220,0.54)"
                       textColor="rgba(220,220,240,0.86)"
                       sectionBackground="rgba(255,255,255,0.03)"
@@ -201,7 +202,11 @@ export default function Infinitude({ onClose }: Props) {
                     const owned = progress.collection[ing.definitionId] ?? 0;
                     const met = owned >= ing.count;
                     return (
-                      <div key={ing.definitionId} style={styles.ingredientRow}>
+                      <div
+                        key={ing.definitionId}
+                        style={styles.ingredientRow}
+                        title={ingDef ? getCardPreviewLines(ingDef, 3).join('\n') : ing.definitionId}
+                      >
                         <div style={{
                           width: 8, height: 8, borderRadius: '50%',
                           background: met ? '#8cf0a0' : '#f08080',
@@ -215,6 +220,21 @@ export default function Infinitude({ onClose }: Props) {
                           <span style={{ fontSize: 10, color: 'rgba(200,200,220,0.55)', marginLeft: 6 }}>
                             ({ingDef?.type ?? '—'})
                           </span>
+                          {ingDef && (
+                            <div
+                              style={{
+                                marginTop: 3,
+                                fontSize: 9.5,
+                                color: 'rgba(226, 210, 210, 0.72)',
+                                lineHeight: 1.35,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                              }}
+                            >
+                              {getCardPreviewLines(ingDef, 1)[0]}
+                            </div>
+                          )}
                         </div>
                         <div style={{
                           fontSize: 12, fontWeight: 700,
@@ -305,9 +325,10 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
         <CardRulesDigest
           card={def}
           variant="preview"
-          maxSections={2}
-          maxLinesPerSection={1}
-          lineClamp={1}
+          abilityTextMode="canonical"
+          maxSections={4}
+          maxLinesPerSection={2}
+          lineClamp={4}
           labelColor={cardFacePalette.textMuted}
           textColor={cardFacePalette.textSoft}
           sectionBackground="transparent"

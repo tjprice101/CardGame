@@ -93,6 +93,10 @@ function mapPackToBossCategory(packId: string, packElement: string): BossCategor
       return 'Glass Absolute';
     case 'BlazingGarden':
       return 'The Blazing Garden';
+    case 'Butterfly':
+      return 'Age of the Butterfly';
+    case 'EternalSeas':
+      return 'Eternal Seas';
     case 'Dark':
       return 'Black Glass Inferno';
     default:
@@ -128,7 +132,7 @@ export default function EternitysWake({ onClose }: Props) {
   }
 
   const hasSavedDecks = progress.savedDecks.length > 0;
-  const bossTabs: BossCategory[] = STORE_BOSS_TAB_ORDER;
+  const bossTabs: BossCategory[] = Array.from(new Set(STORE_BOSS_TAB_ORDER));
   const visibleBosses = BOSS_DEFINITIONS.filter(boss => boss.category === activeBossTab);
 
   return (
@@ -286,8 +290,8 @@ export default function EternitysWake({ onClose }: Props) {
                         card={rewardDef}
                         variant="preview"
                         maxSections={2}
-                        maxLinesPerSection={1}
-                        lineClamp={1}
+                        maxLinesPerSection={10}
+                        lineClamp={3}
                         labelColor="rgba(255,150,150,0.5)"
                         textColor="rgba(255,200,200,0.68)"
                         sectionBackground="transparent"

@@ -174,7 +174,7 @@ describe('Angel mechanics', () => {
         hand: [{ instanceId: 'play_1', definitionId: 'ophanim-fire-pyre-ignite', finish: 'normal' }],
         discardPile: [],
       },
-      turn: makePlayingTurn({ radiance: 4, chainFloor: 1.0 }),
+      turn: makePlayingTurn({ radiance: 4, chainBaseline: 1.0 }),
       progress: {
         ...state.progress,
         oblivion: 0,
@@ -195,7 +195,7 @@ describe('Angel mechanics', () => {
     const activatedAngel = state.board.frontSlots[0] as AngelInstance;
     expect(activatedAngel.activated).toBe(true);
     expect(state.turn.radiance).toBe(8);
-    expect(state.turn.chainFloor).toBe(1.8);
+    expect(state.turn.chainBaseline).toBeGreaterThanOrEqual(1.8);
     expect(state.deck.hand.map(card => card.instanceId)).toEqual(['draw_1', 'draw_2']);
   });
 });

@@ -135,6 +135,20 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(57, 'boss-garden-seven-crown', 'Vethkorath Seven-Crown Proof', 'The Blazing Garden', 'bg-et-vethkorath-seven-crown-proof', 'A thistle theorem embodied, crowned seven times in violet flame.', 'boss_garden_seven_crown'),
   createBoss(58, 'boss-garden-codex', 'Embergrove Codex', 'The Blazing Garden', 'bg-et-embergrove-codex', 'An archive-garden where every lost color is preserved for rekindling.', 'boss_garden_codex'),
   createBoss(59, 'boss-garden-noonproof-transit', 'Noonproof Transit', 'The Blazing Garden', 'bg-et-noonproof-transit', 'A blazing corridor through petal megastructures where motion and ritual are one.', 'boss_garden_noonproof_transit'),
+
+  // Age of the Butterfly (5)
+  createBoss(60, 'boss-butterfly-kethravoss', 'Kethravoss of the Seven Layers', 'Age of the Butterfly', 'bf-et-kethravoss-seven-layers', 'A seven-layered wing-saint whose every membrane filters one impossible color from the future.', 'boss_butterfly_kethravoss'),
+  createBoss(61, 'boss-butterfly-mirrorglass', 'Mirrorglass Conclave', 'Age of the Butterfly', 'bf-et-mirrorglass-conclave', 'A council of refracting wings that votes by reflection and rules by aperture.', 'boss_butterfly_mirrorglass'),
+  createBoss(62, 'boss-butterfly-nullwing', 'Nullwing Interstice', 'Age of the Butterfly', 'bf-et-nullwing-interstice', 'The interval between wingbeats where light forgets the names of its own colors.', 'boss_butterfly_nullwing'),
+  createBoss(63, 'boss-butterfly-pyrethkai', 'Pyrethkai Equilibrium', 'Age of the Butterfly', 'bf-et-pyrethkai-equilibrium', 'A whitefire chrysalis balanced on the exact angle at which heat becomes meaning.', 'boss_butterfly_pyrethkai'),
+  createBoss(64, 'boss-butterfly-volthari', 'Volthari Storm Lattice', 'Age of the Butterfly', 'bf-et-volthari-storm-lattice', 'A storm-architect whose every gust is choreographed to break a single chord.', 'boss_butterfly_volthari'),
+
+  // Eternal Seas (5)
+  createBoss(65, 'boss-seas-aeveleth', 'Aeveleth First Drift', 'Eternal Seas', 'es-et-aeveleth-first-drift', 'The first current that ever moved — still flowing, still rewriting every shore it passes.', 'boss_seas_aeveleth'),
+  createBoss(66, 'boss-seas-surevaan', 'Surevaan Anomaly Log', 'Eternal Seas', 'es-et-surevaan-anomaly-log', 'A living record of every wave that should not have happened, weaponized.', 'boss_seas_surevaan'),
+  createBoss(67, 'boss-seas-thyrvaan', 'Thyrvaan Oldlight Grid', 'Eternal Seas', 'es-et-thyrvaan-oldlight-grid', 'A submerged lattice of pre-stellar light that judges by depth, not brightness.', 'boss_seas_thyrvaan'),
+  createBoss(68, 'boss-seas-seven-margins', 'Crown of Seven Margins', 'Eternal Seas', 'es-et-crown-of-seven-margins', 'Seven veilmargin tides braided into a sovereign’s diadem of pressure and silence.', 'boss_seas_seven_margins'),
+  createBoss(69, 'boss-seas-veleth-abyss', 'Veleth Abyss Sounding', 'Eternal Seas', 'es-et-veleth-abyss-sounding', 'A trench-prayer whose echo returns from depths that should not contain echoes.', 'boss_seas_veleth_abyss'),
 ];
 
 export const BOSS_DEFINITIONS: BossDefinition[] = BOSS_BLUEPRINTS.map((boss, index, bosses) => ({

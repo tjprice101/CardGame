@@ -77,7 +77,12 @@ export interface AngelAttackSet {
 
 export type SummonCondition =
   | { type: 'cherubim_active_gte'; value: number }
-  | { type: 'seraphim_on_board_gte'; value: number };
+  | { type: 'seraphim_on_board_gte'; value: number }
+  | { type: 'pyro_fervor_gte'; value: number }
+  | { type: 'pyro_rupture_gte'; value: number }
+  | { type: 'pyro_furnace_pressure_gte'; value: number }
+  | { type: 'pyro_abyss_fault_gte'; value: number }
+  | { type: 'pyro_ruin_window_gte'; value: number };
 
 export interface AngelDefinition {
   readonly definitionId: string;

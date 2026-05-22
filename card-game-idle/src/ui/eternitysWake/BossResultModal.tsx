@@ -75,8 +75,8 @@ export default function BossResultModal() {
                   card={rewardDef}
                   variant="preview"
                   maxSections={3}
-                  maxLinesPerSection={1}
-                  lineClamp={2}
+                  maxLinesPerSection={10}
+                  lineClamp={3}
                   labelColor={warmTheme.textMuted}
                   textColor={warmTheme.textSoft}
                   sectionBackground="transparent"

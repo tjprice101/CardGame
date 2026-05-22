@@ -1,5 +1,6 @@
 import { memo, useMemo } from 'react';
 import { getCardSummarySections } from '@/ui/cardStatSummary';
+import type { AbilityTextMode } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
 
 type Variant = 'preview' | 'detail';
@@ -14,6 +15,7 @@ function CardRulesDigest({
   textColor = 'rgba(243, 230, 211, 0.84)',
   sectionBackground = 'rgba(255,255,255,0.03)',
   sectionBorder = 'rgba(255,255,255,0.08)',
+  abilityTextMode = 'infinite-eternal-canonical',
 }: {
   card: CardDefinition;
   variant?: Variant;
@@ -24,17 +26,18 @@ function CardRulesDigest({
   textColor?: string;
   sectionBackground?: string;
   sectionBorder?: string;
+  abilityTextMode?: AbilityTextMode;
 }) {
   const sections = useMemo(() => {
-    const all = getCardSummarySections(card);
+    const all = getCardSummarySections(card, { abilityTextMode });
     // Preview: hide 'On Play'/'Play'/'Hooks' — 'Ability' already summarises them.
-    // Detail: hide 'Ability' — individual sections (On Play, On Board, Attacks, etc.)
-    //   show the same data without duplication.
+    // Detail: keep all sections so authored card description and mechanical breakdown
+    // are both visible in stat menus.
     const visible = variant === 'preview'
       ? all.filter(s => s.title !== 'On Play' && s.title !== 'Play' && s.title !== 'Hooks')
-      : all.filter(s => s.title !== 'Ability');
+      : all;
     return visible.slice(0, maxSections ?? (variant === 'preview' ? 3 : Number.MAX_SAFE_INTEGER));
-  }, [card, maxSections, variant]);
+  }, [abilityTextMode, card, maxSections, variant]);
   if (sections.length === 0) return null;
 
   if (variant === 'preview') {

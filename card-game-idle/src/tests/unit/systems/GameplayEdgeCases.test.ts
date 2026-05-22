@@ -159,6 +159,141 @@ describe('Card definition menu invariants', () => {
   });
 });
 
+describe('Neutrality patience stacking', () => {
+  it('applies linked-mode bonus to patience gain effects for active Seraphim only', () => {
+    const activeA: SeraphimInstance = {
+      instanceId: 'ser_active_a',
+      definitionId: 'ser-neutral-equilibrium',
+      type: 'Seraphim',
+      element: 'Neutrality',
+      rarity: 'Rare',
+      level: 1,
+      isActive: true,
+      boardSlot: 0,
+      patienceStacks: 1,
+    };
+
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'hr-light-grand-illumination' },
+      makePlayingTurn({ neutralityLinkedGainBonus: 1 }),
+      {
+        frontSlots: [activeA, null, null, null, null],
+        backSlots: [null, null, null, null],
+        activeBoardEffects: [],
+      },
+      makeDeck('hr-light-grand-illumination'),
+      false,
+      {
+        effects: [{ type: 'patience_gain_all', value: 2 }],
+        countAsPlay: false,
+      },
+    );
+
+    const nextActive = result.board.frontSlots[0];
+    expect(nextActive?.type).toBe('Seraphim');
+    if (nextActive?.type === 'Seraphim') {
+      expect(nextActive.patienceStacks).toBe(4);
+    }
+  });
+
+  it('lets vessel copy a percentage of non-vessel patience gains from patience_gain_all', () => {
+    const vessel: SeraphimInstance = {
+      instanceId: 'ser_vessel',
+      definitionId: 'btei-eternal-vigil',
+      type: 'Seraphim',
+      element: 'Neutrality',
+      rarity: 'Eternal',
+      level: 1,
+      isActive: true,
+      boardSlot: 0,
+      patienceStacks: 3,
+    };
+    const ally: SeraphimInstance = {
+      instanceId: 'ser_ally',
+      definitionId: 'btei-colossus-advent',
+      type: 'Seraphim',
+      element: 'Neutrality',
+      rarity: 'Eternal',
+      level: 1,
+      isActive: true,
+      boardSlot: 1,
+      patienceStacks: 1,
+    };
+
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'hr-light-grand-illumination' },
+      makePlayingTurn({
+        neutralityVesselInstanceId: 'ser_vessel',
+        neutralityVesselCopyPercent: 50,
+        neutralityLinkedGainBonus: 1,
+      }),
+      {
+        frontSlots: [vessel, ally, null, null, null],
+        backSlots: [null, null, null, null],
+        activeBoardEffects: [],
+      },
+      makeDeck('hr-light-grand-illumination'),
+      false,
+      {
+        effects: [{ type: 'patience_gain_all', value: 2 }],
+        countAsPlay: false,
+      },
+    );
+
+    const nextVessel = result.board.frontSlots[0];
+    const nextAlly = result.board.frontSlots[1];
+    expect(nextVessel?.type).toBe('Seraphim');
+    expect(nextAlly?.type).toBe('Seraphim');
+    if (nextVessel?.type === 'Seraphim' && nextAlly?.type === 'Seraphim') {
+      expect(nextVessel.patienceStacks).toBe(7);
+      expect(nextAlly.patienceStacks).toBe(4);
+    }
+  });
+});
+
+describe('Cross-set Eternity/Infinity mechanics', () => {
+  it('routes Prismatic Axiom Rain to a 10-look / take-3 / drop-2 pending effect', () => {
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'inf-prismatic-axiom-rain' },
+      makePlayingTurn(),
+      emptyBoard,
+      {
+        ...makeDeck('inf-prismatic-axiom-rain'),
+        drawPile: Array.from({ length: 10 }, (_, index) => ({
+          instanceId: `draw_${index + 1}`,
+          definitionId: 'seek-neutral-void-surge',
+        })),
+      },
+    );
+
+    expect(result.pendingEffect?.type).toBe('look_top_take_drop');
+    if (result.pendingEffect?.type === 'look_top_take_drop') {
+      expect(result.pendingEffect.take).toBe(3);
+      expect(result.pendingEffect.drop).toBe(2);
+      expect(result.pendingEffect.cards).toHaveLength(10);
+    }
+  });
+
+  it('grants Prismatic Choir Splinter on-play resources and chain amplification', () => {
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'inf-prismatic-choir-splinter' },
+      makePlayingTurn(),
+      emptyBoard,
+      makeDeck('inf-prismatic-choir-splinter'),
+    );
+
+    expect(result.turn.chainMultiplier).toBeGreaterThanOrEqual(4.2);
+  });
+
+  it('lets Prismatic Judgement Array search Ophanim/Cherubim via its activated ability', () => {
+    const judgement = CardRegistry.get('inf-prismatic-judgement-array');
+    const abilityEffects = judgement && 'activatedAbility' in judgement ? (judgement as { activatedAbility?: { effects: Array<{ type: string; filter?: unknown }> } }).activatedAbility?.effects ?? [] : [];
+    const search = abilityEffects.find(effect => effect.type === 'search_deck_by_type');
+    expect(search).toBeDefined();
+    expect(search?.filter).toEqual(['Ophanim', 'Cherubim']);
+  });
+});
+
 describe('Embrace the Infinite', () => {
   beforeEach(() => {
     resetStore();
@@ -265,7 +400,7 @@ describe('Embrace the Infinite', () => {
     expect(state.deck.hand.map(card => card.instanceId)).toEqual(keepIds);
     expect(state.deck.drawPile).toHaveLength(42);
     expect(new Set(state.deck.drawPile.map(card => card.instanceId))).toEqual(
-      new Set([...existingDrawPile.map(card => card.instanceId), ...hand.slice(1).map(card => card.instanceId)])
+      new Set([...existingDrawPile.map(card => card.instanceId), ...hand.slice(1).map(card => card.instanceId)]),
     );
   });
 
@@ -306,12 +441,7 @@ describe('Embrace the Infinite', () => {
     expect(state.deck.hand).toEqual([]);
   });
 });
-
 describe('Custom deck activation', () => {
-  beforeEach(() => {
-    resetStore();
-  });
-
   it('makes a newly saved custom deck the live playable deck immediately', () => {
       const customDeckList: DeckEntry[] = [
         { definitionId: 'ser-neutral-first-light', copies: 4, finish: 'normal' as const },
@@ -377,7 +507,7 @@ describe('Heavenly Light balance', () => {
       makeDeck('hr-light-pillar-of-heaven'),
     );
 
-    expect(spireResult.turn.radiance).toBe(0);
+    expect(spireResult.turn.radiance).toBe(6);
     expect(spireResult.board.activeBoardEffects).toContainEqual({ type: 'score_multiplier', value: 250 });
   });
 });

@@ -5,6 +5,7 @@ import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { getCardFaceBackgroundStyle, getCardBackBackgroundStyle } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardFinishLabel } from '@/systems/progression/HolofoilSystem';
+import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { warmTheme } from '@/ui/theme';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
@@ -109,6 +110,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose }: P
   const packs = findPacksForCard(card.definitionId);
   const elementColor = ELEMENT_COLORS[card.element] ?? '#aaa';
   const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
+  const actionClassLabel = getActionClassLabel(getCardActionClass(card));
 
   useEffect(() => {
     if (!favoriteFeedback) return;
@@ -266,6 +268,14 @@ export default function CollectionCardDetail({ card, finish, owned, onClose }: P
               </div>
               <div style={{ fontSize: 14, color: '#ead9c0', fontWeight: 500 }}>
                 {getCardFinishLabel(finish)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
+                Action Class
+              </div>
+              <div style={{ fontSize: 14, color: '#ead9c0', fontWeight: 500 }}>
+                {actionClassLabel}
               </div>
             </div>
           </div>

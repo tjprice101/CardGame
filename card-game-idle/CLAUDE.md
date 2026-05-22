@@ -98,6 +98,11 @@ Seraphim and Angels have attack stats that fire periodically as cards are played
 - Some Seraphim have `chain_bonus`: adds to chain growth rate while on board.
 - Chain resets to 1.0 at turn end.
 
+### Chain Terminology Rule
+- `chain floor` is deprecated and must not be introduced in new cards, effects, descriptions, UI copy, scripts, or tests.
+- Use `chain gain` language instead (for example: `Gain +1.6 chain`).
+- Use `chain_gain` effect entries for additive chain effects.
+
 ---
 
 ## Naming Conventions
@@ -129,7 +134,7 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 ### Neutrality — "Patience / Stasis"
 - **Patience** is the core mechanic. Seraphim with `patienceThreshold` defined auto-accumulate +1 Patience per card played. Cherubim give additional Patience per card to adjacent front slots via the `cherubim_patience_per_card` passive.
 - **On attack**: each accumulated Patience stack is consumed for +15 Oblivion. If total stacks ≥ `patienceThreshold`, also draws `patienceThresholdDraw` cards.
-- Ophanim: draw/deck manipulation, chain floor setting. Key effects: `patience_gain_all` (instant Patience burst for all Seraphim), `patience_double_all` (double all Patience).
+- Ophanim: draw/deck manipulation, chain gain setup. Key effects: `patience_gain_all` (instant Patience burst for all Seraphim), `patience_double_all` (double all Patience).
 - Angels: mass Patience injection on summon; `patience_double_all` in activated abilities.
 - Beginner-friendly. Universal Synergy Angel activates all Seraphim regardless of element. Salvage loop enabled by Ophanim like Seraph Recall.
 - **Patience thresholds by rarity**: Common/Rare 3–4, Epic 5, Eternal 6, Infinite 8+.
@@ -212,7 +217,7 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - Have `maxDurability` (decrements by 1 per card played, including Cherubim placement). At 0 they expire to discard.
 - **Three effect layers:**
   - `effects: CherubimPassiveEffect[]` — passive effects on adjacent front slots while active. Key types: `cherubim_adjacent_seraphim_bonus` (Oblivion/chain boost to adjacent Seraphim attacks — used by non-Neutrality sets), `cherubim_patience_per_card` (Neutrality: adds Patience per card), `cherubim_resource_per_card`, `cherubim_draw_per_card`.
-  - `onPlayEffects?: ImmediateEffect[]` — fires immediately when the card is played (draw, Oblivion, chain floor, salvage, etc.). Runs through `CardEffectExecutor`.
+  - `onPlayEffects?: ImmediateEffect[]` — fires immediately when the card is played (draw, Oblivion, chain gain, salvage, etc.). Runs through `CardEffectExecutor`.
   - `enthalpy?: CherubimRitualEffect[]` — **Enthalpic Ritual**: fires when placed. Handled by `fireCherubimRitual` in the store.
   - `entropy?: CherubimRitualEffect[]` — **Entropic Ritual**: fires when durability reaches 0. Same handler.
 - **Ritual-specific effect types** (only valid in enthalpy/entropy):

@@ -227,9 +227,9 @@ export default function CollectionViewer({ onClose }: Props) {
               <CardRulesDigest
                 card={card}
                 variant="preview"
-                maxSections={2}
-                maxLinesPerSection={1}
-                lineClamp={1}
+                maxSections={4}
+                maxLinesPerSection={10}
+                lineClamp={3}
                 labelColor={cardFacePalette.textMuted}
                 textColor={cardFacePalette.textSoft}
                 sectionBackground="transparent"

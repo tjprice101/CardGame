@@ -73,7 +73,7 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
   const onPlayLeadByType: Record<string, string> = {
     draw: 'draw tempo',
     oblivion_flat: 'immediate Oblivion injection',
-    set_chain_floor: 'chain-floor anchoring',
+    chain_gain: 'chain-gain anchoring',
     chain_multiplier_set: 'chain snapline setup',
     multiply_next: 'next-card amplification',
     salvage_any: 'discard reclamation',
@@ -1147,8 +1147,7 @@ export default function BoardDisplay() {
                         fontSize: 16,
                       }}
                     >
-                      ×
-                    </button>
+                      ÁE                    </button>
                   </div>
 
                   {discardCost > 0 && (
@@ -1416,8 +1415,7 @@ export default function BoardDisplay() {
                         fontSize: 16,
                       }}
                     >
-                      ×
-                    </button>
+                      ÁE                    </button>
                   </div>
 
                   {discardCost > 0 && (

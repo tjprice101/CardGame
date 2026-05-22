@@ -1,7 +1,7 @@
 import type { BoardState, DeckState, PendingEffect, TurnState } from '@/types/game';
 import type { CardEffect } from '@/types/effects';
-import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
-import { CardRegistry } from '@/cards/CardRegistry';
+import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition, SeraphimInstance } from '@/types/cards';
+import { CardRegistry } from '../../cards/CardRegistry';
 import { TurnSystem } from './TurnSystem';
 
 export interface ExecutionResult {
@@ -18,6 +18,193 @@ interface ExecuteOptions {
   countAsPlay?: boolean;
   removeFromHand?: boolean;
   useNextCardMultiplier?: boolean;
+}
+
+function isActiveSeraphim(unit: BoardState['frontSlots'][number]): unit is SeraphimInstance {
+  return unit?.type === 'Seraphim' && unit.isActive;
+}
+
+function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: TurnState, board: BoardState): number | null {
+  const signatures = Math.min(5, turn.neutralityEngineSignatures?.length ?? 0);
+  const stability = Math.max(0, turn.equilibriumStability ?? 0);
+  const brokenClasses = Math.min(5, turn.attenuationBrokenClasses?.length ?? 0);
+  const sourceCount = Math.min(4, turn.crossSetConversionDistinctSources?.length ?? 0);
+  const setupCount = Math.min(8, turn.neutralitySetupCount ?? 0);
+  const drift = Math.abs(turn.equilibriumDrift ?? 0);
+  const lowDriftBonus = drift <= 8 ? 550 : 0;
+  const patienceSlots = board.frontSlots.filter(unit => {
+    if (!unit) return false;
+    if (unit.type === 'Seraphim') return unit.isActive;
+    return unit.type === 'Angel';
+  });
+  const totalPatience = patienceSlots.reduce((sum, unit) => sum + (unit?.patienceStacks ?? 0), 0);
+  const patienceUnits = patienceSlots.filter(unit => (unit?.patienceStacks ?? 0) > 0).length;
+  const peakPatience = patienceSlots.reduce((max, unit) => Math.max(max, unit?.patienceStacks ?? 0), 0);
+  const widePatienceBonus = totalPatience >= 18 ? 700 : totalPatience >= 12 ? 350 : 0;
+
+  switch (definitionId) {
+    case 'inf-genesis-throne':
+      return 900 + totalPatience * 100 + peakPatience * 210 + signatures * 180 + setupCount * 120;
+    case 'inf-null-apex':
+      return 700 + peakPatience * 380 + brokenClasses * 550 + patienceUnits * 180 + lowDriftBonus;
+    case 'inf-entropic-crown':
+      return 850 + patienceUnits * 500 + totalPatience * 65 + brokenClasses * 450;
+    case 'inf-annihilation-field':
+      return 950 + sourceCount * 620 + peakPatience * 260 + widePatienceBonus;
+    case 'inf-oblivion-absolute':
+      return 1000 + totalPatience * 120 + peakPatience * 240 + stability * 140;
+    case 'inf-void-cascade':
+      return 800 + patienceUnits * 600 + sourceCount * 550 + peakPatience * 180 + widePatienceBonus;
+    case 'inf-sovereign-void':
+      return 1200 + totalPatience * 90 + peakPatience * 220 + brokenClasses * 420 + stability * 120;
+    case 'inf-eternity-rupture':
+      return 1100 + patienceUnits * 420 + sourceCount * 650 + peakPatience * 250 + widePatienceBonus;
+    default:
+      return null;
+  }
+}
+
+function computeNeutralityEternalOblivionBonus(definitionId: string, turn: TurnState, board: BoardState): number | null {
+  const signatures = Math.min(4, turn.neutralityEngineSignatures?.length ?? 0);
+  const stability = Math.max(0, turn.equilibriumStability ?? 0);
+  const sourceCount = Math.min(3, turn.crossSetConversionDistinctSources?.length ?? 0);
+  const setupCount = Math.min(6, turn.neutralitySetupCount ?? 0);
+  const patienceSlots = board.frontSlots.filter(unit => {
+    if (!unit) return false;
+    if (unit.type === 'Seraphim') return unit.isActive;
+    return unit.type === 'Angel';
+  });
+  const totalPatience = patienceSlots.reduce((sum, unit) => sum + (unit?.patienceStacks ?? 0), 0);
+  const patienceUnits = patienceSlots.filter(unit => (unit?.patienceStacks ?? 0) > 0).length;
+  const peakPatience = patienceSlots.reduce((max, unit) => Math.max(max, unit?.patienceStacks ?? 0), 0);
+  const firstCardBonus = turn.cardsPlayedThisTurn === 0 ? 420 : 0;
+
+  switch (definitionId) {
+    case 'btei-voids-reaping':
+      return 220 + totalPatience * 26 + setupCount * 34;
+    case 'btei-temporal-ruin':
+      return 280 + peakPatience * 40 + signatures * 32;
+    case 'btei-null-edict':
+      return 320 + totalPatience * 30 + stability * 36;
+    case 'btei-axiom-of-oblivion':
+      return 360 + peakPatience * 48 + setupCount * 32 + sourceCount * 36;
+    case 'btei-eternal-vigil':
+      return 300 + peakPatience * 42 + patienceUnits * 36;
+    case 'btei-colossus-advent':
+      return 340 + totalPatience * 28 + peakPatience * 30 + signatures * 30;
+    case 'btei-sovereign-domain':
+      return 290 + patienceUnits * 52 + setupCount * 30;
+    case 'btei-architects-manifold':
+      return 310 + patienceUnits * 56 + sourceCount * 42;
+    case 'btei-convergence-of-eternity':
+      return 380 + totalPatience * 34 + signatures * 42;
+    case 'btei-omniscient-fracture':
+      return 420 + peakPatience * 52 + stability * 34 + signatures * 34;
+    case 'btei-neutrality-paradox-crown':
+      return 360 + setupCount * 56 + signatures * 44 + sourceCount * 42 + patienceUnits * 28;
+    case 'btei-neutrality-zero-edict':
+      return 260 + patienceUnits * 48 + setupCount * 26;
+    case 'btei-neutrality-void-throne':
+      return 350 + peakPatience * 44 + setupCount * 30 + stability * 26;
+    case 'btei-neutrality-axiom-maw':
+      return 430 + peakPatience * 58 + stability * 34 + signatures * 32 + sourceCount * 28;
+    case 'btei-neutrality-prime-equilibrium':
+      return 320 + firstCardBonus + stability * 38 + totalPatience * 24 + setupCount * 34;
+    default:
+      return null;
+  }
+}
+
+function computePyroInfiniteOblivionBonus(definitionId: string, turn: TurnState, embersDrained = 0): number | null {
+  const pressure = Math.max(0, turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0);
+  const fault = Math.max(0, turn.pyroAbyssFault ?? turn.pyroRupture ?? 0);
+  const windows = Math.max(0, turn.pyroRuinWindows ?? 0);
+  const heat = Math.max(0, turn.pyroHeat ?? 0);
+  const debt = Math.max(0, turn.pyroBurnDebt ?? 0);
+  const brokenClasses = Math.min(4, turn.pyroAttenuationBrokenClasses?.length ?? 0);
+  const sourceCount = Math.min(4, turn.pyroCrossSetConversionDistinctSources?.length ?? 0);
+  const setupCount = Math.min(6, turn.pyroSetupCount ?? 0);
+  const signatures = Math.min(6, turn.pyroEngineSignatures?.length ?? 0);
+  const balancedBonus = Math.abs(pressure - fault) <= 3 ? 540 : 0;
+  const lowDebtBonus = debt <= 2 ? 460 : debt <= 5 ? 180 : 0;
+
+  switch (definitionId) {
+    case 'inf-ash-kings-apocalypse':
+      return 1100 + pressure * 42 + fault * 68 + windows * 260 + sourceCount * 200 + signatures * 90 + lowDebtBonus;
+    case 'inf-pyraxis-colossus':
+      return 980 + pressure * 54 + windows * 310 + setupCount * 95 + balancedBonus + lowDebtBonus;
+    case 'inf-pyroclasm-engine':
+      return 1050 + fault * 56 + windows * 280 + brokenClasses * 260 + signatures * 100 + sourceCount * 120 + balancedBonus;
+    case 'inf-riftborn-sovereign':
+      return 1300 + embersDrained * 20 + pressure * 28 + fault * 44 + windows * 360 + sourceCount * 180 + lowDebtBonus + (heat >= 12 ? 320 : 0);
+    default:
+      return null;
+  }
+}
+
+function computeLightInfiniteOblivionBonus(definitionId: string, turn: TurnState, board: BoardState): number | null {
+  const resonance = Math.max(0, turn.lightResonance ?? 0);
+  const noteCount = Math.min(4, new Set(turn.lightDistinctNotes ?? []).size);
+  const anchors = Math.min(3, turn.lightChorusAnchors ?? 0);
+  const radiance = Math.max(0, turn.radiance ?? 0);
+  const activeSeraphim = board.frontSlots.filter(unit => unit?.type === 'Seraphim' && unit.isActive).length;
+  const fullChoirBonus = noteCount >= 4 ? 900 : 0;
+
+  switch (definitionId) {
+    case 'inf-celestial-blackout':
+      return 1200 + resonance * 220 + noteCount * 480 + anchors * 260 + Math.min(900, radiance * 7) + fullChoirBonus;
+    case 'inf-lucent-cataclysm-archon':
+      return 1050 + resonance * 180 + noteCount * 430 + anchors * 180 + activeSeraphim * 140 + fullChoirBonus;
+    case 'inf-heliarch-eclipse-engine':
+      return 1100 + resonance * 170 + noteCount * 320 + anchors * 420 + activeSeraphim * 120 + Math.min(700, radiance * 5);
+    default:
+      return null;
+  }
+}
+
+function computeThornboundInfiniteOblivionBonus(definitionId: string, turn: TurnState): number | null {
+  const scar = Math.min(40, Math.max(0, turn.thornScar ?? 0));
+  const trail = Math.min(120, Math.max(0, turn.trail ?? 0));
+  const losses = Math.min(40, Math.max(0, turn.thornLossesThisTurn ?? 0));
+  const processions = Math.min(6, Math.max(0, turn.thornProcessions ?? 0));
+  const warPath = turn.thornWarPath;
+  const pathBonus = warPath === 'Aggression' ? 460 : warPath === 'Endurance' ? 520 : 180;
+
+  switch (definitionId) {
+    case 'inf-thornbound-last-procession':
+      return 1000 + scar * 130 + trail * 22 + losses * 80 + processions * 320 + pathBonus;
+    case 'inf-thorn-widow-engine':
+      return 900 + scar * 90 + trail * 18 + losses * 95 + processions * 280 + pathBonus;
+    case 'inf-gravebloom-singularity':
+      return 1050 + scar * 85 + trail * 20 + losses * 70 + processions * 420 + pathBonus;
+    case 'inf-thornbound-elegy-titan': {
+      const marchReadyBonus = trail >= 40 && scar >= 10 ? 700 : 0;
+      return 1300 + scar * 140 + trail * 24 + losses * 110 + processions * 500 + pathBonus + marchReadyBonus;
+    }
+    default:
+      return null;
+  }
+}
+
+function computeMechanicalInfiniteOblivionBonus(definitionId: string, turn: TurnState): number | null {
+  const queueLength = Math.min(8, turn.mechanicalInstructionQueue?.length ?? 0);
+  const diversity = Math.min(6, new Set(turn.mechanicalInstructionDiversity ?? []).size);
+  const resolved = Math.min(16, turn.mechanicalResolvedInstructions ?? 0);
+  const strain = Math.max(0, turn.strain ?? 0);
+  const kernelBonus = turn.mechanicalKernelLocked ? 420 : 0;
+
+  switch (definitionId) {
+    case 'inf-machina-eternal-loop':
+      return 1200 + queueLength * 140 + diversity * 320 + resolved * 110 + Math.min(900, strain * 55) + kernelBonus;
+    case 'inf-brass-eidolon-prime':
+      return 980 + queueLength * 110 + diversity * 260 + resolved * 95 + Math.min(700, strain * 40) + kernelBonus;
+    case 'inf-mech-entropy-foundry':
+      return 1050 + queueLength * 130 + diversity * 300 + resolved * 105 + Math.min(750, strain * 45) + kernelBonus;
+    case 'inf-mechanical-apotheosis-core':
+      return 1350 + queueLength * 150 + diversity * 360 + resolved * 130 + Math.min(1000, strain * 60) + kernelBonus;
+    default:
+      return null;
+  }
 }
 
 function cloneBoard(board: BoardState): BoardState {
@@ -61,6 +248,7 @@ export class CardEffectExecutor {
     let pendingEffect: PendingEffect | null = null;
     let embersDrained = 0;  // tracks embers before ember_spend:9999 for dynamic sentinels
     let radianceDrained = 0; // tracks radiance before radiance_spend:9999 for dynamic sentinels
+    let snowboundAlternatedThisPlay = false; // tracks if this card play caused a snowbound phase alternation
 
     const multiplier = useNextCardMultiplier && mutableTurn.nextCardMultiplied ? 2 : 1;
     if (useNextCardMultiplier && mutableTurn.nextCardMultiplied) {
@@ -89,10 +277,10 @@ export class CardEffectExecutor {
       const oblivionGainPerSuppressed = isInfinite ? 240 : 120;
 
       const targetFloor = Math.max(
-        mutableTurn.chainFloor ?? 1,
+        mutableTurn.chainBaseline ?? 1,
         mutableTurn.chainMultiplier + suppressedDraw * floorGainPerSuppressed,
       );
-      mutableTurn.chainFloor = targetFloor;
+      mutableTurn.chainBaseline = targetFloor;
       mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, targetFloor);
 
       const dominantGain = suppressedDraw * dominantGainPerSuppressed * multiplier;
@@ -103,10 +291,291 @@ export class CardEffectExecutor {
     }
 
     function processEffect(effect: CardEffect): boolean {
+      const isBurningGardenCardId = (definitionId: string): boolean => {
+        const cardDef = CardRegistry.get(definitionId);
+        return cardDef?.element === 'BlazingGarden';
+      };
+
+      const countBurnPhaseUnits = (): number => {
+        let count = 0;
+        for (const slot of mutableBoard.frontSlots) {
+          if (!slot) continue;
+          if (!isBurningGardenCardId(slot.definitionId)) continue;
+          if (slot.burningGardenPhase === 'Burn') count += 1;
+        }
+        for (const slot of mutableBoard.backSlots) {
+          if (!slot) continue;
+          if (!isBurningGardenCardId(slot.definitionId)) continue;
+          if (slot.burningGardenPhase === 'Burn') count += 1;
+        }
+        return count;
+      };
+
+      const distinctLineages = (): number => new Set(mutableTurn.burningGardenLineagesPlayed ?? []).size;
+
+      // --- Blazing Garden Eternal/Infinity custom effect types ---
       switch (effect.type) {
-        // ���� Oblivion effects ����������������������������������������������������������������������������������������������������������
+        case 'set_garden_law':
+          if (mutableTurn.burningGardenLaw === null || mutableTurn.burningGardenLaw === undefined) {
+            mutableTurn.burningGardenLaw = effect.law;
+          }
+          break;
+        case 'effect_plus':
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + effect.value * 0.05);
+          break;
+        case 'choose_lineage':
+          mutableTurn.burningGardenCodexLineage = mutableTurn.burningGardenLaw ?? 'Rose';
+          processEffect(effect.effect);
+          break;
+        case 'burn_phase_seed_on_other_lineage_play':
+          mutableTurn.burningGardenNextFinalChordScaleBonus =
+            (mutableTurn.burningGardenNextFinalChordScaleBonus ?? 0) + effect.value;
+          break;
+        case 'echo_effect_double':
+          mutableTurn.burningGardenNextFinalChordScaleBonus =
+            (mutableTurn.burningGardenNextFinalChordScaleBonus ?? 0) + Math.max(1, effect.duration);
+          break;
+        case 'sigil_on_burn_play':
+          mutableTurn.burningGardenSunSigils = (mutableTurn.burningGardenSunSigils ?? 0) + effect.value;
+          break;
+        case 'sigil_threshold_echo_return': {
+          const sigils = mutableTurn.burningGardenSunSigils ?? 0;
+          if (sigils >= effect.threshold) {
+            const batches = Math.floor(sigils / effect.threshold);
+            mutableTurn.burningGardenSunSigils = sigils - batches * effect.threshold;
+            mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + batches;
+          }
+          break;
+        }
+        case 'sigil_draw_on_gain':
+          mutableDeck = TurnSystem.drawCards(mutableDeck, effect.value);
+          break;
+        case 'choose_burn_card':
+          processEffect(effect.effect);
+          break;
+        case 'archive_crown_on_new_lineage': {
+          const nextCrowns = Math.min(12, (mutableTurn.burningGardenCrownStacks ?? 0) + effect.value);
+          mutableTurn.burningGardenCrownStacks = nextCrowns;
+          if (nextCrowns >= effect.threshold) {
+            processEffect({ type: 'burn_attack_all' });
+          }
+          break;
+        }
+        case 'burn_attack_all':
+          oblivionBonus += countBurnPhaseUnits() * 140;
+          break;
+        case 'burn_cooldown_reduction_per_crown':
+          mutableTurn.chainBaseline = Math.max(
+            mutableTurn.chainBaseline,
+            mutableTurn.chainMultiplier + (mutableTurn.burningGardenCrownStacks ?? 0) * effect.value * 0.03,
+          );
+          break;
+        case 'char_to_memory_echo':
+          mutableTurn.burningGardenCodexCopiesRemaining = Math.max(
+            mutableTurn.burningGardenCodexCopiesRemaining ?? 0,
+            effect.value,
+          );
+          break;
+        case 'memory_echo_buff':
+          processEffect(effect.effect);
+          break;
+        case 'memory_echo_cost_reduction':
+          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.value;
+          break;
+        case 'replay_last_burn_card': {
+          const lastId = mutableTurn.lastPlayedDefinitionId;
+          if (lastId && isBurningGardenCardId(lastId)) {
+            const replayResult = CardEffectExecutor.execute(
+              { instanceId: 'echo', definitionId: lastId, finish: 'normal' },
+              mutableTurn,
+              mutableBoard,
+              mutableDeck,
+              false,
+              { countAsPlay: false, removeFromHand: false, useNextCardMultiplier: false },
+            );
+            if (replayResult.canPlay) {
+              mutableDeck = replayResult.deck;
+              mutableTurn = replayResult.turn;
+              mutableBoard = replayResult.board;
+              oblivionBonus += replayResult.oblivionBonus;
+              if (replayResult.pendingEffect !== null && pendingEffect === null) {
+                pendingEffect = replayResult.pendingEffect;
+              }
+            }
+          }
+          break;
+        }
+        case 'ignite_units_burn': {
+          let remaining = effect.count;
+          for (const slot of mutableBoard.frontSlots) {
+            if (!slot || remaining <= 0) continue;
+            if (!isBurningGardenCardId(slot.definitionId) || slot.burningGardenPhase === 'Burn') continue;
+            slot.burningGardenPhase = 'Burn';
+            remaining -= 1;
+          }
+          for (const slot of mutableBoard.backSlots) {
+            if (!slot || remaining <= 0) continue;
+            if (!isBurningGardenCardId(slot.definitionId) || slot.burningGardenPhase === 'Burn') continue;
+            slot.burningGardenPhase = 'Burn';
+            remaining -= 1;
+          }
+          break;
+        }
+        case 'mini_final_chord_on_diff_lineages':
+          if (distinctLineages() >= 2) processEffect(effect.effect);
+          break;
+        case 'echo_on_burn_play':
+          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.value;
+          break;
+        case 'snapshot_burn_lineages':
+          mutableTurn.burningGardenIncandescentSnapshot = [...new Set(mutableTurn.burningGardenLineagesPlayed ?? [])].slice(-3);
+          break;
+        case 'incandescent_chorus_on_new_lineage':
+          if (distinctLineages() > (mutableTurn.burningGardenIncandescentSnapshot?.length ?? 0)) {
+            processEffect(effect.effect);
+          }
+          break;
+        case 'burn_lineage_echo_and_cooldown':
+          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.echo;
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + effect.cooldown * 0.05);
+          break;
+        case 'final_chord_bloom_if_all_lineages':
+          if (distinctLineages() >= 3) processEffect(effect.effect);
+          break;
+        case 'bloom_all_lineages': {
+          const lineageCount = Math.max(1, distinctLineages());
+          const lawBonus = 1 + Math.max(0, mutableTurn.burningGardenNextFinalChordScaleBonus ?? 0) * 0.35;
+          oblivionBonus += Math.round(220 * effect.multiplier * lineageCount * lawBonus);
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + 0.2 * lineageCount * effect.multiplier);
+          break;
+        }
+        case 'seed_grove_with_worldflower': {
+          const emberGrove = mutableBoard.emberGrove ?? (mutableBoard.emberGrove = []);
+          const seeds = Math.min(6, countBurnPhaseUnits() * Math.max(1, effect.per_burn));
+          for (let i = 0; i < seeds; i++) {
+            const sourceId = `${deckCard.definitionId}:worldflower:${mutableTurn.turnNumber ?? 0}:${i}:${emberGrove.length}`;
+            emberGrove.push({
+              definitionId: deckCard.definitionId,
+              finish: deckCard.finish ?? 'normal',
+              sourceId,
+              chromaticSources: [sourceId],
+              charredAtTurn: mutableTurn.turnNumber ?? 0,
+              lineage: (mutableTurn.burningGardenLaw ?? 'Rose'),
+              memoryPower: 1,
+            });
+          }
+          break;
+        }
+        case 'worldflower_echo_on_char':
+          mutableTurn.burningGardenWorldflowerGrowth = (mutableTurn.burningGardenWorldflowerGrowth ?? 0) + effect.duration;
+          break;
+        case 'worldflower_bonus_on_three':
+          if ((mutableTurn.burningGardenWorldflowerGrowth ?? 0) >= 3) {
+            mutableTurn.burningGardenGeometryMode = true;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + effect.bonus * 0.15);
+          }
+          break;
+        case 'choose_burn_cards':
+          processEffect(effect.effect);
+          break;
+        case 'char_revive_echo_double':
+          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + Math.max(1, effect.duration);
+          break;
+        case 'echo_persistence_bonus':
+          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + Math.max(0, effect.duration - 1);
+          break;
+        case 'geometry_mode_on_new_lineage':
+          mutableTurn.burningGardenGeometryMode = true;
+          processEffect(effect.effect);
+          break;
+        case 'burn_all_effects_plus':
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + effect.value * 0.1);
+          if ((effect.cooldown ?? 0) > 0) {
+            mutableTurn.burningGardenCrownStacks = Math.min(12, (mutableTurn.burningGardenCrownStacks ?? 0) + (effect.cooldown ?? 0));
+          }
+          break;
+        case 'geometry_mode_next_turn_on_three_lineages':
+          if (distinctLineages() >= 3) mutableTurn.burningGardenGeometryMode = true;
+          break;
+        case 'gate_payoff': {
+          let met = 0;
+          for (const gate of effect.gates) {
+            if (!CardEffectExecutor.evaluateCondition(gate.condition, mutableTurn, mutableBoard)) continue;
+            met += 1;
+            processEffect(gate.payoff);
+          }
+          mutableTurn.burningGardenTransitGateCredit = Math.max(mutableTurn.burningGardenTransitGateCredit ?? 0, met);
+          break;
+        }
+        case 'zenith_on_all_gates':
+          if ((mutableTurn.burningGardenTransitGateCredit ?? 0) >= 3) {
+            mutableTurn.burningGardenZenithNextInfinite = true;
+            mutableTurn.burningGardenGeometryMode = true;
+            processEffect(effect.effect);
+          }
+          break;
+        case 'gain_echo':
+          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.value;
+          break;
+        case 'burn_attack':
+          oblivionBonus += effect.value * 160;
+          break;
+        case 'salvage_burn_from_discard': {
+          if (pendingEffect === null) {
+            const matching = mutableDeck.discardPile.filter(card => isBurningGardenCardId(card.definitionId));
+            if (matching.length > 0) {
+              pendingEffect = { type: 'salvage', cards: matching, filter: null, count: 1 };
+            }
+          }
+          break;
+        }
+        case 'copy_garden_law_to_sky_law': {
+          const law = mutableTurn.burningGardenLaw ?? 'Rose';
+          mutableTurn.burningGardenSkyLaw = law;
+          const matching = effect.effects.find(entry => entry.law === law);
+          if (matching) processEffect(matching.effect);
+          break;
+        }
+        case 'burn_return_to_hand_as_echo':
+          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.duration;
+          break;
+        case 'burn_cooldown_reduction':
+          mutableTurn.chainBaseline = Math.max(
+            mutableTurn.chainBaseline,
+            mutableTurn.chainMultiplier + effect.value * 0.08 * Math.max(1, effect.duration),
+          );
+          break;
+        default:
+          break;
+      }
+      switch (effect.type) {
+        // �E�E�E��E�E�E��E�E�E��E�E�E� Oblivion effects �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'oblivion_flat': {
           let val = effect.value * multiplier;
+          const neutralityEternalBonus = computeNeutralityEternalOblivionBonus(deckCard.definitionId, mutableTurn, mutableBoard);
+          if (neutralityEternalBonus !== null) {
+            val = neutralityEternalBonus * multiplier;
+          }
+          const neutralityInfiniteBonus = computeNeutralityInfiniteOblivionBonus(deckCard.definitionId, mutableTurn, mutableBoard);
+          if (neutralityInfiniteBonus !== null) {
+            val = neutralityInfiniteBonus * multiplier;
+          }
+          const pyroInfiniteBonus = computePyroInfiniteOblivionBonus(deckCard.definitionId, mutableTurn, embersDrained);
+          if (pyroInfiniteBonus !== null) {
+            val = pyroInfiniteBonus * multiplier;
+          }
+          const lightInfiniteBonus = computeLightInfiniteOblivionBonus(deckCard.definitionId, mutableTurn, mutableBoard);
+          if (lightInfiniteBonus !== null) {
+            val = lightInfiniteBonus * multiplier;
+          }
+          const thornboundInfiniteBonus = computeThornboundInfiniteOblivionBonus(deckCard.definitionId, mutableTurn);
+          if (thornboundInfiniteBonus !== null) {
+            val = thornboundInfiniteBonus * multiplier;
+          }
+          const mechanicalInfiniteBonus = computeMechanicalInfiniteOblivionBonus(deckCard.definitionId, mutableTurn);
+          if (mechanicalInfiniteBonus !== null) {
+            val = mechanicalInfiniteBonus * multiplier;
+          }
           // Dynamic sentinel: Chain Pulse ? +10 per card played this turn (including this one)
           if (deckCard.definitionId === 'ophanim-neutral-chain-pulse') {
             val = (mutableTurn.cardsPlayedThisTurn + 1) * 10 * multiplier;
@@ -143,29 +612,111 @@ export class CardEffectExecutor {
           if (deckCard.definitionId === 'hr-light-grand-illumination') {
             val = mutableTurn.radiance * 8 * multiplier;
           }
+          if (deckCard.definitionId === 'inf-prismatic-axiom-rain') {
+            const distinct = Math.min(6, new Set(mutableTurn.prismaticDistinctChannels ?? []).size);
+            const nodes = Math.max(0, mutableTurn.prismaticNodeCharges ?? 0);
+            const depthBonus = (mutableTurn.prismaticRefractionDepth ?? 0) >= 6 ? 120 : 0;
+            val = (distinct * 18 + nodes * 42 + depthBonus) * multiplier;
+          }
+          if (def?.element === 'Neutrality' && val > 0) {
+            mutableTurn.neutralityTriggeredEffects = [
+              ...(mutableTurn.neutralityTriggeredEffects ?? []),
+              `${deckCard.definitionId}: +${Math.round(val)} oblivion`,
+            ].slice(-8);
+          }
           oblivionBonus += val;
           break;
         }
 
-        case 'set_chain_floor':
-          // Amplify chain by adding value directly, then lock in the gain via floor
-          mutableTurn.chainMultiplier = (mutableTurn.chainMultiplier ?? 1.0) + effect.value;
-          mutableTurn.chainFloor = Math.max(mutableTurn.chainFloor ?? 0, mutableTurn.chainMultiplier);
-          break;
-
         case 'chain_multiplier_set':
           // Set both multiplier and floor so the value persists across card plays
           mutableTurn.chainMultiplier = effect.value;
-          mutableTurn.chainFloor = Math.max(mutableTurn.chainFloor ?? 0, effect.value);
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 0, effect.value);
+          if (def?.element === 'Neutrality') {
+            mutableTurn.neutralityChainGainedThisTurn = (mutableTurn.neutralityChainGainedThisTurn ?? 0) + effect.value;
+            mutableTurn.neutralityTriggeredEffects = [
+              ...(mutableTurn.neutralityTriggeredEffects ?? []),
+              `${deckCard.definitionId}: set chain to ${effect.value.toFixed(1)}`,
+            ].slice(-8);
+          }
+          break;
+
+        case 'chain_gain':
+          mutableTurn.chainMultiplier = (mutableTurn.chainMultiplier ?? 1) + effect.value;
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 0, mutableTurn.chainMultiplier);
+          if (def?.element === 'Neutrality') {
+            mutableTurn.neutralityChainGainedThisTurn = (mutableTurn.neutralityChainGainedThisTurn ?? 0) + effect.value;
+            mutableTurn.neutralityTriggeredEffects = [
+              ...(mutableTurn.neutralityTriggeredEffects ?? []),
+              `${deckCard.definitionId}: +${effect.value.toFixed(1)} chain`,
+            ].slice(-8);
+          }
+          break;
+
+        case 'set_chain_floor':
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 0, effect.value);
+          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainBaseline);
+          break;
+
+        case 'black_glass_white_flame_gain':
+          mutableTurn.blackGlassWhiteFlame = Math.min(30, (mutableTurn.blackGlassWhiteFlame ?? 0) + effect.value * multiplier);
+          break;
+
+        case 'black_glass_black_flame_gain':
+          mutableTurn.blackGlassBlackFlame = Math.min(30, (mutableTurn.blackGlassBlackFlame ?? 0) + effect.value * multiplier);
+          break;
+
+        case 'black_glass_fracture_gain':
+          mutableTurn.blackGlassFracture = Math.min(18, (mutableTurn.blackGlassFracture ?? 0) + effect.value * multiplier);
+          break;
+
+        case 'black_glass_flames_swap': {
+          const white = mutableTurn.blackGlassWhiteFlame ?? 0;
+          const black = mutableTurn.blackGlassBlackFlame ?? 0;
+          mutableTurn.blackGlassWhiteFlame = black;
+          mutableTurn.blackGlassBlackFlame = white;
+          break;
+        }
+
+        case 'black_glass_fracture_collapse': {
+          const current = mutableTurn.blackGlassFracture ?? 0;
+          if (effect.value > 0 && effect.value <= 1) {
+            mutableTurn.blackGlassFracture = Math.max(0, Math.ceil(current * effect.value));
+          } else {
+            mutableTurn.blackGlassFracture = Math.max(0, current - Math.max(0, effect.value * multiplier));
+          }
+          break;
+        }
+
+        case 'black_glass_register_state': {
+          if (effect.key === 'grief_oaths') {
+            mutableTurn.blackGlassGriefOaths = Math.max(0, (mutableTurn.blackGlassGriefOaths ?? 0) + effect.value * multiplier);
+          } else if (effect.key === 'collapse_pending') {
+            mutableTurn.blackGlassCollapsePending = effect.value > 0;
+          } else if (effect.key === 'last_payoff') {
+            mutableTurn.blackGlassLastPayoff = effect.value * multiplier;
+          }
+          break;
+        }
+
+        case 'light_resonance_gain': {
+          const nextResonance = Math.min(6, (mutableTurn.lightResonance ?? 0) + effect.value * multiplier);
+          mutableTurn.lightResonance = nextResonance;
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier + Math.min(1.0, nextResonance * 0.167));
+          break;
+        }
+
+        case 'light_anchor_gain':
+          mutableTurn.lightChorusAnchors = Math.min(3, (mutableTurn.lightChorusAnchors ?? 0) + effect.value * multiplier);
           break;
 
         case 'prismatic_light_gain': {
           const gain = effect.value * multiplier;
           mutableTurn.prismaticLight = (mutableTurn.prismaticLight ?? 0) + gain;
-          // Each point of Prismatic Light lifts the chain floor slightly
+          // Each point of Prismatic Light lifts the chain gain slightly
           const lightFloor = 1.0 + (mutableTurn.prismaticLight ?? 0) * 0.005;
-          mutableTurn.chainFloor = Math.max(mutableTurn.chainFloor ?? 1, lightFloor);
-          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainFloor);
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, lightFloor);
+          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainBaseline);
           break;
         }
 
@@ -176,6 +727,137 @@ export class CardEffectExecutor {
             if ((mutableTurn.prismaticLight ?? 0) < effect.value) return false;
             mutableTurn.prismaticLight = (mutableTurn.prismaticLight ?? 0) - effect.value;
           }
+          break;
+        }
+
+        case 'channel_lock_gain': {
+          const topCards = TurnSystem.peekTop(mutableDeck, effect.look);
+          const prismaticCount = topCards.reduce((count, card) => {
+            const cardDef = CardRegistry.get(card.definitionId);
+            return cardDef?.element === 'Prismatic' ? count + 1 : count;
+          }, 0);
+          const gain = Math.min(effect.max, prismaticCount);
+          mutableTurn.prismaticChannelLocks = Math.min(effect.max, (mutableTurn.prismaticChannelLocks ?? 0) + gain);
+          if (gain >= 2) {
+            mutableTurn.chainMultiplier = 2.8;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, 2.8);
+          }
+          break;
+        }
+
+        case 'memory_shard_gain': {
+          const max = effect.max ?? 3;
+          mutableTurn.prismaticMemoryShards = Math.min(max, (mutableTurn.prismaticMemoryShards ?? 0) + effect.value * multiplier);
+          break;
+        }
+
+        case 'channel_memory_init': {
+          mutableTurn.prismaticStormMemoryEnabled = true;
+          mutableTurn.prismaticPendingSwitchDepthMark = Math.max(0, effect.markDepthOnSwitch ?? 1);
+          break;
+        }
+
+        case 'accord_channel_set': {
+          if (pendingEffect === null) {
+            pendingEffect = { type: 'prismatic_channel_choice', sourceCard: deckCard.instanceId };
+          }
+          break;
+        }
+
+        case 'refraction_echo_gain': {
+          const distinctChannels = new Set(mutableTurn.prismaticDistinctChannels ?? []).size;
+          mutableTurn.prismaticRefractionEchoes = Math.min(effect.max, (mutableTurn.prismaticRefractionEchoes ?? 0) + distinctChannels);
+          break;
+        }
+
+        case 'refraction_echo_cascade': {
+          mutableTurn.prismaticEchoCascadeArmed = true;
+          mutableTurn.prismaticEchoCascadeDepthThreshold = effect.depthThreshold ?? 4;
+          mutableTurn.prismaticEchoCascadeGainPerToken = effect.chainGainPerToken ?? 0.08;
+          mutableTurn.prismaticEchoCascadeDrawRefund = effect.drawRefund ?? 1;
+          if (deckCard.definitionId === 'inf-prismatic-axiom-rain') {
+            const fullFireReady = new Set(mutableTurn.prismaticDistinctChannels ?? []).size >= 4
+              && (mutableTurn.prismaticRefractionDepth ?? 0) >= 3;
+            if (fullFireReady) {
+              mutableDeck = TurnSystem.drawCards(mutableDeck, 3);
+              mutableTurn.prismaticNextOphanimRefund = (mutableTurn.prismaticNextOphanimRefund ?? 0) + 1;
+            }
+          }
+          break;
+        }
+
+        case 'chord_token_gain': {
+          const perCherubim = effect.perCherubim ?? 1;
+          const cherubimCount = mutableBoard.backSlots.filter(slot => slot?.type === 'Cherubim').length;
+          const gain = cherubimCount * perCherubim;
+          mutableTurn.prismaticChordTokens = Math.min(effect.max, (mutableTurn.prismaticChordTokens ?? 0) + gain);
+          break;
+        }
+
+        case 'chord_token_multiplier': {
+          const tokens = mutableTurn.prismaticChordTokens ?? 0;
+          mutableTurn.prismaticChordAttackBaseBonus = tokens * effect.baseOblivionPerToken;
+          mutableTurn.prismaticChordAttackChainBonus = tokens * effect.chainScalingPerToken;
+          if (effect.permanentOnFullFire) {
+            const fullFireReady = new Set(mutableTurn.prismaticDistinctChannels ?? []).size >= 4
+              && (mutableTurn.prismaticRefractionDepth ?? 0) >= 3;
+            if (fullFireReady) {
+              mutableTurn.prismaticChordPermanent = true;
+              const bonus = (effect.bonusOblivionPerTokenOnFullFire ?? 0) * tokens;
+              mutableTurn.prismaticChordAttackBaseBonus += bonus;
+            }
+          }
+          break;
+        }
+
+        case 'chord_amplify_chain': {
+          const tokens = mutableTurn.prismaticChordTokens ?? 0;
+          mutableTurn.chainMultiplier = (mutableTurn.chainMultiplier ?? 1) + effect.base + tokens * effect.perToken;
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          break;
+        }
+
+        case 'refraction_depth_sync': {
+          const distinctChannels = new Set(mutableTurn.prismaticDistinctChannels ?? []).size;
+          if (effect.mode === 'set') {
+            mutableTurn.prismaticRefractionDepth = Math.max(0, effect.value ?? 0);
+          } else if (effect.mode === 'set_to_distinct') {
+            mutableTurn.prismaticRefractionDepth = distinctChannels;
+          } else {
+            mutableTurn.prismaticRefractionDepth = (mutableTurn.prismaticRefractionDepth ?? 0) + distinctChannels;
+          }
+          break;
+        }
+
+        case 'refraction_spike_init': {
+          mutableTurn.prismaticRefractionSpikeMax = effect.max;
+          mutableTurn.prismaticRefractionSpikes = Math.min(effect.max, mutableTurn.prismaticRefractionSpikes ?? 0);
+          break;
+        }
+
+        case 'prismatic_search_ophanim_cherubim': {
+          if (pendingEffect !== null) break;
+          const maxTake = Math.min(effect.maxTake, Math.max(0, mutableTurn.prismaticNodeCharges ?? 0), 3);
+          if (maxTake <= 0) break;
+          const matching = mutableDeck.drawPile.filter(card => {
+            const cardDef = CardRegistry.get(card.definitionId);
+            return cardDef?.type === 'Ophanim' || cardDef?.type === 'Cherubim';
+          });
+          if (matching.length === 0) break;
+          pendingEffect = { type: 'search_deck', cards: matching, filter: ['Ophanim', 'Cherubim'], take: Math.min(maxTake, matching.length) };
+          break;
+        }
+
+        case 'sentencing_cast': {
+          if (pendingEffect !== null) break;
+          if ((mutableTurn.prismaticDistinctNonAccordChannels ?? []).length < 2) break;
+          pendingEffect = {
+            type: 'prismatic_sentence_choice',
+            cards: [...mutableDeck.hand],
+            chainGainIfAccordMatch: effect.chainGainIfAccordMatch,
+            draw: effect.draw,
+            drawPerfect: effect.drawPerfect ?? effect.draw,
+          };
           break;
         }
 
@@ -213,13 +895,161 @@ export class CardEffectExecutor {
           break;
         }
 
+        case 'snowbound_set_phase': {
+          const oldPhase = mutableTurn.snowboundPhase;
+          mutableTurn.snowboundPhase = effect.phase;
+          if (oldPhase !== null && oldPhase !== effect.phase) {
+            snowboundAlternatedThisPlay = true;
+          }
+          break;
+        }
+
+        case 'snowbound_flip_phase': {
+          const current = mutableTurn.snowboundPhase ?? null;
+          const newPhase = current === 'Frost' ? 'Voltage' : 'Frost';
+          mutableTurn.snowboundPhase = newPhase;
+          if (current !== null && current !== newPhase) {
+            snowboundAlternatedThisPlay = true;
+          }
+          break;
+        }
+
+        case 'snowbound_reset_phase': {
+          mutableTurn.snowboundPhase = null;
+          break;
+        }
+
+        case 'snowbound_potential_gain': {
+          mutableTurn.snowboundPotential = Math.min(20, (mutableTurn.snowboundPotential ?? 0) + effect.value * multiplier);
+          break;
+        }
+
+        case 'snowbound_potential_spend': {
+          const current = mutableTurn.snowboundPotential ?? 0;
+          if (current < effect.value) return false;
+          mutableTurn.snowboundPotential = current - effect.value;
+          break;
+        }
+
+        case 'snowbound_potential_floor': {
+          mutableTurn.snowboundPotential = Math.max(mutableTurn.snowboundPotential ?? 0, effect.value);
+          break;
+        }
+
+        case 'snowbound_alternations_gain': {
+          mutableTurn.snowboundAlternations = Math.min(12, (mutableTurn.snowboundAlternations ?? 0) + effect.value * multiplier);
+          break;
+        }
+
+        case 'snowbound_conduits_gain': {
+          mutableTurn.snowboundConduits = Math.min(3, (mutableTurn.snowboundConduits ?? 0) + effect.value * multiplier);
+          break;
+        }
+
+        case 'snowbound_conduits_spend': {
+          const current = mutableTurn.snowboundConduits ?? 0;
+          if (current < effect.value) return false;
+          mutableTurn.snowboundConduits = current - effect.value;
+          break;
+        }
+
+        case 'snowbound_charge_from_potential': {
+          const ratio = effect.ratio ?? 1;
+          const potential = Math.max(0, mutableTurn.snowboundPotential ?? 0);
+          if (potential > 0) {
+            const converted = Math.max(1, Math.ceil(potential * ratio));
+            mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + converted;
+            mutableTurn.snowboundPotential = 0;
+          }
+          break;
+        }
+
+        case 'snowbound_potential_from_charge': {
+          const ratio = effect.ratio ?? 1;
+          const charge = Math.max(0, mutableTurn.arcticCharge ?? 0);
+          if (charge > 0) {
+            const converted = Math.max(1, Math.floor(charge * ratio));
+            mutableTurn.snowboundPotential = Math.min(20, (mutableTurn.snowboundPotential ?? 0) + converted);
+            mutableTurn.arcticCharge = 0;
+          }
+          break;
+        }
+
+        case 'snowbound_cashout_conduits': {
+          const conduits = Math.max(0, mutableTurn.snowboundConduits ?? 0);
+          if (conduits > 0) {
+            oblivionBonus += conduits * effect.oblivionPerConduit * multiplier;
+            if ((effect.chainPerConduit ?? 0) > 0) {
+              const gain = conduits * (effect.chainPerConduit ?? 0);
+              mutableTurn.chainMultiplier = (mutableTurn.chainMultiplier ?? 1) + gain;
+              mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 0, mutableTurn.chainMultiplier);
+            }
+            mutableTurn.snowboundConduits = 0;
+          }
+          break;
+        }
+
+        case 'snowbound_alternate_phase': {
+          const current = mutableTurn.snowboundPhase ?? null;
+          const phases = effect.phases ?? ['Frost', 'Voltage'];
+          const nextPhase = current === 'Frost' && phases.includes('Voltage')
+            ? 'Voltage'
+            : current === 'Voltage' && phases.includes('Frost')
+              ? 'Frost'
+              : phases[0] ?? 'Frost';
+          mutableTurn.snowboundPhase = nextPhase;
+          mutableTurn.snowboundAlternations = Math.min(12, (mutableTurn.snowboundAlternations ?? 0) + 1);
+          if (current !== null && current !== nextPhase) {
+            snowboundAlternatedThisPlay = true;
+          }
+          break;
+        }
+
+        case 'snowbound_potential_to_conduits': {
+          const potential = Math.max(0, mutableTurn.snowboundPotential ?? 0);
+          if (potential > 0) {
+            const conduits = Math.ceil(potential / 2); // 2 Potential = 1 Conduit
+            mutableTurn.snowboundConduits = Math.min(3, (mutableTurn.snowboundConduits ?? 0) + conduits);
+            mutableTurn.snowboundPotential = 0;
+          }
+          break;
+        }
+
+        case 'snowbound_conduits_to_arctic_charge': {
+          const conduits = Math.max(0, mutableTurn.snowboundConduits ?? 0);
+          if (conduits > 0) {
+            const charge = conduits * 2; // 1 Conduit = 2 Arctic Charge
+            mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + charge * multiplier;
+          }
+          break;
+        }
+
+        case 'snowbound_conduits_double': {
+          mutableTurn.snowboundConduits = Math.min(3, (mutableTurn.snowboundConduits ?? 0) * 2);
+          break;
+        }
+
+        case 'arctic_charge_double': {
+          mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) * 2;
+          break;
+        }
+
+        case 'while_on_board': {
+          // Store the while_on_board effect as a pending passive effect to be processed on future state changes
+          mutableTurn.snowboundOnBoardEffects = [
+            ...(mutableTurn.snowboundOnBoardEffects ?? []),
+            { trigger: effect.trigger, effects: effect.effects, sourceId: deckCard.instanceId }
+          ];
+          break;
+        }
+
         case 'proof_gain': {
           const gain = effect.value * multiplier;
           mutableTurn.proof = (mutableTurn.proof ?? 0) + gain;
-          // Proof builds chain floor — glass absolute\'s sustained precision
+          // Proof scaling also raises chain consistency for Glass Absolute cards.
           const proofFloor = 1.0 + (mutableTurn.proof ?? 0) * 0.012;
-          mutableTurn.chainFloor = Math.max(mutableTurn.chainFloor ?? 1, proofFloor);
-          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainFloor);
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, proofFloor);
+          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainBaseline);
           break;
         }
 
@@ -249,7 +1079,132 @@ export class CardEffectExecutor {
           break;
         }
 
-        // ���� Thornbound / Mechanical Dreams resources ������������������������������������������������������
+        case 'butterfly_spectrum_gain': {
+          const prior = mutableTurn.butterflySpectrum ?? 0;
+          let gained = effect.value * multiplier;
+          // Wing Pulse: double pending spectrum gains.
+          if ((mutableTurn.flutterWingPulseDoubles ?? 0) > 0 && gained > 0) {
+            gained *= 2;
+            mutableTurn.flutterWingPulseDoubles = (mutableTurn.flutterWingPulseDoubles ?? 0) - 1;
+          }
+          let next = Math.max(0, prior + gained);
+          mutableTurn.butterflySpectrum = next;
+
+          // Flutter thresholds: 4 (minor), 8 (major), 12 (descent).
+          if (prior < 4 && next >= 4) {
+            mutableDeck = TurnSystem.drawCards(mutableDeck, 1);
+          }
+          if (prior < 8 && next >= 8) {
+            mutableTurn.chainMultiplier += 0.3;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          if (next >= 12) {
+            mutableTurn.butterflyStance = 'Dual';
+            mutableTurn.nextCardMultiplied = true;
+            mutableDeck = TurnSystem.drawCards(mutableDeck, 1);
+            mutableTurn.chainMultiplier += 0.4;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+            next = 0;
+            mutableTurn.butterflySpectrum = 0;
+            mutableTurn.butterflyFlutterLevel = 0;
+          } else {
+            mutableTurn.butterflyFlutterLevel = next >= 8 ? 2 : next >= 4 ? 1 : 0;
+          }
+          break;
+        }
+
+        case 'butterfly_tune': {
+          mutableTurn.butterflyStance = effect.stance;
+          break;
+        }
+
+        case 'butterfly_release': {
+          const spectrum = Math.max(0, mutableTurn.butterflySpectrum ?? 0);
+          const spend = effect.spend >= 9999 ? spectrum : Math.min(spectrum, effect.spend);
+          if (spend <= 0) break;
+
+          mutableTurn.butterflySpectrum = Math.max(0, spectrum - spend);
+          mutableTurn.butterflyFlutterLevel = (mutableTurn.butterflySpectrum ?? 0) >= 8
+            ? 2
+            : (mutableTurn.butterflySpectrum ?? 0) >= 4
+              ? 1
+              : 0;
+
+          let releaseOblivion = spend * effect.oblivionPerSpectrum * multiplier;
+          const chainGain = spend * (effect.chainPerSpectrum ?? 0);
+          const stance = mutableTurn.butterflyStance ?? 'Reflect';
+
+          if (stance === 'Absorb' || stance === 'Dual') {
+            releaseOblivion += spend * 15 * multiplier;
+          }
+          if (stance === 'Reflect' || stance === 'Dual') {
+            mutableDeck = TurnSystem.drawCards(mutableDeck, Math.max(1, Math.floor(spend / 3)));
+          }
+
+          oblivionBonus += releaseOblivion;
+          if (chainGain > 0) {
+            mutableTurn.chainMultiplier += chainGain;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          break;
+        }
+
+        case 'seas_current_gain': {
+          const gain = effect.value * multiplier;
+          mutableTurn.eternalSeasCurrent = Math.max(0, (mutableTurn.eternalSeasCurrent ?? 0) + gain);
+
+          const polarity = mutableTurn.eternalSeasPolarity ?? 'White';
+          if (polarity === 'White') {
+            mutableTurn.eternalSeasWhiteFlow = Math.max(0, (mutableTurn.eternalSeasWhiteFlow ?? 0) + 1);
+          } else {
+            mutableTurn.eternalSeasBlackFlow = Math.max(0, (mutableTurn.eternalSeasBlackFlow ?? 0) + 1);
+          }
+
+          const white = mutableTurn.eternalSeasWhiteFlow ?? 0;
+          const black = mutableTurn.eternalSeasBlackFlow ?? 0;
+          if (white > 0 && black > 0) {
+            mutableTurn.eternalSeasMarginCharge = Math.min(20, (mutableTurn.eternalSeasMarginCharge ?? 0) + 1);
+          }
+
+          const margin = mutableTurn.eternalSeasMarginCharge ?? 0;
+          if (margin >= 6) {
+            mutableTurn.eternalSeasMarginCharge = margin - 6;
+            mutableDeck = TurnSystem.drawCards(mutableDeck, 1);
+            mutableTurn.chainMultiplier += 0.35;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          break;
+        }
+
+        case 'seas_polarity_shift': {
+          mutableTurn.eternalSeasPolarity = effect.polarity;
+          if (effect.polarity === 'White') {
+            mutableTurn.eternalSeasWhiteFlow = Math.max(0, (mutableTurn.eternalSeasWhiteFlow ?? 0) + 1);
+          } else {
+            mutableTurn.eternalSeasBlackFlow = Math.max(0, (mutableTurn.eternalSeasBlackFlow ?? 0) + 1);
+          }
+          break;
+        }
+
+        case 'seas_release': {
+          const current = Math.max(0, mutableTurn.eternalSeasCurrent ?? 0);
+          const spend = effect.spend >= 9999 ? current : Math.min(current, effect.spend);
+          if (spend <= 0) break;
+
+          mutableTurn.eternalSeasCurrent = Math.max(0, current - spend);
+          const margin = Math.max(0, mutableTurn.eternalSeasMarginCharge ?? 0);
+          const marginBonus = margin * 60;
+          oblivionBonus += (spend * effect.oblivionPerCurrent + marginBonus) * multiplier;
+          if ((effect.chainPerCurrent ?? 0) > 0) {
+            const chainGain = spend * (effect.chainPerCurrent ?? 0);
+            mutableTurn.chainMultiplier += chainGain;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          mutableTurn.eternalSeasMarginCharge = Math.max(0, margin - 2);
+          break;
+        }
+
+        // �E�E�E��E�E�E��E�E�E��E�E�E� Thornbound / Mechanical Dreams resources �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'trail_gain':
           mutableTurn.trail += effect.value * multiplier;
           break;
@@ -286,7 +1241,156 @@ export class CardEffectExecutor {
           break;
         }
 
-        // ���� Legacy score/power effects (Light compat ? map to Oblivion) ��������������������
+        case 'patience_gain_all': {
+          const linkedBonus = Math.max(0, mutableTurn.neutralityLinkedGainBonus ?? 0);
+          const vesselId = mutableTurn.neutralityVesselInstanceId ?? null;
+          const vesselCopyPercent = Math.max(0, mutableTurn.neutralityVesselCopyPercent ?? 0);
+          const perUnitGain = effect.value + linkedBonus;
+          let totalGain = 0;
+          let nonVesselGain = 0;
+
+          for (const unit of mutableBoard.frontSlots) {
+            if (!unit || unit.type !== 'Seraphim' || !unit.isActive) continue;
+            unit.patienceStacks = (unit.patienceStacks ?? 0) + perUnitGain;
+            totalGain += perUnitGain;
+            if (vesselId && unit.instanceId !== vesselId) {
+              nonVesselGain += perUnitGain;
+            }
+          }
+
+          if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
+            const vessel = mutableBoard.frontSlots.find(
+              unit => unit?.type === 'Seraphim' && unit.isActive && unit.instanceId === vesselId,
+            );
+            if (vessel) {
+              const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
+              if (copied > 0) {
+                vessel.patienceStacks = (vessel.patienceStacks ?? 0) + copied;
+                totalGain += copied;
+              }
+            }
+          }
+
+          if (def?.element === 'Neutrality' && totalGain > 0) {
+            mutableTurn.neutralityPatienceChargedThisTurn = (mutableTurn.neutralityPatienceChargedThisTurn ?? 0) + totalGain;
+            mutableTurn.neutralityTriggeredEffects = [
+              ...(mutableTurn.neutralityTriggeredEffects ?? []),
+              `${deckCard.definitionId}: +${totalGain} total patience`,
+            ].slice(-8);
+          }
+          break;
+        }
+
+        case 'patience_double_all': {
+          let consumedForDoubling = 0;
+          for (const unit of mutableBoard.frontSlots) {
+            if (!unit) continue;
+            if (unit.type === 'Seraphim' && unit.isActive) {
+              const before = unit.patienceStacks ?? 0;
+              unit.patienceStacks = before * 2;
+              consumedForDoubling += before;
+            }
+          }
+          if (def?.element === 'Neutrality' && consumedForDoubling > 0) {
+            mutableTurn.neutralityPatienceConsumedThisTurn = (mutableTurn.neutralityPatienceConsumedThisTurn ?? 0) + consumedForDoubling;
+            mutableTurn.neutralityTriggeredEffects = [
+              ...(mutableTurn.neutralityTriggeredEffects ?? []),
+              `${deckCard.definitionId}: doubled ${consumedForDoubling} patience`,
+            ].slice(-8);
+          }
+          break;
+        }
+
+        case 'neutrality_designate_vessel': {
+          const candidates = mutableBoard.frontSlots
+            .filter(isActiveSeraphim)
+            .sort((a, b) => (b.patienceStacks ?? 0) - (a.patienceStacks ?? 0));
+          if (candidates.length > 0) {
+            mutableTurn.neutralityVesselInstanceId = candidates[0].instanceId;
+            mutableTurn.neutralityTriggeredEffects = [
+              ...(mutableTurn.neutralityTriggeredEffects ?? []),
+              `${deckCard.definitionId}: vessel set`,
+            ].slice(-8);
+          }
+          break;
+        }
+
+        case 'neutrality_vessel_copy_gain': {
+          mutableTurn.neutralityVesselCopyPercent = Math.max(
+            mutableTurn.neutralityVesselCopyPercent ?? 0,
+            Math.max(0, effect.percent),
+          );
+          break;
+        }
+
+        case 'neutrality_vessel_redistribute': {
+          const vesselId = mutableTurn.neutralityVesselInstanceId;
+          if (!vesselId) break;
+          const vessel = mutableBoard.frontSlots.find(
+            unit => unit?.type === 'Seraphim' && unit.isActive && unit.instanceId === vesselId,
+          );
+          if (!vessel) break;
+          const others = mutableBoard.frontSlots.filter(
+            (unit): unit is SeraphimInstance => isActiveSeraphim(unit) && unit.instanceId !== vesselId,
+          );
+          if (others.length === 0) break;
+          const available = Math.max(0, vessel.patienceStacks ?? 0);
+          const budget = Math.min(available, Math.max(0, effect.value));
+          if (budget <= 0) break;
+          const each = Math.floor(budget / others.length);
+          const remainder = budget - each * others.length;
+          if (each <= 0 && remainder <= 0) break;
+          vessel.patienceStacks = available - budget;
+          others.forEach((unit, index) => {
+            const bonus = each + (index < remainder ? 1 : 0);
+            unit.patienceStacks = (unit.patienceStacks ?? 0) + bonus;
+          });
+          break;
+        }
+
+        case 'neutrality_mark_hand': {
+          const markable = mutableDeck.hand
+            .filter(card => card.instanceId !== deckCard.instanceId)
+            .slice(0, Math.max(0, effect.count));
+          const existing = new Set(mutableTurn.neutralityMarkedCardIds ?? []);
+          markable.forEach(card => existing.add(card.instanceId));
+          mutableTurn.neutralityMarkedCardIds = [...existing];
+          mutableTurn.neutralityMarkedPatienceGain = Math.max(
+            mutableTurn.neutralityMarkedPatienceGain ?? 0,
+            Math.max(0, effect.patience),
+          );
+          break;
+        }
+
+        case 'neutrality_attack_preserve': {
+          mutableTurn.neutralityAttackPreservePercent = Math.max(
+            mutableTurn.neutralityAttackPreservePercent ?? 0,
+            Math.max(0, effect.percent),
+          );
+          break;
+        }
+
+        case 'neutrality_attack_restore': {
+          mutableTurn.neutralityAttackRestorePercent = Math.max(
+            mutableTurn.neutralityAttackRestorePercent ?? 0,
+            Math.max(0, effect.percent),
+          );
+          break;
+        }
+
+        case 'neutrality_linked_mode': {
+          mutableTurn.neutralityLinkedGainBonus = Math.max(
+            mutableTurn.neutralityLinkedGainBonus ?? 0,
+            Math.max(0, effect.gain),
+          );
+          mutableTurn.neutralityLinkedRetainPercent = Math.max(
+            mutableTurn.neutralityLinkedRetainPercent ?? 0,
+            Math.max(0, effect.retainPercent),
+          );
+          break;
+        }
+
+        // �E�E�E��E�E�E��E�E�E��E�E�E� Legacy score/power effects (Light compat ? map to Oblivion) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'score_flat':
           oblivionBonus += effect.value * multiplier;
           break;
@@ -304,7 +1408,7 @@ export class CardEffectExecutor {
           mutableBoard.activeBoardEffects.push({ type: 'seraphim_bonus_amplifier', value: effect.value * multiplier });
           break;
 
-        // ���� Radiance effects (Light) ��������������������������������������������������������������������������������������������
+        // �E�E�E��E�E�E��E�E�E��E�E�E� Radiance effects (Light) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'radiance_gain': {
           let gain = effect.value;
           if (deckCard.definitionId === 'hr-light-seraphic-bond') gain = activeSynergies;
@@ -339,7 +1443,7 @@ export class CardEffectExecutor {
           mutableTurn.radiance = mutableTurn.radiance * 2;
           break;
 
-        // ���� Ember effects (Pyroabyss) ������������������������������������������������������������������������������������������
+        // �E�E�E��E�E�E��E�E�E��E�E�E� Ember effects (Pyroabyss) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'ember_gain': {
           let gain = effect.value;
           // Ember Chain ? gain Embers equal to Ophanim count in hand
@@ -364,10 +1468,314 @@ export class CardEffectExecutor {
           break;
         }
 
-        // ���� Draw / deck manipulation ��������������������������������������������������������������������������������������������
+        case 'pyro_furnace_pressure_gain': {
+          mutableTurn.pyroFurnacePressure = Math.min(60, (mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0) + effect.value * multiplier);
+          mutableTurn.pyroFervor = mutableTurn.pyroFurnacePressure;
+          break;
+        }
+
+        case 'pyro_furnace_pressure_spend': {
+          const current = mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0;
+          if (current < effect.value) return false;
+          mutableTurn.pyroFurnacePressure = current - effect.value;
+          mutableTurn.pyroFervor = mutableTurn.pyroFurnacePressure;
+          break;
+        }
+
+        case 'pyro_abyss_fault_gain': {
+          mutableTurn.pyroAbyssFault = Math.min(40, (mutableTurn.pyroAbyssFault ?? mutableTurn.pyroRupture ?? 0) + effect.value * multiplier);
+          mutableTurn.pyroRupture = mutableTurn.pyroAbyssFault;
+          break;
+        }
+
+        case 'pyro_abyss_fault_spend': {
+          const current = mutableTurn.pyroAbyssFault ?? mutableTurn.pyroRupture ?? 0;
+          if (current < effect.value) return false;
+          mutableTurn.pyroAbyssFault = current - effect.value;
+          mutableTurn.pyroRupture = mutableTurn.pyroAbyssFault;
+          break;
+        }
+
+        case 'pyro_ruin_window_gain': {
+          mutableTurn.pyroRuinWindows = Math.min(10, (mutableTurn.pyroRuinWindows ?? 0) + effect.value * multiplier);
+          break;
+        }
+
+        case 'pyro_convert_pressure_to_fault': {
+          const pressure = mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0;
+          const pressurePerFault = Math.max(1, effect.pressurePerFault);
+          const converted = Math.floor(pressure / pressurePerFault);
+          const capped = Math.max(0, effect.maxFaultGain ?? converted * effect.faultGain);
+          const faultGain = Math.min(capped, converted * effect.faultGain);
+          if (faultGain <= 0) break;
+
+          mutableTurn.pyroFurnacePressure = Math.max(0, pressure - Math.floor(faultGain / effect.faultGain) * pressurePerFault);
+          mutableTurn.pyroAbyssFault = Math.min(40, (mutableTurn.pyroAbyssFault ?? mutableTurn.pyroRupture ?? 0) + faultGain);
+          mutableTurn.pyroFervor = mutableTurn.pyroFurnacePressure;
+          mutableTurn.pyroRupture = mutableTurn.pyroAbyssFault;
+          break;
+        }
+
+        case 'pyro_window_cashout': {
+          const available = Math.max(0, mutableTurn.pyroRuinWindows ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          mutableTurn.pyroRuinWindows = Math.max(0, available - consume);
+          oblivionBonus += consume * effect.oblivionPerWindow * multiplier;
+          if ((effect.chainPerWindow ?? 0) > 0) {
+            const gain = consume * (effect.chainPerWindow ?? 0);
+            mutableTurn.chainMultiplier += gain;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          break;
+        }
+
+        case 'pyro_balance_bonus': {
+          const pressure = mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0;
+          const fault = mutableTurn.pyroAbyssFault ?? mutableTurn.pyroRupture ?? 0;
+          const balancedPairs = Math.min(pressure, fault);
+          if (balancedPairs > 0) {
+            oblivionBonus += balancedPairs * effect.oblivionPerPair * multiplier;
+          }
+          break;
+        }
+
+        // Eternal/Infinity per-set amplifier stacks.
+        case 'eternal_stack_gain': {
+          const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+          stacks[effect.stack] = (stacks[effect.stack] ?? 0) + effect.value * multiplier;
+          break;
+        }
+
+        case 'eternal_stack_spend': {
+          const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+          const current = stacks[effect.stack] ?? 0;
+          if (effect.value >= 9999) {
+            stacks[effect.stack] = 0;
+          } else {
+            if (current < effect.value) return false;
+            stacks[effect.stack] = current - effect.value;
+          }
+          break;
+        }
+
+        case 'eternal_stack_cashout': {
+          const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+          const available = Math.max(0, stacks[effect.stack] ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          stacks[effect.stack] = Math.max(0, available - consume);
+          oblivionBonus += consume * effect.oblivionPerStack * multiplier;
+          if ((effect.chainPerStack ?? 0) > 0) {
+            const gain = consume * (effect.chainPerStack ?? 0);
+            mutableTurn.chainMultiplier += gain;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          if ((effect.drawPerStack ?? 0) > 0) {
+            const extraDraw = Math.floor(consume * (effect.drawPerStack ?? 0));
+            for (let i = 0; i < extraDraw; i++) {
+              const ok = processEffect({ type: 'draw', value: 1 });
+              if (!ok) break;
+            }
+          }
+          break;
+        }
+
+        // ── Per-set secondary keyword counters (generic gain/spend) ──────────
+        case 'set_secondary_gain': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          counters[effect.kind] = (counters[effect.kind] ?? 0) + effect.value * multiplier;
+          break;
+        }
+        case 'set_secondary_spend': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const current = counters[effect.kind] ?? 0;
+          if (effect.value >= 9999) {
+            counters[effect.kind] = 0;
+          } else {
+            if (current < effect.value) return false;
+            counters[effect.kind] = current - effect.value;
+          }
+          break;
+        }
+
+        // ── 11 bespoke per-set cashout payoffs ───────────────────────────────
+        // Pyroabyss — Cinder Echo: quadratic oblivion (echoes² × X)
+        case 'pyro_cinder_echo_ignite': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.pyro ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.pyro = available - consume;
+          oblivionBonus += consume * consume * effect.oblivionPerEchoSquared * multiplier;
+          break;
+        }
+        // Heavenly Light — Halo Cascade: raises chain floor (chain baseline)
+        case 'light_halo_cascade_resound': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.light ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.light = available - consume;
+          const lift = consume * effect.chainFloorPerCascade;
+          mutableTurn.chainBaseline = (mutableTurn.chainBaseline ?? 1) + lift;
+          if (mutableTurn.chainMultiplier < mutableTurn.chainBaseline) {
+            mutableTurn.chainMultiplier = mutableTurn.chainBaseline;
+          }
+          break;
+        }
+        // Thornbound — Briar Spiral: spirals → +Trail; chain scales with current Trail
+        case 'thorn_briar_spiral_bloom': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.thorn ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.thorn = available - consume;
+          mutableTurn.trail = (mutableTurn.trail ?? 0) + consume * effect.trailPerSpiral;
+          const chainGain = (mutableTurn.trail ?? 0) * effect.chainPerTrail;
+          if (chainGain > 0) {
+            mutableTurn.chainMultiplier += chainGain;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          break;
+        }
+        // Mechanical — Reactor Flux: vent Strain → oblivion + score multiplier
+        case 'mech_reactor_flux_vent': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.mech ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.mech = available - consume;
+          const strain = Math.max(0, mutableTurn.strain ?? 0);
+          const vented = Math.min(strain, consume);
+          mutableTurn.strain = strain - vented;
+          oblivionBonus += vented * effect.oblivionPerFlux * multiplier;
+          if (effect.scoreMultPerFlux > 0 && consume > 0) {
+            mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: consume * effect.scoreMultPerFlux });
+          }
+          break;
+        }
+        // Prismatic — Spectrum Echo: oblivion = consumed × distinctChannelsThisTurn
+        case 'prism_spectrum_echo_refract': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.prism ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.prism = available - consume;
+          const distinct = new Set(mutableTurn.prismaticDistinctChannels ?? []).size;
+          oblivionBonus += consume * distinct * effect.oblivionPerEchoPerChannel * multiplier;
+          break;
+        }
+        // Black Glass Inferno — Veil Shard: swap flames; oblivion per higher flame
+        case 'glass_veil_shard_swap': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.glass ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.glass = available - consume;
+          const white = mutableTurn.blackGlassWhiteFlame ?? 0;
+          const black = mutableTurn.blackGlassBlackFlame ?? 0;
+          mutableTurn.blackGlassWhiteFlame = black;
+          mutableTurn.blackGlassBlackFlame = white;
+          const higher = Math.max(white, black);
+          oblivionBonus += consume * higher * effect.oblivionPerHigherFlame * multiplier;
+          break;
+        }
+        // Snowbound Voltage — Static Pulse: phase-conditional split
+        case 'snow_static_pulse_discharge': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.snow ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.snow = available - consume;
+          const phase = mutableTurn.snowboundPhase ?? 'Frost';
+          if (phase === 'Voltage') {
+            oblivionBonus += consume * effect.voltageOblivionPerPulse * multiplier;
+          } else {
+            const extraDraw = Math.floor(consume * effect.frostDrawPerPulse);
+            for (let i = 0; i < extraDraw; i++) {
+              const ok = processEffect({ type: 'draw', value: 1 });
+              if (!ok) break;
+            }
+          }
+          break;
+        }
+        // Glass Absolute — Cascade Proof: chain multiplier per cascade depth
+        case 'absol_cascade_proof_amplify': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.absol ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.absol = available - consume;
+          const chainGain = consume * effect.chainPerProofDepth;
+          mutableTurn.chainMultiplier += chainGain;
+          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          break;
+        }
+        // Burning Garden — Wild Pollen: +Embers per pollen; score mult per Bloom
+        case 'garden_wild_pollen_seed': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.garden ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.garden = available - consume;
+          const embers = (mutableBoard.emberGrove ?? (mutableBoard.emberGrove = []));
+          const embersToAdd = Math.floor(consume * effect.embersPerPollen);
+          for (let i = 0; i < embersToAdd; i++) {
+            embers.push({
+              id: `${deckCard.definitionId}:wildpollen:${mutableTurn.turnNumber ?? 0}:${i}:${embers.length}`,
+              source: 'wild-pollen',
+              decayTurns: 3,
+            } as never);
+          }
+          const blooms = Math.max(0, mutableTurn.bloom ?? 0);
+          if (effect.scoreMultPerBloom > 0 && blooms > 0) {
+            mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: blooms * effect.scoreMultPerBloom });
+          }
+          break;
+        }
+        // Age of the Butterfly — Wing Pulse: doubles next N spectrum gains
+        case 'flutter_wing_pulse_amplify': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.flutter ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.flutter = available - consume;
+          mutableTurn.flutterWingPulseDoubles = (mutableTurn.flutterWingPulseDoubles ?? 0) + consume * effect.doubleNextGains;
+          break;
+        }
+        // Eternal Seas — Tide Echo: polarity split
+        case 'tide_echo_resolve': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.tide ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.tide = available - consume;
+          const polarity = mutableTurn.eternalSeasPolarity ?? 'White';
+          if (polarity === 'White') {
+            const chainGain = consume * effect.chainPerPositive;
+            mutableTurn.chainMultiplier += chainGain;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          } else {
+            oblivionBonus += consume * effect.oblivionPerNegative * multiplier;
+          }
+          break;
+        }
+
+        // �E�E�E��E�E�E��E�E�E��E�E�E� Draw / deck manipulation �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'draw': {
           let count = effect.value;
           if (deckCard.definitionId === 'hr-light-divine-clarity') count = 4;
+          if (deckCard.definitionId === 'inf-prismatic-axiom-rain') {
+            count += Math.floor((mutableTurn.prismaticRefractionEchoes ?? 0) / 3);
+          }
+          if (
+            deckCard.definitionId === 'btei-prismatic-blindwars-reliquary'
+            && (mutableTurn.prismaticNodeCharges ?? 0) > 0
+            && mutableTurn.cardsPlayedThisTurn >= 5
+          ) {
+            count += new Set(mutableTurn.prismaticDistinctNonAccordChannels ?? []).size;
+          }
 
           if (def?.rarity === 'Eternal' || def?.rarity === 'Infinite') {
             const original = count;
@@ -513,7 +1921,13 @@ export class CardEffectExecutor {
           break;
 
         case 'conditional': {
-          const met = CardEffectExecutor.evaluateCondition(effect.condition, mutableTurn, mutableBoard);
+          let met = false;
+          // Special handling for snowbound_alternated_this_turn which depends on local play context
+          if (effect.condition.type === 'snowbound_alternated_this_turn') {
+            met = snowboundAlternatedThisPlay;
+          } else {
+            met = CardEffectExecutor.evaluateCondition(effect.condition, mutableTurn, mutableBoard);
+          }
           if (met) {
             for (const subEffect of effect.then) {
               const ok = processEffect(subEffect);
@@ -561,7 +1975,7 @@ export class CardEffectExecutor {
       mutableTurn.cardsPlayedThisTurn += 1;
       mutableTurn.chainMultiplier = Math.max(
         1.0 + mutableTurn.cardsPlayedThisTurn * 0.1,
-        mutableTurn.chainFloor
+        mutableTurn.chainBaseline
       );
     }
 
@@ -579,21 +1993,99 @@ export class CardEffectExecutor {
   ): boolean {
     switch (condition.type) {
       case 'radiance_gte':      return turn.radiance >= condition.value;
+      case 'black_glass_white_flame_gte':
+        return (turn.blackGlassWhiteFlame ?? 0) >= condition.value;
+      case 'black_glass_black_flame_gte':
+        return (turn.blackGlassBlackFlame ?? 0) >= condition.value;
+      case 'black_glass_fracture_gte':
+        return (turn.blackGlassFracture ?? 0) >= condition.value;
+      case 'black_glass_flame_delta_gte':
+        return Math.abs((turn.blackGlassWhiteFlame ?? 0) - (turn.blackGlassBlackFlame ?? 0)) >= condition.value;
+      case 'black_glass_flame_delta_lte':
+        return Math.abs((turn.blackGlassWhiteFlame ?? 0) - (turn.blackGlassBlackFlame ?? 0)) <= condition.value;
+      case 'black_glass_flames_equal':
+        return (turn.blackGlassWhiteFlame ?? 0) === (turn.blackGlassBlackFlame ?? 0);
+      case 'light_resonance_gte':
+        return (turn.lightResonance ?? 0) >= condition.value;
+      case 'light_distinct_notes_gte':
+        return new Set(turn.lightDistinctNotes ?? []).size >= condition.value;
+      case 'light_chorus_anchors_gte':
+        return (turn.lightChorusAnchors ?? 0) >= condition.value;
       case 'ember_gte':         return turn.embers >= condition.value;
       case 'trail_gte':         return turn.trail >= condition.value;
       case 'strain_gte':        return turn.strain >= condition.value;
       case 'strain_lte':        return turn.strain <= condition.value;
       case 'prismatic_light_gte': return (turn.prismaticLight ?? 0) >= condition.value;
+      case 'prismatic_refraction_depth_gte':
+        return (turn.prismaticRefractionDepth ?? 0) >= condition.value;
+      case 'prismatic_node_charges_gte':
+        return (turn.prismaticNodeCharges ?? 0) >= condition.value;
+      case 'prismatic_memory_shards_gte':
+        return (turn.prismaticMemoryShards ?? 0) >= condition.value;
+      case 'prismatic_distinct_channels_gte':
+        return new Set(turn.prismaticDistinctChannels ?? []).size >= condition.value;
       case 'shards_gte':        return (turn.monochromaticShards ?? 0) >= condition.value;
       case 'arctic_charge_gte': return (turn.arcticCharge ?? 0) >= condition.value;
+      case 'snowbound_phase_is':
+        return (turn.snowboundPhase ?? null) === condition.phase;
+      case 'snowbound_potential_gte':
+        return (turn.snowboundPotential ?? 0) >= condition.value;
+      case 'snowbound_alternations_gte':
+        return (turn.snowboundAlternations ?? 0) >= condition.value;
+      case 'snowbound_conduits_gte':
+        return (turn.snowboundConduits ?? 0) >= condition.value;
+      case 'snowbound_alternated_this_turn':
+        return (turn.snowboundAlternatedThisTurn ?? false) === true;
+      case 'snowbound_same_phase_as_last_turn':
+        return turn.snowboundPhase === turn.snowboundPreviousPhase && turn.snowboundPhase !== null;
       case 'proof_gte':         return (turn.proof ?? 0) >= condition.value;
       case 'bloom_gte':         return (turn.bloom ?? 0) >= condition.value;
+      case 'butterfly_spectrum_gte':
+        return (turn.butterflySpectrum ?? 0) >= condition.value;
+      case 'seas_current_gte':
+        return (turn.eternalSeasCurrent ?? 0) >= condition.value;
+      case 'seas_margin_gte':
+        return (turn.eternalSeasMarginCharge ?? 0) >= condition.value;
+      case 'seas_polarity_is':
+        return (turn.eternalSeasPolarity ?? null) === condition.polarity;
+      case 'pyro_furnace_pressure_gte':
+        return (turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0) >= condition.value;
+      case 'pyro_abyss_fault_gte':
+        return (turn.pyroAbyssFault ?? turn.pyroRupture ?? 0) >= condition.value;
+      case 'pyro_ruin_window_gte':
+        return (turn.pyroRuinWindows ?? 0) >= condition.value;
+      case 'burn_phase_cards_gte': {
+        const burnCount = [...board.frontSlots, ...board.backSlots].filter(unit => {
+          if (!unit) return false;
+          return unit.burningGardenPhase === 'Burn';
+        }).length;
+        return burnCount >= condition.value;
+      }
+      case 'grove_cards_gte':
+        return (board.emberGrove?.length ?? 0) >= condition.value;
+      case 'pyro_pressure_higher':
+        return (turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0) > (turn.pyroAbyssFault ?? turn.pyroRupture ?? 0);
+      case 'pyro_fault_higher':
+        return (turn.pyroAbyssFault ?? turn.pyroRupture ?? 0) > (turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0);
+      case 'pyro_pools_balanced': {
+        const pressure = turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0;
+        const fault = turn.pyroAbyssFault ?? turn.pyroRupture ?? 0;
+        return Math.abs(pressure - fault) <= 2;
+      }
       case 'cards_played_gte':  return turn.cardsPlayedThisTurn >= condition.value;
       case 'first_card_this_turn': return turn.cardsPlayedThisTurn === 0;
       case 'seraphim_active_gte':
         return board.frontSlots.filter(s => s?.type === 'Seraphim' && s.isActive).length >= condition.value;
       case 'cherubim_active_gte':
         return board.backSlots.filter(s => s !== null && s.type === 'Cherubim').length >= condition.value;
+      case 'eternal_stack_gte': {
+        const stacks = (turn.eternalStacks ?? {}) as Record<string, number>;
+        return (stacks[condition.stack] ?? 0) >= condition.value;
+      }
+      case 'set_secondary_gte': {
+        const counters = (turn.secondaryCounters ?? {}) as Record<string, number>;
+        return (counters[condition.kind] ?? 0) >= condition.value;
+      }
       default:
         return false;
     }
@@ -627,6 +2119,26 @@ export class CardEffectExecutor {
           if (cond.type === 'seraphim_on_board_gte') {
             const activeSeraphim = board.frontSlots.filter(s => s?.type === 'Seraphim').length;
             if (activeSeraphim < cond.value) return false;
+          }
+          if (cond.type === 'pyro_fervor_gte') {
+            const pressure = turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0;
+            if (pressure < cond.value) return false;
+          }
+          if (cond.type === 'pyro_rupture_gte') {
+            const fault = turn.pyroAbyssFault ?? turn.pyroRupture ?? 0;
+            if (fault < cond.value) return false;
+          }
+          if (cond.type === 'pyro_furnace_pressure_gte') {
+            const pressure = turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0;
+            if (pressure < cond.value) return false;
+          }
+          if (cond.type === 'pyro_abyss_fault_gte') {
+            const fault = turn.pyroAbyssFault ?? turn.pyroRupture ?? 0;
+            if (fault < cond.value) return false;
+          }
+          if (cond.type === 'pyro_ruin_window_gte') {
+            const windows = turn.pyroRuinWindows ?? 0;
+            if (windows < cond.value) return false;
           }
         }
       }

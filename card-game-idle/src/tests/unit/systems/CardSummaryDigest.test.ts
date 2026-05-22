@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { getCardPreviewLines, getCardSummarySections } from '@/ui/cardStatSummary';
+import { getCanonicalCardDescription, getCardPreviewLines, getCardSummarySections } from '@/ui/cardStatSummary';
 import type { CardType } from '@/types/cards';
 
 describe('card summary digest', () => {
@@ -15,5 +15,21 @@ describe('card summary digest', () => {
     const preview = getCardPreviewLines(card!, 3);
     expect(preview.length).toBeGreaterThan(0);
     expect(preview.length).toBeLessThanOrEqual(3);
+  });
+
+  it('uses canonical Ability text for Infinite cards', () => {
+    const infiniteCard = CardRegistry.get('inf-bgi-sorveths-final-breath');
+    expect(infiniteCard).toBeTruthy();
+
+    const ability = getCardSummarySections(infiniteCard!).find(section => section.title === 'Ability');
+    expect(ability?.lines[0]).toBe(getCanonicalCardDescription(infiniteCard!));
+  });
+
+  it('uses canonical Ability text for Black Glass Eternal cards', () => {
+    const eternalCard = CardRegistry.get('btei-bgi-cindershard-lexicon');
+    expect(eternalCard).toBeTruthy();
+
+    const ability = getCardSummarySections(eternalCard!).find(section => section.title === 'Ability');
+    expect(ability?.lines[0]).toBe(getCanonicalCardDescription(eternalCard!));
   });
 });

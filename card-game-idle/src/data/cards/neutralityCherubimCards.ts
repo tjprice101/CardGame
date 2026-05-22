@@ -9,7 +9,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Veil',
-    description: 'On play: Draw 1 card; Search your deck for 1 Seraphim. While on board: Adjacent Seraphim gain +1 Patience per card played.',
+    description: 'On play: Draw 1 card; Search your deck for 1 matching Seraphim. While on board: Buffs Seraphim attacks: base +31, chain bonus +0.04, cooldown -1, multiplier x1.00',
     artKey: 'cherubim_neutral_null_veil',
     maxDurability: 3,
     effects: [
@@ -26,7 +26,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Shroud',
-    description: 'On play: Shuffle discard into deck; Draw 1 card. While on board: Adjacent Seraphim gain +1 Patience per card played.',
+    description: 'On play: Shuffle discard into deck; Draw 1 card. While on board: Buffs Seraphim and Angel attacks: base +24, chain bonus +0.04, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_void_shroud',
     maxDurability: 2,
     effects: [
@@ -43,7 +43,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Mantle',
-    description: 'On play: Search your deck for 1 Seraphim or Cherubim; Draw 1 card. While on board: Adjacent Seraphim gain +2 Patience per card played.',
+    description: 'On play: Search your deck for 1 matching Seraphim or Cherubim; Draw 1 card. While on board: Buffs Seraphim attacks: base +36, chain bonus +0.05, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_balance_mantle',
     maxDurability: 3,
     effects: [
@@ -60,7 +60,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Equilibrium Ward',
-    description: 'On play: Look at the top 4 cards, take 1, put the rest on the bottom. While on board: Adjacent Seraphim gain +2 Patience per card played.',
+    description: 'On play: Look at the top 4 cards, take 1 card, and put the rest on the bottom. While on board: Buffs Seraphim attacks: base +36, chain bonus +0.05, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_equilibrium_ward',
     maxDurability: 3,
     effects: [
@@ -76,7 +76,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Shell',
-    description: 'On play: Salvage any 1 card; Draw 1 card. While on board: Adjacent Seraphim gain +3 Patience per card played.',
+    description: 'On play: Salvage any 1 card; Draw 1 card. While on board: Buffs Seraphim attacks: base +54, chain bonus +0.06, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +42, chain bonus +0.04, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_still_shell',
     maxDurability: 3,
     effects: [
@@ -98,7 +98,7 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Null Fortification',
-    description: 'On play: Draw 2 cards; +40 Oblivion. While on board: Adjacent Seraphim gain +2 Patience per card played.',
+    description: 'On play: Draw 2 cards; +40 Oblivion. While on board: Buffs Seraphim attacks: base +36, chain bonus +0.05, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_null_fortify',
     maxDurability: 3,
     effects: [
@@ -115,7 +115,7 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Void Amplifier',
-    description: 'On play: +140 Oblivion; Draw 2 cards; Salvage any 1 card. While on board: Adjacent Seraphim gain +3 Patience per card played.',
+    description: 'On play: +140 Oblivion; Draw 2 cards; Salvage any 1 card. While on board: Buffs Seraphim attacks: base +46, chain bonus +0.06, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +36, chain bonus +0.04, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_void_amp',
     maxDurability: 2,
     effects: [

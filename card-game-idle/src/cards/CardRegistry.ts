@@ -9,31 +9,33 @@ import type {
   SeraphimDefinition,
 } from '@/types/cards';
 import type { CherubimPassiveEffect } from '@/types/effects';
-import { lightAngels } from '@/data/cards/lightAngels';
-import { lightHRCards } from '@/data/cards/lightHRCards';
-import { lightSeraphims } from '@/data/cards/lightSeraphims';
-import { neutralityAngels } from '@/data/cards/neutralityAngel';
-import { neutralityCards } from '@/data/cards/neutralityCards';
-import { neutralityCherubimCards } from '@/data/cards/neutralityCherubimCards';
-import { pyroabyssAngels } from '@/data/cards/pyroabyssAngels';
-import { pyroabyssSeraphims, pyroabyssOphanimCards } from '@/data/cards/pyroabyssCards';
-import { pyroabyssCherubimCards } from '@/data/cards/pyroabyssCherubimCards';
-import { eternalCards } from '@/data/cards/eternalCards';
-import { thornboundAngels } from '@/data/cards/thornboundAngels';
-import { thornboundCherubim, thornboundCherubimCards, thornboundOphanims, thornboundSeraphims } from '@/data/cards/thornboundCards';
-import { mechanicalDreamsAngels } from '@/data/cards/mechanicalDreamsAngels';
-import { mechanicalDreamsCherubim, mechanicalDreamsCherubimCards, mechanicalDreamsOphanims, mechanicalDreamsSeraphims } from '@/data/cards/mechanicalDreamsCards';
-import { prismaticAccordAngels } from '@/data/cards/prismaticAccordAngels';
-import { prismaticAccordCherubim, prismaticAccordCherubimCards, prismaticAccordOphanims, prismaticAccordSeraphims } from '@/data/cards/prismaticAccordCards';
-import { blackGlassInfernoAngels } from '@/data/cards/blackGlassInfernoAngels';
-import { blackGlassInfernoCherubim, blackGlassInfernoCherubimCards, blackGlassInfernoOphanims, blackGlassInfernoSeraphims } from '@/data/cards/blackGlassInfernoCards';
-import { glassAbsoluteCards } from '@/data/cards/glassAbsoluteCards';
-import { blazingGardenCards } from '@/data/cards/blazingGardenCards';
-import { snowboundVoltageAngels, snowboundVoltageCherubimCards, snowboundVoltageOphanimCards, snowboundVoltageSeraphims } from '@/data/cards/snowboundVoltageCards';
-import { infiniteCards } from '@/data/cards/infiniteCards';
-import { MATERIALIZED_CARD_BALANCE } from '@/data/cards/materializedCardBalance';
-import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
-import { formatDisplayCardText } from '@/ui/preferences';
+import { lightAngels } from '../data/cards/lightAngels';
+import { lightHRCards } from '../data/cards/lightHRCards';
+import { lightSeraphims } from '../data/cards/lightSeraphims';
+import { neutralityAngels } from '../data/cards/neutralityAngel';
+import { neutralityCards } from '../data/cards/neutralityCards';
+import { neutralityCherubimCards } from '../data/cards/neutralityCherubimCards';
+import { pyroabyssAngels } from '../data/cards/pyroabyssAngels';
+import { pyroabyssSeraphims, pyroabyssOphanimCards } from '../data/cards/pyroabyssCards';
+import { pyroabyssCherubimCards } from '../data/cards/pyroabyssCherubimCards';
+import { eternalCards } from '../data/cards/eternalCards';
+import { thornboundAngels } from '../data/cards/thornboundAngels';
+import { thornboundCherubim, thornboundCherubimCards, thornboundOphanims, thornboundSeraphims } from '../data/cards/thornboundCards';
+import { mechanicalDreamsAngels } from '../data/cards/mechanicalDreamsAngels';
+import { mechanicalDreamsCherubim, mechanicalDreamsCherubimCards, mechanicalDreamsOphanims, mechanicalDreamsSeraphims } from '../data/cards/mechanicalDreamsCards';
+import { prismaticAccordAngels } from '../data/cards/prismaticAccordAngels';
+import { prismaticAccordCherubim, prismaticAccordCherubimCards, prismaticAccordOphanims, prismaticAccordSeraphims } from '../data/cards/prismaticAccordCards';
+import { blackGlassInfernoAngels } from '../data/cards/blackGlassInfernoAngels';
+import { blackGlassInfernoCherubim, blackGlassInfernoCherubimCards, blackGlassInfernoOphanims, blackGlassInfernoSeraphims } from '../data/cards/blackGlassInfernoCards';
+import { glassAbsoluteCards } from '../data/cards/glassAbsoluteCards';
+import { blazingGardenCards } from '../data/cards/blazingGardenCards';
+import { butterflySetCards } from '../data/cards/butterflySetCards';
+import { eternalSeasCards } from '../data/cards/eternalSeasCards';
+import { snowboundVoltageAngels, snowboundVoltageCherubimCards, snowboundVoltageOphanimCards, snowboundVoltageSeraphims } from '../data/cards/snowboundVoltageCards';
+import { infiniteCards } from '../data/cards/infiniteCards';
+import { MATERIALIZED_CARD_BALANCE } from '../data/cards/materializedCardBalance';
+import { ScoreSystem } from '../systems/scoring/ScoreSystem';
+import { formatDisplayCardText } from '../ui/preferences';
 
 const registry = new Map<string, CardDefinition>();
 
@@ -83,6 +85,8 @@ const SOURCE_DEFINITIONS: CardDefinition[] = [
   ...(snowboundVoltageSeraphims as unknown as CardDefinition[]),
   ...(glassAbsoluteCards as unknown as CardDefinition[]),
   ...(blazingGardenCards as unknown as CardDefinition[]),
+  ...(butterflySetCards as unknown as CardDefinition[]),
+  ...(eternalSeasCards as unknown as CardDefinition[]),
   ...(infiniteCards as unknown as CardDefinition[]),
 ];
 
@@ -877,7 +881,7 @@ function injectOphanimUtility(def: OphanimDefinition): OphanimDefinition {
       extraEffects.push({ type: 'draw', value: 1 + (weight >= 4 ? 1 : 0) });
       break;
     case 1:
-      extraEffects.push({ type: 'set_chain_floor', value: 1.1 + Math.min(0.9, weight * 0.1) });
+      extraEffects.push({ type: 'chain_gain', value: 1.1 + Math.min(0.9, weight * 0.1) });
       break;
     case 2:
       extraEffects.push({ type: 'shuffle_discard' });
@@ -899,7 +903,128 @@ function injectOphanimUtility(def: OphanimDefinition): OphanimDefinition {
   };
 }
 
+const NEUTRALITY_REWORK_IDS = new Set<string>([
+  'inf-oblivion-absolute',
+  'inf-void-cascade',
+  'inf-genesis-throne',
+  'inf-null-apex',
+  'inf-entropic-crown',
+  'inf-annihilation-field',
+  'inf-sovereign-void',
+  'inf-eternity-rupture',
+  'btei-voids-reaping',
+  'btei-temporal-ruin',
+  'btei-null-edict',
+  'btei-axiom-of-oblivion',
+  'btei-eternal-vigil',
+  'btei-colossus-advent',
+  'btei-sovereign-domain',
+  'btei-architects-manifold',
+  'btei-convergence-of-eternity',
+  'btei-omniscient-fracture',
+  'btei-neutrality-paradox-crown',
+  'btei-neutrality-zero-edict',
+  'btei-neutrality-void-throne',
+  'btei-neutrality-axiom-maw',
+  'btei-neutrality-prime-equilibrium',
+  'btei-prismatic-vorthum-edict',
+  'btei-prismatic-fracture-archive',
+  'inf-prismatic-axiom-rain',
+  'inf-prismatic-collapse-lattice',
+  'btei-light-sunbreak-canon',
+  'btei-light-aureate-rapture',
+  'btei-light-choir-imperator',
+  'btei-light-halo-dominion',
+  'btei-light-throne-of-morning',
+  'inf-celestial-blackout',
+  'inf-lucent-cataclysm-archon',
+  'inf-heliarch-eclipse-engine',
+  'btei-pyroabyss-cinder-cataclysm',
+  'btei-pyroabyss-ashfall-engine',
+  'btei-pyroabyss-infernal-archon',
+  'btei-pyroabyss-hellrift-mandala',
+  'btei-pyroabyss-oblivion-phoenix',
+  'inf-ash-kings-apocalypse',
+  'inf-pyraxis-colossus',
+  'inf-pyroclasm-engine',
+  'inf-riftborn-sovereign',
+  'ser-fire-cinder',
+  'ser-fire-abyssal',
+  'ser-fire-pyre',
+  'ser-fire-infernal',
+  'ser-fire-voidflame',
+  'ophanim-fire-cinder-draw',
+  'ophanim-fire-abyssal-kindle',
+  'ophanim-fire-pyre-ignite',
+  'ophanim-fire-infernal-surge',
+  'ophanim-fire-void-kindling',
+  'ophanim-fire-void-flare',
+  'ophanim-fire-smoldering-cycle',
+  'ophanim-fire-abyssal-recall',
+  'ophanim-fire-flame-burst',
+  'ophanim-fire-abyssal-detonation',
+  'ophanim-fire-pyroclast',
+  'ophanim-fire-ember-threshold',
+  'ophanim-fire-conflagration',
+  'ophanim-fire-pyre-hunt',
+  'ophanim-fire-ember-chain',
+  'ophanim-fire-void-combustion',
+  'ophanim-fire-inferno',
+  'ophanim-fire-void-apocalypse',
+  'cherubim-fire-ember-shroud',
+  'cherubim-fire-abyssal-veil',
+  'cherubim-fire-pyre-mantle',
+  'cherubim-fire-infernal-ward',
+  'cherubim-fire-void-cinder-shell',
+  'cherubim-fire-flame-fortify',
+  'cherubim-fire-abyss-amp',
+  'angel-fire-cinderwing',
+  'angel-fire-pyroclast-wraith',
+  'angel-fire-obliteron',
+  'ga-et-lattice-archive-seraph',
+  'ga-et-angled-infinity',
+  'ga-et-first-white',
+  'ga-et-center-everywhere',
+  'ga-et-perfect-refraction',
+  'ga-inf-glass-absolute',
+  'ga-inf-refracted-sovereign',
+  'ga-inf-yreth-prism-at-center',
+  'ga-inf-chorus-unbroken-spectrum',
+  'ga-inf-shattered-without-shattering',
+  'ga-inf-color-after-white',
+  // Snowbound Voltage Eternal/Infinite reworks (typed snowbound_* / arctic_charge_* effects in
+  // src/data/cards/eternalCards.ts + infiniteCards.ts must bypass materializedCardBalance stubs).
+  'sv-eternal-frost-charge',
+  'sv-eternal-aurora-battery',
+  'sv-eternal-glacier-signal',
+  'sv-eternal-white-static',
+  'sv-eternal-sleet-choir',
+  'sv-infinite-polar-fission',
+  'sv-infinite-neon-snowfall',
+  'sv-infinite-crystal-storm',
+  'sv-infinite-black-ice-throne',
+  'sv-infinite-aurora-collapse',
+]);
+
+function shouldKeepSourceDefinition(definitionId: string): boolean {
+  if (NEUTRALITY_REWORK_IDS.has(definitionId)) return true;
+  // Infinite reward cards must execute the exact source-defined effects so UI text matches behavior.
+  if (definitionId.startsWith('inf-')) return true;
+  // Defensive catch-all: any future Snowbound Eternal/Infinite IDs should keep authored effects.
+  if (definitionId.startsWith('sv-eternal-')) return true;
+  if (definitionId.startsWith('sv-infinite-')) return true;
+  if (definitionId.startsWith('btei-bgi-')) return true;
+  if (definitionId.startsWith('inf-bgi-')) return true;
+  if (definitionId.startsWith('btei-pyroabyss-')) return true;
+  if (definitionId.startsWith('btei-light-')) return true;
+  if (definitionId.startsWith('btei-thornbound-')) return true;
+  return false;
+}
+
 function normalizeDefinition(def: CardDefinition): CardDefinition {
+  if (shouldKeepSourceDefinition(def.definitionId)) {
+    return def;
+  }
   const materialized = MATERIALIZED_CARD_BALANCE[def.definitionId as keyof typeof MATERIALIZED_CARD_BALANCE];
 
   if (def.type === 'Seraphim') {
@@ -972,6 +1097,39 @@ function registerAll(defs: CardDefinition[]): void {
   }
 }
 
+function formatDisplayAttackCost(cost: AttackCost): string {
+  switch (cost.type) {
+    case 'discard_from_hand':
+      return `discard ${cost.value} card${cost.value === 1 ? '' : 's'}`;
+    case 'sacrifice_seraphim':
+      return `sacrifice ${cost.value} Seraphim`;
+    case 'sacrifice_angel':
+      return `sacrifice ${cost.value} Angel`;
+    case 'spend_embers':
+      return `spend ${cost.value} Ember${cost.value === 1 ? '' : 's'}`;
+    case 'spend_radiance':
+      return `spend ${cost.value} Radiance`;
+    case 'spend_trail':
+      return `spend ${cost.value} Trail`;
+    case 'spend_strain':
+      return `spend ${cost.value} Strain`;
+  }
+}
+
+function buildDisplayAttackDescription(attack: {
+  baseOblivion: number;
+  cooldownCards: number;
+  chainScaling: number;
+  costs?: ReadonlyArray<AttackCost>;
+  requiresAngelOnBoard?: boolean;
+}): string {
+  const angelText = attack.requiresAngelOnBoard ? ' · Requires Angel' : '';
+  const costText = attack.costs && attack.costs.length > 0
+    ? ` · Cost: ${attack.costs.map(formatDisplayAttackCost).join(', ')}`
+    : '';
+  return `${attack.baseOblivion} base Oblivion · ${attack.cooldownCards} cards cooldown · chain +${attack.chainScaling.toFixed(2)}${angelText}${costText}`;
+}
+
 function displayCardDefinition(def: CardDefinition): CardDefinition {
   const displayDef = {
     ...def,
@@ -986,12 +1144,12 @@ function displayCardDefinition(def: CardDefinition): CardDefinition {
         unsynergized: {
           ...def.attacks.unsynergized,
           name: formatDisplayCardText(def.attacks.unsynergized.name),
-          description: formatDisplayCardText(def.attacks.unsynergized.description),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.unsynergized)),
         },
         synergized: {
           ...def.attacks.synergized,
           name: formatDisplayCardText(def.attacks.synergized.name),
-          description: formatDisplayCardText(def.attacks.synergized.description),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.synergized)),
         },
       },
     } as CardDefinition;
@@ -1009,12 +1167,12 @@ function displayCardDefinition(def: CardDefinition): CardDefinition {
         primary: {
           ...def.attacks.primary,
           name: formatDisplayCardText(def.attacks.primary.name),
-          description: formatDisplayCardText(def.attacks.primary.description),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.primary)),
         },
         exalted: {
           ...def.attacks.exalted,
           name: formatDisplayCardText(def.attacks.exalted.name),
-          description: formatDisplayCardText(def.attacks.exalted.description),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.exalted)),
         },
       } : def.attacks,
     } as CardDefinition;

@@ -30,7 +30,7 @@ const bonusPitch = {
 const onPlayPitch = {
   draw: 'draw tempo',
   oblivion_flat: 'immediate Oblivion injection',
-  set_chain_floor: 'chain-floor anchoring',
+  chain_gain: 'chain-gain anchoring',
   chain_multiplier_set: 'chain snapline setup',
   multiply_next: 'next-card amplification',
   salvage_any: 'discard reclamation',

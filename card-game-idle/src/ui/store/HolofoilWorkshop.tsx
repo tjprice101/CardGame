@@ -380,8 +380,8 @@ export default function HolofoilWorkshop() {
                       card={def}
                       variant="preview"
                       maxSections={2}
-                      maxLinesPerSection={1}
-                      lineClamp={1}
+                      maxLinesPerSection={10}
+                      lineClamp={3}
                       labelColor={cardFacePalette.textMuted}
                       textColor={cardFacePalette.textSoft}
                       sectionBackground="transparent"

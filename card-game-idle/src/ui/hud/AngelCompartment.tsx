@@ -251,8 +251,8 @@ export default function AngelCompartment() {
                       card={angelDef}
                       variant="preview"
                       maxSections={3}
-                      maxLinesPerSection={1}
-                      lineClamp={2}
+                      maxLinesPerSection={10}
+                      lineClamp={3}
                       labelColor={cardFacePalette.textMuted}
                       textColor={cardFacePalette.textSoft}
                       sectionBackground="transparent"

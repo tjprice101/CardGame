@@ -16,6 +16,7 @@ import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
+import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { warmTheme } from '@/ui/theme';
 import type { CardFinish, SeraphimDefinition, AngelDefinition } from '@/types/cards';
 
@@ -337,6 +338,7 @@ export default function HandDisplay() {
 
   const hoveredDeckCard = hoveredId ? hand.find(c => c.instanceId === hoveredId) : null;
   const hoveredDef = hoveredDeckCard ? CardRegistry.get(hoveredDeckCard.definitionId) : null;
+  const hoveredActionClassLabel = hoveredDef ? getActionClassLabel(getCardActionClass(hoveredDef)) : null;
   const hoveredEngine = hoveredDef ? getSetEngineSnapshotForCard(hoveredDef, turn, board) : null;
   const handRightInset = isPlaying || isMulligan
     ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(392px, 36vw))'
@@ -380,8 +382,8 @@ export default function HandDisplay() {
               card={hoveredDef}
               variant="preview"
               maxSections={3}
-              maxLinesPerSection={1}
-              lineClamp={2}
+              maxLinesPerSection={10}
+              lineClamp={3}
               labelColor="rgba(74, 48, 21, 0.82)"
               textColor={warmTheme.accentDeep}
               sectionBackground="transparent"
@@ -393,6 +395,11 @@ export default function HandDisplay() {
             <span style={{ color: ELEMENT_COLORS[hoveredDef.element] ?? '#aaa' }}>
               {ELEMENT_SET_NAMES[hoveredDef.element] ?? hoveredDef.element}
             </span>
+            {hoveredActionClassLabel && (
+              <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                Action Class: {hoveredActionClassLabel}
+              </span>
+            )}
             {hoveredEngine && (
               <span style={{ color: hoveredEngine.accent, fontWeight: 700 }}>
                 {hoveredEngine.label} engine: {hoveredEngine.compact}

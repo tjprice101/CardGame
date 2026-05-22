@@ -23,9 +23,9 @@ describe('set engine summary', () => {
     const snapshot = getSetEngineSnapshotForCard(def!, turn);
     expect(snapshot).not.toBeNull();
     expect(snapshot?.label).toBe('Neutrality');
-    expect(snapshot?.compact).toContain('Drift 7');
-    expect(snapshot?.compact).toContain('Stability 4');
-    expect(snapshot?.compact).toContain('Setup 2');
+    expect(snapshot?.compact).toContain('Patience');
+    expect(snapshot?.metrics.some(metric => metric.label === 'Patience Charged')).toBe(true);
+    expect(snapshot?.metrics.some(metric => metric.label === 'Patience Consumed')).toBe(true);
 
     const list = getSetEngineSnapshotsForCards([def!], turn);
     expect(list).toHaveLength(1);
@@ -39,9 +39,11 @@ describe('set engine summary', () => {
     expect(pyro).toBeTruthy();
 
     const list = getSetEngineSnapshotsForCards([neutrality!, pyro!], defaultGameState.turn, undefined, { includeAll: true });
-    expect(list).toHaveLength(10);
+    expect(list).toHaveLength(12);
     expect(list[0]?.label).toBe('Neutrality');
     expect(list.some(snapshot => snapshot.label === 'Pyroabyss')).toBe(true);
     expect(list.some(snapshot => snapshot.label === 'Glass Absolute')).toBe(true);
+    expect(list.some(snapshot => snapshot.label === 'Age of the Butterfly')).toBe(true);
+    expect(list.some(snapshot => snapshot.label === 'Eternal Seas')).toBe(true);
   });
 });

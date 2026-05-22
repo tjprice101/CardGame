@@ -259,6 +259,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
           <button
             style={{ ...styles.closeBtn, color: 'rgba(255,100,100,0.6)', borderColor: 'rgba(255,80,80,0.2)' }}
             onClick={() => {
+              if (!window.confirm(`Delete deck "${selectedDeck.name}"? This cannot be undone.`)) return;
               deleteSavedDeck(selectedDeck.id);
               setSelectedId(savedDecks.find(d => d.id !== selectedDeck.id)?.id ?? '');
             }}

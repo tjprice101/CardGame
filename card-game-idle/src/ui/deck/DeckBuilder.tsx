@@ -496,9 +496,9 @@ export default function DeckBuilder({ onClose }: Props) {
                             <CardRulesDigest
                               card={def.def}
                               variant="preview"
-                              maxSections={2}
-                              maxLinesPerSection={1}
-                              lineClamp={1}
+                            maxSections={4}
+                            maxLinesPerSection={10}
+                            lineClamp={3}
                               labelColor={cardFacePalette.textMuted}
                               textColor={cardFacePalette.textSoft}
                               sectionBackground="transparent"
@@ -607,7 +607,11 @@ export default function DeckBuilder({ onClose }: Props) {
                 {!sd.isStarter && (
                   <button className="menu-tactile-btn"
                     style={{ ...styles.miniBtn, ...styles.miniBtnDanger }}
-                    onClick={() => deleteSavedDeck(sd.id)}
+                    onClick={() => {
+                      if (window.confirm(`Delete deck "${sd.name}"? This cannot be undone.`)) {
+                        deleteSavedDeck(sd.id);
+                      }
+                    }}
                   >Delete</button>
                 )}
               </div>

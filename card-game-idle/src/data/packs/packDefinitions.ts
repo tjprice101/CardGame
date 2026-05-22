@@ -1,3 +1,6 @@
+import { butterflyPackPool } from '@/data/cards/butterflySetCards';
+import { eternalSeasPackPool } from '@/data/cards/eternalSeasCards';
+
 export interface PackDefinition {
   id: string;
   name: string;
@@ -349,6 +352,10 @@ export const BLAZING_GARDEN_PACK_POOL: string[] = [
   'bg-inf-proof-completed-sky',
 ];
 
+export const BUTTERFLY_PACK_POOL: string[] = butterflyPackPool;
+
+export const ETERNAL_SEAS_PACK_POOL: string[] = eternalSeasPackPool;
+
 export const PACK_DEFINITIONS: PackDefinition[] = [
   {
     id: 'pack-neutrality',
@@ -448,6 +455,26 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     cost: 45678,
     cardsPerOpen: 5,
     cardPool: BLAZING_GARDEN_PACK_POOL,
+    locked: false,
+  },
+  {
+    id: 'pack-age-of-the-butterfly',
+    name: 'Age of the Butterfly Pack',
+    description: `Cards from Age of the Butterfly - metallic wings, glass refractions, and generation-defining Flutter pulses. Set size: ${BUTTERFLY_PACK_POOL.length} cards.`,
+    element: 'Butterfly',
+    cost: 50240,
+    cardsPerOpen: 5,
+    cardPool: BUTTERFLY_PACK_POOL,
+    locked: false,
+  },
+  {
+    id: 'pack-eternal-seas',
+    name: 'Eternal Seas Pack',
+    description: `Cards from Eternal Seas - white/black waters, Veilmargin currents, and neon deep-ocean mythics. Set size: ${ETERNAL_SEAS_PACK_POOL.length} cards.`,
+    element: 'EternalSeas',
+    cost: 54880,
+    cardsPerOpen: 5,
+    cardPool: ETERNAL_SEAS_PACK_POOL,
     locked: false,
   },
 ];

@@ -14,6 +14,8 @@ const CARD_BACKGROUND_FOLDERS: Partial<Record<string, string>> = {
   Prismatic: 'prismatic-accord',
   GlassAbsolute: 'glass-absolute',
   BlazingGarden: 'blazing-garden',
+  Butterfly: 'age-of-the-butterfly',
+  EternalSeas: 'eternal-seas',
   Dark: 'black-glass-inferno',
 };
 
@@ -179,7 +181,21 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'cherubim-dark-mourning-mantle': 'Veth Serath Midplace.png',
   'cherubim-dark-abyss-throne': 'Vaelthorax Grieffire.png',
   // Glass Absolute Infinite cards with punctuation in their names
-  'ga-inf-yreth-prism-at-center': 'Yreth, Prism at Center.png',
+  // (file name intentionally drops the comma — CSS multi-layer background-image
+  // parsing in Chromium can mishandle %2C inside comma-separated url() lists,
+  // which would otherwise show only the Infinite card-back as a fallback)
+  'ga-inf-yreth-prism-at-center': 'Yreth Prism at Center.png',
+  // Age of the Butterfly cards whose name contains punctuation the on-disk
+  // PNG drops (commas/hyphens stripped to avoid the same CSS url() pitfall).
+  'bf-oph-copper-green-trail': 'Copper Green Trail.png',
+  'bf-inf-mirrorface-voidface': 'Mirrorface Voidface.png',
+  'bf-inf-velkoreth-the-unfolding': 'Velkoreth the Unfolding.png',
+  // Eternal Seas cards whose name contains a comma the on-disk PNG drops.
+  'es-angel-crowned-one-ruby': 'Crowned One Ruby Margin.png',
+  'es-angel-crowned-one-azure': 'Crowned One Azure Margin.png',
+  'es-angel-veleth-undying-water': 'Veleth Undying Water.png',
+  'es-et-aeveleth-first-drift': 'Aeveleth First Drift.png',
+  'es-inf-aeveleth-undying-revision': 'Aeveleth Undying Revision.png',
 };
 
 function getSnowboundEternalFileName(card: CardDefinition): string {
@@ -200,6 +216,8 @@ const CARD_BACK_ASSET_BY_ELEMENT: Partial<Record<string, { folder: string; file:
   Prismatic: { folder: 'prismatic-accord', file: 'Prismatic Accord Card Back.png' },
   GlassAbsolute: { folder: 'glass-absolute', file: 'Glass Absolute Card Back.png' },
   BlazingGarden: { folder: 'blazing-garden', file: 'Blazing Garden Card Back.png' },
+  Butterfly: { folder: 'age-of-the-butterfly', file: 'Age of the Butterfly Card Back.png' },
+  EternalSeas: { folder: 'eternal-seas', file: 'Eternal Seas Card Back.png' },
   Dark: { folder: 'black-glass-inferno', file: 'Black Glass Inferno Card Back.png' },
 };
 
@@ -313,6 +331,16 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
   if (card.element === 'BlazingGarden') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
     return `${CARD_BACKGROUND_ROOT}/blazing-garden/${encodeURIComponent(fileName)}`;
+  }
+
+  if (card.element === 'Butterfly') {
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    return `${CARD_BACKGROUND_ROOT}/age-of-the-butterfly/${encodeURIComponent(fileName)}`;
+  }
+
+  if (card.element === 'EternalSeas') {
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    return `${CARD_BACKGROUND_ROOT}/eternal-seas/${encodeURIComponent(fileName)}`;
   }
 
   const bteiFolder = getBteiFolder(card.definitionId);

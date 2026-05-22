@@ -1,4 +1,5 @@
 import { getCardEngineRole } from '@/ui/setEngineSummary';
+import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import type { CardDefinition } from '@/types/cards';
 
 type Variant = 'compact' | 'detail';
@@ -27,6 +28,7 @@ export default function CardEngineCallout({
   tone?: Tone;
 }) {
   const role = getCardEngineRole(card);
+  const actionClassLabel = getActionClassLabel(getCardActionClass(card));
   if (!role) return null;
 
   const isDetail = variant === 'detail';
@@ -59,7 +61,7 @@ export default function CardEngineCallout({
         fontWeight: 700,
         fontFamily: 'Georgia, serif',
       }}>
-        {role.engineLabel} - {role.badge}
+        {role.engineLabel} - {actionClassLabel}
       </div>
       <div style={{
         marginTop: 4,

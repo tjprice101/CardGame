@@ -1,16 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import '@/styles/animations.css';
 import { GameEngine } from '@/core/engine/GameEngine';
 import HUD from '@/ui/hud/HUD';
-import DeckBuilder from '@/ui/deck/DeckBuilder';
-import DeckViewer from '@/ui/deck/DeckViewer';
-import CardPackStore from '@/ui/store/CardPackStore';
-import SettingsPanel from '@/ui/settings/SettingsPanel';
-import EternitysWake from '@/ui/eternitysWake/EternitysWake';
-import BossFightArena from '@/ui/eternitysWake/BossFightArena';
-import BossResultModal from '@/ui/eternitysWake/BossResultModal';
-import Infinitude from '@/ui/infinitude/Infinitude';
-import TutorialModal from '@/ui/menus/TutorialModal';
+const DeckBuilder = lazy(() => import('@/ui/deck/DeckBuilder'));
+const DeckViewer = lazy(() => import('@/ui/deck/DeckViewer'));
+const CardPackStore = lazy(() => import('@/ui/store/CardPackStore'));
+const SettingsPanel = lazy(() => import('@/ui/settings/SettingsPanel'));
+const EternitysWake = lazy(() => import('@/ui/eternitysWake/EternitysWake'));
+const BossFightArena = lazy(() => import('@/ui/eternitysWake/BossFightArena'));
+const BossResultModal = lazy(() => import('@/ui/eternitysWake/BossResultModal'));
+const Infinitude = lazy(() => import('@/ui/infinitude/Infinitude'));
+const TutorialModal = lazy(() => import('@/ui/menus/TutorialModal'));
 import { warmTheme } from '@/ui/theme';
 import { useStore, selectBoard, selectDeck, selectTurn, selectBossFight, selectSettings } from '@/state/store';
 import { getFontScale, setUiPreferences, t } from '@/ui/preferences';
@@ -101,14 +101,51 @@ export default function App() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.code === 'Space' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      const isTyping = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || tag === 'SELECT' || (e.target as HTMLElement | null)?.isContentEditable;
+
+      if (e.code === 'Space' && !isTyping) {
         e.preventDefault();
         useStore.getState().addOblivion(1_000_000);
+        return;
+      }
+
+      if (isTyping) return;
+
+      // Esc: close topmost modal/overlay in priority order
+      if (e.key === 'Escape') {
+        if (showTutorial) { setShowTutorial(false); e.preventDefault(); return; }
+        if (showSettings) { setShowSettings(false); e.preventDefault(); return; }
+        if (showDeckViewer) { setShowDeckViewer(false); e.preventDefault(); return; }
+        if (showDeckBuilder) { setShowDeckBuilder(false); e.preventDefault(); return; }
+        if (showCardStore) { setShowCardStore(false); e.preventDefault(); return; }
+        if (showInfinitude) { setShowInfinitude(false); e.preventDefault(); return; }
+        if (showEternitysWake) { setShowEternitysWake(false); e.preventDefault(); return; }
+        return;
+      }
+
+      // "?" or Shift+/: open tutorial (toggle off if already open)
+      if (e.key === '?') {
+        setShowTutorial(v => !v);
+        e.preventDefault();
+        return;
+      }
+
+      // "e"/"E": end turn when no modal is open and a turn is in play
+      if ((e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake;
+        if (anyModalOpen) return;
+        const phase = useStore.getState().turn.phase;
+        const pending = useStore.getState().turn.pendingEffect;
+        if (phase === 'playing' && !pending) {
+          e.preventDefault();
+          useStore.getState().endTurn();
+        }
       }
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -161,7 +198,7 @@ export default function App() {
       <div className="game-bg-pattern game-bg-pattern--sigils" />
 
       {/* Boss fight HP bar overlay - hidden while full-screen menus are open */}
-      {!isMenuOpen && <BossFightArena />}
+      {!isMenuOpen && <Suspense fallback={null}><BossFightArena /></Suspense>}
 
       {/* HUD overlay */}
       {!isMenuOpen && (
@@ -269,45 +306,45 @@ export default function App() {
       {/* Deck Builder modal */}
       {showDeckBuilder && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <DeckBuilder onClose={() => setShowDeckBuilder(false)} />
+          <Suspense fallback={null}><DeckBuilder onClose={() => setShowDeckBuilder(false)} /></Suspense>
         </div>
       )}
 
       {/* Card Pack Store modal */}
       {showCardStore && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <CardPackStore onClose={() => setShowCardStore(false)} />
+          <Suspense fallback={null}><CardPackStore onClose={() => setShowCardStore(false)} /></Suspense>
         </div>
       )}
 
       {/* Deck Viewer modal */}
       {showDeckViewer && idlePhase && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <DeckViewer
+          <Suspense fallback={null}><DeckViewer
             onClose={() => setShowDeckViewer(false)}
             onOpenDeckBuilder={() => { setShowDeckViewer(false); setShowDeckBuilder(true); }}
-          />
+          /></Suspense>
         </div>
       )}
 
       {/* Eternity's Wake modal */}
       {showEternitysWake && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <EternitysWake onClose={() => setShowEternitysWake(false)} />
+          <Suspense fallback={null}><EternitysWake onClose={() => setShowEternitysWake(false)} /></Suspense>
         </div>
       )}
 
       {/* Infinitude modal */}
       {showInfinitude && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <Infinitude onClose={() => setShowInfinitude(false)} />
+          <Suspense fallback={null}><Infinitude onClose={() => setShowInfinitude(false)} /></Suspense>
         </div>
       )}
 
       {/* Boss result modal (victory / defeat) */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
         <div style={{ pointerEvents: 'auto' }}>
-          <BossResultModal />
+          <Suspense fallback={null}><BossResultModal /></Suspense>
         </div>
       </div>
 
@@ -345,18 +382,18 @@ export default function App() {
       {/* Settings modal */}
       {showSettings && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <SettingsPanel
+          <Suspense fallback={null}><SettingsPanel
             onClose={() => setShowSettings(false)}
             onSave={() => engine.saveNow()}
             onWipe={() => engine.wipeData()}
-          />
+          /></Suspense>
         </div>
       )}
 
       {/* Tutorial modal */}
       {showTutorial && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 31, pointerEvents: 'auto' }}>
-          <TutorialModal onClose={() => setShowTutorial(false)} />
+          <Suspense fallback={null}><TutorialModal onClose={() => setShowTutorial(false)} /></Suspense>
         </div>
       )}
 
