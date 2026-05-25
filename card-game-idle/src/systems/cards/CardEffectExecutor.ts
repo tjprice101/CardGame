@@ -18,6 +18,10 @@ interface ExecuteOptions {
   countAsPlay?: boolean;
   removeFromHand?: boolean;
   useNextCardMultiplier?: boolean;
+  /** When true, nested forge_recast_* / nacre / ouroboric / unrecorded hue auto-recasts are skipped. */
+  suppressForgeRecursion?: boolean;
+  /** When true, do not append this play to the recast ledger. */
+  skipLedger?: boolean;
 }
 
 function isActiveSeraphim(unit: BoardState['frontSlots'][number]): unit is SeraphimInstance {
@@ -217,6 +221,88 @@ function cloneBoard(board: BoardState): BoardState {
   };
 }
 
+// ─── Abyssal Forge: per-turn state shim + recast runner ─────────────────────
+function ensureForgeTurn(turn: TurnState): void {
+  if (turn.recastLedger === undefined) turn.recastLedger = [];
+  if (turn.reforgeCharges === undefined) turn.reforgeCharges = 0;
+  if (turn.reforgeChargeCap === undefined) turn.reforgeChargeCap = 6;
+  if (turn.pearls === undefined) turn.pearls = 0;
+  if (turn.unrecordedHueActive === undefined) turn.unrecordedHueActive = false;
+  if (turn.forgeRecastEventsThisTurn === undefined) turn.forgeRecastEventsThisTurn = 0;
+  if (turn.forgePendingCherubimTemper === undefined) turn.forgePendingCherubimTemper = 0;
+}
+
+interface RecastRunResult {
+  turn: TurnState;
+  board: BoardState;
+  deck: DeckState;
+  oblivionBonus: number;
+}
+
+/**
+ * Re-fire a ledger entry's defining effects at fractional power. Power is
+ * applied to the resulting oblivion bonus and to chain gains carried by the
+ * sub-execution. The recast does NOT count as a card play and is not appended
+ * to the ledger. Imprint stacks are incremented on the entry; Nacre-coated
+ * entries ignore imprint amplification.
+ */
+function runRecast(
+  entry: import('@/types/game').RecastLedgerEntry,
+  power: number,
+  turn: TurnState,
+  board: BoardState,
+  deck: DeckState
+): RecastRunResult {
+  const def = CardRegistry.get(entry.definitionId);
+  if (!def) return { turn, board, deck, oblivionBonus: 0 };
+
+  const imprintAmp = entry.isNacreCoated ? 1.0 : 1.0 + 0.25 * entry.imprintStacks;
+  const finalPower = power * imprintAmp;
+
+  // Snapshot pre-execute chain to compute the chain delta caused by the recast.
+  const beforeChain = turn.chainMultiplier;
+
+  const result = CardEffectExecutor.execute(
+    { instanceId: entry.instanceId, definitionId: entry.definitionId },
+    turn,
+    board,
+    deck,
+    def.type === 'Seraphim',
+    {
+      countAsPlay: false,
+      removeFromHand: false,
+      useNextCardMultiplier: false,
+      suppressForgeRecursion: true,
+      skipLedger: true,
+    }
+  );
+
+  // Scale the oblivion burst portion by finalPower.
+  const scaledOblivion = result.oblivionBonus * finalPower;
+
+  // Scale the chain delta by finalPower (reapply on top of the unscaled base).
+  const chainDelta = result.turn.chainMultiplier - beforeChain;
+  result.turn.chainMultiplier = beforeChain + chainDelta * finalPower;
+
+  // Record the recast event.
+  entry.recastCount += 1;
+  entry.imprintStacks += 1;
+  result.turn.forgeRecastEventsThisTurn = (result.turn.forgeRecastEventsThisTurn ?? 0) + 1;
+
+  // Drop pearls per recast: 1 base, +2 if Eternal, +3 if Infinite.
+  let pearlDrop = 1;
+  if (def.rarity === 'Eternal') pearlDrop = 2;
+  else if (def.rarity === 'Infinite') pearlDrop = 3;
+  result.turn.pearls = (result.turn.pearls ?? 0) + pearlDrop;
+
+  return {
+    turn: result.turn,
+    board: result.board,
+    deck: result.deck,
+    oblivionBonus: scaledOblivion,
+  };
+}
+
 export class CardEffectExecutor {
   static execute(
     deckCard: { instanceId: string; definitionId: string; finish?: import('@/types/cards').CardFinish },
@@ -240,6 +326,8 @@ export class CardEffectExecutor {
     const countAsPlay = options.countAsPlay ?? true;
     const removeFromHand = options.removeFromHand ?? (deckCard.instanceId !== 'echo' && !isSeraphim);
     const useNextCardMultiplier = options.useNextCardMultiplier ?? countAsPlay;
+    const suppressForgeRecursion = options.suppressForgeRecursion ?? false;
+    const skipLedger = options.skipLedger ?? false;
 
     let mutableDeck = { ...deck, hand: [...deck.hand] };
     let mutableTurn = { ...turn };
@@ -1762,7 +1850,219 @@ export class CardEffectExecutor {
           break;
         }
 
-        // �E�E�E��E�E�E��E�E�E��E�E�E� Draw / deck manipulation �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
+        // ─────────── Abyssal Forge — The Reforging ───────────────────────
+        case 'forge_reforge_charge_gain': {
+          ensureForgeTurn(mutableTurn);
+          const cap = mutableTurn.reforgeChargeCap ?? 6;
+          mutableTurn.reforgeCharges = Math.min(cap, (mutableTurn.reforgeCharges ?? 0) + effect.value);
+          break;
+        }
+        case 'forge_reforge_charge_cap_raise': {
+          ensureForgeTurn(mutableTurn);
+          mutableTurn.reforgeChargeCap = (mutableTurn.reforgeChargeCap ?? 6) + effect.value;
+          break;
+        }
+        case 'forge_pearl_drop': {
+          ensureForgeTurn(mutableTurn);
+          mutableTurn.pearls = (mutableTurn.pearls ?? 0) + effect.value;
+          break;
+        }
+        case 'forge_pearl_cashout': {
+          ensureForgeTurn(mutableTurn);
+          const have = mutableTurn.pearls ?? 0;
+          const spend = Math.min(have, effect.spend);
+          mutableTurn.pearls = have - spend;
+          oblivionBonus += spend * effect.oblivionPerPearl * multiplier;
+          if (effect.chainPerPearl && spend > 0) {
+            mutableTurn.chainMultiplier += spend * effect.chainPerPearl;
+          }
+          break;
+        }
+        case 'forge_recast_last': {
+          if (suppressForgeRecursion) break;
+          ensureForgeTurn(mutableTurn);
+          const ledger = mutableTurn.recastLedger ?? [];
+          const entry = ledger[ledger.length - 1];
+          if (entry) {
+            const r = runRecast(entry, effect.power, mutableTurn, mutableBoard, mutableDeck);
+            mutableTurn = r.turn; mutableBoard = r.board; mutableDeck = r.deck;
+            oblivionBonus += r.oblivionBonus * multiplier;
+          }
+          break;
+        }
+        case 'forge_recast_last_n': {
+          if (suppressForgeRecursion) break;
+          ensureForgeTurn(mutableTurn);
+          const ledger = mutableTurn.recastLedger ?? [];
+          const slice = ledger.slice(-effect.count);
+          for (const entry of slice) {
+            const r = runRecast(entry, effect.power, mutableTurn, mutableBoard, mutableDeck);
+            mutableTurn = r.turn; mutableBoard = r.board; mutableDeck = r.deck;
+            oblivionBonus += r.oblivionBonus * multiplier;
+          }
+          break;
+        }
+        case 'forge_recast_random': {
+          if (suppressForgeRecursion) break;
+          ensureForgeTurn(mutableTurn);
+          const ledger = mutableTurn.recastLedger ?? [];
+          const count = effect.count ?? 1;
+          for (let i = 0; i < count && ledger.length > 0; i++) {
+            const idx = Math.floor(Math.random() * ledger.length);
+            const entry = ledger[idx];
+            const r = runRecast(entry, effect.power, mutableTurn, mutableBoard, mutableDeck);
+            mutableTurn = r.turn; mutableBoard = r.board; mutableDeck = r.deck;
+            oblivionBonus += r.oblivionBonus * multiplier;
+          }
+          break;
+        }
+        case 'forge_nacre_recast': {
+          if (suppressForgeRecursion) break;
+          ensureForgeTurn(mutableTurn);
+          const ledger = mutableTurn.recastLedger ?? [];
+          const targets = effect.targetMode === 'last' ? ledger.slice(-1) : ledger.slice(-(effect.count ?? 2));
+          for (const entry of targets) {
+            // Nacre coat: ignore imprint scaling — always pure 'power'.
+            const r = runRecast({ ...entry, isNacreCoated: true }, effect.power, mutableTurn, mutableBoard, mutableDeck);
+            mutableTurn = r.turn; mutableBoard = r.board; mutableDeck = r.deck;
+            oblivionBonus += r.oblivionBonus * multiplier;
+          }
+          break;
+        }
+        case 'forge_ouroboric_recast': {
+          if (suppressForgeRecursion) break;
+          ensureForgeTurn(mutableTurn);
+          // Recast the entire ledger from oldest to newest at fractional power.
+          const ledger = mutableTurn.recastLedger ?? [];
+          for (const entry of ledger) {
+            const r = runRecast(entry, effect.power, mutableTurn, mutableBoard, mutableDeck);
+            mutableTurn = r.turn; mutableBoard = r.board; mutableDeck = r.deck;
+            oblivionBonus += r.oblivionBonus * multiplier;
+          }
+          break;
+        }
+        case 'forge_temper': {
+          ensureForgeTurn(mutableTurn);
+          // Queue temper factor for a board source. Simplest mapping: queue a flat chain bump.
+          mutableTurn.forgeTemperQueue = (mutableTurn.forgeTemperQueue ?? 0) + effect.factor;
+          mutableTurn.chainMultiplier += 0.05 * effect.factor;
+          break;
+        }
+        case 'forge_anvil_seal': {
+          ensureForgeTurn(mutableTurn);
+          const ledger = mutableTurn.recastLedger ?? [];
+          const entry = effect.target === 'last_played' ? ledger[ledger.length - 1] : ledger[ledger.length - 1];
+          if (entry) entry.isAnvilSealed = true;
+          oblivionBonus += effect.burstOblivion * multiplier;
+          mutableTurn.chainMultiplier += effect.burstChain;
+          break;
+        }
+        case 'forge_nacre_coat': {
+          ensureForgeTurn(mutableTurn);
+          const ledger = mutableTurn.recastLedger ?? [];
+          if (effect.targetMode === 'all_played') {
+            for (const e of ledger) e.isNacreCoated = true;
+          } else {
+            const last = ledger[ledger.length - 1];
+            if (last) last.isNacreCoated = true;
+          }
+          break;
+        }
+        case 'forge_unrecorded_ignite': {
+          ensureForgeTurn(mutableTurn);
+          mutableTurn.unrecordedHueActive = true;
+          break;
+        }
+        case 'forge_crown_cashout': {
+          ensureForgeTurn(mutableTurn);
+          const stacks = (mutableTurn.eternalStacks ?? {}) as Record<string, number>;
+          const crowns = stacks.forge ?? 0;
+          oblivionBonus += crowns * effect.oblivionPerCrown * multiplier;
+          if (effect.chainPerCrown && crowns > 0) {
+            mutableTurn.chainMultiplier += crowns * effect.chainPerCrown;
+          }
+          break;
+        }
+
+        // ───── Death-flamed Hell — Cinder Crown finale ────────────────────
+        case 'dfh_crown_cashout': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.pyre ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.pyre = available - consume;
+          oblivionBonus += consume * effect.oblivionPerCrown * multiplier;
+          if (effect.chainPerCrown && consume > 0) {
+            const chainGain = consume * effect.chainPerCrown;
+            mutableTurn.chainMultiplier += chainGain;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          break;
+        }
+
+        // ── Wished Upon A Star — Stellar Wish System ───────────────────────
+        case 'starlight_gain': {
+          mutableTurn.starlightCharges = (mutableTurn.starlightCharges ?? 0) + effect.amount;
+          break;
+        }
+
+        case 'starlight_spend': {
+          const current = mutableTurn.starlightCharges ?? 0;
+          if (current < effect.amount) return false;
+          mutableTurn.starlightCharges = current - effect.amount;
+          break;
+        }
+
+        case 'dream_lattice_gain': {
+          mutableTurn.dreamLattice = (mutableTurn.dreamLattice ?? 0) + effect.amount;
+          break;
+        }
+
+        case 'dream_lattice_spend': {
+          const current = mutableTurn.dreamLattice ?? 0;
+          if (current < effect.amount) return false;
+          mutableTurn.dreamLattice = current - effect.amount;
+          break;
+        }
+
+        case 'wuas_nova_wish_burst': {
+          const starlight = mutableTurn.starlightCharges ?? 0;
+          const dream = mutableTurn.dreamLattice ?? 0;
+          const dreamMult = effect.dreamMultiplier ?? 0.4;
+          oblivionBonus += starlight * (1 + dream * dreamMult) * multiplier;
+          if (effect.consumeStarlight) mutableTurn.starlightCharges = 0;
+          break;
+        }
+
+        case 'wuas_constellation_lock_release': {
+          const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+          const available = Math.max(0, stacks.wuas ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          stacks.wuas = available - consume;
+          oblivionBonus += consume * effect.oblivionPerStack * multiplier;
+          if ((effect.chainPerDream ?? 0) > 0) {
+            const dream = mutableTurn.dreamLattice ?? 0;
+            const chainGain = dream * (effect.chainPerDream ?? 0);
+            mutableTurn.chainMultiplier += chainGain;
+            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          }
+          break;
+        }
+
+        case 'wuas_infinite_starbirth': {
+          const seraphimCount = mutableBoard.frontSlots.filter(s => s?.type === 'Seraphim').length;
+          const starlight = mutableTurn.starlightCharges ?? 0;
+          oblivionBonus += seraphimCount * starlight * effect.oblivionPerSeraphimPerStarlight * multiplier;
+          if ((effect.drawPerDream ?? 0) > 0) {
+            const dream = mutableTurn.dreamLattice ?? 0;
+            const draws = Math.floor(dream * (effect.drawPerDream ?? 0));
+            if (draws > 0) mutableDeck = TurnSystem.drawCards(mutableDeck, draws);
+          }
+          break;
+        }
+
+        // ───── Draw / deck manipulation �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'draw': {
           let count = effect.value;
           if (deckCard.definitionId === 'hr-light-divine-clarity') count = 4;
@@ -1979,6 +2279,26 @@ export class CardEffectExecutor {
       );
     }
 
+    if (countAsPlay && !skipLedger) {
+      ensureForgeTurn(mutableTurn);
+      const ledger = mutableTurn.recastLedger!;
+      ledger.push({
+        definitionId: deckCard.definitionId,
+        instanceId: deckCard.instanceId,
+        ledgerIndex: ledger.length,
+        recastCount: 0,
+        imprintStacks: 0,
+        isAnvilSealed: false,
+        isNacreCoated: false,
+      });
+      // If a Cherubim queued a temper bump for the next Seraphim, apply it now
+      if (def.type === 'Seraphim' && (mutableTurn.forgePendingCherubimTemper ?? 0) > 0) {
+        const f = mutableTurn.forgePendingCherubimTemper!;
+        mutableTurn.chainMultiplier += 0.05 * f;
+        mutableTurn.forgePendingCherubimTemper = 0;
+      }
+    }
+
     if (countAsPlay && def.type === 'Ophanim') {
       mutableTurn.lastPlayedDefinitionId = deckCard.definitionId;
     }
@@ -2086,6 +2406,18 @@ export class CardEffectExecutor {
         const counters = (turn.secondaryCounters ?? {}) as Record<string, number>;
         return (counters[condition.kind] ?? 0) >= condition.value;
       }
+      case 'forge_reforge_charges_gte':
+        return (turn.reforgeCharges ?? 0) >= condition.value;
+      case 'forge_pearls_gte':
+        return (turn.pearls ?? 0) >= condition.value;
+      case 'forge_recast_count_gte':
+        return (turn.forgeRecastEventsThisTurn ?? 0) >= condition.value;
+      case 'forge_unrecorded_hue_active':
+        return turn.unrecordedHueActive === true;
+      case 'starlight_gte':
+        return (turn.starlightCharges ?? 0) >= condition.value;
+      case 'dream_lattice_gte':
+        return (turn.dreamLattice ?? 0) >= condition.value;
       default:
         return false;
     }

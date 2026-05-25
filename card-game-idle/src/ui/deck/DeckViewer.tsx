@@ -167,9 +167,9 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
   }
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.header}>
-        <div style={styles.title}>{t('myDecks')}</div>
+    <div className="ui-panel-intro" style={{ ...styles.overlay, ['--ui-accent' as any]: '240, 189, 120', ['--ui-accent-soft' as any]: '250, 224, 184' } as React.CSSProperties}>
+      <div className="ui-shimmer-band" style={{ ...styles.header, position: 'relative' }}>
+        <div className="ui-title-glow" style={styles.title}>{t('myDecks')}</div>
         <button style={styles.closeBtn} onClick={onClose}>{t('close')}</button>
       </div>
 

@@ -1,15 +1,15 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
-const heavenlySave = {
+const pantheonSave = {
   read() {
-    return ipcRenderer.sendSync('heavenly-save:read');
+    return ipcRenderer.sendSync('pantheon-save:read');
   },
   write(payload) {
-    return ipcRenderer.sendSync('heavenly-save:write', payload);
+    return ipcRenderer.sendSync('pantheon-save:write', payload);
   },
   remove() {
-    return ipcRenderer.sendSync('heavenly-save:remove');
+    return ipcRenderer.sendSync('pantheon-save:remove');
   },
 };
 
-contextBridge.exposeInMainWorld('heavenlySave', heavenlySave);
+contextBridge.exposeInMainWorld('pantheonSave', pantheonSave);

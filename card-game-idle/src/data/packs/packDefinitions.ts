@@ -1,5 +1,8 @@
 import { butterflyPackPool } from '@/data/cards/butterflySetCards';
 import { eternalSeasPackPool } from '@/data/cards/eternalSeasCards';
+import { abyssalForgePackPool } from '@/data/cards/abyssalForgeCards';
+import { deathFlamedHellPackPool } from '@/data/cards/deathFlamedHellCards';
+import { wishedUponAStarPackPool } from '@/data/cards/wishedUponAStarCards';
 
 export interface PackDefinition {
   id: string;
@@ -7,6 +10,8 @@ export interface PackDefinition {
   description: string;
   element: string;
   cost: number;
+  /** Currency used to purchase this pack. Defaults to 'oblivion'. */
+  currencyType?: 'oblivion' | 'aberratedShards';
   cardsPerOpen: number;
   cardPool: string[];
   locked: boolean;
@@ -355,6 +360,9 @@ export const BLAZING_GARDEN_PACK_POOL: string[] = [
 export const BUTTERFLY_PACK_POOL: string[] = butterflyPackPool;
 
 export const ETERNAL_SEAS_PACK_POOL: string[] = eternalSeasPackPool;
+export const ABYSSAL_FORGE_PACK_POOL: string[] = abyssalForgePackPool;
+export const DEATH_FLAMED_HELL_PACK_POOL: string[] = deathFlamedHellPackPool;
+export const WISHED_UPON_A_STAR_PACK_POOL: string[] = wishedUponAStarPackPool;
 
 export const PACK_DEFINITIONS: PackDefinition[] = [
   {
@@ -372,7 +380,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Pyroabyss Pack',
     description: `Cards from the Pyroabyss set - abyssal void-fire fueled by Embers. Set size: ${PYROABYSS_PACK_POOL.length} cards.`,
     element: 'Fire',
-    cost: 8677,
+    cost: 8674,
     cardsPerOpen: 5,
     cardPool: PYROABYSS_PACK_POOL,
     locked: false,
@@ -382,7 +390,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Heavenly Light Pack',
     description: `Cards from the Heavenly Light set - radiant and Radiance-fueled. Set size: ${HEAVENLY_LIGHT_PACK_POOL.length} cards.`,
     element: 'Light',
-    cost: 13010,
+    cost: 17348,
     cardsPerOpen: 5,
     cardPool: HEAVENLY_LIGHT_PACK_POOL,
     locked: false,
@@ -392,7 +400,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Thornbound Plains Pack',
     description: `Cards from Thornbound Plains - survival through scarlet briars and harrowed roads. Set size: ${THORNBOUND_PLAINS_PACK_POOL.length} cards.`,
     element: 'Thornbound',
-    cost: 18431,
+    cost: 34696,
     cardsPerOpen: 5,
     cardPool: THORNBOUND_PLAINS_PACK_POOL,
     locked: false,
@@ -402,7 +410,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Mechanical Dreams Pack',
     description: `Cards from Mechanical Dreams - overclocked machine divinities and furnace-lit steel. Set size: ${MECHANICAL_DREAMS_PACK_POOL.length} cards.`,
     element: 'Mechanical',
-    cost: 23853,
+    cost: 69392,
     cardsPerOpen: 5,
     cardPool: MECHANICAL_DREAMS_PACK_POOL,
     locked: false,
@@ -412,7 +420,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Prismatic Accord Pack',
     description: `Cards from Prismatic Accord - monochrome steel shardborn ignited by refracted light-memory. Set size: ${PRISMATIC_ACCORD_PACK_POOL.length} cards.`,
     element: 'Prismatic',
-    cost: 27108,
+    cost: 138784,
     cardsPerOpen: 5,
     cardPool: PRISMATIC_ACCORD_PACK_POOL,
     locked: false,
@@ -422,7 +430,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Black Glass Inferno Pack',
     description: `Cards from Black Glass Inferno - colossal draconic war in black-white flame and chromatic grief. Set size: ${BLACK_GLASS_INFERNO_PACK_POOL.length} cards.`,
     element: 'Dark',
-    cost: 31444,
+    cost: 277568,
     cardsPerOpen: 5,
     cardPool: BLACK_GLASS_INFERNO_PACK_POOL,
     locked: false,
@@ -432,7 +440,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Snowbound Voltage Pack',
     description: `Cards from Snowbound Voltage - frozen circuitry, whiteout surges, and winter-static divinity. Set size: ${SNOWBOUND_VOLTAGE_PACK_POOL.length} cards.`,
     element: 'Mechanical',
-    cost: 36910,
+    cost: 555136,
     cardsPerOpen: 5,
     cardPool: SNOWBOUND_VOLTAGE_PACK_POOL,
     locked: false,
@@ -442,7 +450,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Glass Absolute Pack',
     description: `Cards from Glass Absolute - pure prisms, recursive light bodies, and a world made only of refraction. Set size: ${GLASS_ABSOLUTE_PACK_POOL.length} cards.`,
     element: 'GlassAbsolute',
-    cost: 41212,
+    cost: 1110272,
     cardsPerOpen: 5,
     cardPool: GLASS_ABSOLUTE_PACK_POOL,
     locked: false,
@@ -452,7 +460,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'The Blazing Garden Pack',
     description: `Cards from The Blazing Garden - botanical flame lineages, ember-grove memory, and the ever-growing Final Chord. Set size: ${BLAZING_GARDEN_PACK_POOL.length} cards.`,
     element: 'BlazingGarden',
-    cost: 45678,
+    cost: 2220544,
     cardsPerOpen: 5,
     cardPool: BLAZING_GARDEN_PACK_POOL,
     locked: false,
@@ -462,7 +470,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Age of the Butterfly Pack',
     description: `Cards from Age of the Butterfly - metallic wings, glass refractions, and generation-defining Flutter pulses. Set size: ${BUTTERFLY_PACK_POOL.length} cards.`,
     element: 'Butterfly',
-    cost: 50240,
+    cost: 4441088,
     cardsPerOpen: 5,
     cardPool: BUTTERFLY_PACK_POOL,
     locked: false,
@@ -472,9 +480,40 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Eternal Seas Pack',
     description: `Cards from Eternal Seas - white/black waters, Veilmargin currents, and neon deep-ocean mythics. Set size: ${ETERNAL_SEAS_PACK_POOL.length} cards.`,
     element: 'EternalSeas',
-    cost: 54880,
+    cost: 8882176,
     cardsPerOpen: 5,
     cardPool: ETERNAL_SEAS_PACK_POOL,
+    locked: false,
+  },
+  {
+    id: 'pack-abyssal-forge',
+    name: 'Abyssal Forge Pack',
+    description: `Cards from Abyssal Forge - molten anvils, nacre-touched pilgrims, and pearl-welded reforgings. Set size: ${ABYSSAL_FORGE_PACK_POOL.length} cards.`,
+    element: 'AbyssalForge',
+    cost: 17764352,
+    cardsPerOpen: 5,
+    cardPool: ABYSSAL_FORGE_PACK_POOL,
+    locked: false,
+  },
+  {
+    id: 'pack-death-flamed-hell',
+    name: 'Death-flamed Hell Pack',
+    description: `Cards from Death-flamed Hell - the Pale Cohort marches, mournshade choirs, and the brightest object in any hell. Set size: ${DEATH_FLAMED_HELL_PACK_POOL.length} cards.`,
+    element: 'DeathFlamedHell',
+    cost: 35528704,
+    cardsPerOpen: 5,
+    cardPool: DEATH_FLAMED_HELL_PACK_POOL,
+    locked: false,
+  },
+  {
+    id: 'pack-wished-upon-a-star',
+    name: '[EVENT] Wished Upon A Star',
+    description: `Before the stars were named, they made promises. This event set contains 20 base cards, 3 Eternal boss rewards, and 3 Infinite cards — each one an impossible power from beyond the Wishwell. Costs Aberrated Shards. Set size: ${WISHED_UPON_A_STAR_PACK_POOL.length} cards.`,
+    element: 'WishedUponAStar',
+    cost: 7500,
+    currencyType: 'aberratedShards',
+    cardsPerOpen: 5,
+    cardPool: WISHED_UPON_A_STAR_PACK_POOL,
     locked: false,
   },
 ];

@@ -1,4 +1,33 @@
-export const warmTheme = {
+/**
+ * Palette shape consumed throughout the UI. Mutated in-place by
+ * `applyUiPalette` so existing `import { warmTheme }` consumers continue
+ * to read the active theme without refactoring.
+ */
+export interface UiPalette {
+  appBackground: string;
+  overlay: string;
+  backdrop: string;
+  surface: string;
+  surfaceStrong: string;
+  surfaceMuted: string;
+  border: string;
+  borderStrong: string;
+  text: string;
+  textSoft: string;
+  textMuted: string;
+  textFaint: string;
+  accent: string;
+  accentSoft: string;
+  accentDeep: string;
+  success: string;
+  danger: string;
+  cherubim: string;
+  shadow: string;
+  glow: string;
+  button: string;
+}
+
+export const DEFAULT_WARM_PALETTE: UiPalette = {
   appBackground: 'radial-gradient(circle at 18% -12%, #3f2d23 0%, rgba(63, 45, 35, 0) 56%), linear-gradient(180deg, #16100d 0%, #241912 42%, #130d0a 100%)',
   overlay: 'rgba(218, 193, 164, 0.9)',
   backdrop: 'rgba(58, 38, 20, 0.48)',
@@ -21,6 +50,23 @@ export const warmTheme = {
   glow: '0 10px 24px rgba(214, 162, 94, 0.16)',
   button: 'linear-gradient(180deg, #ebc48e 0%, #d59f55 100%)',
 };
+
+/**
+ * Live UI palette. Always the same object reference. Mutated in-place by
+ * `applyUiPalette` when the player switches themes; React surfaces re-render
+ * via a top-level theme-version key in App.
+ */
+export const warmTheme: UiPalette = { ...DEFAULT_WARM_PALETTE };
+
+/** Overwrite warmTheme in-place with `palette`. */
+export function applyUiPalette(palette: UiPalette): void {
+  Object.assign(warmTheme, palette);
+}
+
+/** Reset warmTheme to the default warm palette. */
+export function resetUiPalette(): void {
+  Object.assign(warmTheme, DEFAULT_WARM_PALETTE);
+}
 
 export const uiTypography = {
   display: 'Georgia, "Iowan Old Style", "Cambria", "Times New Roman", serif',

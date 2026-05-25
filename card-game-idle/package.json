@@ -1,7 +1,7 @@
 {
-  "name": "card-game-idle",
+  "name": "pantheon",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.2",
   "type": "module",
   "main": "electron/main.mjs",
   "scripts": {
@@ -44,9 +44,9 @@
   },
   "build": {
     "appId": "com.heavenlyretribution.game",
-    "productName": "Heavenly Retribution",
+    "productName": "Pantheon",
     "directories": {
-      "output": "release"
+      "output": "C:/Users/creat/Downloads/Coding/Card Game Art/Finished Game Executable and Packaging"
     },
     "files": [
       "dist/**",
@@ -54,15 +54,34 @@
       "package.json"
     ],
     "asar": true,
-    "portable": {
-      "artifactName": "${productName}-${version}-Portable.${ext}"
-    },
     "win": {
       "target": [
-        "portable"
+        "zip"
       ],
       "signAndEditExecutable": false,
-      "signDlls": false
+      "signDlls": false,
+      "artifactName": "${productName}-${version}-Windows-x64.${ext}"
+    },
+    "linux": {
+      "target": [
+        "zip"
+      ],
+      "category": "Game",
+      "artifactName": "${productName}-${version}-Linux-x64.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.games",
+      "identity": null,
+      "artifactName": "${productName}-${version}-macOS-${arch}.${ext}"
     }
   }
 }

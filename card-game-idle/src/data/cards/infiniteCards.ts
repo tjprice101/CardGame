@@ -25,7 +25,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Oblivion Absolute',
-    description: 'Draw 7 cards; Set chain floor to x15.0; +6000 Oblivion; All active Seraphim gain +12 Patience',
+    description: 'Draw 7 cards; Set chain floor to x15.0; +6000 Oblivion; All Seraphim on board gain +12 Patience',
     artKey: 'inf_oblivion_absolute',
     effects: [
       { type: 'draw', value: 7 },
@@ -40,7 +40,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Void Cascade',
-    description: '+0 Oblivion; All active Seraphim gain +1 Patience; Draw 6 cards; Shuffle discard into deck; Set chain floor to x12.0; Empower the next card you play',
+    description: '+0 Oblivion; All Seraphim on board gain +1 Patience; Draw 6 cards; Shuffle discard into deck; Set chain floor to x12.0; Empower the next card you play',
     artKey: 'inf_void_cascade',
     effects: [
       { type: 'oblivion_flat', value: 0 },
@@ -214,7 +214,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Null Apex',
-    description: 'On play: Draw 4 cards; Set chain floor to x8.0; All active Seraphim gain +15 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Draw 4 cards; Set chain floor to x8.0; All Seraphim on board gain +15 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active',
 
     artKey: 'inf_null_apex',
     attacks: {
@@ -584,7 +584,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: All active Seraphim gain +20 Patience; Draw 6 cards; Set chain floor to x10.0. After 4 cards played: Double all Patience on the board; Draw 7 cards; +3500 Oblivion; Set chain floor to x12.0; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
+    description: 'On summon: All Seraphim on board gain +20 Patience; Draw 6 cards; Set chain floor to x10.0. After 4 cards played: Double all Patience on the board; Draw 7 cards; +3500 Oblivion; Set chain floor to x12.0; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
     artKey: 'inf_sovereign_void',
     summonCost: [],
     extraSummonConditions: [
@@ -639,7 +639,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Eternity Rupture',
-    description: 'On summon: All active Seraphim gain +15 Patience; Draw 5 cards; +2000 Oblivion; Set chain floor to x7.0. After 4 cards played: Double all Patience on the board; Draw 5 cards; +3000 Oblivion; Set chain floor to x10.0; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
+    description: 'On summon: All Seraphim on board gain +15 Patience; Draw 5 cards; +2000 Oblivion; Set chain floor to x7.0. After 4 cards played: Double all Patience on the board; Draw 5 cards; +3000 Oblivion; Set chain floor to x10.0; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
     artKey: 'inf_eternity_rupture',
     summonCost: [],
     extraSummonConditions: [
@@ -1260,7 +1260,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     type: 'Angel',
     element: 'Mechanical',
     rarity: 'Infinite',
-    name: 'Polar Cataclysm',
+    name: 'Polar Fission',
     description: 'On summon: Gain 15 Radiance; Gain 2 Strain; Draw 5 cards; Set chain floor to x4.2; Gain 16 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Vent 9999 Strain; Gain 10 Radiance; Draw 5 cards; Empower the next card you play; +720 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +400.0 Oblivion per pulse · Frost: +0.8 draw per pulse). While on board: +760 Oblivion per card played while on board',
     artKey: 'sv_infinite_polar_fission',
     summonCost: ['sv-ser-polar-circuit', 'sv-ser-icegrid'],
@@ -1305,7 +1305,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     type: 'Angel',
     element: 'Mechanical',
     rarity: 'Infinite',
-    name: 'Neon Deluge',
+    name: 'Neon Snowfall',
     description: 'On summon: Gain 12 Radiance; Gain 1 Strain; Draw 6 cards; Set chain multiplier to x4.4; Gain 16 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Set chain floor to x5.1; Gain 8 Arctic Charge; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +0.6 draw per pulse). While on board: Chain grows +0.16 per card played while on board',
     artKey: 'sv_infinite_neon_snowfall',
     summonCost: ['sv-cher-station-nullpoint', 'sv-cher-aeldris'],
@@ -1323,7 +1323,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       primary: {
         id: 'sv-infinite-neon-snowfall:primary',
         label: 'Primary',
-        name: 'Neon Deluge Ordinance',
+        name: 'Neon Snowfall Ordinance',
         description: '4300 base Oblivion · 5 cards cooldown · chain +1.25',
         baseOblivion: 4510,
         cooldownCards: 6,
@@ -1334,7 +1334,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       exalted: {
         id: 'sv-infinite-neon-snowfall:exalted',
         label: 'Exalted',
-        name: 'Neon Deluge Throne Decree',
+        name: 'Neon Snowfall Throne Decree',
         description: '18433 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 39 Strain',
         baseOblivion: 12640,
         cooldownCards: 9,
@@ -1350,7 +1350,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     type: 'Angel',
     element: 'Mechanical',
     rarity: 'Infinite',
-    name: 'Crystal Maelstrom',
+    name: 'Crystal Storm',
     description: 'On summon: Gain 3 Strain; Gain 12 Radiance; Draw 6 cards; +900 Oblivion; Gain 18 Arctic Charge; Gain 2 Static Pulses. After 7 cards played: Gain 2 Strain; Draw 5 cards; Empower the next card you play; +960 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +1.0 draw per pulse). While on board: +820 Oblivion per card played while on board',
     artKey: 'sv_infinite_crystal_storm',
     summonCost: ['sv-angel-sleet-choir', 'sv-ser-snow-lattice'],
@@ -1368,7 +1368,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       primary: {
         id: 'sv-infinite-crystal-storm:primary',
         label: 'Primary',
-        name: 'Crystal Maelstrom Ordinance',
+        name: 'Crystal Storm Ordinance',
         description: '4460 base Oblivion · 5 cards cooldown · chain +1.25',
         baseOblivion: 4680,
         cooldownCards: 6,
@@ -1379,7 +1379,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       exalted: {
         id: 'sv-infinite-crystal-storm:exalted',
         label: 'Exalted',
-        name: 'Crystal Maelstrom Throne Decree',
+        name: 'Crystal Storm Throne Decree',
         description: '18981 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 39 Strain',
         baseOblivion: 12980,
         cooldownCards: 9,
@@ -1395,7 +1395,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     type: 'Angel',
     element: 'Mechanical',
     rarity: 'Infinite',
-    name: 'Black Ice Dominion',
+    name: 'Black Ice Throne',
     description: 'On summon: Gain 3 Strain; Gain 14 Radiance; Draw 5 cards; Set chain floor to x5.6; +1020 Oblivion; Gain 18 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 2 Strain; Gain 8 Radiance; Draw 5 cards; Empower the next card you play; +1080 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +420.0 Oblivion per pulse · Frost: +0.8 draw per pulse). While on board: +880 Oblivion per card played while on board',
     artKey: 'sv_infinite_black_ice_throne',
     summonCost: ['sv-eternal-white-static', 'sv-cher-station-nullpoint'],
@@ -1424,7 +1424,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       exalted: {
         id: 'sv-infinite-black-ice-throne:exalted',
         label: 'Exalted',
-        name: 'Black Ice Throne Throne Decree',
+        name: 'Black Ice Throne Decree',
         description: '19802 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 39 Strain',
         baseOblivion: 13540,
         cooldownCards: 9,
@@ -1440,7 +1440,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     type: 'Angel',
     element: 'Mechanical',
     rarity: 'Infinite',
-    name: 'Aurora Singularity',
+    name: 'Aurora Collapse',
     description: 'On summon: Gain 18 Radiance; Gain 3 Strain; Draw 7 cards; Set chain multiplier to x5.2; +1200 Oblivion; Gain 20 Arctic Charge; Gain 4 Static Pulses. After 7 cards played: Vent 9999 Strain; Gain 15 Radiance; Draw 6 cards; Empower the next card you play; +1260 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +520.0 Oblivion per pulse · Frost: +1.2 draw per pulse). While on board: Chain grows +0.18 per card played while on board',
     artKey: 'sv_infinite_aurora_collapse',
     summonCost: ['sv-angel-voltage-patriarch', 'sv-eternal-frost-charge'],
@@ -1458,7 +1458,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       primary: {
         id: 'sv-infinite-aurora-collapse:primary',
         label: 'Primary',
-        name: 'Aurora Singularity Ordinance',
+        name: 'Aurora Collapse Ordinance',
         description: '4920 base Oblivion · 5 cards cooldown · chain +1.25',
         baseOblivion: 5120,
         cooldownCards: 6,
@@ -1469,7 +1469,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       exalted: {
         id: 'sv-infinite-aurora-collapse:exalted',
         label: 'Exalted',
-        name: 'Aurora Singularity Throne Decree',
+        name: 'Aurora Collapse Throne Decree',
         description: '20806 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 40 Strain',
         baseOblivion: 14120,
         cooldownCards: 9,
@@ -2239,6 +2239,129 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'es-et-thyrvaan-oldlight-grid', count: 1 },
       { definitionId: 'es-et-surevaan-anomaly-log', count: 1 },
       { definitionId: 'es-et-veleth-abyss-sounding', count: 1 },
+    ],
+  },
+
+  // Abyssal Forge
+  {
+    resultId: 'af-inf-ouroglas-uncoiled',
+    lore: 'The glass-serpent unspools its coiled centuries; every loop a re-forged sea.',
+    ingredients: [
+      { definitionId: 'af-et-ouroglas-dreaming', count: 2 },
+      { definitionId: 'af-et-forge-beneath', count: 1 },
+      { definitionId: 'af-et-quenched-drift', count: 1 },
+      { definitionId: 'af-et-pearled-pantheon', count: 1 },
+    ],
+  },
+  {
+    resultId: 'af-inf-abyssal-forge-itself',
+    lore: 'The anvil-beneath finally lifts its own hammer and strikes the world flat.',
+    ingredients: [
+      { definitionId: 'af-et-forge-beneath', count: 2 },
+      { definitionId: 'af-et-nacre-touched-procession', count: 1 },
+      { definitionId: 'af-et-pearled-pantheon', count: 1 },
+      { definitionId: 'af-et-quenched-drift', count: 1 },
+    ],
+  },
+  {
+    resultId: 'af-inf-unrecorded-hue',
+    lore: 'A color no ledger ever recorded; the forge invents it the moment you blink.',
+    ingredients: [
+      { definitionId: 'af-et-quenched-drift', count: 2 },
+      { definitionId: 'af-et-ouroglas-dreaming', count: 1 },
+      { definitionId: 'af-et-forge-beneath', count: 1 },
+      { definitionId: 'af-et-nacre-touched-procession', count: 1 },
+    ],
+  },
+  {
+    resultId: 'af-inf-covenant-coiled-fire',
+    lore: 'Pilgrims and pantheon swear one vow inside a single coiled flame.',
+    ingredients: [
+      { definitionId: 'af-et-nacre-touched-procession', count: 2 },
+      { definitionId: 'af-et-pearled-pantheon', count: 1 },
+      { definitionId: 'af-et-ouroglas-dreaming', count: 1 },
+      { definitionId: 'af-et-forge-beneath', count: 1 },
+    ],
+  },
+  {
+    resultId: 'af-inf-reforging-world',
+    lore: 'The world itself is set on the anvil and struck — what rises is older and brighter.',
+    ingredients: [
+      { definitionId: 'af-et-pearled-pantheon', count: 2 },
+      { definitionId: 'af-et-forge-beneath', count: 1 },
+      { definitionId: 'af-et-ouroglas-dreaming', count: 1 },
+      { definitionId: 'af-et-nacre-touched-procession', count: 1 },
+    ],
+  },
+
+  // Death-flamed Hell
+  {
+    resultId: 'dfh-inf-vakhresh-marches-out',
+    lore: 'The pale general crosses the threshold, and every door behind him forgets its name.',
+    ingredients: [
+      { definitionId: 'dfh-et-skull-ceiling-garrison', count: 2 },
+      { definitionId: 'dfh-et-othraks-eternal-communion', count: 1 },
+      { definitionId: 'dfh-et-crimson-ember-rain', count: 1 },
+      { definitionId: 'dfh-et-eternal-procession-of-the-veiled', count: 1 },
+    ],
+  },
+  {
+    resultId: 'dfh-inf-final-communion-of-halos',
+    lore: 'Halo touches halo for the last time; a single white note rings forever.',
+    ingredients: [
+      { definitionId: 'dfh-et-othraks-eternal-communion', count: 2 },
+      { definitionId: 'dfh-et-skull-ceiling-garrison', count: 1 },
+      { definitionId: 'dfh-et-eternal-procession-of-the-veiled', count: 1 },
+      { definitionId: 'dfh-et-crimson-ember-rain', count: 1 },
+    ],
+  },
+  {
+    resultId: 'dfh-inf-bridal-procession-living-world',
+    lore: 'The veiled cortege steps from hell into a living country, and the country bows.',
+    ingredients: [
+      { definitionId: 'dfh-et-eternal-procession-of-the-veiled', count: 2 },
+      { definitionId: 'dfh-et-othraks-eternal-communion', count: 1 },
+      { definitionId: 'dfh-et-skull-ceiling-garrison', count: 1 },
+      { definitionId: 'dfh-et-crimson-ember-rain', count: 1 },
+    ],
+  },
+  {
+    resultId: 'dfh-inf-death-flame-escaping-upward',
+    lore: 'A column of pale fire rises out of every hell and refuses to descend again.',
+    ingredients: [
+      { definitionId: 'dfh-et-crimson-ember-rain', count: 2 },
+      { definitionId: 'dfh-et-skull-ceiling-garrison', count: 1 },
+      { definitionId: 'dfh-et-othraks-eternal-communion', count: 1 },
+      { definitionId: 'dfh-et-eternal-procession-of-the-veiled', count: 1 },
+    ],
+  },
+
+  // [EVENT] Wished Upon A Star
+  {
+    resultId: 'inf-wuas-stellarborn-throne',
+    lore: 'When three cosmic wishes converge at the apex of the Dream Lattice, a throne of living starlight assembles itself from the silence between galaxies.',
+    ingredients: [
+      { definitionId: 'wuas-et-aethervex-wishwright', count: 2 },
+      { definitionId: 'wuas-et-selenira-voidbane', count: 1 },
+      { definitionId: 'wuas-et-draethos-unforgotten', count: 1 },
+    ],
+  },
+  {
+    resultId: 'inf-wuas-lune-choir-ascension',
+    lore: 'The twelve silver Lune sing a convergence that bends dream and starlight into one unbroken note, preserving both across every turn they endure.',
+    ingredients: [
+      { definitionId: 'wuas-et-selenira-voidbane', count: 2 },
+      { definitionId: 'wuas-et-aethervex-wishwright', count: 1 },
+      { definitionId: 'wuas-et-draethos-unforgotten', count: 1 },
+    ],
+  },
+  {
+    resultId: 'inf-wuas-wishwright-absolute',
+    lore: 'Aethervex devours the boundary between wish and reality; every Seraphim on the board becomes a living nova that multiplies oblivion infinitely.',
+    ingredients: [
+      { definitionId: 'wuas-et-draethos-unforgotten', count: 2 },
+      { definitionId: 'wuas-et-aethervex-wishwright', count: 1 },
+      { definitionId: 'wuas-et-selenira-voidbane', count: 1 },
     ],
   },
 ];

@@ -38,15 +38,15 @@ function removeSaveFile() {
   }
 }
 
-ipcMain.on('heavenly-save:read', (event) => {
+ipcMain.on('pantheon-save:read', (event) => {
   event.returnValue = readSaveFile();
 });
 
-ipcMain.on('heavenly-save:write', (event, payload) => {
+ipcMain.on('pantheon-save:write', (event, payload) => {
   event.returnValue = writeSaveFile(String(payload ?? ''));
 });
 
-ipcMain.on('heavenly-save:remove', (event) => {
+ipcMain.on('pantheon-save:remove', (event) => {
   event.returnValue = removeSaveFile();
 });
 
@@ -58,7 +58,7 @@ async function createWindow() {
     minWidth: 1280,
     minHeight: 760,
     backgroundColor: '#120d0b',
-    title: 'Heavenly Retribution',
+    title: 'Pantheon',
     webPreferences: {
       preload: preloadPath,
       contextIsolation: true,

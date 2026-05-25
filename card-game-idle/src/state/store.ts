@@ -4,6 +4,7 @@ import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
   DeckState, ExtraDeckEntry, GameState, ProgressState, SavedDeck, SettingsState, TurnState,
 } from '@/types/game';
+import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import type {
   CardDefinition,
   AngelDefinition,
@@ -36,8 +37,30 @@ import { PackSystem } from '@/systems/cards/PackSystem';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { canConvertCardToHolo, getCardFinishKey, getHolofoilConversionCost } from '@/systems/progression/HolofoilSystem';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
+import { evaluateDailyLogin, getUtcDayIndex } from '@/systems/progression/dailyLogin';
+import {
+  applyQuestProgress,
+  refreshQuestRotation,
+  type QuestKind,
+} from '@/systems/progression/quests';
+import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
+import { getAchievementShardReward } from '@/systems/progression/achievements';
+import { MASTERY_TIERS, getMasteryClaimKey } from '@/systems/progression/cardMastery';
+import { getDailyTrials as _getDailyTrials, getWeeklyTrial, type TrialModifier } from '@/systems/progression/wakeTrials';
+void _getDailyTrials;
+import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/spotlightPack';
+import { getDailyDealPackId, getDailyDealCost } from '@/systems/progression/dailyDeal';
+import { TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { eventBus } from '@/core/events/EventBus';
+import {
+  getCardDissolveYield,
+  ARTIFACT_APEX_SHARD_COST,
+  ARTIFACT_MASTERY_THRESHOLDS,
+  getArtifactCopyCost,
+} from '@/types/artifacts';
+import { ARTIFACT_DEFINITIONS } from '@/data/artifacts/artifactDefinitions';
+import { getArtifactEffect } from '@/systems/artifacts/artifactRuntime';
 import { DEFAULT_CARD_THEME_PACKS, setUiPreferences } from '@/ui/preferences';
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
@@ -215,12 +238,19 @@ const defaultTurn: TurnState = {
   eternalSeasWhiteFlow: 0,
   eternalSeasBlackFlow: 0,
   eternalSeasMarginCharge: 0,
+  recastLedger: [],
+  reforgeCharges: 0,
+  reforgeChargeCap: 6,
+  pearls: 0,
+  unrecordedHueActive: false,
+  forgeRecastEventsThisTurn: 0,
+  forgePendingCherubimTemper: 0,
+  equippedArtifactIds: [],
 };
 
 const defaultProgress: ProgressState = {
   oblivion: 0,
   aberratedShards: 0,
-  prestige: 0,
   totalCardsPlayed: 0,
   collection: { ...STARTER_COLLECTION },
   holoCollection: {},
@@ -238,6 +268,32 @@ const defaultProgress: ProgressState = {
     },
   ],
   activeDeckId: 'starter-neutrality',
+  profile: {
+    name: 'Wanderer',
+    avatarId: 'avatar-acolyte',
+    titleId: null,
+    uiThemeId: 'theme-warm-default',
+    customUiTheme: null,
+  },
+  dailyLogin: {
+    lastClaimedDayIndex: -1,
+    streak: 0,
+    totalClaims: 0,
+  },
+  quests: { daily: [], weekly: [], lastDailyRollDay: -1, lastWeeklyRollWeek: -1 },
+  achievementClaims: {},
+  cardPlayCounts: {},
+  cardMasteryClaims: {},
+  packPityCounters: {},
+  bossCodex: {},
+  weeklyTrialCompletions: {},
+  recentlyAcquired: {},
+  lastCollectionViewedAt: 0,
+  packOpenHistory: [],
+  gauntletBest: { bestDepth: 0, bestShards: 0, runs: 0 },
+  ownedArtifacts: {},
+  cardbaneLight: 0,
+  cardLocks: {},
 };
 
 const defaultSettings: SettingsState = {
@@ -249,6 +305,10 @@ const defaultSettings: SettingsState = {
   fontSizePreset: 'standard',
   cardArtDisplay: 'both',
   cardThemePacks: { ...DEFAULT_CARD_THEME_PACKS },
+  compactMode: false,
+  instantPackReveal: false,
+  highlightRulesText: true,
+  controls: { ...DEFAULT_CONTROL_BINDINGS },
 };
 
 const defaultBossFight: BossFightState = {
@@ -256,6 +316,12 @@ const defaultBossFight: BossFightState = {
   activeBossId: null,
   bossCurrentHp: 0,
   bossMaxHp: 0,
+  kind: 'normal',
+  modifiers: [],
+  trialRewardMult: 1,
+  gauntletDepth: 0,
+  gauntletShardsBanked: 0,
+  gauntletHpCarryFrac: 1,
   damageDealtThisFight: 0,
   fightTimeRemaining: 0,
   cooldowns: {},
@@ -627,6 +693,8 @@ export const defaultGameState: GameState = {
   progress: defaultProgress,
   settings: defaultSettings,
   bossFight: defaultBossFight,
+  saveTampered: false,
+  toasts: [],
 };
 
 // �E��E��E��E� Store type �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
@@ -675,9 +743,53 @@ interface StoreActions {
   updateSettings: (patch: Partial<SettingsState>) => void;
   loadState: (state: GameState) => void;
   resetToDefault: () => void;
-  startBossFight: (bossId: string, savedDeckId: string) => void;
+  startBossFight: (bossId: string, savedDeckId: string, options?: { kind?: 'normal' | 'trial' | 'gauntlet'; modifiers?: TrialModifier[]; trialRewardMult?: number }) => void;
+  startWakeTrial: (bossId: string, savedDeckId: string, modifiers: TrialModifier[], rewardMult: number) => void;
+  startEndlessGauntlet: (savedDeckId: string) => void;
   tickBossTimer: (deltaSeconds: number) => void;
   dismissBossResult: () => void;
+  // Profile & daily login
+  setPlayerName: (name: string) => void;
+  setAvatarId: (avatarId: string) => void;
+  setTitleId: (titleId: string | null) => void;
+  setUiThemeId: (themeId: string) => void;
+  setCustomUiThemeColor: (key: string, value: string) => void;
+  resetCustomUiTheme: () => void;
+  claimDailyReward: () => { shards: number; streak: number } | null;
+  /** Engagement: claim a single quest. */
+  claimQuest: (questId: string) => { shards: number } | null;
+  /** Engagement: claim an unlocked achievement (one-shot). */
+  claimAchievement: (achievementId: string) => { shards: number } | null;
+  /** Engagement: claim a reached card-mastery tier (one-shot per tier). */
+  claimCardMastery: (definitionId: string, tier: number) => { shards: number } | null;
+  /** Quick-claim all currently available mastery tiers. Returns aggregate shard reward & tiers claimed. */
+  claimAllAvailableMastery: () => { shards: number; tiersClaimed: number };
+  /** Mark the collection viewer as seen — clears NEW badges. */
+  markCollectionViewed: () => void;
+  /** Update Endless Gauntlet personal bests after a run. */
+  recordGauntletRun: (depth: number, shards: number) => void;
+  /** Set compact UI mode preference. */
+  setCompactMode: (enabled: boolean) => void;
+  /** Toggle keyword highlighting inside card rules text. */
+  setHighlightRulesText: (enabled: boolean) => void;
+  /** Dissolve one copy of a card into universal Card-bane Light. Returns false if player doesn't own a copy. */
+  dissolveCard: (definitionId: string) => boolean;
+  /** Dissolve every unlocked copy of every card in the collection. Returns total copies dissolved. */
+  dissolveAllUnlocked: () => number;
+  /** Set the number of user-locked copies for a card (additional copies beyond starter locks that cannot be dissolved). */
+  setCardLock: (definitionId: string, count: number) => void;
+  /** Buy one additional copy of an artifact. For Apex (ML3), also consumes Aberrated Shards. Returns false if rejected. */
+  purchaseArtifactCopy: (artifactId: string) => boolean;
+  /** Equip an owned artifact to a saved deck (max 3 per deck). Returns false if rejected. */
+  equipArtifact: (deckId: string, artifactId: string) => boolean;
+  /** Remove an equipped artifact from a saved deck. */
+  unequipArtifact: (deckId: string, artifactId: string) => void;
+  /** Update a saved deck's player-authored how-to-play notes. */
+  setDeckNotes: (deckId: string, notes: string) => void;
+  /** Enqueue a transient toast notification. */
+  enqueueToast: (message: string, kind?: 'info' | 'success' | 'warning' | 'reward', durationMs?: number) => void;
+  /** Dismiss a toast notification by id. */
+  dismissToast: (id: string) => void;
   computedStats: ComputedBoardStats;
   refreshComputedStats: () => void;
 }
@@ -782,10 +894,10 @@ function createDeckState(deckList: DeckEntry[], extraDeck?: Array<ExtraDeckEntry
 
 function addCollectionCard(progress: ProgressState, definitionId: string, finish: CardFinish = 'normal'): void {
   const definition = CardRegistry.get(definitionId);
+  // No collection-side cap: every drawn copy is added so bulk pack opens always
+  // grant the full count (the 4-of restriction is enforced at deckbuilding time).
   const nextCopies = (progress.collection[definitionId] ?? 0) + 1;
-  progress.collection[definitionId] = definition?.rarity === 'Eternal' || definition?.rarity === 'Infinite'
-    ? nextCopies
-    : Math.min(nextCopies, 4);
+  progress.collection[definitionId] = nextCopies;
 
   // Auto-holofoil Eternal and Infinite cards on acquisition
   if (definition?.rarity === 'Eternal' || definition?.rarity === 'Infinite') {
@@ -795,13 +907,76 @@ function addCollectionCard(progress: ProgressState, definitionId: string, finish
     const nextHoloCopies = (progress.holoCollection[definitionId] ?? 0) + 1;
     progress.holoCollection[definitionId] = Math.min(nextHoloCopies, progress.collection[definitionId]);
   }
+
+  // Mark as recently acquired (drives NEW badge in CollectionViewer).
+  if (!progress.recentlyAcquired) progress.recentlyAcquired = {};
+  progress.recentlyAcquired[definitionId] = Date.now();
+}
+
+function recordPackOpen(progress: ProgressState, packId: string, tier: 'pack' | 'box' | 'case', drawn: string[]): void {
+  const rarityCounts: Record<string, number> = {};
+  for (const defId of drawn) {
+    const r = CardRegistry.get(defId)?.rarity ?? 'Common';
+    rarityCounts[r] = (rarityCounts[r] ?? 0) + 1;
+  }
+  if (!progress.packOpenHistory) progress.packOpenHistory = [];
+  progress.packOpenHistory.unshift({ ts: Date.now(), packId, tier, rarityCounts });
+  if (progress.packOpenHistory.length > 50) {
+    progress.packOpenHistory.length = 50;
+  }
 }
 
 function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEFINITIONS)[number]): void {
   const priorClears = progress.bossClearCounts[boss.id] ?? 0;
   progress.bossClearCounts[boss.id] = priorClears + 1;
-  progress.aberratedShards += priorClears === 0 ? boss.firstClearShards : boss.repeatClearShards;
+  const base = priorClears === 0 ? boss.firstClearShards : boss.repeatClearShards;
+  const mult = getBossRewardMultiplier(boss.id);
+  progress.aberratedShards += Math.round(base * mult);
   addCollectionCard(progress, boss.rewardCardId, 'holo');
+  // Quest hooks
+  emitQuestProgressToProgress(progress, { kind: 'win_boss', amount: 1 });
+}
+
+/**
+ * Apply quest progress to the daily + weekly rotations. Pure on the
+ * `progress` object (mutates immer-managed draft). Also lazily rolls fresh
+ * quests if the rotation is stale.
+ */
+function emitQuestProgressToProgress(
+  progress: ProgressState,
+  evt: { kind: QuestKind; amount: number; element?: string; peak?: number },
+): void {
+  if (!progress.quests) return;
+  const day = getUtcDayIndex(Date.now());
+  const rotated = refreshQuestRotation(progress.quests, day);
+  progress.quests.daily = applyQuestProgress(rotated.daily, evt);
+  progress.quests.weekly = applyQuestProgress(rotated.weekly, evt);
+  progress.quests.lastDailyRollDay = rotated.lastDailyRollDay;
+  progress.quests.lastWeeklyRollWeek = rotated.lastWeeklyRollWeek;
+}
+
+/**
+ * Bookkeeping for every card-play site. Increments mastery counts and
+ * emits engine-flavored quest progress events. Always called *after* the
+ * play has fully resolved (so `definitionId` is the real card played).
+ */
+function recordCardPlay(s: Store, definitionId: string): void {
+  s.progress.totalCardsPlayed += 1;
+  if (!s.progress.cardPlayCounts) s.progress.cardPlayCounts = {};
+  s.progress.cardPlayCounts[definitionId] = (s.progress.cardPlayCounts[definitionId] ?? 0) + 1;
+  const def = ScoreSystem.getDefinition(definitionId);
+  if (!def) return;
+  if (def.element) {
+    emitQuestProgressToProgress(s.progress, { kind: 'play_cards_of_element', amount: 1, element: def.element });
+  }
+  const typeKind: QuestKind | null =
+    def.type === 'Seraphim' ? 'play_seraphim'
+    : def.type === 'Cherubim' ? 'play_cherubim'
+    : def.type === 'Ophanim' ? 'play_ophanim'
+    : null;
+  if (typeKind) {
+    emitQuestProgressToProgress(s.progress, { kind: typeKind, amount: 1 });
+  }
 }
 
 // �E��E��E��E� Boss fight helpers �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
@@ -809,9 +984,62 @@ function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEF
 function completeBossFight(s: Store, victory: boolean): void {
   const bossId = s.bossFight.activeBossId;
   const newCooldowns = { ...s.bossFight.cooldowns };
-  if (bossId) newCooldowns[bossId] = Date.now() + 60_000;
+  if (bossId && s.bossFight.kind !== 'gauntlet') newCooldowns[bossId] = Date.now() + 60_000;
+
+  const kind = s.bossFight.kind ?? 'normal';
+  const trialMult = s.bossFight.trialRewardMult ?? 1;
+  const modifiers = s.bossFight.modifiers ?? [];
+  const gauntletShardsBanked = s.bossFight.gauntletShardsBanked ?? 0;
+  const gauntletDepth = s.bossFight.gauntletDepth ?? 0;
+
+  // ── Gauntlet continuation: on victory in gauntlet mode, advance to the
+  //    next boss instead of restoring saved state.
+  if (victory && kind === 'gauntlet' && bossId) {
+    const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
+    const nextIndex = (BOSS_DEFINITIONS.findIndex(b => b.id === bossId) + 1) % BOSS_DEFINITIONS.length;
+    const nextBoss = BOSS_DEFINITIONS[nextIndex];
+    if (boss && nextBoss) {
+      // Bank shards (scaled by depth) without granting them yet.
+      const earned = (boss.repeatClearShards ?? 5) + gauntletDepth * 3;
+      const newBanked = gauntletShardsBanked + earned;
+      // Carry HP fraction from current fight.
+      const hpFrac = s.bossFight.bossMaxHp > 0 ? Math.max(0.25, s.bossFight.bossCurrentHp > 0 ? 1 : 1) : 1;
+      // Continue with a fresh boss, slightly tougher each depth.
+      const nextMaxHp = Math.round(nextBoss.hp * (1 + gauntletDepth * 0.1));
+      // Reset board + turn but keep deck (shuffled fresh for next opponent).
+      const savedDeckSnapshot = s.bossFight.savedGameState; // preserve baseline
+      s.deck = { ...s.deck, hand: [], drawPile: DeckSystem.shuffle([...s.deck.hand, ...s.deck.drawPile, ...s.deck.discardPile]), discardPile: [] };
+      s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+      s.turn = { ...defaultTurn, phase: 'idle' };
+      s.bossFight = {
+        mode: 'active',
+        activeBossId: nextBoss.id,
+        bossCurrentHp: nextMaxHp,
+        bossMaxHp: nextMaxHp,
+        damageDealtThisFight: 0,
+        fightTimeRemaining: BOSS_FIGHT_ROUND_SECONDS,
+        cooldowns: newCooldowns,
+        savedGameState: savedDeckSnapshot,
+        kind: 'gauntlet',
+        modifiers: [],
+        trialRewardMult: 1,
+        gauntletDepth: gauntletDepth + 1,
+        gauntletShardsBanked: newBanked,
+        gauntletHpCarryFrac: hpFrac,
+      };
+      // Count this clear toward quests.
+      emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
+      recompute(s);
+      return;
+    }
+  }
 
   const saved = s.bossFight.savedGameState;
+  // Capture per-fight bests BEFORE we restore the saved progress snapshot,
+  // since we need the live (active) fight stats here.
+  const elapsedSeconds = Math.max(0, Math.round(BOSS_FIGHT_ROUND_SECONDS - s.bossFight.fightTimeRemaining));
+  const fightDamageTotal = s.bossFight.damageDealtThisFight;
+
   if (saved) {
     s.deck = saved.deck;
     s.board = saved.board;
@@ -824,7 +1052,48 @@ function completeBossFight(s: Store, victory: boolean): void {
     const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
     if (boss) {
       awardBossVictoryRewards(s.progress, boss);
+      // Boss Codex personal-best tracking (save v13+).
+      if (!s.progress.bossCodex) s.progress.bossCodex = {};
+      const entry = s.progress.bossCodex[boss.id] ?? {};
+      if (entry.firstClearAt === undefined) entry.firstClearAt = Date.now();
+      if (elapsedSeconds > 0 && (entry.fastestClearSeconds === undefined || elapsedSeconds < entry.fastestClearSeconds)) {
+        entry.fastestClearSeconds = elapsedSeconds;
+      }
+      if (fightDamageTotal > 0 && (entry.highestFightDamage === undefined || fightDamageTotal > entry.highestFightDamage)) {
+        entry.highestFightDamage = fightDamageTotal;
+      }
+      s.progress.bossCodex[boss.id] = entry;
+      // Trial reward bonus — applied on top of base + featured multipliers.
+      if (kind === 'trial' && trialMult > 1) {
+        const base = (s.progress.bossClearCounts[boss.id] ?? 1) === 1 ? boss.firstClearShards : boss.repeatClearShards;
+        s.progress.aberratedShards += Math.round(base * (trialMult - 1));
+      }
+      // Weekly Trial cosmetic credit (no shards): if this trial matches the
+      // current week's rotating trial AND we haven't claimed this week yet,
+      // record the completion. This drives the milestone titles.
+      if (kind === 'trial') {
+        const weekly = getWeeklyTrial();
+        if (weekly.bossId === boss.id) {
+          if (!s.progress.weeklyTrialCompletions) s.progress.weeklyTrialCompletions = {};
+          const prior = s.progress.weeklyTrialCompletions[weekly.weekKey] ?? 0;
+          s.progress.weeklyTrialCompletions[weekly.weekKey] = prior + 1;
+        }
+      }
     }
+  }
+
+  // Gauntlet loss / quit: grant any banked shards.
+  if (kind === 'gauntlet' && gauntletShardsBanked > 0) {
+    s.progress.aberratedShards += gauntletShardsBanked;
+  }
+
+  // Gauntlet run ended — record personal-best stats.
+  if (kind === 'gauntlet') {
+    if (!s.progress.gauntletBest) s.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
+    const best = s.progress.gauntletBest;
+    if (gauntletDepth > best.bestDepth) best.bestDepth = gauntletDepth;
+    if (gauntletShardsBanked > best.bestShards) best.bestShards = gauntletShardsBanked;
+    best.runs += 1;
   }
 
   const finalHp = s.bossFight.bossCurrentHp;
@@ -839,12 +1108,24 @@ function completeBossFight(s: Store, victory: boolean): void {
     fightTimeRemaining: 0,
     cooldowns: newCooldowns,
     savedGameState: null,
+    kind,
+    modifiers,
+    trialRewardMult: trialMult,
+    gauntletDepth,
+    gauntletShardsBanked,
+    gauntletHpCarryFrac: 1,
   };
+  // Suppress reference to unused vars if linter cares
+  void modifiers;
   recompute(s);
 }
 
 function grantOblivion(s: Store, amount: number, chainMultiplier: number): void {
   if (amount <= 0) return;
+  // Trial: patience_lock reduces all Oblivion gains by 15%.
+  if (s.bossFight.mode === 'active' && s.bossFight.kind === 'trial' && s.bossFight.modifiers?.some(m => m.kind === 'patience_lock')) {
+    amount = Math.max(1, Math.floor(amount * 0.85));
+  }
   s.turn.oblivionEarnedThisTurn += amount;
   if (s.bossFight.mode === 'active') {
     s.bossFight.damageDealtThisFight += amount;
@@ -854,6 +1135,10 @@ function grantOblivion(s: Store, amount: number, chainMultiplier: number): void 
     s.progress.oblivion += amount;
     eventBus.emit('oblivion:earned', { delta: amount, total: s.progress.oblivion, chainMultiplier });
   }
+  // Quest hooks: peak-style for per-turn metrics. Multiplier stored as integer *10.
+  const chainScaled = Math.round(Math.max(1, chainMultiplier) * 10);
+  emitQuestProgressToProgress(s.progress, { kind: 'reach_chain_multiplier', amount: 0, peak: chainScaled });
+  emitQuestProgressToProgress(s.progress, { kind: 'earn_oblivion_in_turn', amount: 0, peak: s.turn.oblivionEarnedThisTurn });
 }
 
 function checkBossDefeated(s: Store): void {
@@ -1051,6 +1336,16 @@ function ensureEternalSeasTurnState(turn: TurnState): void {
   if (turn.eternalSeasWhiteFlow === undefined) turn.eternalSeasWhiteFlow = 0;
   if (turn.eternalSeasBlackFlow === undefined) turn.eternalSeasBlackFlow = 0;
   if (turn.eternalSeasMarginCharge === undefined) turn.eternalSeasMarginCharge = 0;
+}
+
+export function ensureAbyssalForgeTurnState(turn: TurnState): void {
+  if (turn.recastLedger === undefined) turn.recastLedger = [];
+  if (turn.reforgeCharges === undefined) turn.reforgeCharges = 0;
+  if (turn.reforgeChargeCap === undefined) turn.reforgeChargeCap = 6;
+  if (turn.pearls === undefined) turn.pearls = 0;
+  if (turn.unrecordedHueActive === undefined) turn.unrecordedHueActive = false;
+  if (turn.forgeRecastEventsThisTurn === undefined) turn.forgeRecastEventsThisTurn = 0;
+  if (turn.forgePendingCherubimTemper === undefined) turn.forgePendingCherubimTemper = 0;
 }
 
 function appendDistinct<T>(items: T[] | undefined, item: T, limit: number): T[] {
@@ -1375,7 +1670,8 @@ function getPyroFullFireMultiplier(s: Store, def: CardDefinition): number {
   ensurePyroTurnState(s.turn);
   const setupReady = (s.turn.pyroSetupCount ?? 0) >= PYRO_SETUP_FOR_FULL_FIRE;
   const enginesReady = (s.turn.pyroEngineSignatures?.length ?? 0) >= PYRO_ENGINES_FOR_FULL_FIRE;
-  return setupReady && enginesReady ? 1.22 : 0.42;
+  const baseFullFire = 1.22 + getArtifactEffect(s.turn, 'pyro_full_fire_mult_bonus', s.progress.ownedArtifacts);
+  return setupReady && enginesReady ? baseFullFire : 0.42;
 }
 
 function countBurningGardenEngines(board: BoardState): number {
@@ -1514,13 +1810,14 @@ function applyAttenuationMultiplier(s: Store, actionClass: AttenuationClass): nu
 
   const deckSetCount = getDeckSetCount(s);
   const maxBreaks = deckSetCount >= 2 ? 2 : 1;
-  const canBreak = (s.turn.equilibriumStability ?? 0) >= 3
+  const breakCost = 3;
+  const canBreak = (s.turn.equilibriumStability ?? 0) >= breakCost
     && (s.turn.attenuationBreaksUsed ?? 0) < maxBreaks
     && !(s.turn.attenuationBrokenClasses ?? []).includes(actionClass);
 
   if (canBreak) {
     multiplier = 1;
-    s.turn.equilibriumStability = Math.max(0, (s.turn.equilibriumStability ?? 0) - 3);
+    s.turn.equilibriumStability = Math.max(0, (s.turn.equilibriumStability ?? 0) - breakCost);
     s.turn.attenuationBreaksUsed = (s.turn.attenuationBreaksUsed ?? 0) + 1;
     s.turn.attenuationBrokenClasses = [...(s.turn.attenuationBrokenClasses ?? []), actionClass];
   }
@@ -1560,7 +1857,9 @@ function applyNeutralityPlayState(
   let stabilityDelta = 0;
   if (newDriftAbs <= oldDriftAbs) stabilityDelta += 1;
   else stabilityDelta -= 1;
-  if (gain > 0 && spend > 0) stabilityDelta += 1;
+  if (gain > 0 && spend > 0) {
+    stabilityDelta += 1;
+  }
   if (actionClass === 'setup') stabilityDelta += 1;
   if (def.rarity === 'Eternal') stabilityDelta += 1;
 
@@ -1628,9 +1927,11 @@ function applyPyroPlayState(
 
   const heatGain = Math.max(0, embersDelta) + (actionClass === 'conversion' ? 2 : 0) + (def.type === 'Ophanim' ? 1 : 0);
   const heatCooling = Math.max(0, -embersDelta) + (radianceDelta > 0 ? 1 : 0);
-  s.turn.pyroHeat = Math.max(0, Math.min(40, (s.turn.pyroHeat ?? 0) + heatGain - heatCooling));
+  const heatCapBonus = getArtifactEffect(s.turn, 'heat_cap_bonus', s.progress.ownedArtifacts);
+  s.turn.pyroHeat = Math.max(0, Math.min(40 + heatCapBonus, (s.turn.pyroHeat ?? 0) + heatGain - heatCooling));
 
-  const overheatDebtGain = Math.max(0, (s.turn.pyroHeat ?? 0) - 14) * 0.08;
+  const overheatThreshold = 14 + heatCapBonus;
+  const overheatDebtGain = Math.max(0, (s.turn.pyroHeat ?? 0) - overheatThreshold) * 0.08;
   const debtRecovery = actionClass === 'setup' || actionClass === 'refund' ? 0.35 : 0.1;
   const nextDebt = (s.turn.pyroBurnDebt ?? 0) + overheatDebtGain - debtRecovery;
   s.turn.pyroBurnDebt = Math.max(0, Math.min(18, Number(nextDebt.toFixed(2))));
@@ -3428,8 +3729,9 @@ function applyPatienceGainAll(s: Store, value: number): void {
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
   let nonVesselGain = 0;
 
+  // Patience flows to every Seraphim on board regardless of Angel-synergy activation.
   for (const unit of s.board.frontSlots) {
-    if (!unit || unit.type !== 'Seraphim' || !unit.isActive) continue;
+    if (!unit || unit.type !== 'Seraphim') continue;
     const gain = value + linkedBonus;
     unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
     if (vesselId && unit.instanceId !== vesselId) {
@@ -3439,7 +3741,7 @@ function applyPatienceGainAll(s: Store, value: number): void {
 
   if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
     const vessel = s.board.frontSlots.find(
-      unit => unit?.type === 'Seraphim' && unit.isActive && unit.instanceId === vesselId,
+      unit => unit?.type === 'Seraphim' && unit.instanceId === vesselId,
     );
     if (vessel) {
       const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
@@ -3476,9 +3778,9 @@ function applyCherubimPassiveEffects(s: Store): void {
     if (!unit || unit.type !== 'Seraphim') continue;
     const unitDef = ScoreSystem.getDefinition(unit.definitionId);
     if (unitDef?.type === 'Seraphim' && (unitDef as import('@/types/cards').SeraphimDefinition).patienceThreshold !== undefined) {
-      const gain = 1 + linkedBonus;
+      const gain = 1 + linkedBonus + getArtifactEffect(s.turn, 'patience_cap_bonus', s.progress.ownedArtifacts);
       unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
-      if (vesselId && unit.isActive && unit.instanceId !== vesselId) nonVesselGain += gain;
+      if (vesselId && unit.instanceId !== vesselId) nonVesselGain += gain;
     }
   }
 
@@ -3521,15 +3823,14 @@ function applyCherubimPassiveEffects(s: Store): void {
         }
 
         case 'cherubim_patience_per_card': {
-          // Give adjacent active Seraphim (and Angels) +value Patience per card played.
+          // Give adjacent Seraphim (and Angels) +value Patience per card played.
           const leftFront = s.board.frontSlots[i];
           const rightFront = s.board.frontSlots[i + 1];
           for (const frontUnit of [leftFront, rightFront]) {
             if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
-            if (frontUnit.type === 'Seraphim' && !frontUnit.isActive) continue;
             const gain = effect.value + linkedBonus;
             frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
-            if (vesselId && frontUnit.type === 'Seraphim' && frontUnit.isActive && frontUnit.instanceId !== vesselId) {
+            if (vesselId && frontUnit.type === 'Seraphim' && frontUnit.instanceId !== vesselId) {
               nonVesselGain += gain;
             }
           }
@@ -3574,13 +3875,27 @@ function applyCherubimPassiveEffects(s: Store): void {
 
   if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
     const vessel = s.board.frontSlots.find(
-      unit => unit?.type === 'Seraphim' && unit.isActive && unit.instanceId === vesselId,
+      unit => unit?.type === 'Seraphim' && unit.instanceId === vesselId,
     );
     if (vessel) {
       const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
       if (copied > 0) {
         vessel.patienceStacks = (vessel.patienceStacks ?? 0) + copied;
       }
+    }
+  }
+
+  // ── Wished Upon A Star per-card passives ─────────────────────────────────
+  // Seraphim on board: wuas-ser-solarvex-fragment and wuas-cher-wishwright-pulse
+  // each give +1 Starlight per card played.
+  const WUAS_STARLIGHT_PER_CARD_IDS = new Set([
+    'wuas-ser-solarvex-fragment',
+    'wuas-cher-wishwright-pulse',
+  ]);
+  for (const unit of [...s.board.frontSlots, ...s.board.backSlots]) {
+    if (!unit) continue;
+    if (WUAS_STARLIGHT_PER_CARD_IDS.has(unit.definitionId)) {
+      s.turn.starlightCharges = (s.turn.starlightCharges ?? 0) + 1;
     }
   }
 }
@@ -3659,7 +3974,7 @@ export const useStore = create<Store>()(
         if (newInst?.type === 'Seraphim' && newInst.isActive) {
           eventBus.emit('seraphim:synergy-gained', { slot, instanceId: deckCard.instanceId });
         }
-        s.progress.totalCardsPlayed += 1;
+        recordCardPlay(s, deckCard.definitionId);
         recompute(s);
       });
     },
@@ -3743,7 +4058,7 @@ export const useStore = create<Store>()(
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
         resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
         incrementAngelProgress(s.board);
-        s.progress.totalCardsPlayed += 1;
+        recordCardPlay(s, deckCard.definitionId);
         checkBossDefeated(s);
         recompute(s);
       });
@@ -3820,7 +4135,7 @@ export const useStore = create<Store>()(
         applyCherubimPassiveEffects(s);
         tickCherubimDurability(s);
         incrementAngelProgress(s.board);
-        s.progress.totalCardsPlayed += 1;
+        recordCardPlay(s, deckCard.definitionId);
         checkBossDefeated(s);
         recompute(s);
       });
@@ -4127,9 +4442,11 @@ export const useStore = create<Store>()(
           // Reset patience after consuming it; draw bonus if threshold met
           if (seraphimDef.patienceThreshold !== undefined) {
             if (seraphimDef.patienceThresholdDraw && capturedPatience >= seraphimDef.patienceThreshold) {
-              s.deck = TurnSystem.drawCards(s.deck, seraphimDef.patienceThresholdDraw);
+              const extraDraws = getArtifactEffect(s.turn, 'patience_threshold_draw_bonus', s.progress.ownedArtifacts);
+              s.deck = TurnSystem.drawCards(s.deck, seraphimDef.patienceThresholdDraw + extraDraws);
             }
-            const preservePercent = Math.max(0, s.turn.neutralityAttackPreservePercent ?? 0);
+            const artifactPreserve = getArtifactEffect(s.turn, 'patience_preserve_percent', s.progress.ownedArtifacts);
+            const preservePercent = Math.max(0, (s.turn.neutralityAttackPreservePercent ?? 0) + artifactPreserve);
             const restorePercent = Math.max(0, s.turn.neutralityAttackRestorePercent ?? 0);
             const preserved = Math.floor(capturedPatience * (preservePercent / 100));
             const restored = Math.floor(capturedPatience * (restorePercent / 100));
@@ -4330,6 +4647,12 @@ export const useStore = create<Store>()(
     beginTurn: () => {
       set(s => {
         if (s.turn.phase !== 'idle') return;
+        // Preserve Dream Lattice across turns if Solarvex Ward or Lune Choir Ascension is on the board.
+        const solarvexWardIds = new Set(['wuas-cher-solarvex-ward', 'inf-wuas-lune-choir-ascension']);
+        const wardActive = s.board.backSlots.some(
+          slot => slot?.type === 'Cherubim' && solarvexWardIds.has(slot.definitionId),
+        );
+        const preservedDreamLattice = wardActive ? (s.turn.dreamLattice ?? 0) : 0;
         s.turn.turnNumber = (s.turn.turnNumber ?? 0) + 1;
         s.turn.emberGroveEchoUsedThisTurn = false;
         if (s.deck.drawPile.length < 5 && s.deck.discardPile.length > 0) {
@@ -4340,6 +4663,25 @@ export const useStore = create<Store>()(
         s.deck.drawPile = remaining;
         for (const card of drawn) s.deck.hand.push(card);
         s.turn = { ...defaultTurn, phase: 'mulligan' };
+        if (preservedDreamLattice > 0) s.turn.dreamLattice = preservedDreamLattice;
+        // Propagate equipped artifacts from the active saved deck into TurnState.
+        const activeDeckForArtifacts = s.progress.savedDecks.find(d => d.id === s.progress.activeDeckId);
+        s.turn.equippedArtifactIds = activeDeckForArtifacts?.equippedArtifacts?.slice() ?? [];
+        // Apply artifact start-of-turn bonuses (after equippedArtifactIds is populated).
+        const flameStartBonus = getArtifactEffect(s.turn, 'flame_start_bonus', s.progress.ownedArtifacts);
+        if (flameStartBonus > 0) {
+          s.turn.blackGlassWhiteFlame = flameStartBonus;
+          s.turn.blackGlassBlackFlame = flameStartBonus;
+        }
+        const voltageStartBonus = getArtifactEffect(s.turn, 'voltage_surge_rate', s.progress.ownedArtifacts);
+        if (voltageStartBonus > 0) {
+          // Snowbound Voltage: passive surge token generation each turn start.
+          s.turn.snowboundPotential = (s.turn.snowboundPotential ?? 0) + voltageStartBonus;
+        }
+        const ironChargeStartBonus = getArtifactEffect(s.turn, 'iron_charge_start_bonus', s.progress.ownedArtifacts);
+        if (ironChargeStartBonus > 0) {
+          s.turn.reforgeCharges = (s.turn.reforgeCharges ?? 0) + ironChargeStartBonus;
+        }
       });
     },
 
@@ -4481,7 +4823,7 @@ export const useStore = create<Store>()(
           s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
           resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
           incrementAngelProgress(s.board);
-          s.progress.totalCardsPlayed += 1;
+          recordCardPlay(s, deckCard.definitionId);
           checkBossDefeated(s);
           recompute(s);
           return;
@@ -4545,7 +4887,7 @@ export const useStore = create<Store>()(
           applyCherubimPassiveEffects(s);
           tickCherubimDurability(s);
           incrementAngelProgress(s.board);
-          s.progress.totalCardsPlayed += 1;
+          recordCardPlay(s, deckCard.definitionId);
           checkBossDefeated(s);
           recompute(s);
           return;
@@ -4570,7 +4912,7 @@ export const useStore = create<Store>()(
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
         resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
         incrementAngelProgress(s.board);
-        s.progress.totalCardsPlayed += 1;
+        recordCardPlay(s, deckCard.definitionId);
         eventBus.emit('card:played', { card: deckCard as never, board: s.board });
         checkBossDefeated(s);
         recompute(s);
@@ -4749,7 +5091,7 @@ export const useStore = create<Store>()(
       set(s => { s.progress.oblivion += delta; });
     },
 
-    // �E��E��E��E� Pack / collection �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // Pack / collection
 
     openPack: (packId) => {
       const s = get();
@@ -4757,15 +5099,61 @@ export const useStore = create<Store>()(
       const isLocked = pack?.oblivionUnlock !== undefined
         ? s.progress.oblivion < pack.oblivionUnlock
         : pack?.locked;
-      if (!pack || isLocked || s.progress.oblivion < pack.cost) return null;
+      if (!pack || isLocked) return null;
+      const usesShards = (pack as typeof pack & { currencyType?: string }).currencyType === 'aberratedShards';
+      const baseCost = usesShards
+        ? pack.cost
+        : (getDailyDealPackId() === pack.id
+          ? getDailyDealCost(pack.cost)
+          : (getSpotlightPackId() === pack.id ? getSpotlightPackCost(pack.cost) : pack.cost));
+      if (usesShards) {
+        if (s.progress.aberratedShards < baseCost) return null;
+      } else {
+        if (s.progress.oblivion < baseCost) return null;
+      }
       const preOpen = { ...s.progress.collection };
       const drawn = PackSystem.open(pack);
+
+      // Per-Pack Epic+ pity: 10 consecutive Packs without Epic/Legendary → next is guaranteed Epic+.
+      const epicPityThreshold = 10;
+      const packPityMisses = s.progress.packPityCounters?.[packId] ?? 0;
+      const hasEpicPlus = drawn.some(definitionId => {
+        const r = CardRegistry.get(definitionId)?.rarity;
+        return r === 'Epic' || r === 'Legendary';
+      });
+      let pityTriggered = false;
+      if (!hasEpicPlus && packPityMisses + 1 >= epicPityThreshold) {
+        // Replace one random card with an Epic (prefer Epic over Legendary so Box/Case pity stays meaningful).
+        const epicPool = pack.cardPool.filter(definitionId => CardRegistry.get(definitionId)?.rarity === 'Epic');
+        const pool = epicPool.length > 0
+          ? epicPool
+          : pack.cardPool.filter(definitionId => CardRegistry.get(definitionId)?.rarity === 'Legendary');
+        if (pool.length > 0 && drawn.length > 0) {
+          const replacement = pool[Math.floor(Math.random() * pool.length)];
+          const replaceIndex = Math.floor(Math.random() * drawn.length);
+          drawn[replaceIndex] = replacement;
+          pityTriggered = true;
+        }
+      }
+      const finalHasEpicPlus = hasEpicPlus || pityTriggered;
+
       set(state => {
-        state.progress.oblivion -= pack.cost;
+        if (usesShards) {
+          state.progress.aberratedShards -= baseCost;
+        } else {
+          state.progress.oblivion -= baseCost;
+        }
         for (const defId of drawn) {
           addCollectionCard(state.progress, defId);
         }
+        if (!state.progress.packPityCounters) state.progress.packPityCounters = {};
+        state.progress.packPityCounters[packId] = finalHasEpicPlus ? 0 : packPityMisses + 1;
+        recordPackOpen(state.progress, packId, 'pack', drawn);
+        emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 1 });
       });
+      if (pityTriggered) {
+        get().enqueueToast('Pity guarantee: Epic+ card secured.', 'reward');
+      }
       return drawn.map(id => ({ id, isNew: !preOpen[id] })).map(x => x.id);
     },
 
@@ -4785,6 +5173,7 @@ export const useStore = create<Store>()(
       }
 
       let hasLegendary = drawn.some(definitionId => CardRegistry.get(definitionId)?.rarity === 'Legendary');
+      let boxPityTriggered = false;
 
       // Box pity: after 2 consecutive no-Legendary boxes for this pack, the 3rd box guarantees one.
       if (!hasLegendary && pityMisses >= 2) {
@@ -4794,6 +5183,7 @@ export const useStore = create<Store>()(
           const replaceIndex = Math.floor(Math.random() * drawn.length);
           drawn[replaceIndex] = replacement;
           hasLegendary = true;
+          boxPityTriggered = true;
         }
       }
 
@@ -4803,7 +5193,12 @@ export const useStore = create<Store>()(
           addCollectionCard(state.progress, defId);
         }
         state.progress.pityCounters[packId] = hasLegendary ? 0 : pityMisses + 1;
+        recordPackOpen(state.progress, packId, 'box', drawn);
+        emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 5 });
       });
+      if (boxPityTriggered) {
+        get().enqueueToast('Pity guarantee: Legendary card secured.', 'reward');
+      }
       return drawn;
     },
 
@@ -4837,6 +5232,8 @@ export const useStore = create<Store>()(
         for (const defId of drawn) {
           addCollectionCard(state.progress, defId);
         }
+        recordPackOpen(state.progress, packId, 'case', drawn);
+        emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 10 });
       });
       return drawn;
     },
@@ -4844,7 +5241,7 @@ export const useStore = create<Store>()(
     convertCardToHolo: (definitionId) => {
       const state = get();
       const definition = CardRegistry.get(definitionId);
-      const cost = getHolofoilConversionCost(definition);
+      const cost = getHolofoilConversionCost(definition, state.progress.holoCollection);
       if (!canConvertCardToHolo(definition, state.progress.collection, state.progress.holoCollection)) return false;
       if (cost === null || state.progress.aberratedShards < cost) return false;
 
@@ -4915,16 +5312,330 @@ export const useStore = create<Store>()(
       });
     },
 
+    // ─── Profile ──────────────────────────────────────────────────────────
+
+    setPlayerName: (name) => {
+      const clean = name.trim().slice(0, 24);
+      if (!clean) return;
+      set(s => { s.progress.profile.name = clean; });
+    },
+
+    setAvatarId: (avatarId) => {
+      set(s => { s.progress.profile.avatarId = avatarId; });
+    },
+
+    setTitleId: (titleId) => {
+      set(s => { s.progress.profile.titleId = titleId; });
+    },
+
+    setUiThemeId: (themeId) => {
+      set(s => { s.progress.profile.uiThemeId = themeId; });
+    },
+
+    setCustomUiThemeColor: (key, value) => {
+      set(s => {
+        const current = (s.progress.profile.customUiTheme ?? {}) as Record<string, string>;
+        s.progress.profile.customUiTheme = { ...current, [key]: value };
+      });
+    },
+
+    resetCustomUiTheme: () => {
+      set(s => { s.progress.profile.customUiTheme = null; });
+    },
+
+    // ─── Daily login ──────────────────────────────────────────────────────
+
+    claimDailyReward: () => {
+      const evalResult = evaluateDailyLogin(get().progress);
+      if (!evalResult.claimable) return null;
+      set(s => {
+        const today = getUtcDayIndex(Date.now());
+        s.progress.dailyLogin.lastClaimedDayIndex = today;
+        s.progress.dailyLogin.streak = evalResult.pendingStreak;
+        s.progress.dailyLogin.totalClaims += 1;
+        s.progress.aberratedShards += evalResult.pendingReward.shards;
+      });
+      return { shards: evalResult.pendingReward.shards, streak: evalResult.pendingStreak };
+    },
+
+    claimQuest: (questId) => {
+      const s = get();
+      if (!s.progress.quests) return null;
+      const all = [...s.progress.quests.daily, ...s.progress.quests.weekly];
+      const quest = all.find(q => q.id === questId);
+      if (!quest) return null;
+      if (quest.claimed) return null;
+      if (quest.progress < quest.goal) return null;
+      const reward = quest.shardReward;
+      set(state => {
+        const list = state.progress.quests.daily.find(q => q.id === questId)
+          ? state.progress.quests.daily
+          : state.progress.quests.weekly;
+        const q = list.find(qq => qq.id === questId);
+        if (q) q.claimed = true;
+        state.progress.aberratedShards += reward;
+      });
+      return { shards: reward };
+    },
+
+    claimAchievement: (achievementId) => {
+      const s = get();
+      const badge = TITLE_BADGE_BY_ID[achievementId];
+      if (!badge) return null;
+      if (!badge.isUnlocked(s.progress)) return null;
+      const claims = s.progress.achievementClaims ?? {};
+      if (claims[achievementId]) return null;
+      const reward = getAchievementShardReward(badge.group);
+      set(state => {
+        if (!state.progress.achievementClaims) state.progress.achievementClaims = {};
+        state.progress.achievementClaims[achievementId] = true;
+        state.progress.aberratedShards += reward;
+      });
+      return { shards: reward };
+    },
+
+    claimCardMastery: (definitionId, tier) => {
+      const tierDef = MASTERY_TIERS.find(t => t.tier === tier);
+      if (!tierDef) return null;
+      const s = get();
+      const count = s.progress.cardPlayCounts?.[definitionId] ?? 0;
+      if (count < tierDef.threshold) return null;
+      const claimKey = getMasteryClaimKey(definitionId, tier);
+      if (s.progress.cardMasteryClaims?.[claimKey]) return null;
+      set(state => {
+        if (!state.progress.cardMasteryClaims) state.progress.cardMasteryClaims = {};
+        state.progress.cardMasteryClaims[claimKey] = true;
+        state.progress.aberratedShards += tierDef.shardReward;
+      });
+      return { shards: tierDef.shardReward };
+    },
+
+    claimAllAvailableMastery: () => {
+      const s = get();
+      const counts = s.progress.cardPlayCounts ?? {};
+      const claims = s.progress.cardMasteryClaims ?? {};
+      let totalShards = 0;
+      let tiersClaimed = 0;
+      const toClaim: Array<{ key: string; shards: number }> = [];
+      for (const definitionId of Object.keys(counts)) {
+        const count = counts[definitionId] ?? 0;
+        for (const tierDef of MASTERY_TIERS) {
+          if (count < tierDef.threshold) continue;
+          const key = getMasteryClaimKey(definitionId, tierDef.tier);
+          if (claims[key]) continue;
+          toClaim.push({ key, shards: tierDef.shardReward });
+          totalShards += tierDef.shardReward;
+          tiersClaimed += 1;
+        }
+      }
+      if (tiersClaimed === 0) return { shards: 0, tiersClaimed: 0 };
+      set(state => {
+        if (!state.progress.cardMasteryClaims) state.progress.cardMasteryClaims = {};
+        for (const c of toClaim) state.progress.cardMasteryClaims[c.key] = true;
+        state.progress.aberratedShards += totalShards;
+      });
+      return { shards: totalShards, tiersClaimed };
+    },
+
+    markCollectionViewed: () => {
+      set(state => {
+        state.progress.lastCollectionViewedAt = Date.now();
+      });
+    },
+
+    recordGauntletRun: (depth, shards) => {
+      set(state => {
+        if (!state.progress.gauntletBest) {
+          state.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
+        }
+        const best = state.progress.gauntletBest;
+        if (depth > best.bestDepth) best.bestDepth = depth;
+        if (shards > best.bestShards) best.bestShards = shards;
+        best.runs += 1;
+      });
+    },
+
+    setCompactMode: (enabled) => {
+      set(state => {
+        state.settings.compactMode = enabled;
+      });
+    },
+
+    setHighlightRulesText: (enabled) => {
+      set(state => {
+        state.settings.highlightRulesText = enabled;
+      });
+    },
+
+    dissolveCard: (definitionId) => {
+      const state = get();
+      const totalOwned = state.progress.collection[definitionId] ?? 0;
+      if (totalOwned <= 0) return false;
+      // Combined lock: starter-locked copies + user-locked copies cannot be dissolved.
+      const starterLocked = STARTER_COLLECTION[definitionId] ?? 0;
+      const userLocked = state.progress.cardLocks?.[definitionId] ?? 0;
+      const lockedCopies = starterLocked + userLocked;
+      if (totalOwned <= lockedCopies) return false;
+      const definition = CardRegistry.get(definitionId);
+      if (!definition) return false;
+      const lightYield = getCardDissolveYield(definition.rarity, definition.element);
+      set(s => {
+        const current = s.progress.collection[definitionId] ?? 0;
+        if (current <= lockedCopies) return;
+        if (current === 1) {
+          delete s.progress.collection[definitionId];
+        } else {
+          s.progress.collection[definitionId] = current - 1;
+        }
+        s.progress.cardbaneLight = (s.progress.cardbaneLight ?? 0) + lightYield;
+      });
+      return true;
+    },
+
+    dissolveAllUnlocked: () => {
+      const state = get();
+      let totalDissolved = 0;
+      let lightGained = 0;
+      const toRemove: Array<{ id: string; remove: number; yield: number }> = [];
+      for (const [id, count] of Object.entries(state.progress.collection)) {
+        if (count <= 0) continue;
+        const definition = CardRegistry.get(id);
+        if (!definition) continue;
+        const starterLocked = STARTER_COLLECTION[id] ?? 0;
+        const userLocked = state.progress.cardLocks?.[id] ?? 0;
+        const lockedCopies = starterLocked + userLocked;
+        const dissolvable = Math.max(0, count - lockedCopies);
+        if (dissolvable <= 0) continue;
+        const lightYield = getCardDissolveYield(definition.rarity, definition.element);
+        toRemove.push({ id, remove: dissolvable, yield: lightYield * dissolvable });
+        totalDissolved += dissolvable;
+        lightGained += lightYield * dissolvable;
+      }
+      if (totalDissolved <= 0) return 0;
+      set(s => {
+        for (const entry of toRemove) {
+          const current = s.progress.collection[entry.id] ?? 0;
+          const next = current - entry.remove;
+          if (next <= 0) {
+            delete s.progress.collection[entry.id];
+          } else {
+            s.progress.collection[entry.id] = next;
+          }
+        }
+        s.progress.cardbaneLight = (s.progress.cardbaneLight ?? 0) + lightGained;
+      });
+      return totalDissolved;
+    },
+
+    setCardLock: (definitionId, count) => {
+      set(s => {
+        if (!s.progress.cardLocks) s.progress.cardLocks = {};
+        const owned = s.progress.collection[definitionId] ?? 0;
+        const starterLocked = STARTER_COLLECTION[definitionId] ?? 0;
+        // Clamp: cannot exceed (owned - starterLocked); cannot go below 0.
+        const maxUserLock = Math.max(0, owned - starterLocked);
+        const clamped = Math.max(0, Math.min(maxUserLock, Math.floor(count)));
+        if (clamped <= 0) {
+          delete s.progress.cardLocks[definitionId];
+        } else {
+          s.progress.cardLocks[definitionId] = clamped;
+        }
+      });
+    },
+
+    purchaseArtifactCopy: (artifactId) => {
+      const state = get();
+      const artifact = ARTIFACT_DEFINITIONS.find(a => a.id === artifactId);
+      if (!artifact) return false;
+      const copies = state.progress.ownedArtifacts?.[artifactId] ?? 0;
+      // Apex copy (10th) requires Aberrated Shards in addition to Light.
+      const isApexUnlock = copies === ARTIFACT_MASTERY_THRESHOLDS.ML2;
+      if (copies >= ARTIFACT_MASTERY_THRESHOLDS.ML3) return false;
+      const lightCost = getArtifactCopyCost(artifact);
+      const haveLight = state.progress.cardbaneLight ?? 0;
+      if (haveLight < lightCost) return false;
+      if (isApexUnlock && (state.progress.aberratedShards ?? 0) < ARTIFACT_APEX_SHARD_COST) return false;
+      set(s => {
+        if (!s.progress.ownedArtifacts) s.progress.ownedArtifacts = {};
+        s.progress.ownedArtifacts[artifactId] = (s.progress.ownedArtifacts[artifactId] ?? 0) + 1;
+        s.progress.cardbaneLight = (s.progress.cardbaneLight ?? 0) - lightCost;
+        if (isApexUnlock) {
+          s.progress.aberratedShards = (s.progress.aberratedShards ?? 0) - ARTIFACT_APEX_SHARD_COST;
+        }
+      });
+      return true;
+    },
+
+    equipArtifact: (deckId, artifactId) => {
+      const state = get();
+      if (!state.progress.ownedArtifacts?.[artifactId]) return false;
+      const deck = state.progress.savedDecks.find(d => d.id === deckId);
+      if (!deck) return false;
+      const current = deck.equippedArtifacts ?? [];
+      if (current.includes(artifactId)) return false;
+      if (current.length >= 3) return false;
+      set(s => {
+        const d = s.progress.savedDecks.find(dk => dk.id === deckId);
+        if (!d) return;
+        if (!d.equippedArtifacts) d.equippedArtifacts = [];
+        d.equippedArtifacts.push(artifactId);
+        // Keep TurnState in sync if this is the active deck.
+        if (s.progress.activeDeckId === deckId) {
+          s.turn.equippedArtifactIds = d.equippedArtifacts.slice();
+        }
+      });
+      return true;
+    },
+
+    unequipArtifact: (deckId, artifactId) => {
+      set(s => {
+        const d = s.progress.savedDecks.find(dk => dk.id === deckId);
+        if (!d || !d.equippedArtifacts) return;
+        d.equippedArtifacts = d.equippedArtifacts.filter(id => id !== artifactId);
+        if (s.progress.activeDeckId === deckId) {
+          s.turn.equippedArtifactIds = d.equippedArtifacts.slice();
+        }
+      });
+    },
+
+    setDeckNotes: (deckId, notes) => {
+      set(s => {
+        const d = s.progress.savedDecks.find(dk => dk.id === deckId);
+        if (!d) return;
+        // Cap notes at 2000 characters to keep saves reasonable.
+        d.notes = notes.length > 2000 ? notes.slice(0, 2000) : notes;
+      });
+    },
+
+    enqueueToast: (message, kind = 'info', durationMs) => {
+      set(state => {
+        if (!state.toasts) state.toasts = [];
+        const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        state.toasts.push({ id, message, kind, ts: Date.now(), durationMs });
+        // Cap queue to prevent runaway spam (keep most recent 8).
+        if (state.toasts.length > 8) state.toasts.splice(0, state.toasts.length - 8);
+      });
+    },
+
+    dismissToast: (id) => {
+      set(state => {
+        if (!state.toasts) return;
+        state.toasts = state.toasts.filter(t => t.id !== id);
+      });
+    },
+
     // �E��E��E��E� Boss fight �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
 
-    startBossFight: (bossId, savedDeckId) => {
+    startBossFight: (bossId, savedDeckId, options) => {
       set(s => {
         if (s.bossFight.mode !== 'idle') return;
         const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
         if (!boss) return;
         const now = Date.now();
         const cooldown = s.bossFight.cooldowns[bossId];
-        if (cooldown && cooldown > now) return;
+        // Gauntlet & trial runs ignore cooldown.
+        const kind = options?.kind ?? 'normal';
+        if (kind === 'normal' && cooldown && cooldown > now) return;
         const savedDeck = s.progress.savedDecks.find(d => d.id === savedDeckId);
         if (!savedDeck) return;
 
@@ -4936,21 +5647,58 @@ export const useStore = create<Store>()(
           settings: { ...s.settings },
         };
 
+        const modifiers = options?.modifiers ?? [];
+
+        // Apply boss-hp boost modifier
+        let maxHp = boss.hp;
+        if (modifiers.some(m => m.kind === 'boss_hp_boost')) {
+          maxHp = Math.round(maxHp * 1.25);
+        }
+
+        // Time pressure
+        let roundSeconds = BOSS_FIGHT_ROUND_SECONDS;
+        if (modifiers.some(m => m.kind === 'time_pressure')) {
+          roundSeconds = Math.max(60, roundSeconds - 30);
+        }
+
         s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
         s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
+
+        // Chain start low modifier — chainMultiplier capped low on first turn.
+        if (modifiers.some(m => m.kind === 'chain_start_low')) {
+          s.turn.chainMultiplier = 0.5;
+        }
+
         s.bossFight = {
           mode: 'active',
           activeBossId: bossId,
-          bossCurrentHp: boss.hp,
-          bossMaxHp: boss.hp,
+          bossCurrentHp: maxHp,
+          bossMaxHp: maxHp,
           damageDealtThisFight: 0,
-          fightTimeRemaining: BOSS_FIGHT_ROUND_SECONDS,
+          fightTimeRemaining: roundSeconds,
           cooldowns: { ...s.bossFight.cooldowns },
           savedGameState: savedState,
+          kind,
+          modifiers,
+          trialRewardMult: options?.trialRewardMult ?? 1,
+          gauntletDepth: kind === 'gauntlet' ? 0 : 0,
+          gauntletShardsBanked: 0,
+          gauntletHpCarryFrac: 1,
         };
         recompute(s);
       });
+    },
+
+    startWakeTrial: (bossId, savedDeckId, modifiers, rewardMult) => {
+      get().startBossFight(bossId, savedDeckId, { kind: 'trial', modifiers, trialRewardMult: rewardMult });
+    },
+
+    startEndlessGauntlet: (savedDeckId) => {
+      // Pick first boss deterministically by day for a stable opener.
+      const firstBoss = BOSS_DEFINITIONS[0];
+      if (!firstBoss) return;
+      get().startBossFight(firstBoss.id, savedDeckId, { kind: 'gauntlet', modifiers: [] });
     },
 
     tickBossTimer: (deltaSeconds) => {
@@ -4997,6 +5745,25 @@ export const useStore = create<Store>()(
         if (op['infiniteCollection'] === undefined) op['infiniteCollection'] = {};
         if (op['favoriteCollection'] === undefined) op['favoriteCollection'] = {};
         if (op['bossClearCounts'] === undefined) op['bossClearCounts'] = {};
+        // Profile + daily login backfill (introduced in save v9).
+        if (op['profile'] === undefined) {
+          op['profile'] = { name: 'Wanderer', avatarId: 'avatar-acolyte', titleId: null, uiThemeId: 'theme-warm-default', customUiTheme: null };
+        } else {
+          const prof = op['profile'] as Record<string, unknown>;
+          if (typeof prof['name'] !== 'string' || !prof['name']) prof['name'] = 'Wanderer';
+          if (typeof prof['avatarId'] !== 'string') prof['avatarId'] = 'avatar-acolyte';
+          if (prof['titleId'] === undefined) prof['titleId'] = null;
+          if (typeof prof['uiThemeId'] !== 'string') prof['uiThemeId'] = 'theme-warm-default';
+          if (prof['customUiTheme'] === undefined) prof['customUiTheme'] = null;
+        }
+        if (op['dailyLogin'] === undefined) {
+          op['dailyLogin'] = { lastClaimedDayIndex: -1, streak: 0, totalClaims: 0 };
+        } else {
+          const dl = op['dailyLogin'] as Record<string, unknown>;
+          if (typeof dl['lastClaimedDayIndex'] !== 'number') dl['lastClaimedDayIndex'] = -1;
+          if (typeof dl['streak'] !== 'number') dl['streak'] = 0;
+          if (typeof dl['totalClaims'] !== 'number') dl['totalClaims'] = 0;
+        }
         if (loaded.settings === undefined) loaded.settings = { ...defaultSettings };
         const settings = loaded.settings as unknown as Record<string, unknown>;
         if (settings['language'] === undefined) settings['language'] = defaultSettings.language;
@@ -5323,4 +6090,9 @@ export const selectPhase = (s: Store): TurnState['phase'] => s.turn.phase;
 export const selectExtraDeck = (s: Store): ExtraDeckEntry[] => s.deck.extraDeck;
 export const selectBossFight = (s: Store): BossFightState => s.bossFight;
 export const selectProgress = (s: Store): ProgressState => s.progress;
+export const selectProfile = (s: Store) => s.progress.profile;
+export const selectDailyLogin = (s: Store) => s.progress.dailyLogin;
+export const selectQuests = (s: Store) => s.progress.quests;
+export const selectAchievementClaims = (s: Store) => s.progress.achievementClaims;
+export const selectCardPlayCounts = (s: Store) => s.progress.cardPlayCounts;
 export const selectCanEmbraceInfinite = (s: Store): boolean => canEmbraceInfinite(s);

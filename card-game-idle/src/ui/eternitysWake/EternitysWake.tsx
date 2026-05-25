@@ -7,7 +7,9 @@ import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import BossCodex from './BossCodex';
 import type { BossCategory } from '@/types/bossFight';
+import { getFeaturedDailyBoss, getFeaturedWeeklyBoss, getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
@@ -67,6 +69,10 @@ const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
   boss_inferno_sorveth_flame: { folder: 'black-glass-inferno', file: 'Sorveth Bifurcated Flame.png' },
   boss_inferno_cinderborn_court: { folder: 'black-glass-inferno', file: 'Cinderborn Matriarch.png' },
   boss_inferno_ashen_sovereign: { folder: 'black-glass-inferno', file: 'Ashen Court Regent.png' },
+  // Wished Upon A Star
+  boss_wuas_aethervex_wishwright: { folder: 'wished-upon-a-star', file: 'Aethervex, the Wishwright.png' },
+  boss_wuas_selenira_voidbane: { folder: 'wished-upon-a-star', file: 'Selenira Voidbane.png' },
+  boss_wuas_draethos_unforgotten: { folder: 'wished-upon-a-star', file: 'Draethos, The Unforgotten.png' },
 };
 
 function getBossArtUrl(keyArt: string): string | null {
@@ -97,8 +103,14 @@ function mapPackToBossCategory(packId: string, packElement: string): BossCategor
       return 'Age of the Butterfly';
     case 'EternalSeas':
       return 'Eternal Seas';
+    case 'AbyssalForge':
+      return 'Abyssal Forge';
+    case 'DeathFlamedHell':
+      return 'Death-flamed Hell';
     case 'Dark':
       return 'Black Glass Inferno';
+    case 'WishedUponAStar':
+      return '[EVENT] Wished Upon A Star';
     default:
       return 'Neutrality';
   }
@@ -110,14 +122,19 @@ const STORE_BOSS_TAB_ORDER: BossCategory[] = STORE_PACK_ORDER.map(packId => {
   return pack ? mapPackToBossCategory(pack.id, pack.element) : 'Neutrality';
 });
 
-interface Props { onClose: () => void; }
+interface Props {
+  onClose: () => void;
+  onOpenWakeTrials?: () => void;
+  onOpenEndlessGauntlet?: () => void;
+}
 
-export default function EternitysWake({ onClose }: Props) {
+export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndlessGauntlet }: Props) {
   const bossFight = useStore(selectBossFight);
   const progress = useStore(selectProgress);
   const startBossFight = useStore(s => s.startBossFight);
   const [selectedBossId, setSelectedBossId] = useState<string | null>(null);
   const [activeBossTab, setActiveBossTab] = useState<BossCategory>('Neutrality');
+  const [showCodex, setShowCodex] = useState(false);
 
   const now = Date.now();
 
@@ -134,36 +151,66 @@ export default function EternitysWake({ onClose }: Props) {
   const hasSavedDecks = progress.savedDecks.length > 0;
   const bossTabs: BossCategory[] = Array.from(new Set(STORE_BOSS_TAB_ORDER));
   const visibleBosses = BOSS_DEFINITIONS.filter(boss => boss.category === activeBossTab);
+  // Difficulty stars: 5-quintile rank within the active category by HP.
+  const sortedByHp = [...visibleBosses].sort((a, b) => a.hp - b.hp);
+  const difficultyByBossId = new Map<string, number>();
+  if (sortedByHp.length > 0) {
+    sortedByHp.forEach((boss, idx) => {
+      const ratio = sortedByHp.length === 1 ? 0 : idx / (sortedByHp.length - 1);
+      const stars = Math.max(1, Math.min(5, Math.round(ratio * 4) + 1));
+      difficultyByBossId.set(boss.id, stars);
+    });
+  }
 
   return (
-    <div style={{
+    <div className="ui-panel-intro" style={{
       position: 'absolute',
       inset: 0,
       background: 'radial-gradient(circle at 50% -8%, rgba(255, 108, 108, 0.22) 0%, rgba(255, 108, 108, 0) 35%), radial-gradient(circle at 18% 86%, rgba(149, 62, 95, 0.22) 0%, rgba(149, 62, 95, 0) 44%), repeating-linear-gradient(126deg, rgba(255, 130, 130, 0.08) 0px, rgba(255, 130, 130, 0.08) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 24px), linear-gradient(180deg, rgba(8, 4, 12, 0.985) 0%, rgba(18, 9, 20, 0.985) 100%)',
       zIndex: 50,
       display: 'flex', flexDirection: 'column', fontFamily: 'Georgia, serif', color: '#FFF8DC',
+      ['--ui-accent' as any]: '255, 107, 107',
+      ['--ui-accent-soft' as any]: '255, 200, 200',
     }}>
       {/* Header */}
       <div style={{
         padding: '16px 24px', borderBottom: '1px solid rgba(255,107,107,0.3)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+        position: 'relative',
       }}>
         <div>
-          <div style={{ fontSize: 22, fontWeight: 'bold', color: '#ff6b6b', letterSpacing: 3 }}>
+          <div className="ui-title-glow" style={{ fontSize: 22, fontWeight: 'bold', color: '#ff6b6b', letterSpacing: 3 }}>
             ETERNITY'S WAKE
           </div>
           <div style={{ fontSize: 11, color: 'rgba(255,107,107,0.6)', marginTop: 2, letterSpacing: 1 }}>
             BOSS CHALLENGES - EARN "ETERNAL" CARDS
           </div>
         </div>
-        <button onClick={onClose} style={{
-          background: 'none', border: '1px solid rgba(255,107,107,0.4)',
-          color: '#ff6b6b', padding: '6px 14px', cursor: 'pointer',
-          fontFamily: 'Georgia, serif', fontSize: 13, borderRadius: 6,
-        }}>
-          Close
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {onOpenWakeTrials && (
+            <button className="ui-cta-breath" onClick={onOpenWakeTrials} style={headerSecondaryButton} title="Daily modifier trials">
+              Wake Trials
+            </button>
+          )}
+          <button className="ui-cta-breath" onClick={() => setShowCodex(true)} style={headerSecondaryButton} title="Personal-best records per boss">
+            Codex
+          </button>
+          {onOpenEndlessGauntlet && (
+            <button className="ui-cta-breath" onClick={onOpenEndlessGauntlet} style={headerSecondaryButton} title="Endless boss gauntlet">
+              Endless Gauntlet
+            </button>
+          )}
+          <button onClick={onClose} style={{
+            background: 'none', border: '1px solid rgba(255,107,107,0.4)',
+            color: '#ff6b6b', padding: '6px 14px', cursor: 'pointer',
+            fontFamily: 'Georgia, serif', fontSize: 13, borderRadius: 6,
+          }}>
+            Close
+          </button>
+        </div>
       </div>
+
+      <FeaturedBossBanner />
 
       <div style={{
         padding: '10px 24px 0',
@@ -177,6 +224,7 @@ export default function EternitysWake({ onClose }: Props) {
           return (
             <button
               key={tab}
+              className={active ? 'ui-chip ui-chip-active' : 'ui-chip'}
               onClick={() => {
                 setActiveBossTab(tab);
                 setSelectedBossId(null);
@@ -200,7 +248,7 @@ export default function EternitysWake({ onClose }: Props) {
       </div>
 
       {/* Boss grid */}
-      <div style={{
+      <div className="ui-grid-stagger" key={activeBossTab} style={{
         flex: 1, overflowY: 'auto', padding: '24px',
         display: 'flex', flexWrap: 'wrap', gap: 20, alignContent: 'flex-start', justifyContent: 'center',
       }}>
@@ -228,7 +276,7 @@ export default function EternitysWake({ onClose }: Props) {
           const rewardDisplayName = boss.category === 'Black Glass Inferno' ? boss.name : rewardDef?.name ?? '';
 
           return (
-            <div key={boss.id} style={{
+            <div key={boss.id} className={onCooldown ? undefined : 'ui-tile-hover'} style={{
               width: 300, background: 'rgba(10,4,16,0.95)',
               border: `1px solid ${onCooldown ? 'rgba(255,107,107,0.2)' : 'rgba(255,107,107,0.5)'}`,
               borderRadius: 12, padding: '20px', display: 'flex', flexDirection: 'column', gap: 12,
@@ -249,7 +297,20 @@ export default function EternitysWake({ onClose }: Props) {
 
               {/* Boss info */}
               <div style={{ borderBottom: '1px solid rgba(255,107,107,0.2)', paddingBottom: 10 }}>
-                <div style={{ fontSize: 16, fontWeight: 'bold', color: '#ff6b6b' }}>{boss.name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ fontSize: 16, fontWeight: 'bold', color: '#ff6b6b' }}>{boss.name}</div>
+                  <div
+                    title={`Difficulty: ${difficultyByBossId.get(boss.id) ?? 1} / 5`}
+                    style={{ display: 'flex', gap: 1, fontSize: 11, letterSpacing: 1 }}
+                  >
+                    {Array.from({ length: 5 }).map((_, i) => {
+                      const filled = i < (difficultyByBossId.get(boss.id) ?? 1);
+                      return (
+                        <span key={i} style={{ color: filled ? '#ffb347' : 'rgba(255,180,180,0.25)' }}>★</span>
+                      );
+                    })}
+                  </div>
+                </div>
                 <div style={{ fontSize: 11, color: 'rgba(255,200,200,0.6)', marginTop: 4 }}>{boss.description}</div>
               </div>
 
@@ -368,6 +429,65 @@ export default function EternitysWake({ onClose }: Props) {
         fontSize: 11, color: 'rgba(255,150,150,0.4)', flexShrink: 0,
       }}>
         Boss fights last {Math.floor(BOSS_FIGHT_ROUND_SECONDS / 60)} minutes, and you only get one turn. All Oblivion earned deals damage instead. 60-second cooldown on success or failure.
+      </div>
+
+      {showCodex && <BossCodex onClose={() => setShowCodex(false)} />}
+    </div>
+  );
+}
+
+const headerSecondaryButton: React.CSSProperties = {
+  background: 'rgba(255,107,107,0.12)',
+  border: '1px solid rgba(255,107,107,0.4)',
+  color: '#ff9a9a',
+  padding: '6px 12px',
+  cursor: 'pointer',
+  fontFamily: 'Georgia, serif',
+  fontSize: 12,
+  borderRadius: 6,
+  letterSpacing: 1,
+  transition: 'all 220ms ease',
+};
+
+function FeaturedBossBanner() {
+  const daily = getFeaturedDailyBoss();
+  const weekly = getFeaturedWeeklyBoss();
+  if (!daily && !weekly) return null;
+  return (
+    <div style={{
+      padding: '10px 24px',
+      borderBottom: '1px solid rgba(255,107,107,0.15)',
+      display: 'flex',
+      gap: 16,
+      flexShrink: 0,
+      background: 'rgba(255,107,107,0.06)',
+    }}>
+      {daily && (
+        <FeaturedTag
+          label="Boss of the Day"
+          name={daily.name}
+          mult={getBossRewardMultiplier(daily.id)}
+        />
+      )}
+      {weekly && weekly.id !== daily?.id && (
+        <FeaturedTag
+          label="Boss of the Week"
+          name={weekly.name}
+          mult={getBossRewardMultiplier(weekly.id)}
+        />
+      )}
+    </div>
+  );
+}
+
+function FeaturedTag({ label, name, mult }: { label: string; name: string; mult: number }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      <div style={{ fontSize: 9, letterSpacing: 1.5, color: 'rgba(255,180,180,0.7)', textTransform: 'uppercase', fontWeight: 'bold' }}>
+        {label}
+      </div>
+      <div style={{ fontSize: 13, color: '#ffd9a8', fontWeight: 'bold' }}>
+        {name} <span style={{ color: '#ffe27a', fontSize: 11, marginLeft: 6 }}>×{mult} shards</span>
       </div>
     </div>
   );

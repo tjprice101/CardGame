@@ -10,12 +10,12 @@ declare module '*.vert' {
   export default shader;
 }
 
-interface HeavenlySaveBridge {
+interface PantheonSaveBridge {
   read(): string | null;
   write(payload: string): boolean;
   remove(): boolean;
 }
 
 interface Window {
-  heavenlySave?: HeavenlySaveBridge;
+  pantheonSave?: PantheonSaveBridge;
 }

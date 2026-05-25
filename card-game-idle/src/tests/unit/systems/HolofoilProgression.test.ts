@@ -35,7 +35,8 @@ describe('Holofoil progression', () => {
   it('converts one normal copy into holo and spends Aberrated Shards', () => {
     const definitionId = 'ophanim-neutral-null-seek';
     const definition = CardRegistry.get(definitionId);
-    const cost = getHolofoilConversionCost(definition);
+    const initialHolo = { [definitionId]: 1 };
+    const cost = getHolofoilConversionCost(definition, initialHolo);
     expect(cost).not.toBeNull();
 
     useStore.setState(state => ({
@@ -44,7 +45,7 @@ describe('Holofoil progression', () => {
         ...state.progress,
         aberratedShards: 50,
         collection: { ...state.progress.collection, [definitionId]: 3 },
-        holoCollection: { ...state.progress.holoCollection, [definitionId]: 1 },
+        holoCollection: { ...state.progress.holoCollection, ...initialHolo },
       },
     }));
 

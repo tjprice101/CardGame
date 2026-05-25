@@ -31,6 +31,9 @@ import { glassAbsoluteCards } from '../data/cards/glassAbsoluteCards';
 import { blazingGardenCards } from '../data/cards/blazingGardenCards';
 import { butterflySetCards } from '../data/cards/butterflySetCards';
 import { eternalSeasCards } from '../data/cards/eternalSeasCards';
+import { abyssalForgeCards } from '../data/cards/abyssalForgeCards';
+import { deathFlamedHellCards } from '../data/cards/deathFlamedHellCards';
+import { wishedUponAStarCards } from '../data/cards/wishedUponAStarCards';
 import { snowboundVoltageAngels, snowboundVoltageCherubimCards, snowboundVoltageOphanimCards, snowboundVoltageSeraphims } from '../data/cards/snowboundVoltageCards';
 import { infiniteCards } from '../data/cards/infiniteCards';
 import { MATERIALIZED_CARD_BALANCE } from '../data/cards/materializedCardBalance';
@@ -87,6 +90,9 @@ const SOURCE_DEFINITIONS: CardDefinition[] = [
   ...(blazingGardenCards as unknown as CardDefinition[]),
   ...(butterflySetCards as unknown as CardDefinition[]),
   ...(eternalSeasCards as unknown as CardDefinition[]),
+  ...(abyssalForgeCards as unknown as CardDefinition[]),
+  ...(deathFlamedHellCards as unknown as CardDefinition[]),
+  ...(wishedUponAStarCards as unknown as CardDefinition[]),
   ...(infiniteCards as unknown as CardDefinition[]),
 ];
 
@@ -1018,6 +1024,10 @@ function shouldKeepSourceDefinition(definitionId: string): boolean {
   if (definitionId.startsWith('btei-pyroabyss-')) return true;
   if (definitionId.startsWith('btei-light-')) return true;
   if (definitionId.startsWith('btei-thornbound-')) return true;
+  if (definitionId.startsWith('dfh-')) return true;
+  if (definitionId.startsWith('af-')) return true;
+  if (definitionId.startsWith('wuas-')) return true;
+  if (definitionId.startsWith('inf-wuas-')) return true;
   return false;
 }
 

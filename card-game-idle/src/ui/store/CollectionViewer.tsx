@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -57,8 +57,23 @@ export default function CollectionViewer({ onClose }: Props) {
   const collection = useStore(s => s.progress.collection);
   const holoCollection = useStore(s => s.progress.holoCollection);
   const favoriteCollection = useStore(s => s.progress.favoriteCollection);
+  const recentlyAcquired = useStore(s => s.progress.recentlyAcquired);
+  const lastCollectionViewedAt = useStore(s => s.progress.lastCollectionViewedAt ?? 0);
   const toggleFavoriteCard = useStore(s => s.toggleFavoriteCard);
+  const markCollectionViewed = useStore(s => s.markCollectionViewed);
+  const lastViewedSnapshotRef = useRef<number>(lastCollectionViewedAt);
+  useEffect(() => {
+    // Snapshot the previous viewed-time once on mount so NEW badges remain visible
+    // for this entire session and only clear next time the user opens the viewer.
+    lastViewedSnapshotRef.current = lastCollectionViewedAt;
+    markCollectionViewed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [activeElement, setActiveElement] = useState<string>('All');
+  const [searchText, setSearchText] = useState('');
+  const [ownedFilter, setOwnedFilter] = useState<'all' | 'owned' | 'missing'>('all');
+  const [rarityFilter, setRarityFilter] = useState<string>('All');
+  const [sortMode, setSortMode] = useState<'set' | 'rarity' | 'name' | 'recent'>('set');
   const categoryOrderRank = new Map(STORE_COLLECTION_SET_ORDER.map((category, index) => [category, index]));
 
   const allCards = CardRegistry.getAll().flatMap(card => {
@@ -79,6 +94,22 @@ export default function CollectionViewer({ onClose }: Props) {
     });
     return variants;
   }).sort((a, b) => {
+    if (sortMode === 'rarity') {
+      if (RARITY_ORDER[a.card.rarity] !== RARITY_ORDER[b.card.rarity])
+        return RARITY_ORDER[b.card.rarity] - RARITY_ORDER[a.card.rarity];
+      return a.card.name.localeCompare(b.card.name);
+    }
+    if (sortMode === 'name') {
+      if (a.card.name !== b.card.name) return a.card.name.localeCompare(b.card.name);
+      return a.finish.localeCompare(b.finish);
+    }
+    if (sortMode === 'recent') {
+      const ta = recentlyAcquired?.[a.card.definitionId] ?? 0;
+      const tb = recentlyAcquired?.[b.card.definitionId] ?? 0;
+      if (ta !== tb) return tb - ta;
+      return a.card.name.localeCompare(b.card.name);
+    }
+    // 'set' (default)
     const categoryA = getCardCategoryKey(a.card);
     const categoryB = getCardCategoryKey(b.card);
     const categoryRankA = categoryOrderRank.get(categoryA) ?? Number.MAX_SAFE_INTEGER;
@@ -98,9 +129,18 @@ export default function CollectionViewer({ onClose }: Props) {
     .filter(category => !orderedCategorySet.has(category))
     .sort((a, b) => a.localeCompare(b));
   const elements = ['All', ...orderedCategories, ...remainingCategories];
-  const filtered = activeElement === 'All'
-    ? allCards
-    : allCards.filter(card => getCardCategoryKey(card.card) === activeElement);
+  const lowerSearch = searchText.trim().toLowerCase();
+  const filtered = allCards.filter(entry => {
+    if (activeElement !== 'All' && getCardCategoryKey(entry.card) !== activeElement) return false;
+    if (rarityFilter !== 'All' && entry.card.rarity !== rarityFilter) return false;
+    if (ownedFilter === 'owned' && entry.owned <= 0) return false;
+    if (ownedFilter === 'missing' && entry.owned > 0) return false;
+    if (lowerSearch) {
+      const hay = `${entry.card.name} ${entry.card.type ?? ''} ${entry.card.rarity}`.toLowerCase();
+      if (!hay.includes(lowerSearch)) return false;
+    }
+    return true;
+  });
 
   const standardFiltered = filtered.filter(entry => entry.card.rarity !== 'Infinite');
   const infiniteSections = INFINITE_TYPE_ORDER
@@ -112,10 +152,15 @@ export default function CollectionViewer({ onClose }: Props) {
 
   const totalOwned = allCards.filter(card => card.owned > 0).length;
   const totalCards = allCards.length;
+  const visibleOwned = filtered.filter(card => card.owned > 0).length;
+  const visibleTotal = filtered.length;
+  const isFilteringActive = activeElement !== 'All' || rarityFilter !== 'All' || ownedFilter !== 'all' || lowerSearch.length > 0;
 
   const renderCardEntry = (entry: CollectionVariantEntry) => {
     const { card, finish, owned } = entry;
     const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
+    const acquiredAt = recentlyAcquired?.[card.definitionId] ?? 0;
+    const isNew = owned > 0 && acquiredAt > lastViewedSnapshotRef.current;
     const isLockedStandardHolo = owned <= 0 && finish === 'holo' && card.rarity !== 'Infinite' && card.rarity !== 'Eternal';
     const cardSurfaceStyle = owned > 0
       ? getCardFaceBackgroundStyle(card, finish)
@@ -159,6 +204,25 @@ export default function CollectionViewer({ onClose }: Props) {
         }}
         title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not owned'}
       >
+        {isNew && (
+          <div style={{
+            position: 'absolute',
+            top: 6,
+            left: 6,
+            zIndex: 3,
+            padding: '2px 6px',
+            borderRadius: 4,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: 1.2,
+            background: 'linear-gradient(135deg, #ff6b35, #f7b733)',
+            color: '#fff',
+            textShadow: '0 1px 1px rgba(0,0,0,0.4)',
+            boxShadow: '0 0 8px rgba(247, 183, 51, 0.6)',
+            animation: 'newBadgePulse 1.6s ease-in-out infinite',
+            pointerEvents: 'none',
+          }}>NEW</div>
+        )}
         {owned > 0 && (
           <button
             onClick={(event) => {
@@ -288,6 +352,11 @@ export default function CollectionViewer({ onClose }: Props) {
           </div>
           <div style={{ fontSize: 11, color: 'rgba(234, 217, 192, 0.75)', marginTop: 3 }}>
             {totalOwned} / {totalCards} unique cards collected
+            {isFilteringActive && (
+              <span style={{ marginLeft: 10, color: '#f0bd78' }}>
+                · Showing {visibleOwned} / {visibleTotal}
+              </span>
+            )}
           </div>
         </div>
         <button
@@ -329,6 +398,98 @@ export default function CollectionViewer({ onClose }: Props) {
             </button>
           );
         })}
+      </div>
+
+      {/* Search + ownership + rarity filters */}
+      <div style={{
+        display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap',
+        padding: '10px 24px', flexShrink: 0,
+        borderBottom: `1px solid ${warmTheme.border}`,
+        background: 'rgba(9, 14, 20, 0.22)',
+      }}>
+        <input
+          type="text"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          placeholder="Search by name, type, rarity…"
+          style={{
+            flex: '1 1 220px', minWidth: 180, maxWidth: 320,
+            padding: '6px 10px', fontSize: 12, fontFamily: 'Georgia, serif',
+            background: 'rgba(28, 22, 16, 0.72)',
+            border: `1px solid ${warmTheme.border}`,
+            borderRadius: 6, color: '#ead9c0', outline: 'none',
+          }}
+        />
+        {searchText && (
+          <button
+            onClick={() => setSearchText('')}
+            style={{
+              padding: '5px 10px', fontSize: 11, cursor: 'pointer',
+              background: 'transparent', color: '#caa57a',
+              border: `1px solid ${warmTheme.border}`, borderRadius: 5,
+              fontFamily: 'Georgia, serif',
+            }}
+          >Clear</button>
+        )}
+
+        <div style={{ display: 'flex', gap: 4, marginLeft: 6 }}>
+          {(['all', 'owned', 'missing'] as const).map(opt => {
+            const isActive = ownedFilter === opt;
+            const label = opt === 'all' ? 'All' : opt === 'owned' ? 'Owned' : 'Missing';
+            return (
+              <button
+                key={opt}
+                onClick={() => setOwnedFilter(opt)}
+                style={{
+                  padding: '5px 12px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
+                  fontFamily: 'Georgia, serif', letterSpacing: 0.8,
+                  background: isActive ? 'rgba(240, 189, 120, 0.18)' : 'rgba(255, 236, 209, 0.9)',
+                  border: isActive ? '1px solid #f0bd78' : `1px solid ${warmTheme.border}`,
+                  color: isActive ? '#f0bd78' : '#5f3a17',
+                }}
+              >{label}</button>
+            );
+          })}
+        </div>
+
+        <div style={{ display: 'flex', gap: 4, marginLeft: 6, flexWrap: 'wrap' }}>
+          {(['All', 'Common', 'Rare', 'Epic', 'Legendary', 'Eternal', 'Infinite'] as const).map(r => {
+            const isActive = rarityFilter === r;
+            const color = r === 'All' ? '#FFD700' : (RARITY_COLORS[r] ?? '#aaa');
+            return (
+              <button
+                key={r}
+                onClick={() => setRarityFilter(r)}
+                style={{
+                  padding: '5px 10px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
+                  fontFamily: 'Georgia, serif', letterSpacing: 0.8,
+                  background: isActive ? `rgba(${hexToRgb(color)},0.20)` : 'rgba(255, 236, 209, 0.9)',
+                  border: isActive ? `1px solid ${color}` : `1px solid ${warmTheme.border}`,
+                  color: isActive ? color : '#5f3a17',
+                }}
+              >{r}</button>
+            );
+          })}
+        </div>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto', fontSize: 11, color: '#caa57a', fontFamily: 'Georgia, serif' }}>
+          Sort:
+          <select
+            value={sortMode}
+            onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
+            style={{
+              padding: '4px 8px', fontSize: 11, fontFamily: 'Georgia, serif',
+              background: 'rgba(28, 22, 16, 0.72)', color: '#ead9c0',
+              border: `1px solid ${warmTheme.border}`, borderRadius: 5,
+              cursor: 'pointer', outline: 'none',
+            }}
+          >
+            <option value="set">Set order</option>
+            <option value="rarity">Rarity</option>
+            <option value="name">Name</option>
+            <option value="recent">Recently obtained</option>
+          </select>
+        </label>
       </div>
 
       {/* Card grid */}

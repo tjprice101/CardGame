@@ -14,7 +14,8 @@ const emptyBoard: BoardState = {
 };
 
 function makePlayingTurn(overrides: Partial<TurnState> = {}): TurnState {
-  return { ...defaultGameState.turn, phase: 'playing', ...overrides };
+  // Always provide a fresh recastLedger so cross-test mutations cannot leak via the shared default reference.
+  return { ...defaultGameState.turn, recastLedger: [], phase: 'playing', ...overrides };
 }
 
 function makeDeck(definitionId: string): DeckState {

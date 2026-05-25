@@ -14,7 +14,9 @@ export type EngineKey =
   | 'pyro'
   | 'blazingGarden'
   | 'butterfly'
-  | 'eternalSeas';
+  | 'eternalSeas'
+  | 'abyssalForge'
+  | 'deathFlamedHell';
 
 type CardRolePattern = 'setup' | 'support' | 'resource' | 'payoff' | 'amplifier' | 'finisher';
 
@@ -75,6 +77,8 @@ const ENGINE_ORDER: EngineKey[] = [
   'blazingGarden',
   'butterfly',
   'eternalSeas',
+  'abyssalForge',
+  'deathFlamedHell',
 ];
 
 const ENGINE_META: Record<EngineKey, { label: string; accent: string }> = {
@@ -90,6 +94,8 @@ const ENGINE_META: Record<EngineKey, { label: string; accent: string }> = {
   blazingGarden: { label: 'Blazing Garden', accent: ELEMENT_COLORS.BlazingGarden },
   butterfly: { label: 'Age of the Butterfly', accent: ELEMENT_COLORS.Butterfly },
   eternalSeas: { label: 'Eternal Seas', accent: ELEMENT_COLORS.EternalSeas },
+  abyssalForge: { label: 'Abyssal Forge', accent: ELEMENT_COLORS.AbyssalForge },
+  deathFlamedHell: { label: 'Death-flamed Hell', accent: ELEMENT_COLORS.DeathFlamedHell },
 };
 
 const ROLE_BADGES: Record<CardRolePattern, string> = {
@@ -197,6 +203,22 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     payoff: 'Converts held Current and margin charge into major Oblivion spikes.',
     amplifier: 'Widens white/black flow balance to improve every future release.',
     finisher: 'Unloads a full Veilmargin convergence after both flows are established.',
+  },
+  abyssalForge: {
+    setup: 'Drops Pearls and stocks Forge Crowns so the recast/cashout chain has fuel to spend.',
+    support: 'Keeps Reforge Charges available so nacre-recasts can land when the window opens.',
+    resource: 'Feeds Pearls and Forge Crowns into the forge so each recast resolves with weight.',
+    payoff: 'Cashes out Pearls and Forge Crowns into Oblivion once recast pressure is built.',
+    amplifier: 'Nacre-coats and recasts prior cards so banked plays compound on each forge cycle.',
+    finisher: 'Ignites the Unrecorded Hue and cashes every Forge Crown for an abyssal finale.',
+  },
+  deathFlamedHell: {
+    setup: 'Stokes Pyre Embers with cohort plays so the funeral procession has fuel to burn.',
+    support: 'Mints Cinder Crowns through ritual extinguishings to keep the dual-cashout finale live.',
+    resource: 'Bridges Embers and Crowns so each cashout step still has counters to detonate.',
+    payoff: 'Converts Pyre Embers and Cinder Crowns into Oblivion spikes on demand.',
+    amplifier: 'Escalates chain growth once both Embers and Crowns are pressurized together.',
+    finisher: 'Detonates the dual cashout: every Ember and every Crown spent in the same breath.',
   },
 };
 
@@ -333,6 +355,8 @@ export function getEngineKeyForCard(def: CardDefinition): EngineKey | null {
   if (def.element === 'BlazingGarden') return 'blazingGarden';
   if (def.element === 'Butterfly') return 'butterfly';
   if (def.element === 'EternalSeas') return 'eternalSeas';
+  if (def.element === 'AbyssalForge') return 'abyssalForge';
+  if (def.element === 'DeathFlamedHell') return 'deathFlamedHell';
   return null;
 }
 
@@ -404,19 +428,19 @@ function buildEngineSnapshot(
   switch (key) {
     case 'neutrality': {
       const frontSlots = board?.frontSlots ?? [];
+      const seraphimCount = frontSlots.filter(u => u?.type === 'Seraphim').length;
+      const angelCount = frontSlots.filter(u => u?.type === 'Angel').length;
+      const patienceEligible = seraphimCount > 0 || angelCount > 0;
       const totalPatience = frontSlots.reduce((acc, unit) => {
         if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return acc;
-        if (unit.type === 'Seraphim' && !unit.isActive) return acc;
         return acc + (unit.patienceStacks ?? 0);
       }, 0);
       const patienceUnits = frontSlots.filter(u =>
         u && (u.type === 'Seraphim' || u.type === 'Angel') &&
-        (u.type !== 'Seraphim' || u.isActive) &&
         (u.patienceStacks ?? 0) > 0,
       ).length;
       const maxPatience = frontSlots.reduce((acc, unit) => {
         if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return acc;
-        if (unit.type === 'Seraphim' && !unit.isActive) return acc;
         return Math.max(acc, unit.patienceStacks ?? 0);
       }, 0);
       const activeCherubim = (board?.backSlots ?? []).filter(b => b !== null).length;
@@ -430,18 +454,26 @@ function buildEngineSnapshot(
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: `Patience ${totalPatience} total | Peak ${maxPatience} | ${patienceUnits} unit${patienceUnits !== 1 ? 's' : ''} charged`,
+        compact: patienceEligible
+          ? `Patience ${totalPatience} total | Peak ${maxPatience} | ${patienceUnits} unit${patienceUnits !== 1 ? 's' : ''} charged`
+          : 'Patience paused — no Seraphim or Angel on board',
         detail: `Pending Bonus Oblivion ≁E+${potentialBonus} | +${formatFixed(chainGainedThisTurn, 1)} chain gained this turn`,
         tagline: 'Neutrality now reports charged, consumed, and converted Patience in real time.',
-        summary: 'Every card you play still charges Patience on eligible Seraphim. Neutrality card effects now surface per-turn charge, consumption, chain gain, and recent triggered events directly in this panel.',
+        summary: 'Every card you play charges +1 Patience on each Seraphim on board, as long as at least one Seraphim or Angel is present. If neither is on board, Patience does not accumulate.',
         metrics: [
-          createMetric('Total Patience', totalPatience, 'Sum of all Patience stacks across active Seraphim. Each stack = +15 Oblivion on next attack.'),
+          createMetric('Eligibility', patienceEligible ? 'Active' : 'Paused', patienceEligible
+            ? `${seraphimCount} Seraphim, ${angelCount} Angel on board.`
+            : 'No Seraphim or Angel on board — Patience paused.'),
+          createMetric('Total Patience', totalPatience, 'Sum of all Patience stacks across Seraphim and Angels on board. Each stack = +15 Oblivion on next attack.'),
           createMetric('Patience Charged', chargedThisTurn, 'Total Patience added by Neutrality card effects this turn.'),
           createMetric('Patience Consumed', consumedThisTurn, 'Patience spent or transformed by Neutrality card effects this turn.'),
           createMetric('Chain Gained', `+${formatFixed(chainGainedThisTurn, 1)}`, 'Direct chain added by Neutrality effects this turn.'),
           createMetric('Recent Triggers', recentTriggers.length === 0 ? 'none' : recentTriggers.join(' | '), 'Most recent Neutrality effect activations this turn.'),
         ],
         nextSteps: [
+          createStep('Place a Seraphim or Angel', patienceEligible, patienceEligible
+            ? `${seraphimCount} Seraphim and ${angelCount} Angel on board — Patience is flowing.`
+            : 'No Seraphim or Angel on board — Patience cannot accumulate. Place a Seraphim or summon an Angel.'),
           createStep('Build Patience stacks', totalPatience >= 3, totalPatience >= 3
             ? `${totalPatience} total Patience built. Each stack adds +15 Oblivion to the next Seraphim attack.`
             : 'Keep playing cards  Eevery card played automatically adds +1 Patience to each eligible Seraphim.'),
@@ -798,6 +830,53 @@ function buildEngineSnapshot(
         ],
       };
     }
+    case 'abyssalForge': {
+      const forges = turn.eternalStacks?.forge ?? 0;
+      const charges = turn.reforgeCharges ?? 0;
+      const cap = turn.reforgeChargeCap ?? 0;
+      const events = turn.forgeRecastEventsThisTurn ?? 0;
+      return {
+        key,
+        label: meta.label,
+        accent: meta.accent,
+        compact: `Forge Crowns ${forges} | Reforge Charges ${charges}${cap ? `/${cap}` : ''}`,
+        detail: `Recast events this turn: ${events}`,
+        tagline: 'Abyssal Forge: Reforge charges fuel recast events; Forge Crowns cash out at the finale.',
+        summary: 'Abyssal Forge stocks Forge Crowns and Reforge Charges through play, then converts them into Oblivion through recast events and crown cashouts.',
+        metrics: [
+          createMetric('Forge Crowns', forges, 'Banked Crowns ready to spend on a Forge Crown cashout finisher for a burst of Oblivion and chain.'),
+          createMetric('Reforge Charges', charges, 'Charges spent by recast and nacre effects.'),
+          createMetric('Recast Events', events, 'Total recast events fired this turn.'),
+        ],
+        nextSteps: [
+          createStep('Bank Forge Crowns', forges >= 2, forges >= 2 ? 'Crowns ready for cashout.' : 'Build Forge Crowns before firing the finale.'),
+          createStep('Stock Charges', charges >= 1, charges >= 1 ? 'Recasts are available.' : 'Stock Reforge Charges to enable recasts.'),
+          createStep('Trigger recasts', events >= 1, events >= 1 ? 'Recast chain is live.' : 'Spend charges to start the recast cascade.'),
+        ],
+      };
+    }
+    case 'deathFlamedHell': {
+      const embers = turn.eternalStacks?.pyre ?? 0;
+      const crowns = turn.secondaryCounters?.pyre ?? 0;
+      return {
+        key,
+        label: meta.label,
+        accent: meta.accent,
+        compact: `Pyre Embers ${embers} | Cinder Crowns ${crowns}`,
+        detail: 'Stoke Embers, mint Crowns, and detonate the dual cashout.',
+        tagline: 'Death-flamed Hell: Pyre Embers and Cinder Crowns feed the funeral procession finale.',
+        summary: 'Death-flamed Hell stokes Pyre Embers through Pale Cohort plays and mints Cinder Crowns through ritual extinguishings, then detonates them in dual cashouts.',
+        metrics: [
+          createMetric('Pyre Embers', embers, 'Pyre fuel built by Pale Cohort plays. Spent by Pyre cashout effects for Oblivion and chain growth per Ember consumed.'),
+          createMetric('Cinder Crowns', crowns, 'Funeral crowns minted by ritual sacrifices (discards, draws, extinguishings). Spent by Crown cashout finales for paired Oblivion and chain bursts.'),
+        ],
+        nextSteps: [
+          createStep('Stoke Embers', embers >= 5, embers >= 5 ? 'Pyre Embers are running hot.' : 'Play more Pale Cohort cards to build Embers.'),
+          createStep('Mint Crowns', crowns >= 3, crowns >= 3 ? 'Cinder Crowns are ready for the finale.' : 'Sacrifice draws and discards to mint Cinder Crowns.'),
+          createStep('Detonate dual cashout', embers >= 8 && crowns >= 6, embers >= 8 && crowns >= 6 ? 'Both pools are loaded — fire the finale.' : 'Hold cashout cards until both pools are pressurized.'),
+        ],
+      };
+    }
   }
 }
 
@@ -1134,6 +1213,44 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
 • ÁE.46 multiplier (reduced): otherwise.
 
       You get best results when you stock Current first, then spend during high margin windows.`,
+      },
+    ],
+  },
+  abyssalForge: {
+    engineKey: 'abyssalForge',
+    title: 'User Guide to: Abyssal Forge',
+    intro: 'Abyssal Forge runs the Reforging Engine. You stock Reforge Charges, fire recast events, and bank Forge Crowns until you cash them out for a finale burst.',
+    sections: [
+      {
+        heading: 'Reforge Charges',
+        body: 'Reforge Charges are the fuel that triggers recast events. Build charges through play, then spend them on recast and nacre effects to chain extra value from cards you have already played.',
+      },
+      {
+        heading: 'Forge Crowns',
+        body: 'Forge Crowns accumulate as you commit to the recast loop. The Forge Crown cashout finisher converts banked Crowns into a burst of Oblivion (and optional chain) at the moment of your choosing.',
+      },
+      {
+        heading: 'Infinite Card Amplification',
+        body: 'Infinite Abyssal Forge cards reward a fully primed forge: high Reforge Charges, banked Forge Crowns, and active recast pressure. Stock both pools before firing your top-end finishers.',
+      },
+    ],
+  },
+  deathFlamedHell: {
+    engineKey: 'deathFlamedHell',
+    title: 'User Guide to: Death-flamed Hell',
+    intro: 'Death-flamed Hell runs the Funeral Procession Engine. You stoke Pyre Embers through play, mint Cinder Crowns through sacrifice, and detonate them in a dual cashout finale.',
+    sections: [
+      {
+        heading: 'Pyre Embers',
+        body: 'Pyre Embers are the set\'s primary fuel. Every Pale Cohort card played stokes the pyre by 1–6 Embers; the longer the procession runs, the hotter the cashout. Spend them with cards that read "Cash out X Pyre Embers" for a per-Ember burst of Oblivion and chain growth.',
+      },
+      {
+        heading: 'Cinder Crowns',
+        body: 'Cinder Crowns are the set\'s second resource. They are minted by ritual sacrifices — discards, draws, and other extinguishings — and stack independently of Embers. Cards that read "Cash out X Cinder Crowns" spend them for a paired Oblivion + chain burst, scaling per Crown consumed.',
+      },
+      {
+        heading: 'Infinite Card Amplification',
+        body: 'Infinite Death-flamed Hell cards reward a fully stoked pyre and a Crown-loaded treasury. Build both pools before firing the dual cashout — the finale scales with the smaller of the two pools, so balance matters.',
       },
     ],
   },

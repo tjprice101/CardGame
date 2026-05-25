@@ -91,11 +91,11 @@ function renderCombatOverview(card: Props['card']) {
   return TYPE_DESCRIPTIONS[card.type];
 }
 
-function findPacksForCard(cardId: string): Array<{ packName: string; tier: 'Pack' | 'Box' | 'Case' }> {
-  const packs: Array<{ packName: string; tier: 'Pack' | 'Box' | 'Case' }> = [];
+function findPacksForCard(cardId: string): Array<{ packId: string; packName: string; element: string }> {
+  const packs: Array<{ packId: string; packName: string; element: string }> = [];
   for (const pack of PACK_DEFINITIONS) {
     if (pack.cardPool.includes(cardId)) {
-      packs.push({ packName: pack.name, tier: 'Pack' });
+      packs.push({ packId: pack.id, packName: pack.name, element: pack.element ?? 'Neutrality' });
     }
   }
   return packs;
@@ -375,19 +375,35 @@ export default function CollectionCardDetail({ card, finish, owned, onClose }: P
             {packs.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 {packs.map((p, idx) => (
-                  <div
+                  <button
                     key={idx}
+                    onClick={() => {
+                      // Close the detail + collection viewer, then signal the store to focus this pack.
+                      onClose();
+                      window.setTimeout(() => {
+                        window.dispatchEvent(new CustomEvent('focusPackInStore', { detail: { packId: p.packId } }));
+                      }, 50);
+                    }}
                     style={{
                       fontSize: 12,
-                      color: '#d4af8f',
-                      padding: '6px 8px',
-                      background: 'rgba(212, 175, 143, 0.1)',
+                      color: '#ffd86b',
+                      padding: '6px 10px',
+                      background: 'rgba(212, 175, 143, 0.12)',
                       borderRadius: 4,
-                      border: `1px solid rgba(212, 175, 143, 0.2)`,
+                      border: '1px solid rgba(212, 175, 143, 0.4)',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: 'Georgia, serif',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: 8,
                     }}
+                    title="Jump to this pack in the store"
                   >
-                    {p.packName}
-                  </div>
+                    <span>{p.packName}</span>
+                    <span style={{ fontSize: 10, color: '#caa57a' }}>→ Store</span>
+                  </button>
                 ))}
               </div>
             ) : (

@@ -80,6 +80,17 @@ export type PendingEffect =
   | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number }
   | { type: 'embrace_infinite'; cards: DeckCard[]; allCards: DeckCard[]; keep: number };
 
+/** One play recorded in the per-turn Recast Ledger. */
+export interface RecastLedgerEntry {
+  definitionId: string;
+  instanceId: string;
+  ledgerIndex: number;
+  recastCount: number;
+  imprintStacks: number;
+  isAnvilSealed: boolean;
+  isNacreCoated: boolean;
+}
+
 export interface TurnState {
   phase: TurnPhase;
   radiance: number;
@@ -247,12 +258,32 @@ export interface TurnState {
   eternalSeasWhiteFlow?: number;
   eternalSeasBlackFlow?: number;
   eternalSeasMarginCharge?: number;
+  // ── Abyssal Forge — The Reforging ────────────────────────────────────────
+  recastLedger?: RecastLedgerEntry[];
+  reforgeCharges?: number;
+  reforgeChargeCap?: number;
+  pearls?: number;
+  unrecordedHueActive?: boolean;
+  forgeTemperQueue?: number; // pending +temper factor for the next attack on a board-wide source
+  forgeRecastEventsThisTurn?: number;
+  forgePendingCherubimTemper?: number; // queued factor from a Cherubim passive; applied to next Seraphim played
   // Eternal/Infinity per-set amplifier stacks. Keyed by EternalStackKind.
   eternalStacks?: Partial<Record<import('./effects').EternalStackKind, number>>;
   // Per-set secondary keyword counters (gain/spend/cashout). One per set.
   secondaryCounters?: Partial<Record<import('./effects').SetSecondaryKind, number>>;
   // Wing Pulse: number of pending spectrum gains to be doubled.
   flutterWingPulseDoubles?: number;
+  // ── Wished Upon A Star — Stellar Wish System ──────────────────────────────
+  // starlightCharges: accumulated through card play, drives Nova Wish scaling.
+  // dreamLattice: secondary amplifier; resets each turn unless Solarvex Ward is active.
+  starlightCharges?: number;
+  dreamLattice?: number;
+  // solarvexWardActive: set by Solarvex Ward Cherubim passive; prevents decay.
+  solarvexWardActive?: boolean;
+  // starlaceAmplifierActive: one-shot flag set by Starlace Binding; doubles next Nova Wish.
+  starlaceAmplifierActive?: boolean;
+  /** Artifact ids equipped on the active deck; populated at game start from SavedDeck.equippedArtifacts. */
+  equippedArtifactIds?: string[];
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────
@@ -263,14 +294,31 @@ export interface SavedDeck {
   deckList: DeckEntry[];
   extraDeck: ExtraDeckEntry[]; // up to 10 Angel entries, max 4 of each definition across finishes
   isStarter: boolean;
+  /** Artifact ids equipped to this deck (max 3). Save v17. */
+  equippedArtifacts?: string[];
+  /** Player-authored notes describing how the deck plays. Save v18. */
+  notes?: string;
 }
 
 // ── Progress / Settings ────────────────────────────────────────────────────────
 
+/**
+ * Per-boss Codex entry tracking personal bests. Save v13+.
+ */
+export interface BossCodexEntry {
+  /** Wall-clock timestamp of first victory. */
+  firstClearAt?: number;
+  /** Fastest clear time in seconds (lower is better). */
+  fastestClearSeconds?: number;
+  /** Highest single-hit damage dealt to this boss (peak chain). */
+  highestHit?: number;
+  /** Most damage dealt in a single fight. */
+  highestFightDamage?: number;
+}
+
 export interface ProgressState {
   oblivion: number;
   aberratedShards: number;
-  prestige: number;
   totalCardsPlayed: number;
   collection: Record<string, number>;         // definitionId ↁEtotal copy count owned
   holoCollection: Record<string, number>;      // definitionId ↁEholo copy count owned
@@ -279,7 +327,82 @@ export interface ProgressState {
   bossClearCounts: Record<string, number>;
   savedDecks: SavedDeck[];
   activeDeckId: string | null;
-  pityCounters: Record<string, number>;       // packId ↁEconsecutive box opens without a Legendary (resets on Legendary box)
+  pityCounters: Record<string, number>;       // packId → consecutive box opens without a Legendary (resets on Legendary box)
+  /** Per-pack Epic+ pity. packId → consecutive single Pack opens without an Epic-or-better. Save v13. */
+  packPityCounters?: Record<string, number>;
+  /** Per-pack Boss Codex tracking. bossId → personal best stats. Save v13. */
+  bossCodex?: Record<string, BossCodexEntry>;
+  /** Weekly trial completions. ISO-week-string → number of weekly trials completed. Save v13. */
+  weeklyTrialCompletions?: Record<string, number>;
+  /** Player profile (name, current avatar, current title badge). Unlock status is derived from progress. */
+  profile: PlayerProfileState;
+  /** Daily login reward tracking. */
+  dailyLogin: DailyLoginState;
+  /** Daily/weekly quest rotation + progress. Save v11. */
+  quests: import('@/systems/progression/quests').QuestState;
+  /** Achievement claim flags (one-shot shard rewards). Save v11. Keyed by title-badge id. */
+  achievementClaims: Record<string, boolean>;
+  /** Lifetime per-card play counts. Save v12. Keyed by definitionId. */
+  cardPlayCounts: Record<string, number>;
+  /** Card mastery tier claim flags. Save v12. Keyed by `${definitionId}::${tier}`. */
+  cardMasteryClaims: Record<string, boolean>;
+  /** Definition-id → wall-clock ms timestamp of most recent acquisition. Save v14. */
+  recentlyAcquired?: Record<string, number>;
+  /** Wall-clock ms of last collection viewer open. NEW badges shown for cards with `recentlyAcquired[id] > lastCollectionViewedAt`. Save v14. */
+  lastCollectionViewedAt?: number;
+  /** Rolling log of pack opens (most recent first, max 50). Save v14. */
+  packOpenHistory?: PackOpenEntry[];
+  /** Endless Gauntlet personal bests. Save v14. */
+  gauntletBest?: GauntletBest;
+  /** Artifact ids the player has purchased, mapped to total copies bought. Save v18 (was Record<string,true> in v17). */
+  ownedArtifacts?: Record<string, number>;
+  /** Universal Card-bane Light currency earned by dissolving cards. Save v18. */
+  cardbaneLight?: number;
+  /**
+   * Per-card user-applied dissolution locks. definitionId → number of
+   * additional copies the player has locked beyond starter copies. Combined
+   * with `STARTER_COLLECTION` to determine the minimum number of copies that
+   * cannot be dissolved. Save v19.
+   */
+  cardLocks?: Record<string, number>;
+}
+
+export interface PackOpenEntry {
+  ts: number;
+  packId: string;
+  tier: 'pack' | 'box' | 'case';
+  rarityCounts: Record<string, number>;
+}
+
+export interface GauntletBest {
+  bestDepth: number;
+  bestShards: number;
+  runs: number;
+}
+
+export interface PlayerProfileState {
+  /** Display name (1-24 chars after trim). */
+  name: string;
+  /** Currently selected avatar definition id. Validated against unlock requirements on render. */
+  avatarId: string;
+  /** Currently selected title badge definition id, or null for none. */
+  titleId: string | null;
+  /** Currently selected UI theme id. Falls back to the default if locked/unknown. */
+  uiThemeId: string;
+  /**
+   * Per-key palette overrides applied on top of the selected theme. Keys must
+   * match `UiPalette`. Null / empty means "no overrides".
+   */
+  customUiTheme: Record<string, string> | null;
+}
+
+export interface DailyLoginState {
+  /** UTC day index of the last claim. -1 means the player has never claimed. */
+  lastClaimedDayIndex: number;
+  /** Current consecutive-day streak. 0 until the first claim. */
+  streak: number;
+  /** Total number of daily rewards ever claimed. */
+  totalClaims: number;
 }
 
 export interface SettingsState {
@@ -291,7 +414,32 @@ export interface SettingsState {
   fontSizePreset: FontSizePreset;
   cardArtDisplay: CardArtDisplay;
   cardThemePacks: Record<string, CardThemePackId>;
+  /** Compact UI scaling: denser collection grid, smaller paddings. Save v14. */
+  compactMode?: boolean;
+  /** Instant-reveal preference for pack opens. Save v14. */
+  instantPackReveal?: boolean;
+  /** Bold/color keywords inside card rules text. Save v15. Defaults to true. */
+  highlightRulesText?: boolean;
+  /**
+   * Keyboard control mappings. Save v16. Values are KeyboardEvent.code strings
+   * (e.g. 'KeyE', 'Slash', 'Escape'). Missing entries fall back to
+   * `DEFAULT_CONTROL_BINDINGS` at read time.
+   */
+  controls?: Partial<Record<KeybindActionId, string>>;
 }
+
+/** Configurable keybind actions exposed in Settings → Controls. */
+export type KeybindActionId =
+  | 'swapExtraDeck'
+  | 'openTutorial'
+  | 'closeOverlay';
+
+/** Default keyboard control bindings (KeyboardEvent.code values). */
+export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
+  swapExtraDeck: 'KeyE',
+  openTutorial: 'Slash',
+  closeOverlay: 'Escape',
+};
 
 export type UiLanguage = 'en' | 'es' | 'fr';
 export type FontSizePreset = 'compact' | 'standard' | 'large';
@@ -310,4 +458,24 @@ export interface GameState {
   progress: ProgressState;
   settings: SettingsState;
   bossFight: BossFightState;
+  /**
+   * In-memory only — set by the SaveManager when the on-disk envelope's
+   * signature didn't validate. Stripped from the payload before serialization
+   * so it can't be cleared by editing the save file.
+   */
+  saveTampered?: boolean;
+  /**
+   * In-memory only — queue of transient toast notifications. Not persisted.
+   */
+  toasts?: ToastEntry[];
+}
+
+export interface ToastEntry {
+  id: string;
+  message: string;
+  kind?: 'info' | 'success' | 'warning' | 'reward';
+  /** Wall-clock time when the toast was enqueued (ms). */
+  ts: number;
+  /** Optional auto-dismiss duration in ms. Defaults to 3500. */
+  durationMs?: number;
 }

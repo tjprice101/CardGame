@@ -14,8 +14,15 @@ import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
+import { ARTIFACT_DEFINITIONS, ARTIFACT_SET_COLORS } from '@/data/artifacts/artifactDefinitions';
+import { getMasteryLevel, getMasteryMultiplier } from '@/types/artifacts';
+import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { AngelDefinition, CardDefinition, CardFinish } from '@/types/cards';
+
+// Stable selector fallback: returning a fresh `{}` from a Zustand v5 selector
+// triggers the "getSnapshot should be cached" infinite-render loop.
+const EMPTY_CARD_LOCKS: Readonly<Record<string, number>> = Object.freeze({});
 
 const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
 const SECTION_COLORS: Record<string, string> = {
@@ -94,6 +101,29 @@ const styles: Record<string, React.CSSProperties> = {
     border: `1px solid ${warmTheme.border}`,
     borderRadius: 6,
     padding: '2px 4px',
+  },
+  lockRow: {
+    marginTop: 3,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+    fontSize: 9, color: '#ffd966', letterSpacing: 0.4,
+    background: 'rgba(13, 20, 32, 0.42)',
+    border: '1px solid rgba(255, 217, 102, 0.32)',
+    borderRadius: 6,
+    padding: '2px 4px',
+    pointerEvents: 'auto',
+  },
+  lockBtn: {
+    width: 14, height: 14, padding: 0,
+    border: '1px solid rgba(255, 217, 102, 0.4)',
+    background: 'rgba(255, 217, 102, 0.08)',
+    color: '#ffd966',
+    borderRadius: 3, cursor: 'pointer',
+    fontSize: 11, lineHeight: '12px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: 'Georgia, serif',
+  },
+  lockBtnDisabled: {
+    opacity: 0.35, cursor: 'not-allowed',
   },
   sidebar: {
     width: 260, borderLeft: `1px solid ${warmTheme.border}`,
@@ -195,14 +225,64 @@ function getFinishLabel(finish: CardFinish): string {
   return finish === 'holo' ? 'Holofoil' : 'Normal';
 }
 
+/**
+ * Lock control rendered under each card variant. Shows the combined lock count
+ * (starter-locked + user-locked) and provides +/- buttons to adjust user locks.
+ * Starter-locked copies are always included and cannot be unlocked.
+ */
+function renderLockControl(
+  definitionId: string,
+  collection: Record<string, number>,
+  cardLocks: Record<string, number>,
+  setCardLock: (definitionId: string, count: number) => void,
+): React.ReactNode {
+  const owned = collection[definitionId] ?? 0;
+  const starterLocked = STARTER_COLLECTION[definitionId] ?? 0;
+  const userLocked = cardLocks[definitionId] ?? 0;
+  const maxUserLock = Math.max(0, owned - starterLocked);
+  if (owned <= 0) return null;
+  const totalLocked = starterLocked + userLocked;
+  const canDecrement = userLocked > 0;
+  const canIncrement = userLocked < maxUserLock;
+  return (
+    <div
+      style={styles.lockRow}
+      onClick={ev => ev.stopPropagation()}
+      title={
+        starterLocked > 0
+          ? `🔒 ${starterLocked} starter ${starterLocked === 1 ? 'copy is' : 'copies are'} permanently locked. You have locked ${userLocked} additional ${userLocked === 1 ? 'copy' : 'copies'}.`
+          : `You have locked ${userLocked} ${userLocked === 1 ? 'copy' : 'copies'} from dissolving.`
+      }
+    >
+      <button
+        style={{ ...styles.lockBtn, ...(canDecrement ? {} : styles.lockBtnDisabled) }}
+        disabled={!canDecrement}
+        onClick={ev => { ev.stopPropagation(); if (canDecrement) setCardLock(definitionId, userLocked - 1); }}
+      >−</button>
+      <span>🔒 {totalLocked}/{owned}</span>
+      <button
+        style={{ ...styles.lockBtn, ...(canIncrement ? {} : styles.lockBtnDisabled) }}
+        disabled={!canIncrement}
+        onClick={ev => { ev.stopPropagation(); if (canIncrement) setCardLock(definitionId, userLocked + 1); }}
+      >+</button>
+    </div>
+  );
+}
+
 export default function DeckBuilder({ onClose }: Props) {
   const faceMetrics = getCardFaceMetrics('grid');
   const { initDeck, saveCurrentDeck, updateSavedDeck, loadSavedDeck, deleteSavedDeck } = useStore.getState();
   const currentDeck = useStore(selectDeck);
   const collection = useStore(s => s.progress.collection);
   const holoCollection = useStore(s => s.progress.holoCollection);
+  const cardLocks = useStore(s => s.progress.cardLocks ?? EMPTY_CARD_LOCKS);
+  const setCardLock = useStore(s => s.setCardLock);
   const savedDecks = useStore(s => s.progress.savedDecks);
   const activeDeckId = useStore(s => s.progress.activeDeckId);
+  const ownedArtifacts = useStore(s => s.progress.ownedArtifacts ?? {});
+  const equipArtifact = useStore(s => s.equipArtifact);
+  const unequipArtifact = useStore(s => s.unequipArtifact);
+  const setDeckNotes = useStore(s => s.setDeckNotes);
   const uniqueOwned = Object.keys(collection).length;
   const isLocked = uniqueOwned < 15;
 
@@ -218,6 +298,9 @@ export default function DeckBuilder({ onClose }: Props) {
   const [elementFilter, setElementFilter] = useState<string | null>(null);
   const [saveMode, setSaveMode] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
+  const [artifactPickerSlot, setArtifactPickerSlot] = useState<number | null>(null);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [notesDraft, setNotesDraft] = useState('');
 
   // Card pool grouped into subsections (Angels go to Extra Deck section, excluded from main pool)
   const { mainSections, angelSection, availableElements } = useMemo(() => {
@@ -299,6 +382,24 @@ export default function DeckBuilder({ onClose }: Props) {
   );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
   const validation = DeckSystem.validate(deckList);
+
+  // Aggregate deck stats: element distribution + rarity breakdown.
+  const deckStats = useMemo(() => {
+    const elementCounts: Record<string, number> = {};
+    const rarityCounts: Record<string, number> = { Common: 0, Rare: 0, Epic: 0, Legendary: 0 };
+    let typeSeraphim = 0, typeCherubim = 0, typeOphanim = 0;
+    for (const entry of deckList) {
+      const def = CardRegistry.get(entry.definitionId);
+      if (!def) continue;
+      const el = getCardCategoryKey(def);
+      elementCounts[el] = (elementCounts[el] ?? 0) + entry.copies;
+      rarityCounts[def.rarity] = (rarityCounts[def.rarity] ?? 0) + entry.copies;
+      if (def.type === 'Seraphim') typeSeraphim += entry.copies;
+      else if (isDisplayCherubimType(def.type)) typeCherubim += entry.copies;
+      else if (isDisplayOphanimType(def.type)) typeOphanim += entry.copies;
+    }
+    return { elementCounts, rarityCounts, typeSeraphim, typeCherubim, typeOphanim };
+  }, [deckList]);
 
   function addCard(defId: string, finish: CardFinish) {
     const def = CardRegistry.get(defId);
@@ -384,8 +485,59 @@ export default function DeckBuilder({ onClose }: Props) {
     setExtraDeckList([]);
   }
 
+  // Auto-fill the main deck with the highest-rarity owned cards. Respects the
+  // current element filter so players can quickly build a focused deck. Adds
+  // up to 4× per definition (or owned copies, whichever is lower) and stops
+  // at 50 cards.
+  function handleFillWithBest() {
+    const rarityRank: Record<string, number> = { Legendary: 4, Epic: 3, Rare: 2, Common: 1 };
+    type Candidate = { def: CardDefinition; finish: CardFinish; owned: number; rank: number };
+
+    const candidates: Candidate[] = [];
+    for (const def of CardRegistry.getAll()) {
+      // Skip Angels — they belong in extra deck.
+      if (def.type === 'Angel') continue;
+      // Respect element filter if active.
+      if (elementFilter !== null && getCardCategoryKey(def) !== elementFilter) continue;
+      const ownedNormal = getOwnedCopiesForFinish(def, 'normal', collection, holoCollection);
+      const ownedHolo = getOwnedCopiesForFinish(def, 'holo', collection, holoCollection);
+      // Prefer holo first when ranking ties.
+      if (ownedHolo > 0) {
+        candidates.push({ def, finish: 'holo', owned: ownedHolo, rank: (rarityRank[def.rarity] ?? 0) + 0.1 });
+      }
+      if (ownedNormal > 0) {
+        candidates.push({ def, finish: 'normal', owned: ownedNormal, rank: (rarityRank[def.rarity] ?? 0) });
+      }
+    }
+    candidates.sort((a, b) => b.rank - a.rank || a.def.name.localeCompare(b.def.name));
+
+    let next = [...deckList];
+    let total = next.reduce((sum, e) => sum + e.copies, 0);
+    for (const c of candidates) {
+      if (total >= 50) break;
+      const ownedTotal = collection[c.def.definitionId] ?? 0;
+      // Keep adding copies of this candidate until cap or deck full.
+      while (total < 50) {
+        const before = next;
+        next = DeckSystem.addDeckEntry(next, c.def.definitionId, c.finish, ownedTotal, c.owned);
+        const after = next.reduce((sum, e) => sum + e.copies, 0);
+        if (after === total) {
+          // No change — cap reached for this candidate.
+          next = before;
+          break;
+        }
+        total = after;
+      }
+    }
+    setDeckList(next);
+    useStore.getState().enqueueToast(
+      total >= 50 ? `Deck filled to 50 with best owned cards.` : `Deck filled with ${total} cards (no more cards available).`,
+      'success',
+    );
+  }
+
   return (
-    <div style={styles.overlay}>
+    <div className="ui-panel-intro" style={{ ...styles.overlay, ['--ui-accent' as any]: '240, 189, 120', ['--ui-accent-soft' as any]: '250, 224, 184' } as React.CSSProperties}>
       {isLocked && (
         <div style={{
           position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 10,
@@ -405,14 +557,79 @@ export default function DeckBuilder({ onClose }: Props) {
         </div>
       )}
 
-      <div style={styles.header}>
+      <div className="ui-shimmer-band" style={{ ...styles.header, position: 'relative' }}>
         <div>
-          <div style={styles.title}>Deck Builder</div>
+          <div className="ui-title-glow" style={styles.title}>Deck Builder</div>
           {activeDeck && (
             <div style={{ fontSize: 11, color: 'rgba(255, 209, 150, 0.86)', marginTop: 2 }}>
               {activeDeck.isStarter ? '🔒 ' : ''}{activeDeck.name}
             </div>
           )}
+          {/* Artifact equip slots — functional. Up to 3 artifacts per deck. */}
+          <div style={{ display: 'flex', gap: 5, marginTop: 5, alignItems: 'center' }}>
+            {[0, 1, 2].map(i => {
+              const equipped = activeDeck?.equippedArtifacts?.[i];
+              const def = equipped ? ARTIFACT_DEFINITIONS.find(a => a.id === equipped) : undefined;
+              const color = def ? (ARTIFACT_SET_COLORS[def.setElementKey] ?? '#f0bd78') : '#f0bd78';
+              const copies = def ? (ownedArtifacts[def.id] ?? 0) : 0;
+              const level = def ? getMasteryLevel(copies) : -1;
+              return (
+                <button
+                  key={i}
+                  className="menu-tactile-btn"
+                  title={def ? `${def.name} — ML ${level} (×${getMasteryMultiplier(copies).toFixed(2)}). Click to unequip.` : (activeDeck ? 'Click to equip an artifact' : 'Save deck to equip artifacts')}
+                  onClick={() => {
+                    if (!activeDeck) return;
+                    if (def) { unequipArtifact(activeDeck.id, def.id); }
+                    else { setArtifactPickerSlot(i); }
+                  }}
+                  disabled={!activeDeck}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 7,
+                    border: def ? `1px solid ${color}` : '1px dashed rgba(255,200,80,0.35)',
+                    background: def
+                      ? `linear-gradient(180deg, ${color}30, ${color}10)`
+                      : 'rgba(255,200,80,0.06)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: def ? color : 'rgba(255,200,80,0.5)',
+                    fontSize: 15,
+                    cursor: activeDeck ? 'pointer' : 'not-allowed',
+                    padding: 0,
+                    boxShadow: def ? `0 0 8px ${color}40 inset` : 'none',
+                    transition: 'all 160ms ease',
+                  }}
+                >
+                  ✦
+                </button>
+              );
+            })}
+            {activeDeck && (
+              <button
+                className="menu-tactile-btn"
+                title="Edit how-to-play notes for this deck"
+                onClick={() => { setNotesDraft(activeDeck.notes ?? ''); setNotesOpen(true); }}
+                style={{
+                  marginLeft: 6,
+                  padding: '4px 10px',
+                  borderRadius: 7,
+                  border: '1px solid rgba(240,189,120,0.4)',
+                  background: 'rgba(240,189,120,0.08)',
+                  color: '#f0bd78',
+                  fontSize: 10,
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  fontFamily: 'Georgia, serif',
+                }}
+              >
+                {(activeDeck.notes && activeDeck.notes.trim().length > 0) ? '📝 Notes' : '📝 Add Notes'}
+              </button>
+            )}
+          </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
           <div style={styles.deckCount}>
@@ -514,6 +731,12 @@ export default function DeckBuilder({ onClose }: Props) {
                         {count > 0 && <div style={styles.badge}>{count}</div>}
                       </div>
                       <div style={styles.ownedLabelBelow}>owns {owned}</div>
+                      {renderLockControl(
+                        def.def.definitionId,
+                        collection,
+                        cardLocks,
+                        setCardLock,
+                      )}
                     </div>
                   );
                 })}
@@ -582,6 +805,12 @@ export default function DeckBuilder({ onClose }: Props) {
                         {count > 0 && <div style={styles.badge}>{count}</div>}
                       </div>
                       <div style={styles.ownedLabelBelow}>owns {owned}</div>
+                      {renderLockControl(
+                        def.def.definitionId,
+                        collection,
+                        cardLocks,
+                        setCardLock,
+                      )}
                     </div>
                   );
                 })}
@@ -635,6 +864,20 @@ export default function DeckBuilder({ onClose }: Props) {
               </button>
             )}
             <div style={{ ...styles.sidebarActionRow, marginBottom: 6 }}>
+              <button className="menu-tactile-btn"
+                style={{
+                  ...styles.miniBtn,
+                  opacity: totalCards < 50 ? 1 : 0.35,
+                  cursor: totalCards < 50 ? 'pointer' : 'not-allowed',
+                }}
+                onClick={handleFillWithBest}
+                disabled={totalCards >= 50}
+                title={elementFilter === null
+                  ? 'Top up the deck with your highest-rarity owned cards.'
+                  : `Top up the deck with the best owned ${ELEMENT_SET_NAMES[elementFilter] ?? elementFilter} cards.`}
+              >
+                Fill with Best
+              </button>
               <button className="menu-tactile-btn"
                 style={{
                   ...styles.miniBtn,
@@ -707,6 +950,43 @@ export default function DeckBuilder({ onClose }: Props) {
             <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.5, marginBottom: 8 }}>
               Main Deck ({totalCards} / 50)
             </div>
+            {/* Stats summary */}
+            {deckList.length > 0 && (
+              <div style={{
+                marginBottom: 10,
+                padding: '6px 8px',
+                background: 'rgba(9, 14, 22, 0.6)',
+                border: `1px solid ${warmTheme.border}`,
+                borderRadius: 6,
+              }}>
+                <div style={{ fontSize: 9, letterSpacing: 1.5, color: '#f0bd78', marginBottom: 4 }}>Stats</div>
+                <div style={{ fontSize: 10, color: '#e8d7bf', display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+                  {(['Legendary','Epic','Rare','Common'] as const).map(r => {
+                    const n = deckStats.rarityCounts[r] ?? 0;
+                    if (n === 0) return null;
+                    const color = r === 'Legendary' ? '#f39c12' : r === 'Epic' ? '#9b59b6' : r === 'Rare' ? '#5b9bd5' : '#999';
+                    return <span key={r} style={{ color }}>{r[0]}: <strong>{n}</strong></span>;
+                  })}
+                </div>
+                <div style={{ fontSize: 10, color: '#caa57a', display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+                  <span style={{ color: '#f0bd78' }}>Ser: <strong>{deckStats.typeSeraphim}</strong></span>
+                  <span style={{ color: warmTheme.cherubim }}>Che: <strong>{deckStats.typeCherubim}</strong></span>
+                  <span style={{ color: '#7f629f' }}>Oph: <strong>{deckStats.typeOphanim}</strong></span>
+                </div>
+                {Object.keys(deckStats.elementCounts).length > 1 && (
+                  <div style={{ fontSize: 9, color: '#9aa1aa', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {Object.entries(deckStats.elementCounts)
+                      .sort((a, b) => b[1] - a[1])
+                      .slice(0, 6)
+                      .map(([el, n]) => (
+                        <span key={el} style={{ color: ELEMENT_COLORS[el] ?? '#caa57a' }}>
+                          {ELEMENT_SET_NAMES[el] ?? el}: {n}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
             {deckList.length === 0 && (
               <div style={{ fontSize: 12, color: 'rgba(232, 215, 191, 0.6)', textAlign: 'center', marginTop: 16 }}>
                 Click cards to add them
@@ -746,6 +1026,224 @@ export default function DeckBuilder({ onClose }: Props) {
           >
             Reshuffle & Play
           </button>
+        </div>
+      </div>
+
+      {/* ── Artifact Picker Modal ───────────────────────────────────────── */}
+      {artifactPickerSlot !== null && activeDeck && (
+        <ArtifactPickerModal
+          ownedArtifacts={ownedArtifacts}
+          equippedIds={activeDeck.equippedArtifacts ?? []}
+          onPick={(artifactId) => {
+            equipArtifact(activeDeck.id, artifactId);
+            setArtifactPickerSlot(null);
+          }}
+          onClose={() => setArtifactPickerSlot(null)}
+        />
+      )}
+
+      {/* ── Notes Modal ─────────────────────────────────────────────────── */}
+      {notesOpen && activeDeck && (
+        <NotesModal
+          deckName={activeDeck.name}
+          value={notesDraft}
+          onChange={setNotesDraft}
+          onSave={() => {
+            setDeckNotes(activeDeck.id, notesDraft);
+            setNotesOpen(false);
+          }}
+          onClose={() => setNotesOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Artifact Picker Modal
+// ────────────────────────────────────────────────────────────────────────────
+
+interface ArtifactPickerProps {
+  ownedArtifacts: Record<string, number>;
+  equippedIds: string[];
+  onPick: (artifactId: string) => void;
+  onClose: () => void;
+}
+
+function ArtifactPickerModal({ ownedArtifacts, equippedIds, onPick, onClose }: ArtifactPickerProps) {
+  const ownedDefs = ARTIFACT_DEFINITIONS
+    .filter(def => (ownedArtifacts[def.id] ?? 0) > 0)
+    .sort((a, b) => a.setName.localeCompare(b.setName) || a.tier.localeCompare(b.tier));
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'absolute', inset: 0, zIndex: 80,
+        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: 'min(720px, 100%)', maxHeight: '80vh',
+          background: 'linear-gradient(180deg, rgba(24,32,47,0.98), rgba(14,20,32,0.98))',
+          border: `1px solid ${warmTheme.border}`,
+          borderRadius: 12,
+          overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
+          fontFamily: 'Georgia, serif',
+          color: '#ead9c0',
+        }}
+      >
+        <div style={{
+          padding: '14px 20px',
+          borderBottom: `1px solid ${warmTheme.border}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 1.5 }}>Equip Artifact</div>
+            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 2 }}>Select one of your owned artifacts to equip in this slot.</div>
+          </div>
+          <button className="menu-tactile-btn" style={{ ...styles.closeBtn }} onClick={onClose}>Cancel</button>
+        </div>
+        <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
+          {ownedDefs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: 40, color: 'rgba(232,215,191,0.5)', fontStyle: 'italic' }}>
+              No artifacts owned yet. Visit the Artifacts menu to purchase your first one.
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+              {ownedDefs.map(def => {
+                const copies = ownedArtifacts[def.id] ?? 0;
+                const level = getMasteryLevel(copies);
+                const mult = getMasteryMultiplier(copies);
+                const color = ARTIFACT_SET_COLORS[def.setElementKey] ?? '#f0bd78';
+                const alreadyEquipped = equippedIds.includes(def.id);
+                return (
+                  <button
+                    key={def.id}
+                    onClick={() => !alreadyEquipped && onPick(def.id)}
+                    disabled={alreadyEquipped}
+                    style={{
+                      textAlign: 'left',
+                      padding: 12,
+                      borderRadius: 10,
+                      border: `1px solid ${alreadyEquipped ? 'rgba(255,255,255,0.1)' : color + '60'}`,
+                      background: alreadyEquipped
+                        ? 'rgba(255,255,255,0.02)'
+                        : `linear-gradient(180deg, ${color}18, transparent)`,
+                      color: alreadyEquipped ? 'rgba(232,215,191,0.4)' : '#ead9c0',
+                      cursor: alreadyEquipped ? 'not-allowed' : 'pointer',
+                      fontFamily: 'Georgia, serif',
+                      transition: 'all 160ms ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: alreadyEquipped ? undefined : color }}>{def.name}</div>
+                      <div style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: `${color}30`, color, letterSpacing: 1 }}>
+                        {level === 3 ? 'APEX' : `ML ${level}`}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 10, opacity: 0.7, marginBottom: 6 }}>
+                      {def.setName} · ×{mult.toFixed(2)} effect
+                    </div>
+                    <div style={{ fontSize: 11, color: 'rgba(232,215,191,0.7)', lineHeight: 1.4 }}>
+                      {def.description}
+                    </div>
+                    {alreadyEquipped && (
+                      <div style={{ marginTop: 6, fontSize: 10, color: '#80e860', letterSpacing: 1 }}>
+                        ALREADY EQUIPPED
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Notes Modal
+// ────────────────────────────────────────────────────────────────────────────
+
+interface NotesModalProps {
+  deckName: string;
+  value: string;
+  onChange: (v: string) => void;
+  onSave: () => void;
+  onClose: () => void;
+}
+
+function NotesModal({ deckName, value, onChange, onSave, onClose }: NotesModalProps) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'absolute', inset: 0, zIndex: 80,
+        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: 'min(640px, 100%)',
+          background: 'linear-gradient(180deg, rgba(24,32,47,0.98), rgba(14,20,32,0.98))',
+          border: `1px solid ${warmTheme.border}`,
+          borderRadius: 12,
+          overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
+          fontFamily: 'Georgia, serif',
+          color: '#ead9c0',
+        }}
+      >
+        <div style={{
+          padding: '14px 20px',
+          borderBottom: `1px solid ${warmTheme.border}`,
+        }}>
+          <div style={{ fontSize: 16, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 1.5 }}>How-to-Play Notes</div>
+          <div style={{ fontSize: 11, opacity: 0.65, marginTop: 2 }}>{deckName}</div>
+        </div>
+        <div style={{ padding: 16 }}>
+          <textarea
+            autoFocus
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Describe how this deck plays — opener, key combos, win condition, side tech…"
+            maxLength={2000}
+            rows={12}
+            style={{
+              width: '100%',
+              boxSizing: 'border-box',
+              padding: 12,
+              borderRadius: 8,
+              background: 'rgba(0,0,0,0.35)',
+              border: `1px solid ${warmTheme.border}`,
+              color: '#ead9c0',
+              fontFamily: 'Georgia, serif',
+              fontSize: 13,
+              lineHeight: 1.55,
+              resize: 'vertical',
+              outline: 'none',
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+            <div style={{ fontSize: 10, opacity: 0.5 }}>
+              {value.length} / 2000 characters
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="menu-tactile-btn" style={styles.closeBtn} onClick={onClose}>Cancel</button>
+              <button className="menu-tactile-btn" style={styles.startBtn} onClick={onSave}>Save Notes</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

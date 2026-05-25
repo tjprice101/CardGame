@@ -51,6 +51,9 @@ const ETERNAL_STACK_LABELS: Record<string, { singular: string; plural: string }>
   garden: { singular: 'Ember Bloom', plural: 'Ember Blooms' },
   flutter: { singular: 'Wing Resonance', plural: 'Wing Resonances' },
   tide: { singular: 'Tide Crown', plural: 'Tide Crowns' },
+  forge: { singular: 'Forge Crown', plural: 'Forge Crowns' },
+  pyre: { singular: 'Pyre Ember', plural: 'Pyre Embers' },
+  wuas: { singular: 'Star Crown', plural: 'Star Crowns' },
 };
 
 function formatEternalStack(stack: string, value: number): string {
@@ -75,6 +78,7 @@ const SET_SECONDARY_LABELS: Record<string, { singular: string; plural: string }>
   garden: { singular: 'Wild Pollen', plural: 'Wild Pollen' },
   flutter: { singular: 'Wing Pulse', plural: 'Wing Pulses' },
   tide: { singular: 'Tide Echo', plural: 'Tide Echoes' },
+  pyre: { singular: 'Cinder Crown', plural: 'Cinder Crowns' },
 };
 
 function formatSetSecondary(kind: string, value: number): string {
@@ -233,6 +237,10 @@ function formatCondition(condition: EffectCondition): string {
       return 'White Flame equals Black Flame';
     case 'black_glass_fracture_gte':
       return `Fracture is ${condition.value}+`;
+    case 'starlight_gte':
+      return `you have ${condition.value}+ Starlight Charges`;
+    case 'dream_lattice_gte':
+      return `you have ${condition.value}+ Dream Lattice`;
     default:
       return `${(condition as { type: string; value?: number }).type.replace(/_/g, ' ')} ${'value' in (condition as { value?: number }) ? (condition as { value?: number }).value ?? '' : ''}`.trim();
   }
@@ -293,15 +301,15 @@ function formatEffect(effect: CardEffect): string {
     case 'power_percent': return `Your board gains +${effect.value}% power`;
     case 'score_multiplier': return `Gain +${effect.value}% total Oblivion this turn`;
     case 'seraphim_bonus_amplifier': return `Seraphim bonuses are amplified by +${effect.value}`;
-    case 'patience_gain_all': return `All active Seraphim gain +${effect.value} Patience`;
+    case 'patience_gain_all': return `All Seraphim on board gain +${effect.value} Patience`;
     case 'patience_double_all': return 'Double all Patience on the board';
-    case 'neutrality_designate_vessel': return 'Designate the active Seraphim with the highest Patience as your Vessel';
+    case 'neutrality_designate_vessel': return 'Designate the Seraphim with the highest Patience as your Vessel';
     case 'neutrality_vessel_copy_gain': return `Your Vessel copies ${effect.percent}% of Patience gained by other Seraphim this turn`;
-    case 'neutrality_vessel_redistribute': return `Redistribute up to ${effect.value} Vessel Patience across your other active Seraphim`;
-    case 'neutrality_mark_hand': return `Mark up to ${effect.count} other cards in hand; marked cards grant +${effect.patience} Patience to all active Seraphim when played`;
+    case 'neutrality_vessel_redistribute': return `Redistribute up to ${effect.value} Vessel Patience across your other Seraphim`;
+    case 'neutrality_mark_hand': return `Mark up to ${effect.count} other cards in hand; marked cards grant +${effect.patience} Patience to all Seraphim when played`;
     case 'neutrality_attack_preserve': return `Seraphim attacks preserve ${effect.percent}% of consumed Patience this turn`;
     case 'neutrality_attack_restore': return `After each Seraphim attack this turn, restore ${effect.percent}% of consumed Patience to that attacker`;
-    case 'neutrality_linked_mode': return `Link active Seraphim this turn: patience gains grant +${effect.gain} extra to all linked Seraphim and non-attacking linked Seraphim retain ${effect.retainPercent}% Patience after each linked attack`;
+    case 'neutrality_linked_mode': return `Link Seraphim this turn: patience gains grant +${effect.gain} extra to all linked Seraphim and non-attacking linked Seraphim retain ${effect.retainPercent}% Patience after each linked attack`;
     case 'overclock':
       return `Overclock: gain ${effect.strain} Strain, then ${effect.then.map(formatEffect).join('; ')}`;
     case 'conditional':
@@ -450,6 +458,58 @@ function formatEffect(effect: CardEffect): string {
     case 'copy_garden_law_to_sky_law': return `Copy Garden Law to Sky Law (${effect.effects.map(e => `${e.law}: ${formatEffect(e.effect)}`).join('; ')})`;
     case 'burn_return_to_hand_as_echo': return `Burn cards return to hand as Echoes for ${formatCount(effect.duration, 'turn')}`;
     case 'burn_cooldown_reduction': return `Burn cards gain ${effect.value} cooldown reduction for ${formatCount(effect.duration, 'turn')}`;
+    case 'forge_reforge_charge_gain': return `Gain ${formatCount(effect.value, 'Reforge Charge')}`;
+    case 'forge_reforge_charge_cap_raise': return `Raise Reforge Charge cap by ${effect.value}`;
+    case 'forge_pearl_drop': return `Drop ${formatCount(effect.value, 'Pearl')}`;
+    case 'forge_pearl_cashout': {
+      const parts: string[] = [`+${effect.oblivionPerPearl} Oblivion`];
+      if ((effect.chainPerPearl ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerPearl!)} chain`);
+      return `Spend ${formatCount(effect.spend, 'Pearl')} (${parts.join(', ')} per Pearl)`;
+    }
+    case 'forge_recast_last': return `Recast last card at ${Math.round(effect.power * 100)}% power`;
+    case 'forge_recast_last_n': return `Recast last ${formatCount(effect.count, 'card')} at ${Math.round(effect.power * 100)}% power`;
+    case 'forge_recast_random': return `Recast ${formatCount(effect.count ?? 1, 'random played card')} at ${Math.round(effect.power * 100)}% power`;
+    case 'forge_nacre_recast': {
+      const target = effect.targetMode === 'last' ? 'last card' : `last ${formatCount(effect.count ?? 1, 'card')}`;
+      return `Nacre-Recast ${target} at ${Math.round(effect.power * 100)}% power`;
+    }
+    case 'forge_ouroboric_recast': return `Ouroboric Recast at ${Math.round(effect.power * 100)}% power`;
+    case 'forge_temper': {
+      const target = effect.targetMode === 'self' ? 'this card' : effect.targetMode === 'last_played' ? 'last played card' : 'all Seraphim on board';
+      return `Temper ${target}: x${formatExactValue(effect.factor)} power`;
+    }
+    case 'forge_anvil_seal': {
+      const target = effect.target === 'self' ? 'this card' : 'last played card';
+      return `Anvil-Seal ${target} (+${effect.burstOblivion} Oblivion, +${formatExactValue(effect.burstChain)} chain on next play)`;
+    }
+    case 'forge_nacre_coat': return `Nacre-Coat ${effect.targetMode === 'all_played' ? 'all played cards' : 'last played card'}`;
+    case 'forge_unrecorded_ignite': return 'Ignite the Unrecorded Hue';
+    case 'forge_crown_cashout': {
+      const parts: string[] = [`+${effect.oblivionPerCrown} Oblivion`];
+      if ((effect.chainPerCrown ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerCrown!)} chain`);
+      return `Cash out all Forge Crowns (${parts.join(', ')} per crown)`;
+    }
+    case 'dfh_crown_cashout': {
+      const parts: string[] = [`+${effect.oblivionPerCrown} Oblivion`];
+      if ((effect.chainPerCrown ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerCrown!)} chain`);
+      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
+      return `Cash out ${scope} Cinder Crowns (${parts.join(', ')} per crown)`;
+    }
+    case 'starlight_gain':
+      return `Gain ${formatCount(effect.amount, 'Starlight Charge')}`;
+    case 'dream_lattice_gain':
+      return `Gain ${formatCount(effect.amount, 'Dream Lattice stack')}`;
+    case 'wuas_nova_wish_burst':
+      return `Nova Wish Burst (Oblivion = Starlight × (1 + Dream × ${effect.dreamMultiplier ?? 0.4}))${effect.consumeStarlight ? '; consumes all Starlight' : ''}`;
+    case 'wuas_constellation_lock_release': {
+      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
+      return `Cash out ${scope} Star Crowns (+${effect.oblivionPerStack} Oblivion per Crown, +${formatExactValue(effect.chainPerDream ?? 0)} chain per Dream Lattice)`;
+    }
+    case 'wuas_infinite_starbirth': {
+      const parts: string[] = [`Ob = Seraphim × Starlight × ${effect.oblivionPerSeraphimPerStarlight}`];
+      if ((effect.drawPerDream ?? 0) > 0) parts.push(`draw ${effect.drawPerDream} per Dream Lattice`);
+      return `Infinite Starbirth (${parts.join('; ')})`;
+    }
     default:
       return (effect as { type: string }).type;
   }
@@ -565,6 +625,12 @@ export function getCanonicalCardDescription(card: CardDefinition): string {
       parts.push(`On play: ${formatEffectsInline(seraphim.onPlayEffects)}`);
     }
     parts.push(`While on board: ${formatSeraphimPassive(seraphim.baseStats.bonusType, seraphim.baseStats.bonusValue)}`);
+    if (seraphim.patienceThreshold !== undefined) {
+      const drawText = seraphim.patienceThresholdDraw && seraphim.patienceThresholdDraw > 0
+        ? `; if Patience ≥ ${seraphim.patienceThreshold} on attack, also draw ${formatCount(seraphim.patienceThresholdDraw, 'card')}`
+        : '';
+      parts.push(`Patience: +1 stack per card played; on attack, each stack → +15 Oblivion${drawText}`);
+    }
     return parts.join('. ');
   }
 
@@ -708,6 +774,16 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       formatSeraphimPassive(seraphim.baseStats.bonusType, seraphim.baseStats.bonusValue),
       `Synergy element ${seraphim.baseStats.synergyRequirement}`,
     ]);
+    if (seraphim.patienceThreshold !== undefined) {
+      const patienceLines = [
+        `Accumulates +1 Patience per card played`,
+        `On attack: each Patience stack grants +15 Oblivion (stacks then reset)`,
+      ];
+      if (seraphim.patienceThresholdDraw && seraphim.patienceThresholdDraw > 0) {
+        patienceLines.push(`If Patience ≥ ${seraphim.patienceThreshold} on attack, also draw ${formatCount(seraphim.patienceThresholdDraw, 'card')}`);
+      }
+      pushSummarySection(sections, 'Patience', patienceLines);
+    }
     if (seraphim.attacks) {
       pushSummarySection(sections, 'Attacks', [
         formatAttackSummary('Unsynergized', seraphim.attacks.unsynergized),

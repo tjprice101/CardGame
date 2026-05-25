@@ -164,7 +164,40 @@ export type ImmediateEffect =
   | { type: 'absol_cascade_proof_amplify'; chainPerProofDepth: number; consume?: number }
   | { type: 'garden_wild_pollen_seed'; embersPerPollen: number; scoreMultPerBloom: number; consume?: number }
   | { type: 'flutter_wing_pulse_amplify'; doubleNextGains: number; consume?: number }
-  | { type: 'tide_echo_resolve'; chainPerPositive: number; oblivionPerNegative: number; consume?: number };
+  | { type: 'tide_echo_resolve'; chainPerPositive: number; oblivionPerNegative: number; consume?: number }
+  // ── Abyssal Forge — The Reforging ────────────────────────────────────────
+  | { type: 'forge_reforge_charge_gain'; value: number }
+  | { type: 'forge_reforge_charge_cap_raise'; value: number }
+  | { type: 'forge_pearl_drop'; value: number }
+  | { type: 'forge_pearl_cashout'; spend: number; oblivionPerPearl: number; chainPerPearl?: number }
+  | { type: 'forge_recast_last'; power: number }
+  | { type: 'forge_recast_last_n'; count: number; power: number }
+  | { type: 'forge_recast_random'; power: number; count?: number }
+  | { type: 'forge_nacre_recast'; targetMode: 'last' | 'lastN'; count?: number; power: number }
+  | { type: 'forge_ouroboric_recast'; power: number }
+  | { type: 'forge_temper'; targetMode: 'self' | 'all_seraphim_on_board' | 'last_played'; factor: number }
+  | { type: 'forge_anvil_seal'; target: 'self' | 'last_played'; burstOblivion: number; burstChain: number }
+  | { type: 'forge_nacre_coat'; targetMode: 'all_played' | 'last_played' }
+  | { type: 'forge_unrecorded_ignite' }
+  | { type: 'forge_crown_cashout'; oblivionPerCrown: number; chainPerCrown?: number }
+  // ── Death-flamed Hell — Pyre Ascendancy ───────────────────────────────────
+  // Pyre Embers live on eternalStacks['pyre']; Cinder Crowns live on
+  // secondaryCounters['pyre']. dfh_crown_cashout consumes Crowns for a
+  // big oblivion+chain finale (the Eternal/Infinite tier signature).
+  | { type: 'dfh_crown_cashout'; oblivionPerCrown: number; chainPerCrown?: number; consume?: number }
+  // ── Wished Upon A Star — Stellar Wish System (base-card mechanics) ─────────
+  // starlightCharges and dreamLattice live directly on TurnState (same as Iron Dominion).
+  | { type: 'starlight_gain'; amount: number }
+  | { type: 'starlight_spend'; amount: number }
+  | { type: 'dream_lattice_gain'; amount: number }
+  | { type: 'dream_lattice_spend'; amount: number }
+  // Nova Wish Burst: oblivion = starlightCharges × (1 + dreamLattice × 0.4).
+  // consumeStarlight: if true, resets starlightCharges to 0 after cashout.
+  | { type: 'wuas_nova_wish_burst'; consumeStarlight?: boolean; dreamMultiplier?: number }
+  // Eternal tier cashout: chain + oblivion scaled by eternalStacks['wuas'] and dreamLattice.
+  | { type: 'wuas_constellation_lock_release'; oblivionPerStack: number; chainPerDream?: number; consume?: number }
+  // Infinite tier cashout: fires based on board seraphim count × starlightCharges, no stack consume.
+  | { type: 'wuas_infinite_starbirth'; oblivionPerSeraphimPerStarlight: number; drawPerDream?: number };
 
 export type EternalStackKind =
   | 'pyro'
@@ -177,7 +210,10 @@ export type EternalStackKind =
   | 'absol'
   | 'garden'
   | 'flutter'
-  | 'tide';
+  | 'tide'
+  | 'forge'
+  | 'pyre'
+  | 'wuas';
 
 /** Per-set secondary keyword kinds — mirrors EternalStackKind 1:1. */
 export type SetSecondaryKind = EternalStackKind;
@@ -247,6 +283,12 @@ export type EffectCondition =
   | { type: 'scar_reset_active' }
   | { type: 'eternal_stack_gte'; stack: EternalStackKind; value: number }
   | { type: 'set_secondary_gte'; kind: SetSecondaryKind; value: number }
+  | { type: 'forge_reforge_charges_gte'; value: number }
+  | { type: 'forge_pearls_gte'; value: number }
+  | { type: 'forge_recast_count_gte'; value: number }
+  | { type: 'forge_unrecorded_hue_active' }
+  | { type: 'starlight_gte'; value: number }
+  | { type: 'dream_lattice_gte'; value: number }
 
 export interface ConditionalEffect {
   type: 'conditional';
@@ -293,6 +335,13 @@ export type CherubimPassiveEffect =
   | { type: 'cherubim_scar_consume'; value: number }
   | { type: 'cherubim_scar_amplify'; value: number }
   | { type: 'cherubim_scar_reset' }
+  // Abyssal Forge — recast-aware passives
+  | { type: 'cherubim_recast_chain_bonus'; value: number }
+  | { type: 'cherubim_recast_oblivion_bonus'; value: number }
+  | { type: 'cherubim_charge_per_n_cards'; n: number }
+  | { type: 'cherubim_temper_on_next_seraphim'; factor: number }
+  | { type: 'cherubim_pearl_per_recast_bonus'; value: number }
+  | { type: 'cherubim_seraphim_recast_amp'; value: number }
   | BlazingGardenEffect
 
 export type CoreCardEffect = BoardEffect | ImmediateEffect | ConditionalEffect;

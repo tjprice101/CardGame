@@ -149,6 +149,23 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(67, 'boss-seas-thyrvaan', 'Thyrvaan Oldlight Grid', 'Eternal Seas', 'es-et-thyrvaan-oldlight-grid', 'A submerged lattice of pre-stellar light that judges by depth, not brightness.', 'boss_seas_thyrvaan'),
   createBoss(68, 'boss-seas-seven-margins', 'Crown of Seven Margins', 'Eternal Seas', 'es-et-crown-of-seven-margins', 'Seven veilmargin tides braided into a sovereign’s diadem of pressure and silence.', 'boss_seas_seven_margins'),
   createBoss(69, 'boss-seas-veleth-abyss', 'Veleth Abyss Sounding', 'Eternal Seas', 'es-et-veleth-abyss-sounding', 'A trench-prayer whose echo returns from depths that should not contain echoes.', 'boss_seas_veleth_abyss'),
+
+  // Abyssal Forge (5)
+  createBoss(70, 'boss-forge-beneath', 'The Forge Beneath', 'Abyssal Forge', 'af-et-forge-beneath', 'The anvil at the bottom of every ocean — where heat is pressure and pressure is prayer.', 'boss_forge_beneath'),
+  createBoss(71, 'boss-ouroglas-dreaming', 'Ouroglas Dreaming', 'Abyssal Forge', 'af-et-ouroglas-dreaming', 'A coiled serpent of fused glass whose every dream re-tempers the world.', 'boss_ouroglas_dreaming'),
+  createBoss(72, 'boss-quenched-drift', 'The Quenched Drift', 'Abyssal Forge', 'af-et-quenched-drift', 'A current of cooling slag that drowns flame and forges silence.', 'boss_quenched_drift'),
+  createBoss(73, 'boss-nacre-procession', 'Nacre-touched Procession', 'Abyssal Forge', 'af-et-nacre-touched-procession', 'Pilgrims welded into pearl, marching the molten road that never sets.', 'boss_nacre_procession'),
+  createBoss(74, 'boss-pearled-pantheon', 'The Pearled Pantheon', 'Abyssal Forge', 'af-et-pearled-pantheon', 'Gods reforged in nacre and ember, crowning the abyss as their own anvil.', 'boss_pearled_pantheon'),
+
+  // Death-flamed Hell (4)
+  createBoss(75, 'boss-skull-ceiling-garrison', 'Skull-Ceiling Garrison', 'Death-flamed Hell', 'dfh-et-skull-ceiling-garrison', 'A vaulted host of bone wardens whose ceiling is the underside of every doom.', 'boss_skull_ceiling_garrison'),
+  createBoss(76, 'boss-othraks-communion', 'Othrak’s Eternal Communion', 'Death-flamed Hell', 'dfh-et-othraks-eternal-communion', 'A choir of mournshade celebrants who pass the chalice of pale fire forever.', 'boss_othraks_communion'),
+  createBoss(77, 'boss-crimson-ember-rain', 'Crimson Ember Rain', 'Death-flamed Hell', 'dfh-et-crimson-ember-rain', 'A weather of falling coals that remembers every name it has burned.', 'boss_crimson_ember_rain'),
+  createBoss(78, 'boss-veiled-procession', 'Eternal Procession of the Veiled', 'Death-flamed Hell', 'dfh-et-eternal-procession-of-the-veiled', 'A bridal march beneath shrouds of death-flame, advancing into every living world.', 'boss_veiled_procession'),
+  // [EVENT] Wished Upon A Star (3)
+  createBoss(79, 'boss-wuas-aethervex-wishwright', 'Aethervex, the Wishwright', '[EVENT] Wished Upon A Star', 'wuas-et-aethervex-wishwright', 'A galaxy-winged colossus with fire-fanged jaws that consume the wishes of dead stars.', 'boss_wuas_aethervex_wishwright'),
+  createBoss(80, 'boss-wuas-selenira-voidbane', 'Selenira Voidbane', '[EVENT] Wished Upon A Star', 'wuas-et-selenira-voidbane', 'An ash-white war-goddess clad in dead-star armor, whose supernovae eyes render judgment.', 'boss_wuas_selenira_voidbane'),
+  createBoss(81, 'boss-wuas-draethos-unforgotten', 'Draethos, The Unforgotten', '[EVENT] Wished Upon A Star', 'wuas-et-draethos-unforgotten', 'An unstable god shifting between child and titan, trailing nightmare-crystal fangs and funeral-ash wings.', 'boss_wuas_draethos_unforgotten'),
 ];
 
 export const BOSS_DEFINITIONS: BossDefinition[] = BOSS_BLUEPRINTS.map((boss, index, bosses) => ({

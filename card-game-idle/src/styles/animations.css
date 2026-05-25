@@ -23,6 +23,26 @@ html { font-size: calc(16px * var(--ui-font-scale, 1)); }
   100% { transform: translateY(220%) skewY(-15deg); }
 }
 
+/* ── WUAS Event button — star shimmer sweep ── */
+@keyframes wuasStarShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.wuas-event-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(8,10,24,0.92) 0%, rgba(18,22,44,0.95) 50%, rgba(8,10,24,0.92) 100%) !important;
+}
+.wuas-event-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(184,200,255,0.12) 50%, transparent 65%);
+  background-size: 200% 100%;
+  animation: wuasStarShimmer 3.2s linear infinite;
+  pointer-events: none;
+}
+
 /* ── Angel card subtle breathing ── */
 @keyframes angelBreath {
   0%, 100% { opacity: 1; }
@@ -74,6 +94,45 @@ html { font-size: calc(16px * var(--ui-font-scale, 1)); }
 @keyframes synergyPulse {
   0%, 100% { box-shadow: var(--seraph-glow-base, 0 0 12px rgba(255,255,255,0.48), 0 0 26px rgba(255,255,255,0.22)); }
   50%       { box-shadow: var(--seraph-glow-peak, 0 0 20px rgba(255,255,255,0.8), 0 0 38px rgba(255,255,255,0.42)); }
+}
+
+/* ── Boss damage pulse: scales with --boss-pulse-intensity (0..1) ── */
+.boss-damage-pulse-panel {
+  /* Intensity-driven shadow + border glow */
+  box-shadow:
+    0 0 calc(8px + 36px * var(--boss-pulse-intensity, 0)) rgba(255, 90, 70, calc(0.15 + 0.55 * var(--boss-pulse-intensity, 0))),
+    0 0 calc(2px + 14px * var(--boss-pulse-intensity, 0)) rgba(255, 200, 90, calc(0.05 + 0.35 * var(--boss-pulse-intensity, 0)));
+  transform: scale(calc(1 + 0.025 * var(--boss-pulse-intensity, 0)));
+  transition: box-shadow 80ms linear, transform 80ms linear;
+  will-change: box-shadow, transform;
+}
+
+.boss-damage-pulse-bar-fill {
+  /* Brighten + saturate the HP bar on impact */
+  filter: brightness(calc(1 + 0.55 * var(--boss-pulse-intensity, 0))) saturate(calc(1 + 0.35 * var(--boss-pulse-intensity, 0)));
+  transition: filter 80ms linear;
+}
+
+@keyframes bossDamageVignettePulse {
+  0%, 100% { opacity: 0; }
+  50%      { opacity: 1; }
+}
+
+.boss-damage-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 24;
+  /* Edge vignette; colors set by per-set theme via CSS vars, alpha driven by --boss-pulse-intensity */
+  --boss-pulse-inner: 255, 70, 50;
+  --boss-pulse-outer: 180, 30, 20;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(var(--boss-pulse-inner), calc(0.32 * var(--boss-pulse-intensity, 0))) 90%,
+    rgba(var(--boss-pulse-outer), calc(0.55 * var(--boss-pulse-intensity, 0))) 100%
+  );
+  transition: background 80ms linear;
 }
 
 /* ── Score tick pop ── */
@@ -807,4 +866,419 @@ html.reduced-motion .holofoil-card {
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
+}
+
+/* ���� Eternity's Wake / Boss Fight dramatic UI ���� */
+@keyframes ewEmberFloat {
+  0%   { transform: translateY(0) translateX(0); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(-160px) translateX(8px); opacity: 0; }
+}
+
+@keyframes ewCrimsonGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(255, 80, 80, 0.35), 0 0 30px rgba(255, 80, 80, 0.18) inset; }
+  50%      { box-shadow: 0 0 28px rgba(255, 120, 120, 0.75), 0 0 50px rgba(255, 80, 80, 0.35) inset; }
+}
+
+@keyframes ewLowHpAlert {
+  0%, 100% { background-color: rgba(255, 60, 60, 0.06); }
+  50%      { background-color: rgba(255, 60, 60, 0.22); }
+}
+
+@keyframes ewBossBreathe {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 14px rgba(255,80,80,0.5)); }
+  50%      { transform: scale(1.025); filter: drop-shadow(0 0 28px rgba(255,140,140,0.8)); }
+}
+
+@keyframes ewHpSheen {
+  0%   { transform: translateX(-120%) skewX(-22deg); }
+  100% { transform: translateX(220%) skewX(-22deg); }
+}
+
+@keyframes ewRankShimmer {
+  0%   { background-position: -180% 0; }
+  100% { background-position: 280% 0; }
+}
+
+@keyframes ewMotivationalRise {
+  0%   { transform: translateY(8px); opacity: 0; }
+  20%  { transform: translateY(0); opacity: 1; }
+  85%  { transform: translateY(-8px); opacity: 1; }
+  100% { transform: translateY(-22px); opacity: 0; }
+}
+
+@keyframes ewGauntletSpiral {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes ewTimerPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(255, 80, 80, 0); }
+  50%      { box-shadow: 0 0 16px rgba(255, 80, 80, 0.5); }
+}
+
+html.reduced-motion .anim-ew-ember,
+html.reduced-motion .anim-ew-crimson-glow,
+html.reduced-motion .anim-ew-low-hp,
+html.reduced-motion .anim-ew-boss-breathe,
+html.reduced-motion .anim-ew-hp-sheen,
+html.reduced-motion .anim-ew-rank-shimmer,
+html.reduced-motion .anim-ew-motivational,
+html.reduced-motion .anim-ew-gauntlet-spiral,
+html.reduced-motion .anim-ew-timer-pulse {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   ── Universal Polish Layer ──
+   Reusable utility classes that bring the Wake-Trials-style smooth motion
+   and shimmer/glow vocabulary to the whole game. Each effect is opt-in via
+   a class hook and respects the global reduced-motion toggle.
+   Customize accent color per-screen via CSS variable: style={{ ['--ui-accent' as any]: '#ff6b6b' }}
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --ui-accent: 230, 196, 132;            /* warm gold rgb fallback */
+  --ui-accent-soft: 250, 224, 184;
+  --ui-accent-glow: 0 0 22px rgba(var(--ui-accent), 0.45);
+}
+
+/* ── Universal shimmer keyframes ── */
+@keyframes uiShimmerSweep {
+  0%   { background-position: -220% 0; }
+  100% { background-position: 320% 0; }
+}
+
+@keyframes uiAuraPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(var(--ui-accent), 0), 0 0 0 rgba(var(--ui-accent), 0); }
+  50%      { box-shadow: 0 0 18px rgba(var(--ui-accent), 0.35), 0 0 40px rgba(var(--ui-accent), 0.18); }
+}
+
+@keyframes uiTitleGlow {
+  0%, 100% { text-shadow: 0 0 12px rgba(var(--ui-accent), 0.45), 0 2px 4px rgba(0,0,0,0.55); }
+  50%      { text-shadow: 0 0 22px rgba(var(--ui-accent), 0.85), 0 0 44px rgba(var(--ui-accent), 0.35), 0 2px 4px rgba(0,0,0,0.6); }
+}
+
+@keyframes uiPanelIntro {
+  0%   { opacity: 0; transform: translateY(14px) scale(0.985); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
+@keyframes uiTileIntro {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes uiBorderShimmer {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+@keyframes uiAmbientFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-2px); }
+}
+
+@keyframes uiHeaderGradientFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Panel entrance ── */
+.ui-panel-intro {
+  animation: uiPanelIntro 0.42s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+
+.ui-tile-intro {
+  animation: uiTileIntro 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Staggered child intros — apply ui-tile-intro to each child of an ui-grid-stagger container */
+.ui-grid-stagger > * { animation: uiTileIntro 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+.ui-grid-stagger > *:nth-child(1)  { animation-delay: 0.02s; }
+.ui-grid-stagger > *:nth-child(2)  { animation-delay: 0.06s; }
+.ui-grid-stagger > *:nth-child(3)  { animation-delay: 0.10s; }
+.ui-grid-stagger > *:nth-child(4)  { animation-delay: 0.14s; }
+.ui-grid-stagger > *:nth-child(5)  { animation-delay: 0.18s; }
+.ui-grid-stagger > *:nth-child(6)  { animation-delay: 0.22s; }
+.ui-grid-stagger > *:nth-child(7)  { animation-delay: 0.26s; }
+.ui-grid-stagger > *:nth-child(8)  { animation-delay: 0.30s; }
+.ui-grid-stagger > *:nth-child(9)  { animation-delay: 0.34s; }
+.ui-grid-stagger > *:nth-child(10) { animation-delay: 0.38s; }
+.ui-grid-stagger > *:nth-child(n+11) { animation-delay: 0.4s; }
+
+/* ── Title text glow — soft breathing aura around a header label ── */
+.ui-title-glow {
+  animation: uiTitleGlow 5.5s ease-in-out infinite;
+}
+
+/* ── Header gradient flow — flowing color band on big titles ── */
+.ui-title-flow {
+  background: linear-gradient(
+    90deg,
+    rgba(var(--ui-accent), 0.95) 0%,
+    rgba(var(--ui-accent-soft, 250, 224, 184), 1) 35%,
+    rgba(var(--ui-accent), 0.95) 60%,
+    rgba(var(--ui-accent-soft, 250, 224, 184), 1) 85%,
+    rgba(var(--ui-accent), 0.95) 100%
+  );
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: uiHeaderGradientFlow 9s ease-in-out infinite;
+  /* keep an underlying solid color for fallback */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.45);
+}
+
+/* ── Shimmer band — a 2px line that flows along the top of a container ── */
+.ui-shimmer-band {
+  position: relative;
+}
+.ui-shimmer-band::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(var(--ui-accent), 0.85) 50%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: uiShimmerSweep 8.5s linear infinite;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.ui-shimmer-band-bottom::after {
+  content: "";
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(var(--ui-accent), 0.6) 50%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: uiShimmerSweep 9.5s linear infinite;
+  pointer-events: none;
+}
+
+/* ── Ambient glow pulse around a panel border ── */
+.ui-glow-pulse-soft {
+  animation: uiAuraPulse 4.2s ease-in-out infinite;
+}
+
+/* ── Tile hover lift — apply to selectable cards/tiles ── */
+.ui-tile-hover {
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 220ms ease,
+              border-color 220ms ease,
+              filter 180ms ease,
+              background-color 220ms ease;
+  will-change: transform, box-shadow;
+}
+.ui-tile-hover:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 14px 28px rgba(0, 0, 0, 0.38),
+    0 0 22px rgba(var(--ui-accent), 0.35),
+    inset 0 0 0 1px rgba(var(--ui-accent), 0.45);
+  filter: saturate(1.08) brightness(1.04);
+}
+.ui-tile-hover:not(:disabled):active {
+  transform: translateY(-1px) scale(0.985);
+}
+
+/* ── Primary CTA — bold breathing button used for "Begin Trial" / "Start" / "Confirm" ── */
+.ui-cta-breath {
+  transition: transform 180ms ease, box-shadow 220ms ease, filter 180ms ease;
+  animation: uiAuraPulse 3.6s ease-in-out infinite;
+}
+.ui-cta-breath:not(:disabled):hover {
+  transform: translateY(-2px);
+  filter: saturate(1.1) brightness(1.06);
+  box-shadow:
+    0 12px 24px rgba(0, 0, 0, 0.35),
+    0 0 28px rgba(var(--ui-accent), 0.65),
+    inset 0 1px 0 rgba(255,255,255,0.22);
+}
+.ui-cta-breath:not(:disabled):active {
+  transform: translateY(0) scale(0.985);
+}
+.ui-cta-breath:disabled {
+  animation: none;
+  filter: grayscale(0.4) brightness(0.85);
+}
+
+/* ── Chip / pill toggle: smooth color transitions and a hairline shimmer when active ── */
+.ui-chip {
+  transition: background 220ms ease, color 220ms ease, border-color 220ms ease, box-shadow 220ms ease, transform 160ms ease;
+  position: relative;
+  overflow: hidden;
+}
+.ui-chip:not(:disabled):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+.ui-chip-active::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, rgba(var(--ui-accent), 0.9), transparent);
+  background-size: 220% 100%;
+  animation: uiShimmerSweep 6.5s linear infinite;
+}
+
+/* ── Ambient float — subtle vertical bob for hero art / featured panels ── */
+.ui-ambient-float {
+  animation: uiAmbientFloat 6.5s ease-in-out infinite;
+}
+
+/* ── Diagonal sweep — single-pass shine on panel mount/hover ── */
+@keyframes uiDiagonalSweep {
+  0%   { transform: translateX(-160%) skewX(-22deg); opacity: 0; }
+  20%  { opacity: 0.55; }
+  80%  { opacity: 0.45; }
+  100% { transform: translateX(260%) skewX(-22deg); opacity: 0; }
+}
+.ui-sweep-once {
+  position: relative;
+  overflow: hidden;
+}
+.ui-sweep-once::after {
+  content: "";
+  position: absolute; inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
+  animation: uiDiagonalSweep 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  pointer-events: none;
+}
+
+/* ── Soft global polish for native form controls used inside menu panels ── */
+.ui-panel-intro select,
+.ui-panel-intro input[type="text"],
+.ui-panel-intro input[type="number"],
+.ui-panel-intro textarea {
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+.ui-panel-intro select:focus,
+.ui-panel-intro input[type="text"]:focus,
+.ui-panel-intro input[type="number"]:focus,
+.ui-panel-intro textarea:focus {
+  border-color: rgba(var(--ui-accent), 0.85) !important;
+  box-shadow: 0 0 0 2px rgba(var(--ui-accent), 0.22), 0 0 14px rgba(var(--ui-accent), 0.18);
+  outline: none;
+}
+
+/* ── Soft default transitions for ALL <button> elements that don't already
+       opt into a bespoke tactile class. Keeps the rest of the game feeling
+       responsive without overriding existing animations. ── */
+button:not(.menu-tactile-btn):not(.attack-screen-tile):not(.attack-cost-choice):not(.attack-modal-primary):not(.attack-modal-secondary):not(.attack-modal-close):not(.attack-embrace-button):not(.ui-cta-breath):not(.ui-tile-hover):not(.ui-chip) {
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 180ms ease, transform 140ms ease, filter 160ms ease;
+}
+
+/* ── Reduced motion respect ── */
+html.reduced-motion .ui-panel-intro,
+html.reduced-motion .ui-tile-intro,
+html.reduced-motion .ui-grid-stagger > *,
+html.reduced-motion .ui-title-glow,
+html.reduced-motion .ui-title-flow,
+html.reduced-motion .ui-shimmer-band::before,
+html.reduced-motion .ui-shimmer-band-bottom::after,
+html.reduced-motion .ui-glow-pulse-soft,
+html.reduced-motion .ui-cta-breath,
+html.reduced-motion .ui-chip-active::after,
+html.reduced-motion .ui-ambient-float,
+html.reduced-motion .ui-sweep-once::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+/* === QOL batch additions === */
+@keyframes newBadgePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 6px rgba(255, 196, 100, 0.55); }
+  50%      { transform: scale(1.08); box-shadow: 0 0 14px rgba(255, 196, 100, 0.95); }
+}
+@keyframes bestCardPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 215, 100, 0.7), inset 0 0 0 0 rgba(255, 215, 100, 0.0); }
+  50%      { box-shadow: 0 0 22px 4px rgba(255, 215, 100, 0.85), inset 0 0 16px rgba(255, 215, 100, 0.35); }
+}
+@keyframes toastSlideIn {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* === Compact UI mode ? modest scale-down across the app === */
+html.compact-mode { --ui-compact-scale: 0.9; }
+html.compact-mode body { font-size: calc(16px * var(--ui-font-scale, 1) * 0.92); }
+html.compact-mode .ui-panel-intro { padding: 14px 18px !important; }
+
+/* ── Title screen prompt pulse ── */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 16px rgba(214,162,94,0.28); opacity: 0.78; }
+  50%      { box-shadow: 0 0 36px rgba(214,162,94,0.72); opacity: 1; }
+}
+
+/* ── Title screen parallax drifts ── */
+@keyframes parallaxDriftA {
+  0%, 100% { transform: translate3d(0,0,0) scale(1.15); }
+  50%      { transform: translate3d(18px,-12px,0) scale(1.17); }
+}
+@keyframes parallaxDriftB {
+  0%, 100% { transform: translate3d(0,0,0) scale(1.05); }
+  50%      { transform: translate3d(-22px,14px,0) scale(1.07); }
+}
+@keyframes parallaxDriftC {
+  0%, 100% { transform: translate3d(0,0,0) scale(0.95); }
+  50%      { transform: translate3d(12px,18px,0) scale(0.97); }
+}
+
+/* ── Scene crossfade black overlay ── */
+@keyframes sceneFade {
+  0%   { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+
+/* Artifact dissolve and powder animations */
+@keyframes dissolveCard {
+  0%   { opacity: 1; transform: scale(1); filter: saturate(1); }
+  40%  { opacity: 0.6; transform: scale(0.96); filter: saturate(3) brightness(1.8); }
+  100% { opacity: 0; transform: scale(0.85); filter: saturate(0) brightness(2); }
+}
+
+@keyframes powderFloat {
+  0%   { opacity: 0; transform: translateY(0) scale(0.7); }
+  20%  { opacity: 1; transform: translateY(-6px) scale(1); }
+  80%  { opacity: 0.9; transform: translateY(-28px) scale(1.05); }
+  100% { opacity: 0; transform: translateY(-44px) scale(0.8); }
+}
+
+@keyframes artifactUnlock {
+  0%   { opacity: 0; transform: scale(0.8); }
+  50%  { opacity: 1; transform: scale(1.04); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.artifact-dissolve-anim {
+  animation: dissolveCard 600ms ease-in forwards;
+}
+
+.powder-float-anim {
+  animation: powderFloat 900ms ease-out forwards;
+  position: absolute;
+  pointer-events: none;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.artifact-unlock-anim {
+  animation: artifactUnlock 700ms ease-out forwards;
 }

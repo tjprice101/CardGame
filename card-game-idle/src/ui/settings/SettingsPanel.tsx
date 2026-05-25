@@ -1,19 +1,25 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useStore, selectSettings } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
 import { FONT_SIZE_OPTIONS, LANGUAGE_OPTIONS, t } from '@/ui/preferences';
+import ControlsSection from '@/ui/settings/ControlsSection';
 
 interface Props {
   onClose: () => void;
   onSave: () => void;
   onWipe: () => void;
+  onExport?: () => string | null;
+  onImport?: (text: string) => boolean;
 }
 
-export default function SettingsPanel({ onClose, onSave, onWipe }: Props) {
+export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImport }: Props) {
   const settings = useStore(selectSettings);
+  const saveTampered = useStore(s => s.saveTampered ?? false);
   const updateSettings = useStore(s => s.updateSettings);
   const [saved, setSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [importStatus, setImportStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   function handleSave() {
     onSave();
@@ -26,6 +32,48 @@ export default function SettingsPanel({ onClose, onSave, onWipe }: Props) {
     setConfirmDelete(false);
   }
 
+  function handleExport() {
+    if (!onExport) return;
+    const payload = onExport();
+    if (!payload) {
+      setImportStatus({ kind: 'err', msg: 'Nothing to export yet.' });
+      return;
+    }
+    const blob = new Blob([payload], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    a.href = url;
+    a.download = `pantheon-${stamp}.pansave`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setImportStatus({ kind: 'ok', msg: 'Save exported.' });
+  }
+
+  function handleImportClick() {
+    fileInputRef.current?.click();
+  }
+
+  function handleImportFile(ev: React.ChangeEvent<HTMLInputElement>) {
+    const file = ev.target.files?.[0];
+    ev.target.value = '';
+    if (!file || !onImport) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result ?? '');
+      const ok = onImport(text);
+      setImportStatus(ok
+        ? { kind: 'ok', msg: 'Save imported. Reloading state…' }
+        : { kind: 'err', msg: 'Not a valid Pantheon save file.' });
+    };
+    reader.onerror = () => {
+      setImportStatus({ kind: 'err', msg: 'Could not read file.' });
+    };
+    reader.readAsText(file);
+  }
+
   return (
     <div style={{
       position: 'absolute',
@@ -33,8 +81,10 @@ export default function SettingsPanel({ onClose, onSave, onWipe }: Props) {
       background: 'radial-gradient(circle at 50% 14%, rgba(201, 170, 112, 0.2) 0%, rgba(201, 170, 112, 0) 36%), radial-gradient(circle at 10% 86%, rgba(104, 134, 174, 0.2) 0%, rgba(104, 134, 174, 0) 40%), repeating-linear-gradient(35deg, rgba(222, 196, 148, 0.06) 0px, rgba(222, 196, 148, 0.06) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 20px), linear-gradient(180deg, rgba(16, 18, 23, 0.965) 0%, rgba(19, 24, 31, 0.965) 100%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 50, pointerEvents: 'auto', fontFamily: 'Georgia, serif',
-    }}>
-      <div style={{
+      ['--ui-accent' as any]: '230, 196, 132',
+      ['--ui-accent-soft' as any]: '250, 224, 184',
+    } as React.CSSProperties}>
+      <div className="ui-panel-intro" style={{
         background: warmTheme.surfaceStrong,
         border: `1px solid ${warmTheme.borderStrong}`,
         borderRadius: 16,
@@ -43,13 +93,15 @@ export default function SettingsPanel({ onClose, onSave, onWipe }: Props) {
         boxShadow: warmTheme.shadow,
         maxHeight: '88vh',
         overflowY: 'auto',
+        position: 'relative',
       }}>
         {/* Header */}
-        <div style={{
+        <div className="ui-shimmer-band" style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           marginBottom: 24, borderBottom: `1px solid ${warmTheme.border}`, paddingBottom: 14,
+          position: 'relative',
         }}>
-          <div style={{ fontSize: 18, fontWeight: 'bold', color: warmTheme.accentDeep, letterSpacing: 2 }}>
+          <div className="ui-title-glow" style={{ fontSize: 18, fontWeight: 'bold', color: warmTheme.accentDeep, letterSpacing: 2 }}>
             {t('settingsTitle')}
           </div>
           <button className="menu-tactile-btn"
@@ -122,6 +174,24 @@ export default function SettingsPanel({ onClose, onSave, onWipe }: Props) {
                 onChange={(e) => updateSettings({ reducedMotion: e.target.checked })}
               />
               {t('reducedMotion')}
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
+              <input
+                type="checkbox"
+                checked={!!settings.compactMode}
+                onChange={(e) => updateSettings({ compactMode: e.target.checked })}
+              />
+              Compact UI mode
+            </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
+              <input
+                type="checkbox"
+                checked={settings.highlightRulesText !== false}
+                onChange={(e) => updateSettings({ highlightRulesText: e.target.checked })}
+              />
+              Highlight keywords in card rules
             </label>
 
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: warmTheme.text }}>
@@ -228,6 +298,8 @@ export default function SettingsPanel({ onClose, onSave, onWipe }: Props) {
           </div>
         </div>
 
+        <ControlsSection />
+
         {/* Save Data section */}
         <div style={{ marginBottom: 24 }}>
           <div style={{
@@ -250,6 +322,74 @@ export default function SettingsPanel({ onClose, onSave, onWipe }: Props) {
           >
             {saved ? 'Saved!' : t('saveNow')}
           </button>
+
+          {/* Export / Import (portable save file for moving between machines) */}
+          {(onExport || onImport) && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+              {onExport && (
+                <button className="menu-tactile-btn"
+                  onClick={handleExport}
+                  title="Download a .pansave file you can carry to another install"
+                  style={{
+                    padding: '10px 0', borderRadius: 10,
+                    border: `1px solid ${warmTheme.borderStrong}`,
+                    background: warmTheme.button,
+                    color: warmTheme.accentDeep, fontSize: 12, cursor: 'pointer',
+                    fontFamily: 'Georgia, serif', letterSpacing: 1,
+                  }}
+                >
+                  Export Save
+                </button>
+              )}
+              {onImport && (
+                <button className="menu-tactile-btn"
+                  onClick={handleImportClick}
+                  title="Load a .pansave or legacy .hrsave file from another install"
+                  style={{
+                    padding: '10px 0', borderRadius: 10,
+                    border: `1px solid ${warmTheme.borderStrong}`,
+                    background: warmTheme.button,
+                    color: warmTheme.accentDeep, fontSize: 12, cursor: 'pointer',
+                    fontFamily: 'Georgia, serif', letterSpacing: 1,
+                  }}
+                >
+                  Import Save
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pansave,.hrsave,.json,.txt,text/plain"
+                onChange={handleImportFile}
+                style={{ display: 'none' }}
+              />
+            </div>
+          )}
+
+          {importStatus && (
+            <div style={{
+              marginBottom: 10, padding: '8px 10px', borderRadius: 8,
+              fontSize: 11, lineHeight: 1.4,
+              border: `1px solid ${importStatus.kind === 'ok' ? 'rgba(79,138,71,0.4)' : 'rgba(184,92,79,0.4)'}`,
+              background: importStatus.kind === 'ok' ? 'rgba(79,138,71,0.1)' : 'rgba(184,92,79,0.1)',
+              color: importStatus.kind === 'ok' ? warmTheme.success : warmTheme.danger,
+            }}>
+              {importStatus.msg}
+            </div>
+          )}
+
+          {saveTampered && (
+            <div style={{
+              marginBottom: 10, padding: '8px 10px', borderRadius: 8,
+              border: '1px solid rgba(184,92,79,0.45)',
+              background: 'rgba(184,92,79,0.12)',
+              color: warmTheme.danger, fontSize: 11, lineHeight: 1.45,
+            }}>
+              ⚠ This save's integrity check failed. The file may have been edited
+              outside the game. Your progress was still loaded — saving again
+              will re-sign the file with the current state.
+            </div>
+          )}
 
           {!confirmDelete ? (
             <button className="menu-tactile-btn"

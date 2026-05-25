@@ -21,9 +21,18 @@ export class GameEngine {
       },
     );
 
-    const saved = this.saveManager.load();
+    const saved = this.saveManager.loadWithStatus();
     if (saved) {
-      useStore.getState().loadState(saved);
+      useStore.getState().loadState(saved.state);
+      useStore.setState({ saveTampered: saved.tampered });
+      if (saved.tampered) {
+        console.warn('[SaveManager] On-disk save failed integrity check; flagged as tampered.');
+      }
+      if (saved.legacy) {
+        // Re-save immediately to upgrade the on-disk envelope to the signed
+        // format so future loads validate.
+        this.saveManager.save();
+      }
     }
 
     try {
@@ -77,7 +86,26 @@ export class GameEngine {
     this.saveManager.stopAutoSave();
     this.saveManager.wipe();
     useStore.getState().resetToDefault();
+    useStore.setState({ saveTampered: false });
     this.saveManager.startAutoSave();
+  }
+
+  /** Returns the current save serialized as a portable text payload. */
+  exportSave(): string | null {
+    return this.saveManager.exportSave();
+  }
+
+  /**
+   * Replaces the on-disk save with `text` if it is a valid Heavenly
+   * Retribution export, reloads the state, and returns true. Returns false
+   * if the payload is unrecognized or corrupt (state is left untouched).
+   */
+  importSave(text: string): boolean {
+    const result = this.saveManager.importSave(text);
+    if (!result) return false;
+    useStore.getState().loadState(result.state);
+    useStore.setState({ saveTampered: result.tampered });
+    return true;
   }
 
   destroy(): void {

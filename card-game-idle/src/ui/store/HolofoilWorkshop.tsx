@@ -207,7 +207,7 @@ export default function HolofoilWorkshop() {
       ? byElement
       : byElement.filter(card => (card.type === 'Angel' ? 'Angel' : card.rarity) === activeRarity);
     const byAffordable = affordableOnly
-      ? byRarity.filter(card => shards >= (getHolofoilConversionCost(card) ?? Number.MAX_SAFE_INTEGER))
+      ? byRarity.filter(card => shards >= (getHolofoilConversionCost(card, holoCollection) ?? Number.MAX_SAFE_INTEGER))
       : byRarity;
     const byCopies = multiCopyOnly
       ? byAffordable.filter(card => getNormalOwnedCopies(card, collection, holoCollection) >= 2)
@@ -215,8 +215,8 @@ export default function HolofoilWorkshop() {
 
     const sorted = [...byCopies];
     sorted.sort((a, b) => {
-      const costA = getHolofoilConversionCost(a) ?? Number.MAX_SAFE_INTEGER;
-      const costB = getHolofoilConversionCost(b) ?? Number.MAX_SAFE_INTEGER;
+      const costA = getHolofoilConversionCost(a, holoCollection) ?? Number.MAX_SAFE_INTEGER;
+      const costB = getHolofoilConversionCost(b, holoCollection) ?? Number.MAX_SAFE_INTEGER;
       if (sortMode === 'name') return a.name.localeCompare(b.name);
       if (sortMode === 'rarity') {
         const delta = (RARITY_ORDER[a.rarity] ?? 0) - (RARITY_ORDER[b.rarity] ?? 0);
@@ -355,7 +355,7 @@ export default function HolofoilWorkshop() {
         {filtered.map(def => {
           const normalOwned = getNormalOwnedCopies(def, collection, holoCollection);
           const holoOwned = getHoloOwnedCopies(collection, holoCollection, def.definitionId);
-          const cost = getHolofoilConversionCost(def) ?? 0;
+          const cost = getHolofoilConversionCost(def, holoCollection) ?? 0;
           const canAfford = shards >= cost;
 
           return (

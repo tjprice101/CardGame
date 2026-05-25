@@ -16,6 +16,9 @@ const CARD_BACKGROUND_FOLDERS: Partial<Record<string, string>> = {
   BlazingGarden: 'blazing-garden',
   Butterfly: 'age-of-the-butterfly',
   EternalSeas: 'eternal-seas',
+  AbyssalForge: 'abyssal-forge',
+  DeathFlamedHell: 'death-flamed-hell',
+  WishedUponAStar: 'wished-upon-a-star',
   Dark: 'black-glass-inferno',
 };
 
@@ -196,6 +199,17 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'es-angel-veleth-undying-water': 'Veleth Undying Water.png',
   'es-et-aeveleth-first-drift': 'Aeveleth First Drift.png',
   'es-inf-aeveleth-undying-revision': 'Aeveleth Undying Revision.png',
+  // Abyssal Forge cards whose PNG filename diverges from the card name
+  // (punctuation dropped, or typo'd source filename preserved).
+  'af-ser-helith-nun-saffron-eel': 'Helith-nun Saffron Eel.png',
+  'af-inf-ouroglas-uncoiled': 'Ourglas Uncoiled.png',
+  "af-oph-ouroglas-discarded-scale": "Ouroglas's Discarded Scale.png",
+  'af-angel-crowned-one-sapphire': 'Crowned One, Sapphire Bellows.png',
+  'af-angel-crowned-one-saffron': 'Crowned One, Saffron Coil.png',
+  'af-ser-cerumel-verdant-anglerfish': 'Cerumel, The Verdant Anglerfish.png',
+  'af-ser-ophrax-vermilion-kraken': 'Ophrax, The Vermilion Kraken.png',
+  'af-ser-tessareth-opal-manta': 'Tessareth, The Opal Manta.png',
+  'af-ser-vairoch-sapphire-bellows': 'Vairoch, The Sapphire Bellows.png',
 };
 
 function getSnowboundEternalFileName(card: CardDefinition): string {
@@ -218,6 +232,9 @@ const CARD_BACK_ASSET_BY_ELEMENT: Partial<Record<string, { folder: string; file:
   BlazingGarden: { folder: 'blazing-garden', file: 'Blazing Garden Card Back.png' },
   Butterfly: { folder: 'age-of-the-butterfly', file: 'Age of the Butterfly Card Back.png' },
   EternalSeas: { folder: 'eternal-seas', file: 'Eternal Seas Card Back.png' },
+  AbyssalForge: { folder: 'abyssal-forge', file: 'Abyssal Forge Card Back.png' },
+  DeathFlamedHell: { folder: 'death-flamed-hell', file: 'Death-flamed Hell Card Back.png' },
+  WishedUponAStar: { folder: 'wished-upon-a-star', file: 'Wished Upon A Star Card Back.png' },
   Dark: { folder: 'black-glass-inferno', file: 'Black Glass Inferno Card Back.png' },
 };
 
@@ -341,6 +358,21 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
   if (card.element === 'EternalSeas') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
     return `${CARD_BACKGROUND_ROOT}/eternal-seas/${encodeURIComponent(fileName)}`;
+  }
+
+  if (card.element === 'AbyssalForge') {
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    return `${CARD_BACKGROUND_ROOT}/abyssal-forge/${encodeURIComponent(fileName)}`;
+  }
+
+  if (card.element === 'DeathFlamedHell') {
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    return `${CARD_BACKGROUND_ROOT}/death-flamed-hell/${encodeURIComponent(fileName)}`;
+  }
+
+  if (card.element === 'WishedUponAStar') {
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    return `${CARD_BACKGROUND_ROOT}/wished-upon-a-star/${encodeURIComponent(fileName)}`;
   }
 
   const bteiFolder = getBteiFolder(card.definitionId);

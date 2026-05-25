@@ -67,6 +67,12 @@ export default function Infinitude({ onClose }: Props) {
   const [justCombined, setJustCombined] = useState<string | null>(null);
 
   const selectedRecipe = orderedRecipes.find(entry => entry.recipe.resultId === selectedRecipeId)?.recipe ?? null;
+  const [listFilter, setListFilter] = useState<'all' | 'event'>('all');
+
+  const filteredRecipes = listFilter === 'event'
+    ? orderedRecipes.filter(e => e.recipe.resultId.startsWith('inf-wuas-'))
+    : orderedRecipes.filter(e => !e.recipe.resultId.startsWith('inf-wuas-'));
+
   const resultDef = selectedRecipe ? CardRegistry.get(selectedRecipe.resultId) : null;
 
   function canCombine(recipe: InfiniteRecipe): boolean {
@@ -83,15 +89,49 @@ export default function Infinitude({ onClose }: Props) {
   }
 
   return (
-    <div style={styles.backdrop}>
-      <div style={styles.panel}>
+    <div style={{ ...styles.backdrop, ['--ui-accent' as any]: '220, 224, 255', ['--ui-accent-soft' as any]: '240, 242, 255' }}>
+      <div className="ui-panel-intro" style={styles.panel}>
         {/* ── Header ── */}
-        <div style={styles.header}>
+        <div style={{ ...styles.header, position: 'relative' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <div style={styles.headerTitle}>INFINITUDE</div>
+            <div className="ui-title-glow" style={styles.headerTitle}>INFINITUDE</div>
             <div style={styles.headerSub}>Merge Eternal cards to forge Infinite power</div>
           </div>
           <button onClick={onClose} style={styles.closeBtn} title="Close">✕</button>
+        </div>
+
+        {/* ── Splash art ── */}
+        <img
+          src="/assets/InfiniteCardsMenuArt.png"
+          alt="Infinitude"
+          style={{ width: '100%', height: 130, objectFit: 'cover', display: 'block', flexShrink: 0 }}
+        />
+
+        {/* ── Filter tabs ── */}
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(220,224,255,0.18)', background: 'rgba(12,12,20,0.6)', flexShrink: 0 }}>
+          {(['all', 'event'] as const).map(tab => (
+            <button
+              key={tab}
+              onClick={() => {
+                setListFilter(tab);
+                const nextList = tab === 'event'
+                  ? orderedRecipes.filter(e => e.recipe.resultId.startsWith('inf-wuas-'))
+                  : orderedRecipes.filter(e => !e.recipe.resultId.startsWith('inf-wuas-'));
+                if (!nextList.some(e => e.recipe.resultId === selectedRecipeId)) {
+                  setSelectedRecipeId(nextList[0]?.recipe.resultId ?? null);
+                }
+              }}
+              style={{
+                padding: '8px 20px', fontSize: 11, cursor: 'pointer', border: 'none', outline: 'none',
+                fontFamily: 'inherit', letterSpacing: 1.2, textTransform: 'uppercase',
+                background: listFilter === tab ? 'rgba(184,200,255,0.1)' : 'transparent',
+                color: listFilter === tab ? '#b8c8ff' : 'rgba(220,224,255,0.4)',
+                borderBottom: listFilter === tab ? '2px solid #b8c8ff' : '2px solid transparent',
+              }}
+            >
+              {tab === 'all' ? 'All Formulas' : '✦ Event Cards'}
+            </button>
+          ))}
         </div>
 
         {/* ── Main layout: recipe list + detail ── */}
@@ -99,12 +139,12 @@ export default function Infinitude({ onClose }: Props) {
           {/* ── Left: recipe list ── */}
           <div style={styles.recipeList}>
             <div style={styles.listHeading}>SELECT FORMULA</div>
-            {orderedRecipes.map((entry, index) => {
+            {filteredRecipes.map((entry, index) => {
               const { recipe, definition: def, setLabel } = entry;
               const ready = canCombine(recipe);
               const owned = progress.infiniteCollection[recipe.resultId] ?? 0;
               const isSelected = recipe.resultId === selectedRecipeId;
-              const previousSetLabel = index > 0 ? orderedRecipes[index - 1]?.setLabel : null;
+              const previousSetLabel = index > 0 ? filteredRecipes[index - 1]?.setLabel : null;
               const showSetHeading = index === 0 || previousSetLabel !== setLabel;
 
               return (

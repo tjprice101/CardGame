@@ -1,0 +1,206 @@
+// Vocabulary registry for the rules-text highlighter. Each term maps to a
+// color/style category. Terms are matched case-insensitively as whole words
+// (with multi-word terms anchored as phrases). Multi-word terms are matched
+// before single-word terms because the combined regex sorts longest-first.
+//
+// This file is the single source of truth — adding a new keyword here is
+// enough to make it highlight everywhere CardRulesDigest is rendered.
+
+import { ELEMENT_SET_NAMES, ELEMENT_COLORS } from '@/data/elements';
+
+export type HighlightCategory =
+  | 'mechanic'
+  | 'status'
+  | 'resource'
+  | 'cardtype'
+  | 'element'
+  | 'trigger'
+  | 'number';
+
+export interface HighlightStyle {
+  color: string;
+  fontWeight?: 600 | 700;
+  fontStyle?: 'italic';
+}
+
+export const HIGHLIGHT_STYLES: Record<HighlightCategory, HighlightStyle> = {
+  mechanic: { color: '#f0bd78', fontWeight: 700 },
+  status: { color: '#ff9b6b', fontWeight: 700 },
+  resource: { color: '#ffd86b', fontWeight: 700 },
+  cardtype: { color: '#c8b890', fontWeight: 700 },
+  element: { color: '#9bc7ff', fontWeight: 700 },
+  trigger: { color: '#b8a07f', fontStyle: 'italic', fontWeight: 600 },
+  number: { color: '#80e860', fontWeight: 700 },
+};
+
+// Single-word and multi-word phrases keyed by category. Order within a
+// category does not matter — the builder sorts all entries longest-first.
+const VOCAB: Record<Exclude<HighlightCategory, 'element' | 'number'>, string[]> = {
+  trigger: [
+    'On Play',
+    'On Summon',
+    'On Board',
+    'While on board',
+    'After',
+    'When',
+    'Whenever',
+    'Play',
+    'Passive',
+    'Hooks',
+    'Awaken',
+    'Materials',
+  ],
+  mechanic: [
+    'Chain',
+    'Cooldown',
+    'Synergy',
+    'Patience',
+    'Holofoil',
+    'Holo',
+    'Eternal',
+    'Infinite',
+    'Prismatic Depth',
+    'Refraction Depth',
+    'Draw',
+    'Discard',
+    'Reshuffle',
+    'Summon',
+    'Sacrifice',
+    'Exalted',
+    'Primary',
+    'Unsynergized',
+    'Synergized',
+    'Auto-discard',
+    'Durability',
+    'Tick speed',
+    'Resource generation',
+    'Power amplifier',
+    'Power',
+    'amplified',
+    'Materials',
+  ],
+  status: [
+    'Burn',
+    'Freeze',
+    'Stun',
+    'Silence',
+    'Haste',
+    'Stagger',
+    'Wither',
+    'Spark',
+    'Bloom',
+    'Frostbite',
+    'Scorched',
+    'Bramble',
+  ],
+  resource: [
+    'Oblivion',
+    'Aberrated Shards',
+    'Aberrated Shard',
+    'Monochromatic Shards',
+    'Radiance',
+    'Ember',
+    'Embers',
+    'Trail',
+    'Strain',
+    'Prismatic Light',
+    'Node Charges',
+    'Memory Shards',
+    'Arctic Charge',
+    'Proof',
+  ],
+  cardtype: [
+    'Seraphim',
+    'Cherubim',
+    'Ophanim',
+    'Angel',
+  ],
+};
+
+export interface VocabEntry {
+  /** The phrase to match (case-insensitive). */
+  phrase: string;
+  category: HighlightCategory;
+  /** Optional per-entry color override (used for element entries). */
+  color?: string;
+}
+
+let cachedEntries: VocabEntry[] | null = null;
+
+/**
+ * Returns every vocabulary entry sorted by phrase length descending so the
+ * combined regex picks up multi-word phrases before single-word substrings
+ * (e.g. "On Play" before "Play").
+ */
+export function getVocabularyEntries(): VocabEntry[] {
+  if (cachedEntries) return cachedEntries;
+
+  const entries: VocabEntry[] = [];
+  for (const [category, phrases] of Object.entries(VOCAB) as [HighlightCategory, string[]][]) {
+    for (const phrase of phrases) {
+      entries.push({ phrase, category });
+    }
+  }
+
+  // Element set names — pull from the canonical map so new sets light up
+  // automatically. Use the element color when available.
+  for (const [key, name] of Object.entries(ELEMENT_SET_NAMES)) {
+    if (!name) continue;
+    entries.push({ phrase: name, category: 'element', color: ELEMENT_COLORS[key] });
+    // Also match the raw element key for cards that reference it bare.
+    if (key !== name) {
+      entries.push({ phrase: key, category: 'element', color: ELEMENT_COLORS[key] });
+    }
+  }
+
+  // Deduplicate by lowercased phrase, preferring the first occurrence so the
+  // explicit VOCAB takes precedence over element name collisions.
+  const seen = new Set<string>();
+  const deduped: VocabEntry[] = [];
+  for (const entry of entries) {
+    const key = entry.phrase.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(entry);
+  }
+
+  deduped.sort((a, b) => b.phrase.length - a.phrase.length);
+  cachedEntries = deduped;
+  return deduped;
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+let cachedRegex: RegExp | null = null;
+
+/**
+ * Builds (and caches) the combined matcher regex. Numbers are matched as a
+ * single token covering signed integers, decimals, x-multipliers, and percent
+ * suffixes — e.g. `+45%`, `x1.8`, `-3`.
+ */
+export function getHighlightRegex(): RegExp {
+  if (cachedRegex) return cachedRegex;
+
+  const phrases = getVocabularyEntries().map(entry => escapeRegex(entry.phrase));
+  // Number pattern: optional sign or 'x', digits, optional decimal, optional %.
+  const numberPattern = '[+\\-x×]?\\d+(?:\\.\\d+)?%?';
+  // Combine: numbers first as a named alternative so we can categorise the
+  // hit by inspecting the matched text in the tokenizer.
+  const pattern = `(${numberPattern})|\\b(${phrases.join('|')})\\b`;
+  cachedRegex = new RegExp(pattern, 'gi');
+  return cachedRegex;
+}
+
+/**
+ * Looks up the category for a matched phrase (case-insensitive). Returns
+ * `null` when the phrase isn't a tracked vocabulary entry.
+ */
+export function getEntryForPhrase(phrase: string): VocabEntry | null {
+  const lower = phrase.toLowerCase();
+  for (const entry of getVocabularyEntries()) {
+    if (entry.phrase.toLowerCase() === lower) return entry;
+  }
+  return null;
+}

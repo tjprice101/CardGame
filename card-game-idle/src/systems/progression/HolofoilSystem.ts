@@ -1,4 +1,5 @@
 import type { CardDefinition, CardFinish } from '@/types/cards';
+import { CardRegistry } from '@/cards/CardRegistry';
 
 export const HOLOFOIL_RARITY_COSTS = {
   Common: 5,
@@ -7,6 +8,15 @@ export const HOLOFOIL_RARITY_COSTS = {
   Legendary: 30,
   Angel: 40,
 } as const;
+
+/**
+ * Per-set exponential scaling factor for holofoil conversions. The Nth holo
+ * copy converted within a given set (element) multiplies that conversion's
+ * cost by SET_EXPONENT^N — so holofoiling deeper into a set becomes an
+ * exponentially expensive milestone. The first conversion in a set is at
+ * base cost.
+ */
+export const HOLOFOIL_SET_EXPONENT = 1.25;
 
 export function getCardFinishKey(definitionId: string, finish: CardFinish): string {
   return `${definitionId}::${finish}`;
@@ -48,10 +58,45 @@ export function getOwnedCopiesForFinish(
     : getNormalOwnedCopies(definition, collection, holoCollection);
 }
 
-export function getHolofoilConversionCost(definition: CardDefinition | undefined): number | null {
+/**
+ * Count of total holofoil copies the player already owns across every card in
+ * the same set (element) as `definition`. Drives the exponential cost ramp.
+ */
+export function getSetHoloCount(
+  definition: CardDefinition,
+  holoCollection: Record<string, number>,
+): number {
+  let total = 0;
+  for (const [defId, count] of Object.entries(holoCollection)) {
+    if ((count ?? 0) <= 0) continue;
+    const def = CardRegistry.get(defId);
+    if (!def) continue;
+    if (def.element === definition.element) total += count;
+  }
+  return total;
+}
+
+export function getHolofoilBaseCost(definition: CardDefinition | undefined): number | null {
   if (!definition || isHoloOnlyCard(definition)) return null;
   if (definition.type === 'Angel') return HOLOFOIL_RARITY_COSTS.Angel;
   return HOLOFOIL_RARITY_COSTS[definition.rarity as keyof Omit<typeof HOLOFOIL_RARITY_COSTS, 'Angel'>] ?? null;
+}
+
+/**
+ * Returns the shard cost for converting one normal copy of `definition` into
+ * holofoil. When `holoCollection` is provided, the cost scales exponentially
+ * by the number of holos already owned in the same set. When omitted,
+ * returns the base (first-conversion) cost.
+ */
+export function getHolofoilConversionCost(
+  definition: CardDefinition | undefined,
+  holoCollection?: Record<string, number>,
+): number | null {
+  const base = getHolofoilBaseCost(definition);
+  if (base === null || !definition) return base;
+  if (!holoCollection) return base;
+  const n = getSetHoloCount(definition, holoCollection);
+  return Math.ceil(base * Math.pow(HOLOFOIL_SET_EXPONENT, n));
 }
 
 export function canConvertCardToHolo(
@@ -60,6 +105,6 @@ export function canConvertCardToHolo(
   holoCollection: Record<string, number>,
 ): boolean {
   if (!definition) return false;
-  if (getHolofoilConversionCost(definition) === null) return false;
+  if (getHolofoilBaseCost(definition) === null) return false;
   return getNormalOwnedCopies(definition, collection, holoCollection) > 0;
 }

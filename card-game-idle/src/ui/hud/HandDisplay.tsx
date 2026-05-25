@@ -15,6 +15,7 @@ import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
+import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
 import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { warmTheme } from '@/ui/theme';
@@ -249,10 +250,27 @@ export default function HandDisplay() {
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [idleShowcaseCards, setIdleShowcaseCards] = useState<IdleShowcaseCard[]>([]);
   const [idleSwapState, setIdleSwapState] = useState<{ slot: number; phase: 'out' | 'in' } | null>(null);
+  // Hand <-> Extra Deck view toggle. Driven by the configurable keybind in
+  // App.tsx via the 'hr-toggle-extra-deck' window event. Read-only relocation
+  // — Angels are still summoned through AngelCompartment.
+  const [handView, setHandView] = useState<'hand' | 'extraDeck'>('hand');
 
   const isMulligan = turn.phase === 'mulligan';
   const isPlaying = turn.phase === 'playing';
   const isIdle = turn.phase === 'idle';
+
+  // Listen for the global toggle event. Snap back to 'hand' on phase changes
+  // so the player always returns to a sane state on turn boundaries.
+  useEffect(() => {
+    function onToggle() {
+      setHandView(v => (v === 'hand' ? 'extraDeck' : 'hand'));
+    }
+    window.addEventListener('hr-toggle-extra-deck', onToggle);
+    return () => window.removeEventListener('hr-toggle-extra-deck', onToggle);
+  }, []);
+  useEffect(() => { setHandView('hand'); }, [turn.phase]);
+
+  const isExtraDeckView = handView === 'extraDeck' && (isPlaying || isMulligan);
 
   const favoriteShowcasePool = useMemo(() => {
     const pool: IdleShowcaseCard[] = [];
@@ -321,6 +339,8 @@ export default function HandDisplay() {
   }, [isIdle, favoriteShowcasePool]);
 
   function handleClick(instanceId: string) {
+    // Extra Deck view is read-only — clicks should not commit play / mulligan.
+    if (isExtraDeckView) return;
     if (isMulligan) {
       toggleMulliganCard(instanceId);
     } else if (isPlaying) {
@@ -336,7 +356,28 @@ export default function HandDisplay() {
     }
   }
 
-  const hoveredDeckCard = hoveredId ? hand.find(c => c.instanceId === hoveredId) : null;
+  const showActiveHand = isMulligan || isPlaying;
+  const showIdleShowcase = isIdle;
+  // Cards to render in the bottom hand strip. Either the live hand (default)
+  // or a read-only relocation of the Extra Deck. Synthetic instanceIds for
+  // extra-deck entries keep React keys stable across renders.
+  const viewCards: Array<{ instanceId: string; definitionId: string; finish: typeof hand[number]['finish'] }> =
+    isExtraDeckView
+      ? deck.extraDeck.map((entry, i) => ({
+          instanceId: `extra-${i}-${entry.definitionId}-${entry.finish}`,
+          definitionId: entry.definitionId,
+          finish: entry.finish,
+        }))
+      : hand
+          .filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'Angel')
+          .map(c => ({ instanceId: c.instanceId, definitionId: c.definitionId, finish: c.finish }));
+  const hasActiveHandCards = viewCards.length > 0;
+
+  const hoveredDeckCard = hoveredId
+    ? (isExtraDeckView
+        ? viewCards.find(c => c.instanceId === hoveredId)
+        : hand.find(c => c.instanceId === hoveredId))
+    : null;
   const hoveredDef = hoveredDeckCard ? CardRegistry.get(hoveredDeckCard.definitionId) : null;
   const hoveredActionClassLabel = hoveredDef ? getActionClassLabel(getCardActionClass(hoveredDef)) : null;
   const hoveredEngine = hoveredDef ? getSetEngineSnapshotForCard(hoveredDef, turn, board) : null;
@@ -344,9 +385,6 @@ export default function HandDisplay() {
     ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(392px, 36vw))'
     : 'var(--angel-drawer-hand-offset, 34px)';
 
-  const showActiveHand = isMulligan || isPlaying;
-  const showIdleShowcase = isIdle;
-  const hasActiveHandCards = hand.length > 0;
   const idleCards = idleShowcaseCards
     .map(card => ({ card, def: CardRegistry.get(card.definitionId) }))
     .filter(entry => entry.def !== undefined);
@@ -499,7 +537,7 @@ export default function HandDisplay() {
                             WebkitLineClamp: 4,
                           }}
                         >
-                          {previewText}
+                          {highlightRulesText(previewText, { disabled: settings.highlightRulesText === false, compact: true })}
                         </div>
                       </div>
                     )}
@@ -541,7 +579,27 @@ export default function HandDisplay() {
             boxShadow: warmTheme.glow,
             marginBottom: 8,
           }}>
-            Hand empty - End Turn to continue
+            {isExtraDeckView ? 'Extra Deck is empty' : 'Hand empty - End Turn to continue'}
+          </div>
+        )}
+        {showActiveHand && (
+          <div style={{
+            position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+            fontFamily: 'Georgia, serif', fontSize: 10, letterSpacing: 2.4,
+            textTransform: 'uppercase', padding: '4px 12px', borderRadius: 999,
+            background: isExtraDeckView ? 'rgba(28, 22, 48, 0.84)' : 'rgba(20, 14, 10, 0.72)',
+            color: isExtraDeckView ? '#cfc8ff' : 'rgba(245, 232, 214, 0.86)',
+            border: `1px solid ${isExtraDeckView ? 'rgba(180,190,255,0.55)' : warmTheme.border}`,
+            boxShadow: warmTheme.glow,
+            pointerEvents: 'auto',
+            whiteSpace: 'nowrap',
+          }}>
+            {isExtraDeckView ? `Extra Deck (${viewCards.length})` : `Hand (${viewCards.length})`}
+            <span style={{
+              marginLeft: 8, opacity: 0.6, fontSize: 9, letterSpacing: 1.2,
+            }}>
+              Press E to swap
+            </span>
           </div>
         )}
         <div
@@ -560,12 +618,14 @@ export default function HandDisplay() {
             e.preventDefault();
           }}
         >
-          {hand.filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'Angel').map((deckCard, idx) => {
+          {viewCards.map((deckCard, idx) => {
           const def = CardRegistry.get(deckCard.definitionId);
-          const selected = turn.mulliganSelected.includes(deckCard.instanceId);
+          const selected = !isExtraDeckView && turn.mulliganSelected.includes(deckCard.instanceId);
           const isHovered = hoveredId === deckCard.instanceId;
-          const isAnimatingOut = playingCardId === deckCard.instanceId;
-          const isPlayable = !isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board);
+          const isAnimatingOut = !isExtraDeckView && playingCardId === deckCard.instanceId;
+          const isPlayable = isExtraDeckView
+            ? false
+            : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board));
           const previewText = def ? getCardPreviewText(def, 2) : 'Card data unavailable';
           const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);
           const nameLength = (def?.name ?? '').length;
@@ -576,8 +636,8 @@ export default function HandDisplay() {
             ? 'linear-gradient(90deg, transparent, rgba(200,210,255,0.09), transparent)'
             : 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)';
 
-          const isDraggable = isPlaying && isPlayable && (def?.type === 'Seraphim' || def?.type === 'Ophanim' || def?.type === 'Cherubim');
-          const isDragging = draggingId === deckCard.instanceId;
+          const isDraggable = !isExtraDeckView && isPlaying && isPlayable && (def?.type === 'Seraphim' || def?.type === 'Ophanim' || def?.type === 'Cherubim');
+          const isDragging = !isExtraDeckView && draggingId === deckCard.instanceId;
 
           return (
             <div
@@ -647,7 +707,7 @@ export default function HandDisplay() {
                       WebkitLineClamp: descMetrics.lineClamp,
                     }}
                   >
-                    {previewText}
+                    {highlightRulesText(previewText, { disabled: settings.highlightRulesText === false, compact: true })}
                   </div>
                 </div>
               )}

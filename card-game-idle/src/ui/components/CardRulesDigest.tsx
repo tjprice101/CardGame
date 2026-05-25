@@ -2,6 +2,8 @@ import { memo, useMemo } from 'react';
 import { getCardSummarySections } from '@/ui/cardStatSummary';
 import type { AbilityTextMode } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
+import { useStore } from '@/state/store';
+import { highlightRulesText } from '@/ui/text/highlightRulesText';
 
 type Variant = 'preview' | 'detail';
 
@@ -28,6 +30,7 @@ function CardRulesDigest({
   sectionBorder?: string;
   abilityTextMode?: AbilityTextMode;
 }) {
+  const highlightEnabled = useStore(state => state.settings.highlightRulesText !== false);
   const sections = useMemo(() => {
     const all = getCardSummarySections(card, { abilityTextMode });
     // Preview: hide 'On Play'/'Play'/'Hooks' — 'Ability' already summarises them.
@@ -75,7 +78,7 @@ function CardRulesDigest({
                 overflow: 'hidden',
                 fontFamily: 'Georgia, serif',
               }}>
-                {line}
+                {highlightRulesText(line, { disabled: !highlightEnabled, compact: true })}
               </div>
             </div>
           ))
@@ -118,7 +121,7 @@ function CardRulesDigest({
                   fontFamily: 'Georgia, serif',
                 }}
               >
-                {line}
+                {highlightRulesText(line, { disabled: !highlightEnabled })}
               </div>
             ))}
           </div>
