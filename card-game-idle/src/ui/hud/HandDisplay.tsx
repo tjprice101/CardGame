@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import CardHoverDetail from '@/ui/hud/CardHoverDetail';
 import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
@@ -395,11 +396,14 @@ export default function HandDisplay() {
         <div style={{
           position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
           color: warmTheme.accentDeep, fontFamily: 'Georgia, serif', fontSize: 13, letterSpacing: 2,
-          background: warmTheme.surface,
-          border: `1px solid ${warmTheme.border}`,
+          background: 'linear-gradient(90deg, rgba(214,162,94,0.12), rgba(248,216,160,0.92), rgba(214,162,94,0.12))',
+          backgroundSize: '200% 100%',
+          animation: 'mulliganShimmer 3s linear infinite',
+          border: `1px solid ${warmTheme.accent}`,
           borderRadius: 999,
-          padding: '8px 16px',
-          boxShadow: warmTheme.glow,
+          padding: '8px 20px',
+          boxShadow: `0 0 20px rgba(214,162,94,0.25), ${warmTheme.glow}`,
+          whiteSpace: 'nowrap',
         }}>
           MULLIGAN ? Click cards to swap them out
         </div>
@@ -640,8 +644,13 @@ export default function HandDisplay() {
           const isDragging = !isExtraDeckView && draggingId === deckCard.instanceId;
 
           return (
-            <div
+            <CardHoverDetail
               key={`${deckCard.instanceId}_${deckCard.definitionId}_${idx}`}
+              definitionId={deckCard.definitionId}
+              finish={deckCard.finish}
+              disabled={isDragging || isMulligan}
+            >
+            <div
               className={[
                 isAnimatingOut ? 'anim-card-play-out' : undefined,
                 deckCard.finish === 'holo'
@@ -657,11 +666,11 @@ export default function HandDisplay() {
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
                 ...(artOnlyMode ? { boxShadow: '0 0 0 2px rgba(255,255,255,0.65), 0 4px 16px rgba(0,0,0,0.5)' } : {}),
                 ...(isHovered && !selected && !isAnimatingOut && isPlayable && !isDragging ? {
-                  transform: 'translateY(-12px)',
+                  transform: 'translateY(-16px) scale(1.025)',
                   boxShadow: artOnlyMode
-                    ? '0 0 0 2px rgba(255,255,255,0.9), 0 8px 24px rgba(0,0,0,0.6)'
-                    : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
-                  borderColor: artOnlyMode ? 'rgba(255,255,255,0.8)' : warmTheme.borderStrong,
+                    ? '0 0 0 2px rgba(255,255,255,0.9), 0 12px 32px rgba(0,0,0,0.65)'
+                    : `0 0 0 1px rgba(214,162,94,0.6), 0 12px 32px rgba(214,162,94,0.28), 0 4px 12px rgba(0,0,0,0.55)`,
+                  borderColor: artOnlyMode ? 'rgba(255,255,255,0.8)' : 'rgba(214,162,94,0.8)',
                 } : {}),
               }}
               onClick={() => handleClick(deckCard.instanceId)}
@@ -730,6 +739,7 @@ export default function HandDisplay() {
                 </div>
               )}
             </div>
+            </CardHoverDetail>
           );
         })}
         </div>

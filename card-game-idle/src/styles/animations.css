@@ -118,6 +118,68 @@ html { font-size: calc(16px * var(--ui-font-scale, 1)); }
   50%      { opacity: 1; }
 }
 
+/* ── Arena ambient edge pulse ── */
+@keyframes arenaEdgePulse {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 1; }
+}
+
+/* ── Board zone row entrance ── */
+@keyframes boardZoneEntrance {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Mulligan banner shimmer ── */
+@keyframes mulliganShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ── Non-playable angel shake (click feedback) ── */
+@keyframes angelShakeNo {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-5px); }
+  40%       { transform: translateX(5px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+.anim-shake-no { animation: angelShakeNo 0.36s ease both; }
+
+/* ── Boss HP bar shake on damage ── */
+@keyframes bossHpShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-4px); }
+  50%       { transform: translateX(4px); }
+  75%       { transform: translateX(-3px); }
+}
+.anim-boss-hp-shake { animation: bossHpShake 0.4s ease both; }
+
+/* ── Boss arena panel slide-in ── */
+@keyframes bossPanelSlideIn {
+  from { opacity: 0; transform: translateY(-24px) scaleX(0.96); }
+  to   { opacity: 1; transform: translateY(0) scaleX(1); }
+}
+
+/* ── Boss ember particle float ── */
+@keyframes emberFloat {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.7; }
+  50%  { transform: translateY(-28px) translateX(6px) scale(0.8); opacity: 0.45; }
+  100% { transform: translateY(-56px) translateX(-4px) scale(0.5); opacity: 0; }
+}
+
+/* ── Boss afterburn bar (ghost damage trail) ── */
+@keyframes afterburnFade {
+  0%   { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
+/* ── Hand card hover gold underglow ── */
+@keyframes handCardGlow {
+  0%, 100% { box-shadow: 0 8px 28px rgba(214,162,94,0.28), 0 2px 8px rgba(0,0,0,0.55); }
+  50%       { box-shadow: 0 12px 36px rgba(214,162,94,0.44), 0 2px 8px rgba(0,0,0,0.55); }
+}
+
 .boss-damage-vignette {
   position: absolute;
   inset: 0;

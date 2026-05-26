@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import CardHoverDetail from '@/ui/hud/CardHoverDetail';
 import { useStore, selectBoard, selectTurn, selectExtraDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -21,6 +22,7 @@ const HAND_RESERVED_WHEN_OPEN = 'min(374px, calc(100vw - 18px))';
 
 export default function AngelCompartment() {
   const [open, setOpen] = useState(false);
+  const [shakeKey, setShakeKey] = useState<string | null>(null);
   const board = useStore(selectBoard);
   const turn = useStore(selectTurn);
   const extraDeck = useStore(selectExtraDeck);
@@ -142,9 +144,12 @@ export default function AngelCompartment() {
                 ? '#83f7b6'
                 : warmTheme.textMuted;
 
+            const entryKey = `${definitionId}::${finish}`;
+            const isShaking = shakeKey === entryKey;
             return (
+              <CardHoverDetail key={entryKey} definitionId={definitionId} finish={finish}>
               <div
-                key={`${definitionId}::${finish}`}
+                className={isShaking ? 'anim-shake-no' : undefined}
                 style={{
                   border: playable
                     ? `1px solid ${warmTheme.borderStrong}`
@@ -167,6 +172,10 @@ export default function AngelCompartment() {
                   if (playable) {
                     summonAngel(definitionId, finish);
                     setOpen(false);
+                  } else {
+                    const k = `${definitionId}::${finish}`;
+                    setShakeKey(k);
+                    setTimeout(() => setShakeKey(sk => sk === k ? null : sk), 400);
                   }
                 }}
               >
@@ -350,8 +359,20 @@ export default function AngelCompartment() {
                       Click to Summon
                     </div>
                   )}
+                  {!playable && availableCopies > 0 && (
+                    <div style={{
+                      marginTop: 8,
+                      textAlign: 'center',
+                      fontSize: 9,
+                      color: 'rgba(255,90,90,0.7)',
+                      letterSpacing: 1,
+                    }}>
+                      Materials not met — click to see what's missing
+                    </div>
+                  )}
                 </div>
               </div>
+              </CardHoverDetail>
             );
           })}
         </div>

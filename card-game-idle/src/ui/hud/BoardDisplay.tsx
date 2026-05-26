@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import CardHoverDetail from '@/ui/hud/CardHoverDetail';
 import { useStore, selectBoard, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -13,6 +14,7 @@ import {
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { ELEMENT_COLORS } from '@/data/elements';
 import type { DeckCard } from '@/types/game';
 import type {
   AngelDefinition,
@@ -658,9 +660,10 @@ export default function BoardDisplay() {
             const isFocused = isHovered || isSelected;
             const focusPalette = getBoardFocusPalette(angelDef?.element);
             const angelDescMetrics = getAdaptiveDescriptionMetrics('board', detailText);
+            const angelElementColor = angelDef?.element ? (ELEMENT_COLORS[angelDef.element] ?? warmTheme.accent) : warmTheme.accent;
             return (
+              <CardHoverDetail key={slotIndex} definitionId={slot.definitionId} finish={slot.finish} disabled={attackPanelSlot !== null}>
               <div
-                key={slotIndex}
                 className={[
                   isNewlyPlaced && angelDef?.element === 'Neutrality' ? 'anim-angel-summon-pop' : 'anim-angel-breath',
                   slot.finish === 'holo'
@@ -704,6 +707,8 @@ export default function BoardDisplay() {
                   position: 'relative',
                 }}
               >
+                {/* Element top stripe */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${angelElementColor}cc, ${angelElementColor}, ${angelElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 {renderBurningGardenBadge(angelDef?.element === 'BlazingGarden' ? slot.burningGardenPhase : undefined, slot.chromaticCounters, slot.isEcho)}
                 {renderPrismaticBadge(angelDef?.prismaticDepth, slot.spectrumTokens)}
                 <div style={getCardNameRibbonStyle('board')}>
@@ -748,6 +753,7 @@ export default function BoardDisplay() {
                   renderBoardFocusOverlay(14, angelDef?.element)
                 )}
               </div>
+              </CardHoverDetail>
             );
           }
 
@@ -767,10 +773,11 @@ export default function BoardDisplay() {
             const isSelected = attackPanelSlot === slotIndex;
             const isFocused = isHovered || isSelected;
             const focusPalette = getBoardFocusPalette(serDef?.element);
+            const serElementColor = serDef?.element ? (ELEMENT_COLORS[serDef.element] ?? warmTheme.accent) : warmTheme.accent;
 
             return (
+              <CardHoverDetail key={slotIndex} definitionId={slot.definitionId} finish={slot.finish} disabled={attackPanelSlot !== null}>
               <div
-                key={slotIndex}
                 className={[
                   isNewlyPlaced ? 'anim-seraphim-pop' : undefined,
                   isActive && !isNewlyPlaced ? 'anim-synergy-pulse' : undefined,
@@ -817,6 +824,8 @@ export default function BoardDisplay() {
                 }}
                 title={`${serDef?.name ?? 'Seraphim'} · Left-click attacks panel · Right-click remove from board`}
               >
+                {/* Element top stripe */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${serElementColor}cc, ${serElementColor}, ${serElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 {renderBurningGardenBadge(serDef?.element === 'BlazingGarden' ? slot.burningGardenPhase : undefined, slot.chromaticCounters, slot.isEcho)}
                 {renderPrismaticBadge(serDef?.prismaticDepth, slot.spectrumTokens)}
                 <div style={getCardNameRibbonStyle('board')}>
@@ -853,26 +862,36 @@ export default function BoardDisplay() {
                   renderBoardFocusOverlay(12, serDef?.element)
                 )}
               </div>
+              </CardHoverDetail>
             );
           }
 
           // Empty front slot ? accepts Seraphim drops
           const hasAction = canPlay && hasSeraphimInHand;
-          const accentColor = isDragTarget
+          const glowColor = isDragTarget
             ? 'rgba(255,215,0,0.9)'
-            : hasSeraphimInHand ? 'rgba(255,215,0,0.55)' : 'rgba(255,215,0,0.2)';
+            : hasSeraphimInHand ? 'rgba(255,215,0,0.5)' : 'rgba(255,215,0,0.12)';
           return (
             <div
               key={slotIndex}
               style={{
                 width: SLOT_W, height: SLOT_H,
-                border: `${isDragTarget ? '2px' : '1px'} dashed ${accentColor}`,
+                border: isDragTarget ? '2px solid rgba(255,215,0,0.85)' : `1px solid rgba(255,215,0,${hasSeraphimInHand ? '0.22' : '0.08'})`,
                 borderRadius: 12,
-                background: isDragTarget ? 'rgba(213,154,82,0.18)' : hasAction ? warmTheme.surface : 'rgba(246,235,218,0.7)',
+                background: isDragTarget
+                  ? 'rgba(213,154,82,0.16)'
+                  : 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.28) 100%)',
+                backdropFilter: 'blur(2px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
-                fontFamily: BODY_FONT, transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
-                boxShadow: isDragTarget ? warmTheme.glow : 'none',
+                fontFamily: BODY_FONT, transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
+                boxShadow: isDragTarget
+                  ? `0 0 0 2px rgba(255,215,0,0.45), 0 0 22px rgba(255,215,0,0.18)`
+                  : hasSeraphimInHand
+                    ? `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 14px rgba(255,215,0,0.06)`
+                    : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                position: 'relative',
+                overflow: 'hidden',
               }}
               onClick={() => handleFrontSlotClick(slotIndex)}
               onDragOver={(e) => {
@@ -888,9 +907,14 @@ export default function BoardDisplay() {
                 setDragOverFront(null);
               }}
             >
-              <div style={{ fontSize: 16, color: accentColor }}>+</div>
-              <div style={{ fontSize: 7, color: accentColor, marginTop: 6, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
-                {isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click Or Drop' : 'Not Clickable'}
+              {/* Corner accent marks */}
+              <div style={{ position: 'absolute', top: 6, left: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: 6, left: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: 6, right: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ fontSize: 18, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.8 : 0.3 }}>✦</div>
+              <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.35 }}>
+                {isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
               </div>
             </div>
           );
@@ -1543,6 +1567,24 @@ export default function BoardDisplay() {
       )}
 
 
+      {/* Zone separator with rank labels */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        width: '100%',
+        gap: 10,
+        marginTop: 'clamp(6px, 1vh, 12px)',
+        marginBottom: 2,
+        pointerEvents: 'none',
+        animation: 'boardZoneEntrance 0.5s ease both',
+      }}>
+        <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07))' }} />
+        <div style={{ fontSize: 8, letterSpacing: 2.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', fontFamily: BODY_FONT, whiteSpace: 'nowrap' }}>Front Rank</div>
+        <div style={{ flex: 2, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+        <div style={{ fontSize: 8, letterSpacing: 2.5, textTransform: 'uppercase', color: 'rgba(200,136,240,0.32)', fontFamily: BODY_FONT, whiteSpace: 'nowrap' }}>Support</div>
+        <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(255,255,255,0.07), transparent)' }} />
+      </div>
+
       {/* Back row: 4 Cherubim slots, staggered between front slots */}
       <div style={{
         display: 'flex',
@@ -1585,9 +1627,10 @@ export default function BoardDisplay() {
               : 'Persists indefinitely';
             const isHovered = hoveredBackSlot === backSlot;
             const focusPalette = getBoardFocusPalette(cardDef?.element);
+            const cherubElementColor = cardDef?.element ? (ELEMENT_COLORS[cardDef.element] ?? '#c888f0') : '#c888f0';
             return (
+              <CardHoverDetail key={backSlot} definitionId={cherubim.definitionId} finish={cherubim.finish} disabled={attackPanelSlot !== null}>
               <div
-                key={backSlot}
                 className={cherubim.finish === 'holo'
                   ? `holofoil-live-card${cardDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${cardDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
                   : undefined}
@@ -1612,6 +1655,8 @@ export default function BoardDisplay() {
                   ? `${cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')} - ${cherubim.durability} play${cherubim.durability !== 1 ? 's' : ''} remaining - click to discard`
                   : `${cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')} - ${conditionText} - click to discard`}
               >
+                {/* Element top stripe */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${cherubElementColor}cc, ${cherubElementColor}, ${cherubElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 {renderBurningGardenBadge(cardDef?.element === 'BlazingGarden' ? cherubim.burningGardenPhase : undefined, cherubim.chromaticCounters, cherubim.isEcho)}
                 {renderPrismaticBadge(cardDef?.prismaticDepth, cherubim.spectrumTokens)}
                 <div style={getCardNameRibbonStyle('boardMini')}>
@@ -1647,26 +1692,36 @@ export default function BoardDisplay() {
                   renderBoardFocusOverlay(12, cardDef?.element)
                 )}
               </div>
+              </CardHoverDetail>
             );
           }
 
           // Empty back slot ? accepts Cherubim drops
           const hasAction = canPlay && hasCherubimInHand;
-          const accentColor = isDragTarget
+          const cherubimGlow = isDragTarget
             ? 'rgba(200,136,240,0.9)'
-            : hasCherubimInHand ? 'rgba(200,136,240,0.55)' : 'rgba(200,136,240,0.2)';
+            : hasCherubimInHand ? 'rgba(200,136,240,0.45)' : 'rgba(200,136,240,0.1)';
           return (
             <div
               key={backSlot}
               style={{
                 width: CHERUBIM_W, height: CHERUBIM_H,
-                border: `${isDragTarget ? '2px' : '1px'} dashed ${accentColor}`,
+                border: isDragTarget ? '2px solid rgba(200,136,240,0.85)' : `1px solid rgba(200,136,240,${hasCherubimInHand ? '0.2' : '0.07'})`,
                 borderRadius: 12,
-                background: isDragTarget ? 'rgba(143,116,169,0.18)' : hasAction ? warmTheme.surface : 'rgba(246,235,218,0.7)',
+                background: isDragTarget
+                  ? 'rgba(143,116,169,0.16)'
+                  : 'linear-gradient(180deg, rgba(200,136,240,0.03) 0%, rgba(0,0,0,0.28) 100%)',
+                backdropFilter: 'blur(2px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
-                fontFamily: BODY_FONT, transition: 'border-color 0.15s, background 0.15s, box-shadow 0.15s',
-                boxShadow: isDragTarget ? warmTheme.glow : 'none',
+                fontFamily: BODY_FONT, transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
+                boxShadow: isDragTarget
+                  ? `0 0 0 2px rgba(200,136,240,0.4), 0 0 18px rgba(200,136,240,0.16)`
+                  : hasCherubimInHand
+                    ? 'inset 0 1px 0 rgba(255,255,255,0.05), 0 0 12px rgba(200,136,240,0.06)'
+                    : 'inset 0 1px 0 rgba(255,255,255,0.03)',
+                position: 'relative',
+                overflow: 'hidden',
               }}
               onClick={() => handleBackSlotClick(backSlot)}
               onDragOver={(e) => {
@@ -1682,9 +1737,14 @@ export default function BoardDisplay() {
                 setDragOverBack(null);
               }}
             >
-              <div style={{ fontSize: 12, color: accentColor }}>+</div>
-              <div style={{ fontSize: 7, color: accentColor, marginTop: 4, letterSpacing: 1, textTransform: 'uppercase' }}>
-                {isDragTarget ? 'Drop Cherubim' : hasCherubimInHand ? 'Click Or Drop' : 'Not Clickable'}
+              {/* Corner accent marks */}
+              <div style={{ position: 'absolute', top: 5, left: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: 5, left: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ position: 'absolute', bottom: 5, right: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
+              <div style={{ fontSize: 14, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.75 : 0.28 }}>✦</div>
+              <div style={{ fontSize: 6, color: cherubimGlow, marginTop: 5, letterSpacing: 1, textTransform: 'uppercase', opacity: hasCherubimInHand ? 0.8 : 0.3 }}>
+                {isDragTarget ? 'Drop Cherubim' : hasCherubimInHand ? 'Click or Drop' : 'Empty'}
               </div>
             </div>
           );

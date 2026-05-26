@@ -83,6 +83,48 @@ export default function ArenaShell() {
         }}
       />
 
+      {/* Pulsing element-tinted vignette around screen edges — left/right rails */}
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `
+            radial-gradient(ellipse 18% 80% at 0% 50%, ${tintRgba} 0%, transparent 100%),
+            radial-gradient(ellipse 18% 80% at 100% 50%, ${tintRgba} 0%, transparent 100%),
+            radial-gradient(ellipse 70% 16% at 50% 0%, ${tintRgba} 0%, transparent 100%),
+            radial-gradient(ellipse 60% 20% at 50% 100%, rgba(0,0,0,0.55) 0%, transparent 100%)
+          `,
+          animation: 'arenaEdgePulse 5s ease-in-out infinite',
+          transition: 'background 600ms ease',
+        }}
+      />
+
+      {/* Top-edge element-tinted accent line */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: '8%',
+          right: '8%',
+          height: 1,
+          background: `linear-gradient(90deg, transparent 0%, ${tint}88 25%, ${tint} 50%, ${tint}88 75%, transparent 100%)`,
+          transition: 'background 600ms ease',
+        }}
+      />
+
+      {/* Bottom-edge dark fade for hand area legibility */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: '22%',
+          background: 'linear-gradient(0deg, rgba(6,4,2,0.72) 0%, rgba(6,4,2,0) 100%)',
+          pointerEvents: 'none',
+        }}
+      />
+
       {/* Subtle ambient set badge — names the active element flavor of this arena. */}
       <div
         style={{

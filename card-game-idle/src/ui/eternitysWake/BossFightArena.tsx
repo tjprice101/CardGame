@@ -117,23 +117,39 @@ export default function BossFightArena() {
       {/* Boss arena banner panel */}
       <div
         style={{
-          margin: '8px auto', width: 'calc(100% - 200px)', maxWidth: 780,
+          margin: '0 auto', width: 'calc(100% - 120px)', maxWidth: 920,
           background: `linear-gradient(180deg, ${EW_PANEL_TINT} 0%, rgba(34, 8, 16, 0.94) 100%)`,
           border: `1px solid ${EW_PANEL_BORDER}`,
-          borderRadius: '0 0 18px 18px',
-          padding: '12px 18px 14px',
-          display: 'flex', flexDirection: 'column', gap: 8,
+          borderRadius: '0 0 20px 20px',
+          padding: '14px 22px 16px',
+          display: 'flex', flexDirection: 'column', gap: 9,
           pointerEvents: 'auto',
           position: 'relative',
-          animation: 'ewCrimsonGlow 3.6s ease-in-out infinite',
+          animation: 'bossPanelSlideIn 0.8s cubic-bezier(0.22,0.61,0.36,1) both, ewCrimsonGlow 3.6s ease-in-out infinite',
+          overflow: 'hidden',
         }}
       >
         {/* Decorative top fleur line */}
         <div style={{
           position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-          width: 86, height: 3, background: `linear-gradient(90deg, transparent, ${EW_ACCENT}, transparent)`,
+          width: 140, height: 3, background: `linear-gradient(90deg, transparent, ${EW_ACCENT}, rgba(255,255,255,0.9), ${EW_ACCENT}, transparent)`,
           borderRadius: 2,
         }} />
+
+        {/* Low-HP ember particles */}
+        {lowHp && [0, 1, 2, 3, 4].map(n => (
+          <div key={n} style={{
+            position: 'absolute',
+            left: `${15 + n * 18}%`,
+            bottom: 0,
+            width: 4, height: 4,
+            borderRadius: '50%',
+            background: n % 2 === 0 ? '#ff7a30' : '#ffcc44',
+            boxShadow: `0 0 6px ${n % 2 === 0 ? '#ff6020' : '#ffa820'}`,
+            animation: `emberFloat ${2.2 + n * 0.4}s ease-out ${n * 0.35}s infinite`,
+            pointerEvents: 'none',
+          }} />
+        ))}
 
         {/* Header row: badge + boss name + timer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
@@ -150,10 +166,10 @@ export default function BossFightArena() {
               }}>{modeBadge.text}</div>
             )}
             <div style={{
-              fontSize: 16, fontWeight: 'bold', color: EW_ACCENT,
+              fontSize: 22, fontWeight: 'bold', color: EW_ACCENT,
               fontFamily: 'Georgia, serif',
-              letterSpacing: 2,
-              textShadow: '0 1px 2px rgba(0,0,0,0.75), 0 0 14px rgba(255,80,80,0.4)',
+              letterSpacing: 3,
+              textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 20px rgba(255,80,80,0.6), 0 0 40px rgba(255,80,80,0.3)',
               textTransform: 'uppercase',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
@@ -172,9 +188,10 @@ export default function BossFightArena() {
           >
             <span style={{ fontSize: 9, color: EW_TEXT_MUTED, letterSpacing: 1.2 }}>TIME</span>
             <span style={{
-              fontSize: 17, color: timeColor, fontFamily: 'Georgia, serif', fontWeight: 'bold',
+              fontSize: 28, color: timeColor, fontFamily: 'Georgia, serif', fontWeight: 'bold',
               fontVariantNumeric: 'tabular-nums',
-              textShadow: `0 0 8px ${timeColor}aa`,
+              textShadow: `0 0 12px ${timeColor}bb, 0 1px 3px rgba(0,0,0,0.75)`,
+              lineHeight: 1,
             }}>
               {timerMinutes}:{timerSeconds}
             </span>
@@ -280,12 +297,12 @@ function HpBar({
     <div
       style={{
         position: 'relative',
-        height: 22,
+        height: 28,
         background: 'rgba(0,0,0,0.55)',
-        borderRadius: 11,
+        borderRadius: 14,
         overflow: 'hidden',
         border: `1px solid ${EW_PANEL_BORDER}`,
-        boxShadow: 'inset 0 0 8px rgba(0,0,0,0.7)',
+        boxShadow: 'inset 0 0 10px rgba(0,0,0,0.75)',
         animation: lowHp ? 'ewLowHpAlert 0.85s ease-in-out infinite' : undefined,
       }}
     >
@@ -294,8 +311,19 @@ function HpBar({
           position: 'absolute', top: 0, right: 0, height: '100%',
           width: `${damageDealtPct}%`,
           background: 'linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.14))',
-          borderRadius: 11,
+          borderRadius: 14,
           transition: 'width 0.6s ease',
+        }}
+      />
+      {/* Afterburn ghost — lingers briefly after damage */}
+      <div
+        style={{
+          position: 'absolute', top: 0, left: 0, height: '100%',
+          width: `${hpPercent * 100}%`,
+          background: `linear-gradient(180deg, rgba(255,180,80,0.35), rgba(255,100,60,0.35))`,
+          borderRadius: 14,
+          animation: 'afterburnFade 0.9s ease-out forwards',
+          pointerEvents: 'none',
         }}
       />
       <div
@@ -303,7 +331,7 @@ function HpBar({
           position: 'absolute', top: 0, left: 0, height: '100%',
           width: `${hpPercent * 100}%`,
           background: `linear-gradient(180deg, ${color}, #b3382b)`,
-          borderRadius: 11,
+          borderRadius: 14,
           transition: 'width 0.45s cubic-bezier(.22,.61,.36,1), background 0.4s ease',
           boxShadow: `0 0 14px ${color}88, inset 0 1px 0 rgba(255,255,255,0.25)`,
           overflow: 'hidden',
