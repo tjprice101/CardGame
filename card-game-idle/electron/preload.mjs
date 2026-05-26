@@ -12,4 +12,14 @@ const pantheonSave = {
   },
 };
 
+const pantheonNotify = {
+  isFocused() {
+    return ipcRenderer.sendSync('pantheon-notify:is-focused') === true;
+  },
+  show(payload) {
+    return ipcRenderer.invoke('pantheon-notify:show', payload);
+  },
+};
+
 contextBridge.exposeInMainWorld('pantheonSave', pantheonSave);
+contextBridge.exposeInMainWorld('pantheonNotify', pantheonNotify);

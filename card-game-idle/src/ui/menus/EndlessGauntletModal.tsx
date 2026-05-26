@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useStore, selectProgress, selectBossFight } from '@/state/store';
+import { useSocialStore, selectSocialStatus } from '@/state/socialStore';
+
+const FriendsLeaderboard = lazy(() => import('@/ui/social/FriendsLeaderboard'));
 
 interface Props {
   onClose: () => void;
@@ -21,6 +24,7 @@ export default function EndlessGauntletModal({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const bossFight = useStore(selectBossFight);
   const startEndlessGauntlet = useStore(s => s.startEndlessGauntlet);
+  const socialStatus = useSocialStore(selectSocialStatus);
   const [selectedDeckId, setSelectedDeckId] = useState<string>(progress.savedDecks[0]?.id ?? '');
 
   const hasDecks = progress.savedDecks.length > 0;
@@ -200,6 +204,23 @@ export default function EndlessGauntletModal({ onClose }: Props) {
             </div>
           </div>
         </div>
+
+        {/* Friends leaderboard (Phase 5). Renders only when authenticated. */}
+        {socialStatus === 'authenticated' && (
+          <div style={{
+            marginBottom: 14, padding: '10px 12px',
+            background: 'rgba(140, 90, 255, 0.08)',
+            border: `1px solid rgba(194, 168, 255, 0.32)`,
+            borderRadius: 10,
+          }}>
+            <div style={{ fontSize: 9, letterSpacing: 2.4, color: EW.violet, textTransform: 'uppercase', marginBottom: 6 }}>
+              Friends Leaderboard
+            </div>
+            <Suspense fallback={<div style={{ fontSize: 10, color: EW.textMuted, fontStyle: 'italic' }}>Loading…</div>}>
+              <FriendsLeaderboard metrics={['gauntletDepth', 'gauntletShards']} />
+            </Suspense>
+          </div>
+        )}
 
         {/* CTA */}
         <button

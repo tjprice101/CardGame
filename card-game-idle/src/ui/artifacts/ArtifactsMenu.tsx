@@ -2,6 +2,7 @@
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
+import { uiTypography } from '@/ui/theme';
 import {
   ARTIFACT_SET_ORDER,
   ARTIFACT_SET_NAMES,
@@ -79,7 +80,9 @@ export default function ArtifactsMenu({ onClose }: Props) {
   const setArtifacts = getArtifactsForSet(selectedSet);
 
   return (
-    <div style={{
+    <div
+      className="artifacts-menu"
+      style={{
       position: 'absolute',
       inset: 0,
       zIndex: 30,
@@ -92,7 +95,7 @@ export default function ArtifactsMenu({ onClose }: Props) {
       opacity: mounted ? 1 : 0,
       transition: 'opacity 320ms ease',
       overflow: 'hidden',
-      fontFamily: 'inherit',
+      fontFamily: uiTypography.body,
       color: '#e8e8f0',
     }}>
       {/* ── Header ─────────────────────────────────────────────────────── */}

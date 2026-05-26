@@ -1183,6 +1183,13 @@ button:not(.menu-tactile-btn):not(.attack-screen-tile):not(.attack-cost-choice):
   transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 180ms ease, transform 140ms ease, filter 160ms ease;
 }
 
+/* ── Artifacts menu: force font inheritance so buttons, inputs and other
+       form controls use the same Georgia serif as the rest of the UI ── */
+.artifacts-menu,
+.artifacts-menu * {
+  font-family: inherit;
+}
+
 /* ── Reduced motion respect ── */
 html.reduced-motion .ui-panel-intro,
 html.reduced-motion .ui-tile-intro,

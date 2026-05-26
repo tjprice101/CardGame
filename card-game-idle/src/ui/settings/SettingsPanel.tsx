@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+﻿import { useRef, useState } from 'react';
 import { useStore, selectSettings } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
 import { FONT_SIZE_OPTIONS, LANGUAGE_OPTIONS, t } from '@/ui/preferences';
@@ -18,7 +18,7 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
   const saveTampered = useStore(s => s.saveTampered ?? false);
   const updateSettings = useStore(s => s.updateSettings);
 
-  // Buffered draft — nothing reaches the store until "Save Settings" is clicked.
+  // Buffered draft 窶・nothing reaches the store until "Save Settings" is clicked.
   const [draft, setDraft] = useState<Partial<SettingsState>>(() => ({ ...settings }));
   const patchDraft = (patch: Partial<SettingsState>) => setDraft(prev => ({ ...prev, ...patch }));
 
@@ -86,7 +86,7 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
       const text = String(reader.result ?? '');
       const ok = onImport(text);
       setImportStatus(ok
-        ? { kind: 'ok', msg: 'Save imported. Reloading state…' }
+        ? { kind: 'ok', msg: 'Save imported. Reloading state窶ｦ' }
         : { kind: 'err', msg: 'Not a valid Pantheon save file.' });
     };
     reader.onerror = () => {
@@ -336,7 +336,7 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
               background: 'rgba(214,162,94,0.07)',
               lineHeight: 1.4,
             }}>
-              You have unsaved changes — click Save Settings to apply them.
+              You have unsaved changes 窶・click Save Settings to apply them.
             </div>
           )}
 
@@ -376,189 +376,6 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
 
         <ControlsSection />
 
-        {/* Save Data section */}
-        <div style={{ marginBottom: 24 }}>
-          <div style={{
-            fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-            color: warmTheme.textMuted, marginBottom: 12,
-          }}>
-            {t('saveData')}
-          </div>
-
-          <button className="menu-tactile-btn"
-            onClick={handleSaveGame}
-            style={{
-              width: '100%', padding: '10px 0', borderRadius: 10,
-              border: `1px solid ${gameSaved ? 'rgba(79,138,71,0.35)' : warmTheme.borderStrong}`,
-              background: gameSaved ? 'rgba(79,138,71,0.12)' : warmTheme.button,
-              color: gameSaved ? warmTheme.success : warmTheme.accentDeep,
-              fontSize: 13, cursor: 'pointer', fontFamily: 'Georgia, serif',
-              letterSpacing: 1, marginBottom: 10, transition: 'background 0.2s, color 0.2s',
-            }}
-          >
-            {gameSaved ? 'Saved!' : 'Save Game Data'}
-          </button>
-
-          {/* Export / Import (portable save file for moving between machines) */}
-          {(onExport || onImport) && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
-              {onExport && (
-                <button className="menu-tactile-btn"
-                  onClick={handleExport}
-                  title="Download a .pansave file you can carry to another install"
-                  style={{
-                    padding: '10px 0', borderRadius: 10,
-                    border: `1px solid ${warmTheme.borderStrong}`,
-                    background: warmTheme.button,
-                    color: warmTheme.accentDeep, fontSize: 12, cursor: 'pointer',
-                    fontFamily: 'Georgia, serif', letterSpacing: 1,
-                  }}
-                >
-                  Export Save
-                </button>
-              )}
-              {onImport && (
-                <button className="menu-tactile-btn"
-                  onClick={handleImportClick}
-                  title="Load a .pansave or legacy .hrsave file from another install"
-                  style={{
-                    padding: '10px 0', borderRadius: 10,
-                    border: `1px solid ${warmTheme.borderStrong}`,
-                    background: warmTheme.button,
-                    color: warmTheme.accentDeep, fontSize: 12, cursor: 'pointer',
-                    fontFamily: 'Georgia, serif', letterSpacing: 1,
-                  }}
-                >
-                  Import Save
-                </button>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pansave,.hrsave,.json,.txt,text/plain"
-                onChange={handleImportFile}
-                style={{ display: 'none' }}
-              />
-            </div>
-          )}
-
-          {importStatus && (
-            <div style={{
-              marginBottom: 10, padding: '8px 10px', borderRadius: 8,
-              fontSize: 11, lineHeight: 1.4,
-              border: `1px solid ${importStatus.kind === 'ok' ? 'rgba(79,138,71,0.4)' : 'rgba(184,92,79,0.4)'}`,
-              background: importStatus.kind === 'ok' ? 'rgba(79,138,71,0.1)' : 'rgba(184,92,79,0.1)',
-              color: importStatus.kind === 'ok' ? warmTheme.success : warmTheme.danger,
-            }}>
-              {importStatus.msg}
-            </div>
-          )}
-
-          {saveTampered && (
-            <div style={{
-              marginBottom: 10, padding: '8px 10px', borderRadius: 8,
-              border: '1px solid rgba(184,92,79,0.45)',
-              background: 'rgba(184,92,79,0.12)',
-              color: warmTheme.danger, fontSize: 11, lineHeight: 1.45,
-            }}>
-              ⚠ This save's integrity check failed. The file may have been edited
-              outside the game. Your progress was still loaded — saving again
-              will re-sign the file with the current state.
-            </div>
-          )}
-
-          {confirmDelete === 0 && (
-            <button className="menu-tactile-btn"
-              onClick={() => setConfirmDelete(1)}
-              style={{
-                width: '100%', padding: '10px 0', borderRadius: 10,
-                border: '1px solid rgba(184,92,79,0.4)',
-                background: 'rgba(184,92,79,0.12)',
-                color: warmTheme.danger,
-                fontSize: 13, cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1,
-              }}
-            >
-              {t('deleteSaveData')}
-            </button>
-          )}
-
-          {confirmDelete === 1 && (
-            <div style={{
-              border: '1px solid rgba(184,92,79,0.5)', borderRadius: 10,
-              padding: '12px 14px', background: 'rgba(184,92,79,0.1)',
-            }}>
-              <div style={{ fontSize: 12, color: warmTheme.danger, marginBottom: 10, lineHeight: 1.5, fontFamily: 'Georgia, serif' }}>
-                Are you sure? This will permanently erase <strong>all progress</strong>.
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="menu-tactile-btn"
-                  onClick={() => setConfirmDelete(2)}
-                  style={{
-                    flex: 1, padding: '8px 0', borderRadius: 5,
-                    border: '1px solid rgba(184,92,79,0.7)',
-                    background: 'rgba(184,92,79,0.18)',
-                    color: warmTheme.danger, fontSize: 12, cursor: 'pointer',
-                    fontFamily: 'Georgia, serif', letterSpacing: 1,
-                  }}
-                >
-                  Yes, delete it
-                </button>
-                <button className="menu-tactile-btn"
-                  onClick={() => setConfirmDelete(0)}
-                  style={{
-                    flex: 1, padding: '8px 0', borderRadius: 5,
-                    border: `1px solid ${warmTheme.border}`,
-                    background: warmTheme.surface,
-                    color: warmTheme.textMuted, fontSize: 12, cursor: 'pointer',
-                    fontFamily: 'Georgia, serif',
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-
-          {confirmDelete === 2 && (
-            <div style={{
-              border: '2px solid rgba(184,92,79,0.8)', borderRadius: 10,
-              padding: '14px 14px', background: 'rgba(184,92,79,0.15)',
-            }}>
-              <div style={{ fontSize: 13, color: warmTheme.danger, marginBottom: 4, fontFamily: 'Georgia, serif', fontWeight: 'bold' }}>
-                Are you REALLY sure?
-              </div>
-              <div style={{ fontSize: 11, color: warmTheme.danger, marginBottom: 12, lineHeight: 1.5, opacity: 0.85 }}>
-                There is no undo. Every card, boss kill, title, and shard will be gone forever.
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="menu-tactile-btn"
-                  onClick={handleWipe}
-                  style={{
-                    flex: 1, padding: '8px 0', borderRadius: 5,
-                    border: '1px solid rgba(184,92,79,0.9)',
-                    background: 'rgba(184,92,79,0.28)',
-                    color: warmTheme.danger, fontSize: 12, cursor: 'pointer',
-                    fontFamily: 'Georgia, serif', letterSpacing: 1, fontWeight: 'bold',
-                  }}
-                >
-                  Delete Everything
-                </button>
-                <button className="menu-tactile-btn"
-                  onClick={() => setConfirmDelete(0)}
-                  style={{
-                    flex: 1, padding: '8px 0', borderRadius: 5,
-                    border: `1px solid ${warmTheme.border}`,
-                    background: warmTheme.surface,
-                    color: warmTheme.textMuted, fontSize: 12, cursor: 'pointer',
-                    fontFamily: 'Georgia, serif',
-                  }}
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
 
         <button className="menu-tactile-btn"
           onClick={onClose}

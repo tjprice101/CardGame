@@ -1,0 +1,4 @@
+# Environment files — contain Supabase / API credentials, never commit.
+.env
+.env.local
+.env.*.local

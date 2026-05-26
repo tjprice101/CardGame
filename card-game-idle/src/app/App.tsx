@@ -12,7 +12,7 @@ const BossResultModal = lazy(() => import('@/ui/eternitysWake/BossResultModal'))
 const Infinitude = lazy(() => import('@/ui/infinitude/Infinitude'));
 const WishedUponAStarEvent = lazy(() => import('@/ui/eventWishedUponAStar/WishedUponAStarEvent'));
 const TutorialModal = lazy(() => import('@/ui/menus/TutorialModal'));
-const ProfilePage = lazy(() => import('@/ui/profile/ProfilePage'));
+const PlayerInformationPage = lazy(() => import('@/ui/player/PlayerInformationPage'));
 const DailyRewardModal = lazy(() => import('@/ui/profile/DailyRewardModal'));
 const QuestsModal = lazy(() => import('@/ui/menus/QuestsModal'));
 const AchievementsModal = lazy(() => import('@/ui/menus/AchievementsModal'));
@@ -20,6 +20,7 @@ const ArtifactsMenu = lazy(() => import('@/ui/artifacts/ArtifactsMenu'));
 const CardMasteryModal = lazy(() => import('@/ui/menus/CardMasteryModal'));
 const WakeTrialsModal = lazy(() => import('@/ui/menus/WakeTrialsModal'));
 const EndlessGauntletModal = lazy(() => import('@/ui/menus/EndlessGauntletModal'));
+const ChatWindow = lazy(() => import('@/ui/social/ChatWindow'));
 const ToastQueue = lazy(() => import('@/ui/components/ToastQueue'));
 const SplashScreen = lazy(() => import('@/ui/boot/SplashScreen'));
 const TitleScreen = lazy(() => import('@/ui/boot/TitleScreen'));
@@ -32,6 +33,9 @@ import { getFontScale, setUiPreferences } from '@/ui/preferences';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { evaluateDailyLogin } from '@/systems/progression/dailyLogin';
 import { TITLE_BADGES } from '@/data/profile/titleBadges';
+import { initStatsSync } from '@/social/statsSync';
+import { initSocialNotifications } from '@/social/notificationsService';
+import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
 
 /**
  * Top-level scene state machine. Splash plays once on app boot, advances
@@ -44,37 +48,15 @@ type AppScene = 'splash' | 'title' | 'menu' | 'arena';
 
 const engine = new GameEngine();
 
-const SUMMON_VIDEO_ROOT = '/assets/video/summons';
-
-const SUMMON_VIDEO_BY_ANGEL: Record<string, string> = {
-  'angel-neutral-beginning': 'the-beginning-and-the-end-summon.mp4',
-  'angel-neutral-presence': 'aegisofpresenceSUMMON.mp4',
-  'angel-neutral-equilibrium': 'aegisofequilibriumSUMMON.mp4',
-  'angel-fire-cinderwing': 'cinderwingSUMMON.mp4',
-  'angel-light-aurelion': 'aurelion thorncrownedSUMMON.mp4',
-  'angel-light-solarius': 'solariusemberthornascendantSUMMON.mp4',
-  'md-angel-ori9-broken-sleep': 'ori-9archonofbrokensleepSUMMON.mp4',
-  'md-angel-thaumiel-prime': 'thaumielprimefurnaceofunwrittenfuturesSUMMON.mp4',
-  'pa-angel-aurelith-ninth-beam': 'aurelithseeroftheninthbeamSUMMON.mp4',
-  'btei-prismatic-blindwars-reliquary': 'reliquaryofblindwarsSUMMON.mp4',
-  'btei-pyroabyss-hellrift-mandala': 'riftbellcatastropheSUMMON.mp4',
-  'btei-thornbound-funeral-bramble': 'gravehedgereliquarySUMMON.mp4',
-  'btei-neutrality-axiom-maw': 'axiommawSUMMON.mp4',
-  'btei-light-halo-legion': 'halolegionprimeSUMMON.mp4',
-  'btei-mech-reactor-paradigm': 'reactorpsalmengineSUMMON.mp4',
-  'tbp-angel-irielle-bramble-gate': 'iriellethorn-saintofthelastroadSUMMON.mp4',
-  'tbp-angel-velmora-harrowed-crown': 'velmoracrownofharrowedplainsSUMMON.mp4',
-};
-
-function getSummonVideoSrc(definitionId: string): string | null {
-  const fileName = SUMMON_VIDEO_BY_ANGEL[definitionId];
-  return fileName ? `${SUMMON_VIDEO_ROOT}/${encodeURIComponent(fileName)}` : null;
-}
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const summonVideoRef = useRef<HTMLVideoElement>(null);
-  const seenAngelsRef = useRef<Set<string>>(new Set());
   const hasSeenSaveRef = useRef(false);
+  // Phase 5: install activity-event + leaderboard stats sync. Idempotent;
+  // safely no-ops without Supabase or while signed out.
+  useEffect(() => { initStatsSync(); }, []);
+  // Phase 6: install desktop / in-app push notifications for DMs, gifts, and
+  // friend requests. Idempotent; channels start/stop with auth status.
+  useEffect(() => { initSocialNotifications(); }, []);
   const [showDeckBuilder, setShowDeckBuilder] = useState(false);
   const [showCardStore, setShowCardStore] = useState(false);
   const [showDeckViewer, setShowDeckViewer] = useState(false);
@@ -83,7 +65,7 @@ export default function App() {
   const [showEternitysWake, setShowEternitysWake] = useState(false);
   const [showInfinitude, setShowInfinitude] = useState(false);
   const [showEventWuas, setShowEventWuas] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+  const [showPlayerInfo, setShowPlayerInfo] = useState(false);
   const [showDailyReward, setShowDailyReward] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
@@ -92,8 +74,6 @@ export default function App() {
   const [showWakeTrials, setShowWakeTrials] = useState(false);
   const [showEndlessGauntlet, setShowEndlessGauntlet] = useState(false);
   const [showAutosaveIndicator, setShowAutosaveIndicator] = useState(false);
-  const [showSummonCinematic, setShowSummonCinematic] = useState(false);
-  const [summonVideoSrc, setSummonVideoSrc] = useState<string | null>(null);
   // Top-level scene state machine. Splash and title only display on the very
   // first boot of each app session; subsequent navigation cycles only between
   // menu and arena.
@@ -120,6 +100,47 @@ export default function App() {
       cardThemePacks: settings.cardThemePacks,
     });
   }, [settings.language, settings.fontSizePreset, settings.cardArtDisplay, settings.cardThemePacks, settings.reducedMotion, settings.compactMode]);
+
+  // ── Music ────────────────────────────────────────────────────────────
+  // Volume slider drives the master music gain in real time. A value of 0
+  // (or the "Music Enabled" checkbox unchecked, which forces volume to 0)
+  // pauses playback entirely.
+  useEffect(() => {
+    MusicManager.setVolume(settings.musicVolume ?? 0);
+  }, [settings.musicVolume]);
+
+  // Pick a track based on what's currently on-screen. Active boss fights
+  // override everything; otherwise the topmost open menu wins. The main hub
+  // (no menu, no fight) is intentionally silent so the title music doesn't
+  // bleed in awkwardly.
+  useEffect(() => {
+    let track: MusicTrackId | null = null;
+    if (scene !== 'splash' && scene !== 'title') {
+      if (bossFight.mode === 'active') {
+        track = bossFight.kind === 'gauntlet' ? 'battle-gauntlet' : 'battle-eternity';
+      } else if (showCardStore) {
+        track = 'menu-shop';
+      } else if (showInfinitude) {
+        track = 'menu-infinitude';
+      } else if (showArtifacts) {
+        track = 'menu-artifacts';
+      } else if (showEternitysWake || showEndlessGauntlet || showWakeTrials) {
+        track = 'menu-eternity';
+      }
+    }
+    MusicManager.playTrack(track);
+  }, [
+    scene,
+    bossFight.mode,
+    bossFight.kind,
+    showCardStore,
+    showInfinitude,
+    showArtifacts,
+    showEternitysWake,
+    showEndlessGauntlet,
+    showWakeTrials,
+  ]);
+  // ─────────────────────────────────────────────────────────────────────
 
   // Apply UI theme palette in-place whenever the player switches themes or
   // edits custom colors. Re-mounts the overlay tree to flush stale style props.
@@ -190,7 +211,6 @@ export default function App() {
 
       if (e.code === 'Space' && !isTyping) {
         e.preventDefault();
-        useStore.getState().addOblivion(1_000_000);
         return;
       }
 
@@ -208,7 +228,7 @@ export default function App() {
         if (showInfinitude) { setShowInfinitude(false); e.preventDefault(); return; }
         if (showEventWuas) { setShowEventWuas(false); e.preventDefault(); return; }
         if (showEternitysWake) { setShowEternitysWake(false); e.preventDefault(); return; }
-        if (showProfile) { setShowProfile(false); e.preventDefault(); return; }
+        if (showPlayerInfo) { setShowPlayerInfo(false); e.preventDefault(); return; }
         if (showQuests) { setShowQuests(false); e.preventDefault(); return; }
         if (showAchievements) { setShowAchievements(false); e.preventDefault(); return; }
         if (showMastery) { setShowMastery(false); e.preventDefault(); return; }
@@ -231,7 +251,7 @@ export default function App() {
       // an active turn is in play (mulligan OR playing), in regular or boss
       // fight modes.
       if (e.code === controls.swapExtraDeck && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showProfile || showDailyReward || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts;
+        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts;
         if (anyModalOpen) return;
         const phase = useStore.getState().turn.phase;
         if (phase === 'playing' || phase === 'mulligan') {
@@ -242,7 +262,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showProfile, showDailyReward, showQuests, showAchievements, showMastery, showWakeTrials, showEndlessGauntlet, showEventWuas, showArtifacts, settings.controls]);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showWakeTrials, showEndlessGauntlet, showEventWuas, showArtifacts, settings.controls]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -254,38 +274,9 @@ export default function App() {
     return () => window.clearTimeout(timeout);
   }, [lastSavedAt]);
 
-  useEffect(() => {
-    const currentAngelIds = new Set<string>();
-    for (const slot of board.frontSlots) {
-      if (slot?.type === 'Angel') {
-        currentAngelIds.add(slot.instanceId);
-      }
-    }
-
-    for (const slot of board.frontSlots) {
-      if (!slot || slot.type !== 'Angel') continue;
-      if (seenAngelsRef.current.has(slot.instanceId)) continue;
-      const videoSrc = getSummonVideoSrc(slot.definitionId);
-      if (videoSrc) {
-        setSummonVideoSrc(videoSrc);
-        setShowSummonCinematic(true);
-        break;
-      }
-    }
-
-    seenAngelsRef.current = currentAngelIds;
-  }, [board.frontSlots]);
-
-  useEffect(() => {
-    if (!showSummonCinematic || !summonVideoRef.current || !summonVideoSrc) return;
-    summonVideoRef.current.playbackRate = 2.25;
-    summonVideoRef.current.currentTime = 0;
-    void summonVideoRef.current.play().catch(() => undefined);
-  }, [showSummonCinematic, summonVideoSrc]);
-
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showProfile || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts;
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts;
 
   // Auto-sync scene to gameplay state once the player has reached the menu.
   // Entering an active turn or boss fight moves us into the arena; finishing
@@ -350,7 +341,7 @@ export default function App() {
             onDeckViewer={() => setShowDeckViewer(true)}
             onTutorial={() => setShowTutorial(true)}
             onDeckBuilder={() => setShowDeckBuilder(true)}
-            onProfile={() => setShowProfile(true)}
+            onPlayerInfo={() => setShowPlayerInfo(true)}
             onQuests={() => setShowQuests(true)}
             onAchievements={() => setShowAchievements(true)}
             onMastery={() => setShowMastery(true)}
@@ -456,12 +447,21 @@ export default function App() {
         </div>
       )}
 
-      {/* Profile modal */}
-      {showProfile && (
+      {/* Player Information — unified profile + social + save-data screen */}
+      {showPlayerInfo && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><ProfilePage onClose={() => setShowProfile(false)} /></Suspense>
+          <Suspense fallback={null}><PlayerInformationPage
+            onClose={() => setShowPlayerInfo(false)}
+            onSave={() => engine.saveNow()}
+            onWipe={() => engine.wipeData()}
+            onExport={() => engine.exportSave()}
+            onImport={(text) => engine.importSave(text)}
+          /></Suspense>
         </div>
       )}
+
+      {/* Floating chat window (always-on once a conversation is open) */}
+      <Suspense fallback={null}><ChatWindow /></Suspense>
 
       {showQuests && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
@@ -522,55 +522,6 @@ export default function App() {
       }}>
         {showAutosaveIndicator ? 'Autosaved' : 'Autosave active'}
       </div>
-
-      {/* The Beginning and the End summon cinematic */}
-      {showSummonCinematic && (
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 95,
-          background: 'rgba(0,0,0,0.88)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          pointerEvents: 'auto',
-        }}>
-          <video
-            key={summonVideoSrc ?? 'summon-video'}
-            ref={summonVideoRef}
-            src={summonVideoSrc ?? undefined}
-            style={{ width: 160, height: 220, objectFit: 'cover', borderRadius: 10, border: '1px solid rgba(255,255,255,0.22)', boxShadow: '0 0 40px rgba(255,255,255,0.15)' }}
-            onEnded={() => {
-              setShowSummonCinematic(false);
-              setSummonVideoSrc(null);
-            }}
-            controls={false}
-          />
-          <button
-            onClick={() => {
-              setShowSummonCinematic(false);
-              setSummonVideoSrc(null);
-            }}
-            style={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              zIndex: 96,
-              padding: '8px 12px',
-              borderRadius: 999,
-              border: '1px solid rgba(255,255,255,0.45)',
-              background: 'rgba(15,15,22,0.65)',
-              color: '#f6f2e9',
-              cursor: 'pointer',
-              letterSpacing: 0.8,
-              fontSize: 11,
-              fontFamily: 'Georgia, serif',
-            }}
-          >
-            Skip
-          </button>
-        </div>
-      )}
 
       </React.Fragment>
       {/* Splash + title screens sit above everything else on first boot. */}

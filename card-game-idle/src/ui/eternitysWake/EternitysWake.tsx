@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { useStore, selectBossFight, selectProgress } from '@/state/store';
+import { useSocialStore, selectSocialStatus } from '@/state/socialStore';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -8,6 +9,8 @@ import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import BossCodex from './BossCodex';
+
+const FriendsLeaderboard = lazy(() => import('@/ui/social/FriendsLeaderboard'));
 import type { BossCategory } from '@/types/bossFight';
 import { getFeaturedDailyBoss, getFeaturedWeeklyBoss, getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 
@@ -138,6 +141,8 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
   const [selectedBossId, setSelectedBossId] = useState<string | null>(null);
   const [activeBossTab, setActiveBossTab] = useState<BossCategory>('Neutrality');
   const [showCodex, setShowCodex] = useState(false);
+  const [showFriendsBoard, setShowFriendsBoard] = useState(false);
+  const socialStatus = useSocialStore(selectSocialStatus);
 
   const now = Date.now();
 
@@ -198,6 +203,11 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           <button className="ui-cta-breath" onClick={() => setShowCodex(true)} style={headerSecondaryButton} title="Personal-best records per boss">
             Codex
           </button>
+          {socialStatus === 'authenticated' && (
+            <button className="ui-cta-breath" onClick={() => setShowFriendsBoard(true)} style={headerSecondaryButton} title="Compare with friends">
+              Friends
+            </button>
+          )}
           {onOpenEndlessGauntlet && (
             <button className="ui-cta-breath" onClick={onOpenEndlessGauntlet} style={headerSecondaryButton} title="Endless boss gauntlet">
               Endless Gauntlet
@@ -435,6 +445,50 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
       </div>
 
       {showCodex && <BossCodex onClose={() => setShowCodex(false)} />}
+      {showFriendsBoard && (
+        <div
+          onClick={() => setShowFriendsBoard(false)}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 60,
+            background: 'rgba(8,4,12,0.78)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: 'Georgia, serif',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'linear-gradient(180deg, rgba(8, 4, 12, 0.985) 0%, rgba(22, 8, 30, 0.985) 100%)',
+              border: '1px solid rgba(255, 107, 107, 0.45)',
+              borderRadius: 14,
+              padding: '20px 22px',
+              width: 460,
+              maxHeight: '82vh',
+              overflowY: 'auto',
+              color: '#FFF8DC',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <div style={{ fontSize: 16, fontWeight: 'bold', color: '#ff6b6b', letterSpacing: 3, textTransform: 'uppercase' }}>
+                Friends Leaderboard
+              </div>
+              <button
+                onClick={() => setShowFriendsBoard(false)}
+                style={{
+                  background: 'transparent', border: '1px solid rgba(255,107,107,0.4)',
+                  color: '#ff9a9a', width: 28, height: 28, borderRadius: 6,
+                  cursor: 'pointer', fontFamily: 'Georgia, serif',
+                }}
+              >×</button>
+            </div>
+            <Suspense fallback={<div style={{ fontSize: 11, opacity: 0.6 }}>Loading…</div>}>
+              <FriendsLeaderboard
+                metrics={['eternityClearsTotal', 'infinitePulls', 'gauntletDepth', 'gauntletShards']}
+              />
+            </Suspense>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Notification } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,6 +50,41 @@ ipcMain.on('pantheon-save:remove', (event) => {
   event.returnValue = removeSaveFile();
 });
 
+// ── Desktop notifications (Phase 6 social) ─────────────────────────────────
+// Renderer asks the main process to display an OS notification when a new DM,
+// gift, or friend request arrives while the window is unfocused. The window
+// reference is captured by createWindow() so we can also flash the taskbar.
+
+let mainWindowRef = null;
+
+ipcMain.on('pantheon-notify:is-focused', (event) => {
+  event.returnValue = mainWindowRef?.isFocused() === true;
+});
+
+ipcMain.handle('pantheon-notify:show', (_event, payload) => {
+  try {
+    if (!Notification.isSupported()) return false;
+    const title = String(payload?.title ?? 'Pantheon').slice(0, 120);
+    const body = String(payload?.body ?? '').slice(0, 400);
+    const silent = Boolean(payload?.silent);
+    const notification = new Notification({ title, body, silent });
+    notification.on('click', () => {
+      if (mainWindowRef) {
+        if (mainWindowRef.isMinimized()) mainWindowRef.restore();
+        mainWindowRef.show();
+        mainWindowRef.focus();
+      }
+    });
+    notification.show();
+    if (mainWindowRef && !mainWindowRef.isFocused()) {
+      try { mainWindowRef.flashFrame(true); } catch { /* non-fatal */ }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+});
+
 async function createWindow() {
   const preloadPath = path.join(__dirname, 'preload.mjs');
   const window = new BrowserWindow({
@@ -67,9 +102,17 @@ async function createWindow() {
     },
   });
 
+  mainWindowRef = window;
+  window.on('focus', () => {
+    try { window.flashFrame(false); } catch { /* non-fatal */ }
+  });
+  window.on('closed', () => {
+    if (mainWindowRef === window) mainWindowRef = null;
+  });
+
   if (isDev) {
     await window.loadURL('http://localhost:5173');
-    window.webContents.openDevTools({ mode: 'detach' });
+    // DevTools is no longer opened automatically. Press F12 or Ctrl+Shift+I to toggle.
     return;
   }
 

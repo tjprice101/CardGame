@@ -10,14 +10,13 @@ import SetEngineDisplay from './SetEngineDisplay';
 import TurnControls from './TurnControls';
 import BoardDisplay from './BoardDisplay';
 import PendingEffectModal from './PendingEffectModal';
-import AngelCompartment from './AngelCompartment';
 
 const styles: Record<string, React.CSSProperties> = {
   rightRail: {
     position: 'absolute',
     top: 120,
-    right: 'calc(var(--angel-drawer-hand-offset, 34px) + 16px)',
-    width: 'min(356px, calc(100vw - var(--angel-drawer-hand-offset, 34px) - 32px))',
+    right: 50,
+    width: 'min(356px, calc(100vw - 82px))',
     display: 'flex',
     flexDirection: 'column',
     gap: 12,
@@ -43,7 +42,6 @@ export default function HUD() {
         <SetEngineDisplay />
       </div>
       <HandDisplay />
-      <AngelCompartment />
       <PendingEffectModal />
     </>
   );
