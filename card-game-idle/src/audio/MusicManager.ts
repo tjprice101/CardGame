@@ -24,13 +24,14 @@ interface TrackDef {
   gain: number;
 }
 
+const AUDIO_BASE = `${import.meta.env.BASE_URL}assets/audio/music`;
 const TRACKS: Record<MusicTrackId, TrackDef> = {
-  'menu-artifacts':  { src: '/assets/audio/music/artifacts-menu.mp3',     gain: 1.0 },
-  'menu-eternity':   { src: '/assets/audio/music/eternitys-wake-menu.mp3', gain: 1.0 },
-  'menu-infinitude': { src: '/assets/audio/music/infinitude-menu.mp3',    gain: 1.0 },
-  'menu-shop':       { src: '/assets/audio/music/shop-menu.mp3',          gain: 1.0 },
-  'battle-eternity': { src: '/assets/audio/music/eternitys-wake-fight.mp3', gain: 1.0 },
-  'battle-gauntlet': { src: '/assets/audio/music/endless-gauntlet.mp3',   gain: 1.0 },
+  'menu-artifacts':  { src: `${AUDIO_BASE}/artifacts-menu.mp3`,     gain: 1.0 },
+  'menu-eternity':   { src: `${AUDIO_BASE}/eternitys-wake-menu.mp3`, gain: 1.0 },
+  'menu-infinitude': { src: `${AUDIO_BASE}/infinitude-menu.mp3`,    gain: 1.0 },
+  'menu-shop':       { src: `${AUDIO_BASE}/shop-menu.mp3`,          gain: 1.0 },
+  'battle-eternity': { src: `${AUDIO_BASE}/eternitys-wake-fight.mp3`, gain: 1.0 },
+  'battle-gauntlet': { src: `${AUDIO_BASE}/endless-gauntlet.mp3`,   gain: 1.0 },
 };
 
 const CROSSFADE_MS = 900;

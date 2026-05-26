@@ -18,7 +18,7 @@ const RARITY_COLORS: Record<string, string> = {
   Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
 };
 
-const BOSS_ART_ROOT = '/assets/card-backgrounds';
+const BOSS_ART_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
 const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
   boss_hollow_queen: { folder: 'neutrality', file: 'Hollow Queen.png' },
   boss_immortal_warden: { folder: 'neutrality', file: 'Immortal Warden.png' },

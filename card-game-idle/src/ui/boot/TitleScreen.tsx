@@ -7,10 +7,11 @@ import { useStore, selectSettings } from '@/state/store';
  * the game logotype and a pulsing "Press Any Key to Start" prompt. Any key,
  * click, or tap advances to the main menu.
  */
+const ASSET_BASE = import.meta.env.BASE_URL;
 const PARALLAX_LAYERS: Array<{ src: string; opacity: number; scale: number; drift: string; top: string; left: string }> = [
-  { src: '/assets/card-backgrounds/heavenly-light/Aurelion%20Thorncrowned.png', opacity: 0.32, scale: 1.15, drift: 'parallaxDriftA 28s ease-in-out infinite', top: '6%', left: '-4%' },
-  { src: '/assets/card-backgrounds/heavenly-light/Solarius%20Emberthorn%20Ascendant.png', opacity: 0.28, scale: 1.05, drift: 'parallaxDriftB 36s ease-in-out infinite', top: '12%', left: '60%' },
-  { src: '/assets/card-backgrounds/heavenly-light/Halo%20Legion%20Prime.png', opacity: 0.22, scale: 0.95, drift: 'parallaxDriftC 44s ease-in-out infinite', top: '52%', left: '30%' },
+  { src: `${ASSET_BASE}assets/card-backgrounds/heavenly-light/Aurelion%20Thorncrowned.png`, opacity: 0.32, scale: 1.15, drift: 'parallaxDriftA 28s ease-in-out infinite', top: '6%', left: '-4%' },
+  { src: `${ASSET_BASE}assets/card-backgrounds/heavenly-light/Solarius%20Emberthorn%20Ascendant.png`, opacity: 0.28, scale: 1.05, drift: 'parallaxDriftB 36s ease-in-out infinite', top: '12%', left: '60%' },
+  { src: `${ASSET_BASE}assets/card-backgrounds/heavenly-light/Halo%20Legion%20Prime.png`, opacity: 0.22, scale: 0.95, drift: 'parallaxDriftC 44s ease-in-out infinite', top: '52%', left: '30%' },
 ];
 
 export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {

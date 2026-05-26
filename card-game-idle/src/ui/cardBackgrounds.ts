@@ -4,7 +4,7 @@ import type { CardFinish } from '@/types/cards';
 import { warmTheme } from '@/ui/theme';
 import { getCardThemePackStyle, getFontScale } from '@/ui/preferences';
 
-const CARD_BACKGROUND_ROOT = '/assets/card-backgrounds';
+const CARD_BACKGROUND_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
 const CARD_BACKGROUND_FOLDERS: Partial<Record<string, string>> = {
   Fire: 'pyroabyss',
   Mechanical: 'mechanical-dreams',

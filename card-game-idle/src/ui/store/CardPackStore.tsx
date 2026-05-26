@@ -15,22 +15,23 @@ const RARITY_COLORS: Record<string, string> = {
   Common: '#b8bcc6', Rare: '#7cbcff', Epic: '#c58bff', Legendary: '#ffd38a', Eternal: '#ff9f9f', Infinite: '#f2f4ff',
 };
 
+const PACK_ART_BASE = `${import.meta.env.BASE_URL}assets/pack-art`;
 const PACK_ART: Record<string, string> = {
-  'pack-neutrality': '/assets/pack-art/NeutralityPackArt.png',
-  'pack-pyroabyss': '/assets/pack-art/PyroabyssPackArt.png',
-  'pack-heavenly-light': '/assets/pack-art/HeavenlyLightPackArt.png',
-  'pack-thornbound-plains': '/assets/pack-art/ThornboundPlainsPackArt.png',
-  'pack-mechanical-dreams': '/assets/pack-art/MechanicalDreamsPackArt.png',
-  'pack-prismatic-accord': '/assets/pack-art/PrismaticAccordPackArt.png',
-  'pack-black-glass-inferno': '/assets/pack-art/BlackGlassPackArt.png',
-  'pack-snowbound-voltage': '/assets/pack-art/SnowboundVoltagePackArt.png',
-  'pack-glass-absolute': '/assets/pack-art/GlassAbsolutePackArt.png',
-  'pack-blazing-garden': '/assets/pack-art/BlazingGardenPackArt.png',
-  'pack-age-of-the-butterfly': '/assets/pack-art/AgeOfTheButterflyPackArt.png',
-  'pack-eternal-seas': '/assets/pack-art/EternalSeasPackArt.png',
-  'pack-abyssal-forge': '/assets/pack-art/AbyssalForgePackArt.png',
-  'pack-death-flamed-hell': '/assets/pack-art/Death-flamedHellPackArt.png',
-  'pack-wished-upon-a-star': '/assets/pack-art/WishedUponAStarEVENTPackArt.png',
+  'pack-neutrality': `${PACK_ART_BASE}/NeutralityPackArt.png`,
+  'pack-pyroabyss': `${PACK_ART_BASE}/PyroabyssPackArt.png`,
+  'pack-heavenly-light': `${PACK_ART_BASE}/HeavenlyLightPackArt.png`,
+  'pack-thornbound-plains': `${PACK_ART_BASE}/ThornboundPlainsPackArt.png`,
+  'pack-mechanical-dreams': `${PACK_ART_BASE}/MechanicalDreamsPackArt.png`,
+  'pack-prismatic-accord': `${PACK_ART_BASE}/PrismaticAccordPackArt.png`,
+  'pack-black-glass-inferno': `${PACK_ART_BASE}/BlackGlassPackArt.png`,
+  'pack-snowbound-voltage': `${PACK_ART_BASE}/SnowboundVoltagePackArt.png`,
+  'pack-glass-absolute': `${PACK_ART_BASE}/GlassAbsolutePackArt.png`,
+  'pack-blazing-garden': `${PACK_ART_BASE}/BlazingGardenPackArt.png`,
+  'pack-age-of-the-butterfly': `${PACK_ART_BASE}/AgeOfTheButterflyPackArt.png`,
+  'pack-eternal-seas': `${PACK_ART_BASE}/EternalSeasPackArt.png`,
+  'pack-abyssal-forge': `${PACK_ART_BASE}/AbyssalForgePackArt.png`,
+  'pack-death-flamed-hell': `${PACK_ART_BASE}/Death-flamedHellPackArt.png`,
+  'pack-wished-upon-a-star': `${PACK_ART_BASE}/WishedUponAStarEVENTPackArt.png`,
 };
 
 const styles: Record<string, React.CSSProperties> = {

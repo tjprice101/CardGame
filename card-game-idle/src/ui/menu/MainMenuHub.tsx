@@ -261,7 +261,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         backgroundImage:
           'radial-gradient(120% 80% at 30% 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.78) 100%), '
           + 'linear-gradient(180deg, rgba(8,5,3,0.45) 0%, rgba(8,5,3,0) 22%, rgba(8,5,3,0) 70%, rgba(8,5,3,0.65) 100%), '
-          + 'url(/assets/InfiniteCardsMenuArt.png)',
+          + `url(${import.meta.env.BASE_URL}assets/InfiniteCardsMenuArt.png)`,
         backgroundSize: 'cover, cover, cover',
         backgroundPosition: 'center, center, center',
       }}

@@ -9,9 +9,10 @@
     "dev:desktop": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "generate:card-balance": "tsx scripts/generate-card-balance-overrides.mts",
     "build": "tsc -b && vite build",
+    "build:web": "cross-env DEPLOY_TARGET=ghpages vite build",
     "build:desktop": "npm run build && electron-builder",
     "preview": "vite preview",
-    "deploy": "cross-env DEPLOY_TARGET=ghpages npm run build && gh-pages -d dist",
+    "deploy": "npm run build:web && gh-pages -d dist",
     "test": "vitest run",
     "test:watch": "vitest"
   },
