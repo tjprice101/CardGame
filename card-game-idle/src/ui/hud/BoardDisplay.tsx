@@ -551,8 +551,8 @@ export default function BoardDisplay() {
   }, [attackPanelSlot, selectedFront?.instanceId, selectedDef?.definitionId]);
 
   const playfieldRightInset = turn.phase === 'playing' || turn.phase === 'mulligan'
-    ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(240px, 22vw))'
-    : 'var(--angel-drawer-hand-offset, 34px)';
+    ? 'calc(var(--angel-drawer-hand-offset, 268px) + min(240px, 22vw))'
+    : 'var(--angel-drawer-hand-offset, 268px)';
 
   return (
     <div style={{

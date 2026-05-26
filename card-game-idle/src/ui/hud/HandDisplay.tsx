@@ -51,19 +51,8 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute',
     bottom: 16,
     left: 0,
-    right: 'var(--angel-drawer-hand-offset, 34px)',
-    display: 'flex',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-    paddingLeft: 8,
-    paddingRight: 8,
-    transition: 'right 0.22s ease, opacity 0.34s ease',
-  },
-  idleShowcaseWrapper: {
-    position: 'absolute',
-    bottom: 16,
-    left: 0,
-    right: 'var(--angel-drawer-hand-offset, 34px)',
+    right: 'var(--angel-drawer-hand-offset, 268px)',
+
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -398,8 +387,8 @@ export default function HandDisplay() {
   const hoveredActionClassLabel = hoveredDef ? getActionClassLabel(getCardActionClass(hoveredDef)) : null;
   const hoveredEngine = hoveredDef ? getSetEngineSnapshotForCard(hoveredDef, turn, board) : null;
   const handRightInset = isPlaying || isMulligan
-    ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(240px, 22vw))'
-    : 'var(--angel-drawer-hand-offset, 34px)';
+    ? 'calc(var(--angel-drawer-hand-offset, 268px) + min(240px, 22vw))'
+    : 'var(--angel-drawer-hand-offset, 268px)';
 
   const idleCards = idleShowcaseCards
     .map(card => ({ card, def: CardRegistry.get(card.definitionId) }))

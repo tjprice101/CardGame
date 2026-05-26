@@ -17,7 +17,7 @@ import type { AngelDefinition, CardFinish } from '@/types/cards';
 const faceMetrics = getCardFaceMetrics('grid');
 const ANGEL_DRAWER_WIDTH = 'min(340px, calc(100vw - 52px))';
 const ANGEL_ART_HEIGHT = 120;
-const HAND_RESERVED_WHEN_CLOSED = '34px';
+const HAND_RESERVED_WHEN_CLOSED = '268px';
 const HAND_RESERVED_WHEN_OPEN = 'min(374px, calc(100vw - 18px))';
 
 export default function AngelCompartment() {

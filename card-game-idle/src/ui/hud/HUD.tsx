@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useStore, selectTurn, selectDeck, selectBossFight } from '@/state/store';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -24,10 +23,7 @@ import PendingEffectModal from './PendingEffectModal';
  * Engines, How-to-Play, future menu items). Center is reserved for the
  * floating ScoreDisplay which sits behind this bar at top-center.
  */
-function TopStatusBar({ onToggleSetEngines, setEnginesOpen }: {
-  onToggleSetEngines: () => void;
-  setEnginesOpen: boolean;
-}) {
+function TopStatusBar() {
   const turn = useStore(selectTurn);
   const deck = useStore(selectDeck);
   const bossFight = useStore(selectBossFight);
@@ -60,7 +56,8 @@ function TopStatusBar({ onToggleSetEngines, setEnginesOpen }: {
   return (
     <div style={{
       position: 'absolute', top: 0, left: 0, right: 0, height: 52,
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      display: 'flex', alignItems: 'center',
+      justifyContent: 'flex-start',
       padding: '0 22px',
       background: 'linear-gradient(180deg, rgba(5,5,7,0.92) 0%, rgba(5,5,7,0.4) 75%, transparent 100%)',
       borderBottom: `1px solid rgba(244,244,248,0.06)`,
@@ -100,61 +97,7 @@ function TopStatusBar({ onToggleSetEngines, setEnginesOpen }: {
         </span>
       </div>
 
-      {/* Right — utility icon toolbar */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, pointerEvents: 'auto' }}>
-        <IconButton
-          label="Set Engines"
-          glyph="⚙"
-          active={setEnginesOpen}
-          tint={tintCss}
-          onClick={onToggleSetEngines}
-        />
-      </div>
     </div>
-  );
-}
-
-/** Compact circular icon button used in the top toolbar. */
-function IconButton({ label, glyph, active, tint, onClick }: {
-  label: string;
-  glyph: string;
-  active: boolean;
-  tint: string;
-  onClick: () => void;
-}) {
-  const [hover, setHover] = useState(false);
-  return (
-    <button
-      onClick={onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      title={label}
-      aria-label={label}
-      style={{
-        width: 36, height: 36, borderRadius: 10,
-        background: active
-          ? `linear-gradient(180deg, ${tint}40, rgba(5,5,7,0.92))`
-          : 'rgba(5,5,7,0.72)',
-        border: active
-          ? `1px solid ${tint}cc`
-          : hover
-            ? '1px solid rgba(244,244,248,0.45)'
-            : '1px solid rgba(244,244,248,0.18)',
-        color: 'rgba(244,244,248,0.92)',
-        fontSize: 16,
-        cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        boxShadow: active
-          ? `0 0 14px ${tint}66, inset 0 1px 0 rgba(244,244,248,0.1)`
-          : hover
-            ? '0 0 12px rgba(244,244,248,0.18), inset 0 1px 0 rgba(244,244,248,0.08)'
-            : 'inset 0 1px 0 rgba(244,244,248,0.06)',
-        transition: 'background 0.18s, border-color 0.18s, box-shadow 0.18s, transform 0.12s',
-        transform: hover ? 'translateY(-1px)' : 'none',
-      }}
-    >
-      {glyph}
-    </button>
   );
 }
 
@@ -196,130 +139,71 @@ function LeftRailFrame() {
 }
 
 /**
- * Hand pedestal — a subtle altar-platform frame behind the bottom hand
- * strip. Gives the cards a defined surface instead of floating in fade.
- * Element-agnostic chrome-white edge with soft underglow.
+ * Right-side control rail — 260 px glass panel that hosts the three main
+ * HUD controls: deck-status pills at the top (padded past the 52 px bar),
+ * the scrollable set-engine reference in the middle, and the turn-control
+ * button anchored at the bottom. Returned to the right edge per user
+ * request; widened to 260 px for breathing room vs the old 220 px.
  */
-function HandPedestal() {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: 'absolute',
-        bottom: 6,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: 'min(1100px, calc(100vw - 360px))',
-        height: 220,
-        background: 'linear-gradient(180deg, transparent 0%, rgba(5,5,7,0.55) 30%, rgba(5,5,7,0.85) 100%)',
-        borderTop: '1px solid rgba(244,244,248,0.14)',
-        borderLeft: '1px solid rgba(244,244,248,0.06)',
-        borderRight: '1px solid rgba(244,244,248,0.06)',
-        borderRadius: '22px 22px 0 0',
-        boxShadow: '0 -8px 28px rgba(0,0,0,0.55), inset 0 1px 0 rgba(244,244,248,0.06)',
-        pointerEvents: 'none',
-        zIndex: 8,
-      }}
-    >
-      {/* Center chrome accent line — implies an altar's central spine */}
-      <div style={{
-        position: 'absolute', top: -1, left: '25%', right: '25%', height: 1,
-        background: 'linear-gradient(90deg, transparent 0%, rgba(244,244,248,0.45) 30%, rgba(244,244,248,0.9) 50%, rgba(244,244,248,0.45) 70%, transparent 100%)',
-      }} />
-    </div>
-  );
-}
-
-/**
- * Bottom-right hero End-Turn / Begin-Turn / Mulligan-Confirm slot.
- * Wraps the existing TurnControls component in a corner-anchored container
- * styled like a finishing-move panel — isolated from the deck pills.
- */
-function EndTurnHero() {
+function RightRail() {
   return (
     <div
       style={{
         position: 'absolute',
-        right: 22, bottom: 22,
-        width: 220,
+        right: 0, top: 0, bottom: 0,
+        width: 260,
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'linear-gradient(270deg, rgba(5,5,7,0.92) 0%, rgba(8,8,16,0.78) 100%)',
+        borderLeft: '1px solid rgba(244,244,248,0.08)',
+        backdropFilter: 'blur(12px)',
+        boxShadow: '-4px 0 24px rgba(0,0,0,0.45)',
         pointerEvents: 'auto',
-        zIndex: 16,
+        zIndex: 14,
       }}
     >
-      <TurnControls />
-    </div>
-  );
-}
+      {/* Inset left-edge accent — gives the rail a physical seam against the arena */}
+      <div aria-hidden="true" style={{
+        position: 'absolute', top: '6%', bottom: '6%', left: 0, width: 1,
+        background: 'linear-gradient(180deg, transparent, rgba(244,244,248,0.14) 25%, rgba(244,244,248,0.14) 75%, transparent)',
+        pointerEvents: 'none',
+      }} />
 
-/**
- * Centered overlay panel that hosts the SetEngineDisplay reference content.
- * Triggered by the ⚙ icon in the top toolbar. Backdrop dims the arena.
- */
-function SetEnginesOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null;
-  return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 150,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'radial-gradient(circle at 50% 50%, rgba(5,5,7,0.78) 0%, rgba(5,5,7,0.92) 100%)',
-        backdropFilter: 'blur(4px)',
-        animation: 'turnHeaderFadeIn 0.35s ease-out',
-      }}
-      onClick={onClose}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: 'min(520px, 92vw)',
-          maxHeight: '82vh',
-          padding: '18px 14px 14px',
-          background: 'linear-gradient(180deg, rgba(14,14,22,0.98), rgba(5,5,7,0.98))',
-          border: '1px solid rgba(244,244,248,0.18)',
-          borderRadius: 18,
-          boxShadow: '0 24px 64px rgba(0,0,0,0.7), 0 0 36px rgba(160,160,255,0.12), inset 0 1px 0 rgba(244,244,248,0.08)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Top accent line */}
-        <div style={{
-          position: 'absolute', top: 0, left: '8%', right: '8%', height: 1,
-          background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.7), transparent)',
-        }} />
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          aria-label="Close Set Engines"
-          style={{
-            position: 'absolute', top: 10, right: 12,
-            width: 28, height: 28, borderRadius: 8,
-            background: 'rgba(5,5,7,0.72)',
-            border: '1px solid rgba(244,244,248,0.2)',
-            color: 'rgba(244,244,248,0.85)',
-            fontSize: 16, lineHeight: 1, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 2,
-          }}
-        >
-          ×
-        </button>
-        <div style={{ overflowY: 'auto', maxHeight: 'calc(82vh - 36px)' }}>
-          <SetEngineDisplay />
-        </div>
+      {/* Deck pills — clears the 52 px top bar */}
+      <div style={{ padding: '64px 18px 0', flexShrink: 0 }}>
+        <DeckStatus />
+      </div>
+
+      {/* Divider */}
+      <div aria-hidden="true" style={{
+        height: 1, margin: '18px 20px 0', flexShrink: 0,
+        background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
+      }} />
+
+      {/* Set engine reference — scrollable, expands to fill available space */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 18px 4px', minHeight: 0 }}>
+        <SetEngineDisplay />
+      </div>
+
+      {/* Divider */}
+      <div aria-hidden="true" style={{
+        height: 1, margin: '14px 20px', flexShrink: 0,
+        background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
+      }} />
+
+      {/* Turn controls — bottom-anchored */}
+      <div style={{ padding: '0 18px 22px', flexShrink: 0 }}>
+        <TurnControls />
       </div>
     </div>
   );
 }
 
 export default function HUD() {
-  const [setEnginesOpen, setSetEnginesOpen] = useState(false);
-
   return (
     <>
-      {/* Cosmetic chrome frames (behind everything functional) */}
+      {/* Cosmetic left-rail chrome frame behind resource orbs */}
       <LeftRailFrame />
-      <HandPedestal />
 
       {/* Core play surfaces */}
       <BoardDisplay />
@@ -330,33 +214,16 @@ export default function HUD() {
       <TrailDisplay />
       <StrainDisplay />
 
-      {/* Top status bar — set · turn · phase (left), toolbar (right) */}
-      <TopStatusBar
-        onToggleSetEngines={() => setSetEnginesOpen(v => !v)}
-        setEnginesOpen={setEnginesOpen}
-      />
+      {/* Top status bar — set · turn · phase */}
+      <TopStatusBar />
 
-      {/* Deck pills — top-right, slim isolated cluster (no big glass box) */}
-      <div style={{
-        position: 'absolute',
-        top: 64, right: 18,
-        width: 220,
-        pointerEvents: 'auto',
-        zIndex: 14,
-      }}>
-        <DeckStatus />
-      </div>
-
-      {/* Hand strip — anchored bottom-center inside the pedestal */}
+      {/* Hand strip */}
       <HandDisplay />
 
-      {/* End Turn hero — bottom-right corner finishing-move slot */}
-      <EndTurnHero />
+      {/* Right control rail — deck pills / set-engines reference / turn button */}
+      <RightRail />
 
-      {/* Set Engines overlay — opens on ⚙ toggle */}
-      <SetEnginesOverlay open={setEnginesOpen} onClose={() => setSetEnginesOpen(false)} />
-
-      {/* Pending-effect modal stays last so it floats above everything */}
+      {/* Pending-effect modal — floats above everything */}
       <PendingEffectModal />
     </>
   );
