@@ -1420,6 +1420,33 @@ html.compact-mode .ui-panel-intro { padding: 14px 18px !important; }
   66%      { box-shadow: 0 0 24px rgba(255,80,80,0.5),  0 0 50px rgba(180,80,255,0.35); }
 }
 
+/* Central altar floor breathing halo — the "ground" beneath the cards */
+@keyframes altarBreathe {
+  0%, 100% { opacity: 0.62; transform: translate(-50%, -50%) scale(1); }
+  50%       { opacity: 0.88; transform: translate(-50%, -50%) scale(1.04); }
+}
+
+/* Orbital pulse ring — radiates outward from a playable empty slot */
+@keyframes orbitalPulse {
+  0%   { transform: translate(-50%, -50%) scale(0.65); opacity: 0.85; }
+  100% { transform: translate(-50%, -50%) scale(1.6);  opacity: 0; }
+}
+
+/* Drifting motes inside the arena — vertical float + horizontal sway */
+@keyframes moteFloat {
+  0%   { transform: translate(0, 0)        scale(1);   opacity: 0; }
+  10%  { opacity: 0.9; }
+  50%  { transform: translate(8px, -34px)  scale(1.1); opacity: 0.85; }
+  90%  { opacity: 0.5; }
+  100% { transform: translate(-4px, -68px) scale(0.85); opacity: 0; }
+}
+
+/* Cinematic title-card fade-in for the turn header */
+@keyframes turnHeaderFadeIn {
+  0%   { opacity: 0; letter-spacing: 18px; filter: blur(6px); }
+  100% { opacity: 1; letter-spacing: 8px;  filter: blur(0);   }
+}
+
 /* Utility classes */
 .anim-screen-shake-soft {
   animation: screenShakeSoft 0.4s ease both;

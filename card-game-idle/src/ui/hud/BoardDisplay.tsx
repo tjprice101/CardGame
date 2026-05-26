@@ -926,6 +926,26 @@ export default function BoardDisplay() {
               <div style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 6, left: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 6, right: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              {/* Orbital pulse rings — two staggered concentric rings radiate outward
+                  to grab the eye when a Seraphim is in hand and this slot is playable. */}
+              {hasSeraphimInHand && (
+                <>
+                  <div style={{
+                    position: 'absolute', top: '50%', left: '50%',
+                    width: 56, height: 56, borderRadius: '50%',
+                    border: `1px solid ${glowColor}`,
+                    animation: 'orbitalPulse 2.4s ease-out infinite',
+                    pointerEvents: 'none',
+                  }} />
+                  <div style={{
+                    position: 'absolute', top: '50%', left: '50%',
+                    width: 56, height: 56, borderRadius: '50%',
+                    border: `1px solid ${glowColor}`,
+                    animation: 'orbitalPulse 2.4s ease-out 1.2s infinite',
+                    pointerEvents: 'none',
+                  }} />
+                </>
+              )}
               <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.25, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>✦</div>
               <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.25, transition: 'opacity 0.2s, color 0.2s' }}>
                 {isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
