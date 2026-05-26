@@ -3,8 +3,10 @@ import react from '@vitejs/plugin-react';
 import glsl from 'vite-plugin-glsl';
 import path from 'path';
 
+const isGhPages = process.env.DEPLOY_TARGET === 'ghpages';
+
 export default defineConfig({
-  base: '/CardGame/',
+  base: isGhPages ? '/CardGame/' : '/',
   plugins: [
     react(),
     glsl({ compress: false }),

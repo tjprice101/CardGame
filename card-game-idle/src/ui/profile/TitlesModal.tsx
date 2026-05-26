@@ -19,10 +19,10 @@ const GROUP_LABELS: Record<TitleBadgeGroup, string> = {
 };
 
 const GROUP_COLORS: Record<TitleBadgeGroup, { bg: string; text: string; border: string }> = {
-  milestone: { bg: 'rgba(214,162,94,0.18)', text: '#e8b95e', border: 'rgba(214,162,94,0.4)' },
-  boss: { bg: 'rgba(184,92,79,0.18)', text: '#d46b5a', border: 'rgba(184,92,79,0.38)' },
-  infinite: { bg: 'rgba(122,169,255,0.18)', text: '#7aa9ff', border: 'rgba(122,169,255,0.38)' },
-  set: { bg: 'rgba(110,190,120,0.18)', text: '#72c47e', border: 'rgba(110,190,120,0.36)' },
+  milestone: { bg: 'rgba(214,162,94,0.18)', text: '#111', border: 'rgba(214,162,94,0.4)' },
+  boss: { bg: 'rgba(184,92,79,0.18)', text: '#111', border: 'rgba(184,92,79,0.38)' },
+  infinite: { bg: 'rgba(122,169,255,0.18)', text: '#111', border: 'rgba(122,169,255,0.38)' },
+  set: { bg: 'rgba(110,190,120,0.18)', text: '#111', border: 'rgba(110,190,120,0.36)' },
 };
 
 const FILTER_GROUPS: { value: FilterGroup; label: string }[] = [
@@ -195,7 +195,7 @@ export default function TitlesModal({ onClose }: Props) {
                     borderRadius: 20,
                     border: `1px solid ${filterGroup === f.value ? warmTheme.accent : warmTheme.border}`,
                     background: filterGroup === f.value ? 'rgba(214,162,94,0.16)' : 'transparent',
-                    color: filterGroup === f.value ? warmTheme.accent : warmTheme.textMuted,
+                    color: filterGroup === f.value ? warmTheme.text : warmTheme.textMuted,
                     fontSize: 10,
                     letterSpacing: 0.5,
                     cursor: 'pointer',
@@ -221,7 +221,7 @@ export default function TitlesModal({ onClose }: Props) {
                       borderRadius: 6,
                       border: `1px solid ${filterStatus === f.value ? warmTheme.accent : warmTheme.border}`,
                       background: filterStatus === f.value ? 'rgba(214,162,94,0.1)' : 'transparent',
-                      color: filterStatus === f.value ? warmTheme.accent : warmTheme.textMuted,
+                      color: filterStatus === f.value ? warmTheme.text : warmTheme.textMuted,
                       fontSize: 10,
                       cursor: 'pointer',
                       fontFamily: 'Georgia, serif',
@@ -259,7 +259,7 @@ export default function TitlesModal({ onClose }: Props) {
         <div style={{ padding: '6px 24px 0', fontSize: 10, color: warmTheme.textFaint, flexShrink: 0 }}>
           {filtered.length} title{filtered.length !== 1 ? 's' : ''} shown
           {activeTitle && (
-            <span style={{ marginLeft: 12, color: warmTheme.accent }}>
+            <span style={{ marginLeft: 12, color: warmTheme.text }}>
               Currently equipped: <strong>{TITLE_BADGES.find(t => t.id === activeTitle)?.text ?? 'Unknown'}</strong>
             </span>
           )}
@@ -362,7 +362,7 @@ function TitleCard({
         width: 22,
         flexShrink: 0,
         fontSize: 14,
-        color: active ? warmTheme.accent : unlocked ? warmTheme.textMuted : warmTheme.textFaint,
+        color: unlocked ? warmTheme.text : warmTheme.textFaint,
         textAlign: 'center',
         lineHeight: 1,
       }}>
@@ -374,7 +374,7 @@ function TitleCard({
         <div style={{
           fontSize: 13,
           fontWeight: 'bold',
-          color: active ? warmTheme.accent : unlocked ? warmTheme.text : warmTheme.textMuted,
+          color: unlocked ? warmTheme.text : warmTheme.textMuted,
           letterSpacing: 0.3,
         }}>
           {text}

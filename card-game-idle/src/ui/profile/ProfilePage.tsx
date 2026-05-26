@@ -112,7 +112,7 @@ export default function ProfilePage({ onClose }: Props) {
                 outline: 'none', fontFamily: 'Georgia, serif', padding: '2px 0',
               }}
             />
-            <div style={{ fontSize: 12, color: warmTheme.accent, marginTop: 4, fontStyle: 'italic' }}>
+            <div style={{ fontSize: 12, color: warmTheme.text, marginTop: 4, fontStyle: 'italic' }}>
               {currentTitle ? currentTitle.text : 'No title selected'}
             </div>
           </div>
@@ -174,7 +174,7 @@ export default function ProfilePage({ onClose }: Props) {
             background: 'rgba(0,0,0,0.04)',
             fontSize: 13,
             fontStyle: currentTitle ? 'normal' : 'italic',
-            color: currentTitle ? warmTheme.accent : warmTheme.textMuted,
+            color: warmTheme.text,
           }}>
             {currentTitle ? currentTitle.text : 'No title selected'}
           </div>
