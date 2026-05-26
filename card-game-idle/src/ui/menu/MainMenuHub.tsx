@@ -215,7 +215,10 @@ function ResourcePill(props: { glyph: string; label: string; value: string; tone
         boxShadow: `0 0 8px ${colors.glow}`,
         fontSize: 12, color: colors.glyph,
       }} aria-hidden>{props.glyph}</span>
-      <span style={{ fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1 }}>{props.value}</span>
+      <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <span style={{ fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 1, lineHeight: 1 }}>{props.value}</span>
+        <span style={{ fontFamily: uiTypography.body, fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', opacity: 0.55, lineHeight: 1 }}>{props.label}</span>
+      </span>
     </div>
   );
 }
@@ -306,36 +309,18 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Level halo + name */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{
-            position: 'relative',
             width: 96, height: 96,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
+            borderRadius: '50%',
+            border: '2px solid rgba(245,232,214,0.18)',
+            background: 'rgba(20,14,10,0.55)',
           }}>
-            <svg viewBox="0 0 100 100" width={96} height={96} style={{ position: 'absolute', inset: 0 }}>
-              <defs>
-                <linearGradient id="lvl-ring" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#f5d68a" />
-                  <stop offset="100%" stopColor="#b8854a" />
-                </linearGradient>
-              </defs>
-              <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(0,0,0,0.55)" strokeWidth="3" />
-              <circle cx="50" cy="50" r="44" fill="none" stroke="url(#lvl-ring)" strokeWidth="3"
-                strokeDasharray={`${Math.min(99, ((cards % 100))) * 2.76} 999`}
-                strokeLinecap="round" transform="rotate(-90 50 50)" />
-            </svg>
             <div style={{
               fontFamily: uiTypography.display, fontSize: 30, color: '#f5e8d6', letterSpacing: 1,
               textShadow: '0 2px 12px rgba(0,0,0,0.6)',
             }} title={avatar.label}>
               {avatar.glyph ?? '◈'}
             </div>
-            <div style={{
-              position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)',
-              padding: '2px 10px', borderRadius: 999,
-              fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6,
-              background: 'rgba(20,14,10,0.85)',
-              border: `1px solid ${warmTheme.accentSoft}`,
-              color: warmTheme.accentSoft,
-            }}>LV {Math.min(99, Math.floor(cards / 100) + 1)}</div>
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
