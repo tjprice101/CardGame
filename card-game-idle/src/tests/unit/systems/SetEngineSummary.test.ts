@@ -39,7 +39,7 @@ describe('set engine summary', () => {
     expect(pyro).toBeTruthy();
 
     const list = getSetEngineSnapshotsForCards([neutrality!, pyro!], defaultGameState.turn, undefined, { includeAll: true });
-    expect(list).toHaveLength(14);
+    expect(list).toHaveLength(15);
     expect(list[0]?.label).toBe('Neutrality');
     expect(list.some(snapshot => snapshot.label === 'Pyroabyss')).toBe(true);
     expect(list.some(snapshot => snapshot.label === 'Glass Absolute')).toBe(true);
@@ -47,5 +47,6 @@ describe('set engine summary', () => {
     expect(list.some(snapshot => snapshot.label === 'Eternal Seas')).toBe(true);
     expect(list.some(snapshot => snapshot.label === 'Abyssal Forge')).toBe(true);
     expect(list.some(snapshot => snapshot.label === 'Death-flamed Hell')).toBe(true);
+    expect(list.some(snapshot => snapshot.label === 'Wished Upon a Star')).toBe(true);
   });
 });

@@ -171,7 +171,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Genesis Throne',
-    description: 'On play: +3000 Oblivion; Draw 5 cards; Set chain floor to x12.0. While on board: +1000 Oblivion per card played while active',
+    description: 'On play: +3000 Oblivion; Draw 5 cards; Set chain floor to x12.0. While on board: +1000 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 8 on attack, also draw 5 cards',
 
     artKey: 'inf_genesis_throne',
     attacks: {
@@ -214,7 +214,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Null Apex',
-    description: 'On play: Draw 4 cards; Set chain floor to x8.0; All Seraphim on board gain +15 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Draw 4 cards; Set chain floor to x8.0; All Seraphim on board gain +15 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 8 on attack, also draw 5 cards',
 
     artKey: 'inf_null_apex',
     attacks: {

@@ -115,7 +115,7 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
             lineHeight: 1.05,
           }}
         >
-          Heavenly<br />Retribution
+          Pantheon
         </div>
         <div
           style={{
@@ -127,7 +127,7 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
             opacity: 0.85,
           }}
         >
-          A Card Idle of Angels &amp; Embers
+          Forge Gods. Outlast Eternity.
         </div>
 
         <div

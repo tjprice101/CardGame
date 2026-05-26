@@ -120,7 +120,7 @@ describe('title badge registry', () => {
 
 describe('dynamic title generation', () => {
   it('mints a boss-clear title for the requested boss only when that boss is cleared', () => {
-    const bossTitle = TITLE_BADGES.find(t => t.group === 'boss');
+    const bossTitle = TITLE_BADGES.find(t => t.id.startsWith('title-bossclear-'));
     expect(bossTitle).toBeTruthy();
     const rawBossId = bossTitle!.id.replace(/^title-bossclear-/, '');
     expect(isTitleUnlocked(bossTitle!.id, baseProgress())).toBe(false);

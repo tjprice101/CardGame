@@ -661,7 +661,7 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-ouroglas-uncoiled',
     name: 'Ouroglas Uncoiled',
-    description: 'On play: +4 Forge Crowns; Ouroboric Recast — re-fire every card played this turn at 50% power, free; Gain 5 Charges. While on board: +180 Oblivion per card played.',
+    description: 'On play: Gain 4 Forge Crowns; Ouroboric Recast at 50% power; Gain 5 Reforge Charges. While on board: +180 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_ouroglas_uncoiled',
     bonusType: 'oblivion_per_card',
@@ -676,7 +676,7 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-abyssal-forge-itself',
     name: 'The Abyssal Forge Itself',
-    description: 'On play: +5 Forge Crowns; Drop 6 Pearls; Nacre-Recast last 5 cards at 100% power; Cash out Forge Crowns (+160 Oblivion, +0.06 chain per Crown). While on board: Chain grows +0.22 per card played.',
+    description: 'On play: Gain 5 Forge Crowns; Drop 6 Pearls; Nacre-Recast last 5 cards at 100% power; Cash out all Forge Crowns (+160 Oblivion, +0.06 chain per crown). While on board: Chain grows +0.22 per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_abyssal_forge_itself',
     bonusType: 'chain_bonus',
@@ -691,7 +691,7 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-unrecorded-hue',
     name: 'The Unrecorded Hue',
-    description: 'On play: +3 Forge Crowns; Ignite the Unrecorded Hue (every following Forge card auto-recasts itself at 100%); Drop 10 Pearls. While on board: Chain grows +0.26 per card played.',
+    description: 'On play: Gain 3 Forge Crowns; Ignite the Unrecorded Hue; Drop 10 Pearls. While on board: Chain grows +0.26 per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_unrecorded_hue',
     bonusType: 'chain_bonus',
@@ -706,7 +706,7 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-covenant-coiled-fire',
     name: 'Covenant of Coiled Fire',
-    description: 'On play: +4 Forge Crowns; Gain 6 Charges; Nacre-Recast last 4 cards at 100% power; Nacre-Coat all prior cards. While on board: +200 Oblivion per card played.',
+    description: 'On play: Gain 4 Forge Crowns; Gain 6 Reforge Charges; Nacre-Recast last 4 cards at 100% power; Nacre-Coat all played cards. While on board: +200 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_covenant_coiled_fire',
     bonusType: 'oblivion_per_card',
@@ -721,7 +721,7 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-reforging-world',
     name: 'The Reforging of the World',
-    description: 'On play: +6 Forge Crowns; Ignite the Unrecorded Hue; Ouroboric Recast at 100% power — re-fire EVERY card played this turn; Cash out Forge Crowns (+220 Oblivion, +0.08 chain per Crown); Draw 3 cards. While on board: Chain grows +0.32 per card played.',
+    description: 'On play: Gain 6 Forge Crowns; Ignite the Unrecorded Hue; Ouroboric Recast at 100% power; Cash out all Forge Crowns (+220 Oblivion, +0.08 chain per crown); Draw 3 cards. While on board: Chain grows +0.32 per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_reforging_world',
     bonusType: 'chain_bonus',

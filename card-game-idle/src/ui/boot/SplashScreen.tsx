@@ -82,7 +82,7 @@ export default function SplashScreen({ onDone }: { onDone: () => void }) {
           textTransform: 'uppercase',
         }}
       >
-        A Card Idle of Angels &amp; Embers
+        Forge Gods. Outlast Eternity.
       </div>
     </div>
   );

@@ -16,7 +16,8 @@ export type EngineKey =
   | 'butterfly'
   | 'eternalSeas'
   | 'abyssalForge'
-  | 'deathFlamedHell';
+  | 'deathFlamedHell'
+  | 'wishedUponAStar';
 
 type CardRolePattern = 'setup' | 'support' | 'resource' | 'payoff' | 'amplifier' | 'finisher';
 
@@ -79,6 +80,7 @@ const ENGINE_ORDER: EngineKey[] = [
   'eternalSeas',
   'abyssalForge',
   'deathFlamedHell',
+  'wishedUponAStar',
 ];
 
 const ENGINE_META: Record<EngineKey, { label: string; accent: string }> = {
@@ -96,6 +98,7 @@ const ENGINE_META: Record<EngineKey, { label: string; accent: string }> = {
   eternalSeas: { label: 'Eternal Seas', accent: ELEMENT_COLORS.EternalSeas },
   abyssalForge: { label: 'Abyssal Forge', accent: ELEMENT_COLORS.AbyssalForge },
   deathFlamedHell: { label: 'Death-flamed Hell', accent: ELEMENT_COLORS.DeathFlamedHell },
+  wishedUponAStar: { label: 'Wished Upon a Star', accent: ELEMENT_COLORS.WishedUponAStar },
 };
 
 const ROLE_BADGES: Record<CardRolePattern, string> = {
@@ -219,6 +222,14 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     payoff: 'Converts Pyre Embers and Cinder Crowns into Oblivion spikes on demand.',
     amplifier: 'Escalates chain growth once both Embers and Crowns are pressurized together.',
     finisher: 'Detonates the dual cashout: every Ember and every Crown spent in the same breath.',
+  },
+  wishedUponAStar: {
+    setup: 'Places Starlight Charges and Dream Lattice so the three star cashout windows can open.',
+    support: 'Sits on board and scales attacks while the Starlight and Dream Lattice stockpile builds.',
+    resource: 'Stocks Starlight and Dream Lattice so the star cashout payloads grow bigger each turn.',
+    payoff: 'Converts Starlight, Dream Lattice, or Star Crowns into Oblivion through one of the star cashouts.',
+    amplifier: 'Deepens both the Starlight and Dream tracks so every star cashout multiplies harder.',
+    finisher: 'Triggers all three cashouts in one play — Starbirth, Wish Burst, and Constellation Lock.',
   },
 };
 
@@ -357,6 +368,7 @@ export function getEngineKeyForCard(def: CardDefinition): EngineKey | null {
   if (def.element === 'EternalSeas') return 'eternalSeas';
   if (def.element === 'AbyssalForge') return 'abyssalForge';
   if (def.element === 'DeathFlamedHell') return 'deathFlamedHell';
+  if (def.element === 'WishedUponAStar') return 'wishedUponAStar';
   return null;
 }
 
@@ -877,6 +889,30 @@ function buildEngineSnapshot(
         ],
       };
     }
+    case 'wishedUponAStar': {
+      const starlight = turn.starlightCharges ?? 0;
+      const dream = turn.dreamLattice ?? 0;
+      const starCrowns = turn.eternalStacks?.wuas ?? 0;
+      return {
+        key,
+        label: meta.label,
+        accent: meta.accent,
+        compact: `Starlight ${starlight} | Dream Lattice ${dream} | Star Crowns ${starCrowns}`,
+        detail: 'Stock Starlight and Dream Lattice, then fire one of the three star cashouts.',
+        tagline: 'Wished Upon a Star: Starlight, Dream Lattice, and Star Crowns feed three layered cashouts.',
+        summary: 'Wished Upon a Star stockpiles Starlight Charges and Dream Lattice over multiple turns, then converts them through Nova Wish Burst, Constellation Lock, or Infinite Starbirth.',
+        metrics: [
+          createMetric('Starlight Charges', starlight, 'Primary cashout fuel. Drives Nova Wish Burst (Oblivion = Starlight × Dream multiplier) and Infinite Starbirth (Oblivion = Seraphim × Starlight).'),
+          createMetric('Dream Lattice', dream, 'Secondary amplifier. Scales Nova Wish Burst and grants draw on Starbirth. Decays each turn unless preserved by Solarvex Ward.'),
+          createMetric('Star Crowns', starCrowns, 'Eternal-tier stack earned by Wishwright cards. Spent by Constellation Lock Release for Oblivion and chain per Crown consumed.'),
+        ],
+        nextSteps: [
+          createStep('Build Starlight', starlight >= 6, starlight >= 6 ? `${starlight} Starlight Charges banked — cashout payloads are meaningful.` : 'Play Starlight-generating cards to build the primary cashout pool.'),
+          createStep('Stack Dream Lattice', dream >= 4, dream >= 4 ? `Dream Lattice at ${dream} — Nova Wish Burst and Starbirth are both amplified.` : 'Stack Dream Lattice with Cherubim and Ophanim to deepen cashout multipliers.'),
+          createStep('Earn Star Crowns', starCrowns >= 3, starCrowns >= 3 ? `${starCrowns} Star Crowns ready for Constellation Lock Release.` : 'Play Eternal WUAS cards to earn Star Crowns for the Constellation cashout.'),
+        ],
+      };
+    }
   }
 }
 
@@ -1251,6 +1287,25 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       {
         heading: 'Infinite Card Amplification',
         body: 'Infinite Death-flamed Hell cards reward a fully stoked pyre and a Crown-loaded treasury. Build both pools before firing the dual cashout — the finale scales with the smaller of the two pools, so balance matters.',
+      },
+    ],
+  },
+  wishedUponAStar: {
+    engineKey: 'wishedUponAStar',
+    title: 'User Guide to: Wished Upon a Star',
+    intro: 'Wished Upon a Star runs the Stellar Wish Engine. You stockpile Starlight Charges and Dream Lattice over multiple turns, earn Star Crowns from Eternal cards, then cash out through three layered payoffs: Nova Wish Burst, Constellation Lock Release, and Infinite Starbirth.',
+    sections: [
+      {
+        heading: 'Starlight Charges',
+        body: 'Starlight Charges are the primary cashout fuel. They accumulate from Ophanim, Cherubim, and Seraphim plays and persist across turns. Two cashouts scale directly with Starlight: Nova Wish Burst (Oblivion = Starlight × Dream multiplier) and Infinite Starbirth (Oblivion = Seraphim on board × Starlight × per-Seraphim value).',
+      },
+      {
+        heading: 'Dream Lattice',
+        body: 'Dream Lattice is the secondary amplifier. It deepens Nova Wish Burst and grants bonus draw on Starbirth. By default, Dream Lattice decays at the end of each turn — Solarvex Ward Cherubim prevents this decay, letting it accumulate into a much larger multiplier over many turns.',
+      },
+      {
+        heading: 'Star Crowns and Constellation Lock',
+        body: 'Star Crowns are the Eternal-tier stack for this set. They are earned by playing Wishwright Eternal cards and spent by Constellation Lock Release for a burst of Oblivion and chain growth per Crown consumed. The more Crowns banked before the cashout, the larger the finale.',
       },
     ],
   },

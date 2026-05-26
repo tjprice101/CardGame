@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
-import { AVATARS, AVATAR_BY_ID, DEFAULT_AVATAR_ID, resolveAvatar } from '@/data/profile/avatars';
-import { TITLE_BADGES, TITLE_BADGE_BY_ID, resolveTitleBadge } from '@/data/profile/titleBadges';
-import { UI_THEMES, DEFAULT_UI_THEME_ID, CUSTOM_THEME_EDITABLE_KEYS } from '@/data/profile/uiThemes';
+import { resolveAvatar } from '@/data/profile/avatars';
+import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
+import { UI_THEMES, DEFAULT_UI_THEME_ID } from '@/data/profile/uiThemes';
+import TitlesModal from '@/ui/profile/TitlesModal';
 
 interface Props {
   onClose: () => void;
@@ -13,20 +14,12 @@ export default function ProfilePage({ onClose }: Props) {
   const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
   const setPlayerName = useStore(s => s.setPlayerName);
-  const setAvatarId = useStore(s => s.setAvatarId);
-  const setTitleId = useStore(s => s.setTitleId);
   const setUiThemeId = useStore(s => s.setUiThemeId);
-  const setCustomUiThemeColor = useStore(s => s.setCustomUiThemeColor);
-  const resetCustomUiTheme = useStore(s => s.resetCustomUiTheme);
   const dailyLogin = useStore(s => s.progress.dailyLogin);
 
   const [nameDraft, setNameDraft] = useState(profile.name);
-  const [showCustomEditor, setShowCustomEditor] = useState(false);
+  const [showTitles, setShowTitles] = useState(false);
 
-  const unlockedAvatars = useMemo(
-    () => AVATARS.filter(a => a.isUnlocked(progress)),
-    [progress],
-  );
   const unlockedTitles = useMemo(
     () => TITLE_BADGES.filter(t => t.isUnlocked(progress)),
     [progress],
@@ -36,7 +29,7 @@ export default function ProfilePage({ onClose }: Props) {
   const currentAvatar = resolveAvatar(profile.avatarId, progress);
   const currentTitle = resolveTitleBadge(profile.titleId, progress);
 
-  const totalCollection = useMemo(
+  const totalCollection = useMemo(  
     () => Object.values(progress.collection).reduce((a, b) => a + b, 0),
     [progress.collection],
   );
@@ -137,94 +130,76 @@ export default function ProfilePage({ onClose }: Props) {
           <StatCell label="Bosses" value={`${totalBossClears} (${distinctBosses})`} />
           <StatCell label="Login Streak" value={`${dailyLogin.streak}d`} />
           <StatCell label="Total Logins" value={dailyLogin.totalClaims.toLocaleString()} />
-          <StatCell label="Unlocked" value={`${unlockedAvatars.length}A / ${unlockedTitles.length}T`} />
+          <StatCell label="Titles" value={`${unlockedTitles.length} / ${TITLE_BADGES.length}`} />
         </div>
 
-        {/* Avatar picker */}
+        {/* Avatar — placeholder until full system is implemented */}
         <SectionHeader>Avatar</SectionHeader>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 8,
           marginBottom: 16,
+          padding: '14px 16px',
+          borderRadius: 10,
+          border: `1px dashed ${warmTheme.border}`,
+          background: 'rgba(0,0,0,0.04)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 12,
         }}>
-          {AVATARS.map(a => {
-            const unlocked = a.isUnlocked(progress);
-            const active = profile.avatarId === a.id && unlocked;
-            return (
-              <button
-                key={a.id}
-                disabled={!unlocked}
-                onClick={() => unlocked && setAvatarId(a.id)}
-                title={unlocked ? a.name : `Locked — ${a.description}`}
-                style={{
-                  aspectRatio: '1 / 1',
-                  fontSize: 22,
-                  background: active ? warmTheme.accentSoft : 'rgba(0,0,0,0.05)',
-                  border: active
-                    ? `2px solid ${warmTheme.accent}`
-                    : `1px solid ${warmTheme.border}`,
-                  borderRadius: 10,
-                  cursor: unlocked ? 'pointer' : 'not-allowed',
-                  opacity: unlocked ? 1 : 0.32,
-                  color: unlocked ? warmTheme.accentDeep : warmTheme.textMuted,
-                  filter: unlocked ? 'none' : 'grayscale(1)',
-                  fontFamily: 'Georgia, serif',
-                  transition: 'background 120ms ease, border-color 120ms ease',
-                }}
-              >{a.glyph}</button>
-            );
-          })}
+          <div style={{
+            width: 40, height: 40, borderRadius: '50%',
+            background: warmTheme.surface,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22, color: warmTheme.textFaint,
+            border: `1px solid ${warmTheme.border}`,
+            flexShrink: 0,
+          }}>
+            {currentAvatar.glyph}
+          </div>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 'bold', color: warmTheme.textMuted }}>Avatar Customization</div>
+            <div style={{ fontSize: 10, color: warmTheme.textFaint, marginTop: 3, lineHeight: 1.4 }}>
+              Custom profile pictures are coming soon. Your avatar will unlock based on your progression milestones.
+            </div>
+          </div>
         </div>
 
-        {/* Title picker */}
+        {/* Title — current + browser button */}
         <SectionHeader>Title Badge</SectionHeader>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16, maxHeight: 320, overflowY: 'auto', paddingRight: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+          <div style={{
+            flex: 1,
+            padding: '10px 14px',
+            borderRadius: 10,
+            border: `1px solid ${warmTheme.border}`,
+            background: 'rgba(0,0,0,0.04)',
+            fontSize: 13,
+            fontStyle: currentTitle ? 'normal' : 'italic',
+            color: currentTitle ? warmTheme.accent : warmTheme.textMuted,
+          }}>
+            {currentTitle ? currentTitle.text : 'No title selected'}
+          </div>
           <button
-            onClick={() => setTitleId(null)}
-            style={titleRowStyle(profile.titleId === null, true)}
+            className="menu-tactile-btn"
+            onClick={() => setShowTitles(true)}
+            style={{
+              flexShrink: 0,
+              padding: '10px 16px',
+              borderRadius: 10,
+              border: `1px solid ${warmTheme.borderStrong}`,
+              background: warmTheme.button,
+              color: warmTheme.accentDeep,
+              fontSize: 12,
+              fontFamily: 'Georgia, serif',
+              cursor: 'pointer',
+              letterSpacing: 0.5,
+              whiteSpace: 'nowrap',
+            }}
           >
-            <span style={{ fontStyle: 'italic', color: warmTheme.textMuted }}>(None)</span>
+            View Titles
           </button>
-          {([
-            ['Milestones', 'milestone'],
-            ['Eternity\u2019s Wake Bosses', 'boss'],
-            ['Infinite Cards', 'infinite'],
-            ['Set Completion', 'set'],
-          ] as const).map(([label, group]) => {
-            const entries = TITLE_BADGES.filter(t => t.group === group);
-            if (entries.length === 0) return null;
-            const unlockedCount = entries.filter(t => t.isUnlocked(progress)).length;
-            return (
-              <div key={group} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div style={{
-                  fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase',
-                  color: warmTheme.textMuted, marginTop: 6, paddingLeft: 2,
-                  display: 'flex', justifyContent: 'space-between',
-                }}>
-                  <span>{label}</span>
-                  <span>{unlockedCount} / {entries.length}</span>
-                </div>
-                {entries.map(t => {
-                  const unlocked = t.isUnlocked(progress);
-                  const active = profile.titleId === t.id && unlocked;
-                  return (
-                    <button
-                      key={t.id}
-                      disabled={!unlocked}
-                      onClick={() => unlocked && setTitleId(t.id)}
-                      title={unlocked ? t.description : `Locked — ${t.description}`}
-                      style={titleRowStyle(active, unlocked)}
-                    >
-                      <span style={{ fontWeight: 'bold' }}>{t.text}</span>
-                      <span style={{ fontSize: 10, color: warmTheme.textMuted, marginLeft: 8 }}>
-                        {unlocked ? '✓' : '🔒'}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })}
         </div>
+
+        {showTitles && <TitlesModal onClose={() => setShowTitles(false)} />}
 
         {/* Theme picker */}
         <SectionHeader>UI Theme</SectionHeader>
@@ -269,67 +244,6 @@ export default function ProfilePage({ onClose }: Props) {
           })}
         </div>
 
-        {/* Custom color editor (collapsible) */}
-        <div style={{ marginBottom: 16 }}>
-          <button
-            onClick={() => setShowCustomEditor(v => !v)}
-            style={{
-              width: '100%', textAlign: 'left',
-              padding: '8px 10px', borderRadius: 8,
-              border: `1px solid ${warmTheme.border}`,
-              background: 'rgba(0,0,0,0.04)',
-              color: warmTheme.text,
-              cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 12,
-            }}
-          >
-            {showCustomEditor ? '▾ Custom Colors' : '▸ Custom Colors'}
-            {profile.customUiTheme && Object.keys(profile.customUiTheme).length > 0 && (
-              <span style={{ marginLeft: 8, fontSize: 10, color: warmTheme.accent }}>
-                ({Object.keys(profile.customUiTheme).length} overridden)
-              </span>
-            )}
-          </button>
-          {showCustomEditor && (
-            <div style={{
-              marginTop: 8, padding: 10,
-              border: `1px solid ${warmTheme.border}`,
-              borderRadius: 8, background: 'rgba(0,0,0,0.04)',
-            }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {CUSTOM_THEME_EDITABLE_KEYS.map(key => {
-                  const current = (profile.customUiTheme?.[key] as string | undefined) ?? normalizeToHex(warmTheme[key]);
-                  return (
-                    <label key={key} style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      fontSize: 11, color: warmTheme.textMuted,
-                    }}>
-                      <input
-                        type="color"
-                        value={current.startsWith('#') ? current : '#000000'}
-                        onChange={(e) => setCustomUiThemeColor(String(key), e.target.value)}
-                        style={{ width: 28, height: 22, padding: 0, border: 'none', background: 'transparent', cursor: 'pointer' }}
-                      />
-                      <span>{key}</span>
-                    </label>
-                  );
-                })}
-              </div>
-              <button
-                onClick={() => resetCustomUiTheme()}
-                style={{
-                  marginTop: 10, padding: '4px 10px',
-                  fontSize: 11, fontFamily: 'Georgia, serif',
-                  background: 'transparent', color: warmTheme.danger,
-                  border: `1px solid ${warmTheme.border}`,
-                  borderRadius: 6, cursor: 'pointer',
-                }}
-              >
-                Reset Custom Colors
-              </button>
-            </div>
-          )}
-        </div>
-
         {/* Footer hint */}
         <div style={{
           fontSize: 10, color: warmTheme.textMuted, textAlign: 'center',
@@ -337,10 +251,6 @@ export default function ProfilePage({ onClose }: Props) {
         }}>
           Avatars and titles unlock automatically as you earn progression milestones.
         </div>
-
-        {/* Ensure registries are referenced so unused-import warnings stay quiet
-            even if a future refactor stops looking up by id directly. */}
-        {(AVATAR_BY_ID[DEFAULT_AVATAR_ID] && TITLE_BADGE_BY_ID) ? null : null}
       </div>
     </div>
   );
@@ -368,22 +278,6 @@ function StatCell({ label, value }: { label: string; value: string }) {
   );
 }
 
-function titleRowStyle(active: boolean, unlocked: boolean): React.CSSProperties {
-  return {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '8px 12px',
-    background: active ? warmTheme.accentSoft : 'rgba(0,0,0,0.04)',
-    border: active ? `2px solid ${warmTheme.accent}` : `1px solid ${warmTheme.border}`,
-    borderRadius: 8,
-    cursor: unlocked ? 'pointer' : 'not-allowed',
-    opacity: unlocked ? 1 : 0.5,
-    color: active ? warmTheme.accentDeep : warmTheme.text,
-    fontFamily: 'Georgia, serif',
-    fontSize: 13,
-    textAlign: 'left',
-  };
-}
-
 function ThemeSwatch({ color }: { color: string }) {
   return (
     <span style={{
@@ -391,15 +285,6 @@ function ThemeSwatch({ color }: { color: string }) {
       background: color, border: '1px solid rgba(0,0,0,0.18)',
     }} />
   );
-}
-
-/** Best-effort hex extraction so the native color picker accepts the value. */
-function normalizeToHex(value: string): string {
-  if (!value) return '#000000';
-  if (value.startsWith('#')) return value.length >= 7 ? value.slice(0, 7) : value;
-  const m = value.match(/#([0-9a-f]{6})/i);
-  if (m) return `#${m[1]}`;
-  return '#000000';
 }
 
 // Suppress unused warnings — DEFAULT_UI_THEME_ID is the registry's canonical default.

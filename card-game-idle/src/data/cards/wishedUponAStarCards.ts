@@ -596,7 +596,7 @@ const infiniteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'inf-wuas-stellarborn-throne',
     name: 'Stellarborn Throne',
-    description: 'The throne every star bows toward, kept warm by unfinished wishes. +10 Starlight Charges; +6 Dream Lattice; Infinite Starbirth (Oblivion = Seraphim on board × Starlight × 110); draw 2 cards per Dream Lattice stack. The Starbirth specialist — every other Infinite leaves Starbirth scaling to the Throne.',
+    description: 'Gain 10 Starlight Charges; Gain 6 Dream Lattice stacks; Infinite Starbirth (Ob = Seraphim × Starlight × 110; draw 2 per Dream Lattice)',
     rarity: 'Infinite',
     artKey: 'inf_wuas_stellarborn_throne',
     effects: [
@@ -608,7 +608,7 @@ const infiniteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'inf-wuas-lune-choir-ascension',
     name: 'Lune Choir Ascension',
-    description: 'The lunar choir ascending past silence into pure resonance. On play: +8 Starlight Charges; +6 Dream Lattice. While on board: All Seraphim and Angel attacks gain +110 base Oblivion and +0.14 chain bonus; Dream Lattice is preserved across turns. The persistent tempo card — doesn\'t cash out, but turns every other card into a bigger threat over multi-turn play.',
+    description: 'On play: Gain 8 Starlight Charges; Gain 6 Dream Lattice stacks. While on board: Buffs Seraphim and Angel attacks: base +110, chain bonus +0.14',
     rarity: 'Infinite',
     artKey: 'inf_wuas_lune_choir_ascension',
     effects: [{
@@ -625,7 +625,7 @@ const infiniteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'inf-wuas-wishwright-absolute',
     name: 'Wishwright Absolute',
-    description: 'The wish that ends all other wishes. On play: +12 Starlight Charges; +8 Dream Lattice; +10 Star Crowns; Nova Wish Burst (×1.6 Dream multiplier); cash out up to 18 Star Crowns (+260 Oblivion per crown, +0.08 chain per Dream Lattice); Infinite Starbirth (Oblivion = Seraphim × Starlight × 140); draw 1 card per Dream Lattice stack. While in play: Chain grows +0.18 per card played. The only card that fires all three set cashouts in a single play — the closing move after the stockpile is built.',
+    description: 'On play: Gain 12 Starlight Charges; Gain 8 Dream Lattice stacks; Gain 10 Star Crowns; Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 1.6)); Cash out up to 18 Star Crowns (+260 Oblivion per Crown, +0.08 chain per Dream Lattice); Infinite Starbirth (Ob = Seraphim × Starlight × 140; draw 1 per Dream Lattice). While on board: Chain grows +0.18 per card played while active',
     rarity: 'Infinite',
     artKey: 'inf_wuas_wishwright_absolute',
     bonusType: 'chain_bonus',

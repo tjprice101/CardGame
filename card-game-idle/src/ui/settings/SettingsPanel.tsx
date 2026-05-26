@@ -3,6 +3,7 @@ import { useStore, selectSettings } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
 import { FONT_SIZE_OPTIONS, LANGUAGE_OPTIONS, t } from '@/ui/preferences';
 import ControlsSection from '@/ui/settings/ControlsSection';
+import type { SettingsState } from '@/types/game';
 
 interface Props {
   onClose: () => void;
@@ -16,20 +17,40 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
   const settings = useStore(selectSettings);
   const saveTampered = useStore(s => s.saveTampered ?? false);
   const updateSettings = useStore(s => s.updateSettings);
-  const [saved, setSaved] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  // Buffered draft — nothing reaches the store until "Save Settings" is clicked.
+  const [draft, setDraft] = useState<Partial<SettingsState>>(() => ({ ...settings }));
+  const patchDraft = (patch: Partial<SettingsState>) => setDraft(prev => ({ ...prev, ...patch }));
+
+  const hasChanges = (Object.keys(draft) as (keyof SettingsState)[]).some(
+    k => (draft as any)[k] !== (settings as any)[k],
+  );
+
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [gameSaved, setGameSaved] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(0); // 0=none 1=first 2=second
   const [importStatus, setImportStatus] = useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  function handleSave() {
+  function handleSaveSettings() {
+    updateSettings(draft);
+    setSettingsSaved(true);
+    setTimeout(() => setSettingsSaved(false), 2000);
+  }
+
+  function handleDiscardSettings() {
+    setDraft({ ...settings });
+  }
+
+  function handleSaveGame() {
     onSave();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setGameSaved(true);
+    setTimeout(() => setGameSaved(false), 2000);
   }
 
   function handleWipe() {
     onWipe();
-    setConfirmDelete(false);
+    setConfirmDelete(0);
   }
 
   function handleExport() {
@@ -125,35 +146,35 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <label style={{ fontSize: 12, color: warmTheme.text, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
               <span>{t('musicVolume')}</span>
-              <span style={{ color: warmTheme.textMuted }}>{Math.round(settings.musicVolume * 100)}%</span>
+              <span style={{ color: warmTheme.textMuted }}>{Math.round((draft.musicVolume ?? settings.musicVolume) * 100)}%</span>
             </label>
             <input
               type="range"
               min={0}
               max={100}
               step={1}
-              value={Math.round(settings.musicVolume * 100)}
-              onChange={(e) => updateSettings({ musicVolume: Number(e.target.value) / 100 })}
+              value={Math.round((draft.musicVolume ?? settings.musicVolume) * 100)}
+              onChange={(e) => patchDraft({ musicVolume: Number(e.target.value) / 100 })}
             />
 
             <label style={{ fontSize: 12, color: warmTheme.text, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
               <span>{t('sfxVolume')}</span>
-              <span style={{ color: warmTheme.textMuted }}>{Math.round(settings.sfxVolume * 100)}%</span>
+              <span style={{ color: warmTheme.textMuted }}>{Math.round((draft.sfxVolume ?? settings.sfxVolume) * 100)}%</span>
             </label>
             <input
               type="range"
               min={0}
               max={100}
               step={1}
-              value={Math.round(settings.sfxVolume * 100)}
-              onChange={(e) => updateSettings({ sfxVolume: Number(e.target.value) / 100 })}
+              value={Math.round((draft.sfxVolume ?? settings.sfxVolume) * 100)}
+              onChange={(e) => patchDraft({ sfxVolume: Number(e.target.value) / 100 })}
             />
 
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
               <input
                 type="checkbox"
-                checked={settings.musicVolume > 0}
-                onChange={(e) => updateSettings({ musicVolume: e.target.checked ? Math.max(settings.musicVolume, 0.45) : 0 })}
+                checked={(draft.musicVolume ?? settings.musicVolume) > 0}
+                onChange={(e) => patchDraft({ musicVolume: e.target.checked ? Math.max(draft.musicVolume ?? settings.musicVolume, 0.45) : 0 })}
               />
               {t('musicEnabled')}
             </label>
@@ -161,8 +182,8 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
               <input
                 type="checkbox"
-                checked={settings.particlesEnabled}
-                onChange={(e) => updateSettings({ particlesEnabled: e.target.checked })}
+                checked={draft.particlesEnabled ?? settings.particlesEnabled}
+                onChange={(e) => patchDraft({ particlesEnabled: e.target.checked })}
               />
               {t('particlesEnabled')}
             </label>
@@ -170,8 +191,8 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
               <input
                 type="checkbox"
-                checked={settings.reducedMotion}
-                onChange={(e) => updateSettings({ reducedMotion: e.target.checked })}
+                checked={draft.reducedMotion ?? settings.reducedMotion}
+                onChange={(e) => patchDraft({ reducedMotion: e.target.checked })}
               />
               {t('reducedMotion')}
             </label>
@@ -179,8 +200,8 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
               <input
                 type="checkbox"
-                checked={!!settings.compactMode}
-                onChange={(e) => updateSettings({ compactMode: e.target.checked })}
+                checked={!!(draft.compactMode ?? settings.compactMode)}
+                onChange={(e) => patchDraft({ compactMode: e.target.checked })}
               />
               Compact UI mode
             </label>
@@ -188,8 +209,8 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
               <input
                 type="checkbox"
-                checked={settings.highlightRulesText !== false}
-                onChange={(e) => updateSettings({ highlightRulesText: e.target.checked })}
+                checked={(draft.highlightRulesText ?? settings.highlightRulesText) !== false}
+                onChange={(e) => patchDraft({ highlightRulesText: e.target.checked })}
               />
               Highlight keywords in card rules
             </label>
@@ -197,8 +218,8 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: warmTheme.text }}>
               <span>{t('fontSizePreset')}</span>
               <select
-                value={settings.fontSizePreset}
-                onChange={(e) => updateSettings({ fontSizePreset: e.target.value as typeof settings.fontSizePreset })}
+                value={draft.fontSizePreset ?? settings.fontSizePreset}
+                onChange={(e) => patchDraft({ fontSizePreset: e.target.value as typeof settings.fontSizePreset })}
                 style={{
                   border: `1px solid ${warmTheme.borderStrong}`,
                   borderRadius: 8,
@@ -226,11 +247,11 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
                     { value: 'art-only',    label: 'Full Art',        desc: 'Art with outline',  showTop: false, showBottom: false },
                   ] as const
                 ).map((opt) => {
-                  const isActive = settings.cardArtDisplay === opt.value;
+                  const isActive = (draft.cardArtDisplay ?? settings.cardArtDisplay) === opt.value;
                   return (
                     <button className="menu-tactile-btn"
                       key={opt.value}
-                      onClick={() => updateSettings({ cardArtDisplay: opt.value })}
+                      onClick={() => patchDraft({ cardArtDisplay: opt.value })}
                       style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                         padding: '8px 6px', borderRadius: 10, cursor: 'pointer',
@@ -275,8 +296,8 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: warmTheme.text }}>
               <span>{t('language')}</span>
               <select
-                value={settings.language}
-                onChange={(e) => updateSettings({ language: e.target.value as typeof settings.language })}
+                value={draft.language ?? settings.language}
+                onChange={(e) => patchDraft({ language: e.target.value as typeof settings.language })}
                 style={{
                   border: `1px solid ${warmTheme.borderStrong}`,
                   borderRadius: 8,
@@ -293,8 +314,63 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             </label>
 
             <div style={{ fontSize: 10, color: warmTheme.textMuted, lineHeight: 1.4 }}>
-              {t('applyImmediately')}
+              Changes take effect after saving.
             </div>
+          </div>
+        </div>
+
+        {/* Save Settings */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{
+            fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
+            color: warmTheme.textMuted, marginBottom: 10,
+          }}>
+            Settings
+          </div>
+
+          {hasChanges && (
+            <div style={{
+              marginBottom: 10, padding: '7px 10px', borderRadius: 8,
+              fontSize: 10, color: warmTheme.accent,
+              border: `1px solid ${warmTheme.border}`,
+              background: 'rgba(214,162,94,0.07)',
+              lineHeight: 1.4,
+            }}>
+              You have unsaved changes — click Save Settings to apply them.
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              className="menu-tactile-btn"
+              onClick={handleSaveSettings}
+              style={{
+                flex: 1, padding: '10px 0', borderRadius: 10,
+                border: `1px solid ${settingsSaved ? 'rgba(79,138,71,0.45)' : hasChanges ? warmTheme.borderStrong : warmTheme.border}`,
+                background: settingsSaved ? 'rgba(79,138,71,0.12)' : hasChanges ? warmTheme.button : 'rgba(0,0,0,0.06)',
+                color: settingsSaved ? warmTheme.success : hasChanges ? warmTheme.accentDeep : warmTheme.textMuted,
+                fontSize: 13, cursor: hasChanges ? 'pointer' : 'default', fontFamily: 'Georgia, serif',
+                letterSpacing: 1, transition: 'all 0.2s',
+              }}
+            >
+              {settingsSaved ? 'Saved!' : 'Save Settings'}
+            </button>
+
+            {hasChanges && (
+              <button
+                className="menu-tactile-btn"
+                onClick={handleDiscardSettings}
+                style={{
+                  padding: '10px 14px', borderRadius: 10,
+                  border: `1px solid ${warmTheme.border}`,
+                  background: 'transparent',
+                  color: warmTheme.textMuted, fontSize: 12, cursor: 'pointer',
+                  fontFamily: 'Georgia, serif',
+                }}
+              >
+                Discard
+              </button>
+            )}
           </div>
         </div>
 
@@ -310,17 +386,17 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
           </div>
 
           <button className="menu-tactile-btn"
-            onClick={handleSave}
+            onClick={handleSaveGame}
             style={{
               width: '100%', padding: '10px 0', borderRadius: 10,
-              border: `1px solid ${saved ? 'rgba(79,138,71,0.35)' : warmTheme.borderStrong}`,
-              background: saved ? 'rgba(79,138,71,0.12)' : warmTheme.button,
-              color: saved ? warmTheme.success : warmTheme.accentDeep,
+              border: `1px solid ${gameSaved ? 'rgba(79,138,71,0.35)' : warmTheme.borderStrong}`,
+              background: gameSaved ? 'rgba(79,138,71,0.12)' : warmTheme.button,
+              color: gameSaved ? warmTheme.success : warmTheme.accentDeep,
               fontSize: 13, cursor: 'pointer', fontFamily: 'Georgia, serif',
               letterSpacing: 1, marginBottom: 10, transition: 'background 0.2s, color 0.2s',
             }}
           >
-            {saved ? 'Saved!' : t('saveNow')}
+            {gameSaved ? 'Saved!' : 'Save Game Data'}
           </button>
 
           {/* Export / Import (portable save file for moving between machines) */}
@@ -391,9 +467,9 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             </div>
           )}
 
-          {!confirmDelete ? (
+          {confirmDelete === 0 && (
             <button className="menu-tactile-btn"
-              onClick={() => setConfirmDelete(true)}
+              onClick={() => setConfirmDelete(1)}
               style={{
                 width: '100%', padding: '10px 0', borderRadius: 10,
                 border: '1px solid rgba(184,92,79,0.4)',
@@ -404,17 +480,19 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
             >
               {t('deleteSaveData')}
             </button>
-          ) : (
+          )}
+
+          {confirmDelete === 1 && (
             <div style={{
               border: '1px solid rgba(184,92,79,0.5)', borderRadius: 10,
               padding: '12px 14px', background: 'rgba(184,92,79,0.1)',
             }}>
-              <div style={{ fontSize: 11, color: warmTheme.danger, marginBottom: 10, lineHeight: 1.5 }}>
-                This will permanently erase all progress. Are you sure?
+              <div style={{ fontSize: 12, color: warmTheme.danger, marginBottom: 10, lineHeight: 1.5, fontFamily: 'Georgia, serif' }}>
+                Are you sure? This will permanently erase <strong>all progress</strong>.
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="menu-tactile-btn"
-                  onClick={handleWipe}
+                  onClick={() => setConfirmDelete(2)}
                   style={{
                     flex: 1, padding: '8px 0', borderRadius: 5,
                     border: '1px solid rgba(184,92,79,0.7)',
@@ -423,10 +501,10 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
                     fontFamily: 'Georgia, serif', letterSpacing: 1,
                   }}
                 >
-                  Confirm Delete
+                  Yes, delete it
                 </button>
                 <button className="menu-tactile-btn"
-                  onClick={() => setConfirmDelete(false)}
+                  onClick={() => setConfirmDelete(0)}
                   style={{
                     flex: 1, padding: '8px 0', borderRadius: 5,
                     border: `1px solid ${warmTheme.border}`,
@@ -435,7 +513,47 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
                     fontFamily: 'Georgia, serif',
                   }}
                 >
-                  {t('close')}
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
+          {confirmDelete === 2 && (
+            <div style={{
+              border: '2px solid rgba(184,92,79,0.8)', borderRadius: 10,
+              padding: '14px 14px', background: 'rgba(184,92,79,0.15)',
+            }}>
+              <div style={{ fontSize: 13, color: warmTheme.danger, marginBottom: 4, fontFamily: 'Georgia, serif', fontWeight: 'bold' }}>
+                Are you REALLY sure?
+              </div>
+              <div style={{ fontSize: 11, color: warmTheme.danger, marginBottom: 12, lineHeight: 1.5, opacity: 0.85 }}>
+                There is no undo. Every card, boss kill, title, and shard will be gone forever.
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="menu-tactile-btn"
+                  onClick={handleWipe}
+                  style={{
+                    flex: 1, padding: '8px 0', borderRadius: 5,
+                    border: '1px solid rgba(184,92,79,0.9)',
+                    background: 'rgba(184,92,79,0.28)',
+                    color: warmTheme.danger, fontSize: 12, cursor: 'pointer',
+                    fontFamily: 'Georgia, serif', letterSpacing: 1, fontWeight: 'bold',
+                  }}
+                >
+                  Delete Everything
+                </button>
+                <button className="menu-tactile-btn"
+                  onClick={() => setConfirmDelete(0)}
+                  style={{
+                    flex: 1, padding: '8px 0', borderRadius: 5,
+                    border: `1px solid ${warmTheme.border}`,
+                    background: warmTheme.surface,
+                    color: warmTheme.textMuted, fontSize: 12, cursor: 'pointer',
+                    fontFamily: 'Georgia, serif',
+                  }}
+                >
+                  Cancel
                 </button>
               </div>
             </div>

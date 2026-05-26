@@ -596,6 +596,13 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
     case 'burn_return_to_hand_as_echo':
     case 'burn_cooldown_reduction':
       return formatEffect(effect as unknown as CardEffect);
+    // Abyssal Forge — recast-aware passives
+    case 'cherubim_charge_per_n_cards': return `Gain 1 Reforge Charge every ${effect.n} cards played`;
+    case 'cherubim_temper_on_next_seraphim': return `Auto-Temper the next Seraphim played (+${Math.round(effect.factor * 100)}%)`;
+    case 'cherubim_recast_chain_bonus': return `+${effect.value} chain per recast event this turn`;
+    case 'cherubim_pearl_per_recast_bonus': return `+${effect.value} extra Pearl per recast event`;
+    case 'cherubim_recast_oblivion_bonus': return `+${effect.value} Oblivion per recast event`;
+    case 'cherubim_seraphim_recast_amp': return `Seraphim recasts fire at +${Math.round(effect.value * 100)}% power`;
     default:
       return (effect as { type: string }).type;
   }
