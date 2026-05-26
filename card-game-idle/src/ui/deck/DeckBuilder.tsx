@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useStore, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
@@ -11,6 +11,7 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
@@ -269,6 +270,10 @@ function renderLockControl(
   );
 }
 
+const RARITY_COLORS_DB: Record<string, string> = {
+  Common: '#888', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
+};
+
 export default function DeckBuilder({ onClose }: Props) {
   const faceMetrics = getCardFaceMetrics('grid');
   const { initDeck, saveCurrentDeck, updateSavedDeck, loadSavedDeck, deleteSavedDeck } = useStore.getState();
@@ -301,6 +306,40 @@ export default function DeckBuilder({ onClose }: Props) {
   const [artifactPickerSlot, setArtifactPickerSlot] = useState<number | null>(null);
   const [notesOpen, setNotesOpen] = useState(false);
   const [notesDraft, setNotesDraft] = useState('');
+
+  // Card hover tooltip (1.5s delay)
+  const [cardTooltip, setCardTooltip] = useState<{ card: CardDefinition; x: number; y: number } | null>(null);
+  const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tooltipDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mousePosRef = useRef({ x: 0, y: 0 });
+
+  function startTooltip(card: CardDefinition) {
+    if (tooltipDismissRef.current !== null) { clearTimeout(tooltipDismissRef.current); tooltipDismissRef.current = null; }
+    if (tooltipTimerRef.current !== null) clearTimeout(tooltipTimerRef.current);
+    tooltipTimerRef.current = setTimeout(() => {
+      setCardTooltip({ card, x: mousePosRef.current.x, y: mousePosRef.current.y });
+    }, 1500);
+  }
+
+  function clearTooltip() {
+    if (tooltipTimerRef.current !== null) { clearTimeout(tooltipTimerRef.current); tooltipTimerRef.current = null; }
+    // Delay actual dismissal so the cursor can move onto the tooltip to scroll/read it.
+    if (tooltipDismissRef.current !== null) clearTimeout(tooltipDismissRef.current);
+    tooltipDismissRef.current = setTimeout(() => {
+      setCardTooltip(null);
+      tooltipDismissRef.current = null;
+    }, 220);
+  }
+
+  function keepTooltip() {
+    if (tooltipDismissRef.current !== null) { clearTimeout(tooltipDismissRef.current); tooltipDismissRef.current = null; }
+  }
+
+  function dismissTooltipNow() {
+    if (tooltipTimerRef.current !== null) { clearTimeout(tooltipTimerRef.current); tooltipTimerRef.current = null; }
+    if (tooltipDismissRef.current !== null) { clearTimeout(tooltipDismissRef.current); tooltipDismissRef.current = null; }
+    setCardTooltip(null);
+  }
 
   // Card pool grouped into subsections (Angels go to Extra Deck section, excluded from main pool)
   const { mainSections, angelSection, availableElements } = useMemo(() => {
@@ -700,7 +739,9 @@ export default function DeckBuilder({ onClose }: Props) {
                           border: `1px solid ${count > 0 ? 'rgba(255,215,0,0.65)' : 'rgba(255,215,0,0.3)'}`,
                         }}
                         onClick={() => addCard(def.def.definitionId, def.finish)}
-                        title={getCardPreviewLines(def.def, 4).join('\n')}
+                        onMouseMove={(e) => { mousePosRef.current = { x: e.clientX, y: e.clientY }; }}
+                        onMouseEnter={() => startTooltip(def.def)}
+                        onMouseLeave={clearTooltip}
                       >
                         <div style={getCardNameRibbonStyle('grid')}>
                           <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
@@ -779,7 +820,9 @@ export default function DeckBuilder({ onClose }: Props) {
                           ...(full ? styles.cardFull : {}),
                         }}
                         onClick={() => addCard(def.def.definitionId, def.finish)}
-                        title={getCardPreviewLines(def.def, 4).join('\n')}
+                        onMouseMove={(e) => { mousePosRef.current = { x: e.clientX, y: e.clientY }; }}
+                        onMouseEnter={() => startTooltip(def.def)}
+                        onMouseLeave={clearTooltip}
                       >
                         <div style={getCardNameRibbonStyle('grid')}>
                           <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
@@ -1054,6 +1097,48 @@ export default function DeckBuilder({ onClose }: Props) {
           }}
           onClose={() => setNotesOpen(false)}
         />
+      )}
+
+      {/* Card hover tooltip — appears after 1.5s hover */}
+      {cardTooltip && (
+        <div
+          onMouseEnter={keepTooltip}
+          onMouseLeave={dismissTooltipNow}
+          style={{
+            position: 'fixed',
+            left: Math.min(cardTooltip.x + 18, window.innerWidth - 330),
+            top: Math.max(8, Math.min(cardTooltip.y - 80, window.innerHeight - 440)),
+            zIndex: 9999,
+            width: 300,
+            maxHeight: 420,
+            overflowY: 'auto',
+            background: 'linear-gradient(180deg, rgba(12,18,28,0.98), rgba(8,12,20,0.98))',
+            border: `1px solid ${warmTheme.borderStrong}`,
+            borderRadius: 12,
+            padding: '14px 16px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
+            fontFamily: 'Georgia, serif',
+            color: '#ead9c0',
+          }}
+        >
+          <div style={{ fontSize: 16, fontWeight: 'bold', color: '#f0bd78', marginBottom: 4 }}>
+            {cardTooltip.card.name}
+          </div>
+          <div style={{ fontSize: 10, color: 'rgba(234,217,192,0.6)', letterSpacing: 1, marginBottom: 10 }}>
+            {getDisplayCardTypeLabel(cardTooltip.card.type)} · <span style={{ color: RARITY_COLORS_DB[cardTooltip.card.rarity] ?? '#aaa' }}>{cardTooltip.card.rarity}</span> · {ELEMENT_SET_NAMES[cardTooltip.card.element] ?? cardTooltip.card.element}
+          </div>
+          <div style={{ marginBottom: 10 }}>
+            <CardEngineCallout card={cardTooltip.card} variant="detail" />
+          </div>
+          <CardRulesDigest
+            card={cardTooltip.card}
+            variant="detail"
+            labelColor="rgba(234,217,192,0.52)"
+            textColor="rgba(234,217,192,0.92)"
+            sectionBackground="rgba(255,255,255,0.04)"
+            sectionBorder="rgba(255,255,255,0.12)"
+          />
+        </div>
       )}
     </div>
   );

@@ -586,7 +586,7 @@ export default function CardPackStore({ onClose }: Props) {
                   <span style={styles.eventDividerLabel}>⭐  Event Packs</span>
                   <div style={styles.eventDividerLine} />
                 </div>
-                <div className="ui-grid-stagger" style={{ ...styles.packGrid, gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>
+                <div className="ui-grid-stagger" style={{ ...styles.packGrid, gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 320px))', justifyContent: 'start' }}>
                 {PACK_DEFINITIONS.filter(p => (p as typeof p & { currencyType?: string }).currencyType === 'aberratedShards').map(renderPackCard)}
                 </div>
               </>

@@ -77,7 +77,10 @@ const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
 
 function getBossArtUrl(keyArt: string): string | null {
   const artData = BOSS_ART_FILES[keyArt];
-  return artData ? `${BOSS_ART_ROOT}/${artData.folder}/${encodeURIComponent(artData.file)}` : null;
+  // Use encodeURI rather than encodeURIComponent: Vite's static middleware does
+  // not resolve %2C (encoded commas) back to literal commas on disk, so files
+  // like "Aethervex, the Wishwright.png" would 404 into the SPA fallback.
+  return artData ? `${BOSS_ART_ROOT}/${artData.folder}/${encodeURI(artData.file)}` : null;
 }
 
 function mapPackToBossCategory(packId: string, packElement: string): BossCategory {

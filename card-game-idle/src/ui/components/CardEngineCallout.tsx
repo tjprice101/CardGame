@@ -39,6 +39,7 @@ export default function CardEngineCallout({
       : `linear-gradient(180deg, ${withAlpha(role.accent, 0.12)} 0%, rgba(255,255,255,0.03) 100%)`
     : `linear-gradient(180deg, ${withAlpha(role.accent, 0.1)} 0%, rgba(255,255,255,0.02) 100%)`;
   const detailTextColor = isLightTone ? 'rgba(61, 40, 18, 0.94)' : 'rgba(236, 229, 219, 0.9)';
+  const compactTextColor = isLightTone ? 'rgba(47, 27, 13, 0.92)' : 'rgba(236, 229, 219, 0.84)';
 
   return (
     <div
@@ -67,7 +68,7 @@ export default function CardEngineCallout({
         marginTop: 4,
         fontSize: isDetail ? 11.5 : 9,
         lineHeight: isDetail ? 1.45 : 1.35,
-        color: isDetail ? detailTextColor : 'rgba(236, 229, 219, 0.84)',
+        color: isDetail ? detailTextColor : compactTextColor,
         display: '-webkit-box',
         WebkitBoxOrient: 'vertical',
         WebkitLineClamp: isDetail ? 3 : 2,

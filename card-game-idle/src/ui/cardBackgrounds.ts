@@ -184,7 +184,7 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'cherubim-dark-mourning-mantle': 'Veth Serath Midplace.png',
   'cherubim-dark-abyss-throne': 'Vaelthorax Grieffire.png',
   // Glass Absolute Infinite cards with punctuation in their names
-  // (file name intentionally drops the comma — CSS multi-layer background-image
+  // (file name intentionally drops the comma  ECSS multi-layer background-image
   // parsing in Chromium can mishandle %2C inside comma-separated url() lists,
   // which would otherwise show only the Infinite card-back as a fallback)
   'ga-inf-yreth-prism-at-center': 'Yreth Prism at Center.png',
@@ -262,21 +262,21 @@ function getCardBackUrl(card: CardDefinition | null | undefined): string | null 
 
   if (card.definitionId.startsWith('sv-')) {
     const { folder, file } = CARD_BACK_ASSET_BY_ELEMENT.SnowboundVoltage!;
-    return `${CARD_BACKGROUND_ROOT}/${folder}/${encodeURIComponent(file)}`;
+    return `${CARD_BACKGROUND_ROOT}/${folder}/${encodeURI(file)}`;
   }
 
   if (card.rarity === 'Infinite') {
-    return `${CARD_BACKGROUND_ROOT}/${INFINITE_CARD_BACK_ASSET.folder}/${encodeURIComponent(INFINITE_CARD_BACK_ASSET.file)}`;
+    return `${CARD_BACKGROUND_ROOT}/${INFINITE_CARD_BACK_ASSET.folder}/${encodeURI(INFINITE_CARD_BACK_ASSET.file)}`;
   }
 
   if (card.rarity === 'Eternal') {
-    return `${CARD_BACKGROUND_ROOT}/${ETERNAL_CARD_BACK_ASSET.folder}/${encodeURIComponent(ETERNAL_CARD_BACK_ASSET.file)}`;
+    return `${CARD_BACKGROUND_ROOT}/${ETERNAL_CARD_BACK_ASSET.folder}/${encodeURI(ETERNAL_CARD_BACK_ASSET.file)}`;
   }
 
   const cardBackKey = card.element;
   const asset = CARD_BACK_ASSET_BY_ELEMENT[cardBackKey];
   if (!asset) return null;
-  return `${CARD_BACKGROUND_ROOT}/${asset.folder}/${encodeURIComponent(asset.file)}`;
+  return `${CARD_BACKGROUND_ROOT}/${asset.folder}/${encodeURI(asset.file)}`;
 }
 
 function hashDefinitionId(definitionId: string): number {
@@ -327,75 +327,75 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
 
   if (card.definitionId.startsWith('sv-infinite-')) {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURI(fileName)}`;
   }
 
   if (card.definitionId.startsWith('sv-eternal-')) {
     const fileName = getSnowboundEternalFileName(card);
-    return `${CARD_BACKGROUND_ROOT}/snowbound-voltage/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/snowbound-voltage/${encodeURI(fileName)}`;
   }
 
   if (card.definitionId.startsWith('sv-')) {
     const fileName = getSnowboundBaseFileName(card);
-    return `${CARD_BACKGROUND_ROOT}/snowbound-voltage/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/snowbound-voltage/${encodeURI(fileName)}`;
   }
 
   if (card.element === 'GlassAbsolute') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/glass-absolute/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/glass-absolute/${encodeURI(fileName)}`;
   }
 
   if (card.element === 'BlazingGarden') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/blazing-garden/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/blazing-garden/${encodeURI(fileName)}`;
   }
 
   if (card.element === 'Butterfly') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/age-of-the-butterfly/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/age-of-the-butterfly/${encodeURI(fileName)}`;
   }
 
   if (card.element === 'EternalSeas') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/eternal-seas/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/eternal-seas/${encodeURI(fileName)}`;
   }
 
   if (card.element === 'AbyssalForge') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/abyssal-forge/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/abyssal-forge/${encodeURI(fileName)}`;
   }
 
   if (card.element === 'DeathFlamedHell') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/death-flamed-hell/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/death-flamed-hell/${encodeURI(fileName)}`;
   }
 
   if (card.element === 'WishedUponAStar') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/wished-upon-a-star/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/wished-upon-a-star/${encodeURI(fileName)}`;
   }
 
   const bteiFolder = getBteiFolder(card.definitionId);
   if (bteiFolder) {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/${bteiFolder}/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/${bteiFolder}/${encodeURI(fileName)}`;
   }
 
   if (card.definitionId.startsWith('inf-bgi-')) {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/black-glass-inferno/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/black-glass-inferno/${encodeURI(fileName)}`;
   }
 
   if (card.rarity === 'Infinite') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURIComponent(fileName)}`;
+    return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURI(fileName)}`;
   }
 
   const folder = CARD_BACKGROUND_FOLDERS[card.element];
   if (!folder) return null;
 
   const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-  return `${CARD_BACKGROUND_ROOT}/${folder}/${encodeURIComponent(fileName)}`;
+  return `${CARD_BACKGROUND_ROOT}/${folder}/${encodeURI(fileName)}`;
 }
 
 export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal'): CSSProperties {

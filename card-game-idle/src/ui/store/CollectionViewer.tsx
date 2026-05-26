@@ -53,7 +53,8 @@ interface SelectedCard {
 
 export default function CollectionViewer({ onClose }: Props) {
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
-  const faceMetrics = getCardFaceMetrics('grid');
+  // Use larger readable sizes than the default 'grid' metrics (7/9/8px is too small)
+  const faceMetrics = { ...getCardFaceMetrics('grid'), typeSize: 10, nameSize: 13, descSize: 10, descLineHeight: 1.35 };
   const collection = useStore(s => s.progress.collection);
   const holoCollection = useStore(s => s.progress.holoCollection);
   const favoriteCollection = useStore(s => s.progress.favoriteCollection);
@@ -278,7 +279,7 @@ export default function CollectionViewer({ onClose }: Props) {
         <div style={getCardRulesPanelStyle('grid')}>
           {owned > 0 && (
             <div style={{ marginBottom: 6 }}>
-              <CardEngineCallout card={card} variant="compact" />
+              <CardEngineCallout card={card} variant="compact" tone="light" />
             </div>
           )}
           <div style={{
@@ -303,7 +304,7 @@ export default function CollectionViewer({ onClose }: Props) {
           </div>
           <div style={{
             marginTop: 6,
-            fontSize: 8,
+            fontSize: 10,
             letterSpacing: 1,
             color: owned > 0 ? cardFacePalette.textMuted : warmTheme.textFaint,
             display: 'flex',
