@@ -193,15 +193,23 @@ export default function App() {
     });
   }, [profile.uiThemeId, profile.customUiTheme]);
 
+  const [saveHydrated, setSaveHydrated] = useState(false);
   useEffect(() => {
     if (!canvasRef.current) return;
-    engine.init(canvasRef.current).catch(console.error);
+    engine.init(canvasRef.current).then(() => setSaveHydrated(true)).catch((err) => {
+      console.error(err);
+      // Even if init failed, unblock title toasts so a brand new player still
+      // gets feedback when they earn their first title.
+      setSaveHydrated(true);
+    });
     return () => { engine.destroy(); };
   }, []);
 
-  // Detect newly-unlocked titles and surface them as toast notifications. The
-  // first run primes the ref silently so we don't spam toasts on every reload
-  // for titles the player already owns.
+  // Detect newly-unlocked titles and surface them as toast notifications.
+  // We must NOT compare against an empty initial set, because progress is
+  // hydrated asynchronously by engine.init() — that would re-toast every
+  // previously-earned title on every reload. Until the save has loaded we
+  // keep re-priming the ref; only after hydration do we start comparing.
   const unlockedTitlesRef = useRef<Set<string> | null>(null);
   useEffect(() => {
     const currentlyUnlocked = new Set<string>();
@@ -212,7 +220,7 @@ export default function App() {
         // Defensive: a malformed predicate shouldn't break the app.
       }
     }
-    if (unlockedTitlesRef.current === null) {
+    if (!saveHydrated || unlockedTitlesRef.current === null) {
       unlockedTitlesRef.current = currentlyUnlocked;
       return;
     }
@@ -229,7 +237,7 @@ export default function App() {
       }
     }
     unlockedTitlesRef.current = currentlyUnlocked;
-  }, [progress]);
+  }, [progress, saveHydrated]);
 
   // Surface the daily login reward modal once after engine init when claimable.
   // Runs once on mount; if the player is mid-fight or has a menu open we still
