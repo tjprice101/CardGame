@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import CardHoverDetail from '@/ui/hud/CardHoverDetail';
+import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -343,6 +344,19 @@ export default function BoardDisplay() {
     prevSlotsRef.current = board.frontSlots;
   });
 
+  // Preload card art for all board slots whenever slots change, so holofoil
+  // and card images don't stutter on first hover or zoom.
+  useEffect(() => {
+    const allSlots = [...board.frontSlots, ...board.backSlots];
+    for (const slot of allSlots) {
+      if (!slot) continue;
+      const def = CardRegistry.get(slot.definitionId);
+      if (!def) continue;
+      const url = getCardBackgroundUrl(def);
+      if (url) { const img = new Image(); img.src = url; }
+    }
+  }, [board.frontSlots, board.backSlots]);
+
   function handleFrontSlotClick(slotIndex: 0 | 1 | 2 | 3 | 4) {
     const slot = board.frontSlots[slotIndex];
     if (slot?.type === 'Seraphim') {
@@ -537,7 +551,7 @@ export default function BoardDisplay() {
   }, [attackPanelSlot, selectedFront?.instanceId, selectedDef?.definitionId]);
 
   const playfieldRightInset = turn.phase === 'playing' || turn.phase === 'mulligan'
-    ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(392px, 36vw))'
+    ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(240px, 22vw))'
     : 'var(--angel-drawer-hand-offset, 34px)';
 
   return (

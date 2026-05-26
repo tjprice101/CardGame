@@ -7,6 +7,7 @@ import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
   cardFacePalette,
   getAdaptiveDescriptionMetrics,
+  getCardBackgroundUrl,
   getCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
@@ -110,11 +111,11 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 12,
     pointerEvents: 'auto',
     position: 'relative',
-    overflowX: 'auto',
+    overflowX: 'clip',
     overflowY: 'visible',
     maxWidth: '100%',
     paddingBottom: 6,
-    paddingTop: 14,
+    paddingTop: 24,
   },
   card: {
     width: 'clamp(116px, 8.2vw, 132px)',
@@ -271,6 +272,20 @@ export default function HandDisplay() {
   }, []);
   useEffect(() => { setHandView('hand'); }, [turn.phase]);
 
+  // Preload card art as soon as the hand changes so images are cached before
+  // the user hovers or plays a card, eliminating the lazy-load stutter.
+  useEffect(() => {
+    for (const deckCard of hand) {
+      const def = CardRegistry.get(deckCard.definitionId);
+      if (!def) continue;
+      const url = getCardBackgroundUrl(def);
+      if (url) {
+        const img = new Image();
+        img.src = url;
+      }
+    }
+  }, [hand]);
+
   const isExtraDeckView = handView === 'extraDeck' && (isPlaying || isMulligan);
 
   const favoriteShowcasePool = useMemo(() => {
@@ -383,7 +398,7 @@ export default function HandDisplay() {
   const hoveredActionClassLabel = hoveredDef ? getActionClassLabel(getCardActionClass(hoveredDef)) : null;
   const hoveredEngine = hoveredDef ? getSetEngineSnapshotForCard(hoveredDef, turn, board) : null;
   const handRightInset = isPlaying || isMulligan
-    ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(392px, 36vw))'
+    ? 'calc(var(--angel-drawer-hand-offset, 34px) + min(240px, 22vw))'
     : 'var(--angel-drawer-hand-offset, 34px)';
 
   const idleCards = idleShowcaseCards
