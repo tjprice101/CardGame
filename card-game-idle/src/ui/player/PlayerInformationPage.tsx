@@ -228,11 +228,12 @@ export default function PlayerInformationPage({
                 onClick={() => setActiveTab(tab.id)}
                 style={{
                   ...styles.tabBtn,
-                  color: active ? warmTheme.accentDeep : warmTheme.textMuted,
+                  color: active ? warmTheme.accentDeep : 'rgba(245,232,214,0.78)',
                   background: active ? 'rgba(255,243,222,0.55)' : 'transparent',
                   borderBottom: active
                     ? `2px solid ${warmTheme.accent}`
                     : '2px solid transparent',
+                  textShadow: active ? 'none' : '0 1px 4px rgba(0,0,0,0.6)',
                 }}
               >
                 <div style={styles.tabLabel}>{tab.label}</div>
