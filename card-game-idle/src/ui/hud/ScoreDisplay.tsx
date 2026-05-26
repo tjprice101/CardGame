@@ -6,7 +6,7 @@ import { warmTheme } from '@/ui/theme';
 const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'absolute',
-    top: 16,
+    top: 62,
     left: '50%',
     transform: 'translateX(-50%)',
     textAlign: 'center',

@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { uiTypography } from '@/ui/theme';
-import { useStore, selectBoard, selectDeck, selectBossFight, selectTurn } from '@/state/store';
+import { useStore, selectBoard, selectDeck, selectBossFight } from '@/state/store';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
@@ -16,7 +15,6 @@ export default function ArenaShell() {
   const board = useStore(selectBoard);
   const deck = useStore(selectDeck);
   const bossFight = useStore(selectBossFight);
-  const turn = useStore(selectTurn);
 
   const dominantElement = useMemo(() => {
     if (bossFight.mode === 'active' && bossFight.activeBossId) {
@@ -49,7 +47,6 @@ export default function ArenaShell() {
   }, [board.frontSlots, deck.deckList, bossFight.mode, bossFight.activeBossId]);
 
   const tint = dominantElement ? ELEMENT_COLORS[dominantElement] ?? '#9090a8' : '#9090a8';
-  const setName = dominantElement ? ELEMENT_SET_NAMES[dominantElement] ?? dominantElement : 'Arena';
   const isBossActive = bossFight.mode === 'active';
 
   // Parse hex → rgb components for nebula corner gradients.
@@ -71,12 +68,6 @@ export default function ArenaShell() {
   // rather than floating in nothing. Boss fights swap to a crimson hot floor.
   const altarRgb = isBossActive ? { r: 255, g: 80, b: 80 } : tintRgb;
   const altarHalo = `radial-gradient(ellipse 64% 38% at 50% 50%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.18) 0%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.08) 38%, transparent 72%)`;
-
-  const phaseLabel = turn.phase === 'mulligan'
-    ? 'Mulligan'
-    : turn.phase === 'playing'
-      ? 'Playing'
-      : 'Idle';
 
   // Drifting cosmic motes — 8 deterministic seeds so positions don't reshuffle
   // every render. Spread across the central play area, faint, slow.
@@ -204,53 +195,6 @@ export default function ArenaShell() {
         position: 'absolute', bottom: 0, left: 0, right: 0, height: '26%',
         background: 'linear-gradient(0deg, rgba(5,5,7,0.88) 0%, rgba(5,5,7,0) 100%)',
       }} />
-
-      {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-          CINEMATIC TOP-CENTER TURN HEADER — replaces the tiny corner badge.
-          Movie-title-card style: hairlines flank a big chrome turn number,
-          set name + phase whisper underneath in widely-spaced caps.
-          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <div
-        key={`turn-${turn.turnNumber ?? 1}-${turn.phase}`}
-        style={{
-          position: 'absolute', top: 18, left: '50%', transform: 'translateX(-50%)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-          pointerEvents: 'none',
-          animation: 'turnHeaderFadeIn 1.1s cubic-bezier(0.22,0.61,0.36,1) both',
-        }}
-      >
-        {/* Flanking hairlines + turn number */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{
-            width: 72, height: 1,
-            background: `linear-gradient(90deg, transparent, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.7) 60%, rgba(244,244,248,0.9))`,
-          }} />
-          <div style={{
-            fontFamily: uiTypography.display,
-            fontSize: 16, letterSpacing: 8,
-            color: 'rgba(244,244,248,0.96)',
-            textTransform: 'uppercase',
-            textShadow: `0 0 16px rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.5), 0 0 32px rgba(244,244,248,0.18)`,
-            whiteSpace: 'nowrap',
-          }}>
-            Turn {turn.turnNumber ?? 1}
-          </div>
-          <div style={{
-            width: 72, height: 1,
-            background: `linear-gradient(90deg, rgba(244,244,248,0.9), rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.7) 40%, transparent)`,
-          }} />
-        </div>
-        {/* Set name + phase whisper */}
-        <div style={{
-          fontFamily: uiTypography.body,
-          fontSize: 9, letterSpacing: 4.5,
-          color: 'rgba(244,244,248,0.5)',
-          textTransform: 'uppercase',
-          whiteSpace: 'nowrap',
-        }}>
-          {setName} <span style={{ color: 'rgba(244,244,248,0.28)', margin: '0 6px' }}>·</span> {phaseLabel}
-        </div>
-      </div>
     </div>
   );
 }

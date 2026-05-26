@@ -295,7 +295,7 @@ export default function BossFightArena() {
             zIndex: 26,
           }}
         >
-          {callout.text}}
+          {callout.text}
         </div>
       )}
     </div>

@@ -6,7 +6,7 @@ import { warmTheme } from '@/ui/theme';
 const styles: Record<string, React.CSSProperties> = {
   panel: {
     position: 'absolute',
-    top: 16,
+    top: 64,
     left: 16,
     background: warmTheme.surface,
     border: `1px solid ${warmTheme.border}`,
