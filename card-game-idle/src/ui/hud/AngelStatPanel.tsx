@@ -1,44 +1,42 @@
 import { useMemo } from 'react';
 import { useStore, selectBoard, selectTurn, selectComputedStats } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
-import { warmTheme } from '@/ui/theme';
-
 const styles: Record<string, React.CSSProperties> = {
   panel: {
     position: 'absolute',
     top: 64,
     left: 16,
-    background: warmTheme.surface,
-    border: `1px solid ${warmTheme.border}`,
+    background: 'rgba(5,5,7,0.72)',
+    border: '1px solid rgba(244,244,248,0.1)',
     borderRadius: 12,
-    padding: '14px 20px',
-    color: warmTheme.text,
+    padding: '12px 18px',
+    color: 'rgba(244,244,248,0.88)',
     fontFamily: '"Georgia", serif',
-    minWidth: 210,
-    backdropFilter: 'blur(4px)',
+    minWidth: 200,
+    backdropFilter: 'blur(8px)',
     pointerEvents: 'none',
-    boxShadow: warmTheme.shadow,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
   },
   title: {
-    fontSize: 12,
+    fontSize: 11,
     letterSpacing: 3,
     textTransform: 'uppercase',
-    color: warmTheme.textMuted,
+    color: 'rgba(244,244,248,0.42)',
     marginBottom: 8,
   },
   stat: {
-    fontSize: 14,
-    color: warmTheme.textSoft,
+    fontSize: 13,
+    color: 'rgba(244,244,248,0.78)',
     marginTop: 4,
   },
   synergy: {
-    marginTop: 10,
-    fontSize: 13,
-    color: warmTheme.accent,
+    marginTop: 8,
+    fontSize: 12,
+    color: 'rgba(200,220,255,0.88)',
   },
   empty: {
-    fontSize: 13,
-    color: warmTheme.textFaint,
+    fontSize: 12,
+    color: 'rgba(244,244,248,0.3)',
     fontStyle: 'italic',
   },
 };

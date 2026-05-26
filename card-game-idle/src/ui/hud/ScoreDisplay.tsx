@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore, selectOblivion, selectTurn } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
-import { warmTheme } from '@/ui/theme';
-
 const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'absolute',
@@ -11,12 +9,12 @@ const styles: Record<string, React.CSSProperties> = {
     transform: 'translateX(-50%)',
     textAlign: 'center',
     fontFamily: '"Georgia", serif',
-    color: warmTheme.accentDeep,
-    background: warmTheme.surface,
-    border: `1px solid ${warmTheme.border}`,
+    color: 'rgba(244,244,248,0.95)',
+    background: 'rgba(5,5,7,0.72)',
+    border: '1px solid rgba(244,244,248,0.12)',
     borderRadius: 18,
     padding: '8px 18px 10px',
-    boxShadow: warmTheme.shadow,
+    boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
     pointerEvents: 'none',
   },
   score: {
@@ -26,13 +24,13 @@ const styles: Record<string, React.CSSProperties> = {
   },
   label: {
     fontSize: 12,
-    color: warmTheme.textMuted,
+    color: 'rgba(244,244,248,0.45)',
     letterSpacing: 4,
     textTransform: 'uppercase',
   },
   chain: {
     fontSize: 14,
-    color: warmTheme.textSoft,
+    color: 'rgba(244,244,248,0.65)',
     marginTop: 2,
   },
 };

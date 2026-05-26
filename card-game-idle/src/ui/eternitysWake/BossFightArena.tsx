@@ -104,7 +104,7 @@ export default function BossFightArena() {
   return (
     <div
       style={{
-        position: 'absolute', top: 0, left: 0, right: 0, zIndex: 25, pointerEvents: 'none',
+        position: 'absolute', top: 52, left: 0, right: 0, zIndex: 25, pointerEvents: 'none',
       }}
     >
       {/* Crimson chamber vignette overlay */}
