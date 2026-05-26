@@ -883,19 +883,19 @@ export default function BoardDisplay() {
           // Empty front slot ? accepts Seraphim drops
           const hasAction = canPlay && hasSeraphimInHand;
           const glowColor = isDragTarget
-            ? 'rgba(255,215,0,0.9)'
-            : hasSeraphimInHand ? 'rgba(255,215,0,0.5)' : 'rgba(255,215,0,0.12)';
+            ? 'rgba(244,244,248,0.95)'
+            : hasSeraphimInHand ? 'rgba(244,244,248,0.65)' : 'rgba(244,244,248,0.2)';
           return (
             <div
               key={slotIndex}
               style={{
                 width: SLOT_W, height: SLOT_H,
-                border: isDragTarget ? '2px solid rgba(255,215,0,0.85)' : `1px solid rgba(255,215,0,${hasSeraphimInHand ? '0.22' : '0.08'})`,
+                border: isDragTarget ? '2px solid rgba(244,244,248,0.9)' : `1px solid rgba(244,244,248,${hasSeraphimInHand ? '0.35' : '0.14'})`,
                 borderRadius: 12,
                 background: isDragTarget
-                  ? 'rgba(213,154,82,0.16)'
-                  : 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(0,0,0,0.28) 100%)',
-                backdropFilter: 'blur(2px)',
+                  ? 'rgba(244,244,248,0.08)'
+                  : 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(5,5,7,0.45) 100%)',
+                backdropFilter: 'blur(3px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
                 fontFamily: BODY_FONT, transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
@@ -922,12 +922,12 @@ export default function BoardDisplay() {
               }}
             >
               {/* Corner accent marks */}
-              <div style={{ position: 'absolute', top: 6, left: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: 6, left: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: 6, right: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none' }} />
-              <div style={{ fontSize: 18, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.8 : 0.3 }}>✦</div>
-              <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.35 }}>
+              <div style={{ position: 'absolute', top: 6, left: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              <div style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              <div style={{ position: 'absolute', bottom: 6, left: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              <div style={{ position: 'absolute', bottom: 6, right: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.25, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>✦</div>
+              <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.25, transition: 'opacity 0.2s, color 0.2s' }}>
                 {isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
               </div>
             </div>
@@ -1592,11 +1592,11 @@ export default function BoardDisplay() {
         pointerEvents: 'none',
         animation: 'boardZoneEntrance 0.5s ease both',
       }}>
-        <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.07))' }} />
-        <div style={{ fontSize: 8, letterSpacing: 2.5, textTransform: 'uppercase', color: 'rgba(255,255,255,0.28)', fontFamily: BODY_FONT, whiteSpace: 'nowrap' }}>Front Rank</div>
-        <div style={{ flex: 2, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-        <div style={{ fontSize: 8, letterSpacing: 2.5, textTransform: 'uppercase', color: 'rgba(200,136,240,0.32)', fontFamily: BODY_FONT, whiteSpace: 'nowrap' }}>Support</div>
-        <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(255,255,255,0.07), transparent)' }} />
+        <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.22))' }} />
+        <div style={{ fontSize: 8, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(244,244,248,0.55)', fontFamily: BODY_FONT, whiteSpace: 'nowrap' }}>Front Rank</div>
+        <div style={{ flex: 2, height: 1, background: 'rgba(244,244,248,0.1)', boxShadow: '0 0 8px rgba(244,244,248,0.06)' }} />
+        <div style={{ fontSize: 8, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(200,160,255,0.65)', fontFamily: BODY_FONT, whiteSpace: 'nowrap' }}>Support</div>
+        <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(244,244,248,0.22), transparent)' }} />
       </div>
 
       {/* Back row: 4 Cherubim slots, staggered between front slots */}
@@ -1713,26 +1713,26 @@ export default function BoardDisplay() {
           // Empty back slot ? accepts Cherubim drops
           const hasAction = canPlay && hasCherubimInHand;
           const cherubimGlow = isDragTarget
-            ? 'rgba(200,136,240,0.9)'
-            : hasCherubimInHand ? 'rgba(200,136,240,0.45)' : 'rgba(200,136,240,0.1)';
+            ? 'rgba(200,160,255,0.95)'
+            : hasCherubimInHand ? 'rgba(200,160,255,0.6)' : 'rgba(200,160,255,0.18)';
           return (
             <div
               key={backSlot}
               style={{
                 width: CHERUBIM_W, height: CHERUBIM_H,
-                border: isDragTarget ? '2px solid rgba(200,136,240,0.85)' : `1px solid rgba(200,136,240,${hasCherubimInHand ? '0.2' : '0.07'})`,
+                border: isDragTarget ? '2px solid rgba(200,160,255,0.9)' : `1px solid rgba(200,160,255,${hasCherubimInHand ? '0.38' : '0.14'})`,
                 borderRadius: 12,
                 background: isDragTarget
-                  ? 'rgba(143,116,169,0.16)'
-                  : 'linear-gradient(180deg, rgba(200,136,240,0.03) 0%, rgba(0,0,0,0.28) 100%)',
-                backdropFilter: 'blur(2px)',
+                  ? 'rgba(160,120,255,0.1)'
+                  : 'linear-gradient(180deg, rgba(200,160,255,0.04) 0%, rgba(5,5,7,0.45) 100%)',
+                backdropFilter: 'blur(3px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
                 fontFamily: BODY_FONT, transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
                 boxShadow: isDragTarget
-                  ? `0 0 0 2px rgba(200,136,240,0.4), 0 0 18px rgba(200,136,240,0.16)`
+                  ? `0 0 0 2px rgba(200,160,255,0.45), 0 0 22px rgba(200,160,255,0.18)`
                   : hasCherubimInHand
-                    ? 'inset 0 1px 0 rgba(255,255,255,0.05), 0 0 12px rgba(200,136,240,0.06)'
+                    ? 'inset 0 1px 0 rgba(255,255,255,0.06), 0 0 14px rgba(200,160,255,0.08)'
                     : 'inset 0 1px 0 rgba(255,255,255,0.03)',
                 position: 'relative',
                 overflow: 'hidden',
@@ -1752,12 +1752,12 @@ export default function BoardDisplay() {
               }}
             >
               {/* Corner accent marks */}
-              <div style={{ position: 'absolute', top: 5, left: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: 5, left: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
-              <div style={{ position: 'absolute', bottom: 5, right: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none' }} />
-              <div style={{ fontSize: 14, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.75 : 0.28 }}>✦</div>
-              <div style={{ fontSize: 6, color: cherubimGlow, marginTop: 5, letterSpacing: 1, textTransform: 'uppercase', opacity: hasCherubimInHand ? 0.8 : 0.3 }}>
+              <div style={{ position: 'absolute', top: 5, left: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              <div style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              <div style={{ position: 'absolute', bottom: 5, left: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              <div style={{ position: 'absolute', bottom: 5, right: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
+              <div style={{ fontSize: 15, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.85 : 0.22, transition: 'opacity 0.2s, color 0.2s', animation: hasCherubimInHand ? 'constellationGlimmer 3.5s ease-in-out infinite' : undefined }}>✦</div>
+              <div style={{ fontSize: 6, color: cherubimGlow, marginTop: 5, letterSpacing: 1.5, textTransform: 'uppercase', opacity: hasCherubimInHand ? 0.8 : 0.22, transition: 'opacity 0.2s, color 0.2s' }}>
                 {isDragTarget ? 'Drop Cherubim' : hasCherubimInHand ? 'Click or Drop' : 'Empty'}
               </div>
             </div>

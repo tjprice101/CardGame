@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, selectBossFight, selectTurn } from '@/state/store';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 
-// Unified Eternity's Wake theme used for every boss fight UI surface (matches the EternitysWake selection menu).
+// Cosmic cataclysm colour palette — void black with crimson accretion ring + chrome-white typography.
 const EW_ACCENT = '#ff6b6b';
-const EW_PANEL_BORDER = 'rgba(255,107,107,0.55)';
-const EW_PANEL_TINT = 'rgba(14,6,18,0.94)';
-const EW_TEXT = '#FFF8DC';
-const EW_TEXT_MUTED = 'rgba(255,200,200,0.62)';
+const EW_PANEL_BORDER = 'rgba(255,80,80,0.6)';
+const EW_PANEL_TINT = 'rgba(2,2,4,0.96)';
+const EW_TEXT = 'rgba(244,244,248,0.95)';
+const EW_TEXT_MUTED = 'rgba(244,244,248,0.48)';
 const EW_GOLD = '#ffd87a';
 
 const MOTIVATIONAL_THRESHOLDS: { min: number; label: string }[] = [
@@ -53,6 +53,10 @@ export default function BossFightArena() {
     if (currentLabel && currentLabel !== lastLabelRef.current) {
       lastLabelRef.current = currentLabel;
       setCallout({ key: Date.now(), text: currentLabel });
+      // CATACLYSMIC and above → hard shake; STRONG/CRUSHING → soft shake.
+      const hardTiers = ['TRANSCENDENT!!!', 'ETERNAL STRIKE!!', 'CATACLYSMIC!', 'DEVASTATING!'];
+      const isHard = hardTiers.includes(currentLabel);
+      window.dispatchEvent(new Event(isHard ? 'hud-shake-hard' : 'hud-shake-soft'));
     }
     if (!currentLabel) lastLabelRef.current = null;
   }, [currentLabel, bossFight.mode]);
@@ -114,39 +118,52 @@ export default function BossFightArena() {
         }}
       />
 
-      {/* Boss arena banner panel */}
+      {/* Boss arena banner panel — cosmic cataclysm */}
       <div
         style={{
           margin: '0 auto', width: 'calc(100% - 120px)', maxWidth: 920,
-          background: `linear-gradient(180deg, ${EW_PANEL_TINT} 0%, rgba(34, 8, 16, 0.94) 100%)`,
+          background: `linear-gradient(180deg, ${EW_PANEL_TINT} 0%, rgba(8,2,14,0.97) 100%)`,
           border: `1px solid ${EW_PANEL_BORDER}`,
           borderRadius: '0 0 20px 20px',
           padding: '14px 22px 16px',
           display: 'flex', flexDirection: 'column', gap: 9,
           pointerEvents: 'auto',
           position: 'relative',
-          animation: 'bossPanelSlideIn 0.8s cubic-bezier(0.22,0.61,0.36,1) both, ewCrimsonGlow 3.6s ease-in-out infinite',
+          animation: 'bossPanelSlideIn 0.8s cubic-bezier(0.22,0.61,0.36,1) both, accretionDiskGlow 3.6s ease-in-out infinite',
           overflow: 'hidden',
         }}
       >
-        {/* Decorative top fleur line */}
+        {/* Decorative top chrome accent — crimsoned at edges, star-white at centre */}
         <div style={{
           position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-          width: 140, height: 3, background: `linear-gradient(90deg, transparent, ${EW_ACCENT}, rgba(255,255,255,0.9), ${EW_ACCENT}, transparent)`,
+          width: 180, height: 2,
+          background: `linear-gradient(90deg, transparent, ${EW_ACCENT}bb, rgba(244,244,248,0.9), ${EW_ACCENT}bb, transparent)`,
           borderRadius: 2,
+          boxShadow: `0 0 12px ${EW_ACCENT}55`,
         }} />
 
-        {/* Low-HP ember particles */}
+        {/* Star-scatter micro-constellation on the panel void */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px)',
+          backgroundSize: '44px 44px',
+          opacity: 0.08,
+          animation: 'voidStarDrift 60s linear infinite',
+        }} />
+
+        {/* Low-HP meteor streaks */}
         {lowHp && [0, 1, 2, 3, 4].map(n => (
           <div key={n} style={{
             position: 'absolute',
-            left: `${15 + n * 18}%`,
-            bottom: 0,
-            width: 4, height: 4,
-            borderRadius: '50%',
-            background: n % 2 === 0 ? '#ff7a30' : '#ffcc44',
-            boxShadow: `0 0 6px ${n % 2 === 0 ? '#ff6020' : '#ffa820'}`,
-            animation: `emberFloat ${2.2 + n * 0.4}s ease-out ${n * 0.35}s infinite`,
+            left: `${8 + n * 19}%`,
+            top: -8,
+            width: 2, height: 10,
+            borderRadius: 2,
+            background: n % 2 === 0
+              ? 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,80,80,0.4) 100%)'
+              : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(200,100,255,0.4) 100%)',
+            boxShadow: `0 0 6px ${n % 2 === 0 ? 'rgba(255,80,80,0.8)' : 'rgba(180,100,255,0.8)'}`,
+            animation: `meteorFall ${1.6 + n * 0.3}s ease-in ${n * 0.28}s infinite`,
             pointerEvents: 'none',
           }} />
         ))}
@@ -166,10 +183,10 @@ export default function BossFightArena() {
               }}>{modeBadge.text}</div>
             )}
             <div style={{
-              fontSize: 22, fontWeight: 'bold', color: EW_ACCENT,
+              fontSize: 23, fontWeight: 'bold', color: 'rgba(244,244,248,0.98)',
               fontFamily: 'Georgia, serif',
-              letterSpacing: 3,
-              textShadow: '0 1px 3px rgba(0,0,0,0.85), 0 0 20px rgba(255,80,80,0.6), 0 0 40px rgba(255,80,80,0.3)',
+              letterSpacing: 5,
+              textShadow: `0 1px 4px rgba(0,0,0,0.9), 0 0 20px ${EW_ACCENT}88, 0 0 44px rgba(180,80,255,0.28)`,
               textTransform: 'uppercase',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
@@ -181,16 +198,17 @@ export default function BossFightArena() {
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '4px 10px', borderRadius: 8,
-              background: 'rgba(0,0,0,0.4)',
+              background: 'rgba(0,0,0,0.55)',
               border: `1px solid ${timeColor}66`,
+              boxShadow: timeCritical ? `0 0 14px ${timeColor}44` : undefined,
               animation: timeCritical ? 'ewTimerPulse 1.1s ease-in-out infinite' : undefined,
             }}
           >
-            <span style={{ fontSize: 9, color: EW_TEXT_MUTED, letterSpacing: 1.2 }}>TIME</span>
+            <span style={{ fontSize: 9, color: EW_TEXT_MUTED, letterSpacing: 2 }}>TIME</span>
             <span style={{
-              fontSize: 28, color: timeColor, fontFamily: 'Georgia, serif', fontWeight: 'bold',
+              fontSize: 30, color: 'rgba(244,244,248,0.98)', fontFamily: 'Georgia, serif', fontWeight: 'bold',
               fontVariantNumeric: 'tabular-nums',
-              textShadow: `0 0 12px ${timeColor}bb, 0 1px 3px rgba(0,0,0,0.75)`,
+              textShadow: `0 0 14px ${timeColor}99, 0 1px 3px rgba(0,0,0,0.85)`,
               lineHeight: 1,
             }}>
               {timerMinutes}:{timerSeconds}
@@ -266,18 +284,18 @@ export default function BossFightArena() {
           style={{
             position: 'fixed', top: 120, left: '50%', transform: 'translateX(-50%)',
             fontFamily: 'Georgia, serif', fontWeight: 'bold',
-            fontSize: 38, letterSpacing: 5,
-            textShadow: '0 0 18px rgba(255,140,80,0.95), 0 2px 4px rgba(0,0,0,0.85), 0 0 36px rgba(255,80,80,0.7)',
+            fontSize: 42, letterSpacing: 6,
+            textShadow: '0 0 22px rgba(244,244,248,0.6), 0 2px 5px rgba(0,0,0,0.9), 0 0 44px rgba(255,80,80,0.55)',
             animation: 'ewMotivationalRise 1.8s ease-out forwards',
             pointerEvents: 'none',
-            background: 'linear-gradient(90deg, #ffd87a, #ff6b6b, #ffd87a)',
+            background: 'linear-gradient(90deg, rgba(244,244,248,0.95), #ff6b6b, rgba(244,244,248,0.95))',
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             zIndex: 26,
           }}
         >
-          {callout.text}
+          {callout.text}}
         </div>
       )}
     </div>
@@ -298,14 +316,21 @@ function HpBar({
       style={{
         position: 'relative',
         height: 28,
-        background: 'rgba(0,0,0,0.55)',
+        background: 'rgba(0,0,0,0.65)',
         borderRadius: 14,
         overflow: 'hidden',
         border: `1px solid ${EW_PANEL_BORDER}`,
-        boxShadow: 'inset 0 0 10px rgba(0,0,0,0.75)',
+        boxShadow: 'inset 0 0 10px rgba(0,0,0,0.85)',
         animation: lowHp ? 'ewLowHpAlert 0.85s ease-in-out infinite' : undefined,
       }}
     >
+      {/* Starfield visible in the unfilled/empty portion of the HP track */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.65) 1px, transparent 1px)',
+        backgroundSize: '22px 22px',
+        opacity: 0.14,
+      }} />
       <div
         style={{
           position: 'absolute', top: 0, right: 0, height: '100%',

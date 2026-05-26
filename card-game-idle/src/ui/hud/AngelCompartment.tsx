@@ -70,13 +70,14 @@ export default function AngelCompartment() {
         width: open ? ANGEL_DRAWER_WIDTH : 0,
         overflow: 'hidden',
         transition: 'width 0.22s ease',
-        background: warmTheme.surfaceStrong,
-        borderLeft: open ? `1px solid ${warmTheme.border}` : 'none',
-        borderTop: open ? `1px solid ${warmTheme.border}` : 'none',
-        borderBottom: open ? `1px solid ${warmTheme.border}` : 'none',
+        background: 'rgba(5,5,7,0.92)',
+        borderLeft: open ? '1px solid rgba(200,160,255,0.28)' : 'none',
+        borderTop: open ? '1px solid rgba(200,160,255,0.2)' : 'none',
+        borderBottom: open ? '1px solid rgba(200,160,255,0.2)' : 'none',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: open ? warmTheme.shadow : 'none',
+        boxShadow: open ? '-8px 0 40px rgba(0,0,0,0.8), inset 1px 0 0 rgba(200,160,255,0.08)' : 'none',
+        backdropFilter: 'blur(12px)',
       }}>
         <div className="ornate-scroll" style={{
           width: '100%',
@@ -90,19 +91,19 @@ export default function AngelCompartment() {
           <div style={{
             fontFamily: 'Georgia, serif',
             fontSize: 10,
-            letterSpacing: 2,
-            color: warmTheme.textMuted,
+            letterSpacing: 3,
+            color: 'rgba(200,160,255,0.7)',
             textTransform: 'uppercase',
             marginBottom: 2,
           }}>
-            Extra Deck - {angelsOnBoard} / {extraDeck.length} on board
+            Extra Deck — {angelsOnBoard} / {extraDeck.length} on board
           </div>
 
           {extraDeck.length === 0 && (
             <div style={{
               fontFamily: 'Georgia, serif',
               fontSize: 11,
-              color: warmTheme.textFaint,
+              color: 'rgba(244,244,248,0.35)',
               textAlign: 'center',
               padding: '20px 0',
             }}>
@@ -136,69 +137,85 @@ export default function AngelCompartment() {
             const statusLabel = availableCopies === 0
               ? `${onBoardCopies}/${totalCopies} summoned`
               : playable
-                ? 'Angel Summon Ready'
-                : 'Need materials';
+                ? 'Summon Ready'
+                : 'Materials not met';
             const statusColor = availableCopies === 0
-              ? warmTheme.success
+              ? '#83f7b6'
               : playable
                 ? '#83f7b6'
-                : warmTheme.textMuted;
+                : 'rgba(255,100,100,0.75)';
+
+            const doSummon = () => {
+              summonAngel(definitionId, finish);
+              setOpen(false);
+              window.dispatchEvent(new Event('hud-shake-soft'));
+            };
+            const handleEntryClick = () => {
+              if (playable) {
+                doSummon();
+              } else {
+                const k = `${definitionId}::${finish}`;
+                setShakeKey(k);
+                setTimeout(() => setShakeKey(sk => sk === k ? null : sk), 400);
+              }
+            };
 
             const entryKey = `${definitionId}::${finish}`;
             const isShaking = shakeKey === entryKey;
             return (
-              <CardHoverDetail key={entryKey} definitionId={definitionId} finish={finish}>
+              <CardHoverDetail
+                key={entryKey}
+                definitionId={definitionId}
+                finish={finish}
+                actionLabel={playable ? 'Summon Angel' : undefined}
+                onAction={playable ? doSummon : undefined}
+                actionDisabled={!playable}
+              >
               <div
                 className={isShaking ? 'anim-shake-no' : undefined}
                 style={{
                   border: playable
-                    ? `1px solid ${warmTheme.borderStrong}`
+                    ? '1px solid rgba(200,160,255,0.7)'
                     : availableCopies === 0
-                      ? `1px solid rgba(79,138,71,0.35)`
-                      : `1px solid ${warmTheme.border}`,
-                  background: 'linear-gradient(180deg, rgba(255,250,245,0.98) 0%, rgba(246,237,226,0.98) 100%)',
+                      ? '1px solid rgba(100,220,150,0.25)'
+                      : '1px solid rgba(244,244,248,0.1)',
+                  background: 'linear-gradient(180deg, rgba(22,14,38,0.97) 0%, rgba(8,5,12,0.97) 100%)',
                   borderRadius: 16,
                   padding: 0,
                   fontFamily: 'Georgia, serif',
                   cursor: playable ? 'pointer' : 'default',
                   transition: 'border-color 0.2s, box-shadow 0.2s, transform 0.2s',
-                  boxShadow: playable ? `${warmTheme.glow}, ${cardFacePalette.shadow}` : cardFacePalette.shadow,
+                  boxShadow: playable
+                    ? '0 0 28px rgba(180,140,255,0.28), 0 4px 16px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.05)'
+                    : '0 2px 8px rgba(0,0,0,0.6)',
                   overflow: 'hidden',
                   display: 'flex',
                   flexDirection: 'column',
                   minHeight: 320,
+                  opacity: availableCopies === 0 ? 0.65 : 1,
                 }}
-                onClick={() => {
-                  if (playable) {
-                    summonAngel(definitionId, finish);
-                    setOpen(false);
-                  } else {
-                    const k = `${definitionId}::${finish}`;
-                    setShakeKey(k);
-                    setTimeout(() => setShakeKey(sk => sk === k ? null : sk), 400);
-                  }
-                }}
+                onClick={handleEntryClick}
               >
                   <div style={getCardNameRibbonStyle('grid')}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 }}>
-                    <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                    <div style={{ fontSize: faceMetrics.typeSize, color: 'rgba(200,160,255,0.7)', letterSpacing: 2, textTransform: 'uppercase' }}>
                       Angel · {finish === 'holo' ? 'Holofoil' : 'Normal'}
                     </div>
                     <div style={{
                       fontSize: 9,
-                      letterSpacing: 1,
+                      letterSpacing: 1.2,
                       color: statusColor,
                       textTransform: 'uppercase',
                       fontWeight: 700,
                       padding: '3px 6px',
                       borderRadius: 999,
-                      background: playable ? 'rgba(79,138,71,0.18)' : 'transparent',
-                      boxShadow: playable ? '0 0 10px rgba(79,138,71,0.28)' : 'none',
+                      background: playable ? 'rgba(100,220,150,0.12)' : availableCopies === 0 ? 'rgba(100,220,150,0.08)' : 'rgba(255,80,80,0.08)',
+                      boxShadow: playable ? '0 0 10px rgba(100,220,150,0.22)' : 'none',
                     }}>
                       {statusLabel}
                     </div>
                   </div>
-                  <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, lineHeight: 1.25, marginTop: 3 }}>
+                  <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: 'rgba(244,244,248,0.95)', lineHeight: 1.25, marginTop: 3 }}>
                     {angelDef.name}
                   </div>
                 </div>
@@ -347,27 +364,41 @@ export default function AngelCompartment() {
                   )}
 
                   {playable && (
-                    <div style={{
-                      marginTop: 10,
-                      textAlign: 'center',
-                      fontSize: 10,
-                      color: warmTheme.accentDeep,
-                      letterSpacing: 1.5,
-                      textTransform: 'uppercase',
-                      opacity: 0.8,
-                    }}>
-                      Click to Summon
-                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); doSummon(); }}
+                      style={{
+                        margin: '12px 14px',
+                        padding: '10px 16px',
+                        borderRadius: 10,
+                        background: 'linear-gradient(180deg, rgba(60,40,100,0.98) 0%, rgba(20,12,36,0.98) 100%)',
+                        border: '1px solid rgba(200,160,255,0.7)',
+                        color: 'rgba(244,244,248,0.98)',
+                        fontSize: 12,
+                        fontFamily: 'Georgia, serif',
+                        cursor: 'pointer',
+                        letterSpacing: 2.5,
+                        textTransform: 'uppercase',
+                        boxShadow: '0 0 22px rgba(180,140,255,0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
+                        width: 'calc(100% - 28px)',
+                      }}
+                    >
+                      Summon Angel
+                    </button>
                   )}
                   {!playable && availableCopies > 0 && (
                     <div style={{
-                      marginTop: 8,
+                      margin: '10px 14px',
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      background: 'rgba(255,80,80,0.06)',
+                      border: '1px solid rgba(255,80,80,0.2)',
                       textAlign: 'center',
                       fontSize: 9,
-                      color: 'rgba(255,90,90,0.7)',
-                      letterSpacing: 1,
+                      color: 'rgba(255,100,100,0.8)',
+                      letterSpacing: 1.5,
+                      textTransform: 'uppercase',
                     }}>
-                      Materials not met — click to see what's missing
+                      Materials not met
                     </div>
                   )}
                 </div>
@@ -384,8 +415,8 @@ export default function AngelCompartment() {
         style={{
           width: 26,
           alignSelf: 'stretch',
-          background: warmTheme.surfaceStrong,
-          border: `1px solid ${warmTheme.border}`,
+          background: 'rgba(18,10,32,0.92)',
+          border: '1px solid rgba(200,160,255,0.3)',
           borderRight: 'none',
           borderRadius: '12px 0 0 12px',
           cursor: 'pointer',
@@ -396,16 +427,18 @@ export default function AngelCompartment() {
           gap: 4,
           fontFamily: 'Georgia, serif',
           padding: '8px 0',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '-4px 0 16px rgba(180,140,255,0.1)',
         }}
       >
-        <span style={{ fontSize: 12, color: warmTheme.accentDeep, writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: 1 }}>
+        <span style={{ fontSize: 12, color: 'rgba(200,160,255,0.9)', writingMode: 'vertical-rl', transform: 'rotate(180deg)', letterSpacing: 2 }}>
           ANGELS
         </span>
         {extraDeck.length > 0 && (
           <span style={{
             fontSize: 9,
-            color: angelsOnBoard > 0 ? warmTheme.success : warmTheme.accentDeep,
-            background: angelsOnBoard > 0 ? 'rgba(79,138,71,0.1)' : 'rgba(181,106,46,0.1)',
+            color: angelsOnBoard > 0 ? '#83f7b6' : 'rgba(200,160,255,0.8)',
+            background: angelsOnBoard > 0 ? 'rgba(100,220,150,0.1)' : 'rgba(200,160,255,0.08)',
             borderRadius: 4,
             padding: '1px 4px',
             minWidth: 14,
@@ -414,7 +447,7 @@ export default function AngelCompartment() {
             {angelsOnBoard}/{extraDeck.length}
           </span>
         )}
-        <span style={{ fontSize: 10, color: warmTheme.textMuted }}>
+        <span style={{ fontSize: 10, color: 'rgba(200,160,255,0.6)' }}>
           {open ? '›' : '‹'}
         </span>
       </button>

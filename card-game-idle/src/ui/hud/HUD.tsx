@@ -23,6 +23,12 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'stretch',
     pointerEvents: 'none',
     zIndex: 14,
+    background: 'rgba(5,5,7,0.52)',
+    border: '1px solid rgba(244,244,248,0.1)',
+    borderRadius: 14,
+    padding: '12px 10px',
+    backdropFilter: 'blur(8px)',
+    boxShadow: '0 8px 32px rgba(0,0,0,0.55), inset 0 1px 0 rgba(244,244,248,0.06)',
   },
 };
 

@@ -18,12 +18,18 @@ interface Props {
   finish: CardFinish;
   /** Suppress the hover timer (e.g. while dragging or attack panel open). */
   disabled?: boolean;
+  /** Optional CTA label shown as a primary button inside the hover detail modal. */
+  actionLabel?: string;
+  /** Called when the CTA button is pressed. Modal will close after calling. */
+  onAction?: () => void;
+  /** When true the CTA button is rendered but greyed out. */
+  actionDisabled?: boolean;
   children: React.ReactNode;
 }
 
 const HOVER_DELAY_MS = 1500;
 
-export default function CardHoverDetail({ definitionId, finish, disabled = false, children }: Props) {
+export default function CardHoverDetail({ definitionId, finish, disabled = false, actionLabel, onAction, actionDisabled, children }: Props) {
   const progress = useStore(selectProgress);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [open, setOpen] = useState(false);
@@ -70,6 +76,9 @@ export default function CardHoverDetail({ definitionId, finish, disabled = false
           finish={finish}
           owned={owned}
           onClose={handleClose}
+          actionLabel={actionLabel}
+          onAction={onAction}
+          actionDisabled={actionDisabled}
         />,
         document.body,
       )}

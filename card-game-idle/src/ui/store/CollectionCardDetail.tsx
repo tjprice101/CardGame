@@ -16,6 +16,10 @@ interface Props {
   finish: 'normal' | 'holo';
   owned: number;
   onClose: () => void;
+  /** Optional CTA rendered above the favorite button — e.g. "Summon Angel". */
+  actionLabel?: string;
+  onAction?: () => void;
+  actionDisabled?: boolean;
 }
 
 const RARITY_COLORS: Record<string, string> = {
@@ -101,7 +105,7 @@ function findPacksForCard(cardId: string): Array<{ packId: string; packName: str
   return packs;
 }
 
-export default function CollectionCardDetail({ card, finish, owned, onClose }: Props) {
+export default function CollectionCardDetail({ card, finish, owned, onClose, actionLabel, onAction, actionDisabled }: Props) {
   const favoriteCollection = useStore(s => s.progress.favoriteCollection);
   const toggleFavoriteCard = useStore(s => s.toggleFavoriteCard);
   const [favoriteFeedback, setFavoriteFeedback] = useState<string | null>(null);
@@ -412,6 +416,38 @@ export default function CollectionCardDetail({ card, finish, owned, onClose }: P
               </div>
             )}
           </div>
+
+          {/* Action CTA (e.g. Summon Angel) — only shown when caller provides it */}
+          {actionLabel && onAction && (
+            <button
+              onClick={() => { onAction(); onClose(); }}
+              disabled={actionDisabled}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                borderRadius: 10,
+                marginBottom: 10,
+                background: actionDisabled
+                  ? 'rgba(244,244,248,0.05)'
+                  : 'linear-gradient(180deg, rgba(50,50,80,0.98) 0%, rgba(18,18,32,0.98) 100%)',
+                border: actionDisabled
+                  ? '1px solid rgba(244,244,248,0.15)'
+                  : '1px solid rgba(200,180,255,0.6)',
+                color: actionDisabled ? 'rgba(244,244,248,0.3)' : 'rgba(244,244,248,0.98)',
+                fontSize: 13,
+                fontFamily: 'Georgia, serif',
+                cursor: actionDisabled ? 'not-allowed' : 'pointer',
+                letterSpacing: 2.5,
+                textTransform: 'uppercase',
+                boxShadow: actionDisabled
+                  ? 'none'
+                  : '0 0 22px rgba(180,160,255,0.28), 0 4px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08)',
+                transition: 'box-shadow 0.15s, border-color 0.15s',
+              }}
+            >
+              {actionLabel}
+            </button>
+          )}
 
           {/* Favorite button */}
           {owned > 0 && (

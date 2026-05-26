@@ -75,15 +75,15 @@ const styles: Record<string, React.CSSProperties> = {
   },
   idleShowcaseLabel: {
     fontSize: 10,
-    letterSpacing: 2,
+    letterSpacing: 2.5,
     textTransform: 'uppercase',
-    color: 'rgba(245, 232, 214, 0.74)',
+    color: 'rgba(244,244,248,0.55)',
     fontFamily: 'Georgia, serif',
-    background: 'rgba(26, 18, 12, 0.64)',
-    border: `1px solid ${warmTheme.border}`,
+    background: 'rgba(5,5,7,0.72)',
+    border: '1px solid rgba(244,244,248,0.14)',
     borderRadius: 999,
     padding: '4px 10px',
-    boxShadow: warmTheme.glow,
+    boxShadow: '0 0 12px rgba(244,244,248,0.06)',
   },
   idleShowcase: {
     display: 'flex',
@@ -135,8 +135,8 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'hidden',
   },
   cardMulligan: {
-    border: '2px solid rgba(255,100,100,0.75)',
-    boxShadow: '0 0 14px rgba(255,80,80,0.45)',
+    border: '2px solid rgba(180,120,255,0.85)',
+    boxShadow: '0 0 18px rgba(160,100,255,0.5), 0 0 40px rgba(140,80,255,0.22)',
   },
   cardAngel: {
     border: `1px solid ${warmTheme.borderStrong}`,
@@ -410,15 +410,16 @@ export default function HandDisplay() {
       {isMulligan && (
         <div style={{
           position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
-          color: warmTheme.accentDeep, fontFamily: 'Georgia, serif', fontSize: 13, letterSpacing: 2,
-          background: 'linear-gradient(90deg, rgba(214,162,94,0.12), rgba(248,216,160,0.92), rgba(214,162,94,0.12))',
+          color: 'rgba(244,244,248,0.95)', fontFamily: 'Georgia, serif', fontSize: 13, letterSpacing: 3,
+          background: 'linear-gradient(90deg, rgba(5,5,7,0.12), rgba(160,120,255,0.55), rgba(80,200,255,0.35), rgba(255,100,200,0.25), rgba(5,5,7,0.12))',
           backgroundSize: '200% 100%',
           animation: 'mulliganShimmer 3s linear infinite',
-          border: `1px solid ${warmTheme.accent}`,
+          border: '1px solid rgba(200,160,255,0.7)',
           borderRadius: 999,
           padding: '8px 20px',
-          boxShadow: `0 0 20px rgba(214,162,94,0.25), ${warmTheme.glow}`,
+          boxShadow: '0 0 28px rgba(160,120,255,0.35), 0 0 60px rgba(80,200,255,0.18)',
           whiteSpace: 'nowrap',
+          textShadow: '0 0 12px rgba(200,160,255,0.8)',
         }}>
           MULLIGAN ? Click cards to swap them out
         </div>
@@ -604,18 +605,18 @@ export default function HandDisplay() {
         {showActiveHand && (
           <div style={{
             position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-            fontFamily: 'Georgia, serif', fontSize: 10, letterSpacing: 2.4,
-            textTransform: 'uppercase', padding: '4px 12px', borderRadius: 999,
-            background: isExtraDeckView ? 'rgba(28, 22, 48, 0.84)' : 'rgba(20, 14, 10, 0.72)',
-            color: isExtraDeckView ? '#cfc8ff' : 'rgba(245, 232, 214, 0.86)',
-            border: `1px solid ${isExtraDeckView ? 'rgba(180,190,255,0.55)' : warmTheme.border}`,
-            boxShadow: warmTheme.glow,
+            fontFamily: 'Georgia, serif', fontSize: 10, letterSpacing: 3,
+            textTransform: 'uppercase', padding: '4px 14px', borderRadius: 999,
+            background: isExtraDeckView ? 'rgba(20,12,40,0.88)' : 'rgba(5,5,7,0.82)',
+            color: isExtraDeckView ? '#cfc8ff' : 'rgba(244,244,248,0.82)',
+            border: `1px solid ${isExtraDeckView ? 'rgba(180,160,255,0.5)' : 'rgba(244,244,248,0.22)'}`,
+            boxShadow: isExtraDeckView ? '0 0 14px rgba(180,160,255,0.18)' : '0 0 14px rgba(244,244,248,0.06)',
             pointerEvents: 'auto',
             whiteSpace: 'nowrap',
           }}>
             {isExtraDeckView ? `Extra Deck (${viewCards.length})` : `Hand (${viewCards.length})`}
             <span style={{
-              marginLeft: 8, opacity: 0.6, fontSize: 9, letterSpacing: 1.2,
+              marginLeft: 8, opacity: 0.55, fontSize: 9, letterSpacing: 1.5,
             }}>
               Press E to swap
             </span>
@@ -684,8 +685,8 @@ export default function HandDisplay() {
                   transform: 'translateY(-16px) scale(1.025)',
                   boxShadow: artOnlyMode
                     ? '0 0 0 2px rgba(255,255,255,0.9), 0 12px 32px rgba(0,0,0,0.65)'
-                    : `0 0 0 1px rgba(214,162,94,0.6), 0 12px 32px rgba(214,162,94,0.28), 0 4px 12px rgba(0,0,0,0.55)`,
-                  borderColor: artOnlyMode ? 'rgba(255,255,255,0.8)' : 'rgba(214,162,94,0.8)',
+                    : `0 0 0 1px rgba(180,220,255,0.55), 0 14px 36px rgba(120,200,255,0.22), 0 4px 14px rgba(0,0,0,0.6)`,
+                  borderColor: artOnlyMode ? 'rgba(255,255,255,0.8)' : 'rgba(180,220,255,0.7)',
                 } : {}),
               }}
               onClick={() => handleClick(deckCard.instanceId)}

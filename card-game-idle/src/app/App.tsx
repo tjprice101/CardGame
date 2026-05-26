@@ -46,6 +46,46 @@ import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
  */
 type AppScene = 'splash' | 'title' | 'menu' | 'arena';
 
+/**
+ * Wrapper that applies CSS screen-shake classes in response to custom events
+ * dispatched by the game engine (angel summons, big boss damage hits).
+ */
+function HudShakeWrapper({ children }: { children: React.ReactNode }) {
+  const divRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const triggerShake = React.useCallback((hard: boolean) => {
+    const el = divRef.current;
+    if (!el) return;
+    const cls = hard ? 'anim-screen-shake-hard' : 'anim-screen-shake-soft';
+    el.classList.remove('anim-screen-shake-soft', 'anim-screen-shake-hard');
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    // Force reflow so re-adding the same class re-triggers animation.
+    void el.offsetWidth;
+    el.classList.add(cls);
+    timeoutRef.current = setTimeout(() => {
+      el.classList.remove(cls);
+    }, hard ? 650 : 450);
+  }, []);
+
+  useEffect(() => {
+    const onSoft = () => triggerShake(false);
+    const onHard = () => triggerShake(true);
+    window.addEventListener('hud-shake-soft', onSoft);
+    window.addEventListener('hud-shake-hard', onHard);
+    return () => {
+      window.removeEventListener('hud-shake-soft', onSoft);
+      window.removeEventListener('hud-shake-hard', onHard);
+    };
+  }, [triggerShake]);
+
+  return (
+    <div ref={divRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+      {children}
+    </div>
+  );
+}
+
 const engine = new GameEngine();
 
 export default function App() {
@@ -325,9 +365,9 @@ export default function App() {
 
       {/* HUD overlay — only mounted in the arena scene. */}
       {!isMenuOpen && scene === 'arena' && (
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+        <HudShakeWrapper>
           <HUD />
-        </div>
+        </HudShakeWrapper>
       )}
 
       {/* Main menu hub — replaces the legacy scattered top-right nav clusters. */}
