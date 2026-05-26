@@ -16,6 +16,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 18px 10px',
     boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
     pointerEvents: 'none',
+    zIndex: 20,
   },
   score: {
     fontSize: 36,

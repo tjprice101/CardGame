@@ -551,8 +551,8 @@ export default function BoardDisplay() {
   }, [attackPanelSlot, selectedFront?.instanceId, selectedDef?.definitionId]);
 
   const playfieldRightInset = turn.phase === 'playing' || turn.phase === 'mulligan'
-    ? 'calc(var(--angel-drawer-hand-offset, 268px) + min(240px, 22vw))'
-    : 'var(--angel-drawer-hand-offset, 268px)';
+    ? 'calc(var(--angel-drawer-hand-offset, 308px) + min(240px, 22vw))'
+    : 'var(--angel-drawer-hand-offset, 308px)';
 
   return (
     <div style={{
@@ -890,11 +890,11 @@ export default function BoardDisplay() {
               key={slotIndex}
               style={{
                 width: SLOT_W, height: SLOT_H,
-                border: isDragTarget ? '2px solid rgba(244,244,248,0.9)' : `1px solid rgba(244,244,248,${hasSeraphimInHand ? '0.35' : '0.14'})`,
+                border: isDragTarget ? '2px solid rgba(244,244,248,0.9)' : `1px solid rgba(244,244,248,${hasSeraphimInHand ? '0.4' : '0.22'})`,
                 borderRadius: 12,
                 background: isDragTarget
-                  ? 'rgba(244,244,248,0.08)'
-                  : 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(5,5,7,0.45) 100%)',
+                  ? 'rgba(244,244,248,0.1)'
+                  : 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
                 backdropFilter: 'blur(3px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
@@ -946,8 +946,8 @@ export default function BoardDisplay() {
                   }} />
                 </>
               )}
-              <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.25, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>✦</div>
-              <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.25, transition: 'opacity 0.2s, color 0.2s' }}>
+              <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.4, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>✦</div>
+              <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.4, transition: 'opacity 0.2s, color 0.2s' }}>
                 {isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
               </div>
             </div>
@@ -1740,11 +1740,11 @@ export default function BoardDisplay() {
               key={backSlot}
               style={{
                 width: CHERUBIM_W, height: CHERUBIM_H,
-                border: isDragTarget ? '2px solid rgba(200,160,255,0.9)' : `1px solid rgba(200,160,255,${hasCherubimInHand ? '0.38' : '0.14'})`,
+                border: isDragTarget ? '2px solid rgba(200,160,255,0.9)' : `1px solid rgba(200,160,255,${hasCherubimInHand ? '0.48' : '0.28'})`,
                 borderRadius: 12,
                 background: isDragTarget
-                  ? 'rgba(160,120,255,0.1)'
-                  : 'linear-gradient(180deg, rgba(200,160,255,0.04) 0%, rgba(5,5,7,0.45) 100%)',
+                  ? 'rgba(160,120,255,0.12)'
+                  : 'linear-gradient(180deg, rgba(200,160,255,0.1) 0%, rgba(200,160,255,0.04) 100%)',
                 backdropFilter: 'blur(3px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 cursor: hasAction ? 'pointer' : 'default', pointerEvents: 'auto',
@@ -1776,8 +1776,8 @@ export default function BoardDisplay() {
               <div style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 5, left: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 5, right: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ fontSize: 15, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.85 : 0.22, transition: 'opacity 0.2s, color 0.2s', animation: hasCherubimInHand ? 'constellationGlimmer 3.5s ease-in-out infinite' : undefined }}>✦</div>
-              <div style={{ fontSize: 6, color: cherubimGlow, marginTop: 5, letterSpacing: 1.5, textTransform: 'uppercase', opacity: hasCherubimInHand ? 0.8 : 0.22, transition: 'opacity 0.2s, color 0.2s' }}>
+              <div style={{ fontSize: 15, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.85 : 0.38, transition: 'opacity 0.2s, color 0.2s', animation: hasCherubimInHand ? 'constellationGlimmer 3.5s ease-in-out infinite' : undefined }}>✦</div>
+              <div style={{ fontSize: 6, color: cherubimGlow, marginTop: 5, letterSpacing: 1.5, textTransform: 'uppercase', opacity: hasCherubimInHand ? 0.8 : 0.38, transition: 'opacity 0.2s, color 0.2s' }}>
                 {isDragTarget ? 'Drop Cherubim' : hasCherubimInHand ? 'Click or Drop' : 'Empty'}
               </div>
             </div>

@@ -151,7 +151,7 @@ function RightRail() {
       style={{
         position: 'absolute',
         right: 0, top: 0, bottom: 0,
-        width: 260,
+        width: 300,
         display: 'flex',
         flexDirection: 'column',
         background: 'linear-gradient(270deg, rgba(5,5,7,0.92) 0%, rgba(8,8,16,0.78) 100%)',
