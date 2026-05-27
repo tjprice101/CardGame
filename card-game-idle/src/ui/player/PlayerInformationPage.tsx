@@ -6,11 +6,12 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
-import { warmTheme } from '@/ui/theme';
+import { subMenuWarm as warmTheme } from '@/ui/theme';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
 import { UI_THEMES } from '@/data/profile/uiThemes';
 import TitlesModal from '@/ui/profile/TitlesModal';
+import ProfilePictureModal from '@/ui/profile/ProfilePictureModal';
 import {
   useSocialStore,
   selectSocialStatus,
@@ -35,11 +36,26 @@ interface Props {
 
 type TabId = 'profile' | 'social' | 'save';
 
-const TABS: { id: TabId; label: string; caption: string }[] = [
-  { id: 'profile', label: 'Profile',     caption: 'Identity, titles & themes' },
-  { id: 'social',  label: 'Social',      caption: 'Account, friends & boards' },
-  { id: 'save',    label: 'Save & Data', caption: 'Save, export, import, wipe' },
+const TABS: { id: TabId; label: string; glyph: string; caption: string }[] = [
+  { id: 'profile', label: 'Profile',     glyph: '◆', caption: 'Identity, titles & themes' },
+  { id: 'social',  label: 'Social',      glyph: '⊕', caption: 'Account, friends & boards' },
+  { id: 'save',    label: 'Save & Data', glyph: '◈', caption: 'Save, export, import, wipe' },
 ];
+
+// Dark cinematic gold palette — all UI colour constants in one place.
+const G = {
+  gold:             '#c8803a',
+  goldSoft:         '#daa058',
+  goldBorder:       'rgba(200,128,58,0.28)',
+  goldBorderStrong: 'rgba(200,128,58,0.55)',
+  goldGlass:        'rgba(200,128,58,0.08)',
+  text:             '#f0dfc0',
+  cinzel:           '"Cinzel", "Cormorant Garamond", Georgia, serif',
+  success:          '#4f8a47',
+  danger:           '#b85c4f',
+  dangerSoft:       'rgba(184,92,79,0.18)',
+  dangerBorder:     'rgba(184,92,79,0.45)',
+} as const;
 
 export default function PlayerInformationPage({
   onClose,
@@ -51,6 +67,7 @@ export default function PlayerInformationPage({
   const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
   const setPlayerName = useStore(s => s.setPlayerName);
+  const setBio = useStore(s => s.setBio);
   const setUiThemeId = useStore(s => s.setUiThemeId);
   const dailyLogin = useStore(s => s.progress.dailyLogin);
   const saveTampered = useStore(s => s.saveTampered ?? false);
@@ -64,7 +81,9 @@ export default function PlayerInformationPage({
 
   const [activeTab, setActiveTab] = useState<TabId>('profile');
   const [nameDraft, setNameDraft] = useState(profile.name);
+  const [bioDraft, setBioDraft] = useState(profile.bio ?? '');
   const [showTitles, setShowTitles] = useState(false);
+  const [showPictures, setShowPictures] = useState(false);
   const [gameSaved, setGameSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(0); // 0=none 1=first 2=second
   const [importStatus, setImportStatus] =
@@ -88,7 +107,7 @@ export default function PlayerInformationPage({
 
   const statusLabel = useMemo(() => {
     if (status === 'authenticated') return 'Signed in';
-    if (status === 'authenticating') return 'Signing in…';
+    if (status === 'loading') return 'Signing in…';
     if (status === 'error') return 'Sign-in error';
     return 'Offline · not signed in';
   }, [status]);
@@ -96,6 +115,10 @@ export default function PlayerInformationPage({
   function commitName() {
     if (nameDraft.trim()) setPlayerName(nameDraft);
     else setNameDraft(profile.name);
+  }
+
+  function commitBio() {
+    setBio(bioDraft);
   }
 
   function handleSaveGame() {
@@ -152,74 +175,96 @@ export default function PlayerInformationPage({
   }
 
   return (
-    <div style={styles.backdrop}>
-      {/* Soft drifting hue washes — replace harsh appBackground with a calm
-          champagne-on-indigo wash, plus subtle radial halos. */}
-      <div style={styles.washWarm} />
-      <div style={styles.washCool} />
-      <div style={styles.washVignette} />
+    <div style={S.backdrop}>
+      {/* Atmospheric layered washes */}
+      <div style={S.washWarm} />
+      <div style={S.washCool} />
+      <div style={S.washVignette} />
+      <div style={S.scanlines} />
 
-      <div className="ui-panel-intro" style={styles.panel}>
-        {/* Header */}
-        <header style={styles.header}>
-          <div style={styles.headerBrand}>
-            <div className="ui-title-glow" style={styles.headerTitle}>Player Information</div>
-            <div style={styles.headerSub}>Identity · Social · Save Data</div>
+      <div className="ui-panel-intro" style={S.panel}>
+
+        {/* ── Header ── */}
+        <header style={S.header}>
+          <div style={S.headerBrand}>
+            <div style={S.headerTitle}>Player Information</div>
+            <div style={S.headerRule}>
+              <div style={S.headerRuleLine} />
+              <span style={S.headerRuleGlyph}>✦</span>
+              <div style={S.headerRuleLine} />
+            </div>
+            <div style={S.headerSub}>Identity · Social · Save Data</div>
           </div>
-          <button
-            onClick={onClose}
-            style={styles.closeBtn}
-            title="Close"
-            aria-label="Close"
-          >{'\u2715'}</button>
+          <button onClick={onClose} style={S.closeBtn} aria-label="Close">✕</button>
         </header>
 
-        {/* Identity hero — always visible above the tabs */}
-        <section style={styles.identityHero}>
-          <div style={styles.avatarWrap}>
-            <div style={styles.avatarHalo} />
-            <div style={styles.avatar}>{currentAvatar.glyph}</div>
+        {/* ── Identity Hero ── */}
+        <section style={S.identityHero}>
+
+          {/* Triple-ring avatar frame */}
+          <div style={S.avatarOuter}>
+            <div style={S.avatarMiddle}>
+              <div style={S.avatarInner}>
+                {currentAvatar.imageUrl
+                  ? <img src={currentAvatar.imageUrl} alt={currentAvatar.name}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                  : <span style={{ fontSize: 40, color: G.gold }}>{currentAvatar.glyph}</span>
+                }
+              </div>
+            </div>
           </div>
-          <div style={styles.identityBody}>
+
+          {/* Identity text column */}
+          <div style={S.identityBody}>
             <input
               type="text"
               value={nameDraft}
-              onChange={(e) => setNameDraft(e.target.value)}
+              onChange={e => setNameDraft(e.target.value)}
               onBlur={commitName}
-              onKeyDown={(e) => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+              onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
               maxLength={24}
-              style={styles.nameInput}
+              style={S.nameInput}
             />
-            <div style={styles.titleText}>
+            <div style={S.titleRibbon}>
               {currentTitle ? currentTitle.text : 'No title selected'}
             </div>
-            <div style={styles.statusRow}>
+            <textarea
+              value={bioDraft}
+              onChange={e => setBioDraft(e.target.value)}
+              onBlur={commitBio}
+              maxLength={200}
+              rows={2}
+              placeholder="Write a short bio…"
+              style={S.bioInput as React.CSSProperties}
+            />
+            <div style={S.statusRow}>
               <span style={{
-                ...styles.statusDot,
-                background: authed ? warmTheme.success : 'rgba(120,120,120,0.4)',
-                boxShadow: authed ? `0 0 8px ${warmTheme.success}` : 'none',
+                ...S.statusDot,
+                background: authed ? G.success : 'rgba(120,120,120,0.45)',
+                boxShadow: authed ? `0 0 8px ${G.success}` : 'none',
               }} />
-              <span style={styles.statusLabel}>{statusLabel}</span>
+              <span style={S.statusLabel}>{statusLabel}</span>
               {authed && socialUser?.email && (
-                <>
-                  <span style={styles.statusDivider}>·</span>
-                  <span style={styles.statusEmail}>{socialUser.email}</span>
-                </>
+                <><span style={{ opacity: 0.4, margin: '0 2px' }}>·</span>
+                  <span style={S.statusEmail}>{socialUser.email}</span></>
               )}
             </div>
           </div>
 
-          {/* Quick stats strip on the right */}
-          <div style={styles.heroStats}>
-            <HeroStat label="Oblivion" value={progress.oblivion.toLocaleString()} />
-            <HeroStat label="Shards" value={progress.aberratedShards.toLocaleString()} />
-            <HeroStat label="Streak" value={`${dailyLogin.streak}d`} />
-            <HeroStat label="Friends" value={friends.length.toLocaleString()} highlight={authed} />
+          {/* Emblem stat pillars */}
+          <div style={S.heroStats}>
+            <EmblemStat label="Oblivion" value={progress.oblivion.toLocaleString()} />
+            <div style={S.emblemDivider} />
+            <EmblemStat label="Shards" value={progress.aberratedShards.toLocaleString()} />
+            <div style={S.emblemDivider} />
+            <EmblemStat label="Streak" value={`${dailyLogin.streak}d`} />
+            <div style={S.emblemDivider} />
+            <EmblemStat label="Friends" value={friends.length.toLocaleString()} highlight={authed} />
           </div>
         </section>
 
-        {/* Tab nav */}
-        <nav style={styles.tabRow}>
+        {/* ── Tab navigation ── */}
+        <nav style={S.tabRow}>
           {TABS.map(tab => {
             const active = activeTab === tab.id;
             return (
@@ -227,25 +272,23 @@ export default function PlayerInformationPage({
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  ...styles.tabBtn,
-                  color: active ? warmTheme.accentDeep : 'rgba(245,232,214,0.78)',
-                  background: active ? 'rgba(255,243,222,0.55)' : 'transparent',
-                  borderBottom: active
-                    ? `2px solid ${warmTheme.accent}`
-                    : '2px solid transparent',
-                  textShadow: active ? 'none' : '0 1px 4px rgba(0,0,0,0.6)',
+                  ...S.tabBtn,
+                  background: active ? G.goldGlass : 'transparent',
+                  borderBottom: active ? `3px solid ${G.gold}` : '3px solid transparent',
+                  boxShadow: active ? '0 4px 16px rgba(200,128,58,0.28)' : 'none',
                 }}
               >
-                <div style={styles.tabLabel}>{tab.label}</div>
-                <div style={styles.tabCaption}>{tab.caption}</div>
+                <span style={{ ...S.tabGlyph, opacity: active ? 0.9 : 0.35 }}>{tab.glyph}</span>
+                <div style={{ ...S.tabLabel, color: active ? G.goldSoft : 'rgba(240,223,192,0.65)' }}>{tab.label}</div>
+                <div style={{ ...S.tabCaption, opacity: active ? 0.65 : 0.4 }}>{tab.caption}</div>
               </button>
             );
           })}
         </nav>
 
-        {/* Tab content */}
-        <main style={styles.content}>
-          <div style={styles.contentInner}>
+        {/* ── Tab content ── */}
+        <main style={S.content}>
+          <div style={S.contentInner}>
             {activeTab === 'profile' && (
               <ProfileTab
                 progress={progress}
@@ -260,19 +303,13 @@ export default function PlayerInformationPage({
                 titlesTotal={TITLE_BADGES.length}
                 dailyLogin={dailyLogin}
                 onOpenTitles={() => setShowTitles(true)}
+                onChangePicture={() => setShowPictures(true)}
                 onChangeTheme={setUiThemeId}
               />
             )}
-
             {activeTab === 'social' && (
-              <SocialTab
-                authed={authed}
-                friends={friends}
-                incoming={incoming}
-                blocked={blocked}
-              />
+              <SocialTab authed={authed} friends={friends} incoming={incoming} blocked={blocked} />
             )}
-
             {activeTab === 'save' && (
               <SaveTab
                 onSave={handleSaveGame}
@@ -290,19 +327,22 @@ export default function PlayerInformationPage({
             )}
           </div>
         </main>
-
-        {showTitles && <TitlesModal onClose={() => setShowTitles(false)} />}
       </div>
+
+      {showTitles && <TitlesModal onClose={() => setShowTitles(false)} />}
+      {showPictures && <ProfilePictureModal currentAvatarId={profile.avatarId ?? ''} onClose={() => setShowPictures(false)} />}
     </div>
   );
 }
 
-// ────────────────────── Tab: Profile ──────────────────────
+// ──────────────────────────────────────────────────
+// Tab: Profile
+// ──────────────────────────────────────────────────
 
 function ProfileTab(props: {
   progress: ReturnType<typeof selectProgress>;
   profile: ReturnType<typeof selectProfile>;
-  currentAvatar: { glyph: string };
+  currentAvatar: { glyph: string; imageUrl?: string; name: string; description: string };
   currentTitle: { text: string } | null;
   totalCollection: number;
   distinctCards: number;
@@ -312,52 +352,70 @@ function ProfileTab(props: {
   titlesTotal: number;
   dailyLogin: { streak: number; totalClaims: number };
   onOpenTitles: () => void;
+  onChangePicture: () => void;
   onChangeTheme: (id: string) => void;
 }) {
   const {
     progress, profile, currentAvatar, currentTitle,
     totalCollection, distinctCards, totalBossClears, distinctBosses,
     unlockedTitlesCount, titlesTotal, dailyLogin,
-    onOpenTitles, onChangeTheme,
+    onOpenTitles, onChangePicture, onChangeTheme,
   } = props;
 
   return (
-    <div style={styles.tabGrid}>
-      <Card title="Lifetime Stats" tone="warm">
-        <div style={styles.statGrid}>
-          <StatCell label="Cards Played" value={progress.totalCardsPlayed.toLocaleString()} />
-          <StatCell label="Cards Owned" value={`${totalCollection}`} sub={`${distinctCards} unique`} />
-          <StatCell label="Bosses Felled" value={`${totalBossClears}`} sub={`${distinctBosses} unique`} />
-          <StatCell label="Login Streak" value={`${dailyLogin.streak}d`} sub={`${dailyLogin.totalClaims} claims`} />
-          <StatCell label="Titles Unlocked" value={`${unlockedTitlesCount} / ${titlesTotal}`} />
-          <StatCell label="Oblivion" value={progress.oblivion.toLocaleString()} />
-        </div>
-      </Card>
+    <div style={S.tabGrid}>
 
-      <Card title="Avatar" tone="warm">
-        <div style={styles.avatarRow}>
-          <div style={styles.avatarSmall}>{currentAvatar.glyph}</div>
-          <div style={{ flex: 1 }}>
-            <div style={styles.avatarRowLabel}>Avatar Customization</div>
-            <div style={styles.avatarRowHint}>
-              Custom profile pictures are coming soon. Avatars unlock automatically
-              as you reach progression milestones.
+      {/* Lifetime Stats */}
+      <GlassCard title="Lifetime Stats">
+        <div style={S.medallionGrid}>
+          <StatMedallion label="Cards Played" value={progress.totalCardsPlayed.toLocaleString()} />
+          <StatMedallion label="Cards Owned" value={`${totalCollection}`} sub={`${distinctCards} unique`} />
+          <StatMedallion label="Bosses Felled" value={`${totalBossClears}`} sub={`${distinctBosses} unique`} />
+          <StatMedallion label="Login Streak" value={`${dailyLogin.streak}d`} sub={`${dailyLogin.totalClaims} claims`} />
+          <StatMedallion label="Titles Unlocked" value={`${unlockedTitlesCount} / ${titlesTotal}`} />
+          <StatMedallion label="Oblivion" value={progress.oblivion.toLocaleString()} />
+        </div>
+      </GlassCard>
+
+      {/* Profile Picture */}
+      <GlassCard title="Profile Picture">
+        <div style={S.avatarShowcase}>
+          <div style={S.showcaseRingOuter}>
+            <div style={S.showcaseRingInner}>
+              {currentAvatar.imageUrl
+                ? <img src={currentAvatar.imageUrl} alt={currentAvatar.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                : <span style={{ fontSize: 28, color: G.gold }}>{currentAvatar.glyph}</span>
+              }
             </div>
           </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={S.showcaseName}>{currentAvatar.name}</div>
+            <div style={S.showcaseDesc}>{currentAvatar.description}</div>
+          </div>
         </div>
-      </Card>
+        <button onClick={onChangePicture} className="menu-tactile-btn" style={S.goldBtn}>
+          Change Picture
+        </button>
+      </GlassCard>
 
-      <Card title="Title Badge" tone="warm">
-        <div style={styles.titleBadgeRow}>
-          <div style={styles.titleBadgeText}>
+      {/* Title Badge */}
+      <GlassCard title="Title Badge">
+        <div style={S.titleScroll}>
+          <div style={S.titleScrollRule} />
+          <div style={S.titleScrollText}>
             {currentTitle ? currentTitle.text : 'No title selected'}
           </div>
-          <button onClick={onOpenTitles} style={styles.pillBtn}>View Titles</button>
+          <div style={S.titleScrollRule} />
         </div>
-      </Card>
+        <button onClick={onOpenTitles} className="menu-tactile-btn" style={S.goldBtn}>
+          View Titles
+        </button>
+      </GlassCard>
 
-      <Card title="UI Theme" tone="warm" wide>
-        <div style={styles.themeGrid}>
+      {/* UI Theme */}
+      <GlassCard title="UI Theme" wide>
+        <div style={S.themeGrid}>
           {UI_THEMES.map(t => {
             const unlocked = t.isUnlocked(progress);
             const active = profile.uiThemeId === t.id;
@@ -368,35 +426,41 @@ function ProfileTab(props: {
                 onClick={() => unlocked && onChangeTheme(t.id)}
                 title={unlocked ? t.description : (t.unlockHint ?? 'Locked')}
                 style={{
-                  ...styles.themeCard,
-                  background: active ? 'rgba(255,237,206,0.7)' : 'rgba(255,250,240,0.35)',
+                  ...S.themeCard,
+                  background: active
+                    ? 'linear-gradient(145deg, rgba(200,128,58,0.16) 0%, rgba(160,88,30,0.10) 100%)'
+                    : 'linear-gradient(145deg, rgba(22,11,3,0.75) 0%, rgba(12,6,2,0.85) 100%)',
                   border: active
-                    ? `2px solid ${warmTheme.accent}`
-                    : `1px solid ${warmTheme.border}`,
+                    ? '2px solid rgba(200,128,58,0.65)'
+                    : '1px solid rgba(200,128,58,0.2)',
+                  boxShadow: active ? '0 0 18px rgba(200,128,58,0.16)' : 'none',
                   cursor: unlocked ? 'pointer' : 'not-allowed',
-                  opacity: unlocked ? 1 : 0.42,
+                  filter: unlocked ? 'none' : 'grayscale(0.55)',
+                  opacity: unlocked ? 1 : 0.5,
                 }}
               >
-                <div style={{ display: 'flex', gap: 4 }}>
+                <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
                   <ThemeSwatch color={t.palette.accent} />
                   <ThemeSwatch color={t.palette.accentSoft} />
                   <ThemeSwatch color={t.palette.surfaceStrong} />
                   <ThemeSwatch color={t.palette.text} />
                 </div>
-                <div style={styles.themeName}>{t.name}</div>
-                <div style={styles.themeDesc}>
+                <div style={S.themeName}>{t.name}</div>
+                <div style={S.themeDesc}>
                   {unlocked ? t.description : (t.unlockHint ?? 'Locked')}
                 </div>
               </button>
             );
           })}
         </div>
-      </Card>
+      </GlassCard>
     </div>
   );
 }
 
-// ────────────────────── Tab: Social ──────────────────────
+// ──────────────────────────────────────────────────
+// Tab: Social
+// ──────────────────────────────────────────────────
 
 function SocialTab(props: {
   authed: boolean;
@@ -406,49 +470,51 @@ function SocialTab(props: {
 }) {
   const { authed, friends, incoming, blocked } = props;
   return (
-    <div style={styles.tabGrid}>
-      <Card title="Account" tone="cool">
+    <div style={S.tabGrid}>
+      <GlassCard title="Account" tone="cool">
         <AuthPanel />
         {!authed && (
-          <div style={styles.signedOutHint}>
+          <div style={S.hintBox}>
             Sign in (or create a free account) to add friends, send gifts,
             exchange messages, and appear on the social leaderboards. Your
             single-player progress always stays local on this device.
           </div>
         )}
-      </Card>
+      </GlassCard>
 
-      <Card
-        title="Friends &amp; Activity"
+      <GlassCard
+        title="Friends & Activity"
         tone="cool"
         wide
-        meta={authed ? `${friends.length} friends · ${incoming.length} requests · ${blocked.length} blocked` : 'Locked'}
+        meta={authed ? `${friends.length} friends · ${incoming.length} requests · ${blocked.length} blocked` : undefined}
       >
         {authed ? (
           <FriendsPanel />
         ) : (
-          <div style={styles.lockedCard}>
-            <div style={{ fontSize: 30, opacity: 0.28, marginBottom: 10 }}>{'\u2726'}</div>
-            <div style={styles.lockedTitle}>Friends locked</div>
-            <div style={styles.lockedBody}>
+          <div style={S.lockedPlaceholder}>
+            <div style={S.lockedGlyph}>✦</div>
+            <div style={S.lockedTitle}>Friends Locked</div>
+            <div style={S.lockedBody}>
               Sign in on the Account card to unlock friends, requests, the
               gift inbox, the activity feed, and friend leaderboards.
             </div>
           </div>
         )}
-      </Card>
+      </GlassCard>
     </div>
   );
 }
 
-// ────────────────────── Tab: Save & Data ──────────────────────
+// ──────────────────────────────────────────────────
+// Tab: Save & Data
+// ──────────────────────────────────────────────────
 
 function SaveTab(props: {
   onSave: () => void;
   gameSaved: boolean;
   onExport?: () => void;
   onImport?: () => void;
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onImportFile: (ev: React.ChangeEvent<HTMLInputElement>) => void;
   importStatus: { kind: 'ok' | 'err'; msg: string } | null;
   saveTampered: boolean;
@@ -462,43 +528,41 @@ function SaveTab(props: {
   } = props;
 
   return (
-    <div style={styles.tabGrid}>
-      <Card title="Save" tone="warm">
+    <div style={S.tabGrid}>
+      <GlassCard title="Save">
         <button
           onClick={onSave}
+          className="menu-tactile-btn"
           style={{
-            ...styles.savePrimaryBtn,
-            border: `1px solid ${gameSaved ? 'rgba(79,138,71,0.5)' : warmTheme.borderStrong}`,
-            background: gameSaved ? 'rgba(79,138,71,0.15)' : warmTheme.button,
-            color: gameSaved ? warmTheme.success : warmTheme.accentDeep,
+            ...S.goldBtn,
+            width: '100%',
+            background: gameSaved
+              ? 'linear-gradient(135deg, rgba(79,138,71,0.75) 0%, rgba(55,110,50,0.85) 100%)'
+              : 'linear-gradient(135deg, rgba(200,128,58,0.85) 0%, rgba(160,88,30,0.9) 100%)',
+            border: gameSaved ? '1px solid rgba(79,138,71,0.6)' : `1px solid ${G.goldBorderStrong}`,
+            color: gameSaved ? '#c8edc4' : '#1a0c04',
+            boxShadow: gameSaved ? '0 4px 14px rgba(79,138,71,0.28)' : '0 4px 14px rgba(200,128,58,0.28)',
           }}
         >
-          {gameSaved ? 'Saved!' : 'Save Game Data'}
+          {gameSaved ? '✓  Saved!' : 'Save Game Data'}
         </button>
-        <div style={styles.saveHint}>
-          Manually flushes your progress to disk. Your save is also written
-          automatically in the background.
+        <div style={S.saveHint}>
+          Manually flushes your progress to disk. Your save is also written automatically in the background.
         </div>
-      </Card>
+      </GlassCard>
 
       {(onExport || onImport) && (
-        <Card title="Portable Save File" tone="cool">
-          <div style={styles.exportRow}>
+        <GlassCard title="Portable Save File" tone="cool">
+          <div style={S.exportRow}>
             {onExport && (
-              <button
-                onClick={onExport}
-                style={styles.outlineBtn}
-                title="Download a .pansave file you can carry to another install"
-              >
+              <button onClick={onExport} className="menu-tactile-btn" style={S.outlineBtn}
+                title="Download a .pansave file you can carry to another install">
                 Export Save
               </button>
             )}
             {onImport && (
-              <button
-                onClick={onImport}
-                style={styles.outlineBtn}
-                title="Load a .pansave or legacy .hrsave file from another install"
-              >
+              <button onClick={onImport} className="menu-tactile-btn" style={S.outlineBtn}
+                title="Load a .pansave or legacy .hrsave file from another install">
                 Import Save
               </button>
             )}
@@ -510,137 +574,139 @@ function SaveTab(props: {
               style={{ display: 'none' }}
             />
           </div>
-          <div style={styles.saveHint}>
-            Move your save between machines with a portable <code>.pansave</code> file.
-            Legacy <code>.hrsave</code> files are also accepted on import.
+          <div style={S.saveHint}>
+            Move your save between machines with a portable{' '}
+            <code style={{ fontFamily: 'monospace', opacity: 0.8 }}>.pansave</code> file.
+            Legacy <code style={{ fontFamily: 'monospace', opacity: 0.8 }}>.hrsave</code> files are also accepted on import.
           </div>
           {importStatus && (
             <div style={{
-              ...styles.statusBanner,
-              borderColor: importStatus.kind === 'ok' ? 'rgba(79,138,71,0.45)' : 'rgba(184,92,79,0.45)',
-              background: importStatus.kind === 'ok' ? 'rgba(79,138,71,0.12)' : 'rgba(184,92,79,0.12)',
-              color: importStatus.kind === 'ok' ? warmTheme.success : warmTheme.danger,
+              ...S.statusBanner,
+              borderColor: importStatus.kind === 'ok' ? 'rgba(79,138,71,0.5)' : G.dangerBorder,
+              background: importStatus.kind === 'ok' ? 'rgba(79,138,71,0.12)' : G.dangerSoft,
+              color: importStatus.kind === 'ok' ? G.success : G.danger,
             }}>
               {importStatus.msg}
             </div>
           )}
-        </Card>
+        </GlassCard>
       )}
 
       {saveTampered && (
-        <Card title="Integrity Warning" tone="danger" wide>
-          <div style={{ ...styles.statusBanner, borderColor: 'rgba(184,92,79,0.5)', background: 'rgba(184,92,79,0.12)', color: warmTheme.danger }}>
-            {'\u26A0'} This save's integrity check failed. The file may have been
-            edited outside the game. Your progress was still loaded — saving
-            again will re-sign the file with the current state.
+        <GlassCard title="Integrity Warning" tone="danger" wide>
+          <div style={{ ...S.statusBanner, borderColor: G.dangerBorder, background: G.dangerSoft, color: G.danger }}>
+            ⚠ This save's integrity check failed. The file may have been edited outside the game.
+            Your progress was still loaded — saving again will re-sign the file with the current state.
           </div>
-        </Card>
+        </GlassCard>
       )}
 
-      <Card title="Danger Zone" tone="danger" wide>
-        <div style={styles.dangerCopy}>
-          Permanently erase <strong>all progress</strong>: every card, boss kill,
-          title, shard, and unlock. There is no undo.
+      <GlassCard title="Danger Zone" tone="danger" wide>
+        <div style={S.dangerCopy}>
+          Permanently erase <strong style={{ color: G.danger }}>all progress</strong>: every card,
+          boss kill, title, shard, and unlock. There is no undo.
         </div>
 
         {confirmDelete === 0 && (
-          <button
-            onClick={() => setConfirmDelete(1)}
-            style={styles.dangerBtn}
-          >
+          <button onClick={() => setConfirmDelete(1)} className="menu-tactile-btn" style={S.dangerBtn}>
             Delete Save Data
           </button>
         )}
-
         {confirmDelete === 1 && (
-          <div style={styles.dangerConfirm}>
-            <div style={styles.dangerConfirmText}>
+          <div style={S.dangerConfirm}>
+            <div style={S.dangerConfirmText}>
               Are you sure? This will permanently erase <strong>all progress</strong>.
             </div>
-            <div style={styles.confirmRow}>
-              <button onClick={() => setConfirmDelete(2)} style={styles.dangerConfirmBtn}>
-                Yes, delete it
-              </button>
-              <button onClick={() => setConfirmDelete(0)} style={styles.cancelBtn}>
-                Cancel
-              </button>
+            <div style={S.confirmRow}>
+              <button onClick={() => setConfirmDelete(2)} className="menu-tactile-btn" style={S.dangerConfirmBtn}>Yes, delete it</button>
+              <button onClick={() => setConfirmDelete(0)} className="menu-tactile-btn" style={S.cancelBtn}>Cancel</button>
             </div>
           </div>
         )}
-
         {confirmDelete === 2 && (
-          <div style={{ ...styles.dangerConfirm, borderColor: 'rgba(184,92,79,0.85)', background: 'rgba(184,92,79,0.18)' }}>
-            <div style={{ ...styles.dangerConfirmText, fontWeight: 700 }}>
-              Are you REALLY sure?
-            </div>
-            <div style={{ ...styles.dangerCopy, color: warmTheme.danger, marginTop: 4, opacity: 0.85 }}>
+          <div style={{ ...S.dangerConfirm, borderColor: 'rgba(184,92,79,0.88)' }}>
+            <div style={{ ...S.dangerConfirmText, fontWeight: 700 }}>Are you REALLY sure?</div>
+            <div style={{ ...S.dangerCopy, color: G.danger, marginTop: 4 }}>
               There is no undo. Every card, boss kill, title, and shard will be gone forever.
             </div>
-            <div style={styles.confirmRow}>
-              <button
-                onClick={onWipe}
-                style={{ ...styles.dangerConfirmBtn, fontWeight: 700, background: 'rgba(184,92,79,0.32)' }}
-              >
+            <div style={S.confirmRow}>
+              <button onClick={onWipe} className="menu-tactile-btn"
+                style={{ ...S.dangerConfirmBtn, background: 'rgba(184,92,79,0.32)', fontWeight: 700 }}>
                 Delete Everything
               </button>
-              <button onClick={() => setConfirmDelete(0)} style={styles.cancelBtn}>
-                Cancel
-              </button>
+              <button onClick={() => setConfirmDelete(0)} className="menu-tactile-btn" style={S.cancelBtn}>Cancel</button>
             </div>
           </div>
         )}
-      </Card>
+      </GlassCard>
     </div>
   );
 }
 
-// ────────────────────── Reusable building blocks ──────────────────────
+// ──────────────────────────────────────────────────
+// Reusable building blocks
+// ──────────────────────────────────────────────────
 
-function Card(props: {
+function GlassCard(props: {
   title: string;
-  tone: 'warm' | 'cool' | 'danger';
+  tone?: 'warm' | 'cool' | 'danger';
   wide?: boolean;
   meta?: string;
   children: React.ReactNode;
 }) {
-  const tones: Record<'warm' | 'cool' | 'danger', React.CSSProperties> = {
-    warm:   { borderColor: 'rgba(214,162,94,0.32)',   background: 'linear-gradient(180deg, rgba(255,247,232,0.62) 0%, rgba(252,238,212,0.46) 100%)' },
-    cool:   { borderColor: 'rgba(140,160,210,0.32)',  background: 'linear-gradient(180deg, rgba(238,242,255,0.55) 0%, rgba(220,228,248,0.42) 100%)' },
-    danger: { borderColor: 'rgba(184,92,79,0.36)',    background: 'linear-gradient(180deg, rgba(255,240,236,0.55) 0%, rgba(248,224,220,0.40) 100%)' },
+  const tone = props.tone ?? 'warm';
+  const toneBorderColor: Record<string, string> = {
+    warm:   'rgba(200,128,58,0.32)',
+    cool:   'rgba(110,140,210,0.32)',
+    danger: 'rgba(184,92,79,0.38)',
+  };
+  const toneAccent: Record<string, string> = {
+    warm:   G.gold,
+    cool:   '#7a9ad0',
+    danger: G.danger,
+  };
+  const toneInsetGlow: Record<string, string> = {
+    warm:   'rgba(200,128,58,0.10)',
+    cool:   'rgba(100,130,200,0.08)',
+    danger: 'rgba(184,92,79,0.10)',
   };
   return (
     <div style={{
-      ...styles.card,
-      ...tones[props.tone],
+      ...S.card,
+      borderColor: toneBorderColor[tone],
+      boxShadow: `0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 ${toneInsetGlow[tone]}`,
       gridColumn: props.wide ? '1 / -1' : 'auto',
     }}>
-      <div style={styles.cardHeader}>
-        <div style={styles.cardTitle}>{props.title}</div>
-        {props.meta && <div style={styles.cardMeta}>{props.meta}</div>}
+      <div style={S.cardHeader}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ ...S.cardAccentBar, background: toneAccent[tone] }} />
+          <div style={S.cardTitle}>{props.title}</div>
+        </div>
+        {props.meta && <div style={S.cardMeta}>{props.meta}</div>}
       </div>
-      <div style={styles.cardBody}>{props.children}</div>
+      <div style={S.cardBody}>{props.children}</div>
     </div>
   );
 }
 
-function StatCell({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function StatMedallion({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div style={styles.statCell}>
-      <div style={styles.statCellLabel}>{label}</div>
-      <div style={styles.statCellValue}>{value}</div>
-      {sub && <div style={styles.statCellSub}>{sub}</div>}
+    <div style={S.medallion}>
+      <div style={S.medallionLabel}>{label}</div>
+      <div style={S.medallionValue}>{value}</div>
+      {sub && <div style={S.medallionSub}>{sub}</div>}
     </div>
   );
 }
 
-function HeroStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function EmblemStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div style={styles.heroStat}>
-      <div style={styles.heroStatLabel}>{label}</div>
+    <div style={S.emblemStat}>
+      <div style={S.emblemLabel}>{label}</div>
       <div style={{
-        ...styles.heroStatValue,
-        color: highlight ? warmTheme.accent : warmTheme.text,
-        textShadow: highlight ? `0 0 12px ${warmTheme.accentSoft}` : 'none',
+        ...S.emblemValue,
+        color: highlight ? G.goldSoft : G.text,
+        textShadow: highlight ? '0 0 16px rgba(218,160,88,0.45)' : 'none',
       }}>{value}</div>
     </div>
   );
@@ -649,20 +715,26 @@ function HeroStat({ label, value, highlight }: { label: string; value: string; h
 function ThemeSwatch({ color }: { color: string }) {
   return (
     <span style={{
-      display: 'inline-block', width: 14, height: 14, borderRadius: 4,
-      background: color, border: '1px solid rgba(0,0,0,0.18)',
+      display: 'inline-block',
+      width: 16, height: 16, borderRadius: '50%',
+      background: color,
+      border: '1px solid rgba(0,0,0,0.28)',
+      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15)',
     }} />
   );
 }
 
-// ────────────────────── Styles ──────────────────────
+// ──────────────────────────────────────────────────
+// Styles
+// ──────────────────────────────────────────────────
 
-const styles: Record<string, React.CSSProperties> = {
-  // Calm full-screen backdrop with layered hue washes.
+const S: Record<string, React.CSSProperties> = {
+
+  /* ── Backdrop layers ── */
   backdrop: {
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(180deg, #1a120c 0%, #160f0d 60%, #100a0d 100%)',
+    background: 'linear-gradient(160deg, #0d0703 0%, #070402 55%, #050203 100%)',
     display: 'flex',
     zIndex: 30,
     overflow: 'hidden',
@@ -671,22 +743,30 @@ const styles: Record<string, React.CSSProperties> = {
   },
   washWarm: {
     position: 'absolute',
-    top: '-25%', left: '-10%', width: '85%', height: '90%',
-    background: 'radial-gradient(ellipse, rgba(214,162,94,0.18) 0%, transparent 60%)',
-    filter: 'blur(70px)', pointerEvents: 'none',
+    top: '-22%', left: '-10%', width: '75%', height: '85%',
+    background: 'radial-gradient(ellipse, rgba(200,128,58,0.24) 0%, rgba(160,88,30,0.10) 42%, transparent 68%)',
+    filter: 'blur(80px)',
+    pointerEvents: 'none',
   },
   washCool: {
     position: 'absolute',
-    bottom: '-25%', right: '-10%', width: '80%', height: '85%',
-    background: 'radial-gradient(ellipse, rgba(140,160,210,0.16) 0%, transparent 65%)',
-    filter: 'blur(80px)', pointerEvents: 'none',
+    bottom: '-22%', right: '-10%', width: '70%', height: '80%',
+    background: 'radial-gradient(ellipse, rgba(70,90,170,0.13) 0%, transparent 65%)',
+    filter: 'blur(90px)',
+    pointerEvents: 'none',
   },
   washVignette: {
     position: 'absolute', inset: 0,
-    background: 'radial-gradient(ellipse at 50% 50%, transparent 35%, rgba(0,0,0,0.42) 100%)',
+    background: 'radial-gradient(ellipse at 50% 44%, transparent 26%, rgba(0,0,0,0.60) 100%)',
+    pointerEvents: 'none',
+  },
+  scanlines: {
+    position: 'absolute', inset: 0,
+    background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px)',
     pointerEvents: 'none',
   },
 
+  /* ── Panel shell ── */
   panel: {
     position: 'relative',
     zIndex: 1,
@@ -698,363 +778,488 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'transparent',
   },
 
-  // Header
+  /* ── Header ── */
   header: {
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    padding: 'clamp(20px, 2.2vw, 32px) clamp(40px, 4vw, 80px) clamp(14px, 1.6vw, 20px)',
+    padding: 'clamp(22px,2.4vw,34px) clamp(40px,4vw,80px) clamp(14px,1.6vw,22px)',
     flexShrink: 0,
     gap: 24,
   },
-  headerBrand: { display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 },
+  headerBrand: { display: 'flex', flexDirection: 'column', gap: 7, minWidth: 0 },
   headerTitle: {
-    fontSize: 'clamp(28px, 2.6vw, 38px)',
+    fontSize: 'clamp(24px,2.6vw,36px)',
     fontWeight: 300,
-    letterSpacing: 6,
-    color: warmTheme.accentSoft,
+    letterSpacing: 7,
+    color: '#daa058',
     fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
-    textShadow: '0 2px 18px rgba(214,162,94,0.35)',
+    textShadow: '0 2px 28px rgba(218,160,88,0.42), 0 0 60px rgba(200,128,58,0.15)',
+    lineHeight: 1.1,
+  },
+  headerRule: {
+    display: 'flex', alignItems: 'center', gap: 10,
+  },
+  headerRuleLine: {
+    height: 1, width: 100, flexShrink: 0,
+    background: 'linear-gradient(90deg, rgba(200,128,58,0.5) 0%, transparent 100%)',
+  },
+  headerRuleGlyph: {
+    fontSize: 11,
+    color: 'rgba(200,128,58,0.55)',
+    lineHeight: 1,
+    flexShrink: 0,
+    userSelect: 'none',
   },
   headerSub: {
-    fontSize: 11,
-    letterSpacing: 3,
+    fontSize: 9,
+    letterSpacing: 4,
     textTransform: 'uppercase',
-    color: 'rgba(245,232,214,0.55)',
-    fontWeight: 300,
+    color: 'rgba(218,160,88,0.42)',
+    fontWeight: 400,
   },
   closeBtn: {
-    width: 40, height: 40, borderRadius: '50%',
-    border: '1px solid rgba(245,232,214,0.22)',
-    background: 'rgba(255,255,255,0.04)',
-    color: 'rgba(245,232,214,0.78)',
-    fontSize: 15, cursor: 'pointer', flexShrink: 0,
-    transition: 'all 0.18s ease',
+    width: 42, height: 42,
+    borderRadius: '50%',
+    border: '1px solid rgba(200,128,58,0.38)',
+    background: 'rgba(200,128,58,0.07)',
+    color: 'rgba(218,160,88,0.72)',
+    fontSize: 14,
+    cursor: 'pointer',
+    flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     fontFamily: 'inherit',
+    lineHeight: 1,
+    padding: 0,
+    transition: 'all 0.18s ease',
   },
 
-  // Identity hero
+  /* ── Identity hero ── */
   identityHero: {
     display: 'flex',
     alignItems: 'center',
     gap: 28,
-    padding: 'clamp(14px, 1.5vw, 20px) clamp(40px, 4vw, 80px) clamp(20px, 2vw, 28px)',
+    padding: 'clamp(14px,1.6vw,22px) clamp(40px,4vw,80px) clamp(16px,1.8vw,24px)',
+    borderBottom: '1px solid rgba(200,128,58,0.16)',
+    background: 'rgba(8,4,1,0.5)',
     flexShrink: 0,
   },
-  avatarWrap: {
-    position: 'relative',
-    display: 'inline-flex',
-    flexShrink: 0,
-  },
-  avatarHalo: {
-    position: 'absolute', inset: '-18px',
-    background: 'radial-gradient(circle, rgba(214,162,94,0.32) 0%, transparent 65%)',
-    filter: 'blur(14px)', pointerEvents: 'none',
-  },
-  avatar: {
-    position: 'relative',
-    width: 90, height: 90, borderRadius: '50%',
-    background: 'linear-gradient(160deg, #f5d196 0%, #b87a3a 100%)',
+
+  /* Triple-ring avatar */
+  avatarOuter: {
+    width: 118, height: 118,
+    borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 44, color: '#3a220f',
-    border: '2px solid rgba(245,228,200,0.6)',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.4), 0 0 28px rgba(214,162,94,0.25)',
+    flexShrink: 0,
+    background: 'rgba(200,128,58,0.05)',
+    boxShadow: '0 0 50px rgba(200,128,58,0.18), 0 0 100px rgba(200,128,58,0.06)',
   },
+  avatarMiddle: {
+    width: 104, height: 104,
+    borderRadius: '50%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    border: '2px solid rgba(200,128,58,0.48)',
+    boxShadow: '0 0 14px rgba(200,128,58,0.2)',
+  },
+  avatarInner: {
+    width: 88, height: 88,
+    borderRadius: '50%',
+    border: '2.5px solid rgba(218,160,88,0.82)',
+    background: 'linear-gradient(160deg, rgba(40,20,5,0.96) 0%, rgba(18,9,2,1) 100%)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
+    boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.65)',
+  },
+
+  /* Identity text */
   identityBody: {
-    display: 'flex', flexDirection: 'column', gap: 6,
+    display: 'flex', flexDirection: 'column', gap: 7,
     minWidth: 0, flex: 1,
   },
   nameInput: {
     background: 'transparent',
     border: 'none',
-    borderBottom: '1px solid rgba(245,232,214,0.18)',
-    color: '#f5e8d6',
-    fontSize: 22,
-    fontWeight: 600,
-    letterSpacing: 0.6,
-    padding: '4px 0',
+    borderBottom: '1px solid rgba(200,128,58,0.22)',
+    color: '#f0dfc0',
+    fontSize: 28,
+    fontWeight: 300,
+    letterSpacing: 2,
+    padding: '3px 0',
     outline: 'none',
-    fontFamily: 'inherit',
-    maxWidth: 320,
+    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+    maxWidth: 340,
+    lineHeight: 1.2,
   },
-  titleText: {
-    fontSize: 13,
+  titleRibbon: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    padding: '4px 14px',
+    borderRadius: 999,
+    background: 'rgba(200,128,58,0.10)',
+    border: '1px solid rgba(200,128,58,0.30)',
+    fontSize: 12,
     fontStyle: 'italic',
-    color: 'rgba(245,232,214,0.62)',
-    letterSpacing: 0.4,
+    color: 'rgba(218,160,88,0.88)',
+    letterSpacing: 0.5,
+  },
+  bioInput: {
+    background: 'transparent',
+    border: 'none',
+    borderBottom: '1px solid rgba(200,128,58,0.14)',
+    color: 'rgba(240,223,192,0.60)',
+    fontSize: 12,
+    fontStyle: 'italic',
+    lineHeight: 1.6,
+    padding: '3px 0',
+    outline: 'none',
+    fontFamily: 'Georgia, serif',
+    resize: 'none',
+    maxWidth: 340,
+    width: '100%',
+    marginTop: 2,
   },
   statusRow: {
     display: 'flex', alignItems: 'center', gap: 8,
-    fontSize: 11,
-    color: 'rgba(245,232,214,0.55)',
-    letterSpacing: 0.5,
-    marginTop: 2,
+    fontSize: 10, color: 'rgba(218,160,88,0.48)', letterSpacing: 0.6, marginTop: 2,
   },
   statusDot: {
-    width: 8, height: 8, borderRadius: '50%',
-    flexShrink: 0,
+    width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
   },
-  statusLabel: { letterSpacing: 1.2, textTransform: 'uppercase', fontSize: 10 },
-  statusDivider: { opacity: 0.5 },
-  statusEmail: { fontFamily: 'monospace', opacity: 0.7 },
+  statusLabel: {
+    letterSpacing: 1.5, textTransform: 'uppercase', fontSize: 9, fontWeight: 400,
+  },
+  statusEmail: { fontFamily: 'monospace', fontSize: 10, opacity: 0.62 },
 
+  /* Emblem stat pillars */
   heroStats: {
     display: 'flex',
     alignItems: 'center',
-    gap: 'clamp(20px, 2.2vw, 36px)',
+    paddingLeft: 28,
+    borderLeft: '1px solid rgba(200,128,58,0.2)',
     flexShrink: 0,
-    paddingLeft: 24,
-    borderLeft: '1px solid rgba(245,232,214,0.12)',
   },
-  heroStat: {
-    display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 5,
+  emblemStat: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    padding: '6px 20px', gap: 5,
   },
-  heroStatLabel: {
-    fontSize: 9,
-    letterSpacing: 2.4,
+  emblemLabel: {
+    fontSize: 8,
+    letterSpacing: 3,
     textTransform: 'uppercase',
-    color: 'rgba(245,232,214,0.5)',
+    color: 'rgba(218,160,88,0.48)',
     fontWeight: 400,
+    whiteSpace: 'nowrap',
   },
-  heroStatValue: {
-    fontSize: 17,
+  emblemValue: {
+    fontSize: 20,
     fontWeight: 600,
     letterSpacing: 0.5,
-    color: '#f5e8d6',
+    color: '#f0dfc0',
     fontVariantNumeric: 'tabular-nums',
   },
+  emblemDivider: {
+    width: 1, height: 30,
+    background: 'rgba(200,128,58,0.18)',
+    flexShrink: 0,
+  },
 
-  // Tabs
+  /* ── Tab navigation ── */
   tabRow: {
     display: 'flex',
-    gap: 4,
-    padding: '0 clamp(40px, 4vw, 80px)',
-    borderBottom: '1px solid rgba(245,232,214,0.10)',
+    gap: 2,
+    padding: '0 clamp(40px,4vw,80px)',
+    background: 'rgba(5,2,0,0.6)',
+    borderBottom: '1px solid rgba(200,128,58,0.2)',
     flexShrink: 0,
   },
   tabBtn: {
     flex: '0 1 220px',
-    padding: '14px 22px 16px',
+    padding: '13px 22px 15px',
     background: 'transparent',
     border: 'none',
+    borderBottom: '3px solid transparent',
     borderRadius: '10px 10px 0 0',
     cursor: 'pointer',
     textAlign: 'left',
     fontFamily: 'inherit',
     transition: 'all 0.18s ease',
   },
+  tabGlyph: {
+    fontSize: 8,
+    color: '#daa058',
+    display: 'block',
+    marginBottom: 3,
+  },
   tabLabel: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: 600,
-    letterSpacing: 1.6,
+    letterSpacing: 3.5,
     textTransform: 'uppercase',
+    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
   },
   tabCaption: {
-    fontSize: 10,
-    letterSpacing: 0.6,
+    fontSize: 9,
+    letterSpacing: 0.5,
     marginTop: 3,
-    opacity: 0.7,
+    color: 'rgba(218,160,88,0.55)',
   },
 
-  // Content
+  /* ── Content area ── */
   content: {
     flex: 1,
     overflowY: 'auto',
     minHeight: 0,
-    padding: 'clamp(24px, 2.4vw, 40px) clamp(40px, 4vw, 80px)',
+    padding: 'clamp(24px,2.4vw,40px) clamp(40px,4vw,80px)',
   },
-  contentInner: {
-    maxWidth: 1180,
-    margin: '0 auto',
-  },
+  contentInner: { maxWidth: 1180, margin: '0 auto' },
 
-  // Card grid
+  /* ── Card grid ── */
   tabGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
     gap: 18,
+    alignItems: 'start',
   },
+
+  /* ── Glass card base ── */
   card: {
-    borderRadius: 14,
-    border: '1px solid rgba(214,162,94,0.32)',
-    padding: '18px 20px 20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
-    backdropFilter: 'blur(6px)',
-    color: warmTheme.text,
+    borderRadius: 16,
+    border: '1px solid rgba(200,128,58,0.28)',
+    background: 'linear-gradient(148deg, rgba(20,10,3,0.92) 0%, rgba(11,5,1,0.96) 100%)',
+    backdropFilter: 'blur(8px)',
+    display: 'flex', flexDirection: 'column',
+    overflow: 'hidden',
   },
   cardHeader: {
-    display: 'flex',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    gap: 12,
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+    padding: '15px 22px 13px',
+    borderBottom: '1px solid rgba(200,128,58,0.12)',
+  },
+  cardAccentBar: {
+    width: 3, height: 18, borderRadius: 2, flexShrink: 0,
   },
   cardTitle: {
-    fontSize: 11,
-    letterSpacing: 3,
+    fontSize: 10,
+    letterSpacing: 4,
     textTransform: 'uppercase',
-    color: warmTheme.accentDeep,
+    color: 'rgba(218,160,88,0.82)',
     fontWeight: 600,
     fontFamily: '"Cinzel", Georgia, serif',
   },
   cardMeta: {
-    fontSize: 10,
+    fontSize: 9,
     letterSpacing: 1,
-    color: warmTheme.textMuted,
+    color: 'rgba(218,160,88,0.42)',
     fontVariantNumeric: 'tabular-nums',
   },
   cardBody: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
+    padding: '18px 22px 20px',
+    display: 'flex', flexDirection: 'column', gap: 14,
   },
 
-  // Stats
-  statGrid: {
+  /* ── Stat medallions ── */
+  medallionGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(128px, 1fr))',
     gap: 10,
   },
-  statCell: {
-    padding: '10px 12px',
-    borderRadius: 10,
-    background: 'rgba(255,250,240,0.42)',
-    border: '1px solid rgba(214,162,94,0.22)',
+  medallion: {
+    padding: '15px 10px 13px',
+    borderRadius: 12,
+    background: 'rgba(200,128,58,0.05)',
+    border: '1px solid rgba(200,128,58,0.15)',
+    textAlign: 'center',
+    display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center',
   },
-  statCellLabel: {
-    fontSize: 9, letterSpacing: 1.8, textTransform: 'uppercase',
-    color: warmTheme.textMuted, fontWeight: 600,
+  medallionLabel: {
+    fontSize: 8, letterSpacing: 2, textTransform: 'uppercase',
+    color: 'rgba(218,160,88,0.48)',
+    fontFamily: '"Cinzel", Georgia, serif',
   },
-  statCellValue: {
-    fontSize: 18, fontWeight: 700, color: warmTheme.text,
-    marginTop: 4, letterSpacing: 0.4,
-    fontVariantNumeric: 'tabular-nums',
+  medallionValue: {
+    fontSize: 26, fontWeight: 300, color: '#daa058',
+    fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, lineHeight: 1.15,
   },
-  statCellSub: {
-    fontSize: 10, color: warmTheme.textFaint, marginTop: 2, letterSpacing: 0.4,
+  medallionSub: {
+    fontSize: 9, color: 'rgba(218,160,88,0.38)', letterSpacing: 0.4,
   },
 
-  // Avatar small
-  avatarRow: { display: 'flex', alignItems: 'center', gap: 14 },
-  avatarSmall: {
-    width: 48, height: 48, borderRadius: '50%',
-    background: 'rgba(255,250,240,0.55)',
-    border: '1px solid rgba(214,162,94,0.32)',
+  /* ── Avatar showcase (Profile Picture card) ── */
+  avatarShowcase: {
+    display: 'flex', alignItems: 'center', gap: 16,
+  },
+  showcaseRingOuter: {
+    width: 74, height: 74,
+    borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 24, color: warmTheme.accentDeep,
+    background: 'rgba(200,128,58,0.05)',
+    border: '1.5px solid rgba(200,128,58,0.38)',
+    boxShadow: '0 0 20px rgba(200,128,58,0.14)',
     flexShrink: 0,
   },
-  avatarRowLabel: { fontSize: 12, fontWeight: 700, color: warmTheme.text, letterSpacing: 0.5 },
-  avatarRowHint: { fontSize: 11, color: warmTheme.textMuted, marginTop: 3, lineHeight: 1.4 },
-
-  // Title badge
-  titleBadgeRow: { display: 'flex', alignItems: 'center', gap: 10 },
-  titleBadgeText: {
-    flex: 1, padding: '10px 14px', borderRadius: 10,
-    border: '1px solid rgba(214,162,94,0.25)',
-    background: 'rgba(255,250,240,0.42)',
-    fontSize: 13, color: warmTheme.text, fontStyle: 'italic',
+  showcaseRingInner: {
+    width: 60, height: 60,
+    borderRadius: '50%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    border: '2px solid rgba(218,160,88,0.80)',
+    background: 'linear-gradient(160deg, rgba(40,20,5,0.95) 0%, rgba(18,9,2,1) 100%)',
+    overflow: 'hidden',
   },
-  pillBtn: {
-    padding: '10px 16px', borderRadius: 999,
-    border: `1px solid ${warmTheme.borderStrong}`,
-    background: warmTheme.button,
-    color: warmTheme.accentDeep,
-    fontSize: 11, fontWeight: 600, letterSpacing: 1.6, textTransform: 'uppercase',
-    cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap',
+  showcaseName: {
+    fontSize: 13, fontWeight: 600, color: '#f0dfc0', letterSpacing: 0.5,
+  },
+  showcaseDesc: {
+    fontSize: 11, color: 'rgba(218,160,88,0.58)', marginTop: 4, lineHeight: 1.45,
   },
 
-  // Themes
+  /* ── Title scroll ── */
+  titleScroll: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+    padding: '4px 0',
+  },
+  titleScrollRule: {
+    width: '100%', height: 1,
+    background: 'linear-gradient(90deg, transparent 0%, rgba(200,128,58,0.42) 25%, rgba(200,128,58,0.42) 75%, transparent 100%)',
+  },
+  titleScrollText: {
+    fontSize: 15,
+    fontStyle: 'italic',
+    color: 'rgba(218,160,88,0.88)',
+    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+    textAlign: 'center',
+    padding: '8px 20px',
+    letterSpacing: 0.8,
+    lineHeight: 1.45,
+  },
+
+  /* ── Theme grid ── */
   themeGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
     gap: 10,
   },
   themeCard: {
-    display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
-    padding: 12, borderRadius: 10,
-    color: warmTheme.text, fontFamily: 'inherit', textAlign: 'left',
+    display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+    padding: '14px 14px 12px',
+    borderRadius: 12,
+    textAlign: 'left',
+    fontFamily: 'inherit',
+    transition: 'all 0.18s ease',
   },
-  themeName: { fontSize: 13, fontWeight: 700, letterSpacing: 0.4 },
-  themeDesc: { fontSize: 10, color: warmTheme.textMuted, lineHeight: 1.4 },
+  themeName: {
+    fontSize: 12, fontWeight: 600, color: '#daa058',
+    letterSpacing: 1.5,
+    fontFamily: '"Cinzel", Georgia, serif',
+  },
+  themeDesc: {
+    fontSize: 9, color: 'rgba(218,160,88,0.52)', lineHeight: 1.4, marginTop: 4,
+  },
 
-  // Social
-  signedOutHint: {
-    marginTop: 10,
-    padding: '10px 12px',
-    borderRadius: 10,
-    border: '1px dashed rgba(140,160,210,0.4)',
-    background: 'rgba(220,228,248,0.35)',
-    color: warmTheme.text, fontSize: 11.5, lineHeight: 1.55,
+  /* ── Buttons ── */
+  goldBtn: {
+    padding: '11px 22px',
+    borderRadius: 999,
+    border: '1px solid rgba(200,128,58,0.55)',
+    background: 'linear-gradient(135deg, rgba(200,128,58,0.85) 0%, rgba(160,88,30,0.9) 100%)',
+    color: '#1a0c04',
+    fontSize: 11,
+    fontWeight: 700,
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    fontFamily: '"Cinzel", Georgia, serif',
+    boxShadow: '0 4px 14px rgba(200,128,58,0.26)',
+    whiteSpace: 'nowrap',
   },
-  lockedCard: {
-    padding: '24px 16px',
-    borderRadius: 10,
-    border: '1px dashed rgba(140,160,210,0.4)',
-    background: 'rgba(220,228,248,0.25)',
-    color: warmTheme.text,
-    textAlign: 'center',
-  },
-  lockedTitle: { fontSize: 13, fontWeight: 700, letterSpacing: 1, color: warmTheme.accentDeep, marginBottom: 6 },
-  lockedBody: { fontSize: 11.5, color: warmTheme.textMuted, lineHeight: 1.55, maxWidth: 440, margin: '0 auto' },
-
-  // Save
-  savePrimaryBtn: {
-    width: '100%', padding: '12px 0', borderRadius: 10,
-    fontSize: 13, fontWeight: 600, letterSpacing: 1.4, textTransform: 'uppercase',
-    cursor: 'pointer', fontFamily: 'inherit',
-    transition: 'background 0.18s ease, color 0.18s ease',
-  },
-  saveHint: { fontSize: 11, color: warmTheme.textMuted, lineHeight: 1.5 },
-  exportRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 },
   outlineBtn: {
     padding: '10px 0', borderRadius: 10,
-    border: `1px solid ${warmTheme.borderStrong}`,
-    background: 'rgba(255,250,240,0.5)',
-    color: warmTheme.accentDeep,
-    fontSize: 12, fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase',
-    cursor: 'pointer', fontFamily: 'inherit',
-  },
-  statusBanner: {
-    padding: '8px 12px', borderRadius: 8,
-    fontSize: 11, lineHeight: 1.45,
-    border: '1px solid transparent',
+    border: '1px solid rgba(200,128,58,0.4)',
+    background: 'rgba(200,128,58,0.06)',
+    color: '#daa058',
+    fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase',
+    cursor: 'pointer', fontFamily: '"Cinzel", Georgia, serif',
+    whiteSpace: 'nowrap',
   },
 
-  // Danger
-  dangerCopy: { fontSize: 12, color: warmTheme.text, lineHeight: 1.55 },
-  dangerBtn: {
-    width: '100%', padding: '12px 0', borderRadius: 10,
-    border: '1px solid rgba(184,92,79,0.5)',
-    background: 'rgba(184,92,79,0.14)',
-    color: warmTheme.danger,
-    fontSize: 12, fontWeight: 600, letterSpacing: 1.4, textTransform: 'uppercase',
-    cursor: 'pointer', fontFamily: 'inherit',
-  },
-  dangerConfirm: {
+  /* ── Social locked & hint ── */
+  hintBox: {
+    marginTop: 4,
     padding: '12px 14px',
     borderRadius: 10,
-    border: '1px solid rgba(184,92,79,0.55)',
-    background: 'rgba(184,92,79,0.10)',
-    display: 'flex', flexDirection: 'column', gap: 10,
+    border: '1px dashed rgba(100,140,220,0.28)',
+    background: 'rgba(70,90,170,0.08)',
+    color: 'rgba(180,200,240,0.72)',
+    fontSize: 11.5, lineHeight: 1.6,
+  },
+  lockedPlaceholder: {
+    padding: '38px 20px',
+    textAlign: 'center',
+    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+  },
+  lockedGlyph: {
+    fontSize: 30, color: 'rgba(200,128,58,0.2)',
+  },
+  lockedTitle: {
+    fontSize: 13, fontWeight: 600, letterSpacing: 2.5, textTransform: 'uppercase',
+    color: 'rgba(218,160,88,0.55)',
+    fontFamily: '"Cinzel", Georgia, serif',
+  },
+  lockedBody: {
+    fontSize: 12, color: 'rgba(218,160,88,0.38)', lineHeight: 1.6, maxWidth: 420,
+  },
+
+  /* ── Save & Data ── */
+  saveHint: {
+    fontSize: 11, color: 'rgba(218,160,88,0.42)', lineHeight: 1.55,
+  },
+  exportRow: {
+    display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+  },
+  statusBanner: {
+    padding: '9px 13px', borderRadius: 8,
+    fontSize: 11, lineHeight: 1.5, border: '1px solid transparent',
+  },
+
+  /* ── Danger zone ── */
+  dangerCopy: {
+    fontSize: 12, color: 'rgba(240,223,192,0.68)', lineHeight: 1.6,
+  },
+  dangerBtn: {
+    width: '100%', padding: '12px 0', borderRadius: 10,
+    border: '1px solid rgba(184,92,79,0.45)',
+    background: 'rgba(184,92,79,0.12)',
+    color: G.danger,
+    fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase',
+    cursor: 'pointer', fontFamily: '"Cinzel", Georgia, serif',
+  },
+  dangerConfirm: {
+    padding: '14px 16px', borderRadius: 12,
+    border: '1px solid rgba(184,92,79,0.45)',
+    background: 'rgba(15,5,4,0.7)',
+    display: 'flex', flexDirection: 'column', gap: 12,
   },
   dangerConfirmText: {
-    fontSize: 12, color: warmTheme.danger, lineHeight: 1.5,
+    fontSize: 12, color: G.danger, lineHeight: 1.5,
   },
-  confirmRow: { display: 'flex', gap: 8 },
+  confirmRow: { display: 'flex', gap: 10 },
   dangerConfirmBtn: {
-    flex: 1, padding: '9px 0', borderRadius: 8,
-    border: '1px solid rgba(184,92,79,0.75)',
-    background: 'rgba(184,92,79,0.2)',
-    color: warmTheme.danger,
-    fontSize: 12, letterSpacing: 1, cursor: 'pointer', fontFamily: 'inherit',
+    flex: 1, padding: '10px 0', borderRadius: 8,
+    border: '1px solid rgba(184,92,79,0.5)',
+    background: 'rgba(184,92,79,0.16)',
+    color: G.danger,
+    fontSize: 12, letterSpacing: 1, cursor: 'pointer', fontFamily: 'Georgia, serif',
   },
   cancelBtn: {
-    flex: 1, padding: '9px 0', borderRadius: 8,
-    border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(255,250,240,0.4)',
-    color: warmTheme.textMuted,
-    fontSize: 12, cursor: 'pointer', fontFamily: 'inherit',
+    flex: 1, padding: '10px 0', borderRadius: 8,
+    border: '1px solid rgba(200,128,58,0.25)',
+    background: 'rgba(200,128,58,0.06)',
+    color: 'rgba(218,160,88,0.62)',
+    fontSize: 12, letterSpacing: 1, cursor: 'pointer', fontFamily: 'Georgia, serif',
   },
 };
+
+// Keep import alive \u2014 warmTheme used by AuthPanel / FriendsPanel sub-trees.
+void warmTheme;

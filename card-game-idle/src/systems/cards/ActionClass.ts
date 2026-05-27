@@ -24,7 +24,7 @@ export function getCardActionClassEffects(def: CardDefinition): CardEffect[] {
 
 export function classifyCardActionClass(def: CardDefinition, effects: CardEffect[]): ActionClass {
   if (def.rarity === 'Infinite') return 'finisher';
-  if (effects.some(effect => effect.type === 'multiply_next' || effect.type === 'chain_gain' || effect.type === 'chain_multiplier_set')) {
+  if (effects.some(effect => effect.type === 'multiply_next')) {
     return 'multiplier';
   }
   if (effects.some(effect => effect.type === 'salvage_any' || effect.type === 'salvage_by_type' || effect.type === 'discard_draw' || effect.type === 'copy_last_hr')) {

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useStore, selectTurn, selectDeck, selectBossFight } from '@/state/store';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -15,6 +16,8 @@ import SetEngineDisplay from './SetEngineDisplay';
 import TurnControls from './TurnControls';
 import BoardDisplay from './BoardDisplay';
 import PendingEffectModal from './PendingEffectModal';
+import FlashOverlay from './FlashOverlay';
+import OblivionAcquisitionScreen from './OblivionAcquisitionScreen';
 
 /**
  * Top status bar — slim full-width chrome strip at the top of the arena.
@@ -23,7 +26,7 @@ import PendingEffectModal from './PendingEffectModal';
  * Engines, How-to-Play, future menu items). Center is reserved for the
  * floating ScoreDisplay which sits behind this bar at top-center.
  */
-function TopStatusBar() {
+function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => void }) {
   const turn = useStore(selectTurn);
   const deck = useStore(selectDeck);
   const bossFight = useStore(selectBossFight);
@@ -97,6 +100,43 @@ function TopStatusBar() {
         </span>
       </div>
 
+      {/* Right — Oblivion Acquisition button */}
+      <button
+        onClick={onOpenOblivionScreen}
+        title="Oblivion Acquisition — view all Oblivion sources"
+        style={{
+          marginLeft: 'auto',
+          pointerEvents: 'auto',
+          display: 'flex', alignItems: 'center', gap: 6,
+          padding: '5px 14px',
+          borderRadius: 999,
+          border: '1px solid rgba(247,192,74,0.35)',
+          background: 'linear-gradient(135deg, rgba(247,192,74,0.14) 0%, rgba(247,192,74,0.06) 100%)',
+          color: '#f7c04a',
+          fontFamily: uiTypography.display,
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: 1.2,
+          cursor: 'pointer',
+          boxShadow: '0 0 12px rgba(247,192,74,0.16)',
+          transition: 'all 0.18s ease',
+        }}
+        onMouseEnter={e => {
+          const b = e.currentTarget;
+          b.style.background = 'linear-gradient(135deg, rgba(247,192,74,0.28) 0%, rgba(247,192,74,0.14) 100%)';
+          b.style.boxShadow = '0 0 22px rgba(247,192,74,0.32)';
+          b.style.borderColor = 'rgba(247,192,74,0.60)';
+        }}
+        onMouseLeave={e => {
+          const b = e.currentTarget;
+          b.style.background = 'linear-gradient(135deg, rgba(247,192,74,0.14) 0%, rgba(247,192,74,0.06) 100%)';
+          b.style.boxShadow = '0 0 12px rgba(247,192,74,0.16)';
+          b.style.borderColor = 'rgba(247,192,74,0.35)';
+        }}
+      >
+        ◈ Oblivion
+      </button>
+
     </div>
   );
 }
@@ -146,12 +186,14 @@ function LeftRailFrame() {
  * request; widened to 260 px for breathing room vs the old 220 px.
  */
 function RightRail() {
+  const bossFight = useStore(selectBossFight);
+  const inBossFight = bossFight.mode === 'active';
   return (
     <div
       style={{
         position: 'absolute',
         right: 0, top: 0, bottom: 0,
-        width: 300,
+        width: 340,
         display: 'flex',
         flexDirection: 'column',
         background: 'linear-gradient(270deg, rgba(5,5,7,0.92) 0%, rgba(8,8,16,0.78) 100%)',
@@ -169,8 +211,8 @@ function RightRail() {
         pointerEvents: 'none',
       }} />
 
-      {/* Deck pills — clears the 52 px top bar */}
-      <div style={{ padding: '64px 18px 0', flexShrink: 0 }}>
+      {/* Deck pills — clears the 52 px top bar; during boss fights also clears the boss panel (~200 px) */}
+      <div style={{ padding: `${inBossFight ? 252 : 64}px 18px 0`, flexShrink: 0 }}>
         <DeckStatus />
       </div>
 
@@ -200,6 +242,8 @@ function RightRail() {
 }
 
 export default function HUD() {
+  const [showOblivionScreen, setShowOblivionScreen] = useState(false);
+
   return (
     <>
       {/* Cosmetic left-rail chrome frame behind resource orbs */}
@@ -215,7 +259,7 @@ export default function HUD() {
       <StrainDisplay />
 
       {/* Top status bar — set · turn · phase */}
-      <TopStatusBar />
+      <TopStatusBar onOpenOblivionScreen={() => setShowOblivionScreen(true)} />
 
       {/* Hand strip */}
       <HandDisplay />
@@ -225,6 +269,14 @@ export default function HUD() {
 
       {/* Pending-effect modal — floats above everything */}
       <PendingEffectModal />
+
+      {/* Full-screen radial flash overlay — triggered by game events */}
+      <FlashOverlay />
+
+      {/* Oblivion Acquisition reference screen */}
+      {showOblivionScreen && (
+        <OblivionAcquisitionScreen onClose={() => setShowOblivionScreen(false)} />
+      )}
     </>
   );
 }

@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 18;
+export const CURRENT_VERSION = 19;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -272,6 +272,30 @@ const migrations: Record<number, Migration> = {
         for (const deck of decks) {
           if (typeof deck.notes !== 'string') deck.notes = '';
         }
+      }
+    }
+    return data;
+  },
+  19: (data) => {
+    // v19 remaps old glyph-only avatar IDs to the new pic-classic-* image-backed IDs.
+    const CLASSIC_REMAP: Record<string, string> = {
+      'avatar-acolyte':           'pic-classic-acolyte',
+      'avatar-cardweaver':        'pic-classic-cardweaver',
+      'avatar-stacker':           'pic-classic-stacker',
+      'avatar-oblivion-touched':  'pic-classic-oblivion-touched',
+      'avatar-eternal':           'pic-classic-eternal',
+      'avatar-boss-slayer':       'pic-classic-boss-slayer',
+      'avatar-eternal-conqueror': 'pic-classic-eternal-conqueror',
+      'avatar-collector':         'pic-classic-collector',
+      'avatar-holo-curator':      'pic-classic-holo-curator',
+      'avatar-infinite':          'pic-classic-infinite',
+      'avatar-shardlord':         'pic-classic-shardlord',
+    };
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      const prof = p.profile as Record<string, unknown> | undefined;
+      if (prof && typeof prof.avatarId === 'string' && CLASSIC_REMAP[prof.avatarId]) {
+        prof.avatarId = CLASSIC_REMAP[prof.avatarId];
       }
     }
     return data;

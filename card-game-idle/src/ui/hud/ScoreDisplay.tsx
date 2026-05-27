@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { useStore, selectOblivion, selectTurn } from '@/state/store';
+import { useStore, selectOblivion } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'absolute',
-    top: 62,
+    top: 44,
     left: '50%',
     transform: 'translateX(-50%)',
     textAlign: 'center',
@@ -38,7 +38,6 @@ const styles: Record<string, React.CSSProperties> = {
 
 export default function ScoreDisplay() {
   const oblivion = useStore(selectOblivion);
-  const turn = useStore(selectTurn);
   const prevRef = useRef(oblivion);
   const [popping, setPopping] = useState(false);
 
@@ -52,15 +51,10 @@ export default function ScoreDisplay() {
     }
   }, [oblivion]);
 
-  const showChain = turn.phase === 'playing' && turn.cardsPlayedThisTurn > 0;
-
   return (
     <div className={popping ? 'anim-score-pop' : undefined} style={styles.container}>
       <div style={styles.label}>Oblivion</div>
       <div style={styles.score}>{formatNumber(oblivion)}</div>
-      {showChain && (
-        <div style={styles.chain}>×{turn.chainMultiplier.toFixed(1)} chain</div>
-      )}
     </div>
   );
 }

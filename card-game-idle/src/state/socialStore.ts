@@ -18,6 +18,7 @@ export interface SocialProfile {
   id: string;
   friendCode: string;
   displayName: string;
+  bio: string | null;
   avatarId: string;
   titleId: string | null;
   uiThemeId: string | null;
@@ -44,6 +45,7 @@ interface SocialState {
   // Own profile sync (called from the main store via a thin bridge in AuthPanel).
   syncOwnProfile: (snapshot: {
     displayName: string;
+    bio: string;
     avatarId: string;
     titleId: string | null;
     uiThemeId: string | null;
@@ -70,7 +72,7 @@ async function fetchOrCreateProfile(
 
   const { data: existing, error: selErr } = await sb
     .from('profiles')
-    .select('id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at')
+    .select('id, friend_code, display_name, bio, avatar_id, title_id, ui_theme_id, last_seen_at')
     .eq('id', userId)
     .maybeSingle();
   if (selErr) throw selErr;
@@ -80,6 +82,7 @@ async function fetchOrCreateProfile(
       id: existing.id,
       friendCode: existing.friend_code,
       displayName: existing.display_name,
+      bio: existing.bio ?? null,
       avatarId: existing.avatar_id,
       titleId: existing.title_id,
       uiThemeId: existing.ui_theme_id,
@@ -96,17 +99,19 @@ async function fetchOrCreateProfile(
         id: userId,
         friend_code: friendCode,
         display_name: fallbackDisplayName,
-        avatar_id: 'avatar-acolyte',
+        bio: null,
+        avatar_id: 'pic-classic-acolyte',
         title_id: null,
         ui_theme_id: null,
       })
-      .select('id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at')
+      .select('id, friend_code, display_name, bio, avatar_id, title_id, ui_theme_id, last_seen_at')
       .single();
     if (!insErr && inserted) {
       return {
         id: inserted.id,
         friendCode: inserted.friend_code,
         displayName: inserted.display_name,
+        bio: inserted.bio ?? null,
         avatarId: inserted.avatar_id,
         titleId: inserted.title_id,
         uiThemeId: inserted.ui_theme_id,
@@ -220,6 +225,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     if (!sb || !user || !profile) return;
     const next = {
       display_name: snapshot.displayName,
+      bio: snapshot.bio || null,
       avatar_id: snapshot.avatarId,
       title_id: snapshot.titleId,
       ui_theme_id: snapshot.uiThemeId,
@@ -228,6 +234,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     // Skip if nothing changed (avoid burning rate limit).
     if (
       profile.displayName === snapshot.displayName &&
+      profile.bio === (snapshot.bio || null) &&
       profile.avatarId === snapshot.avatarId &&
       profile.titleId === snapshot.titleId &&
       profile.uiThemeId === snapshot.uiThemeId
@@ -243,6 +250,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       profile: {
         ...profile,
         displayName: snapshot.displayName,
+        bio: snapshot.bio || null,
         avatarId: snapshot.avatarId,
         titleId: snapshot.titleId,
         uiThemeId: snapshot.uiThemeId,

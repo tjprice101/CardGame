@@ -9,17 +9,16 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinder Seraphim',
-    description: 'On play: +20 Oblivion; Stoke 3 Furnace Pressure; Open 1 Ruin Window. While on board: Chain grows +0.08 per card played while active',
+    description: 'On play: +20 Oblivion; Stoke 3 Furnace Pressure; Open 1 Ruin Window. While on board: +10 Oblivion per card played while active',
     artKey: 'ser_fire_cinder',
     attacks: {
       unsynergized: {
         id: 'ser-fire-cinder:unsynergized',
         label: 'Unsynergized',
         name: 'Cinder Seraphim Vector Break',
-        description: '200 base Oblivion · 4 cards cooldown · chain +1.18',
+        description: '200 base Oblivion �E 4 cards cooldown',
         baseOblivion: 200,
         cooldownCards: 4,
-        chainScaling: 1.18,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'fire'],
       },
@@ -27,21 +26,19 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-cinder:synergized',
         label: 'Synergized',
         name: 'Cinder Seraphim Angelic Verdict',
-        description: '340 base Oblivion · 5 cards cooldown · chain +1.34 · Requires Angel',
+        description: '340 base Oblivion �E 5 cards cooldown �E Requires Angel',
         baseOblivion: 340,
         cooldownCards: 5,
-        chainScaling: 1.34,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'fire'],
       },
     },
-    baseStats: { bonusType: 'chain_bonus', bonusValue: 0.08, synergyRequirement: 'Fire' },
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 10, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 20 },
       { type: 'pyro_furnace_pressure_gain', value: 3 },
-      { type: 'pyro_ruin_window_gain', value: 1 },
-    ],
+      { type: 'pyro_ruin_window_gain', value: 1 }],
   },
   {
     definitionId: 'ser-fire-abyssal',
@@ -49,17 +46,16 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Seraphim',
-    description: 'On play: Draw 1 card; Stoke 2 Furnace Pressure. While on board: +22 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Stoke 2 Furnace Pressure; Forge 1 Abyss Fault. While on board: +22 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_fire_abyssal',
     attacks: {
       unsynergized: {
         id: 'ser-fire-abyssal:unsynergized',
         label: 'Unsynergized',
         name: 'Abyssal Seraphim Vector Break',
-        description: '225 base Oblivion · 4 cards cooldown · chain +1.18',
+        description: '225 base Oblivion �E 4 cards cooldown',
         baseOblivion: 225,
         cooldownCards: 4,
-        chainScaling: 1.18,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'fire'],
       },
@@ -67,10 +63,9 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-abyssal:synergized',
         label: 'Synergized',
         name: 'Abyssal Seraphim Angelic Verdict',
-        description: '383 base Oblivion · 5 cards cooldown · chain +1.34 · Requires Angel',
+        description: '383 base Oblivion �E 5 cards cooldown �E Requires Angel',
         baseOblivion: 383,
         cooldownCards: 5,
-        chainScaling: 1.34,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'fire'],
@@ -78,9 +73,8 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 22, synergyRequirement: 'Fire' },
     onPlayEffects: [
-      { type: 'draw', value: 1 },
       { type: 'pyro_furnace_pressure_gain', value: 2 },
-    ],
+      { type: 'pyro_abyss_fault_gain', value: 1 }],
   },
   {
     definitionId: 'ser-fire-pyre',
@@ -95,10 +89,9 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-pyre:unsynergized',
         label: 'Unsynergized',
         name: 'Pyre Seraphim Vector Break',
-        description: '360 base Oblivion · 4 cards cooldown · chain +1.24',
+        description: '360 base Oblivion �E 4 cards cooldown',
         baseOblivion: 360,
         cooldownCards: 4,
-        chainScaling: 1.24,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'fire'],
       },
@@ -106,10 +99,9 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-pyre:synergized',
         label: 'Synergized',
         name: 'Pyre Seraphim Angelic Verdict',
-        description: '612 base Oblivion · 5 cards cooldown · chain +1.40 · Requires Angel',
+        description: '612 base Oblivion �E 5 cards cooldown �E Requires Angel',
         baseOblivion: 612,
         cooldownCards: 5,
-        chainScaling: 1.40,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'fire'],
@@ -118,8 +110,7 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 14, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 45 },
-      { type: 'pyro_abyss_fault_gain', value: 2 },
-    ],
+      { type: 'pyro_abyss_fault_gain', value: 2 }],
   },
   {
     definitionId: 'ser-fire-infernal',
@@ -127,17 +118,16 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Infernal Seraphim',
-    description: 'On play: +30 Oblivion; Stoke 3 Furnace Pressure; Forge 1 Abyss Fault. While on board: Chain grows +0.12 per card played while active',
+    description: 'On play: +30 Oblivion; Stoke 3 Furnace Pressure; Forge 1 Abyss Fault. While on board: +16 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_fire_infernal',
     attacks: {
       unsynergized: {
         id: 'ser-fire-infernal:unsynergized',
         label: 'Unsynergized',
         name: 'Infernal Seraphim Vector Break',
-        description: '325 base Oblivion · 4 cards cooldown · chain +1.24',
+        description: '325 base Oblivion �E 4 cards cooldown',
         baseOblivion: 325,
         cooldownCards: 4,
-        chainScaling: 1.24,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'fire'],
       },
@@ -145,21 +135,19 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-infernal:synergized',
         label: 'Synergized',
         name: 'Infernal Seraphim Angelic Verdict',
-        description: '553 base Oblivion · 5 cards cooldown · chain +1.40 · Requires Angel',
+        description: '553 base Oblivion �E 5 cards cooldown �E Requires Angel',
         baseOblivion: 553,
         cooldownCards: 5,
-        chainScaling: 1.40,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'fire'],
       },
     },
-    baseStats: { bonusType: 'chain_bonus', bonusValue: 0.12, synergyRequirement: 'Fire' },
+    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 16, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 30 },
       { type: 'pyro_furnace_pressure_gain', value: 3 },
-      { type: 'pyro_abyss_fault_gain', value: 1 },
-    ],
+      { type: 'pyro_abyss_fault_gain', value: 1 }],
   },
   {
     definitionId: 'ser-fire-voidflame',
@@ -167,17 +155,16 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void-Flame Seraphim',
-    description: 'On play: +60 Oblivion; Stoke 4 Furnace Pressure; Forge 2 Abyss Fault; Open 1 Ruin Window; Draw 1 card. While on board: Chain grows +0.16 per card played while active',
+    description: 'On play: +60 Oblivion; Stoke 6 Furnace Pressure; Forge 2 Abyss Fault; Open 1 Ruin Window. While on board: +20 Oblivion per card played while active',
     artKey: 'ser_fire_voidflame',
     attacks: {
       unsynergized: {
         id: 'ser-fire-voidflame:unsynergized',
         label: 'Unsynergized',
         name: 'Void-Flame Seraphim Vector Break',
-        description: '530 base Oblivion · 5 cards cooldown · chain +1.32',
+        description: '530 base Oblivion �E 5 cards cooldown',
         baseOblivion: 530,
         cooldownCards: 5,
-        chainScaling: 1.32,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'fire'],
       },
@@ -185,25 +172,21 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-voidflame:synergized',
         label: 'Synergized',
         name: 'Void-Flame Seraphim Angelic Verdict',
-        description: '901 base Oblivion · 6 cards cooldown · chain +1.48 · Requires Angel',
+        description: '901 base Oblivion �E 6 cards cooldown �E Requires Angel',
         baseOblivion: 901,
         cooldownCards: 6,
-        chainScaling: 1.48,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'fire'],
       },
     },
-    baseStats: { bonusType: 'chain_bonus', bonusValue: 0.16, synergyRequirement: 'Fire' },
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 20, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 60 },
-      { type: 'pyro_furnace_pressure_gain', value: 4 },
+      { type: 'pyro_furnace_pressure_gain', value: 6 },
       { type: 'pyro_abyss_fault_gain', value: 2 },
-      { type: 'pyro_ruin_window_gain', value: 1 },
-      { type: 'draw', value: 1 },
-    ],
-  },
-];
+      { type: 'pyro_ruin_window_gain', value: 1 }],
+  }];
 
 // Ophanim cards
 
@@ -219,8 +202,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_cinder_draw',
     effects: [
       { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'draw', value: 1 },
-    ],
+      { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'ophanim-fire-abyssal-kindle',
@@ -232,8 +214,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_abyssal_kindle',
     effects: [
       { type: 'oblivion_flat', value: 20 },
-      { type: 'pyro_abyss_fault_gain', value: 1 },
-    ],
+      { type: 'pyro_abyss_fault_gain', value: 1 }],
   },
   {
     definitionId: 'ophanim-fire-pyre-ignite',
@@ -244,8 +225,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     description: 'Stoke 3 Furnace Pressure',
     artKey: 'seek_fire_pyre_ignite',
     effects: [
-      { type: 'pyro_furnace_pressure_gain', value: 3 },
-    ],
+      { type: 'pyro_furnace_pressure_gain', value: 3 }],
   },
   {
     definitionId: 'ophanim-fire-infernal-surge',
@@ -257,8 +237,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_infernal_surge',
     effects: [
       { type: 'oblivion_flat', value: 30 },
-      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'pyro_abyss_fault_gain', value: 2 }, { type: 'pyro_ruin_window_gain', value: 1 }] },
-    ],
+      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'pyro_abyss_fault_gain', value: 2 }, { type: 'pyro_ruin_window_gain', value: 1 }] }],
   },
   {
     definitionId: 'ophanim-fire-void-kindling',
@@ -266,12 +245,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Void Kindling',
-    description: 'Draw 2 cards; Open 1 Ruin Window',
+    description: 'Open 2 Ruin Windows; Stoke 3 Furnace Pressure',
     artKey: 'seek_fire_void_kindling',
     effects: [
-      { type: 'draw', value: 2 },
-      { type: 'pyro_ruin_window_gain', value: 1 },
-    ],
+      { type: 'pyro_ruin_window_gain', value: 2 },
+      { type: 'pyro_furnace_pressure_gain', value: 3 }],
   },
   {
     definitionId: 'ophanim-fire-void-flare',
@@ -283,8 +261,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_void_flare',
     effects: [
       { type: 'oblivion_flat', value: 25 },
-      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 6 }, then: [{ type: 'pyro_abyss_fault_gain', value: 1 }] },
-    ],
+      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 6 }, then: [{ type: 'pyro_abyss_fault_gain', value: 1 }] }],
   },
   {
     definitionId: 'ophanim-fire-smoldering-cycle',
@@ -297,8 +274,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     effects: [
       { type: 'shuffle_discard' },
       { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'pyro_abyss_fault_gain', value: 1 },
-    ],
+      { type: 'pyro_abyss_fault_gain', value: 1 }],
   },
   {
     definitionId: 'ophanim-fire-abyssal-recall',
@@ -310,8 +286,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_abyssal_recall',
     effects: [
       { type: 'salvage_by_type', filter: ['Seraphim'] },
-      { type: 'pyro_abyss_fault_gain', value: 1 },
-    ],
+      { type: 'pyro_abyss_fault_gain', value: 1 }],
   },
   // Rares
   {
@@ -324,8 +299,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_flame_burst',
     effects: [
       { type: 'pyro_convert_pressure_to_fault', pressurePerFault: 2, faultGain: 1, maxFaultGain: 4 },
-      { type: 'oblivion_flat', value: 60 },
-    ],
+      { type: 'oblivion_flat', value: 60 }],
   },
   {
     definitionId: 'ophanim-fire-abyssal-detonation',
@@ -338,8 +312,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     effects: [
       { type: 'pyro_abyss_fault_spend', value: 3 },
       { type: 'oblivion_flat', value: 120 },
-      { type: 'draw', value: 1 },
-    ],
+      { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'ophanim-fire-pyroclast',
@@ -347,13 +320,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyroclast',
-    description: 'Spend 2 Abyss Fault; +80 Oblivion; If you control 3+ active Seraphim, Draw 2 cards; Open 1 Ruin Window',
+    description: 'Spend 2 Abyss Fault; +80 Oblivion; If you control 3+ active Seraphim, Forge 3 Abyss Fault; Open 1 Ruin Window',
     artKey: 'seek_fire_pyroclast',
     effects: [
       { type: 'pyro_abyss_fault_spend', value: 2 },
       { type: 'oblivion_flat', value: 80 },
-      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'draw', value: 2 }, { type: 'pyro_ruin_window_gain', value: 1 }] },
-    ],
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'pyro_abyss_fault_gain', value: 3 }, { type: 'pyro_ruin_window_gain', value: 1 }] }],
   },
   {
     definitionId: 'ophanim-fire-ember-threshold',
@@ -365,8 +337,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_ember_threshold',
     effects: [
       { type: 'oblivion_flat', value: 40 },
-      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 8 }, then: [{ type: 'oblivion_flat', value: 30 }, { type: 'pyro_ruin_window_gain', value: 1 }] },
-    ],
+      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 8 }, then: [{ type: 'oblivion_flat', value: 30 }, { type: 'pyro_ruin_window_gain', value: 1 }] }],
   },
   {
     definitionId: 'ophanim-fire-conflagration',
@@ -378,8 +349,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_conflagration',
     effects: [
       { type: 'pyro_balance_bonus', oblivionPerPair: 28 },
-      { type: 'pyro_furnace_pressure_gain', value: 1 },
-    ],
+      { type: 'pyro_furnace_pressure_gain', value: 1 }],
   },
   {
     definitionId: 'ophanim-fire-pyre-hunt',
@@ -391,8 +361,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_fire_pyre_hunt',
     effects: [
       { type: 'search_deck_by_type', filter: ['Cherubim'] },
-      { type: 'pyro_furnace_pressure_gain', value: 1 },
-    ],
+      { type: 'pyro_furnace_pressure_gain', value: 1 }],
   },
   {
     definitionId: 'ophanim-fire-ember-chain',
@@ -405,8 +374,7 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     effects: [
       { type: 'ember_gain', value: 0 },
       { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 10 }, then: [{ type: 'pyro_ruin_window_gain', value: 1 }] },
-    ],
+      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 10 }, then: [{ type: 'pyro_ruin_window_gain', value: 1 }] }],
   },
   // Epics
   {
@@ -415,11 +383,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void Combustion',
-    description: 'Cash out up to 2 Ruin Windows (+340 Oblivion, +0.18 chain per window)',
+    description: 'Cash out up to 2 Ruin Windows (+340 Oblivion per window)',
     artKey: 'seek_fire_void_combustion',
     effects: [
-      { type: 'pyro_window_cashout', oblivionPerWindow: 340, chainPerWindow: 0.18, consume: 2 },
-    ],
+      { type: 'pyro_window_cashout', oblivionPerWindow: 340, consume: 2 }],
   },
   {
     definitionId: 'ophanim-fire-inferno',
@@ -427,13 +394,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Inferno',
-    description: 'Spend 3 Abyss Fault; Amplify Chain by +x1.6; Open 1 Ruin Window',
+    description: 'Spend 3 Abyss Fault; Open 1 Ruin Window',
     artKey: 'seek_fire_inferno',
     effects: [
       { type: 'pyro_abyss_fault_spend', value: 3 },
-      { type: 'chain_gain', value: 1.6 },
-      { type: 'pyro_ruin_window_gain', value: 1 },
-    ],
+      { type: 'pyro_ruin_window_gain', value: 1 }],
   },
   // Legendary
   {
@@ -442,12 +407,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Legendary',
     name: 'Void Apocalypse',
-    description: 'Draw 2 cards; Open 2 Ruin Windows; Cash out up to 3 Ruin Windows (+420 Oblivion, +0.24 chain per window)',
+    description: 'If pools are balanced, +60 Oblivion per Pressure-Fault pair; Open 2 Ruin Windows; Cash out up to 3 Ruin Windows (+420 Oblivion per window)',
     artKey: 'seek_fire_void_apocalypse',
     effects: [
-      { type: 'draw', value: 2 },
+      { type: 'pyro_balance_bonus', oblivionPerPair: 60 },
       { type: 'pyro_ruin_window_gain', value: 2 },
-      { type: 'pyro_window_cashout', oblivionPerWindow: 420, chainPerWindow: 0.24, consume: 3 },
-    ],
-  },
-];
+      { type: 'pyro_window_cashout', oblivionPerWindow: 420, consume: 3 }],
+  }];

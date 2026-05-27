@@ -30,6 +30,8 @@ export interface ComputedBoardStats {
   ophanimOblivionBonus: number;    // bonus Oblivion when Ophanim cards are played (from active Seraphim)
   cherubimExtraPlays: number;        // extra durability added to placed Cherubim cards (from active Seraphim)
   embersPerCardBonus: number;     // flat Embers added per card played (from ember_per_card Seraphim, Pyroabyss)
+  globalOblivionMult: number;     // additive % bonus applied to ALL oblivion grants (from cherubim_global_oblivion_mult passives)
+  fullBoardActive: boolean;       // true when all 9 board slots are filled
 }
 
 // ── Deck ──────────────────────────────────────────────────────────────────────
@@ -72,7 +74,7 @@ export type GlassAxiom = 'multiplier' | 'bridge' | 'cascade';
 export type PendingEffect =
   | { type: 'discard_choice'; count: number; sourceCard: string }
   | { type: 'prismatic_channel_choice'; sourceCard: string }
-  | { type: 'prismatic_sentence_choice'; cards: DeckCard[]; chainGainIfAccordMatch: number; draw: number; drawPerfect: number }
+  | { type: 'prismatic_sentence_choice'; cards: DeckCard[]; draw: number; drawPerfect: number }
   | { type: 'look_top_take'; cards: DeckCard[]; take: number }
   | { type: 'look_top_take_drop'; cards: DeckCard[]; take: number; drop: number }
   | { type: 'look_top_take_type'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number }
@@ -99,8 +101,6 @@ export interface TurnState {
   strain: number;
   cherubimDrawFraction: number;
   cardsPlayedThisTurn: number;
-  chainMultiplier: number;          // 1.0 + cardsPlayedThisTurn * 0.1; grows as cards are played
-  chainBaseline: number;               // minimum chain multiplier (Angels can set a floor)
   oblivionEarnedThisTurn: number;
   lastPlayedDefinitionId: string | null;
   turnNumber?: number;
@@ -383,6 +383,8 @@ export interface GauntletBest {
 export interface PlayerProfileState {
   /** Display name (1-24 chars after trim). */
   name: string;
+  /** Short player-written bio shown on the social profile modal. Max 200 chars. */
+  bio: string;
   /** Currently selected avatar definition id. Validated against unlock requirements on render. */
   avatarId: string;
   /** Currently selected title badge definition id, or null for none. */

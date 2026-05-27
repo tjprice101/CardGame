@@ -5,6 +5,7 @@ import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
 import { UI_THEMES, DEFAULT_UI_THEME_ID } from '@/data/profile/uiThemes';
 import TitlesModal from '@/ui/profile/TitlesModal';
+import ProfilePictureModal from '@/ui/profile/ProfilePictureModal';
 
 interface Props {
   onClose: () => void;
@@ -19,6 +20,7 @@ export default function ProfilePage({ onClose }: Props) {
 
   const [nameDraft, setNameDraft] = useState(profile.name);
   const [showTitles, setShowTitles] = useState(false);
+  const [showPictures, setShowPictures] = useState(false);
 
   const unlockedTitles = useMemo(
     () => TITLE_BADGES.filter(t => t.isUnlocked(progress)),
@@ -96,7 +98,13 @@ export default function ProfilePage({ onClose }: Props) {
             border: `2px solid ${warmTheme.borderStrong}`,
             boxShadow: warmTheme.glow,
             flexShrink: 0,
-          }}>{currentAvatar.glyph}</div>
+            overflow: 'hidden',
+          }}>
+            {currentAvatar.imageUrl
+              ? <img src={currentAvatar.imageUrl} alt={currentAvatar.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+              : currentAvatar.glyph
+            }
+          </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <input
               type="text"
@@ -133,34 +141,58 @@ export default function ProfilePage({ onClose }: Props) {
           <StatCell label="Titles" value={`${unlockedTitles.length} / ${TITLE_BADGES.length}`} />
         </div>
 
-        {/* Avatar — placeholder until full system is implemented */}
-        <SectionHeader>Avatar</SectionHeader>
+        {/* Profile Picture */}
+        <SectionHeader>Profile Picture</SectionHeader>
         <div style={{
           marginBottom: 16,
           padding: '14px 16px',
           borderRadius: 10,
-          border: `1px dashed ${warmTheme.border}`,
+          border: `1px solid ${warmTheme.border}`,
           background: 'rgba(0,0,0,0.04)',
           display: 'flex',
           alignItems: 'center',
-          gap: 12,
+          gap: 14,
         }}>
           <div style={{
-            width: 40, height: 40, borderRadius: '50%',
+            width: 52, height: 52, borderRadius: '50%',
             background: warmTheme.surface,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 22, color: warmTheme.textFaint,
-            border: `1px solid ${warmTheme.border}`,
+            fontSize: 28, color: warmTheme.accentDeep,
+            border: `2px solid ${warmTheme.borderStrong}`,
+            boxShadow: warmTheme.glow,
             flexShrink: 0,
+            overflow: 'hidden',
           }}>
-            {currentAvatar.glyph}
+            {currentAvatar.imageUrl
+              ? <img src={currentAvatar.imageUrl} alt={currentAvatar.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+              : currentAvatar.glyph
+            }
           </div>
-          <div>
-            <div style={{ fontSize: 12, fontWeight: 'bold', color: warmTheme.textMuted }}>Avatar Customization</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 'bold', color: warmTheme.text }}>{currentAvatar.name}</div>
             <div style={{ fontSize: 10, color: warmTheme.textFaint, marginTop: 3, lineHeight: 1.4 }}>
-              Custom profile pictures are coming soon. Your avatar will unlock based on your progression milestones.
+              {currentAvatar.description}
             </div>
           </div>
+          <button
+            className="menu-tactile-btn"
+            onClick={() => setShowPictures(true)}
+            style={{
+              flexShrink: 0,
+              padding: '8px 14px',
+              borderRadius: 10,
+              border: `1px solid ${warmTheme.borderStrong}`,
+              background: warmTheme.button,
+              color: warmTheme.accentDeep,
+              fontSize: 11,
+              fontFamily: 'Georgia, serif',
+              cursor: 'pointer',
+              letterSpacing: 0.5,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            Change
+          </button>
         </div>
 
         {/* Title — current + browser button */}
@@ -200,6 +232,7 @@ export default function ProfilePage({ onClose }: Props) {
         </div>
 
         {showTitles && <TitlesModal onClose={() => setShowTitles(false)} />}
+        {showPictures && <ProfilePictureModal currentAvatarId={profile.avatarId ?? ''} onClose={() => setShowPictures(false)} />}
 
         {/* Theme picker */}
         <SectionHeader>UI Theme</SectionHeader>

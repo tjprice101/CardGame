@@ -44,7 +44,7 @@ const styles: Record<string, React.CSSProperties> = {
 export default function TurnControls() {
   const turn = useStore(selectTurn);
   const deck = useStore(selectDeck);
-  const { beginTurn, confirmMulligan, endTurn } = useStore.getState();
+  const { beginTurn, confirmMulligan, endTurn, endAndBeginAgain } = useStore.getState();
 
   const deckReady = deck.deckList.length > 0;
 
@@ -84,9 +84,24 @@ export default function TurnControls() {
             Hand empty — resolve & draw next turn
           </div>
         )}
-        <button className="menu-tactile-btn" style={{ ...styles.btn, ...styles.primary }} onClick={endTurn} title="Ends play phase, resolves turn-end effects, and starts setup for the next turn.">
-          End Turn
-        </button>
+        <div style={{ display: 'flex', gap: 8, width: '100%' }}>
+          <button 
+            className="menu-tactile-btn" 
+            style={{ ...styles.btn, ...styles.primary, flex: 1, padding: '14px 12px', fontSize: 14, letterSpacing: 2.5 }} 
+            onClick={endTurn} 
+            title="Ends play phase, resolves turn-end effects, and starts setup for the next turn."
+          >
+            End Turn
+          </button>
+          <button 
+            className="menu-tactile-btn" 
+            style={{ ...styles.btn, ...styles.primary, flex: 1, padding: '14px 12px', fontSize: 14, letterSpacing: 2.5 }} 
+            onClick={endAndBeginAgain} 
+            title="Ends current turn and immediately begins the next turn."
+          >
+            End and Begin Again
+          </button>
+        </div>
       </div>
     );
   }

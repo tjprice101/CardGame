@@ -191,11 +191,6 @@ function buildSeraphimAttacks(def: SeraphimDefinition): SeraphimAttackSet {
   const uniqueArchetype = archetypeIndex(def.definitionId, 4);
 
   switch (def.baseStats.bonusType) {
-    case 'chain_bonus':
-      unsynScaling += 0.08;
-      synScaling += 0.1;
-      unsynCooldown = Math.max(1, unsynCooldown - 1);
-      break;
     case 'ophanim_bonus':
       synergizedBase = Math.round(synergizedBase * 1.12);
       synScaling += 0.05;
@@ -245,7 +240,6 @@ function buildSeraphimAttacks(def: SeraphimDefinition): SeraphimAttackSet {
       description: 'Standard attack. Usable whenever its cooldown reaches 0.',
       baseOblivion: unsynergizedBase,
       cooldownCards: unsynCooldown,
-      chainScaling: Number(unsynScaling.toFixed(3)),
       tags: ['seraphim', 'unsynergized', def.element.toLowerCase(), ...familyTags(def.definitionId)],
     },
     synergized: {
@@ -255,7 +249,6 @@ function buildSeraphimAttacks(def: SeraphimDefinition): SeraphimAttackSet {
       description: 'High-impact attack. Requires at least one Angel on your board.',
       baseOblivion: synergizedBase,
       cooldownCards: synCooldown,
-      chainScaling: Number(synScaling.toFixed(3)),
       requiresAngelOnBoard: true,
       costs: uniqueArchetype === 3 && weight >= 3 ? [{ type: 'discard_from_hand', value: 1 }] : undefined,
       tags: ['seraphim', 'synergized', 'covenant', def.element.toLowerCase(), ...familyTags(def.definitionId)],
@@ -270,7 +263,8 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
   const exaltedAction = pickByHash(ANGEL_EXALTED_ACTIONS, `${def.definitionId}:exalted`);
   const summonPressure = def.summonCost.length + (def.extraSummonConditions?.length ?? 0);
   const primaryBase = 130 + weight * 45 + summonPressure * 18;
-  const exaltedBase = Math.round(primaryBase * 2.05);
+  // Exalted is ~3× the equivalent Seraphim synergized base (same rarity), independent of summonPressure.
+  const exaltedBase = Math.round((80 + weight * 30) * 1.85 * 3.0);
   const costValue = 2 + Math.min(6, weight + Math.floor(summonPressure / 2));
   const uniqueArchetype = archetypeIndex(def.definitionId, 4);
 
@@ -331,7 +325,6 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
       description: 'Core Angel attack with stable cooldown cadence.',
       baseOblivion: primaryTunedBase,
       cooldownCards: (3 + Math.min(2, Math.floor((weight + summonPressure) / 4))) + (uniqueArchetype === 1 ? -1 : 0),
-      chainScaling: Number((0.9 + weight * 0.03 + (uniqueArchetype === 2 ? 0.08 : 0)).toFixed(3)),
       tags: ['angel', 'primary', def.element.toLowerCase(), ...familyTags(def.definitionId)],
     },
     exalted: {
@@ -341,7 +334,6 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
       description: 'High-impact finisher that requires an additional cost.',
       baseOblivion: exaltedTunedBase,
       cooldownCards: (5 + Math.min(3, Math.floor((weight + summonPressure) / 3))) + (uniqueArchetype === 0 ? 1 : 0),
-      chainScaling: Number((1.15 + weight * 0.03 + (uniqueArchetype === 3 ? 0.08 : 0)).toFixed(3)),
       costs: [dominantCost, ...(secondaryCost ? [secondaryCost] : [])],
       tags: ['angel', 'exalted', 'finisher', def.element.toLowerCase(), ...familyTags(def.definitionId)],
     },
@@ -568,26 +560,9 @@ function tuneSeraphimAttackSet(def: SeraphimDefinition, attacks: SeraphimAttackS
   let unsynCooldown = clampNumber(attacks.unsynergized.cooldownCards, 1, 4);
   let synCooldown = clampNumber(attacks.synergized.cooldownCards, 3, 7);
 
-  let unsynScaling = clampNumber(
-    attacks.unsynergized.chainScaling,
-    0.86 + weight * 0.02,
-    1.25,
-  );
-  let synScaling = clampNumber(
-    attacks.synergized.chainScaling,
-    1.1 + weight * 0.03,
-    1.55,
-  );
-
   // Align attack profile with passive identity so each Seraphim feels purposeful.
   switch (def.baseStats.bonusType) {
-    case 'chain_bonus':
-      unsynScaling = clampNumber(unsynScaling + 0.04, 0.86 + weight * 0.02, 1.25);
-      synScaling = clampNumber(synScaling + 0.05, 1.1 + weight * 0.03, 1.55);
-      unsynCooldown = Math.max(1, unsynCooldown - 1);
-      break;
     case 'ophanim_bonus':
-      synScaling = clampNumber(synScaling + 0.03, 1.1 + weight * 0.03, 1.55);
       break;
     case 'cherubim_extra_plays':
     case 'cherubim_expire_bonus':
@@ -595,7 +570,6 @@ function tuneSeraphimAttackSet(def: SeraphimDefinition, attacks: SeraphimAttackS
       synCooldown = Math.max(3, synCooldown - 1);
       break;
     case 'oblivion_per_card':
-      unsynScaling = clampNumber(unsynScaling + 0.02, 0.86 + weight * 0.02, 1.25);
       break;
     default:
       break;
@@ -608,33 +582,25 @@ function tuneSeraphimAttackSet(def: SeraphimDefinition, attacks: SeraphimAttackS
         unsynBase = Math.round(unsynBase * 1.08);
         synBase = Math.round(synBase * 1.05);
         unsynCooldown = Math.max(1, unsynCooldown - 1);
-        unsynScaling = clampNumber(unsynScaling + 0.02, 0.86 + weight * 0.02, 1.25);
         break;
       case 'Thornbound':
         synBase = Math.round(synBase * 1.12);
         synCooldown = Math.min(7, synCooldown + 1);
-        synScaling = clampNumber(synScaling + 0.05, 1.1 + weight * 0.03, 1.55);
         break;
       case 'Mechanical':
         unsynBase = Math.round(unsynBase * 0.96);
         unsynCooldown = Math.max(1, unsynCooldown - 1);
         synCooldown = Math.max(3, synCooldown - 1);
-        synScaling = clampNumber(synScaling + 0.04, 1.1 + weight * 0.03, 1.55);
         break;
       case 'Prismatic':
         unsynBase = Math.round(unsynBase * 0.95);
         synBase = Math.round(synBase * 0.97);
-        unsynScaling = clampNumber(unsynScaling + 0.05, 0.86 + weight * 0.02, 1.25);
-        synScaling = clampNumber(synScaling + 0.08, 1.1 + weight * 0.03, 1.55);
         break;
       case 'Light':
-        unsynScaling = clampNumber(unsynScaling + 0.02, 0.86 + weight * 0.02, 1.25);
-        synScaling = clampNumber(synScaling + 0.05, 1.1 + weight * 0.03, 1.55);
         break;
       case 'Dark':
         unsynBase = Math.round(unsynBase * 1.03);
         synBase = Math.round(synBase * 1.1);
-        synScaling = clampNumber(synScaling + 0.03, 1.1 + weight * 0.03, 1.55);
         break;
       default:
         break;
@@ -658,7 +624,6 @@ function tuneSeraphimAttackSet(def: SeraphimDefinition, attacks: SeraphimAttackS
     description: buildSeraphimAttackDescription(def, attacks.unsynergized.name, 'unsynergized'),
     baseOblivion: unsynBase,
     cooldownCards: unsynCooldown,
-    chainScaling: Number(unsynScaling.toFixed(3)),
     costs: tunedUnsynergizedCosts,
   });
 
@@ -667,7 +632,6 @@ function tuneSeraphimAttackSet(def: SeraphimDefinition, attacks: SeraphimAttackS
     description: buildSeraphimAttackDescription(def, attacks.synergized.name, 'synergized'),
     baseOblivion: synBase,
     cooldownCards: synCooldown,
-    chainScaling: Number(synScaling.toFixed(3)),
     costs: tunedSynergizedCosts,
     requiresAngelOnBoard: true,
   });
@@ -697,17 +661,6 @@ function tuneAngelAttackSet(def: AngelDefinition, attacks: AngelAttackSet): Ange
     clampNumber(attacks.exalted.cooldownCards, 4, 8),
   );
 
-  const primaryScaling = clampNumber(
-    attacks.primary.chainScaling,
-    0.92 + weight * 0.03,
-    1.25,
-  );
-  const exaltedScaling = clampNumber(
-    attacks.exalted.chainScaling,
-    1.18 + weight * 0.035,
-    1.65,
-  );
-
   const tunedPrimaryCosts = resolveAttackCosts(attacks.primary.costs, attacks.primary.description);
   const tunedExaltedCosts = resolveAttackCosts(
     attacks.exalted.costs,
@@ -720,7 +673,6 @@ function tuneAngelAttackSet(def: AngelDefinition, attacks: AngelAttackSet): Ange
     description: buildAngelAttackDescription(def, attacks.primary.name, 'primary'),
     baseOblivion: primaryBase,
     cooldownCards: primaryCooldown,
-    chainScaling: Number(primaryScaling.toFixed(3)),
     costs: tunedPrimaryCosts,
   });
 
@@ -729,7 +681,6 @@ function tuneAngelAttackSet(def: AngelDefinition, attacks: AngelAttackSet): Ange
     description: buildAngelAttackDescription(def, attacks.exalted.name, 'exalted'),
     baseOblivion: exaltedBase,
     cooldownCards: exaltedCooldown,
-    chainScaling: Number(exaltedScaling.toFixed(3)),
     costs: tunedExaltedCosts,
   });
 
@@ -740,22 +691,22 @@ function tuneAngelAttackSet(def: AngelDefinition, attacks: AngelAttackSet): Ange
 }
 
 function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffect[] {
+  // Cards whose identity IS the global oblivion multiplier don't receive synthetic attack buffs.
+  if (def.effects.some(e => e.type === 'cherubim_global_oblivion_mult')) {
+    return def.effects;
+  }
+
   let baseOblivion = 0;
-  let chainScaling = 0;
   let multiplier = 1;
 
   for (const effect of def.effects) {
     switch (effect.type) {
       case 'cherubim_adjacent_seraphim_bonus':
         if (effect.bonusType === 'oblivion') baseOblivion += Math.round(effect.value * 0.9);
-        if (effect.bonusType === 'chain') chainScaling += effect.value * 0.12;
         break;
       case 'cherubim_oblivion_per_card':
       case 'cherubim_ophanim_bonus':
         baseOblivion += effect.value;
-        break;
-      case 'cherubim_chain_bonus':
-        chainScaling += effect.value * 0.2;
         break;
       case 'cherubim_seraphim_amp':
         multiplier *= Math.max(1, effect.value);
@@ -770,7 +721,6 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
 
   const weight = rarityWeight(def.rarity);
   if (baseOblivion <= 0) baseOblivion = 16 + weight * 10;
-  if (chainScaling <= 0) chainScaling = 0.03 + weight * 0.01;
 
   const family = primaryFamily(def.definitionId);
   const relatedSeraphim = findRelatedUnitIds('Seraphim', def.element, family, 8);
@@ -798,7 +748,6 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
 
   // Per-card uniqueness: each Cherubim emphasizes a different support pattern.
   let tunedBase = Math.round(baseOblivion);
-  let tunedScaling = Number(chainScaling.toFixed(3));
   let tunedMultiplier = Number(multiplier.toFixed(3));
   let tunedCooldownDelta = weight >= 5 ? -1 : 0;
   let targetUnit: 'Seraphim' | 'Angel' | 'Any' = 'Seraphim';
@@ -810,12 +759,10 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
       targetUnit = 'Seraphim';
       break;
     case 1: // Celestial conductor
-      tunedScaling = Number((tunedScaling * 1.45).toFixed(3));
       targetUnit = 'Angel';
       break;
     case 2: // Universal linker
       tunedBase = Math.round(tunedBase * 0.92);
-      tunedScaling = Number((tunedScaling * 1.1).toFixed(3));
       targetUnit = 'Any';
       break;
     case 3: // Amplifier
@@ -824,7 +771,6 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
       break;
     default: // Hybrid anchor
       tunedBase = Math.round(tunedBase * 1.05);
-      tunedScaling = Number((tunedScaling * 1.2).toFixed(3));
       targetUnit = 'Any';
       break;
   }
@@ -841,7 +787,6 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
     targetDefinitionIds: targetIds,
     targetTags: [def.element.toLowerCase(), family],
     bonusBaseOblivion: tunedBase,
-    bonusChainScaling: tunedScaling,
     cooldownDeltaCards: tunedCooldownDelta,
     multiplier: tunedMultiplier,
   };
@@ -852,7 +797,6 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
     targetDefinitionIds: relatedAngels,
     targetTags: [def.element.toLowerCase(), family, 'angel'],
     bonusBaseOblivion: Math.round(tunedBase * 0.78),
-    bonusChainScaling: Number((tunedScaling * 0.65).toFixed(3)),
     cooldownDeltaCards: weight >= 4 ? -1 : 0,
     multiplier: Number((1 + (tunedMultiplier - 1) * 0.75).toFixed(3)),
   };
@@ -887,7 +831,7 @@ function injectOphanimUtility(def: OphanimDefinition): OphanimDefinition {
       extraEffects.push({ type: 'draw', value: 1 + (weight >= 4 ? 1 : 0) });
       break;
     case 1:
-      extraEffects.push({ type: 'chain_gain', value: 1.1 + Math.min(0.9, weight * 0.1) });
+      extraEffects.push({ type: 'draw', value: 1 + (weight >= 4 ? 1 : 0) });
       break;
     case 2:
       extraEffects.push({ type: 'shuffle_discard' });
@@ -1129,7 +1073,6 @@ function formatDisplayAttackCost(cost: AttackCost): string {
 function buildDisplayAttackDescription(attack: {
   baseOblivion: number;
   cooldownCards: number;
-  chainScaling: number;
   costs?: ReadonlyArray<AttackCost>;
   requiresAngelOnBoard?: boolean;
 }): string {
@@ -1137,7 +1080,7 @@ function buildDisplayAttackDescription(attack: {
   const costText = attack.costs && attack.costs.length > 0
     ? ` · Cost: ${attack.costs.map(formatDisplayAttackCost).join(', ')}`
     : '';
-  return `${attack.baseOblivion} base Oblivion · ${attack.cooldownCards} cards cooldown · chain +${attack.chainScaling.toFixed(2)}${angelText}${costText}`;
+  return `${attack.baseOblivion} base Oblivion · ${attack.cooldownCards} cards cooldown${angelText}${costText}`;
 }
 
 function displayCardDefinition(def: CardDefinition): CardDefinition {

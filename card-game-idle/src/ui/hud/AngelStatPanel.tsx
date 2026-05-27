@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStore, selectBoard, selectTurn, selectComputedStats } from '@/state/store';
+import { useStore, selectBoard, selectTurn, selectComputedStats, selectBossFight } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 const styles: Record<string, React.CSSProperties> = {
   panel: {
@@ -45,8 +45,10 @@ export default function AngelStatPanel() {
   const board = useStore(selectBoard);
   const turn = useStore(selectTurn);
   const stats = useStore(selectComputedStats);
+  const bossFight = useStore(selectBossFight);
 
-  // Single pass over board slots instead of four separate .filter() calls
+  // Single pass over board slots instead of four separate .filter() calls.
+  // Must be declared before any conditional return to satisfy Rules of Hooks.
   const { angelCount, totalSeraphimCount, activeSeraphimCount, cherubimCount } = useMemo(() => {
     let angelCount = 0, totalSeraphimCount = 0, activeSeraphimCount = 0;
     for (const slot of board.frontSlots) {
@@ -60,6 +62,10 @@ export default function AngelStatPanel() {
     return { angelCount, totalSeraphimCount, activeSeraphimCount, cherubimCount };
   }, [board.frontSlots, board.backSlots]);
 
+  // During an active boss fight the boss panel covers this area — hide to
+  // avoid visual clutter. Must come AFTER all hooks to satisfy Rules of Hooks.
+  if (bossFight.mode === 'active') return null;
+
   const hasAnything = angelCount > 0 || totalSeraphimCount > 0;
 
   return (
@@ -69,9 +75,6 @@ export default function AngelStatPanel() {
         <>
           {stats.activeSynergies > 0 && (
             <div style={styles.stat}>+{formatNumber(stats.oblivionPerCardBonus)} Oblivion/card</div>
-          )}
-          {turn.phase === 'playing' && (
-            <div style={styles.stat}>×{turn.chainMultiplier.toFixed(2)} chain</div>
           )}
           {turn.oblivionEarnedThisTurn > 0 && (
             <div style={styles.stat}>+{formatNumber(turn.oblivionEarnedThisTurn)} this turn</div>
@@ -84,13 +87,13 @@ export default function AngelStatPanel() {
           {totalSeraphimCount > 0 && (
             <div style={{
               ...styles.synergy,
-              color: activeSeraphimCount > 0 ? warmTheme.success : warmTheme.textMuted,
+              color: activeSeraphimCount > 0 ? '#4f8a47' : 'rgba(244,244,248,0.38)',
             }}>
               {activeSeraphimCount}/{totalSeraphimCount} Seraphim{totalSeraphimCount > 1 ? 's' : ''} active
             </div>
           )}
           {cherubimCount > 0 && (
-            <div style={{ ...styles.synergy, color: warmTheme.cherubim }}>
+            <div style={{ ...styles.synergy, color: '#8f74a9' }}>
               {cherubimCount} Cherubim card{cherubimCount > 1 ? 's' : ''} active
             </div>
           )}

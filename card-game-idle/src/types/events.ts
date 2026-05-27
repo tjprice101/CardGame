@@ -9,8 +9,12 @@ export interface EventPayloads {
   'board:recomputed': ComputedBoardStats;
   'seraphim:synergy-gained': { slot: 0 | 1 | 2 | 3 | 4; instanceId: string };
   'seraphim:synergy-lost': { slot: 0 | 1 | 2 | 3 | 4; instanceId: string };
-  'oblivion:earned': { delta: number; total: number; chainMultiplier: number };
+  'seraphim:attacked': { slot: number; attackId: string; amount: number };
+  'angel:summoned': { definitionId: string; slot: number };
+  'angel:attacked': { slot: number; attackId: string; amount: number };
+  'oblivion:earned': { delta: number; total: number };
   'boss:damaged': { delta: number; remaining: number };
+  'boss:defeated': { bossId: string; victory: boolean };
   'cherubim:expired': { backSlot: 0 | 1 | 2 | 3; definitionId: string };
   'milestone:reached': { threshold: number; label: string };
   'game:ready': Record<string, never>;

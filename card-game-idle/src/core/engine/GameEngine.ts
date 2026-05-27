@@ -48,6 +48,7 @@ export class GameEngine {
     }
     this.saveManager.startAutoSave();
     this.startLoop();
+    this.registerVisualFeedbackListeners();
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     eventBus.emit('game:ready', {});
   }
@@ -61,6 +62,53 @@ export class GameEngine {
       this.rafId = requestAnimationFrame(loop);
     };
     this.rafId = requestAnimationFrame(loop);
+  }
+
+  private registerVisualFeedbackListeners(): void {
+    // Utility: dispatch a radial color flash to the FlashOverlay component.
+    const flash = (r: number, g: number, b: number, alpha: number, durationMs: number) => {
+      window.dispatchEvent(new CustomEvent('hud-flash', { detail: { r, g, b, alpha, durationMs } }));
+    };
+    const shake = (hard: boolean) => {
+      window.dispatchEvent(new Event(hard ? 'hud-shake-hard' : 'hud-shake-soft'));
+    };
+
+    // Angel summoned — brilliant warm-white/gold burst + hard shake
+    eventBus.on('angel:summoned', () => {
+      shake(true);
+      flash(255, 235, 180, 0.88, 650);
+    });
+
+    // Angel attacked — ice-blue flash + soft shake
+    eventBus.on('angel:attacked', () => {
+      shake(false);
+      flash(100, 220, 255, 0.72, 480);
+    });
+
+    // Seraphim attacked — stronger silver-blue flash + micro-shake (fires frequently, keep subtle)
+    eventBus.on('seraphim:attacked', () => {
+      window.dispatchEvent(new Event('hud-shake-micro'));
+      flash(145, 210, 255, 0.60, 400);
+    });
+
+    // Seraphim synergy gained — violet bloom
+    eventBus.on('seraphim:synergy-gained', () => {
+      flash(200, 130, 255, 0.70, 500);
+    });
+
+    // Boss defeated (victory) — golden victory burst + hard shake
+    // boss:damaged visual is already handled by BossFightArena (vignette + HP shake)
+    eventBus.on('boss:defeated', ({ victory }) => {
+      if (victory) {
+        shake(true);
+        flash(255, 215, 80, 0.92, 900);
+      }
+    });
+
+    // Milestone reached — warm amber flash
+    eventBus.on('milestone:reached', () => {
+      flash(255, 175, 60, 0.68, 560);
+    });
   }
 
   private stopLoop(): void {

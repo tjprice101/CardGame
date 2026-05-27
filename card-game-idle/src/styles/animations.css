@@ -4,6 +4,28 @@
   -webkit-user-select: none;
 }
 
+/* ── Radio Now-Playing toast ── */
+@keyframes radioSlideIn {
+  0%   { opacity: 0; transform: translateX(110%) scale(0.94); }
+  100% { opacity: 1; transform: translateX(0)   scale(1); }
+}
+@keyframes radioSlideOut {
+  0%   { opacity: 1; transform: translateX(0)   scale(1); }
+  100% { opacity: 0; transform: translateX(110%) scale(0.94); }
+}
+@keyframes radioGlyphSpin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes radioBarPulse {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 1; }
+}
+.radio-toast-enter { animation: radioSlideIn  0.44s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.radio-toast-exit  { animation: radioSlideOut 0.38s cubic-bezier(0.55, 0, 1, 0.45) both; }
+html.reduced-motion .radio-toast-enter,
+html.reduced-motion .radio-toast-exit { animation: none; }
+
 /* ── Accessible keyboard focus outline ── */
 :focus { outline: none; }
 :focus-visible {
@@ -1288,10 +1310,22 @@ html.compact-mode { --ui-compact-scale: 0.9; }
 html.compact-mode body { font-size: calc(16px * var(--ui-font-scale, 1) * 0.92); }
 html.compact-mode .ui-panel-intro { padding: 14px 18px !important; }
 
-/* ── Title screen prompt pulse ── */
+/* ── Title screen card showcase — gentle bob; outer wrapper holds rotation ── */
+@keyframes titleCardFloat {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+/* ── Title screen prompt pulse \u2014 original warm variant ── */
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 16px rgba(214,162,94,0.28); opacity: 0.78; }
   50%      { box-shadow: 0 0 36px rgba(214,162,94,0.72); opacity: 1; }
+}
+
+/* ── Title screen prompt pulse \u2014 steel-blue variant (matches main menu) ── */
+@keyframes pulseGlowBlue {
+  0%, 100% { box-shadow: 0 0 16px rgba(90,170,220,0.25); opacity: 0.78; }
+  50%      { box-shadow: 0 0 38px rgba(90,170,220,0.65); opacity: 1; }
 }
 
 /* ── Title screen parallax drifts ── */
@@ -1377,27 +1411,42 @@ html.compact-mode .ui-panel-intro { padding: 14px 18px !important; }
   50%       { opacity: 1; }
 }
 
-/* Soft screen shake — Seraphim placement / angel summon */
+/* Soft screen shake — angel attacks / angel summon.
+   Amplitude envelope: gentle ramp-in → peak at ~30% → decaying tail */
 @keyframes screenShakeSoft {
-  0%   { transform: translate(0,    0);    }
-  15%  { transform: translate(-3px, 1px);  }
-  30%  { transform: translate(3px, -1px);  }
-  45%  { transform: translate(-2px, 2px);  }
-  60%  { transform: translate(2px, -2px);  }
-  75%  { transform: translate(-1px, 1px);  }
-  100% { transform: translate(0,    0);    }
+  0%   { transform: translate(0,      0);      }
+  10%  { transform: translate(-1.5px,  0.5px); }  /* ramp in  */
+  28%  { transform: translate( 3.5px, -1.2px); }  /* peak     */
+  44%  { transform: translate(-3px,   1.8px);  }  /* strong   */
+  58%  { transform: translate( 2px,  -1.5px);  }  /* decay    */
+  72%  { transform: translate(-1.2px,  0.8px); }
+  86%  { transform: translate( 0.6px, -0.4px); }  /* settling */
+  100% { transform: translate(0,      0);      }
 }
 
-/* Hard screen shake — big boss damage */
+/* Micro screen shake — seraphim attacks (frequent; stays subtle).
+   Ramps in, peaks once, decays out — never feels like a stutter */
+@keyframes screenShakeMicro {
+  0%   { transform: translate(0,      0);     }
+  18%  { transform: translate(-1px,   0.4px); }  /* ramp in  */
+  40%  { transform: translate( 2px,  -0.8px); }  /* peak     */
+  65%  { transform: translate(-1.5px, 0.6px); }  /* decay    */
+  84%  { transform: translate( 0.6px,-0.3px); }  /* settling */
+  100% { transform: translate(0,      0);     }
+}
+
+/* Hard screen shake — big boss damage / victory.
+   Punchy ramp-in → strong peak → long decaying tail with micro rotation */
 @keyframes screenShakeHard {
-  0%   { transform: translate(0,    0)    rotate(0deg);    }
-  10%  { transform: translate(-6px, 2px)  rotate(-0.3deg); }
-  25%  { transform: translate(6px, -2px)  rotate(0.3deg);  }
-  40%  { transform: translate(-5px, 3px)  rotate(-0.2deg); }
-  55%  { transform: translate(5px, -3px)  rotate(0.2deg);  }
-  70%  { transform: translate(-3px, 1px)  rotate(-0.1deg); }
-  85%  { transform: translate(2px, -1px)  rotate(0.1deg);  }
-  100% { transform: translate(0,    0)    rotate(0deg);    }
+  0%   { transform: translate(0,      0)     rotate(0deg);     }
+  8%   { transform: translate(-2.5px,  0.8px) rotate(-0.15deg); }  /* ramp in  */
+  20%  { transform: translate( 7px,  -2.5px) rotate( 0.35deg); }  /* PEAK     */
+  34%  { transform: translate(-6px,   2.8px) rotate(-0.28deg); }  /* strong   */
+  48%  { transform: translate( 4.5px,-2px)   rotate( 0.2deg);  }  /* decay    */
+  61%  { transform: translate(-3px,   1.2px) rotate(-0.12deg); }
+  74%  { transform: translate( 1.8px,-0.8px) rotate( 0.07deg); }  /* settling */
+  86%  { transform: translate(-0.8px, 0.4px) rotate(-0.03deg); }
+  100% { transform: translate(0,      0)     rotate(0deg);     }
 }
 
 /* Full-screen white radial flash on angel summon */
@@ -1451,6 +1500,9 @@ html.compact-mode .ui-panel-intro { padding: 14px 18px !important; }
 .anim-screen-shake-soft {
   animation: screenShakeSoft 0.4s ease both;
 }
+.anim-screen-shake-micro {
+  animation: screenShakeMicro 0.25s ease both;
+}
 .anim-screen-shake-hard {
   animation: screenShakeHard 0.6s ease both;
 }
@@ -1467,15 +1519,82 @@ html.compact-mode .ui-panel-intro { padding: 14px 18px !important; }
   z-index: 200;
 }
 
+/* ── Boss Result Screen — cinematic reveal animations ── */
+
+@keyframes resultHeadlineReveal {
+  0%   { opacity: 0; transform: scale(0.72) translateY(32px); filter: blur(10px); }
+  55%  { opacity: 1; transform: scale(1.04) translateY(-4px); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+}
+
+@keyframes resultPanelSlideUp {
+  from { opacity: 0; transform: translateY(36px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes resultVictoryGoldPulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.06); }
+}
+
+@keyframes resultDefeatCrimsonPulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.85; }
+}
+
+@keyframes resultEmberRise {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.85; }
+  40%  { transform: translateY(-48px) translateX(var(--ember-drift, 8px)) scale(0.72); opacity: 0.55; }
+  100% { transform: translateY(-110px) translateX(calc(var(--ember-drift, 8px) * -0.5)) scale(0.35); opacity: 0; }
+}
+
+html.reduced-motion .result-headline-reveal,
+html.reduced-motion .result-panel-slide-up {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+   Triggered by hud-flash CustomEvents from the game engine on major in-turn
+   moments: angel summon, angel/seraphim attack, synergy, boss defeated, etc.
+   Color and peak alpha are driven by CSS custom properties set per-event.   */
+
+@keyframes arenaFlash {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.arena-flash-active {
+  background: radial-gradient(
+    ellipse at 50% 44%,
+    rgba(var(--flash-r, 255), var(--flash-g, 255), var(--flash-b, 255), var(--flash-alpha, 0.28)) 0%,
+    rgba(var(--flash-r, 255), var(--flash-g, 255), var(--flash-b, 255), 0) 68%
+  );
+  animation: arenaFlash var(--flash-dur, 500ms) ease-out forwards;
+}
+
 /* ── Reduced-motion overrides for cosmic void layer ── */
 @media (prefers-reduced-motion: reduce) {
   .anim-screen-shake-soft,
+  .anim-screen-shake-micro,
   .anim-screen-shake-hard { animation: none !important; }
   .anim-cosmic-flash::after { animation: none !important; opacity: 0 !important; }
+  .arena-flash-active { animation: none !important; opacity: 0 !important; }
 }
 html.reduced-motion .anim-screen-shake-soft,
+html.reduced-motion .anim-screen-shake-micro,
 html.reduced-motion .anim-screen-shake-hard,
-html.reduced-motion .anim-cosmic-flash::after {
+html.reduced-motion .anim-cosmic-flash::after,
+html.reduced-motion .arena-flash-active {
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
+}
+
+/* ���� Deck Builder: play button ready pulse ���� */
+@keyframes deckPlayBtnPulse {
+  0%, 100% { box-shadow: 0 2px 14px rgba(180, 120, 10, 0.38), inset 0 1px 0 rgba(255,255,255,0.14); }
+  50%       { box-shadow: 0 4px 28px rgba(200, 140, 10, 0.62), 0 0 36px rgba(240, 189, 120, 0.18), inset 0 1px 0 rgba(255,255,255,0.2); }
+}
+.deck-play-btn-ready {
+  animation: deckPlayBtnPulse 2.8s ease-in-out infinite;
 }

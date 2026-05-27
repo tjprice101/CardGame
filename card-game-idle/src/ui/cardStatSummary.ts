@@ -136,8 +136,6 @@ function formatContinuousBonus(
   switch (bonusType) {
     case 'oblivion_per_card':
       return `+${bonusValue} Oblivion per card played ${scope}`;
-    case 'chain_bonus':
-      return `Chain grows +${bonusValue} per card played ${scope}`;
     case 'ophanim_bonus':
       return `+${bonusValue} Oblivion whenever you play an Ophanim ${scope}`;
     case 'cherubim_extra_plays':
@@ -249,8 +247,6 @@ function formatCondition(condition: EffectCondition): string {
 function formatEffect(effect: CardEffect): string {
   switch (effect.type) {
     case 'oblivion_flat': return `+${effect.value} Oblivion`;
-    case 'chain_gain': return `Amplify Chain by +x${formatExactValue(effect.value)}`;
-    case 'chain_multiplier_set': return `Set chain multiplier to x${formatExactValue(effect.value)}`;
     case 'score_flat': return `+${effect.value}% total Oblivion this turn`;
     case 'radiance_gain': return `Gain ${effect.value} Radiance`;
     case 'radiance_spend': return `Spend ${effect.value} Radiance`;
@@ -279,12 +275,11 @@ function formatEffect(effect: CardEffect): string {
     case 'refraction_echo_gain': return `Gain Refraction Echo tokens from distinct channels (max ${effect.max})`;
     case 'refraction_echo_cascade': return 'Arm Refraction Echo cascade at end of turn';
     case 'chord_token_gain': return `Gain Chord Tokens from Cherubim on board (max ${effect.max})`;
-    case 'chord_token_multiplier': return 'Chord Tokens increase this unit attack power and chain scaling';
-    case 'chord_amplify_chain': return 'Amplify chain based on Chord Tokens';
+    case 'chord_token_multiplier': return 'Chord Tokens increase this unit attack power';
     case 'refraction_depth_sync': return 'Synchronize Refraction Depth with current channel state';
     case 'refraction_spike_init': return `Initialize Refraction Spikes (max ${effect.max})`;
     case 'prismatic_search_ophanim_cherubim': return `Search deck for up to ${effect.maxTake} Ophanim/Cherubim based on Node Charges`;
-    case 'sentencing_cast': return `Cast Sentencing: chosen card gains +${formatExactValue(effect.chainGainIfAccordMatch)} chain gain on Accord match and draws ${effect.draw}${effect.drawPerfect ? ` (${effect.drawPerfect} at perfect verdict)` : ''}`;
+    case 'sentencing_cast': return `Cast Sentencing: chosen card draws ${effect.draw}${effect.drawPerfect ? ` (${effect.drawPerfect} at perfect verdict)` : ''}`;
     case 'monochromatic_shards_gain': return `Gain ${effect.value} Monochromatic Shards`;
     case 'monochromatic_shards_spend': return `Spend ${effect.value} Monochromatic Shards`;
     case 'arctic_charge_gain': return `Gain ${effect.value} Arctic Charge`;
@@ -314,7 +309,6 @@ function formatEffect(effect: CardEffect): string {
       return `Overclock: gain ${effect.strain} Strain, then ${effect.then.map(formatEffect).join('; ')}`;
     case 'conditional':
       return `If ${formatCondition(effect.condition)}, ${effect.then.map(formatEffect).join('; ')}`;
-    case 'set_chain_floor': return `Set chain floor to x${formatExactValue(effect.value)}`;
     case 'pyro_furnace_pressure_gain': return `Stoke ${effect.value} Furnace Pressure`;
     case 'pyro_furnace_pressure_spend': return `Spend ${effect.value} Furnace Pressure`;
     case 'pyro_abyss_fault_gain': return `Forge ${effect.value} Abyss Fault`;
@@ -323,10 +317,8 @@ function formatEffect(effect: CardEffect): string {
     case 'pyro_convert_pressure_to_fault':
       return `Convert Pressure to Fault (${effect.pressurePerFault} Pressure per Fault, gain ${effect.faultGain}${effect.maxFaultGain !== undefined ? ` up to ${effect.maxFaultGain}` : ''})`;
     case 'pyro_window_cashout': {
-      const parts: string[] = [`+${effect.oblivionPerWindow} Oblivion`];
-      if ((effect.chainPerWindow ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerWindow!)} chain`);
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Cash out ${scope} Ruin Windows (${parts.join(', ')} per window)`;
+      return `Cash out ${scope} Ruin Windows (+${effect.oblivionPerWindow} Oblivion per window)`;
     }
     case 'pyro_balance_bonus': return `If pools are balanced, +${effect.oblivionPerPair} Oblivion per Pressure-Fault pair`;
     case 'eternal_stack_gain':
@@ -337,7 +329,6 @@ function formatEffect(effect: CardEffect): string {
         : `Spend ${formatEternalStack(effect.stack, effect.value)}`;
     case 'eternal_stack_cashout': {
       const parts: string[] = [`+${effect.oblivionPerStack} Oblivion`];
-      if ((effect.chainPerStack ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerStack!)} chain`);
       if ((effect.drawPerStack ?? 0) > 0) parts.push(`+${formatExactValue(effect.drawPerStack!)} draw`);
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Cash out ${scope} ${eternalStackName(effect.stack)} (${parts.join(', ')} per stack)`;
@@ -354,11 +345,11 @@ function formatEffect(effect: CardEffect): string {
     }
     case 'light_halo_cascade_resound': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Resound ${scope} ${setSecondaryName('light')} (+${formatExactValue(effect.chainFloorPerCascade)} chain floor per cascade)`;
+      return `Resound ${scope} ${setSecondaryName('light')} (cascade bonus per cascade)`;
     }
     case 'thorn_briar_spiral_bloom': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Bloom ${scope} ${setSecondaryName('thorn')} (+${effect.trailPerSpiral} Trail per spiral, then +${formatExactValue(effect.chainPerTrail)} chain × current Trail)`;
+      return `Bloom ${scope} ${setSecondaryName('thorn')} (+${effect.trailPerSpiral} Trail per spiral)`;
     }
     case 'mech_reactor_flux_vent': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -378,7 +369,7 @@ function formatEffect(effect: CardEffect): string {
     }
     case 'absol_cascade_proof_amplify': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Amplify ${scope} ${setSecondaryName('absol')} (+${formatExactValue(effect.chainPerProofDepth)} chain per proof)`;
+      return `Amplify ${scope} ${setSecondaryName('absol')} (+${effect.oblivionPerProofDepth} Oblivion per proof)`;
     }
     case 'garden_wild_pollen_seed': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -390,24 +381,20 @@ function formatEffect(effect: CardEffect): string {
     }
     case 'tide_echo_resolve': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Resolve ${scope} ${setSecondaryName('tide')} (White polarity: +${formatExactValue(effect.chainPerPositive)} chain per echo · Black polarity: +${formatExactValue(effect.oblivionPerNegative)} Oblivion per echo)`;
+      return `Resolve ${scope} ${setSecondaryName('tide')} (White polarity: +${effect.oblivionPerPositive} Oblivion per echo · Black polarity: +${formatExactValue(effect.oblivionPerNegative)} Oblivion per echo)`;
     }
     case 'light_resonance_gain': return `Gain ${effect.value} Resonance`;
     case 'butterfly_spectrum_gain': return `Gain ${effect.value} Spectrum`;
     case 'butterfly_tune': return `Tune stance to ${effect.stance}`;
     case 'butterfly_release': {
-      const parts: string[] = [`+${effect.oblivionPerSpectrum} Oblivion`];
-      if ((effect.chainPerSpectrum ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerSpectrum!)} chain`);
       const scope = effect.spend >= 9999 ? 'all' : `up to ${effect.spend}`;
-      return `Release ${scope} Spectrum (${parts.join(', ')} per spectrum)`;
+      return `Release ${scope} Spectrum (+${effect.oblivionPerSpectrum} Oblivion per spectrum)`;
     }
     case 'seas_current_gain': return `Gain ${effect.value} Current`;
     case 'seas_polarity_shift': return `Shift polarity to ${effect.polarity}`;
     case 'seas_release': {
-      const parts: string[] = [`+${effect.oblivionPerCurrent} Oblivion`];
-      if ((effect.chainPerCurrent ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerCurrent!)} chain`);
       const scope = effect.spend >= 9999 ? 'all' : `up to ${effect.spend}`;
-      return `Release ${scope} Current (${parts.join(', ')} per current)`;
+      return `Release ${scope} Current (+${effect.oblivionPerCurrent} Oblivion per current)`;
     }
     case 'light_anchor_gain': return `Gain ${effect.value} Anchor`;
     case 'black_glass_white_flame_gain': return `Gain ${effect.value} White Flame`;
@@ -462,9 +449,7 @@ function formatEffect(effect: CardEffect): string {
     case 'forge_reforge_charge_cap_raise': return `Raise Reforge Charge cap by ${effect.value}`;
     case 'forge_pearl_drop': return `Drop ${formatCount(effect.value, 'Pearl')}`;
     case 'forge_pearl_cashout': {
-      const parts: string[] = [`+${effect.oblivionPerPearl} Oblivion`];
-      if ((effect.chainPerPearl ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerPearl!)} chain`);
-      return `Spend ${formatCount(effect.spend, 'Pearl')} (${parts.join(', ')} per Pearl)`;
+      return `Spend ${formatCount(effect.spend, 'Pearl')} (+${effect.oblivionPerPearl} Oblivion per Pearl)`;
     }
     case 'forge_recast_last': return `Recast last card at ${Math.round(effect.power * 100)}% power`;
     case 'forge_recast_last_n': return `Recast last ${formatCount(effect.count, 'card')} at ${Math.round(effect.power * 100)}% power`;
@@ -480,20 +465,16 @@ function formatEffect(effect: CardEffect): string {
     }
     case 'forge_anvil_seal': {
       const target = effect.target === 'self' ? 'this card' : 'last played card';
-      return `Anvil-Seal ${target} (+${effect.burstOblivion} Oblivion, +${formatExactValue(effect.burstChain)} chain on next play)`;
+      return `Anvil-Seal ${target} (+${effect.burstOblivion} Oblivion bonus on next play)`;
     }
     case 'forge_nacre_coat': return `Nacre-Coat ${effect.targetMode === 'all_played' ? 'all played cards' : 'last played card'}`;
     case 'forge_unrecorded_ignite': return 'Ignite the Unrecorded Hue';
     case 'forge_crown_cashout': {
-      const parts: string[] = [`+${effect.oblivionPerCrown} Oblivion`];
-      if ((effect.chainPerCrown ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerCrown!)} chain`);
-      return `Cash out all Forge Crowns (${parts.join(', ')} per crown)`;
+      return `Cash out all Forge Crowns (+${effect.oblivionPerCrown} Oblivion per crown)`;
     }
     case 'dfh_crown_cashout': {
-      const parts: string[] = [`+${effect.oblivionPerCrown} Oblivion`];
-      if ((effect.chainPerCrown ?? 0) > 0) parts.push(`+${formatExactValue(effect.chainPerCrown!)} chain`);
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Cash out ${scope} Cinder Crowns (${parts.join(', ')} per crown)`;
+      return `Cash out ${scope} Cinder Crowns (+${effect.oblivionPerCrown} Oblivion per crown)`;
     }
     case 'starlight_gain':
       return `Gain ${formatCount(effect.amount, 'Starlight Charge')}`;
@@ -503,7 +484,7 @@ function formatEffect(effect: CardEffect): string {
       return `Nova Wish Burst (Oblivion = Starlight × (1 + Dream × ${effect.dreamMultiplier ?? 0.4}))${effect.consumeStarlight ? '; consumes all Starlight' : ''}`;
     case 'wuas_constellation_lock_release': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Cash out ${scope} Star Crowns (+${effect.oblivionPerStack} Oblivion per Crown, +${formatExactValue(effect.chainPerDream ?? 0)} chain per Dream Lattice)`;
+      return `Cash out ${scope} Star Crowns (+${effect.oblivionPerStack} Oblivion per Crown)`;
     }
     case 'wuas_infinite_starbirth': {
       const parts: string[] = [`Ob = Seraphim × Starlight × ${effect.oblivionPerSeraphimPerStarlight}`];
@@ -526,7 +507,6 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
   switch (effect.type) {
     case 'cherubim_oblivion_per_card': return `+${effect.value} Oblivion per card played`;
     case 'cherubim_ophanim_bonus': return `Ophanim plays gain +${effect.value} Oblivion`;
-    case 'cherubim_chain_bonus': return `Chain grows +${effect.value} per card played`;
     case 'cherubim_seraphim_amp': return `Seraphim bonuses are amplified by +${effect.value}`;
     case 'cherubim_ember_gain': return `Gain ${effect.value} ${effect.value === 1 ? 'Ember' : 'Embers'} per card played`;
     case 'cherubim_draw_per_card': return `Draw ${formatCount(effect.value, 'card')} per card played`;
@@ -537,18 +517,16 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
           return `Adjacent active Seraphim gain +${effect.value} Oblivion per card played`;
         case 'draw':
           return `Each adjacent active Seraphim adds ${formatCount(effect.value, 'extra card')} whenever you play a card`;
-        case 'chain':
-          return `Adjacent active Seraphim gain +${effect.value} chain growth`;
         default:
           return `Adjacent active Seraphim ${effect.bonusType} +${effect.value}`;
       }
     }
     case 'cherubim_conditional_buff': return `If ${formatCondition(effect.condition)}, this Cherubim grants +${effect.value} bonus power`;
     case 'cherubim_patience_per_card': return `Adjacent Seraphim gain +${effect.value} Patience per card played`;
+    case 'cherubim_global_oblivion_mult': return `All Oblivion gain +${Math.round(effect.value * 100)}%`;
     case 'cherubim_attack_buff': {
       const parts: string[] = [];
       if (effect.bonusBaseOblivion !== undefined) parts.push(`base +${effect.bonusBaseOblivion}`);
-      if (effect.bonusChainScaling !== undefined) parts.push(`chain bonus +${effect.bonusChainScaling.toFixed(2)}`);
       if (effect.cooldownDeltaCards !== undefined) parts.push(`cooldown ${effect.cooldownDeltaCards >= 0 ? '+' : ''}${effect.cooldownDeltaCards}`);
       if (effect.multiplier !== undefined) parts.push(`multiplier x${effect.multiplier.toFixed(2)}`);
       if (effect.condition) parts.push(`when ${formatCondition(effect.condition)}`);
@@ -599,7 +577,6 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
     // Abyssal Forge — recast-aware passives
     case 'cherubim_charge_per_n_cards': return `Gain 1 Reforge Charge every ${effect.n} cards played`;
     case 'cherubim_temper_on_next_seraphim': return `Auto-Temper the next Seraphim played (+${Math.round(effect.factor * 100)}%)`;
-    case 'cherubim_recast_chain_bonus': return `+${effect.value} chain per recast event this turn`;
     case 'cherubim_pearl_per_recast_bonus': return `+${effect.value} extra Pearl per recast event`;
     case 'cherubim_recast_oblivion_bonus': return `+${effect.value} Oblivion per recast event`;
     case 'cherubim_seraphim_recast_amp': return `Seraphim recasts fire at +${Math.round(effect.value * 100)}% power`;
@@ -674,7 +651,7 @@ function pushLateGameIdentity(
 ): void {
   const identity = getLateGameAttackIdentity(definitionId, rarity, attackLabel);
   if (!identity) return;
-  lines.push(`  Proc · +${Math.round(identity.bonusBaseMultiplier * 100)}% +${identity.bonusFlatOblivion} flat · draw ${identity.drawCards} · chain-gain +${identity.chainGainBonus.toFixed(2)} · dominant +${identity.dominantResourceGain} · cd -${identity.cooldownReduction}`);
+  lines.push(`  Proc · +${Math.round(identity.bonusBaseMultiplier * 100)}% +${identity.bonusFlatOblivion} flat · draw ${identity.drawCards} · dominant +${identity.dominantResourceGain} · cd -${identity.cooldownReduction}`);
 }
 
 function pushSummarySection(sections: CardSummarySection[], title: string, lines: string[]): void {
@@ -692,7 +669,6 @@ function formatAttackSummary(
     name: string;
     baseOblivion: number;
     cooldownCards: number;
-    chainScaling: number;
     costs?: ReadonlyArray<AttackCost>;
     requiresAngelOnBoard?: boolean;
   },
@@ -709,13 +685,12 @@ export function getCanonicalAttackDescription(attack: {
   name: string;
   baseOblivion: number;
   cooldownCards: number;
-  chainScaling: number;
   costs?: ReadonlyArray<AttackCost>;
   requiresAngelOnBoard?: boolean;
 }): string {
   const costText = (attack.costs && attack.costs.length > 0) ? ` · Cost: ${formatCosts(attack.costs)}` : '';
   const angelText = attack.requiresAngelOnBoard ? ' · Requires Angel' : '';
-  return `${attack.baseOblivion} base Oblivion · ${formatCount(attack.cooldownCards, 'card')} cooldown · chain +${attack.chainScaling.toFixed(2)}${angelText}${costText}`;
+  return `${attack.baseOblivion} base Oblivion · ${formatCount(attack.cooldownCards, 'card')} cooldown${angelText}${costText}`;
 }
 
 function normalizePreviewFingerprint(text: string): string {
@@ -917,11 +892,11 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
     if (seraphim.attacks) {
       lines.push('Attacks:');
       lines.push(`- Unsynergized · ${seraphim.attacks.unsynergized.name}`);
-      lines.push(`  Base ${seraphim.attacks.unsynergized.baseOblivion} · Cooldown ${seraphim.attacks.unsynergized.cooldownCards} cards · Chain +${seraphim.attacks.unsynergized.chainScaling.toFixed(2)} · Cost ${formatCosts(seraphim.attacks.unsynergized.costs)}`);
+      lines.push(`  Base ${seraphim.attacks.unsynergized.baseOblivion} · Cooldown ${seraphim.attacks.unsynergized.cooldownCards} cards · Cost ${formatCosts(seraphim.attacks.unsynergized.costs)}`);
       pushLateGameIdentity(lines, seraphim.definitionId, seraphim.rarity, seraphim.attacks.unsynergized.label);
 
       lines.push(`- Synergized · ${seraphim.attacks.synergized.name}`);
-      lines.push(`  Base ${seraphim.attacks.synergized.baseOblivion} · Cooldown ${seraphim.attacks.synergized.cooldownCards} cards · Chain +${seraphim.attacks.synergized.chainScaling.toFixed(2)}`);
+      lines.push(`  Base ${seraphim.attacks.synergized.baseOblivion} · Cooldown ${seraphim.attacks.synergized.cooldownCards} cards`);
       lines.push(`  Requires Angel ${seraphim.attacks.synergized.requiresAngelOnBoard ? 'yes' : 'no'} · Cost ${formatCosts(seraphim.attacks.synergized.costs)}`);
       pushLateGameIdentity(lines, seraphim.definitionId, seraphim.rarity, seraphim.attacks.synergized.label);
     } else {
@@ -948,11 +923,11 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
     if (angel.attacks) {
       lines.push('Attacks:');
       lines.push(`- Primary · ${angel.attacks.primary.name}`);
-      lines.push(`  Base ${angel.attacks.primary.baseOblivion} · Cooldown ${angel.attacks.primary.cooldownCards} cards · Chain +${angel.attacks.primary.chainScaling.toFixed(2)} · Cost ${formatCosts(angel.attacks.primary.costs)}`);
+      lines.push(`  Base ${angel.attacks.primary.baseOblivion} · Cooldown ${angel.attacks.primary.cooldownCards} cards · Cost ${formatCosts(angel.attacks.primary.costs)}`);
       pushLateGameIdentity(lines, angel.definitionId, angel.rarity, angel.attacks.primary.label);
 
       lines.push(`- Exalted · ${angel.attacks.exalted.name}`);
-      lines.push(`  Base ${angel.attacks.exalted.baseOblivion} · Cooldown ${angel.attacks.exalted.cooldownCards} cards · Chain +${angel.attacks.exalted.chainScaling.toFixed(2)} · Cost ${formatCosts(angel.attacks.exalted.costs)}`);
+      lines.push(`  Base ${angel.attacks.exalted.baseOblivion} · Cooldown ${angel.attacks.exalted.cooldownCards} cards · Cost ${formatCosts(angel.attacks.exalted.costs)}`);
       pushLateGameIdentity(lines, angel.definitionId, angel.rarity, angel.attacks.exalted.label);
     } else {
       lines.push('Attacks: none');

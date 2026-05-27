@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import '@/styles/animations.css';
 import { GameEngine } from '@/core/engine/GameEngine';
 import HUD from '@/ui/hud/HUD';
+import { SfxManager } from '@/audio/SfxManager';
 const DeckBuilder = lazy(() => import('@/ui/deck/DeckBuilder'));
 const DeckViewer = lazy(() => import('@/ui/deck/DeckViewer'));
 const CardPackStore = lazy(() => import('@/ui/store/CardPackStore'));
@@ -22,6 +23,8 @@ const WakeTrialsModal = lazy(() => import('@/ui/menus/WakeTrialsModal'));
 const EndlessGauntletModal = lazy(() => import('@/ui/menus/EndlessGauntletModal'));
 const ChatWindow = lazy(() => import('@/ui/social/ChatWindow'));
 const ToastQueue = lazy(() => import('@/ui/components/ToastQueue'));
+const RadioNowPlaying = lazy(() => import('@/ui/components/RadioNowPlaying'));
+const RadioControlBar = lazy(() => import('@/ui/components/RadioControlBar'));
 const SplashScreen = lazy(() => import('@/ui/boot/SplashScreen'));
 const TitleScreen = lazy(() => import('@/ui/boot/TitleScreen'));
 const MainMenuHub = lazy(() => import('@/ui/menu/MainMenuHub'));
@@ -36,6 +39,8 @@ import { TITLE_BADGES } from '@/data/profile/titleBadges';
 import { initStatsSync } from '@/social/statsSync';
 import { initSocialNotifications } from '@/social/notificationsService';
 import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
+import { MainMenuRadio } from '@/audio/MainMenuRadio';
+import type { NowPlayingEvent } from '@/ui/components/RadioNowPlaying';
 
 /**
  * Top-level scene state machine. Splash plays once on app boot, advances
@@ -53,12 +58,13 @@ type AppScene = 'splash' | 'title' | 'menu' | 'arena';
 function HudShakeWrapper({ children }: { children: React.ReactNode }) {
   const divRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const microTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerShake = React.useCallback((hard: boolean) => {
     const el = divRef.current;
     if (!el) return;
     const cls = hard ? 'anim-screen-shake-hard' : 'anim-screen-shake-soft';
-    el.classList.remove('anim-screen-shake-soft', 'anim-screen-shake-hard');
+    el.classList.remove('anim-screen-shake-soft', 'anim-screen-shake-hard', 'anim-screen-shake-micro');
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     // Force reflow so re-adding the same class re-triggers animation.
     void el.offsetWidth;
@@ -68,16 +74,33 @@ function HudShakeWrapper({ children }: { children: React.ReactNode }) {
     }, hard ? 650 : 450);
   }, []);
 
+  const triggerMicro = React.useCallback(() => {
+    const el = divRef.current;
+    if (!el) return;
+    // Don't interrupt a harder shake already in progress
+    if (el.classList.contains('anim-screen-shake-soft') || el.classList.contains('anim-screen-shake-hard')) return;
+    el.classList.remove('anim-screen-shake-micro');
+    if (microTimeoutRef.current) clearTimeout(microTimeoutRef.current);
+    void el.offsetWidth;
+    el.classList.add('anim-screen-shake-micro');
+    microTimeoutRef.current = setTimeout(() => {
+      el.classList.remove('anim-screen-shake-micro');
+    }, 280);
+  }, []);
+
   useEffect(() => {
     const onSoft = () => triggerShake(false);
     const onHard = () => triggerShake(true);
+    const onMicro = () => triggerMicro();
     window.addEventListener('hud-shake-soft', onSoft);
     window.addEventListener('hud-shake-hard', onHard);
+    window.addEventListener('hud-shake-micro', onMicro);
     return () => {
       window.removeEventListener('hud-shake-soft', onSoft);
       window.removeEventListener('hud-shake-hard', onHard);
+      window.removeEventListener('hud-shake-micro', onMicro);
     };
-  }, [triggerShake]);
+  }, [triggerShake, triggerMicro]);
 
   return (
     <div ref={divRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
@@ -114,6 +137,13 @@ export default function App() {
   const [showWakeTrials, setShowWakeTrials] = useState(false);
   const [showEndlessGauntlet, setShowEndlessGauntlet] = useState(false);
   const [showAutosaveIndicator, setShowAutosaveIndicator] = useState(false);
+  // Radio state
+  const radioActiveRef = useRef(false);
+  const nowPlayingEpochRef = useRef(0);
+  const [nowPlayingEvent, setNowPlayingEvent] = useState<NowPlayingEvent | null>(null);
+  const [radioPaused, setRadioPaused] = useState(false);
+  const [radioActive, setRadioActive] = useState(false);
+  const [radioCurrentTrack, setRadioCurrentTrack] = useState<import('@/audio/MainMenuRadio').RadioTrackInfo | null>(null);
   // Top-level scene state machine. Splash and title only display on the very
   // first boot of each app session; subsequent navigation cycles only between
   // menu and arena.
@@ -146,18 +176,76 @@ export default function App() {
   // (or the "Music Enabled" checkbox unchecked, which forces volume to 0)
   // pauses playback entirely.
   useEffect(() => {
-    MusicManager.setVolume(settings.musicVolume ?? 0);
+    const vol = settings.musicVolume ?? 0;
+    MusicManager.setVolume(vol);
+    MainMenuRadio.setVolume(vol);
   }, [settings.musicVolume]);
+
+  // ── SFX volume ───────────────────────────────────────────────────────
+  useEffect(() => {
+    SfxManager.setVolume(settings.sfxVolume ?? 0.8);
+  }, [settings.sfxVolume]);
+
+  // ── Global button click & hover SFX ─────────────────────────────────
+  // Capture-phase pointerdown routes to one of three sounds based on a
+  // data-sfx attribute on the button (or any ancestor):
+  //   data-sfx="claim"  → clickChime()  (rewarding — Claim, Open Pack, Collect)
+  //   (default)         → clickHeavy()  (standard heavy thud)
+  //
+  // A throttled pointerover listener fires hover() (a feather-light tick)
+  // as the cursor enters each distinct button target, capped at once per
+  // 80 ms to stay comfortable even on fast mouse movement.
+  useEffect(() => {
+    const onPointerDown = (e: PointerEvent) => {
+      const btn = (e.target as HTMLElement).closest('button, [role="button"]') as HTMLButtonElement | null;
+      if (!btn || btn.disabled || btn.getAttribute('aria-disabled') === 'true') return;
+      const sfx = btn.dataset.sfx ?? btn.closest('[data-sfx]')?.getAttribute('data-sfx') ?? '';
+      if (sfx === 'claim') {
+        SfxManager.clickChime();
+      } else {
+        SfxManager.clickHeavy();
+      }
+    };
+
+    let lastHoverBtn: Element | null = null;
+    let lastHoverTime = 0;
+    const onPointerOver = (e: PointerEvent) => {
+      const btn = (e.target as HTMLElement).closest('button, [role="button"]') as HTMLButtonElement | null;
+      // Always update the tracked element so we reset when leaving buttons.
+      // If the resolved button hasn't changed we are still hovering the same
+      // element — never re-trigger regardless of how long it's been.
+      if (btn === lastHoverBtn) return;
+      lastHoverBtn = btn;
+      if (!btn || btn.disabled || btn.getAttribute('aria-disabled') === 'true') return;
+      // Throttle rapid sweeps across many different buttons (e.g. a button row)
+      const now = performance.now();
+      if (now - lastHoverTime < 60) return;
+      lastHoverTime = now;
+      SfxManager.hover();
+    };
+
+    window.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointerover', onPointerOver);
+    return () => {
+      window.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointerover', onPointerOver);
+    };
+  }, []);
 
   // Pick a track based on what's currently on-screen. Active boss fights
   // override everything; otherwise the topmost open menu wins. The main hub
-  // (no menu, no fight) is intentionally silent so the title music doesn't
-  // bleed in awkwardly.
+  // (no menu, no fight) plays the ambient main menu theme.
   useEffect(() => {
     let track: MusicTrackId | null = null;
     if (scene !== 'splash' && scene !== 'title') {
       if (bossFight.mode === 'active') {
-        track = bossFight.kind === 'gauntlet' ? 'battle-gauntlet' : 'battle-eternity';
+        if (bossFight.kind === 'gauntlet') {
+          track = (bossFight.gauntletDepth ?? 0) >= 5 ? 'battle-gauntlet-p2' : 'battle-gauntlet-p1';
+        } else if (bossFight.kind === 'trial') {
+          track = 'battle-wake-trials';
+        } else {
+          track = 'battle-eternity';
+        }
       } else if (showCardStore) {
         track = 'menu-shop';
       } else if (showInfinitude) {
@@ -166,19 +254,46 @@ export default function App() {
         track = 'menu-artifacts';
       } else if (showEternitysWake || showEndlessGauntlet || showWakeTrials) {
         track = 'menu-eternity';
+      } else if (turn.phase === 'mulligan' || turn.phase === 'playing') {
+        track = 'battle-normal';
+      } else {
+        track = 'menu-main';
       }
     }
-    MusicManager.playTrack(track);
+    if (track === 'menu-main') {
+      // Route the main menu through the radio playlist instead of a single looping track.
+      if (!radioActiveRef.current) {
+        radioActiveRef.current = true;
+        setRadioActive(true);
+        MainMenuRadio.setOnTrackChange((info) => {
+          nowPlayingEpochRef.current++;
+          setNowPlayingEvent({ epoch: nowPlayingEpochRef.current, track: info });
+          setRadioCurrentTrack(info);
+        });
+        MainMenuRadio.setOnPausedChange((p) => setRadioPaused(p));
+        MainMenuRadio.start(settings.musicVolume ?? 0.5);
+        MusicManager.stop();
+      }
+    } else {
+      if (radioActiveRef.current) {
+        radioActiveRef.current = false;
+        setRadioActive(false);
+        MainMenuRadio.stop();
+      }
+      MusicManager.playTrack(track);
+    }
   }, [
     scene,
     bossFight.mode,
     bossFight.kind,
+    bossFight.gauntletDepth,
     showCardStore,
     showInfinitude,
     showArtifacts,
     showEternitysWake,
     showEndlessGauntlet,
     showWakeTrials,
+    turn.phase,
   ]);
   // ─────────────────────────────────────────────────────────────────────
 
@@ -584,6 +699,17 @@ export default function App() {
         </Suspense>
       )}
       <Suspense fallback={null}><ToastQueue /></Suspense>
+      {/* Main menu radio — now-playing toast (top-right corner) */}
+      <Suspense fallback={null}><RadioNowPlaying nowPlaying={nowPlayingEvent} /></Suspense>
+      {/* Main menu radio — control bar (bottom-right corner) */}
+      <Suspense fallback={null}>
+        <RadioControlBar
+          radioActive={radioActive}
+          paused={radioPaused}
+          currentTrack={radioCurrentTrack}
+          onPausedChange={setRadioPaused}
+        />
+      </Suspense>
     </div>
   );
 }

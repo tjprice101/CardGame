@@ -305,10 +305,9 @@ export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
     setName: 'Glass Absolute',
     tier: 'advanced',
     name: 'Crystalline Array',
-    description: 'Chain multiplier from Proof starts at ×1.1 instead of ×1.0. Also grants +20% Oblivion when Glass Absolute cards are played.',
+    description: 'Grants +20% Oblivion when Glass Absolute cards are played.',
     powderCost: T2,
     effects: [
-      { type: 'chain_mult_start_bonus', value: 0.1 },
       { type: 'oblivion_set_mult', value: 0.2 },
     ],
   },
@@ -445,10 +444,9 @@ export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
     setName: 'Abyssal Forge',
     tier: 'advanced',
     name: 'Weld Matrix',
-    description: 'Each Weld Mark grants +1 chain multiplier step. Also grants +20% Oblivion when Forge cards are played.',
+    description: 'Each Weld Mark extends Forge combos. Also grants +20% Oblivion when Forge cards are played.',
     powderCost: T2,
     effects: [
-      { type: 'weld_mark_chain_bonus', value: 1 },
       { type: 'oblivion_set_mult', value: 0.2 },
     ],
   },
@@ -493,9 +491,9 @@ export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
     setName: 'Death-flamed Hell',
     tier: 'apex',
     name: 'Apocalypse Chain',
-    description: 'Chain multiplier bonus from Death-flamed Hell apex effects is increased by +0.3.',
+    description: 'Death-flamed Hell apex effects deal increased Oblivion.',
     powderCost: T3,
-    effects: [{ type: 'dfh_apocalypse_chain_bonus', value: 0.3 }],
+    effects: [{ type: 'dfh_infernal_pressure_bonus', value: 0.3 }],
   },
 ];
 

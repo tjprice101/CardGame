@@ -9,12 +9,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Embersmite',
-    description: '+30 Oblivion; Gain 1 Radiance; Gain 3 Radiance; Draw 1 card',
+    description: '+30 Oblivion; Gain 1 Radiance; Gain 3 Radiance',
     artKey: 'hr_light_divine_smite',
     effects: [
       { type: 'oblivion_flat', value: 30 },
-      { type: 'radiance_gain', value: 1 },
-    ],
+      { type: 'radiance_gain', value: 1 }],
   },
   {
     definitionId: 'hr-light-holy-radiance',
@@ -22,7 +21,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Hallowed Flame',
-    description: 'Seraphim bonuses are amplified by +15; Gain 1 Radiance; If you have 5+ Radiance, Seraphim bonuses are amplified by +10; Empower the next card you play; Draw 1 card',
+    description: 'Seraphim bonuses are amplified by +15; Gain 1 Radiance; If you have 5+ Radiance, Seraphim bonuses are amplified by +10; Empower the next card you play',
     artKey: 'hr_light_holy_radiance',
     effects: [
       { type: 'seraphim_bonus_amplifier', value: 15 },
@@ -31,8 +30,7 @@ export const lightHRCards: OphanimDefinition[] = [
         type: 'conditional',
         condition: { type: 'radiance_gte', value: 5 },
         then: [{ type: 'seraphim_bonus_amplifier', value: 10 }],
-      },
-    ],
+      }],
   },
   {
     definitionId: 'hr-light-sacred-fury',
@@ -40,12 +38,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Thornfire Fury',
-    description: 'Spend 3 Radiance; Seraphim bonuses are amplified by +25; Amplify Chain by +x1.3',
+    description: 'Spend 3 Radiance; Seraphim bonuses are amplified by +25; chain_gain',
     artKey: 'hr_light_sacred_fury',
     effects: [
       { type: 'radiance_spend', value: 3 },
-      { type: 'seraphim_bonus_amplifier', value: 25 },
-    ],
+      { type: 'seraphim_bonus_amplifier', value: 25 }],
   },
   {
     definitionId: 'hr-light-luminous-strike',
@@ -53,7 +50,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Cinderstrike',
-    description: '+40 Oblivion; If you control 1+ active Seraphim, +40 Oblivion; Amplify Chain by +x1.2',
+    description: '+40 Oblivion; If you control 1+ active Seraphim, +40 Oblivion; chain_gain',
     artKey: 'hr_light_luminous_strike',
     effects: [
       { type: 'oblivion_flat', value: 40 },
@@ -61,8 +58,7 @@ export const lightHRCards: OphanimDefinition[] = [
         type: 'conditional',
         condition: { type: 'seraphim_active_gte', value: 1 },
         then: [{ type: 'oblivion_flat', value: 40 }],
-      },
-    ],
+      }],
   },
   {
     definitionId: 'hr-light-radiant-surge',
@@ -70,7 +66,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Ember Surge',
-    description: '+0 Oblivion; Shuffle discard into deck; Draw 1 card',
+    description: '+0 Oblivion; Shuffle discard into deck; Gain 4 Radiance',
     artKey: 'hr_light_radiant_surge',
     effects: [
       { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: min(radiance * 8, 80)
@@ -82,7 +78,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberforged',
-    description: 'Spend 9999 Radiance; +0 Oblivion; Amplify Chain by +x1.4',
+    description: 'Spend 9999 Radiance; +0 Oblivion; chain_gain',
     artKey: 'hr_light_sunforged',
     effects: [
       { type: 'radiance_spend', value: 9999 },
@@ -95,12 +91,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Seraphfire Wrath',
-    description: '+60 Oblivion; Gain 2 Radiance; Amplify Chain by +x1.3',
+    description: '+60 Oblivion; Gain 2 Radiance; chain_gain',
     artKey: 'hr_light_angelic_wrath',
     effects: [
       { type: 'oblivion_flat', value: 60 },
-      { type: 'radiance_gain', value: 2 },
-    ],
+      { type: 'radiance_gain', value: 2 }],
   },
   {
     definitionId: 'hr-light-exalted-mantle',
@@ -108,11 +103,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Mantle',
-    description: 'Empower the next card you play; Amplify Chain by +x1.4',
+    description: 'Empower the next card you play; chain_gain',
     artKey: 'hr_light_exalted_mantle',
     effects: [
-      { type: 'multiply_next' },
-    ],
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'hr-light-aureate-blessing',
@@ -120,7 +114,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Silverthorn Blessing',
-    description: '+35 Oblivion; If you have played 3+ cards this turn, Gain 2 Radiance; Amplify Chain by +x1.2',
+    description: '+35 Oblivion; If you have played 3+ cards this turn, Gain 2 Radiance; chain_gain',
     artKey: 'hr_light_aureate_blessing',
     effects: [
       { type: 'oblivion_flat', value: 35 },
@@ -128,8 +122,7 @@ export const lightHRCards: OphanimDefinition[] = [
         type: 'conditional',
         condition: { type: 'cards_played_gte', value: 3 },
         then: [{ type: 'radiance_gain', value: 2 }],
-      },
-    ],
+      }],
   },
   {
     definitionId: 'hr-light-gilded-mandate',
@@ -137,16 +130,15 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Thorncrown Mandate',
-    description: 'Seraphim bonuses are amplified by +25; If you have 8+ Radiance, Draw 1 card; Shuffle discard into deck; Draw 1 card',
+    description: 'Seraphim bonuses are amplified by +25; If you have 8+ Radiance, Gain 4 Radiance; Shuffle discard into deck',
     artKey: 'hr_light_gilded_mandate',
     effects: [
       { type: 'seraphim_bonus_amplifier', value: 25 },
       {
         type: 'conditional',
         condition: { type: 'radiance_gte', value: 8 },
-        then: [{ type: 'draw', value: 1 }],
-      },
-    ],
+        then: [{ type: 'radiance_gain', value: 4 }],
+      }],
   },
 
   // Oblivion multiplier cards
@@ -157,12 +149,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Emberwing Grace',
-    description: 'Gain +60% total Oblivion this turn; Gain 1 Radiance; Gain 4 Radiance; Draw 1 card',
+    description: 'Gain +60% total Oblivion this turn; Gain 1 Radiance; Gain 4 Radiance',
     artKey: 'hr_light_celestial_grace',
     effects: [
       { type: 'score_multiplier', value: 60 },
-      { type: 'radiance_gain', value: 1 },
-    ],
+      { type: 'radiance_gain', value: 1 }],
   },
   {
     definitionId: 'hr-light-heavenly-tithe',
@@ -170,12 +161,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Pyre Tithe',
-    description: '+100 Oblivion; Gain 1 Radiance; Shuffle discard into deck; Draw 1 card',
+    description: '+100 Oblivion; Gain 1 Radiance; Shuffle discard into deck',
     artKey: 'hr_light_heavenly_tithe',
     effects: [
       { type: 'oblivion_flat', value: 100 },
-      { type: 'radiance_gain', value: 1 },
-    ],
+      { type: 'radiance_gain', value: 1 }],
   },
   {
     definitionId: 'hr-light-sanctified-offering',
@@ -183,12 +173,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Hallowed Pyre',
-    description: 'Spend 3 Radiance; Gain +100% total Oblivion this turn; Shuffle discard into deck; Draw 1 card',
+    description: 'Spend 3 Radiance; Gain +100% total Oblivion this turn; Shuffle discard into deck',
     artKey: 'hr_light_sanctified_offering',
     effects: [
       { type: 'radiance_spend', value: 3 },
-      { type: 'score_multiplier', value: 100 },
-    ],
+      { type: 'score_multiplier', value: 100 }],
   },
   {
     definitionId: 'hr-light-celestial-dividend',
@@ -196,7 +185,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'Emberthorn Dividend',
-    description: 'Spend 9999 Radiance; +0 Oblivion; Draw 2 cards',
+    description: 'Spend 9999 Radiance; +0 Oblivion; Gain 5 Radiance',
     artKey: 'hr_light_celestial_dividend',
     effects: [
       { type: 'radiance_spend', value: 9999 },
@@ -209,12 +198,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'Silverthorn Spire',
-    description: 'Spend 6 Radiance; Gain +250% total Oblivion this turn; Gain 6 Radiance; Draw 1 card',
+    description: 'Spend 6 Radiance; Gain +250% total Oblivion this turn; Gain 8 Radiance',
     artKey: 'hr_light_pillar_of_heaven',
     effects: [
       { type: 'radiance_spend', value: 6 },
-      { type: 'score_multiplier', value: 250 },
-    ],
+      { type: 'score_multiplier', value: 250 }],
   },
 
   // Seraphim / utility cards
@@ -225,12 +213,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Flashfire Judgement',
-    description: 'Gain 1 Radiance; Shuffle discard into deck; Draw 1 card',
+    description: 'Gain 3 Radiance; Shuffle discard into deck',
     artKey: 'hr_light_hastened_judgment',
     effects: [
       { type: 'radiance_gain', value: 3 },
-      { type: 'multiply_next' },
-    ],
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'hr-light-seraphic-bond',
@@ -238,7 +225,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Bond',
-    description: 'Seraphim bonuses are amplified by +15; Gain 0 Radiance; Empower the next card you play; Draw 1 card',
+    description: 'Seraphim bonuses are amplified by +15; Gain 0 Radiance; Empower the next card you play',
     artKey: 'hr_light_seraphic_bond',
     effects: [
       { type: 'seraphim_bonus_amplifier', value: 15 },
@@ -251,12 +238,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Undying Thornwatch',
-    description: 'Gain 2 Radiance; Shuffle discard into deck; Draw 1 card',
+    description: 'Gain 2 Radiance; Shuffle discard into deck',
     artKey: 'hr_light_undying_vigil',
     effects: [
       { type: 'radiance_gain', value: 3 },
-      { type: 'salvage_any' },
-    ],
+      { type: 'salvage_any' }],
   },
 
   // Utility - Draw/Cycle
@@ -270,8 +256,7 @@ export const lightHRCards: OphanimDefinition[] = [
     description: 'Draw 2 cards',
     artKey: 'hr_light_celestial_scroll',
     effects: [
-      { type: 'draw', value: 2 },
-    ],
+      { type: 'draw', value: 2 }],
   },
   {
     definitionId: 'hr-light-angelic-vision',
@@ -283,8 +268,7 @@ export const lightHRCards: OphanimDefinition[] = [
     artKey: 'hr_light_angelic_vision',
     effects: [
       { type: 'draw', value: 3 },
-      { type: 'discard_choice', value: 1 },
-    ],
+      { type: 'discard_choice', value: 1 }],
   },
   {
     definitionId: 'hr-light-holy-insight',
@@ -295,8 +279,7 @@ export const lightHRCards: OphanimDefinition[] = [
     description: 'Look at the top 5 cards, take 2 cards, and put the rest on the bottom',
     artKey: 'hr_light_holy_insight',
     effects: [
-      { type: 'look_top_take', look: 5, take: 2 },
-    ],
+      { type: 'look_top_take', look: 5, take: 2 }],
   },
   {
     definitionId: 'hr-light-sacred-memory',
@@ -304,12 +287,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Ashen Remembrance',
-    description: 'Shuffle discard into deck; Draw 1 card',
+    description: 'Shuffle discard into deck; Gain 4 Radiance',
     artKey: 'hr_light_sacred_memory',
     effects: [
       { type: 'shuffle_discard' },
-      { type: 'draw', value: 1 },
-    ],
+      { type: 'radiance_gain', value: 4 }],
   },
   {
     definitionId: 'hr-light-radiant-echo',
@@ -317,12 +299,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Ember Echo',
-    description: 'Replay last Ophanim played this turn; Gain 1 Radiance; Draw 1 card',
+    description: 'Replay last Ophanim played this turn; Gain 3 Radiance',
     artKey: 'hr_light_radiant_echo',
     effects: [
       { type: 'copy_last_hr' },
-      { type: 'radiance_gain', value: 1 },
-    ],
+      { type: 'radiance_gain', value: 1 }],
   },
   {
     definitionId: 'hr-light-luminous-cycle',
@@ -330,11 +311,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Ember Cycle',
-    description: 'Choose and discard 3 cards; Amplify Chain by +x1.2',
+    description: 'Choose and discard 3 cards; chain_gain',
     artKey: 'hr_light_luminous_cycle',
     effects: [
-      { type: 'discard_choice', value: 3 },
-    ],
+      { type: 'discard_choice', value: 3 }],
   },
   {
     definitionId: 'hr-light-divine-clarity',
@@ -342,11 +322,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Whiteflame Clarity',
-    description: 'Draw 4 cards',
+    description: 'Seraphim bonuses are amplified by +40; Gain 4 Radiance',
     artKey: 'hr_light_divine_clarity',
     effects: [
-      { type: 'draw', value: 4 },
-    ],
+      { type: 'seraphim_bonus_amplifier', value: 40 },
+      { type: 'radiance_gain', value: 4 }],
   },
   {
     definitionId: 'hr-light-mornings-grace',
@@ -354,23 +334,20 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Emberdawn Grace',
-    description: 'If this is the first card you played this turn, Draw 2 cards; Gain 2 Radiance; If you have played 1+ cards this turn, Draw 1 card; Gain 3 Radiance; Draw 1 card',
+    description: 'If this is the first card you played this turn, Gain 6 Radiance; If you have played 1+ cards this turn, Gain 3 Radiance; Gain 3 Radiance',
     artKey: 'hr_light_mornings_grace',
     effects: [
       {
         type: 'conditional',
         condition: { type: 'first_card_this_turn' },
         then: [
-          { type: 'draw', value: 2 },
-          { type: 'radiance_gain', value: 2 },
-        ],
+          { type: 'radiance_gain', value: 6 }],
       },
       {
         type: 'conditional',
         condition: { type: 'cards_played_gte', value: 1 },
-        then: [{ type: 'draw', value: 1 }],
-      },
-    ],
+        then: [{ type: 'radiance_gain', value: 3 }],
+      }],
   },
   {
     definitionId: 'hr-light-gleaming-passage',
@@ -381,8 +358,7 @@ export const lightHRCards: OphanimDefinition[] = [
     description: 'Discard 2 cards, then draw 3 cards',
     artKey: 'hr_light_gleaming_passage',
     effects: [
-      { type: 'discard_draw', discard: 2, draw: 3 },
-    ],
+      { type: 'discard_draw', discard: 2, draw: 3 }],
   },
 
   // Utility - Radiance Manipulation
@@ -393,7 +369,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Silverthorn Chain',
-    description: 'Gain 0 Radiance; Draw 1 card',
+    description: 'Gain 0 Radiance',
     artKey: 'hr_light_aureate_chain',
     effects: [
       { type: 'radiance_gain', value: 0 },  // executor: counts Ophanim cards in hand (hr-light-aureate-chain)
@@ -405,11 +381,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Ascendant Blaze',
-    description: 'Gain 0 Radiance; Draw 1 card',
+    description: 'Gain 0 Radiance',
     artKey: 'hr_light_transcendent_surge',
     effects: [
       { type: 'radiance_gain', value: 0 },  // executor: cardsPlayedThisTurn (hr-light-transcendent-surge)
-      { type: 'draw', value: 1 },
     ],
   },
   {
@@ -418,11 +393,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Thornfire Covenant',
-    description: 'Sacred Covenant; Draw 1 card',
+    description: 'Sacred Covenant; Gain 3 Radiance',
     artKey: 'hr_light_sacred_covenant',
     effects: [
-      { type: 'sacred_covenant' },
-    ],
+      { type: 'sacred_covenant' }],
   },
   {
     definitionId: 'hr-light-grand-illumination',
@@ -430,11 +404,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'The Emberthorn Revelation',
-    description: 'Double current Radiance; +0 Oblivion; Amplify Chain by +x1.5',
+    description: 'Double current Radiance; +0 Oblivion; chain_gain',
     artKey: 'hr_light_grand_illumination',
     effects: [
       { type: 'radiance_double' },
       { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: mutableTurn.radiance * 8 (after doubling)
     ],
-  },
-];
+  }];

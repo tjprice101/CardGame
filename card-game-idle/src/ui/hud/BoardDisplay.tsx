@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import CardHoverDetail from '@/ui/hud/CardHoverDetail';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
-import { useStore, selectBoard, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
+import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
@@ -14,8 +15,11 @@ import {
 } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
+import { highlightRulesText } from '@/ui/text/highlightRulesText';
+import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
+import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { uiTypography, warmTheme } from '@/ui/theme';
-import { ELEMENT_COLORS } from '@/data/elements';
+import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import type { DeckCard } from '@/types/game';
 import type {
   AngelDefinition,
@@ -27,9 +31,9 @@ import type {
 } from '@/types/cards';
 
 const SLOT_W = 118;
-const SLOT_H = 162;
+const SLOT_H = 168;
 const CHERUBIM_W = 104;
-const CHERUBIM_H = 140;
+const CHERUBIM_H = 148;
 const FRONT_ROW_GAP = 'clamp(12px, 1.4vw, 18px)';
 const BACK_ROW_GAP = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
 const ROW_SEPARATION = 'clamp(14px, 2vh, 24px)';
@@ -76,8 +80,8 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
   const onPlayLeadByType: Record<string, string> = {
     draw: 'draw tempo',
     oblivion_flat: 'immediate Oblivion injection',
-    chain_gain: 'chain-gain anchoring',
-    chain_multiplier_set: 'chain snapline setup',
+    chain_gain: 'draw tempo conversion',
+    chain_multiplier_set: 'oblivion scaling setup',
     multiply_next: 'next-card amplification',
     salvage_any: 'discard reclamation',
     look_top_take: 'topdeck sculpting',
@@ -100,7 +104,6 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
   const onPlayPitch = onPlayLeadByType[firstOnPlay] ?? 'setup momentum';
   const baseOblivion = Math.max(90, Math.round(80 + def.baseStats.bonusValue * 2.2));
   const unsyncedCooldown = def.rarity === 'Legendary' || def.rarity === 'Eternal' || def.rarity === 'Infinite' ? 4 : 3;
-  const unsyncedScaling = def.baseStats.bonusType === 'chain_bonus' ? 0.98 : 0.9;
 
   return {
     unsynergized: {
@@ -110,7 +113,6 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
       description: `${def.name} executes a ${elementPitch} opener that leans on ${onPlayPitch} and converts into ${bonusPitch}.`,
       baseOblivion,
       cooldownCards: unsyncedCooldown,
-      chainScaling: unsyncedScaling,
       costs: [],
       tags: ['seraphim', 'unsynergized'],
     },
@@ -121,7 +123,6 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
       description: `With an Angel aligned, ${def.name} escalates into its ${elementPitch} finisher and over-converts ${bonusPitch}.`,
       baseOblivion: Math.round(baseOblivion * 1.95),
       cooldownCards: unsyncedCooldown + 2,
-      chainScaling: Math.round((unsyncedScaling + 0.27) * 100) / 100,
       costs: [],
       requiresAngelOnBoard: true,
       tags: ['seraphim', 'synergized'],
@@ -135,7 +136,7 @@ function getAngelUiAttacks(def: AngelDefinition) {
   const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
   const auraByBonusType: Record<string, string> = {
     oblivion_per_card: 'steady field pressure',
-    chain_bonus: 'chain acceleration',
+    chain_bonus: 'momentum acceleration',
     ophanim_bonus: 'Ophanim-linked burst pressure',
     power_per_seraphim: 'seraphim-linked scaling',
     oblivion_per_seraphim: 'formation-linked conversion',
@@ -152,7 +153,6 @@ function getAngelUiAttacks(def: AngelDefinition) {
       description: `${def.name} applies disciplined pressure and stabilizes your ${aura}.`,
       baseOblivion,
       cooldownCards: summonTax + 2,
-      chainScaling: 0.98,
       costs: [],
       tags: ['angel', 'primary'],
     },
@@ -163,7 +163,6 @@ function getAngelUiAttacks(def: AngelDefinition) {
       description: `Exalted channel of ${def.activatedAbility.name}; converts ${aura} into a decisive finisher window.`,
       baseOblivion: Math.round(baseOblivion * 2.05),
       cooldownCards: summonTax + 5,
-      chainScaling: 1.24,
       costs: [],
       tags: ['angel', 'exalted'],
     },
@@ -277,16 +276,16 @@ function formatAttackCosts(costs: ReadonlyArray<{ type: string; value: number }>
 function formatAttackSummary(attack: {
   baseOblivion: number;
   cooldownCards: number;
-  chainScaling: number;
   costs?: ReadonlyArray<{ type: string; value: number }>;
   requiresAngelOnBoard?: boolean;
 }): string {
   const requirement = attack.requiresAngelOnBoard ? 'Requires Angel on board · ' : '';
-  return `${requirement}Base ${attack.baseOblivion} · Cooldown ${attack.cooldownCards} cards · Chain +${attack.chainScaling.toFixed(2)} · Cost ${formatAttackCosts(attack.costs)}`;
+  return `${requirement}Base ${attack.baseOblivion} · Cooldown ${attack.cooldownCards} cards · Cost ${formatAttackCosts(attack.costs)}`;
 }
 
 export default function BoardDisplay() {
   const board = useStore(selectBoard);
+  const bossFight = useStore(selectBossFight);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
@@ -518,7 +517,7 @@ export default function BoardDisplay() {
             overflow: 'hidden',
             fontFamily: BODY_FONT,
           }}>
-            {def ? getCardPreviewText(def, 2) : ''}
+            {def ? highlightRulesText(getCardPreviewText(def, 2), { lightBg: true }) : ''}
           </div>
           <div style={{ fontSize: 9, color: selected ? accentColor : '#6f4734', marginTop: 5, textAlign: 'center', fontFamily: DISPLAY_FONT, letterSpacing: 0.4, fontWeight: 700 }}>
             {actionLabel}
@@ -550,16 +549,32 @@ export default function BoardDisplay() {
     setPendingSeraphimAttack(null);
   }, [attackPanelSlot, selectedFront?.instanceId, selectedDef?.definitionId]);
 
-  const playfieldRightInset = turn.phase === 'playing' || turn.phase === 'mulligan'
-    ? 'calc(var(--angel-drawer-hand-offset, 308px) + min(240px, 22vw))'
-    : 'var(--angel-drawer-hand-offset, 308px)';
+  const playfieldRightInset = 'var(--angel-drawer-hand-offset, 348px)';
+
+  // Compute the hovered card definition for the immediate tooltip.
+  // Suppress tooltip when the attack panel is open to avoid overlap.
+  const boardHoveredCard =
+    attackPanelSlot === null
+      ? (hoveredFrontSlot !== null ? board.frontSlots[hoveredFrontSlot] : null) ??
+        (hoveredBackSlot !== null ? board.backSlots[hoveredBackSlot] : null)
+      : null;
+  const boardHoveredDef = boardHoveredCard ? CardRegistry.get(boardHoveredCard.definitionId) ?? null : null;
+  const boardHoveredActionClassLabel = boardHoveredDef ? getActionClassLabel(getCardActionClass(boardHoveredDef)) : null;
+  const boardHoveredEngine = boardHoveredDef ? getSetEngineSnapshotForCard(boardHoveredDef, turn, board) : null;
+
+  const BOARD_TOOLTIP_TYPE_COLORS: Record<string, string> = {
+    Seraphim: '#FFD700',
+    Ophanim: '#c888f0',
+    Cherubim: '#b87de8',
+    Angel: '#FFD700',
+  };
 
   return (
     <div style={{
       position: 'absolute',
       left: 0,
       right: playfieldRightInset,
-      top: 'clamp(118px, 16vh, 216px)',
+      top: bossFight.mode === 'active' ? 'clamp(228px, 23vh, 305px)' : 'clamp(146px, 15.5vh, 218px)',
       marginInline: 'auto',
       pointerEvents: 'none',
       zIndex: 60,
@@ -569,6 +584,64 @@ export default function BoardDisplay() {
       gap: 0,
       width: 'max-content',
     }}>
+      {/* Immediate hover tooltip for board cards */}
+      {boardHoveredDef && (
+        <div style={{
+          position: 'fixed',
+          bottom: 200,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 270,
+          background: 'linear-gradient(180deg, rgba(247,239,226,0.995) 0%, rgba(235,218,190,0.99) 100%)',
+          border: '1px solid rgba(138,94,58,0.5)',
+          borderRadius: 14,
+          padding: '14px 16px',
+          pointerEvents: 'none',
+          zIndex: 90,
+          boxShadow: '0 22px 40px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.38)',
+          backdropFilter: 'blur(10px)',
+          fontFamily: BODY_FONT,
+          animation: 'tooltipFadeIn 0.18s ease both',
+        }}>
+          <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.55, marginBottom: 4, color: BOARD_TOOLTIP_TYPE_COLORS[boardHoveredDef.type] ?? '#aaa' }}>
+            {getDisplayCardTypeLabel(boardHoveredDef.type)}
+          </div>
+          <div style={{ fontSize: 16, fontWeight: 'bold', color: warmTheme.accentDeep, marginBottom: 8, lineHeight: 1.2 }}>
+            {boardHoveredDef.name}
+          </div>
+          <div style={{ fontSize: 13, color: warmTheme.text, lineHeight: 1.6, marginBottom: 10 }}>
+            <CardRulesDigest
+              card={boardHoveredDef}
+              variant="preview"
+              maxSections={3}
+              maxLinesPerSection={10}
+              lineClamp={3}
+              labelColor="rgba(74, 48, 21, 0.82)"
+              textColor={warmTheme.accentDeep}
+              sectionBackground="transparent"
+              sectionBorder="transparent"
+              lightBg={true}
+            />
+          </div>
+          <CardEngineCallout card={boardHoveredDef} variant="detail" tone="light" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start', fontSize: 10, color: 'rgba(58, 40, 24, 0.86)', lineHeight: 1.35, marginTop: 6 }}>
+            <span style={{ color: ELEMENT_COLORS[boardHoveredDef.element] ?? '#aaa' }}>
+              {ELEMENT_SET_NAMES[boardHoveredDef.element] ?? boardHoveredDef.element}
+            </span>
+            {boardHoveredActionClassLabel && (
+              <span style={{ color: 'rgba(52, 36, 20, 0.94)' }}>
+                Action Class: {boardHoveredActionClassLabel}
+              </span>
+            )}
+            {boardHoveredEngine && (
+              <span style={{ color: boardHoveredEngine.accent, fontWeight: 700 }}>
+                {boardHoveredEngine.label} engine: {boardHoveredEngine.compact}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
           <button
@@ -676,7 +749,6 @@ export default function BoardDisplay() {
             const angelDescMetrics = getAdaptiveDescriptionMetrics('board', detailText);
             const angelElementColor = angelDef?.element ? (ELEMENT_COLORS[angelDef.element] ?? warmTheme.accent) : warmTheme.accent;
             return (
-              <CardHoverDetail key={slotIndex} definitionId={slot.definitionId} finish={slot.finish} disabled={attackPanelSlot !== null}>
               <div
                 className={[
                   isNewlyPlaced && angelDef?.element === 'Neutrality' ? 'anim-angel-summon-pop' : 'anim-angel-breath',
@@ -767,7 +839,6 @@ export default function BoardDisplay() {
                   renderBoardFocusOverlay(14, angelDef?.element)
                 )}
               </div>
-              </CardHoverDetail>
             );
           }
 
@@ -790,7 +861,6 @@ export default function BoardDisplay() {
             const serElementColor = serDef?.element ? (ELEMENT_COLORS[serDef.element] ?? warmTheme.accent) : warmTheme.accent;
 
             return (
-              <CardHoverDetail key={slotIndex} definitionId={slot.definitionId} finish={slot.finish} disabled={attackPanelSlot !== null}>
               <div
                 className={[
                   isNewlyPlaced ? 'anim-seraphim-pop' : undefined,
@@ -868,7 +938,7 @@ export default function BoardDisplay() {
                     WebkitLineClamp: seraphimDescMetrics.lineClamp,
                     overflow: 'hidden',
                   }}>
-                    {seraphimText}
+                    {highlightRulesText(seraphimText, { lightBg: true })}
                   </div>
                   <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, letterSpacing: 0.5, textAlign: 'center' }}>left-click attacks · right-click remove</div>
                 </div>
@@ -876,7 +946,6 @@ export default function BoardDisplay() {
                   renderBoardFocusOverlay(12, serDef?.element)
                 )}
               </div>
-              </CardHoverDetail>
             );
           }
 
@@ -1663,7 +1732,6 @@ export default function BoardDisplay() {
             const focusPalette = getBoardFocusPalette(cardDef?.element);
             const cherubElementColor = cardDef?.element ? (ELEMENT_COLORS[cardDef.element] ?? '#c888f0') : '#c888f0';
             return (
-              <CardHoverDetail key={backSlot} definitionId={cherubim.definitionId} finish={cherubim.finish} disabled={attackPanelSlot !== null}>
               <div
                 className={cherubim.finish === 'holo'
                   ? `holofoil-live-card${cardDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${cardDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
@@ -1726,7 +1794,6 @@ export default function BoardDisplay() {
                   renderBoardFocusOverlay(12, cardDef?.element)
                 )}
               </div>
-              </CardHoverDetail>
             );
           }
 

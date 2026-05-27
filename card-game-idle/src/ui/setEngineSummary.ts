@@ -112,7 +112,7 @@ const ROLE_BADGES: Record<CardRolePattern, string> = {
 
 const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
   neutrality: {
-    setup: 'Draws cards or searches the deck  Ekeeping the play chain flowing accelerates Patience on every waiting Seraphim.',
+    setup: 'Draws cards or searches the deck  Ekeeping the play sequence flowing accelerates Patience on every waiting Seraphim.',
     support: 'Sits on the board and grants extra Patience to adjacent Seraphim each time any card is played.',
     resource: 'Plays frequently and cheaply, triggering Patience accumulation across all active Seraphim.',
     payoff: 'Fires the Patience burst  Econsuming all stored stacks for +15 Oblivion each on attack.',
@@ -162,7 +162,7 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
   snowbound: {
     setup: 'Sets Frost and Voltage pacing so phase alternations generate meaningful Potential stores.',
     support: 'Smooths phase alternation with Conduits while Potential builds on the Frost side.',
-    resource: 'Builds Potential so the next Voltage phase switch converts into a real chain burst.',
+    resource: 'Builds Potential so the next Voltage phase switch converts into a real Oblivion burst.',
     payoff: 'Releases stored Potential into Voltage bursts once the polarity cycle is primed.',
     amplifier: 'Pushes alternation payoffs harder once multiple successful phase swaps are active.',
     finisher: 'Triggers Whiteout Surge: releases all stored Potential as repeated micro-bursts scaled by alternations.',
@@ -180,7 +180,7 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     support: 'Balances Heat and Stability so Pyro auto-breaks are available when attenuation starts biting.',
     resource: 'Moves Embers up or down to push Heat, trigger mixed gain-spend turns, and feed Fire scaling.',
     payoff: 'Turns Heat, cross-set conversion fuel, and Stability into larger Fire Oblivion payouts.',
-    amplifier: 'Raises chain pressure once Heat is online and the furnace has enough signatures to stay lit.',
+    amplifier: 'Raises burst pressure once Heat is online and the furnace has enough signatures to stay lit.',
     finisher: 'Cashes a fully stoked Pyro line once Setup Count and signatures are ready for Infinite fire.',
   },
   blazingGarden: {
@@ -195,7 +195,7 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     setup: 'Charges Spectrum and starts the Flutter thresholds toward a descent turn.',
     support: 'Maintains stance tuning so Reflect and Absorb are both available on demand.',
     resource: 'Builds shared Spectrum that every Butterfly card can spend or convert.',
-    payoff: 'Releases stored Spectrum into Oblivion and chain at the best timing window.',
+    payoff: 'Releases stored Spectrum into Oblivion at the best timing window.',
     amplifier: 'Boosts threshold pulses and dual-surface turns once Spectrum is high.',
     finisher: 'Triggers Velkoreth Descent-style turns where Reflect and Absorb overlap.',
   },
@@ -208,7 +208,7 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     finisher: 'Unloads a full Veilmargin convergence after both flows are established.',
   },
   abyssalForge: {
-    setup: 'Drops Pearls and stocks Forge Crowns so the recast/cashout chain has fuel to spend.',
+    setup: 'Drops Pearls and stocks Forge Crowns so the recast/cashout sequence has fuel to spend.',
     support: 'Keeps Reforge Charges available so nacre-recasts can land when the window opens.',
     resource: 'Feeds Pearls and Forge Crowns into the forge so each recast resolves with weight.',
     payoff: 'Cashes out Pearls and Forge Crowns into Oblivion once recast pressure is built.',
@@ -220,7 +220,7 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     support: 'Mints Cinder Crowns through ritual extinguishings to keep the dual-cashout finale live.',
     resource: 'Bridges Embers and Crowns so each cashout step still has counters to detonate.',
     payoff: 'Converts Pyre Embers and Cinder Crowns into Oblivion spikes on demand.',
-    amplifier: 'Escalates chain growth once both Embers and Crowns are pressurized together.',
+    amplifier: 'Escalates Oblivion output once both Embers and Crowns are pressurized together.',
     finisher: 'Detonates the dual cashout: every Ember and every Crown spent in the same breath.',
   },
   wishedUponAStar: {
@@ -232,10 +232,6 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     finisher: 'Triggers all three cashouts in one play — Starbirth, Wish Burst, and Constellation Lock.',
   },
 };
-
-function formatFixed(value: number, digits = 1): string {
-  return value.toFixed(digits).replace(/\.0$/, '');
-}
 
 function formatPreview(items: string[], fallback = 'none', limit = 3): string {
   if (items.length === 0) return fallback;
@@ -302,7 +298,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
   if (def.type === 'Seraphim') {
     if (def.baseStats.bonusType === 'ophanim_bonus' || hasTextSnippet(def, ['ophanim'])) return 'amplifier';
     if (def.baseStats.bonusType === 'ember_per_card' || def.baseStats.bonusType === 'resource_generation') return 'resource';
-    if (def.baseStats.bonusType === 'chain_bonus' || hasTextSnippet(def, ['chain'])) return 'setup';
+    if (hasTextSnippet(def, ['chain'])) return 'setup';
     if (def.baseStats.bonusType === 'power_amplifier' || def.baseStats.bonusType === 'score_per_second') return 'amplifier';
     return 'payoff';
   }
@@ -334,7 +330,7 @@ function getCardRoleDetail(def: CardDefinition): string {
     return 'It stocks the resources this engine spends to stay online.';
   }
 
-  if (hasSomeEffect(def, ['chain_gain', 'chain_multiplier_set', 'chain_gain', 'multiply_next'])) {
+  if (hasSomeEffect(def, ['multiply_next'])) {
     return 'It sharpens timing so the next payoff window lands cleanly.';
   }
 
@@ -459,7 +455,6 @@ function buildEngineSnapshot(
       const potentialBonus = totalPatience * 15;
       const chargedThisTurn = turn.neutralityPatienceChargedThisTurn ?? 0;
       const consumedThisTurn = turn.neutralityPatienceConsumedThisTurn ?? 0;
-      const chainGainedThisTurn = turn.neutralityChainGainedThisTurn ?? 0;
       const recentTriggers = (turn.neutralityTriggeredEffects ?? []).slice(-3);
 
       return {
@@ -469,7 +464,7 @@ function buildEngineSnapshot(
         compact: patienceEligible
           ? `Patience ${totalPatience} total | Peak ${maxPatience} | ${patienceUnits} unit${patienceUnits !== 1 ? 's' : ''} charged`
           : 'Patience paused — no Seraphim or Angel on board',
-        detail: `Pending Bonus Oblivion ≁E+${potentialBonus} | +${formatFixed(chainGainedThisTurn, 1)} chain gained this turn`,
+        detail: `Pending Bonus Oblivion ≁E+${potentialBonus} | Patience active this turn`,
         tagline: 'Neutrality now reports charged, consumed, and converted Patience in real time.',
         summary: 'Every card you play charges +1 Patience on each Seraphim on board, as long as at least one Seraphim or Angel is present. If neither is on board, Patience does not accumulate.',
         metrics: [
@@ -479,7 +474,6 @@ function buildEngineSnapshot(
           createMetric('Total Patience', totalPatience, 'Sum of all Patience stacks across Seraphim and Angels on board. Each stack = +15 Oblivion on next attack.'),
           createMetric('Patience Charged', chargedThisTurn, 'Total Patience added by Neutrality card effects this turn.'),
           createMetric('Patience Consumed', consumedThisTurn, 'Patience spent or transformed by Neutrality card effects this turn.'),
-          createMetric('Chain Gained', `+${formatFixed(chainGainedThisTurn, 1)}`, 'Direct chain added by Neutrality effects this turn.'),
           createMetric('Recent Triggers', recentTriggers.length === 0 ? 'none' : recentTriggers.join(' | '), 'Most recent Neutrality effect activations this turn.'),
         ],
         nextSteps: [
@@ -513,7 +507,7 @@ function buildEngineSnapshot(
         summary: 'Alternate card types to grow cadence and Resonance, and use Chorus Anchors to protect it. If your deck includes Infinite cards, meeting Resonance 3 + 3 distinct notes amplifies them to ÁE.22. Open the Guide for full details.',
         metrics: [
           createMetric('Cadence', cadence, 'Distinct Hymn Note types played this turn.'),
-          createMetric('Resonance', resonance, 'Raises chain. Drops on repeated notes without an Anchor.'),
+          createMetric('Resonance', resonance, 'Builds attack power. Drops on repeated notes without an Anchor.'),
           createMetric('Anchors', anchors, 'Absorbs one repeated-note penalty per charge.'),
           createMetric('Echoes', (turn.lightCadenceNotes ?? []).length, 'Total note triggers in the rolling cadence window.'),
         ],
@@ -544,7 +538,7 @@ function buildEngineSnapshot(
         tagline: 'Let attrition stack Trail and Scar, then choose Aggression or Endurance.',
         summary: 'Build Trail and Scar through card plays and losses, choose a War Path with your first Eternal card, and collect the end-turn Oblivion payout. Open the Guide for full details.',
         metrics: [
-          createMetric('Trail', trail, 'Builds from plays and losses. Amplifies chain on Conversion plays.'),
+          createMetric('Trail', trail, 'Builds from plays and losses. Powers Conversion plays.'),
           createMetric('Scar', scar, 'Cashed out at end of turn for Oblivion based on War Path.'),
           createMetric('Path', turn.thornWarPath ?? 'Unset', 'Aggression or Endurance  Eset by your first Eternal card this turn.'),
           createMetric('Processions', processions, 'Last Procession trigger count this turn.'),
@@ -605,11 +599,11 @@ function buildEngineSnapshot(
         compact: `Channel ${channel} | Refraction ${depth} | Nodes ${nodes} | Colors ${channels.length}`,
         detail: `Spectrum ${formatPreview(channels.map(capitalize))}`,
         tagline: 'Route through every Spectrum color, then fire Ninefold Accord.',
-        summary: 'Switch between color channels to build Refraction Depth and amplify chain. If your deck includes Infinite cards, meeting 4 Colors + 3 Refraction amplifies them to ÁE.22. Open the Guide for full details.',
+        summary: 'Switch between color channels to build Refraction Depth and attack power. If your deck includes Infinite cards, meeting 4 Colors + 3 Refraction amplifies them to ÁE.22. Open the Guide for full details.',
         metrics: [
           createMetric('Channel', channel, 'Current active color channel.'),
-          createMetric('Refraction', depth, 'Increases with each channel switch. Amplifies chain.'),
-          createMetric('Nodes', nodes, 'Node Charges from Eternal cards. Further amplify chain on channel switch.'),
+          createMetric('Refraction', depth, 'Increases with each channel switch. Amplifies attack power.'),
+          createMetric('Nodes', nodes, 'Node Charges from Eternal cards. Further amplify power on channel switch.'),
           createMetric('Colors', channels.length, 'Distinct channels used. At 4+ (with Refraction 3), Infinite cards gain ÁE.22 amplification.'),
         ],
         nextSteps: [
@@ -665,10 +659,10 @@ function buildEngineSnapshot(
         compact: `Phase ${turn.snowboundPhase ?? 'Unset'} | Potential ${turn.snowboundPotential ?? 0} | Alternations ${turn.snowboundAlternations ?? 0} | Conduits ${turn.snowboundConduits ?? 0}`,
         detail: 'Frost grows setup windows. Voltage cashes them in.',
         tagline: 'Store Potential on Frost, spend it all on the Voltage surge.',
-        summary: 'Alternate between Frost and Voltage phases to build Potential and chain bonuses. If your deck includes Infinite cards, meeting 3 Alternations + 3 Potential amplifies them to ÁE.21. Open the Guide for full details.',
+        summary: 'Alternate between Frost and Voltage phases to build Potential and burst power. If your deck includes Infinite cards, meeting 3 Alternations + 3 Potential amplifies them to ÁE.21. Open the Guide for full details.',
         metrics: [
-          createMetric('Phase', turn.snowboundPhase ?? 'Unset', 'Frost charges Potential; Voltage discharges it to amplify chain.'),
-          createMetric('Potential', turn.snowboundPotential ?? 0, 'Charged by Frost plays. Released by Voltage plays to amplify chain.'),
+          createMetric('Phase', turn.snowboundPhase ?? 'Unset', 'Frost charges Potential; Voltage discharges it for a burst of Oblivion.'),
+          createMetric('Potential', turn.snowboundPotential ?? 0, 'Charged by Frost plays. Released by Voltage plays for burst Oblivion.'),
           createMetric('Alternations', turn.snowboundAlternations ?? 0, 'Each phase switch adds 1. At 3+ (with Potential 3), Infinite cards gain ÁE.21 amplification.'),
           createMetric('Conduits', turn.snowboundConduits ?? 0, 'From Eternal cards. Absorbs one same-phase repeat without losing Potential.'),
         ],
@@ -732,11 +726,11 @@ function buildEngineSnapshot(
         compact: `Pressure ${pressure} | Fault ${fault} | Windows ${windows} | Legacy ${legacyAmplifications}`,
         detail: `Legacy Unstable ${unstableFervorTokens} | Ash ${ashTokens} | Resonance ${resonanceStacks}${convergenceLocked ? ' | Converged' : ''}`,
         tagline: 'Build Furnace Pressure, crack it into Abyss Fault, then detonate Ruin Windows on your timing.',
-        summary: 'Pyroabyss now revolves around a three-step loop. Pressure is built by setup-heavy Fire plays, converted into Fault through Ophanim/Cherubim lines, then cashed via Ruin Windows for burst chain and Oblivion. Balanced Pressure/Fault lines naturally generate extra windows, while Eternal and Infinite cards widen or cash those windows for premium payoffs.',
+        summary: 'Pyroabyss now revolves around a three-step loop. Pressure is built by setup-heavy Fire plays, converted into Fault through Ophanim/Cherubim lines, then cashed via Ruin Windows for burst Oblivion. Balanced Pressure/Fault lines naturally generate extra windows, while Eternal and Infinite cards widen or cash those windows for premium payoffs.',
         metrics: [
           createMetric('Furnace Pressure', pressure, 'Primary setup pool generated by Fire sequencing. High pressure enables conversion lines.'),
           createMetric('Abyss Fault', fault, 'Converted void pool consumed by finishers and Infinite scaling lines.'),
-          createMetric('Ruin Windows', windows, 'Cashout charges used by Eternal/Infinite abilities for chain and Oblivion spikes.'),
+          createMetric('Ruin Windows', windows, 'Cashout charges used by Eternal/Infinite abilities for Oblivion spikes.'),
           createMetric('Pool Balance', pressure > fault ? `Pressure-bias (+${pressure - fault})` : fault > pressure ? `Fault-bias (+${fault - pressure})` : 'Balanced', 'Keeping pools close creates extra windows and smoother Angel conversion turns.'),
         ],
         nextSteps: [
@@ -760,7 +754,7 @@ function buildEngineSnapshot(
         tagline: 'Choose a Grove Law, balance your lineages, then trigger Final Chord Bloom.',
         summary: 'Blazing Garden runs an Ember Grove Ecosystem Engine: spent cards become Seeds carrying Rose, Sunflower, or Thistle lineage memory. Re-germinating seeds creates Echo cards with combo utility. Grove Laws apply global lineage modifiers. Final Chord Bloom simultaneously blooms all lineages  Eeach bloom modifies the next, rewarding balanced lineage rhythm.',
         metrics: [
-          createMetric('Law', law, 'Grove Law applying a global modifier this turn  ERose adds echoes, Sunflower grants chain safety, Thistle improves conversion precision'),
+          createMetric('Law', law, 'Grove Law applying a global modifier this turn  ERose adds echoes, Sunflower grants combo safety, Thistle improves conversion precision'),
           createMetric('Echoes', echoes, 'Reduced-power Echo cards re-generated from Seeds  Ecarry lineage memory for combo utility'),
           createMetric('Lineages', lineages.length, 'Rose, Sunflower, Thistle lines active  Eall three present maximizes Final Chord Bloom payoff'),
           createMetric('Grove', grove, 'Cards stored in the Ember Grove  Ethey become Seeds on next echo; more stock = more echo options'),
@@ -856,14 +850,14 @@ function buildEngineSnapshot(
         tagline: 'Abyssal Forge: Reforge charges fuel recast events; Forge Crowns cash out at the finale.',
         summary: 'Abyssal Forge stocks Forge Crowns and Reforge Charges through play, then converts them into Oblivion through recast events and crown cashouts.',
         metrics: [
-          createMetric('Forge Crowns', forges, 'Banked Crowns ready to spend on a Forge Crown cashout finisher for a burst of Oblivion and chain.'),
+          createMetric('Forge Crowns', forges, 'Banked Crowns ready to spend on a Forge Crown cashout finisher for a burst of Oblivion.'),
           createMetric('Reforge Charges', charges, 'Charges spent by recast and nacre effects.'),
           createMetric('Recast Events', events, 'Total recast events fired this turn.'),
         ],
         nextSteps: [
           createStep('Bank Forge Crowns', forges >= 2, forges >= 2 ? 'Crowns ready for cashout.' : 'Build Forge Crowns before firing the finale.'),
           createStep('Stock Charges', charges >= 1, charges >= 1 ? 'Recasts are available.' : 'Stock Reforge Charges to enable recasts.'),
-          createStep('Trigger recasts', events >= 1, events >= 1 ? 'Recast chain is live.' : 'Spend charges to start the recast cascade.'),
+          createStep('Trigger recasts', events >= 1, events >= 1 ? 'Recast sequence is live.' : 'Spend charges to start the recast cascade.'),
         ],
       };
     }
@@ -879,8 +873,8 @@ function buildEngineSnapshot(
         tagline: 'Death-flamed Hell: Pyre Embers and Cinder Crowns feed the funeral procession finale.',
         summary: 'Death-flamed Hell stokes Pyre Embers through Pale Cohort plays and mints Cinder Crowns through ritual extinguishings, then detonates them in dual cashouts.',
         metrics: [
-          createMetric('Pyre Embers', embers, 'Pyre fuel built by Pale Cohort plays. Spent by Pyre cashout effects for Oblivion and chain growth per Ember consumed.'),
-          createMetric('Cinder Crowns', crowns, 'Funeral crowns minted by ritual sacrifices (discards, draws, extinguishings). Spent by Crown cashout finales for paired Oblivion and chain bursts.'),
+          createMetric('Pyre Embers', embers, 'Pyre fuel built by Pale Cohort plays. Spent by Pyre cashout effects for Oblivion per Ember consumed.'),
+          createMetric('Cinder Crowns', crowns, 'Funeral crowns minted by ritual sacrifices (discards, draws, extinguishings). Spent by Crown cashout finales for Oblivion bursts.'),
         ],
         nextSteps: [
           createStep('Stoke Embers', embers >= 5, embers >= 5 ? 'Pyre Embers are running hot.' : 'Play more Pale Cohort cards to build Embers.'),
@@ -904,7 +898,7 @@ function buildEngineSnapshot(
         metrics: [
           createMetric('Starlight Charges', starlight, 'Primary cashout fuel. Drives Nova Wish Burst (Oblivion = Starlight × Dream multiplier) and Infinite Starbirth (Oblivion = Seraphim × Starlight).'),
           createMetric('Dream Lattice', dream, 'Secondary amplifier. Scales Nova Wish Burst and grants draw on Starbirth. Decays each turn unless preserved by Solarvex Ward.'),
-          createMetric('Star Crowns', starCrowns, 'Eternal-tier stack earned by Wishwright cards. Spent by Constellation Lock Release for Oblivion and chain per Crown consumed.'),
+          createMetric('Star Crowns', starCrowns, 'Eternal-tier stack earned by Wishwright cards. Spent by Constellation Lock Release for Oblivion per Crown consumed.'),
         ],
         nextSteps: [
           createStep('Build Starlight', starlight >= 6, starlight >= 6 ? `${starlight} Starlight Charges banked — cashout payloads are meaningful.` : 'Play Starlight-generating cards to build the primary cashout pool.'),
@@ -950,7 +944,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Cherubim: Patience Amplifiers',
-        body: 'Neutrality Cherubim have one job: grant extra Patience to the Seraphim directly in front of them, every card you play.\n\n• Common Cherubim: +1 extra Patience per card (adjacent Seraphim gain +2 total instead of +1).\n• Rare Cherubim: +2 extra Patience per card (+3 total per card played).\n• Epic Cherubim: +3 extra Patience per card (+4 total per card played).\n\nA Seraphim sitting adjacent to an Epic Cherubim with a 6-card cooldown has 24 Patience before it fires  Ethat is +360 Oblivion added to the attack before any chain multipliers.\n\nPlace Cherubim next to your highest-rarity Seraphim first to maximise their amplification window.',
+        body: 'Neutrality Cherubim have one job: grant extra Patience to the Seraphim directly in front of them, every card you play.\n\n• Common Cherubim: +1 extra Patience per card (adjacent Seraphim gain +2 total instead of +1).\n• Rare Cherubim: +2 extra Patience per card (+3 total per card played).\n• Epic Cherubim: +3 extra Patience per card (+4 total per card played).\n\nA Seraphim sitting adjacent to an Epic Cherubim with a 6-card cooldown has 24 Patience before it fires  Ethat is +360 Oblivion added to the attack before any multipliers.\n\nPlace Cherubim next to your highest-rarity Seraphim first to maximise their amplification window.',
       },
       {
         heading: 'Ophanim: The Draw Engine',
@@ -966,7 +960,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   light: {
     engineKey: 'light',
     title: 'User Guide to: Heavenly Light',
-    intro: 'Heavenly Light runs a Choir Cadence Engine. You build a sequence of Hymn Notes by playing different card types, grow Resonance, and amplify chain. The goal is to hit Apotheosis Pulse, the moment when a cadence reaches full power.',
+    intro: 'Heavenly Light runs a Choir Cadence Engine. You build a sequence of Hymn Notes by playing different card types, grow Resonance, and amplify attack power. The goal is to hit Apotheosis Pulse, the moment when a cadence reaches full power.',
     sections: [
       {
         heading: 'Hymn Notes and Card Types',
@@ -974,7 +968,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Resonance',
-        body: 'Resonance is the core power meter for Heavenly Light (max 6). Every new note added to the cadence increases Resonance by +1. Playing a Multiplier-class card adds +2 Resonance instead.\n\nIf you play the same note type as the one you just played, Resonance drops by 1 and the cadence resets back to just that one note.\n\nResonance directly amplifies chain: the engine adds up to +1.0 to your current chain multiplier, capped at 1.0, and locks in that value as the minimum chain for the rest of the turn.',
+        body: 'Resonance is the core power meter for Heavenly Light (max 6). Every new note added to the cadence increases Resonance by +1. Playing a Multiplier-class card adds +2 Resonance instead.\n\nIf you play the same note type as the one you just played, Resonance drops by 1 and the cadence resets back to just that one note.\n\nResonance directly increases the power of your Seraphim attacks, locking in a minimum attack power bonus for the rest of the turn.',
       },
       {
         heading: 'Chorus Anchors',
@@ -982,7 +976,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Infinite Card Amplification',
-        body: 'The Choir Cadence engine works fully without Infinite cards. Resonance amplifies chain, Anchors protect your cadence, and every Light card benefits from those effects regardless of rarity.\n\nIf your deck includes Infinite Light cards, they respond to how well the choir has been built:\n\n- x1.22 multiplier (amplified): Resonance >= 3 and distinct note types >= 3.\n- x0.5 multiplier (reduced): either condition is below the threshold.\n\nBuilding the choir well naturally satisfies these conditions. The Infinite card bonus is the reward for playing correctly, not the goal you build around.',
+        body: 'The Choir Cadence engine works fully without Infinite cards. Resonance builds cadence power, Anchors protect your cadence, and every Light card benefits from those effects regardless of rarity.\n\nIf your deck includes Infinite Light cards, they respond to how well the choir has been built:\n\n- x1.22 multiplier (amplified): Resonance >= 3 and distinct note types >= 3.\n- x0.5 multiplier (reduced): either condition is below the threshold.\n\nBuilding the choir well naturally satisfies these conditions. The Infinite card bonus is the reward for playing correctly, not the goal you build around.',
       },
     ],
   },
@@ -994,7 +988,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
     sections: [
       {
         heading: 'Trail',
-        body: 'Trail is a resource that builds as you play Thornbound cards. Setup-class and Refund-class cards grant +2 Trail per play; all other classes grant +1 Trail.\n\nTrail is also gained when cards are lost. Losing cards adds Trail and Scar simultaneously. Thornbound Conversion-class cards use Trail to amplify chain.',
+        body: 'Trail is a resource that builds as you play Thornbound cards. Setup-class and Refund-class cards grant +2 Trail per play; all other classes grant +1 Trail.\n\nTrail is also gained when cards are lost. Losing cards adds Trail and Scar simultaneously. Thornbound Conversion-class cards use Trail to amplify Oblivion output.',
       },
       {
         heading: 'Scar',
@@ -1046,7 +1040,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   prismatic: {
     engineKey: 'prismatic',
     title: 'User Guide to: Prismatic Accord',
-    intro: 'Prismatic Accord is a channel-switching engine. Cards have color channels, and switching between different channels builds Refraction Depth  Ewhich amplifies chain. The more you alternate channels, the higher chain climbs.',
+    intro: 'Prismatic Accord is a channel-switching engine. Cards have color channels, and switching between different channels builds Refraction Depth  Ewhich increases attack power.',
     sections: [
       {
         heading: 'Color Channels',
@@ -1054,19 +1048,19 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Refraction Depth',
-        body: 'Refraction Depth accumulates when you switch channels between consecutive plays (max 9). Every channel switch grants +1 Refraction Depth; a Multiplier-class card on a channel switch grants +2.\n\nEvery channel switch also amplifies chain: +0.06 per switch. If you stay on the same channel, you get a smaller chain bonus (+0.04) and no Refraction Depth.',
+        body: 'Refraction Depth accumulates when you switch channels between consecutive plays (max 9). Every channel switch grants +1 Refraction Depth; a Multiplier-class card on a channel switch grants +2.\n\nEvery channel switch increases your attack power. If you stay on the same channel, you get a smaller bonus and no Refraction Depth.',
       },
       {
         heading: 'Node Charges',
-        body: 'Eternal-rarity Prismatic cards grant +1 Node Charge (max 3). Charges are consumed on a channel switch: if you switch channels and have a Node Charge available, the charge is spent and you get an extra +0.12 chain gain boost on top of the normal +0.06. This effectively makes charged channel switches worth +0.18 chain gain.',
+        body: 'Eternal-rarity Prismatic cards grant +1 Node Charge (max 3). Charges are consumed on a channel switch: if you switch channels and have a Node Charge available, the charge is spent and you get an extra power boost on top of the normal channel-switch bonus. This effectively makes charged channel switches worth significantly more.',
       },
       {
         heading: 'Cross-Set Conversion Bonus',
-        body: 'If you play a Prismatic Conversion-class card immediately after a card from a different set, the engine immediately grants +18 flat Oblivion and raises the chain gain by +0.08. This makes Prismatic exceptionally good in mixed-set decks where you naturally alternate between sets.',
+        body: 'If you play a Prismatic Conversion-class card immediately after a card from a different set, the engine immediately grants +18 flat Oblivion and an extra power boost. This makes Prismatic exceptionally good in mixed-set decks where you naturally alternate between sets.',
       },
       {
         heading: 'Infinite Card Amplification',
-        body: 'The Spectrum Refraction engine works fully without Infinite cards  Eevery channel switch raises the chain gain, Node Charges boost it further, and the cross-set bonus fires on any Conversion play. None of that requires Infinite cards.\n\nIf your deck includes Infinite Prismatic cards, they read how broadly the spectrum has been used:\n\n• ÁE.22 multiplier (amplified): Distinct Channels ≥ 4 AND Refraction Depth ≥ 3.\n• ÁE.46 multiplier (reduced): either condition is below threshold.\n\nSpreading across four channels and building Refraction is what you do naturally when playing Prismatic well. The Infinite bonus comes with it.',
+        body: 'The Spectrum Refraction engine works fully without Infinite cards  Eevery channel switch increases attack power, Node Charges boost it further, and the cross-set bonus fires on any Conversion play. None of that requires Infinite cards.\n\nIf your deck includes Infinite Prismatic cards, they read how broadly the spectrum has been used:\n\n• ÁE.22 multiplier (amplified): Distinct Channels ≥ 4 AND Refraction Depth ≥ 3.\n• ÁE.46 multiplier (reduced): either condition is below threshold.\n\nSpreading across four channels and building Refraction is what you do naturally when playing Prismatic well. The Infinite bonus comes with it.',
       },
     ],
   },
@@ -1102,7 +1096,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   snowbound: {
     engineKey: 'snowbound',
     title: 'User Guide to: Snowbound Voltage',
-    intro: 'Snowbound Voltage is an alternation engine with two phases: Frost and Voltage. You charge up Potential during Frost plays, then release it during Voltage plays for chain gain bonuses. Alternating between phases is the core mechanic.',
+    intro: 'Snowbound Voltage is an alternation engine with two phases: Frost and Voltage. You charge up Potential during Frost plays, then release it during Voltage plays for a burst of Oblivion. Alternating between phases is the core mechanic.',
     sections: [
       {
         heading: 'Frost and Voltage Phases',
@@ -1114,7 +1108,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Potential',
-        body: 'Potential is charged during Frost plays and discharged during Voltage plays (max 20).\n\n• Frost play: +2 Potential, +3 Potential if you just alternated.\n• Voltage play: the engine discharges up to (4 + Alternations) points of Potential. Each point discharged amplifies chain by +0.05. Approximately 60% of the discharged Potential is consumed; the rest remains.',
+        body: 'Potential is charged during Frost plays and discharged during Voltage plays (max 20).\n\n• Frost play: +2 Potential, +3 Potential if you just alternated.\n• Voltage play: the engine discharges up to (4 + Alternations) points of Potential. Each point discharged grants a burst of Oblivion. Approximately 60% of the discharged Potential is consumed; the rest remains.',
       },
       {
         heading: 'Conduits',
@@ -1122,7 +1116,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Infinite Card Amplification',
-        body: 'The Polarity engine works fully without Infinite cards  EPotential charges during Frost and fires chain gain bonuses during Voltage, and Conduits protect the rhythm, all regardless of card rarity.\n\nIf your deck includes Infinite Snowbound Voltage cards, they read how well the alternation cycle is running:\n\n• ÁE.21 multiplier (amplified): Alternations ≥ 3 AND Potential ≥ 3.\n• ÁE.44 multiplier (reduced): either condition is below threshold.\n\nThree full phase switches with Potential charged is simply what a working Snowbound turn looks like. The Infinite amplification follows naturally.',
+        body: 'The Polarity engine works fully without Infinite cards  EPotential charges during Frost and fires burst Oblivion during Voltage, and Conduits protect the rhythm, all regardless of card rarity.\n\nIf your deck includes Infinite Snowbound Voltage cards, they read how well the alternation cycle is running:\n\n• ÁE.21 multiplier (amplified): Alternations ≥ 3 AND Potential ≥ 3.\n• ÁE.44 multiplier (reduced): either condition is below threshold.\n\nThree full phase switches with Potential charged is simply what a working Snowbound turn looks like. The Infinite amplification follows naturally.',
       },
     ],
   },
@@ -1138,7 +1132,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Axioms from Eternal Cards',
-        body: 'Playing an Eternal-rarity Glass Absolute card registers an Axiom (max 3 unique axiom types):\n\n• Multiplier Axiom  Eregistered by Angel-type cards or Multiplier-class cards. Immediately amplifies chain by +0.1.\n• Bridge Axiom  Eregistered by Ophanim-type cards or Conversion-class cards. While this axiom is active, any Conversion play immediately after a card from a different set grants +2 Depth to the board.\n• Cascade Axiom  Eregistered by all other Eternal cards.\n\nAxioms are tracked by type  Eyou cannot register the same axiom twice.',
+        body: 'Playing an Eternal-rarity Glass Absolute card registers an Axiom (max 3 unique axiom types):\n\n• Multiplier Axiom  Eregistered by Angel-type cards or Multiplier-class cards. Immediately grants extra Oblivion.\n• Bridge Axiom  Eregistered by Ophanim-type cards or Conversion-class cards. While this axiom is active, any Conversion play immediately after a card from a different set grants +2 Depth to the board.\n• Cascade Axiom  Eregistered by all other Eternal cards.\n\nAxioms are tracked by type  Eyou cannot register the same axiom twice.',
       },
       {
         heading: 'Infinite Card Amplification',
@@ -1190,7 +1184,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Garden Law',
-        body: 'The first Eternal-rarity Blazing Garden card you play in a turn sets the Garden Law, which applies a global rule for the rest of that turn:\n\n• Thistle Law: Conversion-class plays raise the chain gain by +0.08.\n• Other laws affect bloom behavior and echo generation.\n\nThe Garden Law can only be set once per turn  Ethe first Eternal card locks it in.',
+        body: 'The first Eternal-rarity Blazing Garden card you play in a turn sets the Garden Law, which applies a global rule for the rest of that turn:\n\n• Thistle Law: Conversion-class plays grant extra Oblivion.\n• Other laws affect bloom behavior and echo generation.\n\nThe Garden Law can only be set once per turn  Ethe first Eternal card locks it in.',
       },
       {
         heading: 'Infinite Card Amplification',
@@ -1212,7 +1206,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
         body: `The engine has natural breakpoints as Spectrum grows:
 
 • 4 Spectrum: minor pulse value.
-• 8 Spectrum: major pulse value and stronger chain pressure.
+• 8 Spectrum: major pulse value and stronger burst pressure.
 • 12 Spectrum: descent-style payoff trigger and reset.
 
       Because thresholds are shared, every card played can set up a later finisher even if that card is itself a setup piece.`,
@@ -1259,11 +1253,11 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
     sections: [
       {
         heading: 'Reforge Charges',
-        body: 'Reforge Charges are the fuel that triggers recast events. Build charges through play, then spend them on recast and nacre effects to chain extra value from cards you have already played.',
+        body: 'Reforge Charges are the fuel that triggers recast events. Build charges through play, then spend them on recast and nacre effects to extra value from cards you have already played.',
       },
       {
         heading: 'Forge Crowns',
-        body: 'Forge Crowns accumulate as you commit to the recast loop. The Forge Crown cashout finisher converts banked Crowns into a burst of Oblivion (and optional chain) at the moment of your choosing.',
+        body: 'Forge Crowns accumulate as you commit to the recast loop. The Forge Crown cashout finisher converts banked Crowns into a burst of Oblivion at the moment of your choosing.',
       },
       {
         heading: 'Infinite Card Amplification',
@@ -1278,11 +1272,11 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
     sections: [
       {
         heading: 'Pyre Embers',
-        body: 'Pyre Embers are the set\'s primary fuel. Every Pale Cohort card played stokes the pyre by 1–6 Embers; the longer the procession runs, the hotter the cashout. Spend them with cards that read "Cash out X Pyre Embers" for a per-Ember burst of Oblivion and chain growth.',
+        body: 'Pyre Embers are the set\'s primary fuel. Every Pale Cohort card played stokes the pyre by 1–6 Embers; the longer the procession runs, the hotter the cashout. Spend them with cards that read "Cash out X Pyre Embers" for a per-Ember burst of Oblivion.',
       },
       {
         heading: 'Cinder Crowns',
-        body: 'Cinder Crowns are the set\'s second resource. They are minted by ritual sacrifices — discards, draws, and other extinguishings — and stack independently of Embers. Cards that read "Cash out X Cinder Crowns" spend them for a paired Oblivion + chain burst, scaling per Crown consumed.',
+        body: 'Cinder Crowns are the set\'s second resource. They are minted by ritual sacrifices — discards, draws, and other extinguishings — and stack independently of Embers. Cards that read "Cash out X Cinder Crowns" spend them for a paired Oblivion burst, scaling per Crown consumed.',
       },
       {
         heading: 'Infinite Card Amplification',
@@ -1305,7 +1299,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Star Crowns and Constellation Lock',
-        body: 'Star Crowns are the Eternal-tier stack for this set. They are earned by playing Wishwright Eternal cards and spent by Constellation Lock Release for a burst of Oblivion and chain growth per Crown consumed. The more Crowns banked before the cashout, the larger the finale.',
+        body: 'Star Crowns are the Eternal-tier stack for this set. They are earned by playing Wishwright Eternal cards and spent by Constellation Lock Release for a burst of Oblivion per Crown consumed. The more Crowns banked before the cashout, the larger the finale.',
       },
     ],
   },

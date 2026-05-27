@@ -1,5 +1,5 @@
 import { getUtcDayIndex } from './dailyLogin';
-import { getWeekIndex } from './quests';
+import { getQuestWeekIndex } from './quests';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 
 /**
@@ -115,8 +115,7 @@ export interface WeeklyTrial {
 }
 
 export function getWeeklyTrial(now: number = Date.now()): WeeklyTrial {
-  const day = getUtcDayIndex(now);
-  const weekIndex = getWeekIndex(day);
+  const weekIndex = getQuestWeekIndex(now);
   const weekKey = `w${weekIndex}`;
   const seed = weekIndex * 0x9E3779B1 + 17;
   const rng = mulberry32(seed);

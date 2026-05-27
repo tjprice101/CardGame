@@ -33,6 +33,18 @@ export const HIGHLIGHT_STYLES: Record<HighlightCategory, HighlightStyle> = {
   number: { color: '#80e860', fontWeight: 700 },
 };
 
+// Dark-shade variants for use on light parchment card face panels.
+// These preserve hue intent but are readable against cream/tan backgrounds.
+export const LIGHT_BG_HIGHLIGHT_STYLES: Record<HighlightCategory, HighlightStyle> = {
+  mechanic: { color: '#7a4e0e', fontWeight: 700 },
+  status:   { color: '#882a0e', fontWeight: 700 },
+  resource: { color: '#6b4a00', fontWeight: 700 },
+  cardtype: { color: '#5a3c14', fontWeight: 700 },
+  element:  { color: '#1a3f6b', fontWeight: 700 },
+  trigger:  { color: '#5a3818', fontStyle: 'italic', fontWeight: 600 },
+  number:   { color: '#1a5a10', fontWeight: 700 },
+};
+
 // Single-word and multi-word phrases keyed by category. Order within a
 // category does not matter — the builder sorts all entries longest-first.
 const VOCAB: Record<Exclude<HighlightCategory, 'element' | 'number'>, string[]> = {

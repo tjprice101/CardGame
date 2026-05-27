@@ -18,13 +18,6 @@ const GROUP_LABELS: Record<TitleBadgeGroup, string> = {
   set: 'Set Completion',
 };
 
-const GROUP_COLORS: Record<TitleBadgeGroup, { bg: string; text: string; border: string }> = {
-  milestone: { bg: 'rgba(214,162,94,0.18)', text: '#111', border: 'rgba(214,162,94,0.4)' },
-  boss: { bg: 'rgba(184,92,79,0.18)', text: '#111', border: 'rgba(184,92,79,0.38)' },
-  infinite: { bg: 'rgba(122,169,255,0.18)', text: '#111', border: 'rgba(122,169,255,0.38)' },
-  set: { bg: 'rgba(110,190,120,0.18)', text: '#111', border: 'rgba(110,190,120,0.36)' },
-};
-
 const FILTER_GROUPS: { value: FilterGroup; label: string }[] = [
   { value: 'all', label: 'All' },
   { value: 'milestone', label: 'Milestone' },
@@ -97,110 +90,107 @@ export default function TitlesModal({ onClose }: Props) {
   return (
     <div
       style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(8,6,14,0.82)',
-        backdropFilter: 'blur(6px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 120,
-        pointerEvents: 'auto',
-        fontFamily: 'Georgia, serif',
-        padding: '16px',
+        position: 'fixed', inset: 0,
+        background: 'rgba(4,2,1,0.88)',
+        backdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 120, pointerEvents: 'auto',
+        fontFamily: 'Georgia, serif', padding: '16px',
       }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
         className="ui-panel-intro"
         style={{
-          background: warmTheme.surfaceStrong,
-          border: `1px solid ${warmTheme.borderStrong}`,
+          background: 'linear-gradient(160deg, #0e0603 0%, #080302 60%, #060202 100%)',
+          border: '1px solid rgba(200,128,58,0.30)',
           borderRadius: 18,
-          width: '100%',
-          maxWidth: 680,
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(214,162,94,0.12)',
+          width: '100%', maxWidth: 700, maxHeight: '90vh',
+          display: 'flex', flexDirection: 'column',
+          boxShadow: '0 24px 80px rgba(0,0,0,0.72), 0 0 0 1px rgba(200,128,58,0.08)',
           overflow: 'hidden',
         }}
       >
-        {/* Header */}
+        {/* ── Header ── */}
         <div
           className="ui-shimmer-band"
           style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '20px 24px 16px',
-            borderBottom: `1px solid ${warmTheme.border}`,
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '20px 26px 16px',
+            borderBottom: '1px solid rgba(200,128,58,0.16)',
             flexShrink: 0,
-            position: 'relative',
           }}
         >
           <div>
-            <div className="ui-title-glow" style={{ fontSize: 20, fontWeight: 'bold', color: warmTheme.accentDeep, letterSpacing: 2, textTransform: 'uppercase' }}>
+            <div style={{
+              fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+              fontSize: 20, fontWeight: 300, letterSpacing: 5, textTransform: 'uppercase',
+              color: '#daa058', textShadow: '0 2px 22px rgba(218,160,88,0.38)',
+            }}>
               Titles
             </div>
-            <div style={{ fontSize: 11, color: warmTheme.textMuted, marginTop: 2, letterSpacing: 0.5 }}>
-              {unlockedCount} / {TITLE_BADGES.length} unlocked
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+              <div style={{ height: 1, width: 60, background: 'linear-gradient(90deg, rgba(200,128,58,0.5) 0%, transparent 100%)' }} />
+              <span style={{ fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase', color: 'rgba(218,160,88,0.40)' }}>
+                {unlockedCount} of {TITLE_BADGES.length} unlocked
+              </span>
             </div>
           </div>
           <button
-            className="menu-tactile-btn"
             onClick={onClose}
             style={{
-              background: 'transparent', border: `1px solid ${warmTheme.border}`,
-              color: warmTheme.textMuted, fontSize: 16, cursor: 'pointer',
-              lineHeight: 1, padding: '4px 10px', borderRadius: 8,
+              width: 38, height: 38, borderRadius: '50%',
+              border: '1px solid rgba(200,128,58,0.32)',
+              background: 'rgba(200,128,58,0.06)',
+              color: 'rgba(218,160,88,0.65)',
+              fontSize: 13, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: 'inherit', lineHeight: 1, padding: 0,
             }}
           >
             ✕
           </button>
         </div>
 
-        {/* Filters + Sort */}
-        <div style={{ padding: '12px 24px', borderBottom: `1px solid ${warmTheme.border}`, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {/* Search */}
+        {/* ── Filters + Sort ── */}
+        <div style={{
+          padding: '12px 26px',
+          borderBottom: '1px solid rgba(200,128,58,0.12)',
+          flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10,
+        }}>
           <input
             type="text"
-            placeholder="Search titles..."
+            placeholder="Search titles…"
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
-              width: '100%',
-              padding: '7px 12px',
-              borderRadius: 8,
-              border: `1px solid ${warmTheme.border}`,
-              background: 'rgba(0,0,0,0.18)',
-              color: warmTheme.text,
-              fontFamily: 'Georgia, serif',
-              fontSize: 12,
-              outline: 'none',
-              boxSizing: 'border-box',
+              width: '100%', padding: '8px 13px', borderRadius: 8,
+              border: '1px solid rgba(200,128,58,0.22)',
+              background: 'rgba(200,128,58,0.05)',
+              color: '#f0dfc0',
+              fontFamily: 'Georgia, serif', fontSize: 12,
+              outline: 'none', boxSizing: 'border-box',
             }}
           />
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-            {/* Group filter pills */}
+            {/* Group pills */}
             <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
               {FILTER_GROUPS.map(f => (
                 <button
                   key={f.value}
                   onClick={() => setFilterGroup(f.value)}
-                  className="menu-tactile-btn"
                   style={{
-                    padding: '4px 10px',
-                    borderRadius: 20,
-                    border: `1px solid ${filterGroup === f.value ? warmTheme.accent : warmTheme.border}`,
-                    background: filterGroup === f.value ? 'rgba(214,162,94,0.16)' : 'transparent',
-                    color: filterGroup === f.value ? warmTheme.text : warmTheme.textMuted,
-                    fontSize: 10,
-                    letterSpacing: 0.5,
-                    cursor: 'pointer',
-                    fontFamily: 'Georgia, serif',
-                    textTransform: 'uppercase',
+                    padding: '4px 11px', borderRadius: 999,
+                    border: filterGroup === f.value
+                      ? '1px solid rgba(200,128,58,0.60)'
+                      : '1px solid rgba(200,128,58,0.18)',
+                    background: filterGroup === f.value
+                      ? 'rgba(200,128,58,0.16)' : 'rgba(200,128,58,0.04)',
+                    color: filterGroup === f.value
+                      ? '#daa058' : 'rgba(218,160,88,0.45)',
+                    fontSize: 9.5, letterSpacing: 0.8, cursor: 'pointer',
+                    fontFamily: 'Georgia, serif', textTransform: 'uppercase',
                   }}
                 >
                   {f.label}
@@ -209,22 +199,22 @@ export default function TitlesModal({ onClose }: Props) {
             </div>
 
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-              {/* Status filter */}
+              {/* Status pills */}
               <div style={{ display: 'flex', gap: 4 }}>
                 {FILTER_STATUSES.map(f => (
                   <button
                     key={f.value}
                     onClick={() => setFilterStatus(f.value)}
-                    className="menu-tactile-btn"
                     style={{
-                      padding: '4px 9px',
-                      borderRadius: 6,
-                      border: `1px solid ${filterStatus === f.value ? warmTheme.accent : warmTheme.border}`,
-                      background: filterStatus === f.value ? 'rgba(214,162,94,0.1)' : 'transparent',
-                      color: filterStatus === f.value ? warmTheme.text : warmTheme.textMuted,
-                      fontSize: 10,
-                      cursor: 'pointer',
-                      fontFamily: 'Georgia, serif',
+                      padding: '4px 9px', borderRadius: 6,
+                      border: filterStatus === f.value
+                        ? '1px solid rgba(200,128,58,0.50)'
+                        : '1px solid rgba(200,128,58,0.14)',
+                      background: filterStatus === f.value
+                        ? 'rgba(200,128,58,0.12)' : 'rgba(200,128,58,0.03)',
+                      color: filterStatus === f.value
+                        ? '#daa058' : 'rgba(218,160,88,0.40)',
+                      fontSize: 9.5, cursor: 'pointer', fontFamily: 'Georgia, serif',
                     }}
                   >
                     {f.label}
@@ -237,14 +227,11 @@ export default function TitlesModal({ onClose }: Props) {
                 value={sortMode}
                 onChange={e => setSortMode(e.target.value as SortMode)}
                 style={{
-                  padding: '4px 8px',
-                  borderRadius: 6,
-                  border: `1px solid ${warmTheme.border}`,
-                  background: warmTheme.surface,
-                  color: warmTheme.textMuted,
-                  fontFamily: 'Georgia, serif',
-                  fontSize: 10,
-                  cursor: 'pointer',
+                  padding: '5px 8px', borderRadius: 6,
+                  border: '1px solid rgba(200,128,58,0.20)',
+                  background: 'rgba(8,4,1,0.8)',
+                  color: 'rgba(218,160,88,0.60)',
+                  fontFamily: 'Georgia, serif', fontSize: 9.5, cursor: 'pointer',
                 }}
               >
                 {SORT_MODES.map(s => (
@@ -255,32 +242,43 @@ export default function TitlesModal({ onClose }: Props) {
           </div>
         </div>
 
-        {/* Results count */}
-        <div style={{ padding: '6px 24px 0', fontSize: 10, color: warmTheme.textFaint, flexShrink: 0 }}>
+        {/* ── Results count ── */}
+        <div style={{
+          padding: '6px 26px 0',
+          fontSize: 9.5, color: 'rgba(218,160,88,0.36)',
+          flexShrink: 0, letterSpacing: 1,
+        }}>
           {filtered.length} title{filtered.length !== 1 ? 's' : ''} shown
           {activeTitle && (
-            <span style={{ marginLeft: 12, color: warmTheme.text }}>
-              Currently equipped: <strong>{TITLE_BADGES.find(t => t.id === activeTitle)?.text ?? 'Unknown'}</strong>
+            <span style={{ marginLeft: 12, color: 'rgba(218,160,88,0.60)' }}>
+              Equipped: <strong style={{ color: '#daa058' }}>
+                {TITLE_BADGES.find(t => t.id === activeTitle)?.text ?? 'Unknown'}
+              </strong>
             </span>
           )}
         </div>
 
-        {/* Title list */}
-        <div style={{ overflowY: 'auto', flex: 1, padding: '12px 24px 20px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {/* None option */}
+        {/* ── Title list ── */}
+        <div style={{
+          overflowY: 'auto', flex: 1,
+          padding: '12px 26px 20px',
+          display: 'flex', flexDirection: 'column', gap: 5,
+        }}>
           {(filterGroup === 'all' || filterStatus !== 'locked') && (
             <TitleCard
-              text="— None —"
-              description="Display no title."
-              group={null}
-              unlocked={true}
+              text="— None —" description="Display no title."
+              group={null} unlocked={true}
               active={activeTitle === null}
               onEquip={() => setTitleId(null)}
             />
           )}
 
           {filtered.length === 0 ? (
-            <div style={{ textAlign: 'center', color: warmTheme.textMuted, fontSize: 13, padding: '32px 0', fontStyle: 'italic' }}>
+            <div style={{
+              textAlign: 'center',
+              color: 'rgba(218,160,88,0.38)',
+              fontSize: 13, padding: '32px 0', fontStyle: 'italic',
+            }}>
               No titles match your filters.
             </div>
           ) : (
@@ -289,12 +287,8 @@ export default function TitlesModal({ onClose }: Props) {
               const active = activeTitle === t.id && unlocked;
               return (
                 <TitleCard
-                  key={t.id}
-                  text={t.text}
-                  description={t.description}
-                  group={t.group}
-                  unlocked={unlocked}
-                  active={active}
+                  key={t.id} text={t.text} description={t.description}
+                  group={t.group} unlocked={unlocked} active={active}
                   onEquip={() => unlocked && setTitleId(t.id)}
                 />
               );
@@ -302,22 +296,29 @@ export default function TitlesModal({ onClose }: Props) {
           )}
         </div>
 
-        {/* Footer */}
+        {/* ── Footer ── */}
         <div style={{
-          padding: '10px 24px',
-          borderTop: `1px solid ${warmTheme.border}`,
-          fontSize: 10,
-          color: warmTheme.textMuted,
-          textAlign: 'center',
-          flexShrink: 0,
-          lineHeight: 1.5,
+          padding: '10px 26px',
+          borderTop: '1px solid rgba(200,128,58,0.12)',
+          display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
         }}>
-          Titles unlock automatically as you earn milestones. Click an unlocked title to equip it.
+          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, rgba(200,128,58,0.18) 50%, transparent 100%)' }} />
+          <div style={{ fontSize: 9.5, color: 'rgba(218,160,88,0.35)', letterSpacing: 1, textAlign: 'center' }}>
+            Titles unlock as you earn milestones · Click an unlocked title to equip
+          </div>
+          <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, rgba(200,128,58,0.18) 50%, transparent 100%)' }} />
         </div>
       </div>
     </div>
   );
 }
+
+const GC: Record<TitleBadgeGroup, { text: string; border: string }> = {
+  milestone: { text: '#c8a050', border: 'rgba(200,160,80,0.35)' },
+  boss:      { text: '#c07070', border: 'rgba(192,112,112,0.35)' },
+  infinite:  { text: '#7aabf8', border: 'rgba(122,171,248,0.35)' },
+  set:       { text: '#6ec878', border: 'rgba(110,200,120,0.35)' },
+};
 
 function TitleCard({
   text, description, group, unlocked, active, onEquip,
@@ -329,78 +330,67 @@ function TitleCard({
   active: boolean;
   onEquip: () => void;
 }) {
-  const colors = group ? GROUP_COLORS[group] : null;
-
   return (
     <button
       onClick={onEquip}
       disabled={!unlocked}
-      className={unlocked ? 'menu-tactile-btn' : undefined}
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '10px 14px',
-        borderRadius: 10,
+        display: 'flex', alignItems: 'center', gap: 13,
+        padding: '10px 14px', borderRadius: 10,
         border: active
-          ? `2px solid ${warmTheme.accent}`
-          : `1px solid ${warmTheme.border}`,
-        background: active
-          ? 'rgba(214,162,94,0.12)'
+          ? '1px solid rgba(200,128,58,0.60)'
           : unlocked
-            ? 'rgba(255,255,255,0.025)'
-            : 'rgba(0,0,0,0.06)',
+            ? '1px solid rgba(200,128,58,0.16)'
+            : '1px solid rgba(200,128,58,0.06)',
+        background: active
+          ? 'rgba(200,128,58,0.10)'
+          : unlocked
+            ? 'rgba(200,128,58,0.04)'
+            : 'rgba(0,0,0,0.12)',
         cursor: unlocked ? 'pointer' : 'default',
-        textAlign: 'left',
-        fontFamily: 'Georgia, serif',
+        textAlign: 'left', fontFamily: 'Georgia, serif',
         width: '100%',
+        borderLeft: active ? '3px solid rgba(200,128,58,0.80)' : undefined,
+        filter: unlocked ? undefined : 'grayscale(0.55) opacity(0.52)',
         transition: 'background 120ms ease, border-color 120ms ease',
+        paddingLeft: active ? 11 : 14,
       }}
     >
-      {/* Lock / equip indicator */}
+      {/* Equip indicator */}
       <div style={{
-        width: 22,
-        flexShrink: 0,
-        fontSize: 14,
-        color: unlocked ? warmTheme.text : warmTheme.textFaint,
-        textAlign: 'center',
-        lineHeight: 1,
+        width: 18, flexShrink: 0,
+        fontSize: 12, lineHeight: 1, textAlign: 'center',
+        color: active ? '#c8803a' : unlocked ? 'rgba(218,160,88,0.45)' : 'rgba(200,128,58,0.20)',
       }}>
-        {active ? '✓' : unlocked ? '○' : '🔒'}
+        {active ? '✦' : unlocked ? '○' : '⊘'}
       </div>
 
-      {/* Main content */}
+      {/* Text */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 13,
-          fontWeight: 'bold',
-          color: unlocked ? warmTheme.text : warmTheme.textMuted,
+          fontSize: 13, fontWeight: active ? 600 : 400,
+          color: unlocked ? (active ? '#daa058' : '#f0dfc0') : 'rgba(218,160,88,0.40)',
           letterSpacing: 0.3,
         }}>
           {text}
         </div>
         <div style={{
-          fontSize: 10,
-          color: unlocked ? warmTheme.textMuted : warmTheme.textFaint,
+          fontSize: 10, lineHeight: 1.35,
+          color: unlocked ? 'rgba(218,160,88,0.48)' : 'rgba(200,128,58,0.22)',
           marginTop: 2,
-          lineHeight: 1.35,
         }}>
           {description}
         </div>
       </div>
 
       {/* Group badge */}
-      {group && colors && (
+      {group && (
         <div style={{
-          flexShrink: 0,
-          padding: '3px 8px',
-          borderRadius: 12,
-          fontSize: 9,
-          letterSpacing: 0.8,
-          textTransform: 'uppercase',
-          background: colors.bg,
-          color: colors.text,
-          border: `1px solid ${colors.border}`,
+          flexShrink: 0, padding: '3px 8px', borderRadius: 999,
+          fontSize: 9, letterSpacing: 0.8, textTransform: 'uppercase',
+          color: GC[group].text,
+          border: `1px solid ${GC[group].border}`,
+          background: 'rgba(0,0,0,0.18)',
         }}>
           {GROUP_LABELS[group]}
         </div>
@@ -408,3 +398,5 @@ function TitleCard({
     </button>
   );
 }
+
+void warmTheme;

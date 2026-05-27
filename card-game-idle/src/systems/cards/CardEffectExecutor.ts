@@ -259,8 +259,7 @@ function runRecast(
   const imprintAmp = entry.isNacreCoated ? 1.0 : 1.0 + 0.25 * entry.imprintStacks;
   const finalPower = power * imprintAmp;
 
-  // Snapshot pre-execute chain to compute the chain delta caused by the recast.
-  const beforeChain = turn.chainMultiplier;
+  // Snapshot pre-execute (chain removed).
 
   const result = CardEffectExecutor.execute(
     { instanceId: entry.instanceId, definitionId: entry.definitionId },
@@ -279,10 +278,6 @@ function runRecast(
 
   // Scale the oblivion burst portion by finalPower.
   const scaledOblivion = result.oblivionBonus * finalPower;
-
-  // Scale the chain delta by finalPower (reapply on top of the unscaled base).
-  const chainDelta = result.turn.chainMultiplier - beforeChain;
-  result.turn.chainMultiplier = beforeChain + chainDelta * finalPower;
 
   // Record the recast event.
   entry.recastCount += 1;
@@ -360,16 +355,8 @@ export class CardEffectExecutor {
       if (suppressedDraw <= 0) return;
 
       const isInfinite = def?.rarity === 'Infinite';
-      const floorGainPerSuppressed = isInfinite ? 0.55 : 0.35;
       const dominantGainPerSuppressed = isInfinite ? 10 : 5;
       const oblivionGainPerSuppressed = isInfinite ? 240 : 120;
-
-      const targetFloor = Math.max(
-        mutableTurn.chainBaseline ?? 1,
-        mutableTurn.chainMultiplier + suppressedDraw * floorGainPerSuppressed,
-      );
-      mutableTurn.chainBaseline = targetFloor;
-      mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, targetFloor);
 
       const dominantGain = suppressedDraw * dominantGainPerSuppressed * multiplier;
       if (mutableTurn.embers >= mutableTurn.radiance) mutableTurn.embers += dominantGain;
@@ -409,7 +396,7 @@ export class CardEffectExecutor {
           }
           break;
         case 'effect_plus':
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + effect.value * 0.05);
+          // chain removed — no-op
           break;
         case 'choose_lineage':
           mutableTurn.burningGardenCodexLineage = mutableTurn.burningGardenLaw ?? 'Rose';
@@ -453,10 +440,7 @@ export class CardEffectExecutor {
           oblivionBonus += countBurnPhaseUnits() * 140;
           break;
         case 'burn_cooldown_reduction_per_crown':
-          mutableTurn.chainBaseline = Math.max(
-            mutableTurn.chainBaseline,
-            mutableTurn.chainMultiplier + (mutableTurn.burningGardenCrownStacks ?? 0) * effect.value * 0.03,
-          );
+          // chain removed — no-op
           break;
         case 'char_to_memory_echo':
           mutableTurn.burningGardenCodexCopiesRemaining = Math.max(
@@ -525,7 +509,7 @@ export class CardEffectExecutor {
           break;
         case 'burn_lineage_echo_and_cooldown':
           mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.echo;
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + effect.cooldown * 0.05);
+          // chain cooldown bonus removed
           break;
         case 'final_chord_bloom_if_all_lineages':
           if (distinctLineages() >= 3) processEffect(effect.effect);
@@ -534,7 +518,6 @@ export class CardEffectExecutor {
           const lineageCount = Math.max(1, distinctLineages());
           const lawBonus = 1 + Math.max(0, mutableTurn.burningGardenNextFinalChordScaleBonus ?? 0) * 0.35;
           oblivionBonus += Math.round(220 * effect.multiplier * lineageCount * lawBonus);
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + 0.2 * lineageCount * effect.multiplier);
           break;
         }
         case 'seed_grove_with_worldflower': {
@@ -560,7 +543,7 @@ export class CardEffectExecutor {
         case 'worldflower_bonus_on_three':
           if ((mutableTurn.burningGardenWorldflowerGrowth ?? 0) >= 3) {
             mutableTurn.burningGardenGeometryMode = true;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + effect.bonus * 0.15);
+            // chain bonus removed
           }
           break;
         case 'choose_burn_cards':
@@ -577,7 +560,7 @@ export class CardEffectExecutor {
           processEffect(effect.effect);
           break;
         case 'burn_all_effects_plus':
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline, mutableTurn.chainMultiplier + effect.value * 0.1);
+          // chain bonus removed
           if ((effect.cooldown ?? 0) > 0) {
             mutableTurn.burningGardenCrownStacks = Math.min(12, (mutableTurn.burningGardenCrownStacks ?? 0) + (effect.cooldown ?? 0));
           }
@@ -628,10 +611,7 @@ export class CardEffectExecutor {
           mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.duration;
           break;
         case 'burn_cooldown_reduction':
-          mutableTurn.chainBaseline = Math.max(
-            mutableTurn.chainBaseline,
-            mutableTurn.chainMultiplier + effect.value * 0.08 * Math.max(1, effect.duration),
-          );
+          // chain bonus removed
           break;
         default:
           break;
@@ -664,11 +644,11 @@ export class CardEffectExecutor {
           if (mechanicalInfiniteBonus !== null) {
             val = mechanicalInfiniteBonus * multiplier;
           }
-          // Dynamic sentinel: Chain Pulse ? +10 per card played this turn (including this one)
+          // Oblivion Pulse — +10 per card played this turn (including this one)
           if (deckCard.definitionId === 'ophanim-neutral-chain-pulse') {
             val = (mutableTurn.cardsPlayedThisTurn + 1) * 10 * multiplier;
           }
-          // Echo Pulse ? +15 per card played this turn
+          // Echo Pulse — +15 per card played this turn
           if (deckCard.definitionId === 'ophanim-neutral-echo-pulse') {
             val = (mutableTurn.cardsPlayedThisTurn + 1) * 15 * multiplier;
           }
@@ -716,36 +696,6 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'chain_multiplier_set':
-          // Set both multiplier and floor so the value persists across card plays
-          mutableTurn.chainMultiplier = effect.value;
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 0, effect.value);
-          if (def?.element === 'Neutrality') {
-            mutableTurn.neutralityChainGainedThisTurn = (mutableTurn.neutralityChainGainedThisTurn ?? 0) + effect.value;
-            mutableTurn.neutralityTriggeredEffects = [
-              ...(mutableTurn.neutralityTriggeredEffects ?? []),
-              `${deckCard.definitionId}: set chain to ${effect.value.toFixed(1)}`,
-            ].slice(-8);
-          }
-          break;
-
-        case 'chain_gain':
-          mutableTurn.chainMultiplier = (mutableTurn.chainMultiplier ?? 1) + effect.value;
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 0, mutableTurn.chainMultiplier);
-          if (def?.element === 'Neutrality') {
-            mutableTurn.neutralityChainGainedThisTurn = (mutableTurn.neutralityChainGainedThisTurn ?? 0) + effect.value;
-            mutableTurn.neutralityTriggeredEffects = [
-              ...(mutableTurn.neutralityTriggeredEffects ?? []),
-              `${deckCard.definitionId}: +${effect.value.toFixed(1)} chain`,
-            ].slice(-8);
-          }
-          break;
-
-        case 'set_chain_floor':
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 0, effect.value);
-          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainBaseline);
-          break;
-
         case 'black_glass_white_flame_gain':
           mutableTurn.blackGlassWhiteFlame = Math.min(30, (mutableTurn.blackGlassWhiteFlame ?? 0) + effect.value * multiplier);
           break;
@@ -790,7 +740,6 @@ export class CardEffectExecutor {
         case 'light_resonance_gain': {
           const nextResonance = Math.min(6, (mutableTurn.lightResonance ?? 0) + effect.value * multiplier);
           mutableTurn.lightResonance = nextResonance;
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier + Math.min(1.0, nextResonance * 0.167));
           break;
         }
 
@@ -801,10 +750,6 @@ export class CardEffectExecutor {
         case 'prismatic_light_gain': {
           const gain = effect.value * multiplier;
           mutableTurn.prismaticLight = (mutableTurn.prismaticLight ?? 0) + gain;
-          // Each point of Prismatic Light lifts the chain gain slightly
-          const lightFloor = 1.0 + (mutableTurn.prismaticLight ?? 0) * 0.005;
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, lightFloor);
-          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainBaseline);
           break;
         }
 
@@ -826,10 +771,6 @@ export class CardEffectExecutor {
           }, 0);
           const gain = Math.min(effect.max, prismaticCount);
           mutableTurn.prismaticChannelLocks = Math.min(effect.max, (mutableTurn.prismaticChannelLocks ?? 0) + gain);
-          if (gain >= 2) {
-            mutableTurn.chainMultiplier = 2.8;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, 2.8);
-          }
           break;
         }
 
@@ -861,7 +802,7 @@ export class CardEffectExecutor {
         case 'refraction_echo_cascade': {
           mutableTurn.prismaticEchoCascadeArmed = true;
           mutableTurn.prismaticEchoCascadeDepthThreshold = effect.depthThreshold ?? 4;
-          mutableTurn.prismaticEchoCascadeGainPerToken = effect.chainGainPerToken ?? 0.08;
+          mutableTurn.prismaticEchoCascadeGainPerToken = 0.08;
           mutableTurn.prismaticEchoCascadeDrawRefund = effect.drawRefund ?? 1;
           if (deckCard.definitionId === 'inf-prismatic-axiom-rain') {
             const fullFireReady = new Set(mutableTurn.prismaticDistinctChannels ?? []).size >= 4
@@ -885,7 +826,6 @@ export class CardEffectExecutor {
         case 'chord_token_multiplier': {
           const tokens = mutableTurn.prismaticChordTokens ?? 0;
           mutableTurn.prismaticChordAttackBaseBonus = tokens * effect.baseOblivionPerToken;
-          mutableTurn.prismaticChordAttackChainBonus = tokens * effect.chainScalingPerToken;
           if (effect.permanentOnFullFire) {
             const fullFireReady = new Set(mutableTurn.prismaticDistinctChannels ?? []).size >= 4
               && (mutableTurn.prismaticRefractionDepth ?? 0) >= 3;
@@ -895,13 +835,6 @@ export class CardEffectExecutor {
               mutableTurn.prismaticChordAttackBaseBonus += bonus;
             }
           }
-          break;
-        }
-
-        case 'chord_amplify_chain': {
-          const tokens = mutableTurn.prismaticChordTokens ?? 0;
-          mutableTurn.chainMultiplier = (mutableTurn.chainMultiplier ?? 1) + effect.base + tokens * effect.perToken;
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
           break;
         }
 
@@ -942,7 +875,6 @@ export class CardEffectExecutor {
           pendingEffect = {
             type: 'prismatic_sentence_choice',
             cards: [...mutableDeck.hand],
-            chainGainIfAccordMatch: effect.chainGainIfAccordMatch,
             draw: effect.draw,
             drawPerfect: effect.drawPerfect ?? effect.draw,
           };
@@ -1067,11 +999,6 @@ export class CardEffectExecutor {
           const conduits = Math.max(0, mutableTurn.snowboundConduits ?? 0);
           if (conduits > 0) {
             oblivionBonus += conduits * effect.oblivionPerConduit * multiplier;
-            if ((effect.chainPerConduit ?? 0) > 0) {
-              const gain = conduits * (effect.chainPerConduit ?? 0);
-              mutableTurn.chainMultiplier = (mutableTurn.chainMultiplier ?? 1) + gain;
-              mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 0, mutableTurn.chainMultiplier);
-            }
             mutableTurn.snowboundConduits = 0;
           }
           break;
@@ -1134,10 +1061,6 @@ export class CardEffectExecutor {
         case 'proof_gain': {
           const gain = effect.value * multiplier;
           mutableTurn.proof = (mutableTurn.proof ?? 0) + gain;
-          // Proof scaling also raises chain consistency for Glass Absolute cards.
-          const proofFloor = 1.0 + (mutableTurn.proof ?? 0) * 0.012;
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, proofFloor);
-          mutableTurn.chainMultiplier = Math.max(mutableTurn.chainMultiplier, mutableTurn.chainBaseline);
           break;
         }
 
@@ -1183,15 +1106,12 @@ export class CardEffectExecutor {
             mutableDeck = TurnSystem.drawCards(mutableDeck, 1);
           }
           if (prior < 8 && next >= 8) {
-            mutableTurn.chainMultiplier += 0.3;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+            // (chain bonus removed)
           }
           if (next >= 12) {
             mutableTurn.butterflyStance = 'Dual';
             mutableTurn.nextCardMultiplied = true;
             mutableDeck = TurnSystem.drawCards(mutableDeck, 1);
-            mutableTurn.chainMultiplier += 0.4;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
             next = 0;
             mutableTurn.butterflySpectrum = 0;
             mutableTurn.butterflyFlutterLevel = 0;
@@ -1219,7 +1139,6 @@ export class CardEffectExecutor {
               : 0;
 
           let releaseOblivion = spend * effect.oblivionPerSpectrum * multiplier;
-          const chainGain = spend * (effect.chainPerSpectrum ?? 0);
           const stance = mutableTurn.butterflyStance ?? 'Reflect';
 
           if (stance === 'Absorb' || stance === 'Dual') {
@@ -1230,10 +1149,6 @@ export class CardEffectExecutor {
           }
 
           oblivionBonus += releaseOblivion;
-          if (chainGain > 0) {
-            mutableTurn.chainMultiplier += chainGain;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
-          }
           break;
         }
 
@@ -1258,8 +1173,6 @@ export class CardEffectExecutor {
           if (margin >= 6) {
             mutableTurn.eternalSeasMarginCharge = margin - 6;
             mutableDeck = TurnSystem.drawCards(mutableDeck, 1);
-            mutableTurn.chainMultiplier += 0.35;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
           }
           break;
         }
@@ -1283,11 +1196,6 @@ export class CardEffectExecutor {
           const margin = Math.max(0, mutableTurn.eternalSeasMarginCharge ?? 0);
           const marginBonus = margin * 60;
           oblivionBonus += (spend * effect.oblivionPerCurrent + marginBonus) * multiplier;
-          if ((effect.chainPerCurrent ?? 0) > 0) {
-            const chainGain = spend * (effect.chainPerCurrent ?? 0);
-            mutableTurn.chainMultiplier += chainGain;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
-          }
           mutableTurn.eternalSeasMarginCharge = Math.max(0, margin - 2);
           break;
         }
@@ -1610,11 +1518,6 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           mutableTurn.pyroRuinWindows = Math.max(0, available - consume);
           oblivionBonus += consume * effect.oblivionPerWindow * multiplier;
-          if ((effect.chainPerWindow ?? 0) > 0) {
-            const gain = consume * (effect.chainPerWindow ?? 0);
-            mutableTurn.chainMultiplier += gain;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
-          }
           break;
         }
 
@@ -1654,11 +1557,6 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           stacks[effect.stack] = Math.max(0, available - consume);
           oblivionBonus += consume * effect.oblivionPerStack * multiplier;
-          if ((effect.chainPerStack ?? 0) > 0) {
-            const gain = consume * (effect.chainPerStack ?? 0);
-            mutableTurn.chainMultiplier += gain;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
-          }
           if ((effect.drawPerStack ?? 0) > 0) {
             const extraDraw = Math.floor(consume * (effect.drawPerStack ?? 0));
             for (let i = 0; i < extraDraw; i++) {
@@ -1698,21 +1596,17 @@ export class CardEffectExecutor {
           oblivionBonus += consume * consume * effect.oblivionPerEchoSquared * multiplier;
           break;
         }
-        // Heavenly Light — Halo Cascade: raises chain floor (chain baseline)
+        // Heavenly Light — Halo Cascade: bonus oblivion per cascade
         case 'light_halo_cascade_resound': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.light ?? 0);
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           counters.light = available - consume;
-          const lift = consume * effect.chainFloorPerCascade;
-          mutableTurn.chainBaseline = (mutableTurn.chainBaseline ?? 1) + lift;
-          if (mutableTurn.chainMultiplier < mutableTurn.chainBaseline) {
-            mutableTurn.chainMultiplier = mutableTurn.chainBaseline;
-          }
+          oblivionBonus += consume * (effect.oblivionPerCascade ?? 0) * multiplier;
           break;
         }
-        // Thornbound — Briar Spiral: spirals → +Trail; chain scales with current Trail
+        // Thornbound — Briar Spiral: spirals → +Trail; bonus oblivion per Trail
         case 'thorn_briar_spiral_bloom': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.thorn ?? 0);
@@ -1720,11 +1614,7 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           counters.thorn = available - consume;
           mutableTurn.trail = (mutableTurn.trail ?? 0) + consume * effect.trailPerSpiral;
-          const chainGain = (mutableTurn.trail ?? 0) * effect.chainPerTrail;
-          if (chainGain > 0) {
-            mutableTurn.chainMultiplier += chainGain;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
-          }
+          oblivionBonus += (mutableTurn.trail ?? 0) * (effect.oblivionPerTrail ?? 0) * multiplier;
           break;
         }
         // Mechanical — Reactor Flux: vent Strain → oblivion + score multiplier
@@ -1788,16 +1678,14 @@ export class CardEffectExecutor {
           }
           break;
         }
-        // Glass Absolute — Cascade Proof: chain multiplier per cascade depth
+        // Glass Absolute — Cascade Proof: bonus oblivion per proof depth
         case 'absol_cascade_proof_amplify': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.absol ?? 0);
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           counters.absol = available - consume;
-          const chainGain = consume * effect.chainPerProofDepth;
-          mutableTurn.chainMultiplier += chainGain;
-          mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+          oblivionBonus += consume * (effect.oblivionPerProofDepth ?? 0) * multiplier;
           break;
         }
         // Burning Garden — Wild Pollen: +Embers per pollen; score mult per Bloom
@@ -1841,9 +1729,7 @@ export class CardEffectExecutor {
           counters.tide = available - consume;
           const polarity = mutableTurn.eternalSeasPolarity ?? 'White';
           if (polarity === 'White') {
-            const chainGain = consume * effect.chainPerPositive;
-            mutableTurn.chainMultiplier += chainGain;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
+            oblivionBonus += consume * effect.oblivionPerPositive * multiplier;
           } else {
             oblivionBonus += consume * effect.oblivionPerNegative * multiplier;
           }
@@ -1873,9 +1759,6 @@ export class CardEffectExecutor {
           const spend = Math.min(have, effect.spend);
           mutableTurn.pearls = have - spend;
           oblivionBonus += spend * effect.oblivionPerPearl * multiplier;
-          if (effect.chainPerPearl && spend > 0) {
-            mutableTurn.chainMultiplier += spend * effect.chainPerPearl;
-          }
           break;
         }
         case 'forge_recast_last': {
@@ -1943,9 +1826,8 @@ export class CardEffectExecutor {
         }
         case 'forge_temper': {
           ensureForgeTurn(mutableTurn);
-          // Queue temper factor for a board source. Simplest mapping: queue a flat chain bump.
+          // Queue temper factor for a board source.
           mutableTurn.forgeTemperQueue = (mutableTurn.forgeTemperQueue ?? 0) + effect.factor;
-          mutableTurn.chainMultiplier += 0.05 * effect.factor;
           break;
         }
         case 'forge_anvil_seal': {
@@ -1954,7 +1836,6 @@ export class CardEffectExecutor {
           const entry = effect.target === 'last_played' ? ledger[ledger.length - 1] : ledger[ledger.length - 1];
           if (entry) entry.isAnvilSealed = true;
           oblivionBonus += effect.burstOblivion * multiplier;
-          mutableTurn.chainMultiplier += effect.burstChain;
           break;
         }
         case 'forge_nacre_coat': {
@@ -1978,9 +1859,6 @@ export class CardEffectExecutor {
           const stacks = (mutableTurn.eternalStacks ?? {}) as Record<string, number>;
           const crowns = stacks.forge ?? 0;
           oblivionBonus += crowns * effect.oblivionPerCrown * multiplier;
-          if (effect.chainPerCrown && crowns > 0) {
-            mutableTurn.chainMultiplier += crowns * effect.chainPerCrown;
-          }
           break;
         }
 
@@ -1992,11 +1870,6 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           counters.pyre = available - consume;
           oblivionBonus += consume * effect.oblivionPerCrown * multiplier;
-          if (effect.chainPerCrown && consume > 0) {
-            const chainGain = consume * effect.chainPerCrown;
-            mutableTurn.chainMultiplier += chainGain;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
-          }
           break;
         }
 
@@ -2041,12 +1914,6 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           stacks.wuas = available - consume;
           oblivionBonus += consume * effect.oblivionPerStack * multiplier;
-          if ((effect.chainPerDream ?? 0) > 0) {
-            const dream = mutableTurn.dreamLattice ?? 0;
-            const chainGain = dream * (effect.chainPerDream ?? 0);
-            mutableTurn.chainMultiplier += chainGain;
-            mutableTurn.chainBaseline = Math.max(mutableTurn.chainBaseline ?? 1, mutableTurn.chainMultiplier);
-          }
           break;
         }
 
@@ -2273,10 +2140,6 @@ export class CardEffectExecutor {
 
     if (countAsPlay) {
       mutableTurn.cardsPlayedThisTurn += 1;
-      mutableTurn.chainMultiplier = Math.max(
-        1.0 + mutableTurn.cardsPlayedThisTurn * 0.1,
-        mutableTurn.chainBaseline
-      );
     }
 
     if (countAsPlay && !skipLedger) {
@@ -2294,7 +2157,7 @@ export class CardEffectExecutor {
       // If a Cherubim queued a temper bump for the next Seraphim, apply it now
       if (def.type === 'Seraphim' && (mutableTurn.forgePendingCherubimTemper ?? 0) > 0) {
         const f = mutableTurn.forgePendingCherubimTemper!;
-        mutableTurn.chainMultiplier += 0.05 * f;
+        mutableTurn.forgeTemperQueue = (mutableTurn.forgeTemperQueue ?? 0) + f;
         mutableTurn.forgePendingCherubimTemper = 0;
       }
     }

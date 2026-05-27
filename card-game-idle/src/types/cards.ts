@@ -9,7 +9,6 @@ export type BurningGardenPhase = 'Bloom' | 'Burn';
 
 export const SERAPHIM_BONUS_TYPES = [
   'oblivion_per_card',
-  'chain_bonus',
   'ophanim_bonus',
   'cherubim_extra_plays',
   'cherubim_expire_bonus',
@@ -59,7 +58,6 @@ export interface AttackDefinition<TLabel extends string = string> {
   readonly description: string;
   readonly baseOblivion: number;
   readonly cooldownCards: number;
-  readonly chainScaling: number;
   readonly costs?: AttackCost[];
   readonly requiresAngelOnBoard?: boolean;
   readonly tags?: string[];

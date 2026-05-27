@@ -13,7 +13,6 @@ import {
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
-import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
 import { ARTIFACT_DEFINITIONS, ARTIFACT_SET_COLORS } from '@/data/artifacts/artifactDefinitions';
 import { getMasteryLevel, getMasteryMultiplier } from '@/types/artifacts';
@@ -33,90 +32,109 @@ const SECTION_COLORS: Record<string, string> = {
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
     position: 'absolute', inset: 0,
-    background: 'radial-gradient(circle at 78% 12%, rgba(140, 174, 255, 0.16) 0%, rgba(140, 174, 255, 0) 32%), radial-gradient(circle at 18% 82%, rgba(196, 155, 90, 0.18) 0%, rgba(196, 155, 90, 0) 42%), repeating-linear-gradient(45deg, rgba(165, 128, 76, 0.06) 0px, rgba(165, 128, 76, 0.06) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 24px), linear-gradient(180deg, rgba(14, 20, 32, 0.97) 0%, rgba(24, 32, 47, 0.97) 100%)',
+    background: 'radial-gradient(ellipse at 82% 8%, rgba(100, 60, 180, 0.09) 0%, transparent 38%), radial-gradient(ellipse at 12% 88%, rgba(200, 133, 10, 0.13) 0%, transparent 44%), radial-gradient(ellipse at 50% 50%, rgba(6, 10, 20, 0.55) 0%, transparent 100%), repeating-linear-gradient(45deg, rgba(200, 165, 90, 0.022) 0px, rgba(200, 165, 90, 0.022) 1px, transparent 1px, transparent 28px), linear-gradient(180deg, #050c17 0%, #08111f 45%, #050b15 100%)',
     zIndex: 50,
     display: 'flex', flexDirection: 'column', pointerEvents: 'auto',
     fontFamily: 'Georgia, serif',
     color: '#ead9c0',
   },
   header: {
-    padding: '14px 24px', borderBottom: `1px solid ${warmTheme.border}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
-    background: 'rgba(8, 12, 18, 0.45)',
+    padding: '20px 28px 16px',
+    borderBottom: '1px solid rgba(200, 155, 72, 0.22)',
+    display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0,
+    background: 'linear-gradient(180deg, rgba(5, 9, 17, 0.88) 0%, rgba(8, 13, 24, 0.65) 100%)',
+    boxShadow: '0 1px 0 rgba(200, 155, 72, 0.1), 0 4px 20px rgba(0,0,0,0.45)',
   },
-  title: { fontSize: 20, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 2 },
-  deckCount: { fontSize: 13, opacity: 0.7 },
+  title: {
+    fontSize: 24, fontWeight: 'bold', color: '#f5c96c',
+    letterSpacing: 4, textTransform: 'uppercase',
+    textShadow: '0 0 28px rgba(240, 189, 120, 0.36), 0 2px 6px rgba(0,0,0,0.8)',
+    lineHeight: 1,
+  },
+  deckCount: { fontSize: 12, color: 'rgba(234,217,192,0.58)', letterSpacing: 0.5 },
   filterBar: {
-    padding: '8px 16px', borderBottom: `1px solid ${warmTheme.border}`,
-    display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap',
-    background: 'rgba(8, 12, 18, 0.35)',
+    display: 'flex', alignItems: 'stretch', flexShrink: 0, flexWrap: 'wrap',
+    background: 'rgba(3, 6, 14, 0.6)',
+    borderBottom: '1px solid rgba(200, 155, 72, 0.16)',
   },
   filterBtn: {
-    padding: '5px 14px', borderRadius: 20, border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(255, 232, 199, 0.9)', color: '#68441f', fontSize: 11,
-    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1, transition: 'all 0.15s',
+    padding: '0 16px', height: 36, border: 'none',
+    borderBottom: '3px solid transparent',
+    borderRight: '1px solid rgba(200, 155, 72, 0.12)',
+    background: 'transparent', color: 'rgba(234,217,192,0.55)', fontSize: 10.5,
+    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1.2,
+    textTransform: 'uppercase', transition: 'all 0.18s ease',
+    display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
   },
   filterBtnActive: {
-    background: 'rgba(255, 216, 154, 0.98)', borderColor: '#c48a49', color: '#6a3f17',
+    color: '#f5c96c',
+    borderBottomColor: '#f0bd78',
+    background: 'rgba(240, 189, 120, 0.08)',
   },
   body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  cardPool: { flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 0 },
+  cardPool: { flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 },
   sectionHeader: {
     display: 'flex', alignItems: 'center', gap: 10,
-    padding: '8px 0 6px', marginBottom: 8,
-    borderBottom: `1px solid ${warmTheme.border}`,
+    padding: '10px 0 8px', marginBottom: 10,
   },
-  sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2, textTransform: 'uppercase' },
-  sectionCount: { fontSize: 9, color: 'rgba(232, 215, 191, 0.72)', letterSpacing: 1 },
-  sectionGrid: { display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+  sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2.5, textTransform: 'uppercase' },
+  sectionCount: { fontSize: 9, color: 'rgba(232, 215, 191, 0.5)', letterSpacing: 1.2 },
+  sectionGrid: { display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 24 },
   cardWithMeta: {
-    width: 100,
+    width: 116,
     display: 'flex',
     flexDirection: 'column',
-    gap: 4,
+    gap: 3,
   },
   card: {
-    width: 100, height: 148, background: warmTheme.surfaceStrong,
-    border: `1px solid ${warmTheme.border}`, borderRadius: 12, cursor: 'pointer',
+    width: 116, height: 164,
+    background: 'rgba(8, 12, 20, 0.85)',
+    border: '1px solid rgba(200, 155, 72, 0.22)', borderRadius: 12, cursor: 'pointer',
     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
-    transition: 'border-color 0.15s, box-shadow 0.15s',
+    transition: 'border-color 0.18s ease, box-shadow 0.18s ease, transform 0.14s ease',
     position: 'relative', overflow: 'hidden',
   },
-  cardAdded: { borderColor: warmTheme.borderStrong, boxShadow: warmTheme.glow },
-  cardFull: { opacity: 0.4, cursor: 'not-allowed' },
+  cardAdded: {
+    borderColor: 'rgba(245, 201, 108, 0.92)',
+    boxShadow: '0 0 0 1px rgba(240, 189, 120, 0.3), 0 0 18px rgba(240, 189, 120, 0.2)',
+    transform: 'translateY(-2px)',
+  },
+  cardFull: { opacity: 0.34, cursor: 'not-allowed' },
   cardName: { fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 },
   cardDesc: { color: cardFacePalette.textSoft, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden' },
   cardSubtype: { letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 4, textAlign: 'center' },
   badge: {
-    position: 'absolute', top: 4, right: 4, width: 18, height: 18,
-    borderRadius: '50%', background: warmTheme.button, color: warmTheme.accentDeep,
-    fontSize: 10, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    position: 'absolute', bottom: 7, right: 6, width: 21, height: 21,
+    borderRadius: '50%',
+    background: 'radial-gradient(circle at 38% 32%, #f8d878 0%, #c8850a 60%, #8a5200 100%)',
+    color: '#3a1800',
+    fontSize: 11, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    boxShadow: '0 1px 5px rgba(0,0,0,0.65), 0 0 8px rgba(240,189,120,0.35)',
   },
   ownedLabelBelow: {
-    fontSize: 9, color: 'rgba(255, 255, 255, 0.96)', letterSpacing: 0.5,
+    fontSize: 9, color: 'rgba(240, 220, 190, 0.75)', letterSpacing: 0.4,
     textAlign: 'center',
-    opacity: 1,
     pointerEvents: 'none',
-    textShadow: '0 1px 2px rgba(0,0,0,0.7)',
-    background: 'rgba(13, 20, 32, 0.42)',
-    border: `1px solid ${warmTheme.border}`,
-    borderRadius: 6,
-    padding: '2px 4px',
+    textShadow: '0 1px 3px rgba(0,0,0,0.9)',
+    background: 'rgba(4, 7, 15, 0.72)',
+    border: '1px solid rgba(200, 155, 72, 0.2)',
+    borderRadius: 5,
+    padding: '2px 5px',
   },
   lockRow: {
-    marginTop: 3,
+    marginTop: 2,
     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
     fontSize: 9, color: '#ffd966', letterSpacing: 0.4,
-    background: 'rgba(13, 20, 32, 0.42)',
-    border: '1px solid rgba(255, 217, 102, 0.32)',
-    borderRadius: 6,
+    background: 'rgba(10, 14, 26, 0.78)',
+    border: '1px solid rgba(255, 217, 102, 0.25)',
+    borderRadius: 5,
     padding: '2px 4px',
     pointerEvents: 'auto',
   },
   lockBtn: {
     width: 14, height: 14, padding: 0,
-    border: '1px solid rgba(255, 217, 102, 0.4)',
-    background: 'rgba(255, 217, 102, 0.08)',
+    border: '1px solid rgba(255, 217, 102, 0.36)',
+    background: 'rgba(255, 217, 102, 0.1)',
     color: '#ffd966',
     borderRadius: 3, cursor: 'pointer',
     fontSize: 11, lineHeight: '12px',
@@ -124,70 +142,95 @@ const styles: Record<string, React.CSSProperties> = {
     fontFamily: 'Georgia, serif',
   },
   lockBtnDisabled: {
-    opacity: 0.35, cursor: 'not-allowed',
+    opacity: 0.3, cursor: 'not-allowed',
   },
   sidebar: {
-    width: 260, borderLeft: `1px solid ${warmTheme.border}`,
+    width: 290, borderLeft: '1px solid rgba(200, 155, 72, 0.16)',
     display: 'flex', flexDirection: 'column', overflow: 'hidden',
-    background: 'rgba(8, 12, 18, 0.35)',
+    background: 'linear-gradient(180deg, rgba(4, 7, 13, 0.75) 0%, rgba(6, 9, 18, 0.7) 100%)',
+    boxShadow: 'inset 2px 0 16px rgba(0,0,0,0.35)',
   },
   sidebarSection: {
-    padding: '10px 12px', borderBottom: `1px solid ${warmTheme.border}`, flexShrink: 0,
-    background: 'rgba(9, 14, 22, 0.4)',
+    padding: '12px 14px', borderBottom: '1px solid rgba(200, 155, 72, 0.12)', flexShrink: 0,
   },
   sidebarSectionTitle: {
-    fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-    opacity: 0.8, marginBottom: 8, color: '#f0bd78',
+    fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase',
+    color: '#d4a84e', marginBottom: 10,
+    display: 'flex', alignItems: 'center', gap: 6,
   },
   savedDeckRow: {
     display: 'flex', alignItems: 'center', gap: 6,
-    padding: '5px 0', borderBottom: `1px solid ${warmTheme.border}`,
+    padding: '6px 8px 6px 10px', marginBottom: 2, borderRadius: 6,
+    transition: 'background 0.15s',
+    borderLeft: '2px solid transparent',
   },
-  savedDeckName: { fontSize: 11, color: '#e8d7bf', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  deckList: { flex: 1, overflowY: 'auto', padding: 12 },
+  savedDeckName: { fontSize: 11, color: '#c8b898', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  deckList: { flex: 1, overflowY: 'auto', padding: '10px 12px' },
   entryRow: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '4px 0', borderBottom: `1px solid ${warmTheme.border}`,
+    display: 'flex', alignItems: 'center',
+    padding: '4px 6px', marginBottom: 1, borderRadius: 4,
+    borderBottom: '1px solid rgba(200, 155, 72, 0.09)',
+    gap: 5, transition: 'background 0.12s',
   },
-  entryName: { fontSize: 11, color: '#e8d7bf', flex: 1 },
-  entryCount: { fontSize: 11, color: warmTheme.accentDeep, margin: '0 6px', minWidth: 14, textAlign: 'center' },
+  entryName: { fontSize: 10.5, color: '#c4ae90', flex: 1, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  entryCount: {
+    fontSize: 11, color: '#f0bd78', margin: '0 3px', minWidth: 18, textAlign: 'center',
+    fontWeight: 'bold', flexShrink: 0,
+  },
   entryBtn: {
-    width: 20, height: 20, border: `1px solid ${warmTheme.borderStrong}`, borderRadius: 6,
-    background: warmTheme.surface, color: warmTheme.accentDeep, fontSize: 13, cursor: 'pointer',
+    width: 22, height: 22, border: '1px solid rgba(200, 155, 72, 0.36)', borderRadius: 5,
+    background: 'rgba(200, 155, 72, 0.1)', color: '#f0bd78', fontSize: 14, cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
+    transition: 'background 0.12s, border-color 0.12s',
+    lineHeight: 1, flexShrink: 0,
   },
   footer: {
-    padding: '12px 24px', borderTop: `1px solid ${warmTheme.border}`,
+    padding: '14px 28px', borderTop: '1px solid rgba(200, 155, 72, 0.2)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+    background: 'linear-gradient(180deg, rgba(5, 8, 16, 0.65) 0%, rgba(3, 6, 12, 0.88) 100%)',
+    boxShadow: '0 -1px 0 rgba(200, 155, 72, 0.08)',
   },
   startBtn: {
-    padding: '10px 28px', borderRadius: 10, border: `1px solid ${warmTheme.borderStrong}`,
-    background: warmTheme.button, color: warmTheme.accentDeep, fontSize: 14,
-    cursor: 'pointer', letterSpacing: 1, fontFamily: 'Georgia, serif',
+    padding: '11px 34px', borderRadius: 10,
+    border: '1px solid rgba(240, 189, 120, 0.65)',
+    background: 'linear-gradient(180deg, #c09040 0%, #8a5e10 50%, #6a4408 100%)',
+    color: '#fff8ea', fontSize: 13,
+    cursor: 'pointer', letterSpacing: 2, fontFamily: 'Georgia, serif',
+    textShadow: '0 1px 4px rgba(0,0,0,0.7)',
+    boxShadow: '0 2px 14px rgba(180, 120, 10, 0.38), inset 0 1px 0 rgba(255,255,255,0.14)',
+    textTransform: 'uppercase',
+    transition: 'box-shadow 0.25s, transform 0.15s',
   },
   closeBtn: {
-    padding: '8px 18px', borderRadius: 10, border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(255, 237, 213, 0.94)', color: '#5f3a17', fontSize: 12,
+    padding: '10px 20px', borderRadius: 10,
+    border: '1px solid rgba(200, 155, 72, 0.22)',
+    background: 'rgba(234, 217, 192, 0.05)',
+    color: 'rgba(234, 217, 192, 0.68)', fontSize: 12,
     cursor: 'pointer', fontFamily: 'Georgia, serif',
+    letterSpacing: 0.5, transition: 'background 0.15s, border-color 0.15s',
   },
   miniBtn: {
-    padding: '3px 8px', borderRadius: 6, border: `1px solid ${warmTheme.borderStrong}`,
-    background: warmTheme.surface, color: warmTheme.accentDeep, fontSize: 10,
+    padding: '5px 10px', borderRadius: 6,
+    border: '1px solid rgba(200, 155, 72, 0.36)',
+    background: 'rgba(200, 155, 72, 0.1)', color: '#e8c870', fontSize: 10,
     cursor: 'pointer', fontFamily: 'Georgia, serif', flexShrink: 0,
+    letterSpacing: 0.5, transition: 'background 0.15s, box-shadow 0.15s',
   },
   miniBtnDanger: {
-    borderColor: 'rgba(184,92,79,0.35)', color: warmTheme.danger,
+    borderColor: 'rgba(184, 90, 79, 0.4)', color: '#e07060',
+    background: 'rgba(184, 90, 79, 0.08)',
   },
   sidebarActionRow: {
     display: 'flex', gap: 6, flexWrap: 'wrap',
   },
   empty: {
-    width: '100%', textAlign: 'center', marginTop: 40,
-    fontSize: 13, color: 'rgba(232, 215, 191, 0.68)', fontStyle: 'italic',
+    width: '100%', textAlign: 'center', marginTop: 48,
+    fontSize: 13, color: 'rgba(232, 215, 191, 0.42)', fontStyle: 'italic',
   },
   nameInput: {
-    background: warmTheme.surface, border: `1px solid ${warmTheme.borderStrong}`,
-    color: '#4f3418', fontSize: 12, padding: '4px 8px', borderRadius: 6,
+    background: 'rgba(3, 6, 14, 0.75)',
+    border: '1px solid rgba(200, 155, 72, 0.38)',
+    color: '#e8d4b8', fontSize: 12, padding: '6px 10px', borderRadius: 6,
     fontFamily: 'Georgia, serif', outline: 'none', width: '100%', boxSizing: 'border-box',
   },
 };
@@ -605,7 +648,7 @@ export default function DeckBuilder({ onClose }: Props) {
             </div>
           )}
           {/* Artifact equip slots — functional. Up to 3 artifacts per deck. */}
-          <div style={{ display: 'flex', gap: 5, marginTop: 5, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6, marginTop: 6, alignItems: 'center' }}>
             {[0, 1, 2].map(i => {
               const equipped = activeDeck?.equippedArtifacts?.[i];
               const def = equipped ? ARTIFACT_DEFINITIONS.find(a => a.id === equipped) : undefined;
@@ -624,22 +667,22 @@ export default function DeckBuilder({ onClose }: Props) {
                   }}
                   disabled={!activeDeck}
                   style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 7,
-                    border: def ? `1px solid ${color}` : '1px dashed rgba(255,200,80,0.35)',
+                    width: 34,
+                    height: 34,
+                    borderRadius: 8,
+                    border: def ? `1px solid ${color}90` : '1px dashed rgba(200,155,72,0.3)',
                     background: def
-                      ? `linear-gradient(180deg, ${color}30, ${color}10)`
-                      : 'rgba(255,200,80,0.06)',
+                      ? `linear-gradient(180deg, ${color}28, ${color}10)`
+                      : 'rgba(200,155,72,0.05)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: def ? color : 'rgba(255,200,80,0.5)',
-                    fontSize: 15,
+                    color: def ? color : 'rgba(200,155,72,0.42)',
+                    fontSize: 16,
                     cursor: activeDeck ? 'pointer' : 'not-allowed',
                     padding: 0,
-                    boxShadow: def ? `0 0 8px ${color}40 inset` : 'none',
-                    transition: 'all 160ms ease',
+                    boxShadow: def ? `0 0 12px ${color}30 inset, 0 0 8px ${color}18` : 'none',
+                    transition: 'all 180ms ease',
                   }}
                 >
                   ✦
@@ -652,12 +695,12 @@ export default function DeckBuilder({ onClose }: Props) {
                 title="Edit how-to-play notes for this deck"
                 onClick={() => { setNotesDraft(activeDeck.notes ?? ''); setNotesOpen(true); }}
                 style={{
-                  marginLeft: 6,
+                  marginLeft: 4,
                   padding: '4px 10px',
                   borderRadius: 7,
-                  border: '1px solid rgba(240,189,120,0.4)',
-                  background: 'rgba(240,189,120,0.08)',
-                  color: '#f0bd78',
+                  border: '1px solid rgba(200,155,72,0.3)',
+                  background: 'rgba(200,155,72,0.06)',
+                  color: 'rgba(234,217,192,0.7)',
                   fontSize: 10,
                   letterSpacing: 1,
                   textTransform: 'uppercase',
@@ -670,16 +713,26 @@ export default function DeckBuilder({ onClose }: Props) {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-          <div style={styles.deckCount}>
-            <span style={{ color: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e86060' : '#FFD700' }}>
-              {totalCards}
-            </span>
-            <span style={{ opacity: 0.5 }}> / 50 cards</span>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+          <div>
+            <div style={{ textAlign: 'right', marginBottom: 4 }}>
+              <span style={{ fontSize: 22, fontWeight: 'bold', color: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e06060' : '#f0bd78', lineHeight: 1 }}>
+                {totalCards}
+              </span>
+              <span style={{ fontSize: 12, color: 'rgba(234,217,192,0.45)', marginLeft: 4 }}> / 50</span>
+            </div>
+            <div style={{ width: 120, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: 2,
+                width: `${Math.min(100, (totalCards / 50) * 100)}%`,
+                background: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e06060' : 'linear-gradient(90deg, #c8850a, #f5c96c)',
+                transition: 'width 0.3s ease, background 0.3s ease',
+              }} />
+            </div>
           </div>
-          <div style={{ ...styles.deckCount, fontSize: 11 }}>
-            <span style={{ color: '#FFD700' }}>{extraDeckList.length}</span>
-            <span style={{ opacity: 0.5 }}> / 10 extra deck</span>
+          <div style={{ fontSize: 10, color: 'rgba(234,217,192,0.45)', textAlign: 'right' }}>
+            <span style={{ color: '#c8a058' }}>{extraDeckList.length}</span>
+            <span> / 10 extra deck</span>
           </div>
         </div>
       </div>
@@ -695,11 +748,18 @@ export default function DeckBuilder({ onClose }: Props) {
             key={el}
             style={{
               ...styles.filterBtn,
-              ...(elementFilter === el ? styles.filterBtnActive : {}),
-              ...(elementFilter === el ? { color: ELEMENT_COLORS[el] ?? '#FFD700', borderColor: ELEMENT_COLORS[el] ?? '#FFD700' } : {}),
+              ...(elementFilter === el ? {
+                ...styles.filterBtnActive,
+                color: ELEMENT_COLORS[el] ?? '#f0bd78',
+                borderBottomColor: ELEMENT_COLORS[el] ?? '#f0bd78',
+                background: `${(ELEMENT_COLORS[el] ?? '#f0bd78')}14`,
+              } : {}),
             }}
             onClick={() => setElementFilter(el === elementFilter ? null : el)}
           >
+            {elementFilter === el && (
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: ELEMENT_COLORS[el] ?? '#f0bd78', display: 'inline-block', flexShrink: 0 }} />
+            )}
             {ELEMENT_SET_NAMES[el] ?? el}
           </button>
         ))}
@@ -712,9 +772,11 @@ export default function DeckBuilder({ onClose }: Props) {
           {angelSection.length > 0 && (
             <div>
               <div style={styles.sectionHeader}>
+                <div style={{ width: 4, height: 20, borderRadius: 2, background: SECTION_COLORS['Angel'] ?? '#f0bd78', boxShadow: `0 0 8px ${(SECTION_COLORS['Angel'] ?? '#f0bd78')}60`, flexShrink: 0 }} />
                 <span style={{ ...styles.sectionLabel, color: SECTION_COLORS['Angel'] }}>
                   Extra Deck (Angels)
                 </span>
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${(SECTION_COLORS['Angel'] ?? '#f0bd78')}50, transparent)`, marginLeft: 4 }} />
                 <span style={styles.sectionCount}>{extraDeckList.length} / 10 selected</span>
               </div>
               <div style={styles.sectionGrid}>
@@ -794,9 +856,11 @@ export default function DeckBuilder({ onClose }: Props) {
           {mainSections.map(section => (
             <div key={section.label}>
               <div style={styles.sectionHeader}>
-                <span style={{ ...styles.sectionLabel, color: SECTION_COLORS[section.label] ?? '#FFD700' }}>
+                <div style={{ width: 4, height: 20, borderRadius: 2, background: SECTION_COLORS[section.label] ?? '#f0bd78', boxShadow: `0 0 8px ${(SECTION_COLORS[section.label] ?? '#f0bd78')}50`, flexShrink: 0 }} />
+                <span style={{ ...styles.sectionLabel, color: SECTION_COLORS[section.label] ?? '#f0bd78' }}>
                   {section.label}
                 </span>
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${(SECTION_COLORS[section.label] ?? '#f0bd78')}45, transparent)`, marginLeft: 4 }} />
                 <span style={styles.sectionCount}>{section.cards.length} card{section.cards.length !== 1 ? 's' : ''}</span>
               </div>
               <div style={styles.sectionGrid}>
@@ -866,11 +930,14 @@ export default function DeckBuilder({ onClose }: Props) {
         <div style={styles.sidebar}>
           {/* Saved decks */}
           <div style={styles.sidebarSection}>
-            <div style={styles.sidebarSectionTitle}>Saved Decks</div>
+            <div style={styles.sidebarSectionTitle}>
+              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
+              Saved Decks
+            </div>
             {savedDecks.map(sd => (
               <div key={sd.id} style={{
                 ...styles.savedDeckRow,
-                ...(sd.id === activeDeckId ? { background: 'rgba(255,215,0,0.06)', borderRadius: 4, padding: '5px 4px' } : {}),
+                ...(sd.id === activeDeckId ? { borderLeftColor: '#f0bd78', background: 'rgba(240, 189, 120, 0.09)' } : {}),
               }}>
                 <div style={styles.savedDeckName} title={sd.name}>
                   {sd.isStarter ? '🔒 ' : ''}{sd.name}
@@ -897,7 +964,10 @@ export default function DeckBuilder({ onClose }: Props) {
 
           {/* Save controls */}
           <div style={styles.sidebarSection}>
-            <div style={styles.sidebarSectionTitle}>Save</div>
+            <div style={styles.sidebarSectionTitle}>
+              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
+              Save
+            </div>
             {!isEditingStarter && activeDeckId && (
               <button className="menu-tactile-btn"
                 style={{ ...styles.miniBtn, marginBottom: 6, opacity: validation.valid ? 1 : 0.35, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
@@ -964,7 +1034,10 @@ export default function DeckBuilder({ onClose }: Props) {
 
           {/* Extra deck list */}
           <div style={{ ...styles.sidebarSection, flexShrink: 0 }}>
-            <div style={styles.sidebarSectionTitle}>Extra Deck ({extraDeckList.length} / 10)</div>
+            <div style={styles.sidebarSectionTitle}>
+              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
+              Extra Deck ({extraDeckList.length} / 10)
+            </div>
             {extraDeckList.length === 0 && (
               <div style={{ fontSize: 10, color: 'rgba(232, 215, 191, 0.56)', fontStyle: 'italic' }}>No angels selected</div>
             )}
@@ -974,10 +1047,12 @@ export default function DeckBuilder({ onClose }: Props) {
               const owned = def ? getOwnedCopiesForFinish(def, entry.finish, collection, holoCollection) : 0;
               const totalForDefinition = extraDeckDefinitionCountMap.get(entry.definitionId) ?? 0;
               const canAdd = entry.copies < owned && totalForDefinition < cap && extraDeckList.length < 10;
+              const rarityColorEx = RARITY_COLORS_DB[def?.rarity ?? ''] ?? 'rgba(200,155,72,0.5)';
               return (
                 <div key={entry.key} style={styles.entryRow}>
-                  <div style={styles.entryName}>{def?.name ?? entry.definitionId} ({getFinishLabel(entry.finish)})</div>
-                  <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>-</button>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: rarityColorEx, boxShadow: `0 0 4px ${rarityColorEx}70` }} />
+                  <div style={styles.entryName}>{def?.name ?? entry.definitionId}{entry.finish === 'holo' ? ' ✦' : ''}</div>
+                  <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>−</button>
                   <div style={styles.entryCount}>×{entry.copies}</div>
                   <button className="menu-tactile-btn"
                     style={{ ...styles.entryBtn, opacity: canAdd ? 1 : 0.3 }}
@@ -990,31 +1065,43 @@ export default function DeckBuilder({ onClose }: Props) {
 
           {/* Main deck list */}
           <div style={styles.deckList}>
-            <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.5, marginBottom: 8 }}>
+            <div style={{ ...styles.sidebarSectionTitle, marginBottom: 8 }}>
+              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
               Main Deck ({totalCards} / 50)
             </div>
             {/* Stats summary */}
             {deckList.length > 0 && (
               <div style={{
                 marginBottom: 10,
-                padding: '6px 8px',
-                background: 'rgba(9, 14, 22, 0.6)',
-                border: `1px solid ${warmTheme.border}`,
-                borderRadius: 6,
+                padding: '8px 10px',
+                background: 'rgba(5, 8, 16, 0.7)',
+                border: '1px solid rgba(200, 155, 72, 0.16)',
+                borderRadius: 8,
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
               }}>
-                <div style={{ fontSize: 9, letterSpacing: 1.5, color: '#f0bd78', marginBottom: 4 }}>Stats</div>
-                <div style={{ fontSize: 10, color: '#e8d7bf', display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+                <div style={{ fontSize: 9, letterSpacing: 2, color: '#d4a84e', marginBottom: 6, textTransform: 'uppercase' }}>Stats</div>
+                <div style={{ fontSize: 10, color: '#e8d7bf', display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 5 }}>
                   {(['Legendary','Epic','Rare','Common'] as const).map(r => {
                     const n = deckStats.rarityCounts[r] ?? 0;
                     if (n === 0) return null;
-                    const color = r === 'Legendary' ? '#f39c12' : r === 'Epic' ? '#9b59b6' : r === 'Rare' ? '#5b9bd5' : '#999';
+                    const color = r === 'Legendary' ? '#f39c12' : r === 'Epic' ? '#9b59b6' : r === 'Rare' ? '#5b9bd5' : '#888';
                     return <span key={r} style={{ color }}>{r[0]}: <strong>{n}</strong></span>;
                   })}
                 </div>
-                <div style={{ fontSize: 10, color: '#caa57a', display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 4 }}>
+                {totalCards > 0 && (
+                  <div style={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', marginBottom: 6, background: 'rgba(255,255,255,0.06)' }}>
+                    {(['Legendary','Epic','Rare','Common'] as const).map(r => {
+                      const n = deckStats.rarityCounts[r] ?? 0;
+                      if (n === 0) return null;
+                      const color = r === 'Legendary' ? '#f39c12' : r === 'Epic' ? '#9b59b6' : r === 'Rare' ? '#5b9bd5' : '#555';
+                      return <div key={r} style={{ width: `${(n / totalCards) * 100}%`, background: color, transition: 'width 0.3s' }} />;
+                    })}
+                  </div>
+                )}
+                <div style={{ fontSize: 10, display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
                   <span style={{ color: '#f0bd78' }}>Ser: <strong>{deckStats.typeSeraphim}</strong></span>
                   <span style={{ color: warmTheme.cherubim }}>Che: <strong>{deckStats.typeCherubim}</strong></span>
-                  <span style={{ color: '#7f629f' }}>Oph: <strong>{deckStats.typeOphanim}</strong></span>
+                  <span style={{ color: '#9070b8' }}>Oph: <strong>{deckStats.typeOphanim}</strong></span>
                 </div>
                 {Object.keys(deckStats.elementCounts).length > 1 && (
                   <div style={{ fontSize: 9, color: '#9aa1aa', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -1040,10 +1127,12 @@ export default function DeckBuilder({ onClose }: Props) {
               const cap = Math.min(4, collection[entry.definitionId] ?? 0);
               const owned = def ? getOwnedCopiesForFinish(def, entry.finish, collection, holoCollection) : 0;
               const totalForDefinition = deckDefinitionCountMap.get(entry.definitionId) ?? 0;
+              const rarityColorMain = RARITY_COLORS_DB[def?.rarity ?? ''] ?? 'rgba(200,155,72,0.5)';
               return (
                 <div key={getVariantKey(entry.definitionId, entry.finish)} style={styles.entryRow}>
-                  <div style={styles.entryName}>{def?.name ?? entry.definitionId} ({getFinishLabel(entry.finish)})</div>
-                  <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>-</button>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: rarityColorMain, boxShadow: `0 0 4px ${rarityColorMain}70` }} />
+                  <div style={styles.entryName}>{def?.name ?? entry.definitionId}{entry.finish === 'holo' ? ' ✦' : ''}</div>
+                  <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>−</button>
                   <div style={styles.entryCount}>×{entry.copies}</div>
                   <button className="menu-tactile-btn"
                     style={{ ...styles.entryBtn, opacity: entry.copies >= owned || totalForDefinition >= cap ? 0.3 : 1 }}
@@ -1058,13 +1147,23 @@ export default function DeckBuilder({ onClose }: Props) {
 
       <div style={styles.footer}>
         <div>
-          {!validation.valid && <div style={{ color: '#e86060', fontSize: 11 }}>{validation.errors[0]}</div>}
-          {validation.valid && <div style={{ color: '#80e860', fontSize: 11 }}>Deck is valid - 50 cards</div>}
+          {!validation.valid && (
+            <div style={{ color: '#e07060', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 14, lineHeight: 1 }}>✕</span>
+              {validation.errors[0]}
+            </div>
+          )}
+          {validation.valid && (
+            <div style={{ color: '#80e860', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6, textShadow: '0 0 14px rgba(128, 232, 96, 0.4)' }}>
+              <span style={{ fontSize: 14, lineHeight: 1 }}>✓</span>
+              Deck valid — 50 cards
+            </div>
+          )}
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 10 }}>
           <button className="menu-tactile-btn" style={styles.closeBtn} onClick={onClose}>Close</button>
-          <button className="menu-tactile-btn"
-            style={{ ...styles.startBtn, opacity: validation.valid ? 1 : 0.4, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
+          <button className={`menu-tactile-btn${validation.valid ? ' deck-play-btn-ready' : ''}`}
+            style={{ ...styles.startBtn, opacity: validation.valid ? 1 : 0.38, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
             onClick={validation.valid ? handleStart : undefined}
           >
             Reshuffle & Play
@@ -1113,7 +1212,7 @@ export default function DeckBuilder({ onClose }: Props) {
             maxHeight: 420,
             overflowY: 'auto',
             background: 'linear-gradient(180deg, rgba(12,18,28,0.98), rgba(8,12,20,0.98))',
-            border: `1px solid ${warmTheme.borderStrong}`,
+            border: '1px solid rgba(200, 155, 72, 0.45)',
             borderRadius: 12,
             padding: '14px 16px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.7)',
@@ -1174,23 +1273,25 @@ function ArtifactPickerModal({ ownedArtifacts, equippedIds, onPick, onClose }: A
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 'min(720px, 100%)', maxHeight: '80vh',
-          background: 'linear-gradient(180deg, rgba(24,32,47,0.98), rgba(14,20,32,0.98))',
-          border: `1px solid ${warmTheme.border}`,
-          borderRadius: 12,
+          background: 'linear-gradient(180deg, rgba(8, 12, 22, 0.98) 0%, rgba(5, 8, 16, 0.98) 100%)',
+          border: '1px solid rgba(200, 155, 72, 0.28)',
+          borderRadius: 14,
           overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           fontFamily: 'Georgia, serif',
           color: '#ead9c0',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(200, 155, 72, 0.08)',
         }}
       >
         <div style={{
-          padding: '14px 20px',
-          borderBottom: `1px solid ${warmTheme.border}`,
+          padding: '18px 22px',
+          borderBottom: '1px solid rgba(200, 155, 72, 0.16)',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'rgba(4, 7, 14, 0.5)',
         }}>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 1.5 }}>Equip Artifact</div>
-            <div style={{ fontSize: 11, opacity: 0.65, marginTop: 2 }}>Select one of your owned artifacts to equip in this slot.</div>
+            <div style={{ fontSize: 18, fontWeight: 'bold', color: '#f5c96c', letterSpacing: 3, textTransform: 'uppercase', textShadow: '0 0 20px rgba(240,189,120,0.3)' }}>Equip Artifact</div>
+            <div style={{ fontSize: 11, color: 'rgba(234,217,192,0.55)', marginTop: 4 }}>Select one of your owned artifacts to equip in this slot.</div>
           </div>
           <button className="menu-tactile-btn" style={{ ...styles.closeBtn }} onClick={onClose}>Cancel</button>
         </div>
@@ -1239,8 +1340,8 @@ function ArtifactPickerModal({ ownedArtifacts, equippedIds, onPick, onClose }: A
                       {def.description}
                     </div>
                     {alreadyEquipped && (
-                      <div style={{ marginTop: 6, fontSize: 10, color: '#80e860', letterSpacing: 1 }}>
-                        ALREADY EQUIPPED
+                      <div style={{ marginTop: 6, fontSize: 9, color: '#80e860', letterSpacing: 1.5, textTransform: 'uppercase', padding: '2px 7px', background: 'rgba(128, 232, 96, 0.12)', border: '1px solid rgba(128, 232, 96, 0.3)', borderRadius: 4, display: 'inline-block' }}>
+                        ✓ Equipped
                       </div>
                     )}
                   </button>
@@ -1281,21 +1382,23 @@ function NotesModal({ deckName, value, onChange, onSave, onClose }: NotesModalPr
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 'min(640px, 100%)',
-          background: 'linear-gradient(180deg, rgba(24,32,47,0.98), rgba(14,20,32,0.98))',
-          border: `1px solid ${warmTheme.border}`,
-          borderRadius: 12,
+          background: 'linear-gradient(180deg, rgba(8, 12, 22, 0.98) 0%, rgba(5, 8, 16, 0.98) 100%)',
+          border: '1px solid rgba(200, 155, 72, 0.26)',
+          borderRadius: 14,
           overflow: 'hidden',
           display: 'flex', flexDirection: 'column',
           fontFamily: 'Georgia, serif',
           color: '#ead9c0',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(200, 155, 72, 0.06)',
         }}
       >
         <div style={{
-          padding: '14px 20px',
-          borderBottom: `1px solid ${warmTheme.border}`,
+          padding: '18px 22px',
+          borderBottom: '1px solid rgba(200, 155, 72, 0.16)',
+          background: 'rgba(4, 7, 14, 0.5)',
         }}>
-          <div style={{ fontSize: 16, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 1.5 }}>How-to-Play Notes</div>
-          <div style={{ fontSize: 11, opacity: 0.65, marginTop: 2 }}>{deckName}</div>
+          <div style={{ fontSize: 18, fontWeight: 'bold', color: '#f5c96c', letterSpacing: 3, textTransform: 'uppercase', textShadow: '0 0 20px rgba(240,189,120,0.3)' }}>How-to-Play Notes</div>
+          <div style={{ fontSize: 11, color: 'rgba(234,217,192,0.55)', marginTop: 4 }}>{deckName}</div>
         </div>
         <div style={{ padding: 16 }}>
           <textarea
@@ -1310,8 +1413,8 @@ function NotesModal({ deckName, value, onChange, onSave, onClose }: NotesModalPr
               boxSizing: 'border-box',
               padding: 12,
               borderRadius: 8,
-              background: 'rgba(0,0,0,0.35)',
-              border: `1px solid ${warmTheme.border}`,
+              background: 'rgba(2, 5, 12, 0.75)',
+              border: '1px solid rgba(200, 155, 72, 0.25)',
               color: '#ead9c0',
               fontFamily: 'Georgia, serif',
               fontSize: 13,

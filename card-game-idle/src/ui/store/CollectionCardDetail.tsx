@@ -49,7 +49,7 @@ function renderCombatOverview(card: Props['card']) {
         <div style={{ padding: '8px 10px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
           <div style={{ fontSize: 11, color: '#f0bd78', textTransform: 'uppercase', letterSpacing: 0.8 }}>Unsynergized · {attacks.unsynergized.name}</div>
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 6 }}>
-            Oblivion {attacks.unsynergized.baseOblivion} · Cooldown {attacks.unsynergized.cooldownCards} cards · Chain +{attacks.unsynergized.chainScaling.toFixed(2)}
+            Oblivion {attacks.unsynergized.baseOblivion} · Cooldown {attacks.unsynergized.cooldownCards} cards
           </div>
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
             Cost: {formatAttackCosts(attacks.unsynergized.costs)}
@@ -58,7 +58,7 @@ function renderCombatOverview(card: Props['card']) {
         <div style={{ padding: '8px 10px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
           <div style={{ fontSize: 11, color: '#f0bd78', textTransform: 'uppercase', letterSpacing: 0.8 }}>Synergized · {attacks.synergized.name}</div>
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 6 }}>
-            Oblivion {attacks.synergized.baseOblivion} · Cooldown {attacks.synergized.cooldownCards} cards · Chain +{attacks.synergized.chainScaling.toFixed(2)}
+            Oblivion {attacks.synergized.baseOblivion} · Cooldown {attacks.synergized.cooldownCards} cards
           </div>
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
             Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} · Cost: {formatAttackCosts(attacks.synergized.costs)}
@@ -76,13 +76,13 @@ function renderCombatOverview(card: Props['card']) {
         <div style={{ padding: '8px 10px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
           <div style={{ fontSize: 11, color: '#f0bd78', textTransform: 'uppercase', letterSpacing: 0.8 }}>Primary · {attacks.primary.name}</div>
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 6 }}>
-            Oblivion {attacks.primary.baseOblivion} · Cooldown {attacks.primary.cooldownCards} cards · Chain +{attacks.primary.chainScaling.toFixed(2)}
+            Oblivion {attacks.primary.baseOblivion} · Cooldown {attacks.primary.cooldownCards} cards
           </div>
         </div>
         <div style={{ padding: '8px 10px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
           <div style={{ fontSize: 11, color: '#f0bd78', textTransform: 'uppercase', letterSpacing: 0.8 }}>Exalted · {attacks.exalted.name}</div>
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 6 }}>
-            Oblivion {attacks.exalted.baseOblivion} · Cooldown {attacks.exalted.cooldownCards} cards · Chain +{attacks.exalted.chainScaling.toFixed(2)}
+            Oblivion {attacks.exalted.baseOblivion} · Cooldown {attacks.exalted.cooldownCards} cards
           </div>
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
             Cost: {formatAttackCosts(attacks.exalted.costs)}

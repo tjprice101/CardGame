@@ -7,6 +7,7 @@ import {
   getHighlightRegex,
   getEntryForPhrase,
   HIGHLIGHT_STYLES,
+  LIGHT_BG_HIGHLIGHT_STYLES,
   type HighlightCategory,
 } from './rulesVocabulary';
 
@@ -15,6 +16,8 @@ export interface HighlightOptions {
   disabled?: boolean;
   /** When true, scale down font emphasis for tight preview panels. */
   compact?: boolean;
+  /** When true, use dark-shade colors readable on light parchment card face panels. */
+  lightBg?: boolean;
 }
 
 function categoriseNumberMatch(_text: string): HighlightCategory {
@@ -63,9 +66,11 @@ export function highlightRulesText(text: string, options?: HighlightOptions): Re
     }
 
     if (category) {
-      const baseStyle = HIGHLIGHT_STYLES[category];
+      const styleSet = options?.lightBg ? LIGHT_BG_HIGHLIGHT_STYLES : HIGHLIGHT_STYLES;
+      const baseStyle = styleSet[category];
       const style: React.CSSProperties = {
-        color: colorOverride ?? baseStyle.color,
+        // On light backgrounds, skip per-element color overrides (use the dark fallback instead)
+        color: (options?.lightBg ? undefined : colorOverride) ?? baseStyle.color,
         fontWeight: baseStyle.fontWeight,
         fontStyle: baseStyle.fontStyle,
       };

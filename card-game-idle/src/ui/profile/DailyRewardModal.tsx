@@ -134,6 +134,7 @@ export default function DailyRewardModal({ onClose }: Props) {
           >Later</button>
           <button
             onClick={handleClaim}
+            data-sfx="claim"
             className="menu-tactile-btn"
             style={{
               flex: 2, padding: '10px 0',

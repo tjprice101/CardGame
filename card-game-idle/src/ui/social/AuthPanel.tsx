@@ -51,6 +51,7 @@ export default function AuthPanel() {
     if (status !== 'authenticated' || !socialProfile) return;
     void syncOwnProfile({
       displayName: localProfile.name,
+      bio: localProfile.bio ?? '',
       avatarId: localProfile.avatarId,
       titleId: localProfile.titleId,
       uiThemeId: localProfile.uiThemeId ?? null,
@@ -59,6 +60,7 @@ export default function AuthPanel() {
     status,
     socialProfile,
     localProfile.name,
+    localProfile.bio,
     localProfile.avatarId,
     localProfile.titleId,
     localProfile.uiThemeId,
@@ -86,7 +88,7 @@ export default function AuthPanel() {
             <div style={{ fontSize: 13, fontWeight: 'bold', color: warmTheme.text }}>
               Signed in as {socialProfile.displayName}
             </div>
-            <div style={{ fontSize: 10, color: warmTheme.textMuted, marginTop: 2 }}>
+            <div style={{ fontSize: 10, color: warmTheme.textSoft, marginTop: 2 }}>
               Friend code: <span style={{ fontFamily: 'monospace', color: warmTheme.accentDeep }}>{socialProfile.friendCode}</span>
             </div>
           </div>
@@ -154,7 +156,7 @@ export default function AuthPanel() {
       >
         {busy ? 'Working…' : mode === 'signin' ? 'Sign in' : 'Create account'}
       </button>
-      <div style={{ fontSize: 9, color: warmTheme.textMuted, marginTop: 8, lineHeight: 1.4 }}>
+      <div style={{ fontSize: 9, color: warmTheme.textSoft, marginTop: 8, lineHeight: 1.4 }}>
         Your account is separate from your local save. Saves stay on this device; the account
         is used for friends, messages, and friend leaderboards.
       </div>
@@ -194,7 +196,7 @@ const cardStyle: React.CSSProperties = {
 const hintStyle: React.CSSProperties = {
   ...cardStyle,
   fontSize: 10,
-  color: warmTheme.textMuted,
+  color: warmTheme.textSoft,
   fontStyle: 'italic',
 };
 
@@ -203,8 +205,8 @@ const inputStyle: React.CSSProperties = {
   padding: '6px 8px',
   marginBottom: 6,
   fontSize: 12,
-  background: 'rgba(0,0,0,0.06)',
-  border: `1px solid ${warmTheme.border}`,
+  background: 'rgba(255,255,255,0.88)',
+  border: `1px solid ${warmTheme.borderStrong}`,
   borderRadius: 6,
   color: warmTheme.text,
   fontFamily: 'Georgia, serif',
@@ -228,9 +230,9 @@ const ghostBtn: React.CSSProperties = {
   padding: '4px 10px',
   fontSize: 11,
   background: 'transparent',
-  border: `1px solid ${warmTheme.border}`,
+  border: `1px solid ${warmTheme.borderStrong}`,
   borderRadius: 6,
-  color: warmTheme.textMuted,
+  color: warmTheme.text,
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
 };
@@ -251,7 +253,7 @@ function NotificationSettings() {
     <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${warmTheme.border}` }}>
       <div style={{
         fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-        color: warmTheme.textMuted, marginBottom: 6,
+        color: warmTheme.textSoft, marginBottom: 6,
       }}>Notifications</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <NotifToggle on={prefs.dms} label="Direct messages" onToggle={() => toggle('dms')} />
@@ -283,7 +285,7 @@ function NotifToggle({
         background: on ? warmTheme.accentSoft : 'transparent',
         border: `1px solid ${on ? warmTheme.accent : warmTheme.border}`,
         borderRadius: 6,
-        color: on ? warmTheme.accentDeep : warmTheme.textMuted,
+        color: on ? warmTheme.accentDeep : warmTheme.text,
         cursor: 'pointer',
         fontFamily: 'Georgia, serif',
         fontSize: 11,

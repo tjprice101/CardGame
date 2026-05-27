@@ -24,6 +24,18 @@ import {
 import AuthPanel from '@/ui/social/AuthPanel';
 import FriendsPanel from '@/ui/social/FriendsPanel';
 
+// Dark gold palette constants
+const G = {
+  gold:         '#c8803a',
+  goldSoft:     '#daa058',
+  goldBorder:   'rgba(200,128,58,0.28)',
+  goldGlass:    'rgba(200,128,58,0.07)',
+  text:         '#f0dfc0',
+  cinzel:       '"Cinzel", "Cormorant Garamond", Georgia, serif',
+  success:      '#4f8a47',
+  danger:       '#b85c4f',
+} as const;
+
 interface Props {
   onClose: () => void;
 }
@@ -44,7 +56,7 @@ export default function SocialPage({ onClose }: Props) {
 
   const statusLabel = useMemo(() => {
     if (status === 'authenticated') return 'Signed in';
-    if (status === 'authenticating') return 'Signing in…';
+    if (status === 'loading') return 'Signing in…';
     if (status === 'error') return 'Sign-in error';
     return 'Offline · not signed in';
   }, [status]);
@@ -52,68 +64,79 @@ export default function SocialPage({ onClose }: Props) {
   const dailyLogin = progress.dailyLogin;
 
   return (
-    <div style={styles.backdrop}>
-      <div className="ui-panel-intro" style={styles.panel}>
-        {/* Header */}
-        <div className="ui-shimmer-band" style={styles.header}>
-          <div style={styles.headerBrand}>
-            <div className="ui-title-glow" style={styles.headerTitle}>SOCIAL</div>
-            <div style={styles.headerSub}>Account, friends, gifts &amp; leaderboards</div>
+    <div style={S.backdrop}>
+      {/* Atmospheric washes */}
+      <div style={S.washWarm} />
+      <div style={S.washCool} />
+      <div style={S.washVignette} />
+      <div style={S.scanlines} />
+
+      <div className="ui-panel-intro" style={S.panel}>
+
+        {/* ── Header ── */}
+        <header style={S.header}>
+          <div style={S.headerBrand}>
+            <div style={S.headerTitle}>Social</div>
+            <div style={S.headerRule}>
+              <div style={S.headerRuleLine} />
+              <span style={S.headerRuleGlyph}>✦</span>
+              <div style={S.headerRuleLine} />
+            </div>
+            <div style={S.headerSub}>Account · Friends · Leaderboards</div>
           </div>
 
-          <div style={styles.headerStats}>
-            <Stat label="Friends" value={friends.length.toLocaleString()} highlight={authed} />
-            <StatDivider />
-            <Stat label="Requests" value={incoming.length.toLocaleString()} highlight={incoming.length > 0} />
-            <StatDivider />
-            <Stat label="Blocked" value={blocked.length.toLocaleString()} />
-            <StatDivider />
-            <Stat label="Streak" value={`${dailyLogin.streak}d`} />
+          <div style={S.headerStats}>
+            <EmblemStat label="Friends" value={friends.length.toLocaleString()} highlight={authed} />
+            <div style={S.emblemDivider} />
+            <EmblemStat label="Requests" value={incoming.length.toLocaleString()} highlight={incoming.length > 0} />
+            <div style={S.emblemDivider} />
+            <EmblemStat label="Blocked" value={blocked.length.toLocaleString()} />
+            <div style={S.emblemDivider} />
+            <EmblemStat label="Streak" value={`${dailyLogin.streak}d`} />
           </div>
 
-          <button
-            className="menu-tactile-btn"
-            onClick={onClose}
-            style={styles.closeBtn}
-            aria-label="Close"
-          >
-            X
-          </button>
-        </div>
+          <button onClick={onClose} style={S.closeBtn} aria-label="Close">✕</button>
+        </header>
 
-        {/* Identity strip */}
-        <div style={styles.identityStrip}>
-          <div style={styles.avatar}>{currentAvatar.glyph}</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={styles.playerName}>{profile.name || 'Acolyte'}</div>
-            <div style={styles.playerTitle}>
+        {/* ── Identity strip ── */}
+        <section style={S.identityStrip}>
+          <div style={S.avatarOuter}>
+            <div style={S.avatarInner}>
+              {currentAvatar.imageUrl
+                ? <img src={currentAvatar.imageUrl} alt={currentAvatar.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} draggable={false} />
+                : <span style={{ fontSize: 36, color: G.gold }}>{currentAvatar.glyph}</span>
+              }
+            </div>
+          </div>
+
+          <div style={S.identityBody}>
+            <div style={S.playerName}>{profile.name || 'Acolyte'}</div>
+            <div style={S.titleRibbon}>
               {currentTitle ? currentTitle.text : 'No title selected'}
             </div>
-            <div style={styles.handleRow}>
+            <div style={S.statusRow}>
               <span style={{
-                ...styles.statusDot,
-                background: authed ? warmTheme.success : warmTheme.textFaint,
-                boxShadow: authed ? `0 0 8px ${warmTheme.success}` : 'none',
+                ...S.statusDot,
+                background: authed ? G.success : 'rgba(120,120,120,0.45)',
+                boxShadow: authed ? `0 0 8px ${G.success}` : 'none',
               }} />
-              <span style={styles.statusLabel}>{statusLabel}</span>
+              <span style={S.statusLabel}>{statusLabel}</span>
               {authed && socialUser?.email && (
-                <>
-                  <span style={styles.handleDivider}>·</span>
-                  <span style={styles.handleEmail}>{socialUser.email}</span>
-                </>
+                <><span style={{ opacity: 0.4, margin: '0 3px' }}>·</span>
+                  <span style={S.statusEmail}>{socialUser.email}</span></>
               )}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Body */}
-        <div style={styles.body}>
-          {/* Left column: auth */}
-          <div style={styles.authCol}>
-            <SectionHeader>Account</SectionHeader>
+        {/* ── Body: two dark glass columns ── */}
+        <div style={S.body}>
+          <div style={S.authCol}>
+            <ColHeader title="Account" />
             <AuthPanel />
             {!authed && (
-              <div style={styles.signedOutHint}>
+              <div style={S.hintBox}>
                 Sign in (or create a free account) to add friends, send gifts,
                 exchange messages, and see your standing on the social
                 leaderboards. Your single-player progress always stays local.
@@ -121,20 +144,20 @@ export default function SocialPage({ onClose }: Props) {
             )}
           </div>
 
-          {/* Right column: friends + tabs */}
-          <div style={styles.friendsCol}>
-            <SectionHeader>Friends &amp; Activity</SectionHeader>
+          <div style={S.friendsCol}>
+            <ColHeader
+              title="Friends & Activity"
+              meta={authed ? `${friends.length} friends · ${incoming.length} requests · ${blocked.length} blocked` : undefined}
+            />
             {authed ? (
               <FriendsPanel />
             ) : (
-              <div style={styles.lockedCard}>
-                <div style={{ fontSize: 28, opacity: 0.32, marginBottom: 10 }}>
-                  ✦
-                </div>
-                <div style={styles.lockedTitle}>Friends locked</div>
-                <div style={styles.lockedBody}>
-                  Sign in on the left to unlock friends, requests, gift inbox,
-                  the activity feed, and friend leaderboards.
+              <div style={S.lockedCard}>
+                <div style={S.lockedGlyph}>✦</div>
+                <div style={S.lockedTitle}>Friends Locked</div>
+                <div style={S.lockedBody}>
+                  Sign in on the left to unlock friends, requests, the gift
+                  inbox, the activity feed, and friend leaderboards.
                 </div>
               </div>
             )}
@@ -145,251 +168,244 @@ export default function SocialPage({ onClose }: Props) {
   );
 }
 
-// — Subcomponents —————————————————————————————————————————————
+// ── Sub-components ────────────────────────────────
 
-function SectionHeader({ children }: { children: React.ReactNode }) {
+function ColHeader({ title, meta }: { title: string; meta?: string }) {
   return (
-    <div style={styles.sectionHeader}>{children}</div>
+    <div style={S.colHeader}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={S.colAccentBar} />
+        <div style={S.colTitle}>{title}</div>
+      </div>
+      {meta && <div style={S.colMeta}>{meta}</div>}
+    </div>
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function EmblemStat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4 }}>
-      <div style={styles.statLabel}>{label}</div>
+    <div style={S.emblemStat}>
+      <div style={S.emblemLabel}>{label}</div>
       <div style={{
-        ...styles.statValue,
-        color: highlight ? warmTheme.accent : warmTheme.text,
-        textShadow: highlight ? `0 0 12px ${warmTheme.accentSoft}` : 'none',
+        ...S.emblemValue,
+        color: highlight ? G.goldSoft : G.text,
+        textShadow: highlight ? '0 0 14px rgba(218,160,88,0.45)' : 'none',
       }}>{value}</div>
     </div>
   );
 }
 
-function StatDivider() {
-  return <div style={styles.statDivider} />;
-}
+// ── Styles ────────────────────────────────────────
 
-// — Styles ——————————————————————————————————————————————————————
-
-const styles: Record<string, React.CSSProperties> = {
+const S: Record<string, React.CSSProperties> = {
   backdrop: {
     position: 'absolute',
     inset: 0,
-    background: warmTheme.appBackground,
+    background: 'linear-gradient(160deg, #0d0703 0%, #070402 55%, #050203 100%)',
     display: 'flex',
     zIndex: 30,
-    animation: 'backdropFade 0.22s ease',
+    overflow: 'hidden',
     fontFamily: 'Georgia, serif',
+    animation: 'backdropFade 0.22s ease',
+  },
+  washWarm: {
+    position: 'absolute',
+    top: '-20%', left: '-8%', width: '70%', height: '80%',
+    background: 'radial-gradient(ellipse, rgba(200,128,58,0.22) 0%, rgba(160,88,30,0.08) 45%, transparent 70%)',
+    filter: 'blur(80px)', pointerEvents: 'none',
+  },
+  washCool: {
+    position: 'absolute',
+    bottom: '-20%', right: '-8%', width: '65%', height: '75%',
+    background: 'radial-gradient(ellipse, rgba(70,90,170,0.12) 0%, transparent 65%)',
+    filter: 'blur(90px)', pointerEvents: 'none',
+  },
+  washVignette: {
+    position: 'absolute', inset: 0,
+    background: 'radial-gradient(ellipse at 50% 44%, transparent 28%, rgba(0,0,0,0.58) 100%)',
+    pointerEvents: 'none',
+  },
+  scanlines: {
+    position: 'absolute', inset: 0,
+    background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px)',
+    pointerEvents: 'none',
   },
   panel: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    overflow: 'hidden',
-    background: warmTheme.surfaceStrong,
+    position: 'relative', zIndex: 1,
+    width: '100%', height: '100%',
+    display: 'flex', flexDirection: 'column',
+    overflow: 'hidden', background: 'transparent',
     animation: 'panelSlideUp 0.28s ease',
   },
 
   /* Header */
   header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 'clamp(32px, 3.6vw, 72px)',
-    padding: 'clamp(20px, 2vw, 32px) clamp(40px, 4vw, 88px)',
-    borderBottom: `1px solid ${warmTheme.border}`,
-    background: `linear-gradient(90deg, ${warmTheme.accentSoft}33 0%, transparent 70%)`,
-    flexShrink: 0,
-    position: 'relative',
-  },
-  headerBrand: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
+    display: 'flex', alignItems: 'center',
+    gap: 'clamp(24px,3vw,56px)',
+    padding: 'clamp(20px,2.2vw,32px) clamp(40px,4vw,80px)',
+    borderBottom: '1px solid rgba(200,128,58,0.16)',
+    background: 'rgba(8,4,1,0.5)',
     flexShrink: 0,
   },
+  headerBrand: { display: 'flex', flexDirection: 'column', gap: 7, flexShrink: 0 },
   headerTitle: {
-    fontSize: 'clamp(26px, 2.4vw, 40px)',
-    fontWeight: 700,
-    letterSpacing: 7,
-    color: warmTheme.accentDeep,
+    fontSize: 'clamp(24px,2.6vw,36px)',
+    fontWeight: 300, letterSpacing: 7,
+    color: '#daa058',
+    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+    textShadow: '0 2px 28px rgba(218,160,88,0.42)',
+    lineHeight: 1.1,
+  },
+  headerRule: { display: 'flex', alignItems: 'center', gap: 10 },
+  headerRuleLine: {
+    height: 1, width: 80, flexShrink: 0,
+    background: 'linear-gradient(90deg, rgba(200,128,58,0.5) 0%, transparent 100%)',
+  },
+  headerRuleGlyph: {
+    fontSize: 10, color: 'rgba(200,128,58,0.55)', lineHeight: 1, flexShrink: 0,
   },
   headerSub: {
-    fontSize: 11,
-    color: warmTheme.textMuted,
-    letterSpacing: 1.4,
+    fontSize: 9, letterSpacing: 3.5, textTransform: 'uppercase',
+    color: 'rgba(218,160,88,0.42)',
   },
   headerStats: {
-    flex: 1,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 'clamp(28px, 3vw, 56px)',
+    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  statLabel: {
-    fontSize: 9,
-    letterSpacing: 2.4,
-    textTransform: 'uppercase',
-    color: warmTheme.textMuted,
+  emblemStat: {
+    display: 'flex', flexDirection: 'column', alignItems: 'center',
+    padding: '4px 20px', gap: 4,
   },
-  statValue: {
-    fontSize: 18,
-    fontWeight: 700,
-    letterSpacing: 0.5,
+  emblemLabel: {
+    fontSize: 8, letterSpacing: 3, textTransform: 'uppercase',
+    color: 'rgba(218,160,88,0.48)', fontWeight: 400, whiteSpace: 'nowrap',
   },
-  statDivider: {
-    width: 1,
-    height: 36,
-    background: warmTheme.border,
+  emblemValue: {
+    fontSize: 19, fontWeight: 600, letterSpacing: 0.5,
+    color: '#f0dfc0', fontVariantNumeric: 'tabular-nums',
+  },
+  emblemDivider: {
+    width: 1, height: 28,
+    background: 'rgba(200,128,58,0.18)', flexShrink: 0,
   },
   closeBtn: {
-    background: 'rgba(0,0,0,0.06)',
-    border: `1px solid ${warmTheme.border}`,
-    borderRadius: 10,
-    color: warmTheme.textMuted,
-    cursor: 'pointer',
-    fontSize: 16,
-    width: 40,
-    height: 40,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-    fontFamily: 'Georgia, serif',
+    width: 42, height: 42, borderRadius: '50%',
+    border: '1px solid rgba(200,128,58,0.38)',
+    background: 'rgba(200,128,58,0.07)',
+    color: 'rgba(218,160,88,0.72)',
+    fontSize: 14, cursor: 'pointer', flexShrink: 0,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    fontFamily: 'inherit', lineHeight: 1, padding: 0,
   },
 
   /* Identity strip */
   identityStrip: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 22,
-    padding: 'clamp(20px, 2vw, 32px) clamp(40px, 4vw, 88px)',
-    borderBottom: `1px solid ${warmTheme.border}`,
-    background: `linear-gradient(180deg, ${warmTheme.surface} 0%, ${warmTheme.surfaceStrong} 100%)`,
+    display: 'flex', alignItems: 'center', gap: 22,
+    padding: 'clamp(16px,1.8vw,24px) clamp(40px,4vw,80px)',
+    borderBottom: '1px solid rgba(200,128,58,0.14)',
+    background: 'rgba(6,3,1,0.42)',
     flexShrink: 0,
   },
-  avatar: {
-    width: 78,
-    height: 78,
-    borderRadius: '50%',
-    background: warmTheme.accentSoft,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 40,
-    color: warmTheme.accentDeep,
-    border: `2px solid ${warmTheme.borderStrong}`,
-    boxShadow: warmTheme.glow,
+  avatarOuter: {
+    width: 84, height: 84, borderRadius: '50%',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
+    border: '2px solid rgba(200,128,58,0.48)',
+    boxShadow: '0 0 30px rgba(200,128,58,0.16)',
+    background: 'rgba(200,128,58,0.04)',
   },
+  avatarInner: {
+    width: 70, height: 70, borderRadius: '50%',
+    border: '2px solid rgba(218,160,88,0.78)',
+    background: 'linear-gradient(160deg, rgba(40,20,5,0.96) 0%, rgba(18,9,2,1) 100%)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    overflow: 'hidden',
+    boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.6)',
+  },
+  identityBody: { display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 },
   playerName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: warmTheme.text,
-    letterSpacing: 0.5,
+    fontSize: 22, fontWeight: 300, letterSpacing: 2,
+    color: '#f0dfc0',
+    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+    lineHeight: 1.2,
   },
-  playerTitle: {
-    fontSize: 13,
-    color: warmTheme.textMuted,
-    fontStyle: 'italic',
-    marginTop: 3,
+  titleRibbon: {
+    display: 'inline-flex', alignItems: 'center', alignSelf: 'flex-start',
+    padding: '3px 12px', borderRadius: 999,
+    background: 'rgba(200,128,58,0.10)',
+    border: '1px solid rgba(200,128,58,0.28)',
+    fontSize: 11, fontStyle: 'italic', color: 'rgba(218,160,88,0.86)',
   },
-  handleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 8,
-    fontSize: 11,
-    color: warmTheme.textMuted,
-    letterSpacing: 0.4,
+  statusRow: {
+    display: 'flex', alignItems: 'center', gap: 7,
+    fontSize: 10, color: 'rgba(218,160,88,0.48)',
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: '50%',
-    flexShrink: 0,
-  },
+  statusDot: { width: 7, height: 7, borderRadius: '50%', flexShrink: 0 },
   statusLabel: {
-    fontWeight: 600,
-    letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    fontSize: 10,
+    letterSpacing: 1.5, textTransform: 'uppercase', fontSize: 9,
   },
-  handleDivider: {
-    opacity: 0.5,
-  },
-  handleEmail: {
-    fontFamily: 'Georgia, serif',
-    fontStyle: 'italic',
-  },
+  statusEmail: { fontFamily: 'monospace', fontSize: 10, opacity: 0.6 },
 
-  /* Body */
+  /* Body columns */
   body: {
     display: 'grid',
-    gridTemplateColumns: 'clamp(320px, 26vw, 460px) minmax(0, 1fr)',
-    flex: 1,
-    overflow: 'hidden',
-    minHeight: 0,
+    gridTemplateColumns: 'clamp(300px,26vw,440px) minmax(0,1fr)',
+    flex: 1, overflow: 'hidden', minHeight: 0,
   },
   authCol: {
-    borderRight: `1px solid ${warmTheme.border}`,
-    background: `${warmTheme.surface}`,
-    padding: 'clamp(24px, 2.4vw, 40px) clamp(24px, 2.4vw, 40px)',
+    borderRight: '1px solid rgba(200,128,58,0.14)',
+    background: 'rgba(8,4,1,0.35)',
+    padding: 'clamp(22px,2.4vw,38px) clamp(22px,2.4vw,38px)',
     overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
+    display: 'flex', flexDirection: 'column', gap: 14,
     minHeight: 0,
   },
   friendsCol: {
-    padding: 'clamp(24px, 2.4vw, 40px) clamp(28px, 3vw, 56px)',
+    padding: 'clamp(22px,2.4vw,38px) clamp(28px,3vw,56px)',
     overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
-    minHeight: 0,
+    display: 'flex', flexDirection: 'column', gap: 14,
+    minHeight: 0, background: 'transparent',
   },
-  sectionHeader: {
-    fontSize: 10,
-    letterSpacing: 2.6,
-    textTransform: 'uppercase',
-    color: warmTheme.textMuted,
-    paddingBottom: 4,
-    borderBottom: `1px solid ${warmTheme.border}`,
+
+  /* Column header */
+  colHeader: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: 10, paddingBottom: 12,
+    borderBottom: '1px solid rgba(200,128,58,0.14)',
+    marginBottom: 2, flexShrink: 0,
   },
-  signedOutHint: {
-    fontSize: 11.5,
-    lineHeight: 1.55,
-    color: warmTheme.textMuted,
-    fontStyle: 'italic',
-    padding: '12px 14px',
-    background: 'rgba(0,0,0,0.04)',
-    border: `1px dashed ${warmTheme.border}`,
-    borderRadius: 10,
+  colAccentBar: { width: 3, height: 16, borderRadius: 2, background: G.gold, flexShrink: 0 },
+  colTitle: {
+    fontSize: 10, letterSpacing: 4, textTransform: 'uppercase',
+    color: 'rgba(218,160,88,0.80)', fontWeight: 600,
+    fontFamily: '"Cinzel", Georgia, serif',
+  },
+  colMeta: {
+    fontSize: 9, letterSpacing: 1, color: 'rgba(218,160,88,0.42)',
+    fontVariantNumeric: 'tabular-nums',
+  },
+
+  hintBox: {
+    padding: '12px 14px', borderRadius: 10,
+    border: '1px dashed rgba(100,140,220,0.28)',
+    background: 'rgba(70,90,170,0.08)',
+    color: 'rgba(180,200,240,0.72)',
+    fontSize: 11.5, lineHeight: 1.6,
   },
   lockedCard: {
-    margin: '8px 0',
-    padding: '36px 24px',
-    background: 'rgba(0,0,0,0.04)',
-    border: `1px dashed ${warmTheme.border}`,
-    borderRadius: 14,
-    textAlign: 'center',
-    color: warmTheme.textMuted,
+    margin: '8px 0', padding: '40px 24px',
+    background: 'rgba(200,128,58,0.04)',
+    border: '1px dashed rgba(200,128,58,0.22)',
+    borderRadius: 14, textAlign: 'center',
   },
+  lockedGlyph: { fontSize: 28, color: 'rgba(200,128,58,0.2)', marginBottom: 12 },
   lockedTitle: {
-    fontSize: 14,
-    fontWeight: 700,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    color: warmTheme.accentDeep,
-    marginBottom: 8,
+    fontSize: 13, fontWeight: 600, letterSpacing: 2.5, textTransform: 'uppercase',
+    color: 'rgba(218,160,88,0.55)',
+    fontFamily: '"Cinzel", Georgia, serif', marginBottom: 8,
   },
   lockedBody: {
-    fontSize: 12,
-    lineHeight: 1.55,
-    color: warmTheme.textMuted,
-    maxWidth: 360,
-    margin: '0 auto',
+    fontSize: 12, color: 'rgba(218,160,88,0.38)', lineHeight: 1.6, maxWidth: 360, margin: '0 auto',
   },
 };
+
+void warmTheme;

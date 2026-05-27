@@ -13,7 +13,6 @@ export type QuestKind =
   | 'play_cherubim'
   | 'play_ophanim'
   | 'summon_angel'
-  | 'reach_chain_multiplier'
   | 'earn_oblivion_in_turn'
   | 'win_boss'
   | 'open_packs'
@@ -49,47 +48,53 @@ const ENGINE_ELEMENTS: { element: string; label: string }[] = [
 ];
 
 const DAILY_QUEST_POOL: QuestTemplate[] = [
+  // Generic "play any cards" — accessible at every stage (play_cards_of_element
+  // with no target matches all element events fired for every card played).
+  { id: 'daily-any-cards-10', text: 'Play 10 cards', kind: 'play_cards_of_element', goal: 10, shardReward: 10 },
+  { id: 'daily-any-cards-20', text: 'Play 20 cards', kind: 'play_cards_of_element', goal: 20, shardReward: 15 },
+  // Element-specific (5 cards each — a small hand's worth)
   ...ENGINE_ELEMENTS.map<QuestTemplate>(({ element, label }) => ({
     id: `daily-element-${element.toLowerCase()}`,
-    text: `Play 8 ${label} cards`,
-    kind: 'play_cards_of_element',
+    text: `Play 5 ${label} cards`,
+    kind: 'play_cards_of_element' as QuestKind,
     target: element,
-    goal: 8,
-    shardReward: 15,
+    goal: 5,
+    shardReward: 12,
   })),
-  { id: 'daily-seraphim-6', text: 'Place 6 Seraphim', kind: 'play_seraphim', goal: 6, shardReward: 12 },
-  { id: 'daily-cherubim-4', text: 'Place 4 Cherubim', kind: 'play_cherubim', goal: 4, shardReward: 12 },
-  { id: 'daily-ophanim-10', text: 'Play 10 Ophanim', kind: 'play_ophanim', goal: 10, shardReward: 12 },
-  { id: 'daily-angel-1', text: 'Summon 1 Angel', kind: 'summon_angel', goal: 1, shardReward: 15 },
-  { id: 'daily-chain-3', text: 'Reach a x3.0 chain multiplier in one turn', kind: 'reach_chain_multiplier', goal: 30, shardReward: 18 },
-  { id: 'daily-chain-5', text: 'Reach a x5.0 chain multiplier in one turn', kind: 'reach_chain_multiplier', goal: 50, shardReward: 25 },
-  { id: 'daily-turn-100k', text: 'Earn 100,000 Oblivion in a single turn', kind: 'earn_oblivion_in_turn', goal: 100_000, shardReward: 18 },
-  { id: 'daily-turn-1m', text: 'Earn 1,000,000 Oblivion in a single turn', kind: 'earn_oblivion_in_turn', goal: 1_000_000, shardReward: 30 },
-  { id: 'daily-boss-1', text: 'Defeat any Eternity\u2019s Wake boss', kind: 'win_boss', goal: 1, shardReward: 20 },
+  // Angel type plays (low thresholds, no summon requirement)
+  { id: 'daily-ophanim-5', text: 'Play 5 Ophanim', kind: 'play_ophanim', goal: 5, shardReward: 10 },
+  { id: 'daily-seraphim-3', text: 'Place 3 Seraphim', kind: 'play_seraphim', goal: 3, shardReward: 10 },
+  { id: 'daily-cherubim-2', text: 'Place 2 Cherubim', kind: 'play_cherubim', goal: 2, shardReward: 10 },
+  // Pack opening
   { id: 'daily-pack-1', text: 'Open any card pack', kind: 'open_packs', goal: 1, shardReward: 10 },
-  { id: 'daily-multisets-3', text: 'Play cards from 3 different sets in one turn', kind: 'play_unique_sets_in_turn', goal: 3, shardReward: 18 },
+
+  // Boss (the first boss is accessible from the start)
+  { id: 'daily-boss-1', text: 'Defeat any boss', kind: 'win_boss', goal: 1, shardReward: 20 },
+  // Multi-set (2 sets is achievable with a modest collection)
+  { id: 'daily-multisets-2', text: 'Play cards from 2 different sets in one turn', kind: 'play_unique_sets_in_turn', goal: 2, shardReward: 15 },
 ];
 
 const WEEKLY_QUEST_POOL: QuestTemplate[] = [
-  { id: 'weekly-cards-200', text: 'Play 200 cards this week', kind: 'play_ophanim', goal: 0, shardReward: 0 }, // placeholder; replaced below
-  { id: 'weekly-bosses-5', text: 'Defeat 5 bosses', kind: 'win_boss', goal: 5, shardReward: 60 },
-  { id: 'weekly-chain-7', text: 'Reach an x7.0 chain multiplier', kind: 'reach_chain_multiplier', goal: 70, shardReward: 70 },
-  { id: 'weekly-turn-5m', text: 'Earn 5,000,000 Oblivion in a single turn', kind: 'earn_oblivion_in_turn', goal: 5_000_000, shardReward: 80 },
-  { id: 'weekly-angels-5', text: 'Summon 5 Angels', kind: 'summon_angel', goal: 5, shardReward: 65 },
-  { id: 'weekly-packs-10', text: 'Open 10 card packs', kind: 'open_packs', goal: 10, shardReward: 55 },
-  { id: 'weekly-multisets-5', text: 'Play 5 different sets in one turn', kind: 'play_unique_sets_in_turn', goal: 5, shardReward: 75 },
+  // Generic "play any cards" accumulated over the week
+  { id: 'weekly-any-cards-50', text: 'Play 50 cards this week', kind: 'play_cards_of_element', goal: 50, shardReward: 50 },
+  { id: 'weekly-any-cards-100', text: 'Play 100 cards this week', kind: 'play_cards_of_element', goal: 100, shardReward: 70 },
+  // Element-specific (~4/day over 7 days)
   ...ENGINE_ELEMENTS.map<QuestTemplate>(({ element, label }) => ({
     id: `weekly-element-${element.toLowerCase()}`,
-    text: `Play 50 ${label} cards`,
-    kind: 'play_cards_of_element',
+    text: `Play 30 ${label} cards this week`,
+    kind: 'play_cards_of_element' as QuestKind,
     target: element,
-    goal: 50,
-    shardReward: 65,
+    goal: 30,
+    shardReward: 55,
   })),
-];
+  // Boss (2 over a week — very achievable)
+  { id: 'weekly-bosses-2', text: 'Defeat 2 bosses', kind: 'win_boss', goal: 2, shardReward: 60 },
 
-// Filter out placeholder
-const REAL_WEEKLY = WEEKLY_QUEST_POOL.filter(q => q.shardReward > 0);
+  // Packs (3 over a week)
+  { id: 'weekly-packs-3', text: 'Open 3 card packs', kind: 'open_packs', goal: 3, shardReward: 45 },
+  // Multi-set (3 sets in one turn — requires a modest collection by week's end)
+  { id: 'weekly-multisets-3', text: 'Play cards from 3 different sets in one turn', kind: 'play_unique_sets_in_turn', goal: 3, shardReward: 65 },
+];
 
 export interface QuestInstance {
   /** Unique id for this active quest (template id + roll id). */
@@ -174,19 +179,37 @@ export function rollDailyQuests(dayIndex: number): QuestInstance[] {
 
 export function rollWeeklyQuests(weekIndex: number): QuestInstance[] {
   const seed = weekIndex * 2246822519 + 7;
-  return pickN(REAL_WEEKLY, WEEKLY_QUEST_COUNT, seed).map(t => instantiate(t, `w${weekIndex}`));
+  return pickN(WEEKLY_QUEST_POOL, WEEKLY_QUEST_COUNT, seed).map(t => instantiate(t, `w${weekIndex}`));
 }
 
-export function getWeekIndex(dayIndex: number): number {
-  return Math.floor(dayIndex / 7);
+/**
+ * Quest day resets at 8:00 PM EST = 01:00 UTC (fixed UTC-5 offset, no DST).
+ * A "quest day" runs from 01:00 UTC to 01:00 UTC the following day.
+ */
+const QUEST_RESET_UTC_HOUR_MS = 3_600_000; // 1 hour = 01:00 UTC
+
+/**
+ * Anchor for Monday-aligned quest weeks: Mon Jan 5, 1970 at 01:00 UTC.
+ * Weekly quests reset every Monday at 01:00 UTC (= Sunday 8 PM EST).
+ */
+const QUEST_WEEK_ANCHOR_MS = 349_200_000;
+
+export function getQuestDayIndex(timestamp: number): number {
+  return Math.floor((timestamp - QUEST_RESET_UTC_HOUR_MS) / 86_400_000);
+}
+
+export function getQuestWeekIndex(timestamp: number): number {
+  return Math.floor((timestamp - QUEST_WEEK_ANCHOR_MS) / 604_800_000);
 }
 
 /**
  * Ensures the quest state reflects the current daily/weekly window. If a roll
  * is stale (or empty), refreshes it. Pure — returns a new QuestState.
+ * @param timestamp — pass Date.now(); day and week indices are derived internally.
  */
-export function refreshQuestRotation(state: QuestState, dayIndex: number): QuestState {
-  const weekIndex = getWeekIndex(dayIndex);
+export function refreshQuestRotation(state: QuestState, timestamp: number): QuestState {
+  const dayIndex = getQuestDayIndex(timestamp);
+  const weekIndex = getQuestWeekIndex(timestamp);
   let next = state;
   if (state.lastDailyRollDay !== dayIndex || state.daily.length === 0) {
     next = { ...next, daily: rollDailyQuests(dayIndex), lastDailyRollDay: dayIndex };

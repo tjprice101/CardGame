@@ -9,6 +9,7 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
+import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import type { CardSubtypeFilter } from '@/types/effects';
 import type { DeckCard } from '@/types/game';
@@ -167,7 +168,7 @@ export default function PendingEffectModal() {
         </div>
         <div style={getCardRulesPanelStyle('compact')}>
           <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: faceMetrics.descLines }}>
-            {def ? getCardPreviewText(def, 2) : ''}
+            {def ? highlightRulesText(getCardPreviewText(def, 2), { lightBg: true }) : ''}
           </div>
           {footerLabel && (
             <div style={{ fontSize: 7, color: footerColor ?? cardFacePalette.textMuted, marginTop: 4, textAlign: 'center', fontFamily: BODY_FONT }}>

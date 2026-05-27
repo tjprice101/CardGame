@@ -11,12 +11,17 @@
 // retry the pending track at that point.
 
 export type MusicTrackId =
+  | 'menu-main'
   | 'menu-artifacts'
   | 'menu-eternity'
   | 'menu-infinitude'
   | 'menu-shop'
+  | 'battle-normal'
   | 'battle-eternity'
-  | 'battle-gauntlet';
+  | 'battle-wake-trials'
+  | 'battle-gauntlet'
+  | 'battle-gauntlet-p1'
+  | 'battle-gauntlet-p2';
 
 interface TrackDef {
   src: string;
@@ -26,12 +31,17 @@ interface TrackDef {
 
 const AUDIO_BASE = `${import.meta.env.BASE_URL}assets/audio/music`;
 const TRACKS: Record<MusicTrackId, TrackDef> = {
-  'menu-artifacts':  { src: `${AUDIO_BASE}/artifacts-menu.mp3`,     gain: 1.0 },
-  'menu-eternity':   { src: `${AUDIO_BASE}/eternitys-wake-menu.mp3`, gain: 1.0 },
-  'menu-infinitude': { src: `${AUDIO_BASE}/infinitude-menu.mp3`,    gain: 1.0 },
-  'menu-shop':       { src: `${AUDIO_BASE}/shop-menu.mp3`,          gain: 1.0 },
-  'battle-eternity': { src: `${AUDIO_BASE}/eternitys-wake-fight.mp3`, gain: 1.0 },
-  'battle-gauntlet': { src: `${AUDIO_BASE}/endless-gauntlet.mp3`,   gain: 1.0 },
+  'menu-main':         { src: `${AUDIO_BASE}/the-space-between-eternities-main-menu.mp3`,             gain: 1.0 },
+  'menu-artifacts':    { src: `${AUDIO_BASE}/artifacts-of-infinity-artifact-menu.mp3`,                gain: 1.0 },
+  'menu-eternity':     { src: `${AUDIO_BASE}/brink-of-eternity-eternitys-wake-menu.mp3`,              gain: 1.0 },
+  'menu-infinitude':   { src: `${AUDIO_BASE}/precipice-of-infinity-infinity-card-menu.mp3`,           gain: 1.0 },
+  'menu-shop':         { src: `${AUDIO_BASE}/store-by-the-event-horizon-shop-menu.mp3`,               gain: 1.0 },
+  'battle-normal':     { src: `${AUDIO_BASE}/for-every-card-a-whisper-main-turn-fight.mp3`,           gain: 1.0 },
+  'battle-eternity':   { src: `${AUDIO_BASE}/lifelong-fight-eternitys-wake-fight.mp3`,                gain: 1.0 },
+  'battle-wake-trials':{ src: `${AUDIO_BASE}/by-the-cards-everlasting-moment-wake-trials.mp3`,        gain: 1.0 },
+  'battle-gauntlet':   { src: `${AUDIO_BASE}/the-endless-dream-endless-gauntlet.mp3`,                 gain: 1.0 },
+  'battle-gauntlet-p1':{ src: `${AUDIO_BASE}/in-the-beginning-it-was-only-i-gauntlet-p1.mp3`,         gain: 1.0 },
+  'battle-gauntlet-p2':{ src: `${AUDIO_BASE}/but-in-the-end-we-only-have-eachother-gauntlet-p2.mp3`,  gain: 1.0 },
 };
 
 const CROSSFADE_MS = 900;

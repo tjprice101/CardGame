@@ -171,8 +171,8 @@ function TurnFlowBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>A Single Turn</div>
         <NumberedStep n={1} title="Begin Turn">
-          From the main menu, press the large <Tag>Begin Turn</Tag> button. A fresh hand draws, the chain
-          resets to <Tag>x1.0</Tag>, and per-turn resources (Radiance, Embers, Strain, etc.) reset.
+          From the main menu, press the large <Tag>Begin Turn</Tag> button. A fresh hand draws and
+          per-turn resources (Radiance, Embers, Strain, etc.) reset.
         </NumberedStep>
         <NumberedStep n={2} title="Mulligan">
           Click cards in hand to mark them for replacement, then confirm. Use it to dig for setup pieces or to
@@ -185,15 +185,15 @@ function TurnFlowBody() {
         </NumberedStep>
         <NumberedStep n={4} title="End Turn">
           Click the <Tag>End Turn</Tag> button in the arena footer. The board resolves, front-row units go to
-          discard, the chain resets, and you return to the main menu for the next turn.
+          discard, and you return to the main menu for the next turn.
         </NumberedStep>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Cadence Tips</div>
-        <ListItem label="Cheap First">Cycle low-cost Ophanim early to build chain and reduce attack cooldowns.</ListItem>
+        <ListItem label="Cheap First">Cycle low-cost Ophanim early to reduce attack cooldowns.</ListItem>
         <ListItem label="Set Up">Drop Seraphim and Cherubim before your big payoff plays so passives are already online.</ListItem>
-        <ListItem label="Sequence">Cooldowns tick in cards played, not seconds. Fire each attack at its strongest chain window.</ListItem>
+        <ListItem label="Sequence">Cooldowns tick in cards played, not seconds. Fire each attack at peak resource windows.</ListItem>
       </div>
     </>
   );
@@ -229,7 +229,7 @@ function BoardBody() {
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card Types</div>
-        <ListItem label="Ophanim">Played from hand. Immediate effect. No board presence. Your main draw / cycling / chain-shaping tools.</ListItem>
+        <ListItem label="Ophanim">Played from hand. Immediate effect. No board presence. Your main draw / cycling / resource tools.</ListItem>
         <ListItem label="Seraphim">Front-row fighters with an On-Play effect, a While-On-Board passive, and an attack profile.</ListItem>
         <ListItem label="Cherubim">Back-row support with durability. Has On-Play, optional Enthalpy (placed) and Entropy (expired) rituals, and a passive that pings each card played.</ListItem>
         <ListItem label="Angel">Extra Deck. Summoned at any time when conditions are met. Spends the listed Seraphim, but the summon itself does not count as a card play.</ListItem>
@@ -269,16 +269,6 @@ function AttacksBody() {
           <div style={sectionHeadingStyle}>Angel Attacks</div>
           <ListItem label="Primary">Consistent damage on a moderate cooldown.</ListItem>
           <ListItem label="Exalted">Finisher. Biggest payoff, longest cooldown, frequently requires a discard or sacrifice cost.</ListItem>
-        </div>
-      </div>
-
-      <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Chain Multiplier</div>
-        <div style={bodyTextStyle}>
-          Chain begins each turn at <Tag>x1.0</Tag> and grows by <Tag>+0.1</Tag> for every card you play. Many
-          cards also push chain directly with <em>chain gain</em> effects, or set a chain multiplier. Chain
-          scales most Oblivion sources, including attack payouts &mdash; so cheap cycling early is what enables
-          monster numbers later.
         </div>
       </div>
 
@@ -335,8 +325,8 @@ function SetsBody() {
     ['Neutrality', 'Patience / Stasis', 'Stockpile Patience on Seraphim, cash it out on attack. The friendly starter engine.'],
     ['Heavenly Light', 'Radiance & Cadence', 'Build Hymn Notes and Chorus Anchors, escalate through Resonance tiers, finish with an Apotheosis Pulse.'],
     ['Pyroabyss', 'Embers & Heat', "Spend Embers to fuel Fire attacks. Convert other sets' resources into furnace fuel; balance Heat and Stability."],
-    ['Thornbound Plains', 'Trail & War-Path', 'Accumulate Trail and Scars on the march; bloom Briar Spirals for chain; cash the war-path on demand.'],
-    ['Snowbound Voltage', 'Phase & Potential', 'Alternate Frost and Voltage phases. Each successful swap converts stored Potential into a chain burst.'],
+    ['Thornbound Plains', 'Trail & War-Path', 'Accumulate Trail and Scars on the march; bloom Briar Spirals; cash the war-path on demand.'],
+    ['Snowbound Voltage', 'Phase & Potential', 'Alternate Frost and Voltage phases. Each successful swap converts stored Potential into a burst.'],
     ['Mechanical Dreams', 'Strain & Instructions', 'Queue diverse Instructions, Overclock to spend Strain, finish with an Instruction Loop replay.'],
     ['Prismatic Accord', 'Spectrum & Refraction', 'Refract tokens onto adjacent depths, accumulate distinct channels, fire the Ninefold Accord finisher.'],
     ['Black Glass Inferno', 'Twin-Flame & Fracture', 'Balance White and Black Flame to build Fracture, then collapse it into a single decisive payoff.'],
@@ -489,7 +479,7 @@ const SECTIONS: Section[] = [
   { id: 'overview', label: 'Overview', title: 'How To Play', subtitle: 'The game loop, currencies, and modes.', body: <OverviewBody /> },
   { id: 'turn-flow', label: 'Turn Flow', title: 'Turn Flow', subtitle: 'Begin -> Mulligan -> Play -> End.', body: <TurnFlowBody /> },
   { id: 'board', label: 'Board & Cards', title: 'The Board', subtitle: 'Slots, card types, and click behavior.', body: <BoardBody /> },
-  { id: 'attacks', label: 'Attacks & Chain', title: 'Attacks & Chain', subtitle: 'How Seraphim and Angel attacks pay out.', body: <AttacksBody /> },
+  { id: 'attacks', label: 'Attacks', title: 'Attacks', subtitle: 'How Seraphim and Angel attacks pay out.', body: <AttacksBody /> },
   { id: 'patience', label: 'Patience', title: 'Patience System', subtitle: 'The Neutrality starter engine.', body: <PatienceBody /> },
   { id: 'sets', label: 'Sets', title: 'Set Engines', subtitle: 'The mechanical identity of every set.', body: <SetsBody /> },
   { id: 'rarities', label: 'Rarities', title: 'Rarity Tiers', subtitle: 'From Common through Infinite.', body: <RaritiesBody /> },

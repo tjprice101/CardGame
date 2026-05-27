@@ -54,7 +54,6 @@ export type ArtifactEffectType =
 
   // Glass Absolute
   | 'proof_threshold_reduction'
-  | 'chain_mult_start_bonus'
   | 'cascade_proof_all_board'        // flag (value=1 means active)
 
   // Blazing Garden
@@ -74,13 +73,11 @@ export type ArtifactEffectType =
 
   // Abyssal Forge
   | 'iron_charge_start_bonus'
-  | 'weld_mark_chain_bonus'
   | 'forge_full_fire_mult_bonus'
 
   // Death-flamed Hell (TBD — mechanic audit needed)
   | 'dfh_infernal_pressure_bonus'
-  | 'dfh_soulflame_mult'
-  | 'dfh_apocalypse_chain_bonus';
+  | 'dfh_soulflame_mult';
 
 export interface ArtifactEffect {
   type: ArtifactEffectType;

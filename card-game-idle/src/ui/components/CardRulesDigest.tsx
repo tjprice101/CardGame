@@ -18,6 +18,7 @@ function CardRulesDigest({
   sectionBackground = 'rgba(255,255,255,0.03)',
   sectionBorder = 'rgba(255,255,255,0.08)',
   abilityTextMode = 'infinite-eternal-canonical',
+  lightBg = false,
 }: {
   card: CardDefinition;
   variant?: Variant;
@@ -29,6 +30,7 @@ function CardRulesDigest({
   sectionBackground?: string;
   sectionBorder?: string;
   abilityTextMode?: AbilityTextMode;
+  lightBg?: boolean;
 }) {
   const highlightEnabled = useStore(state => state.settings.highlightRulesText !== false);
   const sections = useMemo(() => {
@@ -78,7 +80,7 @@ function CardRulesDigest({
                 overflow: 'hidden',
                 fontFamily: 'Georgia, serif',
               }}>
-                {highlightRulesText(line, { disabled: !highlightEnabled, compact: true })}
+                {highlightRulesText(line, { disabled: !highlightEnabled, compact: true, lightBg })}
               </div>
             </div>
           ))
@@ -121,7 +123,7 @@ function CardRulesDigest({
                   fontFamily: 'Georgia, serif',
                 }}
               >
-                {highlightRulesText(line, { disabled: !highlightEnabled })}
+                {highlightRulesText(line, { disabled: !highlightEnabled, lightBg })}
               </div>
             ))}
           </div>

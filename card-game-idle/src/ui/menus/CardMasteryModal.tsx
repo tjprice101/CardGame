@@ -62,6 +62,7 @@ export default function CardMasteryModal({ onClose }: Props) {
           <button
             onClick={() => claimAllAvailableMastery()}
             disabled={claimableSummary.tiersClaimable === 0}
+            data-sfx="claim"
             style={{
               padding: '5px 12px', borderRadius: 6,
               fontFamily: 'Georgia, serif', fontSize: 11, fontWeight: 'bold',
@@ -108,6 +109,7 @@ export default function CardMasteryModal({ onClose }: Props) {
                         key={tier.tier}
                         onClick={() => claimCardMastery(m.definitionId, tier.tier)}
                         disabled={!reached || claimed}
+                        data-sfx="claim"
                         title={`${tier.label} — ${tier.threshold.toLocaleString()} plays`}
                         style={{
                           flex: 1,

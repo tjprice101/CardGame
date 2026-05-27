@@ -24,16 +24,38 @@ export default function FriendProfileModal({ profile, online, onClose }: Props) 
   const openConversation = useMessagesStore(s => s.openConversation);
   const [showGift, setShowGift] = useState(false);
 
-  const avatarGlyph =
-    (profile.avatarId && AVATAR_BY_ID[profile.avatarId]?.glyph)
-    ?? AVATAR_BY_ID[DEFAULT_AVATAR_ID].glyph;
+  const avatarDef =
+    (profile.avatarId ? AVATAR_BY_ID[profile.avatarId] : undefined)
+    ?? AVATAR_BY_ID[DEFAULT_AVATAR_ID];
   const titleText = profile.titleId ? TITLE_BADGE_BY_ID[profile.titleId]?.text : null;
 
   return (
     <div style={backdropStyle} onClick={onClose}>
       <div style={modalStyle} onClick={e => e.stopPropagation()}>
         <button onClick={onClose} style={closeBtn}>✕</button>
-        <div style={{ fontSize: 56, lineHeight: 1, marginBottom: 8 }}>{avatarGlyph}</div>
+        {avatarDef?.imageUrl
+          ? (
+            <div style={{
+              width: 80, height: 80, borderRadius: '50%', overflow: 'hidden',
+              border: `2px solid ${warmTheme.borderStrong}`,
+              boxShadow: warmTheme.glow,
+              marginBottom: 8,
+              flexShrink: 0,
+            }}>
+              <img
+                src={avatarDef.imageUrl}
+                alt={avatarDef.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                draggable={false}
+              />
+            </div>
+          )
+          : (
+            <div style={{ fontSize: 56, lineHeight: 1, marginBottom: 8 }}>
+              {avatarDef?.glyph ?? '?'}
+            </div>
+          )
+        }
         <div style={{ fontSize: 18, fontWeight: 'bold', color: warmTheme.text }}>
           {profile.displayName}
         </div>
@@ -45,6 +67,15 @@ export default function FriendProfileModal({ profile, online, onClose }: Props) 
         <div style={{ fontSize: 10, color: warmTheme.textMuted, fontFamily: 'monospace', marginTop: 6 }}>
           {profile.friendCode}
         </div>
+        {profile.bio && (
+          <div style={{
+            fontSize: 12, color: warmTheme.textMuted, marginTop: 10,
+            lineHeight: 1.5, maxWidth: 260, textAlign: 'center',
+            fontStyle: 'italic',
+          }}>
+            {profile.bio}
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 6, fontSize: 10, color: warmTheme.textMuted }}>
           <span style={{
             width: 8, height: 8, borderRadius: '50%',
@@ -115,7 +146,7 @@ const primaryBtn: React.CSSProperties = {
   background: warmTheme.accent,
   border: `1px solid ${warmTheme.accent}`,
   borderRadius: 6,
-  color: warmTheme.surface,
+  color: '#fff',
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
 };

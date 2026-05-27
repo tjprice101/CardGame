@@ -98,7 +98,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '8px 16px',
     borderRadius: 10,
     border: `1px solid ${warmTheme.borderStrong}`,
-    background: warmTheme.button,
+    background: 'linear-gradient(180deg, #e8a84a 0%, #c06818 100%)',
     color: '#2b1709',
     fontSize: 12,
     fontWeight: 600,
@@ -404,6 +404,7 @@ export default function CardPackStore({ onClose }: Props) {
               return (
                 <button
                   key={tier}
+                  data-sfx="claim"
                   style={{ ...styles.openBtn, ...(canAfford ? {} : styles.openBtnDisabled) }}
                   onClick={canAfford ? () => handleOpen(pack.id, tier) : undefined}
                 >

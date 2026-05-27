@@ -8,7 +8,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-fire-cinderwing:primary",
         "label": "Primary",
         "name": "Ash Ray",
-        "description": "Ash Ray is your reliable cinder strike, ideal for pacing chain growth into a finisher.",
+        "description": "Ash Ray is your reliable cinder strike, ideal for building momentum into a finisher.",
         "baseOblivion": 224,
         "cooldownCards": 3,
         "chainScaling": 0.95,
@@ -58,7 +58,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-fire-obliteron:primary",
         "label": "Primary",
         "name": "Ember Edict",
-        "description": "Ember Edict is your reliable cinder strike, ideal for pacing chain growth into a finisher.",
+        "description": "Ember Edict is your reliable cinder strike, ideal for building momentum into a finisher.",
         "baseOblivion": 346,
         "cooldownCards": 3,
         "chainScaling": 1.04,
@@ -166,7 +166,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-light-aurelion:primary",
         "label": "Primary",
         "name": "Halo Hammer",
-        "description": "Halo Hammer is your reliable dawn strike, ideal for pacing chain growth into a finisher.",
+        "description": "Halo Hammer is your reliable dawn strike, ideal for building momentum into a finisher.",
         "baseOblivion": 269,
         "cooldownCards": 4,
         "chainScaling": 1.04,
@@ -220,7 +220,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-light-seraphiel:primary",
         "label": "Primary",
         "name": "Canticle Ray",
-        "description": "Canticle Ray is your reliable canticle strike, ideal for pacing chain growth into a finisher.",
+        "description": "Canticle Ray is your reliable canticle strike, ideal for building momentum into a finisher.",
         "baseOblivion": 224,
         "cooldownCards": 3,
         "chainScaling": 0.95,
@@ -328,7 +328,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-neutral-beginning:primary",
         "label": "Primary",
         "name": "Null Hammer",
-        "description": "Null Hammer is your reliable paradox strike, ideal for pacing chain growth into a finisher.",
+        "description": "Null Hammer is your reliable paradox strike, ideal for building momentum into a finisher.",
         "baseOblivion": 224,
         "cooldownCards": 3,
         "chainScaling": 0.95,
@@ -378,7 +378,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-neutral-equilibrium:primary",
         "label": "Primary",
         "name": "Paradox Hammer",
-        "description": "Paradox Hammer is your reliable paradox strike, ideal for pacing chain growth into a finisher.",
+        "description": "Paradox Hammer is your reliable paradox strike, ideal for building momentum into a finisher.",
         "baseOblivion": 382,
         "cooldownCards": 4,
         "chainScaling": 1.1,
@@ -428,7 +428,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-neutral-presence:primary",
         "label": "Primary",
         "name": "Axiom Ray",
-        "description": "Axiom Ray is your reliable stillness strike, ideal for pacing chain growth into a finisher.",
+        "description": "Axiom Ray is your reliable stillness strike, ideal for building momentum into a finisher.",
         "baseOblivion": 338,
         "cooldownCards": 3,
         "chainScaling": 1.04,
@@ -1679,7 +1679,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-angel-morvakael-twice-scarred:primary",
         "label": "Primary",
         "name": "Obsidian Edict",
-        "description": "Obsidian Edict is your reliable nocturne strike, ideal for pacing chain growth into a finisher.",
+        "description": "Obsidian Edict is your reliable nocturne strike, ideal for building momentum into a finisher.",
         "baseOblivion": 346,
         "cooldownCards": 3,
         "chainScaling": 1.04,
@@ -1733,7 +1733,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-angel-sorveth-bifurcated-flame:primary",
         "label": "Primary",
         "name": "Obsidian Edict",
-        "description": "Obsidian Edict is your reliable umbral strike, ideal for pacing chain growth into a finisher.",
+        "description": "Obsidian Edict is your reliable umbral strike, ideal for building momentum into a finisher.",
         "baseOblivion": 382,
         "cooldownCards": 5,
         "chainScaling": 1.04,
@@ -3220,7 +3220,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-elegy-of-veth-serath:primary",
         "label": "Primary",
         "name": "Elegy of Ordinance",
-        "description": "392 base Oblivion · 4 cards cooldown · chain +1.13",
+        "description": "392 base Oblivion · 4 cards cooldown",
         "baseOblivion": 2300,
         "cooldownCards": 6,
         "chainScaling": 1.42,
@@ -3235,7 +3235,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-elegy-of-veth-serath:exalted",
         "label": "Exalted",
         "name": "Elegy of Throne Decree",
-        "description": "765 base Oblivion · 7 cards cooldown · chain +1.35 · Cost: discard 2 cards, spend 3 Strain",
+        "description": "765 base Oblivion · 7 cards cooldown · Cost: discard 2 cards, spend 3 Strain",
         "baseOblivion": 5700,
         "cooldownCards": 9,
         "chainScaling": 1.66,
@@ -3326,7 +3326,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-rosecrown-annihilator:unsynergized",
         "label": "Unsynergized",
         "name": "Rosecrown Annihilator Vector Break",
-        "description": "258 base Oblivion · 5 cards cooldown · chain +0.96 · Cost: discard 2 cards",
+        "description": "258 base Oblivion · 5 cards cooldown · Cost: discard 2 cards",
         "baseOblivion": 2700,
         "cooldownCards": 6,
         "chainScaling": 1.56,
@@ -3341,7 +3341,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-rosecrown-annihilator:synergized",
         "label": "Synergized",
         "name": "Rosecrown Annihilator Angelic Verdict",
-        "description": "553 base Oblivion · 8 cards cooldown · chain +1.34 · Requires Angel",
+        "description": "553 base Oblivion · 8 cards cooldown · Requires Angel",
         "baseOblivion": 4500,
         "cooldownCards": 7,
         "chainScaling": 1.74,
@@ -3363,7 +3363,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-silver-sorrow-archwyrm:unsynergized",
         "label": "Unsynergized",
         "name": "Silver Sorrow Vector Break",
-        "description": "258 base Oblivion · 4 cards cooldown · chain +1.15 · Cost: discard 2 cards",
+        "description": "258 base Oblivion · 4 cards cooldown · Cost: discard 2 cards",
         "baseOblivion": 2350,
         "cooldownCards": 6,
         "chainScaling": 1.53,
@@ -3378,7 +3378,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-silver-sorrow-archwyrm:synergized",
         "label": "Synergized",
         "name": "Silver Sorrow Angelic Verdict",
-        "description": "494 base Oblivion · 8 cards cooldown · chain +1.45 · Requires Angel",
+        "description": "494 base Oblivion · 8 cards cooldown · Requires Angel",
         "baseOblivion": 3900,
         "cooldownCards": 7,
         "chainScaling": 1.7,
@@ -3400,7 +3400,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-throne-of-cinders:primary",
         "label": "Primary",
         "name": "Throne of Ordinance",
-        "description": "376 base Oblivion · 3 cards cooldown · chain +1.07",
+        "description": "376 base Oblivion · 3 cards cooldown",
         "baseOblivion": 2400,
         "cooldownCards": 6,
         "chainScaling": 1.44,
@@ -3415,7 +3415,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-throne-of-cinders:exalted",
         "label": "Exalted",
         "name": "Throne of Throne Decree",
-        "description": "802 base Oblivion · 7 cards cooldown · chain +1.35 · Cost: discard 2 cards, sacrifice 1 Seraphim",
+        "description": "802 base Oblivion · 7 cards cooldown · Cost: discard 2 cards, sacrifice 1 Seraphim",
         "baseOblivion": 5800,
         "cooldownCards": 9,
         "chainScaling": 1.68,
@@ -3436,7 +3436,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-velplane-ossuary:unsynergized",
         "label": "Unsynergized",
         "name": "Veilplane Ossuary Vector Break",
-        "description": "283 base Oblivion · 5 cards cooldown · chain +1.02 · Cost: discard 2 cards",
+        "description": "283 base Oblivion · 5 cards cooldown · Cost: discard 2 cards",
         "baseOblivion": 3000,
         "cooldownCards": 6,
         "chainScaling": 1.54,
@@ -3451,7 +3451,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-velplane-ossuary:synergized",
         "label": "Synergized",
         "name": "Veilplane Ossuary Angelic Verdict",
-        "description": "495 base Oblivion · 8 cards cooldown · chain +1.25 · Requires Angel",
+        "description": "495 base Oblivion · 8 cards cooldown · Requires Angel",
         "baseOblivion": 5100,
         "cooldownCards": 7,
         "chainScaling": 1.72,
@@ -3473,7 +3473,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-colossus-advent:unsynergized",
         "label": "Unsynergized",
         "name": "Colossus Advent Cleave",
-        "description": "268 base Oblivion · 5 cards cooldown · chain +1.05 · Cost: discard 1 card",
+        "description": "268 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 268,
         "cooldownCards": 5,
         "chainScaling": 1.05,
@@ -3493,7 +3493,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-colossus-advent:synergized",
         "label": "Synergized",
         "name": "Colossus Advent Judgment",
-        "description": "492 base Oblivion · 7 cards cooldown · chain +1.28 · Requires Angel",
+        "description": "492 base Oblivion · 7 cards cooldown · Requires Angel",
         "baseOblivion": 492,
         "cooldownCards": 7,
         "chainScaling": 1.28,
@@ -3515,7 +3515,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-convergence-of-eternity:primary",
         "label": "Primary",
         "name": "Convergence of Ordinance",
-        "description": "1930 base Oblivion · 6 cards cooldown · chain +1.36",
+        "description": "1930 base Oblivion · 6 cards cooldown",
         "baseOblivion": 1930,
         "cooldownCards": 6,
         "chainScaling": 1.36,
@@ -3530,7 +3530,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-convergence-of-eternity:exalted",
         "label": "Exalted",
         "name": "Convergence of Throne Decree",
-        "description": "4920 base Oblivion · 9 cards cooldown · chain +1.62",
+        "description": "4920 base Oblivion · 9 cards cooldown",
         "baseOblivion": 4920,
         "cooldownCards": 9,
         "chainScaling": 1.62,
@@ -3551,7 +3551,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-eternal-vigil:unsynergized",
         "label": "Unsynergized",
         "name": "Eternal Vigil Rend",
-        "description": "246 base Oblivion · 5 cards cooldown · chain +1.00 · Cost: discard 1 card",
+        "description": "246 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 246,
         "cooldownCards": 5,
         "chainScaling": 1,
@@ -3571,7 +3571,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-eternal-vigil:synergized",
         "label": "Synergized",
         "name": "Eternal Vigil Concordance",
-        "description": "438 base Oblivion · 7 cards cooldown · chain +1.24 · Requires Angel",
+        "description": "438 base Oblivion · 7 cards cooldown · Requires Angel",
         "baseOblivion": 438,
         "cooldownCards": 7,
         "chainScaling": 1.24,
@@ -4125,7 +4125,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-neutrality-axiom-maw:primary",
         "label": "Primary",
         "name": "Axiom Maw Ordinance",
-        "description": "373 base Oblivion · 4 cards cooldown · chain +1.07",
+        "description": "373 base Oblivion · 4 cards cooldown",
         "baseOblivion": 373,
         "cooldownCards": 4,
         "chainScaling": 1.07,
@@ -4140,7 +4140,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-neutrality-axiom-maw:exalted",
         "label": "Exalted",
         "name": "Axiom Maw Throne Decree",
-        "description": "842 base Oblivion · 7 cards cooldown · chain +1.38 · Cost: discard 2 cards",
+        "description": "842 base Oblivion · 7 cards cooldown · Cost: discard 2 cards",
         "baseOblivion": 842,
         "cooldownCards": 7,
         "chainScaling": 1.38,
@@ -4221,7 +4221,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-neutrality-void-throne:unsynergized",
         "label": "Unsynergized",
         "name": "Equilibrium Rex Breaker",
-        "description": "232 base Oblivion · 5 cards cooldown · chain +1.02 · Cost: discard 1 card",
+        "description": "232 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 232,
         "cooldownCards": 5,
         "chainScaling": 1.02,
@@ -4241,7 +4241,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-neutrality-void-throne:synergized",
         "label": "Synergized",
         "name": "Equilibrium Rex Verdict",
-        "description": "466 base Oblivion · 7 cards cooldown · chain +1.31 · Requires Angel",
+        "description": "466 base Oblivion · 7 cards cooldown · Requires Angel",
         "baseOblivion": 466,
         "cooldownCards": 7,
         "chainScaling": 1.31,
@@ -4298,7 +4298,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-omniscient-fracture:primary",
         "label": "Primary",
         "name": "Omniscient Fracture Ordinance",
-        "description": "2070 base Oblivion · 6 cards cooldown · chain +1.36",
+        "description": "2070 base Oblivion · 6 cards cooldown",
         "baseOblivion": 2070,
         "cooldownCards": 6,
         "chainScaling": 1.36,
@@ -4313,7 +4313,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-omniscient-fracture:exalted",
         "label": "Exalted",
         "name": "Omniscient Fracture Throne Decree",
-        "description": "5280 base Oblivion · 9 cards cooldown · chain +1.62",
+        "description": "5280 base Oblivion · 9 cards cooldown",
         "baseOblivion": 5280,
         "cooldownCards": 9,
         "chainScaling": 1.62,
@@ -4876,7 +4876,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-thornbound-funeral-bramble:primary",
         "label": "Primary",
         "name": "Grave Hedge Ordinance",
-        "description": "Grave Hedge Ordinance is your reliable gallow strike, ideal for pacing chain growth into a finisher.",
+        "description": "Grave Hedge Ordinance is your reliable gallow strike, ideal for building momentum into a finisher.",
         "baseOblivion": 430,
         "cooldownCards": 5,
         "chainScaling": 1.17,
@@ -7185,7 +7185,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-et-center-everywhere:unsynergized",
         "label": "Unsynergized",
         "name": "Center Everywhere Vector Break",
-        "description": "1320 base Oblivion · 5 cards cooldown · chain +1.25 · Cost: discard 1 card",
+        "description": "1320 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 1320,
         "cooldownCards": 6,
         "chainScaling": 1.46,
@@ -7200,7 +7200,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-et-center-everywhere:synergized",
         "label": "Synergized",
         "name": "Center Everywhere Angelic Verdict",
-        "description": "2310 base Oblivion · 8 cards cooldown · chain +1.55 · Requires Angel",
+        "description": "2310 base Oblivion · 8 cards cooldown · Requires Angel",
         "baseOblivion": 2260,
         "cooldownCards": 8,
         "chainScaling": 1.67,
@@ -7267,7 +7267,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-et-lattice-archive-seraph:unsynergized",
         "label": "Unsynergized",
         "name": "Lattice Archive Vector Break",
-        "description": "1080 base Oblivion · 5 cards cooldown · chain +1.25 · Cost: discard 1 card",
+        "description": "1080 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 1080,
         "cooldownCards": 6,
         "chainScaling": 1.4,
@@ -7282,7 +7282,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-et-lattice-archive-seraph:synergized",
         "label": "Synergized",
         "name": "Lattice Archive Angelic Verdict",
-        "description": "1890 base Oblivion · 8 cards cooldown · chain +1.55 · Requires Angel",
+        "description": "1890 base Oblivion · 8 cards cooldown · Requires Angel",
         "baseOblivion": 1870,
         "cooldownCards": 8,
         "chainScaling": 1.6,
@@ -7329,7 +7329,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-inf-chorus-unbroken-spectrum:unsynergized",
         "label": "Unsynergized",
         "name": "Unbroken Spectrum Vector Break",
-        "description": "2380 base Oblivion · 5 cards cooldown · chain +1.25 · Cost: discard 1 card",
+        "description": "2380 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 2380,
         "cooldownCards": 7,
         "chainScaling": 1.7,
@@ -7344,7 +7344,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-inf-chorus-unbroken-spectrum:synergized",
         "label": "Synergized",
         "name": "Unbroken Spectrum Angelic Verdict",
-        "description": "4165 base Oblivion · 8 cards cooldown · chain +1.55 · Requires Angel",
+        "description": "4165 base Oblivion · 8 cards cooldown · Requires Angel",
         "baseOblivion": 4090,
         "cooldownCards": 9,
         "chainScaling": 1.92,
@@ -7403,7 +7403,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-inf-glass-absolute:unsynergized",
         "label": "Unsynergized",
         "name": "Glass Absolute Vector Break",
-        "description": "2760 base Oblivion · 5 cards cooldown · chain +1.25 · Cost: discard 1 card",
+        "description": "2760 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 2760,
         "cooldownCards": 7,
         "chainScaling": 1.74,
@@ -7418,7 +7418,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-inf-glass-absolute:synergized",
         "label": "Synergized",
         "name": "Glass Absolute Angelic Verdict",
-        "description": "4830 base Oblivion · 8 cards cooldown · chain +1.55 · Requires Angel",
+        "description": "4830 base Oblivion · 8 cards cooldown · Requires Angel",
         "baseOblivion": 4520,
         "cooldownCards": 9,
         "chainScaling": 1.96,
@@ -7954,10 +7954,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "radiance_gain",
         "value": 0
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -7973,8 +7969,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 0
       },
       {
-        "type": "draw",
-        "value": 2
+        "type": "radiance_gain",
+        "value": 5
       }
     ]
   },
@@ -7992,10 +7988,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "radiance_gain",
         "value": 4
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8012,7 +8004,11 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "draw",
+        "type": "seraphim_bonus_amplifier",
+        "value": 40
+      },
+      {
+        "type": "radiance_gain",
         "value": 4
       }
     ]
@@ -8031,10 +8027,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "radiance_gain",
         "value": 3
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8065,17 +8057,13 @@ export const MATERIALIZED_CARD_BALANCE = {
         },
         "then": [
           {
-            "type": "draw",
-            "value": 1
+            "type": "radiance_gain",
+            "value": 4
           }
         ]
       },
       {
         "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8110,14 +8098,10 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "radiance_gain",
-        "value": 1
+        "value": 3
       },
       {
         "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8134,10 +8118,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8177,10 +8157,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "multiply_next"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8233,12 +8209,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         },
         "then": [
           {
-            "type": "draw",
-            "value": 2
-          },
-          {
             "type": "radiance_gain",
-            "value": 2
+            "value": 6
           }
         ]
       },
@@ -8250,18 +8222,14 @@ export const MATERIALIZED_CARD_BALANCE = {
         },
         "then": [
           {
-            "type": "draw",
-            "value": 1
+            "type": "radiance_gain",
+            "value": 3
           }
         ]
       },
       {
         "type": "radiance_gain",
         "value": 3
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8278,11 +8246,7 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "radiance_gain",
-        "value": 6
-      },
-      {
-        "type": "draw",
-        "value": 1
+        "value": 8
       }
     ]
   },
@@ -8294,11 +8258,7 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "radiance_gain",
-        "value": 1
-      },
-      {
-        "type": "draw",
-        "value": 1
+        "value": 3
       }
     ]
   },
@@ -8313,8 +8273,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "shuffle_discard"
       },
       {
-        "type": "draw",
-        "value": 1
+        "type": "radiance_gain",
+        "value": 4
       }
     ]
   },
@@ -8325,8 +8285,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "sacred_covenant"
       },
       {
-        "type": "draw",
-        "value": 1
+        "type": "radiance_gain",
+        "value": 3
       }
     ]
   },
@@ -8354,8 +8314,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "shuffle_discard"
       },
       {
-        "type": "draw",
-        "value": 1
+        "type": "radiance_gain",
+        "value": 4
       }
     ]
   },
@@ -8372,10 +8332,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8392,10 +8348,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "multiply_next"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8422,10 +8374,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "radiance_gain",
         "value": 0
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8438,10 +8386,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -8570,7 +8514,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-glassrose-leviathan:unsynergized",
         "label": "Unsynergized",
         "name": "Glassrose Leviathan Vector Break",
-        "description": "286 base Oblivion · 5 cards cooldown · chain +1.04 · Cost: discard 2 cards",
+        "description": "286 base Oblivion · 5 cards cooldown · Cost: discard 2 cards",
         "baseOblivion": 8200,
         "cooldownCards": 6,
         "chainScaling": 1.74,
@@ -8585,7 +8529,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-glassrose-leviathan:synergized",
         "label": "Synergized",
         "name": "Glassrose Leviathan Angelic Verdict",
-        "description": "577 base Oblivion · 8 cards cooldown · chain +1.28 · Requires Angel · Cost: discard 1 card",
+        "description": "577 base Oblivion · 8 cards cooldown · Requires Angel · Cost: discard 1 card",
         "baseOblivion": 13600,
         "cooldownCards": 7,
         "chainScaling": 1.94,
@@ -8622,7 +8566,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-midplace-apocalypse:primary",
         "label": "Primary",
         "name": "Midplace Apocalypse Ordinance",
-        "description": "436 base Oblivion · 5 cards cooldown · chain +1.10",
+        "description": "436 base Oblivion · 5 cards cooldown",
         "baseOblivion": 4550,
         "cooldownCards": 6,
         "chainScaling": 1.56,
@@ -8637,7 +8581,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-midplace-apocalypse:exalted",
         "label": "Exalted",
         "name": "Midplace Apocalypse Throne Decree",
-        "description": "1037 base Oblivion · 8 cards cooldown · chain +1.39 · Cost: discard 3 cards, discard 1 card",
+        "description": "1037 base Oblivion · 8 cards cooldown · Cost: discard 3 cards, discard 1 card",
         "baseOblivion": 12100,
         "cooldownCards": 9,
         "chainScaling": 1.82,
@@ -8658,7 +8602,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-obsidian-covenant-colossus:unsynergized",
         "label": "Unsynergized",
         "name": "Obsidian Covenant Vector Break",
-        "description": "244 base Oblivion · 5 cards cooldown · chain +0.98 · Cost: discard 2 cards",
+        "description": "244 base Oblivion · 5 cards cooldown · Cost: discard 2 cards",
         "baseOblivion": 7000,
         "cooldownCards": 6,
         "chainScaling": 1.72,
@@ -8673,7 +8617,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-obsidian-covenant-colossus:synergized",
         "label": "Synergized",
         "name": "Obsidian Covenant Angelic Verdict",
-        "description": "528 base Oblivion · 8 cards cooldown · chain +1.37 · Requires Angel",
+        "description": "528 base Oblivion · 8 cards cooldown · Requires Angel",
         "baseOblivion": 11200,
         "cooldownCards": 7,
         "chainScaling": 1.9,
@@ -8738,7 +8682,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-vaelmor-umbra-sovereign:primary",
         "label": "Primary",
         "name": "Vaelmor Umbra Ordinance",
-        "description": "458 base Oblivion · 5 cards cooldown · chain +1.16",
+        "description": "458 base Oblivion · 5 cards cooldown",
         "baseOblivion": 4700,
         "cooldownCards": 6,
         "chainScaling": 1.58,
@@ -8753,7 +8697,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-vaelmor-umbra-sovereign:exalted",
         "label": "Exalted",
         "name": "Vaelmor Umbra Throne Decree",
-        "description": "894 base Oblivion · 7 cards cooldown · chain +1.39 · Cost: discard 3 cards, spend 4 Strain",
+        "description": "894 base Oblivion · 7 cards cooldown · Cost: discard 3 cards, spend 4 Strain",
         "baseOblivion": 12300,
         "cooldownCards": 9,
         "chainScaling": 1.84,
@@ -8884,7 +8828,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-eternity-rupture:primary",
         "label": "Primary",
         "name": "Eternity Rupture Ordinance",
-        "description": "4170 base Oblivion · 6 cards cooldown · chain +1.50",
+        "description": "4170 base Oblivion · 6 cards cooldown",
         "baseOblivion": 4170,
         "cooldownCards": 6,
         "chainScaling": 1.5,
@@ -8899,7 +8843,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-eternity-rupture:exalted",
         "label": "Exalted",
         "name": "Eternity Rupture Throne Decree",
-        "description": "11470 base Oblivion · 9 cards cooldown · chain +1.76",
+        "description": "11470 base Oblivion · 9 cards cooldown",
         "baseOblivion": 11470,
         "cooldownCards": 9,
         "chainScaling": 1.76,
@@ -8920,7 +8864,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-genesis-throne:unsynergized",
         "label": "Unsynergized",
         "name": "Genesis Throne Fracture",
-        "description": "338 base Oblivion · 5 cards cooldown · chain +1.22 · Cost: discard 1 card",
+        "description": "338 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 338,
         "cooldownCards": 5,
         "chainScaling": 1.22,
@@ -8940,7 +8884,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-genesis-throne:synergized",
         "label": "Synergized",
         "name": "Genesis Throne Verdict",
-        "description": "742 base Oblivion · 7 cards cooldown · chain +1.56 · Requires Angel",
+        "description": "742 base Oblivion · 7 cards cooldown · Requires Angel",
         "baseOblivion": 742,
         "cooldownCards": 7,
         "chainScaling": 1.56,
@@ -9237,7 +9181,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-mechanical-apotheosis-core:primary",
         "label": "Primary",
         "name": "Forge Hammer",
-        "description": "Forge Hammer is your reliable reactor strike, ideal for pacing chain growth into a finisher.",
+        "description": "Forge Hammer is your reliable reactor strike, ideal for building momentum into a finisher.",
         "baseOblivion": 520,
         "cooldownCards": 5,
         "chainScaling": 1.24,
@@ -9291,7 +9235,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-null-apex:unsynergized",
         "label": "Unsynergized",
         "name": "Null Apex Cleave",
-        "description": "322 base Oblivion · 5 cards cooldown · chain +1.18 · Cost: discard 1 card",
+        "description": "322 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
         "baseOblivion": 322,
         "cooldownCards": 5,
         "chainScaling": 1.18,
@@ -9311,7 +9255,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-null-apex:synergized",
         "label": "Synergized",
         "name": "Null Apex Cataclysm",
-        "description": "708 base Oblivion · 7 cards cooldown · chain +1.52 · Requires Angel",
+        "description": "708 base Oblivion · 7 cards cooldown · Requires Angel",
         "baseOblivion": 708,
         "cooldownCards": 7,
         "chainScaling": 1.52,
@@ -9663,7 +9607,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-sovereign-void:primary",
         "label": "Primary",
         "name": "Sovereign Void Ordinance",
-        "description": "3970 base Oblivion · 6 cards cooldown · chain +1.50",
+        "description": "3970 base Oblivion · 6 cards cooldown",
         "baseOblivion": 3970,
         "cooldownCards": 6,
         "chainScaling": 1.5,
@@ -9678,7 +9622,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-sovereign-void:exalted",
         "label": "Exalted",
         "name": "Sovereign Void Throne Decree",
-        "description": "10920 base Oblivion · 9 cards cooldown · chain +1.76",
+        "description": "10920 base Oblivion · 9 cards cooldown",
         "baseOblivion": 10920,
         "cooldownCards": 9,
         "chainScaling": 1.76,
@@ -9990,7 +9934,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-thornbound-elegy-titan:primary",
         "label": "Primary",
         "name": "Thornbound Elegy Ordinance",
-        "description": "Thornbound Elegy Ordinance is your reliable thorn strike, ideal for pacing chain growth into a finisher.",
+        "description": "Thornbound Elegy Ordinance is your reliable thorn strike, ideal for building momentum into a finisher.",
         "baseOblivion": 520,
         "cooldownCards": 5,
         "chainScaling": 1.24,
@@ -11339,12 +11283,12 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "oblivion_flat",
-        "value": 0
+        "type": "patience_gain_all",
+        "value": 2
       },
       {
-        "type": "radiance_gain",
-        "value": 4
+        "type": "oblivion_flat",
+        "value": 0
       },
       {
         "type": "draw",
@@ -11525,7 +11469,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-angel-aurelith-ninth-beam:primary",
         "label": "Primary",
         "name": "Spectrum Severance",
-        "description": "Spectrum Severance is your reliable lattice strike, ideal for pacing chain growth into a finisher.",
+        "description": "Spectrum Severance is your reliable lattice strike, ideal for building momentum into a finisher.",
         "baseOblivion": 382,
         "cooldownCards": 4,
         "chainScaling": 1.1,
@@ -13197,7 +13141,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-angel-icebound-conductor:primary",
         "label": "Primary",
         "name": "Icebound Conductor Ordinance",
-        "description": "Icebound Conductor Ordinance is your reliable vector strike, ideal for pacing chain growth into a finisher.",
+        "description": "Icebound Conductor Ordinance is your reliable vector strike, ideal for building momentum into a finisher.",
         "baseOblivion": 486,
         "cooldownCards": 4,
         "chainScaling": 1.08,
@@ -13295,7 +13239,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-angel-overcurrent-chorus:primary",
         "label": "Primary",
         "name": "Overcurrent Chorus Ordinance",
-        "description": "Overcurrent Chorus Ordinance is your reliable brass strike, ideal for pacing chain growth into a finisher.",
+        "description": "Overcurrent Chorus Ordinance is your reliable brass strike, ideal for building momentum into a finisher.",
         "baseOblivion": 392,
         "cooldownCards": 3,
         "chainScaling": 1,
@@ -14203,7 +14147,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-crystal-storm:primary",
         "label": "Primary",
         "name": "Crystal Maelstrom Ordinance",
-        "description": "Crystal Maelstrom Ordinance is your reliable gear strike, ideal for pacing chain growth into a finisher.",
+        "description": "Crystal Maelstrom Ordinance is your reliable gear strike, ideal for building momentum into a finisher.",
         "baseOblivion": 4460,
         "cooldownCards": 5,
         "chainScaling": 1.25,

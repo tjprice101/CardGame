@@ -25,14 +25,12 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Oblivion Absolute',
-    description: 'Draw 7 cards; Set chain floor to x15.0; +6000 Oblivion; All Seraphim on board gain +12 Patience',
+    description: 'Draw 7 cards; +6000 Oblivion; All Seraphim on board gain +12 Patience',
     artKey: 'inf_oblivion_absolute',
     effects: [
       { type: 'draw', value: 7 },
-      { type: 'set_chain_floor', value: 15.0 },
       { type: 'oblivion_flat', value: 6000 },
-      { type: 'patience_gain_all', value: 12 },
-    ],
+      { type: 'patience_gain_all', value: 12 }],
   },
   {
     definitionId: 'inf-void-cascade',
@@ -40,16 +38,14 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Void Cascade',
-    description: '+0 Oblivion; All Seraphim on board gain +1 Patience; Draw 6 cards; Shuffle discard into deck; Set chain floor to x12.0; Empower the next card you play',
+    description: '+0 Oblivion; All Seraphim on board gain +1 Patience; Draw 6 cards; Shuffle discard into deck; Empower the next card you play',
     artKey: 'inf_void_cascade',
     effects: [
       { type: 'oblivion_flat', value: 0 },
       { type: 'patience_gain_all', value: 1 },
       { type: 'draw', value: 6 },
       { type: 'shuffle_discard' },
-      { type: 'set_chain_floor', value: 12.0 },
-      { type: 'multiply_next' },
-    ],
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'inf-ash-kings-apocalypse',
@@ -57,7 +53,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: "Ash Kings' Apocalypse",
-    description: 'Gain 60 Embers; Stoke 36 Furnace Pressure; Convert Pressure to Fault (6 Pressure per Fault, gain 12 up to 36); Cash out up to 1 Ruin Windows (+1500 Oblivion, +0.6 chain per window); Gain 5 Inferno Tiers; Cash out all Inferno Tiers (+700 Oblivion, +0.3 chain per stack); Gain 5 Cinder Echoes; Ignite up to 2 Cinder Echoes (+100.0 Oblivion × echoes²); Discard 2 cards, then draw 8 cards; Shuffle discard into deck; Set chain multiplier to x5.0; +2000 Oblivion',
+    description: 'Gain 60 Embers; Stoke 36 Furnace Pressure; Convert Pressure to Fault (6 Pressure per Fault, gain 12 up to 36); Cash out up to 1 Ruin Windows (+1500 Oblivion per window); Gain 5 Inferno Tiers; Cash out all Inferno Tiers (+700 Oblivion per stack); Gain 5 Cinder Echoes; Ignite up to 2 Cinder Echoes (+100.0 Oblivion × echoes²); Discard 2 cards, then draw 8 cards; Shuffle discard into deck; +2000 Oblivion',
     artKey: 'inf_ash_kings_apocalypse',
     // Role: bulk echo SEEDER. Gains 5 echoes (largest single dump) and ignites
     // only HALF (2) ? saves the rest as carry-over fuel for next turn's igniters.
@@ -65,16 +61,14 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'ember_gain', value: 60 },
       { type: 'pyro_furnace_pressure_gain', value: 36 },
       { type: 'pyro_convert_pressure_to_fault', pressurePerFault: 6, faultGain: 12, maxFaultGain: 36 },
-      { type: 'pyro_window_cashout', oblivionPerWindow: 1500, chainPerWindow: 0.6, consume: 1 },
+      { type: 'pyro_window_cashout', oblivionPerWindow: 1500, consume: 1 },
       { type: 'eternal_stack_gain', stack: 'pyro', value: 5 },
-      { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 700, chainPerStack: 0.30 },
+      { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 700 },
       { type: 'set_secondary_gain', kind: 'pyro', value: 5 },
       { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 100, consume: 2 },
       { type: 'discard_draw', discard: 2, draw: 8 },
       { type: 'shuffle_discard' },
-      { type: 'chain_multiplier_set', value: 5.0 },
-      { type: 'oblivion_flat', value: 2000 },
-    ],
+      { type: 'oblivion_flat', value: 2000 }],
   },
   {
     definitionId: 'inf-prismatic-axiom-rain',
@@ -82,7 +76,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Axiom Rain',
-    description: 'Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 6 Mirror Chain links; Gain 3 Spectrum Echoes; Draw 2 cards; Set chain floor to x11.0; Gain 40 Prismatic Light; Cash out all Mirror Chain links (+600 Oblivion, +0.25 chain per stack); Refract all Spectrum Echoes (+380.0 Oblivion per echo × distinct channels)',
+    description: 'Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 6 Mirror Chain links; Gain 3 Spectrum Echoes; Draw 2 cards; Gain 40 Prismatic Light; Cash out all Mirror Chain links (+600 Oblivion per stack); Refract all Spectrum Echoes (+380.0 Oblivion per echo × distinct channels)',
     artKey: 'inf_prismatic_axiom_rain',
     // Role: ULTRA REFRACT FINISHER. +3 Spectrum Echoes on play, then refracts
     // all at high oblivionPerEchoPerChannel ? apex chain-and-burst combo.
@@ -91,11 +85,9 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'prism', value: 6 },
       { type: 'set_secondary_gain', kind: 'prism', value: 3 },
       { type: 'draw', value: 2 },
-      { type: 'set_chain_floor', value: 11.0 },
       { type: 'prismatic_light_gain', value: 40 },
-      { type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 600, chainPerStack: 0.25 },
-      { type: 'prism_spectrum_echo_refract', oblivionPerEchoPerChannel: 380 },
-    ],
+      { type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 600 },
+      { type: 'prism_spectrum_echo_refract', oblivionPerEchoPerChannel: 380 }],
   },
   {
     definitionId: 'inf-thornbound-last-procession',
@@ -103,10 +95,10 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Last Procession',
-    description: 'Gain 100 Trail; Gain 5 Thorncrowns; Gain 4 Briar Spirals; Salvage any 1 card; Draw 5 cards; Gain +220% total Oblivion this turn; Cash out all Thorncrowns (+700 Oblivion, +0.3 chain per stack); Bloom all Briar Spirals (+50 Trail per spiral, then +0.03 chain × current Trail); If you have 140+ Trail, Spend 60 Trail; +3500 Oblivion; Empower the next card you play',
+    description: 'Gain 100 Trail; Gain 5 Thorncrowns; Gain 4 Briar Spirals; Salvage any 1 card; Draw 5 cards; Gain +220% total Oblivion this turn; Cash out all Thorncrowns (+700 Oblivion per stack); Bloom all Briar Spirals (+50 Trail per spiral); If you have 140+ Trail, Spend 60 Trail; +3500 Oblivion; Empower the next card you play',
     artKey: 'inf_thornbound_last_procession',
     // Role: ULTRA-BLOOM FINISHER. Largest spiral seed (+4) plus uncapped bloom
-    // (trailPerSpiral: 50, chainPerTrail: 0.03) ? the apex chain inflator of the set.
+    // (trailPerSpiral: 50, oblivionPerTrail: 18) ? the apex chain inflator of the set.
     effects: [
       { type: 'trail_gain', value: 100 },
       { type: 'eternal_stack_gain', stack: 'thorn', value: 5 },
@@ -114,10 +106,9 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'salvage_any' },
       { type: 'draw', value: 5 },
       { type: 'score_multiplier', value: 220 },
-      { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 700, chainPerStack: 0.30 },
-      { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 50, chainPerTrail: 0.03 },
-      { type: 'conditional', condition: { type: 'trail_gte', value: 140 }, then: [{ type: 'trail_spend', value: 60 }, { type: 'oblivion_flat', value: 3500 }, { type: 'multiply_next' }] },
-    ],
+      { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 700 },
+      { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 50, oblivionPerTrail: 18 },
+      { type: 'conditional', condition: { type: 'trail_gte', value: 140 }, then: [{ type: 'trail_spend', value: 60 }, { type: 'oblivion_flat', value: 3500 }, { type: 'multiply_next' }] }],
   },
   {
     definitionId: 'inf-celestial-blackout',
@@ -125,9 +116,9 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Celestial Blackout',
-    description: 'Gain 100 Radiance; Gain 3 Resonance; Gain 2 Anchor; Gain 6 Halo Crowns; Gain 4 Halo Cascades; Cash out all Halo Crowns (+650 Oblivion, +0.25 chain per stack); Double current Radiance; Draw 6 cards; Set chain multiplier to x7.5; If you have 5+ Resonance, +4000 Oblivion; Resound all Halo Cascades (+0.4 chain floor per cascade); +3200 Oblivion',
+    description: 'Gain 100 Radiance; Gain 3 Resonance; Gain 2 Anchor; Gain 6 Halo Crowns; Gain 4 Halo Cascades; Cash out all Halo Crowns (+650 Oblivion per stack); Double current Radiance; Draw 6 cards; If you have 5+ Resonance, +4000 Oblivion; Resound all Halo Cascades (cascade bonus per cascade); +3200 Oblivion',
     artKey: 'inf_celestial_blackout',
-    // Role: UBER FINISHER. Massive resonance-gated resound (chainFloorPerCascade: 0.4)
+    // Role: UBER FINISHER. Massive resonance-gated resound (oblivionPerCascade: 240)
     // on top of full Halo Crown cashout ? floor + multiplier double-amp.
     effects: [
       { type: 'radiance_gain', value: 100 },
@@ -135,13 +126,11 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'light_anchor_gain', value: 2 },
       { type: 'eternal_stack_gain', stack: 'light', value: 6 },
       { type: 'set_secondary_gain', kind: 'light', value: 4 },
-      { type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 650, chainPerStack: 0.25 },
+      { type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 650 },
       { type: 'radiance_double' },
       { type: 'draw', value: 6 },
-      { type: 'chain_multiplier_set', value: 7.5 },
-      { type: 'conditional', condition: { type: 'light_resonance_gte', value: 5 }, then: [{ type: 'oblivion_flat', value: 4000 }, { type: 'light_halo_cascade_resound', chainFloorPerCascade: 0.4 }] },
-      { type: 'oblivion_flat', value: 3200 },
-    ],
+      { type: 'conditional', condition: { type: 'light_resonance_gte', value: 5 }, then: [{ type: 'oblivion_flat', value: 4000 }, { type: 'light_halo_cascade_resound', oblivionPerCascade: 240 }] },
+      { type: 'oblivion_flat', value: 3200 }],
   },
   {
     definitionId: 'inf-machina-eternal-loop',
@@ -149,18 +138,16 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Machina Eternal Loop',
-    description: 'Overclock: gain 4 Strain, then Draw 4 cards; Gain 6 Reactor Cores; Gain 3 Reactor Flux; Set chain floor to x9.0; Empower the next card you play; Cash out all Reactor Cores (+650 Oblivion, +0.3 chain per stack); Vent all Reactor Flux (consume matching Strain: +800.0 Oblivion per Strain vented, +0.25% score per flux); +2500 Oblivion',
+    description: 'Overclock: gain 4 Strain, then Draw 4 cards; Gain 6 Reactor Cores; Gain 3 Reactor Flux; Empower the next card you play; Cash out all Reactor Cores (+650 Oblivion per stack); Vent all Reactor Flux (consume matching Strain: +800.0 Oblivion per Strain vented, +0.25% score per flux); +2500 Oblivion',
     artKey: 'inf_machina_eternal_loop',
     // Role: ULTRA VENT FINISHER. Overclock seeds 3 flux; after Reactor Core cashout,
     // vents ALL flux at high coefficients ? the apex of the venter family.
     effects: [
-      { type: 'overclock', strain: 4, then: [{ type: 'draw', value: 4 }, { type: 'eternal_stack_gain', stack: 'mech', value: 6 }, { type: 'set_secondary_gain', kind: 'mech', value: 3 }, { type: 'set_chain_floor', value: 9.0 }, { type: 'multiply_next' }] },
-      { type: 'eternal_stack_cashout', stack: 'mech', oblivionPerStack: 650, chainPerStack: 0.30 },
+      { type: 'overclock', strain: 4, then: [{ type: 'draw', value: 4 }, { type: 'eternal_stack_gain', stack: 'mech', value: 6 }, { type: 'set_secondary_gain', kind: 'mech', value: 3 }, { type: 'multiply_next' }] },
+      { type: 'eternal_stack_cashout', stack: 'mech', oblivionPerStack: 650 },
       { type: 'mech_reactor_flux_vent', oblivionPerFlux: 800, scoreMultPerFlux: 0.25 },
-      { type: 'oblivion_flat', value: 2500 },
-    ],
-  },
-];
+      { type: 'oblivion_flat', value: 2500 }],
+  }];
 
 // Seraphim (3)
 
@@ -171,7 +158,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Genesis Throne',
-    description: 'On play: +3000 Oblivion; Draw 5 cards; Set chain floor to x12.0. While on board: +1000 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 8 on attack, also draw 5 cards',
+    description: 'On play: +3000 Oblivion; Draw 5 cards. While on board: +1000 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 8 on attack, also draw 5 cards',
 
     artKey: 'inf_genesis_throne',
     attacks: {
@@ -179,10 +166,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-genesis-throne:unsynergized',
         label: 'Unsynergized',
         name: 'Genesis Throne Vector Break',
-        description: '8640 base Oblivion · 6 cards cooldown · chain +1.65',
+        description: '8640 base Oblivion · 6 cards cooldown',
         baseOblivion: 8640,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'neutrality'],
       },
@@ -190,10 +176,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-genesis-throne:synergized',
         label: 'Synergized',
         name: 'Genesis Throne Angelic Verdict',
-        description: '14688 base Oblivion · 7 cards cooldown · chain +1.81 · Requires Angel',
+        description: '14688 base Oblivion · 7 cards cooldown · Requires Angel',
         baseOblivion: 14688,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'neutrality'],
@@ -204,9 +189,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     patienceThresholdDraw: 5,
     onPlayEffects: [
       { type: 'oblivion_flat', value: 3000 },
-      { type: 'draw', value: 5 },
-      { type: 'set_chain_floor', value: 12.0 },
-    ],
+      { type: 'draw', value: 5 }],
   },
   {
     definitionId: 'inf-null-apex',
@@ -214,7 +197,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Null Apex',
-    description: 'On play: Draw 4 cards; Set chain floor to x8.0; All Seraphim on board gain +15 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 8 on attack, also draw 5 cards',
+    description: 'On play: Draw 4 cards; All Seraphim on board gain +15 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 8 on attack, also draw 5 cards',
 
     artKey: 'inf_null_apex',
     attacks: {
@@ -222,10 +205,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-null-apex:unsynergized',
         label: 'Unsynergized',
         name: 'Null Apex Vector Break',
-        description: '7560 base Oblivion · 6 cards cooldown · chain +1.65',
+        description: '7560 base Oblivion · 6 cards cooldown',
         baseOblivion: 7560,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'neutrality'],
       },
@@ -233,10 +215,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-null-apex:synergized',
         label: 'Synergized',
         name: 'Null Apex Angelic Verdict',
-        description: '16140 base Oblivion · 7 cards cooldown · chain +1.81 · Requires Angel',
+        description: '16140 base Oblivion · 7 cards cooldown · Requires Angel',
         baseOblivion: 16140,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'neutrality'],
@@ -247,10 +228,8 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     patienceThresholdDraw: 5,
     onPlayEffects: [
       { type: 'draw', value: 4 },
-      { type: 'set_chain_floor', value: 8.0 },
       { type: 'patience_gain_all', value: 15 },
-      { type: 'oblivion_flat', value: 1500 },
-    ],
+      { type: 'oblivion_flat', value: 1500 }],
   },
   {
     definitionId: 'inf-pyraxis-colossus',
@@ -258,17 +237,16 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyraxis Colossus',
-    description: 'On play: Gain 80 Embers; Stoke 40 Furnace Pressure; Forge 20 Abyss Fault; If pools are balanced, +90 Oblivion per Pressure-Fault pair; If Pressure and Fault are balanced, Gain 3 Cinder Echoes; Gain 4 Inferno Tiers; If you have 8+ Inferno Tiers, Spend 8 Inferno Tiers; +2000 Oblivion; Set chain multiplier to x6.0; Ignite up to 3 Cinder Echoes (+130.0 Oblivion × echoes²); Draw 4 cards; +1200 Oblivion; Set chain floor to x6.0. While on board: Gain 80 Embers per card played while active',
+    description: 'On play: Gain 80 Embers; Stoke 40 Furnace Pressure; Forge 20 Abyss Fault; If pools are balanced, +90 Oblivion per Pressure-Fault pair; If Pressure and Fault are balanced, Gain 3 Cinder Echoes; Gain 4 Inferno Tiers; If you have 8+ Inferno Tiers, Spend 8 Inferno Tiers; +2000 Oblivion; Ignite up to 3 Cinder Echoes (+130.0 Oblivion × echoes²); Draw 4 cards; +1200 Oblivion. While on board: Gain 80 Embers per card played while active',
     artKey: 'inf_pyraxis_colossus',
     attacks: {
       unsynergized: {
         id: 'inf-pyraxis-colossus:unsynergized',
         label: 'Unsynergized',
         name: 'Pyraxis Colossus Vector Break',
-        description: '4525 base Oblivion · 6 cards cooldown · chain +1.65',
+        description: '4525 base Oblivion · 6 cards cooldown',
         baseOblivion: 4525,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'fire'],
       },
@@ -276,10 +254,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-pyraxis-colossus:synergized',
         label: 'Synergized',
         name: 'Pyraxis Colossus Angelic Verdict',
-        description: '7693 base Oblivion · 7 cards cooldown · chain +1.81 · Requires Angel',
+        description: '7693 base Oblivion · 7 cards cooldown · Requires Angel',
         baseOblivion: 7693,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'fire'],
@@ -295,11 +272,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       { type: 'pyro_balance_bonus', oblivionPerPair: 90 },
       { type: 'conditional', condition: { type: 'pyro_pools_balanced' }, then: [{ type: 'set_secondary_gain', kind: 'pyro', value: 3 }] },
       { type: 'eternal_stack_gain', stack: 'pyro', value: 4 },
-      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 8 }, then: [{ type: 'eternal_stack_spend', stack: 'pyro', value: 8 }, { type: 'oblivion_flat', value: 2000 }, { type: 'chain_multiplier_set', value: 6.0 }, { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 130, consume: 3 }] },
+      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 8 }, then: [{ type: 'eternal_stack_spend', stack: 'pyro', value: 8 }, { type: 'oblivion_flat', value: 2000 }, { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 130, consume: 3 }] },
       { type: 'draw', value: 4 },
-      { type: 'oblivion_flat', value: 1200 },
-      { type: 'set_chain_floor', value: 6.0 },
-    ],
+      { type: 'oblivion_flat', value: 1200 }],
   },
   {
     definitionId: 'inf-prismatic-choir-splinter',
@@ -307,17 +282,16 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Choir Splinter',
-    description: 'On play: Gain 3 Mirror Chain links; Gain 2 Spectrum Echoes; Draw 3 cards; Set chain floor to x8.5; Empower the next card you play; If you have 5+ Mirror Chain links, Spend 5 Mirror Chain links; +2000 Oblivion; Refract up to 2 Spectrum Echoes (+500.0 Oblivion per echo × distinct channels); Empower the next card you play; +1200 Oblivion. While on board: Chain grows +0.75 per card played while active',
+    description: 'On play: Gain 3 Mirror Chain links; Gain 2 Spectrum Echoes; Draw 3 cards; Empower the next card you play; If you have 5+ Mirror Chain links, Spend 5 Mirror Chain links; +2000 Oblivion; Refract up to 2 Spectrum Echoes (+500.0 Oblivion per echo × distinct channels); Empower the next card you play; +1200 Oblivion. While on board: +500 Oblivion per card played while active',
     artKey: 'inf_prismatic_choir_splinter',
     attacks: {
       unsynergized: {
         id: 'inf-prismatic-choir-splinter:unsynergized',
         label: 'Unsynergized',
         name: 'Prismatic Choir Vector Break',
-        description: '260 base Oblivion · 4 cards cooldown · chain +1.25 · Cost: discard 1 card',
+        description: '260 base Oblivion · 4 cards cooldown · Cost: discard 1 card',
         baseOblivion: 4490,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'prismatic'],
       },
@@ -325,25 +299,22 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-prismatic-choir-splinter:synergized',
         label: 'Synergized',
         name: 'Prismatic Choir Angelic Verdict',
-        description: '481 base Oblivion · 8 cards cooldown · chain +1.55 · Requires Angel',
+        description: '481 base Oblivion · 8 cards cooldown · Requires Angel',
         baseOblivion: 7633,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'prismatic'],
       },
     },
-    baseStats: { bonusType: 'chain_bonus', bonusValue: 0.75, synergyRequirement: 'Prismatic' },
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 500, synergyRequirement: 'Prismatic' },
     onPlayEffects: [
       { type: 'eternal_stack_gain', stack: 'prism', value: 3 },
       { type: 'set_secondary_gain', kind: 'prism', value: 2 },
       { type: 'draw', value: 3 },
-      { type: 'set_chain_floor', value: 8.5 },
       { type: 'multiply_next' },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'prism', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'prism', value: 5 }, { type: 'oblivion_flat', value: 2000 }, { type: 'prism_spectrum_echo_refract', oblivionPerEchoPerChannel: 500, consume: 2 }, { type: 'multiply_next' }] },
-      { type: 'oblivion_flat', value: 1200 },
-    ],
+      { type: 'oblivion_flat', value: 1200 }],
   },
   {
     definitionId: 'inf-thorn-widow-engine',
@@ -351,17 +322,16 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thorn Widow Engine',
-    description: 'On play: Gain 70 Trail; Gain 3 Thorncrowns; Gain 2 Briar Spirals; If you have 6+ Thorncrowns, Spend 6 Thorncrowns; +2400 Oblivion; Bloom up to 2 Briar Spirals (+60 Trail per spiral, then +0.04 chain × current Trail); Empower the next card you play; Draw 3 cards; Gain +140% total Oblivion this turn; If you have 100+ Trail, Spend 40 Trail; +2500 Oblivion; Empower the next card you play. While on board: Each new Cherubim summoned while active gains +2 durability',
+    description: 'On play: Gain 70 Trail; Gain 3 Thorncrowns; Gain 2 Briar Spirals; If you have 6+ Thorncrowns, Spend 6 Thorncrowns; +2400 Oblivion; Bloom up to 2 Briar Spirals (+60 Trail per spiral); Empower the next card you play; Draw 3 cards; Gain +140% total Oblivion this turn; If you have 100+ Trail, Spend 40 Trail; +2500 Oblivion; Empower the next card you play. While on board: Each new Cherubim summoned while active gains +2 durability',
     artKey: 'inf_thorn_widow_engine',
     attacks: {
       unsynergized: {
         id: 'inf-thorn-widow-engine:unsynergized',
         label: 'Unsynergized',
         name: 'Thorn Widow Vector Break',
-        description: '653 base Oblivion · 4 cards cooldown · chain +1.20 · Cost: spend 29 Trail',
+        description: '653 base Oblivion · 4 cards cooldown · Cost: spend 29 Trail',
         baseOblivion: 4405,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [{ type: 'spend_trail', value: 29 }],
         tags: ['seraphim', 'unsynergized', 'thornbound'],
       },
@@ -369,10 +339,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-thorn-widow-engine:synergized',
         label: 'Synergized',
         name: 'Thorn Widow Angelic Verdict',
-        description: '1461 base Oblivion · 7 cards cooldown · chain +1.55 · Requires Angel · Cost: spend 36 Trail',
+        description: '1461 base Oblivion · 7 cards cooldown · Requires Angel · Cost: spend 36 Trail',
         baseOblivion: 7489,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [{ type: 'spend_trail', value: 36 }],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'thornbound'],
@@ -383,11 +352,10 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       { type: 'trail_gain', value: 70 },
       { type: 'eternal_stack_gain', stack: 'thorn', value: 3 },
       { type: 'set_secondary_gain', kind: 'thorn', value: 2 },
-      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'thorn', value: 6 }, then: [{ type: 'eternal_stack_spend', stack: 'thorn', value: 6 }, { type: 'oblivion_flat', value: 2400 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 60, chainPerTrail: 0.035, consume: 2 }, { type: 'multiply_next' }] },
+      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'thorn', value: 6 }, then: [{ type: 'eternal_stack_spend', stack: 'thorn', value: 6 }, { type: 'oblivion_flat', value: 2400 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 60, oblivionPerTrail: 185, consume: 2 }, { type: 'multiply_next' }] },
       { type: 'draw', value: 3 },
       { type: 'score_multiplier', value: 140 },
-      { type: 'conditional', condition: { type: 'trail_gte', value: 100 }, then: [{ type: 'trail_spend', value: 40 }, { type: 'oblivion_flat', value: 2500 }, { type: 'multiply_next' }] },
-    ],
+      { type: 'conditional', condition: { type: 'trail_gte', value: 100 }, then: [{ type: 'trail_spend', value: 40 }, { type: 'oblivion_flat', value: 2500 }, { type: 'multiply_next' }] }],
   },
   {
     definitionId: 'inf-lucent-cataclysm-archon',
@@ -395,17 +363,16 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Lucent Cataclysm Archon',
-    description: 'On play: Gain 80 Radiance; Gain 3 Resonance; Gain 1 Anchor; Gain 5 Halo Crowns; Gain 2 Halo Cascades; If you have 7+ Halo Crowns, Spend 7 Halo Crowns; +2800 Oblivion; Resound up to 2 Halo Cascades (+0.6 chain floor per cascade); Set chain multiplier to x9.5; Draw 4 cards; Set chain floor to x9.0; If you have 3+ Chorus Anchors, +2400 Oblivion; Empower the next card you play. While on board: +720 Oblivion per card played while active',
+    description: 'On play: Gain 80 Radiance; Gain 3 Resonance; Gain 1 Anchor; Gain 5 Halo Crowns; Gain 2 Halo Cascades; If you have 7+ Halo Crowns, Spend 7 Halo Crowns; +2800 Oblivion; Resound up to 2 Halo Cascades (cascade bonus per cascade); Draw 4 cards; If you have 3+ Chorus Anchors, +2400 Oblivion; Empower the next card you play. While on board: +720 Oblivion per card played while active',
     artKey: 'inf_lucent_cataclysm_archon',
     attacks: {
       unsynergized: {
         id: 'inf-lucent-cataclysm-archon:unsynergized',
         label: 'Unsynergized',
         name: 'Lucent Cataclysm Vector Break',
-        description: '7430 base Oblivion · 6 cards cooldown · chain +1.65',
+        description: '7430 base Oblivion · 6 cards cooldown',
         baseOblivion: 7430,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'light'],
       },
@@ -413,10 +380,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-lucent-cataclysm-archon:synergized',
         label: 'Synergized',
         name: 'Lucent Cataclysm Angelic Verdict',
-        description: '12631 base Oblivion · 7 cards cooldown · chain +1.81 · Requires Angel',
+        description: '12631 base Oblivion · 7 cards cooldown · Requires Angel',
         baseOblivion: 12631,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'light'],
@@ -431,11 +397,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       { type: 'light_anchor_gain', value: 1 },
       { type: 'eternal_stack_gain', stack: 'light', value: 5 },
       { type: 'set_secondary_gain', kind: 'light', value: 2 },
-      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 7 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 7 }, { type: 'oblivion_flat', value: 2800 }, { type: 'light_halo_cascade_resound', chainFloorPerCascade: 0.6, consume: 2 }, { type: 'chain_multiplier_set', value: 9.5 }] },
+      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 7 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 7 }, { type: 'oblivion_flat', value: 2800 }, { type: 'light_halo_cascade_resound', oblivionPerCascade: 360, consume: 2 }] },
       { type: 'draw', value: 4 },
-      { type: 'set_chain_floor', value: 9.0 },
-      { type: 'conditional', condition: { type: 'light_chorus_anchors_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 2400 }, { type: 'multiply_next' }] },
-    ],
+      { type: 'conditional', condition: { type: 'light_chorus_anchors_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 2400 }, { type: 'multiply_next' }] }],
   },
   {
     definitionId: 'inf-brass-eidolon-prime',
@@ -443,17 +407,16 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Brass Eidolon Prime',
-    description: 'On play: Gain 3 Strain; Gain 3 Reactor Cores; Gain 2 Reactor Flux; Draw 4 cards; Set chain floor to x7.5; If you have 5+ Reactor Cores, Spend 5 Reactor Cores; +2200 Oblivion; Vent up to 2 Reactor Flux (consume matching Strain: +1000.0 Oblivion per Strain vented, +0.2% score per flux); Empower the next card you play; +1500 Oblivion. While on board: +1200 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 3 Strain; Gain 3 Reactor Cores; Gain 2 Reactor Flux; Draw 4 cards; If you have 5+ Reactor Cores, Spend 5 Reactor Cores; +2200 Oblivion; Vent up to 2 Reactor Flux (consume matching Strain: +1000.0 Oblivion per Strain vented, +0.2% score per flux); Empower the next card you play; +1500 Oblivion. While on board: +1200 Oblivion whenever you play an Ophanim while active',
     artKey: 'inf_brass_eidolon_prime',
     attacks: {
       unsynergized: {
         id: 'inf-brass-eidolon-prime:unsynergized',
         label: 'Unsynergized',
         name: 'Brass Eidolon Vector Break',
-        description: '653 base Oblivion · 5 cards cooldown · chain +1.20 · Cost: spend 29 Strain',
+        description: '653 base Oblivion · 5 cards cooldown · Cost: spend 29 Strain',
         baseOblivion: 6910,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'mechanical'],
       },
@@ -461,10 +424,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-brass-eidolon-prime:synergized',
         label: 'Synergized',
         name: 'Brass Eidolon Angelic Verdict',
-        description: '1490 base Oblivion · 8 cards cooldown · chain +1.55 · Requires Angel · Cost: spend 36 Strain',
+        description: '1490 base Oblivion · 8 cards cooldown · Requires Angel · Cost: spend 36 Strain',
         baseOblivion: 12990,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'mechanical'],
@@ -476,12 +438,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'mech', value: 3 },
       { type: 'set_secondary_gain', kind: 'mech', value: 2 },
       { type: 'draw', value: 4 },
-      { type: 'set_chain_floor', value: 7.5 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'mech', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'mech', value: 5 }, { type: 'oblivion_flat', value: 2200 }, { type: 'mech_reactor_flux_vent', oblivionPerFlux: 1000, scoreMultPerFlux: 0.20, consume: 2 }, { type: 'multiply_next' }] },
-      { type: 'oblivion_flat', value: 1500 },
-    ],
-  },
-];
+      { type: 'oblivion_flat', value: 1500 }],
+  }];
 
 // Cherubim (3)
 
@@ -492,10 +451,10 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Entropic Crown',
-      description: 'On play: +3200 Oblivion; Draw 4 cards; Set chain floor to x10.0. While on board: Adjacent Seraphim gain +8 Patience per card played',
+      description: 'On play: +3200 Oblivion; Draw 4 cards. While on board: Adjacent Seraphim gain +8 Patience per card played',
     artKey: 'inf_entropic_crown',
       effects: [{ type: 'cherubim_patience_per_card', value: 8 }],
-      onPlayEffects: [{ type: 'oblivion_flat', value: 3200 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 10.0 }],
+      onPlayEffects: [{ type: 'oblivion_flat', value: 3200 }, { type: 'draw', value: 4 }],
   },
   {
     definitionId: 'inf-annihilation-field',
@@ -503,10 +462,10 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Annihilation Field',
-      description: 'On play: Draw 3 cards; Set chain floor to x5.0; Shuffle discard into deck; Draw 4 cards. While on board: Adjacent Seraphim gain +6 Patience per card played',
+      description: 'On play: Draw 3 cards; Shuffle discard into deck; Draw 4 cards. While on board: Adjacent Seraphim gain +6 Patience per card played',
     artKey: 'inf_annihilation_field',
       effects: [{ type: 'cherubim_patience_per_card', value: 6 }],
-      onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'set_chain_floor', value: 5.0 }, { type: 'shuffle_discard' }, { type: 'draw', value: 4 }],
+      onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'shuffle_discard' }, { type: 'draw', value: 4 }],
   },
   {
     definitionId: 'inf-pyroclasm-engine',
@@ -514,12 +473,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyroclasm Engine',
-      description: 'On play: Gain 50 Embers; Forge 24 Abyss Fault; Open 3 Ruin Windows; Cash out up to 1 Ruin Windows (+1100 Oblivion, +0.4 chain per window); Gain 3 Inferno Tiers; Cash out all Inferno Tiers (+600 Oblivion, +0.5 draw per stack); Gain 4 Cinder Echoes; Draw 3 cards; +2000 Oblivion; Vent 9999 Strain. While on board: Adjacent active Seraphim gain +200 Oblivion per card played; Adjacent active Seraphim gain +0.2 chain growth',
+      description: 'On play: Gain 50 Embers; Forge 24 Abyss Fault; Open 3 Ruin Windows; Cash out up to 1 Ruin Windows (+1100 Oblivion per window); Gain 3 Inferno Tiers; Cash out all Inferno Tiers (+600 Oblivion, +0.5 draw per stack); Gain 4 Cinder Echoes; Draw 3 cards; +2000 Oblivion; Vent 9999 Strain. While on board: Adjacent active Seraphim gain +200 Oblivion per card played',
     artKey: 'inf_pyroclasm_engine',
-      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 200 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.20 }],
+      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 200 }],
     // Role: BACK-ROW echo battery. Gains 4 echoes but does NOT ignite ? leaves
     // the entire pool as ammo for adjacent Seraphim's bespoke igniters next turn.
-      onPlayEffects: [{ type: 'ember_gain', value: 50 }, { type: 'pyro_abyss_fault_gain', value: 24 }, { type: 'pyro_ruin_window_gain', value: 3 }, { type: 'pyro_window_cashout', oblivionPerWindow: 1100, chainPerWindow: 0.4, consume: 1 }, { type: 'eternal_stack_gain', stack: 'pyro', value: 3 }, { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 600, drawPerStack: 0.5 }, { type: 'set_secondary_gain', kind: 'pyro', value: 4 }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 2000 }, { type: 'strain_vent', value: 9999 }],
+      onPlayEffects: [{ type: 'ember_gain', value: 50 }, { type: 'pyro_abyss_fault_gain', value: 24 }, { type: 'pyro_ruin_window_gain', value: 3 }, { type: 'pyro_window_cashout', oblivionPerWindow: 1100, consume: 1 }, { type: 'eternal_stack_gain', stack: 'pyro', value: 3 }, { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 600, drawPerStack: 0.5 }, { type: 'set_secondary_gain', kind: 'pyro', value: 4 }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 2000 }, { type: 'strain_vent', value: 9999 }],
   },
   {
     definitionId: 'inf-prismatic-collapse-lattice',
@@ -527,12 +486,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Collapse Lattice',
-      description: 'On play: Gain 30 Prismatic Light; Gain 5 Mirror Chain links; Gain 4 Spectrum Echoes; Draw 4 cards; Set chain floor to x7.0; Draw 3 cards; If you have 6+ Mirror Chain links, Cash out all Mirror Chain links (+700 Oblivion, +0.5 draw per stack); +2500 Oblivion. While on board: Adjacent active Seraphim gain +220 Oblivion per card played; Adjacent active Seraphim gain +0.22 chain growth',
+      description: 'On play: Gain 30 Prismatic Light; Gain 5 Mirror Chain links; Gain 4 Spectrum Echoes; Draw 4 cards; Draw 3 cards; If you have 6+ Mirror Chain links, Cash out all Mirror Chain links (+700 Oblivion, +0.5 draw per stack); +2500 Oblivion. While on board: Adjacent active Seraphim gain +220 Oblivion per card played',
     artKey: 'inf_prismatic_collapse_lattice',
-      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 220 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.22 }],
+      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 220 }],
       // Role: BACK-ROW SPECTRUM ECHO BATTERY. +4 echoes, never refracts ? feeds
       // adjacent Seraphim/Angel refractors.
-      onPlayEffects: [{ type: 'prismatic_light_gain', value: 30 }, { type: 'eternal_stack_gain', stack: 'prism', value: 5 }, { type: 'set_secondary_gain', kind: 'prism', value: 4 }, { type: 'draw', value: 4 }, { type: 'set_chain_floor', value: 7.0 }, { type: 'draw', value: 3 }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'prism', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 700, drawPerStack: 0.5 }] }, { type: 'oblivion_flat', value: 2500 }],
+      onPlayEffects: [{ type: 'prismatic_light_gain', value: 30 }, { type: 'eternal_stack_gain', stack: 'prism', value: 5 }, { type: 'set_secondary_gain', kind: 'prism', value: 4 }, { type: 'draw', value: 4 }, { type: 'draw', value: 3 }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'prism', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 700, drawPerStack: 0.5 }] }, { type: 'oblivion_flat', value: 2500 }],
   },
   {
     definitionId: 'inf-gravebloom-singularity',
@@ -540,12 +499,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Gravebloom Singularity',
-      description: 'On play: Gain 90 Trail; Gain 4 Thorncrowns; Gain 5 Briar Spirals; Discard 2 cards, then draw 4 cards; Set chain floor to x9.0; Salvage any 1 card; Cash out all Thorncrowns (+900 Oblivion, +0.5 draw per stack). While on board: Adjacent active Seraphim gain +280 Oblivion per card played',
+      description: 'On play: Gain 90 Trail; Gain 4 Thorncrowns; Gain 5 Briar Spirals; Discard 2 cards, then draw 4 cards; Salvage any 1 card; Cash out all Thorncrowns (+900 Oblivion, +0.5 draw per stack). While on board: Adjacent active Seraphim gain +280 Oblivion per card played',
     artKey: 'inf_gravebloom_singularity',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 280 }],
       // Role: BACK-ROW BRIAR BATTERY. Massive +5 Briar Spiral seed and never blooms;
       // pure feeder for adjacent Seraphim bloomers.
-      onPlayEffects: [{ type: 'trail_gain', value: 90 }, { type: 'eternal_stack_gain', stack: 'thorn', value: 4 }, { type: 'set_secondary_gain', kind: 'thorn', value: 5 }, { type: 'discard_draw', discard: 2, draw: 4 }, { type: 'set_chain_floor', value: 9.0 }, { type: 'salvage_any' }, { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 900, drawPerStack: 0.5 }],
+      onPlayEffects: [{ type: 'trail_gain', value: 90 }, { type: 'eternal_stack_gain', stack: 'thorn', value: 4 }, { type: 'set_secondary_gain', kind: 'thorn', value: 5 }, { type: 'discard_draw', discard: 2, draw: 4 }, { type: 'salvage_any' }, { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 900, drawPerStack: 0.5 }],
   },
   {
     definitionId: 'inf-heliarch-eclipse-engine',
@@ -553,12 +512,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Heliarch Eclipse Engine',
-      description: 'On play: Gain 95 Radiance; Gain 4 Resonance; Gain 2 Anchor; Gain 4 Halo Crowns; Gain 4 Halo Cascades; Double current Radiance; Draw 3 cards; If you have 6+ Resonance, +3000 Oblivion; If you have 6+ Halo Crowns, Cash out all Halo Crowns (+550 Oblivion, +0.2 chain per stack); +2200 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played; Adjacent active Seraphim gain +0.18 chain growth',
+      description: 'On play: Gain 95 Radiance; Gain 4 Resonance; Gain 2 Anchor; Gain 4 Halo Crowns; Gain 4 Halo Cascades; Double current Radiance; Draw 3 cards; If you have 6+ Resonance, +3000 Oblivion; If you have 6+ Halo Crowns, Cash out all Halo Crowns (+550 Oblivion per stack); +2200 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played',
     artKey: 'inf_heliarch_eclipse_engine',
-      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 300 }, { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'chain', value: 0.18 }],
+      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 300 }],
       // Role: BACK-ROW cascade BATTERY. Gains 4 Halo Cascades and never resounds;
       // exists purely to feed adjacent Seraphim resounders.
-      onPlayEffects: [{ type: 'radiance_gain', value: 95 }, { type: 'light_resonance_gain', value: 4 }, { type: 'light_anchor_gain', value: 2 }, { type: 'eternal_stack_gain', stack: 'light', value: 4 }, { type: 'set_secondary_gain', kind: 'light', value: 4 }, { type: 'radiance_double' }, { type: 'draw', value: 3 }, { type: 'conditional', condition: { type: 'light_resonance_gte', value: 6 }, then: [{ type: 'oblivion_flat', value: 3000 }] }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 550, chainPerStack: 0.20 }] }, { type: 'oblivion_flat', value: 2200 }],
+      onPlayEffects: [{ type: 'radiance_gain', value: 95 }, { type: 'light_resonance_gain', value: 4 }, { type: 'light_anchor_gain', value: 2 }, { type: 'eternal_stack_gain', stack: 'light', value: 4 }, { type: 'set_secondary_gain', kind: 'light', value: 4 }, { type: 'radiance_double' }, { type: 'draw', value: 3 }, { type: 'conditional', condition: { type: 'light_resonance_gte', value: 6 }, then: [{ type: 'oblivion_flat', value: 3000 }] }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 550 }] }, { type: 'oblivion_flat', value: 2200 }],
   },
   {
     definitionId: 'inf-mech-entropy-foundry',
@@ -566,14 +525,13 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Mech Entropy Foundry',
-      description: 'On play: Gain 4 Strain; Gain 5 Reactor Cores; Gain 4 Reactor Flux; Draw 3 cards; Vent 9999 Strain; Cash out all Reactor Cores (+600 Oblivion, +0.25 chain per stack); Set chain floor to x8.5. While on board: Adjacent active Seraphim gain +260 Oblivion per card played',
+      description: 'On play: Gain 4 Strain; Gain 5 Reactor Cores; Gain 4 Reactor Flux; Draw 3 cards; Vent 9999 Strain; Cash out all Reactor Cores (+600 Oblivion per stack). While on board: Adjacent active Seraphim gain +260 Oblivion per card played',
     artKey: 'inf_mech_entropy_foundry',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 260 }],
       // Role: BACK-ROW FLUX BATTERY. +4 Reactor Flux on play and never vents ?
       // pure feeder for adjacent Seraphim/Angel venters.
-      onPlayEffects: [{ type: 'strain_gain', value: 4 }, { type: 'eternal_stack_gain', stack: 'mech', value: 5 }, { type: 'set_secondary_gain', kind: 'mech', value: 4 }, { type: 'draw', value: 3 }, { type: 'strain_vent', value: 9999 }, { type: 'eternal_stack_cashout', stack: 'mech', oblivionPerStack: 600, chainPerStack: 0.25 }, { type: 'set_chain_floor', value: 8.5 }],
-  },
-];
+      onPlayEffects: [{ type: 'strain_gain', value: 4 }, { type: 'eternal_stack_gain', stack: 'mech', value: 5 }, { type: 'set_secondary_gain', kind: 'mech', value: 4 }, { type: 'draw', value: 3 }, { type: 'strain_vent', value: 9999 }, { type: 'eternal_stack_cashout', stack: 'mech', oblivionPerStack: 600 }],
+  }];
 
 // Angels (3)
 
@@ -584,38 +542,32 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: All Seraphim on board gain +20 Patience; Draw 6 cards; Set chain floor to x10.0. After 4 cards played: Double all Patience on the board; Draw 7 cards; +3500 Oblivion; Set chain floor to x12.0; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
+    description: 'On summon: All Seraphim on board gain +20 Patience; Draw 6 cards. After 4 cards played: Double all Patience on the board; Draw 7 cards; +3500 Oblivion; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
     artKey: 'inf_sovereign_void',
     summonCost: [],
     extraSummonConditions: [
-      { type: 'seraphim_on_board_gte', value: 3 },
-    ],
+      { type: 'seraphim_on_board_gte', value: 3 }],
     onSummonEffects: [
       { type: 'patience_gain_all', value: 20 },
-      { type: 'draw', value: 6 },
-      { type: 'set_chain_floor', value: 10.0 },
-    ],
+      { type: 'draw', value: 6 }],
     activatedAbility: {
       name: 'Null Dominion',
       cardsPlayedRequirement: 4,
-      description: 'Double all Patience on the board; Draw 7 cards; +3500 Oblivion; Set chain floor to x12.0; Empower the next card you play',
+      description: 'Double all Patience on the board; Draw 7 cards; +3500 Oblivion; Empower the next card you play',
       effects: [
         { type: 'patience_double_all' },
         { type: 'draw', value: 7 },
         { type: 'oblivion_flat', value: 3500 },
-        { type: 'set_chain_floor', value: 12.0 },
-        { type: 'multiply_next' },
-      ],
+        { type: 'multiply_next' }],
     },
     attacks: {
       primary: {
         id: 'inf-sovereign-void:primary',
         label: 'Primary',
         name: 'Sovereign Void Ordinance',
-        description: '3970 base Oblivion · 6 cards cooldown · chain +1.50',
+        description: '3970 base Oblivion · 6 cards cooldown',
         baseOblivion: 3970,
         cooldownCards: 6,
-        chainScaling: 1.50,
         costs: [],
         tags: ['angel', 'primary', 'neutrality'],
       },
@@ -623,10 +575,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
         id: 'inf-sovereign-void:exalted',
         label: 'Exalted',
         name: 'Sovereign Void Throne Decree',
-        description: '10920 base Oblivion · 9 cards cooldown · chain +1.76',
+        description: '10920 base Oblivion · 9 cards cooldown',
         baseOblivion: 10920,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'neutrality'],
       },
@@ -639,40 +590,34 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Eternity Rupture',
-    description: 'On summon: All Seraphim on board gain +15 Patience; Draw 5 cards; +2000 Oblivion; Set chain floor to x7.0. After 4 cards played: Double all Patience on the board; Draw 5 cards; +3000 Oblivion; Set chain floor to x10.0; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
+    description: 'On summon: All Seraphim on board gain +15 Patience; Draw 5 cards; +2000 Oblivion. After 4 cards played: Double all Patience on the board; Draw 5 cards; +3000 Oblivion; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
     artKey: 'inf_eternity_rupture',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },
-      { type: 'cherubim_active_gte', value: 2 },
-    ],
+      { type: 'cherubim_active_gte', value: 2 }],
     onSummonEffects: [
       { type: 'patience_gain_all', value: 15 },
       { type: 'draw', value: 5 },
-      { type: 'oblivion_flat', value: 2000 },
-      { type: 'set_chain_floor', value: 7.0 },
-    ],
+      { type: 'oblivion_flat', value: 2000 }],
     activatedAbility: {
       name: 'Rupture Convergence',
       cardsPlayedRequirement: 4,
-      description: 'Double all Patience on the board; Draw 5 cards; +3000 Oblivion; Set chain floor to x10.0; Empower the next card you play',
+      description: 'Double all Patience on the board; Draw 5 cards; +3000 Oblivion; Empower the next card you play',
       effects: [
         { type: 'patience_double_all' },
         { type: 'draw', value: 5 },
         { type: 'oblivion_flat', value: 3000 },
-        { type: 'set_chain_floor', value: 10.0 },
-        { type: 'multiply_next' },
-      ],
+        { type: 'multiply_next' }],
     },
     attacks: {
       primary: {
         id: 'inf-eternity-rupture:primary',
         label: 'Primary',
         name: 'Eternity Rupture Ordinance',
-        description: '4170 base Oblivion · 6 cards cooldown · chain +1.50',
+        description: '4170 base Oblivion · 6 cards cooldown',
         baseOblivion: 4170,
         cooldownCards: 6,
-        chainScaling: 1.50,
         costs: [],
         tags: ['angel', 'primary', 'neutrality'],
       },
@@ -680,10 +625,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
         id: 'inf-eternity-rupture:exalted',
         label: 'Exalted',
         name: 'Eternity Rupture Throne Decree',
-        description: '11470 base Oblivion · 9 cards cooldown · chain +1.76',
+        description: '11470 base Oblivion · 9 cards cooldown',
         baseOblivion: 11470,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'neutrality'],
       },
@@ -696,12 +640,11 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Riftborn Sovereign',
-    description: 'On summon: Gain 100 Embers; Stoke 40 Furnace Pressure; Open 2 Ruin Windows; Gain 6 Inferno Tiers; Gain 4 Cinder Echoes; Draw 5 cards; +1500 Oblivion; Set chain floor to x6.0. After 5 cards played: Convert Pressure to Fault (8 Pressure per Fault, gain 8 up to 32); If pools are balanced, +160 Oblivion per Pressure-Fault pair; Cash out up to 1 Ruin Windows (+1800 Oblivion, +0.6 chain per window); Cash out all Inferno Tiers (+1000 Oblivion, +0.4 chain per stack); Ignite all Cinder Echoes (+80.0 Oblivion × echoes²); Spend 9999 Embers; Draw 4 cards; Empower the next card you play. While on board: +400 Oblivion per card played while on board',
+    description: 'On summon: Gain 100 Embers; Stoke 40 Furnace Pressure; Open 2 Ruin Windows; Gain 6 Inferno Tiers; Gain 4 Cinder Echoes; Draw 5 cards; +1500 Oblivion. After 5 cards played: Convert Pressure to Fault (8 Pressure per Fault, gain 8 up to 32); If pools are balanced, +160 Oblivion per Pressure-Fault pair; Cash out up to 1 Ruin Windows (+1800 Oblivion per window); Cash out all Inferno Tiers (+1000 Oblivion per stack); Ignite all Cinder Echoes (+80.0 Oblivion × echoes²); Spend 9999 Embers; Draw 4 cards; Empower the next card you play. While on board: +400 Oblivion per card played while on board',
     artKey: 'inf_riftborn_sovereign',
     summonCost: [],
     extraSummonConditions: [
-      { type: 'cherubim_active_gte', value: 1 },
-    ],
+      { type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
       { type: 'ember_gain', value: 100 },
       { type: 'pyro_furnace_pressure_gain', value: 40 },
@@ -709,33 +652,29 @@ export const infiniteAngelCards: AngelDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'pyro', value: 6 },
       { type: 'set_secondary_gain', kind: 'pyro', value: 4 },
       { type: 'draw', value: 5 },
-      { type: 'oblivion_flat', value: 1500 },
-      { type: 'set_chain_floor', value: 6.0 },
-    ],
+      { type: 'oblivion_flat', value: 1500 }],
     activatedAbility: {
       name: 'Rift Conflagration',
       cardsPlayedRequirement: 5,
-      description: 'Convert Pressure to Fault (8 Pressure per Fault, gain 8 up to 32); If pools are balanced, +160 Oblivion per Pressure-Fault pair; Cash out up to 1 Ruin Windows (+1800 Oblivion, +0.6 chain per window); Cash out all Inferno Tiers (+1000 Oblivion, +0.4 chain per stack); Ignite all Cinder Echoes (+80.0 Oblivion × echoes²); Spend 9999 Embers; Draw 4 cards; Empower the next card you play',
+      description: 'Convert Pressure to Fault (8 Pressure per Fault, gain 8 up to 32); If pools are balanced, +160 Oblivion per Pressure-Fault pair; Cash out up to 1 Ruin Windows (+1800 Oblivion per window); Cash out all Inferno Tiers (+1000 Oblivion per stack); Ignite all Cinder Echoes (+80.0 Oblivion × echoes²); Spend 9999 Embers; Draw 4 cards; Empower the next card you play',
       effects: [
         { type: 'pyro_convert_pressure_to_fault', pressurePerFault: 8, faultGain: 8, maxFaultGain: 32 },
         { type: 'pyro_balance_bonus', oblivionPerPair: 160 },
-        { type: 'pyro_window_cashout', oblivionPerWindow: 1800, chainPerWindow: 0.6, consume: 1 },
-        { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 1000, chainPerStack: 0.40 },
+        { type: 'pyro_window_cashout', oblivionPerWindow: 1800, consume: 1 },
+        { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 1000 },
         { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 80 },
         { type: 'ember_spend', value: 9999 },
         { type: 'draw', value: 4 },
-        { type: 'multiply_next' },
-      ],
+        { type: 'multiply_next' }],
     },
     attacks: {
       primary: {
         id: 'inf-riftborn-sovereign:primary',
         label: 'Primary',
         name: 'Riftborn Sovereign Ordinance',
-        description: '3770 base Oblivion · 6 cards cooldown · chain +1.50',
+        description: '3770 base Oblivion · 6 cards cooldown',
         baseOblivion: 3770,
         cooldownCards: 6,
-        chainScaling: 1.50,
         costs: [],
         tags: ['angel', 'primary', 'fire'],
       },
@@ -743,10 +682,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
         id: 'inf-riftborn-sovereign:exalted',
         label: 'Exalted',
         name: 'Riftborn Sovereign Throne Decree',
-        description: '10370 base Oblivion · 9 cards cooldown · chain +1.76',
+        description: '10370 base Oblivion · 9 cards cooldown',
         baseOblivion: 10370,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'fire'],
       },
@@ -759,44 +697,39 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Judgement Array',
-    description: 'On summon: Draw 5 cards; Gain 40 Prismatic Light; Gain 5 Mirror Chain links; Gain 3 Spectrum Echoes; Set chain floor to x8.5. After 4 cards played: Cash out all Mirror Chain links (+700 Oblivion, +0.3 chain per stack); Refract all Spectrum Echoes (+320.0 Oblivion per echo × distinct channels); Search your deck for 1 matching Ophanim or Cherubim; Draw 4 cards; Empower the next card you play; +2800 Oblivion. While on board: +470 Oblivion per card played while on board',
+    description: 'On summon: Draw 5 cards; Gain 40 Prismatic Light; Gain 5 Mirror Chain links; Gain 3 Spectrum Echoes. After 4 cards played: Cash out all Mirror Chain links (+700 Oblivion per stack); Refract all Spectrum Echoes (+320.0 Oblivion per echo × distinct channels); Search your deck for 1 matching Ophanim or Cherubim; Draw 4 cards; Empower the next card you play; +2800 Oblivion. While on board: +470 Oblivion per card played while on board',
     artKey: 'inf_prismatic_judgement_array',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },
-      { type: 'cherubim_active_gte', value: 1 },
-    ],
+      { type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
       { type: 'draw', value: 5 },
       { type: 'prismatic_light_gain', value: 40 },
       { type: 'eternal_stack_gain', stack: 'prism', value: 5 },
-      { type: 'set_secondary_gain', kind: 'prism', value: 3 },
-      { type: 'set_chain_floor', value: 8.5 },
-    ],
+      { type: 'set_secondary_gain', kind: 'prism', value: 3 }],
     activatedAbility: {
       name: 'Spectrum Verdict',
       cardsPlayedRequirement: 4,
-      description: 'Cash out all Mirror Chain links (+700 Oblivion, +0.3 chain per stack); Refract all Spectrum Echoes (+320.0 Oblivion per echo × distinct channels); Search your deck for 1 matching Ophanim or Cherubim; Draw 4 cards; Empower the next card you play; +2800 Oblivion',
+      description: 'Cash out all Mirror Chain links (+700 Oblivion per stack); Refract all Spectrum Echoes (+320.0 Oblivion per echo × distinct channels); Search your deck for 1 matching Ophanim or Cherubim; Draw 4 cards; Empower the next card you play; +2800 Oblivion',
       // Role: APEX FINISHER. Activated ability refracts ALL Spectrum Echoes at
       // a moderate-high coefficient, then empower-stacks the result.
       effects: [
-        { type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 700, chainPerStack: 0.30 },
+        { type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 700 },
         { type: 'prism_spectrum_echo_refract', oblivionPerEchoPerChannel: 320 },
         { type: 'search_deck_by_type', filter: ['Ophanim', 'Cherubim'] },
         { type: 'draw', value: 4 },
         { type: 'multiply_next' },
-        { type: 'oblivion_flat', value: 2800 },
-      ],
+        { type: 'oblivion_flat', value: 2800 }],
     },
     attacks: {
       primary: {
         id: 'inf-prismatic-judgement-array:primary',
         label: 'Primary',
         name: 'Prismatic Judgement Ordinance',
-        description: '458 base Oblivion · 5 cards cooldown · chain +1.16',
+        description: '458 base Oblivion · 5 cards cooldown',
         baseOblivion: 3910,
         cooldownCards: 6,
-        chainScaling: 1.50,
         costs: [],
         tags: ['angel', 'primary', 'prismatic'],
       },
@@ -804,10 +737,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
         id: 'inf-prismatic-judgement-array:exalted',
         label: 'Exalted',
         name: 'Prismatic Judgement Throne Decree',
-        description: '894 base Oblivion · 7 cards cooldown · chain +1.39 · Cost: discard 3 cards, spend 4 Strain',
+        description: '894 base Oblivion · 7 cards cooldown · Cost: discard 3 cards, spend 4 Strain',
         baseOblivion: 10755,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'prismatic'],
       },
@@ -820,46 +752,40 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Elegy Titan',
-    description: 'On summon: Gain 110 Trail; Gain 6 Thorncrowns; Gain 4 Briar Spirals; Draw 4 cards; Gain +120% total Oblivion this turn; Set chain floor to x6.8. After 5 cards played: Spend 80 Trail; Cash out all Thorncrowns (+850 Oblivion, +0.35 chain per stack); Bloom all Briar Spirals (+40 Trail per spiral, then +0.02 chain × current Trail); Salvage any 1 card; Draw 4 cards; Set chain floor to x9.6; +3200 Oblivion; If you have 100+ Trail, Empower the next card you play; +2800 Oblivion. While on board: +520 Oblivion per card played while on board',
+    description: 'On summon: Gain 110 Trail; Gain 6 Thorncrowns; Gain 4 Briar Spirals; Draw 4 cards; Gain +120% total Oblivion this turn. After 5 cards played: Spend 80 Trail; Cash out all Thorncrowns (+850 Oblivion per stack); Bloom all Briar Spirals (+40 Trail per spiral); Salvage any 1 card; Draw 4 cards; +3200 Oblivion; If you have 100+ Trail, Empower the next card you play; +2800 Oblivion. While on board: +520 Oblivion per card played while on board',
     artKey: 'inf_thornbound_elegy_titan',
     summonCost: [],
     extraSummonConditions: [
-      { type: 'seraphim_on_board_gte', value: 2 },
-    ],
+      { type: 'seraphim_on_board_gte', value: 2 }],
     onSummonEffects: [
       { type: 'trail_gain', value: 110 },
       { type: 'eternal_stack_gain', stack: 'thorn', value: 6 },
       { type: 'set_secondary_gain', kind: 'thorn', value: 4 },
       { type: 'draw', value: 4 },
-      { type: 'score_multiplier', value: 120 },
-      { type: 'set_chain_floor', value: 6.8 },
-    ],
+      { type: 'score_multiplier', value: 120 }],
     activatedAbility: {
       name: 'Funeral Surge',
       cardsPlayedRequirement: 5,
-      description: 'Spend 80 Trail; Cash out all Thorncrowns (+850 Oblivion, +0.35 chain per stack); Bloom all Briar Spirals (+40 Trail per spiral, then +0.02 chain × current Trail); Salvage any 1 card; Draw 4 cards; Set chain floor to x9.6; +3200 Oblivion; If you have 100+ Trail, Empower the next card you play; +2800 Oblivion',
+      description: 'Spend 80 Trail; Cash out all Thorncrowns (+850 Oblivion per stack); Bloom all Briar Spirals (+40 Trail per spiral); Salvage any 1 card; Draw 4 cards; +3200 Oblivion; If you have 100+ Trail, Empower the next card you play; +2800 Oblivion',
       // Role: APEX BIG BLOOMER. Moderate per-spiral coefficient but uncapped consume
       // on a +4-spiral seed ? trades single-pop coefficient for sheer pool size.
       effects: [
         { type: 'trail_spend', value: 80 },
-        { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 850, chainPerStack: 0.35 },
-        { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 40, chainPerTrail: 0.02 },
+        { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 850 },
+        { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 40, oblivionPerTrail: 12 },
         { type: 'salvage_any' },
         { type: 'draw', value: 4 },
-        { type: 'set_chain_floor', value: 9.6 },
         { type: 'oblivion_flat', value: 3200 },
-        { type: 'conditional', condition: { type: 'trail_gte', value: 100 }, then: [{ type: 'multiply_next' }, { type: 'oblivion_flat', value: 2800 }] },
-      ],
+        { type: 'conditional', condition: { type: 'trail_gte', value: 100 }, then: [{ type: 'multiply_next' }, { type: 'oblivion_flat', value: 2800 }] }],
     },
     attacks: {
       primary: {
         id: 'inf-thornbound-elegy-titan:primary',
         label: 'Primary',
         name: 'Thornbound Elegy Ordinance',
-        description: '520 base Oblivion · 5 cards cooldown · chain +1.24',
+        description: '520 base Oblivion · 5 cards cooldown',
         baseOblivion: 4010,
         cooldownCards: 6,
-        chainScaling: 1.50,
         costs: [],
         tags: ['angel', 'primary', 'thornbound'],
       },
@@ -867,10 +793,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
         id: 'inf-thornbound-elegy-titan:exalted',
         label: 'Exalted',
         name: 'Thornbound Elegy Throne Decree',
-        description: '1180 base Oblivion · 8 cards cooldown · chain +1.62 · Cost: spend 14 Trail, discard 1 card',
+        description: '1180 base Oblivion · 8 cards cooldown · Cost: spend 14 Trail, discard 1 card',
         baseOblivion: 11030,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'thornbound'],
       },
@@ -883,40 +808,35 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Mechanical Apotheosis Core',
-    description: 'On summon: Gain 4 Strain; Gain 3 Reactor Flux; Draw 5 cards; Set chain floor to x7.8; +1800 Oblivion. After 4 cards played: Overclock: gain 3 Strain, then Draw 5 cards; Vent all Reactor Flux (consume matching Strain: +550.0 Oblivion per Strain vented, +0.35% score per flux); Empower the next card you play; Set chain floor to x10.5; +3500 Oblivion. While on board: +560 Oblivion per card played while on board',
+    description: 'On summon: Gain 4 Strain; Gain 3 Reactor Flux; Draw 5 cards; +1800 Oblivion. After 4 cards played: Overclock: gain 3 Strain, then Draw 5 cards; Vent all Reactor Flux (consume matching Strain: +550.0 Oblivion per Strain vented, +0.35% score per flux); Empower the next card you play; +3500 Oblivion. While on board: +560 Oblivion per card played while on board',
     artKey: 'inf_mechanical_apotheosis_core',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },
-      { type: 'cherubim_active_gte', value: 1 },
-    ],
+      { type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
       { type: 'strain_gain', value: 4 },
       { type: 'set_secondary_gain', kind: 'mech', value: 3 },
       { type: 'draw', value: 5 },
-      { type: 'set_chain_floor', value: 7.8 },
-      { type: 'oblivion_flat', value: 1800 },
-    ],
+      { type: 'oblivion_flat', value: 1800 }],
     activatedAbility: {
       name: 'Core Singularity',
       cardsPlayedRequirement: 4,
-      description: 'Overclock: gain 3 Strain, then Draw 5 cards; Vent all Reactor Flux (consume matching Strain: +550.0 Oblivion per Strain vented, +0.35% score per flux); Empower the next card you play; Set chain floor to x10.5; +3500 Oblivion',
+      description: 'Overclock: gain 3 Strain, then Draw 5 cards; Vent all Reactor Flux (consume matching Strain: +550.0 Oblivion per Strain vented, +0.35% score per flux); Empower the next card you play; +3500 Oblivion',
       // Role: APEX SCORE-MULT VENTER. Activated ability vents ALL Reactor Flux
       // with the highest scoreMultPerFlux in the set ? trades raw oblivion for raw mult.
       effects: [
-        { type: 'overclock', strain: 3, then: [{ type: 'draw', value: 5 }, { type: 'mech_reactor_flux_vent', oblivionPerFlux: 550, scoreMultPerFlux: 0.35 }, { type: 'multiply_next' }, { type: 'set_chain_floor', value: 10.5 }] },
-        { type: 'oblivion_flat', value: 3500 },
-      ],
+        { type: 'overclock', strain: 3, then: [{ type: 'draw', value: 5 }, { type: 'mech_reactor_flux_vent', oblivionPerFlux: 550, scoreMultPerFlux: 0.35 }, { type: 'multiply_next' }] },
+        { type: 'oblivion_flat', value: 3500 }],
     },
     attacks: {
       primary: {
         id: 'inf-mechanical-apotheosis-core:primary',
         label: 'Primary',
         name: 'Mechanical Apotheosis Ordinance',
-        description: '520 base Oblivion · 5 cards cooldown · chain +1.24',
+        description: '520 base Oblivion · 5 cards cooldown',
         baseOblivion: 4090,
         cooldownCards: 6,
-        chainScaling: 1.50,
         costs: [],
         tags: ['angel', 'primary', 'mechanical'],
       },
@@ -924,17 +844,15 @@ export const infiniteAngelCards: AngelDefinition[] = [
         id: 'inf-mechanical-apotheosis-core:exalted',
         label: 'Exalted',
         name: 'Mechanical Apotheosis Throne Decree',
-        description: '1180 base Oblivion · 8 cards cooldown · chain +1.60 · Cost: spend 14 Strain, discard 1 card',
+        description: '1180 base Oblivion · 8 cards cooldown · Cost: spend 14 Strain, discard 1 card',
         baseOblivion: 11250,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'mechanical'],
       },
     },
     baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 560 },
-  },
-];
+  }];
 
 export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
   {
@@ -943,7 +861,7 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: "Sorveth's Final Breath",
-    description: 'Gain 18 Black Flame; Gain 6 Fracture; Gain 7 Eclipse Marks; Gain 3 Veil Shards; Gain 20 Monochromatic Shards; Discard 3 cards, then draw 7 cards; Salvage any 1 card; Set chain floor to x12.0; Empower the next card you play; Cash out all Eclipse Marks (+650 Oblivion, +0.25 chain per stack); If Fracture is 10+, Shatter all Veil Shards (swap flames, +180.0 Oblivion per higher flame per shard); +3400 Oblivion',
+    description: 'Gain 18 Black Flame; Gain 6 Fracture; Gain 7 Eclipse Marks; Gain 3 Veil Shards; Gain 20 Monochromatic Shards; Discard 3 cards, then draw 7 cards; Salvage any 1 card; Empower the next card you play; Cash out all Eclipse Marks (+650 Oblivion per stack); If Fracture is 10+, Shatter all Veil Shards (swap flames, +180.0 Oblivion per higher flame per shard); +3400 Oblivion',
     artKey: 'inf_bgi_sorveths_final_breath',
     // Role: FRACTURE-GATED INFINITE FINISHER. +3 Veil Shards; inside the
     // fracture?10 conditional, also swaps all shards at a moderate coefficient.
@@ -955,11 +873,9 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
       { type: 'monochromatic_shards_gain', value: 20 },
       { type: 'discard_draw', discard: 3, draw: 7 },
       { type: 'salvage_any' },
-      { type: 'set_chain_floor', value: 12.0 },
       { type: 'multiply_next' },
-      { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 650, chainPerStack: 0.25 },
-      { type: 'conditional', condition: { type: 'black_glass_fracture_gte', value: 10 }, then: [{ type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 180 }, { type: 'oblivion_flat', value: 3400 }] },
-    ],
+      { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 650 },
+      { type: 'conditional', condition: { type: 'black_glass_fracture_gte', value: 10 }, then: [{ type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 180 }, { type: 'oblivion_flat', value: 3400 }] }],
   },
   {
     definitionId: 'inf-bgi-chromatic-ruin-deluge',
@@ -967,7 +883,7 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Chromatic Ruin Deluge',
-    description: 'Gain 15 White Flame; Gain 15 Black Flame; Gain 6 Eclipse Marks; Gain 2 Veil Shards; Gain 18 Monochromatic Shards; Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Draw 2 cards; Set chain multiplier to x5.0; If White Flame equals Black Flame, Spend 6 Eclipse Marks; +3000 Oblivion; Shatter up to 3 Veil Shards (swap flames, +160.0 Oblivion per higher flame per shard); Empower the next card you play; +2900 Oblivion',
+    description: 'Gain 15 White Flame; Gain 15 Black Flame; Gain 6 Eclipse Marks; Gain 2 Veil Shards; Gain 18 Monochromatic Shards; Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Draw 2 cards; If White Flame equals Black Flame, Spend 6 Eclipse Marks; +3000 Oblivion; Shatter up to 3 Veil Shards (swap flames, +160.0 Oblivion per higher flame per shard); Empower the next card you play; +2900 Oblivion',
     artKey: 'inf_bgi_chromatic_ruin_deluge',
     // Role: BALANCED-FLAME INFINITE. +2 Veil Shards; inside flames-equal,
     // swaps 3 shards ? leans on its own balanced flame state for a guaranteed
@@ -980,11 +896,8 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
       { type: 'monochromatic_shards_gain', value: 18 },
       { type: 'look_top_take_drop', look: 10, take: 3, drop: 2 },
       { type: 'draw', value: 2 },
-      { type: 'chain_multiplier_set', value: 5.0 },
-      { type: 'conditional', condition: { type: 'black_glass_flames_equal' }, then: [{ type: 'eternal_stack_spend', stack: 'glass', value: 6 }, { type: 'oblivion_flat', value: 3000 }, { type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 160, consume: 3 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 2900 }] },
-    ],
-  },
-];
+      { type: 'conditional', condition: { type: 'black_glass_flames_equal' }, then: [{ type: 'eternal_stack_spend', stack: 'glass', value: 6 }, { type: 'oblivion_flat', value: 3000 }, { type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 160, consume: 3 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 2900 }] }],
+  }];
 
 export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
   {
@@ -993,17 +906,16 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Obsidian Covenant Colossus',
-    description: 'On play: Gain 14 Black Flame; Gain 5 Fracture; Gain 5 Eclipse Marks; Gain 3 Veil Shards; Gain 15 Monochromatic Shards; Discard 2 cards, then draw 5 cards; Salvage any 1 card; Set chain floor to x9.2; If you have 6+ Eclipse Marks, Cash out all Eclipse Marks (+600 Oblivion, +0.22 chain per stack); If you have 20+ Black Flame, Shatter all Veil Shards (swap flames, +150.0 Oblivion per higher flame per shard); +1900 Oblivion. While on board: +900 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 14 Black Flame; Gain 5 Fracture; Gain 5 Eclipse Marks; Gain 3 Veil Shards; Gain 15 Monochromatic Shards; Discard 2 cards, then draw 5 cards; Salvage any 1 card; If you have 6+ Eclipse Marks, Cash out all Eclipse Marks (+600 Oblivion per stack); If you have 20+ Black Flame, Shatter all Veil Shards (swap flames, +150.0 Oblivion per higher flame per shard); +1900 Oblivion. While on board: +900 Oblivion whenever you play an Ophanim while active',
     artKey: 'inf_bgi_obsidian_covenant_colossus',
     attacks: {
       unsynergized: {
         id: 'inf-bgi-obsidian-covenant-colossus:unsynergized',
         label: 'Unsynergized',
         name: 'Obsidian Covenant Vector Break',
-        description: '6265 base Oblivion · 6 cards cooldown · chain +1.65',
+        description: '6265 base Oblivion · 6 cards cooldown',
         baseOblivion: 6265,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'dark'],
       },
@@ -1011,10 +923,9 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
         id: 'inf-bgi-obsidian-covenant-colossus:synergized',
         label: 'Synergized',
         name: 'Obsidian Covenant Angelic Verdict',
-        description: '10651 base Oblivion · 7 cards cooldown · chain +1.81 · Requires Angel',
+        description: '10651 base Oblivion · 7 cards cooldown · Requires Angel',
         baseOblivion: 10651,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'dark'],
@@ -1031,10 +942,8 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
       { type: 'monochromatic_shards_gain', value: 15 },
       { type: 'discard_draw', discard: 2, draw: 5 },
       { type: 'salvage_any' },
-      { type: 'set_chain_floor', value: 9.2 },
-      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 600, chainPerStack: 0.22 }] },
-      { type: 'conditional', condition: { type: 'black_glass_black_flame_gte', value: 20 }, then: [{ type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 150 }, { type: 'oblivion_flat', value: 1900 }] },
-    ],
+      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 600 }] },
+      { type: 'conditional', condition: { type: 'black_glass_black_flame_gte', value: 20 }, then: [{ type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 150 }, { type: 'oblivion_flat', value: 1900 }] }],
   },
   {
     definitionId: 'inf-bgi-glassrose-leviathan',
@@ -1042,17 +951,16 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Glassrose Leviathan',
-    description: 'On play: Gain 14 White Flame; Gain 4 Fracture; Gain 4 Eclipse Marks; Gain 2 Veil Shards; Gain 15 Monochromatic Shards; Discard 2 cards, then draw 5 cards; Salvage any 1 card; Empower the next card you play; Set chain floor to x8.4; If you have 5+ Eclipse Marks, Spend 5 Eclipse Marks; +1800 Oblivion; Shatter up to 2 Veil Shards (swap flames, +200.0 Oblivion per higher flame per shard); Empower the next card you play. While on board: +780 Oblivion per card played while active',
+    description: 'On play: Gain 14 White Flame; Gain 4 Fracture; Gain 4 Eclipse Marks; Gain 2 Veil Shards; Gain 15 Monochromatic Shards; Discard 2 cards, then draw 5 cards; Salvage any 1 card; Empower the next card you play; If you have 5+ Eclipse Marks, Spend 5 Eclipse Marks; +1800 Oblivion; Shatter up to 2 Veil Shards (swap flames, +200.0 Oblivion per higher flame per shard); Empower the next card you play. While on board: +780 Oblivion per card played while active',
     artKey: 'inf_bgi_glassrose_leviathan',
     attacks: {
       unsynergized: {
         id: 'inf-bgi-glassrose-leviathan:unsynergized',
         label: 'Unsynergized',
         name: 'Glassrose Leviathan Vector Break',
-        description: '7690 base Oblivion · 6 cards cooldown · chain +1.65',
+        description: '7690 base Oblivion · 6 cards cooldown',
         baseOblivion: 7690,
         cooldownCards: 6,
-        chainScaling: 1.65,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'dark'],
       },
@@ -1060,10 +968,9 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
         id: 'inf-bgi-glassrose-leviathan:synergized',
         label: 'Synergized',
         name: 'Glassrose Leviathan Angelic Verdict',
-        description: '13073 base Oblivion · 7 cards cooldown · chain +1.81 · Requires Angel',
+        description: '13073 base Oblivion · 7 cards cooldown · Requires Angel',
         baseOblivion: 13073,
         cooldownCards: 7,
-        chainScaling: 1.81,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'dark'],
@@ -1081,11 +988,8 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
       { type: 'discard_draw', discard: 2, draw: 5 },
       { type: 'salvage_any' },
       { type: 'multiply_next' },
-      { type: 'set_chain_floor', value: 8.4 },
-      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'glass', value: 5 }, { type: 'oblivion_flat', value: 1800 }, { type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 200, consume: 2 }, { type: 'multiply_next' }] },
-    ],
-  },
-];
+      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'glass', value: 5 }, { type: 'oblivion_flat', value: 1800 }, { type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 200, consume: 2 }, { type: 'multiply_next' }] }],
+  }];
 
 export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
   {
@@ -1094,12 +998,12 @@ export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Inferno of Two Truths',
-      description: 'On play: Gain 10 White Flame; Gain 10 Black Flame; Gain 5 Eclipse Marks; Gain 5 Veil Shards; Gain 12 Monochromatic Shards; Discard 2 cards, then draw 4 cards; Salvage any 1 card; Set chain floor to x8.0; Set chain multiplier to x4.5; Cash out all Eclipse Marks (+550 Oblivion, +0.2 chain per stack); +2200 Oblivion; If White Flame equals Black Flame, +2400 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played',
+      description: 'On play: Gain 10 White Flame; Gain 10 Black Flame; Gain 5 Eclipse Marks; Gain 5 Veil Shards; Gain 12 Monochromatic Shards; Discard 2 cards, then draw 4 cards; Salvage any 1 card; Cash out all Eclipse Marks (+550 Oblivion per stack); +2200 Oblivion; If White Flame equals Black Flame, +2400 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played',
     artKey: 'inf_bgi_inferno_of_two_truths',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 300 }],
       // Role: BALANCED VEIL-SHARD INFINITE BATTERY (Cherubim). +5 shards; no
       // swap of its own ? feeds adjacent Seraphim/Angel swappers.
-      onPlayEffects: [{ type: 'black_glass_white_flame_gain', value: 10 }, { type: 'black_glass_black_flame_gain', value: 10 }, { type: 'eternal_stack_gain', stack: 'glass', value: 5 }, { type: 'set_secondary_gain', kind: 'glass', value: 5 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'discard_draw', discard: 2, draw: 4 }, { type: 'salvage_any' }, { type: 'set_chain_floor', value: 8.0 }, { type: 'chain_multiplier_set', value: 4.5 }, { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 550, chainPerStack: 0.20 }, { type: 'oblivion_flat', value: 2200 }, { type: 'conditional', condition: { type: 'black_glass_flames_equal' }, then: [{ type: 'oblivion_flat', value: 2400 }] }],
+      onPlayEffects: [{ type: 'black_glass_white_flame_gain', value: 10 }, { type: 'black_glass_black_flame_gain', value: 10 }, { type: 'eternal_stack_gain', stack: 'glass', value: 5 }, { type: 'set_secondary_gain', kind: 'glass', value: 5 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'discard_draw', discard: 2, draw: 4 }, { type: 'salvage_any' }, { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 550 }, { type: 'oblivion_flat', value: 2200 }, { type: 'conditional', condition: { type: 'black_glass_flames_equal' }, then: [{ type: 'oblivion_flat', value: 2400 }] }],
   },
   {
     definitionId: 'inf-bgi-ashen-cinder-cathedral',
@@ -1107,14 +1011,13 @@ export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Ashen Cinder Cathedral',
-      description: 'On play: Gain 12 Black Flame; Gain 4 Fracture; Gain 4 Eclipse Marks; Gain 4 Veil Shards; Gain 12 Monochromatic Shards; Salvage any 1 card; Draw 6 cards; Empower the next card you play; If you have 6+ Eclipse Marks, Cash out all Eclipse Marks (+700 Oblivion, +0.3 chain per stack). While on board: Adjacent active Seraphim gain +240 Oblivion per card played',
+      description: 'On play: Gain 12 Black Flame; Gain 4 Fracture; Gain 4 Eclipse Marks; Gain 4 Veil Shards; Gain 12 Monochromatic Shards; Salvage any 1 card; Draw 6 cards; Empower the next card you play; If you have 6+ Eclipse Marks, Cash out all Eclipse Marks (+700 Oblivion per stack). While on board: Adjacent active Seraphim gain +240 Oblivion per card played',
     artKey: 'inf_bgi_ashen_cinder_cathedral',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 240 }],
       // Role: BLACK-FLAME CHERUBIM BATTERY. +4 shards; no swap ? a denser
       // black-aligned variant of the back-row reservoir.
-      onPlayEffects: [{ type: 'black_glass_black_flame_gain', value: 12 }, { type: 'black_glass_fracture_gain', value: 4 }, { type: 'eternal_stack_gain', stack: 'glass', value: 4 }, { type: 'set_secondary_gain', kind: 'glass', value: 4 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'salvage_any' }, { type: 'draw', value: 6 }, { type: 'multiply_next' }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 700, chainPerStack: 0.30 }] }],
-  },
-];
+      onPlayEffects: [{ type: 'black_glass_black_flame_gain', value: 12 }, { type: 'black_glass_fracture_gain', value: 4 }, { type: 'eternal_stack_gain', stack: 'glass', value: 4 }, { type: 'set_secondary_gain', kind: 'glass', value: 4 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'salvage_any' }, { type: 'draw', value: 6 }, { type: 'multiply_next' }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 700 }] }],
+  }];
 
 export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
   {
@@ -1123,13 +1026,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Vaelmor, Umbra Sovereign',
-    description: 'On summon: Gain 14 White Flame; Gain 14 Black Flame; Gain 4 Fracture; Gain 6 Eclipse Marks; Gain 3 Veil Shards; Gain 18 Monochromatic Shards; Discard 3 cards, then draw 8 cards; Salvage any 1 card; Set chain floor to x10.0; +2500 Oblivion. After 4 cards played: Swap White Flame and Black Flame; Fracture collapses by 0.5; Cash out all Eclipse Marks (+750 Oblivion, +0.3 chain per stack); Shatter all Veil Shards (swap flames, +170.0 Oblivion per higher flame per shard); Discard 3 cards, then draw 7 cards; Shuffle discard into deck; Set chain multiplier to x6.0; +3800 Oblivion; Gain 15 Monochromatic Shards. While on board: +640 Oblivion per card played while on board',
+    description: 'On summon: Gain 14 White Flame; Gain 14 Black Flame; Gain 4 Fracture; Gain 6 Eclipse Marks; Gain 3 Veil Shards; Gain 18 Monochromatic Shards; Discard 3 cards, then draw 8 cards; Salvage any 1 card; +2500 Oblivion. After 4 cards played: Swap White Flame and Black Flame; Fracture collapses by 0.5; Cash out all Eclipse Marks (+750 Oblivion per stack); Shatter all Veil Shards (swap flames, +170.0 Oblivion per higher flame per shard); Discard 3 cards, then draw 7 cards; Shuffle discard into deck; +3800 Oblivion; Gain 15 Monochromatic Shards. While on board: +640 Oblivion per card played while on board',
     artKey: 'inf_bgi_vaelmor_umbra_sovereign',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 3 },
-      { type: 'cherubim_active_gte', value: 1 },
-    ],
+      { type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
       { type: 'black_glass_white_flame_gain', value: 14 },
       { type: 'black_glass_black_flame_gain', value: 14 },
@@ -1139,36 +1041,31 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       { type: 'monochromatic_shards_gain', value: 18 },
       { type: 'discard_draw', discard: 3, draw: 8 },
       { type: 'salvage_any' },
-      { type: 'set_chain_floor', value: 10.0 },
-      { type: 'oblivion_flat', value: 2500 },
-    ],
+      { type: 'oblivion_flat', value: 2500 }],
     activatedAbility: {
       name: 'Sovereign Scission',
       cardsPlayedRequirement: 4,
-      description: 'Swap White Flame and Black Flame; Fracture collapses by 0.5; Cash out all Eclipse Marks (+750 Oblivion, +0.3 chain per stack); Shatter all Veil Shards (swap flames, +170.0 Oblivion per higher flame per shard); Discard 3 cards, then draw 7 cards; Shuffle discard into deck; Set chain multiplier to x6.0; +3800 Oblivion; Gain 15 Monochromatic Shards',
+      description: 'Swap White Flame and Black Flame; Fracture collapses by 0.5; Cash out all Eclipse Marks (+750 Oblivion per stack); Shatter all Veil Shards (swap flames, +170.0 Oblivion per higher flame per shard); Discard 3 cards, then draw 7 cards; Shuffle discard into deck; +3800 Oblivion; Gain 15 Monochromatic Shards',
       // Role: APEX SWAP-AND-SHARD ANGEL. Swaps flames, then swaps every banked
       // Veil Shard at the highest coefficient in the band ? dual-payoff finale.
       effects: [
         { type: 'black_glass_flames_swap' },
         { type: 'black_glass_fracture_collapse', value: 0.5 },
-        { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 750, chainPerStack: 0.30 },
+        { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 750 },
         { type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 170 },
         { type: 'discard_draw', discard: 3, draw: 7 },
         { type: 'shuffle_discard' },
-        { type: 'chain_multiplier_set', value: 6.0 },
         { type: 'oblivion_flat', value: 3800 },
-        { type: 'monochromatic_shards_gain', value: 15 },
-      ],
+        { type: 'monochromatic_shards_gain', value: 15 }],
     },
     attacks: {
       primary: {
         id: 'inf-bgi-vaelmor-umbra-sovereign:primary',
         label: 'Primary',
         name: 'Vaelmor Umbra Ordinance',
-        description: '4250 base Oblivion · 6 cards cooldown · chain +1.50',
+        description: '4250 base Oblivion · 6 cards cooldown',
         baseOblivion: 4250,
         cooldownCards: 6,
-        chainScaling: 1.50,
         costs: [],
         tags: ['angel', 'primary', 'dark'],
       },
@@ -1176,10 +1073,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'inf-bgi-vaelmor-umbra-sovereign:exalted',
         label: 'Exalted',
         name: 'Vaelmor Umbra Throne Decree',
-        description: '11690 base Oblivion · 9 cards cooldown · chain +1.76',
+        description: '11690 base Oblivion · 9 cards cooldown',
         baseOblivion: 11690,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'dark'],
       },
@@ -1192,13 +1088,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Midplace Apocalypse',
-    description: 'On summon: Gain 16 White Flame; Gain 16 Black Flame; Gain 5 Eclipse Marks; Gain 3 Veil Shards; Gain 18 Monochromatic Shards; Register state: Collapse Pending += 1; Discard 2 cards, then draw 6 cards; Salvage any 1 card; Empower the next card you play; Set chain floor to x9.4. After 5 cards played: Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse Marks; Cash out all Eclipse Marks (+700 Oblivion, +0.28 chain per stack); Salvage any 1 card; Draw 5 cards; Set chain floor to x11.2; +3500 Oblivion; If Fracture is 14+, Shatter all Veil Shards (swap flames, +155.0 Oblivion per higher flame per shard); +2500 Oblivion. While on board: +620 Oblivion per card played while on board',
+    description: 'On summon: Gain 16 White Flame; Gain 16 Black Flame; Gain 5 Eclipse Marks; Gain 3 Veil Shards; Gain 18 Monochromatic Shards; Register state: Collapse Pending += 1; Discard 2 cards, then draw 6 cards; Salvage any 1 card; Empower the next card you play. After 5 cards played: Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse Marks; Cash out all Eclipse Marks (+700 Oblivion per stack); Salvage any 1 card; Draw 5 cards; +3500 Oblivion; If Fracture is 14+, Shatter all Veil Shards (swap flames, +155.0 Oblivion per higher flame per shard); +2500 Oblivion. While on board: +620 Oblivion per card played while on board',
     artKey: 'inf_bgi_midplace_apocalypse',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },
-      { type: 'cherubim_active_gte', value: 2 },
-    ],
+      { type: 'cherubim_active_gte', value: 2 }],
     onSummonEffects: [
       { type: 'black_glass_white_flame_gain', value: 16 },
       { type: 'black_glass_black_flame_gain', value: 16 },
@@ -1208,36 +1103,31 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       { type: 'black_glass_register_state', key: 'collapse_pending', value: 1 },
       { type: 'discard_draw', discard: 2, draw: 6 },
       { type: 'salvage_any' },
-      { type: 'multiply_next' },
-      { type: 'set_chain_floor', value: 9.4 },
-    ],
+      { type: 'multiply_next' }],
     activatedAbility: {
       name: 'Plateau of Ruin',
       cardsPlayedRequirement: 5,
-      description: 'Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse Marks; Cash out all Eclipse Marks (+700 Oblivion, +0.28 chain per stack); Salvage any 1 card; Draw 5 cards; Set chain floor to x11.2; +3500 Oblivion; If Fracture is 14+, Shatter all Veil Shards (swap flames, +155.0 Oblivion per higher flame per shard); +2500 Oblivion',
+      description: 'Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse Marks; Cash out all Eclipse Marks (+700 Oblivion per stack); Salvage any 1 card; Draw 5 cards; +3500 Oblivion; If Fracture is 14+, Shatter all Veil Shards (swap flames, +155.0 Oblivion per higher flame per shard); +2500 Oblivion',
       // Role: FRACTURE-GATED APEX. Veil-shard swap is locked behind the
       // fracture?14 conditional ? rewards builds that crack heavy fracture.
       effects: [
         { type: 'black_glass_fracture_gain', value: 8 },
         { type: 'black_glass_fracture_collapse', value: 0.5 },
         { type: 'eternal_stack_gain', stack: 'glass', value: 4 },
-        { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 700, chainPerStack: 0.28 },
+        { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 700 },
         { type: 'salvage_any' },
         { type: 'draw', value: 5 },
-        { type: 'set_chain_floor', value: 11.2 },
         { type: 'oblivion_flat', value: 3500 },
-        { type: 'conditional', condition: { type: 'black_glass_fracture_gte', value: 14 }, then: [{ type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 155 }, { type: 'oblivion_flat', value: 2500 }] },
-      ],
+        { type: 'conditional', condition: { type: 'black_glass_fracture_gte', value: 14 }, then: [{ type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 155 }, { type: 'oblivion_flat', value: 2500 }] }],
     },
     attacks: {
       primary: {
         id: 'inf-bgi-midplace-apocalypse:primary',
         label: 'Primary',
         name: 'Midplace Apocalypse Ordinance',
-        description: '4210 base Oblivion · 6 cards cooldown · chain +1.50',
+        description: '4210 base Oblivion · 6 cards cooldown',
         baseOblivion: 4210,
         cooldownCards: 6,
-        chainScaling: 1.50,
         costs: [],
         tags: ['angel', 'primary', 'dark'],
       },
@@ -1245,10 +1135,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'inf-bgi-midplace-apocalypse:exalted',
         label: 'Exalted',
         name: 'Midplace Apocalypse Throne Decree',
-        description: '11580 base Oblivion · 9 cards cooldown · chain +1.76',
+        description: '11580 base Oblivion · 9 cards cooldown',
         baseOblivion: 11580,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'dark'],
       },
@@ -1261,11 +1150,11 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Polar Fission',
-    description: 'On summon: Gain 15 Radiance; Gain 2 Strain; Draw 5 cards; Set chain floor to x4.2; Gain 16 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Vent 9999 Strain; Gain 10 Radiance; Draw 5 cards; Empower the next card you play; +720 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +400.0 Oblivion per pulse · Frost: +0.8 draw per pulse). While on board: +760 Oblivion per card played while on board',
+    description: 'On summon: Gain 15 Radiance; Gain 2 Strain; Draw 5 cards; Gain 16 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Vent 9999 Strain; Gain 10 Radiance; Draw 5 cards; Empower the next card you play; +720 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +400.0 Oblivion per pulse · Frost: +0.8 draw per pulse). While on board: +760 Oblivion per card played while on board',
     artKey: 'sv_infinite_polar_fission',
     summonCost: ['sv-ser-polar-circuit', 'sv-ser-icegrid'],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }, { type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 15 }, { type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'set_chain_floor', value: 4.2 }, { type: 'arctic_charge_gain', value: 16 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 15 }, { type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'arctic_charge_gain', value: 16 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
     activatedAbility: {
       name: 'Fission Crown',
       cardsPlayedRequirement: 6,
@@ -1279,10 +1168,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-polar-fission:primary',
         label: 'Primary',
         name: 'Polar Fission Ordinance',
-        description: '4040 base Oblivion · 5 cards cooldown · chain +1.25',
+        description: '4040 base Oblivion · 5 cards cooldown',
         baseOblivion: 4220,
         cooldownCards: 6,
-        chainScaling: 1.5,
         costs: [],
         tags: ['angel', 'primary', 'mechanical', 'snowbound', 'voltage'],
       },
@@ -1290,10 +1178,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-polar-fission:exalted',
         label: 'Exalted',
         name: 'Polar Fission Throne Decree',
-        description: '17551 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 39 Strain',
+        description: '17551 base Oblivion · 8 cards cooldown · Cost: spend 39 Strain',
         baseOblivion: 11980,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'mechanical', 'snowbound', 'voltage'],
       },
@@ -1306,28 +1193,27 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Neon Snowfall',
-    description: 'On summon: Gain 12 Radiance; Gain 1 Strain; Draw 6 cards; Set chain multiplier to x4.4; Gain 16 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Set chain floor to x5.1; Gain 8 Arctic Charge; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +0.6 draw per pulse). While on board: Chain grows +0.16 per card played while on board',
+    description: 'On summon: Gain 12 Radiance; Gain 1 Strain; Draw 6 cards; Gain 16 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Gain 8 Arctic Charge; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +0.6 draw per pulse). While on board: +760 Oblivion per card played while on board',
     artKey: 'sv_infinite_neon_snowfall',
     summonCost: ['sv-cher-station-nullpoint', 'sv-cher-aeldris'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 12 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 6 }, { type: 'chain_multiplier_set', value: 4.4 }, { type: 'arctic_charge_gain', value: 16 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 12 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 6 }, { type: 'arctic_charge_gain', value: 16 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
     activatedAbility: {
       name: 'Aurora Shock',
       cardsPlayedRequirement: 6,
-      description: 'Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Set chain floor to x5.1; Gain 8 Arctic Charge; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +0.6 draw per pulse)',
+      description: 'Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Gain 8 Arctic Charge; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +0.6 draw per pulse)',
       // Role: CHAIN-FOCUSED PULSE SEEDER. Seeds 3, then partial 3-pulse discharge
       // leaves residue banked for downstream finishers.
-      effects: [{ type: 'radiance_gain', value: 8 }, { type: 'draw', value: 5 }, { type: 'oblivion_flat', value: 840 }, { type: 'set_chain_floor', value: 5.1 }, { type: 'arctic_charge_gain', value: 8 }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 380, frostDrawPerPulse: 0.6, consume: 3 }],
+      effects: [{ type: 'radiance_gain', value: 8 }, { type: 'draw', value: 5 }, { type: 'oblivion_flat', value: 840 }, { type: 'arctic_charge_gain', value: 8 }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 380, frostDrawPerPulse: 0.6, consume: 3 }],
     },
     attacks: {
       primary: {
         id: 'sv-infinite-neon-snowfall:primary',
         label: 'Primary',
         name: 'Neon Snowfall Ordinance',
-        description: '4300 base Oblivion · 5 cards cooldown · chain +1.25',
+        description: '4300 base Oblivion · 5 cards cooldown',
         baseOblivion: 4510,
         cooldownCards: 6,
-        chainScaling: 1.5,
         costs: [],
         tags: ['angel', 'primary', 'mechanical', 'snowbound', 'voltage'],
       },
@@ -1335,15 +1221,14 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-neon-snowfall:exalted',
         label: 'Exalted',
         name: 'Neon Snowfall Throne Decree',
-        description: '18433 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 39 Strain',
+        description: '18433 base Oblivion · 8 cards cooldown · Cost: spend 39 Strain',
         baseOblivion: 12640,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'mechanical', 'snowbound', 'voltage'],
       },
     },
-    baseStats: { basePower: 0, bonusType: 'chain_bonus', bonusValue: 0.16 },
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 760 },
   },
   {
     definitionId: 'sv-infinite-crystal-storm',
@@ -1369,10 +1254,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-crystal-storm:primary',
         label: 'Primary',
         name: 'Crystal Storm Ordinance',
-        description: '4460 base Oblivion · 5 cards cooldown · chain +1.25',
+        description: '4460 base Oblivion · 5 cards cooldown',
         baseOblivion: 4680,
         cooldownCards: 6,
-        chainScaling: 1.5,
         costs: [],
         tags: ['angel', 'primary', 'mechanical', 'snowbound', 'voltage'],
       },
@@ -1380,10 +1264,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-crystal-storm:exalted',
         label: 'Exalted',
         name: 'Crystal Storm Throne Decree',
-        description: '18981 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 39 Strain',
+        description: '18981 base Oblivion · 8 cards cooldown · Cost: spend 39 Strain',
         baseOblivion: 12980,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'mechanical', 'snowbound', 'voltage'],
       },
@@ -1396,11 +1279,11 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Throne',
-    description: 'On summon: Gain 3 Strain; Gain 14 Radiance; Draw 5 cards; Set chain floor to x5.6; +1020 Oblivion; Gain 18 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 2 Strain; Gain 8 Radiance; Draw 5 cards; Empower the next card you play; +1080 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +420.0 Oblivion per pulse · Frost: +0.8 draw per pulse). While on board: +880 Oblivion per card played while on board',
+    description: 'On summon: Gain 3 Strain; Gain 14 Radiance; Draw 5 cards; +1020 Oblivion; Gain 18 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 2 Strain; Gain 8 Radiance; Draw 5 cards; Empower the next card you play; +1080 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +420.0 Oblivion per pulse · Frost: +0.8 draw per pulse). While on board: +880 Oblivion per card played while on board',
     artKey: 'sv_infinite_black_ice_throne',
     summonCost: ['sv-eternal-white-static', 'sv-cher-station-nullpoint'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 14 }, { type: 'draw', value: 5 }, { type: 'set_chain_floor', value: 5.6 }, { type: 'oblivion_flat', value: 1020 }, { type: 'arctic_charge_gain', value: 18 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
+    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 14 }, { type: 'draw', value: 5 }, { type: 'oblivion_flat', value: 1020 }, { type: 'arctic_charge_gain', value: 18 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
     activatedAbility: {
       name: 'Throne Freeze',
       cardsPlayedRequirement: 6,
@@ -1414,10 +1297,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-black-ice-throne:primary',
         label: 'Primary',
         name: 'Black Ice Throne Ordinance',
-        description: '4620 base Oblivion · 5 cards cooldown · chain +1.25',
+        description: '4620 base Oblivion · 5 cards cooldown',
         baseOblivion: 4860,
         cooldownCards: 6,
-        chainScaling: 1.5,
         costs: [],
         tags: ['angel', 'primary', 'mechanical', 'snowbound', 'voltage'],
       },
@@ -1425,10 +1307,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-black-ice-throne:exalted',
         label: 'Exalted',
         name: 'Black Ice Throne Decree',
-        description: '19802 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 39 Strain',
+        description: '19802 base Oblivion · 8 cards cooldown · Cost: spend 39 Strain',
         baseOblivion: 13540,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'mechanical', 'snowbound', 'voltage'],
       },
@@ -1441,11 +1322,11 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Aurora Collapse',
-    description: 'On summon: Gain 18 Radiance; Gain 3 Strain; Draw 7 cards; Set chain multiplier to x5.2; +1200 Oblivion; Gain 20 Arctic Charge; Gain 4 Static Pulses. After 7 cards played: Vent 9999 Strain; Gain 15 Radiance; Draw 6 cards; Empower the next card you play; +1260 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +520.0 Oblivion per pulse · Frost: +1.2 draw per pulse). While on board: Chain grows +0.18 per card played while on board',
+    description: 'On summon: Gain 18 Radiance; Gain 3 Strain; Draw 7 cards; +1200 Oblivion; Gain 20 Arctic Charge; Gain 4 Static Pulses. After 7 cards played: Vent 9999 Strain; Gain 15 Radiance; Draw 6 cards; Empower the next card you play; +1260 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +520.0 Oblivion per pulse · Frost: +1.2 draw per pulse). While on board: +940 Oblivion per card played while on board',
     artKey: 'sv_infinite_aurora_collapse',
     summonCost: ['sv-angel-voltage-patriarch', 'sv-eternal-frost-charge'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 3 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'strain_gain', value: 3 }, { type: 'draw', value: 7 }, { type: 'chain_multiplier_set', value: 5.2 }, { type: 'oblivion_flat', value: 1200 }, { type: 'arctic_charge_gain', value: 20 }, { type: 'set_secondary_gain', kind: 'snow', value: 4 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'strain_gain', value: 3 }, { type: 'draw', value: 7 }, { type: 'oblivion_flat', value: 1200 }, { type: 'arctic_charge_gain', value: 20 }, { type: 'set_secondary_gain', kind: 'snow', value: 4 }],
     activatedAbility: {
       name: 'Collapse Horizon',
       cardsPlayedRequirement: 7,
@@ -1459,10 +1340,9 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-aurora-collapse:primary',
         label: 'Primary',
         name: 'Aurora Collapse Ordinance',
-        description: '4920 base Oblivion · 5 cards cooldown · chain +1.25',
+        description: '4920 base Oblivion · 5 cards cooldown',
         baseOblivion: 5120,
         cooldownCards: 6,
-        chainScaling: 1.5,
         costs: [],
         tags: ['angel', 'primary', 'mechanical', 'snowbound', 'voltage'],
       },
@@ -1470,17 +1350,15 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         id: 'sv-infinite-aurora-collapse:exalted',
         label: 'Exalted',
         name: 'Aurora Collapse Throne Decree',
-        description: '20806 base Oblivion · 8 cards cooldown · chain +1.65 · Cost: spend 40 Strain',
+        description: '20806 base Oblivion · 8 cards cooldown · Cost: spend 40 Strain',
         baseOblivion: 14120,
         cooldownCards: 9,
-        chainScaling: 1.76,
         costs: [],
         tags: ['angel', 'exalted', 'mechanical', 'snowbound', 'voltage'],
       },
     },
-    baseStats: { basePower: 0, bonusType: 'chain_bonus', bonusValue: 0.18 },
-  },
-];
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 940 },
+  }];
 
 export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
   {
@@ -1489,7 +1367,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Polar Cataclysm',
-    description: 'Gain 20 Radiance; Gain 3 Strain; Draw 6 cards; Set chain floor to x10.5; Empower the next card you play; +3200 Oblivion; Gain 20 Arctic Charge; Gain 3 Static Pulses; Discharge all Static Pulses (Voltage: +500.0 Oblivion per pulse · Frost: +1.0 draw per pulse)',
+    description: 'Gain 20 Radiance; Gain 3 Strain; Draw 6 cards; Empower the next card you play; +3200 Oblivion; Gain 20 Arctic Charge; Gain 3 Static Pulses; Discharge all Static Pulses (Voltage: +500.0 Oblivion per pulse · Frost: +1.0 draw per pulse)',
     artKey: 'inf_sv_polar_cataclysm',
     // Role: SELF-CASHOUT FINISHER. Seeds 3 pulses and discharges them in the
     // same play ? immediate +draws spike.
@@ -1497,13 +1375,11 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'radiance_gain', value: 20 },
       { type: 'strain_gain', value: 3 },
       { type: 'draw', value: 6 },
-      { type: 'set_chain_floor', value: 10.5 },
       { type: 'multiply_next' },
       { type: 'oblivion_flat', value: 3200 },
       { type: 'arctic_charge_gain', value: 20 },
       { type: 'set_secondary_gain', kind: 'snow', value: 3 },
-      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 500, frostDrawPerPulse: 1.0 },
-    ],
+      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 500, frostDrawPerPulse: 1.0 }],
   },
   {
     definitionId: 'inf-sv-neon-deluge',
@@ -1511,7 +1387,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Neon Deluge',
-    description: 'Gain 2 Strain; Gain 10 Radiance; Look at the top 9 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Draw 2 cards; Set chain multiplier to x4.8; +2800 Oblivion; Gain 15 Arctic Charge; Gain 2 Static Pulses',
+    description: 'Gain 2 Strain; Gain 10 Radiance; Look at the top 9 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Draw 2 cards; +2800 Oblivion; Gain 15 Arctic Charge; Gain 2 Static Pulses',
     artKey: 'inf_sv_neon_deluge',
     // Role: PURE PULSE BATTERY. +2 Static Pulses, no discharge ? hoards for
     // downstream Aurora/Crystal finishers.
@@ -1520,11 +1396,9 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'radiance_gain', value: 10 },
       { type: 'look_top_take_drop', look: 9, take: 3, drop: 2 },
       { type: 'draw', value: 2 },
-      { type: 'chain_multiplier_set', value: 4.8 },
       { type: 'oblivion_flat', value: 2800 },
       { type: 'arctic_charge_gain', value: 15 },
-      { type: 'set_secondary_gain', kind: 'snow', value: 2 },
-    ],
+      { type: 'set_secondary_gain', kind: 'snow', value: 2 }],
   },
   {
     definitionId: 'inf-sv-crystal-maelstrom',
@@ -1532,7 +1406,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Crystal Maelstrom',
-    description: 'Gain 3 Strain; Gain 12 Radiance; Draw 5 cards; Set chain floor to x11.2; +3300 Oblivion; Gain 18 Arctic Charge; Gain 3 Static Pulses; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +0.8 draw per pulse)',
+    description: 'Gain 3 Strain; Gain 12 Radiance; Draw 5 cards; +3300 Oblivion; Gain 18 Arctic Charge; Gain 3 Static Pulses; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +0.8 draw per pulse)',
     artKey: 'inf_sv_crystal_maelstrom',
     // Role: MID-COEFFICIENT FINISHER. Seeds 3, discharges all banked pulses at
     // a modest 0.8 frost coefficient.
@@ -1540,12 +1414,10 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'strain_gain', value: 3 },
       { type: 'radiance_gain', value: 12 },
       { type: 'draw', value: 5 },
-      { type: 'set_chain_floor', value: 11.2 },
       { type: 'oblivion_flat', value: 3300 },
       { type: 'arctic_charge_gain', value: 18 },
       { type: 'set_secondary_gain', kind: 'snow', value: 3 },
-      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 460, frostDrawPerPulse: 0.8 },
-    ],
+      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 460, frostDrawPerPulse: 0.8 }],
   },
   {
     definitionId: 'inf-sv-black-ice-dominion',
@@ -1553,7 +1425,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Dominion',
-    description: 'Gain 3 Strain; Gain 14 Radiance; Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Draw 3 cards; Set chain floor to x9.8; +3100 Oblivion; Gain 18 Arctic Charge; Gain 4 Static Pulses',
+    description: 'Gain 3 Strain; Gain 14 Radiance; Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Draw 3 cards; +3100 Oblivion; Gain 18 Arctic Charge; Gain 4 Static Pulses',
     artKey: 'inf_sv_black_ice_dominion',
     // Role: BIG PULSE BATTERY + SCOUT. +4 Static Pulses; no discharge ?
     // the deck-thinning variant of the back-row reservoir.
@@ -1562,11 +1434,9 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'radiance_gain', value: 14 },
       { type: 'look_top_take_drop', look: 12, take: 4, drop: 1 },
       { type: 'draw', value: 3 },
-      { type: 'set_chain_floor', value: 9.8 },
       { type: 'oblivion_flat', value: 3100 },
       { type: 'arctic_charge_gain', value: 18 },
-      { type: 'set_secondary_gain', kind: 'snow', value: 4 },
-    ],
+      { type: 'set_secondary_gain', kind: 'snow', value: 4 }],
   },
   {
     definitionId: 'inf-sv-aurora-singularity',
@@ -1574,7 +1444,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Aurora Singularity',
-    description: 'Gain 25 Radiance; Gain 4 Strain; Draw 8 cards; Empower the next card you play; Set chain floor to x12.5; +3600 Oblivion; Gain 22 Arctic Charge; Gain 4 Static Pulses; Discharge all Static Pulses (Voltage: +550.0 Oblivion per pulse · Frost: +1.2 draw per pulse)',
+    description: 'Gain 25 Radiance; Gain 4 Strain; Draw 8 cards; Empower the next card you play; +3600 Oblivion; Gain 22 Arctic Charge; Gain 4 Static Pulses; Discharge all Static Pulses (Voltage: +550.0 Oblivion per pulse · Frost: +1.2 draw per pulse)',
     artKey: 'inf_sv_aurora_singularity',
     // Role: APEX OPHANIM FINISHER. Seeds 4 pulses, discharges them all at the
     // highest single-card Frost coefficient (1.2 draws per pulse).
@@ -1583,14 +1453,11 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'strain_gain', value: 4 },
       { type: 'draw', value: 8 },
       { type: 'multiply_next' },
-      { type: 'set_chain_floor', value: 12.5 },
       { type: 'oblivion_flat', value: 3600 },
       { type: 'arctic_charge_gain', value: 22 },
       { type: 'set_secondary_gain', kind: 'snow', value: 4 },
-      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 550, frostDrawPerPulse: 1.2 },
-    ],
-  },
-];
+      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 550, frostDrawPerPulse: 1.2 }],
+  }];
 
 // Flat export for registry
 
@@ -1603,8 +1470,7 @@ export const infiniteCards: Array<OphanimDefinition | SeraphimDefinition | Cheru
   ...blackGlassInfernoInfiniteSeraphims,
   ...blackGlassInfernoInfiniteCherubim,
   ...blackGlassInfernoInfiniteAngels,
-  ...snowboundVoltageInfiniteOphanims,
-];
+  ...snowboundVoltageInfiniteOphanims];
 
 // Combination recipes
 
@@ -1618,8 +1484,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-null-edict', count: 1 },
       { definitionId: 'btei-temporal-ruin', count: 1 },
       { definitionId: 'btei-voids-reaping', count: 1 },
-      { definitionId: 'btei-neutrality-zero-edict', count: 1 },
-    ],
+      { definitionId: 'btei-neutrality-zero-edict', count: 1 }],
   },
   {
     resultId: 'inf-void-cascade',
@@ -1628,16 +1493,14 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-temporal-ruin', count: 2 },
       { definitionId: 'btei-voids-reaping', count: 1 },
       { definitionId: 'btei-architects-manifold', count: 1 },
-      { definitionId: 'btei-convergence-of-eternity', count: 1 },
-    ],
+      { definitionId: 'btei-convergence-of-eternity', count: 1 }],
   },
   {
     resultId: 'inf-ash-kings-apocalypse',
     lore: 'The Ash Kings did not end; they became the conflagration that erases horizons.',
     ingredients: [
       { definitionId: 'btei-pyroabyss-ashfall-engine', count: 4 },
-      { definitionId: 'btei-pyroabyss-oblivion-phoenix', count: 1 },
-    ],
+      { definitionId: 'btei-pyroabyss-oblivion-phoenix', count: 1 }],
   },
   // Seraphim
   {
@@ -1648,8 +1511,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-eternal-vigil', count: 1 },
       { definitionId: 'btei-omniscient-fracture', count: 1 },
       { definitionId: 'btei-convergence-of-eternity', count: 1 },
-      { definitionId: 'btei-sovereign-domain', count: 1 },
-    ],
+      { definitionId: 'btei-sovereign-domain', count: 1 }],
   },
   {
     resultId: 'inf-null-apex',
@@ -1659,8 +1521,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-architects-manifold', count: 1 },
       { definitionId: 'btei-null-edict', count: 1 },
       { definitionId: 'btei-axiom-of-oblivion', count: 1 },
-      { definitionId: 'btei-sovereign-domain', count: 1 },
-    ],
+      { definitionId: 'btei-sovereign-domain', count: 1 }],
   },
   {
     resultId: 'inf-pyraxis-colossus',
@@ -1668,8 +1529,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-pyroabyss-infernal-archon', count: 2 },
       { definitionId: 'btei-pyroabyss-cinder-cataclysm', count: 2 },
-      { definitionId: 'btei-pyroabyss-hellrift-mandala', count: 1 },
-    ],
+      { definitionId: 'btei-pyroabyss-hellrift-mandala', count: 1 }],
   },
   // Cherubim
   {
@@ -1679,8 +1539,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-architects-manifold', count: 2 },
       { definitionId: 'btei-sovereign-domain', count: 1 },
       { definitionId: 'btei-neutrality-zero-edict', count: 1 },
-      { definitionId: 'btei-null-edict', count: 1 },
-    ],
+      { definitionId: 'btei-null-edict', count: 1 }],
   },
   {
     resultId: 'inf-annihilation-field',
@@ -1690,8 +1549,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-sovereign-domain', count: 1 },
       { definitionId: 'btei-voids-reaping', count: 1 },
       { definitionId: 'btei-axiom-of-oblivion', count: 1 },
-      { definitionId: 'btei-temporal-ruin', count: 1 },
-    ],
+      { definitionId: 'btei-temporal-ruin', count: 1 }],
   },
   {
     resultId: 'inf-pyroclasm-engine',
@@ -1700,8 +1558,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-pyroabyss-cinder-cataclysm', count: 2 },
       { definitionId: 'btei-pyroabyss-ashfall-engine', count: 1 },
       { definitionId: 'btei-pyroabyss-infernal-archon', count: 1 },
-      { definitionId: 'btei-light-choir-imperator', count: 1 },
-    ],
+      { definitionId: 'btei-light-choir-imperator', count: 1 }],
   },
   // Angels
   {
@@ -1712,8 +1569,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-convergence-of-eternity', count: 1 },
       { definitionId: 'btei-neutrality-void-throne', count: 1 },
       { definitionId: 'btei-sovereign-domain', count: 1 },
-      { definitionId: 'btei-architects-manifold', count: 1 },
-    ],
+      { definitionId: 'btei-architects-manifold', count: 1 }],
   },
   {
     resultId: 'inf-eternity-rupture',
@@ -1722,8 +1578,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-convergence-of-eternity', count: 2 },
       { definitionId: 'btei-sovereign-domain', count: 1 },
       { definitionId: 'btei-temporal-ruin', count: 1 },
-      { definitionId: 'btei-omniscient-fracture', count: 1 },
-    ],
+      { definitionId: 'btei-omniscient-fracture', count: 1 }],
   },
   {
     resultId: 'inf-riftborn-sovereign',
@@ -1731,8 +1586,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-pyroabyss-hellrift-mandala', count: 3 },
       { definitionId: 'btei-pyroabyss-infernal-archon', count: 1 },
-      { definitionId: 'btei-pyroabyss-ashfall-engine', count: 1 },
-    ],
+      { definitionId: 'btei-pyroabyss-ashfall-engine', count: 1 }],
   },
   {
     resultId: 'inf-prismatic-axiom-rain',
@@ -1742,8 +1596,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-prismatic-ninefold-accord', count: 1 },
       { definitionId: 'btei-prismatic-storm-memory', count: 1 },
       { definitionId: 'btei-prismatic-fracture-archive', count: 1 },
-      { definitionId: 'btei-prismatic-blindwars-reliquary', count: 1 },
-    ],
+      { definitionId: 'btei-prismatic-blindwars-reliquary', count: 1 }],
   },
   {
     resultId: 'inf-thornbound-last-procession',
@@ -1752,8 +1605,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-thornbound-gallowcrown-matron', count: 2 },
       { definitionId: 'btei-thornbound-briar-siege', count: 1 },
       { definitionId: 'btei-thornbound-red-march', count: 1 },
-      { definitionId: 'btei-thornbound-funeral-bramble', count: 1 },
-    ],
+      { definitionId: 'btei-thornbound-funeral-bramble', count: 1 }],
   },
   {
     resultId: 'inf-celestial-blackout',
@@ -1762,8 +1614,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-light-throne-of-morning', count: 2 },
       { definitionId: 'btei-light-sunbreak-canon', count: 1 },
       { definitionId: 'btei-light-choir-imperator', count: 1 },
-      { definitionId: 'btei-light-halo-dominion', count: 1 },
-    ],
+      { definitionId: 'btei-light-halo-dominion', count: 1 }],
   },
   {
     resultId: 'inf-machina-eternal-loop',
@@ -1772,8 +1623,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-mech-overclock-singularity', count: 2 },
       { definitionId: 'btei-mech-reactor-paradigm', count: 1 },
       { definitionId: 'btei-mech-thaumic-primevector', count: 1 },
-      { definitionId: 'btei-mech-brass-judicator', count: 1 },
-    ],
+      { definitionId: 'btei-mech-brass-judicator', count: 1 }],
   },
   {
     resultId: 'inf-prismatic-choir-splinter',
@@ -1783,8 +1633,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-prismatic-fracture-archive', count: 1 },
       { definitionId: 'btei-prismatic-ninefold-accord', count: 1 },
       { definitionId: 'btei-prismatic-blindwars-reliquary', count: 1 },
-      { definitionId: 'btei-prismatic-vorthum-edict', count: 1 },
-    ],
+      { definitionId: 'btei-prismatic-vorthum-edict', count: 1 }],
   },
   {
     resultId: 'inf-thorn-widow-engine',
@@ -1793,8 +1642,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-thornbound-cathedral-lancer', count: 1 },
       { definitionId: 'btei-thornbound-red-march', count: 1 },
       { definitionId: 'btei-thornbound-briar-siege', count: 1 },
-      { definitionId: 'btei-thornbound-gallowcrown-matron', count: 1 },
-    ],
+      { definitionId: 'btei-thornbound-gallowcrown-matron', count: 1 }],
   },
   {
     resultId: 'inf-lucent-cataclysm-archon',
@@ -1802,8 +1650,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-light-aureate-rapture', count: 1 },
       { definitionId: 'btei-light-choir-imperator', count: 3 },
-      { definitionId: 'btei-light-halo-dominion', count: 1 },
-    ],
+      { definitionId: 'btei-light-halo-dominion', count: 1 }],
   },
   {
     resultId: 'inf-brass-eidolon-prime',
@@ -1811,8 +1658,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-mech-furnace-ascension', count: 2 },
       { definitionId: 'btei-mech-brass-judicator', count: 2 },
-      { definitionId: 'btei-mech-thaumic-primevector', count: 1 },
-    ],
+      { definitionId: 'btei-mech-thaumic-primevector', count: 1 }],
   },
   {
     resultId: 'inf-prismatic-collapse-lattice',
@@ -1821,8 +1667,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-prismatic-blindwars-reliquary', count: 2 },
       { definitionId: 'btei-prismatic-storm-memory', count: 1 },
       { definitionId: 'btei-prismatic-fracture-archive', count: 1 },
-      { definitionId: 'btei-prismatic-ninefold-accord', count: 1 },
-    ],
+      { definitionId: 'btei-prismatic-ninefold-accord', count: 1 }],
   },
   {
     resultId: 'inf-gravebloom-singularity',
@@ -1832,8 +1677,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-thornbound-funeral-bramble', count: 1 },
       { definitionId: 'btei-thornbound-gallowcrown-matron', count: 1 },
       { definitionId: 'btei-thornbound-cathedral-lancer', count: 1 },
-      { definitionId: 'btei-thornbound-briar-siege', count: 1 },
-    ],
+      { definitionId: 'btei-thornbound-briar-siege', count: 1 }],
   },
   {
     resultId: 'inf-heliarch-eclipse-engine',
@@ -1842,8 +1686,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-light-choir-imperator', count: 1 },
       { definitionId: 'btei-light-halo-dominion', count: 1 },
       { definitionId: 'btei-light-throne-of-morning', count: 2 },
-      { definitionId: 'btei-light-sunbreak-canon', count: 1 },
-    ],
+      { definitionId: 'btei-light-sunbreak-canon', count: 1 }],
   },
   {
     resultId: 'inf-mech-entropy-foundry',
@@ -1853,8 +1696,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-mech-reactor-paradigm', count: 1 },
       { definitionId: 'btei-mech-thaumic-primevector', count: 1 },
       { definitionId: 'btei-mech-overclock-singularity', count: 1 },
-      { definitionId: 'btei-mech-furnace-ascension', count: 1 },
-    ],
+      { definitionId: 'btei-mech-furnace-ascension', count: 1 }],
   },
   {
     resultId: 'inf-prismatic-judgement-array',
@@ -1863,8 +1705,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-prismatic-ninefold-accord', count: 2 },
       { definitionId: 'btei-prismatic-blindwars-reliquary', count: 1 },
       { definitionId: 'btei-prismatic-vorthum-edict', count: 1 },
-      { definitionId: 'btei-prismatic-storm-memory', count: 1 },
-    ],
+      { definitionId: 'btei-prismatic-storm-memory', count: 1 }],
   },
   {
     resultId: 'inf-thornbound-elegy-titan',
@@ -1872,8 +1713,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-thornbound-funeral-bramble', count: 3 },
       { definitionId: 'btei-thornbound-gallowcrown-matron', count: 1 },
-      { definitionId: 'btei-thornbound-cathedral-lancer', count: 1 },
-    ],
+      { definitionId: 'btei-thornbound-cathedral-lancer', count: 1 }],
   },
   {
     resultId: 'inf-mechanical-apotheosis-core',
@@ -1883,8 +1723,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-mech-reactor-paradigm', count: 1 },
       { definitionId: 'btei-mech-overclock-singularity', count: 1 },
       { definitionId: 'btei-mech-brass-judicator', count: 1 },
-      { definitionId: 'btei-mech-furnace-ascension', count: 1 },
-    ],
+      { definitionId: 'btei-mech-furnace-ascension', count: 1 }],
   },
   // Black Glass Inferno
   {
@@ -1893,8 +1732,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-bgi-cindershard-lexicon', count: 2 },
       { definitionId: 'btei-bgi-inferborn-prophecy', count: 1 },
-      { definitionId: 'btei-bgi-elegy-of-veth-serath', count: 1 },
-    ],
+      { definitionId: 'btei-bgi-elegy-of-veth-serath', count: 1 }],
   },
   {
     resultId: 'inf-bgi-chromatic-ruin-deluge',
@@ -1902,8 +1740,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-bgi-blackglass-catastrophe', count: 3 },
       { definitionId: 'btei-bgi-nocturne-of-embers', count: 1 },
-      { definitionId: 'btei-bgi-throne-of-cinders', count: 1 },
-    ],
+      { definitionId: 'btei-bgi-throne-of-cinders', count: 1 }],
   },
   {
     resultId: 'inf-bgi-obsidian-covenant-colossus',
@@ -1911,8 +1748,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-bgi-throne-of-cinders', count: 2 },
       { definitionId: 'btei-bgi-velplane-ossuary', count: 1 },
-      { definitionId: 'btei-bgi-cindershard-lexicon', count: 1 },
-    ],
+      { definitionId: 'btei-bgi-cindershard-lexicon', count: 1 }],
   },
   {
     resultId: 'inf-bgi-glassrose-leviathan',
@@ -1920,8 +1756,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-bgi-rosecrown-annihilator', count: 2 },
       { definitionId: 'btei-bgi-crystal-war-sutures', count: 1 },
-      { definitionId: 'btei-bgi-silver-sorrow-archwyrm', count: 1 },
-    ],
+      { definitionId: 'btei-bgi-silver-sorrow-archwyrm', count: 1 }],
   },
   {
     resultId: 'inf-bgi-inferno-of-two-truths',
@@ -1929,8 +1764,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-bgi-inferborn-prophecy', count: 2 },
       { definitionId: 'btei-bgi-nocturne-of-embers', count: 1 },
-      { definitionId: 'btei-bgi-crystal-war-sutures', count: 1 },
-    ],
+      { definitionId: 'btei-bgi-crystal-war-sutures', count: 1 }],
   },
   {
     resultId: 'inf-bgi-ashen-cinder-cathedral',
@@ -1938,8 +1772,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-bgi-throne-of-cinders', count: 2 },
       { definitionId: 'btei-bgi-elegy-of-veth-serath', count: 1 },
-      { definitionId: 'btei-bgi-cindershard-lexicon', count: 1 },
-    ],
+      { definitionId: 'btei-bgi-cindershard-lexicon', count: 1 }],
   },
   {
     resultId: 'inf-bgi-vaelmor-umbra-sovereign',
@@ -1947,8 +1780,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-bgi-silver-sorrow-archwyrm', count: 2 },
       { definitionId: 'btei-bgi-velplane-ossuary', count: 1 },
-      { definitionId: 'btei-bgi-elegy-of-veth-serath', count: 1 },
-    ],
+      { definitionId: 'btei-bgi-elegy-of-veth-serath', count: 1 }],
   },
   {
     resultId: 'inf-bgi-midplace-apocalypse',
@@ -1956,8 +1788,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'btei-bgi-velplane-ossuary', count: 2 },
       { definitionId: 'btei-bgi-elegy-of-veth-serath', count: 2 },
-      { definitionId: 'btei-bgi-blackglass-catastrophe', count: 1 },
-    ],
+      { definitionId: 'btei-bgi-blackglass-catastrophe', count: 1 }],
   },
 
   // Snowbound Voltage
@@ -1967,16 +1798,14 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'sv-eternal-frost-charge', count: 2 },
       { definitionId: 'sv-eternal-aurora-battery', count: 1 },
-      { definitionId: 'sv-eternal-white-static', count: 1 },
-    ],
+      { definitionId: 'sv-eternal-white-static', count: 1 }],
   },
   {
     resultId: 'inf-sv-neon-deluge',
     lore: 'The aurora learned to fall sideways, and now it drowns all light.',
     ingredients: [
       { definitionId: 'sv-eternal-aurora-battery', count: 3 },
-      { definitionId: 'sv-eternal-sleet-choir', count: 1 },
-    ],
+      { definitionId: 'sv-eternal-sleet-choir', count: 1 }],
   },
   {
     resultId: 'inf-sv-crystal-maelstrom',
@@ -1984,8 +1813,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'sv-eternal-glacier-signal', count: 2 },
       { definitionId: 'sv-eternal-frost-charge', count: 1 },
-      { definitionId: 'sv-eternal-sleet-choir', count: 1 },
-    ],
+      { definitionId: 'sv-eternal-sleet-choir', count: 1 }],
   },
   {
     resultId: 'inf-sv-black-ice-dominion',
@@ -1993,8 +1821,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'sv-eternal-white-static', count: 2 },
       { definitionId: 'sv-eternal-glacier-signal', count: 1 },
-      { definitionId: 'sv-eternal-frost-charge', count: 1 },
-    ],
+      { definitionId: 'sv-eternal-frost-charge', count: 1 }],
   },
   {
     resultId: 'inf-sv-aurora-singularity',
@@ -2002,8 +1829,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'sv-eternal-aurora-battery', count: 2 },
       { definitionId: 'sv-eternal-sleet-choir', count: 2 },
-      { definitionId: 'sv-eternal-white-static', count: 1 },
-    ],
+      { definitionId: 'sv-eternal-white-static', count: 1 }],
   },
 
   // Glass Absolute
@@ -2013,8 +1839,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'ga-et-first-white', count: 2 },
       { definitionId: 'ga-et-lattice-archive-seraph', count: 1 },
-      { definitionId: 'ga-et-perfect-refraction', count: 1 },
-    ],
+      { definitionId: 'ga-et-perfect-refraction', count: 1 }],
   },
   {
     resultId: 'ga-inf-refracted-sovereign',
@@ -2022,8 +1847,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'ga-et-perfect-refraction', count: 2 },
       { definitionId: 'ga-et-angled-infinity', count: 1 },
-      { definitionId: 'ga-et-lattice-archive-seraph', count: 1 },
-    ],
+      { definitionId: 'ga-et-lattice-archive-seraph', count: 1 }],
   },
   {
     resultId: 'ga-inf-yreth-prism-at-center',
@@ -2031,8 +1855,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'ga-et-center-everywhere', count: 2 },
       { definitionId: 'ga-et-angled-infinity', count: 1 },
-      { definitionId: 'ga-et-first-white', count: 1 },
-    ],
+      { definitionId: 'ga-et-first-white', count: 1 }],
   },
   {
     resultId: 'ga-inf-chorus-unbroken-spectrum',
@@ -2040,16 +1863,14 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'ga-et-lattice-archive-seraph', count: 2 },
       { definitionId: 'ga-et-perfect-refraction', count: 2 },
-      { definitionId: 'ga-et-first-white', count: 1 },
-    ],
+      { definitionId: 'ga-et-first-white', count: 1 }],
   },
   {
     resultId: 'ga-inf-shattered-without-shattering',
     lore: 'The form breaks across infinity yet remains one intact theorem.',
     ingredients: [
       { definitionId: 'ga-et-angled-infinity', count: 3 },
-      { definitionId: 'ga-et-perfect-refraction', count: 1 },
-    ],
+      { definitionId: 'ga-et-perfect-refraction', count: 1 }],
   },
   {
     resultId: 'ga-inf-color-after-white',
@@ -2058,8 +1879,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'ga-et-first-white', count: 2 },
       { definitionId: 'ga-et-center-everywhere', count: 1 },
       { definitionId: 'ga-et-lattice-archive-seraph', count: 1 },
-      { definitionId: 'ga-et-angled-infinity', count: 1 },
-    ],
+      { definitionId: 'ga-et-angled-infinity', count: 1 }],
   },
 
   // Blazing Garden
@@ -2069,8 +1889,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bg-et-serevathi-proofflame', count: 2 },
       { definitionId: 'bg-et-vethkorath-seven-crown-proof', count: 1 },
-      { definitionId: 'bg-et-embergrove-codex', count: 1 },
-    ],
+      { definitionId: 'bg-et-embergrove-codex', count: 1 }],
   },
   {
     resultId: 'bg-inf-soleth-vair-worldflower',
@@ -2078,16 +1897,14 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bg-et-aureveth-evernoon', count: 2 },
       { definitionId: 'bg-et-noonproof-transit', count: 2 },
-      { definitionId: 'bg-et-serevathi-proofflame', count: 1 },
-    ],
+      { definitionId: 'bg-et-serevathi-proofflame', count: 1 }],
   },
   {
     resultId: 'bg-inf-embergrove-resurrection-array',
     lore: 'The Ember Grove returns every lost color as stronger, wilder growth.',
     ingredients: [
       { definitionId: 'bg-et-embergrove-codex', count: 3 },
-      { definitionId: 'bg-et-serevathi-proofflame', count: 1 },
-    ],
+      { definitionId: 'bg-et-serevathi-proofflame', count: 1 }],
   },
   {
     resultId: 'bg-inf-choir-of-rekindled-geometry',
@@ -2095,8 +1912,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bg-et-vethkorath-seven-crown-proof', count: 2 },
       { definitionId: 'bg-et-embergrove-codex', count: 1 },
-      { definitionId: 'bg-et-serevathi-proofflame', count: 1 },
-    ],
+      { definitionId: 'bg-et-serevathi-proofflame', count: 1 }],
   },
   {
     resultId: 'bg-inf-noon-that-never-sets',
@@ -2105,8 +1921,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'bg-et-aureveth-evernoon', count: 2 },
       { definitionId: 'bg-et-noonproof-transit', count: 1 },
       { definitionId: 'bg-et-serevathi-proofflame', count: 1 },
-      { definitionId: 'bg-et-vethkorath-seven-crown-proof', count: 1 },
-    ],
+      { definitionId: 'bg-et-vethkorath-seven-crown-proof', count: 1 }],
   },
   {
     resultId: 'bg-inf-proof-completed-sky',
@@ -2114,8 +1929,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bg-et-vethkorath-seven-crown-proof', count: 3 },
       { definitionId: 'bg-et-noonproof-transit', count: 1 },
-      { definitionId: 'bg-et-serevathi-proofflame', count: 1 },
-    ],
+      { definitionId: 'bg-et-serevathi-proofflame', count: 1 }],
   },
 
   // Age of the Butterfly
@@ -2125,8 +1939,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bf-et-kethravoss-seven-layers', count: 2 },
       { definitionId: 'bf-et-pyrethkai-equilibrium', count: 1 },
-      { definitionId: 'bf-et-mirrorglass-conclave', count: 1 },
-    ],
+      { definitionId: 'bf-et-mirrorglass-conclave', count: 1 }],
   },
   {
     resultId: 'bf-inf-open-foundational-chrysalis',
@@ -2134,8 +1947,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bf-et-nullwing-interstice', count: 2 },
       { definitionId: 'bf-et-pyrethkai-equilibrium', count: 1 },
-      { definitionId: 'bf-et-kethravoss-seven-layers', count: 1 },
-    ],
+      { definitionId: 'bf-et-kethravoss-seven-layers', count: 1 }],
   },
   {
     resultId: 'bf-inf-mirrorface-voidface',
@@ -2143,8 +1955,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bf-et-mirrorglass-conclave', count: 2 },
       { definitionId: 'bf-et-nullwing-interstice', count: 1 },
-      { definitionId: 'bf-et-pyrethkai-equilibrium', count: 1 },
-    ],
+      { definitionId: 'bf-et-pyrethkai-equilibrium', count: 1 }],
   },
   {
     resultId: 'bf-inf-generation-of-the-flutter',
@@ -2152,8 +1963,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bf-et-pyrethkai-equilibrium', count: 2 },
       { definitionId: 'bf-et-kethravoss-seven-layers', count: 1 },
-      { definitionId: 'bf-et-mirrorglass-conclave', count: 1 },
-    ],
+      { definitionId: 'bf-et-mirrorglass-conclave', count: 1 }],
   },
   {
     resultId: 'bf-inf-the-endless-wing-age',
@@ -2161,8 +1971,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'bf-et-volthari-storm-lattice', count: 3 },
       { definitionId: 'bf-et-pyrethkai-equilibrium', count: 1 },
-      { definitionId: 'bf-et-kethravoss-seven-layers', count: 1 },
-    ],
+      { definitionId: 'bf-et-kethravoss-seven-layers', count: 1 }],
   },
 
   // Eternal Seas
@@ -2171,8 +1980,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     lore: 'The trench-voice answers itself, and the sea remembers its true name.',
     ingredients: [
       { definitionId: 'es-et-veleth-abyss-sounding', count: 3 },
-      { definitionId: 'es-et-thyrvaan-oldlight-grid', count: 1 },
-    ],
+      { definitionId: 'es-et-thyrvaan-oldlight-grid', count: 1 }],
   },
   {
     resultId: 'es-inf-water-that-was-always-there',
@@ -2180,8 +1988,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'es-et-aeveleth-first-drift', count: 3 },
       { definitionId: 'es-et-thyrvaan-oldlight-grid', count: 1 },
-      { definitionId: 'es-et-veleth-abyss-sounding', count: 1 },
-    ],
+      { definitionId: 'es-et-veleth-abyss-sounding', count: 1 }],
   },
   {
     resultId: 'es-inf-veilmargin-cathedral',
@@ -2189,16 +1996,14 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'es-et-thyrvaan-oldlight-grid', count: 2 },
       { definitionId: 'es-et-crown-of-seven-margins', count: 1 },
-      { definitionId: 'es-et-aeveleth-first-drift', count: 1 },
-    ],
+      { definitionId: 'es-et-aeveleth-first-drift', count: 1 }],
   },
   {
     resultId: 'es-inf-seven-crowned-confluence',
     lore: 'Seven crowned currents converge into one sovereign tide.',
     ingredients: [
       { definitionId: 'es-et-crown-of-seven-margins', count: 3 },
-      { definitionId: 'es-et-thyrvaan-oldlight-grid', count: 1 },
-    ],
+      { definitionId: 'es-et-thyrvaan-oldlight-grid', count: 1 }],
   },
   {
     resultId: 'es-inf-aeveleth-undying-revision',
@@ -2206,8 +2011,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'es-et-aeveleth-first-drift', count: 2 },
       { definitionId: 'es-et-surevaan-anomaly-log', count: 2 },
-      { definitionId: 'es-et-crown-of-seven-margins', count: 1 },
-    ],
+      { definitionId: 'es-et-crown-of-seven-margins', count: 1 }],
   },
 
   // Abyssal Forge
@@ -2216,8 +2020,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     lore: 'The glass-serpent unspools its coiled centuries; every loop a re-forged sea.',
     ingredients: [
       { definitionId: 'af-et-ouroglas-dreaming', count: 3 },
-      { definitionId: 'af-et-forge-beneath', count: 1 },
-    ],
+      { definitionId: 'af-et-forge-beneath', count: 1 }],
   },
   {
     resultId: 'af-inf-abyssal-forge-itself',
@@ -2225,8 +2028,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'af-et-forge-beneath', count: 3 },
       { definitionId: 'af-et-ouroglas-dreaming', count: 1 },
-      { definitionId: 'af-et-pearled-pantheon', count: 1 },
-    ],
+      { definitionId: 'af-et-pearled-pantheon', count: 1 }],
   },
   {
     resultId: 'af-inf-unrecorded-hue',
@@ -2234,8 +2036,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'af-et-quenched-drift', count: 2 },
       { definitionId: 'af-et-ouroglas-dreaming', count: 1 },
-      { definitionId: 'af-et-nacre-touched-procession', count: 1 },
-    ],
+      { definitionId: 'af-et-nacre-touched-procession', count: 1 }],
   },
   {
     resultId: 'af-inf-covenant-coiled-fire',
@@ -2243,18 +2044,16 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'af-et-nacre-touched-procession', count: 2 },
       { definitionId: 'af-et-pearled-pantheon', count: 1 },
-      { definitionId: 'af-et-forge-beneath', count: 1 },
-    ],
+      { definitionId: 'af-et-forge-beneath', count: 1 }],
   },
   {
     resultId: 'af-inf-reforging-world',
-    lore: 'The world itself is set on the anvil and struck — what rises is older and brighter.',
+    lore: 'The world itself is set on the anvil and struck  Ewhat rises is older and brighter.',
     ingredients: [
       { definitionId: 'af-et-forge-beneath', count: 2 },
       { definitionId: 'af-et-pearled-pantheon', count: 1 },
       { definitionId: 'af-et-quenched-drift', count: 1 },
-      { definitionId: 'af-et-nacre-touched-procession', count: 1 },
-    ],
+      { definitionId: 'af-et-nacre-touched-procession', count: 1 }],
   },
 
   // Death-flamed Hell
@@ -2264,24 +2063,21 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'dfh-et-skull-ceiling-garrison', count: 2 },
       { definitionId: 'dfh-et-eternal-procession-of-the-veiled', count: 1 },
-      { definitionId: 'dfh-et-othraks-eternal-communion', count: 1 },
-    ],
+      { definitionId: 'dfh-et-othraks-eternal-communion', count: 1 }],
   },
   {
     resultId: 'dfh-inf-final-communion-of-halos',
     lore: 'Halo touches halo for the last time; a single white note rings forever.',
     ingredients: [
       { definitionId: 'dfh-et-othraks-eternal-communion', count: 3 },
-      { definitionId: 'dfh-et-crimson-ember-rain', count: 1 },
-    ],
+      { definitionId: 'dfh-et-crimson-ember-rain', count: 1 }],
   },
   {
     resultId: 'dfh-inf-bridal-procession-living-world',
     lore: 'The veiled cortege steps from hell into a living country, and the country bows.',
     ingredients: [
       { definitionId: 'dfh-et-eternal-procession-of-the-veiled', count: 3 },
-      { definitionId: 'dfh-et-skull-ceiling-garrison', count: 1 },
-    ],
+      { definitionId: 'dfh-et-skull-ceiling-garrison', count: 1 }],
   },
   {
     resultId: 'dfh-inf-death-flame-escaping-upward',
@@ -2289,8 +2085,7 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'dfh-et-crimson-ember-rain', count: 2 },
       { definitionId: 'dfh-et-othraks-eternal-communion', count: 1 },
-      { definitionId: 'dfh-et-skull-ceiling-garrison', count: 1 },
-    ],
+      { definitionId: 'dfh-et-skull-ceiling-garrison', count: 1 }],
   },
 
   // [EVENT] Wished Upon A Star
@@ -2299,16 +2094,14 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     lore: 'When three cosmic wishes converge at the apex of the Dream Lattice, a throne of living starlight assembles itself from the silence between galaxies.',
     ingredients: [
       { definitionId: 'wuas-et-aethervex-wishwright', count: 3 },
-      { definitionId: 'wuas-et-selenira-voidbane', count: 1 },
-    ],
+      { definitionId: 'wuas-et-selenira-voidbane', count: 1 }],
   },
   {
     resultId: 'inf-wuas-lune-choir-ascension',
     lore: 'The twelve silver Lune sing a convergence that bends dream and starlight into one unbroken note, preserving both across every turn they endure.',
     ingredients: [
       { definitionId: 'wuas-et-selenira-voidbane', count: 3 },
-      { definitionId: 'wuas-et-aethervex-wishwright', count: 1 },
-    ],
+      { definitionId: 'wuas-et-aethervex-wishwright', count: 1 }],
   },
   {
     resultId: 'inf-wuas-wishwright-absolute',
@@ -2316,8 +2109,6 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
     ingredients: [
       { definitionId: 'wuas-et-aethervex-wishwright', count: 2 },
       { definitionId: 'wuas-et-draethos-unforgotten', count: 2 },
-      { definitionId: 'wuas-et-selenira-voidbane', count: 1 },
-    ],
-  },
-];
+      { definitionId: 'wuas-et-selenira-voidbane', count: 1 }],
+  }];
 

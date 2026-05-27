@@ -3,14 +3,30 @@ import type { AngelInstance, CherubimInstance, SeraphimInstance } from '@/types/
 
 export class ScoreSystem {
   static compute(board: BoardState): ComputedBoardStats {
+    // Sum global oblivion multiplier from back-slot Cherubim (independent of active Seraphim count).
+    let globalOblivionMult = 0;
+    for (const slot of board.backSlots) {
+      if (!slot) continue;
+      const cherDef = ScoreSystem.getDefinition(slot.definitionId);
+      if (!cherDef || cherDef.type !== 'Cherubim') continue;
+      for (const eff of cherDef.effects) {
+        if (eff.type === 'cherubim_global_oblivion_mult') {
+          globalOblivionMult += eff.value;
+        }
+      }
+    }
+
     const activeSeraphims = board.frontSlots.filter(
       (s): s is SeraphimInstance => s?.type === 'Seraphim' && s.isActive
     );
 
     const activeSynergies = activeSeraphims.length;
+    const fullBoardActive =
+      board.frontSlots.every(s => s !== null) &&
+      board.backSlots.every(s => s !== null);
 
     if (activeSynergies === 0) {
-      return { activeSynergies: 0, oblivionPerCardBonus: 0, ophanimOblivionBonus: 0, cherubimExtraPlays: 0, embersPerCardBonus: 0 };
+      return { activeSynergies: 0, oblivionPerCardBonus: 0, ophanimOblivionBonus: 0, cherubimExtraPlays: 0, embersPerCardBonus: 0, globalOblivionMult, fullBoardActive };
     }
 
     let oblivionPerCardBonus = 0;
@@ -54,7 +70,7 @@ export class ScoreSystem {
 
     oblivionPerCardBonus += prismaticChordBonus;
 
-    return { activeSynergies, oblivionPerCardBonus, ophanimOblivionBonus, cherubimExtraPlays, embersPerCardBonus };
+    return { activeSynergies, oblivionPerCardBonus, ophanimOblivionBonus, cherubimExtraPlays, embersPerCardBonus, globalOblivionMult, fullBoardActive };
   }
 
   static getDefinition: (id: string) => import('@/types/cards').CardDefinition | undefined =

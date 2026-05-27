@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import CardHoverDetail from '@/ui/hud/CardHoverDetail';
 import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
@@ -51,7 +50,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute',
     bottom: 16,
     left: 0,
-    right: 'var(--angel-drawer-hand-offset, 308px)',
+    right: 'var(--angel-drawer-hand-offset, 348px)',
 
     display: 'flex',
     flexDirection: 'column',
@@ -100,10 +99,10 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 12,
     pointerEvents: 'auto',
     position: 'relative',
-    overflowX: 'clip',
+    overflowX: 'auto',
     overflowY: 'visible',
     maxWidth: '100%',
-    paddingBottom: 6,
+    paddingBottom: 10,
     paddingTop: 24,
   },
   card: {
@@ -212,8 +211,6 @@ function formatSeraphimSynergyLine(def: SeraphimDefinition): string {
       return `Synergy: Cherubim gain +${bonusValue} durability`;
     case 'ophanim_bonus':
       return `Synergy: Ophanim plays gain +${bonusValue} Oblivion`;
-    case 'chain_bonus':
-      return `Synergy: chain growth +${bonusValue.toFixed(2)} per card played`;
     case 'ember_per_card':
       return `Synergy: +${bonusValue} embers per card played`;
     case 'oblivion_per_card':
@@ -235,7 +232,7 @@ export default function HandDisplay() {
   const showTopPanel = cardArtDisplay === 'both' || cardArtDisplay === 'top-only';
   const showBottomPanel = cardArtDisplay === 'both' || cardArtDisplay === 'bottom-only';
   const artOnlyMode = cardArtDisplay === 'art-only';
-  const { playCard, toggleMulliganCard } = useStore.getState();
+  const { playCard, toggleMulliganCard, summonAngel } = useStore.getState();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -344,8 +341,19 @@ export default function HandDisplay() {
   }, [isIdle, favoriteShowcasePool]);
 
   function handleClick(instanceId: string) {
-    // Extra Deck view is read-only — clicks should not commit play / mulligan.
-    if (isExtraDeckView) return;
+    if (isExtraDeckView) {
+      // Summon an Angel from the Extra Deck when conditions are met.
+      if (!isPlaying) return;
+      const deckCard = viewCards.find(c => c.instanceId === instanceId);
+      if (!deckCard) return;
+      const def = CardRegistry.get(deckCard.definitionId);
+      if (!def || def.type !== 'Angel') return;
+      if (!CardEffectExecutor.checkPlayable(def, 0, turn, board)) return;
+      summonAngel(deckCard.definitionId, deckCard.finish);
+      setHandView('hand');
+      window.dispatchEvent(new Event('hud-shake-soft'));
+      return;
+    }
     if (isMulligan) {
       toggleMulliganCard(instanceId);
     } else if (isPlaying) {
@@ -386,9 +394,7 @@ export default function HandDisplay() {
   const hoveredDef = hoveredDeckCard ? CardRegistry.get(hoveredDeckCard.definitionId) : null;
   const hoveredActionClassLabel = hoveredDef ? getActionClassLabel(getCardActionClass(hoveredDef)) : null;
   const hoveredEngine = hoveredDef ? getSetEngineSnapshotForCard(hoveredDef, turn, board) : null;
-  const handRightInset = isPlaying || isMulligan
-    ? 'calc(var(--angel-drawer-hand-offset, 308px) + min(240px, 22vw))'
-    : 'var(--angel-drawer-hand-offset, 308px)';
+  const handRightInset = 'var(--angel-drawer-hand-offset, 348px)';
 
   const idleCards = idleShowcaseCards
     .map(card => ({ card, def: CardRegistry.get(card.definitionId) }))
@@ -434,8 +440,7 @@ export default function HandDisplay() {
               labelColor="rgba(74, 48, 21, 0.82)"
               textColor={warmTheme.accentDeep}
               sectionBackground="transparent"
-              sectionBorder="transparent"
-            />
+              sectionBorder="transparent"              lightBg={true}            />
           </div>
           <CardEngineCallout card={hoveredDef} variant="detail" tone="light" />
           <div style={styles.tooltipFooter}>
@@ -479,10 +484,10 @@ export default function HandDisplay() {
                   return (
                     <>
                       <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                        Unsynergized - {attacks.unsynergized.name} | Oblivion {attacks.unsynergized.baseOblivion} | Cooldown {attacks.unsynergized.cooldownCards} cards | Chain +{attacks.unsynergized.chainScaling.toFixed(2)}
+                        Unsynergized - {attacks.unsynergized.name} | Oblivion {attacks.unsynergized.baseOblivion} | Cooldown {attacks.unsynergized.cooldownCards} cards
                       </span>
                       <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                        Synergized - {attacks.synergized.name} | Oblivion {attacks.synergized.baseOblivion} | Cooldown {attacks.synergized.cooldownCards} cards | Chain +{attacks.synergized.chainScaling.toFixed(2)}
+                        Synergized - {attacks.synergized.name} | Oblivion {attacks.synergized.baseOblivion} | Cooldown {attacks.synergized.cooldownCards} cards
                       </span>
                       <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
                         Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} | Cost: {formatAttackCosts(attacks.synergized.costs)}
@@ -546,7 +551,7 @@ export default function HandDisplay() {
                             WebkitLineClamp: 4,
                           }}
                         >
-                          {highlightRulesText(previewText, { disabled: settings.highlightRulesText === false, compact: true })}
+                          {highlightRulesText(previewText, { disabled: settings.highlightRulesText === false, compact: true, lightBg: true })}
                         </div>
                       </div>
                     )}
@@ -633,7 +638,7 @@ export default function HandDisplay() {
           const isHovered = hoveredId === deckCard.instanceId;
           const isAnimatingOut = !isExtraDeckView && playingCardId === deckCard.instanceId;
           const isPlayable = isExtraDeckView
-            ? false
+            ? (isPlaying && !!def && def.type === 'Angel' && CardEffectExecutor.checkPlayable(def, 0, turn, board))
             : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board));
           const previewText = def ? getCardPreviewText(def, 2) : 'Card data unavailable';
           const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);
@@ -649,13 +654,8 @@ export default function HandDisplay() {
           const isDragging = !isExtraDeckView && draggingId === deckCard.instanceId;
 
           return (
-            <CardHoverDetail
-              key={`${deckCard.instanceId}_${deckCard.definitionId}_${idx}`}
-              definitionId={deckCard.definitionId}
-              finish={deckCard.finish}
-              disabled={isDragging || isMulligan}
-            >
             <div
+              key={`${deckCard.instanceId}_${deckCard.definitionId}_${idx}`}
               className={[
                 isAnimatingOut ? 'anim-card-play-out' : undefined,
                 deckCard.finish === 'holo'
@@ -721,7 +721,7 @@ export default function HandDisplay() {
                       WebkitLineClamp: descMetrics.lineClamp,
                     }}
                   >
-                    {highlightRulesText(previewText, { disabled: settings.highlightRulesText === false, compact: true })}
+                    {highlightRulesText(previewText, { disabled: settings.highlightRulesText === false, compact: true, lightBg: true })}
                   </div>
                 </div>
               )}
@@ -744,7 +744,6 @@ export default function HandDisplay() {
                 </div>
               )}
             </div>
-            </CardHoverDetail>
           );
         })}
         </div>

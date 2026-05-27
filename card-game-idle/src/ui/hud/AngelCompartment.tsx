@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import CardHoverDetail from '@/ui/hud/CardHoverDetail';
 import { useStore, selectBoard, selectTurn, selectExtraDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -17,8 +16,8 @@ import type { AngelDefinition, CardFinish } from '@/types/cards';
 const faceMetrics = getCardFaceMetrics('grid');
 const ANGEL_DRAWER_WIDTH = 'min(340px, calc(100vw - 52px))';
 const ANGEL_ART_HEIGHT = 120;
-const HAND_RESERVED_WHEN_CLOSED = '308px';
-const HAND_RESERVED_WHEN_OPEN = 'min(374px, calc(100vw - 18px))';
+const HAND_RESERVED_WHEN_CLOSED = '348px';
+const HAND_RESERVED_WHEN_OPEN = 'min(414px, calc(100vw - 18px))';
 
 export default function AngelCompartment() {
   const [open, setOpen] = useState(false);
@@ -163,15 +162,8 @@ export default function AngelCompartment() {
             const entryKey = `${definitionId}::${finish}`;
             const isShaking = shakeKey === entryKey;
             return (
-              <CardHoverDetail
-                key={entryKey}
-                definitionId={definitionId}
-                finish={finish}
-                actionLabel={playable ? 'Summon Angel' : undefined}
-                onAction={playable ? doSummon : undefined}
-                actionDisabled={!playable}
-              >
               <div
+                key={entryKey}
                 className={isShaking ? 'anim-shake-no' : undefined}
                 style={{
                   border: playable
@@ -403,7 +395,6 @@ export default function AngelCompartment() {
                   )}
                 </div>
               </div>
-              </CardHoverDetail>
             );
           })}
         </div>

@@ -154,9 +154,9 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
     padding: '7px 8px',
     borderRadius: 8,
-    border: `1px solid ${warmTheme.borderStrong}`,
-    background: warmTheme.button,
-    color: warmTheme.accentDeep,
+    border: '1px solid rgba(168, 104, 40, 0.7)',
+    background: 'linear-gradient(180deg, #c9893e 0%, #a0662a 100%)',
+    color: '#fff8ee',
     fontSize: 10,
     cursor: 'pointer',
     fontFamily: 'Georgia, serif',
@@ -379,7 +379,7 @@ export default function HolofoilWorkshop() {
                     <CardRulesDigest
                       card={def}
                       variant="preview"
-                      maxSections={2}
+                      maxSections={4}
                       maxLinesPerSection={10}
                       lineClamp={3}
                       labelColor={cardFacePalette.textMuted}
@@ -409,7 +409,7 @@ export default function HolofoilWorkshop() {
                   onClick={() => canAfford && handleConvert(def.definitionId, def.name)}
                   disabled={!canAfford}
                 >
-                  {canAfford ? 'Convert to Holo' : `Need ${cost - shards} More`}
+                  {canAfford ? `Convert (${cost} Shards)` : `Need ${cost - shards} More`}
                 </button>
               </div>
             </div>

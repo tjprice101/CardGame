@@ -33,17 +33,10 @@ const RARITY_GLOW_BRIGHT: Record<string, string> = {
   Legendary: 'rgba(243,156,18,1.0)',
 };
 
-// Lightweight per-rarity audio chime synthesized via Web Audio API. Avoids
-// shipping audio assets while still giving meaningful tactile feedback.
-const RARITY_TONES: Record<string, { freq: number; dur: number; gain: number; type: OscillatorType }> = {
-  Common:    { freq: 320,  dur: 0.10, gain: 0.06, type: 'sine'     },
-  Rare:      { freq: 520,  dur: 0.14, gain: 0.08, type: 'triangle' },
-  Epic:      { freq: 660,  dur: 0.20, gain: 0.10, type: 'triangle' },
-  Legendary: { freq: 880,  dur: 0.28, gain: 0.14, type: 'sawtooth' },
-  Eternal:   { freq: 1040, dur: 0.36, gain: 0.16, type: 'sawtooth' },
-  Infinite:  { freq: 1240, dur: 0.42, gain: 0.18, type: 'sawtooth' },
-};
-
+// Per-rarity reveal sounds synthesised via Web Audio API.
+// Each rarity uses layered synthesis: a transient noise body plus a
+// pitched resonant tail. Higher rarities are lower-frequency and longer —
+// giving weight and drama rather than a cartoon "ta-da" effect.
 let sharedAudioCtx: AudioContext | null = null;
 function playRarityChime(rarity: string) {
   try {
@@ -52,22 +45,124 @@ function playRarityChime(rarity: string) {
       if (!Ctor) return;
       sharedAudioCtx = new Ctor();
     }
+    if (sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume().catch(() => {});
     const ctx = sharedAudioCtx;
-    const tone = RARITY_TONES[rarity] ?? RARITY_TONES.Common;
     const t0 = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = tone.type;
-    osc.frequency.setValueAtTime(tone.freq, t0);
-    osc.frequency.exponentialRampToValueAtTime(tone.freq * 1.18, t0 + tone.dur * 0.6);
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(tone.gain, t0 + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + tone.dur);
-    osc.connect(gain).connect(ctx.destination);
-    osc.start(t0);
-    osc.stop(t0 + tone.dur + 0.02);
+
+    // Helper: generate a white-noise buffer
+    const noiseBuf = (dur: number) => {
+      const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * dur), ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+      return buf;
+    };
+
+    if (rarity === 'Common') {
+      // Dry card-flip: short bandpass noise, no tone
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf(0.06);
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 1900; f.Q.value = 1.3;
+      const g = ctx.createGain(); g.gain.value = 0.20;
+      src.connect(f); f.connect(g); g.connect(ctx.destination); src.start(t0);
+      return;
+    }
+
+    if (rarity === 'Rare') {
+      // Crisp impact + brief metallic ring at 400 Hz (stable pitch)
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf(0.055);
+      const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 2100; f.Q.value = 1.4;
+      const gn = ctx.createGain(); gn.gain.value = 0.22;
+      src.connect(f); f.connect(gn); gn.connect(ctx.destination); src.start(t0);
+      const osc = ctx.createOscillator(); const go = ctx.createGain();
+      osc.type = 'triangle'; osc.frequency.value = 400;
+      go.gain.setValueAtTime(0.10, t0); go.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.24);
+      osc.connect(go); go.connect(ctx.destination); osc.start(t0); osc.stop(t0 + 0.26);
+      return;
+    }
+
+    if (rarity === 'Epic') {
+      // Deep lowpass impact + low tone that descends (not rises)
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf(0.085);
+      const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 1100;
+      const gn = ctx.createGain(); gn.gain.value = 0.28;
+      src.connect(f); f.connect(gn); gn.connect(ctx.destination); src.start(t0);
+      const osc = ctx.createOscillator(); const go = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(270, t0); osc.frequency.exponentialRampToValueAtTime(210, t0 + 0.40);
+      go.gain.setValueAtTime(0, t0); go.gain.linearRampToValueAtTime(0.13, t0 + 0.018);
+      go.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.42);
+      osc.connect(go); go.connect(ctx.destination); osc.start(t0); osc.stop(t0 + 0.44);
+      return;
+    }
+
+    if (rarity === 'Legendary') {
+      // Sub punch that drops in pitch + descending parallel fourths + noise body
+      const osub = ctx.createOscillator(); const gsub = ctx.createGain();
+      osub.type = 'sine';
+      osub.frequency.setValueAtTime(150, t0); osub.frequency.exponentialRampToValueAtTime(55, t0 + 0.20);
+      gsub.gain.setValueAtTime(0.30, t0); gsub.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.24);
+      osub.connect(gsub); gsub.connect(ctx.destination); osub.start(t0); osub.stop(t0 + 0.26);
+      // Two descending triangle tones (perfect fourth apart) — sounds weighty, not cartoony
+      ([220, 146.83] as number[]).forEach((startFreq, i) => {
+        const osc = ctx.createOscillator(); const g = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(startFreq, t0);
+        osc.frequency.exponentialRampToValueAtTime(startFreq * 0.74, t0 + 0.44);
+        g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.10 - i * 0.02, t0 + 0.016);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.48);
+        osc.connect(g); g.connect(ctx.destination); osc.start(t0); osc.stop(t0 + 0.50);
+      });
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf(0.09);
+      const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.value = 750;
+      const ng = ctx.createGain(); ng.gain.value = 0.30;
+      src.connect(nf); nf.connect(ng); ng.connect(ctx.destination); src.start(t0);
+      return;
+    }
+
+    if (rarity === 'Eternal') {
+      // Heavy sub thump + downward noise sweep + low minor-third swell
+      const osub = ctx.createOscillator(); const gsub = ctx.createGain();
+      osub.type = 'sine';
+      osub.frequency.setValueAtTime(110, t0); osub.frequency.exponentialRampToValueAtTime(42, t0 + 0.30);
+      gsub.gain.setValueAtTime(0.34, t0); gsub.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.34);
+      osub.connect(gsub); gsub.connect(ctx.destination); osub.start(t0); osub.stop(t0 + 0.36);
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf(0.14);
+      const nf = ctx.createBiquadFilter(); nf.type = 'lowpass';
+      nf.frequency.setValueAtTime(2600, t0); nf.frequency.exponentialRampToValueAtTime(250, t0 + 0.14);
+      const ng = ctx.createGain(); ng.gain.value = 0.30;
+      src.connect(nf); nf.connect(ng); ng.connect(ctx.destination); src.start(t0);
+      // Low minor-third swell: C3 + Eb3 (196 + 233 Hz)
+      ([196, 233] as number[]).forEach((freq, i) => {
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = freq;
+        g.gain.setValueAtTime(0, t0 + 0.05); g.gain.linearRampToValueAtTime(0.09 - i * 0.02, t0 + 0.16);
+        g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.70);
+        o.connect(g); g.connect(ctx.destination); o.start(t0 + 0.05); o.stop(t0 + 0.72);
+      });
+      return;
+    }
+
+    // ── Infinite: grandest — cascading sub drop + noise rush + power fifth
+    const osub = ctx.createOscillator(); const gsub = ctx.createGain();
+    osub.type = 'sine';
+    osub.frequency.setValueAtTime(125, t0); osub.frequency.exponentialRampToValueAtTime(38, t0 + 0.40);
+    gsub.gain.setValueAtTime(0.38, t0); gsub.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.44);
+    osub.connect(gsub); gsub.connect(ctx.destination); osub.start(t0); osub.stop(t0 + 0.46);
+    const src2 = ctx.createBufferSource(); src2.buffer = noiseBuf(0.20);
+    const nf2 = ctx.createBiquadFilter(); nf2.type = 'lowpass';
+    nf2.frequency.setValueAtTime(3200, t0); nf2.frequency.exponentialRampToValueAtTime(180, t0 + 0.20);
+    const ng2 = ctx.createGain(); ng2.gain.value = 0.32;
+    src2.connect(nf2); nf2.connect(ng2); ng2.connect(ctx.destination); src2.start(t0);
+    // Power fifth + octave: C3 + G3 + C4 — staggered swell
+    ([130.81, 196.00, 261.63] as number[]).forEach((freq, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      const delay = i * 0.028;
+      g.gain.setValueAtTime(0, t0 + delay); g.gain.linearRampToValueAtTime(0.09 - i * 0.014, t0 + delay + 0.10);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.90);
+      o.connect(g); g.connect(ctx.destination); o.start(t0 + delay); o.stop(t0 + 0.92);
+    });
   } catch {
-    // Audio is best-effort; silently ignore failures (e.g. autoplay blocking).
+    // Audio is best-effort; silently ignore failures.
   }
 }
 
@@ -266,6 +361,7 @@ const CardTile = memo(function CardTile({
                       textColor={cardFacePalette.textSoft}
                       sectionBackground="transparent"
                       sectionBorder="transparent"
+                      lightBg={true}
                     />
                   )}
                 </div>
@@ -429,10 +525,11 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
 
         {!allRevealed ? (
           <div style={{ display: 'flex', gap: 10 }}>
-            <button style={styles.closeBtn} onClick={revealAll}>
+            <button data-sfx="claim" style={styles.closeBtn} onClick={revealAll}>
               {bestIsLegendaryPlus ? 'Reveal Best' : 'Reveal All'}
             </button>
             <button
+              data-sfx="claim"
               style={{ ...styles.closeBtn, background: 'rgba(60, 40, 20, 0.78)', color: '#f0bd78', border: `1px solid ${warmTheme.border}` }}
               onClick={instantReveal}
               title="Skip animation"
@@ -441,7 +538,7 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
             </button>
           </div>
         ) : (
-          <button style={styles.closeBtn} onClick={onClose}>
+          <button data-sfx="claim" style={styles.closeBtn} onClick={onClose}>
             Collect
           </button>
         )}

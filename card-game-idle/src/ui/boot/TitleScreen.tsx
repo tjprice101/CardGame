@@ -1,18 +1,120 @@
 import { useEffect, useState } from 'react';
-import { warmTheme, uiTypography } from '@/ui/theme';
+import { uiTypography } from '@/ui/theme';
 import { useStore, selectSettings } from '@/state/store';
 
 /**
- * Parallax title screen. Three drifting layers of card-art silhouettes behind
- * the game logotype and a pulsing "Press Any Key to Start" prompt. Any key,
- * click, or tap advances to the main menu.
+ * Parallax title screen. Card art from across the game's sets is displayed in
+ * two fanned clusters flanking the centred logotype and prompt. Any key, click,
+ * or tap advances to the main menu.
  */
-const ASSET_BASE = import.meta.env.BASE_URL;
-const PARALLAX_LAYERS: Array<{ src: string; opacity: number; scale: number; drift: string; top: string; left: string }> = [
-  { src: `${ASSET_BASE}assets/card-backgrounds/heavenly-light/Aurelion%20Thorncrowned.png`, opacity: 0.32, scale: 1.15, drift: 'parallaxDriftA 28s ease-in-out infinite', top: '6%', left: '-4%' },
-  { src: `${ASSET_BASE}assets/card-backgrounds/heavenly-light/Solarius%20Emberthorn%20Ascendant.png`, opacity: 0.28, scale: 1.05, drift: 'parallaxDriftB 36s ease-in-out infinite', top: '12%', left: '60%' },
-  { src: `${ASSET_BASE}assets/card-backgrounds/heavenly-light/Halo%20Legion%20Prime.png`, opacity: 0.22, scale: 0.95, drift: 'parallaxDriftC 44s ease-in-out infinite', top: '52%', left: '30%' },
+
+const BASE = import.meta.env.BASE_URL;
+
+/** Helper: build a card-backgrounds asset URL. */
+function card(set: string, name: string): string {
+  return `${BASE}assets/card-backgrounds/${set}/${encodeURIComponent(name)}.png`;
+}
+
+/** Card width — shared constant so height (via aspect-ratio) stays consistent. */
+const CARD_W = 'clamp(128px, 13.5vw, 196px)';
+
+interface CardSpec {
+  src: string;
+  /** CSS rotation applied to the outer rotate-wrapper. */
+  rot: number;
+  /** Absolute positioning for the outer rotate-wrapper. */
+  pos: React.CSSProperties;
+  /** Element opacity (back cards are dimmer). */
+  opacity: number;
+  /** Float animation period in seconds. */
+  dur: number;
+  /** Float animation start delay in seconds. */
+  delay: number;
+  /** Edge-fade mask (cards near screen edge fade into the void). */
+  fadeEdge?: 'left' | 'right';
+}
+
+// ── Left cluster — celestial / aquatic / cosmic ──────────────────────────────
+const LEFT_CARDS: CardSpec[] = [
+  {
+    src: card('heavenly-light', 'Halo Legion Prime'),
+    rot: -15, opacity: 0.52, dur: 5.0, delay: 0.4, fadeEdge: 'left',
+    pos: { left: '-2%', top: '16%' },
+  },
+  {
+    src: card('eternal-seas', 'Crowned One Azure Margin'),
+    rot: -8, opacity: 0.74, dur: 5.4, delay: 1.2,
+    pos: { left: '4%', top: '29%' },
+  },
+  {
+    src: card('infinite', 'Genesis Throne'),
+    rot: -2, opacity: 0.92, dur: 4.6, delay: 0.8,
+    pos: { left: '10%', top: '43%' },
+  },
 ];
+
+// ── Right cluster — mechanical / infernal / celestial ────────────────────────
+const RIGHT_CARDS: CardSpec[] = [
+  {
+    src: card('mechanical-dreams', 'Steel Hymn Executor'),
+    rot: 15, opacity: 0.52, dur: 4.8, delay: 0.7, fadeEdge: 'right',
+    pos: { right: '-2%', top: '16%' },
+  },
+  {
+    src: card('black-glass-inferno', 'Morvakael the Twice-Scarred'),
+    rot: 8, opacity: 0.74, dur: 5.2, delay: 1.5,
+    pos: { right: '4%', top: '29%' },
+  },
+  {
+    src: card('heavenly-light', 'Solarius Emberthorn Ascendant'),
+    rot: 2, opacity: 0.92, dur: 4.4, delay: 0.2,
+    pos: { right: '10%', top: '43%' },
+  },
+];
+
+/** Single card rendered with outer rotate-wrapper + inner float-animation div. */
+function ShowcaseCard({ c, reduced }: { c: CardSpec; reduced: boolean }) {
+  const mask = c.fadeEdge === 'left'
+    ? 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.9) 65%, #000 100%)'
+    : c.fadeEdge === 'right'
+      ? 'linear-gradient(-90deg, transparent 0%, rgba(0,0,0,0.5) 30%, rgba(0,0,0,0.9) 65%, #000 100%)'
+      : undefined;
+
+  return (
+    <div
+      aria-hidden="true"
+      style={{
+        position: 'absolute',
+        ...c.pos,
+        width: CARD_W,
+        aspectRatio: '5 / 7',
+        transform: `rotate(${c.rot}deg)`,
+        transformOrigin: 'bottom center',
+        opacity: c.opacity,
+        pointerEvents: 'none',
+        willChange: reduced ? undefined : 'transform',
+      }}
+    >
+      {/* Inner div animates Y only — outer div holds the rotation */}
+      <div style={{
+        width: '100%',
+        height: '100%',
+        backgroundImage: `url(${c.src})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        borderRadius: 9,
+        boxShadow: [
+          '0 14px 44px rgba(0,0,0,0.85)',
+          '0 0 0 1px rgba(255,255,255,0.14)',
+          'inset 0 0 0 1px rgba(255,255,255,0.06)',
+        ].join(', '),
+        maskImage: mask,
+        WebkitMaskImage: mask,
+        animation: reduced ? undefined : `titleCardFloat ${c.dur}s ease-in-out ${c.delay}s infinite`,
+      }} />
+    </div>
+  );
+}
 
 export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
   const settings = useStore(selectSettings);
@@ -47,107 +149,137 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
         position: 'absolute',
         inset: 0,
         zIndex: 180,
-        background: 'radial-gradient(circle at 50% 32%, #3a2419 0%, #160d09 65%, #050302 100%)',
         overflow: 'hidden',
+        cursor: 'pointer',
         opacity: sceneOpacity,
         transition: reduced ? 'opacity 200ms ease' : 'opacity 650ms ease',
-        cursor: 'pointer',
+        // Deep sky-navy — dark variant of the main menu art palette
+        background: 'linear-gradient(180deg, #071426 0%, #0d2240 38%, #101e3a 65%, #06101e 100%)',
       }}
     >
-      {/* Parallax art layers */}
-      {!reduced && PARALLAX_LAYERS.map((layer, i) => (
-        <div
-          key={i}
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            top: layer.top,
-            left: layer.left,
-            width: 'clamp(280px, 32vw, 520px)',
-            height: 'clamp(380px, 44vw, 720px)',
-            backgroundImage: `url(${layer.src})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            opacity: layer.opacity,
-            filter: 'blur(2px) saturate(0.85)',
-            transform: `scale(${layer.scale})`,
-            animation: layer.drift,
-            mixBlendMode: 'screen',
-            pointerEvents: 'none',
-            willChange: 'transform',
-          }}
-        />
+      {/* ── Sky-art atmospheric light — matches the main menu luminosity ─── */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: [
+          // Bright sky bloom from upper-center (evokes the menu art's sky)
+          'radial-gradient(ellipse 90% 55% at 50% 20%, rgba(140,200,250,0.18) 0%, rgba(80,155,220,0.09) 45%, transparent 68%)',
+          // Deep ocean-blue depth at the bottom
+          'radial-gradient(ellipse 70% 38% at 50% 98%, rgba(20,55,110,0.30) 0%, transparent 60%)',
+        ].join(', '),
+      }} />
+
+      {/* ── Side vignettes — cards dissolve into the sky at screen edges ── */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: [
+          'linear-gradient(90deg,  rgba(7,20,38,0.85) 0%, rgba(7,20,38,0) 20%)',
+          'linear-gradient(-90deg, rgba(7,20,38,0.85) 0%, rgba(7,20,38,0) 20%)',
+        ].join(', '),
+      }} />
+
+      {/* ── Bottom vignette ───────────────────────────────────────────────── */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'linear-gradient(180deg, rgba(7,20,38,0) 52%, rgba(7,20,38,0.90) 100%)',
+      }} />
+
+      {/* ── Card showcase ─────────────────────────────────────────────────── */}
+      {LEFT_CARDS.map((c, i) => (
+        <ShowcaseCard key={`l${i}`} c={c} reduced={reduced} />
+      ))}
+      {RIGHT_CARDS.map((c, i) => (
+        <ShowcaseCard key={`r${i}`} c={c} reduced={reduced} />
       ))}
 
-      {/* Vignette */}
-      <div
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'radial-gradient(circle at 50% 50%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.7) 100%)',
-          pointerEvents: 'none',
-        }}
-      />
+      {/* ── Centre vignette — keeps title crisp against card imagery ──────── */}
+      <div aria-hidden style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse 58% 70% at 50% 50%, rgba(7,20,38,0.75) 0%, rgba(7,20,38,0) 65%)',
+      }} />
 
-      {/* Foreground content */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 28,
-          textAlign: 'center',
-          padding: 24,
-        }}
-      >
-        <div
-          style={{
-            fontFamily: uiTypography.display,
-            fontSize: 'clamp(40px, 7vw, 96px)',
-            letterSpacing: 8,
-            color: '#f5e8d6',
-            textShadow: '0 6px 32px rgba(214,162,94,0.55), 0 0 4px rgba(255,255,255,0.25)',
-            textTransform: 'uppercase',
-            fontWeight: 400,
-            lineHeight: 1.05,
-          }}
-        >
+      {/* ── Foreground: logotype + prompt ─────────────────────────────────── */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 0,
+        textAlign: 'center',
+        padding: '0 24px',
+        pointerEvents: 'none',
+      }}>
+        {/* Small set-count label above title */}
+        <div style={{
+          fontFamily: uiTypography.body,
+          fontSize: 9,
+          letterSpacing: 5,
+          color: 'rgba(140,200,245,0.52)',
+          textTransform: 'uppercase',
+          marginBottom: 18,
+          userSelect: 'none',
+        }}>
+          18 Card Sets · Infinite Cards · Eternity's Wake
+        </div>
+
+        {/* Main wordmark */}
+        <div style={{
+          fontFamily: uiTypography.display,
+          fontSize: 'clamp(46px, 8vw, 108px)',
+          letterSpacing: 10,
+          color: '#eef4fc',
+          textShadow: [
+            '0 0 56px rgba(100,180,240,0.60)',
+            '0 0 110px rgba(60,140,210,0.25)',
+            '0 6px 36px rgba(0,0,0,0.98)',
+          ].join(', '),
+          textTransform: 'uppercase',
+          fontWeight: 400,
+          lineHeight: 1,
+          userSelect: 'none',
+        }}>
           Pantheon
         </div>
-        <div
-          style={{
-            fontFamily: uiTypography.body,
-            fontSize: 'clamp(11px, 1.1vw, 14px)',
-            letterSpacing: 5,
-            color: warmTheme.accentSoft,
-            textTransform: 'uppercase',
-            opacity: 0.85,
-          }}
-        >
+
+        {/* Chrome divider */}
+        <div aria-hidden style={{
+          marginTop: 22, marginBottom: 20,
+          width: 240, height: 1,
+          background: 'linear-gradient(90deg, transparent, rgba(90,170,220,0.72), transparent)',
+          boxShadow: '0 0 12px rgba(90,170,220,0.32)',
+        }} />
+
+        {/* Tagline */}
+        <div style={{
+          fontFamily: uiTypography.body,
+          fontSize: 'clamp(10px, 1.1vw, 13px)',
+          letterSpacing: 5,
+          color: 'rgba(200,225,248,0.62)',
+          textTransform: 'uppercase',
+          userSelect: 'none',
+        }}>
           Forge Gods. Outlast Eternity.
         </div>
 
-        <div
-          style={{
-            marginTop: 64,
-            padding: '14px 36px',
-            border: `1px solid ${warmTheme.accentSoft}`,
-            borderRadius: 999,
-            background: 'rgba(20, 14, 10, 0.55)',
-            backdropFilter: 'blur(2px)',
-            fontFamily: uiTypography.body,
-            fontSize: 'clamp(12px, 1.2vw, 15px)',
-            letterSpacing: 4,
-            color: '#f8e9cc',
-            textTransform: 'uppercase',
-            animation: reduced ? undefined : 'pulseGlow 1.8s ease-in-out infinite',
-            boxShadow: '0 0 28px rgba(214,162,94,0.35)',
-          }}
-        >
+        {/* Press Any Key prompt */}
+        <div style={{
+          marginTop: 60,
+          padding: '13px 40px',
+          border: '1px solid rgba(90,170,220,0.55)',
+          borderRadius: 999,
+          background: 'rgba(7,20,38,0.62)',
+          backdropFilter: 'blur(4px)',
+          fontFamily: uiTypography.body,
+          fontSize: 'clamp(11px, 1.1vw, 14px)',
+          letterSpacing: 4,
+          color: '#deeefa',
+          textTransform: 'uppercase',
+          userSelect: 'none',
+          animation: reduced ? undefined : 'pulseGlowBlue 1.8s ease-in-out infinite',
+          boxShadow: '0 0 28px rgba(90,170,220,0.22)',
+          pointerEvents: 'auto',
+        }}>
           Press Any Key to Start
         </div>
       </div>

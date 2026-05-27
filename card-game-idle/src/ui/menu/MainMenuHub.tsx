@@ -34,12 +34,17 @@ const ATMOSPHERE_LINES = [
   'The pantheon stirs. Are you ready to listen?',
   'Some cards remember being played. Treat them kindly.',
   'A quiet turn is still a turn. Begin when you are ready.',
-  "Even infinity bends to a patient hand.",
+  'Even infinity bends to a patient hand.',
   'Old gods do not blink. Neither should you.',
   'A deck is a prayer arranged in order.',
   'Shuffle once for fortune. Twice for fate.',
   'The board remembers what the hand forgets.',
   'No spark is wasted on the willing.',
+  'Patience is not waiting — it is building toward something inevitable.',
+  'Every Seraphim carries a war the world forgot. Honor that.',
+  'Oblivion is earned. Spend it as boldly as you dare.',
+  'The Wake calls. Answer when you are strong enough to finish what you start.',
+  'The infinite is not granted — it is played for, one card at a time.',
 ];
 
 function pickDailyLine(seed: number): string {
@@ -47,36 +52,83 @@ function pickDailyLine(seed: number): string {
   return ATMOSPHERE_LINES[(day + seed) % ATMOSPHERE_LINES.length];
 }
 
-/** A single cream-translucent tile in the Arknights-style right cluster. */
+/**
+ * Glass-shard tile — each button is a translucent crystalline pane clipped
+ * to an angular polygon.  When arranged side-by-side in the right cluster
+ * the dark container gap acts as the "lead lines" of a stained-glass mosaic.
+ */
 function TileButton(props: {
   label: string;
   caption?: string;
   meta?: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
-  /** Tile color tone — 'primary' is the blue hero CTA; others are cream. */
+  /** Tile color tone */
   tone?: 'primary' | 'cream' | 'cream-dim';
-  /** Layout: 'wide' spans full row, 'half' takes 1fr, 'third' takes 1/3 etc. */
+  /** Layout size preset */
   size?: 'hero' | 'wide' | 'half' | 'third' | 'small';
-  /** Optional right-aligned artwork (data URL or path). */
   art?: string;
-  /** Small badge in the corner (e.g. "1" or "76"). */
   badge?: { label: string; tone?: 'alert' | 'info' | 'gold' };
+  /** CSS clip-path polygon — creates the glass-shard edge. */
+  clipPath?: string;
+  /** Gradient angle (deg) — varies per tile so each pane refracts light differently. */
+  glassAngle?: number;
 }) {
   const isPrimary = props.tone === 'primary';
   const dim = props.tone === 'cream-dim';
+  const ang = props.glassAngle ?? 128;
+
+  // Each palette variant is a frosted glass pane.
+  // Primary  — dense steel-blue glass (opaque hero / CTA)
+  // Regular  — semi-frosted blue-white (most tiles)
+  // Dim      — thin transparent glass (utility tiles)
   const palette = isPrimary
-    ? { bg: 'linear-gradient(135deg, rgba(56,148,196,0.95), rgba(34,108,152,0.92))', color: '#f4fbff', border: 'rgba(180,220,240,0.55)', shadow: '0 10px 30px rgba(40,120,170,0.45)' }
+    ? {
+        glass: [
+          `linear-gradient(${ang}deg, rgba(42,140,205,0.94) 0%, rgba(22,100,162,0.84) 48%, rgba(68,165,222,0.92) 100%)`,
+          'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.075) 20px 21px)',
+          'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.055) 32px 33px)',
+        ].join(', '),
+        specular: 'rgba(200,238,255,0.62)',
+        border: 'rgba(170,225,255,0.75)',
+        color: '#eef8ff',
+        captionColor: 'rgba(210,238,255,0.80)',
+        textShadow: '0 1px 10px rgba(0,0,0,0.45)',
+      }
     : dim
-      ? { bg: 'linear-gradient(135deg, rgba(232,224,210,0.88), rgba(202,192,176,0.85))', color: '#3a2d1e', border: 'rgba(180,160,128,0.7)', shadow: '0 6px 18px rgba(0,0,0,0.35)' }
-      : { bg: 'linear-gradient(135deg, rgba(248,242,230,0.95), rgba(228,218,198,0.92))', color: '#2c2317', border: 'rgba(214,196,160,0.75)', shadow: '0 8px 22px rgba(0,0,0,0.38)' };
+      ? {
+          glass: [
+            `linear-gradient(${ang}deg, rgba(155,205,245,0.55) 0%, rgba(118,178,232,0.40) 48%, rgba(190,225,252,0.52) 100%)`,
+            'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.065) 20px 21px)',
+            'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.048) 32px 33px)',
+          ].join(', '),
+          specular: 'rgba(235,248,255,0.42)',
+          border: 'rgba(155,210,245,0.55)',
+          color: '#ddf0ff',
+          captionColor: 'rgba(195,228,252,0.75)',
+          textShadow: '0 1px 8px rgba(0,10,40,0.55)',
+        }
+      : {
+          glass: [
+            `linear-gradient(${ang}deg, rgba(215,235,255,0.75) 0%, rgba(165,210,250,0.60) 48%, rgba(232,246,255,0.72) 100%)`,
+            'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.075) 20px 21px)',
+            'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.055) 32px 33px)',
+          ].join(', '),
+          specular: 'rgba(255,255,255,0.52)',
+          border: 'rgba(185,225,255,0.68)',
+          color: '#1a2535',
+          captionColor: 'rgba(26,46,75,0.72)',
+          textShadow: '0 1px 4px rgba(220,240,255,0.35)',
+        };
+
   const dims: React.CSSProperties = props.size === 'hero'
-    ? { minHeight: 132, padding: '18px 22px' }
+    ? { minHeight: 132, padding: '18px 24px' }
     : props.size === 'wide'
       ? { minHeight: 78, padding: '14px 18px' }
       : props.size === 'small'
         ? { minHeight: 58, padding: '10px 14px' }
         : { minHeight: 96, padding: '14px 18px' };
+
   return (
     <button
       className="menu-tactile-btn"
@@ -90,34 +142,53 @@ function TileButton(props: {
         justifyContent: 'center',
         gap: 4,
         border: `1px solid ${palette.border}`,
-        borderRadius: 6,
-        background: palette.bg,
+        borderRadius: 0,
+        background: palette.glass,
+        backdropFilter: 'blur(8px) saturate(1.30) brightness(1.14)',
+        WebkitBackdropFilter: 'blur(8px) saturate(1.30) brightness(1.14)',
         color: palette.color,
         fontFamily: uiTypography.body,
         textAlign: 'left',
-        boxShadow: palette.shadow,
         cursor: props.disabled ? 'not-allowed' : 'pointer',
-        opacity: props.disabled ? 0.55 : 1,
+        opacity: props.disabled ? 0.42 : 1,
         overflow: 'hidden',
-        transition: 'transform 160ms ease, box-shadow 160ms ease, filter 160ms ease',
+        transition: 'filter 150ms ease, transform 150ms ease',
+        clipPath: props.clipPath,
+        width: '100%',
+        boxSizing: 'border-box',
         ...dims,
       }}
-      onMouseEnter={(e) => { if (!props.disabled) (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(-2px)'; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'translateY(0)'; }}
+      onMouseEnter={(e) => {
+        if (!props.disabled) {
+          (e.currentTarget as HTMLButtonElement).style.filter = 'brightness(1.20) saturate(1.28)';
+          (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.018)';
+        }
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.filter = '';
+        (e.currentTarget as HTMLButtonElement).style.transform = '';
+      }}
     >
-      {/* Faint background pattern — repeating chevrons */}
+      {/* Glass specular — bright top-edge light reflection */}
       <div aria-hidden style={{
-        position: 'absolute', inset: 0, opacity: 0.07, pointerEvents: 'none',
-        backgroundImage: 'repeating-linear-gradient(135deg, transparent 0 18px, rgba(0,0,0,0.4) 18px 19px)',
+        position: 'absolute', top: 0, left: 0, right: 0, height: '46%',
+        background: `linear-gradient(180deg, ${palette.specular} 0%, transparent 100%)`,
+        pointerEvents: 'none',
+      }} />
+      {/* Glass depth — bottom-edge shadow */}
+      <div aria-hidden style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: '28%',
+        background: 'linear-gradient(0deg, rgba(0,8,24,0.26) 0%, transparent 100%)',
+        pointerEvents: 'none',
       }} />
       {props.art && (
         <div aria-hidden style={{
           position: 'absolute', right: -6, top: -6, bottom: -6, width: '46%',
           backgroundImage: `url(${props.art})`,
           backgroundSize: 'cover', backgroundPosition: 'center right',
-          opacity: 0.85,
-          maskImage: 'linear-gradient(90deg, transparent 0%, #000 50%)',
-          WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, #000 50%)',
+          opacity: 0.60,
+          maskImage: 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.85) 55%)',
+          WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.85) 55%)',
         }} />
       )}
       <div style={{
@@ -127,6 +198,7 @@ function TileButton(props: {
         letterSpacing: props.size === 'small' ? 1.2 : 1.6,
         lineHeight: 1,
         textTransform: props.size === 'small' ? 'uppercase' : 'none',
+        textShadow: palette.textShadow,
       }}>{props.label}</div>
       {props.caption && (
         <div style={{
@@ -134,23 +206,24 @@ function TileButton(props: {
           fontSize: 10,
           letterSpacing: 0.6,
           textTransform: 'uppercase',
-          opacity: 0.72,
+          color: palette.captionColor,
         }}>{props.caption}</div>
       )}
       {props.meta && (
-        <div style={{ position: 'relative', marginTop: 4, fontSize: 11, opacity: 0.85 }}>{props.meta}</div>
+        <div style={{ position: 'relative', marginTop: 4, fontSize: 11, opacity: 0.82 }}>{props.meta}</div>
       )}
       {props.badge && (
         <div style={{
           position: 'absolute', top: 8, right: 10,
           padding: '2px 7px',
-          borderRadius: 4,
+          borderRadius: 2,
           fontFamily: uiTypography.display,
           fontSize: 11,
           letterSpacing: 0.6,
-          color: props.badge.tone === 'alert' ? '#fff' : props.badge.tone === 'gold' ? '#3a2d1e' : '#f4fbff',
-          background: props.badge.tone === 'alert' ? 'rgba(196,68,68,0.95)' : props.badge.tone === 'gold' ? 'rgba(232,196,128,0.95)' : 'rgba(56,148,196,0.95)',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.4)',
+          backdropFilter: 'blur(4px)',
+          color: props.badge.tone === 'alert' ? '#fff' : props.badge.tone === 'gold' ? '#1a2535' : '#eef8ff',
+          background: props.badge.tone === 'alert' ? 'rgba(196,68,68,0.92)' : props.badge.tone === 'gold' ? 'rgba(210,178,100,0.92)' : 'rgba(36,128,192,0.92)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.50)',
         }}>{props.badge.label}</div>
       )}
     </button>
@@ -169,14 +242,16 @@ function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: ()
         width: 36, height: 36,
         borderRadius: 8,
         border: `1px solid ${warmTheme.border}`,
-        background: 'rgba(20,14,10,0.55)',
-        color: warmTheme.accentSoft,
+        background: 'rgba(10,18,36,0.60)',
         fontSize: 16,
+        color: '#7dd4f8',
         cursor: 'pointer',
         backdropFilter: 'blur(4px)',
       }}
     >
-      {props.glyph}
+      <span style={{ display: 'block', lineHeight: 1 }}>
+        {props.glyph}
+      </span>
       {props.dot && (
         <span style={{
           position: 'absolute', top: 4, right: 4,
@@ -202,10 +277,10 @@ function ResourcePill(props: { glyph: string; label: string; value: string; tone
       padding: '6px 12px 6px 8px',
       borderRadius: 999,
       border: `1px solid ${warmTheme.border}`,
-      background: 'rgba(16,11,7,0.62)',
+      background: 'rgba(8,16,32,0.68)',
       backdropFilter: 'blur(4px)',
       fontFamily: uiTypography.body,
-      color: '#f0e4d0',
+      color: '#e8f2fc',
       letterSpacing: 0.6,
     }}>
       <span style={{
@@ -263,7 +338,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         // Full-bleed art with deep vignette so foreground UI reads clearly
         backgroundImage:
           'radial-gradient(120% 80% at 30% 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.78) 100%), '
-          + 'linear-gradient(180deg, rgba(8,5,3,0.45) 0%, rgba(8,5,3,0) 22%, rgba(8,5,3,0) 70%, rgba(8,5,3,0.65) 100%), '
+          + 'linear-gradient(180deg, rgba(5,10,22,0.45) 0%, rgba(5,10,22,0) 22%, rgba(5,10,22,0) 70%, rgba(5,10,22,0.65) 100%), '
           + `url(${import.meta.env.BASE_URL}assets/InfiniteCardsMenuArt.png)`,
         backgroundSize: 'cover, cover, cover',
         backgroundPosition: 'center, center, center',
@@ -287,7 +362,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             fontFamily: uiTypography.body, fontSize: 11, letterSpacing: 1.4,
-            color: 'rgba(245,232,214,0.78)', textTransform: 'uppercase', marginRight: 6,
+            color: 'rgba(210,232,252,0.78)', textTransform: 'uppercase', marginRight: 6,
           }}>
             Pantheon · Idle
           </div>
@@ -312,19 +387,28 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             width: 96, height: 96,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             borderRadius: '50%',
-            border: '2px solid rgba(245,232,214,0.18)',
-            background: 'rgba(20,14,10,0.55)',
+            border: '2px solid rgba(160,210,255,0.22)',
+            background: 'rgba(10,18,36,0.60)',
+            overflow: 'hidden',
           }}>
-            <div style={{
-              fontFamily: uiTypography.display, fontSize: 30, color: '#f5e8d6', letterSpacing: 1,
-              textShadow: '0 2px 12px rgba(0,0,0,0.6)',
-            }} title={avatar.label}>
-              {avatar.glyph ?? '◈'}
-            </div>
+            {avatar.imageUrl
+              ? <img
+                  src={avatar.imageUrl}
+                  alt={avatar.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  draggable={false}
+                />
+              : <div style={{
+                  fontFamily: uiTypography.display, fontSize: 30, color: '#eef4fc', letterSpacing: 1,
+                  textShadow: '0 2px 12px rgba(0,0,0,0.6)',
+                }} title={avatar.name}>
+                  {avatar.glyph ?? '◈'}
+                </div>
+            }
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1.4, color: '#f5e8d6',
+              fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1.4, color: '#eef4fc',
               textShadow: '0 2px 12px rgba(0,0,0,0.7)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               {profile.name || 'Acolyte'}
@@ -339,7 +423,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             )}
             <div style={{
               fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 1.4,
-              color: 'rgba(245,232,214,0.55)', textTransform: 'uppercase', marginTop: 2,
+              color: 'rgba(190,220,252,0.62)', textTransform: 'uppercase', marginTop: 2,
             }}>
               Active Deck · {deck.deckList.length} cards
             </div>
@@ -354,9 +438,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             padding: '12px 16px',
             borderRadius: 4,
             border: `1px solid ${warmTheme.border}`,
-            background: 'rgba(14,9,6,0.62)',
+            background: 'rgba(8,16,34,0.68)',
             backdropFilter: 'blur(4px)',
-            color: 'rgba(245,232,214,0.88)',
+            color: 'rgba(220,240,255,0.88)',
             fontFamily: uiTypography.body,
             fontSize: 13,
             fontStyle: 'italic',
@@ -426,8 +510,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             padding: '10px 14px',
             borderRadius: 4,
             border: `1px solid ${warmTheme.border}`,
-            background: 'rgba(20,14,10,0.78)',
-            color: '#f0e4d0',
+            background: 'rgba(10,18,36,0.82)',
+            color: '#e8f2fc',
             fontFamily: uiTypography.display,
             fontSize: 14,
             letterSpacing: 1.4,
@@ -448,8 +532,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             padding: '10px 14px',
             borderRadius: 4,
             border: `1px solid ${warmTheme.border}`,
-            background: 'rgba(20,14,10,0.78)',
-            color: '#f0e4d0',
+            background: 'rgba(10,18,36,0.82)',
+            color: '#e8f2fc',
             fontFamily: uiTypography.display,
             fontSize: 14,
             letterSpacing: 1.4,
@@ -464,7 +548,12 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         </button>
       </div>
 
-      {/* ───────── Right: tile cluster ───────── */}
+      {/* ───────── Right: scattered glass shards ───────── */}
+      {/*
+        Container is fully transparent — no dark panel behind the tiles.
+        Each wrapper div carries a drop-shadow (follows the clip-path shape)
+        and a slight rotation so the shards look scattered rather than gridded.
+      */}
       <div style={{
         position: 'absolute',
         right: 'clamp(20px, 3vw, 56px)',
@@ -474,11 +563,12 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr)',
         gridAutoRows: 'min-content',
-        gap: 10,
+        gap: 22,
         alignContent: 'start',
+        background: 'transparent',
       }}>
-        {/* Hero — Begin Turn (spans full width) */}
-        <div style={{ gridColumn: '1 / -1' }}>
+        {/* Hero — Begin Turn */}
+        <div style={{ gridColumn: '1 / -1', filter: 'drop-shadow(0 6px 20px rgba(0,20,60,0.55))' }}>
           <TileButton
             label="Begin Turn"
             caption={canBeginTurn ? 'Step into the arena' : 'Build a deck before beginning your turn.'}
@@ -487,44 +577,135 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             onClick={props.onBeginTurn}
             disabled={!canBeginTurn}
             meta={canBeginTurn ? <span style={{ opacity: 0.85 }}>{deck.deckList.length} cards · ready to draw</span> : undefined}
+            clipPath="polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 52px) 100%, 0 100%)"
+            glassAngle={128}
           />
         </div>
 
         {/* Row: Eternity's Wake | Infinitude */}
-        <div style={{ gridColumn: 'span 3' }}>
-          <TileButton label={t('eternityWake') || "Eternity's Wake"} caption="Boss challenges · Earn Eternals" size="half" onClick={props.onEternitysWake} />
+        <div style={{ gridColumn: 'span 3', transform: 'rotate(-0.9deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.50))' }}>
+          <TileButton
+            label={t('eternityWake') || "Eternity's Wake"}
+            caption="Boss challenges · Earn Eternals"
+            size="half"
+            onClick={props.onEternitysWake}
+            clipPath="polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
+            glassAngle={118}
+          />
         </div>
-        <div style={{ gridColumn: 'span 3' }}>
-          <TileButton label={t('infinitude') || 'Infinitude'} caption="Merge Eternals into Infinites" size="half" onClick={props.onInfinitude} />
+        <div style={{ gridColumn: 'span 3', transform: 'rotate(0.7deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.50))' }}>
+          <TileButton
+            label={t('infinitude') || 'Infinitude'}
+            caption="Merge Eternals into Infinites"
+            size="half"
+            onClick={props.onInfinitude}
+            clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
+            glassAngle={142}
+          />
         </div>
 
-        {/* Row: Card Store (wide) split with Deck Builder / Deck Viewer */}
-        <div style={{ gridColumn: 'span 6', display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 10 }}>
-          <TileButton label={t('cardStore') || 'Store'} caption="Open card packs" tone="primary" size="wide" onClick={props.onCardStore} />
-          <TileButton label={noDecklist ? '+ Deck' : 'Edit Deck'} caption="Build & tune" tone="cream" size="wide" onClick={props.onDeckBuilder} />
-          <TileButton label="Viewer" caption="Inspect your deck" tone="cream-dim" size="wide" onClick={props.onDeckViewer} />
+        {/* Row: Card Store | Deck Builder | Viewer */}
+        <div style={{ gridColumn: 'span 6', display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 22, background: 'transparent' }}>
+          <div style={{ transform: 'rotate(0.5deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.52))' }}>
+            <TileButton
+              label={t('cardStore') || 'Store'}
+              caption="Open card packs"
+              tone="primary"
+              size="wide"
+              onClick={props.onCardStore}
+              clipPath="polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
+              glassAngle={125}
+            />
+          </div>
+          <div style={{ transform: 'rotate(-0.6deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.48))' }}>
+            <TileButton
+              label={noDecklist ? '+ Deck' : 'Edit Deck'}
+              caption="Build & tune"
+              tone="cream"
+              size="wide"
+              onClick={props.onDeckBuilder}
+              clipPath="polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
+              glassAngle={108}
+            />
+          </div>
+          <div style={{ transform: 'rotate(0.8deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.46))' }}>
+            <TileButton
+              label="Viewer"
+              caption="Inspect your deck"
+              tone="cream-dim"
+              size="wide"
+              onClick={props.onDeckViewer}
+              clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
+              glassAngle={152}
+            />
+          </div>
         </div>
 
         {/* Row: Quests | Achievements | Mastery */}
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton label="Quests" caption="Daily & weekly goals" size="half" onClick={props.onQuests} />
+        <div style={{ gridColumn: 'span 2', transform: 'rotate(-0.7deg)', filter: 'drop-shadow(0 5px 14px rgba(0,20,60,0.46))' }}>
+          <TileButton
+            label="Quests"
+            caption="Daily & weekly goals"
+            size="half"
+            onClick={props.onQuests}
+            clipPath="polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
+            glassAngle={120}
+          />
         </div>
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton label="Achievements" caption="Long-term rewards" size="half" onClick={props.onAchievements} />
+        <div style={{ gridColumn: 'span 2', transform: 'rotate(0.5deg)', filter: 'drop-shadow(0 5px 14px rgba(0,20,60,0.46))' }}>
+          <TileButton
+            label="Achievements"
+            caption="Long-term rewards"
+            size="half"
+            onClick={props.onAchievements}
+            clipPath="polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
+            glassAngle={135}
+          />
         </div>
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton label="Mastery" caption="Per-card progression" size="half" onClick={props.onMastery} />
+        <div style={{ gridColumn: 'span 2', transform: 'rotate(-1.0deg)', filter: 'drop-shadow(0 5px 14px rgba(0,20,60,0.46))' }}>
+          <TileButton
+            label="Mastery"
+            caption="Per-card progression"
+            size="half"
+            onClick={props.onMastery}
+            clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
+            glassAngle={112}
+          />
         </div>
 
         {/* Bottom utility row */}
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton label="Player Info" caption="Profile · Social · Save" tone="cream-dim" size="small" onClick={props.onPlayerInfo} />
+        <div style={{ gridColumn: 'span 2', transform: 'rotate(0.6deg)', filter: 'drop-shadow(0 4px 12px rgba(0,20,60,0.42))' }}>
+          <TileButton
+            label="Player Info"
+            caption="Profile · Social · Save"
+            tone="cream-dim"
+            size="small"
+            onClick={props.onPlayerInfo}
+            clipPath="polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
+            glassAngle={128}
+          />
         </div>
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton label="Settings" caption="Audio · controls" tone="cream-dim" size="small" onClick={props.onSettings} />
+        <div style={{ gridColumn: 'span 2', transform: 'rotate(-0.5deg)', filter: 'drop-shadow(0 4px 12px rgba(0,20,60,0.42))' }}>
+          <TileButton
+            label="Settings"
+            caption="Audio · controls"
+            tone="cream-dim"
+            size="small"
+            onClick={props.onSettings}
+            clipPath="polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
+            glassAngle={145}
+          />
         </div>
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton label="Tutorial" caption="How to play" tone="cream-dim" size="small" onClick={props.onTutorial} />
+        <div style={{ gridColumn: 'span 2', transform: 'rotate(0.8deg)', filter: 'drop-shadow(0 4px 12px rgba(0,20,60,0.42))' }}>
+          <TileButton
+            label="Tutorial"
+            caption="How to play"
+            tone="cream-dim"
+            size="small"
+            onClick={props.onTutorial}
+            clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
+            glassAngle={118}
+          />
         </div>
       </div>
     </div>

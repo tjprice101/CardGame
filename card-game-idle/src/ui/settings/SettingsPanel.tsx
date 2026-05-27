@@ -1,6 +1,6 @@
 ﻿import { useRef, useState } from 'react';
 import { useStore, selectSettings } from '@/state/store';
-import { warmTheme } from '@/ui/theme';
+import { subMenuWarm } from '@/ui/theme';
 import { FONT_SIZE_OPTIONS, LANGUAGE_OPTIONS, t } from '@/ui/preferences';
 import ControlsSection from '@/ui/settings/ControlsSection';
 import type { SettingsState } from '@/types/game';
@@ -97,274 +97,203 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
 
   return (
     <div style={{
-      position: 'absolute',
-      inset: 0,
-      background: 'radial-gradient(circle at 50% 14%, rgba(201, 170, 112, 0.2) 0%, rgba(201, 170, 112, 0) 36%), radial-gradient(circle at 10% 86%, rgba(104, 134, 174, 0.2) 0%, rgba(104, 134, 174, 0) 40%), repeating-linear-gradient(35deg, rgba(222, 196, 148, 0.06) 0px, rgba(222, 196, 148, 0.06) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 20px), linear-gradient(180deg, rgba(16, 18, 23, 0.965) 0%, rgba(19, 24, 31, 0.965) 100%)',
+      position: 'absolute', inset: 0,
+      background: 'radial-gradient(ellipse at 50% 0%, rgba(180,130,60,0.18) 0%, transparent 50%), linear-gradient(180deg, rgba(14,16,20,0.96) 0%, rgba(18,22,28,0.96) 100%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 50, pointerEvents: 'auto', fontFamily: 'Georgia, serif',
-      ['--ui-accent' as any]: '230, 196, 132',
-      ['--ui-accent-soft' as any]: '250, 224, 184',
-    } as React.CSSProperties}>
-      <div className="ui-panel-intro" style={{
-        background: warmTheme.surfaceStrong,
-        border: `1px solid ${warmTheme.borderStrong}`,
-        borderRadius: 16,
-        padding: '28px 32px',
-        width: 340,
-        boxShadow: warmTheme.shadow,
-        maxHeight: '88vh',
-        overflowY: 'auto',
-        position: 'relative',
+    }}>
+      <div style={{
+        background: 'linear-gradient(160deg, rgba(255,252,244,0.99) 0%, rgba(250,244,232,0.99) 100%)',
+        border: `1px solid ${subMenuWarm.borderStrong}`,
+        borderRadius: 18,
+        width: 480,
+        boxShadow: `${subMenuWarm.shadow}, inset 0 1px 0 rgba(255,240,200,0.6)`,
+        maxHeight: '90vh',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
       }}>
+        {/* Top accent band */}
+        <div style={{
+          height: 4, flexShrink: 0,
+          background: `linear-gradient(90deg, ${subMenuWarm.accentDeep}, ${subMenuWarm.accent}, ${subMenuWarm.accentDeep})`,
+        }} />
+
         {/* Header */}
-        <div className="ui-shimmer-band" style={{
+        <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          marginBottom: 24, borderBottom: `1px solid ${warmTheme.border}`, paddingBottom: 14,
-          position: 'relative',
+          padding: '18px 28px 14px', borderBottom: `1px solid ${subMenuWarm.border}`,
+          flexShrink: 0,
         }}>
-          <div className="ui-title-glow" style={{ fontSize: 18, fontWeight: 'bold', color: warmTheme.accentDeep, letterSpacing: 2 }}>
+          <div style={{ fontSize: 22, fontWeight: 'bold', color: subMenuWarm.accentDeep, letterSpacing: 2 }}>
             {t('settingsTitle')}
           </div>
-          <button className="menu-tactile-btn"
+          <button
             onClick={onClose}
             style={{
-              background: 'transparent', border: 'none', color: warmTheme.textMuted,
-              fontSize: 18, cursor: 'pointer', lineHeight: 1, padding: '0 4px',
+              width: 32, height: 32, borderRadius: '50%',
+              border: `1px solid ${subMenuWarm.border}`,
+              background: subMenuWarm.surfaceMuted,
+              color: subMenuWarm.textMuted, fontSize: 14, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
-          >X</button>
+          >✕</button>
         </div>
 
-        {/* Save Data section */}
-        <div style={{ marginBottom: 18 }}>
-          <div style={{
-            fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-            color: warmTheme.textMuted, marginBottom: 12,
-          }}>
-            {t('gameplaySettings')}
-          </div>
+        {/* Scrollable content */}
+        <div style={{ overflowY: 'auto', flex: 1, padding: '22px 28px' }}>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <label style={{ fontSize: 12, color: warmTheme.text, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-              <span>{t('musicVolume')}</span>
-              <span style={{ color: warmTheme.textMuted }}>{Math.round((draft.musicVolume ?? settings.musicVolume) * 100)}%</span>
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
+          {/* ── Gameplay Settings ── */}
+          <SectionHeader icon="♪" label={t('gameplaySettings')} />
+
+          {/* Volume sliders */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 18 }}>
+            <VolumeSlider
+              label={t('musicVolume')}
               value={Math.round((draft.musicVolume ?? settings.musicVolume) * 100)}
-              onChange={(e) => patchDraft({ musicVolume: Number(e.target.value) / 100 })}
+              onChange={v => patchDraft({ musicVolume: v / 100 })}
             />
-
-            <label style={{ fontSize: 12, color: warmTheme.text, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
-              <span>{t('sfxVolume')}</span>
-              <span style={{ color: warmTheme.textMuted }}>{Math.round((draft.sfxVolume ?? settings.sfxVolume) * 100)}%</span>
-            </label>
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={1}
+            <VolumeSlider
+              label={t('sfxVolume')}
               value={Math.round((draft.sfxVolume ?? settings.sfxVolume) * 100)}
-              onChange={(e) => patchDraft({ sfxVolume: Number(e.target.value) / 100 })}
+              onChange={v => patchDraft({ sfxVolume: v / 100 })}
             />
+          </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
-              <input
-                type="checkbox"
-                checked={(draft.musicVolume ?? settings.musicVolume) > 0}
-                onChange={(e) => patchDraft({ musicVolume: e.target.checked ? Math.max(draft.musicVolume ?? settings.musicVolume, 0.45) : 0 })}
-              />
-              {t('musicEnabled')}
-            </label>
+          {/* Checkboxes in 2-col grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px 16px', marginBottom: 18 }}>
+            <CheckRow
+              label={t('musicEnabled')}
+              checked={(draft.musicVolume ?? settings.musicVolume) > 0}
+              onChange={on => patchDraft({ musicVolume: on ? Math.max(draft.musicVolume ?? settings.musicVolume, 0.45) : 0 })}
+            />
+            <CheckRow
+              label={t('particlesEnabled')}
+              checked={draft.particlesEnabled ?? settings.particlesEnabled}
+              onChange={on => patchDraft({ particlesEnabled: on })}
+            />
+            <CheckRow
+              label={t('reducedMotion')}
+              checked={draft.reducedMotion ?? settings.reducedMotion}
+              onChange={on => patchDraft({ reducedMotion: on })}
+            />
+            <CheckRow
+              label="Compact UI mode"
+              checked={!!(draft.compactMode ?? settings.compactMode)}
+              onChange={on => patchDraft({ compactMode: on })}
+            />
+            <CheckRow
+              label="Highlight keywords"
+              checked={(draft.highlightRulesText ?? settings.highlightRulesText) !== false}
+              onChange={on => patchDraft({ highlightRulesText: on })}
+            />
+          </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
-              <input
-                type="checkbox"
-                checked={draft.particlesEnabled ?? settings.particlesEnabled}
-                onChange={(e) => patchDraft({ particlesEnabled: e.target.checked })}
-              />
-              {t('particlesEnabled')}
-            </label>
+          {/* Selects row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 18 }}>
+            <SelectRow
+              label={t('fontSizePreset')}
+              value={draft.fontSizePreset ?? settings.fontSizePreset}
+              options={FONT_SIZE_OPTIONS}
+              onChange={v => patchDraft({ fontSizePreset: v as typeof settings.fontSizePreset })}
+            />
+            <SelectRow
+              label={t('language')}
+              value={draft.language ?? settings.language}
+              options={LANGUAGE_OPTIONS}
+              onChange={v => patchDraft({ language: v as typeof settings.language })}
+            />
+          </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
-              <input
-                type="checkbox"
-                checked={draft.reducedMotion ?? settings.reducedMotion}
-                onChange={(e) => patchDraft({ reducedMotion: e.target.checked })}
-              />
-              {t('reducedMotion')}
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
-              <input
-                type="checkbox"
-                checked={!!(draft.compactMode ?? settings.compactMode)}
-                onChange={(e) => patchDraft({ compactMode: e.target.checked })}
-              />
-              Compact UI mode
-            </label>
-
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: warmTheme.text }}>
-              <input
-                type="checkbox"
-                checked={(draft.highlightRulesText ?? settings.highlightRulesText) !== false}
-                onChange={(e) => patchDraft({ highlightRulesText: e.target.checked })}
-              />
-              Highlight keywords in card rules
-            </label>
-
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: warmTheme.text }}>
-              <span>{t('fontSizePreset')}</span>
-              <select
-                value={draft.fontSizePreset ?? settings.fontSizePreset}
-                onChange={(e) => patchDraft({ fontSizePreset: e.target.value as typeof settings.fontSizePreset })}
-                style={{
-                  border: `1px solid ${warmTheme.borderStrong}`,
-                  borderRadius: 8,
-                  background: warmTheme.surface,
-                  color: warmTheme.text,
-                  fontFamily: 'Georgia, serif',
-                  padding: '6px 8px',
-                }}
-              >
-                {FONT_SIZE_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-
-            {/* Card Art Display Mode */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 12, color: warmTheme.text }}>Card Art Display</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                {(
-                  [
-                    { value: 'both',        label: 'Both (Default)',  desc: 'Name + Effects',   showTop: true,  showBottom: true  },
-                    { value: 'top-only',    label: 'Name Only',       desc: 'Name only',         showTop: true,  showBottom: false },
-                    { value: 'bottom-only', label: 'Effects Only',    desc: 'Effects only',      showTop: false, showBottom: true  },
-                    { value: 'art-only',    label: 'Full Art',        desc: 'Art with outline',  showTop: false, showBottom: false },
-                  ] as const
-                ).map((opt) => {
-                  const isActive = (draft.cardArtDisplay ?? settings.cardArtDisplay) === opt.value;
-                  return (
-                    <button className="menu-tactile-btn"
-                      key={opt.value}
-                      onClick={() => patchDraft({ cardArtDisplay: opt.value })}
-                      style={{
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                        padding: '8px 6px', borderRadius: 10, cursor: 'pointer',
-                        border: `1px solid ${isActive ? warmTheme.borderStrong : warmTheme.border}`,
-                        background: isActive ? 'rgba(240,189,120,0.12)' : warmTheme.surface,
-                        fontFamily: 'Georgia, serif',
-                      }}
-                    >
-                      {/* Mini card preview */}
-                      <div style={{
-                        width: 52, height: 72, borderRadius: 6, overflow: 'hidden', position: 'relative', flexShrink: 0,
-                        background: 'linear-gradient(160deg, #2a1e38 0%, #1a2434 50%, #1e2a1e 100%)',
-                        boxShadow: opt.value === 'art-only' ? '0 0 0 1.5px rgba(255,255,255,0.7)' : `0 0 0 1px ${warmTheme.border}`,
-                        display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                      }}>
-                        {opt.showTop && (
-                          <div style={{
-                            background: 'rgba(240,228,210,0.93)', padding: '3px 4px', flexShrink: 0,
-                          }}>
-                            <div style={{ fontSize: 5, color: '#555', letterSpacing: 0.5 }}>OPHANIM</div>
-                            <div style={{ fontSize: 6, fontWeight: 'bold', color: '#1a0e06', lineHeight: 1.2 }}>Oblivion Shard</div>
-                          </div>
-                        )}
-                        <div style={{ flex: 1 }} />
-                        {opt.showBottom && (
-                          <div style={{
-                            background: 'rgba(234,220,200,0.92)', padding: '3px 4px', flexShrink: 0,
-                          }}>
-                            <div style={{ fontSize: 5, color: '#2a1a0e', lineHeight: 1.3 }}>Draw 2 cards. +800 Oblivion.</div>
-                          </div>
-                        )}
-                      </div>
-                      <div style={{ fontSize: 9, color: isActive ? warmTheme.accentDeep : warmTheme.textMuted, textAlign: 'center', letterSpacing: 0.5 }}>
-                        {opt.label}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: warmTheme.text }}>
-              <span>{t('language')}</span>
-              <select
-                value={draft.language ?? settings.language}
-                onChange={(e) => patchDraft({ language: e.target.value as typeof settings.language })}
-                style={{
-                  border: `1px solid ${warmTheme.borderStrong}`,
-                  borderRadius: 8,
-                  background: warmTheme.surface,
-                  color: warmTheme.text,
-                  fontFamily: 'Georgia, serif',
-                  padding: '6px 8px',
-                }}
-              >
-                {LANGUAGE_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
-            </label>
-
-            <div style={{ fontSize: 10, color: warmTheme.textMuted, lineHeight: 1.4 }}>
-              Changes take effect after saving.
+          {/* Card Art Display */}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 11, color: subMenuWarm.textMuted, marginBottom: 10, letterSpacing: 0.5 }}>Card Art Display</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+              {(
+                [
+                  { value: 'both',        label: 'Both',        showTop: true,  showBottom: true  },
+                  { value: 'top-only',    label: 'Name Only',   showTop: true,  showBottom: false },
+                  { value: 'bottom-only', label: 'Effects',     showTop: false, showBottom: true  },
+                  { value: 'art-only',    label: 'Full Art',    showTop: false, showBottom: false },
+                ] as const
+              ).map(opt => {
+                const isActive = (draft.cardArtDisplay ?? settings.cardArtDisplay) === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => patchDraft({ cardArtDisplay: opt.value })}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                      padding: '8px 4px', borderRadius: 10, cursor: 'pointer',
+                      border: `1px solid ${isActive ? subMenuWarm.borderStrong : subMenuWarm.border}`,
+                      background: isActive ? 'rgba(200,128,58,0.10)' : 'rgba(0,0,0,0.03)',
+                      fontFamily: 'Georgia, serif',
+                    }}
+                  >
+                    <div style={{
+                      width: 44, height: 60, borderRadius: 5, overflow: 'hidden',
+                      background: 'linear-gradient(160deg, #2a1e38 0%, #1a2434 50%, #1e2a1e 100%)',
+                      boxShadow: `0 0 0 ${isActive ? '1.5px ' + subMenuWarm.accent : '1px rgba(0,0,0,0.2)'}`,
+                      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                    }}>
+                      {opt.showTop && (
+                        <div style={{ background: 'rgba(240,228,210,0.93)', padding: '2px 3px' }}>
+                          <div style={{ fontSize: 4, color: '#555' }}>OPHANIM</div>
+                          <div style={{ fontSize: 5, fontWeight: 'bold', color: '#1a0e06' }}>Oblivion Shard</div>
+                        </div>
+                      )}
+                      <div style={{ flex: 1 }} />
+                      {opt.showBottom && (
+                        <div style={{ background: 'rgba(234,220,200,0.92)', padding: '2px 3px' }}>
+                          <div style={{ fontSize: 4, color: '#2a1a0e' }}>Draw 2 cards. +800 Oblivion.</div>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 8, color: isActive ? subMenuWarm.accentDeep : subMenuWarm.textMuted, textAlign: 'center', letterSpacing: 0.5, fontWeight: isActive ? 700 : 400 }}>
+                      {opt.label}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
 
-        {/* Save Settings */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{
-            fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-            color: warmTheme.textMuted, marginBottom: 10,
-          }}>
-            Settings
-          </div>
+          {/* ── Save Settings ── */}
+          <SectionDivider />
+          <SectionHeader icon="✎" label="Preferences" />
 
           {hasChanges && (
             <div style={{
-              marginBottom: 10, padding: '7px 10px', borderRadius: 8,
-              fontSize: 10, color: warmTheme.accent,
-              border: `1px solid ${warmTheme.border}`,
-              background: 'rgba(214,162,94,0.07)',
-              lineHeight: 1.4,
+              marginBottom: 10, padding: '8px 12px', borderRadius: 8,
+              fontSize: 11, color: subMenuWarm.accent,
+              border: `1px solid rgba(200,128,58,0.35)`,
+              background: 'rgba(200,128,58,0.07)',
             }}>
-              You have unsaved changes 窶・click Save Settings to apply them.
+              Unsaved changes — click <strong>Save Settings</strong> to apply.
             </div>
           )}
 
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
             <button
-              className="menu-tactile-btn"
               onClick={handleSaveSettings}
               style={{
                 flex: 1, padding: '10px 0', borderRadius: 10,
-                border: `1px solid ${settingsSaved ? 'rgba(79,138,71,0.45)' : hasChanges ? warmTheme.borderStrong : warmTheme.border}`,
-                background: settingsSaved ? 'rgba(79,138,71,0.12)' : hasChanges ? warmTheme.button : 'rgba(0,0,0,0.06)',
-                color: settingsSaved ? warmTheme.success : hasChanges ? warmTheme.accentDeep : warmTheme.textMuted,
-                fontSize: 13, cursor: hasChanges ? 'pointer' : 'default', fontFamily: 'Georgia, serif',
-                letterSpacing: 1, transition: 'all 0.2s',
+                border: `1px solid ${settingsSaved ? 'rgba(79,138,71,0.45)' : hasChanges ? subMenuWarm.borderStrong : subMenuWarm.border}`,
+                background: settingsSaved ? 'rgba(79,138,71,0.12)' : hasChanges ? subMenuWarm.button : 'rgba(0,0,0,0.06)',
+                color: settingsSaved ? subMenuWarm.success : hasChanges ? '#fff' : subMenuWarm.textMuted,
+                fontSize: 13, cursor: hasChanges ? 'pointer' : 'default',
+                fontFamily: 'Georgia, serif', letterSpacing: 1, transition: 'all 0.2s',
               }}
             >
-              {settingsSaved ? 'Saved!' : 'Save Settings'}
+              {settingsSaved ? '✓ Saved' : 'Save Settings'}
             </button>
-
             {hasChanges && (
               <button
-                className="menu-tactile-btn"
                 onClick={handleDiscardSettings}
                 style={{
-                  padding: '10px 14px', borderRadius: 10,
-                  border: `1px solid ${warmTheme.border}`,
+                  padding: '10px 16px', borderRadius: 10,
+                  border: `1px solid ${subMenuWarm.border}`,
                   background: 'transparent',
-                  color: warmTheme.textMuted, fontSize: 12, cursor: 'pointer',
+                  color: subMenuWarm.textMuted, fontSize: 12, cursor: 'pointer',
                   fontFamily: 'Georgia, serif',
                 }}
               >
@@ -372,24 +301,199 @@ export default function SettingsPanel({ onClose, onSave, onWipe, onExport, onImp
               </button>
             )}
           </div>
+
+          {/* ── Save Data ── */}
+          <SectionDivider />
+          <SectionHeader icon="💾" label="Save Data" />
+
+          {saveTampered && (
+            <div style={{
+              marginBottom: 10, padding: '8px 12px', borderRadius: 8,
+              fontSize: 11, color: subMenuWarm.danger,
+              border: `1px solid rgba(184,92,79,0.35)`,
+              background: 'rgba(184,92,79,0.07)',
+            }}>
+              Save integrity check failed — data may have been modified.
+            </div>
+          )}
+
+          {importStatus && (
+            <div style={{
+              marginBottom: 10, padding: '8px 12px', borderRadius: 8,
+              fontSize: 11,
+              color: importStatus.kind === 'ok' ? subMenuWarm.success : subMenuWarm.danger,
+              border: `1px solid ${importStatus.kind === 'ok' ? 'rgba(79,138,71,0.35)' : 'rgba(184,92,79,0.35)'}`,
+              background: importStatus.kind === 'ok' ? 'rgba(79,138,71,0.07)' : 'rgba(184,92,79,0.07)',
+            }}>
+              {importStatus.msg}
+            </div>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+            <button
+              onClick={handleSaveGame}
+              style={{
+                padding: '9px 0', borderRadius: 10,
+                border: `1px solid ${gameSaved ? 'rgba(79,138,71,0.45)' : subMenuWarm.borderStrong}`,
+                background: gameSaved ? 'rgba(79,138,71,0.12)' : subMenuWarm.button,
+                color: gameSaved ? subMenuWarm.success : '#fff',
+                fontSize: 12, cursor: 'pointer',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              {gameSaved ? '✓ Saved' : 'Save Game'}
+            </button>
+            <button
+              onClick={handleExport}
+              style={{
+                padding: '9px 0', borderRadius: 10,
+                border: `1px solid ${subMenuWarm.border}`,
+                background: 'rgba(0,0,0,0.04)',
+                color: subMenuWarm.text, fontSize: 12, cursor: 'pointer',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              Export Save
+            </button>
+            <button
+              onClick={handleImportClick}
+              style={{
+                padding: '9px 0', borderRadius: 10,
+                border: `1px solid ${subMenuWarm.border}`,
+                background: 'rgba(0,0,0,0.04)',
+                color: subMenuWarm.text, fontSize: 12, cursor: 'pointer',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              Import Save
+            </button>
+            <button
+              onClick={() => {
+                if (confirmDelete === 0) { setConfirmDelete(1); return; }
+                if (confirmDelete === 1) { setConfirmDelete(2); return; }
+                handleWipe();
+              }}
+              style={{
+                padding: '9px 0', borderRadius: 10,
+                border: `1px solid ${confirmDelete > 0 ? 'rgba(184,92,79,0.5)' : subMenuWarm.border}`,
+                background: confirmDelete > 0 ? 'rgba(184,92,79,0.10)' : 'rgba(0,0,0,0.04)',
+                color: confirmDelete > 0 ? subMenuWarm.danger : subMenuWarm.textMuted,
+                fontSize: 12, cursor: 'pointer',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              {confirmDelete === 0 ? 'Delete Save' : confirmDelete === 1 ? 'Are you sure?' : 'Click to Confirm'}
+            </button>
+          </div>
+          <input ref={fileInputRef} type="file" accept=".pansave,.json,.txt" style={{ display: 'none' }} onChange={handleImportFile} />
+
+          {/* ── Controls ── */}
+          <SectionDivider />
+          <ControlsSection />
         </div>
 
-        <ControlsSection />
-
-
-        <button className="menu-tactile-btn"
-          onClick={onClose}
-          style={{
-            width: '100%', padding: '9px 0', borderRadius: 10,
-            border: `1px solid ${warmTheme.border}`,
-            background: warmTheme.surface,
-            color: warmTheme.textMuted, fontSize: 12, cursor: 'pointer',
-            fontFamily: 'Georgia, serif',
-          }}
-        >
-          {t('close')}
-        </button>
+        {/* Footer close button */}
+        <div style={{ padding: '12px 28px', borderTop: `1px solid ${subMenuWarm.border}`, flexShrink: 0 }}>
+          <button
+            onClick={onClose}
+            style={{
+              width: '100%', padding: '9px 0', borderRadius: 10,
+              border: `1px solid ${subMenuWarm.border}`,
+              background: 'rgba(0,0,0,0.04)',
+              color: subMenuWarm.textMuted, fontSize: 12, cursor: 'pointer',
+              fontFamily: 'Georgia, serif',
+            }}
+          >
+            {t('close')}
+          </button>
+        </div>
       </div>
     </div>
+  );
+}
+
+function SectionHeader({ icon, label }: { icon: string; label: string }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
+    }}>
+      <span style={{
+        fontSize: 11, color: subMenuWarm.accentSoft,
+        background: 'rgba(200,128,58,0.1)', padding: '2px 6px',
+        borderRadius: 5, border: `1px solid rgba(200,128,58,0.18)`,
+      }}>{icon}</span>
+      <span style={{
+        fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
+        fontWeight: 700, color: subMenuWarm.accentDeep,
+      }}>{label}</span>
+    </div>
+  );
+}
+
+function SectionDivider() {
+  return <div style={{ borderTop: `1px solid ${subMenuWarm.border}`, margin: '16px 0 18px' }} />;
+}
+
+function VolumeSlider({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+  return (
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <span style={{ fontSize: 12, color: subMenuWarm.text }}>{label}</span>
+        <span style={{
+          fontSize: 11, color: subMenuWarm.accentSoft, fontWeight: 600,
+          background: 'rgba(200,128,58,0.08)', padding: '1px 7px',
+          borderRadius: 5, border: `1px solid rgba(200,128,58,0.18)`,
+        }}>{value}%</span>
+      </div>
+      <input
+        type="range" min={0} max={100} step={1} value={value}
+        onChange={e => onChange(Number(e.target.value))}
+        style={{ width: '100%', accentColor: subMenuWarm.accent }}
+      />
+    </div>
+  );
+}
+
+function CheckRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label style={{
+      display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: subMenuWarm.text,
+      cursor: 'pointer', padding: '4px 0',
+    }}>
+      <input
+        type="checkbox" checked={checked}
+        onChange={e => onChange(e.target.checked)}
+        style={{ accentColor: subMenuWarm.accent, width: 14, height: 14 }}
+      />
+      {label}
+    </label>
+  );
+}
+
+function SelectRow({ label, value, options, onChange }: {
+  label: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label style={{ display: 'flex', flexDirection: 'column', gap: 5, fontSize: 12, color: subMenuWarm.text }}>
+      <span style={{ fontSize: 11, color: subMenuWarm.textMuted }}>{label}</span>
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        style={{
+          border: `1px solid ${subMenuWarm.borderStrong}`,
+          borderRadius: 8,
+          background: 'rgba(255,252,244,0.9)',
+          color: subMenuWarm.text,
+          fontFamily: 'Georgia, serif',
+          padding: '6px 8px',
+          fontSize: 12,
+        }}
+      >
+        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+    </label>
   );
 }

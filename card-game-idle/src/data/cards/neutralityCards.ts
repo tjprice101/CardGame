@@ -9,17 +9,16 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Seraphim',
-    description: 'On play: +20 Oblivion; Draw 1 card. While on board: +8 Oblivion per card played while active',
+    description: 'On play: +16 Oblivion; All Seraphim on board gain +3 Patience. While on board: +6 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
     artKey: 'ser_neutral_null',
     attacks: {
       unsynergized: {
         id: 'ser-neutral-null:unsynergized',
         label: 'Unsynergized',
         name: 'Null Seraphim Vector Break',
-        description: '121 base Oblivion · 5 cards cooldown · chain +1.01 · Cost: discard 1 card',
+        description: '121 base Oblivion �E 5 cards cooldown �E Cost: discard 1 card',
         baseOblivion: 225,
         cooldownCards: 5,
-        chainScaling: 1.18,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'neutrality'],
       },
@@ -27,22 +26,20 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         id: 'ser-neutral-null:synergized',
         label: 'Synergized',
         name: 'Null Seraphim Angelic Verdict',
-        description: '233 base Oblivion · 8 cards cooldown · chain +1.20 · Requires Angel',
+        description: '233 base Oblivion �E 8 cards cooldown �E Requires Angel',
         baseOblivion: 383,
         cooldownCards: 7,
-        chainScaling: 1.34,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'neutrality'],
       },
     },
-    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 8, synergyRequirement: 'Neutrality' },
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 6, synergyRequirement: 'Neutrality' },
     patienceThreshold: 3,
     patienceThresholdDraw: 1,
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 20 },
-      { type: 'draw', value: 1 },
-    ],
+      { type: 'oblivion_flat', value: 16 },
+      { type: 'patience_gain_all', value: 3 }],
   },
   {
     definitionId: 'ser-neutral-void',
@@ -50,17 +47,16 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Seraphim',
-    description: 'On play: +30 Oblivion. While on board: +15 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: +24 Oblivion. While on board: +12 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
     artKey: 'ser_neutral_void',
     attacks: {
       unsynergized: {
         id: 'ser-neutral-void:unsynergized',
         label: 'Unsynergized',
         name: 'Void Seraphim Vector Break',
-        description: '112 base Oblivion · 5 cards cooldown · chain +0.88 · Cost: discard 1 card',
+        description: '112 base Oblivion �E 5 cards cooldown �E Cost: discard 1 card',
         baseOblivion: 225,
         cooldownCards: 5,
-        chainScaling: 1.18,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'neutrality'],
       },
@@ -68,21 +64,19 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         id: 'ser-neutral-void:synergized',
         label: 'Synergized',
         name: 'Void Seraphim Angelic Verdict',
-        description: '274 base Oblivion · 8 cards cooldown · chain +1.28 · Requires Angel',
+        description: '274 base Oblivion �E 8 cards cooldown �E Requires Angel',
         baseOblivion: 383,
         cooldownCards: 7,
-        chainScaling: 1.34,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'neutrality'],
       },
     },
-    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 15, synergyRequirement: 'Neutrality' },
+    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 12, synergyRequirement: 'Neutrality' },
     patienceThreshold: 3,
     patienceThresholdDraw: 1,
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 30 },
-    ],
+      { type: 'oblivion_flat', value: 24 }],
   },
   {
     definitionId: 'ser-neutral-balance',
@@ -90,17 +84,16 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Seraphim',
-    description: 'On play: +25 Oblivion; Draw 2 cards. While on board: Each new Cherubim summoned while active gains +2 durability',
+    description: 'On play: +20 Oblivion; Designate the Seraphim with the highest Patience as your Vessel. While on board: Each new Cherubim summoned while active gains +2 durability. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 1 card',
     artKey: 'ser_neutral_balance',
     attacks: {
       unsynergized: {
         id: 'ser-neutral-balance:unsynergized',
         label: 'Unsynergized',
         name: 'Balance Seraphim Vector Break',
-        description: '142 base Oblivion · 2 cards cooldown · chain +0.90 · Cost: discard 1 card',
+        description: '142 base Oblivion �E 2 cards cooldown �E Cost: discard 1 card',
         baseOblivion: 390,
         cooldownCards: 5,
-        chainScaling: 1.24,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'neutrality'],
       },
@@ -108,10 +101,9 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         id: 'ser-neutral-balance:synergized',
         label: 'Synergized',
         name: 'Balance Seraphim Angelic Verdict',
-        description: '281 base Oblivion · 4 cards cooldown · chain +1.16 · Requires Angel',
+        description: '281 base Oblivion �E 4 cards cooldown �E Requires Angel',
         baseOblivion: 663,
         cooldownCards: 7,
-        chainScaling: 1.40,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'neutrality'],
@@ -121,9 +113,8 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     patienceThreshold: 4,
     patienceThresholdDraw: 1,
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 25 },
-      { type: 'draw', value: 2 },
-    ],
+      { type: 'oblivion_flat', value: 20 },
+      { type: 'neutrality_designate_vessel' }],
   },
   {
     definitionId: 'ser-neutral-equilibrium',
@@ -131,17 +122,16 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Equilibrium Seraphim',
-    description: 'On play: +45 Oblivion. While on board: Chain grows +0.05 per card played while active',
+    description: 'On play: +36 Oblivion. While on board: +8 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 2 cards',
     artKey: 'ser_neutral_equilibrium',
     attacks: {
       unsynergized: {
         id: 'ser-neutral-equilibrium:unsynergized',
         label: 'Unsynergized',
         name: 'Equilibrium Seraphim Vector Break',
-        description: '134 base Oblivion · 2 cards cooldown · chain +1.14 · Cost: discard 1 card',
+        description: '134 base Oblivion �E 2 cards cooldown �E Cost: discard 1 card',
         baseOblivion: 335,
         cooldownCards: 5,
-        chainScaling: 1.24,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'neutrality'],
       },
@@ -149,21 +139,19 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         id: 'ser-neutral-equilibrium:synergized',
         label: 'Synergized',
         name: 'Equilibrium Seraphim Angelic Verdict',
-        description: '281 base Oblivion · 8 cards cooldown · chain +1.46 · Requires Angel',
+        description: '281 base Oblivion �E 8 cards cooldown �E Requires Angel',
         baseOblivion: 570,
         cooldownCards: 7,
-        chainScaling: 1.40,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'neutrality'],
       },
     },
-    baseStats: { bonusType: 'chain_bonus', bonusValue: 0.05, synergyRequirement: 'Neutrality' },
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 8, synergyRequirement: 'Neutrality' },
     patienceThreshold: 4,
     patienceThresholdDraw: 2,
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 45 },
-    ],
+      { type: 'oblivion_flat', value: 36 }],
   },
   {
     definitionId: 'ser-neutral-still',
@@ -171,17 +159,16 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Seraphim',
-    description: 'On play: +60 Oblivion; Draw 1 card. While on board: Gain +50 Oblivion when a Cherubim expires while active',
+    description: 'On play: +48 Oblivion; Seraphim attacks preserve 0.2% of consumed Patience this turn. While on board: Gain +50 Oblivion when a Cherubim expires while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 5 on attack, also draw 2 cards',
     artKey: 'ser_neutral_still',
     attacks: {
       unsynergized: {
         id: 'ser-neutral-still:unsynergized',
         label: 'Unsynergized',
         name: 'Still Seraphim Vector Break',
-        description: '173 base Oblivion · 2 cards cooldown · chain +0.92 · Cost: discard 1 card',
+        description: '173 base Oblivion �E 2 cards cooldown �E Cost: discard 1 card',
         baseOblivion: 560,
         cooldownCards: 6,
-        chainScaling: 1.32,
         costs: [],
         tags: ['seraphim', 'unsynergized', 'neutrality'],
       },
@@ -189,10 +176,9 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         id: 'ser-neutral-still:synergized',
         label: 'Synergized',
         name: 'Still Seraphim Angelic Verdict',
-        description: '333 base Oblivion · 4 cards cooldown · chain +1.19 · Requires Angel',
+        description: '333 base Oblivion �E 4 cards cooldown �E Requires Angel',
         baseOblivion: 952,
         cooldownCards: 8,
-        chainScaling: 1.48,
         costs: [],
         requiresAngelOnBoard: true,
         tags: ['seraphim', 'synergized', 'neutrality'],
@@ -202,11 +188,9 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     patienceThreshold: 5,
     patienceThresholdDraw: 2,
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 60 },
-      { type: 'draw', value: 1 },
-    ],
-  },
-];
+      { type: 'oblivion_flat', value: 48 },
+      { type: 'neutrality_attack_preserve', percent: 0.20 }],
+  }];
 
 // Starter Ophanim cards
 
@@ -220,8 +204,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     description: 'Draw 2 cards',
     artKey: 'seek_neutral_null_seek',
     effects: [
-      { type: 'draw', value: 2 },
-    ],
+      { type: 'draw', value: 2 }],
   },
   {
     definitionId: 'ophanim-neutral-seraph-recall',
@@ -233,8 +216,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_neutral_seraph_recall',
     effects: [
       { type: 'salvage_by_type', filter: ['Seraphim'] },
-      { type: 'discard_choice', value: 1 },
-    ],
+      { type: 'discard_choice', value: 1 }],
   },
   {
     definitionId: 'ophanim-neutral-neutral-cycle',
@@ -246,8 +228,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_neutral_neutral_cycle',
     effects: [
       { type: 'shuffle_discard' },
-      { type: 'oblivion_flat', value: 18 },
-    ],
+      { type: 'patience_gain_all', value: 4 }],
   },
   {
     definitionId: 'ophanim-neutral-measured-seek',
@@ -258,8 +239,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     description: 'Look at the top 4 cards, take 1 card, put 1 card on the bottom, and discard the rest',
     artKey: 'seek_neutral_measured_seek',
     effects: [
-      { type: 'look_top_take_drop', look: 4, take: 1, drop: 1 },
-    ],
+      { type: 'look_top_take_drop', look: 4, take: 1, drop: 1 }],
   },
   {
     definitionId: 'ophanim-neutral-void-surge',
@@ -272,7 +252,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     effects: [
       { type: 'oblivion_flat', value: 25 },
       { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'oblivion_flat', value: 15 }] },
-    ],
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'ophanim-neutral-still-pulse',
@@ -283,21 +263,21 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     description: 'Draw 1 card; If you control 3+ active Seraphim, Draw 1 card',
     artKey: 'seek_neutral_still_pulse',
     effects: [
-      { type: 'draw', value: 1 },
-      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'draw', value: 1 }] },
-    ],
+      { type: 'patience_gain_all', value: 3 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'patience_gain_all', value: 3 }] }],
   },
   {
     definitionId: 'ophanim-neutral-chain-pulse',
     type: 'Ophanim',
     element: 'Neutrality',
     rarity: 'Rare',
-    name: 'Chain Pulse',
-    description: '+0 Oblivion; Gain 4 Radiance; Draw 1 card',
+    name: 'Oblivion Pulse',
+    description: 'All Seraphim on board gain +2 Patience; +0 Oblivion; Draw 1 card',
     artKey: 'seek_neutral_chain_pulse',
     effects: [
-      { type: 'oblivion_flat', value: 0 }, // executor: (cardsPlayedThisTurn + 1) * 10
-    ],
+      { type: 'patience_gain_all', value: 2 },
+      { type: 'oblivion_flat', value: 20 },
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'ophanim-neutral-cherubim-recall',
@@ -309,8 +289,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_neutral_cherubim_recall',
     effects: [
       { type: 'salvage_by_type', filter: ['Cherubim'] },
-      { type: 'discard_choice', value: 1 },
-    ],
+      { type: 'discard_choice', value: 1 }],
   },
   {
     definitionId: 'ophanim-neutral-deep-seek',
@@ -322,10 +301,8 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_neutral_deep_seek',
     effects: [
       { type: 'search_deck_by_type', filter: ['Seraphim', 'Cherubim'] },
-      { type: 'discard_choice', value: 1 },
-    ],
-  },
-];
+      { type: 'discard_choice', value: 1 }],
+  }];
 
 // Pack-exclusive Ophanim cards
 
@@ -340,8 +317,7 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     artKey: 'seek_neutral_grand_seek',
     effects: [
       { type: 'draw', value: 2 },
-      { type: 'patience_gain_all', value: 2 },
-    ],
+      { type: 'patience_gain_all', value: 2 }],
   },
   {
     definitionId: 'ophanim-neutral-echo-pulse',
@@ -352,9 +328,8 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     description: '+0 Oblivion; Draw 1 card',
     artKey: 'seek_neutral_echo_pulse',
     effects: [
-      { type: 'multiply_next' },
-      { type: 'draw', value: 2 },
-    ],
+      { type: 'patience_gain_all', value: 5 },
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'ophanim-neutral-seraph-hunt',
@@ -365,8 +340,7 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     description: 'Search your deck for 1 matching Seraphim',
     artKey: 'seek_neutral_seraph_hunt',
     effects: [
-      { type: 'search_deck_by_type', filter: ['Seraphim'] },
-    ],
+      { type: 'search_deck_by_type', filter: ['Seraphim'] }],
   },
   {
     definitionId: 'ophanim-neutral-nullfall',
@@ -377,13 +351,10 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     description: 'Salvage 2 cards matching Seraphim or Cherubim',
     artKey: 'seek_neutral_nullfall',
     effects: [
-      { type: 'salvage_by_type', filter: ['Seraphim', 'Cherubim'] },
-    ],
-  },
-];
+      { type: 'salvage_by_type', filter: ['Seraphim', 'Cherubim'] }],
+  }];
 
 export const neutralityCards = [
   ...neutralitySeraphims,
   ...neutralityOphanimCards,
-  ...neutralityPackOphanimCards,
-];
+  ...neutralityPackOphanimCards];

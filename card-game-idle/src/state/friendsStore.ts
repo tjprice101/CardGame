@@ -13,6 +13,7 @@ export interface FriendProfileLite {
   id: string;
   friendCode: string;
   displayName: string;
+  bio: string | null;
   avatarId: string;
   titleId: string | null;
   uiThemeId: string | null;
@@ -64,6 +65,7 @@ function rowToProfile(row: {
   id: string;
   friend_code: string;
   display_name: string;
+  bio?: string | null;
   avatar_id: string;
   title_id: string | null;
   ui_theme_id: string | null;
@@ -73,6 +75,7 @@ function rowToProfile(row: {
     id: row.id,
     friendCode: row.friend_code,
     displayName: row.display_name,
+    bio: row.bio ?? null,
     avatarId: row.avatar_id,
     titleId: row.title_id,
     uiThemeId: row.ui_theme_id,
