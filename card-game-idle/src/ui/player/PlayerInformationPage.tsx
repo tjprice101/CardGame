@@ -6,12 +6,21 @@
 
 import { useMemo, useRef, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
-import { subMenuWarm as warmTheme } from '@/ui/theme';
+import { subMenuWarm as warmTheme, warmTheme as cardRenderTheme } from '@/ui/theme';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
 import { UI_THEMES } from '@/data/profile/uiThemes';
 import TitlesModal from '@/ui/profile/TitlesModal';
 import ProfilePictureModal from '@/ui/profile/ProfilePictureModal';
+import SignatureCardPickerModal from '@/ui/profile/SignatureCardPickerModal';
+import { CardRegistry } from '@/cards/CardRegistry';
+import {
+  getCardFaceBackgroundStyle,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+  cardFacePalette,
+} from '@/ui/cardBackgrounds';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import {
   useSocialStore,
   selectSocialStatus,
@@ -69,6 +78,7 @@ export default function PlayerInformationPage({
   const setPlayerName = useStore(s => s.setPlayerName);
   const setBio = useStore(s => s.setBio);
   const setUiThemeId = useStore(s => s.setUiThemeId);
+  const setSignatureCard = useStore(s => s.setSignatureCard);
   const dailyLogin = useStore(s => s.progress.dailyLogin);
   const saveTampered = useStore(s => s.saveTampered ?? false);
 
@@ -84,6 +94,7 @@ export default function PlayerInformationPage({
   const [bioDraft, setBioDraft] = useState(profile.bio ?? '');
   const [showTitles, setShowTitles] = useState(false);
   const [showPictures, setShowPictures] = useState(false);
+  const [sigPickerSlot, setSigPickerSlot] = useState<number | null>(null);
   const [gameSaved, setGameSaved] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(0); // 0=none 1=first 2=second
   const [importStatus, setImportStatus] =
@@ -305,6 +316,8 @@ export default function PlayerInformationPage({
                 onOpenTitles={() => setShowTitles(true)}
                 onChangePicture={() => setShowPictures(true)}
                 onChangeTheme={setUiThemeId}
+                onPickSignatureCard={setSigPickerSlot}
+                onClearSignatureCard={(slot) => setSignatureCard(slot, null)}
               />
             )}
             {activeTab === 'social' && (
@@ -331,9 +344,26 @@ export default function PlayerInformationPage({
 
       {showTitles && <TitlesModal onClose={() => setShowTitles(false)} />}
       {showPictures && <ProfilePictureModal currentAvatarId={profile.avatarId ?? ''} onClose={() => setShowPictures(false)} />}
+      {sigPickerSlot !== null && (
+        <SignatureCardPickerModal
+          slotIndex={sigPickerSlot}
+          onClose={() => setSigPickerSlot(null)}
+          onPick={(cardId) => { setSignatureCard(sigPickerSlot, cardId); setSigPickerSlot(null); }}
+        />
+      )}
     </div>
   );
 }
+
+// Rarity accent colours used in the Signature Cards card slots.
+const SIG_RARITY_COLOR: Record<string, string> = {
+  Common:    '#aabccc',
+  Rare:      '#6699dd',
+  Epic:      '#aa66dd',
+  Legendary: '#ddaa33',
+  Eternal:   '#ff8844',
+  Infinite:  '#44ddcc',
+};
 
 // ──────────────────────────────────────────────────
 // Tab: Profile
@@ -354,12 +384,15 @@ function ProfileTab(props: {
   onOpenTitles: () => void;
   onChangePicture: () => void;
   onChangeTheme: (id: string) => void;
+  onPickSignatureCard: (slot: number) => void;
+  onClearSignatureCard: (slot: number) => void;
 }) {
   const {
     progress, profile, currentAvatar, currentTitle,
     totalCollection, distinctCards, totalBossClears, distinctBosses,
     unlockedTitlesCount, titlesTotal, dailyLogin,
     onOpenTitles, onChangePicture, onChangeTheme,
+    onPickSignatureCard, onClearSignatureCard,
   } = props;
 
   return (
@@ -452,6 +485,81 @@ function ProfileTab(props: {
               </button>
             );
           })}
+        </div>
+      </GlassCard>
+
+      {/* Signature Cards */}
+      <GlassCard title="Signature Cards" wide>
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+          {Array.from({ length: 5 }, (_, i) => {
+            const cardId = (profile.signatureCardIds ?? [])[i] ?? null;
+            const def = cardId ? CardRegistry.get(cardId) : null;
+            const rarityColor = def ? (SIG_RARITY_COLOR[def.rarity] ?? G.gold) : 'rgba(200,128,58,0.28)';
+            return (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
+                <button
+                  onClick={() => onPickSignatureCard(i)}
+                  title={def ? `Change: ${def.name}` : `Pick card for slot ${i + 1}`}
+                  style={{
+                    width: 90, height: 124, borderRadius: 12,
+                    border: def ? `1px solid ${rarityColor}55` : '1px dashed rgba(200,128,58,0.30)',
+                    ...(def ? getCardFaceBackgroundStyle(def, 'normal') : {}),
+                    backgroundColor: def ? cardRenderTheme.surfaceStrong : 'rgba(200,128,58,0.04)',
+                    position: 'relative',
+                    display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+                    overflow: 'hidden', cursor: 'pointer', padding: 0,
+                    boxShadow: def ? `0 4px 18px ${rarityColor}28` : 'none',
+                    transition: 'all 0.18s ease',
+                    flexShrink: 0,
+                  }}
+                >
+                  {def ? (
+                    <>
+                      <div style={getCardNameRibbonStyle('compact')}>
+                        <div style={{ fontSize: 6, letterSpacing: 1, textTransform: 'uppercase', color: cardFacePalette.text }}>
+                          {getDisplayCardTypeLabel(def.type)}
+                        </div>
+                      </div>
+                      <div style={getCardRulesPanelStyle('compact')}>
+                        <div style={{ fontSize: 7, fontWeight: 'bold', color: cardFacePalette.text, lineHeight: 1.2 }}>
+                          {def.name}
+                        </div>
+                        <div style={{ fontSize: 6, color: rarityColor, letterSpacing: 0.4, marginTop: 1 }}>
+                          {def.rarity}
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+                    }}>
+                      <span style={{ fontSize: 20, color: 'rgba(200,128,58,0.30)', fontWeight: 300, lineHeight: 1 }}>+</span>
+                      <span style={{ fontSize: 7, color: 'rgba(200,128,58,0.28)', letterSpacing: 1, textTransform: 'uppercase' }}>
+                        Slot {i + 1}
+                      </span>
+                    </div>
+                  )}
+                </button>
+                {def && (
+                  <button
+                    onClick={() => onClearSignatureCard(i)}
+                    title="Remove card"
+                    style={{
+                      fontSize: 8, letterSpacing: 1, textTransform: 'uppercase',
+                      color: 'rgba(184,92,79,0.65)',
+                      background: 'transparent', border: 'none',
+                      cursor: 'pointer', padding: '1px 4px',
+                      fontFamily: '"Cinzel", Georgia, serif', lineHeight: 1,
+                    }}
+                  >Remove</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div style={S.saveHint}>
+          Showcase up to 5 cards on your profile — visible to friends.
         </div>
       </GlassCard>
     </div>
@@ -737,7 +845,8 @@ const S: Record<string, React.CSSProperties> = {
     background: 'linear-gradient(160deg, #0d0703 0%, #070402 55%, #050203 100%)',
     display: 'flex',
     zIndex: 30,
-    overflow: 'hidden',
+    overflowY: 'auto',
+    overflowX: 'hidden',
     fontFamily: 'Georgia, serif',
     animation: 'backdropFade 0.22s ease',
   },
@@ -771,10 +880,9 @@ const S: Record<string, React.CSSProperties> = {
     position: 'relative',
     zIndex: 1,
     width: '100%',
-    height: '100%',
+    minHeight: '100%',
     display: 'flex',
     flexDirection: 'column',
-    overflow: 'hidden',
     background: 'transparent',
   },
 
@@ -971,9 +1079,13 @@ const S: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: 2,
     padding: '0 clamp(40px,4vw,80px)',
-    background: 'rgba(5,2,0,0.6)',
+    background: 'rgba(5,2,0,0.92)',
     borderBottom: '1px solid rgba(200,128,58,0.2)',
     flexShrink: 0,
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    backdropFilter: 'blur(12px)',
   },
   tabBtn: {
     flex: '0 1 220px',
@@ -1009,10 +1121,7 @@ const S: Record<string, React.CSSProperties> = {
 
   /* ── Content area ── */
   content: {
-    flex: 1,
-    overflowY: 'auto',
-    minHeight: 0,
-    padding: 'clamp(24px,2.4vw,40px) clamp(40px,4vw,80px)',
+    padding: 'clamp(24px,2.4vw,40px) clamp(40px,4vw,80px) clamp(40px,4vw,80px)',
   },
   contentInner: { maxWidth: 1180, margin: '0 auto' },
 

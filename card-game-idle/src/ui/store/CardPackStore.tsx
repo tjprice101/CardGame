@@ -4,10 +4,12 @@ import { useStore } from '@/state/store';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { warmTheme } from '@/ui/theme';
+import { getTrialDeckDefinition } from '@/data/trialDecks';
+import { warmTheme, uiTypography } from '@/ui/theme';
 import PackOpeningModal from './PackOpeningModal';
 import CollectionViewer from './CollectionViewer';
 import HolofoilWorkshop from './HolofoilWorkshop';
+import TrialDeckModeModal from '@/ui/trialDeck/TrialDeckModeModal';
 import { getSpotlightPackId, getSpotlightPackCost, SPOTLIGHT_DISCOUNT } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost, DAILY_DEAL_DISCOUNT } from '@/systems/progression/dailyDeal';
 
@@ -38,13 +40,13 @@ const styles: Record<string, React.CSSProperties> = {
   overlay: {
     position: 'absolute',
     inset: 0,
-    background: 'radial-gradient(circle at 16% 8%, rgba(248, 203, 140, 0.16) 0%, rgba(248, 203, 140, 0) 34%), radial-gradient(circle at 84% 90%, rgba(110, 76, 38, 0.35) 0%, rgba(110, 76, 38, 0) 42%), repeating-linear-gradient(135deg, rgba(241, 191, 122, 0.06) 0px, rgba(241, 191, 122, 0.06) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 22px), linear-gradient(180deg, rgba(24, 18, 13, 0.97) 0%, rgba(37, 27, 19, 0.97) 100%)',
+    background: 'radial-gradient(circle at 16% 8%, rgba(78,158,220,0.18) 0%, rgba(78,158,220,0) 34%), radial-gradient(circle at 84% 90%, rgba(20,55,180,0.28) 0%, rgba(20,55,180,0) 42%), repeating-linear-gradient(135deg, rgba(88,170,218,0.04) 0px, rgba(88,170,218,0.04) 2px, rgba(0,0,0,0) 2px, rgba(0,0,0,0) 22px), linear-gradient(180deg, rgba(3,8,18,0.98) 0%, rgba(5,11,24,0.98) 100%)',
     zIndex: 50,
     display: 'flex',
     flexDirection: 'column',
     pointerEvents: 'auto',
-    fontFamily: 'Georgia, serif',
-    color: '#ead9c0',
+    fontFamily: uiTypography.body,
+    color: '#c8dff2',
   },
   header: {
     padding: '16px 24px',
@@ -55,8 +57,8 @@ const styles: Record<string, React.CSSProperties> = {
     flexShrink: 0,
     background: 'rgba(9, 12, 16, 0.42)',
   },
-  title: { fontSize: 20, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 2 },
-  score: { fontSize: 13, color: 'rgba(234, 217, 192, 0.82)' },
+  title: { fontSize: 20, fontWeight: 'bold', color: '#7dd4f8', letterSpacing: 2, textShadow: '0 0 28px rgba(88,180,235,0.55), 0 2px 6px rgba(0,0,0,0.8)' },
+  score: { fontSize: 13, color: 'rgba(210,235,255,0.82)' },
   body: {
     flex: 1,
     overflowY: 'auto',
@@ -78,31 +80,32 @@ const styles: Record<string, React.CSSProperties> = {
   },
   packCard: {
     width: '100%',
-    background: 'linear-gradient(180deg, rgba(28, 22, 17, 0.94) 0%, rgba(37, 29, 22, 0.94) 100%)',
-    border: '1px solid rgba(218, 167, 109, 0.34)',
+    background: 'linear-gradient(180deg, rgba(4,10,24,0.97) 0%, rgba(6,14,30,0.97) 100%)',
+    border: '1px solid rgba(110,160,215,0.34)',
     borderRadius: 16,
     padding: '14px',
     display: 'flex',
     flexDirection: 'column',
     gap: 10,
-    boxShadow: warmTheme.shadow,
+    boxShadow: 'inset 0 1px 0 rgba(140,210,255,0.08), 0 2px 14px rgba(0,0,0,0.60)',
   },
   packLocked: {
     opacity: 0.5,
     filter: 'grayscale(0.6)',
   },
-  packName: { fontSize: 16, fontWeight: 'bold', color: '#f1c486' },
-  packDesc: { fontSize: 11, color: 'rgba(235, 220, 197, 0.84)', lineHeight: 1.42 },
-  packCost: { fontSize: 13, color: '#f1c486' },
+  packName: { fontSize: 16, fontWeight: 'bold', color: '#96daff' },
+  packDesc: { fontSize: 11, color: 'rgba(205,228,255,0.78)', lineHeight: 1.42 },
+  packCost: { fontSize: 13, color: '#90d0f8' },
   openBtn: {
     padding: '8px 16px',
     borderRadius: 10,
-    border: `1px solid ${warmTheme.borderStrong}`,
-    background: 'linear-gradient(180deg, #e8a84a 0%, #c06818 100%)',
-    color: '#2b1709',
+    border: `1px solid rgba(72,148,210,0.60)`,
+    background: 'linear-gradient(180deg, #6ec8f0 0%, #4298d8 100%)',
+    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(60,140,210,0.35)',
+    color: '#05111f',
     fontSize: 12,
     fontWeight: 600,
-    fontFamily: 'Georgia, serif',
+    fontFamily: uiTypography.body,
     cursor: 'pointer',
     letterSpacing: 1,
     transition: 'background 0.15s',
@@ -129,9 +132,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 9,
     padding: '2px 7px',
     borderRadius: 3,
-    background: 'linear-gradient(180deg, rgba(44, 33, 26, 0.94) 0%, rgba(30, 22, 17, 0.94) 100%)',
-    border: '1px solid rgba(194, 151, 102, 0.35)',
-    textShadow: '0 1px 2px rgba(0, 0, 0, 0.7)',
+    background: 'linear-gradient(180deg, rgba(5,11,24,0.94) 0%, rgba(4,8,18,0.94) 100%)',
+    border: '1px solid rgba(110,165,220,0.34)',
+    textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
     letterSpacing: 1,
   },
   footer: {
@@ -152,38 +155,38 @@ const styles: Record<string, React.CSSProperties> = {
   tabBtn: {
     padding: '6px 16px',
     borderRadius: 999,
-    border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(247, 212, 162, 0.9)',
-    color: '#3a220f',
+    border: `1px solid rgba(100,140,188,0.28)`,
+    background: 'rgba(5,18,36,0.85)',
+    color: '#c8dff2',
     fontSize: 11,
     cursor: 'pointer',
-    fontFamily: 'Georgia, serif',
+    fontFamily: uiTypography.body,
     letterSpacing: 1,
   },
   closeBtn: {
     padding: '8px 20px',
     borderRadius: 10,
-    border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(245, 206, 153, 0.94)',
-    color: '#2e190b',
+    border: `1px solid rgba(100,140,188,0.28)`,
+    background: 'rgba(5,18,36,0.85)',
+    color: '#c8dff2',
     fontSize: 12,
     cursor: 'pointer',
-    fontFamily: 'Georgia, serif',
+    fontFamily: uiTypography.body,
   },
   collectionBar: {
     fontSize: 11,
-    color: 'rgba(234, 217, 192, 0.8)',
+    color: 'rgba(190,215,245,0.72)',
   },
   helpPanel: {
     width: '100%',
-    background: 'linear-gradient(180deg, rgba(43, 31, 21, 0.9) 0%, rgba(32, 24, 17, 0.9) 100%)',
-    border: '1px solid rgba(218, 167, 109, 0.34)',
+    background: 'linear-gradient(180deg, rgba(4,10,24,0.93) 0%, rgba(3,8,18,0.93) 100%)',
+    border: '1px solid rgba(110,160,215,0.34)',
+    boxShadow: 'inset 0 1px 0 rgba(140,210,255,0.07), 0 2px 12px rgba(0,0,0,0.55)',
     borderRadius: 14,
     padding: '10px 12px',
     fontSize: 10,
-    color: 'rgba(235, 220, 197, 0.9)',
+    color: 'rgba(205,228,255,0.82)',
     lineHeight: 1.4,
-    boxShadow: warmTheme.shadow,
   },
   helpGrid: {
     marginTop: 6,
@@ -192,17 +195,17 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 6,
   },
   helpItem: {
-    border: '1px solid rgba(218, 167, 109, 0.24)',
+    border: '1px solid rgba(110,165,220,0.24)',
     borderRadius: 8,
     padding: '6px 8px',
-    background: 'rgba(22, 16, 12, 0.36)',
+    background: 'rgba(3,8,20,0.40)',
   },
   pityNote: {
     marginTop: 4,
-    borderTop: '1px solid rgba(218, 167, 109, 0.28)',
+    borderTop: '1px solid rgba(110,165,220,0.26)',
     paddingTop: 7,
     fontSize: 9,
-    color: 'rgba(247, 214, 165, 0.88)',
+    color: 'rgba(190,215,245,0.80)',
     lineHeight: 1.45,
   },
   eventDivider: {
@@ -229,9 +232,9 @@ const styles: Record<string, React.CSSProperties> = {
   } as React.CSSProperties,
 };
 
-interface Props { onClose: () => void }
+interface Props { onClose: () => void; onStartTrial: (packId: string, mode: 'solo' | 'guided') => void }
 
-export default function CardPackStore({ onClose }: Props) {
+export default function CardPackStore({ onClose, onStartTrial }: Props) {
   const oblivion = useStore(s => s.progress.oblivion);
   const shards = useStore(s => s.progress.aberratedShards);
   const collection = useStore(s => s.progress.collection);
@@ -239,6 +242,7 @@ export default function CardPackStore({ onClose }: Props) {
   const packPityCounters = useStore(s => s.progress.packPityCounters ?? {});
   const [openingResult, setOpeningResult] = useState<{ cards: string[]; packName: string; newCards: Set<string> } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
+  const [trialPackId, setTrialPackId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'packs' | 'holofoils' | 'history'>('packs');
   const [focusPackId, setFocusPackId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<1 | 5 | 100>(1);
@@ -325,6 +329,7 @@ export default function CardPackStore({ onClose }: Props) {
 
     const artSrc = PACK_ART[pack.id];
     const displayName = pack.name.replace(/^\[EVENT\]\s*/, '');
+    const hasTrial = !isLocked && getTrialDeckDefinition(pack.id) !== null;
 
     return (
       <div
@@ -409,10 +414,10 @@ export default function CardPackStore({ onClose }: Props) {
                   onClick={canAfford ? () => handleOpen(pack.id, tier) : undefined}
                 >
                   <span style={{ fontWeight: 'bold' }}>
-                    {label}{quantity > 1 && <span style={{ color: '#7a3e0c', marginLeft: 4 }}>×{quantity}</span>}
+                    {label}{quantity > 1 && <span style={{ color: 'rgba(12,30,52,0.65)', marginLeft: 4 }}>×{quantity}</span>}
                   </span>
-                  <span style={{ color: '#4a2c11', marginLeft: 6, fontWeight: 700 }}>({totalCards} cards)</span>
-                  <span style={{ float: 'right', fontSize: 11, color: '#3e230e', fontWeight: 700 }}>
+                  <span style={{ color: 'rgba(12,30,52,0.55)', marginLeft: 6, fontWeight: 700 }}>({totalCards} cards)</span>
+                  <span style={{ float: 'right', fontSize: 11, color: 'rgba(12,30,52,0.80)', fontWeight: 700 }}>
                     {totalCost.toLocaleString()} {currencyLabel}
                     {discount && <span style={{ color: 'rgba(100,220,100,0.8)', marginLeft: 5 }}>{discount}</span>}
                   </span>
@@ -457,7 +462,7 @@ export default function CardPackStore({ onClose }: Props) {
               </div>
               {!usesShards && (
                 <div>
-                  <span style={{ color: '#ffc97a' }}>Box Legendary Pity:</span>{' '}
+                  <span style={{ color: '#7bbde8' }}>Box Legendary Pity:</span>{' '}
                   {boxGuaranteedNext
                     ? 'Next Box guaranteed.'
                     : `${boxesUntilPity} Box${boxesUntilPity === 1 ? '' : 'es'} until guaranteed.`}
@@ -465,6 +470,28 @@ export default function CardPackStore({ onClose }: Props) {
               )}
             </div>
           </div>
+        )}
+        {hasTrial && (
+          <button
+            data-sfx="click"
+            onClick={() => setTrialPackId(pack.id)}
+            style={{
+              padding: '7px 12px',
+              borderRadius: 8,
+              border: '1px solid rgba(120, 200, 140, 0.50)',
+              background: 'linear-gradient(180deg, rgba(60,140,80,0.28) 0%, rgba(40,100,60,0.28) 100%)',
+              color: '#8de8a8',
+              fontSize: 11,
+              fontWeight: 600,
+              fontFamily: uiTypography.body,
+              cursor: 'pointer',
+              letterSpacing: 1,
+              textAlign: 'center' as const,
+              width: '100%',
+            }}
+          >
+            🃏 Trial Deck
+          </button>
         )}
       </div>
     );
@@ -483,16 +510,16 @@ export default function CardPackStore({ onClose }: Props) {
               onClick={() => setShowCollection(true)}
               style={{
                 padding: '4px 12px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
-                fontFamily: 'Georgia, serif', letterSpacing: 1,
-                background: 'rgba(255,215,0,0.1)', border: '1px solid rgba(255,215,0,0.35)',
-                color: 'rgba(255,215,0,0.8)',
+                fontFamily: uiTypography.body, letterSpacing: 1,
+                background: 'rgba(58,142,200,0.10)', border: '1px solid rgba(88,170,218,0.35)',
+                color: '#7bbde8',
               }}
             >
               View Collection
             </button>
           </div>
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginTop: 6 }}>
-            <span style={{ fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(255,215,140,0.7)', fontWeight: 700 }}>
+            <span style={{ fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(205,228,255,0.72)', fontWeight: 700 }}>
               Buy Qty
             </span>
             {([1, 5, 100] as const).map(q => {
@@ -506,13 +533,13 @@ export default function CardPackStore({ onClose }: Props) {
                     borderRadius: 5,
                     fontSize: 12,
                     cursor: 'pointer',
-                    fontFamily: 'Georgia, serif',
+                    fontFamily: uiTypography.body,
                     letterSpacing: 1,
                     fontWeight: 700,
-                    background: active ? 'rgba(255,215,0,0.28)' : 'rgba(255,215,0,0.06)',
-                    border: `1px solid ${active ? 'rgba(255,215,0,0.7)' : 'rgba(255,215,0,0.22)'}`,
-                    color: active ? '#fff2c2' : 'rgba(255,215,0,0.7)',
-                    boxShadow: active ? '0 0 10px rgba(255,215,0,0.35)' : 'none',
+                    background: active ? 'rgba(78,160,220,0.32)' : 'rgba(58,142,200,0.07)',
+                    border: `1px solid ${active ? 'rgba(110,185,240,0.78)' : 'rgba(88,170,218,0.26)'}`,
+                    color: active ? '#d8f0ff' : 'rgba(110,185,240,0.72)',
+                    boxShadow: active ? '0 0 12px rgba(78,160,220,0.40), inset 0 1px 0 rgba(200,235,255,0.12)' : 'none',
                   }}
                 >
                   ×{q}
@@ -528,7 +555,7 @@ export default function CardPackStore({ onClose }: Props) {
           style={{
             ...styles.tabBtn,
             ...(activeTab === 'packs'
-              ? { color: '#2b1709', borderColor: warmTheme.borderStrong, background: 'rgba(247, 212, 162, 0.96)' }
+              ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
               : {}),
           }}
           onClick={() => setActiveTab('packs')}
@@ -539,7 +566,7 @@ export default function CardPackStore({ onClose }: Props) {
           style={{
             ...styles.tabBtn,
             ...(activeTab === 'holofoils'
-              ? { color: '#2b1709', borderColor: warmTheme.borderStrong, background: 'rgba(247, 212, 162, 0.96)' }
+              ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
               : {}),
           }}
           onClick={() => setActiveTab('holofoils')}
@@ -550,7 +577,7 @@ export default function CardPackStore({ onClose }: Props) {
           style={{
             ...styles.tabBtn,
             ...(activeTab === 'history'
-              ? { color: '#2b1709', borderColor: warmTheme.borderStrong, background: 'rgba(247, 212, 162, 0.96)' }
+              ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
               : {}),
           }}
           onClick={() => setActiveTab('history')}
@@ -563,7 +590,7 @@ export default function CardPackStore({ onClose }: Props) {
         <div style={styles.body}>
           <div style={styles.packsColumn}>
             <div style={styles.helpPanel}>
-              <strong style={{ color: '#f2c787', letterSpacing: 1 }}>How Opening Works</strong>
+              <strong style={{ color: '#7dd4f8', letterSpacing: 1 }}>How Opening Works</strong>
               <div style={styles.helpGrid}>
                 <div style={styles.helpItem}><strong>Pack:</strong> 5 cards with normal rarity odds.</div>
                 <div style={styles.helpItem}><strong>Box:</strong> 25 cards (5 packs), 2% discount, Legendary pity for that set.</div>
@@ -616,6 +643,15 @@ export default function CardPackStore({ onClose }: Props) {
       )}
 
       {showCollection && <CollectionViewer onClose={() => setShowCollection(false)} />}
+
+      {trialPackId && (
+        <TrialDeckModeModal
+          packId={trialPackId}
+          packName={PACK_DEFINITIONS.find(p => p.id === trialPackId)?.name.replace(/^\[EVENT\]\s*/, '') ?? trialPackId}
+          onConfirm={(mode) => { onStartTrial(trialPackId, mode); onClose(); }}
+          onClose={() => setTrialPackId(null)}
+        />
+      )}
     </div>
   );
 }
@@ -644,12 +680,12 @@ function PackHistoryPanel() {
       <div style={{ maxWidth: 880, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
         <div style={{
           padding: 14, borderRadius: 12,
-          background: 'rgba(28, 22, 16, 0.7)',
-          border: `1px solid ${warmTheme.border}`,
+          background: 'rgba(5,12,28,0.70)',
+          border: `1px solid rgba(62,112,168,0.28)`,
         }}>
-          <div style={{ fontSize: 13, color: '#f0bd78', letterSpacing: 1, marginBottom: 8 }}>Recent Streaks</div>
+          <div style={{ fontSize: 13, color: '#58aada', letterSpacing: 1, marginBottom: 8 }}>Recent Streaks</div>
           {Object.keys(packPityCounters).length === 0 && Object.keys(boxPityCounters).length === 0 ? (
-            <div style={{ fontSize: 12, color: '#caa57a' }}>No active streaks.</div>
+            <div style={{ fontSize: 12, color: 'rgba(190,215,245,0.60)' }}>No active streaks.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
               {Object.entries(packPityCounters).filter(([, v]) => v > 0).map(([packId, n]) => {
@@ -675,10 +711,10 @@ function PackHistoryPanel() {
         {history.length > 0 && (
           <div style={{
             padding: 14, borderRadius: 12,
-            background: 'rgba(28, 22, 16, 0.7)',
-            border: `1px solid ${warmTheme.border}`,
+            background: 'rgba(5,12,28,0.70)',
+            border: `1px solid rgba(62,112,168,0.28)`,
           }}>
-            <div style={{ fontSize: 13, color: '#f0bd78', letterSpacing: 1, marginBottom: 8 }}>
+            <div style={{ fontSize: 13, color: '#58aada', letterSpacing: 1, marginBottom: 8 }}>
               Last {history.length} opens · totals
             </div>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', fontSize: 12 }}>
@@ -697,14 +733,14 @@ function PackHistoryPanel() {
 
         <div style={{
           padding: 14, borderRadius: 12,
-          background: 'rgba(28, 22, 16, 0.7)',
-          border: `1px solid ${warmTheme.border}`,
+          background: 'rgba(5,12,28,0.70)',
+          border: `1px solid rgba(62,112,168,0.28)`,
         }}>
-          <div style={{ fontSize: 13, color: '#f0bd78', letterSpacing: 1, marginBottom: 8 }}>
+          <div style={{ fontSize: 13, color: '#58aada', letterSpacing: 1, marginBottom: 8 }}>
             Open History ({history.length})
           </div>
           {history.length === 0 ? (
-            <div style={{ fontSize: 12, color: '#caa57a' }}>No pack opens recorded yet.</div>
+            <div style={{ fontSize: 12, color: 'rgba(190,215,245,0.60)' }}>No pack opens recorded yet.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {history.map((entry, idx) => {
@@ -715,12 +751,12 @@ function PackHistoryPanel() {
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     fontSize: 11, padding: '6px 10px',
                     background: 'rgba(9, 12, 16, 0.45)',
-                    border: '1px solid rgba(218, 167, 109, 0.18)',
+                    border: '1px solid rgba(62,112,168,0.20)',
                     borderRadius: 6,
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <span style={{ color: '#f1c486', fontWeight: 600 }}>{pack?.name ?? entry.packId} · {tierLabel}</span>
-                      <span style={{ color: '#caa57a', fontSize: 10 }}>{formatTs(entry.ts)}</span>
+                      <span style={{ color: '#7bbde8', fontWeight: 600 }}>{pack?.name ?? entry.packId} · {tierLabel}</span>
+                      <span style={{ color: 'rgba(190,215,245,0.50)', fontSize: 10 }}>{formatTs(entry.ts)}</span>
                     </div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                       {RARITY_DISPLAY_ORDER.map(r => {

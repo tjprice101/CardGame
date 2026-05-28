@@ -1,6 +1,7 @@
 import type { AngelInstance, CardFinish, CherubimInstance, SeraphimInstance } from './cards';
 import type { ActiveBoardEffect, CardSubtypeFilter } from './effects';
 import type { BossFightState } from './bossFight';
+import type { BattlegroundState } from './battleground';
 
 export interface EmberGroveEntry {
   definitionId: string;
@@ -32,6 +33,8 @@ export interface ComputedBoardStats {
   embersPerCardBonus: number;     // flat Embers added per card played (from ember_per_card Seraphim, Pyroabyss)
   globalOblivionMult: number;     // additive % bonus applied to ALL oblivion grants (from cherubim_global_oblivion_mult passives)
   fullBoardActive: boolean;       // true when all 9 board slots are filled
+  /** Global resonance score — sum of (copies × masteryContribution) across all owned cards. Exposed for UI gating. */
+  resonanceScore?: number;
 }
 
 // ── Deck ──────────────────────────────────────────────────────────────────────
@@ -244,6 +247,8 @@ export interface TurnState {
   burningGardenZenithNextInfinite?: boolean;
   burningGardenSkyLaw?: 'Rose' | 'Sunflower' | 'Thistle' | null;
   lastPlayedElement?: string | null;
+  /** Distinct card elements played this turn — used for 'play_unique_sets_in_turn' quest tracking. */
+  uniqueElementsPlayedThisTurn?: string[];
   cherubimConditionalMult?: number; // multiplier from cherubim_conditional_buff passives, applied per card play
   prismaticLight?: number;
   monochromaticShards?: number;
@@ -318,6 +323,10 @@ export interface BossCodexEntry {
 
 export interface ProgressState {
   oblivion: number;
+  /** Total Oblivion ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
+  lifetimeOblivion?: number;
+  /** Highest Oblivion earned in a single turn. Used for Oblivion-Touched unlock. Save v22. */
+  bestSingleTurnOblivion?: number;
   aberratedShards: number;
   totalCardsPlayed: number;
   collection: Record<string, number>;         // definitionId ↁEtotal copy count owned
@@ -365,6 +374,27 @@ export interface ProgressState {
    * cannot be dissolved. Save v19.
    */
   cardLocks?: Record<string, number>;
+  /** Ascension mode — Entropy currency balance. Save v21. */
+  entropyBalance?: number;
+  /** Ascension mode — per-raid cooldowns. raidId → Unix-ms when cooldown expires. Save v21. */
+  nullRaidCooldowns?: Record<string, number>;
+  /** Ascension mode — total clear count per raid. raidId → number. Save v21. */
+  nullRaidClears?: Record<string, number>;
+  /** Ascension mode — owned Transcendent Card copies. definitionId → count. Save v21. */
+  transcendentCollection?: Record<string, number>;
+  /** Ascension mode — purchased cosmetic ids (profile pics, UI themes). Save v21. */
+  purchasedAscensionCosmetics?: string[];
+  /** Battleground of the Card-born lifetime stats. Save v20. */
+  battlegroundStats?: {
+    wins: number;
+    losses: number;
+    bestScore: number;
+    totalMatches: number;
+    /** Milestone keys already claimed (e.g. '10k', '50k', '250k'). */
+    claimedMilestones: string[];
+    /** Unix-ms timestamps of recent reward-bearing matches (for daily cap). */
+    dailyMatchTimestamps: number[];
+  };
 }
 
 export interface PackOpenEntry {
@@ -396,6 +426,8 @@ export interface PlayerProfileState {
    * match `UiPalette`. Null / empty means "no overrides".
    */
   customUiTheme: Record<string, string> | null;
+  /** Up to 5 card definition ids the player has chosen to showcase. Save v21. */
+  signatureCardIds?: string[];
 }
 
 export interface DailyLoginState {
@@ -448,6 +480,49 @@ export type FontSizePreset = 'compact' | 'standard' | 'large';
 export type CardThemePackId = 'classic' | 'luminous' | 'nocturne';
 export type CardArtDisplay = 'both' | 'top-only' | 'bottom-only' | 'art-only';
 
+// ── Trial Deck ─────────────────────────────────────────────────────────────────
+
+/** One step in a guided trial walkthrough. */
+export interface TrialGuideStep {
+  /** The definitionId of the card the player should play at this step. */
+  cardDefinitionId: string;
+  /** Short instructional text explaining what this card does in context. */
+  hint: string;
+}
+
+/** Curated per-set trial deck definition (stored in trialDecks.ts). */
+export interface TrialDeckDefinition {
+  packId: string;
+  displayName: string;
+  deckList: DeckEntry[];
+  extraDeck: ExtraDeckEntry[];
+  /** Ordered steps for Guided mode. */
+  guideSteps: TrialGuideStep[];
+  /** Fixed opening hand for Guided mode (array of definitionIds). */
+  guidedOpeningHand: string[];
+  /** Ordered deck for Guided mode — NOT shuffled, comes out in definition order. */
+  guidedDeckOrder: DeckEntry[];
+}
+
+/** Live trial deck slice in the store. */
+export interface TrialDeckState {
+  mode: 'idle' | 'active';
+  packId: string | null;
+  trialMode: 'solo' | 'guided';
+  savedGameState: import('./bossFight').SavedGameState | null;
+  /** Current guide step index (0-based). */
+  guideStep: number;
+  guideSteps: TrialGuideStep[];
+  guidedOpeningHand: string[];
+  guidedDeckOrder: DeckEntry[];
+  /** True once all guide steps have been completed (guided mode only). */
+  guideComplete: boolean;
+  /** Number of turns completed in this trial session. */
+  turnCount: number;
+  /** Running total of Oblivion scored across all trial turns. */
+  trialOblivionTotal: number;
+}
+
 // ── Root game state ───────────────────────────────────────────────────────────
 
 export interface GameState {
@@ -460,6 +535,8 @@ export interface GameState {
   progress: ProgressState;
   settings: SettingsState;
   bossFight: BossFightState;
+  battleground: BattlegroundState;
+  trialDeck: TrialDeckState;
   /**
    * In-memory only — set by the SaveManager when the on-disk envelope's
    * signature didn't validate. Stripped from the payload before serialization

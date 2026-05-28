@@ -170,7 +170,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     artKey: 'bf_ser_unfurling_cantor',
     bonusType: 'oblivion_per_card',
     bonusValue: 8,
-    onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 4 }, { type: 'butterfly_tune', stance: 'Reflect' }],
+    onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 2 }, { type: 'butterfly_tune', stance: 'Reflect' }, { type: 'draw', value: 1 }],
     unsynergizedName: 'Cantor Slice',
     synergizedName: 'Cantor Flutter',
     unsynergizedBase: 236,
@@ -282,7 +282,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     artKey: 'bf_ser_mireth_lenshost',
     bonusType: 'cherubim_extra_plays',
     bonusValue: 1,
-    onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 9 }, { type: 'butterfly_tune', stance: 'Reflect' }],
+    onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 5 }, { type: 'draw', value: 2 }, { type: 'butterfly_tune', stance: 'Reflect' }],
     unsynergizedName: 'Prismatic Congregation',
     synergizedName: 'Lensstorm Descent',
     unsynergizedBase: 690,
@@ -299,15 +299,15 @@ const baseCherubim: CherubimDefinition[] = [
     rarity: 'Common',
     artKey: 'bf_cher_mireth_flutterlings',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'draw', value: 1 }],
-    onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 4 }],
+    onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 2 }, { type: 'draw', value: 1 }],
   }),
   buildCherubim({
     definitionId: 'bf-cher-copper-bank-spark',
     name: 'Copper Bank Spark',
-    description: 'On play: Gain 2 Spectrum; Tune stance to Absorb. While on board: Gain 1 Ember per card played; Buffs Seraphim attacks: base +26, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 2 Spectrum; Tune stance to Absorb. While on board: Gain 1 Strain per card played; Buffs Seraphim attacks: base +26, cooldown +0, multiplier x1.00',
     rarity: 'Common',
     artKey: 'bf_cher_copper_bank_spark',
-    effects: [{ type: 'cherubim_resource_per_card', resource: 'ember', value: 1 }],
+    effects: [{ type: 'cherubim_resource_per_card', resource: 'butterflySpectrum', value: 1 }],
     onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 2 }, { type: 'butterfly_tune', stance: 'Absorb' }],
   }),
   buildCherubim({
@@ -354,7 +354,7 @@ const baseCherubim: CherubimDefinition[] = [
     artKey: 'bf_cher_stained_century_choir',
     maxDurability: 9,
     effects: [{ type: 'cherubim_global_oblivion_mult', value: 0.55 }],
-    onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 9 }],
+    onPlayEffects: [{ type: 'butterfly_spectrum_gain', value: 5 }, { type: 'draw', value: 2 }],
   }),
   buildCherubim({
     definitionId: 'bf-cher-flutter-vigil-sexton',
@@ -373,7 +373,7 @@ const baseOphanim: OphanimDefinition[] = [
     description: 'Gain 2 Spectrum; Draw 1 card',
     rarity: 'Common',
     artKey: 'bf_oph_ridge_trace',
-    effects: [{ type: 'butterfly_spectrum_gain', value: 4 }],
+    effects: [{ type: 'butterfly_spectrum_gain', value: 2 }, { type: 'draw', value: 1 }],
   }),
   buildOphanim({
     definitionId: 'bf-oph-lens-current',
@@ -386,10 +386,10 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'bf-oph-copper-green-trail',
     name: 'Copper-Green Trail',
-    description: 'Tune stance to Absorb; Gain 3 Spectrum; Gain 4 Embers; Shuffle discard into deck; Draw 1 card',
+    description: 'Tune stance to Absorb; Gain 3 Spectrum; Gain 4 Embers',
     rarity: 'Rare',
     artKey: 'bf_oph_copper_green_trail',
-    effects: [{ type: 'butterfly_tune', stance: 'Absorb' }, { type: 'butterfly_spectrum_gain', value: 5 }, { type: 'ember_gain', value: 4 }],
+    effects: [{ type: 'butterfly_tune', stance: 'Absorb' }, { type: 'butterfly_spectrum_gain', value: 3 }, { type: 'ember_gain', value: 4 }],
   }),
   buildOphanim({
     definitionId: 'bf-oph-crystal-ornament-route',
@@ -397,15 +397,15 @@ const baseOphanim: OphanimDefinition[] = [
     description: 'Gain 3 Spectrum; Draw 2 cards',
     rarity: 'Rare',
     artKey: 'bf_oph_crystal_ornament_route',
-    effects: [{ type: 'butterfly_spectrum_gain', value: 7 }],
+    effects: [{ type: 'butterfly_spectrum_gain', value: 3 }, { type: 'draw', value: 2 }],
   }),
   buildOphanim({
     definitionId: 'bf-oph-suppression-wake',
     name: 'Suppression Wake',
-    description: 'Tune stance to Absorb; Gain 4 Spectrum; +180 Oblivion; Shuffle discard into deck; Draw 1 card',
+    description: 'Tune stance to Absorb; Gain 4 Spectrum; +180 Oblivion',
     rarity: 'Epic',
     artKey: 'bf_oph_suppression_wake',
-    effects: [{ type: 'butterfly_tune', stance: 'Absorb' }, { type: 'butterfly_spectrum_gain', value: 6 }, { type: 'oblivion_flat', value: 180 }],
+    effects: [{ type: 'butterfly_tune', stance: 'Absorb' }, { type: 'butterfly_spectrum_gain', value: 4 }, { type: 'oblivion_flat', value: 180 }],
   }),
   buildOphanim({
     definitionId: 'bf-oph-electromagnetic-arrival',
@@ -413,20 +413,20 @@ const baseOphanim: OphanimDefinition[] = [
     description: 'Gain 4 Spectrum; Draw 1 card',
     rarity: 'Epic',
     artKey: 'bf_oph_electromagnetic_arrival',
-    effects: [{ type: 'butterfly_spectrum_gain', value: 6 }],
+    effects: [{ type: 'butterfly_spectrum_gain', value: 4 }, { type: 'draw', value: 1 }],
   }),
   buildOphanim({
     definitionId: 'bf-oph-midair-citadel',
     name: 'Midair Citadel',
-    description: 'Gain 5 Spectrum; Release up to 2 Spectrum (+110 Oblivion per spectrum); Draw 2 cards',
+    description: 'Gain 5 Spectrum; Release up to 2 Spectrum (+110 Oblivion per spectrum)',
     rarity: 'Legendary',
     artKey: 'bf_oph_midair_citadel',
-    effects: [{ type: 'butterfly_spectrum_gain', value: 9 }, { type: 'butterfly_release', spend: 2, oblivionPerSpectrum: 110 }],
+    effects: [{ type: 'butterfly_spectrum_gain', value: 5 }, { type: 'butterfly_release', spend: 2, oblivionPerSpectrum: 110 }],
   }),
   buildOphanim({
     definitionId: 'bf-oph-velmargin-lensfall',
     name: 'Velmargin Lensfall',
-    description: 'Tune stance to Reflect; Gain 5 Spectrum; Empower the next card you play; Draw 2 cards',
+    description: 'Tune stance to Reflect; Gain 5 Spectrum; Empower the next card you play',
     rarity: 'Legendary',
     artKey: 'bf_oph_velmargin_lensfall',
     effects: [{ type: 'butterfly_tune', stance: 'Reflect' }, { type: 'butterfly_spectrum_gain', value: 5 }, { type: 'multiply_next' }],
@@ -440,7 +440,7 @@ const baseAngels: AngelDefinition[] = [
     rarity: 'Rare',
     artKey: 'bf_angel_meadow_navigator',
     summonCost: ['bf-ser-unfurling-cantor', 'bf-ser-ferrathi-iron-hum'],
-    onSummonEffects: [{ type: 'butterfly_spectrum_gain', value: 6 }],
+    onSummonEffects: [{ type: 'butterfly_spectrum_gain', value: 4 }, { type: 'draw', value: 1 }],
     activatedAbility: {
       name: 'Route the Wing',
       cardsPlayedRequirement: 2,
@@ -512,7 +512,7 @@ const baseAngels: AngelDefinition[] = [
     rarity: 'Epic',
     artKey: 'bf_angel_flutter_cartographer',
     summonCost: ['bf-ser-ossiveth-shadowspan', 'bf-ser-mireth-lenshost'],
-    onSummonEffects: [{ type: 'butterfly_spectrum_gain', value: 10 }],
+    onSummonEffects: [{ type: 'butterfly_spectrum_gain', value: 6 }, { type: 'draw', value: 2 }],
     activatedAbility: {
       name: 'Mark the Pulse',
       cardsPlayedRequirement: 3,
@@ -540,8 +540,8 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Archive Release',
       cardsPlayedRequirement: 4,
-      description: 'Release up to 4 Spectrum (+125 Oblivion per spectrum)',
-      effects: [{ type: 'butterfly_release', spend: 4, oblivionPerSpectrum: 125 }],
+      description: 'Release up to 4 Spectrum (+125 Oblivion per spectrum); Draw 1 card',
+      effects: [{ type: 'butterfly_release', spend: 4, oblivionPerSpectrum: 125 }, { type: 'draw', value: 1 }],
     },
     primaryName: 'Catalog Slash',
     exaltedName: 'Generational Verdict',
@@ -605,12 +605,12 @@ const eternalCards: CardDefinition[] = [
     artKey: 'bf_et_mirrorglass_conclave',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.14 }],
     // Role: BACK-ROW WING-PULSE BATTERY (Cherubim Eternal). +3 flutter, no pulse.
-    onPlayEffects: [{ type: 'butterfly_tune', stance: 'Reflect' }, { type: 'butterfly_spectrum_gain', value: 10 }, { type: 'set_secondary_gain', kind: 'flutter', value: 3 }],
+    onPlayEffects: [{ type: 'butterfly_tune', stance: 'Reflect' }, { type: 'butterfly_spectrum_gain', value: 6 }, { type: 'draw', value: 2 }, { type: 'set_secondary_gain', kind: 'flutter', value: 3 }],
   }),
   buildOphanim({
     definitionId: 'bf-et-nullwing-interstice',
     name: 'Nullwing Interstice',
-    description: 'Tune stance to Absorb; Gain 1 Wing Pulse; Amplify up to 1 Wing Pulses (double next 1 spectrum gain per pulse); Gain 6 Spectrum; Release up to 4 Spectrum (+130 Oblivion per spectrum); Gain 6 Prismatic Light; Draw 1 card',
+    description: 'Tune stance to Absorb; Gain 1 Wing Pulse; Amplify up to 1 Wing Pulses (double next 1 spectrum gain per pulse); Gain 6 Spectrum; Release up to 4 Spectrum (+130 Oblivion per spectrum)',
     rarity: 'Eternal',
     artKey: 'bf_et_nullwing_interstice',
     // Role: SELF-DOUBLE OPHANIM (Eternal). +1 flutter then consumes 1 to double
@@ -651,7 +651,7 @@ const eternalCards: CardDefinition[] = [
     artKey: 'bf_et_volthari_storm_lattice',
     // Role: STORM ESCALATOR OPHANIM. +1 flutter then consumes 2 banked pulses at
     // a modest double-next coefficient.
-    effects: [{ type: 'butterfly_spectrum_gain', value: 10 }, { type: 'set_secondary_gain', kind: 'flutter', value: 1 }, { type: 'flutter_wing_pulse_amplify', doubleNextGains: 1, consume: 2 }],
+    effects: [{ type: 'butterfly_spectrum_gain', value: 8 }, { type: 'set_secondary_gain', kind: 'flutter', value: 1 }, { type: 'flutter_wing_pulse_amplify', doubleNextGains: 1, consume: 2 }, { type: 'draw', value: 1 }],
   })];
 
 const infinityCards: CardDefinition[] = [
@@ -680,7 +680,7 @@ const infinityCards: CardDefinition[] = [
     rarity: 'Infinite',
     artKey: 'bf_inf_open_foundational_chrysalis',
     // Role: PURE OPHANIM PULSE BATTERY (Infinite). +3 flutter, no amplify.
-    effects: [{ type: 'butterfly_spectrum_gain', value: 12 }, { type: 'butterfly_tune', stance: 'Reflect' }, { type: 'set_secondary_gain', kind: 'flutter', value: 3 }],
+    effects: [{ type: 'butterfly_spectrum_gain', value: 8 }, { type: 'draw', value: 2 }, { type: 'butterfly_tune', stance: 'Reflect' }, { type: 'set_secondary_gain', kind: 'flutter', value: 3 }],
   }),
   buildCherubim({
     definitionId: 'bf-inf-mirrorface-voidface',
@@ -726,7 +726,7 @@ const infinityCards: CardDefinition[] = [
     artKey: 'bf_inf_the_endless_wing_age',
     // Role: HIGH-COEFFICIENT PARTIAL OPHANIM (Infinite). +2 flutter then
     // consumes 2 at the strongest double-next coefficient.
-    effects: [{ type: 'butterfly_spectrum_gain', value: 11 }, { type: 'set_secondary_gain', kind: 'flutter', value: 2 }, { type: 'flutter_wing_pulse_amplify', doubleNextGains: 2, consume: 2 }, { type: 'butterfly_release', spend: 5, oblivionPerSpectrum: 170 }],
+    effects: [{ type: 'butterfly_spectrum_gain', value: 9 }, { type: 'set_secondary_gain', kind: 'flutter', value: 2 }, { type: 'flutter_wing_pulse_amplify', doubleNextGains: 2, consume: 2 }, { type: 'butterfly_release', spend: 5, oblivionPerSpectrum: 170 }, { type: 'draw', value: 1 }],
   })];
 
 export const butterflySetCards: CardDefinition[] = [

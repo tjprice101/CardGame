@@ -48,28 +48,3 @@ export function hasArtifactFlag(
   return getArtifactEffect(turn, effectType, copiesById) >= 1;
 }
 
-/**
- * Returns artifact-based Oblivion multiplier bonus for a given set element key.
- * Summed from all equipped 'oblivion_set_mult' effects whose parent artifact
- * belongs to the given set, scaled by mastery.
- */
-export function getSetOblivionMult(
-  turn: TurnState,
-  elementKey: string,
-  copiesById?: Record<string, number>,
-): number {
-  const ids = turn.equippedArtifactIds;
-  if (!ids || ids.length === 0) return 0;
-  let total = 0;
-  for (const id of ids) {
-    const def = ARTIFACT_DEFINITIONS.find(a => a.id === id);
-    if (!def || def.setElementKey !== elementKey) continue;
-    const copies = copiesById?.[id] ?? 1;
-    if (copies <= 0) continue;
-    const mult = getMasteryMultiplier(copies);
-    for (const eff of def.effects) {
-      if (eff.type === 'oblivion_set_mult') total += eff.value * mult;
-    }
-  }
-  return total;
-}

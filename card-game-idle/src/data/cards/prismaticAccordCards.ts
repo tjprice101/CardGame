@@ -7,7 +7,7 @@ export const prismaticAccordSeraphims: SeraphimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Common',
     name: 'Skyglass Veltharion',
-    description: 'On play: Draw 1 card; Gain 2 Prismatic Light. While on board: +22 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 4 Prismatic Light. While on board: +22 Oblivion whenever you play an Ophanim while active',
     artKey: 'pa_ser_skyglass_veltharion',
     attacks: {
       unsynergized: {
@@ -33,7 +33,7 @@ export const prismaticAccordSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 22, synergyRequirement: 'Prismatic' },
-    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'prismatic_light_gain', value: 2 }],
+    onPlayEffects: [{ type: 'prismatic_light_gain', value: 4 }],
   },
   {
     definitionId: 'pa-ser-plainshush-drossken',
@@ -215,7 +215,7 @@ export const prismaticAccordOphanims: OphanimDefinition[] = [
     name: 'Prismwake Glint',
     description: 'Draw 1 card; +20 Oblivion',
     artKey: 'pa_seek_prismwake_glint',
-    effects: [{ type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 20 }, { type: 'prismatic_light_gain', value: 2 }],
+    effects: [{ type: 'oblivion_flat', value: 20 }, { type: 'prismatic_light_gain', value: 4 }],
   },
   {
     definitionId: 'pa-ophanim-fracture-road-reading',
@@ -247,8 +247,7 @@ export const prismaticAccordOphanims: OphanimDefinition[] = [
     artKey: 'pa_seek_lightveil_ambush',
     effects: [
       { type: 'oblivion_flat', value: 45 },
-      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'draw', value: 1 }] },
-      { type: 'prismatic_light_gain', value: 2 }],
+      { type: 'prismatic_light_gain', value: 4 }],
   },
   {
     definitionId: 'pa-ophanim-frozen-color-omen',
@@ -279,8 +278,7 @@ export const prismaticAccordOphanims: OphanimDefinition[] = [
     description: 'chain_gain; If you control 1+ active Seraphim, Draw 1 card; Shuffle discard into deck; Draw 1 card',
     artKey: 'pa_seek_accord_reflection',
     effects: [
-      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'draw', value: 1 }] },
-      { type: 'prismatic_light_gain', value: 3 }],
+      { type: 'prismatic_light_gain', value: 5 }],
   },
   {
     definitionId: 'pa-ophanim-tide-mirror-convergence',
@@ -290,7 +288,7 @@ export const prismaticAccordOphanims: OphanimDefinition[] = [
     name: 'Tide Mirror Convergence',
     description: 'Draw 2 cards; Choose and discard 1 card',
     artKey: 'pa_seek_tide_mirror_convergence',
-    effects: [{ type: 'draw', value: 2 }, { type: 'discard_choice', value: 1 }, { type: 'prismatic_light_gain', value: 3 }],
+    effects: [{ type: 'discard_choice', value: 1 }, { type: 'prismatic_light_gain', value: 7 }],
   },
   {
     definitionId: 'pa-ophanim-spectrum-lattice',
@@ -310,7 +308,7 @@ export const prismaticAccordOphanims: OphanimDefinition[] = [
     name: 'Nine Day Beam',
     description: 'chain_multiplier_set; Draw 2 cards; +80 Oblivion',
     artKey: 'pa_seek_nine_day_beam',
-    effects: [{ type: 'draw', value: 2 }, { type: 'oblivion_flat', value: 80 }, { type: 'prismatic_light_gain', value: 5 }],
+    effects: [{ type: 'oblivion_flat', value: 80 }, { type: 'prismatic_light_gain', value: 9 }],
   }];
 
 export const prismaticAccordCherubim: CherubimDefinition[] = [
@@ -320,10 +318,10 @@ export const prismaticAccordCherubim: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Common',
     name: 'Mirrorfield Locus',
-      description: 'On play: Draw 1 card; Salvage 1 card matching Ophanim; Gain 2 Prismatic Light. While on board: Adjacent active Seraphim gain +8 Oblivion per card played; Buffs Seraphim attacks: base +8, cooldown -1, multiplier x1.00',
+      description: 'On play: Salvage 1 card matching Ophanim; Gain 4 Prismatic Light. While on board: Adjacent active Seraphim gain +8 Oblivion per card played; Buffs Seraphim attacks: base +8, cooldown -1, multiplier x1.00',
     artKey: 'pa_cherubim_mirrorfield_locus',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 8 }],
-      onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'salvage_by_type', filter: ['Ophanim'] }, { type: 'prismatic_light_gain', value: 2 }],
+      onPlayEffects: [{ type: 'salvage_by_type', filter: ['Ophanim'] }, { type: 'prismatic_light_gain', value: 4 }],
   },
   {
     definitionId: 'pa-cherubim-fracture-veil',
@@ -364,10 +362,10 @@ export const prismaticAccordCherubim: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Rare',
     name: 'Accord Witness Monolith',
-      description: 'On play: Draw 1 card; Salvage any 1 card; Gain 3 Prismatic Light. While on board: Adjacent active Seraphim gain +8 Oblivion per card played; Buffs Seraphim attacks: base +7, cooldown +0, multiplier x1.00',
+      description: 'On play: Salvage any 1 card; Gain 5 Prismatic Light. While on board: Adjacent active Seraphim gain +8 Oblivion per card played; Buffs Seraphim attacks: base +7, cooldown +0, multiplier x1.00',
     artKey: 'pa_cherubim_accord_witness_monolith',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 8 }],
-      onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'salvage_any' }, { type: 'prismatic_light_gain', value: 3 }],
+      onPlayEffects: [{ type: 'salvage_any' }, { type: 'prismatic_light_gain', value: 5 }],
   },
   {
     definitionId: 'pa-cherubim-century-blind-scar',
@@ -375,10 +373,10 @@ export const prismaticAccordCherubim: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Epic',
     name: 'Century Blind Scar',
-      description: 'On play: Empower the next card you play; Draw 2 cards; Gain 4 Prismatic Light. While on board: Adjacent active Seraphim gain +10 Oblivion per card played; Buffs Angel attacks: base +9, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +7, cooldown +0, multiplier x1.00',
+      description: 'On play: Empower the next card you play; Gain 8 Prismatic Light. While on board: Adjacent active Seraphim gain +10 Oblivion per card played; Buffs Angel attacks: base +9, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +7, cooldown +0, multiplier x1.00',
     artKey: 'pa_cherubim_century_blind_scar',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 10 }],
-      onPlayEffects: [{ type: 'multiply_next' }, { type: 'draw', value: 2 }, { type: 'prismatic_light_gain', value: 4 }],
+      onPlayEffects: [{ type: 'multiply_next' }, { type: 'prismatic_light_gain', value: 8 }],
   },
   {
     definitionId: 'pa-cherubim-whitebeam-confluence',
@@ -386,11 +384,11 @@ export const prismaticAccordCherubim: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Legendary',
     name: 'Whitebeam Confluence',
-      description: 'On play: If you control 2+ active Cherubim, +140 Oblivion; Draw 1 card; Gain 5 Prismatic Light; Gain 2 Prismatic Light. While on board: Adjacent active Seraphim gain +9 Oblivion per card played; Buffs Seraphim and Angel attacks: base +8, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +6, cooldown -1, multiplier x1.00',
+      description: 'On play: If you control 2+ active Cherubim, +140 Oblivion; Gain 9 Prismatic Light. While on board: Adjacent active Seraphim gain +9 Oblivion per card played; Buffs Seraphim and Angel attacks: base +8, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +6, cooldown -1, multiplier x1.00',
     artKey: 'pa_cherubim_whitebeam_confluence',
     maxDurability: 8,
       effects: [{ type: 'cherubim_global_oblivion_mult', value: 0.25 }],
-      onPlayEffects: [{ type: 'conditional', condition: { type: 'cherubim_active_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 140 }] }, { type: 'draw', value: 1 }, { type: 'prismatic_light_gain', value: 5 }, { type: 'prismatic_light_gain', value: 2 }],
+      onPlayEffects: [{ type: 'conditional', condition: { type: 'cherubim_active_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 140 }] }, { type: 'prismatic_light_gain', value: 9 }],
   }];
 
 export const prismaticAccordCherubimCards: CherubimDefinition[] = [
@@ -400,11 +398,11 @@ export const prismaticAccordCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Common',
     name: 'Null Prism',
-    description: 'On play: Draw 2 cards; +45 Oblivion; Gain 2 Prismatic Light. While on board: Adjacent active Seraphim gain +10 Oblivion per card played; Buffs Seraphim attacks: base +11, cooldown -1, multiplier x1.00',
+    description: 'On play: +45 Oblivion; Gain 6 Prismatic Light. While on board: Adjacent active Seraphim gain +10 Oblivion per card played; Buffs Seraphim attacks: base +11, cooldown -1, multiplier x1.00',
     artKey: 'pa_cherubim_null_prism',
     maxDurability: 2,
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 10 }],
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'oblivion_flat', value: 45 }, { type: 'prismatic_light_gain', value: 2 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 45 }, { type: 'prismatic_light_gain', value: 6 }],
   },
   {
     definitionId: 'cherubim-prismatic-light-echo',
@@ -412,11 +410,11 @@ export const prismaticAccordCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Common',
     name: 'Light Echo',
-    description: 'On play: Look at the top 3 cards, take 1 card, and put the rest on the bottom; Draw 1 card; Gain 2 Prismatic Light. While on board: Gain 3 Radiance per card played; Buffs Seraphim attacks: base +31, cooldown -1, multiplier x1.00',
+    description: 'On play: Look at the top 3 cards, take 1 card, and put the rest on the bottom; Gain 4 Prismatic Light. While on board: Gain 3 Radiance per card played; Buffs Seraphim attacks: base +31, cooldown -1, multiplier x1.00',
     artKey: 'pa_cherubim_light_echo',
     maxDurability: 2,
     effects: [{ type: 'cherubim_resource_per_card', resource: 'radiance', value: 3 }],
-    onPlayEffects: [{ type: 'look_top_take', look: 3, take: 1 }, { type: 'draw', value: 1 }, { type: 'prismatic_light_gain', value: 2 }],
+    onPlayEffects: [{ type: 'look_top_take', look: 3, take: 1 }, { type: 'prismatic_light_gain', value: 4 }],
   },
   {
     definitionId: 'cherubim-prismatic-spectrum-veil',
@@ -424,11 +422,11 @@ export const prismaticAccordCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Common',
     name: 'Spectrum Veil',
-    description: 'On play: Draw 2 cards; Gain 3 Prismatic Light. While on board: Adjacent active Seraphim gain +12 Oblivion per card played; Buffs Seraphim attacks: base +13, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 7 Prismatic Light. While on board: Adjacent active Seraphim gain +12 Oblivion per card played; Buffs Seraphim attacks: base +13, cooldown -1, multiplier x1.00',
     artKey: 'pa_cherubim_spectrum_veil',
     maxDurability: 3,
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 12 }],
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'prismatic_light_gain', value: 3 }],
+    onPlayEffects: [{ type: 'prismatic_light_gain', value: 7 }],
   },
   {
     definitionId: 'cherubim-prismatic-radiance-ward',
@@ -448,11 +446,11 @@ export const prismaticAccordCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Rare',
     name: 'Harmony Shell',
-    description: 'On play: Empower the next card you play; Draw 2 cards; +40 Oblivion; Gain 3 Prismatic Light. While on board: If you control 1+ active Cherubim, this Cherubim grants +1.7 bonus power; Buffs Seraphim and Angel attacks: base +38, cooldown +0, multiplier x1.70',
+    description: 'On play: Empower the next card you play; +40 Oblivion; Gain 7 Prismatic Light. While on board: If you control 1+ active Cherubim, this Cherubim grants +1.7 bonus power; Buffs Seraphim and Angel attacks: base +38, cooldown +0, multiplier x1.70',
     artKey: 'pa_cherubim_harmony_shell',
     maxDurability: 3,
     effects: [{ type: 'cherubim_conditional_buff', condition: { type: 'cherubim_active_gte', value: 1 }, value: 1.7 }],
-    onPlayEffects: [{ type: 'multiply_next' }, { type: 'draw', value: 2 }, { type: 'oblivion_flat', value: 40 }, { type: 'prismatic_light_gain', value: 3 }],
+    onPlayEffects: [{ type: 'multiply_next' }, { type: 'oblivion_flat', value: 40 }, { type: 'prismatic_light_gain', value: 7 }],
   },
   {
     definitionId: 'cherubim-prismatic-convergence-beacon',
@@ -460,11 +458,11 @@ export const prismaticAccordCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Epic',
     name: 'Convergence Beacon',
-    description: 'On play: Draw 3 cards; Salvage any 1 card; Gain 5 Prismatic Light. While on board: Draw 2 cards per card played; Buffs Seraphim and Angel attacks: base +42, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +33, cooldown +0, multiplier x1.00',
+    description: 'On play: Salvage any 1 card; Gain 11 Prismatic Light. While on board: Draw 2 cards per card played; Buffs Seraphim and Angel attacks: base +42, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +33, cooldown +0, multiplier x1.00',
     artKey: 'pa_cherubim_convergence_beacon',
     maxDurability: 4,
     effects: [{ type: 'cherubim_draw_per_card', value: 2 }],
-    onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'salvage_any' }, { type: 'prismatic_light_gain', value: 5 }],
+    onPlayEffects: [{ type: 'salvage_any' }, { type: 'prismatic_light_gain', value: 11 }],
   },
   {
     definitionId: 'cherubim-prismatic-luminous-ascent',
@@ -472,11 +470,11 @@ export const prismaticAccordCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Epic',
     name: 'Luminous Ascent',
-    description: 'On play: Draw 2 cards; Gain 3 Radiance; Gain 5 Prismatic Light. While on board: Gain 4 Radiance per card played; Buffs Seraphim and Angel attacks: base +42, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +33, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 3 Radiance; Gain 9 Prismatic Light. While on board: Gain 4 Radiance per card played; Buffs Seraphim and Angel attacks: base +42, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +33, cooldown +0, multiplier x1.00',
     artKey: 'pa_cherubim_luminous_ascent',
     maxDurability: 4,
     effects: [{ type: 'cherubim_resource_per_card', resource: 'radiance', value: 4 }],
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'radiance_gain', value: 3 }, { type: 'prismatic_light_gain', value: 5 }],
+    onPlayEffects: [{ type: 'radiance_gain', value: 3 }, { type: 'prismatic_light_gain', value: 9 }],
   },
   {
     definitionId: 'cherubim-prismatic-absolute-light',
@@ -484,9 +482,9 @@ export const prismaticAccordCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Legendary',
     name: 'Absolute Light',
-    description: 'On play: Look at the top 5 cards, take 2 cards, and put the rest on the bottom; Draw 1 card; +120 Oblivion; Gain 6 Prismatic Light. While on board: Adjacent active Seraphim gain +22 Oblivion per card played; Buffs Angel attacks: base +20, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +16, cooldown -1, multiplier x1.00',
+    description: 'On play: Look at the top 5 cards, take 2 cards, and put the rest on the bottom; +120 Oblivion; Gain 8 Prismatic Light. While on board: Adjacent active Seraphim gain +22 Oblivion per card played; Buffs Angel attacks: base +20, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +16, cooldown -1, multiplier x1.00',
     artKey: 'pa_cherubim_absolute_light',
     maxDurability: 5,
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 22 }],
-    onPlayEffects: [{ type: 'look_top_take', look: 5, take: 2 }, { type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 120 }, { type: 'prismatic_light_gain', value: 6 }],
+    onPlayEffects: [{ type: 'look_top_take', look: 5, take: 2 }, { type: 'oblivion_flat', value: 120 }, { type: 'prismatic_light_gain', value: 8 }],
   }];

@@ -33,8 +33,7 @@ export const thornboundEternals = [
     },
     baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 1, synergyRequirement: 'Thornbound' },
     onPlayEffects: [
-      { type: 'trail_gain', value: 30 },
-      { type: 'draw', value: 2 },
+      { type: 'trail_gain', value: 34 },
       { type: 'trail_linked_gain', value: 1 },
       { type: 'conditional', condition: { type: 'trail_gte', value: 15 }, then: [
         { type: 'funeral_procession', value: 1, perCard: false }
@@ -75,8 +74,7 @@ export const thornboundEternals = [
     },
     baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 1, synergyRequirement: 'Thornbound' },
     onPlayEffects: [
-      { type: 'trail_gain', value: 18 },
-      { type: 'draw', value: 2 },
+      { type: 'trail_gain', value: 22 },
       { type: 'trail_linked_gain', value: 1 },
       { type: 'conditional', condition: { type: 'trail_gte', value: 10 }, then: [
         { type: 'funeral_procession', value: 1, perCard: false }
@@ -98,8 +96,7 @@ export const thornboundEternals = [
       { type: 'cherubim_funeral_procession', value: 1, perCard: false },
       { type: 'cherubim_scar_echo', value: 2 }],
     onPlayEffects: [
-      { type: 'trail_gain', value: 10 },
-      { type: 'draw', value: 2 },
+      { type: 'trail_gain', value: 14 },
       { type: 'trail_linked_gain', value: 1 },
       { type: 'conditional', condition: { type: 'trail_gte', value: 10 }, then: [
         { type: 'funeral_procession', value: 1, perCard: false }
@@ -114,8 +111,7 @@ export const thornboundEternals = [
     description: 'Draw 3 cards; Gain 12 Trail; Trail Linked Gain: Gain 1 Trail for each card played this turn; If you have 10+ Trail, Funeral Procession: All Trail gained this turn is doubled. Empower the next card you play.',
     artKey: 'eternal_last_ember_caravan',
     effects: [
-      { type: 'draw', value: 3 },
-      { type: 'trail_gain', value: 12 },
+      { type: 'trail_gain', value: 18 },
       { type: 'trail_linked_gain', value: 1 },
       { type: 'conditional', condition: { type: 'trail_gte', value: 10 }, then: [
         { type: 'funeral_procession', value: 1, perCard: false }
@@ -165,7 +161,7 @@ export const thornboundSeraphims: SeraphimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Common',
     name: 'Bleak March Duelist',
-    description: 'On play: Draw 1 card. While on board: +12 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 2 Trail. While on board: +12 Oblivion whenever you play an Ophanim while active',
     artKey: 'tbp_ser_bleak_march_duelist',
     attacks: {
       unsynergized: {
@@ -191,7 +187,7 @@ export const thornboundSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 12, synergyRequirement: 'Thornbound' },
-    onPlayEffects: [{ type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'trail_gain', value: 2 }],
   },
   {
     definitionId: 'tbp-ser-vinedusk-lancer',
@@ -341,7 +337,7 @@ export const thornboundOphanims: OphanimDefinition[] = [
     name: 'Ashpath Forager',
     description: 'Draw 1 card; Gain 1 Trail; +15 Oblivion',
     artKey: 'tbp_seek_ashpath_forager',
-    effects: [{ type: 'draw', value: 1 }, { type: 'trail_gain', value: 1 }, { type: 'oblivion_flat', value: 15 }],
+    effects: [{ type: 'trail_gain', value: 3 }, { type: 'oblivion_flat', value: 15 }],
   },
   {
     definitionId: 'tbp-ophanim-thorn-map-initiate',
@@ -385,7 +381,7 @@ export const thornboundOphanims: OphanimDefinition[] = [
     description: 'chain_gain; If you have 2+ Trail, Draw 1 card; Gain 3 Trail; Draw 1 card',
     artKey: 'tbp_seek_red_veil_waystone',
     effects: [
-      { type: 'conditional', condition: { type: 'trail_gte', value: 2 }, then: [{ type: 'draw', value: 1 }] }],
+      { type: 'trail_gain', value: 4 }],
   },
   {
     definitionId: 'tbp-ophanim-blackroot-quartermaster',
@@ -438,8 +434,7 @@ export const thornboundOphanims: OphanimDefinition[] = [
     description: 'Draw 2 cards; Gain 2 Trail; If you have 4+ Trail, +180 Oblivion',
     artKey: 'tbp_seek_last_ember_caravan',
     effects: [
-      { type: 'draw', value: 2 },
-      { type: 'trail_gain', value: 2 },
+      { type: 'trail_gain', value: 6 },
       { type: 'conditional', condition: { type: 'trail_gte', value: 4 }, then: [{ type: 'oblivion_flat', value: 180 }] }],
   }];
 
@@ -450,11 +445,11 @@ export const thornboundCherubim: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Common',
     name: 'Spitebloom Sink',
-      description: 'On play: Gain 2 Trail; Salvage 1 card matching Ophanim; Draw 1 card. While on board: Adjacent active Seraphim gain +11 Oblivion per card played; Buffs Seraphim and Angel attacks: base +11, cooldown +0, multiplier x1.00',
+      description: 'On play: Gain 4 Trail; Salvage 1 card matching Ophanim. While on board: Adjacent active Seraphim gain +11 Oblivion per card played; Buffs Seraphim and Angel attacks: base +11, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_spitebloom_sink',
     maxDurability: 2,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 11 }],
-      onPlayEffects: [{ type: 'trail_gain', value: 2 }, { type: 'salvage_by_type', filter: ['Ophanim'] }, { type: 'draw', value: 1 }],
+      onPlayEffects: [{ type: 'trail_gain', value: 4 }, { type: 'salvage_by_type', filter: ['Ophanim'] }],
   },
   {
     definitionId: 'tbp-cherubim-thornwake-ditch',
@@ -462,11 +457,11 @@ export const thornboundCherubim: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Common',
     name: 'Thornwake Ditch',
-      description: 'On play: Draw 2 cards; Gain 2 Trail. While on board: Adjacent active Seraphim gain +9 Oblivion per card played; Buffs Angel attacks: base +8, cooldown +0, multiplier x1.00',
+      description: 'On play: Gain 6 Trail. While on board: Adjacent active Seraphim gain +9 Oblivion per card played; Buffs Angel attacks: base +8, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_thornwake_ditch',
     maxDurability: 2,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 9 }],
-      onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'trail_gain', value: 2 }],
+      onPlayEffects: [{ type: 'trail_gain', value: 6 }],
   },
   {
     definitionId: 'tbp-cherubim-gallows-bramble',
@@ -486,11 +481,11 @@ export const thornboundCherubim: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Rare',
     name: 'Pale Vine Reliquary',
-      description: 'On play: Salvage any 1 card; Draw 2 cards; Empower the next card you play. While on board: Adjacent active Seraphim gain +16 Oblivion per card played; Buffs Seraphim and Angel attacks: base +13, cooldown +0, multiplier x1.00',
+      description: 'On play: Salvage any 1 card; Gain 4 Trail; Empower the next card you play. While on board: Adjacent active Seraphim gain +16 Oblivion per card played; Buffs Seraphim and Angel attacks: base +13, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_pale_vine_reliquary',
     maxDurability: 3,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 16 }],
-      onPlayEffects: [{ type: 'salvage_any' }, { type: 'draw', value: 2 }, { type: 'multiply_next' }],
+      onPlayEffects: [{ type: 'salvage_any' }, { type: 'trail_gain', value: 4 }, { type: 'multiply_next' }],
   },
   {
     definitionId: 'tbp-cherubim-red-marsh-effigy',
@@ -498,11 +493,11 @@ export const thornboundCherubim: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Rare',
     name: 'Red Marsh Effigy',
-      description: 'On play: Gain 2 Trail; Draw 2 cards. While on board: Adjacent active Seraphim gain +10 Oblivion per card played; Buffs Seraphim attacks: base +9, cooldown +0, multiplier x1.00',
+      description: 'On play: Gain 6 Trail. While on board: Adjacent active Seraphim gain +10 Oblivion per card played; Buffs Seraphim attacks: base +9, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_red_marsh_effigy',
     maxDurability: 3,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 10 }],
-      onPlayEffects: [{ type: 'trail_gain', value: 2 }, { type: 'draw', value: 2 }],
+      onPlayEffects: [{ type: 'trail_gain', value: 6 }],
   },
   {
     definitionId: 'tbp-cherubim-funeral-hedgerow',
@@ -510,11 +505,11 @@ export const thornboundCherubim: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Epic',
     name: 'Funeral Hedgerow',
-      description: 'On play: Gain 3 Trail; Draw 1 card. While on board: Adjacent active Seraphim gain +14 Oblivion per card played; Buffs Seraphim attacks: base +15, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +12, cooldown +0, multiplier x1.00',
+      description: 'On play: Gain 5 Trail. While on board: Adjacent active Seraphim gain +14 Oblivion per card played; Buffs Seraphim attacks: base +15, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +12, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_funeral_hedgerow',
     maxDurability: 4,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 14 }],
-      onPlayEffects: [{ type: 'trail_gain', value: 3 }, { type: 'draw', value: 1 }],
+      onPlayEffects: [{ type: 'trail_gain', value: 5 }],
   },
   {
     definitionId: 'tbp-cherubim-cathedral-of-splinters',
@@ -522,11 +517,11 @@ export const thornboundCherubim: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Legendary',
     name: 'Cathedral of Splinters',
-      description: 'On play: If you have 3+ Trail, +220 Oblivion; Gain 2 Trail; Draw 2 cards. While on board: Adjacent active Seraphim gain +16 Oblivion per card played; Buffs Seraphim and Angel attacks: base +15, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +12, cooldown -1, multiplier x1.00',
+      description: 'On play: If you have 3+ Trail, +220 Oblivion; Gain 6 Trail. While on board: Adjacent active Seraphim gain +16 Oblivion per card played; Buffs Seraphim and Angel attacks: base +15, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +12, cooldown -1, multiplier x1.00',
     artKey: 'tbp_cherubim_cathedral_of_splinters',
     maxDurability: 8,
       effects: [{ type: 'cherubim_global_oblivion_mult', value: 0.16 }],
-      onPlayEffects: [{ type: 'conditional', condition: { type: 'trail_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 220 }] }, { type: 'trail_gain', value: 2 }, { type: 'draw', value: 2 }],
+      onPlayEffects: [{ type: 'conditional', condition: { type: 'trail_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 220 }] }, { type: 'trail_gain', value: 6 }],
   }];
 
 export const thornboundCherubimCards: CherubimDefinition[] = [
@@ -536,11 +531,11 @@ export const thornboundCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Common',
     name: 'Null Thorn',
-    description: 'On play: Gain 2 Trail; Draw 1 card. While on board: Adjacent active Seraphim gain +10 Oblivion per card played; Buffs Seraphim attacks: base +11, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 4 Trail. While on board: Adjacent active Seraphim gain +10 Oblivion per card played; Buffs Seraphim attacks: base +11, cooldown -1, multiplier x1.00',
     artKey: 'tbp_cherubim_null_thorn',
     maxDurability: 2,
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 10 }],
-    onPlayEffects: [{ type: 'trail_gain', value: 2 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'trail_gain', value: 4 }],
   },
   {
     definitionId: 'cherubim-thornbound-path-keeper',
@@ -548,11 +543,11 @@ export const thornboundCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Common',
     name: 'Path Keeper',
-    description: 'On play: Look at the top 4 cards, take 1 card, and put the rest on the bottom; Draw 1 card. While on board: Gain 2 Trail per card played; Buffs Seraphim attacks: base +26, cooldown +0, multiplier x1.00',
+    description: 'On play: Look at the top 4 cards, take 1 card, and put the rest on the bottom; Gain 2 Trail. While on board: Gain 2 Trail per card played; Buffs Seraphim attacks: base +26, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_path_keeper',
     maxDurability: 2,
     effects: [{ type: 'cherubim_resource_per_card', resource: 'trail', value: 2 }],
-    onPlayEffects: [{ type: 'look_top_take', look: 4, take: 1 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'look_top_take', look: 4, take: 1 }, { type: 'trail_gain', value: 2 }],
   },
   {
     definitionId: 'cherubim-thornbound-vine-mantle',
@@ -572,11 +567,11 @@ export const thornboundCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Rare',
     name: 'Trail Accelerator',
-    description: 'On play: Gain 2 Trail; Draw 2 cards. While on board: Adjacent active Seraphim chain +0.09; Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 6 Trail. While on board: Adjacent active Seraphim chain +0.09; Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_trail_accelerator',
     maxDurability: 3,
     effects: [],
-    onPlayEffects: [{ type: 'trail_gain', value: 2 }, { type: 'draw', value: 2 }],
+    onPlayEffects: [{ type: 'trail_gain', value: 6 }],
   },
   {
     definitionId: 'cherubim-thornbound-growth-shell',
@@ -584,11 +579,11 @@ export const thornboundCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Rare',
     name: 'Growth Shell',
-    description: 'On play: Empower the next card you play; Gain 2 Trail; Draw 1 card. While on board: If you control 1+ active Cherubim, this Cherubim grants +1.7 bonus power; Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.95',
+    description: 'On play: Empower the next card you play; Gain 4 Trail. While on board: If you control 1+ active Cherubim, this Cherubim grants +1.7 bonus power; Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.95',
     artKey: 'tbp_cherubim_growth_shell',
     maxDurability: 3,
     effects: [{ type: 'cherubim_conditional_buff', condition: { type: 'cherubim_active_gte', value: 1 }, value: 1.7 }],
-    onPlayEffects: [{ type: 'multiply_next' }, { type: 'trail_gain', value: 2 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'multiply_next' }, { type: 'trail_gain', value: 4 }],
   },
   {
     definitionId: 'cherubim-thornbound-bramble-arbor',
@@ -596,11 +591,11 @@ export const thornboundCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Epic',
     name: 'Bramble Arbor',
-      description: 'On play: Draw 2 cards; +60 Oblivion. While on board: Gain 3 Trail per card played; Buffs Angel attacks: base +46, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +36, cooldown +0, multiplier x1.00',
+      description: 'On play: Gain 4 Trail; +60 Oblivion. While on board: Gain 3 Trail per card played; Buffs Angel attacks: base +46, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +36, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_bramble_arbor',
     maxDurability: 4,
     effects: [{ type: 'cherubim_resource_per_card', resource: 'trail', value: 3 }],
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'oblivion_flat', value: 60 }],
+    onPlayEffects: [{ type: 'trail_gain', value: 4 }, { type: 'oblivion_flat', value: 60 }],
   },
   {
     definitionId: 'cherubim-thornbound-wildroot-ascension',
@@ -608,11 +603,11 @@ export const thornboundCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Epic',
     name: 'Wildroot Ascension',
-      description: 'On play: Gain 2 Trail; Draw 1 card. While on board: Draw 2 cards per card played; Buffs Angel attacks: base +46, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +36, cooldown +0, multiplier x1.00',
+      description: 'On play: Gain 4 Trail. While on board: Draw 2 cards per card played; Buffs Angel attacks: base +46, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +36, cooldown +0, multiplier x1.00',
     artKey: 'tbp_cherubim_wildroot_ascension',
     maxDurability: 4,
     effects: [{ type: 'cherubim_draw_per_card', value: 2 }],
-    onPlayEffects: [{ type: 'trail_gain', value: 2 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'trail_gain', value: 4 }],
   },
   {
     definitionId: 'cherubim-thornbound-eternal-roots',
@@ -620,9 +615,9 @@ export const thornboundCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Legendary',
     name: 'Eternal Roots',
-      description: 'On play: Look at the top 5 cards, take 2 cards, and put the rest on the bottom; Draw 1 card. While on board: Adjacent active Seraphim gain +18 Oblivion per card played; Buffs Angel attacks: base +16, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +12, cooldown -1, multiplier x1.00',
+      description: 'On play: Look at the top 5 cards, take 2 cards, and put the rest on the bottom; Gain 2 Trail. While on board: Adjacent active Seraphim gain +18 Oblivion per card played; Buffs Angel attacks: base +16, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +12, cooldown -1, multiplier x1.00',
     artKey: 'tbp_cherubim_eternal_roots',
     maxDurability: 5,
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 18 }],
-    onPlayEffects: [{ type: 'look_top_take', look: 5, take: 2 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'look_top_take', look: 5, take: 2 }, { type: 'trail_gain', value: 2 }],
   }];

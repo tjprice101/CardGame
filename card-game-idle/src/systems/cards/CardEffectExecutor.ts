@@ -215,9 +215,9 @@ function cloneBoard(board: BoardState): BoardState {
   return {
     ...board,
     activeBoardEffects: [...board.activeBoardEffects],
-    frontSlots: [...board.frontSlots] as BoardState['frontSlots'],
-    backSlots: [...board.backSlots] as BoardState['backSlots'],
-       emberGrove: [...(board.emberGrove ?? [])],
+    frontSlots: board.frontSlots.map(s => s ? { ...s } : null) as BoardState['frontSlots'],
+    backSlots: board.backSlots.map(s => s ? { ...s } : null) as BoardState['backSlots'],
+    emberGrove: [...(board.emberGrove ?? [])],
   };
 }
 
@@ -349,20 +349,6 @@ export class CardEffectExecutor {
     function applyRadianceGain(base: number): void {
       const adjusted = throneActive ? Math.ceil(base * 1.5) : base;
       mutableTurn.radiance += adjusted;
-    }
-
-    function applyLateGameDrawConversion(suppressedDraw: number): void {
-      if (suppressedDraw <= 0) return;
-
-      const isInfinite = def?.rarity === 'Infinite';
-      const dominantGainPerSuppressed = isInfinite ? 10 : 5;
-      const oblivionGainPerSuppressed = isInfinite ? 240 : 120;
-
-      const dominantGain = suppressedDraw * dominantGainPerSuppressed * multiplier;
-      if (mutableTurn.embers >= mutableTurn.radiance) mutableTurn.embers += dominantGain;
-      else mutableTurn.radiance += dominantGain;
-
-      oblivionBonus += suppressedDraw * oblivionGainPerSuppressed * multiplier;
     }
 
     function processEffect(effect: CardEffect): boolean {
@@ -1441,26 +1427,12 @@ export class CardEffectExecutor {
 
         // �E�E�E��E�E�E��E�E�E��E�E�E� Ember effects (Pyroabyss) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'ember_gain': {
-          let gain = effect.value;
-          // Ember Chain ? gain Embers equal to Ophanim count in hand
-          if (deckCard.definitionId === 'ophanim-fire-ember-chain') {
-            gain = deck.hand.filter(c => {
-              const d = CardRegistry.get(c.definitionId);
-              return d?.type === 'Ophanim';
-            }).length;
-          }
-          mutableTurn.embers += gain * multiplier;
+          // embers resource scrapped — no-op
           break;
         }
 
         case 'ember_spend': {
-          if (effect.value >= 9999) {
-            embersDrained = mutableTurn.embers;
-            mutableTurn.embers = 0;
-          } else {
-            if (mutableTurn.embers < effect.value) return false;
-            mutableTurn.embers -= effect.value;
-          }
+          // embers resource scrapped — always succeeds, no drain
           break;
         }
 
@@ -1670,10 +1642,15 @@ export class CardEffectExecutor {
           if (phase === 'Voltage') {
             oblivionBonus += consume * effect.voltageOblivionPerPulse * multiplier;
           } else {
-            const extraDraw = Math.floor(consume * effect.frostDrawPerPulse);
-            for (let i = 0; i < extraDraw; i++) {
-              const ok = processEffect({ type: 'draw', value: 1 });
-              if (!ok) break;
+            if ((effect.frostArcticChargePerPulse ?? 0) > 0) {
+              const chargeGain = Math.floor(consume * effect.frostArcticChargePerPulse!);
+              mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + chargeGain;
+            } else if ((effect.frostDrawPerPulse ?? 0) > 0) {
+              const extraDraw = Math.floor(consume * effect.frostDrawPerPulse!);
+              for (let i = 0; i < extraDraw; i++) {
+                const ok = processEffect({ type: 'draw', value: 1 });
+                if (!ok) break;
+              }
             }
           }
           break;
@@ -1933,24 +1910,6 @@ export class CardEffectExecutor {
         case 'draw': {
           let count = effect.value;
           if (deckCard.definitionId === 'hr-light-divine-clarity') count = 4;
-          if (deckCard.definitionId === 'inf-prismatic-axiom-rain') {
-            count += Math.floor((mutableTurn.prismaticRefractionEchoes ?? 0) / 3);
-          }
-          if (
-            deckCard.definitionId === 'btei-prismatic-blindwars-reliquary'
-            && (mutableTurn.prismaticNodeCharges ?? 0) > 0
-            && mutableTurn.cardsPlayedThisTurn >= 5
-          ) {
-            count += new Set(mutableTurn.prismaticDistinctNonAccordChannels ?? []).size;
-          }
-
-          if (def?.rarity === 'Eternal' || def?.rarity === 'Infinite') {
-            const original = count;
-            const allowed = original >= 3 ? 1 : 0;
-            const suppressed = Math.max(0, original - allowed);
-            count = allowed;
-            applyLateGameDrawConversion(suppressed);
-          }
 
           mutableDeck = TurnSystem.drawCards(mutableDeck, count);
           if (deckCard.definitionId === 'hr-light-divine-clarity') {

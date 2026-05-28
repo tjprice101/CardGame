@@ -131,12 +131,12 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-ser-prismwake',
     name: 'Prismwake Seraph',
-    description: 'On play: Draw 1 card. While on board: +12 Oblivion per card played while active',
+    description: 'On play: Gain 12 Proof. While on board: +12 Oblivion per card played while active',
     rarity: 'Common',
     artKey: 'ga_ser_prismwake',
     bonusType: 'oblivion_per_card',
     bonusValue: 12,
-    onPlayEffects: [{ type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'proof_gain', value: 12 }],
     unsynergizedName: 'Prismwake Vector Break',
     synergizedName: 'Prismwake Angelic Verdict',
     unsynergizedDescription: '240 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -149,12 +149,12 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-ser-lattice-canticle',
     name: 'Lattice Canticle Seraph',
-    description: 'On play: Draw 2 cards; Empower the next card you play. While on board: +18 Oblivion per card played while active',
+    description: 'On play: Gain 10 Proof; Empower the next card you play. While on board: +18 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'ga_ser_lattice_canticle',
     bonusType: 'oblivion_per_card',
     bonusValue: 18,
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'multiply_next' }],
+    onPlayEffects: [{ type: 'proof_gain', value: 10 }, { type: 'multiply_next' }],
     unsynergizedName: 'Lattice Canticle Vector Break',
     synergizedName: 'Lattice Canticle Angelic Verdict',
     unsynergizedDescription: '312 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -185,12 +185,12 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-ser-glass-hymn',
     name: 'Glass Hymn Sentinel',
-    description: 'On play: +220 Oblivion; Draw 1 card. While on board: +30 Oblivion per card played while active',
+    description: 'On play: +220 Oblivion; Gain 8 Proof. While on board: +30 Oblivion per card played while active',
     rarity: 'Epic',
     artKey: 'ga_ser_glass_hymn',
     bonusType: 'oblivion_per_card',
     bonusValue: 30,
-    onPlayEffects: [{ type: 'oblivion_flat', value: 220 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 220 }, { type: 'proof_gain', value: 8 }],
     unsynergizedName: 'Glass Hymn Vector Break',
     synergizedName: 'Glass Hymn Angelic Verdict',
     unsynergizedDescription: '460 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -203,12 +203,12 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-ser-yrethborn',
     name: 'Yrethborn Ascendant',
-    description: 'On play: Draw 2 cards; Gain 22 Proof. While on board: +22 Oblivion per card played while active',
+    description: 'On play: Gain 30 Proof. While on board: +22 Oblivion per card played while active',
     rarity: 'Legendary',
     artKey: 'ga_ser_yrethborn',
     bonusType: 'oblivion_per_card',
     bonusValue: 22,
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'proof_gain', value: 22 }],
+    onPlayEffects: [{ type: 'proof_gain', value: 30 }],
     unsynergizedName: 'Yrethborn Vector Break',
     synergizedName: 'Yrethborn Angelic Verdict',
     unsynergizedDescription: '690 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -222,11 +222,11 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-mirrorbody-archivist',
     name: 'Mirrorbody Archivist',
-    description: 'On play: Draw 1 card. While on board: Adjacent active Seraphim gain +28 Oblivion per card played; Buffs Seraphim and Angel attacks: base +26, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 8 Proof. While on board: Adjacent active Seraphim gain +28 Oblivion per card played; Buffs Seraphim and Angel attacks: base +26, cooldown +0, multiplier x1.00',
     rarity: 'Common',
     artKey: 'ga_cher_mirrorbody_archivist',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 28 }],
-    onPlayEffects: [{ type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'proof_gain', value: 8 }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-facet-gate-ward',
@@ -240,11 +240,11 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-prismatic-reliquary',
     name: 'Prismatic Reliquary',
-    description: 'On play: Draw 2 cards; Gain 8 Proof. While on board: Adjacent active Seraphim gain +38 Oblivion per card played; Buffs Seraphim attacks: base +34, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 16 Proof. While on board: Adjacent active Seraphim gain +38 Oblivion per card played; Buffs Seraphim attacks: base +34, cooldown +0, multiplier x1.00',
     rarity: 'Rare',
     artKey: 'ga_cher_prismatic_reliquary',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 38 }],
-    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'proof_gain', value: 8 }],
+    onPlayEffects: [{ type: 'proof_gain', value: 16 }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-shard-choir-keeper',
@@ -276,11 +276,11 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-splitlight-cantor',
     name: 'Splitlight Cantor',
-    description: 'On play: Gain 18 Radiance; Draw 1 card. While on board: Gain 12 Radiance per card played; Buffs Seraphim attacks: base +42, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 18 Radiance; Gain 6 Proof. While on board: Gain 12 Radiance per card played; Buffs Seraphim attacks: base +42, cooldown -1, multiplier x1.00',
     rarity: 'Rare',
     artKey: 'ga_cher_splitlight_cantor',
     effects: [{ type: 'cherubim_resource_per_card', resource: 'radiance', value: 12 }],
-    onPlayEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'proof_gain', value: 6 }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-light-archive',
@@ -294,11 +294,11 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-shardward-savant',
     name: 'Shardward Savant',
-    description: 'On play: +180 Oblivion; Draw 2 cards. While on board: Adjacent active Seraphim gain +20 Oblivion per card played; Buffs Seraphim and Angel attacks: base +17, cooldown +0, multiplier x1.00',
+    description: 'On play: +180 Oblivion; Gain 10 Proof. While on board: Adjacent active Seraphim gain +20 Oblivion per card played; Buffs Seraphim and Angel attacks: base +17, cooldown +0, multiplier x1.00',
     rarity: 'Common',
     artKey: 'ga_cher_shardward_savant',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 20 }],
-    onPlayEffects: [{ type: 'oblivion_flat', value: 180 }, { type: 'draw', value: 2 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 180 }, { type: 'proof_gain', value: 10 }],
   }),
 
   buildOphanim({
@@ -307,7 +307,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Draw 1 card; chain_gain',
     rarity: 'Common',
     artKey: 'ga_oph_spectral_current',
-    effects: [{ type: 'draw', value: 1 }],
+    effects: [{ type: 'proof_gain', value: 6 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-triune-prism-flow',
@@ -339,7 +339,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Draw 3 cards; Empower the next card you play',
     rarity: 'Epic',
     artKey: 'ga_oph_lumen_cascade',
-    effects: [{ type: 'draw', value: 3 }, { type: 'multiply_next' }],
+    effects: [{ type: 'proof_gain', value: 16 }, { type: 'multiply_next' }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-crystal-echo-archive',
@@ -355,7 +355,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Draw 4 cards; Gain 24 Radiance; chain_multiplier_set; Gain 20 Proof',
     rarity: 'Legendary',
     artKey: 'ga_oph_white_transit',
-    effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 24 }, { type: 'proof_gain', value: 20 }],
+    effects: [{ type: 'radiance_gain', value: 24 }, { type: 'proof_gain', value: 32 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-prism-veil-drift',
@@ -363,7 +363,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Draw 2 cards; Look at the top 4 cards, take 1 card, and put the rest on the bottom',
     rarity: 'Rare',
     artKey: 'ga_oph_prism_veil_drift',
-    effects: [{ type: 'draw', value: 2 }, { type: 'look_top_take', look: 4, take: 1 }],
+    effects: [{ type: 'proof_gain', value: 8 }, { type: 'look_top_take', look: 4, take: 1 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-lattice-horizon',
@@ -379,7 +379,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Replay last Ophanim played this turn; Draw 1 card; Gain 8 Proof',
     rarity: 'Legendary',
     artKey: 'ga_oph_spectral_afterimage',
-    effects: [{ type: 'copy_last_hr' }, { type: 'draw', value: 1 }, { type: 'proof_gain', value: 8 }],
+    effects: [{ type: 'copy_last_hr' }, { type: 'proof_gain', value: 14 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-clear-beyond',
@@ -387,7 +387,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     description: 'Draw 3 cards; Salvage any 1 card',
     rarity: 'Common',
     artKey: 'ga_oph_clear_beyond',
-    effects: [{ type: 'draw', value: 3 }, { type: 'salvage_any' }],
+    effects: [{ type: 'proof_gain', value: 12 }, { type: 'salvage_any' }],
   }),
 
   buildSeraphim({

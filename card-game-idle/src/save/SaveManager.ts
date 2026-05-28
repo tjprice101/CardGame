@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 19;
+export const CURRENT_VERSION = 21;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -297,6 +297,30 @@ const migrations: Record<number, Migration> = {
       if (prof && typeof prof.avatarId === 'string' && CLASSIC_REMAP[prof.avatarId]) {
         prof.avatarId = CLASSIC_REMAP[prof.avatarId];
       }
+    }
+    return data;
+  },
+  20: (data) => {
+    // v20 adds: battlegroundStats for Battleground of the Card-born.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      if (p.battlegroundStats === undefined) {
+        p.battlegroundStats = { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] };
+      }
+    }
+    return data;
+  },
+  21: (data) => {
+    // v21 adds: Signature Cards (profile), Ascension mode currency + tracking.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      const prof = p.profile as Record<string, unknown> | undefined;
+      if (prof && prof.signatureCardIds === undefined) prof.signatureCardIds = [];
+      if (p.entropyBalance === undefined) p.entropyBalance = 0;
+      if (p.nullRaidCooldowns === undefined) p.nullRaidCooldowns = {};
+      if (p.nullRaidClears === undefined) p.nullRaidClears = {};
+      if (p.transcendentCollection === undefined) p.transcendentCollection = {};
+      if (p.purchasedAscensionCosmetics === undefined) p.purchasedAscensionCosmetics = [];
     }
     return data;
   },

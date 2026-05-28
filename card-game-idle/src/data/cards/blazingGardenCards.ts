@@ -119,7 +119,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_ser_serevathi_ember_spiral',
     bonusType: 'ember_per_card',
     bonusValue: 3,
-    onPlayEffects: [{ type: 'bloom_gain', value: 6 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'bloom_gain', value: 4 }],
     unsynergizedName: 'Petal Circuit Slash',
     synergizedName: 'Blazing Choir Slash',
     unsynergizedDescription: '236 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -155,7 +155,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_ser_vethkorath_starspine',
     bonusType: 'oblivion_per_card',
     bonusValue: 22,
-    onPlayEffects: [{ type: 'bloom_gain', value: 9 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'bloom_gain', value: 5 }],
     unsynergizedName: 'Thistle Proof Cut',
     synergizedName: 'Proof Completed Cut',
     unsynergizedDescription: '418 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -173,7 +173,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_ser_embergrove_cantor',
     bonusType: 'ember_per_card',
     bonusValue: 14,
-    onPlayEffects: [{ type: 'salvage_any' }, { type: 'bloom_gain', value: 16 }],
+    onPlayEffects: [{ type: 'salvage_any' }, { type: 'bloom_gain', value: 14 }, { type: 'draw', value: 1 }],
     unsynergizedName: 'Ember Echo Rend',
     synergizedName: 'Echo Chord Rend',
     unsynergizedDescription: '516 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -191,7 +191,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_ser_final_chord_herald',
     bonusType: 'oblivion_per_card',
     bonusValue: 34,
-    onPlayEffects: [{ type: 'bloom_gain', value: 6 }, { type: 'oblivion_flat', value: 220 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'oblivion_flat', value: 220 }],
     unsynergizedName: 'Choirline Sundering',
     synergizedName: 'Final Chord Sundering',
     unsynergizedDescription: '620 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -210,7 +210,7 @@ export const blazingGardenCards: CardDefinition[] = [
     rarity: 'Common',
     artKey: 'bg_cher_root_lantern_attendant',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 24 }],
-    onPlayEffects: [{ type: 'bloom_gain', value: 3 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }],
   }),
   buildCherubim({
     definitionId: 'bg-cher-auric-floret-keeper',
@@ -228,7 +228,7 @@ export const blazingGardenCards: CardDefinition[] = [
     rarity: 'Rare',
     artKey: 'bg_cher_thistleproof_chorister',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.08 }],
-    onPlayEffects: [{ type: 'bloom_gain', value: 6 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'bloom_gain', value: 4 }],
   }),
   buildCherubim({
     definitionId: 'bg-cher-embergrove-historian',
@@ -256,7 +256,7 @@ export const blazingGardenCards: CardDefinition[] = [
     artKey: 'bg_cher_golden_petal_vicar',
     maxDurability: 9,
     effects: [{ type: 'cherubim_global_oblivion_mult', value: 0.48 }],
-    onPlayEffects: [{ type: 'bloom_gain', value: 14 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'bloom_gain', value: 10 }],
   }),
   buildCherubim({
     definitionId: 'bg-cher-charred-choir-reclaimer',
@@ -265,7 +265,7 @@ export const blazingGardenCards: CardDefinition[] = [
     rarity: 'Legendary',
     artKey: 'bg_cher_charred_choir_reclaimer',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 40 }],
-    onPlayEffects: [{ type: 'shuffle_discard' }, { type: 'bloom_gain', value: 3 }],
+    onPlayEffects: [{ type: 'shuffle_discard' }, { type: 'draw', value: 1 }],
   }),
 
   // Ophanim (7)
@@ -275,7 +275,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Draw 1 card; Gain 3 Bloom',
     rarity: 'Common',
     artKey: 'bg_oph_petal_route_initiate',
-    effects: [{ type: 'bloom_gain', value: 5 }],
+    effects: [{ type: 'draw', value: 1 }, { type: 'bloom_gain', value: 3 }],
   }),
   buildOphanim({
     definitionId: 'bg-oph-sunvein-wayfinder',
@@ -291,7 +291,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'chain_gain; Gain 5 Bloom; Empower the next card you play; Draw 1 card',
     rarity: 'Rare',
     artKey: 'bg_oph_violet_crown_drift',
-    effects: [{ type: 'bloom_gain', value: 7 }, { type: 'multiply_next' }],
+    effects: [{ type: 'bloom_gain', value: 5 }, { type: 'multiply_next' }],
   }),
   buildOphanim({
     definitionId: 'bg-oph-embergrove-cartographer',
@@ -299,7 +299,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Salvage any 1 card; Draw 1 card',
     rarity: 'Rare',
     artKey: 'bg_oph_embergrove_cartographer',
-    effects: [{ type: 'salvage_any' }, { type: 'bloom_gain', value: 2 }],
+    effects: [{ type: 'salvage_any' }, { type: 'draw', value: 1 }],
   }),
   buildOphanim({
     definitionId: 'bg-oph-rootflare-transit',
@@ -307,7 +307,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Draw 3 cards; chain_multiplier_set',
     rarity: 'Epic',
     artKey: 'bg_oph_rootflare_transit',
-    effects: [{ type: 'bloom_gain', value: 8 }],
+    effects: [{ type: 'draw', value: 3 }],
   }),
   buildOphanim({
     definitionId: 'bg-oph-spiral-memory-bloom',
@@ -323,7 +323,7 @@ export const blazingGardenCards: CardDefinition[] = [
     description: 'Draw 4 cards; chain_gain; Gain 10 Bloom',
     rarity: 'Legendary',
     artKey: 'bg_oph_chordbearing_migration',
-    effects: [{ type: 'bloom_gain', value: 18 }],
+    effects: [{ type: 'draw', value: 4 }, { type: 'bloom_gain', value: 10 }],
   }),
 
   // Eternal (5) - OVERHAULED
@@ -513,7 +513,7 @@ export const blazingGardenCards: CardDefinition[] = [
     // pollen at the highest bloom-multiplier coefficient.
     effects: [
       { type: 'gate_payoff', gates: [
-        { condition: { type: 'cards_played_gte', value: 4 }, payoff: { type: 'bloom_gain', value: 6 } },
+        { condition: { type: 'cards_played_gte', value: 4 }, payoff: { type: 'draw', value: 2 } },
         { condition: { type: 'burn_phase_cards_gte', value: 2 }, payoff: { type: 'gain_echo', value: 2 } },
         { condition: { type: 'grove_cards_gte', value: 1 }, payoff: { type: 'burn_attack', value: 1 } }] },
       { type: 'zenith_on_all_gates', effect: { type: 'burn_all_effects_plus', value: 2 }, duration: 1 },

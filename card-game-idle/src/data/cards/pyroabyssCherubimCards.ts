@@ -7,11 +7,11 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Ember Shroud',
-    description: 'On play: Stoke 4 Furnace Pressure; Forge 1 Abyss Fault; Open 1 Ruin Window. While on board: Gain 2 Embers per card played',
+    description: 'On play: Stoke 4 Furnace Pressure; Forge 1 Abyss Fault; Open 1 Ruin Window. While on board: Gain 2 Strain per card played',
     artKey: 'cherubim_fire_ember_shroud',
     maxDurability: 2,
     effects: [
-      { type: 'cherubim_resource_per_card', resource: 'ember', value: 2 }],
+      { type: 'cherubim_resource_per_card', resource: 'pyroFurnacePressure', value: 2 }],
     onPlayEffects: [
       { type: 'pyro_furnace_pressure_gain', value: 4 },
       { type: 'pyro_abyss_fault_gain', value: 1 },
@@ -40,11 +40,11 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyre Mantle',
-    description: 'On play: Stoke 5 Furnace Pressure; +50 Oblivion; Open 1 Ruin Window. While on board: Gain 3 Embers per card played',
+    description: 'On play: Stoke 5 Furnace Pressure; +50 Oblivion; Open 1 Ruin Window. While on board: Gain 3 Strain per card played',
     artKey: 'cherubim_fire_pyre_mantle',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_resource_per_card', resource: 'ember', value: 3 }],
+      { type: 'cherubim_resource_per_card', resource: 'pyroFurnacePressure', value: 3 }],
     onPlayEffects: [
       { type: 'pyro_furnace_pressure_gain', value: 5 },
       { type: 'oblivion_flat', value: 50 },

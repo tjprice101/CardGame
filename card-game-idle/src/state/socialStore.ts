@@ -23,9 +23,10 @@ export interface SocialProfile {
   titleId: string | null;
   uiThemeId: string | null;
   lastSeenAt: string | null;
+  signatureCardIds: string[];
 }
 
-export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'error';
+export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'error' | 'confirmation_pending';
 
 interface SocialState {
   status: AuthStatus;
@@ -49,6 +50,7 @@ interface SocialState {
     avatarId: string;
     titleId: string | null;
     uiThemeId: string | null;
+    signatureCardIds: string[];
   }) => Promise<void>;
 }
 
@@ -72,7 +74,7 @@ async function fetchOrCreateProfile(
 
   const { data: existing, error: selErr } = await sb
     .from('profiles')
-    .select('id, friend_code, display_name, bio, avatar_id, title_id, ui_theme_id, last_seen_at')
+    .select('id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at, signature_card_ids')
     .eq('id', userId)
     .maybeSingle();
   if (selErr) throw selErr;
@@ -82,11 +84,12 @@ async function fetchOrCreateProfile(
       id: existing.id,
       friendCode: existing.friend_code,
       displayName: existing.display_name,
-      bio: existing.bio ?? null,
+      bio: null,
       avatarId: existing.avatar_id,
       titleId: existing.title_id,
       uiThemeId: existing.ui_theme_id,
       lastSeenAt: existing.last_seen_at,
+      signatureCardIds: Array.isArray(existing.signature_card_ids) ? existing.signature_card_ids : [],
     };
   }
 
@@ -99,23 +102,24 @@ async function fetchOrCreateProfile(
         id: userId,
         friend_code: friendCode,
         display_name: fallbackDisplayName,
-        bio: null,
         avatar_id: 'pic-classic-acolyte',
         title_id: null,
         ui_theme_id: null,
+        signature_card_ids: [],
       })
-      .select('id, friend_code, display_name, bio, avatar_id, title_id, ui_theme_id, last_seen_at')
+      .select('id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at, signature_card_ids')
       .single();
     if (!insErr && inserted) {
       return {
         id: inserted.id,
         friendCode: inserted.friend_code,
         displayName: inserted.display_name,
-        bio: inserted.bio ?? null,
+        bio: null,
         avatarId: inserted.avatar_id,
         titleId: inserted.title_id,
         uiThemeId: inserted.ui_theme_id,
         lastSeenAt: inserted.last_seen_at,
+        signatureCardIds: Array.isArray(inserted.signature_card_ids) ? inserted.signature_card_ids : [],
       };
     }
     // Postgres unique violation = 23505. Retry only on that.
@@ -180,7 +184,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         set({ user, session: data.session ?? null, profile, status: 'authenticated' });
       } else {
         // Email confirmation required: session is null until the user clicks the link.
-        set({ status: 'idle' });
+        set({ status: 'confirmation_pending' });
       }
     } catch (err) {
       set({ status: 'error', errorMessage: messageOf(err) });
@@ -225,19 +229,22 @@ export const useSocialStore = create<SocialState>((set, get) => ({
     if (!sb || !user || !profile) return;
     const next = {
       display_name: snapshot.displayName,
-      bio: snapshot.bio || null,
       avatar_id: snapshot.avatarId,
       title_id: snapshot.titleId,
       ui_theme_id: snapshot.uiThemeId,
+      signature_card_ids: snapshot.signatureCardIds,
       last_seen_at: new Date().toISOString(),
     };
     // Skip if nothing changed (avoid burning rate limit).
+    const sigsSame =
+      profile.signatureCardIds.length === snapshot.signatureCardIds.length &&
+      profile.signatureCardIds.every((id, i) => id === snapshot.signatureCardIds[i]);
     if (
       profile.displayName === snapshot.displayName &&
-      profile.bio === (snapshot.bio || null) &&
       profile.avatarId === snapshot.avatarId &&
       profile.titleId === snapshot.titleId &&
-      profile.uiThemeId === snapshot.uiThemeId
+      profile.uiThemeId === snapshot.uiThemeId &&
+      sigsSame
     ) {
       return;
     }
@@ -250,7 +257,7 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       profile: {
         ...profile,
         displayName: snapshot.displayName,
-        bio: snapshot.bio || null,
+        signatureCardIds: snapshot.signatureCardIds,
         avatarId: snapshot.avatarId,
         titleId: snapshot.titleId,
         uiThemeId: snapshot.uiThemeId,
@@ -263,6 +270,9 @@ export const useSocialStore = create<SocialState>((set, get) => ({
 function messageOf(err: unknown): string {
   if (err instanceof Error) return err.message;
   if (typeof err === 'string') return err;
+  if (err && typeof err === 'object' && 'message' in err && typeof (err as Record<string, unknown>).message === 'string') {
+    return (err as Record<string, unknown>).message as string;
+  }
   return 'Unknown error';
 }
 

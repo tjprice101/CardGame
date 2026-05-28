@@ -20,6 +20,10 @@ interface MainMenuHubProps {
   onSettings: () => void;
   /** Opens the Wished Upon A Star event landing page. */
   onEventWishedUponAStar?: () => void;
+  /** Opens the Battleground of the Card-born lobby. */
+  onBattleground?: () => void;
+  /** Opens the Ascension endgame mode hub. */
+  onAscension?: () => void;
   /** Triggered by the hero tile — caller starts the turn (store.beginTurn). */
   onBeginTurn: () => void;
 }
@@ -122,12 +126,12 @@ function TileButton(props: {
         };
 
   const dims: React.CSSProperties = props.size === 'hero'
-    ? { minHeight: 132, padding: '18px 24px' }
+    ? { minHeight: 100, padding: '12px 20px' }
     : props.size === 'wide'
-      ? { minHeight: 78, padding: '14px 18px' }
+      ? { minHeight: 60, padding: '8px 16px' }
       : props.size === 'small'
-        ? { minHeight: 58, padding: '10px 14px' }
-        : { minHeight: 96, padding: '14px 18px' };
+        ? { minHeight: 44, padding: '7px 12px' }
+        : { minHeight: 68, padding: '8px 14px' };
 
   return (
     <button
@@ -194,7 +198,7 @@ function TileButton(props: {
       <div style={{
         position: 'relative',
         fontFamily: uiTypography.display,
-        fontSize: props.size === 'hero' ? 30 : props.size === 'small' ? 14 : 22,
+        fontSize: props.size === 'hero' ? 26 : props.size === 'small' ? 13 : 18,
         letterSpacing: props.size === 'small' ? 1.2 : 1.6,
         lineHeight: 1,
         textTransform: props.size === 'small' ? 'uppercase' : 'none',
@@ -354,7 +358,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <IconStripButton glyph="⚙" ariaLabel="Settings" onClick={props.onSettings} />
           <IconStripButton glyph="🏆" ariaLabel="Achievements" onClick={props.onAchievements} dot />
-          <IconStripButton glyph="✦" ariaLabel="Mastery" onClick={props.onMastery} />
+          <IconStripButton glyph="✦" ariaLabel="Card-born Tier" onClick={props.onMastery} />
           <IconStripButton glyph="📜" ariaLabel="Quests" onClick={props.onQuests} />
           <IconStripButton glyph="?" ariaLabel="Tutorial" onClick={props.onTutorial} />
         </div>
@@ -563,7 +567,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         display: 'grid',
         gridTemplateColumns: 'repeat(6, 1fr)',
         gridAutoRows: 'min-content',
-        gap: 22,
+        gap: 10,
         alignContent: 'start',
         background: 'transparent',
       }}>
@@ -604,8 +608,34 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           />
         </div>
 
+        {/* Row: Battleground of the Card-born */}
+        <div style={{ gridColumn: '1 / -1', transform: 'rotate(-0.4deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.50))' }}>
+          <TileButton
+            label="Battleground of the Card-born"
+            caption="3-min Oblivion race · PvP or CPU"
+            tone="cream"
+            size="wide"
+            onClick={props.onBattleground}
+            clipPath="polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%)"
+            glassAngle={132}
+          />
+        </div>
+
+        {/* Row: Ascension */}
+        <div style={{ gridColumn: '1 / -1', transform: 'rotate(0.3deg)', filter: 'drop-shadow(0 5px 16px rgba(30,0,80,0.55))' }}>
+          <TileButton
+            label="Ascension"
+            caption="Endgame · Null Raids · Transcendent Cards"
+            tone="primary"
+            size="wide"
+            onClick={props.onAscension}
+            clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
+            glassAngle={145}
+          />
+        </div>
+
         {/* Row: Card Store | Deck Builder | Viewer */}
-        <div style={{ gridColumn: 'span 6', display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 22, background: 'transparent' }}>
+        <div style={{ gridColumn: 'span 6', display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 10, background: 'transparent' }}>
           <div style={{ transform: 'rotate(0.5deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.52))' }}>
             <TileButton
               label={t('cardStore') || 'Store'}
@@ -664,8 +694,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         </div>
         <div style={{ gridColumn: 'span 2', transform: 'rotate(-1.0deg)', filter: 'drop-shadow(0 5px 14px rgba(0,20,60,0.46))' }}>
           <TileButton
-            label="Mastery"
-            caption="Per-card progression"
+            label="Card-born Tier"
+            caption="Card-born progression"
             size="half"
             onClick={props.onMastery}
             clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"

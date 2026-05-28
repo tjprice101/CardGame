@@ -17,6 +17,13 @@ const SHARDS_BY_GROUP: Record<TitleBadgeDefinition['group'], number> = {
   set: 100,
 };
 
+const OBLIVION_BY_GROUP: Record<TitleBadgeDefinition['group'], number> = {
+  milestone: 5_000,
+  boss: 2_500,
+  infinite: 10_000,
+  set: 15_000,
+};
+
 export interface AchievementView {
   id: string;
   text: string;
@@ -25,10 +32,15 @@ export interface AchievementView {
   unlocked: boolean;
   claimed: boolean;
   shardReward: number;
+  oblivionReward: number;
 }
 
 export function getAchievementShardReward(group: TitleBadgeDefinition['group']): number {
   return SHARDS_BY_GROUP[group] ?? 25;
+}
+
+export function getAchievementOblivionReward(group: TitleBadgeDefinition['group']): number {
+  return OBLIVION_BY_GROUP[group] ?? 0;
 }
 
 export function listAchievements(progress: ProgressState): AchievementView[] {
@@ -43,6 +55,7 @@ export function listAchievements(progress: ProgressState): AchievementView[] {
       unlocked,
       claimed: !!claims[badge.id],
       shardReward: getAchievementShardReward(badge.group),
+      oblivionReward: getAchievementOblivionReward(badge.group),
     };
   });
 }

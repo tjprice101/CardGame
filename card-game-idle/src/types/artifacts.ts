@@ -7,77 +7,52 @@ export type ArtifactTier = 'basic' | 'advanced' | 'apex';
 
 /** All possible effect types an artifact can contribute to the game loop. */
 export type ArtifactEffectType =
-  // Shared — Oblivion multiplier when cards of the artifact's set are played
-  | 'oblivion_set_mult'
-
-  // Neutrality — Patience-system-native (Equilibrium/Attenuation mechanics
-  // are no longer used by Neutrality cards; these artifacts plug into the
-  // Patience accumulation + threshold-cashout loop that Seraphim use).
-  | 'patience_cap_bonus'                  // +N Patience/turn per Seraphim with a patience threshold
-  | 'patience_threshold_draw_bonus'       // +N extra cards drawn when a Patience threshold cashes out on attack
-  | 'patience_preserve_percent'           // +N% of consumed Patience is preserved (rolled back into the Seraphim) after cashout
+  // Neutrality — Patience-system-native
+  | 'patience_gain_bonus'             // +N Patience gained per card played to each Seraphim
+  | 'patience_attack_oblivion_bonus'  // +N flat Oblivion when a Seraphim fires with >= threshold Patience
+  | 'patience_threshold_reduction'    // Seraphim Patience threshold reduced by N (min 1)
 
   // Pyroabyss
   | 'heat_cap_bonus'
-  | 'cinder_echo_oblivion_mult'
-  | 'pyro_full_fire_mult_bonus'      // added to the 1.23 base multiplier
+  | 'pyro_full_fire_mult_bonus'       // added to the full-fire gate base multiplier
 
   // Heavenly Light
-  | 'resonance_gain_bonus'
-  | 'resonance_chain_extend'
-  | 'halo_cascade_draw_bonus'
+  | 'resonance_gain_bonus'             // +N Cadence per Light card played (Heavenly Light set)
 
   // Thornbound
-  | 'trail_gain_bonus'
-  | 'scar_payout_mult'
-  | 'trail_spend_discount'
+  | 'trail_gain_bonus'                // +N Trail per Thornbound card played
+  | 'trail_spend_discount'            // Trail spend abilities cost N less (min 0)
 
   // Mechanical Dreams
-  | 'queue_capacity_bonus'
-  | 'strain_restore_on_vent'
-  | 'queue_flush_oblivion_mult'
+  | 'queue_capacity_bonus'            // +N instruction queue capacity
 
   // Prismatic Accord
-  | 'channel_count_bonus'
-  | 'refraction_cascade_bonus'
-  | 'chord_threshold_reduction'
+  | 'channel_count_bonus'             // +N Spectrum tokens per Prismatic card played
 
   // Black Glass Inferno
-  | 'flame_start_bonus'
-  | 'fracture_oblivion_mult'
-  | 'veil_shard_tier_bonus'
+  | 'flame_start_bonus'               // White Flame and Black Flame each start N higher
 
   // Snowbound Voltage
-  | 'voltage_surge_rate'
-  | 'phase_transition_oblivion_bonus'
-  | 'discharge_mult_bonus'           // added to 1.0 base discharge mult
+  | 'voltage_surge_rate'              // +N Voltage Surge tokens at turn start
 
   // Glass Absolute
-  | 'proof_threshold_reduction'
-  | 'cascade_proof_all_board'        // flag (value=1 means active)
+  | 'proof_threshold_reduction'       // Glass Absolute Seraphim start each turn with N extra Proof tokens
 
   // Blazing Garden
-  | 'ember_grove_capacity'
-  | 'burn_pollen_link'               // flag (value=1)
-  | 'char_ember_bonus'
+  | 'ember_start_bonus'               // +N Embers at the start of each turn
 
   // Age of the Butterfly
-  | 'wing_resonance_gain_bonus'
-  | 'wing_pulse_duration_bonus'
-  | 'butterfly_spectrum_peak_draw_bonus'
+  | 'wing_resonance_gain_bonus'       // +N Wing Resonance per Butterfly card played
 
   // Eternal Seas
-  | 'tide_crown_rate_bonus'
-  | 'polarity_split_oblivion_mult'
-  | 'tide_echo_double'               // flag (value=1)
+  | 'tide_crown_rate_bonus'           // +N Tide Crown tokens at turn start
 
   // Abyssal Forge
-  | 'iron_charge_start_bonus'
-  | 'forge_full_fire_mult_bonus'
+  | 'iron_charge_start_bonus'         // +N Iron Charge at turn start
+  | 'forge_full_fire_mult_bonus'      // added to the Forge full-fire gate base multiplier
 
-  // Death-flamed Hell (TBD — mechanic audit needed)
-  | 'dfh_infernal_pressure_bonus'
-  | 'dfh_soulflame_mult';
+  // Death-flamed Hell
+  | 'dfh_infernal_pressure_bonus';    // +N to the Infernal Pressure cap
 
 export interface ArtifactEffect {
   type: ArtifactEffectType;

@@ -170,7 +170,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     artKey: 'es_ser_velthiri_bloomschool',
     bonusType: 'oblivion_per_card',
     bonusValue: 8,
-    onPlayEffects: [{ type: 'seas_current_gain', value: 4 }, { type: 'seas_polarity_shift', polarity: 'White' }],
+    onPlayEffects: [{ type: 'seas_current_gain', value: 2 }, { type: 'seas_polarity_shift', polarity: 'White' }, { type: 'draw', value: 1 }],
     unsynergizedName: 'School Cut',
     synergizedName: 'Margin Bloom Cut',
     unsynergizedBase: 230,
@@ -218,7 +218,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     artKey: 'es_ser_thyrvaan_fractalbreath',
     bonusType: 'resource_generation',
     bonusValue: 5,
-    onPlayEffects: [{ type: 'seas_current_gain', value: 5 }, { type: 'seas_polarity_shift', polarity: 'Black' }],
+    onPlayEffects: [{ type: 'seas_current_gain', value: 3 }, { type: 'seas_polarity_shift', polarity: 'Black' }, { type: 'draw', value: 1 }],
     unsynergizedName: 'Fractal Pulse',
     synergizedName: 'Oldest Light Pulse',
     unsynergizedBase: 324,
@@ -282,7 +282,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     artKey: 'es_ser_veleth_itself_echo',
     bonusType: 'oblivion_per_card',
     bonusValue: 30,
-    onPlayEffects: [{ type: 'seas_current_gain', value: 9 }, { type: 'seas_polarity_shift', polarity: 'Black' }],
+    onPlayEffects: [{ type: 'seas_current_gain', value: 5 }, { type: 'draw', value: 2 }, { type: 'seas_polarity_shift', polarity: 'Black' }],
     unsynergizedName: 'Basslight Rupture',
     synergizedName: 'Undying Water Rupture',
     unsynergizedBase: 696,
@@ -335,7 +335,7 @@ const baseCherubim: CherubimDefinition[] = [
     rarity: 'Epic',
     artKey: 'es_cher_surevaan_pulse_reader',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.09 }],
-    onPlayEffects: [{ type: 'seas_current_gain', value: 6 }],
+    onPlayEffects: [{ type: 'seas_current_gain', value: 4 }, { type: 'draw', value: 1 }],
   }),
   buildCherubim({
     definitionId: 'es-cher-thyrvaan-breathframe',
@@ -353,7 +353,7 @@ const baseCherubim: CherubimDefinition[] = [
     rarity: 'Legendary',
     artKey: 'es_cher_crowned_current_keeper',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Angel', bonusBaseOblivion: 56 }, { type: 'cherubim_draw_per_card', value: 0.34 }],
-    onPlayEffects: [{ type: 'seas_current_gain', value: 9 }],
+    onPlayEffects: [{ type: 'seas_current_gain', value: 5 }, { type: 'draw', value: 2 }],
   }),
   buildCherubim({
     definitionId: 'es-cher-aeveleth-trace',
@@ -373,12 +373,12 @@ const baseOphanim: OphanimDefinition[] = [
     description: 'Gain 2 Current; Draw 1 card',
     rarity: 'Common',
     artKey: 'es_oph_shallows_spiral_map',
-    effects: [{ type: 'seas_current_gain', value: 4 }],
+    effects: [{ type: 'seas_current_gain', value: 2 }, { type: 'draw', value: 1 }],
   }),
   buildOphanim({
     definitionId: 'es-oph-veilmargin-crossflow',
     name: 'Veilmargin Crossflow',
-    description: 'Gain 2 Current; Shift polarity to White; Shift polarity to Black; Draw 1 card',
+    description: 'Gain 2 Current; Shift polarity to White; Shift polarity to Black',
     rarity: 'Common',
     artKey: 'es_oph_veilmargin_crossflow',
     effects: [{ type: 'seas_current_gain', value: 2 }, { type: 'seas_polarity_shift', polarity: 'White' }, { type: 'seas_polarity_shift', polarity: 'Black' }],
@@ -389,12 +389,12 @@ const baseOphanim: OphanimDefinition[] = [
     description: 'Shift polarity to White; Gain 3 Current; Draw 1 card',
     rarity: 'Rare',
     artKey: 'es_oph_whitewater_cant',
-    effects: [{ type: 'seas_polarity_shift', polarity: 'White' }, { type: 'seas_current_gain', value: 5 }],
+    effects: [{ type: 'seas_polarity_shift', polarity: 'White' }, { type: 'seas_current_gain', value: 3 }, { type: 'draw', value: 1 }],
   }),
   buildOphanim({
     definitionId: 'es-oph-blackwater-cant',
     name: 'Blackwater Cant',
-    description: 'Shift polarity to Black; Gain 3 Current; +150 Oblivion; Draw 1 card',
+    description: 'Shift polarity to Black; Gain 3 Current; +150 Oblivion',
     rarity: 'Rare',
     artKey: 'es_oph_blackwater_cant',
     effects: [{ type: 'seas_polarity_shift', polarity: 'Black' }, { type: 'seas_current_gain', value: 3 }, { type: 'oblivion_flat', value: 150 }],
@@ -402,7 +402,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'es-oph-neon-pressure-line',
     name: 'Neon Pressure Line',
-    description: 'Gain 4 Current; Release up to 2 Current (+95 Oblivion per current); Shuffle discard into deck; Draw 1 card',
+    description: 'Gain 4 Current; Release up to 2 Current (+95 Oblivion per current)',
     rarity: 'Epic',
     artKey: 'es_oph_neon_pressure_line',
     effects: [{ type: 'seas_current_gain', value: 4 }, { type: 'seas_release', spend: 2, oblivionPerCurrent: 95 }],
@@ -421,12 +421,12 @@ const baseOphanim: OphanimDefinition[] = [
     description: 'Gain 5 Current; Draw 1 card',
     rarity: 'Legendary',
     artKey: 'es_oph_crowncurrent_atlas',
-    effects: [{ type: 'seas_current_gain', value: 7 }],
+    effects: [{ type: 'seas_current_gain', value: 5 }, { type: 'draw', value: 1 }],
   }),
   buildOphanim({
     definitionId: 'es-oph-depthless-sounding',
     name: 'Depthless Sounding',
-    description: 'Gain 5 Current; Release up to 3 Current (+125 Oblivion per current); Draw 2 cards',
+    description: 'Gain 5 Current; Release up to 3 Current (+125 Oblivion per current)',
     rarity: 'Legendary',
     artKey: 'es_oph_depthless_sounding',
     effects: [{ type: 'seas_current_gain', value: 5 }, { type: 'seas_release', spend: 3, oblivionPerCurrent: 125 }],
@@ -440,7 +440,7 @@ const baseAngels: AngelDefinition[] = [
     rarity: 'Rare',
     artKey: 'es_angel_veilmargin_cartographer',
     summonCost: ['es-ser-velthiri-bloomschool', 'es-ser-kethavar-helixhunter'],
-    onSummonEffects: [{ type: 'seas_current_gain', value: 6 }],
+    onSummonEffects: [{ type: 'seas_current_gain', value: 4 }, { type: 'draw', value: 1 }],
     activatedAbility: {
       name: 'Trace Margin',
       cardsPlayedRequirement: 2,
@@ -600,18 +600,18 @@ const eternalCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'es-et-surevaan-anomaly-log',
     name: 'Surevaan Anomaly Log',
-    description: 'On play: Gain 6 Current; Draw 2 cards; Gain 3 Tide Echoes. While on board: Seraphim bonuses are amplified by +0.14; Buffs Seraphim and Angel attacks: base +69, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +54, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 8 Current; Gain 3 Tide Echoes. While on board: Seraphim bonuses are amplified by +0.14; Buffs Seraphim and Angel attacks: base +69, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +54, cooldown -1, multiplier x1.00',
     rarity: 'Eternal',
     artKey: 'es_et_surevaan_anomaly_log',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.14 }],
     // Role: BACK-ROW TIDE BATTERY (Cherubim Eternal). +3 tide each play; no
     // resolve ?Ethe polarity-agnostic reservoir.
-    onPlayEffects: [{ type: 'seas_current_gain', value: 10 }, { type: 'set_secondary_gain', kind: 'tide', value: 3 }],
+    onPlayEffects: [{ type: 'seas_current_gain', value: 8 }, { type: 'set_secondary_gain', kind: 'tide', value: 3 }],
   }),
   buildOphanim({
     definitionId: 'es-et-thyrvaan-oldlight-grid',
     name: 'Thyrvaan Oldlight Grid',
-    description: 'Gain 6 Current; Shift polarity to Black; Gain 1 Tide Echo; Resolve up to 1 Tide Echoes (White polarity: +60 Oblivion per echo · Black polarity: +140.0 Oblivion per echo); Release up to 4 Current (+130 Oblivion per current); Gain 6 Prismatic Light; Draw 1 card',
+    description: 'Gain 6 Current; Shift polarity to Black; Gain 1 Tide Echo; Resolve up to 1 Tide Echoes (White polarity: +60 Oblivion per echo · Black polarity: +140.0 Oblivion per echo); Release up to 4 Current (+130 Oblivion per current)',
     rarity: 'Eternal',
     artKey: 'es_et_thyrvaan_oldlight_grid',
     // Role: BLACK OBLIVION RESOLVER (Ophanim Eternal). Sets Black polarity then
@@ -621,11 +621,11 @@ const eternalCards: CardDefinition[] = [
   buildAngel({
     definitionId: 'es-et-crown-of-seven-margins',
     name: 'Crown of Seven Margins',
-    description: 'On summon: Gain 7 Current; Shift polarity to White; Shift polarity to Black; Draw 1 card; Gain 2 Tide Echoes. After 3 cards played: Resolve all Tide Echoes (White polarity: +84 Oblivion per echo · Black polarity: +180.0 Oblivion per echo); Release up to 5 Current (+150 Oblivion per current). While on board: +50 Oblivion for each Seraphim on board while on board',
+    description: 'On summon: Gain 9 Current; Shift polarity to White; Shift polarity to Black; Gain 3 Tide Echoes. After 3 cards played: Resolve all Tide Echoes (White polarity: +84 Oblivion per echo · Black polarity: +180.0 Oblivion per echo); Release up to 5 Current (+150 Oblivion per current). While on board: +50 Oblivion for each Seraphim on board while on board',
     rarity: 'Eternal',
     artKey: 'es_et_crown_of_seven_margins',
     summonCost: ['es-ser-veilmargin-harbinger', 'es-ser-ossiveth-naur-ridgebody'],
-    onSummonEffects: [{ type: 'seas_current_gain', value: 9 }, { type: 'seas_polarity_shift', polarity: 'White' }, { type: 'seas_polarity_shift', polarity: 'Black' }, { type: 'set_secondary_gain', kind: 'tide', value: 2 }],
+    onSummonEffects: [{ type: 'seas_current_gain', value: 9 }, { type: 'seas_polarity_shift', polarity: 'White' }, { type: 'seas_polarity_shift', polarity: 'Black' }, { type: 'set_secondary_gain', kind: 'tide', value: 3 }],
     // Apex Eternal Angel: activated ability resolves ALL banked tide echoes per
     // current polarity at the strongest Eternal coefficients.
     activatedAbility: {
@@ -647,12 +647,12 @@ const eternalCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'es-et-veleth-abyss-sounding',
     name: 'Veleth Abyss Sounding',
-    description: 'Gain 8 Current; Gain 1 Tide Echo; Resolve up to 2 Tide Echoes (White polarity: +72 Oblivion per echo · Black polarity: +160.0 Oblivion per echo); Release up to 4 Current (+145 Oblivion per current); Draw 1 card',
+    description: 'Gain 8 Current; Gain 1 Tide Echo; Resolve up to 2 Tide Echoes (White polarity: +72 Oblivion per echo · Black polarity: +160.0 Oblivion per echo); Release up to 4 Current (+145 Oblivion per current); Gain 1 Tide Echo',
     rarity: 'Eternal',
     artKey: 'es_et_veleth_abyss_sounding',
     // Role: TIDE ESCALATOR (Ophanim Eternal). +1 tide then resolves 2 banked
     // echoes at a mid coefficient ?Epolarity-aware finisher.
-    effects: [{ type: 'seas_current_gain', value: 10 }, { type: 'set_secondary_gain', kind: 'tide', value: 1 }, { type: 'tide_echo_resolve', oblivionPerPositive: 72, oblivionPerNegative: 160, consume: 2 }, { type: 'seas_release', spend: 4, oblivionPerCurrent: 145 }],
+    effects: [{ type: 'seas_current_gain', value: 8 }, { type: 'set_secondary_gain', kind: 'tide', value: 1 }, { type: 'tide_echo_resolve', oblivionPerPositive: 72, oblivionPerNegative: 160, consume: 2 }, { type: 'seas_release', spend: 4, oblivionPerCurrent: 145 }, { type: 'set_secondary_gain', kind: 'tide', value: 1 }],
   })];
 
 const infinityCards: CardDefinition[] = [
@@ -677,21 +677,21 @@ const infinityCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'es-inf-water-that-was-always-there',
     name: 'Water That Was Always There',
-    description: 'Gain 8 Current; Draw 2 cards; Shift polarity to White; Gain 3 Tide Echoes',
+    description: 'Gain 14 Current; Shift polarity to White; Gain 3 Tide Echoes',
     rarity: 'Infinite',
     artKey: 'es_inf_water_that_was_always_there',
     // Role: PURE OPHANIM TIDE BATTERY (Infinite). +3 tide; no resolve.
-    effects: [{ type: 'seas_current_gain', value: 12 }, { type: 'seas_polarity_shift', polarity: 'White' }, { type: 'set_secondary_gain', kind: 'tide', value: 3 }],
+    effects: [{ type: 'seas_current_gain', value: 14 }, { type: 'seas_polarity_shift', polarity: 'White' }, { type: 'set_secondary_gain', kind: 'tide', value: 3 }],
   }),
   buildCherubim({
     definitionId: 'es-inf-veilmargin-cathedral',
     name: 'Veilmargin Cathedral',
-    description: 'On play: Gain 8 Current; Draw 1 card; Gain 4 Tide Echoes. While on board: Buffs Seraphim and Angel attacks: base +118; Seraphim bonuses are amplified by +0.2',
+    description: 'On play: Gain 8 Current; Gain 5 Tide Echoes. While on board: Buffs Seraphim and Angel attacks: base +118; Seraphim bonuses are amplified by +0.2',
     rarity: 'Infinite',
     artKey: 'es_inf_veilmargin_cathedral',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 118 }, { type: 'cherubim_seraphim_amp', value: 0.2 }],
     // Role: BIG BACK-ROW TIDE BATTERY (Cherubim Infinite). +4 tide; no resolve.
-    onPlayEffects: [{ type: 'seas_current_gain', value: 10 }, { type: 'set_secondary_gain', kind: 'tide', value: 4 }],
+    onPlayEffects: [{ type: 'seas_current_gain', value: 8 }, { type: 'set_secondary_gain', kind: 'tide', value: 5 }],
   }),
   buildAngel({
     definitionId: 'es-inf-seven-crowned-confluence',
@@ -722,12 +722,12 @@ const infinityCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'es-inf-aeveleth-undying-revision',
     name: 'Aeveleth, Undying Revision',
-    description: 'Gain 9 Current; Gain 2 Tide Echoes; Resolve up to 2 Tide Echoes (White polarity: +132 Oblivion per echo · Black polarity: +280.0 Oblivion per echo); Release up to 5 Current (+172 Oblivion per current); Draw 1 card',
+    description: 'Gain 9 Current; Gain 2 Tide Echoes; Resolve up to 2 Tide Echoes (White polarity: +132 Oblivion per echo · Black polarity: +280.0 Oblivion per echo); Release up to 5 Current (+172 Oblivion per current); Gain 1 Tide Echo',
     rarity: 'Infinite',
     artKey: 'es_inf_aeveleth_undying_revision',
     // Role: HIGH-COEFFICIENT PARTIAL OPHANIM (Infinite). +2 tide then resolves
     // 2 echoes at the strongest per-echo coefficient.
-    effects: [{ type: 'seas_current_gain', value: 11 }, { type: 'set_secondary_gain', kind: 'tide', value: 2 }, { type: 'tide_echo_resolve', oblivionPerPositive: 132, oblivionPerNegative: 280, consume: 2 }, { type: 'seas_release', spend: 5, oblivionPerCurrent: 172 }],
+    effects: [{ type: 'seas_current_gain', value: 9 }, { type: 'set_secondary_gain', kind: 'tide', value: 2 }, { type: 'tide_echo_resolve', oblivionPerPositive: 132, oblivionPerNegative: 280, consume: 2 }, { type: 'seas_release', spend: 5, oblivionPerCurrent: 172 }, { type: 'set_secondary_gain', kind: 'tide', value: 1 }],
   })];
 
 export const eternalSeasCards: CardDefinition[] = [

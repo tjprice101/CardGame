@@ -5,7 +5,20 @@
 // player builds stay visually clean.
 
 import { useEffect, useState } from 'react';
-import { warmTheme } from '@/ui/theme';
+// Dark gold palette shared with PlayerInformationPage — authoring here avoids
+// importing the mutable warmTheme which defaults to the blue steel palette.
+const A = {
+  gold:             '#c8803a',
+  goldSoft:         '#daa058',
+  goldBorder:       'rgba(200,128,58,0.28)',
+  goldBorderStrong: 'rgba(200,128,58,0.55)',
+  goldGlass:        'rgba(200,128,58,0.10)',
+  text:             '#f0dfc0',
+  textSoft:         'rgba(240,223,192,0.62)',
+  textMuted:        'rgba(240,223,192,0.40)',
+  success:          '#4f8a47',
+  danger:           '#b85c4f',
+} as const;
 import {
   useSocialStore,
   selectSocialStatus,
@@ -55,6 +68,7 @@ export default function AuthPanel() {
       avatarId: localProfile.avatarId,
       titleId: localProfile.titleId,
       uiThemeId: localProfile.uiThemeId ?? null,
+      signatureCardIds: localProfile.signatureCardIds ?? [],
     });
   }, [
     status,
@@ -64,6 +78,7 @@ export default function AuthPanel() {
     localProfile.avatarId,
     localProfile.titleId,
     localProfile.uiThemeId,
+    localProfile.signatureCardIds,
     syncOwnProfile,
   ]);
 
@@ -85,11 +100,11 @@ export default function AuthPanel() {
       <div style={cardStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 'bold', color: warmTheme.text }}>
+            <div style={{ fontSize: 13, fontWeight: 'bold', color: A.text }}>
               Signed in as {socialProfile.displayName}
             </div>
-            <div style={{ fontSize: 10, color: warmTheme.textSoft, marginTop: 2 }}>
-              Friend code: <span style={{ fontFamily: 'monospace', color: warmTheme.accentDeep }}>{socialProfile.friendCode}</span>
+            <div style={{ fontSize: 10, color: A.textSoft, marginTop: 2 }}>
+              Friend code: <span style={{ fontFamily: 'monospace', color: A.goldSoft }}>{socialProfile.friendCode}</span>
             </div>
           </div>
           <button
@@ -98,6 +113,25 @@ export default function AuthPanel() {
           >Sign out</button>
         </div>
         <NotificationSettings />
+      </div>
+    );
+  }
+
+  if (status === 'confirmation_pending') {
+    return (
+      <div style={cardStyle}>
+        <div style={{ fontSize: 13, color: '#6ecf7c', fontWeight: 700, marginBottom: 6 }}>
+          Almost there!
+        </div>
+        <div style={{ fontSize: 12, color: A.textSoft, lineHeight: 1.6 }}>
+          A confirmation email has been sent. Click the link in that email, then come back and sign in.
+        </div>
+        <button
+          onClick={() => setMode('signin')}
+          style={{ ...ghostBtn, marginTop: 12 }}
+        >
+          Sign in instead
+        </button>
       </div>
     );
   }
@@ -112,7 +146,13 @@ export default function AuthPanel() {
         await signUp(email.trim(), password, localProfile.name);
       }
     } catch (err) {
-      setLocalError(err instanceof Error ? err.message : String(err));
+      setLocalError(
+        err instanceof Error
+          ? err.message
+          : (err && typeof err === 'object' && 'message' in err && typeof (err as Record<string, unknown>).message === 'string')
+            ? (err as Record<string, unknown>).message as string
+            : 'Sign-in failed. Please try again.',
+      );
     } finally {
       setBusy(false);
     }
@@ -156,7 +196,7 @@ export default function AuthPanel() {
       >
         {busy ? 'Working…' : mode === 'signin' ? 'Sign in' : 'Create account'}
       </button>
-      <div style={{ fontSize: 9, color: warmTheme.textSoft, marginTop: 8, lineHeight: 1.4 }}>
+      <div style={{ fontSize: 9, color: A.textMuted, marginTop: 8, lineHeight: 1.4 }}>
         Your account is separate from your local save. Saves stay on this device; the account
         is used for friends, messages, and friend leaderboards.
       </div>
@@ -174,12 +214,15 @@ function ModeTab({
         flex: 1,
         padding: '6px 8px',
         fontSize: 11,
-        background: active ? warmTheme.accentSoft : 'transparent',
-        border: `1px solid ${active ? warmTheme.accent : warmTheme.border}`,
+        background: active ? A.goldGlass : 'transparent',
+        border: `1px solid ${active ? A.goldBorderStrong : A.goldBorder}`,
         borderRadius: 6,
-        color: warmTheme.text,
+        color: active ? A.goldSoft : A.textSoft,
         cursor: 'pointer',
         fontFamily: 'Georgia, serif',
+        fontWeight: active ? 600 : 400,
+        letterSpacing: active ? 0.5 : 0,
+        transition: 'all 0.18s ease',
       }}
     >{children}</button>
   );
@@ -188,51 +231,55 @@ function ModeTab({
 const cardStyle: React.CSSProperties = {
   padding: 12,
   marginBottom: 12,
-  background: 'rgba(0,0,0,0.04)',
-  border: `1px solid ${warmTheme.border}`,
+  background: 'rgba(200,128,58,0.04)',
+  border: `1px solid ${A.goldBorder}`,
   borderRadius: 10,
 };
 
 const hintStyle: React.CSSProperties = {
   ...cardStyle,
   fontSize: 10,
-  color: warmTheme.textSoft,
+  color: A.textMuted,
   fontStyle: 'italic',
 };
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
-  padding: '6px 8px',
+  padding: '7px 10px',
   marginBottom: 6,
   fontSize: 12,
-  background: 'rgba(255,255,255,0.88)',
-  border: `1px solid ${warmTheme.borderStrong}`,
+  background: 'rgba(0,0,0,0.35)',
+  border: `1px solid ${A.goldBorder}`,
   borderRadius: 6,
-  color: warmTheme.text,
+  color: A.text,
   fontFamily: 'Georgia, serif',
   boxSizing: 'border-box',
+  outline: 'none',
 };
 
 const primaryBtn: React.CSSProperties = {
   width: '100%',
-  padding: '8px 12px',
+  padding: '9px 12px',
   fontSize: 12,
-  fontWeight: 'bold',
-  background: warmTheme.accentSoft,
-  border: `1px solid ${warmTheme.accent}`,
-  borderRadius: 6,
-  color: warmTheme.accentDeep,
+  fontWeight: 700,
+  background: 'linear-gradient(135deg, rgba(200,128,58,0.85) 0%, rgba(160,88,30,0.9) 100%)',
+  border: `1px solid ${A.goldBorderStrong}`,
+  borderRadius: 8,
+  color: '#1a0c04',
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
+  letterSpacing: 1,
+  textTransform: 'uppercase',
+  boxShadow: '0 4px 14px rgba(200,128,58,0.26)',
 };
 
 const ghostBtn: React.CSSProperties = {
-  padding: '4px 10px',
+  padding: '5px 12px',
   fontSize: 11,
   background: 'transparent',
-  border: `1px solid ${warmTheme.borderStrong}`,
+  border: `1px solid ${A.goldBorder}`,
   borderRadius: 6,
-  color: warmTheme.text,
+  color: A.textSoft,
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
 };
@@ -250,10 +297,10 @@ function NotificationSettings() {
   }
 
   return (
-    <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${warmTheme.border}` }}>
+    <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${A.goldBorder}` }}>
       <div style={{
         fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-        color: warmTheme.textSoft, marginBottom: 6,
+        color: A.textMuted, marginBottom: 6,
       }}>Notifications</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <NotifToggle on={prefs.dms} label="Direct messages" onToggle={() => toggle('dms')} />
@@ -282,10 +329,10 @@ function NotifToggle({
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '4px 8px',
-        background: on ? warmTheme.accentSoft : 'transparent',
-        border: `1px solid ${on ? warmTheme.accent : warmTheme.border}`,
+        background: on ? A.goldGlass : 'transparent',
+        border: `1px solid ${on ? A.goldBorderStrong : A.goldBorder}`,
         borderRadius: 6,
-        color: on ? warmTheme.accentDeep : warmTheme.text,
+        color: on ? A.goldSoft : A.textSoft,
         cursor: 'pointer',
         fontFamily: 'Georgia, serif',
         fontSize: 11,

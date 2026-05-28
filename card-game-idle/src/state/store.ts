@@ -2,7 +2,7 @@
 import { immer } from 'zustand/middleware/immer';
 import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
-  DeckState, ExtraDeckEntry, GameState, ProgressState, SavedDeck, SettingsState, TurnState,
+  DeckState, ExtraDeckEntry, GameState, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
 } from '@/types/game';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import type {
@@ -21,6 +21,7 @@ import type {
 } from '@/types/cards';
 import type { CardEffect, CardSubtypeFilter } from '@/types/effects';
 import type { BossFightState, SavedGameState } from '@/types/bossFight';
+import type { BattlegroundState, BattlegroundKind, BattlegroundOpponentProfile, BattlegroundSavedGameState, CpuDifficulty } from '@/types/battleground';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { SynergySystem } from '@/systems/cards/SynergySystem';
@@ -44,7 +45,7 @@ import {
   type QuestKind,
 } from '@/systems/progression/quests';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
-import { getAchievementShardReward } from '@/systems/progression/achievements';
+import { getAchievementShardReward, getAchievementOblivionReward } from '@/systems/progression/achievements';
 import { MASTERY_TIERS, getMasteryClaimKey } from '@/systems/progression/cardMastery';
 import { getDailyTrials as _getDailyTrials, getWeeklyTrial, type TrialModifier } from '@/systems/progression/wakeTrials';
 void _getDailyTrials;
@@ -52,6 +53,7 @@ import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/
 import { getDailyDealPackId, getDailyDealCost } from '@/systems/progression/dailyDeal';
 import { TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
+import { NULL_RAID_DEFINITIONS, NULL_RAID_BOSS_MAP, NULL_RAID_ENCOUNTER_SECONDS } from '@/data/ascension/nullRaidDefinitions';
 import { eventBus } from '@/core/events/EventBus';
 import {
   getCardDissolveYield,
@@ -62,6 +64,7 @@ import {
 import { ARTIFACT_DEFINITIONS } from '@/data/artifacts/artifactDefinitions';
 import { getArtifactEffect } from '@/systems/artifacts/artifactRuntime';
 import { DEFAULT_CARD_THEME_PACKS, setUiPreferences } from '@/ui/preferences';
+import { getTrialDeckDefinition } from '@/data/trialDecks';
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
@@ -223,6 +226,7 @@ const defaultTurn: TurnState = {
   burningGardenZenithNextInfinite: false,
   burningGardenSkyLaw: null,
   lastPlayedElement: null,
+  uniqueElementsPlayedThisTurn: [],
   prismaticLight: 0,
   monochromaticShards: 0,
   arcticCharge: 0,
@@ -273,6 +277,7 @@ const defaultProgress: ProgressState = {
     titleId: null,
     uiThemeId: 'theme-warm-default',
     customUiTheme: null,
+    signatureCardIds: [],
   },
   dailyLogin: {
     lastClaimedDayIndex: -1,
@@ -293,6 +298,12 @@ const defaultProgress: ProgressState = {
   ownedArtifacts: {},
   cardbaneLight: 0,
   cardLocks: {},
+  entropyBalance: 0,
+  nullRaidCooldowns: {},
+  nullRaidClears: {},
+  transcendentCollection: {},
+  purchasedAscensionCosmetics: [],
+  battlegroundStats: { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] },
 };
 
 const defaultSettings: SettingsState = {
@@ -325,6 +336,40 @@ const defaultBossFight: BossFightState = {
   fightTimeRemaining: 0,
   cooldowns: {},
   savedGameState: null,
+};
+
+const defaultBattleground: BattlegroundState = {
+  mode: 'idle',
+  kind: null,
+  cpuDifficulty: null,
+  sessionId: null,
+  myScore: 0,
+  opponentScore: 0,
+  opponentBoard: null,
+  opponentProfile: null,
+  timeRemaining: 180,
+  myHandEmpty: false,
+  opponentHandEmpty: false,
+  opponentHandSize: 0,
+  result: null,
+  savedGameState: null,
+  rewardClaimed: false,
+  cooldownUntil: 0,
+  turnTaken: false,
+};
+
+const defaultTrialDeckState: TrialDeckState = {
+  mode: 'idle',
+  packId: null,
+  trialMode: 'solo',
+  savedGameState: null,
+  guideStep: 0,
+  guideSteps: [],
+  guidedOpeningHand: [],
+  guidedDeckOrder: [],
+  guideComplete: false,
+  turnCount: 0,
+  trialOblivionTotal: 0,
 };
 
 type PrismaticBoardCard = SeraphimInstance | AngelInstance | CherubimInstance;
@@ -552,16 +597,14 @@ function applyBurningGardenFinalChord(s: Store, def: CardDefinition, chromaticSo
   }
 
   if (def.type === 'Cherubim') {
-    s.turn.embers += 20 * scale;
-    s.turn.radiance += 12 * scale;
+    s.turn.burningGardenWorldflowerGrowth = (s.turn.burningGardenWorldflowerGrowth ?? 0) + 12 * scale;
     if ((s.turn.burningGardenGeometryMode ?? false)) {
-      s.turn.radiance += 8;
+      s.turn.burningGardenWorldflowerGrowth += 8;
     }
     return;
   }
 
-  s.turn.embers += 12 * scale;
-  s.turn.radiance += 12 * scale;
+  s.turn.burningGardenWorldflowerGrowth = (s.turn.burningGardenWorldflowerGrowth ?? 0) + 12 * scale;
   if ((s.turn.burningGardenGeometryMode ?? false)) {
     s.deck = TurnSystem.drawCards(s.deck, 1);
   }
@@ -687,6 +730,8 @@ export const defaultGameState: GameState = {
   progress: defaultProgress,
   settings: defaultSettings,
   bossFight: defaultBossFight,
+  battleground: { ...defaultBattleground } as BattlegroundState,
+  trialDeck: { ...defaultTrialDeckState },
   saveTampered: false,
   toasts: [],
 };
@@ -743,6 +788,11 @@ interface StoreActions {
   startEndlessGauntlet: (savedDeckId: string) => void;
   tickBossTimer: (deltaSeconds: number) => void;
   dismissBossResult: () => void;
+  // ── Trial Deck ──────────────────────────────────────────────────────────────
+  /** Begin a Trial Deck practice session for the given pack. Saves current game state; restores on exit. */
+  startTrialDeck: (packId: string, mode: 'solo' | 'guided') => void;
+  /** End the active Trial Deck session and restore the saved game state. */
+  endTrialDeck: () => void;
   // Profile & daily login
   setPlayerName: (name: string) => void;
   setBio: (bio: string) => void;
@@ -751,11 +801,26 @@ interface StoreActions {
   setUiThemeId: (themeId: string) => void;
   setCustomUiThemeColor: (key: string, value: string) => void;
   resetCustomUiTheme: () => void;
+  /** Set a Signature Card slot (0-4). Pass null cardId to clear the slot. */
+  setSignatureCard: (slot: number, cardId: string | null) => void;
+  // Ascension mode
+  /** Add Entropy currency to the player's balance. */
+  addEntropy: (amount: number) => void;
+  /** Spend Entropy. Returns false if insufficient balance. */
+  spendEntropy: (amount: number) => boolean;
+  /** Record a Null Raid clear and apply post-raid cooldown. */
+  recordNullRaidClear: (raidId: string, cooldownMs: number) => void;
+  /** Add a Transcendent Card copy to the collection. */
+  addTranscendentCard: (definitionId: string) => void;
+  /** Mark an Ascension cosmetic as purchased. */
+  purchaseAscensionCosmetic: (cosmeticId: string) => void;
+  /** Begin a Null Raid run. Validates cooldown, resonance gate, and idle state. */
+  startNullRaid: (raidId: string, savedDeckId: string) => void;
   claimDailyReward: () => { shards: number; streak: number } | null;
   /** Engagement: claim a single quest. */
-  claimQuest: (questId: string) => { shards: number } | null;
+  claimQuest: (questId: string) => { shards: number; oblivion?: number } | null;
   /** Engagement: claim an unlocked achievement (one-shot). */
-  claimAchievement: (achievementId: string) => { shards: number } | null;
+  claimAchievement: (achievementId: string) => { shards: number; oblivion?: number } | null;
   /** Engagement: claim a reached card-mastery tier (one-shot per tier). */
   claimCardMastery: (definitionId: string, tier: number) => { shards: number } | null;
   /** Quick-claim all currently available mastery tiers. Returns aggregate shard reward & tiers claimed. */
@@ -786,6 +851,17 @@ interface StoreActions {
   enqueueToast: (message: string, kind?: 'info' | 'success' | 'warning' | 'reward', durationMs?: number) => void;
   /** Dismiss a toast notification by id. */
   dismissToast: (id: string) => void;
+  // ── Battleground of the Card-born ────────────────────────────────────────────
+  /** Enter lobby phase. Saves the current idle game state. */
+  enterBattleground: (kind: BattlegroundKind, cpuDifficulty?: CpuDifficulty, opponentProfile?: BattlegroundOpponentProfile) => void;
+  /** Tick the countdown timer. Call once per second from the match component. */
+  tickBattlegroundTimer: (deltaSeconds: number) => void;
+  /** Complete the match — computes result, grants rewards, restores saved state. */
+  completeBattleground: () => void;
+  /** Update opponent's live board + score (PvP realtime sync). */
+  updateOpponentBattleground: (board: BoardState | null, score: number, handSize?: number) => void;
+  /** Return to main menu from finished state (clears battleground slice). */
+  dismissBattleground: () => void;
   computedStats: ComputedBoardStats;
   refreshComputedStats: () => void;
 }
@@ -798,8 +874,41 @@ interface AttackPaymentSelection {
   sacrificeAngelInstanceIds?: string[];
 }
 
+/**
+ * Tune this constant so a complete, fully-mastered collection reaches
+ * approximately ×40–50 total globalOblivionMult from resonance alone.
+ * Lower value = stronger resonance; higher value = weaker.
+ */
+const RESONANCE_SCALE_CONSTANT = 500;
+
+/**
+ * Sums each card's resonanceContribution at its highest reached mastery tier.
+ * Copy count is irrelevant — owning 1 or 10 copies of a card contributes the
+ * same amount. Only play-count mastery (what the player has actually earned)
+ * determines the contribution.
+ */
+function computeGlobalResonanceScore(progress: ProgressState): number {
+  const counts = progress.cardPlayCounts ?? {};
+  let score = 0;
+  for (const definitionId of Object.keys(counts)) {
+    const playCount = counts[definitionId] ?? 0;
+    if (playCount <= 0) continue;
+    let contribution = 0;
+    for (const tier of MASTERY_TIERS) {
+      if (playCount >= tier.threshold) contribution = tier.resonanceContribution;
+    }
+    score += contribution;
+  }
+  return score;
+}
+
 function recompute(state: Store): void {
   state.computedStats = ScoreSystem.compute(state.board);
+  const resonanceScore = computeGlobalResonanceScore(state.progress);
+  if (resonanceScore > 0) {
+    state.computedStats.globalOblivionMult += resonanceScore / RESONANCE_SCALE_CONSTANT;
+  }
+  state.computedStats.resonanceScore = resonanceScore;
   eventBus.emit('board:recomputed', state.computedStats);
 }
 
@@ -934,6 +1043,38 @@ function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEF
 }
 
 /**
+ * Award play-count mastery to every card in the fight deck and extra deck.
+ * Used by boss fights, trials, and endless gauntlet completions so that
+ * repeated content engagement meaningfully advances card mastery.
+ *
+ * `amount` is added to each card's cardPlayCounts entry; this advances
+ * mastery tiers (which drive the Global Resonance Score) independently of
+ * actual hand-play counts.
+ */
+function awardDeckMastery(progress: ProgressState, deckList: import('@/types/game').DeckEntry[], extraDeck: import('@/types/game').ExtraDeckEntry[], baseAmount: number): void {
+  if (baseAmount <= 0) return;
+  if (!progress.cardPlayCounts) progress.cardPlayCounts = {};
+  const seen = new Set<string>();
+  const allIds = [
+    ...deckList.map(e => e.definitionId),
+    ...extraDeck.map(e => e.definitionId),
+  ];
+  for (const definitionId of allIds) {
+    if (seen.has(definitionId)) continue;
+    seen.add(definitionId);
+    const current = progress.cardPlayCounts[definitionId] ?? 0;
+    // Find the highest mastery tier this card has already reached.
+    let reachedTier = 0;
+    for (const tier of MASTERY_TIERS) {
+      if (current >= tier.threshold) reachedTier = tier.tier;
+    }
+    // +5% per tier already reached — rewards continued play on well-mastered cards.
+    const scaled = Math.round(baseAmount * (1 + reachedTier * 0.05));
+    progress.cardPlayCounts[definitionId] = current + scaled;
+  }
+}
+
+/**
  * Apply quest progress to the daily + weekly rotations. Pure on the
  * `progress` object (mutates immer-managed draft). Also lazily rolls fresh
  * quests if the rotation is stale.
@@ -963,6 +1104,14 @@ function recordCardPlay(s: Store, definitionId: string): void {
   if (!def) return;
   if (def.element) {
     emitQuestProgressToProgress(s.progress, { kind: 'play_cards_of_element', amount: 1, element: def.element });
+
+    // Track unique elements played this turn for 'play_unique_sets_in_turn' quests.
+    const played = s.turn.uniqueElementsPlayedThisTurn ?? [];
+    if (!played.includes(def.element)) {
+      s.turn.uniqueElementsPlayedThisTurn = [...played, def.element];
+    }
+    const uniqueSetCount = (s.turn.uniqueElementsPlayedThisTurn ?? played).length;
+    emitQuestProgressToProgress(s.progress, { kind: 'play_unique_sets_in_turn', amount: 0, peak: uniqueSetCount });
   }
   const typeKind: QuestKind | null =
     def.type === 'Seraphim' ? 'play_seraphim'
@@ -980,13 +1129,14 @@ function completeBossFight(s: Store, victory: boolean): void {
   const bossId = s.bossFight.activeBossId;
   if (bossId) eventBus.emit('boss:defeated', { bossId, victory });
   const newCooldowns = { ...s.bossFight.cooldowns };
-  if (bossId && s.bossFight.kind !== 'gauntlet') newCooldowns[bossId] = Date.now() + 60_000;
+  if (bossId && s.bossFight.kind !== 'gauntlet' && s.bossFight.kind !== 'null_raid') newCooldowns[bossId] = Date.now() + 60_000;
 
   const kind = s.bossFight.kind ?? 'normal';
   const trialMult = s.bossFight.trialRewardMult ?? 1;
   const modifiers = s.bossFight.modifiers ?? [];
   const gauntletShardsBanked = s.bossFight.gauntletShardsBanked ?? 0;
   const gauntletDepth = s.bossFight.gauntletDepth ?? 0;
+  const saved = s.bossFight.savedGameState;
 
   // ── Gauntlet continuation: on victory in gauntlet mode, advance to the
   //    next boss instead of restoring saved state.
@@ -1030,11 +1180,113 @@ function completeBossFight(s: Store, victory: boolean): void {
     }
   }
 
-  const saved = s.bossFight.savedGameState;
+  // ── Null Raid encounter chain: on victory, advance to the next encounter.
+  //    On defeat or last encounter victory, grant accumulated rewards.
+  if (kind === 'null_raid') {
+    const encounterBossIds = s.bossFight.nullRaidEncounterBossIds ?? [];
+    const encounterIndex = s.bossFight.nullRaidEncounterIndex ?? 0;
+    const raidId = s.bossFight.nullRaidId ?? '';
+    const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === raidId);
+    const entropyGain = raidDef?.entropyPerEncounter ?? 75;
+    const shardsGain = raidDef?.shardsPerEncounter ?? 20;
+    const accEntropy = (s.bossFight.nullRaidAccumulatedEntropy ?? 0) + (victory ? entropyGain : 0);
+    const accShards = (s.bossFight.nullRaidAccumulatedShards ?? 0) + (victory ? shardsGain : 0);
+    const nextIndex = encounterIndex + 1;
+
+    // Advance to next encounter if victorious and more encounters remain.
+    if (victory && nextIndex < encounterBossIds.length) {
+      const nextBossId = encounterBossIds[nextIndex];
+      const nextBoss = NULL_RAID_BOSS_MAP.get(nextBossId);
+      if (nextBoss) {
+        s.deck = {
+          ...s.deck,
+          hand: [],
+          drawPile: DeckSystem.shuffle([...s.deck.hand, ...s.deck.drawPile, ...s.deck.discardPile]),
+          discardPile: [],
+        };
+        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.turn = { ...defaultTurn, phase: 'idle' };
+        s.bossFight = {
+          mode: 'active',
+          activeBossId: nextBossId,
+          bossCurrentHp: nextBoss.hp,
+          bossMaxHp: nextBoss.hp,
+          damageDealtThisFight: 0,
+          fightTimeRemaining: NULL_RAID_ENCOUNTER_SECONDS,
+          cooldowns: newCooldowns,
+          savedGameState: s.bossFight.savedGameState,
+          kind: 'null_raid',
+          nullRaidId: raidId,
+          nullRaidEncounterBossIds: encounterBossIds,
+          nullRaidEncounterIndex: nextIndex,
+          nullRaidAccumulatedEntropy: accEntropy,
+          nullRaidAccumulatedShards: accShards,
+        };
+        emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
+        recompute(s);
+        return;
+      }
+    }
+
+    // Raid ended (defeat or final boss cleared) — restore saved game state.
+    if (saved) {
+      s.deck = saved.deck;
+      s.board = saved.board;
+      s.turn = saved.turn;
+      s.progress = saved.progress;
+      s.settings = saved.settings;
+    }
+
+    // Grant accumulated rewards.
+    s.progress.entropyBalance = (s.progress.entropyBalance ?? 0) + accEntropy;
+    s.progress.aberratedShards += accShards;
+
+    // Apply cooldown.
+    if (!s.progress.nullRaidCooldowns) s.progress.nullRaidCooldowns = {};
+    s.progress.nullRaidCooldowns[raidId] = Date.now() + (raidDef?.cooldownMs ?? 5 * 60 * 1000);
+
+    if (victory) {
+      // Record clear.
+      if (!s.progress.nullRaidClears) s.progress.nullRaidClears = {};
+      s.progress.nullRaidClears[raidId] = (s.progress.nullRaidClears[raidId] ?? 0) + 1;
+
+      // 5% chance to drop completion Angel.
+      if (raidDef?.completionAngelId && Math.random() < 0.05) {
+        addCollectionCard(s.progress, raidDef.completionAngelId, 'holo');
+        if (!s.progress.transcendentCollection) s.progress.transcendentCollection = {};
+        s.progress.transcendentCollection[raidDef.completionAngelId] =
+          (s.progress.transcendentCollection[raidDef.completionAngelId] ?? 0) + 1;
+      }
+
+      emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
+    }
+
+    s.bossFight = {
+      mode: victory ? 'victory' : 'defeat',
+      activeBossId: bossId,
+      bossCurrentHp: s.bossFight.bossCurrentHp,
+      bossMaxHp: s.bossFight.bossMaxHp,
+      damageDealtThisFight: s.bossFight.damageDealtThisFight,
+      fightTimeRemaining: 0,
+      cooldowns: newCooldowns,
+      savedGameState: null,
+      kind: 'null_raid',
+      nullRaidId: raidId,
+      nullRaidEncounterBossIds: encounterBossIds,
+      nullRaidEncounterIndex: encounterIndex,
+      nullRaidAccumulatedEntropy: accEntropy,
+      nullRaidAccumulatedShards: accShards,
+    };
+    recompute(s);
+    return;
+  }
   // Capture per-fight bests BEFORE we restore the saved progress snapshot,
   // since we need the live (active) fight stats here.
   const elapsedSeconds = Math.max(0, Math.round(BOSS_FIGHT_ROUND_SECONDS - s.bossFight.fightTimeRemaining));
   const fightDamageTotal = s.bossFight.damageDealtThisFight;
+  // Capture the deck in use for mastery awards before state is restored.
+  const fightDeckList = s.deck.deckList;
+  const fightExtraDeck = s.deck.extraDeck;
 
   if (saved) {
     s.deck = saved.deck;
@@ -1075,6 +1327,15 @@ function completeBossFight(s: Store, victory: boolean): void {
           s.progress.weeklyTrialCompletions[weekly.weekKey] = prior + 1;
         }
       }
+      // Award card mastery for every card in the fight deck. Boss index drives
+      // the base amount (higher-tier bosses give more); Wake Trials apply a
+      // capped multiplier so stacked modifiers don't trivialise higher tiers.
+      const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
+      const baseMasteryPerCard = Math.round(3 + (bossIdx / Math.max(1, BOSS_DEFINITIONS.length - 1)) * 32);
+      // Cap trial multiplier at 2× so a fully-stacked trial awards at most
+      // double the base — significant, but not grind-skipping.
+      const masteryMult = kind === 'trial' ? Math.min(Math.max(1, trialMult), 2.0) : 1;
+      awardDeckMastery(s.progress, fightDeckList, fightExtraDeck, Math.round(baseMasteryPerCard * masteryMult));
     }
   }
 
@@ -1090,6 +1351,11 @@ function completeBossFight(s: Store, victory: boolean): void {
     if (gauntletDepth > best.bestDepth) best.bestDepth = gauntletDepth;
     if (gauntletShardsBanked > best.bestShards) best.bestShards = gauntletShardsBanked;
     best.runs += 1;
+    // Award card mastery scaled by how many bosses were cleared this run.
+    // Each depth level of consecutive clears is harder than a single clear,
+    // so the per-depth rate is modest to keep higher tiers a real grind.
+    const gauntletMasteryPerCard = Math.max(5, gauntletDepth * 6);
+    awardDeckMastery(s.progress, fightDeckList, fightExtraDeck, gauntletMasteryPerCard);
   }
 
   const finalHp = s.bossFight.bossCurrentHp;
@@ -1122,6 +1388,10 @@ function grantOblivion(s: Store, amount: number): void {
   if (s.bossFight.mode === 'active' && s.bossFight.kind === 'trial' && s.bossFight.modifiers?.some(m => m.kind === 'patience_lock')) {
     amount = Math.max(1, Math.floor(amount * 0.85));
   }
+  // Elemental weakness bonus: ×1.25 when the deck's plurality element matches the boss's weak element.
+  if (s.bossFight.mode === 'active' && s.bossFight.bossWeaknessActive) {
+    amount = Math.round(amount * 1.25);
+  }
   // Global Oblivion multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
   if (s.computedStats.globalOblivionMult > 0) {
     amount = Math.round(amount * (1 + s.computedStats.globalOblivionMult));
@@ -1137,7 +1407,12 @@ function grantOblivion(s: Store, amount: number): void {
     eventBus.emit('boss:damaged', { delta: amount, remaining: s.bossFight.bossCurrentHp });
   } else {
     s.progress.oblivion += amount;
+    s.progress.lifetimeOblivion = (s.progress.lifetimeOblivion ?? 0) + amount;
     eventBus.emit('oblivion:earned', { delta: amount, total: s.progress.oblivion });
+  }
+  // Also track battleground score when a match is active.
+  if (s.battleground.mode === 'active') {
+    s.battleground.myScore += amount;
   }
   emitQuestProgressToProgress(s.progress, { kind: 'earn_oblivion_in_turn', amount: 0, peak: s.turn.oblivionEarnedThisTurn });
 }
@@ -1147,6 +1422,74 @@ function checkBossDefeated(s: Store): void {
     completeBossFight(s, true);
   }
 }
+
+const BATTLEGROUND_MILESTONE_SCORE: [string, number][] = [
+  ['10k', 10_000],
+  ['50k', 50_000],
+  ['250k', 250_000],
+];
+const BATTLEGROUND_COOLDOWN_MS = 60_000;
+
+function completeBattlegroundFight(s: Store): void {
+  if (s.battleground.mode !== 'active') return;
+  const my = s.battleground.myScore;
+  const opp = s.battleground.opponentScore;
+  const result: 'win' | 'loss' | 'draw' = my > opp ? 'win' : my < opp ? 'loss' : 'draw';
+  const kind = s.battleground.kind ?? 'cpu';
+  const diff = s.battleground.cpuDifficulty ?? 'normal';
+
+  // ── Shard reward ──────────────────────────────────────────────────────────
+  const now = Date.now();
+  const stats = s.progress.battlegroundStats ?? { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] };
+
+  // All matches grant rewards (no daily cap).
+  const underCap = true;
+
+  if (underCap) {
+    let shards = 0;
+    if (kind === 'pvp') {
+      shards = result === 'win' ? 120 : result === 'draw' ? 60 : 40;
+    } else {
+      if (result === 'win') {
+        shards = diff === 'hard' ? 80 : diff === 'normal' ? 60 : 40;
+      } else {
+        shards = 15;
+      }
+    }
+    s.progress.aberratedShards += shards;
+  }
+
+  // ── Best-score update ─────────────────────────────────────────────────────
+  const newBest = Math.max(stats.bestScore, my);
+
+  // ── Milestone card pulls ──────────────────────────────────────────────────
+  const claimedMilestones = [...stats.claimedMilestones];
+  for (const [key, threshold] of BATTLEGROUND_MILESTONE_SCORE) {
+    if (newBest >= threshold && !claimedMilestones.includes(key)) {
+      claimedMilestones.push(key);
+      // Grant a random common card from any registered pack (simple reward).
+      s.progress.aberratedShards += 5;
+    }
+  }
+
+  // ── Lifetime stats update ─────────────────────────────────────────────────
+  s.progress.battlegroundStats = {
+    wins: stats.wins + (result === 'win' ? 1 : 0),
+    losses: stats.losses + (result === 'loss' ? 1 : 0),
+    bestScore: newBest,
+    totalMatches: stats.totalMatches + 1,
+    claimedMilestones,
+    dailyMatchTimestamps: stats.dailyMatchTimestamps,
+  };
+
+  // ── Finalise battleground state ───────────────────────────────────────────
+  s.battleground.mode = 'finished';
+  s.battleground.result = result;
+  s.battleground.rewardClaimed = true;
+  s.battleground.cooldownUntil = now + BATTLEGROUND_COOLDOWN_MS;
+}
+
+
 
 function canEmbraceInfinite(state: Pick<GameState, 'deck' | 'turn'>): boolean {
   return state.turn.phase === 'playing'
@@ -1450,8 +1793,7 @@ function resolveMechanicalInstruction(
       s.deck = TurnSystem.drawCards(s.deck, 1);
       break;
     case 'gain':
-      if (s.turn.embers <= s.turn.radiance) s.turn.embers += intensity;
-      else s.turn.radiance += intensity;
+      s.turn.strain += intensity;
       break;
     case 'copy':
       s.turn.nextCardMultiplied = true;
@@ -1460,9 +1802,8 @@ function resolveMechanicalInstruction(
       s.turn.nextCardMultiplied = efficiency >= 0.9;
       break;
     case 'convert':
-      s.turn.embers += Math.max(1, Math.round(2 * efficiency));
-      s.turn.radiance += Math.max(1, Math.round(2 * efficiency));
       s.turn.strain = Math.max(0, s.turn.strain - 1);
+      grantOblivion(s, Math.max(15, Math.round(12 * efficiency)));
       break;
     case 'trigger':
       grantOblivion(s, Math.max(20, Math.round((34 + (s.turn.mechanicalResolvedInstructions ?? 0) * 6) * efficiency)));
@@ -1777,13 +2118,6 @@ function getEternalSeasFullFireMultiplier(s: Store, def: CardDefinition): number
   const setupReady = (s.turn.eternalSeasCurrent ?? 0) >= 9;
   const enginesReady = (s.turn.eternalSeasMarginCharge ?? 0) >= 3;
   return setupReady && enginesReady ? 1.35 : 0.70;
-}
-
-function getIgnitionTierMultiplier(element: string, embers: number): number {
-  if (element !== 'Fire') return 1;
-  if (embers >= 16) return 1.70;
-  if (embers >= 6) return 1.30;
-  return 1;
 }
 
 function getSetFullFireMultiplier(s: Store, def: CardDefinition): number {
@@ -2744,7 +3078,7 @@ function endTurnInternal(s: Store): void {
             shouldDiscard = s.progress.oblivion <= condition.value;
             break;
           case 'embers_lte':
-            shouldDiscard = s.turn.embers <= condition.value;
+            shouldDiscard = false; // embers resource scrapped
             break;
           case 'radiance_lte':
             shouldDiscard = s.turn.radiance <= condition.value;
@@ -2783,6 +3117,20 @@ function endTurnInternal(s: Store): void {
   }
   s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
   s.board.activeBoardEffects = [];
+  if (s.turn.oblivionEarnedThisTurn > (s.progress.bestSingleTurnOblivion ?? 0)) {
+    s.progress.bestSingleTurnOblivion = s.turn.oblivionEarnedThisTurn;
+  }
+  // ── Trial Deck tracking ────────────────────────────────────────────────────
+  if (s.trialDeck.mode === 'active') {
+    s.trialDeck.turnCount = (s.trialDeck.turnCount ?? 0) + 1;
+    s.trialDeck.trialOblivionTotal = (s.trialDeck.trialOblivionTotal ?? 0) + (s.turn.oblivionEarnedThisTurn ?? 0);
+    // Guided mode: mark complete when all guide steps have been played
+    if (s.trialDeck.trialMode === 'guided' && !s.trialDeck.guideComplete) {
+      if (s.trialDeck.guideStep >= s.trialDeck.guideSteps.length) {
+        s.trialDeck.guideComplete = true;
+      }
+    }
+  }
   s.turn = { ...defaultTurn, phase: 'idle' };
   recompute(s);
 }
@@ -2867,12 +3215,7 @@ function canResolveActivatedEffects(
         resourceTurn.radiance -= effect.value;
         return true;
       case 'ember_spend':
-        if (effect.value >= 9999) {
-          resourceTurn.embers = 0;
-          return true;
-        }
-        if (resourceTurn.embers < effect.value) return false;
-        resourceTurn.embers -= effect.value;
+        // embers resource scrapped — always passes
         return true;
       case 'trail_spend':
         if (effect.value >= 9999) {
@@ -3125,7 +3468,7 @@ function canPayAttackCosts(
         break;
       }
       case 'spend_embers':
-        if (s.turn.embers < cost.value) return false;
+        // embers resource scrapped — no cost check
         break;
       case 'spend_radiance':
         if (s.turn.radiance < cost.value) return false;
@@ -3195,7 +3538,7 @@ function payAttackCosts(
         break;
       }
       case 'spend_embers':
-        s.turn.embers -= cost.value;
+        // embers resource scrapped — no deduction
         break;
       case 'spend_radiance':
         s.turn.radiance -= cost.value;
@@ -3210,10 +3553,32 @@ function payAttackCosts(
   }
 }
 
-function grantDominantAttackResource(turn: TurnState, amount: number): void {
+function grantDominantAttackResource(s: Store, element: string | undefined, amount: number): void {
   if (amount <= 0) return;
-  if (turn.embers >= turn.radiance) turn.embers += amount;
-  else turn.radiance += amount;
+  switch (element) {
+    case 'Light':
+      s.turn.radiance += amount;
+      break;
+    case 'Mechanical':
+      s.turn.strain += amount;
+      break;
+    case 'Neutrality': {
+      const frontline = s.board.frontSlots.filter(
+        (u): u is SeraphimInstance | AngelInstance =>
+          u !== null && (u.type === 'Seraphim' || u.type === 'Angel')
+      );
+      if (frontline.length > 0) {
+        const perUnit = Math.round(amount / frontline.length);
+        for (const unit of frontline) {
+          unit.patienceStacks = (unit.patienceStacks ?? 0) + perUnit;
+        }
+      }
+      break;
+    }
+    default:
+      grantOblivion(s, amount);
+      break;
+  }
 }
 
 function reduceFrontlineAttackCooldowns(board: BoardState, amount: number): void {
@@ -3275,7 +3640,8 @@ function applyLateGameAttackIdentity(
 
   const dominantResourceGain = identity.dominantResourceGain + suppressedDraws * (isInfinite ? 10 : 5);
   if (dominantResourceGain > 0) {
-    grantDominantAttackResource(s.turn, dominantResourceGain);
+    const attackingDef = ScoreSystem.getDefinition(definitionId);
+    grantDominantAttackResource(s, attackingDef?.element, dominantResourceGain);
   }
 
   if (identity.cooldownReduction > 0) {
@@ -3284,23 +3650,6 @@ function applyLateGameAttackIdentity(
 }
 
 // �E��E��E��E� Cherubim helpers �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
-
-function computeAdjacentCherubimEmberBonus(board: BoardState): number {
-  let bonus = 0;
-  for (let i = 0; i < 4; i++) {
-    const cherubim = board.backSlots[i];
-    if (!cherubim || cherubim.type !== 'Cherubim') continue;
-    const def = ScoreSystem.getDefinition(cherubim.definitionId);
-    if (!def || def.type !== 'Cherubim') continue;
-    const burnMultiplier = isBurningGardenCard(def) ? computeBurningGardenBoardPower(cherubim) : 1;
-    for (const effect of (def as CherubimDefinition).effects) {
-      if (effect.type === 'cherubim_ember_gain') {
-        bonus += effect.value * burnMultiplier;
-      }
-    }
-  }
-  return bonus;
-}
 
 function computeCherubimPassiveOblivionBonus(board: BoardState, isOphanimPlay: boolean): number {
   let bonus = 0;
@@ -3630,8 +3979,6 @@ function awardOblivionForCardPlay(
     grantOblivion(s, totalAward);
   }
 
-  const emberBonus = s.computedStats.embersPerCardBonus + computeAdjacentCherubimEmberBonus(s.board);
-  if (emberBonus > 0) s.turn.embers += emberBonus;
 }
 
 function tickCherubimDurability(s: Store): void {
@@ -3711,7 +4058,8 @@ function applyCherubimPassiveEffects(s: Store): void {
     if (!unit || unit.type !== 'Seraphim') continue;
     const unitDef = ScoreSystem.getDefinition(unit.definitionId);
     if (unitDef?.type === 'Seraphim' && (unitDef as import('@/types/cards').SeraphimDefinition).patienceThreshold !== undefined) {
-      const gain = 1 + linkedBonus + getArtifactEffect(s.turn, 'patience_cap_bonus', s.progress.ownedArtifacts);
+      const patienceGainBonus = Math.floor(getArtifactEffect(s.turn, 'patience_gain_bonus', s.progress.ownedArtifacts));
+      const gain = 1 + linkedBonus + patienceGainBonus;
       unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
       if (vesselId && unit.instanceId !== vesselId) nonVesselGain += gain;
     }
@@ -3734,8 +4082,11 @@ function applyCherubimPassiveEffects(s: Store): void {
       switch (effect.type) {
         case 'cherubim_resource_per_card': {
           switch (effect.resource) {
-            case 'ember':
-              s.turn.embers += effect.value;
+            case 'pyroFurnacePressure':
+              s.turn.pyroFurnacePressure = Math.min(60, (s.turn.pyroFurnacePressure ?? 0) + effect.value);
+              break;
+            case 'butterflySpectrum':
+              s.turn.butterflySpectrum = (s.turn.butterflySpectrum ?? 0) + effect.value;
               break;
             case 'radiance':
               s.turn.radiance += effect.value;
@@ -3780,7 +4131,7 @@ function applyCherubimPassiveEffects(s: Store): void {
             } else if (effect.condition.type === 'radiance_gte') {
               conditionMet = s.turn.radiance >= effect.condition.value;
             } else if (effect.condition.type === 'ember_gte') {
-              conditionMet = s.turn.embers >= effect.condition.value;
+              conditionMet = false; // embers resource scrapped
             } else if (effect.condition.type === 'strain_gte') {
               conditionMet = s.turn.strain >= effect.condition.value;
             } else if (effect.condition.type === 'strain_lte') {
@@ -3844,7 +4195,21 @@ function resolveNeutralityMarkedCardTrigger(s: Store, playedInstanceId: string):
   s.turn.neutralityMarkedCardIds = marked.filter(id => id !== playedInstanceId);
 }
 
-// �E��E��E��E� Store �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+/** Advance the trial guide step when a guided trial card matches the current step. */
+function advanceTrialGuideStep(s: Store, definitionId: string): void {
+  if (s.trialDeck.mode !== 'active' || s.trialDeck.trialMode !== 'guided') return;
+  const step = s.trialDeck.guideStep;
+  if (step >= s.trialDeck.guideSteps.length) return;
+  if (s.trialDeck.guideSteps[step].cardDefinitionId === definitionId) {
+    s.trialDeck.guideStep = step + 1;
+    // Notify the HUD that the step has advanced
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('trial-guide-step-changed', {
+        detail: { step: s.trialDeck.guideStep, total: s.trialDeck.guideSteps.length },
+      }));
+    }
+  }
+}
 
 export const useStore = create<Store>()(
   immer((set, get) => ({
@@ -4346,13 +4711,6 @@ export const useStore = create<Store>()(
 
         amount = Math.round(amount * getBurningGardenEchoPenalty(unit));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
-        // Pyroabyssal Ignition Threshold
-        const embers = s.turn.embers ?? 0;
-        amount = Math.round(amount * getIgnitionTierMultiplier(def.element, embers));
-        if (def.element === 'Fire' && embers >= 16) {
-          s.turn.embers = Math.max(0, embers - 10);
-          s.deck = TurnSystem.drawCards(s.deck, 1);
-        }
         grantOblivion(s, amount);
         eventBus.emit('seraphim:attacked', { slot, attackId: attack.id, amount });
 
@@ -4365,14 +4723,20 @@ export const useStore = create<Store>()(
           const spikeReduction = usedSpike ? 1 : 0;
           const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - crownCooldownReduction - spikeReduction);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
-          // Reset patience after consuming it; draw bonus if threshold met
+          // Reset patience after consuming it.
           if (seraphimDef.patienceThreshold !== undefined) {
-            if (seraphimDef.patienceThresholdDraw && capturedPatience >= seraphimDef.patienceThreshold) {
-              const extraDraws = getArtifactEffect(s.turn, 'patience_threshold_draw_bonus', s.progress.ownedArtifacts);
-              s.deck = TurnSystem.drawCards(s.deck, seraphimDef.patienceThresholdDraw + extraDraws);
+            const thresholdReduction = Math.floor(getArtifactEffect(s.turn, 'patience_threshold_reduction', s.progress.ownedArtifacts));
+            const effectiveThreshold = Math.max(1, seraphimDef.patienceThreshold - thresholdReduction);
+            if (capturedPatience >= effectiveThreshold) {
+              if (seraphimDef.patienceThresholdDraw) {
+                s.deck = TurnSystem.drawCards(s.deck, seraphimDef.patienceThresholdDraw);
+              }
+              const oblivionBonus = Math.floor(getArtifactEffect(s.turn, 'patience_attack_oblivion_bonus', s.progress.ownedArtifacts));
+              if (oblivionBonus > 0) {
+                grantOblivion(s, oblivionBonus);
+              }
             }
-            const artifactPreserve = getArtifactEffect(s.turn, 'patience_preserve_percent', s.progress.ownedArtifacts);
-            const preservePercent = Math.max(0, (s.turn.neutralityAttackPreservePercent ?? 0) + artifactPreserve);
+            const preservePercent = Math.max(0, s.turn.neutralityAttackPreservePercent ?? 0);
             const restorePercent = Math.max(0, s.turn.neutralityAttackRestorePercent ?? 0);
             const preserved = Math.floor(capturedPatience * (preservePercent / 100));
             const restored = Math.floor(capturedPatience * (restorePercent / 100));
@@ -4452,13 +4816,6 @@ export const useStore = create<Store>()(
 
         amount = Math.round(amount * getBurningGardenEchoPenalty(unit));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
-        // Pyroabyssal Ignition Threshold
-        const angelEmbers = s.turn.embers ?? 0;
-        amount = Math.round(amount * getIgnitionTierMultiplier(def.element, angelEmbers));
-        if (def.element === 'Fire' && angelEmbers >= 16) {
-          s.turn.embers = Math.max(0, angelEmbers - 10);
-          s.deck = TurnSystem.drawCards(s.deck, 1);
-        }
         grantOblivion(s, amount);
         eventBus.emit('angel:attacked', { slot, attackId: attack.id, amount });
 
@@ -4563,6 +4920,10 @@ export const useStore = create<Store>()(
     beginTurn: () => {
       set(s => {
         if (s.turn.phase !== 'idle') return;
+        // Battleground: players only get one turn. Block a second beginTurn.
+        if (s.battleground.mode === 'active' && s.battleground.turnTaken) return;
+        // Mark the turn as consumed for this battleground match.
+        if (s.battleground.mode === 'active') s.battleground.turnTaken = true;
         // Preserve Dream Lattice across turns if Solarvex Ward or Lune Choir Ascension is on the board.
         const solarvexWardIds = new Set(['wuas-cher-solarvex-ward', 'inf-wuas-lune-choir-ascension']);
         const wardActive = s.board.backSlots.some(
@@ -4578,7 +4939,37 @@ export const useStore = create<Store>()(
         const { drawn, remaining } = DeckSystem.draw(s.deck.drawPile, 5);
         s.deck.drawPile = remaining;
         for (const card of drawn) s.deck.hand.push(card);
-        s.turn = { ...defaultTurn, phase: 'mulligan' };
+
+        // ── Guided Trial Deck: first turn gets a fixed opening hand ──────────
+        const isGuidedTrial = s.trialDeck.mode === 'active' && s.trialDeck.trialMode === 'guided';
+        if (isGuidedTrial && s.turn.turnNumber === 1 && s.trialDeck.guidedOpeningHand.length > 0) {
+          // Put the drawn cards back into the draw pile (front), then build
+          // the fixed opening hand from guidedOpeningHand definitionIds.
+          s.deck.drawPile = [...s.deck.hand, ...s.deck.drawPile];
+          s.deck.hand = [];
+          const hand: DeckCard[] = [];
+          for (const defId of s.trialDeck.guidedOpeningHand) {
+            const idx = s.deck.drawPile.findIndex(c => c.definitionId === defId);
+            if (idx !== -1) {
+              hand.push(s.deck.drawPile[idx]);
+              s.deck.drawPile.splice(idx, 1);
+            } else {
+              // Card not in draw pile — create a fresh instance
+              const { nextDeckId: _nextId } = (() => {
+                // We can't call nextDeckId() here; use a deterministic id
+                return { nextDeckId: () => `trial-guided-hand-${defId}-${Date.now()}` };
+              })();
+              hand.push({ instanceId: _nextId(), definitionId: defId, finish: 'normal' });
+            }
+          }
+          for (const card of hand) s.deck.hand.push(card);
+          // Skip mulligan in guided mode — go straight to playing
+          s.turn = { ...defaultTurn, phase: 'playing' };
+          if (preservedDreamLattice > 0) s.turn.dreamLattice = preservedDreamLattice;
+          return;
+        }
+
+        s.turn = { ...defaultTurn, phase: isGuidedTrial ? 'playing' : 'mulligan' };
         if (preservedDreamLattice > 0) s.turn.dreamLattice = preservedDreamLattice;
         // Propagate equipped artifacts from the active saved deck into TurnState.
         const activeDeckForArtifacts = s.progress.savedDecks.find(d => d.id === s.progress.activeDeckId);
@@ -4597,6 +4988,10 @@ export const useStore = create<Store>()(
         const ironChargeStartBonus = getArtifactEffect(s.turn, 'iron_charge_start_bonus', s.progress.ownedArtifacts);
         if (ironChargeStartBonus > 0) {
           s.turn.reforgeCharges = (s.turn.reforgeCharges ?? 0) + ironChargeStartBonus;
+        }
+        const emberStartBonus = Math.floor(getArtifactEffect(s.turn, 'ember_start_bonus', s.progress.ownedArtifacts));
+        if (emberStartBonus > 0) {
+          s.turn.embers = (s.turn.embers ?? 0) + emberStartBonus;
         }
       });
     },
@@ -4740,6 +5135,7 @@ export const useStore = create<Store>()(
           resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
           incrementAngelProgress(s.board);
           recordCardPlay(s, deckCard.definitionId);
+          advanceTrialGuideStep(s, deckCard.definitionId);
           checkBossDefeated(s);
           recompute(s);
           return;
@@ -4803,6 +5199,7 @@ export const useStore = create<Store>()(
           tickCherubimDurability(s);
           incrementAngelProgress(s.board);
           recordCardPlay(s, deckCard.definitionId);
+          advanceTrialGuideStep(s, deckCard.definitionId);
           checkBossDefeated(s);
           recompute(s);
           return;
@@ -4826,6 +5223,7 @@ export const useStore = create<Store>()(
         resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
         incrementAngelProgress(s.board);
         recordCardPlay(s, deckCard.definitionId);
+        advanceTrialGuideStep(s, deckCard.definitionId);
         eventBus.emit('card:played', { card: deckCard as never, board: s.board });
         checkBossDefeated(s);
         recompute(s);
@@ -5084,7 +5482,7 @@ export const useStore = create<Store>()(
                   shouldDiscard = s.progress.oblivion <= condition.value;
                   break;
                 case 'embers_lte':
-                  shouldDiscard = s.turn.embers <= condition.value;
+                  shouldDiscard = false; // embers resource scrapped
                   break;
                 case 'radiance_lte':
                   shouldDiscard = s.turn.radiance <= condition.value;
@@ -5163,6 +5561,10 @@ export const useStore = create<Store>()(
         const ironChargeStartBonus = getArtifactEffect(s.turn, 'iron_charge_start_bonus', s.progress.ownedArtifacts);
         if (ironChargeStartBonus > 0) {
           s.turn.reforgeCharges = (s.turn.reforgeCharges ?? 0) + ironChargeStartBonus;
+        }
+        const emberStartBonus2 = Math.floor(getArtifactEffect(s.turn, 'ember_start_bonus', s.progress.ownedArtifacts));
+        if (emberStartBonus2 > 0) {
+          s.turn.embers = (s.turn.embers ?? 0) + emberStartBonus2;
         }
         
         recompute(s);
@@ -5404,6 +5806,53 @@ export const useStore = create<Store>()(
       set(s => { s.progress.profile.customUiTheme = null; });
     },
 
+    setSignatureCard: (slot, cardId) => {
+      if (slot < 0 || slot > 4) return;
+      set(s => {
+        const sigs = [...(s.progress.profile.signatureCardIds ?? [])];
+        while (sigs.length <= 4) sigs.push(null as unknown as string);
+        if (cardId === null) {
+          sigs[slot] = null as unknown as string;
+        } else {
+          sigs[slot] = cardId;
+        }
+        s.progress.profile.signatureCardIds = sigs.filter((_, i) => i <= 4);
+      });
+    },
+
+    addEntropy: (amount) => {
+      set(s => { s.progress.entropyBalance = (s.progress.entropyBalance ?? 0) + amount; });
+    },
+
+    spendEntropy: (amount) => {
+      const state = get();
+      if ((state.progress.entropyBalance ?? 0) < amount) return false;
+      set(s => { s.progress.entropyBalance = (s.progress.entropyBalance ?? 0) - amount; });
+      return true;
+    },
+
+    recordNullRaidClear: (raidId, cooldownMs) => {
+      set(s => {
+        s.progress.nullRaidClears = { ...(s.progress.nullRaidClears ?? {}), [raidId]: ((s.progress.nullRaidClears ?? {})[raidId] ?? 0) + 1 };
+        s.progress.nullRaidCooldowns = { ...(s.progress.nullRaidCooldowns ?? {}), [raidId]: Date.now() + cooldownMs };
+      });
+    },
+
+    addTranscendentCard: (definitionId) => {
+      set(s => {
+        s.progress.transcendentCollection = { ...(s.progress.transcendentCollection ?? {}), [definitionId]: ((s.progress.transcendentCollection ?? {})[definitionId] ?? 0) + 1 };
+      });
+    },
+
+    purchaseAscensionCosmetic: (cosmeticId) => {
+      set(s => {
+        const existing = s.progress.purchasedAscensionCosmetics ?? [];
+        if (!existing.includes(cosmeticId)) {
+          s.progress.purchasedAscensionCosmetics = [...existing, cosmeticId];
+        }
+      });
+    },
+
     // ─── Daily login ──────────────────────────────────────────────────────
 
     claimDailyReward: () => {
@@ -5427,16 +5876,24 @@ export const useStore = create<Store>()(
       if (!quest) return null;
       if (quest.claimed) return null;
       if (quest.progress < quest.goal) return null;
-      const reward = quest.shardReward;
+      const shardReward = quest.shardReward;
+      const oblivionReward = quest.oblivionReward ?? 0;
       set(state => {
         const list = state.progress.quests.daily.find(q => q.id === questId)
           ? state.progress.quests.daily
           : state.progress.quests.weekly;
         const q = list.find(qq => qq.id === questId);
         if (q) q.claimed = true;
-        state.progress.aberratedShards += reward;
+        if (oblivionReward > 0) {
+          state.progress.oblivion += oblivionReward;
+          state.progress.lifetimeOblivion = (state.progress.lifetimeOblivion ?? 0) + oblivionReward;
+        } else {
+          state.progress.aberratedShards += shardReward;
+        }
       });
-      return { shards: reward };
+      return oblivionReward > 0
+        ? { shards: 0, oblivion: oblivionReward }
+        : { shards: shardReward };
     },
 
     claimAchievement: (achievementId) => {
@@ -5446,13 +5903,18 @@ export const useStore = create<Store>()(
       if (!badge.isUnlocked(s.progress)) return null;
       const claims = s.progress.achievementClaims ?? {};
       if (claims[achievementId]) return null;
-      const reward = getAchievementShardReward(badge.group);
+      const shardReward = getAchievementShardReward(badge.group);
+      const oblivionReward = getAchievementOblivionReward(badge.group);
       set(state => {
         if (!state.progress.achievementClaims) state.progress.achievementClaims = {};
         state.progress.achievementClaims[achievementId] = true;
-        state.progress.aberratedShards += reward;
+        state.progress.aberratedShards += shardReward;
+        if (oblivionReward > 0) {
+          state.progress.oblivion += oblivionReward;
+          state.progress.lifetimeOblivion = (state.progress.lifetimeOblivion ?? 0) + oblivionReward;
+        }
       });
-      return { shards: reward };
+      return { shards: shardReward, oblivion: oblivionReward > 0 ? oblivionReward : undefined };
     },
 
     claimCardMastery: (definitionId, tier) => {
@@ -5685,6 +6147,112 @@ export const useStore = create<Store>()(
       });
     },
 
+    // ── Battleground of the Card-born ────────────────────────────────────────
+
+    enterBattleground: (kind, cpuDifficulty, opponentProfile) => {
+      set(s => {
+        if (s.battleground.mode !== 'idle') return;
+        const savedState: BattlegroundSavedGameState = {
+          deck: JSON.parse(JSON.stringify(s.deck)) as DeckState,
+          board: JSON.parse(JSON.stringify(s.board)) as BoardState,
+          turn: JSON.parse(JSON.stringify(s.turn)) as TurnState,
+          progress: JSON.parse(JSON.stringify(s.progress)) as ProgressState,
+          settings: { ...s.settings },
+        };
+        s.battleground = {
+          mode: 'active',
+          kind,
+          cpuDifficulty: kind === 'cpu' ? (cpuDifficulty ?? 'normal') : null,
+          sessionId: null,
+          myScore: 0,
+          opponentScore: 0,
+          opponentBoard: null,
+          opponentProfile: opponentProfile ?? null,
+          timeRemaining: 180,
+          myHandEmpty: false,
+          opponentHandEmpty: false,
+          opponentHandSize: 0,
+          result: null,
+          savedGameState: savedState,
+          rewardClaimed: false,
+          cooldownUntil: 0,
+          turnTaken: false,
+        };
+        // Fresh board/turn for the match; deck retained so player has their built deck.
+        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.turn = { ...defaultTurn, phase: 'idle' };
+        recompute(s);
+      });
+    },
+
+    tickBattlegroundTimer: (deltaSeconds) => {
+      set(s => {
+        if (s.battleground.mode !== 'active') return;
+        s.battleground.timeRemaining = Math.max(0, s.battleground.timeRemaining - deltaSeconds);
+        // Update my hand-empty state on every tick.
+        // Also treat the player as done if they have used their one turn and are back in idle.
+        const naturallyEmpty = s.deck.hand.length === 0 && s.deck.drawPile.length === 0;
+        const turnOver = s.battleground.turnTaken && s.turn.phase === 'idle';
+        s.battleground.myHandEmpty = s.battleground.myHandEmpty || naturallyEmpty || turnOver;
+        const myEmpty = s.battleground.myHandEmpty;
+        const oppEmpty = s.battleground.opponentHandEmpty;
+        const myScore = s.battleground.myScore;
+        const oppScore = s.battleground.opponentScore;
+        // Win condition: timer expired → compare scores.
+        if (s.battleground.timeRemaining <= 0) {
+          completeBattlegroundFight(s);
+          return;
+        }
+        // Win condition: both done → resolve by score.
+        if (myEmpty && oppEmpty) {
+          completeBattlegroundFight(s);
+          return;
+        }
+        // Win condition: opponent ran out AND I lead.
+        if (oppEmpty && myScore > oppScore) {
+          completeBattlegroundFight(s);
+          return;
+        }
+      });
+    },
+
+    completeBattleground: () => {
+      set(s => {
+        if (s.battleground.mode !== 'active') return;
+        completeBattlegroundFight(s);
+      });
+    },
+
+    updateOpponentBattleground: (board, score, handSize) => {
+      set(s => {
+        if (s.battleground.mode !== 'active') return;
+        s.battleground.opponentBoard = board;
+        s.battleground.opponentScore = score;
+        if (handSize !== undefined) {
+          s.battleground.opponentHandSize = handSize;
+          s.battleground.opponentHandEmpty = handSize === 0;
+        }
+      });
+    },
+
+    dismissBattleground: () => {
+      set(s => {
+        if (s.battleground.mode !== 'finished') return;
+        const saved = s.battleground.savedGameState;
+        if (saved) {
+          s.deck = saved.deck;
+          s.board = saved.board;
+          s.turn = saved.turn;
+          // progress was already updated in completeBattlegroundFight; don't restore.
+          s.settings = saved.settings;
+        }
+        s.battleground = { ...defaultBattleground };
+        recompute(s);
+      });
+    },
+
+
+
     // �E��E��E��E� Boss fight �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
 
     startBossFight: (bossId, savedDeckId, options) => {
@@ -5730,6 +6298,23 @@ export const useStore = create<Store>()(
         if (modifiers.some(m => m.kind === 'chain_start_low')) {
         }
 
+        // Detect elemental weakness: tally the deck's plurality element and
+        // compare to boss.weakElement. If they match, damage is boosted ×1.25.
+        let bossWeaknessActive = false;
+        if (boss.weakElement) {
+          const elementCounts: Record<string, number> = {};
+          for (const entry of savedDeck.deckList) {
+            const def = CardRegistry.get(entry.definitionId);
+            if (!def?.element) continue;
+            elementCounts[def.element] = (elementCounts[def.element] ?? 0) + entry.copies;
+          }
+          const pluralityElement = Object.keys(elementCounts).reduce(
+            (best, el) => (elementCounts[el] > (elementCounts[best] ?? 0) ? el : best),
+            ''
+          );
+          bossWeaknessActive = !!pluralityElement && pluralityElement === boss.weakElement;
+        }
+
         s.bossFight = {
           mode: 'active',
           activeBossId: bossId,
@@ -5745,6 +6330,7 @@ export const useStore = create<Store>()(
           gauntletDepth: kind === 'gauntlet' ? 0 : 0,
           gauntletShardsBanked: 0,
           gauntletHpCarryFrac: 1,
+          bossWeaknessActive,
         };
         recompute(s);
       });
@@ -5759,6 +6345,64 @@ export const useStore = create<Store>()(
       const firstBoss = BOSS_DEFINITIONS[0];
       if (!firstBoss) return;
       get().startBossFight(firstBoss.id, savedDeckId, { kind: 'gauntlet', modifiers: [] });
+    },
+
+    startNullRaid: (raidId, savedDeckId) => {
+      set(s => {
+        if (s.bossFight.mode !== 'idle') return;
+
+        const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === raidId);
+        if (!raidDef) return;
+
+        // Cooldown gate.
+        const now = Date.now();
+        const cooldown = s.progress.nullRaidCooldowns?.[raidId];
+        if (cooldown && cooldown > now) return;
+
+        // Resonance gate.
+        const resonanceScore = computeGlobalResonanceScore(s.progress);
+        if (resonanceScore < raidDef.resonanceRequired) return;
+
+        // Deck must exist.
+        const savedDeck = s.progress.savedDecks.find(d => d.id === savedDeckId);
+        if (!savedDeck) return;
+
+        // First encounter boss must exist.
+        const firstBossId = raidDef.encounterBossIds[0];
+        if (!firstBossId) return;
+        const firstBoss = NULL_RAID_BOSS_MAP.get(firstBossId);
+        if (!firstBoss) return;
+
+        // Save current game state so we can restore it after the raid.
+        const savedState: SavedGameState = {
+          deck: JSON.parse(JSON.stringify(s.deck)) as typeof s.deck,
+          board: JSON.parse(JSON.stringify(s.board)) as typeof s.board,
+          turn: JSON.parse(JSON.stringify(s.turn)) as typeof s.turn,
+          progress: JSON.parse(JSON.stringify(s.progress)) as typeof s.progress,
+          settings: { ...s.settings },
+        };
+
+        s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
+        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.turn = { ...defaultTurn, phase: 'idle' };
+        s.bossFight = {
+          mode: 'active',
+          activeBossId: firstBossId,
+          bossCurrentHp: firstBoss.hp,
+          bossMaxHp: firstBoss.hp,
+          damageDealtThisFight: 0,
+          fightTimeRemaining: NULL_RAID_ENCOUNTER_SECONDS,
+          cooldowns: { ...s.bossFight.cooldowns },
+          savedGameState: savedState,
+          kind: 'null_raid',
+          nullRaidId: raidId,
+          nullRaidEncounterBossIds: raidDef.encounterBossIds,
+          nullRaidEncounterIndex: 0,
+          nullRaidAccumulatedEntropy: 0,
+          nullRaidAccumulatedShards: 0,
+        };
+        recompute(s);
+      });
     },
 
     tickBossTimer: (deltaSeconds) => {
@@ -5777,6 +6421,75 @@ export const useStore = create<Store>()(
         s.bossFight.mode = 'idle';
         s.bossFight.activeBossId = null;
         s.bossFight.savedGameState = null;
+      });
+    },
+
+    // ── Trial Deck ──────────────────────────────────────────────────────────────
+
+    startTrialDeck: (packId, mode) => {
+      set(s => {
+        if (s.trialDeck.mode !== 'idle') return;
+        if (s.bossFight.mode !== 'idle') return;
+        const def = getTrialDeckDefinition(packId);
+        if (!def) return;
+
+        const savedState: SavedGameState = {
+          deck: JSON.parse(JSON.stringify(s.deck)) as DeckState,
+          board: JSON.parse(JSON.stringify(s.board)) as BoardState,
+          turn: JSON.parse(JSON.stringify(s.turn)) as TurnState,
+          progress: JSON.parse(JSON.stringify(s.progress)) as ProgressState,
+          settings: { ...s.settings },
+        };
+
+        // Build the trial deck state
+        if (mode === 'guided') {
+          // Ordered draw pile for guided mode
+          const drawPile = DeckSystem.buildOrdered(def.guidedDeckOrder);
+          s.deck = {
+            deckList: def.deckList,
+            extraDeck: def.extraDeck,
+            drawPile,
+            hand: [],
+            discardPile: [],
+          };
+        } else {
+          s.deck = createDeckState(def.deckList, def.extraDeck);
+        }
+
+        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.turn = { ...defaultTurn, phase: 'idle' };
+
+        s.trialDeck = {
+          mode: 'active',
+          packId,
+          trialMode: mode,
+          savedGameState: savedState,
+          guideStep: 0,
+          guideSteps: def.guideSteps,
+          guidedOpeningHand: mode === 'guided' ? def.guidedOpeningHand : [],
+          guidedDeckOrder: mode === 'guided' ? def.guidedDeckOrder : [],
+          guideComplete: false,
+          turnCount: 0,
+          trialOblivionTotal: 0,
+        };
+
+        recompute(s);
+      });
+    },
+
+    endTrialDeck: () => {
+      set(s => {
+        if (s.trialDeck.mode !== 'active') return;
+        const saved = s.trialDeck.savedGameState;
+        if (saved) {
+          s.deck = JSON.parse(JSON.stringify(saved.deck)) as DeckState;
+          s.board = JSON.parse(JSON.stringify(saved.board)) as BoardState;
+          s.turn = JSON.parse(JSON.stringify(saved.turn)) as TurnState;
+          s.progress = JSON.parse(JSON.stringify(saved.progress)) as ProgressState;
+          s.settings = { ...saved.settings };
+        }
+        s.trialDeck = { ...defaultTrialDeckState };
+        recompute(s);
       });
     },
 
@@ -6116,6 +6829,12 @@ export const useStore = create<Store>()(
           (loaded as unknown as Record<string, unknown>)['bossFight'] = { ...defaultBossFight };
         }
 
+        // Migrate battleground: always reset to idle on load (never resume mid-match).
+        (loaded as unknown as Record<string, unknown>)['battleground'] = { ...defaultBattleground };
+
+        // Migrate trialDeck: always reset to idle on load (no in-progress trials survive restarts).
+        (loaded as unknown as Record<string, unknown>)['trialDeck'] = { ...defaultTrialDeckState };
+
         Object.assign(s, loaded);
         setUiPreferences(s.settings);
         recompute(s);
@@ -6145,6 +6864,8 @@ export const selectRadiance = (s: Store): number => s.turn.radiance;
 export const selectPhase = (s: Store): TurnState['phase'] => s.turn.phase;
 export const selectExtraDeck = (s: Store): ExtraDeckEntry[] => s.deck.extraDeck;
 export const selectBossFight = (s: Store): BossFightState => s.bossFight;
+export const selectBattleground = (s: Store): BattlegroundState => s.battleground;
+export const selectTrialDeck = (s: Store): TrialDeckState => s.trialDeck;
 export const selectProgress = (s: Store): ProgressState => s.progress;
 export const selectProfile = (s: Store) => s.progress.profile;
 export const selectDailyLogin = (s: Store) => s.progress.dailyLogin;

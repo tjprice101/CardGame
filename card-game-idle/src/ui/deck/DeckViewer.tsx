@@ -2,21 +2,53 @@
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
-import { warmTheme } from '@/ui/theme';
-import { t } from '@/ui/preferences';
+import { uiTypography } from '@/ui/theme';
 import type { CardDefinition } from '@/types/cards';
 import type { SavedDeck } from '@/types/game';
 
+// ── Design palette ────────────────────────────────────────────────────────────
+const P = {
+  bg: 'linear-gradient(162deg, #040a15 0%, #060e1c 50%, #030810 100%)',
+  glow: 'radial-gradient(ellipse 55% 40% at 50% 0%, rgba(78,158,220,0.18) 0%, transparent 55%)',
+  panel: 'rgba(4,10,24,0.78)',
+  panelActive: 'rgba(78,160,220,0.14)',
+  border: 'rgba(110,160,215,0.30)',
+  borderStrong: 'rgba(72,128,190,0.54)',
+  accent: '#72caf5',
+  accentDeep: '#1e5890',
+  accentGold: '#6ec8f5',
+  accentGlow: 'rgba(88,180,235,0.45)',
+  success: '#7de88a',
+  successBg: 'rgba(90,175,100,0.14)',
+  text: '#f0f6ff',
+  textMuted: 'rgba(205,228,255,0.78)',
+  textFaint: 'rgba(165,205,245,0.52)',
+};
+
 const RARITY_COLORS: Record<string, string> = {
-  Common: '#999', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
+  Common: '#aaa',
+  Rare: '#5b9bd5',
+  Epic: '#9b59b6',
+  Legendary: '#f39c12',
+  Eternal: '#ff6b6b',
+  Infinite: '#e8e8f0',
+};
+
+const RARITY_GLYPH: Record<string, string> = {
+  Common: '◇',
+  Rare: '◈',
+  Epic: '✦',
+  Legendary: '★',
+  Eternal: '✸',
+  Infinite: '∞',
 };
 
 const TYPE_ORDER: CardDefinition['type'][] = ['Ophanim', 'Seraphim', 'Cherubim', 'Angel'];
 const TYPE_LABELS: Record<CardDefinition['type'], string> = {
-  Ophanim: 'Ophanim',
-  Seraphim: 'Seraphim',
-  Cherubim: 'Cherubim',
-  Angel: 'Angel',
+  Ophanim: 'Ophanim', Seraphim: 'Seraphim', Cherubim: 'Cherubim', Angel: 'Angel',
+};
+const TYPE_ACCENT: Record<CardDefinition['type'], string> = {
+  Ophanim: '#ff9966', Seraphim: '#ffcc66', Cherubim: '#aaddff', Angel: '#99ffcc',
 };
 const RARITY_ORDER: Record<string, number> = {
   Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5,
@@ -24,89 +56,8 @@ const RARITY_ORDER: Record<string, number> = {
 
 type PreviewSection = {
   label: string;
+  type: CardDefinition['type'];
   entries: Array<{ definitionId: string; copies: number; def: CardDefinition }>;
-};
-
-const styles: Record<string, React.CSSProperties> = {
-  overlay: {
-    position: 'absolute', inset: 0,
-    background: 'radial-gradient(circle at 12% 10%, rgba(221, 195, 146, 0.18) 0%, rgba(221, 195, 146, 0) 34%), radial-gradient(circle at 86% 84%, rgba(92, 127, 163, 0.18) 0%, rgba(92, 127, 163, 0) 40%), repeating-linear-gradient(115deg, rgba(227, 205, 163, 0.07) 0px, rgba(227, 205, 163, 0.07) 2px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0) 26px), linear-gradient(180deg, rgba(19, 23, 26, 0.97) 0%, rgba(27, 34, 38, 0.97) 100%)',
-    zIndex: 50,
-    display: 'flex', flexDirection: 'column', pointerEvents: 'auto',
-    fontFamily: 'Georgia, serif', color: '#ead9c0',
-  },
-  header: {
-    padding: '14px 24px', borderBottom: `1px solid ${warmTheme.border}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
-    background: 'rgba(9, 14, 20, 0.42)',
-  },
-  title: { fontSize: 20, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 2 },
-  body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  deckList: {
-    width: 240, borderRight: `1px solid ${warmTheme.border}`,
-    display: 'flex', flexDirection: 'column', overflow: 'hidden',
-    background: 'rgba(9, 14, 20, 0.36)',
-  },
-  deckListHeader: {
-    padding: '10px 14px', fontSize: 9, letterSpacing: 2,
-    textTransform: 'uppercase', opacity: 0.85, borderBottom: `1px solid ${warmTheme.border}`,
-    color: '#f0bd78',
-    flexShrink: 0,
-  },
-  deckListScroll: { flex: 1, overflowY: 'auto', padding: '8px 0' },
-  deckRow: {
-    display: 'flex', alignItems: 'center', gap: 8,
-    padding: '8px 14px', cursor: 'pointer',
-    borderBottom: `1px solid ${warmTheme.border}`,
-    transition: 'background 0.12s',
-  },
-  deckRowActive: { background: 'rgba(255, 208, 140, 0.16)' },
-  deckName: {
-    flex: 1, fontSize: 12, color: '#ead9c0',
-    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-  },
-  deckMeta: { fontSize: 10, color: 'rgba(234, 217, 192, 0.72)' },
-  preview: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  previewHeader: {
-    padding: '12px 18px', borderBottom: `1px solid ${warmTheme.border}`,
-    display: 'flex', alignItems: 'baseline', gap: 10, flexShrink: 0,
-    background: 'rgba(9, 14, 20, 0.3)',
-  },
-  previewTitle: { fontSize: 16, fontWeight: 'bold', color: '#f0bd78' },
-  previewScroll: { flex: 1, overflowY: 'auto', padding: 16 },
-  sectionHeader: {
-    fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-    opacity: 0.9, marginBottom: 6, marginTop: 12, color: '#f0bd78',
-  },
-  cardRow: {
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '4px 0', borderBottom: `1px solid ${warmTheme.border}`,
-  },
-  cardName: { fontSize: 11, color: '#ead9c0', flex: 1 },
-  cardRarity: { fontSize: 10, marginRight: 8 },
-  cardCopies: { fontSize: 11, color: warmTheme.accentDeep, minWidth: 24, textAlign: 'right' },
-  footer: {
-    padding: '12px 24px', borderTop: `1px solid ${warmTheme.border}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, flexShrink: 0,
-  },
-  loadBtn: {
-    padding: '9px 24px', borderRadius: 10, border: `1px solid ${warmTheme.borderStrong}`,
-    background: warmTheme.button, color: warmTheme.accentDeep, fontSize: 13,
-    cursor: 'pointer', letterSpacing: 1, fontFamily: 'Georgia, serif',
-  },
-  closeBtn: {
-    padding: '8px 18px', borderRadius: 10, border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(255, 237, 213, 0.94)', color: '#5f3a17', fontSize: 12,
-    cursor: 'pointer', fontFamily: 'Georgia, serif',
-  },
-  emptyPreview: {
-    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: 13, color: warmTheme.textFaint, fontStyle: 'italic',
-  },
-  loadedBadge: {
-    fontSize: 9, letterSpacing: 1, color: warmTheme.success,
-    border: '1px solid rgba(79,138,71,0.3)', borderRadius: 10, padding: '2px 7px',
-  },
 };
 
 interface Props { onClose: () => void; onOpenDeckBuilder: () => void }
@@ -120,163 +71,357 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
 
   const selectedDeck = savedDecks.find(d => d.id === selectedId) ?? null;
 
-  function handleLoad(deck: SavedDeck) {
-    loadSavedDeck(deck.id);
+  function handleLoad(deckId: string) {
+    loadSavedDeck(deckId);
     onClose();
+  }
+
+  function handleDelete(deck: SavedDeck) {
+    if (!window.confirm(`Delete deck "${deck.name}"? This cannot be undone.`)) return;
+    deleteSavedDeck(deck.id);
+    const next = savedDecks.find(d => d.id !== deck.id);
+    setSelectedId(next?.id ?? '');
   }
 
   function buildPreview(deck: SavedDeck) {
     const grouped = new Map<string, { definitionId: string; copies: number; def: CardDefinition }>();
-
-    const pushEntry = (definitionId: string, copies: number) => {
+    const push = (definitionId: string, copies: number) => {
       const def = CardRegistry.get(definitionId);
       if (!def) return;
-
-      const existing = grouped.get(definitionId);
-      if (existing) {
-        existing.copies += copies;
-        return;
-      }
-
+      const ex = grouped.get(definitionId);
+      if (ex) { ex.copies += copies; return; }
       grouped.set(definitionId, { definitionId, copies, def });
     };
-
-    deck.deckList.forEach(entry => pushEntry(entry.definitionId, entry.copies));
-    (deck.extraDeck ?? []).forEach(entry => pushEntry(entry.definitionId, 1));
+    deck.deckList.forEach(e => push(e.definitionId, e.copies));
+    (deck.extraDeck ?? []).forEach(e => push(e.definitionId, 1));
 
     const totalCards = deck.deckList.reduce((s, e) => s + e.copies, 0) + (deck.extraDeck?.length ?? 0);
-
     const elements = new Set<string>();
-    grouped.forEach(entry => {
-      elements.add(entry.def.element);
-    });
+    grouped.forEach(e => elements.add(e.def.element));
+    const rarityCounts: Record<string, number> = {};
+    grouped.forEach(e => { rarityCounts[e.def.rarity] = (rarityCounts[e.def.rarity] ?? 0) + e.copies; });
 
-    const sections: PreviewSection[] = TYPE_ORDER.map(typeLabel => ({
-      label: TYPE_LABELS[typeLabel],
+    const sections: PreviewSection[] = TYPE_ORDER.map(typeKey => ({
+      label: TYPE_LABELS[typeKey],
+      type: typeKey,
       entries: Array.from(grouped.values())
-        .filter(entry => entry.def.type === typeLabel)
-        .sort((left, right) => {
-          const rarityDelta = (RARITY_ORDER[left.def.rarity] ?? Number.MAX_SAFE_INTEGER)
-            - (RARITY_ORDER[right.def.rarity] ?? Number.MAX_SAFE_INTEGER);
-          if (rarityDelta !== 0) return rarityDelta;
-          return left.def.name.localeCompare(right.def.name);
+        .filter(e => e.def.type === typeKey)
+        .sort((a, b) => {
+          const rd = (RARITY_ORDER[a.def.rarity] ?? 99) - (RARITY_ORDER[b.def.rarity] ?? 99);
+          return rd !== 0 ? rd : a.def.name.localeCompare(b.def.name);
         }),
-    })).filter(section => section.entries.length > 0);
+    })).filter(s => s.entries.length > 0);
 
-    return { sections, totalCards, elements };
+    return { sections, totalCards, elements, rarityCounts };
   }
 
   return (
-    <div className="ui-panel-intro" style={{ ...styles.overlay, ['--ui-accent' as any]: '240, 189, 120', ['--ui-accent-soft' as any]: '250, 224, 184' } as React.CSSProperties}>
-      <div className="ui-shimmer-band" style={{ ...styles.header, position: 'relative' }}>
-        <div className="ui-title-glow" style={styles.title}>{t('myDecks')}</div>
-        <button style={styles.closeBtn} onClick={onClose}>{t('close')}</button>
+    <div
+      className="ui-panel-intro"
+      style={{
+        position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'auto',
+        background: P.bg, display: 'flex', flexDirection: 'column',
+        fontFamily: uiTypography.body, color: P.text,
+      }}
+    >
+      {/* Ambient glow */}
+      <div style={{ position: 'absolute', inset: 0, background: P.glow, pointerEvents: 'none' }} />
+      {/* Atmospheric washes */}
+      <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: '70%', height: '85%', background: 'radial-gradient(ellipse, rgba(78,165,225,0.28) 0%, rgba(25,88,170,0.12) 42%, transparent 68%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-18%', right: '-8%', width: '60%', height: '70%', background: 'radial-gradient(ellipse, rgba(22,65,200,0.22) 0%, transparent 65%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 44%, transparent 22%, rgba(0,0,0,0.65) 100%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px)', pointerEvents: 'none' }} />
+
+      {/* Header */}
+      <div
+        className="ui-shimmer-band"
+        style={{
+          position: 'relative', flexShrink: 0,
+          padding: 'clamp(18px,2vw,28px) clamp(28px,3vw,52px) clamp(14px,1.6vw,20px)',
+          borderBottom: `1px solid ${P.borderStrong}`,
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          background: 'rgba(0,0,0,0.35)',
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          <div
+            className="ui-title-glow"
+            style={{
+              fontFamily: uiTypography.display, fontSize: 'clamp(22px,2.2vw,30px)', fontWeight: 300,
+              color: P.accent, letterSpacing: 6,
+              textShadow: `0 2px 28px ${P.accentGlow}, 0 0 60px rgba(220,170,60,0.12)`,
+              lineHeight: 1.1,
+            }}
+          >
+            DECK VIEWER
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ height: 1, width: 60, background: `linear-gradient(90deg, ${P.accentDeep}80, transparent)` }} />
+            <span style={{ fontSize: 11, color: `${P.accentDeep}99` }}>❖</span>
+            <div style={{ fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: `${P.accentDeep}88`, fontWeight: 400 }}>
+              {savedDecks.length} Saved Deck{savedDecks.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+        </div>
+        <button
+          className="menu-tactile-btn"
+          onClick={onClose}
+          style={{
+            width: 42, height: 42, borderRadius: '50%', cursor: 'pointer',
+            background: 'rgba(200,128,58,0.08)', border: `1px solid ${P.border}`,
+            color: P.textMuted, fontSize: 16, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', flexShrink: 0, transition: 'all 0.18s ease', padding: 0,
+          }}
+        >
+          ✕
+        </button>
       </div>
 
-      <div style={styles.body}>
-        {/* Deck list column */}
-        <div style={styles.deckList}>
-          <div style={styles.deckListHeader}>{t('savedDecks')} ({savedDecks.length})</div>
-          <div style={styles.deckListScroll}>
+      {/* Body */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
+
+        {/* Deck list sidebar */}
+        <div style={{
+          width: 260, flexShrink: 0, borderRight: `1px solid ${P.border}`,
+          display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          background: 'rgba(5,10,20,0.60)',
+          backdropFilter: 'blur(8px)',
+        }}>
+          <div style={{
+            padding: '10px 16px', fontSize: 9, letterSpacing: 2,
+            textTransform: 'uppercase', color: P.textMuted,
+            borderBottom: `1px solid ${P.border}`, flexShrink: 0,
+          }}>
+            Saved Decks
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '6px 0' }}>
+            {savedDecks.length === 0 && (
+              <div style={{ padding: 16, fontSize: 13, color: P.textFaint, fontStyle: 'italic' }}>
+                No decks saved yet.
+              </div>
+            )}
             {savedDecks.map(deck => {
-              const totalCards = deck.deckList.reduce((s, e) => s + e.copies, 0) + (deck.extraDeck?.length ?? 0);
+              const isActive = deck.id === activeDeckId;
+              const isSelected = deck.id === selectedId;
+              const cardCount = deck.deckList.reduce((s, e) => s + e.copies, 0) + (deck.extraDeck?.length ?? 0);
               return (
                 <div
                   key={deck.id}
-                  style={{
-                    ...styles.deckRow,
-                    ...(deck.id === selectedId ? styles.deckRowActive : {}),
-                  }}
                   onClick={() => setSelectedId(deck.id)}
+                  style={{
+                    padding: '10px 16px', cursor: 'pointer',
+                    borderBottom: `1px solid ${P.border}`,
+                    background: isSelected ? P.panelActive : 'transparent',
+                    borderLeft: isSelected ? `3px solid ${P.accent}` : '3px solid transparent',
+                    transition: 'background 0.15s',
+                  }}
                 >
-                  <div>
-                    <div style={styles.deckName}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{
+                      flex: 1, fontSize: 13, color: isSelected ? P.accent : P.text,
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      fontWeight: isSelected ? 600 : 400,
+                    }}>
                       {deck.isStarter ? '🔒 ' : ''}{deck.name}
                     </div>
-                    <div style={styles.deckMeta}>{totalCards} cards</div>
+                    {isActive && (
+                      <div style={{
+                        fontSize: 9, padding: '2px 6px', borderRadius: 8,
+                        border: `1px solid ${P.success}44`, color: P.success, letterSpacing: 1,
+                      }}>
+                        ACTIVE
+                      </div>
+                    )}
                   </div>
-                  {deck.id === activeDeckId && (
-                    <div style={styles.loadedBadge}>{t('activeDeck')}</div>
-                  )}
+                  <div style={{ fontSize: 11, color: P.textMuted, marginTop: 2 }}>
+                    {cardCount} cards
+                  </div>
                 </div>
               );
             })}
           </div>
+
+          {/* Open Deck Builder button */}
+          <div style={{ padding: 12, borderTop: `1px solid ${P.border}`, flexShrink: 0 }}>
+            <button
+              className="menu-tactile-btn"
+              onClick={onOpenDeckBuilder}
+              style={{
+                width: '100%', padding: '9px 0', borderRadius: 8,
+                border: `1px solid ${P.borderStrong}`,
+                background: 'linear-gradient(180deg, #5aabdc 0%, #3888c4 100%)',
+                color: '#0c1e34',
+                fontSize: 12, cursor: 'pointer', fontFamily: uiTypography.display, letterSpacing: 2,
+                fontWeight: 700, textTransform: 'uppercase',
+                boxShadow: `0 4px 16px ${P.accentGlow}`,
+              }}
+            >
+              Deck Builder
+            </button>
+          </div>
         </div>
 
-        {/* Preview column */}
-        {selectedDeck ? (
-          <div style={styles.preview}>
-            {(() => {
-              const { sections, totalCards, elements } = buildPreview(selectedDeck);
-              return (
-                <>
-                  <div style={styles.previewHeader}>
-                    <div style={styles.previewTitle}>{selectedDeck.name}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,215,0,0.5)' }}>
-                      {totalCards} cards
+        {/* Preview panel */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {selectedDeck ? (() => {
+            const { sections, totalCards, elements, rarityCounts } = buildPreview(selectedDeck);
+            const isActive = selectedDeck.id === activeDeckId;
+            return (
+              <>
+                {/* Preview header */}
+                <div style={{
+                  padding: '14px 20px', borderBottom: `1px solid ${P.border}`, flexShrink: 0,
+                  background: 'rgba(0,0,0,0.2)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: P.accent, flex: 1 }}>
+                      {selectedDeck.name}
                     </div>
+                    <div style={{ fontSize: 12, color: P.textMuted }}>{totalCards} cards</div>
+                    {!selectedDeck.isStarter && !isActive && (
+                      <button
+                        className="menu-tactile-btn"
+                        onClick={() => handleDelete(selectedDeck)}
+                        style={{
+                          padding: '5px 14px', borderRadius: 6,
+                          border: '1px solid rgba(255,80,80,0.30)',
+                          background: 'rgba(255,60,60,0.10)', color: 'rgba(255,130,130,0.80)',
+                          fontSize: 12, cursor: 'pointer', fontFamily: uiTypography.body,
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
+                    {!isActive && (
+                      <button
+                        className="menu-tactile-btn"
+                        onClick={() => handleLoad(selectedDeck.id)}
+                        style={{
+                          padding: '5px 18px', borderRadius: 6,
+                          border: `1px solid ${P.borderStrong}`,
+                          background: 'linear-gradient(180deg, #5aabdc 0%, #3888c4 100%)',
+                          color: '#0c1e34',
+                          fontSize: 12, cursor: 'pointer', fontFamily: uiTypography.display,
+                          letterSpacing: 1, fontWeight: 700,
+                          boxShadow: `0 4px 14px ${P.accentGlow}`,
+                        }}
+                      >
+                        Load Deck
+                      </button>
+                    )}
+                    {isActive && (
+                      <div style={{
+                        fontSize: 11, padding: '4px 10px', borderRadius: 6,
+                        border: `1px solid ${P.success}44`, color: P.success,
+                      }}>
+                        Active Deck
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Element + rarity pill strip */}
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
                     {[...elements].map(el => (
                       <div key={el} style={{
-                        fontSize: 10, padding: '2px 8px', borderRadius: 10,
-                        border: `1px solid ${ELEMENT_COLORS[el] ?? '#888'}44`,
-                        color: ELEMENT_COLORS[el] ?? '#aaa',
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '3px 9px', borderRadius: 20,
+                        border: `1px solid ${(ELEMENT_COLORS[el] ?? '#888')}44`,
+                        background: `${(ELEMENT_COLORS[el] ?? '#888')}11`,
+                        fontSize: 11,
                       }}>
-                        {ELEMENT_SET_NAMES[el] ?? el}
+                        <div style={{
+                          width: 7, height: 7, borderRadius: '50%',
+                          background: ELEMENT_COLORS[el] ?? '#888',
+                          boxShadow: `0 0 5px ${ELEMENT_COLORS[el] ?? '#888'}88`,
+                        }} />
+                        <span style={{ color: ELEMENT_COLORS[el] ?? '#aaa' }}>
+                          {ELEMENT_SET_NAMES[el] ?? el}
+                        </span>
                       </div>
                     ))}
-                  </div>
-
-                  <div style={styles.previewScroll}>
-                    {sections.map((section, index) => (
-                      <>
-                        <div style={{ ...styles.sectionHeader, marginTop: index === 0 ? 12 : 16 }}>
-                          {section.label}
+                    <div style={{ width: 1, background: P.border, alignSelf: 'stretch', margin: '0 4px' }} />
+                    {Object.entries(rarityCounts)
+                      .sort((a, b) => (RARITY_ORDER[b[0]] ?? 0) - (RARITY_ORDER[a[0]] ?? 0))
+                      .map(([rarity, count]) => (
+                        <div key={rarity} style={{
+                          display: 'flex', alignItems: 'center', gap: 4,
+                          padding: '3px 9px', borderRadius: 20,
+                          border: `1px solid ${(RARITY_COLORS[rarity] ?? '#888')}44`,
+                          background: `${(RARITY_COLORS[rarity] ?? '#888')}11`,
+                          fontSize: 11,
+                        }}>
+                          <span style={{ color: RARITY_COLORS[rarity] ?? '#aaa' }}>
+                            {RARITY_GLYPH[rarity] ?? '?'}
+                          </span>
+                          <span style={{ color: P.textMuted }}>{count}</span>
                         </div>
-                        {section.entries.map(entry => (
-                          <div key={entry.definitionId} style={styles.cardRow}>
-                            <div style={styles.cardName}>{entry.def.name}</div>
-                            <div style={{ ...styles.cardRarity, color: RARITY_COLORS[entry.def.rarity] ?? '#aaa' }}>
-                              {entry.def.rarity}
-                            </div>
-                            <div style={styles.cardCopies}>×{entry.copies}</div>
-                          </div>
-                        ))}
-                      </>
-                    ))}
+                      ))
+                    }
                   </div>
-                </>
-              );
-            })()}
-          </div>
-        ) : (
-          <div style={styles.emptyPreview}>Select a deck to preview</div>
-        )}
+                </div>
+
+                {/* Card list */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '12px 20px' }}>
+                  {sections.map((section, si) => (
+                      <div key={section.type} style={{ marginTop: si === 0 ? 0 : 20 }}>
+                        <div style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          marginBottom: 8, paddingBottom: 6,
+                          borderBottom: `1px solid ${TYPE_ACCENT[section.type]}44`,
+                        }}>
+                          <div style={{ width: 3, height: 14, borderRadius: 2, background: TYPE_ACCENT[section.type], flexShrink: 0 }} />
+                          <span style={{
+                            fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase',
+                            color: TYPE_ACCENT[section.type], fontWeight: 600,
+                            fontFamily: uiTypography.display,
+                          }}>
+                            {section.label} ({section.entries.reduce((s, e) => s + e.copies, 0)})
+                          </span>
+                      </div>
+                      {section.entries.map(entry => (
+                        <div
+                          key={entry.definitionId}
+                          style={{
+                            display: 'flex', alignItems: 'center',
+                            padding: '4px 0', borderBottom: `1px solid ${P.border}`,
+                          }}
+                        >
+                          <span style={{
+                            fontSize: 13, color: RARITY_COLORS[entry.def.rarity] ?? '#aaa',
+                            marginRight: 7, opacity: 0.85,
+                          }}>
+                            {RARITY_GLYPH[entry.def.rarity] ?? '?'}
+                          </span>
+                          <span style={{ flex: 1, fontSize: 12, color: P.text }}>
+                            {entry.def.name}
+                          </span>
+                          <span style={{ fontSize: 11, color: P.accentDeep, minWidth: 28, textAlign: 'right' }}>
+                            ×{entry.copies}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </>
+            );
+          })() : (
+            <div style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 14, color: P.textFaint, fontStyle: 'italic',
+            }}>
+              Select a deck to preview
+            </div>
+          )}
+        </div>
       </div>
 
-      <div style={styles.footer}>
-        {selectedDeck && !selectedDeck.isStarter && selectedDeck.id !== activeDeckId && (
-          <button
-            style={{ ...styles.closeBtn, color: 'rgba(255,100,100,0.6)', borderColor: 'rgba(255,80,80,0.2)' }}
-            onClick={() => {
-              if (!window.confirm(`Delete deck "${selectedDeck.name}"? This cannot be undone.`)) return;
-              deleteSavedDeck(selectedDeck.id);
-              setSelectedId(savedDecks.find(d => d.id !== selectedDeck.id)?.id ?? '');
-            }}
-          >
-            Delete
-          </button>
-        )}
-        <button style={styles.closeBtn} onClick={onOpenDeckBuilder}>{t('deckBuilder')}</button>
-        {selectedDeck && selectedDeck.id !== activeDeckId && (
-          <button style={styles.loadBtn} onClick={() => handleLoad(selectedDeck)}>
-            Load Deck
-          </button>
-        )}
-        {selectedDeck && selectedDeck.id === activeDeckId && (
-          <div style={{ fontSize: 12, color: '#80e860' }}>This deck is active</div>
-        )}
-      </div>
+      {/* Bottom accent */}
+      <div style={{
+        height: 2, flexShrink: 0,
+        background: `linear-gradient(90deg, transparent, ${P.border}, transparent)`,
+      }} />
     </div>
   );
 }
+

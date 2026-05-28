@@ -569,13 +569,13 @@ const infiniteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'inf-wuas-stellarborn-throne',
     name: 'Stellarborn Throne',
-    description: 'Gain 10 Starlight Charges; Gain 6 Dream Lattice stacks; Infinite Starbirth (Ob = Seraphim × Starlight × 110; draw 2 per Dream Lattice)',
+    description: 'Gain 10 Starlight Charges; Gain 6 Dream Lattice stacks; Infinite Starbirth (Ob = Seraphim × Starlight × 160)',
     rarity: 'Infinite',
     artKey: 'inf_wuas_stellarborn_throne',
     effects: [
       { type: 'starlight_gain', amount: 10 },
       { type: 'dream_lattice_gain', amount: 6 },
-      { type: 'wuas_infinite_starbirth', oblivionPerSeraphimPerStarlight: 110, drawPerDream: 2 }],
+      { type: 'wuas_infinite_starbirth', oblivionPerSeraphimPerStarlight: 160 }],
   }),
   buildCherubim({
     definitionId: 'inf-wuas-lune-choir-ascension',
@@ -595,7 +595,7 @@ const infiniteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'inf-wuas-wishwright-absolute',
     name: 'Wishwright Absolute',
-    description: 'On play: Gain 12 Starlight Charges; Gain 8 Dream Lattice stacks; Gain 10 Star Crowns; Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 1.6)); Cash out up to 18 Star Crowns (+260 Oblivion per Crown); Infinite Starbirth (Ob = Seraphim × Starlight × 140; draw 1 per Dream Lattice). While on board: +50 Oblivion per card played while active',
+    description: 'On play: Gain 12 Starlight Charges; Gain 8 Dream Lattice stacks; Gain 10 Star Crowns; Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 1.6)); Cash out up to 18 Star Crowns (+260 Oblivion per Crown); Infinite Starbirth (Ob = Seraphim × Starlight × 180). While on board: +50 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'inf_wuas_wishwright_absolute',
     bonusType: 'oblivion_per_card',
@@ -606,7 +606,7 @@ const infiniteCards: CardDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'wuas', value: 10 },
       { type: 'wuas_nova_wish_burst', consumeStarlight: false, dreamMultiplier: 1.6 },
       { type: 'wuas_constellation_lock_release', oblivionPerStack: 260, consume: 18 },
-      { type: 'wuas_infinite_starbirth', oblivionPerSeraphimPerStarlight: 140, drawPerDream: 1 }],
+      { type: 'wuas_infinite_starbirth', oblivionPerSeraphimPerStarlight: 180 }],
     unsynergizedName: 'Absolute Strike', synergizedName: 'Wishwright Zenith',
     unsynergizedDescription: 'A single, final wish ? granted with no margin for grief.',
     synergizedDescription: 'The Wishwright closes his hand. The sky obeys.',

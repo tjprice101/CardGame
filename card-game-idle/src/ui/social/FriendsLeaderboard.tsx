@@ -22,7 +22,9 @@ export type LeaderboardMetric =
   | 'gauntletDepth'
   | 'gauntletShards'
   | 'infinitePulls'
-  | 'eternityClearsTotal';
+  | 'eternityClearsTotal'
+  | 'battlegroundWins'
+  | 'battlegroundBestScore';
 
 interface StatsRow {
   user_id: string;
@@ -31,6 +33,8 @@ interface StatsRow {
   gauntlet_runs: number | null;
   eternity_clears: Record<string, number> | null;
   infinite_pulls: number | null;
+  battleground_wins: number | null;
+  battleground_best_score: number | null;
 }
 
 interface LeaderboardEntry {
@@ -43,6 +47,8 @@ interface LeaderboardEntry {
   runs: number;
   infinite: number;
   eternityTotal: number;
+  battlegroundWins: number;
+  battlegroundBestScore: number;
 }
 
 const METRIC_LABEL: Record<LeaderboardMetric, string> = {
@@ -50,6 +56,8 @@ const METRIC_LABEL: Record<LeaderboardMetric, string> = {
   gauntletShards: 'Gauntlet Shards',
   infinitePulls: 'Infinite Pulls',
   eternityClearsTotal: 'Eternity Clears',
+  battlegroundWins: 'Battleground Wins',
+  battlegroundBestScore: 'Battleground Score',
 };
 
 function metricValue(entry: LeaderboardEntry, metric: LeaderboardMetric): number {
@@ -58,6 +66,8 @@ function metricValue(entry: LeaderboardEntry, metric: LeaderboardMetric): number
     case 'gauntletShards': return entry.shards;
     case 'infinitePulls': return entry.infinite;
     case 'eternityClearsTotal': return entry.eternityTotal;
+    case 'battlegroundWins': return entry.battlegroundWins;
+    case 'battlegroundBestScore': return entry.battlegroundBestScore;
   }
 }
 
@@ -92,7 +102,7 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
 
   const metric = fixedMetric ?? selectedMetric;
   const metricOptions = metrics ?? (
-    ['gauntletDepth', 'gauntletShards', 'infinitePulls', 'eternityClearsTotal'] as LeaderboardMetric[]
+    ['gauntletDepth', 'gauntletShards', 'infinitePulls', 'eternityClearsTotal', 'battlegroundWins', 'battlegroundBestScore'] as LeaderboardMetric[]
   );
 
   useEffect(() => {
@@ -111,7 +121,7 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
     let cancelled = false;
     void sb
       .from('profile_stats')
-      .select('user_id, gauntlet_best_depth, gauntlet_best_shards, gauntlet_runs, eternity_clears, infinite_pulls')
+      .select('user_id, gauntlet_best_depth, gauntlet_best_shards, gauntlet_runs, eternity_clears, infinite_pulls, battleground_wins, battleground_best_score')
       .in('user_id', ids)
       .then(({ data, error }) => {
         if (cancelled) return;
@@ -149,6 +159,8 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
         runs: s?.gauntlet_runs ?? 0,
         infinite: s?.infinite_pulls ?? 0,
         eternityTotal: sumValues(s?.eternity_clears ?? null),
+        battlegroundWins: s?.battleground_wins ?? 0,
+        battlegroundBestScore: s?.battleground_best_score ?? 0,
       };
     }
 
@@ -217,6 +229,12 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
                 )}
                 {metric === 'infinitePulls' && (
                   <div style={subtle}>eternity {e.eternityTotal}</div>
+                )}
+                {metric === 'battlegroundWins' && (
+                  <div style={subtle}>best score {e.battlegroundBestScore.toLocaleString()}</div>
+                )}
+                {metric === 'battlegroundBestScore' && (
+                  <div style={subtle}>wins {e.battlegroundWins}</div>
                 )}
               </div>
               <div style={valStyle}>{value.toLocaleString()}</div>

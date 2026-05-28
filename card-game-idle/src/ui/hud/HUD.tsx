@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useStore, selectTurn, selectDeck, selectBossFight } from '@/state/store';
+import { useStore, selectTurn, selectDeck, selectBossFight, selectBattleground } from '@/state/store';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
@@ -8,9 +8,9 @@ import ScoreDisplay from './ScoreDisplay';
 import AngelStatPanel from './AngelStatPanel';
 import HandDisplay from './HandDisplay';
 import RadianceDisplay from './RadianceDisplay';
-import EmberDisplay from './EmberDisplay';
 import TrailDisplay from './TrailDisplay';
 import StrainDisplay from './StrainDisplay';
+import EmberDisplay from './EmberDisplay';
 import DeckStatus from './DeckStatus';
 import SetEngineDisplay from './SetEngineDisplay';
 import TurnControls from './TurnControls';
@@ -187,7 +187,9 @@ function LeftRailFrame() {
  */
 function RightRail() {
   const bossFight = useStore(selectBossFight);
+  const battleground = useStore(selectBattleground);
   const inBossFight = bossFight.mode === 'active';
+  const inBattleground = battleground.mode === 'active';
   return (
     <div
       style={{
@@ -211,8 +213,8 @@ function RightRail() {
         pointerEvents: 'none',
       }} />
 
-      {/* Deck pills — clears the 52 px top bar; during boss fights also clears the boss panel (~200 px) */}
-      <div style={{ padding: `${inBossFight ? 252 : 64}px 18px 0`, flexShrink: 0 }}>
+      {/* Deck pills — clears the 52 px top bar; during boss fights also clears the boss panel (~200 px); during battlegrounds clears the slim BG strip (~52 px). */}
+      <div style={{ padding: `${inBossFight ? 252 : inBattleground ? 64 : 64}px 18px 0`, flexShrink: 0 }}>
         <DeckStatus />
       </div>
 
@@ -243,6 +245,8 @@ function RightRail() {
 
 export default function HUD() {
   const [showOblivionScreen, setShowOblivionScreen] = useState(false);
+  const battleground = useStore(selectBattleground);
+  const inBattleground = battleground.mode === 'active';
 
   return (
     <>
@@ -251,12 +255,13 @@ export default function HUD() {
 
       {/* Core play surfaces */}
       <BoardDisplay />
-      <ScoreDisplay />
+      {/* ScoreDisplay overlaps the battleground pill — the BG bar already shows both scores */}
+      {!inBattleground && <ScoreDisplay />}
       <AngelStatPanel />
       <RadianceDisplay />
-      <EmberDisplay />
       <TrailDisplay />
       <StrainDisplay />
+      <EmberDisplay />
 
       {/* Top status bar — set · turn · phase */}
       <TopStatusBar onOpenOblivionScreen={() => setShowOblivionScreen(true)} />

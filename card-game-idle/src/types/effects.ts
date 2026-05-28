@@ -155,7 +155,7 @@ export type ImmediateEffect =
   | { type: 'mech_reactor_flux_vent'; oblivionPerFlux: number; scoreMultPerFlux: number; consume?: number }
   | { type: 'prism_spectrum_echo_refract'; oblivionPerEchoPerChannel: number; consume?: number }
   | { type: 'glass_veil_shard_swap'; oblivionPerHigherFlame: number; consume?: number }
-  | { type: 'snow_static_pulse_discharge'; voltageOblivionPerPulse: number; frostDrawPerPulse: number; consume?: number }
+  | { type: 'snow_static_pulse_discharge'; voltageOblivionPerPulse: number; frostDrawPerPulse?: number; frostArcticChargePerPulse?: number; consume?: number }
   | { type: 'absol_cascade_proof_amplify'; oblivionPerProofDepth: number; consume?: number }
   | { type: 'garden_wild_pollen_seed'; embersPerPollen: number; scoreMultPerBloom: number; consume?: number }
   | { type: 'flutter_wing_pulse_amplify'; doubleNextGains: number; consume?: number }
@@ -192,6 +192,7 @@ export type ImmediateEffect =
   // Eternal tier cashout: chain + oblivion scaled by eternalStacks['wuas'] and dreamLattice.
   | { type: 'wuas_constellation_lock_release'; oblivionPerStack: number; consume?: number }
   // Infinite tier cashout: fires based on board seraphim count × starlightCharges, no stack consume.
+  | { type: 'wuas_infinite_starbirth'; oblivionPerSeraphimPerStarlight: number; drawPerDream?: number }
   | { type: 'wuas_infinite_starbirth'; oblivionPerSeraphimPerStarlight: number; drawPerDream?: number };
 
 export type EternalStackKind =
@@ -297,7 +298,7 @@ export type CherubimPassiveEffect =
   | { type: 'cherubim_seraphim_amp'; value: number }
   | { type: 'cherubim_ember_gain'; value: number }
   | { type: 'cherubim_draw_per_card'; value: number }
-  | { type: 'cherubim_resource_per_card'; resource: 'ember' | 'radiance' | 'trail' | 'strain'; value: number }
+  | { type: 'cherubim_resource_per_card'; resource: 'pyroFurnacePressure' | 'butterflySpectrum' | 'radiance' | 'trail' | 'strain'; value: number }
   | { type: 'cherubim_adjacent_seraphim_bonus'; value: number; bonusType: 'oblivion' | 'draw' }
   | { type: 'cherubim_conditional_buff'; condition: EffectCondition; value: number }
   | { type: 'cherubim_patience_per_card'; value: number }

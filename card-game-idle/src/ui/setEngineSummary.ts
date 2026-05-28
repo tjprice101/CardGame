@@ -120,12 +120,12 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     finisher: 'Cashes a fully charged Patience payoff, meeting the threshold for a bonus draw alongside maximum Oblivion.',
   },
   light: {
-    setup: 'Adds Hymn Notes and opens Cadence setup so Resonance tiers can build.',
-    support: 'Anchors the choir with Chorus Anchors so note cadence persists through interruptions.',
-    resource: 'Feeds Radiance and tempo so the choir keeps advancing toward its next Resonance tier.',
-    payoff: 'Converts built Cadence and Resonance into Oblivion once the hymn sequence is complete.',
-    amplifier: 'Pushes Resonance harder once multiple Chorus Anchors and distinct note types are active.',
-    finisher: 'Triggers Apotheosis Pulse: converts the full cadence sequence into repeated Oblivion echoes.',
+    setup: 'Adds Hymn Notes and opens note variety so Cadence can build.',
+    support: 'Anchors the choir with Chorus Anchors so note variety persists through interruptions.',
+    resource: 'Feeds Radiance and tempo so the choir keeps advancing toward its next Cadence tier.',
+    payoff: 'Converts built note variety and Cadence into Oblivion once the hymn sequence is complete.',
+    amplifier: 'Pushes Cadence harder once multiple Chorus Anchors and distinct note types are active.',
+    finisher: 'Triggers Apotheosis Pulse: converts the full note sequence into repeated Oblivion echoes.',
   },
   thornbound: {
     setup: 'Builds Trail and positions the war-path before the briars start paying out.',
@@ -501,26 +501,26 @@ function buildEngineSnapshot(
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: `Cadence ${cadence} | Resonance ${resonance} | Anchors ${anchors}`,
+        compact: `Hymn Notes ${cadence} | Cadence ${resonance} | Anchors ${anchors}`,
         detail: `Notes ${formatPreview(notes)} | Echoes ${(turn.lightCadenceNotes ?? []).length}`,
         tagline: 'Build the choir note by note before the Apotheosis Pulse echoes.',
-        summary: 'Alternate card types to grow cadence and Resonance, and use Chorus Anchors to protect it. If your deck includes Infinite cards, meeting Resonance 3 + 3 distinct notes amplifies them to ÁE.22. Open the Guide for full details.',
+        summary: 'Alternate card types to grow note variety and Cadence, and use Chorus Anchors to protect it. If your deck includes Infinite cards, meeting Cadence 3 + 3 distinct notes amplifies them to ÁE.22. Open the Guide for full details.',
         metrics: [
-          createMetric('Cadence', cadence, 'Distinct Hymn Note types played this turn.'),
-          createMetric('Resonance', resonance, 'Builds attack power. Drops on repeated notes without an Anchor.'),
+          createMetric('Hymn Notes', cadence, 'Distinct Hymn Note types played this turn.'),
+          createMetric('Cadence', resonance, 'Builds attack power. Drops on repeated notes without an Anchor.'),
           createMetric('Anchors', anchors, 'Absorbs one repeated-note penalty per charge.'),
           createMetric('Echoes', (turn.lightCadenceNotes ?? []).length, 'Total note triggers in the rolling cadence window.'),
         ],
         nextSteps: [
           createStep('Add new notes', cadence >= 3, cadence >= 3
-            ? 'Cadence is healthy. Start aiming for the payoff side of the choir.'
-            : 'Play distinct Light notes first so cadence grows before the payoff turn.'),
+            ? 'Note variety is healthy. Start aiming for the payoff side of the choir.'
+            : 'Play distinct Light notes first so note variety grows before the payoff turn.'),
           createStep('Hold anchors', anchors >= 1, anchors >= 1
-            ? 'At least one anchor is holding the choir. Protect it while resonance builds.'
+            ? 'At least one anchor is holding the choir. Protect it while Cadence builds.'
             : 'Anchor the choir with persistent Light pieces before leaning on payoff cards.'),
-          createStep('Spend resonance late', resonance >= 3, resonance >= 3
-            ? 'Resonance is stocked. Shift into Seraphim or Angel payoff pieces.'
-            : 'Keep sequencing Light setup until resonance is worth cashing.'),
+          createStep('Build Cadence', resonance >= 3, resonance >= 3
+            ? 'Cadence is stocked. Shift into Seraphim or Angel payoff pieces.'
+            : 'Keep sequencing Light setup until Cadence is worth cashing.'),
         ],
       };
     }
@@ -960,23 +960,23 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   light: {
     engineKey: 'light',
     title: 'User Guide to: Heavenly Light',
-    intro: 'Heavenly Light runs a Choir Cadence Engine. You build a sequence of Hymn Notes by playing different card types, grow Resonance, and amplify attack power. The goal is to hit Apotheosis Pulse, the moment when a cadence reaches full power.',
+    intro: 'Heavenly Light runs a Choir Cadence Engine. You build a sequence of Hymn Notes by playing different card types, grow Cadence, and amplify attack power. The goal is to hit Apotheosis Pulse, the moment when a cadence reaches full power.',
     sections: [
       {
         heading: 'Hymn Notes and Card Types',
         body: 'Every Heavenly Light card has a card type (Ophanim, Cherubim, Seraphim, or Angel). When you play a Light card, the engine automatically registers a Hymn Note equal to that card type. The cadence tracks the last 6 notes you have played, and distinct note types are tracked separately up to a maximum of 4 unique types.',
       },
       {
-        heading: 'Resonance',
-        body: 'Resonance is the core power meter for Heavenly Light (max 6). Every new note added to the cadence increases Resonance by +1. Playing a Multiplier-class card adds +2 Resonance instead.\n\nIf you play the same note type as the one you just played, Resonance drops by 1 and the cadence resets back to just that one note.\n\nResonance directly increases the power of your Seraphim attacks, locking in a minimum attack power bonus for the rest of the turn.',
+        heading: 'Cadence',
+        body: 'Cadence is the core power meter for Heavenly Light (max 6). Every new note added to the sequence increases Cadence by +1. Playing a Multiplier-class card adds +2 Cadence instead.\n\nIf you play the same note type as the one you just played, Cadence drops by 1 and the note sequence resets back to just that one note.\n\nCadence directly increases the power of your Seraphim attacks, locking in a minimum attack power bonus for the rest of the turn.',
       },
       {
         heading: 'Chorus Anchors',
-        body: 'Chorus Anchors protect you from the repeated-note penalty. Each Eternal-rarity Light card you play grants +1 Chorus Anchor (max 3).\n\nWhen you play a repeated note and you have at least 1 Chorus Anchor, the anchor absorbs the repeat: the cadence does not reset, Resonance does not drop, and the anchor counter goes down by 1. Without an anchor, a repeated note resets the cadence and loses Resonance.',
+        body: 'Chorus Anchors protect you from the repeated-note penalty. Each Eternal-rarity Light card you play grants +1 Chorus Anchor (max 3).\n\nWhen you play a repeated note and you have at least 1 Chorus Anchor, the anchor absorbs the repeat: the note sequence does not reset, Cadence does not drop, and the anchor counter goes down by 1. Without an anchor, a repeated note resets the sequence and loses Cadence.',
       },
       {
         heading: 'Infinite Card Amplification',
-        body: 'The Choir Cadence engine works fully without Infinite cards. Resonance builds cadence power, Anchors protect your cadence, and every Light card benefits from those effects regardless of rarity.\n\nIf your deck includes Infinite Light cards, they respond to how well the choir has been built:\n\n- x1.22 multiplier (amplified): Resonance >= 3 and distinct note types >= 3.\n- x0.5 multiplier (reduced): either condition is below the threshold.\n\nBuilding the choir well naturally satisfies these conditions. The Infinite card bonus is the reward for playing correctly, not the goal you build around.',
+        body: 'The Choir Cadence engine works fully without Infinite cards. Cadence builds attack power, Anchors protect your note sequence, and every Light card benefits from those effects regardless of rarity.\n\nIf your deck includes Infinite Light cards, they respond to how well the choir has been built:\n\n- x1.22 multiplier (amplified): Cadence >= 3 and distinct note types >= 3.\n- x0.5 multiplier (reduced): either condition is below the threshold.\n\nBuilding the choir well naturally satisfies these conditions. The Infinite card bonus is the reward for playing correctly, not the goal you build around.',
       },
     ],
   },

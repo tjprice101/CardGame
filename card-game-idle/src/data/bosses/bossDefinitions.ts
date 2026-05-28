@@ -3,7 +3,7 @@ import type { BossDefinition, BossCategory } from '@/types/bossFight';
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
 const FIRST_ETERNAL_BOSS_HP = 12_000;
-const FINAL_ETERNAL_BOSS_HP = 25_000_000;
+const FINAL_ETERNAL_BOSS_HP = 850_000;
 const FIRST_ETERNAL_BONUS_HP = 5_000;
 
 function roundBossHp(value: number): number {
@@ -168,7 +168,30 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(81, 'boss-wuas-draethos-unforgotten', 'Draethos, The Unforgotten', '[EVENT] Wished Upon A Star', 'wuas-et-draethos-unforgotten', 'An unstable god shifting between child and titan, trailing nightmare-crystal fangs and funeral-ash wings.', 'boss_wuas_draethos_unforgotten'),
 ];
 
+/**
+ * Thematic elemental weaknesses per boss category.
+ * Deck plurality matching this element grants ×1.25 damage during the fight.
+ */
+const CATEGORY_WEAKNESS: Partial<Record<BossCategory, string>> = {
+  'Neutrality':              'Fire',
+  'Pyroabyss':               'EternalSeas',
+  'Heavenly Light':          'Dark',
+  'Thornbound Plains':       'BlazingGarden',
+  'Mechanical Dreams':       'SnowboundVoltage',
+  'Prismatic Accord':        'Neutrality',
+  'Snowbound Voltage':       'BlazingGarden',
+  'Black Glass Inferno':     'Light',
+  'Glass Absolute':          'Mechanical',
+  'The Blazing Garden':      'EternalSeas',
+  'Age of the Butterfly':    'Thornbound',
+  'Eternal Seas':            'Butterfly',
+  'Abyssal Forge':           'DeathFlamedHell',
+  'Death-flamed Hell':       'Light',
+  '[EVENT] Wished Upon A Star': 'Prismatic',
+};
+
 export const BOSS_DEFINITIONS: BossDefinition[] = BOSS_BLUEPRINTS.map((boss, index, bosses) => ({
   ...boss,
   hp: getScaledBossHp(index, bosses.length),
+  weakElement: CATEGORY_WEAKNESS[boss.category],
 }));

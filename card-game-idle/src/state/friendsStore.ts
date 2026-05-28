@@ -18,6 +18,8 @@ export interface FriendProfileLite {
   titleId: string | null;
   uiThemeId: string | null;
   lastSeenAt: string | null;
+  /** Signature card definition ids (up to 5). */
+  signatureCardIds: string[];
 }
 
 export interface FriendRequestRow {
@@ -70,6 +72,7 @@ function rowToProfile(row: {
   title_id: string | null;
   ui_theme_id: string | null;
   last_seen_at: string | null;
+  signature_card_ids?: unknown;
 }): FriendProfileLite {
   return {
     id: row.id,
@@ -80,6 +83,7 @@ function rowToProfile(row: {
     titleId: row.title_id,
     uiThemeId: row.ui_theme_id,
     lastSeenAt: row.last_seen_at,
+    signatureCardIds: Array.isArray(row.signature_card_ids) ? row.signature_card_ids as string[] : [],
   };
 }
 
@@ -106,10 +110,10 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
         .select(`
           from_user, to_user, status, created_at, updated_at,
           from_profile:profiles!friend_requests_from_user_fkey (
-            id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at
+            id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at, signature_card_ids
           ),
           to_profile:profiles!friend_requests_to_user_fkey (
-            id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at
+            id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at, signature_card_ids
           )
         `);
       if (reqErr) throw reqErr;
@@ -117,7 +121,7 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
       const friends: FriendRequestRow[] = [];
       const incoming: FriendRequestRow[] = [];
       const outgoing: FriendRequestRow[] = [];
-      for (const r of (reqs ?? []) as Array<{
+      for (const r of (reqs ?? []) as unknown as Array<{
         from_user: string;
         to_user: string;
         status: 'pending' | 'accepted' | 'declined';
@@ -147,12 +151,12 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
         .select(`
           blocked,
           blocked_profile:profiles!blocks_blocked_fkey (
-            id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at
+            id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at, signature_card_ids
           )
         `);
       if (blockErr) throw blockErr;
 
-      const blocked: FriendProfileLite[] = ((blocks ?? []) as Array<{
+      const blocked: FriendProfileLite[] = ((blocks ?? []) as unknown as Array<{
         blocked_profile: Parameters<typeof rowToProfile>[0] | null;
       }>)
         .map(b => b.blocked_profile)

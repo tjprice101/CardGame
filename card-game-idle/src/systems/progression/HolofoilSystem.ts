@@ -84,19 +84,14 @@ export function getHolofoilBaseCost(definition: CardDefinition | undefined): num
 
 /**
  * Returns the shard cost for converting one normal copy of `definition` into
- * holofoil. When `holoCollection` is provided, the cost scales exponentially
- * by the number of holos already owned in the same set. When omitted,
- * returns the base (first-conversion) cost.
+ * holofoil. Cost is always the flat base cost regardless of how many holos
+ * are already owned in the same set.
  */
 export function getHolofoilConversionCost(
   definition: CardDefinition | undefined,
-  holoCollection?: Record<string, number>,
+  _holoCollection?: Record<string, number>,
 ): number | null {
-  const base = getHolofoilBaseCost(definition);
-  if (base === null || !definition) return base;
-  if (!holoCollection) return base;
-  const n = getSetHoloCount(definition, holoCollection);
-  return Math.ceil(base * Math.pow(HOLOFOIL_SET_EXPONENT, n));
+  return getHolofoilBaseCost(definition);
 }
 
 export function canConvertCardToHolo(

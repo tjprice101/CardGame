@@ -4,7 +4,6 @@
 // Shows current track title and pause / skip buttons.
 
 import { useCallback } from 'react';
-import { MainMenuRadio } from '@/audio/MainMenuRadio';
 import type { RadioTrackInfo } from '@/audio/MainMenuRadio';
 
 interface Props {
@@ -12,6 +11,9 @@ interface Props {
   paused: boolean;
   currentTrack: RadioTrackInfo | null;
   onPausedChange: (p: boolean) => void;
+  onPause: () => void;
+  onResume: () => void;
+  onSkip: () => void;
 }
 
 // Main menu navy / ice-blue palette.
@@ -103,20 +105,20 @@ function IconRadio() {
   );
 }
 
-export default function RadioControlBar({ radioActive, paused, currentTrack, onPausedChange }: Props) {
+export default function RadioControlBar({ radioActive, paused, currentTrack, onPausedChange, onPause, onResume, onSkip }: Props) {
   const handlePauseResume = useCallback(() => {
     if (paused) {
-      MainMenuRadio.resume();
+      onResume();
       onPausedChange(false);
     } else {
-      MainMenuRadio.pause();
+      onPause();
       onPausedChange(true);
     }
-  }, [paused, onPausedChange]);
+  }, [paused, onPausedChange, onPause, onResume]);
 
   const handleSkip = useCallback(() => {
-    MainMenuRadio.skip();
-  }, []);
+    onSkip();
+  }, [onSkip]);
 
   return (
     <div style={radioActive ? BAR : BAR_HIDDEN} aria-hidden={!radioActive}>

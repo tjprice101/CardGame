@@ -226,7 +226,7 @@ function formatCondition(condition: EffectCondition): string {
     case 'light_chorus_anchors_gte':
       return `you have ${condition.value}+ Chorus Anchors`;
     case 'light_resonance_gte':
-      return `you have ${condition.value}+ Resonance`;
+      return `you have ${condition.value}+ Cadence`;
     case 'black_glass_white_flame_gte':
       return `you have ${condition.value}+ White Flame`;
     case 'black_glass_black_flame_gte':
@@ -365,7 +365,10 @@ function formatEffect(effect: CardEffect): string {
     }
     case 'snow_static_pulse_discharge': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Discharge ${scope} ${setSecondaryName('snow')} (Voltage: +${formatExactValue(effect.voltageOblivionPerPulse)} Oblivion per pulse · Frost: +${formatExactValue(effect.frostDrawPerPulse)} draw per pulse)`;
+      const frostPart = (effect.frostArcticChargePerPulse ?? 0) > 0
+        ? `+${formatExactValue(effect.frostArcticChargePerPulse!)} Arctic Charge per pulse`
+        : `+${formatExactValue(effect.frostDrawPerPulse ?? 0)} draw per pulse`;
+      return `Discharge ${scope} ${setSecondaryName('snow')} (Voltage: +${formatExactValue(effect.voltageOblivionPerPulse)} Oblivion per pulse · Frost: ${frostPart})`;
     }
     case 'absol_cascade_proof_amplify': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -383,7 +386,7 @@ function formatEffect(effect: CardEffect): string {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Resolve ${scope} ${setSecondaryName('tide')} (White polarity: +${effect.oblivionPerPositive} Oblivion per echo · Black polarity: +${formatExactValue(effect.oblivionPerNegative)} Oblivion per echo)`;
     }
-    case 'light_resonance_gain': return `Gain ${effect.value} Resonance`;
+    case 'light_resonance_gain': return `Gain ${effect.value} Cadence`;
     case 'butterfly_spectrum_gain': return `Gain ${effect.value} Spectrum`;
     case 'butterfly_tune': return `Tune stance to ${effect.stance}`;
     case 'butterfly_release': {

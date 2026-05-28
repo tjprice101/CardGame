@@ -323,7 +323,7 @@ function PatienceBody() {
 function SetsBody() {
   const sets: Array<[string, string, string]> = [
     ['Neutrality', 'Patience / Stasis', 'Stockpile Patience on Seraphim, cash it out on attack. The friendly starter engine.'],
-    ['Heavenly Light', 'Radiance & Cadence', 'Build Hymn Notes and Chorus Anchors, escalate through Resonance tiers, finish with an Apotheosis Pulse.'],
+    ['Heavenly Light', 'Radiance & Cadence', 'Build Hymn Notes and Chorus Anchors, build Cadence, finish with an Apotheosis Pulse.'],
     ['Pyroabyss', 'Embers & Heat', "Spend Embers to fuel Fire attacks. Convert other sets' resources into furnace fuel; balance Heat and Stability."],
     ['Thornbound Plains', 'Trail & War-Path', 'Accumulate Trail and Scars on the march; bloom Briar Spirals; cash the war-path on demand.'],
     ['Snowbound Voltage', 'Phase & Potential', 'Alternate Frost and Voltage phases. Each successful swap converts stored Potential into a burst.'],
@@ -334,6 +334,7 @@ function SetsBody() {
     ['Blazing Garden', 'Ember Grove & Echo', 'Persistent grove state across turns. Bloom Rose / Sunflower / Thistle lineages and trigger one Echo per turn.'],
     ['Age of the Butterfly', 'Spectrum Stances', 'Charge shared Spectrum, tune Reflect and Absorb stances, descend into a dual-surface payoff turn.'],
     ['Eternal Seas', 'Current & Veilmargin', 'Stock Current, alternate White/Black flow, converge for a Veilmargin release.'],
+    ['Iron Dominion', 'Forge & Weld-Mark', 'Accumulate Iron Charge and Weld Marks; fracture-vent for Oblivion; Tungsten Overclock gates the full-fire multiplier.'],
   ];
 
   return (
@@ -425,6 +426,7 @@ function ModesBody() {
         <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Oblivion you generate is dealt as damage instead of banked.</ListItem>
         <ListItem label="Categories">Bosses are organized by set &mdash; Neutrality, Pyroabyss, Heavenly Light, Thornbound Plains, and so on. Use the tab strip at the top of the Wake menu to switch.</ListItem>
         <ListItem label="Rewards">First clear and repeat clears both grant Aberrated Shards and the boss's signature Eternal card. 60-second cooldown after any attempt.</ListItem>
+        <ListItem label="Tier Progress">Every card in your deck and Extra Deck earns <Tag>Tier Progress</Tag> on a boss victory. Higher-tier bosses give more — early bosses grant ~3 per card, the hardest grant ~35. Wake Trials apply a bonus multiplier (capped at ×2). The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
@@ -439,6 +441,100 @@ function ModesBody() {
           Open the Card Store to spend Oblivion on packs. Each pack has its own rarity weights and pity
           counters; the store displays them up front. Use the Deck Builder to assemble up to 50 cards plus an
           Extra Deck of Angels (max 5, up to 2 copies per definition).
+        </div>
+      </div>
+    </>
+  );
+}
+
+function CardBornTierBody() {
+  const tiers: Array<[string, string, number, string]> = [
+    ['Practiced',     '◈', 25,     'First steps. The card becomes familiar in your hands.'],
+    ['Veteran',       '◆', 75,     'Consistent use — you know this card\'s timing.'],
+    ['Master',        '✦', 400,    'Real commitment. The card has shaped your play.'],
+    ['Eternal Bond',  '★', 1_500,  'This card is a staple, deeply understood.'],
+    ['Resonant',      '✵', 3_000,  'Refined command — you push its limits each turn.'],
+    ['Transcendent',  '✷', 6_000,  'Near-peak. Rare few reach here.'],
+    ['Ascendant',     '✸', 15_000, 'One of your defining cards. Profound familiarity.'],
+    ['Infinite Bond', '∞', 30_000, 'The apex tier. You and this card are inseparable.'],
+  ];
+
+  return (
+    <>
+      <div style={cardStyle}>
+        <div style={sectionHeadingStyle}>What is Card-born Tier?</div>
+        <div style={bodyTextStyle}>
+          Every card you play from hand is tracked individually. As its play count climbs through{' '}
+          <Tag>8 tiers</Tag> — from Practiced to Infinite Bond — it earns{' '}
+          <Tag>Resonance points</Tag> and a one-time shard reward at each milestone. Resonance feeds
+          directly into your <Tag>Collection Power</Tag> multiplier, permanently boosting Oblivion
+          earned from all attacks. Owning more copies of a card has no effect on Resonance — only the
+          play count on each unique card matters.
+        </div>
+      </div>
+
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>The 8 Tiers</div>
+        {tiers.map(([name, glyph, threshold, desc], i) => (
+          <div key={name} style={{
+            display: 'grid', gridTemplateColumns: '28px 110px 70px 1fr',
+            gap: 10, padding: '6px 4px',
+            borderBottom: i < tiers.length - 1 ? `1px solid ${PALETTE.borderSoft}` : 'none',
+            alignItems: 'baseline',
+          }}>
+            <div style={{ fontSize: 14, color: PALETTE.accent, textAlign: 'center' }}>{glyph}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT }}>{name}</div>
+            <div style={{ fontSize: 11, color: PALETTE.inkSoft }}>{threshold.toLocaleString()} plays</div>
+            <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>{desc}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
+        <div style={cardStyle}>
+          <div style={sectionHeadingStyle}>Resonance</div>
+          <div style={bodyTextStyle}>
+            Each tier reached on a card permanently adds <Tag>Resonance points</Tag> to your global pool.
+            Resonance is your measure of investment across your entire card-born history — one point per
+            unique card per tier reached, regardless of how many copies you own.
+          </div>
+        </div>
+        <div style={cardAltStyle}>
+          <div style={sectionHeadingStyle}>Collection Power</div>
+          <div style={bodyTextStyle}>
+            Your total Resonance fuels the <Tag>Collection Power</Tag> multiplier — a passive bonus that
+            amplifies all Oblivion earned from Seraphim and Angel attacks. Claim each tier milestone from
+            the <Tag>Card-born Tier</Tag> screen to bank its shard reward.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Tier Progress from Boss Content</div>
+        <div style={bodyTextStyle}>
+          Completing Eternity's Wake boss fights, Wake Trials, and the Endless Gauntlet awards{' '}
+          <Tag>Tier Progress</Tag> to every card in your active deck and Extra Deck — on top of the
+          plays you earn in-hand. The base amount scales with difficulty:
+        </div>
+        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <ListItem label="Boss fights">~3 per card for the easiest bosses, up to ~35 for the hardest. Higher-index bosses in each set are harder and grant more.</ListItem>
+          <ListItem label="Wake Trials">Apply the trial's reward multiplier to the boss base (capped at ×2 so stacked modifiers don't skip tiers).</ListItem>
+          <ListItem label="Endless Gauntlet">5 per card minimum + 6 per depth level cleared. A 10-boss run grants ~60 per card.</ListItem>
+          <ListItem label="Per-tier scaling">Each card also receives an extra +5% for every tier it has already reached. A T4 card gets ×1.20 the base amount; a T7 card gets ×1.35. Fresh cards are unaffected.</ListItem>
+        </div>
+        <div style={{ ...bodyTextStyle, marginTop: 8, color: PALETTE.inkSoft }}>
+          The result screen for every boss fight shows the exact base amount awarded. Higher tiers still
+          require substantial hand-play — boss rewards supplement the grind but cannot replace it.
+        </div>
+      </div>
+
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Shard Rewards</div>
+        <div style={bodyTextStyle}>
+          Completing a tier milestone shows a <Tag>Claim</Tag> button in the Card-born Tier screen. You must
+          manually claim each reward — they do not auto-collect. Use the filter toolbar (All / Claimable /
+          In Progress) to find your pending milestones quickly. After claiming, the Claim All button at the
+          top lets you sweep the rest in one click.
         </div>
       </div>
     </>
@@ -463,6 +559,16 @@ function ProgressionBody() {
         <ListItem label="Filters">The Workshop supports filter, sort, and "show convertible" toggles so you can plan upgrades.</ListItem>
       </div>
 
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Card-born Tier</div>
+        <div style={bodyTextStyle}>
+          Every card you play accumulates play-count mastery across <Tag>8 tiers</Tag> (Practiced → Infinite Bond).
+          Each tier grants <Tag>Resonance points</Tag> and a shard reward. Resonance feeds your{' '}
+          <Tag>Collection Power</Tag> multiplier, permanently boosting Oblivion earned from attacks.
+          See the <Tag>Card-born Tier</Tag> section in this guide for the full breakdown.
+        </div>
+      </div>
+
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Profile, Titles &amp; Themes</div>
         <ListItem label="Profile">Set your display name and avatar from the Profile menu.</ListItem>
@@ -484,6 +590,7 @@ const SECTIONS: Section[] = [
   { id: 'sets', label: 'Sets', title: 'Set Engines', subtitle: 'The mechanical identity of every set.', body: <SetsBody /> },
   { id: 'rarities', label: 'Rarities', title: 'Rarity Tiers', subtitle: 'From Common through Infinite.', body: <RaritiesBody /> },
   { id: 'modes', label: 'Modes', title: 'Wake, Infinitude & Packs', subtitle: 'Boss fights, crafting, and the store.', body: <ModesBody /> },
+  { id: 'card-born-tier', label: 'Card-born Tier', title: 'Card-born Tier', subtitle: 'Play-count mastery, Resonance, and Collection Power.', body: <CardBornTierBody /> },
   { id: 'progression', label: 'Progression', title: 'Progression & Cosmetics', subtitle: 'Shards, holofoils, profile, and themes.', body: <ProgressionBody /> },
 ];
 

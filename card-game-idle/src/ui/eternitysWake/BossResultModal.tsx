@@ -54,6 +54,25 @@ export default function BossResultModal() {
   if (!isVisible) return null;
 
   const boss = BOSS_DEFINITIONS.find(b => b.id === bossFight.activeBossId);
+  const kind = bossFight.kind ?? 'normal';
+  const gauntletDepth = bossFight.gauntletDepth ?? 0;
+  const trialMult = bossFight.trialRewardMult ?? 1;
+
+  // Compute base mastery-per-card using the same formula as the store.
+  let masteryPerCard: number | null = null;
+  let masteryNote = '+5% per tier already reached on each card';
+  if (kind === 'gauntlet') {
+    masteryPerCard = Math.max(5, gauntletDepth * 6);
+    masteryNote = `Depth ${gauntletDepth} · +5% per tier already reached on each card`;
+  } else if (isVictory && boss) {
+    const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
+    const base = Math.round(3 + (bossIdx / Math.max(1, BOSS_DEFINITIONS.length - 1)) * 32);
+    const mult = kind === 'trial' ? Math.min(Math.max(1, trialMult), 2.0) : 1;
+    masteryPerCard = Math.round(base * mult);
+    if (kind === 'trial') {
+      masteryNote = `×${mult.toFixed(2)} trial bonus · +5% per tier already reached on each card`;
+    }
+  }
   const rewardDef = isVictory && boss ? CardRegistry.get(boss.rewardCardId) : undefined;
 
   const ACCENT       = isVictory ? VICTORY_ACCENT : DEFEAT_ACCENT;
@@ -201,6 +220,19 @@ export default function BossResultModal() {
           <StatCell label="BOSS MAX HP" value={bossFight.bossMaxHp.toLocaleString()} accent={EW_TEXT_MUTED} />
           {boss && (
             <StatCell label="BOSS" value={boss.name} accent={EW_TEXT} span />
+          )}
+          {masteryPerCard !== null && (
+            <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 8.5, letterSpacing: 1.5, color: EW_TEXT_MUTED, textTransform: 'uppercase' }}>
+                Tier Progress Awarded
+              </span>
+              <span style={{ fontSize: 18, fontWeight: 'bold', color: '#7de8a0', textShadow: '0 0 14px rgba(125,232,160,0.5)' }}>
+                +{masteryPerCard} per deck card (base)
+              </span>
+              <span style={{ fontSize: 10, color: 'rgba(125,232,160,0.55)', letterSpacing: 0.5 }}>
+                {masteryNote}
+              </span>
+            </div>
           )}
         </div>
 

@@ -32,44 +32,44 @@ const SECTION_COLORS: Record<string, string> = {
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
     position: 'absolute', inset: 0,
-    background: 'radial-gradient(ellipse at 82% 8%, rgba(100, 60, 180, 0.09) 0%, transparent 38%), radial-gradient(ellipse at 12% 88%, rgba(200, 133, 10, 0.13) 0%, transparent 44%), radial-gradient(ellipse at 50% 50%, rgba(6, 10, 20, 0.55) 0%, transparent 100%), repeating-linear-gradient(45deg, rgba(200, 165, 90, 0.022) 0px, rgba(200, 165, 90, 0.022) 1px, transparent 1px, transparent 28px), linear-gradient(180deg, #050c17 0%, #08111f 45%, #050b15 100%)',
+    background: 'radial-gradient(ellipse at 82% 8%, rgba(100, 60, 180, 0.10) 0%, transparent 38%), radial-gradient(ellipse at 12% 88%, rgba(58, 142, 200, 0.17) 0%, transparent 44%), radial-gradient(ellipse at 50% 50%, rgba(4, 8, 18, 0.60) 0%, transparent 100%), repeating-linear-gradient(45deg, rgba(90, 165, 220, 0.025) 0px, rgba(90, 165, 220, 0.025) 1px, transparent 1px, transparent 28px), linear-gradient(180deg, #040a15 0%, #060e1c 45%, #030a12 100%)',
     zIndex: 50,
     display: 'flex', flexDirection: 'column', pointerEvents: 'auto',
     fontFamily: 'Georgia, serif',
-    color: '#ead9c0',
+    color: '#e8f4ff',
   },
   header: {
     padding: '20px 28px 16px',
-    borderBottom: '1px solid rgba(200, 155, 72, 0.22)',
+    borderBottom: '1px solid rgba(72,128,190,0.32)',
     display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0,
-    background: 'linear-gradient(180deg, rgba(5, 9, 17, 0.88) 0%, rgba(8, 13, 24, 0.65) 100%)',
-    boxShadow: '0 1px 0 rgba(200, 155, 72, 0.1), 0 4px 20px rgba(0,0,0,0.45)',
+    background: 'linear-gradient(180deg, rgba(4, 8, 18, 0.92) 0%, rgba(6, 11, 22, 0.70) 100%)',
+    boxShadow: '0 1px 0 rgba(78,148,210,0.18), 0 4px 22px rgba(0,0,0,0.55)',
   },
   title: {
-    fontSize: 24, fontWeight: 'bold', color: '#f5c96c',
+    fontSize: 24, fontWeight: 'bold', color: '#7dd4f8',
     letterSpacing: 4, textTransform: 'uppercase',
-    textShadow: '0 0 28px rgba(240, 189, 120, 0.36), 0 2px 6px rgba(0,0,0,0.8)',
+    textShadow: '0 0 36px rgba(88,180,235,0.55), 0 2px 8px rgba(0,0,0,0.9)',
     lineHeight: 1,
   },
-  deckCount: { fontSize: 12, color: 'rgba(234,217,192,0.58)', letterSpacing: 0.5 },
+  deckCount: { fontSize: 12, color: 'rgba(205,228,255,0.68)', letterSpacing: 0.5 },
   filterBar: {
     display: 'flex', alignItems: 'stretch', flexShrink: 0, flexWrap: 'wrap',
     background: 'rgba(3, 6, 14, 0.6)',
-    borderBottom: '1px solid rgba(200, 155, 72, 0.16)',
+    borderBottom: '1px solid rgba(72,128,190,0.20)',
   },
   filterBtn: {
     padding: '0 16px', height: 36, border: 'none',
     borderBottom: '3px solid transparent',
-    borderRight: '1px solid rgba(200, 155, 72, 0.12)',
-    background: 'transparent', color: 'rgba(234,217,192,0.55)', fontSize: 10.5,
+    borderRight: '1px solid rgba(72,128,190,0.16)',
+    background: 'transparent', color: 'rgba(205,228,255,0.55)', fontSize: 10.5,
     cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1.2,
     textTransform: 'uppercase', transition: 'all 0.18s ease',
     display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
   },
   filterBtnActive: {
-    color: '#f5c96c',
-    borderBottomColor: '#f0bd78',
-    background: 'rgba(240, 189, 120, 0.08)',
+    color: '#7dd4f8',
+    borderBottomColor: '#4298d8',
+    background: 'rgba(78,160,220,0.12)',
   },
   body: { display: 'flex', flex: 1, overflow: 'hidden' },
   cardPool: { flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 },
@@ -78,7 +78,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '10px 0 8px', marginBottom: 10,
   },
   sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2.5, textTransform: 'uppercase' },
-  sectionCount: { fontSize: 9, color: 'rgba(232, 215, 191, 0.5)', letterSpacing: 1.2 },
+  sectionCount: { fontSize: 9, color: 'rgba(205,228,255,0.52)', letterSpacing: 1.2 },
   sectionGrid: { display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 24 },
   cardWithMeta: {
     width: 116,
@@ -88,15 +88,15 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     width: 116, height: 164,
-    background: 'rgba(8, 12, 20, 0.85)',
-    border: '1px solid rgba(200, 155, 72, 0.22)', borderRadius: 12, cursor: 'pointer',
+    background: 'rgba(4, 8, 18, 0.90)',
+    border: '1px solid rgba(72,128,190,0.32)', borderRadius: 12, cursor: 'pointer',
     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
     transition: 'border-color 0.18s ease, box-shadow 0.18s ease, transform 0.14s ease',
     position: 'relative', overflow: 'hidden',
   },
   cardAdded: {
-    borderColor: 'rgba(245, 201, 108, 0.92)',
-    boxShadow: '0 0 0 1px rgba(240, 189, 120, 0.3), 0 0 18px rgba(240, 189, 120, 0.2)',
+    borderColor: 'rgba(110,200,245,0.90)',
+    boxShadow: '0 0 0 1px rgba(78,160,220,0.45), 0 0 22px rgba(78,160,220,0.28)',
     transform: 'translateY(-2px)',
   },
   cardFull: { opacity: 0.34, cursor: 'not-allowed' },
@@ -112,12 +112,12 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 1px 5px rgba(0,0,0,0.65), 0 0 8px rgba(240,189,120,0.35)',
   },
   ownedLabelBelow: {
-    fontSize: 9, color: 'rgba(240, 220, 190, 0.75)', letterSpacing: 0.4,
+    fontSize: 9, color: 'rgba(205,228,255,0.75)', letterSpacing: 0.4,
     textAlign: 'center',
     pointerEvents: 'none',
     textShadow: '0 1px 3px rgba(0,0,0,0.9)',
-    background: 'rgba(4, 7, 15, 0.72)',
-    border: '1px solid rgba(200, 155, 72, 0.2)',
+    background: 'rgba(3, 6, 14, 0.80)',
+    border: '1px solid rgba(72,128,190,0.26)',
     borderRadius: 5,
     padding: '2px 5px',
   },
@@ -145,17 +145,17 @@ const styles: Record<string, React.CSSProperties> = {
     opacity: 0.3, cursor: 'not-allowed',
   },
   sidebar: {
-    width: 290, borderLeft: '1px solid rgba(200, 155, 72, 0.16)',
+    width: 290, borderLeft: '1px solid rgba(72,128,190,0.24)',
     display: 'flex', flexDirection: 'column', overflow: 'hidden',
-    background: 'linear-gradient(180deg, rgba(4, 7, 13, 0.75) 0%, rgba(6, 9, 18, 0.7) 100%)',
-    boxShadow: 'inset 2px 0 16px rgba(0,0,0,0.35)',
+    background: 'linear-gradient(180deg, rgba(3, 6, 14, 0.82) 0%, rgba(4, 8, 18, 0.78) 100%)',
+    boxShadow: 'inset 2px 0 18px rgba(0,0,0,0.40)',
   },
   sidebarSection: {
-    padding: '12px 14px', borderBottom: '1px solid rgba(200, 155, 72, 0.12)', flexShrink: 0,
+    padding: '12px 14px', borderBottom: '1px solid rgba(72,128,190,0.18)', flexShrink: 0,
   },
   sidebarSectionTitle: {
     fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase',
-    color: '#d4a84e', marginBottom: 10,
+    color: 'rgba(205,228,255,0.62)', marginBottom: 10,
     display: 'flex', alignItems: 'center', gap: 6,
   },
   savedDeckRow: {
@@ -164,31 +164,31 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'background 0.15s',
     borderLeft: '2px solid transparent',
   },
-  savedDeckName: { fontSize: 11, color: '#c8b898', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  savedDeckName: { fontSize: 11, color: 'rgba(205,228,255,0.78)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   deckList: { flex: 1, overflowY: 'auto', padding: '10px 12px' },
   entryRow: {
     display: 'flex', alignItems: 'center',
     padding: '4px 6px', marginBottom: 1, borderRadius: 4,
-    borderBottom: '1px solid rgba(200, 155, 72, 0.09)',
+    borderBottom: '1px solid rgba(72,128,190,0.14)',
     gap: 5, transition: 'background 0.12s',
   },
-  entryName: { fontSize: 10.5, color: '#c4ae90', flex: 1, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  entryName: { fontSize: 10.5, color: 'rgba(205,228,255,0.78)', flex: 1, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
   entryCount: {
-    fontSize: 11, color: '#f0bd78', margin: '0 3px', minWidth: 18, textAlign: 'center',
+    fontSize: 11, color: '#7dd4f8', margin: '0 3px', minWidth: 18, textAlign: 'center',
     fontWeight: 'bold', flexShrink: 0,
   },
   entryBtn: {
-    width: 22, height: 22, border: '1px solid rgba(200, 155, 72, 0.36)', borderRadius: 5,
-    background: 'rgba(200, 155, 72, 0.1)', color: '#f0bd78', fontSize: 14, cursor: 'pointer',
+    width: 22, height: 22, border: '1px solid rgba(72,128,190,0.42)', borderRadius: 5,
+    background: 'rgba(78,155,220,0.13)', color: '#7dd4f8', fontSize: 14, cursor: 'pointer',
     display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0,
     transition: 'background 0.12s, border-color 0.12s',
     lineHeight: 1, flexShrink: 0,
   },
   footer: {
-    padding: '14px 28px', borderTop: '1px solid rgba(200, 155, 72, 0.2)',
+    padding: '14px 28px', borderTop: '1px solid rgba(72,128,190,0.28)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
-    background: 'linear-gradient(180deg, rgba(5, 8, 16, 0.65) 0%, rgba(3, 6, 12, 0.88) 100%)',
-    boxShadow: '0 -1px 0 rgba(200, 155, 72, 0.08)',
+    background: 'linear-gradient(180deg, rgba(4, 7, 15, 0.70) 0%, rgba(3, 5, 12, 0.92) 100%)',
+    boxShadow: '0 -1px 0 rgba(72,128,190,0.14)',
   },
   startBtn: {
     padding: '11px 34px', borderRadius: 10,
@@ -203,16 +203,16 @@ const styles: Record<string, React.CSSProperties> = {
   },
   closeBtn: {
     padding: '10px 20px', borderRadius: 10,
-    border: '1px solid rgba(200, 155, 72, 0.22)',
-    background: 'rgba(234, 217, 192, 0.05)',
-    color: 'rgba(234, 217, 192, 0.68)', fontSize: 12,
+    border: '1px solid rgba(72,128,190,0.32)',
+    background: 'rgba(78,155,220,0.06)',
+    color: 'rgba(205,228,255,0.78)', fontSize: 12,
     cursor: 'pointer', fontFamily: 'Georgia, serif',
     letterSpacing: 0.5, transition: 'background 0.15s, border-color 0.15s',
   },
   miniBtn: {
     padding: '5px 10px', borderRadius: 6,
-    border: '1px solid rgba(200, 155, 72, 0.36)',
-    background: 'rgba(200, 155, 72, 0.1)', color: '#e8c870', fontSize: 10,
+    border: '1px solid rgba(72,128,190,0.42)',
+    background: 'rgba(78,155,220,0.13)', color: '#7dd4f8', fontSize: 10,
     cursor: 'pointer', fontFamily: 'Georgia, serif', flexShrink: 0,
     letterSpacing: 0.5, transition: 'background 0.15s, box-shadow 0.15s',
   },
@@ -225,12 +225,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   empty: {
     width: '100%', textAlign: 'center', marginTop: 48,
-    fontSize: 13, color: 'rgba(232, 215, 191, 0.42)', fontStyle: 'italic',
+    fontSize: 13, color: 'rgba(165,205,245,0.52)', fontStyle: 'italic',
   },
   nameInput: {
-    background: 'rgba(3, 6, 14, 0.75)',
-    border: '1px solid rgba(200, 155, 72, 0.38)',
-    color: '#e8d4b8', fontSize: 12, padding: '6px 10px', borderRadius: 6,
+    background: 'rgba(2, 5, 14, 0.82)',
+    border: '1px solid rgba(72,128,190,0.45)',
+    color: '#d8f0ff', fontSize: 12, padding: '6px 10px', borderRadius: 6,
     fontFamily: 'Georgia, serif', outline: 'none', width: '100%', boxSizing: 'border-box',
   },
 };
@@ -643,7 +643,7 @@ export default function DeckBuilder({ onClose }: Props) {
         <div>
           <div className="ui-title-glow" style={styles.title}>Deck Builder</div>
           {activeDeck && (
-            <div style={{ fontSize: 11, color: 'rgba(255, 209, 150, 0.86)', marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.80)', marginTop: 2 }}>
               {activeDeck.isStarter ? '🔒 ' : ''}{activeDeck.name}
             </div>
           )}
@@ -670,14 +670,14 @@ export default function DeckBuilder({ onClose }: Props) {
                     width: 34,
                     height: 34,
                     borderRadius: 8,
-                    border: def ? `1px solid ${color}90` : '1px dashed rgba(200,155,72,0.3)',
+                    border: def ? `1px solid ${color}90` : '1px dashed rgba(90,170,220,0.28)',
                     background: def
                       ? `linear-gradient(180deg, ${color}28, ${color}10)`
-                      : 'rgba(200,155,72,0.05)',
+                      : 'rgba(90,170,220,0.05)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: def ? color : 'rgba(200,155,72,0.42)',
+                    color: def ? color : 'rgba(90,170,220,0.42)',
                     fontSize: 16,
                     cursor: activeDeck ? 'pointer' : 'not-allowed',
                     padding: 0,
@@ -698,9 +698,9 @@ export default function DeckBuilder({ onClose }: Props) {
                   marginLeft: 4,
                   padding: '4px 10px',
                   borderRadius: 7,
-                  border: '1px solid rgba(200,155,72,0.3)',
-                  background: 'rgba(200,155,72,0.06)',
-                  color: 'rgba(234,217,192,0.7)',
+                  border: '1px solid rgba(90,170,220,0.28)',
+                  background: 'rgba(90,170,220,0.06)',
+                  color: 'rgba(190,215,245,0.70)',
                   fontSize: 10,
                   letterSpacing: 1,
                   textTransform: 'uppercase',
@@ -716,22 +716,22 @@ export default function DeckBuilder({ onClose }: Props) {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <div>
             <div style={{ textAlign: 'right', marginBottom: 4 }}>
-              <span style={{ fontSize: 22, fontWeight: 'bold', color: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e06060' : '#f0bd78', lineHeight: 1 }}>
+              <span style={{ fontSize: 22, fontWeight: 'bold', color: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e06060' : '#7dd4f8', lineHeight: 1 }}>
                 {totalCards}
               </span>
-              <span style={{ fontSize: 12, color: 'rgba(234,217,192,0.45)', marginLeft: 4 }}> / 50</span>
+              <span style={{ fontSize: 12, color: 'rgba(165,205,245,0.52)', marginLeft: 4 }}> / 50</span>
             </div>
             <div style={{ width: 120, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
               <div style={{
                 height: '100%', borderRadius: 2,
                 width: `${Math.min(100, (totalCards / 50) * 100)}%`,
-                background: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e06060' : 'linear-gradient(90deg, #c8850a, #f5c96c)',
+                background: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e06060' : 'linear-gradient(90deg, #3888c4, #58aada)',
                 transition: 'width 0.3s ease, background 0.3s ease',
               }} />
             </div>
           </div>
-          <div style={{ fontSize: 10, color: 'rgba(234,217,192,0.45)', textAlign: 'right' }}>
-            <span style={{ color: '#c8a058' }}>{extraDeckList.length}</span>
+          <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.45)', textAlign: 'right' }}>
+            <span style={{ color: '#58aada' }}>{extraDeckList.length}</span>
             <span> / 10 extra deck</span>
           </div>
         </div>
@@ -750,9 +750,9 @@ export default function DeckBuilder({ onClose }: Props) {
               ...styles.filterBtn,
               ...(elementFilter === el ? {
                 ...styles.filterBtnActive,
-                color: ELEMENT_COLORS[el] ?? '#f0bd78',
-                borderBottomColor: ELEMENT_COLORS[el] ?? '#f0bd78',
-                background: `${(ELEMENT_COLORS[el] ?? '#f0bd78')}14`,
+                color: ELEMENT_COLORS[el] ?? '#58aada',
+                borderBottomColor: ELEMENT_COLORS[el] ?? '#58aada',
+                background: `${(ELEMENT_COLORS[el] ?? '#58aada')}14`,
               } : {}),
             }}
             onClick={() => setElementFilter(el === elementFilter ? null : el)}
@@ -856,11 +856,11 @@ export default function DeckBuilder({ onClose }: Props) {
           {mainSections.map(section => (
             <div key={section.label}>
               <div style={styles.sectionHeader}>
-                <div style={{ width: 4, height: 20, borderRadius: 2, background: SECTION_COLORS[section.label] ?? '#f0bd78', boxShadow: `0 0 8px ${(SECTION_COLORS[section.label] ?? '#f0bd78')}50`, flexShrink: 0 }} />
-                <span style={{ ...styles.sectionLabel, color: SECTION_COLORS[section.label] ?? '#f0bd78' }}>
+                <div style={{ width: 4, height: 20, borderRadius: 2, background: SECTION_COLORS[section.label] ?? '#58aada', boxShadow: `0 0 8px ${(SECTION_COLORS[section.label] ?? '#58aada')}50`, flexShrink: 0 }} />
+                <span style={{ ...styles.sectionLabel, color: SECTION_COLORS[section.label] ?? '#58aada' }}>
                   {section.label}
                 </span>
-                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${(SECTION_COLORS[section.label] ?? '#f0bd78')}45, transparent)`, marginLeft: 4 }} />
+                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${(SECTION_COLORS[section.label] ?? '#58aada')}45, transparent)`, marginLeft: 4 }} />
                 <span style={styles.sectionCount}>{section.cards.length} card{section.cards.length !== 1 ? 's' : ''}</span>
               </div>
               <div style={styles.sectionGrid}>
@@ -931,13 +931,13 @@ export default function DeckBuilder({ onClose }: Props) {
           {/* Saved decks */}
           <div style={styles.sidebarSection}>
             <div style={styles.sidebarSectionTitle}>
-              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
+              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
               Saved Decks
             </div>
             {savedDecks.map(sd => (
               <div key={sd.id} style={{
                 ...styles.savedDeckRow,
-                ...(sd.id === activeDeckId ? { borderLeftColor: '#f0bd78', background: 'rgba(240, 189, 120, 0.09)' } : {}),
+                ...(sd.id === activeDeckId ? { borderLeftColor: '#58aada', background: 'rgba(58,142,200,0.09)' } : {}),
               }}>
                 <div style={styles.savedDeckName} title={sd.name}>
                   {sd.isStarter ? '🔒 ' : ''}{sd.name}
@@ -956,7 +956,7 @@ export default function DeckBuilder({ onClose }: Props) {
               </div>
             ))}
             {savedDecks.length === 1 && (
-              <div style={{ fontSize: 10, color: 'rgba(232, 215, 191, 0.62)', marginTop: 6, fontStyle: 'italic' }}>
+              <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.55)', marginTop: 6, fontStyle: 'italic' }}>
                 Build a deck below and save it to create a custom deck.
               </div>
             )}
@@ -1035,11 +1035,11 @@ export default function DeckBuilder({ onClose }: Props) {
           {/* Extra deck list */}
           <div style={{ ...styles.sidebarSection, flexShrink: 0 }}>
             <div style={styles.sidebarSectionTitle}>
-              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
+              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
               Extra Deck ({extraDeckList.length} / 10)
             </div>
             {extraDeckList.length === 0 && (
-              <div style={{ fontSize: 10, color: 'rgba(232, 215, 191, 0.56)', fontStyle: 'italic' }}>No angels selected</div>
+              <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.50)', fontStyle: 'italic' }}>No angels selected</div>
             )}
             {extraDeckEntries.map(entry => {
               const def = CardRegistry.get(entry.definitionId);
@@ -1066,7 +1066,7 @@ export default function DeckBuilder({ onClose }: Props) {
           {/* Main deck list */}
           <div style={styles.deckList}>
             <div style={{ ...styles.sidebarSectionTitle, marginBottom: 8 }}>
-              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
+              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
               Main Deck ({totalCards} / 50)
             </div>
             {/* Stats summary */}
@@ -1075,12 +1075,12 @@ export default function DeckBuilder({ onClose }: Props) {
                 marginBottom: 10,
                 padding: '8px 10px',
                 background: 'rgba(5, 8, 16, 0.7)',
-                border: '1px solid rgba(200, 155, 72, 0.16)',
+                border: '1px solid rgba(62,112,168,0.20)',
                 borderRadius: 8,
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
               }}>
-                <div style={{ fontSize: 9, letterSpacing: 2, color: '#d4a84e', marginBottom: 6, textTransform: 'uppercase' }}>Stats</div>
-                <div style={{ fontSize: 10, color: '#e8d7bf', display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 5 }}>
+                <div style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(190,215,245,0.55)', marginBottom: 6, textTransform: 'uppercase' }}>Stats</div>
+                <div style={{ fontSize: 10, color: '#c8dff2', display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 5 }}>
                   {(['Legendary','Epic','Rare','Common'] as const).map(r => {
                     const n = deckStats.rarityCounts[r] ?? 0;
                     if (n === 0) return null;

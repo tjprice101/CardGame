@@ -17,7 +17,8 @@ export type ActivityKind =
   | 'infinite_pull'
   | 'gauntlet_best'
   | 'set_completion'
-  | 'title_unlocked';
+  | 'title_unlocked'
+  | 'battleground_result';
 
 export interface ActivityEvent {
   id: string;

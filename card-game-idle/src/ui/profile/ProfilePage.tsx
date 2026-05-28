@@ -6,6 +6,8 @@ import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
 import { UI_THEMES, DEFAULT_UI_THEME_ID } from '@/data/profile/uiThemes';
 import TitlesModal from '@/ui/profile/TitlesModal';
 import ProfilePictureModal from '@/ui/profile/ProfilePictureModal';
+import SignatureCardPickerModal from '@/ui/profile/SignatureCardPickerModal';
+import { CardRegistry } from '@/cards/CardRegistry';
 
 interface Props {
   onClose: () => void;
@@ -21,6 +23,8 @@ export default function ProfilePage({ onClose }: Props) {
   const [nameDraft, setNameDraft] = useState(profile.name);
   const [showTitles, setShowTitles] = useState(false);
   const [showPictures, setShowPictures] = useState(false);
+  const [sigPickerSlot, setSigPickerSlot] = useState<number | null>(null);
+  const setSignatureCard = useStore(s => s.setSignatureCard);
 
   const unlockedTitles = useMemo(
     () => TITLE_BADGES.filter(t => t.isUnlocked(progress)),
@@ -45,6 +49,7 @@ export default function ProfilePage({ onClose }: Props) {
   }
 
   return (
+    <>
     <div style={{
       position: 'absolute',
       inset: 0,
@@ -277,6 +282,27 @@ export default function ProfilePage({ onClose }: Props) {
           })}
         </div>
 
+        {/* ── Signature Cards ── */}
+        <SectionHeader>Signature Cards</SectionHeader>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 6 }}>
+            {Array.from({ length: 5 }, (_, i) => {
+              const cardId = (profile.signatureCardIds ?? [])[i] ?? null;
+              return (
+                <SignatureSlot
+                  key={i}
+                  cardId={cardId}
+                  onClick={() => setSigPickerSlot(i)}
+                  onClear={() => setSignatureCard(i, null)}
+                />
+              );
+            })}
+          </div>
+          <div style={{ fontSize: 9, color: warmTheme.textMuted }}>
+            Showcase up to 5 cards on your profile — visible to friends.
+          </div>
+        </div>
+
         {/* Footer hint */}
         <div style={{
           fontSize: 10, color: warmTheme.textMuted, textAlign: 'center',
@@ -286,6 +312,15 @@ export default function ProfilePage({ onClose }: Props) {
         </div>
       </div>
     </div>
+
+    {sigPickerSlot !== null && (
+      <SignatureCardPickerModal
+        slotIndex={sigPickerSlot}
+        onClose={() => setSigPickerSlot(null)}
+        onPick={(cardId) => { setSignatureCard(sigPickerSlot, cardId); setSigPickerSlot(null); }}
+      />
+    )}
+  </>
   );
 }
 
@@ -318,6 +353,64 @@ function ThemeSwatch({ color }: { color: string }) {
       background: color, border: '1px solid rgba(0,0,0,0.18)',
     }} />
   );
+}
+
+function SignatureSlot({ cardId, onClick, onClear }: { cardId: string | null; onClick: () => void; onClear: () => void }) {
+  const def = cardId ? CardRegistry.get(cardId) : null;
+  const rarityColor: Record<string, string> = {
+    Common: '#aabccc', Rare: '#6699dd', Epic: '#aa66dd',
+    Legendary: '#ddaa33', Eternal: '#ff8844', Infinite: '#44ddcc',
+  };
+  const color = def ? (rarityColor[def.rarity] ?? warmTheme.textMuted) : warmTheme.border;
+  return (
+    <div style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', gap: 2 }}>
+      <button
+        onClick={onClick}
+        title={def ? def.name : 'Click to set Signature Card'}
+        style={{
+          width: 72, height: 90,
+          border: `2px solid ${color}`,
+          borderRadius: 8,
+          background: def ? `rgba(${hexToRgb(color)},0.08)` : 'rgba(0,0,0,0.18)',
+          color,
+          cursor: 'pointer',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 4, padding: 4, textAlign: 'center',
+          fontSize: 10, fontFamily: 'Georgia, serif',
+          transition: 'border-color 0.15s',
+        }}
+      >
+        {def ? (
+          <>
+            <div style={{ fontSize: 9, opacity: 0.7, letterSpacing: 0.5 }}>{def.rarity}</div>
+            <div style={{ fontSize: 9, fontWeight: 'bold', lineHeight: 1.2 }}>{def.name}</div>
+          </>
+        ) : (
+          <span style={{ fontSize: 22, opacity: 0.4 }}>+</span>
+        )}
+      </button>
+      {def && (
+        <button
+          onClick={(e) => { e.stopPropagation(); onClear(); }}
+          title="Remove"
+          style={{
+            position: 'absolute', top: -6, right: -6,
+            width: 16, height: 16, borderRadius: '50%',
+            background: '#662233', border: '1px solid #aa3355',
+            color: '#ffaabb', fontSize: 9, cursor: 'pointer', lineHeight: '14px',
+            padding: 0,
+          }}
+        >✕</button>
+      )}
+    </div>
+  );
+}
+
+function hexToRgb(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r},${g},${b}`;
 }
 
 // Suppress unused warnings — DEFAULT_UI_THEME_ID is the registry's canonical default.

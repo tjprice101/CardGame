@@ -25,12 +25,11 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Oblivion Absolute',
-    description: 'Draw 7 cards; +6000 Oblivion; All Seraphim on board gain +12 Patience',
+    description: '+6000 Oblivion; All Seraphim on board gain +26 Patience',
     artKey: 'inf_oblivion_absolute',
     effects: [
-      { type: 'draw', value: 7 },
       { type: 'oblivion_flat', value: 6000 },
-      { type: 'patience_gain_all', value: 12 }],
+      { type: 'patience_gain_all', value: 26 }],
   },
   {
     definitionId: 'inf-void-cascade',
@@ -38,13 +37,11 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Void Cascade',
-    description: '+0 Oblivion; All Seraphim on board gain +1 Patience; Draw 6 cards; Shuffle discard into deck; Empower the next card you play',
+    description: '+0 Oblivion; All Seraphim on board gain +13 Patience; Empower the next card you play',
     artKey: 'inf_void_cascade',
     effects: [
       { type: 'oblivion_flat', value: 0 },
-      { type: 'patience_gain_all', value: 1 },
-      { type: 'draw', value: 6 },
-      { type: 'shuffle_discard' },
+      { type: 'patience_gain_all', value: 13 },
       { type: 'multiply_next' }],
   },
   {
@@ -53,7 +50,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: "Ash Kings' Apocalypse",
-    description: 'Gain 60 Embers; Stoke 36 Furnace Pressure; Convert Pressure to Fault (6 Pressure per Fault, gain 12 up to 36); Cash out up to 1 Ruin Windows (+1500 Oblivion per window); Gain 5 Inferno Tiers; Cash out all Inferno Tiers (+700 Oblivion per stack); Gain 5 Cinder Echoes; Ignite up to 2 Cinder Echoes (+100.0 Oblivion × echoes²); Discard 2 cards, then draw 8 cards; Shuffle discard into deck; +2000 Oblivion',
+    description: 'Gain 60 Embers; Stoke 36 Furnace Pressure; Convert Pressure to Fault (6 Pressure per Fault, gain 12 up to 36); Cash out up to 1 Ruin Windows (+1500 Oblivion per window); Gain 5 Inferno Tiers; Cash out all Inferno Tiers (+700 Oblivion per stack); Gain 5 Cinder Echoes; Ignite up to 2 Cinder Echoes (+100.0 Oblivion × echoes²); +2000 Oblivion',
     artKey: 'inf_ash_kings_apocalypse',
     // Role: bulk echo SEEDER. Gains 5 echoes (largest single dump) and ignites
     // only HALF (2) ? saves the rest as carry-over fuel for next turn's igniters.
@@ -66,8 +63,6 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 700 },
       { type: 'set_secondary_gain', kind: 'pyro', value: 5 },
       { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 100, consume: 2 },
-      { type: 'discard_draw', discard: 2, draw: 8 },
-      { type: 'shuffle_discard' },
       { type: 'oblivion_flat', value: 2000 }],
   },
   {
@@ -76,7 +71,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Axiom Rain',
-    description: 'Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 6 Mirror Chain links; Gain 3 Spectrum Echoes; Draw 2 cards; Gain 40 Prismatic Light; Cash out all Mirror Chain links (+600 Oblivion per stack); Refract all Spectrum Echoes (+380.0 Oblivion per echo × distinct channels)',
+    description: 'Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 6 Mirror Chain links; Gain 3 Spectrum Echoes; Gain 44 Prismatic Light; Cash out all Mirror Chain links (+600 Oblivion per stack); Refract all Spectrum Echoes (+380.0 Oblivion per echo × distinct channels)',
     artKey: 'inf_prismatic_axiom_rain',
     // Role: ULTRA REFRACT FINISHER. +3 Spectrum Echoes on play, then refracts
     // all at high oblivionPerEchoPerChannel ? apex chain-and-burst combo.
@@ -84,8 +79,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'look_top_take_drop', look: 10, take: 3, drop: 2 },
       { type: 'eternal_stack_gain', stack: 'prism', value: 6 },
       { type: 'set_secondary_gain', kind: 'prism', value: 3 },
-      { type: 'draw', value: 2 },
-      { type: 'prismatic_light_gain', value: 40 },
+      { type: 'prismatic_light_gain', value: 44 },
       { type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 600 },
       { type: 'prism_spectrum_echo_refract', oblivionPerEchoPerChannel: 380 }],
   },
@@ -95,7 +89,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Last Procession',
-    description: 'Gain 100 Trail; Gain 5 Thorncrowns; Gain 4 Briar Spirals; Salvage any 1 card; Draw 5 cards; Gain +220% total Oblivion this turn; Cash out all Thorncrowns (+700 Oblivion per stack); Bloom all Briar Spirals (+50 Trail per spiral); If you have 140+ Trail, Spend 60 Trail; +3500 Oblivion; Empower the next card you play',
+    description: 'Gain 100 Trail; Gain 5 Thorncrowns; Gain 4 Briar Spirals; Salvage any 1 card; Gain 110 Trail; Gain +220% total Oblivion this turn; Cash out all Thorncrowns (+700 Oblivion per stack); Bloom all Briar Spirals (+50 Trail per spiral); If you have 140+ Trail, Spend 60 Trail; +3500 Oblivion; Empower the next card you play',
     artKey: 'inf_thornbound_last_procession',
     // Role: ULTRA-BLOOM FINISHER. Largest spiral seed (+4) plus uncapped bloom
     // (trailPerSpiral: 50, oblivionPerTrail: 18) ? the apex chain inflator of the set.
@@ -104,7 +98,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'thorn', value: 5 },
       { type: 'set_secondary_gain', kind: 'thorn', value: 4 },
       { type: 'salvage_any' },
-      { type: 'draw', value: 5 },
+      { type: 'trail_gain', value: 110 },
       { type: 'score_multiplier', value: 220 },
       { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 700 },
       { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 50, oblivionPerTrail: 18 },
@@ -116,7 +110,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Celestial Blackout',
-    description: 'Gain 100 Radiance; Gain 3 Resonance; Gain 2 Anchor; Gain 6 Halo Crowns; Gain 4 Halo Cascades; Cash out all Halo Crowns (+650 Oblivion per stack); Double current Radiance; Draw 6 cards; If you have 5+ Resonance, +4000 Oblivion; Resound all Halo Cascades (cascade bonus per cascade); +3200 Oblivion',
+    description: 'Gain 100 Radiance; Gain 3 Cadence; Gain 2 Anchor; Gain 6 Halo Crowns; Gain 4 Halo Cascades; Cash out all Halo Crowns (+650 Oblivion per stack); Double current Radiance; Gain 112 Radiance; If you have 5+ Cadence, +4000 Oblivion; Resound all Halo Cascades (cascade bonus per cascade); +3200 Oblivion',
     artKey: 'inf_celestial_blackout',
     // Role: UBER FINISHER. Massive resonance-gated resound (oblivionPerCascade: 240)
     // on top of full Halo Crown cashout ? floor + multiplier double-amp.
@@ -128,7 +122,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'set_secondary_gain', kind: 'light', value: 4 },
       { type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 650 },
       { type: 'radiance_double' },
-      { type: 'draw', value: 6 },
+      { type: 'radiance_gain', value: 112 },
       { type: 'conditional', condition: { type: 'light_resonance_gte', value: 5 }, then: [{ type: 'oblivion_flat', value: 4000 }, { type: 'light_halo_cascade_resound', oblivionPerCascade: 240 }] },
       { type: 'oblivion_flat', value: 3200 }],
   },
@@ -138,12 +132,12 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Machina Eternal Loop',
-    description: 'Overclock: gain 4 Strain, then Draw 4 cards; Gain 6 Reactor Cores; Gain 3 Reactor Flux; Empower the next card you play; Cash out all Reactor Cores (+650 Oblivion per stack); Vent all Reactor Flux (consume matching Strain: +800.0 Oblivion per Strain vented, +0.25% score per flux); +2500 Oblivion',
+    description: 'Overclock: gain 4 Strain, then Gain 8 Strain; Gain 6 Reactor Cores; Gain 3 Reactor Flux; Empower the next card you play; Cash out all Reactor Cores (+650 Oblivion per stack); Vent all Reactor Flux (consume matching Strain: +800.0 Oblivion per Strain vented, +0.25% score per flux); +2500 Oblivion',
     artKey: 'inf_machina_eternal_loop',
     // Role: ULTRA VENT FINISHER. Overclock seeds 3 flux; after Reactor Core cashout,
     // vents ALL flux at high coefficients ? the apex of the venter family.
     effects: [
-      { type: 'overclock', strain: 4, then: [{ type: 'draw', value: 4 }, { type: 'eternal_stack_gain', stack: 'mech', value: 6 }, { type: 'set_secondary_gain', kind: 'mech', value: 3 }, { type: 'multiply_next' }] },
+      { type: 'overclock', strain: 4, then: [{ type: 'strain_gain', value: 8 }, { type: 'eternal_stack_gain', stack: 'mech', value: 6 }, { type: 'set_secondary_gain', kind: 'mech', value: 3 }, { type: 'multiply_next' }] },
       { type: 'eternal_stack_cashout', stack: 'mech', oblivionPerStack: 650 },
       { type: 'mech_reactor_flux_vent', oblivionPerFlux: 800, scoreMultPerFlux: 0.25 },
       { type: 'oblivion_flat', value: 2500 }],
@@ -158,7 +152,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Genesis Throne',
-    description: 'On play: +3000 Oblivion; Draw 5 cards. While on board: +1000 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 8 on attack, also draw 5 cards',
+    description: 'On play: +3000 Oblivion; All Seraphim on board gain +10 Patience. While on board: +1000 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion',
 
     artKey: 'inf_genesis_throne',
     attacks: {
@@ -186,10 +180,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 1000, synergyRequirement: 'Neutrality' },
     patienceThreshold: 8,
-    patienceThresholdDraw: 5,
     onPlayEffects: [
       { type: 'oblivion_flat', value: 3000 },
-      { type: 'draw', value: 5 }],
+      { type: 'patience_gain_all', value: 10 }],
   },
   {
     definitionId: 'inf-null-apex',
@@ -197,7 +190,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Null Apex',
-    description: 'On play: Draw 4 cards; All Seraphim on board gain +15 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 8 on attack, also draw 5 cards',
+    description: 'On play: All Seraphim on board gain +23 Patience; +1500 Oblivion. While on board: +1500 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion',
 
     artKey: 'inf_null_apex',
     attacks: {
@@ -225,10 +218,8 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 1500, synergyRequirement: 'Neutrality' },
     patienceThreshold: 8,
-    patienceThresholdDraw: 5,
     onPlayEffects: [
-      { type: 'draw', value: 4 },
-      { type: 'patience_gain_all', value: 15 },
+      { type: 'patience_gain_all', value: 23 },
       { type: 'oblivion_flat', value: 1500 }],
   },
   {
@@ -237,7 +228,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyraxis Colossus',
-    description: 'On play: Gain 80 Embers; Stoke 40 Furnace Pressure; Forge 20 Abyss Fault; If pools are balanced, +90 Oblivion per Pressure-Fault pair; If Pressure and Fault are balanced, Gain 3 Cinder Echoes; Gain 4 Inferno Tiers; If you have 8+ Inferno Tiers, Spend 8 Inferno Tiers; +2000 Oblivion; Ignite up to 3 Cinder Echoes (+130.0 Oblivion × echoes²); Draw 4 cards; +1200 Oblivion. While on board: Gain 80 Embers per card played while active',
+    description: 'On play: Gain 80 Embers; Stoke 40 Furnace Pressure; Forge 20 Abyss Fault; If pools are balanced, +90 Oblivion per Pressure-Fault pair; If Pressure and Fault are balanced, Gain 3 Cinder Echoes; Gain 4 Inferno Tiers; If you have 8+ Inferno Tiers, Spend 8 Inferno Tiers; +2000 Oblivion; Ignite up to 3 Cinder Echoes (+130.0 Oblivion × echoes²); Stoke 48 Furnace Pressure; +1200 Oblivion. While on board: Gain 80 Embers per card played while active',
     artKey: 'inf_pyraxis_colossus',
     attacks: {
       unsynergized: {
@@ -273,7 +264,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       { type: 'conditional', condition: { type: 'pyro_pools_balanced' }, then: [{ type: 'set_secondary_gain', kind: 'pyro', value: 3 }] },
       { type: 'eternal_stack_gain', stack: 'pyro', value: 4 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 8 }, then: [{ type: 'eternal_stack_spend', stack: 'pyro', value: 8 }, { type: 'oblivion_flat', value: 2000 }, { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 130, consume: 3 }] },
-      { type: 'draw', value: 4 },
+      { type: 'pyro_furnace_pressure_gain', value: 48 },
       { type: 'oblivion_flat', value: 1200 }],
   },
   {
@@ -282,7 +273,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Choir Splinter',
-    description: 'On play: Gain 3 Mirror Chain links; Gain 2 Spectrum Echoes; Draw 3 cards; Empower the next card you play; If you have 5+ Mirror Chain links, Spend 5 Mirror Chain links; +2000 Oblivion; Refract up to 2 Spectrum Echoes (+500.0 Oblivion per echo × distinct channels); Empower the next card you play; +1200 Oblivion. While on board: +500 Oblivion per card played while active',
+    description: 'On play: Gain 3 Mirror Chain links; Gain 2 Spectrum Echoes; Gain 6 Prismatic Light; Empower the next card you play; If you have 5+ Mirror Chain links, Spend 5 Mirror Chain links; +2000 Oblivion; Refract up to 2 Spectrum Echoes (+500.0 Oblivion per echo × distinct channels); Empower the next card you play; +1200 Oblivion. While on board: +500 Oblivion per card played while active',
     artKey: 'inf_prismatic_choir_splinter',
     attacks: {
       unsynergized: {
@@ -311,7 +302,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     onPlayEffects: [
       { type: 'eternal_stack_gain', stack: 'prism', value: 3 },
       { type: 'set_secondary_gain', kind: 'prism', value: 2 },
-      { type: 'draw', value: 3 },
+      { type: 'prismatic_light_gain', value: 6 },
       { type: 'multiply_next' },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'prism', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'prism', value: 5 }, { type: 'oblivion_flat', value: 2000 }, { type: 'prism_spectrum_echo_refract', oblivionPerEchoPerChannel: 500, consume: 2 }, { type: 'multiply_next' }] },
       { type: 'oblivion_flat', value: 1200 }],
@@ -322,7 +313,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thorn Widow Engine',
-    description: 'On play: Gain 70 Trail; Gain 3 Thorncrowns; Gain 2 Briar Spirals; If you have 6+ Thorncrowns, Spend 6 Thorncrowns; +2400 Oblivion; Bloom up to 2 Briar Spirals (+60 Trail per spiral); Empower the next card you play; Draw 3 cards; Gain +140% total Oblivion this turn; If you have 100+ Trail, Spend 40 Trail; +2500 Oblivion; Empower the next card you play. While on board: Each new Cherubim summoned while active gains +2 durability',
+    description: 'On play: Gain 76 Trail; Gain 3 Thorncrowns; Gain 2 Briar Spirals; If you have 6+ Thorncrowns, Spend 6 Thorncrowns; +2400 Oblivion; Bloom up to 2 Briar Spirals (+60 Trail per spiral); Empower the next card you play; Gain +140% total Oblivion this turn; If you have 100+ Trail, Spend 40 Trail; +2500 Oblivion; Empower the next card you play. While on board: Each new Cherubim summoned while active gains +2 durability',
     artKey: 'inf_thorn_widow_engine',
     attacks: {
       unsynergized: {
@@ -349,11 +340,10 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 2, synergyRequirement: 'Thornbound' },
     onPlayEffects: [
-      { type: 'trail_gain', value: 70 },
+      { type: 'trail_gain', value: 76 },
       { type: 'eternal_stack_gain', stack: 'thorn', value: 3 },
       { type: 'set_secondary_gain', kind: 'thorn', value: 2 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'thorn', value: 6 }, then: [{ type: 'eternal_stack_spend', stack: 'thorn', value: 6 }, { type: 'oblivion_flat', value: 2400 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 60, oblivionPerTrail: 185, consume: 2 }, { type: 'multiply_next' }] },
-      { type: 'draw', value: 3 },
       { type: 'score_multiplier', value: 140 },
       { type: 'conditional', condition: { type: 'trail_gte', value: 100 }, then: [{ type: 'trail_spend', value: 40 }, { type: 'oblivion_flat', value: 2500 }, { type: 'multiply_next' }] }],
   },
@@ -363,7 +353,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Lucent Cataclysm Archon',
-    description: 'On play: Gain 80 Radiance; Gain 3 Resonance; Gain 1 Anchor; Gain 5 Halo Crowns; Gain 2 Halo Cascades; If you have 7+ Halo Crowns, Spend 7 Halo Crowns; +2800 Oblivion; Resound up to 2 Halo Cascades (cascade bonus per cascade); Draw 4 cards; If you have 3+ Chorus Anchors, +2400 Oblivion; Empower the next card you play. While on board: +720 Oblivion per card played while active',
+    description: 'On play: Gain 80 Radiance; Gain 3 Cadence; Gain 1 Anchor; Gain 5 Halo Crowns; Gain 2 Halo Cascades; If you have 7+ Halo Crowns, Spend 7 Halo Crowns; +2800 Oblivion; Resound up to 2 Halo Cascades (cascade bonus per cascade); Gain 88 Radiance; If you have 3+ Chorus Anchors, +2400 Oblivion; Empower the next card you play. While on board: +720 Oblivion per card played while active',
     artKey: 'inf_lucent_cataclysm_archon',
     attacks: {
       unsynergized: {
@@ -398,7 +388,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'light', value: 5 },
       { type: 'set_secondary_gain', kind: 'light', value: 2 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 7 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 7 }, { type: 'oblivion_flat', value: 2800 }, { type: 'light_halo_cascade_resound', oblivionPerCascade: 360, consume: 2 }] },
-      { type: 'draw', value: 4 },
+      { type: 'radiance_gain', value: 88 },
       { type: 'conditional', condition: { type: 'light_chorus_anchors_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 2400 }, { type: 'multiply_next' }] }],
   },
   {
@@ -407,7 +397,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Brass Eidolon Prime',
-    description: 'On play: Gain 3 Strain; Gain 3 Reactor Cores; Gain 2 Reactor Flux; Draw 4 cards; If you have 5+ Reactor Cores, Spend 5 Reactor Cores; +2200 Oblivion; Vent up to 2 Reactor Flux (consume matching Strain: +1000.0 Oblivion per Strain vented, +0.2% score per flux); Empower the next card you play; +1500 Oblivion. While on board: +1200 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 11 Strain; Gain 3 Reactor Cores; Gain 2 Reactor Flux; If you have 5+ Reactor Cores, Spend 5 Reactor Cores; +2200 Oblivion; Vent up to 2 Reactor Flux (consume matching Strain: +1000.0 Oblivion per Strain vented, +0.2% score per flux); Empower the next card you play; +1500 Oblivion. While on board: +1200 Oblivion whenever you play an Ophanim while active',
     artKey: 'inf_brass_eidolon_prime',
     attacks: {
       unsynergized: {
@@ -434,10 +424,9 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 1200, synergyRequirement: 'Mechanical' },
     onPlayEffects: [
-      { type: 'strain_gain', value: 3 },
+      { type: 'strain_gain', value: 11 },
       { type: 'eternal_stack_gain', stack: 'mech', value: 3 },
       { type: 'set_secondary_gain', kind: 'mech', value: 2 },
-      { type: 'draw', value: 4 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'mech', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'mech', value: 5 }, { type: 'oblivion_flat', value: 2200 }, { type: 'mech_reactor_flux_vent', oblivionPerFlux: 1000, scoreMultPerFlux: 0.20, consume: 2 }, { type: 'multiply_next' }] },
       { type: 'oblivion_flat', value: 1500 }],
   }];
@@ -451,10 +440,10 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Entropic Crown',
-      description: 'On play: +3200 Oblivion; Draw 4 cards. While on board: Adjacent Seraphim gain +8 Patience per card played',
+      description: 'On play: +3200 Oblivion; All Seraphim on board gain +8 Patience. While on board: Adjacent Seraphim gain +8 Patience per card played',
     artKey: 'inf_entropic_crown',
       effects: [{ type: 'cherubim_patience_per_card', value: 8 }],
-      onPlayEffects: [{ type: 'oblivion_flat', value: 3200 }, { type: 'draw', value: 4 }],
+      onPlayEffects: [{ type: 'oblivion_flat', value: 3200 }, { type: 'patience_gain_all', value: 8 }],
   },
   {
     definitionId: 'inf-annihilation-field',
@@ -462,10 +451,10 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Annihilation Field',
-      description: 'On play: Draw 3 cards; Shuffle discard into deck; Draw 4 cards. While on board: Adjacent Seraphim gain +6 Patience per card played',
+      description: 'On play: All Seraphim on board gain +14 Patience. While on board: Adjacent Seraphim gain +6 Patience per card played',
     artKey: 'inf_annihilation_field',
       effects: [{ type: 'cherubim_patience_per_card', value: 6 }],
-      onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'shuffle_discard' }, { type: 'draw', value: 4 }],
+      onPlayEffects: [{ type: 'patience_gain_all', value: 14 }],
   },
   {
     definitionId: 'inf-pyroclasm-engine',
@@ -473,12 +462,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyroclasm Engine',
-      description: 'On play: Gain 50 Embers; Forge 24 Abyss Fault; Open 3 Ruin Windows; Cash out up to 1 Ruin Windows (+1100 Oblivion per window); Gain 3 Inferno Tiers; Cash out all Inferno Tiers (+600 Oblivion, +0.5 draw per stack); Gain 4 Cinder Echoes; Draw 3 cards; +2000 Oblivion; Vent 9999 Strain. While on board: Adjacent active Seraphim gain +200 Oblivion per card played',
+      description: 'On play: Gain 50 Embers; Forge 24 Abyss Fault; Open 3 Ruin Windows; Cash out up to 1 Ruin Windows (+1100 Oblivion per window); Gain 3 Inferno Tiers; Cash out all Inferno Tiers (+900 Oblivion per stack); Gain 4 Cinder Echoes; Stoke 6 Furnace Pressure; +2000 Oblivion; Vent 9999 Strain. While on board: Adjacent active Seraphim gain +200 Oblivion per card played',
     artKey: 'inf_pyroclasm_engine',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 200 }],
     // Role: BACK-ROW echo battery. Gains 4 echoes but does NOT ignite ? leaves
     // the entire pool as ammo for adjacent Seraphim's bespoke igniters next turn.
-      onPlayEffects: [{ type: 'ember_gain', value: 50 }, { type: 'pyro_abyss_fault_gain', value: 24 }, { type: 'pyro_ruin_window_gain', value: 3 }, { type: 'pyro_window_cashout', oblivionPerWindow: 1100, consume: 1 }, { type: 'eternal_stack_gain', stack: 'pyro', value: 3 }, { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 600, drawPerStack: 0.5 }, { type: 'set_secondary_gain', kind: 'pyro', value: 4 }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 2000 }, { type: 'strain_vent', value: 9999 }],
+      onPlayEffects: [{ type: 'ember_gain', value: 50 }, { type: 'pyro_abyss_fault_gain', value: 24 }, { type: 'pyro_ruin_window_gain', value: 3 }, { type: 'pyro_window_cashout', oblivionPerWindow: 1100, consume: 1 }, { type: 'eternal_stack_gain', stack: 'pyro', value: 3 }, { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 900 }, { type: 'set_secondary_gain', kind: 'pyro', value: 4 }, { type: 'pyro_furnace_pressure_gain', value: 6 }, { type: 'oblivion_flat', value: 2000 }, { type: 'strain_vent', value: 9999 }],
   },
   {
     definitionId: 'inf-prismatic-collapse-lattice',
@@ -486,12 +475,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Collapse Lattice',
-      description: 'On play: Gain 30 Prismatic Light; Gain 5 Mirror Chain links; Gain 4 Spectrum Echoes; Draw 4 cards; Draw 3 cards; If you have 6+ Mirror Chain links, Cash out all Mirror Chain links (+700 Oblivion, +0.5 draw per stack); +2500 Oblivion. While on board: Adjacent active Seraphim gain +220 Oblivion per card played',
+      description: 'On play: Gain 44 Prismatic Light; Gain 5 Mirror Chain links; Gain 4 Spectrum Echoes; If you have 6+ Mirror Chain links, Cash out all Mirror Chain links (+1000 Oblivion per stack); +2500 Oblivion. While on board: Adjacent active Seraphim gain +220 Oblivion per card played',
     artKey: 'inf_prismatic_collapse_lattice',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 220 }],
       // Role: BACK-ROW SPECTRUM ECHO BATTERY. +4 echoes, never refracts ? feeds
       // adjacent Seraphim/Angel refractors.
-      onPlayEffects: [{ type: 'prismatic_light_gain', value: 30 }, { type: 'eternal_stack_gain', stack: 'prism', value: 5 }, { type: 'set_secondary_gain', kind: 'prism', value: 4 }, { type: 'draw', value: 4 }, { type: 'draw', value: 3 }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'prism', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 700, drawPerStack: 0.5 }] }, { type: 'oblivion_flat', value: 2500 }],
+      onPlayEffects: [{ type: 'prismatic_light_gain', value: 44 }, { type: 'eternal_stack_gain', stack: 'prism', value: 5 }, { type: 'set_secondary_gain', kind: 'prism', value: 4 }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'prism', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 1000 }] }, { type: 'oblivion_flat', value: 2500 }],
   },
   {
     definitionId: 'inf-gravebloom-singularity',
@@ -499,12 +488,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Gravebloom Singularity',
-      description: 'On play: Gain 90 Trail; Gain 4 Thorncrowns; Gain 5 Briar Spirals; Discard 2 cards, then draw 4 cards; Salvage any 1 card; Cash out all Thorncrowns (+900 Oblivion, +0.5 draw per stack). While on board: Adjacent active Seraphim gain +280 Oblivion per card played',
+      description: 'On play: Gain 90 Trail; Gain 4 Thorncrowns; Gain 5 Briar Spirals; Salvage any 1 card; Cash out all Thorncrowns (+1200 Oblivion per stack). While on board: Adjacent active Seraphim gain +280 Oblivion per card played',
     artKey: 'inf_gravebloom_singularity',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 280 }],
       // Role: BACK-ROW BRIAR BATTERY. Massive +5 Briar Spiral seed and never blooms;
       // pure feeder for adjacent Seraphim bloomers.
-      onPlayEffects: [{ type: 'trail_gain', value: 90 }, { type: 'eternal_stack_gain', stack: 'thorn', value: 4 }, { type: 'set_secondary_gain', kind: 'thorn', value: 5 }, { type: 'discard_draw', discard: 2, draw: 4 }, { type: 'salvage_any' }, { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 900, drawPerStack: 0.5 }],
+      onPlayEffects: [{ type: 'trail_gain', value: 90 }, { type: 'eternal_stack_gain', stack: 'thorn', value: 4 }, { type: 'set_secondary_gain', kind: 'thorn', value: 5 }, { type: 'salvage_any' }, { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 1200 }],
   },
   {
     definitionId: 'inf-heliarch-eclipse-engine',
@@ -512,12 +501,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Heliarch Eclipse Engine',
-      description: 'On play: Gain 95 Radiance; Gain 4 Resonance; Gain 2 Anchor; Gain 4 Halo Crowns; Gain 4 Halo Cascades; Double current Radiance; Draw 3 cards; If you have 6+ Resonance, +3000 Oblivion; If you have 6+ Halo Crowns, Cash out all Halo Crowns (+550 Oblivion per stack); +2200 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played',
+      description: 'On play: Gain 101 Radiance; Gain 4 Cadence; Gain 2 Anchor; Gain 4 Halo Crowns; Gain 4 Halo Cascades; Double current Radiance; If you have 6+ Cadence, +3000 Oblivion; If you have 6+ Halo Crowns, Cash out all Halo Crowns (+550 Oblivion per stack); +2200 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played',
     artKey: 'inf_heliarch_eclipse_engine',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 300 }],
       // Role: BACK-ROW cascade BATTERY. Gains 4 Halo Cascades and never resounds;
       // exists purely to feed adjacent Seraphim resounders.
-      onPlayEffects: [{ type: 'radiance_gain', value: 95 }, { type: 'light_resonance_gain', value: 4 }, { type: 'light_anchor_gain', value: 2 }, { type: 'eternal_stack_gain', stack: 'light', value: 4 }, { type: 'set_secondary_gain', kind: 'light', value: 4 }, { type: 'radiance_double' }, { type: 'draw', value: 3 }, { type: 'conditional', condition: { type: 'light_resonance_gte', value: 6 }, then: [{ type: 'oblivion_flat', value: 3000 }] }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 550 }] }, { type: 'oblivion_flat', value: 2200 }],
+      onPlayEffects: [{ type: 'radiance_gain', value: 101 }, { type: 'light_resonance_gain', value: 4 }, { type: 'light_anchor_gain', value: 2 }, { type: 'eternal_stack_gain', stack: 'light', value: 4 }, { type: 'set_secondary_gain', kind: 'light', value: 4 }, { type: 'radiance_double' }, { type: 'conditional', condition: { type: 'light_resonance_gte', value: 6 }, then: [{ type: 'oblivion_flat', value: 3000 }] }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 550 }] }, { type: 'oblivion_flat', value: 2200 }],
   },
   {
     definitionId: 'inf-mech-entropy-foundry',
@@ -525,12 +514,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Mech Entropy Foundry',
-      description: 'On play: Gain 4 Strain; Gain 5 Reactor Cores; Gain 4 Reactor Flux; Draw 3 cards; Vent 9999 Strain; Cash out all Reactor Cores (+600 Oblivion per stack). While on board: Adjacent active Seraphim gain +260 Oblivion per card played',
+      description: 'On play: Gain 10 Strain; Gain 5 Reactor Cores; Gain 4 Reactor Flux; Vent 9999 Strain; Cash out all Reactor Cores (+600 Oblivion per stack). While on board: Adjacent active Seraphim gain +260 Oblivion per card played',
     artKey: 'inf_mech_entropy_foundry',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 260 }],
       // Role: BACK-ROW FLUX BATTERY. +4 Reactor Flux on play and never vents ?
       // pure feeder for adjacent Seraphim/Angel venters.
-      onPlayEffects: [{ type: 'strain_gain', value: 4 }, { type: 'eternal_stack_gain', stack: 'mech', value: 5 }, { type: 'set_secondary_gain', kind: 'mech', value: 4 }, { type: 'draw', value: 3 }, { type: 'strain_vent', value: 9999 }, { type: 'eternal_stack_cashout', stack: 'mech', oblivionPerStack: 600 }],
+      onPlayEffects: [{ type: 'strain_gain', value: 10 }, { type: 'eternal_stack_gain', stack: 'mech', value: 5 }, { type: 'set_secondary_gain', kind: 'mech', value: 4 }, { type: 'strain_vent', value: 9999 }, { type: 'eternal_stack_cashout', stack: 'mech', oblivionPerStack: 600 }],
   }];
 
 // Angels (3)
@@ -542,21 +531,20 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: All Seraphim on board gain +20 Patience; Draw 6 cards. After 4 cards played: Double all Patience on the board; Draw 7 cards; +3500 Oblivion; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
+    description: 'On summon: All Seraphim on board gain +32 Patience. After 4 cards played: Double all Patience on the board; All Seraphim on board gain +14 Patience; +3500 Oblivion; Empower the next card you play. While on board: +500 Oblivion per card played while on board',
     artKey: 'inf_sovereign_void',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 3 }],
     onSummonEffects: [
-      { type: 'patience_gain_all', value: 20 },
-      { type: 'draw', value: 6 }],
+      { type: 'patience_gain_all', value: 32 }],
     activatedAbility: {
       name: 'Null Dominion',
       cardsPlayedRequirement: 4,
-      description: 'Double all Patience on the board; Draw 7 cards; +3500 Oblivion; Empower the next card you play',
+      description: 'Double all Patience on the board; All Seraphim on board gain +14 Patience; +3500 Oblivion; Empower the next card you play',
       effects: [
         { type: 'patience_double_all' },
-        { type: 'draw', value: 7 },
+        { type: 'patience_gain_all', value: 14 },
         { type: 'oblivion_flat', value: 3500 },
         { type: 'multiply_next' }],
     },
@@ -590,23 +578,22 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Eternity Rupture',
-    description: 'On summon: All Seraphim on board gain +15 Patience; Draw 5 cards; +2000 Oblivion. After 4 cards played: Double all Patience on the board; Draw 5 cards; +3000 Oblivion; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
+    description: 'On summon: All Seraphim on board gain +25 Patience; +2000 Oblivion. After 4 cards played: Double all Patience on the board; All Seraphim on board gain +10 Patience; +3000 Oblivion; Empower the next card you play. While on board: +600 Oblivion per card played while on board',
     artKey: 'inf_eternity_rupture',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },
       { type: 'cherubim_active_gte', value: 2 }],
     onSummonEffects: [
-      { type: 'patience_gain_all', value: 15 },
-      { type: 'draw', value: 5 },
+      { type: 'patience_gain_all', value: 25 },
       { type: 'oblivion_flat', value: 2000 }],
     activatedAbility: {
       name: 'Rupture Convergence',
       cardsPlayedRequirement: 4,
-      description: 'Double all Patience on the board; Draw 5 cards; +3000 Oblivion; Empower the next card you play',
+      description: 'Double all Patience on the board; All Seraphim on board gain +10 Patience; +3000 Oblivion; Empower the next card you play',
       effects: [
         { type: 'patience_double_all' },
-        { type: 'draw', value: 5 },
+        { type: 'patience_gain_all', value: 10 },
         { type: 'oblivion_flat', value: 3000 },
         { type: 'multiply_next' }],
     },
@@ -640,23 +627,22 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Riftborn Sovereign',
-    description: 'On summon: Gain 100 Embers; Stoke 40 Furnace Pressure; Open 2 Ruin Windows; Gain 6 Inferno Tiers; Gain 4 Cinder Echoes; Draw 5 cards; +1500 Oblivion. After 5 cards played: Convert Pressure to Fault (8 Pressure per Fault, gain 8 up to 32); If pools are balanced, +160 Oblivion per Pressure-Fault pair; Cash out up to 1 Ruin Windows (+1800 Oblivion per window); Cash out all Inferno Tiers (+1000 Oblivion per stack); Ignite all Cinder Echoes (+80.0 Oblivion × echoes²); Spend 9999 Embers; Draw 4 cards; Empower the next card you play. While on board: +400 Oblivion per card played while on board',
+    description: 'On summon: Gain 100 Embers; Stoke 50 Furnace Pressure; Open 2 Ruin Windows; Gain 6 Inferno Tiers; Gain 4 Cinder Echoes; +1500 Oblivion. After 5 cards played: Convert Pressure to Fault (8 Pressure per Fault, gain 8 up to 32); If pools are balanced, +160 Oblivion per Pressure-Fault pair; Cash out up to 1 Ruin Windows (+1800 Oblivion per window); Cash out all Inferno Tiers (+1000 Oblivion per stack); Ignite all Cinder Echoes (+80.0 Oblivion × echoes²); Spend 9999 Embers; Stoke 8 Furnace Pressure; Empower the next card you play. While on board: +400 Oblivion per card played while on board',
     artKey: 'inf_riftborn_sovereign',
     summonCost: [],
     extraSummonConditions: [
       { type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
       { type: 'ember_gain', value: 100 },
-      { type: 'pyro_furnace_pressure_gain', value: 40 },
+      { type: 'pyro_furnace_pressure_gain', value: 50 },
       { type: 'pyro_ruin_window_gain', value: 2 },
       { type: 'eternal_stack_gain', stack: 'pyro', value: 6 },
       { type: 'set_secondary_gain', kind: 'pyro', value: 4 },
-      { type: 'draw', value: 5 },
       { type: 'oblivion_flat', value: 1500 }],
     activatedAbility: {
       name: 'Rift Conflagration',
       cardsPlayedRequirement: 5,
-      description: 'Convert Pressure to Fault (8 Pressure per Fault, gain 8 up to 32); If pools are balanced, +160 Oblivion per Pressure-Fault pair; Cash out up to 1 Ruin Windows (+1800 Oblivion per window); Cash out all Inferno Tiers (+1000 Oblivion per stack); Ignite all Cinder Echoes (+80.0 Oblivion × echoes²); Spend 9999 Embers; Draw 4 cards; Empower the next card you play',
+      description: 'Convert Pressure to Fault (8 Pressure per Fault, gain 8 up to 32); If pools are balanced, +160 Oblivion per Pressure-Fault pair; Cash out up to 1 Ruin Windows (+1800 Oblivion per window); Cash out all Inferno Tiers (+1000 Oblivion per stack); Ignite all Cinder Echoes (+80.0 Oblivion × echoes²); Spend 9999 Embers; Stoke 8 Furnace Pressure; Empower the next card you play',
       effects: [
         { type: 'pyro_convert_pressure_to_fault', pressurePerFault: 8, faultGain: 8, maxFaultGain: 32 },
         { type: 'pyro_balance_bonus', oblivionPerPair: 160 },
@@ -664,7 +650,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
         { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 1000 },
         { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 80 },
         { type: 'ember_spend', value: 9999 },
-        { type: 'draw', value: 4 },
+        { type: 'pyro_furnace_pressure_gain', value: 8 },
         { type: 'multiply_next' }],
     },
     attacks: {
@@ -697,28 +683,27 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Judgement Array',
-    description: 'On summon: Draw 5 cards; Gain 40 Prismatic Light; Gain 5 Mirror Chain links; Gain 3 Spectrum Echoes. After 4 cards played: Cash out all Mirror Chain links (+700 Oblivion per stack); Refract all Spectrum Echoes (+320.0 Oblivion per echo × distinct channels); Search your deck for 1 matching Ophanim or Cherubim; Draw 4 cards; Empower the next card you play; +2800 Oblivion. While on board: +470 Oblivion per card played while on board',
+    description: 'On summon: Gain 50 Prismatic Light; Gain 5 Mirror Chain links; Gain 3 Spectrum Echoes. After 4 cards played: Cash out all Mirror Chain links (+700 Oblivion per stack); Refract all Spectrum Echoes (+320.0 Oblivion per echo × distinct channels); Search your deck for 1 matching Ophanim or Cherubim; Gain 8 Prismatic Light; Empower the next card you play; +2800 Oblivion. While on board: +470 Oblivion per card played while on board',
     artKey: 'inf_prismatic_judgement_array',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },
       { type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
-      { type: 'draw', value: 5 },
-      { type: 'prismatic_light_gain', value: 40 },
+      { type: 'prismatic_light_gain', value: 50 },
       { type: 'eternal_stack_gain', stack: 'prism', value: 5 },
       { type: 'set_secondary_gain', kind: 'prism', value: 3 }],
     activatedAbility: {
       name: 'Spectrum Verdict',
       cardsPlayedRequirement: 4,
-      description: 'Cash out all Mirror Chain links (+700 Oblivion per stack); Refract all Spectrum Echoes (+320.0 Oblivion per echo × distinct channels); Search your deck for 1 matching Ophanim or Cherubim; Draw 4 cards; Empower the next card you play; +2800 Oblivion',
+      description: 'Cash out all Mirror Chain links (+700 Oblivion per stack); Refract all Spectrum Echoes (+320.0 Oblivion per echo × distinct channels); Search your deck for 1 matching Ophanim or Cherubim; Gain 8 Prismatic Light; Empower the next card you play; +2800 Oblivion',
       // Role: APEX FINISHER. Activated ability refracts ALL Spectrum Echoes at
       // a moderate-high coefficient, then empower-stacks the result.
       effects: [
         { type: 'eternal_stack_cashout', stack: 'prism', oblivionPerStack: 700 },
         { type: 'prism_spectrum_echo_refract', oblivionPerEchoPerChannel: 320 },
         { type: 'search_deck_by_type', filter: ['Ophanim', 'Cherubim'] },
-        { type: 'draw', value: 4 },
+        { type: 'prismatic_light_gain', value: 8 },
         { type: 'multiply_next' },
         { type: 'oblivion_flat', value: 2800 }],
     },
@@ -752,21 +737,20 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Elegy Titan',
-    description: 'On summon: Gain 110 Trail; Gain 6 Thorncrowns; Gain 4 Briar Spirals; Draw 4 cards; Gain +120% total Oblivion this turn. After 5 cards played: Spend 80 Trail; Cash out all Thorncrowns (+850 Oblivion per stack); Bloom all Briar Spirals (+40 Trail per spiral); Salvage any 1 card; Draw 4 cards; +3200 Oblivion; If you have 100+ Trail, Empower the next card you play; +2800 Oblivion. While on board: +520 Oblivion per card played while on board',
+    description: 'On summon: Gain 118 Trail; Gain 6 Thorncrowns; Gain 4 Briar Spirals; Gain +120% total Oblivion this turn. After 5 cards played: Spend 80 Trail; Cash out all Thorncrowns (+850 Oblivion per stack); Bloom all Briar Spirals (+40 Trail per spiral); Salvage any 1 card; Gain 8 Trail; +3200 Oblivion; If you have 100+ Trail, Empower the next card you play; +2800 Oblivion. While on board: +520 Oblivion per card played while on board',
     artKey: 'inf_thornbound_elegy_titan',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 }],
     onSummonEffects: [
-      { type: 'trail_gain', value: 110 },
+      { type: 'trail_gain', value: 118 },
       { type: 'eternal_stack_gain', stack: 'thorn', value: 6 },
       { type: 'set_secondary_gain', kind: 'thorn', value: 4 },
-      { type: 'draw', value: 4 },
       { type: 'score_multiplier', value: 120 }],
     activatedAbility: {
       name: 'Funeral Surge',
       cardsPlayedRequirement: 5,
-      description: 'Spend 80 Trail; Cash out all Thorncrowns (+850 Oblivion per stack); Bloom all Briar Spirals (+40 Trail per spiral); Salvage any 1 card; Draw 4 cards; +3200 Oblivion; If you have 100+ Trail, Empower the next card you play; +2800 Oblivion',
+      description: 'Spend 80 Trail; Cash out all Thorncrowns (+850 Oblivion per stack); Bloom all Briar Spirals (+40 Trail per spiral); Salvage any 1 card; Gain 8 Trail; +3200 Oblivion; If you have 100+ Trail, Empower the next card you play; +2800 Oblivion',
       // Role: APEX BIG BLOOMER. Moderate per-spiral coefficient but uncapped consume
       // on a +4-spiral seed ? trades single-pop coefficient for sheer pool size.
       effects: [
@@ -774,7 +758,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
         { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 850 },
         { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 40, oblivionPerTrail: 12 },
         { type: 'salvage_any' },
-        { type: 'draw', value: 4 },
+        { type: 'trail_gain', value: 8 },
         { type: 'oblivion_flat', value: 3200 },
         { type: 'conditional', condition: { type: 'trail_gte', value: 100 }, then: [{ type: 'multiply_next' }, { type: 'oblivion_flat', value: 2800 }] }],
     },
@@ -808,25 +792,24 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Mechanical Apotheosis Core',
-    description: 'On summon: Gain 4 Strain; Gain 3 Reactor Flux; Draw 5 cards; +1800 Oblivion. After 4 cards played: Overclock: gain 3 Strain, then Draw 5 cards; Vent all Reactor Flux (consume matching Strain: +550.0 Oblivion per Strain vented, +0.35% score per flux); Empower the next card you play; +3500 Oblivion. While on board: +560 Oblivion per card played while on board',
+    description: 'On summon: Gain 14 Strain; Gain 3 Reactor Flux; +1800 Oblivion. After 4 cards played: Overclock: gain 3 Strain, then Gain 10 Strain; Vent all Reactor Flux (consume matching Strain: +550.0 Oblivion per Strain vented, +0.35% score per flux); Empower the next card you play; +3500 Oblivion. While on board: +560 Oblivion per card played while on board',
     artKey: 'inf_mechanical_apotheosis_core',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },
       { type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
-      { type: 'strain_gain', value: 4 },
+      { type: 'strain_gain', value: 14 },
       { type: 'set_secondary_gain', kind: 'mech', value: 3 },
-      { type: 'draw', value: 5 },
       { type: 'oblivion_flat', value: 1800 }],
     activatedAbility: {
       name: 'Core Singularity',
       cardsPlayedRequirement: 4,
-      description: 'Overclock: gain 3 Strain, then Draw 5 cards; Vent all Reactor Flux (consume matching Strain: +550.0 Oblivion per Strain vented, +0.35% score per flux); Empower the next card you play; +3500 Oblivion',
+      description: 'Overclock: gain 3 Strain, then Gain 10 Strain; Vent all Reactor Flux (consume matching Strain: +550.0 Oblivion per Strain vented, +0.35% score per flux); Empower the next card you play; +3500 Oblivion',
       // Role: APEX SCORE-MULT VENTER. Activated ability vents ALL Reactor Flux
       // with the highest scoreMultPerFlux in the set ? trades raw oblivion for raw mult.
       effects: [
-        { type: 'overclock', strain: 3, then: [{ type: 'draw', value: 5 }, { type: 'mech_reactor_flux_vent', oblivionPerFlux: 550, scoreMultPerFlux: 0.35 }, { type: 'multiply_next' }] },
+        { type: 'overclock', strain: 3, then: [{ type: 'strain_gain', value: 10 }, { type: 'mech_reactor_flux_vent', oblivionPerFlux: 550, scoreMultPerFlux: 0.35 }, { type: 'multiply_next' }] },
         { type: 'oblivion_flat', value: 3500 }],
     },
     attacks: {
@@ -861,7 +844,7 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: "Sorveth's Final Breath",
-    description: 'Gain 18 Black Flame; Gain 6 Fracture; Gain 7 Eclipse Marks; Gain 3 Veil Shards; Gain 20 Monochromatic Shards; Discard 3 cards, then draw 7 cards; Salvage any 1 card; Empower the next card you play; Cash out all Eclipse Marks (+650 Oblivion per stack); If Fracture is 10+, Shatter all Veil Shards (swap flames, +180.0 Oblivion per higher flame per shard); +3400 Oblivion',
+    description: 'Gain 18 Black Flame; Gain 6 Fracture; Gain 7 Eclipse Marks; Gain 3 Veil Shards; Gain 20 Monochromatic Shards; Salvage any 1 card; Empower the next card you play; Cash out all Eclipse Marks (+650 Oblivion per stack); If Fracture is 10+, Shatter all Veil Shards (swap flames, +180.0 Oblivion per higher flame per shard); +3400 Oblivion',
     artKey: 'inf_bgi_sorveths_final_breath',
     // Role: FRACTURE-GATED INFINITE FINISHER. +3 Veil Shards; inside the
     // fracture?10 conditional, also swaps all shards at a moderate coefficient.
@@ -871,7 +854,6 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'glass', value: 7 },
       { type: 'set_secondary_gain', kind: 'glass', value: 3 },
       { type: 'monochromatic_shards_gain', value: 20 },
-      { type: 'discard_draw', discard: 3, draw: 7 },
       { type: 'salvage_any' },
       { type: 'multiply_next' },
       { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 650 },
@@ -883,7 +865,7 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Chromatic Ruin Deluge',
-    description: 'Gain 15 White Flame; Gain 15 Black Flame; Gain 6 Eclipse Marks; Gain 2 Veil Shards; Gain 18 Monochromatic Shards; Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Draw 2 cards; If White Flame equals Black Flame, Spend 6 Eclipse Marks; +3000 Oblivion; Shatter up to 3 Veil Shards (swap flames, +160.0 Oblivion per higher flame per shard); Empower the next card you play; +2900 Oblivion',
+    description: 'Gain 15 White Flame; Gain 15 Black Flame; Gain 6 Eclipse Marks; Gain 2 Veil Shards; Gain 22 Monochromatic Shards; Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; If White Flame equals Black Flame, Spend 6 Eclipse Marks; +3000 Oblivion; Shatter up to 3 Veil Shards (swap flames, +160.0 Oblivion per higher flame per shard); Empower the next card you play; +2900 Oblivion',
     artKey: 'inf_bgi_chromatic_ruin_deluge',
     // Role: BALANCED-FLAME INFINITE. +2 Veil Shards; inside flames-equal,
     // swaps 3 shards ? leans on its own balanced flame state for a guaranteed
@@ -893,9 +875,8 @@ export const blackGlassInfernoInfiniteOphanims: OphanimDefinition[] = [
       { type: 'black_glass_black_flame_gain', value: 15 },
       { type: 'eternal_stack_gain', stack: 'glass', value: 6 },
       { type: 'set_secondary_gain', kind: 'glass', value: 2 },
-      { type: 'monochromatic_shards_gain', value: 18 },
+      { type: 'monochromatic_shards_gain', value: 22 },
       { type: 'look_top_take_drop', look: 10, take: 3, drop: 2 },
-      { type: 'draw', value: 2 },
       { type: 'conditional', condition: { type: 'black_glass_flames_equal' }, then: [{ type: 'eternal_stack_spend', stack: 'glass', value: 6 }, { type: 'oblivion_flat', value: 3000 }, { type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 160, consume: 3 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 2900 }] }],
   }];
 
@@ -906,7 +887,7 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Obsidian Covenant Colossus',
-    description: 'On play: Gain 14 Black Flame; Gain 5 Fracture; Gain 5 Eclipse Marks; Gain 3 Veil Shards; Gain 15 Monochromatic Shards; Discard 2 cards, then draw 5 cards; Salvage any 1 card; If you have 6+ Eclipse Marks, Cash out all Eclipse Marks (+600 Oblivion per stack); If you have 20+ Black Flame, Shatter all Veil Shards (swap flames, +150.0 Oblivion per higher flame per shard); +1900 Oblivion. While on board: +900 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 14 Black Flame; Gain 5 Fracture; Gain 5 Eclipse Marks; Gain 3 Veil Shards; Gain 15 Monochromatic Shards; Salvage any 1 card; If you have 6+ Eclipse Marks, Cash out all Eclipse Marks (+600 Oblivion per stack); If you have 20+ Black Flame, Shatter all Veil Shards (swap flames, +150.0 Oblivion per higher flame per shard); +1900 Oblivion. While on board: +900 Oblivion whenever you play an Ophanim while active',
     artKey: 'inf_bgi_obsidian_covenant_colossus',
     attacks: {
       unsynergized: {
@@ -940,7 +921,6 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'glass', value: 5 },
       { type: 'set_secondary_gain', kind: 'glass', value: 3 },
       { type: 'monochromatic_shards_gain', value: 15 },
-      { type: 'discard_draw', discard: 2, draw: 5 },
       { type: 'salvage_any' },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 600 }] },
       { type: 'conditional', condition: { type: 'black_glass_black_flame_gte', value: 20 }, then: [{ type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 150 }, { type: 'oblivion_flat', value: 1900 }] }],
@@ -951,7 +931,7 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Glassrose Leviathan',
-    description: 'On play: Gain 14 White Flame; Gain 4 Fracture; Gain 4 Eclipse Marks; Gain 2 Veil Shards; Gain 15 Monochromatic Shards; Discard 2 cards, then draw 5 cards; Salvage any 1 card; Empower the next card you play; If you have 5+ Eclipse Marks, Spend 5 Eclipse Marks; +1800 Oblivion; Shatter up to 2 Veil Shards (swap flames, +200.0 Oblivion per higher flame per shard); Empower the next card you play. While on board: +780 Oblivion per card played while active',
+    description: 'On play: Gain 14 White Flame; Gain 4 Fracture; Gain 4 Eclipse Marks; Gain 2 Veil Shards; Gain 15 Monochromatic Shards; Salvage any 1 card; Empower the next card you play; If you have 5+ Eclipse Marks, Spend 5 Eclipse Marks; +1800 Oblivion; Shatter up to 2 Veil Shards (swap flames, +200.0 Oblivion per higher flame per shard); Empower the next card you play. While on board: +780 Oblivion per card played while active',
     artKey: 'inf_bgi_glassrose_leviathan',
     attacks: {
       unsynergized: {
@@ -985,7 +965,6 @@ export const blackGlassInfernoInfiniteSeraphims: SeraphimDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'glass', value: 4 },
       { type: 'set_secondary_gain', kind: 'glass', value: 2 },
       { type: 'monochromatic_shards_gain', value: 15 },
-      { type: 'discard_draw', discard: 2, draw: 5 },
       { type: 'salvage_any' },
       { type: 'multiply_next' },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'glass', value: 5 }, { type: 'oblivion_flat', value: 1800 }, { type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 200, consume: 2 }, { type: 'multiply_next' }] }],
@@ -998,12 +977,12 @@ export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Inferno of Two Truths',
-      description: 'On play: Gain 10 White Flame; Gain 10 Black Flame; Gain 5 Eclipse Marks; Gain 5 Veil Shards; Gain 12 Monochromatic Shards; Discard 2 cards, then draw 4 cards; Salvage any 1 card; Cash out all Eclipse Marks (+550 Oblivion per stack); +2200 Oblivion; If White Flame equals Black Flame, +2400 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played',
+      description: 'On play: Gain 10 White Flame; Gain 10 Black Flame; Gain 5 Eclipse Marks; Gain 5 Veil Shards; Gain 12 Monochromatic Shards; Salvage any 1 card; Cash out all Eclipse Marks (+550 Oblivion per stack); +2200 Oblivion; If White Flame equals Black Flame, +2400 Oblivion. While on board: Adjacent active Seraphim gain +300 Oblivion per card played',
     artKey: 'inf_bgi_inferno_of_two_truths',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 300 }],
       // Role: BALANCED VEIL-SHARD INFINITE BATTERY (Cherubim). +5 shards; no
       // swap of its own ? feeds adjacent Seraphim/Angel swappers.
-      onPlayEffects: [{ type: 'black_glass_white_flame_gain', value: 10 }, { type: 'black_glass_black_flame_gain', value: 10 }, { type: 'eternal_stack_gain', stack: 'glass', value: 5 }, { type: 'set_secondary_gain', kind: 'glass', value: 5 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'discard_draw', discard: 2, draw: 4 }, { type: 'salvage_any' }, { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 550 }, { type: 'oblivion_flat', value: 2200 }, { type: 'conditional', condition: { type: 'black_glass_flames_equal' }, then: [{ type: 'oblivion_flat', value: 2400 }] }],
+      onPlayEffects: [{ type: 'black_glass_white_flame_gain', value: 10 }, { type: 'black_glass_black_flame_gain', value: 10 }, { type: 'eternal_stack_gain', stack: 'glass', value: 5 }, { type: 'set_secondary_gain', kind: 'glass', value: 5 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'salvage_any' }, { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 550 }, { type: 'oblivion_flat', value: 2200 }, { type: 'conditional', condition: { type: 'black_glass_flames_equal' }, then: [{ type: 'oblivion_flat', value: 2400 }] }],
   },
   {
     definitionId: 'inf-bgi-ashen-cinder-cathedral',
@@ -1011,12 +990,12 @@ export const blackGlassInfernoInfiniteCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Ashen Cinder Cathedral',
-      description: 'On play: Gain 12 Black Flame; Gain 4 Fracture; Gain 4 Eclipse Marks; Gain 4 Veil Shards; Gain 12 Monochromatic Shards; Salvage any 1 card; Draw 6 cards; Empower the next card you play; If you have 6+ Eclipse Marks, Cash out all Eclipse Marks (+700 Oblivion per stack). While on board: Adjacent active Seraphim gain +240 Oblivion per card played',
+      description: 'On play: Gain 12 Black Flame; Gain 4 Fracture; Gain 4 Eclipse Marks; Gain 4 Veil Shards; Gain 24 Monochromatic Shards; Salvage any 1 card; Empower the next card you play; If you have 6+ Eclipse Marks, Cash out all Eclipse Marks (+700 Oblivion per stack). While on board: Adjacent active Seraphim gain +240 Oblivion per card played',
     artKey: 'inf_bgi_ashen_cinder_cathedral',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 240 }],
       // Role: BLACK-FLAME CHERUBIM BATTERY. +4 shards; no swap ? a denser
       // black-aligned variant of the back-row reservoir.
-      onPlayEffects: [{ type: 'black_glass_black_flame_gain', value: 12 }, { type: 'black_glass_fracture_gain', value: 4 }, { type: 'eternal_stack_gain', stack: 'glass', value: 4 }, { type: 'set_secondary_gain', kind: 'glass', value: 4 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'salvage_any' }, { type: 'draw', value: 6 }, { type: 'multiply_next' }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 700 }] }],
+      onPlayEffects: [{ type: 'black_glass_black_flame_gain', value: 12 }, { type: 'black_glass_fracture_gain', value: 4 }, { type: 'eternal_stack_gain', stack: 'glass', value: 4 }, { type: 'set_secondary_gain', kind: 'glass', value: 4 }, { type: 'monochromatic_shards_gain', value: 24 }, { type: 'salvage_any' }, { type: 'multiply_next' }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'glass', value: 6 }, then: [{ type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 700 }] }],
   }];
 
 export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
@@ -1026,7 +1005,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Vaelmor, Umbra Sovereign',
-    description: 'On summon: Gain 14 White Flame; Gain 14 Black Flame; Gain 4 Fracture; Gain 6 Eclipse Marks; Gain 3 Veil Shards; Gain 18 Monochromatic Shards; Discard 3 cards, then draw 8 cards; Salvage any 1 card; +2500 Oblivion. After 4 cards played: Swap White Flame and Black Flame; Fracture collapses by 0.5; Cash out all Eclipse Marks (+750 Oblivion per stack); Shatter all Veil Shards (swap flames, +170.0 Oblivion per higher flame per shard); Discard 3 cards, then draw 7 cards; Shuffle discard into deck; +3800 Oblivion; Gain 15 Monochromatic Shards. While on board: +640 Oblivion per card played while on board',
+    description: 'On summon: Gain 14 White Flame; Gain 14 Black Flame; Gain 4 Fracture; Gain 6 Eclipse Marks; Gain 3 Veil Shards; Gain 18 Monochromatic Shards; Salvage any 1 card; +2500 Oblivion. After 4 cards played: Swap White Flame and Black Flame; Fracture collapses by 0.5; Cash out all Eclipse Marks (+750 Oblivion per stack); Shatter all Veil Shards (swap flames, +170.0 Oblivion per higher flame per shard); +3800 Oblivion; Gain 15 Monochromatic Shards. While on board: +640 Oblivion per card played while on board',
     artKey: 'inf_bgi_vaelmor_umbra_sovereign',
     summonCost: [],
     extraSummonConditions: [
@@ -1039,13 +1018,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       { type: 'eternal_stack_gain', stack: 'glass', value: 6 },
       { type: 'set_secondary_gain', kind: 'glass', value: 3 },
       { type: 'monochromatic_shards_gain', value: 18 },
-      { type: 'discard_draw', discard: 3, draw: 8 },
       { type: 'salvage_any' },
       { type: 'oblivion_flat', value: 2500 }],
     activatedAbility: {
       name: 'Sovereign Scission',
       cardsPlayedRequirement: 4,
-      description: 'Swap White Flame and Black Flame; Fracture collapses by 0.5; Cash out all Eclipse Marks (+750 Oblivion per stack); Shatter all Veil Shards (swap flames, +170.0 Oblivion per higher flame per shard); Discard 3 cards, then draw 7 cards; Shuffle discard into deck; +3800 Oblivion; Gain 15 Monochromatic Shards',
+      description: 'Swap White Flame and Black Flame; Fracture collapses by 0.5; Cash out all Eclipse Marks (+750 Oblivion per stack); Shatter all Veil Shards (swap flames, +170.0 Oblivion per higher flame per shard); +3800 Oblivion; Gain 15 Monochromatic Shards',
       // Role: APEX SWAP-AND-SHARD ANGEL. Swaps flames, then swaps every banked
       // Veil Shard at the highest coefficient in the band ? dual-payoff finale.
       effects: [
@@ -1053,8 +1031,6 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         { type: 'black_glass_fracture_collapse', value: 0.5 },
         { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 750 },
         { type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 170 },
-        { type: 'discard_draw', discard: 3, draw: 7 },
-        { type: 'shuffle_discard' },
         { type: 'oblivion_flat', value: 3800 },
         { type: 'monochromatic_shards_gain', value: 15 }],
     },
@@ -1088,7 +1064,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Midplace Apocalypse',
-    description: 'On summon: Gain 16 White Flame; Gain 16 Black Flame; Gain 5 Eclipse Marks; Gain 3 Veil Shards; Gain 18 Monochromatic Shards; Register state: Collapse Pending += 1; Discard 2 cards, then draw 6 cards; Salvage any 1 card; Empower the next card you play. After 5 cards played: Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse Marks; Cash out all Eclipse Marks (+700 Oblivion per stack); Salvage any 1 card; Draw 5 cards; +3500 Oblivion; If Fracture is 14+, Shatter all Veil Shards (swap flames, +155.0 Oblivion per higher flame per shard); +2500 Oblivion. While on board: +620 Oblivion per card played while on board',
+    description: 'On summon: Gain 16 White Flame; Gain 16 Black Flame; Gain 5 Eclipse Marks; Gain 3 Veil Shards; Gain 18 Monochromatic Shards; Register state: Collapse Pending += 1; Salvage any 1 card; Empower the next card you play. After 5 cards played: Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse Marks; Cash out all Eclipse Marks (+700 Oblivion per stack); Salvage any 1 card; Gain 10 Monochromatic Shards; +3500 Oblivion; If Fracture is 14+, Shatter all Veil Shards (swap flames, +155.0 Oblivion per higher flame per shard); +2500 Oblivion. While on board: +620 Oblivion per card played while on board',
     artKey: 'inf_bgi_midplace_apocalypse',
     summonCost: [],
     extraSummonConditions: [
@@ -1101,13 +1077,12 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       { type: 'set_secondary_gain', kind: 'glass', value: 3 },
       { type: 'monochromatic_shards_gain', value: 18 },
       { type: 'black_glass_register_state', key: 'collapse_pending', value: 1 },
-      { type: 'discard_draw', discard: 2, draw: 6 },
       { type: 'salvage_any' },
       { type: 'multiply_next' }],
     activatedAbility: {
       name: 'Plateau of Ruin',
       cardsPlayedRequirement: 5,
-      description: 'Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse Marks; Cash out all Eclipse Marks (+700 Oblivion per stack); Salvage any 1 card; Draw 5 cards; +3500 Oblivion; If Fracture is 14+, Shatter all Veil Shards (swap flames, +155.0 Oblivion per higher flame per shard); +2500 Oblivion',
+      description: 'Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse Marks; Cash out all Eclipse Marks (+700 Oblivion per stack); Salvage any 1 card; Gain 10 Monochromatic Shards; +3500 Oblivion; If Fracture is 14+, Shatter all Veil Shards (swap flames, +155.0 Oblivion per higher flame per shard); +2500 Oblivion',
       // Role: FRACTURE-GATED APEX. Veil-shard swap is locked behind the
       // fracture?14 conditional ? rewards builds that crack heavy fracture.
       effects: [
@@ -1116,7 +1091,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         { type: 'eternal_stack_gain', stack: 'glass', value: 4 },
         { type: 'eternal_stack_cashout', stack: 'glass', oblivionPerStack: 700 },
         { type: 'salvage_any' },
-        { type: 'draw', value: 5 },
+        { type: 'monochromatic_shards_gain', value: 10 },
         { type: 'oblivion_flat', value: 3500 },
         { type: 'conditional', condition: { type: 'black_glass_fracture_gte', value: 14 }, then: [{ type: 'glass_veil_shard_swap', oblivionPerHigherFlame: 155 }, { type: 'oblivion_flat', value: 2500 }] }],
     },
@@ -1150,18 +1125,18 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Polar Fission',
-    description: 'On summon: Gain 15 Radiance; Gain 2 Strain; Draw 5 cards; Gain 16 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Vent 9999 Strain; Gain 10 Radiance; Draw 5 cards; Empower the next card you play; +720 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +400.0 Oblivion per pulse · Frost: +0.8 draw per pulse). While on board: +760 Oblivion per card played while on board',
+    description: 'On summon: Gain 15 Radiance; Gain 2 Strain; Gain 26 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Vent 9999 Strain; Gain 10 Radiance; Gain 10 Arctic Charge; Empower the next card you play; +720 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +400.0 Oblivion per pulse · Frost: +10.0 Arctic Charge per pulse). While on board: +760 Oblivion per card played while on board',
     artKey: 'sv_infinite_polar_fission',
     summonCost: ['sv-ser-polar-circuit', 'sv-ser-icegrid'],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }, { type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 15 }, { type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'arctic_charge_gain', value: 16 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 15 }, { type: 'strain_gain', value: 2 }, { type: 'arctic_charge_gain', value: 26 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
     activatedAbility: {
       name: 'Fission Crown',
       cardsPlayedRequirement: 6,
-      description: 'Vent 9999 Strain; Gain 10 Radiance; Draw 5 cards; Empower the next card you play; +720 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +400.0 Oblivion per pulse · Frost: +0.8 draw per pulse)',
+      description: 'Vent 9999 Strain; Gain 10 Radiance; Gain 10 Arctic Charge; Empower the next card you play; +720 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +400.0 Oblivion per pulse · Frost: +10.0 Arctic Charge per pulse)',
       // Role: APEX FROST FISSION. Seeds 3, then discharges every banked pulse ?
       // moderate-high coefficient, widest payout in the Infinite Angel band.
-      effects: [{ type: 'strain_vent', value: 9999 }, { type: 'radiance_gain', value: 10 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 720 }, { type: 'arctic_charge_discharge' }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 400, frostDrawPerPulse: 0.8 }],
+      effects: [{ type: 'strain_vent', value: 9999 }, { type: 'radiance_gain', value: 10 }, { type: 'arctic_charge_gain', value: 10 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 720 }, { type: 'arctic_charge_discharge' }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 400, frostArcticChargePerPulse: 10 }],
     },
     attacks: {
       primary: {
@@ -1193,18 +1168,18 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Neon Snowfall',
-    description: 'On summon: Gain 12 Radiance; Gain 1 Strain; Draw 6 cards; Gain 16 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Gain 8 Arctic Charge; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +0.6 draw per pulse). While on board: +760 Oblivion per card played while on board',
+    description: 'On summon: Gain 12 Radiance; Gain 1 Strain; Gain 28 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 8 Radiance; Gain 18 Arctic Charge; +840 Oblivion; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +8.0 Arctic Charge per pulse). While on board: +760 Oblivion per card played while on board',
     artKey: 'sv_infinite_neon_snowfall',
     summonCost: ['sv-cher-station-nullpoint', 'sv-cher-aeldris'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 12 }, { type: 'strain_gain', value: 1 }, { type: 'draw', value: 6 }, { type: 'arctic_charge_gain', value: 16 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 12 }, { type: 'strain_gain', value: 1 }, { type: 'arctic_charge_gain', value: 28 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
     activatedAbility: {
       name: 'Aurora Shock',
       cardsPlayedRequirement: 6,
-      description: 'Gain 8 Radiance; Draw 5 cards; +840 Oblivion; Gain 8 Arctic Charge; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +0.6 draw per pulse)',
+      description: 'Gain 8 Radiance; Gain 18 Arctic Charge; +840 Oblivion; Discharge up to 3 Static Pulses (Voltage: +380.0 Oblivion per pulse · Frost: +8.0 Arctic Charge per pulse)',
       // Role: CHAIN-FOCUSED PULSE SEEDER. Seeds 3, then partial 3-pulse discharge
       // leaves residue banked for downstream finishers.
-      effects: [{ type: 'radiance_gain', value: 8 }, { type: 'draw', value: 5 }, { type: 'oblivion_flat', value: 840 }, { type: 'arctic_charge_gain', value: 8 }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 380, frostDrawPerPulse: 0.6, consume: 3 }],
+      effects: [{ type: 'radiance_gain', value: 8 }, { type: 'arctic_charge_gain', value: 18 }, { type: 'oblivion_flat', value: 840 }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 380, frostArcticChargePerPulse: 8, consume: 3 }],
     },
     attacks: {
       primary: {
@@ -1236,18 +1211,18 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Crystal Storm',
-    description: 'On summon: Gain 3 Strain; Gain 12 Radiance; Draw 6 cards; +900 Oblivion; Gain 18 Arctic Charge; Gain 2 Static Pulses. After 7 cards played: Gain 2 Strain; Draw 5 cards; Empower the next card you play; +960 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +1.0 draw per pulse). While on board: +820 Oblivion per card played while on board',
+    description: 'On summon: Gain 3 Strain; Gain 12 Radiance; Gain 30 Arctic Charge; +900 Oblivion; Gain 2 Static Pulses. After 7 cards played: Gain 2 Strain; Gain 10 Arctic Charge; Empower the next card you play; +960 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +12.0 Arctic Charge per pulse). While on board: +820 Oblivion per card played while on board',
     artKey: 'sv_infinite_crystal_storm',
     summonCost: ['sv-angel-sleet-choir', 'sv-ser-snow-lattice'],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 3 }],
-    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 12 }, { type: 'draw', value: 6 }, { type: 'oblivion_flat', value: 900 }, { type: 'arctic_charge_gain', value: 18 }, { type: 'set_secondary_gain', kind: 'snow', value: 2 }],
+    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 12 }, { type: 'arctic_charge_gain', value: 30 }, { type: 'oblivion_flat', value: 900 }, { type: 'set_secondary_gain', kind: 'snow', value: 2 }],
     activatedAbility: {
       name: 'Storm Break',
       cardsPlayedRequirement: 7,
-      description: 'Gain 2 Strain; Draw 5 cards; Empower the next card you play; +960 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +1.0 draw per pulse)',
+      description: 'Gain 2 Strain; Gain 10 Arctic Charge; Empower the next card you play; +960 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +12.0 Arctic Charge per pulse)',
       // Role: PULSE CONVERTER. Modest seed (+2), but the activated ability
       // discharges every banked pulse at the highest coefficient in the band.
-      effects: [{ type: 'strain_gain', value: 2 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 960 }, { type: 'arctic_charge_discharge' }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 460, frostDrawPerPulse: 1.0 }],
+      effects: [{ type: 'strain_gain', value: 2 }, { type: 'arctic_charge_gain', value: 10 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 960 }, { type: 'arctic_charge_discharge' }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 460, frostArcticChargePerPulse: 12 }],
     },
     attacks: {
       primary: {
@@ -1279,18 +1254,18 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Throne',
-    description: 'On summon: Gain 3 Strain; Gain 14 Radiance; Draw 5 cards; +1020 Oblivion; Gain 18 Arctic Charge; Gain 3 Static Pulses. After 6 cards played: Gain 2 Strain; Gain 8 Radiance; Draw 5 cards; Empower the next card you play; +1080 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +420.0 Oblivion per pulse · Frost: +0.8 draw per pulse). While on board: +880 Oblivion per card played while on board',
+    description: 'On summon: Gain 3 Strain; Gain 14 Radiance; Gain 28 Arctic Charge; +1020 Oblivion; Gain 3 Static Pulses. After 6 cards played: Gain 2 Strain; Gain 8 Radiance; Gain 10 Arctic Charge; Empower the next card you play; +1080 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +420.0 Oblivion per pulse · Frost: +10.0 Arctic Charge per pulse). While on board: +880 Oblivion per card played while on board',
     artKey: 'sv_infinite_black_ice_throne',
     summonCost: ['sv-eternal-white-static', 'sv-cher-station-nullpoint'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 14 }, { type: 'draw', value: 5 }, { type: 'oblivion_flat', value: 1020 }, { type: 'arctic_charge_gain', value: 18 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
+    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 14 }, { type: 'arctic_charge_gain', value: 28 }, { type: 'oblivion_flat', value: 1020 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
     activatedAbility: {
       name: 'Throne Freeze',
       cardsPlayedRequirement: 6,
-      description: 'Gain 2 Strain; Gain 8 Radiance; Draw 5 cards; Empower the next card you play; +1080 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +420.0 Oblivion per pulse · Frost: +0.8 draw per pulse)',
+      description: 'Gain 2 Strain; Gain 8 Radiance; Gain 10 Arctic Charge; Empower the next card you play; +1080 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +420.0 Oblivion per pulse · Frost: +10.0 Arctic Charge per pulse)',
       // Role: FLOOR-LOCKED DISCHARGER. Seeds 3, discharges all at a moderate
       // coefficient ? paired with its chain-floor lockstep for stable payouts.
-      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 8 }, { type: 'draw', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1080 }, { type: 'arctic_charge_discharge' }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 420, frostDrawPerPulse: 0.8 }],
+      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 8 }, { type: 'arctic_charge_gain', value: 10 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1080 }, { type: 'arctic_charge_discharge' }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 420, frostArcticChargePerPulse: 10 }],
     },
     attacks: {
       primary: {
@@ -1322,18 +1297,18 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Aurora Collapse',
-    description: 'On summon: Gain 18 Radiance; Gain 3 Strain; Draw 7 cards; +1200 Oblivion; Gain 20 Arctic Charge; Gain 4 Static Pulses. After 7 cards played: Vent 9999 Strain; Gain 15 Radiance; Draw 6 cards; Empower the next card you play; +1260 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +520.0 Oblivion per pulse · Frost: +1.2 draw per pulse). While on board: +940 Oblivion per card played while on board',
+    description: 'On summon: Gain 18 Radiance; Gain 3 Strain; Gain 34 Arctic Charge; +1200 Oblivion; Gain 4 Static Pulses. After 7 cards played: Vent 9999 Strain; Gain 15 Radiance; Gain 12 Arctic Charge; Empower the next card you play; +1260 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +520.0 Oblivion per pulse · Frost: +14.0 Arctic Charge per pulse). While on board: +940 Oblivion per card played while on board',
     artKey: 'sv_infinite_aurora_collapse',
     summonCost: ['sv-angel-voltage-patriarch', 'sv-eternal-frost-charge'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 3 }],
-    onSummonEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'strain_gain', value: 3 }, { type: 'draw', value: 7 }, { type: 'oblivion_flat', value: 1200 }, { type: 'arctic_charge_gain', value: 20 }, { type: 'set_secondary_gain', kind: 'snow', value: 4 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'strain_gain', value: 3 }, { type: 'arctic_charge_gain', value: 34 }, { type: 'oblivion_flat', value: 1200 }, { type: 'set_secondary_gain', kind: 'snow', value: 4 }],
     activatedAbility: {
       name: 'Collapse Horizon',
       cardsPlayedRequirement: 7,
-      description: 'Vent 9999 Strain; Gain 15 Radiance; Draw 6 cards; Empower the next card you play; +1260 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +520.0 Oblivion per pulse · Frost: +1.2 draw per pulse)',
+      description: 'Vent 9999 Strain; Gain 15 Radiance; Gain 12 Arctic Charge; Empower the next card you play; +1260 Oblivion; Discharge Arctic Charge; Discharge all Static Pulses (Voltage: +520.0 Oblivion per pulse · Frost: +14.0 Arctic Charge per pulse)',
       // Role: APEX SNOWBOUND FINISHER. Seeds 4 pulses, then discharges them all
       // at the highest Frost coefficient on Snowbound ? saved for the kill.
-      effects: [{ type: 'strain_vent', value: 9999 }, { type: 'radiance_gain', value: 15 }, { type: 'draw', value: 6 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1260 }, { type: 'arctic_charge_discharge' }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 520, frostDrawPerPulse: 1.2 }],
+      effects: [{ type: 'strain_vent', value: 9999 }, { type: 'radiance_gain', value: 15 }, { type: 'arctic_charge_gain', value: 12 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1260 }, { type: 'arctic_charge_discharge' }, { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 520, frostArcticChargePerPulse: 14 }],
     },
     attacks: {
       primary: {
@@ -1367,19 +1342,19 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Polar Cataclysm',
-    description: 'Gain 20 Radiance; Gain 3 Strain; Draw 6 cards; Empower the next card you play; +3200 Oblivion; Gain 20 Arctic Charge; Gain 3 Static Pulses; Discharge all Static Pulses (Voltage: +500.0 Oblivion per pulse · Frost: +1.0 draw per pulse)',
+    description: 'Gain 3 Strain; Gain 20 Radiance; Gain 32 Arctic Charge; Empower the next card you play; +3200 Oblivion; Gain 20 Arctic Charge; Gain 3 Static Pulses; Discharge all Static Pulses (Voltage: +500.0 Oblivion per pulse · Frost: +12.0 Arctic Charge per pulse)',
     artKey: 'inf_sv_polar_cataclysm',
     // Role: SELF-CASHOUT FINISHER. Seeds 3 pulses and discharges them in the
-    // same play ? immediate +draws spike.
+    // same play ? immediate Arctic Charge spike.
     effects: [
-      { type: 'radiance_gain', value: 20 },
       { type: 'strain_gain', value: 3 },
-      { type: 'draw', value: 6 },
+      { type: 'radiance_gain', value: 20 },
+      { type: 'arctic_charge_gain', value: 32 },
       { type: 'multiply_next' },
       { type: 'oblivion_flat', value: 3200 },
       { type: 'arctic_charge_gain', value: 20 },
       { type: 'set_secondary_gain', kind: 'snow', value: 3 },
-      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 500, frostDrawPerPulse: 1.0 }],
+      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 500, frostArcticChargePerPulse: 12 }],
   },
   {
     definitionId: 'inf-sv-neon-deluge',
@@ -1387,7 +1362,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Neon Deluge',
-    description: 'Gain 2 Strain; Gain 10 Radiance; Look at the top 9 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Draw 2 cards; +2800 Oblivion; Gain 15 Arctic Charge; Gain 2 Static Pulses',
+    description: 'Gain 2 Strain; Gain 10 Radiance; Look at the top 9 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 19 Arctic Charge; +2800 Oblivion; Gain 15 Arctic Charge; Gain 2 Static Pulses',
     artKey: 'inf_sv_neon_deluge',
     // Role: PURE PULSE BATTERY. +2 Static Pulses, no discharge ? hoards for
     // downstream Aurora/Crystal finishers.
@@ -1395,7 +1370,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'strain_gain', value: 2 },
       { type: 'radiance_gain', value: 10 },
       { type: 'look_top_take_drop', look: 9, take: 3, drop: 2 },
-      { type: 'draw', value: 2 },
+      { type: 'arctic_charge_gain', value: 19 },
       { type: 'oblivion_flat', value: 2800 },
       { type: 'arctic_charge_gain', value: 15 },
       { type: 'set_secondary_gain', kind: 'snow', value: 2 }],
@@ -1406,18 +1381,18 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Crystal Maelstrom',
-    description: 'Gain 3 Strain; Gain 12 Radiance; Draw 5 cards; +3300 Oblivion; Gain 18 Arctic Charge; Gain 3 Static Pulses; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +0.8 draw per pulse)',
+    description: 'Gain 3 Strain; Gain 12 Radiance; Gain 28 Arctic Charge; +3300 Oblivion; Gain 18 Arctic Charge; Gain 3 Static Pulses; Discharge all Static Pulses (Voltage: +460.0 Oblivion per pulse · Frost: +10.0 Arctic Charge per pulse)',
     artKey: 'inf_sv_crystal_maelstrom',
     // Role: MID-COEFFICIENT FINISHER. Seeds 3, discharges all banked pulses at
-    // a modest 0.8 frost coefficient.
+    // a modest frost coefficient.
     effects: [
       { type: 'strain_gain', value: 3 },
       { type: 'radiance_gain', value: 12 },
-      { type: 'draw', value: 5 },
+      { type: 'arctic_charge_gain', value: 28 },
       { type: 'oblivion_flat', value: 3300 },
       { type: 'arctic_charge_gain', value: 18 },
       { type: 'set_secondary_gain', kind: 'snow', value: 3 },
-      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 460, frostDrawPerPulse: 0.8 }],
+      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 460, frostArcticChargePerPulse: 10 }],
   },
   {
     definitionId: 'inf-sv-black-ice-dominion',
@@ -1425,7 +1400,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Dominion',
-    description: 'Gain 3 Strain; Gain 14 Radiance; Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Draw 3 cards; +3100 Oblivion; Gain 18 Arctic Charge; Gain 4 Static Pulses',
+    description: 'Gain 3 Strain; Gain 14 Radiance; Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Gain 24 Arctic Charge; +3100 Oblivion; Gain 18 Arctic Charge; Gain 4 Static Pulses',
     artKey: 'inf_sv_black_ice_dominion',
     // Role: BIG PULSE BATTERY + SCOUT. +4 Static Pulses; no discharge ?
     // the deck-thinning variant of the back-row reservoir.
@@ -1433,7 +1408,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'strain_gain', value: 3 },
       { type: 'radiance_gain', value: 14 },
       { type: 'look_top_take_drop', look: 12, take: 4, drop: 1 },
-      { type: 'draw', value: 3 },
+      { type: 'arctic_charge_gain', value: 24 },
       { type: 'oblivion_flat', value: 3100 },
       { type: 'arctic_charge_gain', value: 18 },
       { type: 'set_secondary_gain', kind: 'snow', value: 4 }],
@@ -1444,19 +1419,19 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Aurora Singularity',
-    description: 'Gain 25 Radiance; Gain 4 Strain; Draw 8 cards; Empower the next card you play; +3600 Oblivion; Gain 22 Arctic Charge; Gain 4 Static Pulses; Discharge all Static Pulses (Voltage: +550.0 Oblivion per pulse · Frost: +1.2 draw per pulse)',
+    description: 'Gain 4 Strain; Gain 25 Radiance; Gain 38 Arctic Charge; Empower the next card you play; +3600 Oblivion; Gain 22 Arctic Charge; Gain 4 Static Pulses; Discharge all Static Pulses (Voltage: +550.0 Oblivion per pulse · Frost: +14.0 Arctic Charge per pulse)',
     artKey: 'inf_sv_aurora_singularity',
     // Role: APEX OPHANIM FINISHER. Seeds 4 pulses, discharges them all at the
-    // highest single-card Frost coefficient (1.2 draws per pulse).
+    // highest single-card Frost coefficient.
     effects: [
-      { type: 'radiance_gain', value: 25 },
       { type: 'strain_gain', value: 4 },
-      { type: 'draw', value: 8 },
+      { type: 'radiance_gain', value: 25 },
+      { type: 'arctic_charge_gain', value: 38 },
       { type: 'multiply_next' },
       { type: 'oblivion_flat', value: 3600 },
       { type: 'arctic_charge_gain', value: 22 },
       { type: 'set_secondary_gain', kind: 'snow', value: 4 },
-      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 550, frostDrawPerPulse: 1.2 }],
+      { type: 'snow_static_pulse_discharge', voltageOblivionPerPulse: 550, frostArcticChargePerPulse: 14 }],
   }];
 
 // Flat export for registry

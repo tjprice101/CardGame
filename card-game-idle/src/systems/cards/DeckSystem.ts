@@ -64,6 +64,17 @@ export class DeckSystem {
     return DeckSystem.shuffle(cards);
   }
 
+  /** Same as buildFromList but does NOT shuffle — used for Trial Deck guided mode. */
+  static buildOrdered(deckList: DeckEntry[]): DeckCard[] {
+    const cards: DeckCard[] = [];
+    for (const entry of deckList) {
+      for (let i = 0; i < entry.copies; i++) {
+        cards.push({ instanceId: nextDeckId(), definitionId: entry.definitionId, finish: entry.finish });
+      }
+    }
+    return cards;
+  }
+
   static draw(drawPile: DeckCard[], count: number): { drawn: DeckCard[]; remaining: DeckCard[] } {
     const actual = Math.min(count, drawPile.length);
     return {

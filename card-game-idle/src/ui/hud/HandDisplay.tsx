@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings } from '@/state/store';
+import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings, selectBattleground, selectBossFight } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -100,10 +100,11 @@ const styles: Record<string, React.CSSProperties> = {
     pointerEvents: 'auto',
     position: 'relative',
     overflowX: 'auto',
-    overflowY: 'visible',
+    overflowY: 'clip',
     maxWidth: '100%',
     paddingBottom: 10,
     paddingTop: 24,
+    scrollbarGutter: 'stable',
   },
   card: {
     width: 'clamp(116px, 8.2vw, 132px)',
@@ -228,6 +229,8 @@ export default function HandDisplay() {
   const board = useStore(selectBoard);
   const progress = useStore(selectProgress);
   const settings = useStore(selectSettings);
+  const battleground = useStore(selectBattleground);
+  const bossFight = useStore(selectBossFight);
   const cardArtDisplay = settings.cardArtDisplay ?? 'both';
   const showTopPanel = cardArtDisplay === 'both' || cardArtDisplay === 'top-only';
   const showBottomPanel = cardArtDisplay === 'both' || cardArtDisplay === 'bottom-only';
@@ -340,6 +343,21 @@ export default function HandDisplay() {
     return () => window.clearInterval(timer);
   }, [isIdle, favoriteShowcasePool]);
 
+  // Trial Deck guided-mode: highlight the card matching the current guide step
+  const [guideHighlightDefId, setGuideHighlightDefId] = useState<string | null>(null);
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ cardDefinitionId: string }>;
+      setGuideHighlightDefId(ce.detail?.cardDefinitionId ?? null);
+    };
+    window.addEventListener('trial-guide-highlight', handler);
+    return () => window.removeEventListener('trial-guide-highlight', handler);
+  }, []);
+  // Clear highlight when no longer in playing phase
+  useEffect(() => {
+    if (!isPlaying) setGuideHighlightDefId(null);
+  }, [isPlaying]);
+
   function handleClick(instanceId: string) {
     if (isExtraDeckView) {
       // Summon an Angel from the Extra Deck when conditions are met.
@@ -370,7 +388,7 @@ export default function HandDisplay() {
   }
 
   const showActiveHand = isMulligan || isPlaying;
-  const showIdleShowcase = isIdle;
+  const showIdleShowcase = isIdle && bossFight.mode !== 'active';
   // Cards to render in the bottom hand strip. Either the live hand (default)
   // or a read-only relocation of the Extra Deck. Synthetic instanceIds for
   // extra-deck entries keep React keys stable across renders.
@@ -404,7 +422,7 @@ export default function HandDisplay() {
     <div style={{ ...styles.overlay, background: isMulligan ? 'rgba(92,63,31,0.14)' : 'transparent' }}>
       {isMulligan && (
         <div style={{
-          position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)',
+          position: 'absolute', top: battleground.mode === 'active' ? 72 : 16, left: '50%', transform: 'translateX(-50%)',
           color: 'rgba(244,244,248,0.95)', fontFamily: 'Georgia, serif', fontSize: 13, letterSpacing: 3,
           background: 'linear-gradient(90deg, rgba(5,5,7,0.12), rgba(160,120,255,0.55), rgba(80,200,255,0.35), rgba(255,100,200,0.25), rgba(5,5,7,0.12))',
           backgroundSize: '200% 100%',
@@ -652,6 +670,7 @@ export default function HandDisplay() {
 
           const isDraggable = !isExtraDeckView && isPlaying && isPlayable && (def?.type === 'Seraphim' || def?.type === 'Ophanim' || def?.type === 'Cherubim');
           const isDragging = !isExtraDeckView && draggingId === deckCard.instanceId;
+          const isGuideHighlighted = isPlaying && !isExtraDeckView && guideHighlightDefId === deckCard.definitionId;
 
           return (
             <div
@@ -661,6 +680,7 @@ export default function HandDisplay() {
                 deckCard.finish === 'holo'
                   ? `holofoil-live-card${def?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${def?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
                   : undefined,
+                isGuideHighlighted ? 'trial-guide-pulse' : undefined,
               ].filter(Boolean).join(' ') || undefined}
               draggable={isDraggable}
               style={{
@@ -728,6 +748,31 @@ export default function HandDisplay() {
 
               {selected && (
                 <div style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, color: warmTheme.danger }}>?</div>
+              )}
+
+              {/* Neutrality "marked" indicator — card was stamped by Temporal Ruin
+                  or similar; playing it grants +N Patience to all Seraphim */}
+              {!isExtraDeckView && (turn.neutralityMarkedCardIds ?? []).includes(deckCard.instanceId) && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: 5,
+                  right: 5,
+                  zIndex: 10,
+                  padding: '2px 6px',
+                  borderRadius: 999,
+                  border: '1px solid rgba(166,198,255,0.45)',
+                  background: 'rgba(24, 20, 52, 0.88)',
+                  color: 'rgba(200,220,255,0.96)',
+                  fontSize: 8,
+                  lineHeight: 1,
+                  letterSpacing: 0.5,
+                  fontFamily: 'Georgia, serif',
+                  fontWeight: 700,
+                  pointerEvents: 'none',
+                  boxShadow: '0 2px 8px rgba(80,120,255,0.32)',
+                }}>
+                  {`★ +${turn.neutralityMarkedPatienceGain ?? 0} Pat`}
+                </div>
               )}
 
               {/* Shimmer sweep on hover */}

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
-import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
+import { useStore, selectBoard, selectBossFight, selectBattleground, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
@@ -19,7 +19,7 @@ import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
 import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { uiTypography, warmTheme } from '@/ui/theme';
-import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
+import { ELEMENT_COLORS, ELEMENT_SET_NAMES, isSnowboundCard } from '@/data/elements';
 import type { DeckCard } from '@/types/game';
 import type {
   AngelDefinition,
@@ -268,6 +268,276 @@ interface PendingSeraphimAttack {
   description: string;
 }
 
+function renderPatienceBadge(stacks: number) {
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: 7,
+      left: 7,
+      zIndex: 8,
+      padding: '2px 6px',
+      borderRadius: 999,
+      border: '1px solid rgba(166,198,255,0.38)',
+      background: 'rgba(18, 16, 30, 0.82)',
+      color: 'rgba(200,218,255,0.96)',
+      fontSize: 9,
+      lineHeight: 1,
+      letterSpacing: 0.5,
+      fontFamily: DISPLAY_FONT,
+      fontWeight: 700,
+      pointerEvents: 'none',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
+    }}>
+      {`⬡ ${stacks}`}
+    </div>
+  );
+}
+
+function renderVesselBadge() {
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: 7,
+      right: 7,
+      zIndex: 8,
+      padding: '2px 6px',
+      borderRadius: 999,
+      border: '1px solid rgba(180,210,255,0.55)',
+      background: 'rgba(36, 58, 148, 0.90)',
+      color: 'rgba(220,234,255,0.98)',
+      fontSize: 9,
+      lineHeight: 1,
+      letterSpacing: 0.8,
+      fontFamily: DISPLAY_FONT,
+      fontWeight: 700,
+      pointerEvents: 'none',
+      boxShadow: '0 2px 10px rgba(80,130,255,0.4)',
+      animation: 'boardFocusPulse 2s ease-in-out infinite',
+    }}>
+      VESSEL
+    </div>
+  );
+}
+
+function renderSnowboundBadge(phase?: 'Frost' | 'Voltage' | null, potential?: number, conduits?: number) {
+  if (!phase && (potential ?? 0) <= 0 && (conduits ?? 0) <= 0) return null;
+  const isFrost = phase !== 'Voltage';
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: `1px solid ${isFrost ? 'rgba(135,206,235,0.38)' : 'rgba(245,230,60,0.38)'}`,
+      background: isFrost ? 'rgba(10, 40, 80, 0.82)' : 'rgba(55, 50, 5, 0.82)',
+      color: isFrost ? 'rgba(175,225,255,0.96)' : 'rgba(255,240,100,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`${phase ?? 'Frost'} · P${potential ?? 0}${(conduits ?? 0) > 0 ? ` · C${conduits}` : ''}`}
+    </div>
+  );
+}
+
+function renderForgeBadge(charges?: number, cap?: number, pearls?: number) {
+  if ((charges ?? 0) <= 0 && (pearls ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(184,162,109,0.38)',
+      background: 'rgba(30, 20, 8, 0.82)',
+      color: 'rgba(220,195,140,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`Rg ${charges ?? 0}/${cap ?? 5}${(pearls ?? 0) > 0 ? ` · Pr ${pearls}` : ''}`}
+    </div>
+  );
+}
+
+function renderSeasBadge(polarity?: 'White' | 'Black' | null, current?: number) {
+  if (!polarity && (current ?? 0) <= 0) return null;
+  const isWhite = polarity !== 'Black';
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: `1px solid ${isWhite ? 'rgba(100,200,220,0.38)' : 'rgba(30,80,130,0.52)'}`,
+      background: isWhite ? 'rgba(10, 55, 75, 0.82)' : 'rgba(5, 15, 45, 0.85)',
+      color: isWhite ? 'rgba(180,235,255,0.96)' : 'rgba(100,160,220,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`${polarity ?? 'None'} · C${current ?? 0}`}
+    </div>
+  );
+}
+
+function renderBlackGlassBadge(white?: number, black?: number, fracture?: number) {
+  if ((white ?? 0) <= 0 && (black ?? 0) <= 0 && (fracture ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(180,160,190,0.32)',
+      background: 'rgba(10, 6, 14, 0.86)',
+      color: 'rgba(220,210,230,0.94)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`W${white ?? 0}/B${black ?? 0}${(fracture ?? 0) > 0 ? ` · F${fracture}` : ''}`}
+    </div>
+  );
+}
+
+function renderButterflyBadge(stance?: 'Reflect' | 'Absorb' | 'Dual' | null, spectrum?: number) {
+  if (!stance && (spectrum ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(155,183,255,0.38)',
+      background: 'rgba(20, 14, 48, 0.82)',
+      color: 'rgba(195,210,255,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`${stance ?? 'None'}${(spectrum ?? 0) > 0 ? ` · S${spectrum}` : ''}`}
+    </div>
+  );
+}
+
+function renderLightBadge(radiance?: number, resonance?: number) {
+  if ((radiance ?? 0) <= 0 && (resonance ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(255,215,0,0.38)',
+      background: 'rgba(48, 38, 4, 0.82)',
+      color: 'rgba(255,235,150,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`R${radiance ?? 0}${(resonance ?? 0) > 0 ? ` · Cad${resonance}` : ''}`}
+    </div>
+  );
+}
+
+function renderThornboundBadge(trail?: number, warPath?: string | null) {
+  if ((trail ?? 0) <= 0 && !warPath) return null;
+  const pathLabel = warPath === 'Aggression' ? 'Agg' : warPath === 'Endurance' ? 'End' : null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(182,48,48,0.38)',
+      background: 'rgba(28, 8, 8, 0.82)',
+      color: 'rgba(230,180,180,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`Trail ${trail ?? 0}${pathLabel ? ` · ${pathLabel}` : ''}`}
+    </div>
+  );
+}
+
+function renderMechanicalBadge(strain?: number) {
+  if ((strain ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(240,160,24,0.38)',
+      background: 'rgba(24, 18, 4, 0.82)',
+      color: 'rgba(255,200,100,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`Strain ${strain}`}
+    </div>
+  );
+}
+
+function renderWuasBadge(starlight?: number, dreamLattice?: number) {
+  if ((starlight ?? 0) <= 0 && (dreamLattice ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(184,200,232,0.38)',
+      background: 'rgba(16, 12, 32, 0.82)',
+      color: 'rgba(210,220,255,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`St${starlight ?? 0}${(dreamLattice ?? 0) > 0 ? ` · DL${dreamLattice}` : ''}`}
+    </div>
+  );
+}
+
+function renderDeathFlamedHellBadge(pyreStacks?: number) {
+  if ((pyreStacks ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(192,24,24,0.42)',
+      background: 'rgba(28, 4, 4, 0.86)',
+      color: 'rgba(255,160,120,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`Pyre ${pyreStacks}`}
+    </div>
+  );
+}
+
+function renderGlassAbsoluteBadge(proof?: number, depth?: number) {
+  if ((proof ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(207,239,255,0.34)',
+      background: 'rgba(8, 18, 28, 0.84)',
+      color: 'rgba(200,240,255,0.94)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`Pr${proof ?? 0}${(depth ?? 0) > 0 ? ` · D${depth}` : ''}`}
+    </div>
+  );
+}
+
+function renderPyroBadge(pressure?: number, fault?: number, windows?: number) {
+  if ((pressure ?? 0) <= 0 && (fault ?? 0) <= 0 && (windows ?? 0) <= 0) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: 7, left: 7, zIndex: 8,
+      padding: '2px 6px', borderRadius: 999,
+      border: '1px solid rgba(176,74,255,0.38)',
+      background: 'rgba(22, 6, 32, 0.82)',
+      color: 'rgba(210,160,255,0.96)',
+      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+    }}>
+      {`P${pressure ?? 0} / F${fault ?? 0}${(windows ?? 0) > 0 ? ` · W${windows}` : ''}`}
+    </div>
+  );
+}
+
 function formatAttackCosts(costs: ReadonlyArray<{ type: string; value: number }> | undefined): string {
   if (!costs || costs.length === 0) return 'No additional cost';
   return costs.map(cost => `${cost.type.replace(/_/g, ' ')} ${cost.value}`).join(', ');
@@ -285,7 +555,8 @@ function formatAttackSummary(attack: {
 
 export default function BoardDisplay() {
   const board = useStore(selectBoard);
-  const bossFight = useStore(selectBossFight);
+  const bossFight     = useStore(selectBossFight);
+  const battleground  = useStore(selectBattleground);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
@@ -574,7 +845,7 @@ export default function BoardDisplay() {
       position: 'absolute',
       left: 0,
       right: playfieldRightInset,
-      top: bossFight.mode === 'active' ? 'clamp(228px, 23vh, 305px)' : 'clamp(146px, 15.5vh, 218px)',
+      top: bossFight.mode === 'active' ? 'clamp(160px, 16vh, 215px)' : 'clamp(146px, 15.5vh, 218px)',
       marginInline: 'auto',
       pointerEvents: 'none',
       zIndex: 60,
@@ -797,6 +1068,18 @@ export default function BoardDisplay() {
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${angelElementColor}cc, ${angelElementColor}, ${angelElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 {renderBurningGardenBadge(angelDef?.element === 'BlazingGarden' ? slot.burningGardenPhase : undefined, slot.chromaticCounters, slot.isEcho)}
                 {renderPrismaticBadge(angelDef?.prismaticDepth, slot.spectrumTokens)}
+                {angelDef && isSnowboundCard(angelDef) && renderSnowboundBadge(turn.snowboundPhase, turn.snowboundPotential, turn.snowboundConduits)}
+                {angelDef?.element === 'AbyssalForge' && renderForgeBadge(turn.reforgeCharges, turn.reforgeChargeCap, turn.pearls)}
+                {angelDef?.element === 'EternalSeas' && renderSeasBadge(turn.eternalSeasPolarity, turn.eternalSeasCurrent)}
+                {angelDef?.element === 'Dark' && renderBlackGlassBadge(turn.blackGlassWhiteFlame, turn.blackGlassBlackFlame, turn.blackGlassFracture)}
+                {angelDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyStance, turn.butterflySpectrum)}
+                {angelDef?.element === 'Light' && renderLightBadge(turn.radiance, turn.lightResonance)}
+                {angelDef?.element === 'Thornbound' && renderThornboundBadge(turn.trail, turn.thornWarPath)}
+                {angelDef?.element === 'Mechanical' && angelDef && !isSnowboundCard(angelDef) && renderMechanicalBadge(turn.strain)}
+                {angelDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
+                {angelDef?.element === 'DeathFlamedHell' && renderDeathFlamedHellBadge(turn.eternalStacks?.pyre)}
+                {angelDef?.element === 'GlassAbsolute' && renderGlassAbsoluteBadge(turn.proof, turn.glassProofDepth)}
+                {angelDef?.element === 'Fire' && renderPyroBadge(turn.pyroFurnacePressure, turn.pyroAbyssFault, turn.pyroRuinWindows)}
                 <div style={getCardNameRibbonStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
                     Angel
@@ -835,6 +1118,8 @@ export default function BoardDisplay() {
                           : `Charge ${progress}/${awakenRequirement}`}
                   </div>
                 </div>
+                {/* Patience stacks badge (bottom-left) */}
+                {(slot.patienceStacks ?? 0) > 0 && renderPatienceBadge(slot.patienceStacks!)}
                 {isFocused && (
                   renderBoardFocusOverlay(14, angelDef?.element)
                 )}
@@ -912,6 +1197,18 @@ export default function BoardDisplay() {
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${serElementColor}cc, ${serElementColor}, ${serElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 {renderBurningGardenBadge(serDef?.element === 'BlazingGarden' ? slot.burningGardenPhase : undefined, slot.chromaticCounters, slot.isEcho)}
                 {renderPrismaticBadge(serDef?.prismaticDepth, slot.spectrumTokens)}
+                {serDef && isSnowboundCard(serDef) && renderSnowboundBadge(turn.snowboundPhase, turn.snowboundPotential, turn.snowboundConduits)}
+                {serDef?.element === 'AbyssalForge' && renderForgeBadge(turn.reforgeCharges, turn.reforgeChargeCap, turn.pearls)}
+                {serDef?.element === 'EternalSeas' && renderSeasBadge(turn.eternalSeasPolarity, turn.eternalSeasCurrent)}
+                {serDef?.element === 'Dark' && renderBlackGlassBadge(turn.blackGlassWhiteFlame, turn.blackGlassBlackFlame, turn.blackGlassFracture)}
+                {serDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyStance, turn.butterflySpectrum)}
+                {serDef?.element === 'Light' && renderLightBadge(turn.radiance, turn.lightResonance)}
+                {serDef?.element === 'Thornbound' && renderThornboundBadge(turn.trail, turn.thornWarPath)}
+                {serDef?.element === 'Mechanical' && serDef && !isSnowboundCard(serDef) && renderMechanicalBadge(turn.strain)}
+                {serDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
+                {serDef?.element === 'DeathFlamedHell' && renderDeathFlamedHellBadge(turn.eternalStacks?.pyre)}
+                {serDef?.element === 'GlassAbsolute' && renderGlassAbsoluteBadge(turn.proof, turn.glassProofDepth)}
+                {serDef?.element === 'Fire' && renderPyroBadge(turn.pyroFurnacePressure, turn.pyroAbyssFault, turn.pyroRuinWindows)}
                 <div style={getCardNameRibbonStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
                     {getDisplayCardTypeLabel('Seraphim')}
@@ -942,6 +1239,10 @@ export default function BoardDisplay() {
                   </div>
                   <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, letterSpacing: 0.5, textAlign: 'center' }}>left-click attacks · right-click remove</div>
                 </div>
+                {/* Patience stacks badge (bottom-left) */}
+                {(slot.patienceStacks ?? 0) > 0 && renderPatienceBadge(slot.patienceStacks!)}
+                {/* Vessel designation badge (bottom-right) */}
+                {turn.neutralityVesselInstanceId && slot.instanceId === turn.neutralityVesselInstanceId && renderVesselBadge()}
                 {isFocused && (
                   renderBoardFocusOverlay(12, serDef?.element)
                 )}
@@ -1669,6 +1970,64 @@ export default function BoardDisplay() {
         </div>
       )}
 
+
+      {/* Active Neutrality turn mechanics chips */}
+      {canPlay && (() => {
+        const chips: { label: string; title: string }[] = [];
+        if (turn.neutralityVesselInstanceId) {
+          const vesselName = board.frontSlots.find(s => s?.instanceId === turn.neutralityVesselInstanceId)
+            ? (CardRegistry.get(board.frontSlots.find(s => s?.instanceId === turn.neutralityVesselInstanceId)!.definitionId)?.name ?? 'Vessel')
+            : 'Vessel';
+          chips.push({ label: 'Vessel: ' + vesselName, title: 'A Seraphim has been designated as your Vessel for this turn.' });
+        }
+        if ((turn.neutralityVesselCopyPercent ?? 0) > 0) {
+          chips.push({ label: `Copy ${turn.neutralityVesselCopyPercent}%`, title: `Your Vessel copies ${turn.neutralityVesselCopyPercent}% of Patience gained by other Seraphim this turn.` });
+        }
+        if ((turn.neutralityLinkedGainBonus ?? 0) > 0) {
+          const retain = turn.neutralityLinkedRetainPercent ?? 0;
+          chips.push({ label: `Linked +${turn.neutralityLinkedGainBonus} / Retain ${retain}%`, title: `Linked mode: patience gains grant +${turn.neutralityLinkedGainBonus} extra to all linked Seraphim; non-attackers retain ${retain}% Patience after linked attacks.` });
+        }
+        if ((turn.neutralityAttackPreservePercent ?? 0) > 0) {
+          chips.push({ label: `Preserve ${turn.neutralityAttackPreservePercent}%`, title: `Seraphim attacks preserve ${turn.neutralityAttackPreservePercent}% of consumed Patience this turn.` });
+        }
+        if ((turn.neutralityAttackRestorePercent ?? 0) > 0) {
+          chips.push({ label: `Restore ${turn.neutralityAttackRestorePercent}%`, title: `Seraphim attacks restore ${turn.neutralityAttackRestorePercent}% of consumed Patience this turn.` });
+        }
+        if ((turn.neutralityMarkedCardIds?.length ?? 0) > 0) {
+          const gain = turn.neutralityMarkedPatienceGain ?? 0;
+          chips.push({ label: `${turn.neutralityMarkedCardIds!.length} Marked (+${gain} Pat)`, title: `${turn.neutralityMarkedCardIds!.length} hand card(s) marked: each grants +${gain} Patience to all Seraphim when played.` });
+        }
+        if (chips.length === 0) return null;
+        return (
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 5,
+            justifyContent: 'center',
+            marginTop: 6,
+            pointerEvents: 'none',
+          }}>
+            {chips.map((chip, idx) => (
+              <div key={idx} title={chip.title} style={{
+                padding: '2px 8px',
+                borderRadius: 999,
+                border: '1px solid rgba(160,190,255,0.38)',
+                background: 'rgba(20, 24, 56, 0.82)',
+                color: 'rgba(190,215,255,0.94)',
+                fontSize: 8.5,
+                lineHeight: 1.4,
+                letterSpacing: 0.5,
+                fontFamily: DISPLAY_FONT,
+                fontWeight: 700,
+                pointerEvents: 'none',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.24)',
+              }}>
+                {chip.label}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Zone separator with rank labels */}
       <div style={{

@@ -38,6 +38,18 @@ export const MAIN_MENU_RADIO_PLAYLIST: RadioTrack[] = [
     filename: 'wings-of-the-board-main-menu-radio.mp3',
     gain: 1.0,
   },
+  {
+    id: 'the-first-draw-of-eternity',
+    title: 'The First Draw of Eternity',
+    filename: 'the-first-draw-of-eternity-main-menu.mp3',
+    gain: 1.0,
+  },
+  {
+    id: 'sovereign-of-the-infinite-deck',
+    title: 'Sovereign of the Infinite Deck',
+    filename: 'sovereign-of-the-infinite-deck-main-menu.mp3',
+    gain: 1.0,
+  },
 ];
 
 const CROSSFADE_MS = 1400;

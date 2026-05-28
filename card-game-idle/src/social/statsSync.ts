@@ -33,6 +33,9 @@ interface StatsSnapshot {
   infiniteByDef: Record<string, number>;
   gauntletBestDepth: number;
   gauntletBestShards: number;
+  battlegroundWins: number;
+  battlegroundBestScore: number;
+  battlegroundTotalMatches: number;
 }
 
 let lastSnapshot: StatsSnapshot | null = null;
@@ -54,6 +57,9 @@ function snapshot(progress: ProgressState): StatsSnapshot {
     infiniteByDef: { ...progress.infiniteCollection },
     gauntletBestDepth: progress.gauntletBest?.bestDepth ?? 0,
     gauntletBestShards: progress.gauntletBest?.bestShards ?? 0,
+    battlegroundWins: progress.battlegroundStats?.wins ?? 0,
+    battlegroundBestScore: progress.battlegroundStats?.bestScore ?? 0,
+    battlegroundTotalMatches: progress.battlegroundStats?.totalMatches ?? 0,
   };
 }
 
@@ -69,6 +75,8 @@ function statsRowFor(userId: string, progress: ProgressState) {
     gauntlet_runs: gauntlet.runs,
     eternity_clears: eternityClears,
     infinite_pulls: sumValues(progress.infiniteCollection),
+    battleground_wins: progress.battlegroundStats?.wins ?? 0,
+    battleground_best_score: progress.battlegroundStats?.bestScore ?? 0,
     updated_at: new Date().toISOString(),
   };
 }
@@ -101,7 +109,7 @@ function scheduleStatsUpsert(): void {
 }
 
 async function postActivity(
-  kind: 'boss_clear' | 'infinite_pull' | 'gauntlet_best' | 'set_completion' | 'title_unlocked',
+  kind: 'boss_clear' | 'infinite_pull' | 'gauntlet_best' | 'set_completion' | 'title_unlocked' | 'battleground_result',
   payload: Record<string, unknown>,
 ): Promise<void> {
   const sb = getSupabase();
@@ -152,6 +160,17 @@ function detectAndPostTransitions(prev: StatsSnapshot, next: StatsSnapshot): boo
     });
   }
 
+  // Battleground result: fires when total match count increases.
+  if (next.battlegroundTotalMatches > prev.battlegroundTotalMatches) {
+    changed = true;
+    const won = next.battlegroundWins > prev.battlegroundWins;
+    void postActivity('battleground_result', {
+      result: won ? 'win' : 'loss',
+      score: next.battlegroundBestScore,
+      totalWins: next.battlegroundWins,
+    });
+  }
+
   return changed;
 }
 
@@ -192,6 +211,7 @@ export function initStatsSync(): void {
     } else if (
       next.bossClearTotal !== lastSnapshot.bossClearTotal
       || next.infiniteTotal !== lastSnapshot.infiniteTotal
+      || next.battlegroundTotalMatches !== lastSnapshot.battlegroundTotalMatches
     ) {
       // Routine drift; throttle.
       scheduleStatsUpsert();

@@ -33,7 +33,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 10, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 4 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'monochromatic_shards_gain', value: 2 }],
   },
   {
     definitionId: 'bgi-ser-ashen-helix',
@@ -169,7 +169,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'cherubim_expire_bonus', bonusValue: 120, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 5 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ser-void-mandible-archon',
@@ -271,7 +271,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 22, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 6 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'monochromatic_shards_gain', value: 4 }],
   },
   {
     definitionId: 'bgi-ser-hatred-astralwyrm',
@@ -339,7 +339,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'cherubim_expire_bonus', bonusValue: 260, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 9 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'monochromatic_shards_gain', value: 5 }],
   }];
 
 export const blackGlassInfernoOphanims: OphanimDefinition[] = [
@@ -351,7 +351,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Cinder Litany',
     description: 'Draw 1 card; +25 Oblivion',
     artKey: 'bgi_seek_cinder_litany',
-    effects: [{ type: 'monochromatic_shards_gain', value: 2 }, { type: 'oblivion_flat', value: 25 }],
+    effects: [{ type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 25 }],
   },
   {
     definitionId: 'bgi-ophanim-veilplane-shard',
@@ -383,7 +383,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     artKey: 'bgi_seek_ashen_memory',
     effects: [
       { type: 'oblivion_flat', value: 50 },
-      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'monochromatic_shards_gain', value: 2 }] }],
+      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'draw', value: 1 }] }],
   },
   {
     definitionId: 'bgi-ophanim-sable-descent',
@@ -393,7 +393,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Sable Descent',
     description: 'Draw 1 card; chain_gain',
     artKey: 'bgi_seek_sable_descent',
-    effects: [{ type: 'monochromatic_shards_gain', value: 2 }],
+    effects: [{ type: 'draw', value: 1 }],
   },
   {
     definitionId: 'bgi-ophanim-chromatic-sorrow',
@@ -423,7 +423,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Scorchglass Route',
     description: 'Draw 2 cards; Choose and discard 1 card',
     artKey: 'bgi_seek_scorchglass_route',
-    effects: [{ type: 'discard_choice', value: 1 }, { type: 'monochromatic_shards_gain', value: 7 }],
+    effects: [{ type: 'draw', value: 2 }, { type: 'discard_choice', value: 1 }, { type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ophanim-lament-siphon',
@@ -444,7 +444,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     description: 'chain_gain; If you control 1+ active Seraphim, Draw 1 card; Draw 1 card',
     artKey: 'bgi_seek_covenant_split',
     effects: [
-      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'monochromatic_shards_gain', value: 2 }] }],
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'draw', value: 1 }] }],
   },
   {
     definitionId: 'bgi-ophanim-infernal-script',
@@ -465,7 +465,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     description: 'Draw 2 cards; If you control 2+ active Cherubim, +80 Oblivion',
     artKey: 'bgi_seek_cindered_oath',
     effects: [
-      { type: 'monochromatic_shards_gain', value: 4 },
+      { type: 'draw', value: 2 },
       { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 80 }] }],
   },
   {
@@ -476,7 +476,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Grief Lattice',
     description: 'chain_multiplier_set; Draw 1 card',
     artKey: 'bgi_seek_grief_lattice',
-    effects: [{ type: 'monochromatic_shards_gain', value: 2 }],
+    effects: [{ type: 'draw', value: 1 }],
   },
   {
     definitionId: 'bgi-ophanim-violet-dirge',
@@ -496,7 +496,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'Copper Hate Psalm',
     description: '+160 Oblivion; chain_gain; Empower the next card you play; Draw 1 card',
     artKey: 'bgi_seek_copper_hate_psalm',
-    effects: [{ type: 'oblivion_flat', value: 160 }, { type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 2 }],
+    effects: [{ type: 'oblivion_flat', value: 160 }, { type: 'multiply_next' }],
   },
   {
     definitionId: 'bgi-ophanim-blue-mourning-rift',
@@ -516,7 +516,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: 'White-Black Supernova',
     description: 'Draw 3 cards; chain_multiplier_set',
     artKey: 'bgi_seek_whiteblack_supernova',
-    effects: [{ type: 'monochromatic_shards_gain', value: 6 }],
+    effects: [{ type: 'draw', value: 3 }],
   },
   {
     definitionId: 'bgi-ophanim-dracovyr-warcry',
@@ -536,7 +536,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     name: "Sorveth's Eleventh Second",
     description: 'Draw 4 cards; chain_gain; Empower the next card you play',
     artKey: 'bgi_seek_sorveths_eleventh_second',
-    effects: [{ type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 16 }],
+    effects: [{ type: 'draw', value: 4 }, { type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 8 }],
   },
   {
     definitionId: 'bgi-ophanim-shadows-of-the-inferno',
@@ -547,8 +547,9 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     description: 'Draw 3 cards; +220 Oblivion; If you have played 3+ cards this turn, +220 Oblivion',
     artKey: 'bgi_seek_shadows_of_the_inferno',
     effects: [
+      { type: 'draw', value: 3 },
       { type: 'oblivion_flat', value: 220 },
-      { type: 'monochromatic_shards_gain', value: 12 },
+      { type: 'monochromatic_shards_gain', value: 6 },
       { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 220 }] }],
   }];
 
@@ -563,7 +564,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_glassrose_pyre',
     maxDurability: 2,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 8 }],
-      onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 4 }, { type: 'salvage_by_type', filter: ['Ophanim'] }],
+      onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'salvage_by_type', filter: ['Ophanim'] }],
   },
   {
     definitionId: 'bgi-cherubim-ashencourt-sigil',
@@ -575,7 +576,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_ashencourt_sigil',
     maxDurability: 2,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 12 }],
-      onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 2 }, { type: 'oblivion_flat', value: 30 }],
+      onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 30 }],
   },
   {
     definitionId: 'bgi-cherubim-cinderborn-oath',
@@ -587,7 +588,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_cinderborn_oath',
     maxDurability: 3,
       effects: [],
-      onPlayEffects: [{ type: 'oblivion_flat', value: 50 }, { type: 'monochromatic_shards_gain', value: 2 }],
+      onPlayEffects: [{ type: 'oblivion_flat', value: 50 }, { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'bgi-cherubim-veilplane-fissure',
@@ -599,7 +600,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_veilplane_fissure',
     maxDurability: 3,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 16 }],
-      onPlayEffects: [{ type: 'salvage_any' }, { type: 'monochromatic_shards_gain', value: 4 }, { type: 'oblivion_flat', value: 80 }],
+      onPlayEffects: [{ type: 'salvage_any' }, { type: 'draw', value: 2 }, { type: 'oblivion_flat', value: 80 }],
   },
   {
     definitionId: 'bgi-cherubim-chromatic-crater',
@@ -611,7 +612,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_chromatic_crater',
     maxDurability: 3,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 14 }],
-      onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 4 }],
+      onPlayEffects: [{ type: 'draw', value: 2 }],
   },
   {
     definitionId: 'bgi-cherubim-ruin-garden',
@@ -623,7 +624,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_ruin_garden',
     maxDurability: 2,
       effects: [],
-      onPlayEffects: [{ type: 'shuffle_discard' }, { type: 'salvage_any' }, { type: 'monochromatic_shards_gain', value: 2 }],
+      onPlayEffects: [{ type: 'shuffle_discard' }, { type: 'salvage_any' }, { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'bgi-cherubim-sorveths-ring',
@@ -635,7 +636,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_sorveths_ring',
     maxDurability: 4,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 16 }],
-      onPlayEffects: [{ type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 6 }, { type: 'oblivion_flat', value: 90 }],
+      onPlayEffects: [{ type: 'multiply_next' }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 90 }],
   },
   {
     definitionId: 'bgi-cherubim-veth-serath-midplace',
@@ -647,7 +648,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_veth_serath_midplace',
     maxDurability: 4,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 18 }],
-      onPlayEffects: [{ type: 'salvage_by_type', filter: ['Ophanim', 'Cherubim'] }, { type: 'monochromatic_shards_gain', value: 2 }],
+      onPlayEffects: [{ type: 'salvage_by_type', filter: ['Ophanim', 'Cherubim'] }, { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'bgi-cherubim-vaelthorax-grieffire',
@@ -659,7 +660,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_vaelthorax_grieffire',
     maxDurability: 5,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 20 }],
-      onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 6 }, { type: 'oblivion_flat', value: 180 }],
+      onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 180 }],
   },
   {
     definitionId: 'bgi-cherubim-morvakaels-answer',
@@ -671,7 +672,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     artKey: 'bgi_cherubim_morvakaels_answer',
     maxDurability: 5,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 22 }],
-      onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 4 }, { type: 'salvage_any' }, { type: 'oblivion_flat', value: 140 }],
+      onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'salvage_any' }, { type: 'oblivion_flat', value: 140 }],
   }];
 
 export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
@@ -684,7 +685,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     description: 'On play: Draw 1 card; +25 Oblivion. While on board: Adjacent active Seraphim gain +9 Oblivion per card played; Buffs Seraphim and Angel attacks: base +7, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_null_obsidian',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 9 }],
-    onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 2 }, { type: 'oblivion_flat', value: 25 }],
+    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 25 }],
   },
   {
     definitionId: 'cherubim-dark-rose-shroud',
@@ -739,7 +740,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     description: 'On play: Draw 2 cards. While on board: Draw 2 cards per card played; Buffs Seraphim and Angel attacks: base +48, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +37, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_grieffire_ascent',
     effects: [{ type: 'cherubim_draw_per_card', value: 2 }],
-    onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 4 }],
+    onPlayEffects: [{ type: 'draw', value: 2 }],
   },
   {
     definitionId: 'cherubim-dark-mourning-mantle',
@@ -750,7 +751,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     description: 'On play: Salvage 2 cards matching Ophanim or Cherubim; Draw 1 card. While on board: Adjacent active Seraphim gain +15 Oblivion per card played; Buffs Seraphim and Angel attacks: base +13, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +10, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_mourning_mantle',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 15 }],
-    onPlayEffects: [{ type: 'salvage_by_type', filter: ['Ophanim', 'Cherubim'] }, { type: 'monochromatic_shards_gain', value: 2 }],
+    onPlayEffects: [{ type: 'salvage_by_type', filter: ['Ophanim', 'Cherubim'] }, { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'cherubim-dark-abyss-throne',

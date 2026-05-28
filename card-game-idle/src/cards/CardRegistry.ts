@@ -8,7 +8,7 @@ import type {
   SeraphimAttackSet,
   SeraphimDefinition,
 } from '@/types/cards';
-import type { CherubimPassiveEffect } from '@/types/effects';
+import type { CherubimPassiveEffect, CardEffect } from '@/types/effects';
 import { lightAngels } from '../data/cards/lightAngels';
 import { lightHRCards } from '../data/cards/lightHRCards';
 import { lightSeraphims } from '../data/cards/lightSeraphims';
@@ -36,6 +36,7 @@ import { deathFlamedHellCards } from '../data/cards/deathFlamedHellCards';
 import { wishedUponAStarCards } from '../data/cards/wishedUponAStarCards';
 import { snowboundVoltageAngels, snowboundVoltageCherubimCards, snowboundVoltageOphanimCards, snowboundVoltageSeraphims } from '../data/cards/snowboundVoltageCards';
 import { infiniteCards } from '../data/cards/infiniteCards';
+import { transcendentCardDefinitions } from '../data/ascension/transcendentCards';
 import { MATERIALIZED_CARD_BALANCE } from '../data/cards/materializedCardBalance';
 import { ScoreSystem } from '../systems/scoring/ScoreSystem';
 import { formatDisplayCardText } from '../ui/preferences';
@@ -94,6 +95,7 @@ const SOURCE_DEFINITIONS: CardDefinition[] = [
   ...(deathFlamedHellCards as unknown as CardDefinition[]),
   ...(wishedUponAStarCards as unknown as CardDefinition[]),
   ...(infiniteCards as unknown as CardDefinition[]),
+  ...(transcendentCardDefinitions as unknown as CardDefinition[]),
 ];
 
 const ELEMENT_MOTIFS: Record<string, string[]> = {
@@ -805,18 +807,46 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
   return [...def.effects, ...derived];
 }
 
+function isOphanimUtilityEffect(effect: CardEffect): boolean {
+  switch (effect.type) {
+    // Classic card-draw utility
+    case 'draw':
+    case 'discard_draw':
+    case 'look_top_take':
+    case 'look_top_take_drop':
+    case 'look_top_take_type':
+    case 'search_deck_by_type':
+    case 'salvage_by_type':
+    case 'salvage_any':
+    case 'shuffle_discard':
+    // Set-specific resource gains that replace draw as the set's card-advantage mechanic
+    case 'trail_gain':
+    case 'strain_gain':
+    case 'arctic_charge_gain':
+    case 'proof_gain':
+    case 'prismatic_light_gain':
+    case 'eternal_stack_gain':
+    case 'bloom_gain':
+    case 'butterfly_spectrum_gain':
+    case 'seas_current_gain':
+    case 'radiance_gain':
+    case 'ember_gain':
+    case 'monochromatic_shards_gain':
+    case 'pyro_furnace_pressure_gain':
+    case 'pyro_abyss_fault_gain':
+      return true;
+    // Recurse into overclock/conditional so nested resource gains are recognised
+    case 'overclock':
+      return effect.then.some(isOphanimUtilityEffect);
+    case 'conditional':
+      return effect.then.some(isOphanimUtilityEffect);
+    default:
+      return false;
+  }
+}
+
 function hasOphanimUtilityEffect(def: OphanimDefinition): boolean {
-  return def.effects.some(effect =>
-    effect.type === 'draw'
-    || effect.type === 'discard_draw'
-    || effect.type === 'look_top_take'
-    || effect.type === 'look_top_take_drop'
-    || effect.type === 'look_top_take_type'
-    || effect.type === 'search_deck_by_type'
-    || effect.type === 'salvage_by_type'
-    || effect.type === 'salvage_any'
-    || effect.type === 'shuffle_discard',
-  );
+  return def.effects.some(isOphanimUtilityEffect);
 }
 
 function injectOphanimUtility(def: OphanimDefinition): OphanimDefinition {

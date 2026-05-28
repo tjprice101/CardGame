@@ -121,12 +121,12 @@ export default function BossFightArena() {
       {/* Boss arena banner panel — cosmic cataclysm */}
       <div
         style={{
-          margin: '0 auto', width: 'calc(100% - 120px)', maxWidth: 920,
+          margin: '0 auto 0 160px', width: 'calc(100% - 220px)', maxWidth: 860,
           background: `linear-gradient(180deg, ${EW_PANEL_TINT} 0%, rgba(8,2,14,0.97) 100%)`,
           border: `1px solid ${EW_PANEL_BORDER}`,
-          borderRadius: '0 0 20px 20px',
-          padding: '14px 22px 16px',
-          display: 'flex', flexDirection: 'column', gap: 9,
+          borderRadius: '0 0 12px 12px',
+          padding: '4px 14px 6px',
+          display: 'flex', flexDirection: 'column', gap: 3,
           pointerEvents: 'auto',
           position: 'relative',
           animation: 'bossPanelSlideIn 0.8s cubic-bezier(0.22,0.61,0.36,1) both, accretionDiskGlow 3.6s ease-in-out infinite',
@@ -183,9 +183,9 @@ export default function BossFightArena() {
               }}>{modeBadge.text}</div>
             )}
             <div style={{
-              fontSize: 23, fontWeight: 'bold', color: 'rgba(244,244,248,0.98)',
+              fontSize: 14, fontWeight: 'bold', color: 'rgba(244,244,248,0.98)',
               fontFamily: 'Georgia, serif',
-              letterSpacing: 5,
+              letterSpacing: 3,
               textShadow: `0 1px 4px rgba(0,0,0,0.9), 0 0 20px ${EW_ACCENT}88, 0 0 44px rgba(180,80,255,0.28)`,
               textTransform: 'uppercase',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -196,17 +196,17 @@ export default function BossFightArena() {
 
           <div
             style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '4px 10px', borderRadius: 8,
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '2px 8px', borderRadius: 6,
               background: 'rgba(0,0,0,0.55)',
               border: `1px solid ${timeColor}66`,
               boxShadow: timeCritical ? `0 0 14px ${timeColor}44` : undefined,
               animation: timeCritical ? 'ewTimerPulse 1.1s ease-in-out infinite' : undefined,
             }}
           >
-            <span style={{ fontSize: 9, color: EW_TEXT_MUTED, letterSpacing: 2 }}>TIME</span>
+            <span style={{ fontSize: 8, color: EW_TEXT_MUTED, letterSpacing: 2 }}>TIME</span>
             <span style={{
-              fontSize: 30, color: 'rgba(244,244,248,0.98)', fontFamily: 'Georgia, serif', fontWeight: 'bold',
+              fontSize: 17, color: 'rgba(244,244,248,0.98)', fontFamily: 'Georgia, serif', fontWeight: 'bold',
               fontVariantNumeric: 'tabular-nums',
               textShadow: `0 0 14px ${timeColor}99, 0 1px 3px rgba(0,0,0,0.85)`,
               lineHeight: 1,
@@ -219,8 +219,8 @@ export default function BossFightArena() {
         <HpBar hpPercent={hpPercent} damageDealtPct={damageDealtPct} color={hpColor} lowHp={lowHp} />
 
         <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10,
-          fontSize: 11, fontFamily: 'Georgia, serif',
+          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6,
+          fontSize: 10, fontFamily: 'Georgia, serif',
         }}>
           <Stat label="BOSS HP" value={`${bossFight.bossCurrentHp.toLocaleString()} / ${bossFight.bossMaxHp.toLocaleString()}`} color={EW_TEXT} />
           <Stat
@@ -234,7 +234,7 @@ export default function BossFightArena() {
 
         {/* Timer bar */}
         <div style={{
-          position: 'relative', height: 5, background: 'rgba(0,0,0,0.45)', borderRadius: 3, overflow: 'hidden',
+          position: 'relative', height: 4, background: 'rgba(0,0,0,0.45)', borderRadius: 3, overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.04)',
         }}>
           <div style={{
@@ -315,7 +315,7 @@ function HpBar({
     <div
       style={{
         position: 'relative',
-        height: 28,
+        height: 11,
         background: 'rgba(0,0,0,0.65)',
         borderRadius: 14,
         overflow: 'hidden',
@@ -398,7 +398,7 @@ function Stat({ label, value, color, align, emphasize }: {
       <span style={{ fontSize: 8.5, letterSpacing: 1.4, color: EW_TEXT_MUTED }}>{label}</span>
       <span style={{
         color,
-        fontSize: emphasize ? 14 : 12,
+        fontSize: emphasize ? 12 : 10,
         fontWeight: emphasize ? 'bold' : 'normal',
         fontVariantNumeric: 'tabular-nums',
         textShadow: emphasize ? `0 0 10px ${color}88` : undefined,

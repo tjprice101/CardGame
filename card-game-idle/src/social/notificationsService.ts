@@ -22,6 +22,7 @@ import { useMessagesStore } from '@/state/messagesStore';
 import { useFriendsStore } from '@/state/friendsStore';
 import { useGiftsStore } from '@/state/giftsStore';
 import { useStore } from '@/state/store';
+import { useBattlegroundStore } from '@/state/battlegroundStore';
 
 const PREF_KEY = 'pantheon.social.notifications.v1';
 
@@ -228,6 +229,10 @@ function connectChannels(): void {
   // before the user opens the panel.
   useGiftsStore.getState().connectRealtime();
   void useGiftsStore.getState().loadGifts();
+
+  // Battleground invites: the battlegroundStore handles in-app toast;
+  // we supplement with an OS notification when the window is unfocused.
+  useBattlegroundStore.getState().connectRealtime();
 }
 
 function disconnectChannels(): void {
@@ -246,6 +251,7 @@ function disconnectChannels(): void {
   }
   profileNameCache.clear();
   useGiftsStore.getState().disconnectRealtime();
+  useBattlegroundStore.getState().disconnectRealtime();
 }
 
 // ── Public init ─────────────────────────────────────────────────────────────

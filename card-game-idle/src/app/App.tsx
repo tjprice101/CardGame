@@ -18,6 +18,9 @@ const DailyRewardModal = lazy(() => import('@/ui/profile/DailyRewardModal'));
 const QuestsModal = lazy(() => import('@/ui/menus/QuestsModal'));
 const AchievementsModal = lazy(() => import('@/ui/menus/AchievementsModal'));
 const ArtifactsMenu = lazy(() => import('@/ui/artifacts/ArtifactsMenu'));
+const AscensionHub = lazy(() => import('@/ui/ascension/AscensionHub'));
+const NullRaidArena = lazy(() => import('@/ui/ascension/NullRaidArena'));
+const NullRaidResults = lazy(() => import('@/ui/ascension/NullRaidResults'));
 const CardMasteryModal = lazy(() => import('@/ui/menus/CardMasteryModal'));
 const WakeTrialsModal = lazy(() => import('@/ui/menus/WakeTrialsModal'));
 const EndlessGauntletModal = lazy(() => import('@/ui/menus/EndlessGauntletModal'));
@@ -28,9 +31,16 @@ const RadioControlBar = lazy(() => import('@/ui/components/RadioControlBar'));
 const SplashScreen = lazy(() => import('@/ui/boot/SplashScreen'));
 const TitleScreen = lazy(() => import('@/ui/boot/TitleScreen'));
 const MainMenuHub = lazy(() => import('@/ui/menu/MainMenuHub'));
+const BattlegroundLobby = lazy(() => import('@/ui/battleground/BattlegroundLobby'));
+const BattlegroundMatch = lazy(() => import('@/ui/battleground/BattlegroundMatch'));
+const BattlegroundRewards = lazy(() => import('@/ui/battleground/BattlegroundRewards'));
+const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/BattlegroundInviteModal'));
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
 import { warmTheme } from '@/ui/theme';
-import { useStore, selectBoard, selectTurn, selectBossFight, selectSettings, selectProfile, selectProgress } from '@/state/store';
+import { useStore, selectBoard, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProfile, selectProgress, selectTrialDeck } from '@/state/store';
+import TrialDeckHUD from '@/ui/hud/TrialDeckHUD';
+const TrialDeckSummaryModal = lazy(() => import('@/ui/trialDeck/TrialDeckSummaryModal'));
+import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import { getFontScale, setUiPreferences } from '@/ui/preferences';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
@@ -40,6 +50,7 @@ import { initStatsSync } from '@/social/statsSync';
 import { initSocialNotifications } from '@/social/notificationsService';
 import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
 import { MainMenuRadio } from '@/audio/MainMenuRadio';
+import { MainTurnRadio } from '@/audio/MainTurnRadio';
 import type { NowPlayingEvent } from '@/ui/components/RadioNowPlaying';
 
 /**
@@ -126,6 +137,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [showEternitysWake, setShowEternitysWake] = useState(false);
+  const [showBattleground, setShowBattleground] = useState(false);
   const [showInfinitude, setShowInfinitude] = useState(false);
   const [showEventWuas, setShowEventWuas] = useState(false);
   const [showPlayerInfo, setShowPlayerInfo] = useState(false);
@@ -134,16 +146,25 @@ export default function App() {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showMastery, setShowMastery] = useState(false);
   const [showArtifacts, setShowArtifacts] = useState(false);
+  const [showAscension, setShowAscension] = useState(false);
   const [showWakeTrials, setShowWakeTrials] = useState(false);
   const [showEndlessGauntlet, setShowEndlessGauntlet] = useState(false);
+  const [showTrialSummary, setShowTrialSummary] = useState(false);
   const [showAutosaveIndicator, setShowAutosaveIndicator] = useState(false);
-  // Radio state
+  // Radio state — main menu
   const radioActiveRef = useRef(false);
   const nowPlayingEpochRef = useRef(0);
   const [nowPlayingEvent, setNowPlayingEvent] = useState<NowPlayingEvent | null>(null);
   const [radioPaused, setRadioPaused] = useState(false);
   const [radioActive, setRadioActive] = useState(false);
   const [radioCurrentTrack, setRadioCurrentTrack] = useState<import('@/audio/MainMenuRadio').RadioTrackInfo | null>(null);
+  // Radio state — main turn
+  const turnRadioActiveRef = useRef(false);
+  const turnNowPlayingEpochRef = useRef(0);
+  const [turnNowPlayingEvent, setTurnNowPlayingEvent] = useState<NowPlayingEvent | null>(null);
+  const [turnRadioPaused, setTurnRadioPaused] = useState(false);
+  const [turnRadioActive, setTurnRadioActive] = useState(false);
+  const [turnRadioCurrentTrack, setTurnRadioCurrentTrack] = useState<import('@/audio/MainTurnRadio').RadioTrackInfo | null>(null);
   // Top-level scene state machine. Splash and title only display on the very
   // first boot of each app session; subsequent navigation cycles only between
   // menu and arena.
@@ -151,9 +172,11 @@ export default function App() {
   const board = useStore(selectBoard);
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
+  const battleground = useStore(selectBattleground);
   const settings = useStore(selectSettings);
   const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
+  const trialDeck = useStore(selectTrialDeck);
   const lastSavedAt = useStore(s => s.lastSavedAt);
 
   useEffect(() => {
@@ -179,6 +202,7 @@ export default function App() {
     const vol = settings.musicVolume ?? 0;
     MusicManager.setVolume(vol);
     MainMenuRadio.setVolume(vol);
+    MainTurnRadio.setVolume(vol);
   }, [settings.musicVolume]);
 
   // ── SFX volume ───────────────────────────────────────────────────────
@@ -274,11 +298,42 @@ export default function App() {
         MainMenuRadio.start(settings.musicVolume ?? 0.5);
         MusicManager.stop();
       }
+      // Stop the turn radio if we were in a battle
+      if (turnRadioActiveRef.current) {
+        turnRadioActiveRef.current = false;
+        setTurnRadioActive(false);
+        MainTurnRadio.stop();
+      }
+    } else if (track === 'battle-normal') {
+      // Route normal battle music through the turn radio playlist.
+      if (!turnRadioActiveRef.current) {
+        turnRadioActiveRef.current = true;
+        setTurnRadioActive(true);
+        MainTurnRadio.setOnTrackChange((info) => {
+          turnNowPlayingEpochRef.current++;
+          setTurnNowPlayingEvent({ epoch: turnNowPlayingEpochRef.current, track: info });
+          setTurnRadioCurrentTrack(info);
+        });
+        MainTurnRadio.setOnPausedChange((p) => setTurnRadioPaused(p));
+        MainTurnRadio.start(settings.musicVolume ?? 0.5);
+        MusicManager.stop();
+      }
+      // Stop the menu radio if transitioning from menu
+      if (radioActiveRef.current) {
+        radioActiveRef.current = false;
+        setRadioActive(false);
+        MainMenuRadio.stop();
+      }
     } else {
       if (radioActiveRef.current) {
         radioActiveRef.current = false;
         setRadioActive(false);
         MainMenuRadio.stop();
+      }
+      if (turnRadioActiveRef.current) {
+        turnRadioActiveRef.current = false;
+        setTurnRadioActive(false);
+        MainTurnRadio.stop();
       }
       MusicManager.playTrack(track);
     }
@@ -396,9 +451,12 @@ export default function App() {
         if (showAchievements) { setShowAchievements(false); e.preventDefault(); return; }
         if (showMastery) { setShowMastery(false); e.preventDefault(); return; }
         if (showArtifacts) { setShowArtifacts(false); e.preventDefault(); return; }
+        if (showAscension) { setShowAscension(false); e.preventDefault(); return; }
         if (showWakeTrials) { setShowWakeTrials(false); e.preventDefault(); return; }
         if (showEndlessGauntlet) { setShowEndlessGauntlet(false); e.preventDefault(); return; }
         if (showDailyReward) { setShowDailyReward(false); e.preventDefault(); return; }
+        // If in an active trial, show the summary instead of doing nothing
+        if (trialDeck.mode === 'active') { setShowTrialSummary(true); e.preventDefault(); return; }
         return;
       }
 
@@ -414,7 +472,7 @@ export default function App() {
       // an active turn is in play (mulligan OR playing), in regular or boss
       // fight modes.
       if (e.code === controls.swapExtraDeck && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts;
+        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts || showAscension;
         if (anyModalOpen) return;
         const phase = useStore.getState().turn.phase;
         if (phase === 'playing' || phase === 'mulligan') {
@@ -425,7 +483,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showWakeTrials, showEndlessGauntlet, showEventWuas, showArtifacts, settings.controls]);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showWakeTrials, showEndlessGauntlet, showEventWuas, showArtifacts, showAscension, settings.controls, trialDeck.mode]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -439,25 +497,39 @@ export default function App() {
 
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts;
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts || showBattleground || showAscension;
 
   // Auto-sync scene to gameplay state once the player has reached the menu.
   // Entering an active turn or boss fight moves us into the arena; finishing
   // the turn returns us to the menu. Splash/title remain manual transitions.
+  // Battleground matches keep the arena active regardless of turn phase.
+  // Trial Deck sessions also keep arena active.
   useEffect(() => {
     if (scene === 'splash' || scene === 'title') return;
-    const inPlay = !idlePhase || inBossFight;
+    const inPlay = !idlePhase || inBossFight || battleground.mode === 'active' || trialDeck.mode === 'active';
     if (inPlay && scene !== 'arena') setScene('arena');
     else if (!inPlay && scene !== 'menu') setScene('menu');
-  }, [scene, idlePhase, inBossFight]);
+  }, [scene, idlePhase, inBossFight, battleground.mode, trialDeck.mode]);
 
   // Unified Eternity's Wake background overlay during any active boss fight (matches selection menu).
   const showBossBackdrop = inBossFight && BOSS_DEFINITIONS.some(b => b.id === bossFight.activeBossId);
   const ETERNITYS_WAKE_BG = 'radial-gradient(circle at 50% -8%, rgba(255, 108, 108, 0.22) 0%, rgba(255, 108, 108, 0) 35%), radial-gradient(circle at 18% 86%, rgba(149, 62, 95, 0.22) 0%, rgba(149, 62, 95, 0) 44%), repeating-linear-gradient(126deg, rgba(255, 130, 130, 0.08) 0px, rgba(255, 130, 130, 0.08) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 24px), linear-gradient(180deg, rgba(8, 4, 12, 0.985) 0%, rgba(18, 9, 20, 0.985) 100%)';
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '100%', background: warmTheme.appBackground, color: warmTheme.text, overflow: 'hidden' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%' }} />
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '100%',
+        background: warmTheme.appBackground,
+        color: warmTheme.text,
+        overflow: 'hidden',
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        style={{ display: 'block', width: '100%', height: '100%' }}
+      />
       <React.Fragment key={`theme-${themeKey}`}>
       <div className="game-bg-pattern game-bg-pattern--grain" />
       <div className="game-bg-pattern game-bg-pattern--sigils" />
@@ -479,7 +551,18 @@ export default function App() {
       )}
 
       {/* Boss fight HP bar overlay - hidden while full-screen menus are open */}
-      {!isMenuOpen && scene === 'arena' && <Suspense fallback={null}><BossFightArena /></Suspense>}
+      {!isMenuOpen && scene === 'arena' && bossFight.kind !== 'null_raid' && <Suspense fallback={null}><BossFightArena /></Suspense>}
+      {scene === 'arena' && bossFight.kind === 'null_raid' && bossFight.mode === 'active' && <Suspense fallback={null}><NullRaidArena /></Suspense>}
+
+      {/* Battleground match HUD overlay (timer + scores) */}
+      {!isMenuOpen && battleground.mode === 'active' && (
+        <Suspense fallback={null}><BattlegroundMatch /></Suspense>
+      )}
+
+      {/* Battleground result screen */}
+      {battleground.mode === 'finished' && (
+        <Suspense fallback={null}><BattlegroundRewards /></Suspense>
+      )}
 
       {/* Ambient arena backdrop — element-tinted gradient under the HUD. */}
       {!isMenuOpen && scene === 'arena' && (
@@ -493,12 +576,18 @@ export default function App() {
         </HudShakeWrapper>
       )}
 
+      {/* Trial Deck HUD — shown in arena when a trial is active */}
+      {!isMenuOpen && scene === 'arena' && trialDeck.mode === 'active' && (
+        <TrialDeckHUD onEndTrialRequest={() => setShowTrialSummary(true)} />
+      )}
+
       {/* Main menu hub — replaces the legacy scattered top-right nav clusters. */}
-      {!isMenuOpen && scene === 'menu' && !inBossFight && (
+      {!isMenuOpen && scene === 'menu' && !inBossFight && battleground.mode !== 'active' && (
         <Suspense fallback={null}>
           <MainMenuHub
             onCardStore={() => setShowCardStore(true)}
             onEternitysWake={() => setShowEternitysWake(true)}
+            onBattleground={() => setShowBattleground(true)}
             onInfinitude={() => setShowInfinitude(true)}
             onEventWishedUponAStar={() => setShowEventWuas(true)}
             onDeckViewer={() => setShowDeckViewer(true)}
@@ -510,6 +599,7 @@ export default function App() {
             onMastery={() => setShowMastery(true)}
             onArtifacts={() => setShowArtifacts(true)}
             onSettings={() => setShowSettings(true)}
+            onAscension={() => setShowAscension(true)}
             onBeginTurn={() => {
               setScene('arena');
               useStore.getState().beginTurn();
@@ -534,7 +624,14 @@ export default function App() {
       {/* Card Pack Store modal */}
       {showCardStore && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><CardPackStore onClose={() => setShowCardStore(false)} /></Suspense>
+          <Suspense fallback={null}><CardPackStore
+            onClose={() => setShowCardStore(false)}
+            onStartTrial={(packId, mode) => {
+              setShowCardStore(false);
+              useStore.getState().startTrialDeck(packId, mode);
+              setScene('arena');
+            }}
+          /></Suspense>
         </div>
       )}
 
@@ -559,6 +656,13 @@ export default function App() {
         </div>
       )}
 
+      {/* Battleground of the Card-born */}
+      {showBattleground && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
+          <Suspense fallback={null}><BattlegroundLobby onClose={() => setShowBattleground(false)} /></Suspense>
+        </div>
+      )}
+
       {/* Infinitude modal */}
       {showInfinitude && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
@@ -579,12 +683,26 @@ export default function App() {
         </div>
       )}
 
-      {/* Boss result modal (victory / defeat) */}
-      <div style={{ position: 'absolute', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
-        <div style={{ pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><BossResultModal /></Suspense>
+      {/* Ascension hub modal */}
+      {showAscension && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
+          <Suspense fallback={null}><AscensionHub onClose={() => setShowAscension(false)} /></Suspense>
         </div>
-      </div>
+      )}
+
+      {/* Boss result modal (victory / defeat) — only for non-null-raid fights */}
+      {bossFight.kind !== 'null_raid' && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
+          <div style={{ pointerEvents: 'auto' }}>
+            <Suspense fallback={null}><BossResultModal /></Suspense>
+          </div>
+        </div>
+      )}
+
+      {/* Null Raid results overlay */}
+      {bossFight.kind === 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat') && (
+        <Suspense fallback={null}><NullRaidResults /></Suspense>
+      )}
 
       {/* Emergency end turn removed — End Turn is now driven exclusively by
           the in-arena TurnControls (footer button); there is no keyboard
@@ -664,6 +782,21 @@ export default function App() {
         </div>
       )}
 
+      {/* Trial Deck summary modal */}
+      {showTrialSummary && trialDeck.mode === 'active' && (
+        <Suspense fallback={null}>
+          <TrialDeckSummaryModal
+            packName={PACK_DEFINITIONS.find(p => p.id === trialDeck.packId)?.name.replace(/^\[EVENT\]\s*/, '') ?? (trialDeck.packId ?? 'Trial')}
+            onConfirm={() => {
+              setShowTrialSummary(false);
+              useStore.getState().endTrialDeck();
+              setScene('menu');
+            }}
+            onClose={() => setShowTrialSummary(false)}
+          />
+        </Suspense>
+      )}
+
       {/* Autosave status indicator */}
       <div style={{
         position: 'absolute',
@@ -699,17 +832,44 @@ export default function App() {
         </Suspense>
       )}
       <Suspense fallback={null}><ToastQueue /></Suspense>
-      {/* Main menu radio — now-playing toast (top-right corner) */}
-      <Suspense fallback={null}><RadioNowPlaying nowPlaying={nowPlayingEvent} /></Suspense>
-      {/* Main menu radio — control bar (bottom-right corner) */}
-      <Suspense fallback={null}>
-        <RadioControlBar
-          radioActive={radioActive}
-          paused={radioPaused}
-          currentTrack={radioCurrentTrack}
-          onPausedChange={setRadioPaused}
-        />
-      </Suspense>
+      {/* Main menu radio — now-playing toast and control bar (home menu only, hidden when any submenu is open) */}
+      {scene === 'menu' && !isMenuOpen && (
+        <>
+          <Suspense fallback={null}><RadioNowPlaying nowPlaying={nowPlayingEvent} /></Suspense>
+          <Suspense fallback={null}>
+            <RadioControlBar
+              radioActive={radioActive}
+              paused={radioPaused}
+              currentTrack={radioCurrentTrack}
+              onPausedChange={setRadioPaused}
+              onPause={() => MainMenuRadio.pause()}
+              onResume={() => MainMenuRadio.resume()}
+              onSkip={() => MainMenuRadio.skip()}
+            />
+          </Suspense>
+        </>
+      )}
+      {/* Main turn radio — now-playing toast and control bar (arena, non-boss fights only) */}
+      {scene === 'arena' && !inBossFight && !isMenuOpen && (
+        <>
+          <Suspense fallback={null}><RadioNowPlaying nowPlaying={turnNowPlayingEvent} /></Suspense>
+          <Suspense fallback={null}>
+            <RadioControlBar
+              radioActive={turnRadioActive}
+              paused={turnRadioPaused}
+              currentTrack={turnRadioCurrentTrack}
+              onPausedChange={setTurnRadioPaused}
+              onPause={() => MainTurnRadio.pause()}
+              onResume={() => MainTurnRadio.resume()}
+              onSkip={() => MainTurnRadio.skip()}
+            />
+          </Suspense>
+        </>
+      )}
+
+      {/* Battleground PvP incoming invite — global, shown regardless of scene */}
+      <Suspense fallback={null}><BattlegroundInviteModal /></Suspense>
+
     </div>
   );
 }

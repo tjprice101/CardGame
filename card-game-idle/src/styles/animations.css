@@ -1598,3 +1598,16 @@ html.reduced-motion .arena-flash-active {
 .deck-play-btn-ready {
   animation: deckPlayBtnPulse 2.8s ease-in-out infinite;
 }
+
+/* ── Trial Deck guided-mode card highlight pulse ── */
+@keyframes trialGuidePulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(100, 220, 130, 0.6), 0 0 16px rgba(100, 220, 130, 0.35); }
+  50%       { box-shadow: 0 0 0 3px rgba(120, 255, 155, 0.9), 0 0 32px rgba(100, 220, 130, 0.7); }
+}
+.trial-guide-pulse {
+  animation: trialGuidePulse 1.2s ease-in-out infinite;
+}
+html.reduced-motion .trial-guide-pulse {
+  animation: none !important;
+  box-shadow: 0 0 0 3px rgba(100, 220, 130, 0.85) !important;
+}

@@ -1,13 +1,34 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { subMenuWarm } from '@/ui/theme';
+import { uiTypography } from '@/ui/theme';
 import {
   refreshQuestRotation,
   isQuestComplete,
   type QuestInstance,
 } from '@/systems/progression/quests';
 
-// ── Countdown helpers ────────────────────────────────────────────────────
+// ── Design palette — Warm Hearth (steel blue) ──────────────────────────────
+const P = {
+  bg: 'linear-gradient(158deg, #040a15 0%, #060e1c 50%, #030810 100%)',
+  glow: 'radial-gradient(ellipse 50% 40% at 50% 0%, rgba(78,158,220,0.22) 0%, transparent 55%)',
+  panel: 'rgba(6,14,30,0.72)',
+  border: 'rgba(110,160,215,0.32)',
+  borderStrong: 'rgba(72,128,190,0.56)',
+  borderWeekly: 'rgba(72,128,190,0.48)',
+  accentDaily: '#72caf5',
+  accentDailyDeep: '#1e5890',
+  accentWeekly: '#96daff',
+  accentWeeklyDeep: '#255fa8',
+  accentGold: '#72caf5',
+  accentGoldGlow: 'rgba(88,180,235,0.48)',
+  success: '#7de88a',
+  successBg: 'rgba(90,175,100,0.14)',
+  text: '#f0f6ff',
+  textMuted: 'rgba(205,228,255,0.82)',
+  textFaint: 'rgba(165,205,245,0.58)',
+};
+
+// ── Countdown helpers ─────────────────────────────────────────────────────────
 function msUntilDailyReset(): number {
   const now = Date.now();
   const d = new Date(now);
@@ -29,7 +50,7 @@ function formatCountdown(ms: number): string {
   const h = Math.floor((totalSec % 86400) / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
   const s = totalSec % 60;
-  const hms = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const hms = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   return d > 0 ? `${d}d ${hms}` : hms;
 }
 function useQuestCountdowns() {
@@ -61,242 +82,378 @@ export default function QuestsModal({ onClose }: Props) {
 
   const dailyComplete = view.daily.filter(q => isQuestComplete(q)).length;
   const weeklyComplete = view.weekly.filter(q => isQuestComplete(q)).length;
-  const dailyShards = view.daily.filter(q => !q.claimed).reduce((s, q) => s + q.shardReward, 0);
-  const weeklyShards = view.weekly.filter(q => !q.claimed).reduce((s, q) => s + q.shardReward, 0);
+  const dailyOblivionTotal = view.daily.reduce((s, q) => s + (q.oblivionReward ?? 0), 0);
+  const dailyShardsTotal = view.daily.reduce((s, q) => s + q.shardReward, 0);
+  const weeklyShardsTotal = view.weekly.reduce((s, q) => s + q.shardReward, 0);
+  const dailyOblivionLeft = view.daily.filter(q => !q.claimed).reduce((s, q) => s + (q.oblivionReward ?? 0), 0);
+  const dailyShardsLeft = view.daily.filter(q => !q.claimed).reduce((s, q) => s + q.shardReward, 0);
+  const weeklyShardsLeft = view.weekly.filter(q => !q.claimed).reduce((s, q) => s + q.shardReward, 0);
+  const useOblivionForDaily = dailyOblivionTotal > 0;
 
   return (
     <div
       onClick={onClose}
+      className="ui-panel-intro"
       style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse at 40% 0%, rgba(180,130,60,0.18) 0%, transparent 50%), linear-gradient(180deg, rgba(14,16,20,0.96) 0%, rgba(18,22,28,0.96) 100%)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 50, pointerEvents: 'auto', fontFamily: 'Georgia, serif',
+        position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'auto',
+        background: P.bg,
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        fontFamily: uiTypography.body,
       }}
     >
-      <div onClick={e => e.stopPropagation()} style={{
-        width: 560, maxHeight: '86vh',
-        background: `linear-gradient(160deg, rgba(255,252,244,0.99) 0%, rgba(250,244,232,0.99) 100%)`,
-        border: `1px solid ${subMenuWarm.borderStrong}`,
-        borderRadius: 18,
-        boxShadow: `${subMenuWarm.shadow}, inset 0 1px 0 rgba(255,240,200,0.6)`,
-        display: 'flex', flexDirection: 'column',
-        overflow: 'hidden',
-        position: 'relative',
-      }}>
-        {/* Decorative top band */}
-        <div style={{
-          height: 4,
-          background: `linear-gradient(90deg, ${subMenuWarm.accentDeep}, ${subMenuWarm.accent}, ${subMenuWarm.accentDeep})`,
-          flexShrink: 0,
-        }} />
+      {/* Atmospheric washes — Warm Hearth */}
+      <div style={{ position: 'absolute', top: '-18%', left: '-8%', width: '65%', height: '80%', background: 'radial-gradient(ellipse, rgba(78,165,225,0.28) 0%, rgba(30,88,170,0.12) 42%, transparent 68%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-15%', right: '-8%', width: '60%', height: '75%', background: 'radial-gradient(ellipse, rgba(22,65,200,0.20) 0%, transparent 65%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 44%, transparent 22%, rgba(0,0,0,0.68) 100%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px)', pointerEvents: 'none' }} />
 
-        {/* Header */}
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '18px 24px 14px',
-          borderBottom: `1px solid ${subMenuWarm.border}`,
-          flexShrink: 0,
+      {/* Dual-tone top accent */}
+      <div style={{
+        height: 3, flexShrink: 0,
+        background: `linear-gradient(90deg, transparent, ${P.accentDailyDeep}, ${P.accentDaily}, ${P.accentWeekly}, ${P.accentWeeklyDeep}, transparent)`,
+        boxShadow: `0 0 24px rgba(58,142,200,0.38)`,
+      }} />
+
+      <div onClick={e => e.stopPropagation()} style={{
+        display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden',
+        ['--ui-accent' as any]: '58, 142, 200',
+        ['--ui-accent-soft' as any]: '90, 171, 218',
+      } as React.CSSProperties}>
+
+        {/* ── Header ── */}
+        <div className="ui-shimmer-band" style={{
+          position: 'relative',
+          padding: '22px 32px 18px',
+          borderBottom: `1px solid ${P.border}`,
+          display: 'flex', alignItems: 'center', gap: 24, flexShrink: 0,
         }}>
-          <div>
-            <div style={{ fontSize: 22, fontWeight: 'bold', color: subMenuWarm.accentDeep, letterSpacing: 2, fontFamily: 'Georgia, serif' }}>
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontSize: 10, letterSpacing: 3.5, textTransform: 'uppercase',
+              color: P.accentDailyDeep, fontFamily: uiTypography.display, marginBottom: 6,
+            }}>
+              DAILY & WEEKLY OBJECTIVES
+            </div>
+            <div className="ui-title-glow" style={{
+              fontSize: 32, fontWeight: 700, letterSpacing: 1.5,
+              color: P.accentDaily, fontFamily: uiTypography.display,
+              textShadow: `0 0 48px rgba(88,188,245,0.55), 0 2px 8px rgba(0,0,0,0.8)`,
+            }}>
               Quests
             </div>
-            <div style={{ fontSize: 11, color: subMenuWarm.textMuted, letterSpacing: 0.5, marginTop: 2 }}>
-              {dailyShards + weeklyShards > 0 ? `${(dailyShards + weeklyShards).toLocaleString()} shards available` : 'All rewards collected'}
+            <div style={{ fontSize: 13, color: P.textMuted, marginTop: 5, letterSpacing: 0.3, lineHeight: 1.4 }}>
+              Complete daily objectives for quick rewards. Weekly quests offer larger Shard bounties for sustained play.
             </div>
           </div>
-          <button onClick={onClose} style={{
-            width: 32, height: 32, borderRadius: '50%',
-            border: `1px solid ${subMenuWarm.border}`,
-            background: subMenuWarm.surfaceMuted,
-            color: subMenuWarm.textMuted, fontSize: 14, cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>✕</button>
+
+          {/* Hero stats — emblem pillars */}
+          <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 20, borderLeft: `1px solid ${P.border}`, flexShrink: 0 }}>
+            <QuestStat label="Daily Complete" value={`${dailyComplete}/${view.daily.length}`} accent={P.accentDaily} sub={useOblivionForDaily ? `${dailyOblivionLeft.toLocaleString()} Oblivion left` : `${dailyShardsLeft} shards left`} />
+            <div style={{ width: 1, height: 30, background: P.border, flexShrink: 0 }} />
+            <QuestStat label="Weekly Complete" value={`${weeklyComplete}/${view.weekly.length}`} accent={P.accentWeekly} sub={`${weeklyShardsLeft} shards left`} />
+            {(dailyOblivionLeft + dailyShardsLeft + weeklyShardsLeft) > 0 && (
+              <>
+                <div style={{ width: 1, height: 30, background: P.border, flexShrink: 0 }} />
+                <QuestStat label="Weekly Shards" value={`+${weeklyShardsLeft.toLocaleString()}`} accent={P.accentGold} sub="shards" pulse />
+              </>
+            )}
+          </div>
+
+          <button
+            onClick={onClose}
+            style={{
+              width: 42, height: 42, borderRadius: '50%', cursor: 'pointer',
+              background: 'rgba(58,142,200,0.08)', border: `1px solid ${P.border}`,
+              color: P.textMuted, fontSize: 16, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', flexShrink: 0, transition: 'all 0.18s ease', padding: 0,
+            }}
+          >
+            ✕
+          </button>
         </div>
 
-        {/* Scrollable content */}
-        <div style={{ overflowY: 'auto', flex: 1, padding: '20px 24px' }}>
-          {/* Daily */}
-          <div style={{ marginBottom: 24 }}>
+        {/* ── Body: two panels side by side ── */}
+        <div style={{ display: 'flex', flex: 1, overflow: 'hidden', gap: 0 }}>
+
+          {/* ── Daily column ── */}
+          <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            borderRight: `1px solid ${P.border}`,
+          }}>
+            {/* Daily column header */}
             <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              marginBottom: 12,
+              padding: '16px 28px 12px',
+              borderBottom: `1px solid ${P.border}`,
+              flexShrink: 0,
+              background: 'rgba(10,30,80,0.12)',
+              backdropFilter: 'blur(6px)',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{
-                  fontSize: 10, letterSpacing: 2, textTransform: 'uppercase',
-                  fontWeight: 700, color: subMenuWarm.accentDeep,
-                }}>Daily</div>
-                <div style={{
-                  fontSize: 10, padding: '2px 8px', borderRadius: 999,
-                  background: dailyComplete === view.daily.length && view.daily.length > 0
-                    ? 'rgba(79,138,71,0.15)' : `rgba(200,128,58,0.12)`,
-                  color: dailyComplete === view.daily.length && view.daily.length > 0
-                    ? subMenuWarm.success : subMenuWarm.accent,
-                  border: `1px solid ${dailyComplete === view.daily.length && view.daily.length > 0 ? 'rgba(79,138,71,0.3)' : subMenuWarm.border}`,
-                  fontWeight: 600,
-                }}>
-                  {dailyComplete}/{view.daily.length}
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  background: 'rgba(58,142,200,0.16)',
+                  border: `1px solid rgba(58,142,200,0.38)`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18, color: P.accentDaily,
+                  textShadow: `0 0 16px rgba(58,142,200,0.60)`,
+                }}>☀</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: 16, fontWeight: 700, color: P.accentDaily,
+                    fontFamily: uiTypography.display, letterSpacing: 0.8,
+                  }}>Daily Quests</div>
+                  <div style={{ fontSize: 11, color: P.textMuted }}>
+                    Resets each day · {useOblivionForDaily ? `${dailyOblivionTotal.toLocaleString()} Oblivion total` : `${dailyShardsTotal} shards total`}
+                  </div>
                 </div>
-              </div>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 5,
-                fontSize: 10, color: subMenuWarm.textFaint,
-              }}>
-                <span>⏱</span>
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCountdown(dailyMs)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    padding: '4px 10px', borderRadius: 16,
+                    background: dailyComplete === view.daily.length && view.daily.length > 0
+                      ? P.successBg : 'rgba(58,142,200,0.10)',
+                    border: `1px solid ${dailyComplete === view.daily.length && view.daily.length > 0 ? 'rgba(110,207,124,0.30)' : 'rgba(58,142,200,0.25)'}`,
+                    fontSize: 11, fontWeight: 700,
+                    color: dailyComplete === view.daily.length && view.daily.length > 0 ? P.success : P.accentDaily,
+                    fontFamily: uiTypography.display,
+                  }}>
+                    {dailyComplete}/{view.daily.length}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: P.textFaint, fontVariantNumeric: 'tabular-nums' }}>
+                    ⏱ {formatCountdown(dailyMs)}
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {view.daily.map(q => (
-                <QuestCard key={q.id} quest={q} onClaim={() => claimQuest(q.id)} />
-              ))}
-              {view.daily.length === 0 && (
-                <div style={{ fontSize: 12, color: subMenuWarm.textMuted, fontStyle: 'italic', padding: '12px 0', textAlign: 'center' }}>
-                  No daily quests available.
-                </div>
+
+            {/* Daily quest list */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {view.daily.length === 0 ? (
+                <EmptyState message="No daily quests available yet." />
+              ) : (
+                view.daily.map(q => (
+                  <QuestCard key={q.id} quest={q} accent={P.accentDaily} onClaim={() => claimQuest(q.id)} />
+                ))
               )}
             </div>
           </div>
 
-          {/* Divider */}
+          {/* ── Weekly column ── */}
           <div style={{
-            borderTop: `1px solid ${subMenuWarm.border}`,
-            marginBottom: 24,
-            position: 'relative',
+            flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
           }}>
-            <span style={{
-              position: 'absolute', top: -9, left: '50%', transform: 'translateX(-50%)',
-              background: 'rgba(252,248,240,0.99)', padding: '0 10px',
-              fontSize: 9, letterSpacing: 1.5, color: subMenuWarm.textFaint, textTransform: 'uppercase',
-            }}>•</span>
-          </div>
-
-          {/* Weekly */}
-          <div>
+            {/* Weekly column header */}
             <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              marginBottom: 12,
+              padding: '16px 28px 12px',
+              borderBottom: `1px solid ${P.border}`,
+              flexShrink: 0,
+              background: 'rgba(10,30,80,0.12)',
+              backdropFilter: 'blur(6px)',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{
-                  fontSize: 10, letterSpacing: 2, textTransform: 'uppercase',
-                  fontWeight: 700, color: subMenuWarm.accentDeep,
-                }}>Weekly</div>
-                <div style={{
-                  fontSize: 10, padding: '2px 8px', borderRadius: 999,
-                  background: weeklyComplete === view.weekly.length && view.weekly.length > 0
-                    ? 'rgba(79,138,71,0.15)' : 'rgba(200,128,58,0.12)',
-                  color: weeklyComplete === view.weekly.length && view.weekly.length > 0
-                    ? subMenuWarm.success : subMenuWarm.accent,
-                  border: `1px solid ${weeklyComplete === view.weekly.length && view.weekly.length > 0 ? 'rgba(79,138,71,0.3)' : subMenuWarm.border}`,
-                  fontWeight: 600,
-                }}>
-                  {weeklyComplete}/{view.weekly.length}
+                  width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                  background: 'rgba(90,170,220,0.16)',
+                  border: `1px solid rgba(90,170,220,0.38)`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18, color: P.accentWeekly,
+                  textShadow: `0 0 16px rgba(90,170,220,0.60)`,
+                }}>✦</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: 16, fontWeight: 700, color: P.accentWeekly,
+                    fontFamily: uiTypography.display, letterSpacing: 0.8,
+                  }}>Weekly Quests</div>
+                  <div style={{ fontSize: 11, color: P.textMuted }}>
+                    Resets each Monday · {weeklyShardsTotal} shards total
+                  </div>
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: subMenuWarm.textFaint }}>
-                <span>⏱</span>
-                <span style={{ fontVariantNumeric: 'tabular-nums' }}>{formatCountdown(weeklyMs)}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{
+                    padding: '4px 10px', borderRadius: 16,
+                    background: weeklyComplete === view.weekly.length && view.weekly.length > 0
+                      ? P.successBg : 'rgba(90,170,220,0.10)',
+                    border: `1px solid ${weeklyComplete === view.weekly.length && view.weekly.length > 0 ? 'rgba(110,207,124,0.30)' : 'rgba(90,170,220,0.25)'}`,
+                    fontSize: 11, fontWeight: 700,
+                    color: weeklyComplete === view.weekly.length && view.weekly.length > 0 ? P.success : P.accentWeekly,
+                    fontFamily: uiTypography.display,
+                  }}>
+                    {weeklyComplete}/{view.weekly.length}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: P.textFaint, fontVariantNumeric: 'tabular-nums' }}>
+                    ⏱ {formatCountdown(weeklyMs)}
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {view.weekly.map(q => (
-                <QuestCard key={q.id} quest={q} onClaim={() => claimQuest(q.id)} />
-              ))}
-              {view.weekly.length === 0 && (
-                <div style={{ fontSize: 12, color: subMenuWarm.textMuted, fontStyle: 'italic', padding: '12px 0', textAlign: 'center' }}>
-                  No weekly quests available.
-                </div>
+
+            {/* Weekly quest list */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {view.weekly.length === 0 ? (
+                <EmptyState message="No weekly quests available yet." />
+              ) : (
+                view.weekly.map(q => (
+                  <QuestCard key={q.id} quest={q} accent={P.accentWeekly} onClaim={() => claimQuest(q.id)} />
+                ))
               )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Bottom accent */}
+      <div style={{
+        height: 2, flexShrink: 0,
+        background: `linear-gradient(90deg, transparent, ${P.border}, transparent)`,
+      }} />
     </div>
   );
 }
 
-function QuestCard({ quest, onClaim }: { quest: QuestInstance; onClaim: () => void }) {
+function QuestStat({ label, value, accent, sub, pulse }: {
+  label: string; value: string; accent: string; sub?: string; pulse?: boolean;
+}) {
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      padding: '6px 20px', gap: 4,
+      boxShadow: pulse ? `0 0 24px ${accent}33` : 'none',
+    }}>
+      <div style={{
+        fontSize: 8, letterSpacing: 3, textTransform: 'uppercase',
+        color: `${accent}99`, fontWeight: 400, whiteSpace: 'nowrap',
+      }}>{label}</div>
+      <div style={{
+        fontSize: 22, fontWeight: 600, letterSpacing: 0.5, color: accent,
+        fontVariantNumeric: 'tabular-nums',
+        textShadow: `0 0 20px ${accent}55`,
+      }}>{value}</div>
+      {sub && <div style={{ fontSize: 10, color: `${accent}77` }}>{sub}</div>}
+    </div>
+  );
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div style={{
+      padding: 40, textAlign: 'center', color: P.textFaint,
+      fontSize: 13, fontStyle: 'italic', fontFamily: uiTypography.body,
+    }}>
+      {message}
+    </div>
+  );
+}
+
+function QuestCard({ quest, accent, onClaim }: { quest: QuestInstance; accent: string; onClaim: () => void }) {
   const complete = isQuestComplete(quest);
   const pct = Math.min(100, Math.round((quest.progress / Math.max(1, quest.goal)) * 100));
 
-  const statusColor = quest.claimed ? 'rgba(79,138,71,0.7)' : complete ? subMenuWarm.accent : 'rgba(150,130,100,0.4)';
+  const statusBg = quest.claimed
+    ? 'rgba(255,255,255,0.02)'
+    : complete
+      ? `${accent}0a`
+      : P.panel;
+  const statusBorder = quest.claimed
+    ? 'rgba(110,207,124,0.20)'
+    : complete
+      ? `${accent}55`
+      : 'rgba(255,255,255,0.08)';
 
   return (
     <div style={{
-      display: 'flex', gap: 0,
-      background: quest.claimed ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.55)',
-      border: `1px solid ${quest.claimed ? 'rgba(150,130,100,0.2)' : complete ? `rgba(200,128,58,0.45)` : subMenuWarm.border}`,
+      background: statusBg,
+      border: `1px solid ${statusBorder}`,
       borderRadius: 12,
       overflow: 'hidden',
-      opacity: quest.claimed ? 0.6 : 1,
-      boxShadow: complete && !quest.claimed ? '0 2px 12px rgba(200,128,58,0.15)' : 'none',
-      transition: 'box-shadow 0.2s, border-color 0.2s',
+      opacity: quest.claimed ? 0.65 : 1,
+      boxShadow: complete && !quest.claimed ? `0 2px 16px ${accent}22` : 'none',
+      transition: 'all 0.2s',
     }}>
-      {/* Left status stripe */}
-      <div style={{ width: 4, background: statusColor, flexShrink: 0 }} />
-
-      <div style={{ flex: 1, padding: '12px 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-          <div style={{ fontSize: 13, fontWeight: 'bold', color: subMenuWarm.text, lineHeight: 1.3, flex: 1, paddingRight: 12 }}>
-            {quest.text}
+      {/* Left accent stripe */}
+      <div style={{ display: 'flex', gap: 0 }}>
+        <div style={{
+          width: 3, flexShrink: 0, alignSelf: 'stretch',
+          background: quest.claimed
+            ? P.success
+            : complete
+              ? accent
+              : 'rgba(255,255,255,0.08)',
+          boxShadow: complete && !quest.claimed ? `0 0 12px ${accent}66` : 'none',
+        }} />
+        <div style={{ flex: 1, padding: '14px 16px' }}>
+          {/* Top row */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+            <div style={{
+              fontSize: 13, fontWeight: 700, color: complete ? P.text : P.textMuted,
+              lineHeight: 1.4, flex: 1, paddingRight: 14,
+              fontFamily: uiTypography.display,
+            }}>
+              {quest.text}
+            </div>
+            <div style={{
+              fontSize: 12, fontWeight: 700, color: P.accentDaily,
+              background: 'rgba(58,142,200,0.12)', padding: '3px 10px',
+              borderRadius: 8, border: `1px solid rgba(58,142,200,0.28)`,
+              flexShrink: 0, fontFamily: uiTypography.display,
+            }}>
+              {(quest.oblivionReward ?? 0) > 0
+                ? `+${quest.oblivionReward!.toLocaleString()} Oblivion`
+                : `+${quest.shardReward} ◈`}
+            </div>
           </div>
-          <div style={{
-            fontSize: 12, fontWeight: 700, color: subMenuWarm.accentSoft,
-            background: 'rgba(200,128,58,0.10)', padding: '2px 8px',
-            borderRadius: 6, flexShrink: 0,
-            border: `1px solid rgba(200,128,58,0.22)`,
-          }}>
-            +{quest.shardReward}
-          </div>
-        </div>
 
-        {/* Progress bar */}
-        <div style={{ position: 'relative', height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.08)', overflow: 'hidden', marginBottom: 8 }}>
-          <div style={{
-            position: 'absolute', inset: '0 auto 0 0', width: `${pct}%`,
-            background: complete
-              ? `linear-gradient(90deg, ${subMenuWarm.accentSoft}, ${subMenuWarm.accent})`
-              : `linear-gradient(90deg, rgba(180,130,60,0.7), rgba(200,128,58,0.9))`,
-            borderRadius: 3,
-            transition: 'width 300ms ease',
-          }} />
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: 11, color: subMenuWarm.textMuted }}>
-            {Math.min(quest.progress, quest.goal).toLocaleString()} / {quest.goal.toLocaleString()}
-            <span style={{ marginLeft: 6, color: subMenuWarm.textFaint }}>({pct}%)</span>
+          {/* Progress bar */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{
+              height: 4, borderRadius: 2,
+              background: 'rgba(255,255,255,0.06)',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%', width: `${pct}%`,
+                background: complete
+                  ? `linear-gradient(90deg, ${accent}cc, ${accent})`
+                  : `linear-gradient(90deg, ${accent}88, ${accent}aa)`,
+                borderRadius: 2,
+                transition: 'width 0.5s ease',
+                boxShadow: complete ? `0 0 8px ${accent}88` : 'none',
+              }} />
+            </div>
+            <div style={{
+              display: 'flex', justifyContent: 'space-between',
+              marginTop: 4, fontSize: 10, color: P.textFaint,
+            }}>
+              <span>{quest.progress.toLocaleString()} / {quest.goal.toLocaleString()}</span>
+              <span>{pct}%</span>
+            </div>
           </div>
-          <button
-            onClick={onClaim}
-            disabled={!complete || quest.claimed}
-            style={{
-              background: quest.claimed
-                ? 'transparent'
-                : complete
-                  ? subMenuWarm.button
-                  : 'rgba(0,0,0,0.05)',
-              color: quest.claimed
-                ? subMenuWarm.textFaint
-                : complete
-                  ? '#fff'
-                  : subMenuWarm.textMuted,
-              border: `1px solid ${quest.claimed ? 'transparent' : complete ? subMenuWarm.accentSoft : subMenuWarm.border}`,
-              borderRadius: 8,
-              padding: '4px 14px',
-              fontFamily: 'Georgia, serif',
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: 0.5,
-              cursor: complete && !quest.claimed ? 'pointer' : 'default',
-              transition: 'all 0.15s',
-            }}
-          >
-            {quest.claimed ? 'Claimed ✓' : complete ? 'Claim' : 'In Progress'}
-          </button>
+
+          {/* Claim row */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={onClaim}
+              disabled={!complete || quest.claimed}
+              data-sfx="claim"
+              style={{
+                background: quest.claimed
+                  ? 'rgba(255,255,255,0.04)'
+                  : complete
+                    ? `linear-gradient(135deg, ${P.accentGold}cc, ${P.accentGold})`
+                    : 'rgba(255,255,255,0.04)',
+                color: quest.claimed
+                  ? P.textFaint
+                  : complete
+                  ? '#0c1e34'
+                    : P.textFaint,
+                border: `1px solid ${quest.claimed ? 'rgba(255,255,255,0.08)' : complete ? `${P.accentGold}88` : 'rgba(255,255,255,0.08)'}`,
+                borderRadius: 8, padding: '6px 18px',
+                fontFamily: uiTypography.display, fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
+                cursor: complete && !quest.claimed ? 'pointer' : 'default',
+                boxShadow: complete && !quest.claimed ? `0 4px 14px ${P.accentGoldGlow}` : 'none',
+                transition: 'all 0.15s',
+              }}
+            >
+              {quest.claimed ? '✓ Collected' : complete ? '✦ Claim Reward' : 'In Progress'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

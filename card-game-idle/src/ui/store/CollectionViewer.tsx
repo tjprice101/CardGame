@@ -338,7 +338,7 @@ export default function CollectionViewer({ onClose }: Props) {
       display: 'flex',
       flexDirection: 'column',
       fontFamily: 'Georgia, serif',
-      color: '#ead9c0',
+      color: '#c8dff2',
       pointerEvents: 'auto',
     }}>
       {/* Header */}
@@ -348,13 +348,13 @@ export default function CollectionViewer({ onClose }: Props) {
         background: 'rgba(9, 14, 20, 0.4)',
       }}>
         <div>
-          <div style={{ fontSize: 20, fontWeight: 'bold', color: '#f0bd78', letterSpacing: 2 }}>
+          <div style={{ fontSize: 20, fontWeight: 'bold', color: '#58aada', letterSpacing: 2 }}>
             Collection
           </div>
-          <div style={{ fontSize: 11, color: 'rgba(234, 217, 192, 0.75)', marginTop: 3 }}>
+          <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.72)', marginTop: 3 }}>
             {totalOwned} / {totalCards} unique cards collected
             {isFilteringActive && (
-              <span style={{ marginLeft: 10, color: '#f0bd78' }}>
+              <span style={{ marginLeft: 10, color: '#58aada' }}>
                 · Showing {visibleOwned} / {visibleTotal}
               </span>
             )}
@@ -363,8 +363,8 @@ export default function CollectionViewer({ onClose }: Props) {
         <button
           onClick={onClose}
           style={{
-            background: 'rgba(255, 237, 213, 0.94)', border: `1px solid ${warmTheme.border}`,
-            color: '#5f3a17', borderRadius: 10, padding: '6px 16px',
+            background: 'rgba(5,18,36,0.85)', border: `1px solid rgba(100,140,188,0.28)`,
+            color: '#c8dff2', borderRadius: 10, padding: '6px 16px',
             fontSize: 12, cursor: 'pointer', fontFamily: 'Georgia, serif',
           }}
         >
@@ -389,9 +389,9 @@ export default function CollectionViewer({ onClose }: Props) {
               style={{
                 padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
                 fontFamily: 'Georgia, serif', letterSpacing: 1,
-                background: isActive ? `rgba(${hexToRgb(color)},0.18)` : 'rgba(255, 236, 209, 0.9)',
-                border: isActive ? `1px solid ${color}` : `1px solid ${warmTheme.border}`,
-                color: isActive ? color : '#5f3a17',
+                background: isActive ? `rgba(${hexToRgb(color)},0.18)` : 'rgba(5,18,36,0.82)',
+                border: isActive ? `1px solid ${color}` : `1px solid rgba(100,140,188,0.28)`,
+                color: isActive ? color : '#c8dff2',
                 transition: 'all 0.15s',
               }}
             >
@@ -416,9 +416,9 @@ export default function CollectionViewer({ onClose }: Props) {
           style={{
             flex: '1 1 220px', minWidth: 180, maxWidth: 320,
             padding: '6px 10px', fontSize: 12, fontFamily: 'Georgia, serif',
-            background: 'rgba(28, 22, 16, 0.72)',
-            border: `1px solid ${warmTheme.border}`,
-            borderRadius: 6, color: '#ead9c0', outline: 'none',
+            background: 'rgba(5,12,28,0.80)',
+            border: `1px solid rgba(100,140,188,0.28)`,
+            borderRadius: 6, color: '#c8dff2', outline: 'none',
           }}
         />
         {searchText && (
@@ -426,7 +426,7 @@ export default function CollectionViewer({ onClose }: Props) {
             onClick={() => setSearchText('')}
             style={{
               padding: '5px 10px', fontSize: 11, cursor: 'pointer',
-              background: 'transparent', color: '#caa57a',
+              background: 'transparent', color: '#7bbde8',
               border: `1px solid ${warmTheme.border}`, borderRadius: 5,
               fontFamily: 'Georgia, serif',
             }}
@@ -444,9 +444,9 @@ export default function CollectionViewer({ onClose }: Props) {
                 style={{
                   padding: '5px 12px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
                   fontFamily: 'Georgia, serif', letterSpacing: 0.8,
-                  background: isActive ? 'rgba(240, 189, 120, 0.18)' : 'rgba(255, 236, 209, 0.9)',
-                  border: isActive ? '1px solid #f0bd78' : `1px solid ${warmTheme.border}`,
-                  color: isActive ? '#f0bd78' : '#5f3a17',
+                  background: isActive ? 'rgba(58,142,200,0.18)' : 'rgba(5,18,36,0.82)',
+                  border: isActive ? '1px solid rgba(62,112,168,0.70)' : `1px solid rgba(100,140,188,0.28)`,
+                  color: isActive ? '#58aada' : '#c8dff2',
                 }}
               >{label}</button>
             );
@@ -464,24 +464,24 @@ export default function CollectionViewer({ onClose }: Props) {
                 style={{
                   padding: '5px 10px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
                   fontFamily: 'Georgia, serif', letterSpacing: 0.8,
-                  background: isActive ? `rgba(${hexToRgb(color)},0.20)` : 'rgba(255, 236, 209, 0.9)',
-                  border: isActive ? `1px solid ${color}` : `1px solid ${warmTheme.border}`,
-                  color: isActive ? color : '#5f3a17',
+                  background: isActive ? `rgba(${hexToRgb(color)},0.20)` : 'rgba(5,18,36,0.82)',
+                  border: isActive ? `1px solid ${color}` : `1px solid rgba(100,140,188,0.28)`,
+                  color: isActive ? color : '#c8dff2',
                 }}
               >{r}</button>
             );
           })}
         </div>
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto', fontSize: 11, color: '#caa57a', fontFamily: 'Georgia, serif' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto', fontSize: 11, color: 'rgba(190,215,245,0.60)', fontFamily: 'Georgia, serif' }}>
           Sort:
           <select
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as typeof sortMode)}
             style={{
               padding: '4px 8px', fontSize: 11, fontFamily: 'Georgia, serif',
-              background: 'rgba(28, 22, 16, 0.72)', color: '#ead9c0',
-              border: `1px solid ${warmTheme.border}`, borderRadius: 5,
+              background: 'rgba(5,18,36,0.85)', color: '#c8dff2',
+              border: `1px solid rgba(100,140,188,0.28)`, borderRadius: 5,
               cursor: 'pointer', outline: 'none',
             }}
           >

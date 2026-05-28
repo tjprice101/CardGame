@@ -35,7 +35,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   intro: {
     padding: '0 24px 16px',
-    color: 'rgba(234, 217, 192, 0.84)',
+    color: 'rgba(205,228,255,0.78)',
     fontSize: 12,
     lineHeight: 1.6,
   },
@@ -55,9 +55,9 @@ const styles: Record<string, React.CSSProperties> = {
   filterBtn: {
     padding: '5px 14px',
     borderRadius: 20,
-    border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(255, 236, 209, 0.9)',
-    color: '#5f3a17',
+    border: `1px solid rgba(72,128,190,0.30)`,
+    background: 'rgba(4,10,24,0.85)',
+    color: 'rgba(205,228,255,0.75)',
     fontSize: 11,
     cursor: 'pointer',
     fontFamily: 'Georgia, serif',
@@ -65,9 +65,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
   select: {
     borderRadius: 8,
-    border: `1px solid ${warmTheme.border}`,
-    background: 'rgba(255, 238, 214, 0.94)',
-    color: '#553719',
+    border: `1px solid rgba(72,128,190,0.30)`,
+    background: 'rgba(4,10,24,0.90)',
+    color: 'rgba(205,228,255,0.82)',
     fontFamily: 'Georgia, serif',
     fontSize: 11,
     padding: '6px 8px',
@@ -76,9 +76,9 @@ const styles: Record<string, React.CSSProperties> = {
     marginLeft: 'auto',
     padding: '6px 10px',
     borderRadius: 999,
-    border: `1px solid ${warmTheme.borderStrong}`,
-    background: 'rgba(255, 215, 0, 0.1)',
-    color: '#f3c687',
+    border: `1px solid rgba(72,128,190,0.38)`,
+    background: 'rgba(78,155,220,0.10)',
+    color: '#7dd4f8',
     fontSize: 11,
     letterSpacing: 0.6,
   },
@@ -86,9 +86,9 @@ const styles: Record<string, React.CSSProperties> = {
     margin: '0 24px 14px',
     padding: '8px 12px',
     borderRadius: 10,
-    border: `1px solid ${warmTheme.success}`,
-    background: 'rgba(74, 168, 111, 0.12)',
-    color: warmTheme.success,
+    border: `1px solid #7de88a`,
+    background: 'rgba(90,175,100,0.12)',
+    color: '#7de88a',
     fontSize: 11,
     letterSpacing: 0.6,
   },
@@ -105,7 +105,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: '100%',
     textAlign: 'center',
     padding: '56px 12px',
-    color: 'rgba(234, 217, 192, 0.75)',
+    color: 'rgba(190,215,245,0.70)',
     fontStyle: 'italic',
   },
   cardTile: {
@@ -120,11 +120,11 @@ const styles: Record<string, React.CSSProperties> = {
     aspectRatio: '148 / 204',
     borderRadius: 14,
     overflow: 'hidden',
-    border: `1px solid ${warmTheme.borderStrong}`,
+    border: `1px solid rgba(72,128,190,0.42)`,
     display: 'flex',
     flexDirection: 'column',
-    background: warmTheme.surfaceStrong,
-    boxShadow: warmTheme.shadow,
+    background: 'rgba(4,10,24,0.96)',
+    boxShadow: '0 4px 18px rgba(0,0,0,0.65), inset 0 1px 0 rgba(110,185,240,0.06)',
   },
   desc: {
     color: cardFacePalette.textSoft,
@@ -143,20 +143,20 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 6,
   },
   infoPanel: {
-    border: `1px solid ${warmTheme.border}`,
+    border: `1px solid rgba(72,128,190,0.28)`,
     borderRadius: 10,
     padding: '7px 8px 8px',
-    background: 'rgba(12, 18, 28, 0.48)',
-    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
+    background: 'rgba(4,10,24,0.60)',
+    boxShadow: 'inset 0 1px 0 rgba(140,210,255,0.04)',
   },
   convertBtn: {
     marginTop: 6,
     width: '100%',
     padding: '7px 8px',
     borderRadius: 8,
-    border: '1px solid rgba(168, 104, 40, 0.7)',
-    background: 'linear-gradient(180deg, #c9893e 0%, #a0662a 100%)',
-    color: '#fff8ee',
+    border: '1px solid rgba(72,128,190,0.55)',
+    background: 'linear-gradient(180deg, #6ec8f0 0%, #4298d8 100%)',
+    color: '#05111f',
     fontSize: 10,
     cursor: 'pointer',
     fontFamily: 'Georgia, serif',
@@ -272,15 +272,15 @@ export default function HolofoilWorkshop() {
       <div style={styles.filterBar}>
         {elements.map(element => {
           const isActive = activeElement === element;
-          const color = element === 'All' ? warmTheme.accentDeep : (ELEMENT_COLORS[element] ?? warmTheme.textMuted);
+          const color = element === 'All' ? '#72caf5' : (ELEMENT_COLORS[element] ?? 'rgba(205,228,255,0.75)');
           return (
             <button className="menu-tactile-btn"
               key={element}
               style={{
                 ...styles.filterBtn,
-                color: isActive ? color : warmTheme.textMuted,
-                borderColor: isActive ? color : warmTheme.border,
-                background: isActive ? 'rgba(255,215,0,0.08)' : warmTheme.surface,
+                color: isActive ? color : 'rgba(205,228,255,0.65)',
+                borderColor: isActive ? color : 'rgba(72,128,190,0.30)',
+                background: isActive ? 'rgba(78,155,220,0.14)' : 'rgba(4,10,24,0.85)',
               }}
               onClick={() => setActiveElement(element)}
             >
@@ -317,9 +317,9 @@ export default function HolofoilWorkshop() {
         <button className="menu-tactile-btn"
           style={{
             ...styles.filterBtn,
-            borderColor: affordableOnly ? warmTheme.borderStrong : warmTheme.border,
-            color: affordableOnly ? '#5d3816' : '#5f3a17',
-            background: affordableOnly ? 'rgba(255, 217, 154, 0.98)' : 'rgba(255, 236, 209, 0.9)',
+            borderColor: affordableOnly ? 'rgba(110,160,215,0.55)' : 'rgba(72,128,190,0.30)',
+            color: affordableOnly ? '#7dd4f8' : 'rgba(205,228,255,0.75)',
+            background: affordableOnly ? 'rgba(78,155,220,0.16)' : 'rgba(4,10,24,0.85)',
           }}
           onClick={() => setAffordableOnly(prev => !prev)}
         >
@@ -329,9 +329,9 @@ export default function HolofoilWorkshop() {
         <button className="menu-tactile-btn"
           style={{
             ...styles.filterBtn,
-            borderColor: multiCopyOnly ? warmTheme.borderStrong : warmTheme.border,
-            color: multiCopyOnly ? '#5d3816' : '#5f3a17',
-            background: multiCopyOnly ? 'rgba(255, 217, 154, 0.98)' : 'rgba(255, 236, 209, 0.9)',
+            borderColor: multiCopyOnly ? 'rgba(110,160,215,0.55)' : 'rgba(72,128,190,0.30)',
+            color: multiCopyOnly ? '#7dd4f8' : 'rgba(205,228,255,0.75)',
+            background: multiCopyOnly ? 'rgba(78,155,220,0.16)' : 'rgba(4,10,24,0.85)',
           }}
           onClick={() => setMultiCopyOnly(prev => !prev)}
         >
@@ -386,6 +386,7 @@ export default function HolofoilWorkshop() {
                       textColor={cardFacePalette.textSoft}
                       sectionBackground="transparent"
                       sectionBorder="transparent"
+                      lightBg
                     />
                   </div>
                 </div>

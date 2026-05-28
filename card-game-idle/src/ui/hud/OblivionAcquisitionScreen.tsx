@@ -4,7 +4,7 @@
  *
  * Four tabs:
  *   Overview  – live board stats (earned this turn, active bonuses)
- *   Attacks   – Seraphim / Angel attack breakdown + Patience formula
+ *   Attacks   – Seraphim / Angel attack breakdown
  *   Bonuses   – Board bonuses, global mult, Cherubim passives
  *   Tips      – Prioritised strategy tips
  */
@@ -198,17 +198,14 @@ function SectionTitle({ label, accent }: { label: string; accent: string }) {
 
 // ─── attack card (live board data) ───────────────────────────────────────────
 
-function SeraphimAttackRow({ instance, def, patience }: {
-  instance: SeraphimInstance; def: SeraphimDefinition; patience: number;
+function SeraphimAttackRow({ instance, def }: {
+  instance: SeraphimInstance; def: SeraphimDefinition;
 }) {
   const attacks = def.attacks;
   if (!attacks) return null;
 
   const unsyn = attacks.unsynergized;
   const syn   = attacks.synergized;
-  const patienceBonus = (v: number) => Math.round(v * patience * 0.015);
-  const unsynTotal = unsyn.baseOblivion + patienceBonus(unsyn.baseOblivion);
-  const synTotal   = syn.baseOblivion   + patienceBonus(syn.baseOblivion);
   const unsyncedCd = instance.attackCooldowns?.[unsyn.id] ?? 0;
   const syncedCd   = instance.attackCooldowns?.[syn.id]  ?? 0;
 
@@ -228,21 +225,12 @@ function SeraphimAttackRow({ instance, def, patience }: {
             {instance.isActive ? '✦ Synergy Active' : '○ Synergy Offline'}
           </div>
         </div>
-        {patience > 0 && (
-          <div style={{
-            fontSize: 10, letterSpacing: 1, padding: '3px 9px', borderRadius: 999,
-            background: `${C.purple.fg}1a`, border: `1px solid ${C.purple.br}`,
-            color: C.purple.fg, fontFamily: BF,
-          }}>
-            {patience} Patience stack{patience !== 1 ? 's' : ''}
-          </div>
-        )}
       </div>
       {/* Attacks */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
         {[
-          { label: 'Unsynergized', base: unsyn.baseOblivion, total: unsynTotal, cd: unsyncedCd, ready: unsyncedCd <= 0 },
-          { label: 'Synergized',   base: syn.baseOblivion,   total: synTotal,   cd: syncedCd,   ready: syncedCd <= 0 && instance.isActive },
+          { label: 'Unsynergized', base: unsyn.baseOblivion, cd: unsyncedCd, ready: unsyncedCd <= 0 },
+          { label: 'Synergized',   base: syn.baseOblivion,   cd: syncedCd,   ready: syncedCd <= 0 && instance.isActive },
         ].map((a, i) => (
           <div key={a.label} style={{
             padding: '10px 14px',
@@ -250,11 +238,7 @@ function SeraphimAttackRow({ instance, def, patience }: {
           }}>
             <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>{a.label}</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: a.ready ? C.blue.fg : 'rgba(244,244,248,0.35)', fontFamily: DF }}>
-              {formatNumber(a.total)}
-            </div>
-            <div style={{ fontSize: 10, color: 'rgba(244,244,248,0.4)', fontFamily: BF, marginTop: 2 }}>
-              Base {formatNumber(a.base)}
-              {patience > 0 && ` + ${formatNumber(patienceBonus(a.base))} patience`}
+              {formatNumber(a.base)}
             </div>
             <div style={{ fontSize: 9, color: a.ready ? C.green.fg : 'rgba(244,244,248,0.35)', marginTop: 4, fontFamily: BF }}>
               {a.ready ? '● Ready' : `Cooldown: ${a.cd} cards`}
@@ -420,7 +404,7 @@ function OverviewTab() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           {[
             { icon: '🃏', label: 'Card Plays',         desc: 'Every card played generates Oblivion, amplified by Seraphim synergies.',     accent: C.gold   },
-            { icon: '⚔',  label: 'Seraphim Attacks',  desc: 'Cooldown-gated attacks with Patience scaling (+1.5% per stack).',             accent: C.blue   },
+            { icon: '⛳',  label: 'Seraphim Attacks',  desc: 'Cooldown-gated attacks — Unsynergized always available, Synergized requires an Angel.',             accent: C.blue   },
             { icon: '✦',  label: 'Angel Attacks',     desc: 'Exalted Angel attacks deal ~3× a comparable Seraphim hit.',                   accent: C.gold   },
             { icon: '⊞',  label: 'Full Board Bonus',  desc: 'Fill all 9 board slots to activate a +30% multiplier on all Oblivion.',      accent: C.green  },
             { icon: '◈',  label: 'Cherubim Passives', desc: 'Cherubim in the back row grant ongoing per-card or on-expire bonuses.',       accent: C.purple },
@@ -449,7 +433,7 @@ function OverviewTab() {
           <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, color: C.red.fg, fontFamily: DF, marginBottom: 5 }}>Boss Fight Active</div>
           <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.62)', lineHeight: 1.55, fontFamily: BF }}>
             Boss fights have a higher Oblivion threshold. Focus on maximising your attacks — filling the board
-            and stacking Patience will be critical for clearing the damage check.
+            will be critical for clearing the damage check.
           </div>
         </div>
       )}
@@ -477,40 +461,19 @@ function AttacksTab() {
           <SourceCard
             icon="⚔"
             title="Unsynergized Strike"
-            subtitle="Always available once cooldown expires. Scaled by base attack Oblivion. Patience stacks add +1.5% of the base value each."
+            subtitle="Always available once cooldown expires. Deals base attack Oblivion as soon as the cooldown clears."
             accent={C.blue}
-            tags={['cooldown-gated', 'always available', 'patience-scaled']}
+            tags={['cooldown-gated', 'always available']}
           />
           <SourceCard
-            icon="✶"
+            icon="✾"
             title="Synergized Strike"
-            subtitle="Requires an Angel on the front row. Higher base than Unsynergized — typically 2–2.5× the base. Also gains the Patience multiplier."
+            subtitle="Requires an Angel on the front row. Higher base than Unsynergized — typically 2–2.5× the base."
             accent={C.blue}
-            tags={['requires angel', 'higher base', 'patience-scaled']}
+            tags={['requires angel', 'higher base']}
           />
 
-          {/* Patience formula card */}
-          <div style={{
-            padding: '16px 18px', borderRadius: 14,
-            border: `1px solid ${C.purple.br}`, background: C.purple.bg,
-          }}>
-            <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, color: C.purple.fg, fontFamily: DF, marginBottom: 8 }}>
-              Patience Bonus Formula
-            </div>
-            <div style={{
-              fontFamily: 'monospace', fontSize: 14, color: 'rgba(220,200,255,0.9)',
-              background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '10px 14px',
-              marginBottom: 10, letterSpacing: 0.4,
-            }}>
-              bonus = baseOblivion × patience × 1.5%
-            </div>
-            <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.6)', lineHeight: 1.6, fontFamily: BF }}>
-              Each Patience stack on a Seraphim adds <strong style={{ color: C.purple.fg }}>1.5% of its base attack value</strong> as
-              bonus Oblivion. A Seraphim with 20 Patience stacks and a 500 base attack would deal an extra
-              {' '}<strong style={{ color: C.purple.fg }}>150 Oblivion</strong> (500 × 20 × 0.015) per hit.
-              Build Patience through Neutrality cards and Cherubim that grant patience_gain effects.
-            </div>
-          </div>
+          {/* Patience formula card removed */}
 
           {/* Live Seraphim board */}
           {seraphims.length > 0 ? (
@@ -526,7 +489,6 @@ function AttacksTab() {
                     key={ser.instanceId}
                     instance={ser}
                     def={def}
-                    patience={ser.patienceStacks ?? 0}
                   />
                 );
               })}
@@ -777,42 +739,36 @@ function TipsTab() {
       />
       <TipCard
         rank={2}
-        title="Stack Patience on Your Primary Seraphim"
-        detail="Patience adds 1.5% of base attack per stack — at 30 stacks that's +45% per hit, for free. Neutrality Cherubim and cards with patience_gain are the fastest path. Pair with a high-base Seraphim for maximum leverage."
-        accent={C.purple.fg}
-      />
-      <TipCard
-        rank={3}
         title="Save Exalted Angel Attacks for Maximum Burst"
         detail="Exalted hits deal ~3× a comparable Seraphim's full hit. Don't waste Exalted on low-multiplier turns. Use them when Full Board Bonus is active and your Global Multiplier is highest."
         accent={C.gold.fg}
       />
       <TipCard
-        rank={4}
+        rank={3}
         title="Activate Seraphim Synergy Before Attacking"
         detail="Synergized attacks have a far higher base than Unsynergized. Ensure an Angel of the right element is on the board before triggering your Seraphim's main attack. Check the coloured element stripe on each Seraphim card."
         accent={C.blue.fg}
       />
       <TipCard
-        rank={5}
+        rank={4}
         title="Match Cherubim to Your Seraphim Layout"
         detail={`Current per-card bonus: +${formatNumber(perCardBonus)}. Increase it by placing Cherubim with cherubim_oblivion_per_card or cherubim_adjacent_seraphim_bonus adjacent to your strongest active Seraphim.`}
         accent={C.purple.fg}
       />
       <TipCard
-        rank={6}
+        rank={5}
         title="Time Your Set Mechanic Cashouts"
         detail="Set mechanics (Eternal Stacks, Cinder Echoes, Cascade Proofs, etc.) produce disproportionate Oblivion when cashed out at high counts. Hold off triggering cashout cards until your stack is large — then combine with Full Board Bonus for the biggest burst possible."
         accent={C.red.fg}
       />
       <TipCard
-        rank={7}
+        rank={6}
         title="Cycle Cherubim for Expire Bonuses"
         detail="Cherubim with cherubim_expire_bonus detonate on death, granting Oblivion bursts. Some decks intentionally let Cherubim expire to chain detonations — play cards that reduce durability slowly unless you are in the middle of a burst window."
         accent={C.gold.fg}
       />
       <TipCard
-        rank={8}
+        rank={7}
         title="Upgrade to Higher-Rarity Attacks"
         detail="Legendary and Eternal Seraphim have significantly higher base attack values, which amplifies the Patience multiplier. Even a small increase in base Oblivion compounds across every attack and Patience stack."
         accent={C.blue.fg}

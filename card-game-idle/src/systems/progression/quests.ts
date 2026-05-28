@@ -27,7 +27,10 @@ export interface QuestTemplate {
   target?: string;
   /** Goal value the player must reach. */
   goal: number;
+  /** Aberrated Shard reward — used for weekly quests. */
   shardReward: number;
+  /** Oblivion reward — used for daily quests instead of shards. */
+  oblivionReward?: number;
 }
 
 /** Element ids that have a meaningful pack/set in the game. */
@@ -50,8 +53,8 @@ const ENGINE_ELEMENTS: { element: string; label: string }[] = [
 const DAILY_QUEST_POOL: QuestTemplate[] = [
   // Generic "play any cards" — accessible at every stage (play_cards_of_element
   // with no target matches all element events fired for every card played).
-  { id: 'daily-any-cards-10', text: 'Play 10 cards', kind: 'play_cards_of_element', goal: 10, shardReward: 10 },
-  { id: 'daily-any-cards-20', text: 'Play 20 cards', kind: 'play_cards_of_element', goal: 20, shardReward: 15 },
+  { id: 'daily-any-cards-10', text: 'Play 10 cards', kind: 'play_cards_of_element', goal: 10, shardReward: 0, oblivionReward: 5_000 },
+  { id: 'daily-any-cards-20', text: 'Play 20 cards', kind: 'play_cards_of_element', goal: 20, shardReward: 0, oblivionReward: 7_500 },
   // Element-specific (5 cards each — a small hand's worth)
   ...ENGINE_ELEMENTS.map<QuestTemplate>(({ element, label }) => ({
     id: `daily-element-${element.toLowerCase()}`,
@@ -59,19 +62,20 @@ const DAILY_QUEST_POOL: QuestTemplate[] = [
     kind: 'play_cards_of_element' as QuestKind,
     target: element,
     goal: 5,
-    shardReward: 12,
+    shardReward: 0,
+    oblivionReward: 6_000,
   })),
   // Angel type plays (low thresholds, no summon requirement)
-  { id: 'daily-ophanim-5', text: 'Play 5 Ophanim', kind: 'play_ophanim', goal: 5, shardReward: 10 },
-  { id: 'daily-seraphim-3', text: 'Place 3 Seraphim', kind: 'play_seraphim', goal: 3, shardReward: 10 },
-  { id: 'daily-cherubim-2', text: 'Place 2 Cherubim', kind: 'play_cherubim', goal: 2, shardReward: 10 },
+  { id: 'daily-ophanim-5', text: 'Play 5 Ophanim', kind: 'play_ophanim', goal: 5, shardReward: 0, oblivionReward: 5_500 },
+  { id: 'daily-seraphim-3', text: 'Place 3 Seraphim', kind: 'play_seraphim', goal: 3, shardReward: 0, oblivionReward: 5_000 },
+  { id: 'daily-cherubim-2', text: 'Place 2 Cherubim', kind: 'play_cherubim', goal: 2, shardReward: 0, oblivionReward: 5_000 },
   // Pack opening
-  { id: 'daily-pack-1', text: 'Open any card pack', kind: 'open_packs', goal: 1, shardReward: 10 },
+  { id: 'daily-pack-1', text: 'Open any card pack', kind: 'open_packs', goal: 1, shardReward: 0, oblivionReward: 8_000 },
 
   // Boss (the first boss is accessible from the start)
-  { id: 'daily-boss-1', text: 'Defeat any boss', kind: 'win_boss', goal: 1, shardReward: 20 },
+  { id: 'daily-boss-1', text: 'Defeat any boss', kind: 'win_boss', goal: 1, shardReward: 0, oblivionReward: 10_000 },
   // Multi-set (2 sets is achievable with a modest collection)
-  { id: 'daily-multisets-2', text: 'Play cards from 2 different sets in one turn', kind: 'play_unique_sets_in_turn', goal: 2, shardReward: 15 },
+  { id: 'daily-multisets-2', text: 'Play cards from 2 different sets in one turn', kind: 'play_unique_sets_in_turn', goal: 2, shardReward: 0, oblivionReward: 6_500 },
 ];
 
 const WEEKLY_QUEST_POOL: QuestTemplate[] = [
@@ -106,7 +110,10 @@ export interface QuestInstance {
   target?: string;
   goal: number;
   progress: number;
+  /** Aberrated Shard reward — set on weekly quests. */
   shardReward: number;
+  /** Oblivion reward — set on daily quests instead of shards. */
+  oblivionReward?: number;
   claimed: boolean;
 }
 
@@ -167,6 +174,7 @@ function instantiate(template: QuestTemplate, salt: string): QuestInstance {
     goal: template.goal,
     progress: 0,
     shardReward: template.shardReward,
+    oblivionReward: template.oblivionReward,
     claimed: false,
   };
 }

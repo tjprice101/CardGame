@@ -112,7 +112,15 @@ async function createWindow() {
 
   if (isDev) {
     await window.loadURL('http://localhost:5173');
-    // DevTools is no longer opened automatically. Press F12 or Ctrl+Shift+I to toggle.
+    window.webContents.openDevTools({ mode: 'detach' });
+    // Log renderer console messages to the terminal for debugging.
+    window.webContents.on('console-message', (_e, level, message, line, sourceId) => {
+      const prefix = ['LOG', 'WARN', 'ERR', 'DBG'][level] ?? 'LOG';
+      console.log(`[renderer:${prefix}] ${message} (${sourceId}:${line})`);
+    });
+    window.webContents.on('render-process-gone', (_e, details) => {
+      console.error('[renderer:CRASH]', details.reason, details.exitCode);
+    });
     return;
   }
 

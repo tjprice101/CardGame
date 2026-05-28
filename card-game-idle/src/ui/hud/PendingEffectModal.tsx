@@ -135,6 +135,8 @@ export default function PendingEffectModal() {
   const { resolvePending } = useStore.getState();
   const [selected, setSelected] = useState<string[]>([]);
 
+  const backdropStyle: React.CSSProperties = styles.backdrop;
+
   const pending = turn.pendingEffect;
 
   useEffect(() => { setSelected([]); }, [pending]);
@@ -193,7 +195,7 @@ export default function PendingEffectModal() {
     const canConfirm = selectedChannel !== null;
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Choose Accord Channel</div>
           <div style={styles.subtitle}>Pick 1 channel for this turn. Matching plays gain Node Charges; off-channel plays lose one.</div>
@@ -240,7 +242,7 @@ export default function PendingEffectModal() {
     const toggleCard = (id: string) => setSelected(prev => prev.includes(id) ? [] : [id]);
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Sentencing</div>
           <div style={styles.subtitle}>Choose 1 card in your hand to sentence. It will gain Accord bonuses when played.</div>
@@ -299,7 +301,7 @@ export default function PendingEffectModal() {
     const canConfirm = isLuminousCycle || selected.length >= effectiveMax;
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Choose Cards to Discard</div>
           <div style={styles.subtitle}>{subtitle}</div>
@@ -350,7 +352,7 @@ export default function PendingEffectModal() {
     const canConfirm = selected.length >= Math.min(keepCount, pending.cards.length);
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Embrace the Infinite</div>
           <div style={styles.subtitle}>
@@ -403,7 +405,7 @@ export default function PendingEffectModal() {
     const canConfirm = selected.length >= Math.min(maxTake, pending.cards.length);
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Choose {maxTake} Card{maxTake > 1 ? 's' : ''} to Keep</div>
           <div style={styles.subtitle}>
@@ -445,7 +447,7 @@ export default function PendingEffectModal() {
   if (pending.type === 'look_top_take_drop') {
     if (pending.cards.length === 0) {
       return (
-        <div className="anim-backdrop-fade" style={styles.backdrop}>
+        <div className="anim-backdrop-fade" style={backdropStyle}>
           <div className="anim-panel-slide-up" style={styles.panel}>
             <div style={styles.title}>Look ? Take & Drop</div>
             <div style={styles.subtitle}>There are no cards left in your deck to inspect.</div>
@@ -494,7 +496,7 @@ export default function PendingEffectModal() {
       : `${selected.length} / ${totalSelections} chosen`;
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Look ? Take & Drop</div>
           <div style={styles.subtitle}>{subtitle}</div>
@@ -538,7 +540,7 @@ export default function PendingEffectModal() {
     const filterText = pending.filter.join(' / ');
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Look ? Take {maxTake} (Filtered)</div>
           <div style={styles.subtitle}>Take {maxTake} matching card{maxTake === 1 ? '' : 's'} ({filterText}) into your hand. The rest return to the bottom of your deck.</div>
@@ -589,7 +591,7 @@ export default function PendingEffectModal() {
     const canConfirm = selected.length >= maxTake;
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Search Deck</div>
           <div style={styles.subtitle}>Choose {maxTake} card{maxTake === 1 ? '' : 's'} to add to your hand. Your deck will be shuffled afterward.</div>
@@ -651,7 +653,7 @@ export default function PendingEffectModal() {
 
     if (pending.cards.length === 0) {
       return (
-        <div className="anim-backdrop-fade" style={styles.backdrop}>
+        <div className="anim-backdrop-fade" style={backdropStyle}>
           <div className="anim-panel-slide-up" style={styles.panel}>
             <div style={styles.title}>Salvage</div>
             <div style={styles.subtitle}>No valid cards in your discard pile.</div>
@@ -677,7 +679,7 @@ export default function PendingEffectModal() {
       : 'Choose 1 card to salvage from your discard pile.';
 
     return (
-      <div className="anim-backdrop-fade" style={styles.backdrop}>
+      <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Salvage</div>
           <div style={styles.subtitle}>{subtitle}</div>

@@ -12,6 +12,10 @@ export interface BossDefinition {
   firstClearShards: number;
   repeatClearShards: number;
   description: string;
+  /** Element key that this boss is weak to (×1.25 damage when deck plurality matches). */
+  weakElement?: string;
+  /** If true, this boss belongs to a Null Raid and should not appear in Eternity's Wake boss lists. */
+  isNullRaidBoss?: boolean;
 }
 
 export type BossFightMode = 'idle' | 'active' | 'victory' | 'defeat';
@@ -19,9 +23,9 @@ export type BossFightMode = 'idle' | 'active' | 'victory' | 'defeat';
 /**
  * What kind of fight run is currently active. Normal = single boss, Wake
  * Trial = modifier-stacked single boss, Gauntlet = endless chain of bosses
- * with HP carry-over.
+ * with HP carry-over, Null Raid = timed multi-encounter Ascension raid.
  */
-export type BossFightKind = 'normal' | 'trial' | 'gauntlet';
+export type BossFightKind = 'normal' | 'trial' | 'gauntlet' | 'null_raid';
 
 export interface TrialModifierRef {
   kind:
@@ -66,4 +70,17 @@ export interface BossFightState {
   gauntletShardsBanked?: number;
   /** HP fraction (0..1) carried from the previous fight in a gauntlet. */
   gauntletHpCarryFrac?: number;
+  /** True when the active deck's plurality element matches the boss's weakElement. */
+  bossWeaknessActive?: boolean;
+  // ── Null Raid fields ─────────────────────────────────────────────────────
+  /** Null Raid: the active raid definition id. */
+  nullRaidId?: string;
+  /** Null Raid: ordered list of all encounter boss ids for this raid run. */
+  nullRaidEncounterBossIds?: string[];
+  /** Null Raid: 0-based index of the current encounter. */
+  nullRaidEncounterIndex?: number;
+  /** Null Raid: total entropy accumulated from completed encounters. */
+  nullRaidAccumulatedEntropy?: number;
+  /** Null Raid: total aberrated shards accumulated from completed encounters. */
+  nullRaidAccumulatedShards?: number;
 }

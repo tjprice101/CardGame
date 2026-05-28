@@ -180,12 +180,12 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-soot-veiled-soldier',
     name: 'Soot-veiled Soldier',
-    description: 'On play: Gain 1 Pyre Ember; Draw 1 card. While on board: +10 Oblivion per card played while active',
+    description: 'On play: Gain 3 Pyre Embers. While on board: +10 Oblivion per card played while active',
     rarity: 'Common',
     artKey: 'dfh_ser_soot_veiled_soldier',
     bonusType: 'oblivion_per_card',
     bonusValue: 10,
-    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 1 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 3 }],
     unsynergizedName: 'Soot Cut', synergizedName: 'Veiled March',
     unsynergizedBase: 230, synergizedBase: 404,
     unsynergizedCooldown: 4, synergizedCooldown: 5,
@@ -232,12 +232,12 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-choirhouse-cantor',
     name: 'Choirhouse Cantor',
-    description: 'On play: Gain 3 Pyre Embers; Draw 1 card. While on board: +34 Oblivion per card played while active',
+    description: 'On play: Gain 5 Pyre Embers. While on board: +34 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'dfh_ser_choirhouse_cantor',
     bonusType: 'oblivion_per_card',
     bonusValue: 34,
-    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 3 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }],
     unsynergizedName: 'Choir Note', synergizedName: 'Cantor Verdict',
     unsynergizedBase: 372, synergizedBase: 636,
     unsynergizedCooldown: 4, synergizedCooldown: 6,
@@ -258,12 +258,12 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-sablecrown-herald',
     name: 'Sablecrown Herald',
-    description: 'On play: Gain 4 Pyre Embers; Gain 2 Cinder Crowns; Draw 1 card. While on board: +20 Oblivion per card played while active',
+    description: 'On play: Gain 6 Pyre Embers; Gain 2 Cinder Crowns. While on board: +20 Oblivion per card played while active',
     rarity: 'Epic',
     artKey: 'dfh_ser_sablecrown_herald',
     bonusType: 'oblivion_per_card',
     bonusValue: 20,
-    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 4 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 6 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }],
     unsynergizedName: 'Sable Edict', synergizedName: 'Herald of the Crown',
     unsynergizedBase: 640, synergizedBase: 1108,
     unsynergizedCooldown: 5, synergizedCooldown: 7,
@@ -323,11 +323,11 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-reliquary-of-the-last-tongue',
     name: 'Reliquary of the Last Tongue',
-    description: 'On play: Gain 3 Pyre Embers; Draw 1 card. While on board: Buffs Seraphim and Angel attacks: base +30',
+    description: 'On play: Gain 5 Pyre Embers. While on board: Buffs Seraphim and Angel attacks: base +30',
     rarity: 'Rare',
     artKey: 'dfh_cher_reliquary_of_the_last_tongue',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 30 }],
-    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 3 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }],
   }),
   buildCherubim({
     definitionId: 'dfh-cher-severed-sanctity-hierophant',
@@ -350,11 +350,11 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-othraks-confessor',
     name: "Othrak's Confessor",
-    description: 'On play: Gain 3 Pyre Embers; Gain 2 Cinder Crowns; Draw 1 card. While on board: Buffs Seraphim and Angel attacks: base +42',
+    description: 'On play: Gain 5 Pyre Embers; Gain 2 Cinder Crowns. While on board: Buffs Seraphim and Angel attacks: base +42',
     rarity: 'Epic',
     artKey: 'dfh_cher_othraks_confessor',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 42 }],
-    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 3 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }, { type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }],
   }),
   buildCherubim({
     definitionId: 'dfh-cher-cinder-saint-othrak',
@@ -381,10 +381,10 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-ash-petal-strewer',
     name: 'Ash-petal Strewer',
-    description: 'Gain 2 Pyre Embers; Draw 1 card',
+    description: 'Gain 4 Pyre Embers',
     rarity: 'Common',
     artKey: 'dfh_oph_ash_petal_strewer',
-    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 4 }],
   }),
   buildOphanim({
     definitionId: 'dfh-oph-bell-ringer-of-the-hollow',
@@ -437,10 +437,10 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-faceless-bridesmaid-choir',
     name: 'Faceless Bridesmaid Choir',
-    description: 'Gain 3 Pyre Embers; Gain 1 Cinder Crown; Draw 1 card',
+    description: 'Gain 5 Pyre Embers; Gain 1 Cinder Crown',
     rarity: 'Rare',
     artKey: 'dfh_oph_faceless_bridesmaid_choir',
-    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 3 }, { type: 'set_secondary_gain', kind: 'pyre', value: 1 }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }, { type: 'set_secondary_gain', kind: 'pyre', value: 1 }],
   }),
   buildOphanim({
     definitionId: 'dfh-oph-funeral-march-drummer',
@@ -453,10 +453,10 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-hollowkings-vacant-page',
     name: "Hollowking's Vacant Page",
-    description: 'Gain 2 Pyre Embers; Gain 2 Cinder Crowns; Draw 1 card',
+    description: 'Gain 4 Pyre Embers; Gain 2 Cinder Crowns',
     rarity: 'Rare',
     artKey: 'dfh_oph_hollowkings_vacant_page',
-    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 4 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }],
   }),
   buildOphanim({
     definitionId: 'dfh-oph-procession-lantern-custodian',
@@ -485,10 +485,10 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-choirhouse-conductor',
     name: 'Choirhouse Conductor',
-    description: 'Gain 4 Pyre Embers; Gain 2 Cinder Crowns; Draw 1 card',
+    description: 'Gain 6 Pyre Embers; Gain 2 Cinder Crowns',
     rarity: 'Epic',
     artKey: 'dfh_oph_choirhouse_conductor',
-    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 4 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 6 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }],
   }),
   buildOphanim({
     definitionId: 'dfh-oph-hollow-throne-coronation',
@@ -509,18 +509,18 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-wedding-that-wasnt-cantor',
     name: "Wedding-that-wasn't Cantor",
-    description: 'Gain 3 Pyre Embers; Gain 4 Cinder Crowns; Draw 1 card',
+    description: 'Gain 5 Pyre Embers; Gain 4 Cinder Crowns',
     rarity: 'Epic',
     artKey: 'dfh_oph_wedding_that_wasnt_cantor',
-    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 3 }, { type: 'set_secondary_gain', kind: 'pyre', value: 4 }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }, { type: 'set_secondary_gain', kind: 'pyre', value: 4 }],
   }),
   buildOphanim({
     definitionId: 'dfh-oph-wedding-procession-living-world',
     name: 'The Wedding Procession Into the Living World',
-    description: 'Gain 6 Pyre Embers; Gain 4 Cinder Crowns; Draw 2 cards',
+    description: 'Gain 10 Pyre Embers; Gain 4 Cinder Crowns',
     rarity: 'Legendary',
     artKey: 'dfh_oph_wedding_procession_living_world',
-    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 6 }, { type: 'set_secondary_gain', kind: 'pyre', value: 4 }, { type: 'draw', value: 2 }],
+    effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 10 }, { type: 'set_secondary_gain', kind: 'pyre', value: 4 }],
   })];
 
 // ���� Angels (4 Legendary + 1 special) ��������������������������������������������������������������������������������
@@ -568,11 +568,11 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'dfh-ang-sablecrown-the-unnamed',
     name: 'Sablecrown, The Unnamed',
-    description: 'On summon: Gain 5 Pyre Embers; Gain 4 Cinder Crowns; Draw 1 card. After 3 cards played: Cash out up to 8 Cinder Crowns (+120 Oblivion per crown). While on board: +0.1 Oblivion per card played while on board',
+    description: 'On summon: Gain 7 Pyre Embers; Gain 4 Cinder Crowns. After 3 cards played: Cash out up to 8 Cinder Crowns (+120 Oblivion per crown). While on board: +0.1 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_sablecrown_the_unnamed',
     summonCost: ['dfh-ser-sablecrown-herald', 'dfh-ser-ash-marrow-reaver'],
-    onSummonEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }, { type: 'set_secondary_gain', kind: 'pyre', value: 4 }, { type: 'draw', value: 1 }],
+    onSummonEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 7 }, { type: 'set_secondary_gain', kind: 'pyre', value: 4 }],
     activatedAbility: {
       name: 'Unnamed Coronation',
       cardsPlayedRequirement: 3,
@@ -588,7 +588,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'dfh-ang-veil-iorn-the-faceless-bride',
     name: 'Veil-iorn, The Faceless Bride',
-    description: 'On summon: Gain 6 Pyre Embers; Gain 5 Cinder Crowns. After 4 cards played: Gain 5 Pyre Embers; Gain 4 Cinder Crowns; Draw 2 cards. While on board: +70 Oblivion per card played while on board',
+    description: 'On summon: Gain 6 Pyre Embers; Gain 5 Cinder Crowns. After 4 cards played: Gain 5 Pyre Embers; Gain 4 Cinder Crowns. While on board: +70 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_veil_iorn_the_faceless_bride',
     summonCost: ['dfh-ser-khorr-vael-no-face', 'dfh-ser-sablecrown-herald'],
@@ -596,8 +596,8 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Bridal Veil',
       cardsPlayedRequirement: 4,
-      description: 'Gain 5 Pyre Embers; Gain 4 Cinder Crowns; Draw 2 cards',
-      effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }, { type: 'set_secondary_gain', kind: 'pyre', value: 4 }, { type: 'draw', value: 2 }],
+      description: 'Gain 5 Pyre Embers; Gain 4 Cinder Crowns',
+      effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }, { type: 'set_secondary_gain', kind: 'pyre', value: 4 }],
     },
     primaryName: 'Faceless Cut', exaltedName: 'Veil-iorn Verdict',
     primaryBase: 780, exaltedBase: 1372,
@@ -608,11 +608,11 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'dfh-ang-council-of-the-seven-choirs',
     name: 'Council of the Seven Choirs',
-    description: 'On summon: Gain 8 Pyre Embers; Gain 6 Cinder Crowns; Draw 1 card. After 4 cards played: Cash out up to 12 Cinder Crowns (+160 Oblivion per crown). While on board: +0.14 Oblivion per card played while on board',
+    description: 'On summon: Gain 10 Pyre Embers; Gain 6 Cinder Crowns. After 4 cards played: Cash out up to 12 Cinder Crowns (+160 Oblivion per crown). While on board: +0.14 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_council_of_the_seven_choirs',
     summonCost: ['dfh-ser-khorr-vael-no-face', 'dfh-ser-pyrelungs-vassal'],
-    onSummonEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 8 }, { type: 'set_secondary_gain', kind: 'pyre', value: 6 }, { type: 'draw', value: 1 }],
+    onSummonEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 10 }, { type: 'set_secondary_gain', kind: 'pyre', value: 6 }],
     activatedAbility: {
       name: 'Seven-Choir Verdict',
       cardsPlayedRequirement: 4,
@@ -652,9 +652,8 @@ const eternalCards: CardDefinition[] = [
     artKey: 'dfh_et_othraks_eternal_communion',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 80, cooldownDeltaCards: -1 }],
     onPlayEffects: [
-      { type: 'eternal_stack_gain', stack: 'pyre', value: 5 },
-      { type: 'set_secondary_gain', kind: 'pyre', value: 4 },
-      { type: 'draw', value: 2 }],
+      { type: 'eternal_stack_gain', stack: 'pyre', value: 9 },
+      { type: 'set_secondary_gain', kind: 'pyre', value: 4 }],
   }),
   buildOphanim({
     definitionId: 'dfh-et-crimson-ember-rain',
@@ -670,14 +669,13 @@ const eternalCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-et-eternal-procession-of-the-veiled',
     name: 'The Eternal Procession of the Veiled',
-    description: 'Gain 4 Pyre Embers; Gain 6 Cinder Crowns; Cash out up to 10 Cinder Crowns (+180 Oblivion per crown); Draw 1 card',
+    description: 'Gain 4 Pyre Embers; Gain 8 Cinder Crowns; Cash out up to 10 Cinder Crowns (+180 Oblivion per crown)',
     rarity: 'Eternal',
     artKey: 'dfh_et_eternal_procession_of_the_veiled',
     effects: [
       { type: 'eternal_stack_gain', stack: 'pyre', value: 4 },
-      { type: 'set_secondary_gain', kind: 'pyre', value: 6 },
-      { type: 'dfh_crown_cashout', oblivionPerCrown: 180, consume: 10 },
-      { type: 'draw', value: 1 }],
+      { type: 'set_secondary_gain', kind: 'pyre', value: 8 },
+      { type: 'dfh_crown_cashout', oblivionPerCrown: 180, consume: 10 }],
   })];
 
 // ���� Infinite (4) ������������������������������������������������������������������������������������������������������������������������
@@ -702,28 +700,26 @@ const infinityCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-inf-final-communion-of-halos',
     name: 'The Final Communion of Halos',
-    description: 'On play: Gain 8 Pyre Embers; Gain 8 Cinder Crowns; Cash out up to 12 Cinder Crowns (+320 Oblivion per crown); Draw 3 cards. While on board: Buffs Seraphim and Angel attacks: base +200',
+    description: 'On play: Gain 14 Pyre Embers; Gain 8 Cinder Crowns; Cash out up to 12 Cinder Crowns (+320 Oblivion per crown). While on board: Buffs Seraphim and Angel attacks: base +200',
     rarity: 'Infinite',
     artKey: 'dfh_inf_final_communion_of_halos',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 200 }],
     onPlayEffects: [
-      { type: 'eternal_stack_gain', stack: 'pyre', value: 8 },
+      { type: 'eternal_stack_gain', stack: 'pyre', value: 14 },
       { type: 'set_secondary_gain', kind: 'pyre', value: 8 },
-      { type: 'dfh_crown_cashout', oblivionPerCrown: 320, consume: 12 },
-      { type: 'draw', value: 3 }],
+      { type: 'dfh_crown_cashout', oblivionPerCrown: 320, consume: 12 }],
   }),
   buildOphanim({
     definitionId: 'dfh-inf-bridal-procession-living-world',
     name: 'The Bridal Procession Reaches the Living World',
-    description: 'Gain 8 Pyre Embers; Gain 10 Cinder Crowns; Cash out up to 12 Pyre Embers (+400 Oblivion per stack); Cash out up to 12 Cinder Crowns (+300 Oblivion per crown); Draw 2 cards',
+    description: 'Gain 12 Pyre Embers; Gain 10 Cinder Crowns; Cash out up to 12 Pyre Embers (+400 Oblivion per stack); Cash out up to 12 Cinder Crowns (+300 Oblivion per crown)',
     rarity: 'Infinite',
     artKey: 'dfh_inf_bridal_procession_living_world',
     effects: [
-      { type: 'eternal_stack_gain', stack: 'pyre', value: 8 },
+      { type: 'eternal_stack_gain', stack: 'pyre', value: 12 },
       { type: 'set_secondary_gain', kind: 'pyre', value: 10 },
       { type: 'eternal_stack_cashout', stack: 'pyre', oblivionPerStack: 400, consume: 12 },
-      { type: 'dfh_crown_cashout', oblivionPerCrown: 300, consume: 12 },
-      { type: 'draw', value: 2 }],
+      { type: 'dfh_crown_cashout', oblivionPerCrown: 300, consume: 12 }],
   }),
   buildOphanim({
     definitionId: 'dfh-inf-death-flame-escaping-upward',
