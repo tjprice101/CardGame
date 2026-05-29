@@ -661,11 +661,11 @@ function BonusesTab() {
         <SectionTitle label="Set Mechanics (Cashouts)" accent={C.red.fg} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
-            { set: 'Pyroabyss',       mech: 'Cinder Echo Ignite',         desc: 'Quadratic burst — Oblivion scales with echoes². Maximise echo count before igniting.', accent: C.red    },
-            { set: 'Eternal Seas',    mech: 'Tide Echo Resolve',           desc: 'Polarity-split payout. Manage Tide Crown polarity for optimal cashout timing.',         accent: C.blue   },
-            { set: 'Butterfly Set',   mech: 'Wing Pulse Amplify',          desc: 'Doubles the next butterfly_spectrum_gain. Chain doubles for exponential scaling.',      accent: C.purple },
-            { set: 'Blazing Garden',  mech: 'Wild Pollen Seed',            desc: 'Pushes Embers then triggers a score multiplier. Bloom then Burn for max payout.',      accent: C.red    },
-            { set: 'Glass Absolute',  mech: 'Cascade Proof Amplify',       desc: 'Chain multiplier from cascading Proof tokens. Deeper cascades = larger multiplier.',   accent: C.blue   },
+            { set: 'Pyroabyss',       mech: 'Chroma Ember Ignite',        desc: 'Quadratic burst — Oblivion scales with embers². Maximise Chroma Ember count before igniting.', accent: C.red    },
+            { set: 'Eternal Seas',    mech: 'Undertow Release',            desc: 'Base cards spend Undertow for same-turn burst, skim Foam into manual draw, and use Deepwake as the shared higher-rarity amplification overlay.', accent: C.blue   },
+            { set: 'Butterfly Set',   mech: 'Wing Resonance',              desc: 'Butterfly Eternity and Infinite cards bank Wing Resonance, then cash it through current Spectrum and Formation for sharper payoff turns.', accent: C.purple },
+            { set: 'Blazing Garden',  mech: 'Wild Pollen Seed',            desc: 'Eternal cards generate Wild Pollen, then seed effects convert it into direct Oblivion and Bloom-scaled score. Build Burn/Grove first, then cash out.', accent: C.red    },
+            { set: 'Glass Absolute',  mech: 'Refraction Charge Conversion', desc: 'Build fragments first, then spend Refraction Charge for stronger Eternal/Infinite burst windows with queue or ledger riders.', accent: C.blue   },
             { set: 'Eternal / Inf.',  mech: 'Eternal Stack Cashout',       desc: "Each set's primary stack (e.g., Inferno Tier) converts to Oblivion on cashout cards.", accent: C.gold   },
           ].map(({ set, mech, desc, accent }) => (
             <div key={set} style={{
@@ -758,7 +758,7 @@ function TipsTab() {
       <TipCard
         rank={5}
         title="Time Your Set Mechanic Cashouts"
-        detail="Set mechanics (Eternal Stacks, Cinder Echoes, Cascade Proofs, etc.) produce disproportionate Oblivion when cashed out at high counts. Hold off triggering cashout cards until your stack is large — then combine with Full Board Bonus for the biggest burst possible."
+        detail="Set mechanics (Eternal Stacks, Chroma Embers, Refraction Charge, etc.) produce disproportionate Oblivion when cashed out at high counts. Hold off triggering cashout cards until your stack is large, then combine with Full Board Bonus for the biggest burst possible."
         accent={C.red.fg}
       />
       <TipCard

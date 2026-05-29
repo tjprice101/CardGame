@@ -141,29 +141,33 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - **Patience per card by Cherubim rarity**: Common +1, Rare +2, Epic +3, Eternal +4–5, Infinite +6–8.
 
 ### Heavenly Light — "Radiance"
-- **Radiance** is a per-turn counter that resets at turn end.
+- **Cadence** tracks the current note sequence and rewards variety.
+- **Radiance** is a per-turn fuel counter that resets at turn end.
 - Cards generate Radiance, spend Radiance, or scale off current Radiance.
 - Radiance is **exclusive to Heavenly Light**. No other element may use `radiance_gain`, `radiance_spend`, `radiance_double`, or any Radiance effect.
-- Higher risk/reward than Neutrality. More complex combos.
+- Chorus Anchors protect repeat notes from breaking the sequence.
+- Heavenly Light should read as a two-resource engine: build Cadence, spend Radiance, and keep the sequence intact when it matters.
 
 ### Pyroabyss — "Embers"
-- **Embers** is the resource. Cards generate Embers; spending Embers fuels attacks and powerful effects.
-- Cross-set conversion: Pyroabyss can convert other sets' resources via tracked conversion amplification.
-- Seraphim have `chain_bonus` as a common bonusType (fire drives chain growth).
+- **Furnace Pressure** is the core resource. Stoke effects raise Furnace; Ignite converts it into tiered Oblivion and resets Furnace.
+- **Rise Streak** tracks consecutive Furnace increases and multiplies Ignite payout.
+- Fire Seraphim and Angel attacks scale with current Furnace (`+2.5%` per Furnace, max `+75%`).
+- **Eternity Fire overlay (same turn only)**: when a Fire Eternity source is active or a Fire Eternity card was played this turn, Ignite generates Chrono Embers (`floor(ignite/450)`). Eternity Fire Seraphim/Angel attacks gain `+5%` per Chrono Ember (max `+20%`) and consume all Chrono Embers on attack.
 
 ### Thornbound Plains — "Trail / War-Path"
 - **Trail** is the resource. Accumulated via card plays, spent on high-power effects and attack costs.
 - **Scar** and **war-path payout** mechanics: Seraphim build scars and pay out Oblivion on thresholds.
 - Extra Cherubim plays per turn (`cherubim_extra_plays` bonusType) is a Thornbound Seraphim trait.
 
-### Snowbound Voltage — "Phase / Potential"
-- **Phase** and **Potential** are the core resources/states.
-- Cards shift phase states and convert Potential into Oblivion output.
+### Snowbound Voltage — "Frost / Voltage / Arctic Charge"
+- **Arctic Charge** is the core Snowbound resource.
+- Frost cards build Arctic Charge; Voltage cards cash it out into Oblivion output.
 
-### Mechanical Dreams — "Strain / Instruction Queue"
-- **Strain** is the resource. Cards generate Strain; `overclock` effects spend Strain for amplified outcomes.
-- An **instruction queue** pattern: some Ophanim use `{ type: 'overclock', strain: N, then: [...] }` — gain Strain, then execute the nested effects.
-- Mechanical Seraphim often use Strain in attack costs.
+### Mechanical Dreams — "Clock / Chime / Strain"
+- **Clock-Chime** is the primary loop. Each Mechanical play advances the Clock; every 3 ticks, a Chime fires.
+- **Chime** delivers immediate burst, vents/spends Strain pressure, and primes your next Mechanical attack (stored up to 1 if no attack is used immediately).
+- **Strain** remains the core fuel for Mechanical effects and attack costs.
+- **Reactor Core** is the Eternity/Infinity extension layer. Mechanical Eternity and Infinite cards build, spend, or cash out Reactor Cores for larger burst windows.
 
 ### Prismatic Accord — "Spectrum Tokens / Refraction"
 - **prismaticDepth** on card definitions (defaults by rarity: Common 1, Rare 2, Epic 3, Legendary 4, Eternal/Infinite 5).
@@ -175,15 +179,22 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - Dark element; uses `cherubim_adjacent_seraphim_bonus` passives (Oblivion/chain to adjacent Seraphim attacks).
 - Cards tend toward high-value Ophanim with conditional scaling.
 
-### Glass Absolute — "Proof Lattice"
-- **Proof** accumulates through card interactions forming a lattice.
-- Seraphim and Ophanim that interact with adjacent proof nodes.
+### Glass Absolute — "Fragments & Formation"
+- Base loop is fragments-first: fill the board with Glass cards and cash tiered formation bonuses (3/5/7 fragments).
+- Eternal and Infinite cards share one ancillary overlay: Refraction Charge. Eternal lines build/spend charge for conversion windows, and Infinite lines use stronger charge thresholds with queue/floor/ledger riders.
 
-### Blazing Garden — "Ember Grove / Echo"
+### Blazing Garden — "Burn / Ember Grove / Echo / Wild Pollen"
 - **Ember Grove** is persistent board state (survives across turns, unlike per-turn resources).
-- One-per-turn **echo**: first qualifying play each turn fires an echo effect.
-- **Burn ignition**: threshold conditions that trigger bonus Oblivion bursts.
+- Base loop: maintain **Burn uptime**, branch Rose/Sunflower/Thistle lineages, then convert Grove seeds into Echo turns.
+- One-per-turn **echo** remains, with additional free-echo gain from specific card effects.
 - End-turn: char converts to Ember Grove. Seraphim have dedicated BlazeGarden instance initialization.
+- **Wild Pollen** is the higher-rarity ancillary mechanic: Eternal cards generate it, and Eternal/Infinite seed effects spend it for amplified Oblivion and score payout.
+
+### Eternal Seas — "Undertow / Foam / Deepwake"
+- **Undertow** is the base same-turn setup pool. Base cards build Undertow and cash it through `seas_undertow_release` for direct Oblivion.
+- **Foam** is the support layer. Base release lines often skim Foam, and the HUD action spends 5 Foam to draw 1 card.
+- **Deepwake** is the shared higher-rarity overlay (Eternal and Infinite). Deepwake surge effects (`seas_deepwake_surge`) amplify Undertow conversion and optional Foam return.
+- Legacy **Current/Polarity/Tide Echo** fields may still exist for compatibility, but they are no longer the primary Eternal Seas base loop.
 
 ---
 
@@ -366,7 +377,7 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - **Seraphim discard-cost attacks**: require explicit `paymentSelection`; store does not auto-pick. `BoardDisplay` opens a Seraphim discard picker modal before calling `activateSeraphimAttack`.
 - **Infinitude visibility**: recipe-driven via `INFINITE_RECIPES` in `infiniteCards.ts`. Eternity's Wake visibility: boss-data-driven via `BossCategory` + `mapPackToBossCategory` + `BOSS_DEFINITIONS`. Adding set cards alone will not surface them in those menus.
 - **`Embrace the Infinite`** button: available when `hand` has 40+ cards, phase is `playing`, and no pending effect. Does not require an empty draw pile.
-- **Glass Absolute**: `prismaticDepth` on definitions + `spectrumTokens` on board instances. Depth defaults by rarity (Common 1, Rare 2, Epic 3, Legendary 4, Eternal/Infinite 5). Refracts tokens onto boarded cards whose depth differs by 1.
+- **Glass Absolute**: base loop is fragments-first; Eternal/Infinite overlays are Refraction Charge-first. Runtime still tracks depth/token board data, but player-facing higher-rarity conversion is now charge/queue/ledger driven.
 - **Burning Garden**: uses persistent `emberGrove` board state; one-per-turn echo; Burn ignition; end-turn char-to-Ember-Grove conversion. `initializeBurningGardenInstance` must be called when placing a Burning Garden Seraphim.
 - **Balance override scripts**: `scripts/add-explicit-attacks.mjs`, `scripts/enforce-attack-power-constraints.mjs`, etc. Attack regex must use word boundaries (`\bsynergized`) because bare `synergized:` also matches inside `unsynergized:`.
 - **Card face art**: `public/assets/card-backgrounds/<element-folder>/`. `src/ui/cardBackgrounds.ts` resolves element-specific subfolders. Neutrality uses `neutrality/`. `CARD_BACKGROUND_FILE_OVERRIDES` handles special cases. Infinite BGI cards route to `black-glass-inferno/` not `infinite/`.

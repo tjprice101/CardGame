@@ -9,7 +9,7 @@ import { warmTheme, uiTypography } from '@/ui/theme';
 import PackOpeningModal from './PackOpeningModal';
 import CollectionViewer from './CollectionViewer';
 import HolofoilWorkshop from './HolofoilWorkshop';
-import TrialDeckModeModal from '@/ui/trialDeck/TrialDeckModeModal';
+import CoreMechanicEngineModal from './CoreMechanicEngineModal';
 import { getSpotlightPackId, getSpotlightPackCost, SPOTLIGHT_DISCOUNT } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost, DAILY_DEAL_DISCOUNT } from '@/systems/progression/dailyDeal';
 
@@ -242,7 +242,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
   const packPityCounters = useStore(s => s.progress.packPityCounters ?? {});
   const [openingResult, setOpeningResult] = useState<{ cards: string[]; packName: string; newCards: Set<string> } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
-  const [trialPackId, setTrialPackId] = useState<string | null>(null);
+  const [coreEnginePackId, setCoreEnginePackId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'packs' | 'holofoils' | 'history'>('packs');
   const [focusPackId, setFocusPackId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<1 | 5 | 100>(1);
@@ -474,7 +474,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
         {hasTrial && (
           <button
             data-sfx="click"
-            onClick={() => setTrialPackId(pack.id)}
+            onClick={() => setCoreEnginePackId(pack.id)}
             style={{
               padding: '7px 12px',
               borderRadius: 8,
@@ -490,7 +490,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
               width: '100%',
             }}
           >
-            🃏 Trial Deck
+            Core Mechanic Engine
           </button>
         )}
       </div>
@@ -644,12 +644,13 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
 
       {showCollection && <CollectionViewer onClose={() => setShowCollection(false)} />}
 
-      {trialPackId && (
-        <TrialDeckModeModal
-          packId={trialPackId}
-          packName={PACK_DEFINITIONS.find(p => p.id === trialPackId)?.name.replace(/^\[EVENT\]\s*/, '') ?? trialPackId}
-          onConfirm={(mode) => { onStartTrial(trialPackId, mode); onClose(); }}
-          onClose={() => setTrialPackId(null)}
+      {coreEnginePackId && (
+        <CoreMechanicEngineModal
+          packId={coreEnginePackId}
+          packName={PACK_DEFINITIONS.find(p => p.id === coreEnginePackId)?.name.replace(/^\[EVENT\]\s*/, '') ?? coreEnginePackId}
+          cardPool={PACK_DEFINITIONS.find(p => p.id === coreEnginePackId)?.cardPool ?? []}
+          onStartTrial={onStartTrial}
+          onClose={() => setCoreEnginePackId(null)}
         />
       )}
     </div>

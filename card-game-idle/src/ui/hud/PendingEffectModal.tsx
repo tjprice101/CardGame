@@ -146,16 +146,16 @@ export default function PendingEffectModal() {
   const confirm = () => { resolvePending(selected); setSelected([]); };
   const failToFind = () => { resolvePending([]); setSelected([]); };
   const buildCardStyle = (
-    card: Pick<DeckCard, 'definitionId' | 'finish'>,
+    card: Pick<DeckCard, 'definitionId' | 'finish' | 'faceState'>,
     stateStyle?: React.CSSProperties,
   ): React.CSSProperties => ({
     ...styles.card,
-    ...getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish),
+    ...getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, card.faceState),
     ...(stateStyle ?? {}),
   });
 
   const renderCardFace = (
-    card: Pick<DeckCard, 'definitionId' | 'finish'>,
+    card: Pick<DeckCard, 'definitionId' | 'finish' | 'faceState'>,
     footerLabel?: string,
     footerColor?: string,
   ) => {
@@ -197,8 +197,8 @@ export default function PendingEffectModal() {
     return (
       <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
-          <div style={styles.title}>Choose Accord Channel</div>
-          <div style={styles.subtitle}>Pick 1 channel for this turn. Matching plays gain Node Charges; off-channel plays lose one.</div>
+          <div style={styles.title}>Choose Focus Channel</div>
+          <div style={styles.subtitle}>Pick 1 channel for this turn. This is used by advanced Prismatic cards.</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(120px, 1fr))', gap: 10, marginBottom: 16 }}>
             {channels.map(channel => {
               const isSel = selectedChannel === channel.id;
@@ -245,7 +245,7 @@ export default function PendingEffectModal() {
       <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Sentencing</div>
-          <div style={styles.subtitle}>Choose 1 card in your hand to sentence. It will gain Accord bonuses when played.</div>
+          <div style={styles.subtitle}>Choose 1 card in your hand to sentence. It will gain enhanced follow-up effects when played.</div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
               const isTake = selected.includes(c.instanceId);

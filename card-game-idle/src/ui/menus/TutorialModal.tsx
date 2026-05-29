@@ -323,17 +323,17 @@ function PatienceBody() {
 function SetsBody() {
   const sets: Array<[string, string, string]> = [
     ['Neutrality', 'Patience / Stasis', 'Stockpile Patience on Seraphim, cash it out on attack. The friendly starter engine.'],
-    ['Heavenly Light', 'Radiance & Cadence', 'Build Hymn Notes and Chorus Anchors, build Cadence, finish with an Apotheosis Pulse.'],
-    ['Pyroabyss', 'Embers & Heat', "Spend Embers to fuel Fire attacks. Convert other sets' resources into furnace fuel; balance Heat and Stability."],
-    ['Thornbound Plains', 'Trail & War-Path', 'Accumulate Trail and Scars on the march; bloom Briar Spirals; cash the war-path on demand.'],
-    ['Snowbound Voltage', 'Phase & Potential', 'Alternate Frost and Voltage phases. Each successful swap converts stored Potential into a burst.'],
-    ['Mechanical Dreams', 'Strain & Instructions', 'Queue diverse Instructions, Overclock to spend Strain, finish with an Instruction Loop replay.'],
-    ['Prismatic Accord', 'Spectrum & Refraction', 'Refract tokens onto adjacent depths, accumulate distinct channels, fire the Ninefold Accord finisher.'],
-    ['Black Glass Inferno', 'Twin-Flame & Fracture', 'Balance White and Black Flame to build Fracture, then collapse it into a single decisive payoff.'],
-    ['Glass Absolute', 'Proof Lattice', 'Stack proofs and Axioms across the board; cascade the lattice for an absolute demonstration.'],
-    ['Blazing Garden', 'Ember Grove & Echo', 'Persistent grove state across turns. Bloom Rose / Sunflower / Thistle lineages and trigger one Echo per turn.'],
-    ['Age of the Butterfly', 'Spectrum Stances', 'Charge shared Spectrum, tune Reflect and Absorb stances, descend into a dual-surface payoff turn.'],
-    ['Eternal Seas', 'Current & Veilmargin', 'Stock Current, alternate White/Black flow, converge for a Veilmargin release.'],
+    ['Heavenly Light', 'Cadence, Radiance & Halo', 'Build note variety and Anchors for Cadence, then spend stocked Halo on your biggest Light burst turns.'],
+    ['Pyroabyss', 'Furnace & Chroma', 'Build Furnace Pressure for Ignite and Fire attack scaling, then on Eternal/Infinite turns convert Ignite into same-turn Chroma Embers for a higher-rarity burst.'],
+    ['Thornbound Plains', 'Trail, Scar & Briar Spiral', 'Build Trail, convert to Scar manually in the HUD, then use Eternal Briar Spirals to amplify your payoff turn.'],
+    ['Snowbound Voltage', 'Frost, Voltage & Polar Capacitors', 'Frost cards build Arctic Charge and Voltage cards cash it out; Eternity/Infinite cards add Polar Capacitor bank-and-release lines.'],
+    ['Mechanical Dreams', 'Strain & Clock-Chime', 'Build Strain, track the 3-tick Clock, and spend stored Chimes on your strongest Mechanical attacks.'],
+    ['Prismatic', 'Refraction & Prism Charge', 'Switch channels to build Refraction Depth and Prism Charge, then spend fixed charge amounts on payoff turns.'],
+    ['Black Glass Inferno', 'Twin-Flame, Fracture & Eclipse', 'Balance White and Black Flame, build Fracture, then convert banked Eclipse through Eternal/Infinity burst windows.'],
+    ['Glass Absolute', 'Fragments, Formation & Refraction', 'Build dense Glass board presence to hit fragment tiers, then use Refraction Charge on Eternal/Infinite cards to convert that formation into larger burst turns.'],
+    ['Blazing Garden', 'Burn, Grove, Echo & Wild Pollen', 'Keep units in Burn, let charred cards seed Ember Grove, generate Wild Pollen from Eternal cards, then spend seeded payoffs for your lineage burst turn.'],
+    ['Age of the Butterfly', 'Flutter Formation + Wing Resonance', 'Charge shared Spectrum, complete Formation across unit types, then cash Wing Resonance windows on Eternity/Infinite turns before Descent reset.'],
+    ['Eternal Seas', 'Undertow, Foam & Deepwake', 'Build Undertow during the turn, release it for burst, spend 5 Foam in the HUD to draw 1 card, and use Deepwake on Eternal/Infinite cards to amplify your conversion turns.'],
     ['Iron Dominion', 'Forge & Weld-Mark', 'Accumulate Iron Charge and Weld Marks; fracture-vent for Oblivion; Tungsten Overclock gates the full-fire multiplier.'],
   ];
 

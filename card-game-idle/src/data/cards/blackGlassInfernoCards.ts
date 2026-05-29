@@ -1,20 +1,57 @@
 import type { CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
 
-export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
+const ensureOnPlayPrefix = (text: string): string => (
+  text.startsWith('On play:') ? text : `On play: ${text}`
+);
+
+const appendRule = (text: string, rule: string): string => {
+  const normalized = ensureOnPlayPrefix(text);
+  if (normalized.includes(rule)) {
+    return normalized;
+  }
+
+  const whileOnBoardMarker = '. While on board:';
+  const whileOnBoardIndex = normalized.indexOf(whileOnBoardMarker);
+  if (whileOnBoardIndex >= 0) {
+    return `${normalized.slice(0, whileOnBoardIndex)}; ${rule}${normalized.slice(whileOnBoardIndex)}`;
+  }
+
+  return `${normalized}; ${rule}`;
+};
+
+const withBlackFlameSeraphim = (card: SeraphimDefinition): SeraphimDefinition => ({
+  ...card,
+  description: appendRule(card.description, 'Gain 2 Black Flame'),
+  onPlayEffects: [...card.onPlayEffects, { type: 'black_glass_black_flame_gain', value: 2 }],
+});
+
+const withBlackFlameOphanim = (card: OphanimDefinition): OphanimDefinition => ({
+  ...card,
+  description: appendRule(card.description, 'Gain 2 Black Flame'),
+  effects: [...card.effects, { type: 'black_glass_black_flame_gain', value: 2 }],
+});
+
+const withWhiteFlameCherubim = (card: CherubimDefinition): CherubimDefinition => ({
+  ...card,
+  description: appendRule(card.description, 'Gain 2 White Flame'),
+  onPlayEffects: [...card.onPlayEffects, { type: 'black_glass_white_flame_gain', value: 2 }],
+});
+
+export const blackGlassInfernoSeraphims: SeraphimDefinition[] = ([
   {
     definitionId: 'bgi-ser-obsidian-choir',
     type: 'Seraphim',
     element: 'Dark',
     rarity: 'Common',
     name: 'Obsidian Choir',
-    description: 'On play: Draw 1 card; Gain 2 Monochromatic Shards. While on board: +10 Oblivion per card played while active',
+    description: 'On play: Draw 1 card; Gain 2 Monochromatic Shards; Gain 2 Black Flame. While on board: +10 Oblivion per card played while active',
     artKey: 'bgi_ser_obsidian_choir',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-obsidian-choir:unsynergized',
         label: 'Unsynergized',
         name: 'Obsidian Choir Vector Break',
-        description: '141 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
+        description: '178 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
         baseOblivion: 235,
         cooldownCards: 4,
         costs: [],
@@ -24,7 +61,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-obsidian-choir:synergized',
         label: 'Synergized',
         name: 'Obsidian Choir Angelic Verdict',
-        description: '396 base Oblivion · 8 cards cooldown · Requires Angel',
+        description: '850 base Oblivion · 8 cards cooldown · Requires Angel',
         baseOblivion: 400,
         cooldownCards: 5,
         costs: [],
@@ -41,14 +78,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Ashen Helix',
-    description: 'On play: Gain 2 Monochromatic Shards. While on board: +24 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 2 Monochromatic Shards; Gain 2 Black Flame. While on board: +24 Oblivion whenever you play an Ophanim while active',
     artKey: 'bgi_ser_ashen_helix',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-ashen-helix:unsynergized',
         label: 'Unsynergized',
         name: 'Ashen Helix Vector Break',
-        description: '130 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
+        description: '165 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
         baseOblivion: 235,
         cooldownCards: 4,
         costs: [],
@@ -58,7 +95,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-ashen-helix:synergized',
         label: 'Synergized',
         name: 'Ashen Helix Angelic Verdict',
-        description: '375 base Oblivion · 8 cards cooldown · Requires Angel',
+        description: '803 base Oblivion · 8 cards cooldown · Requires Angel',
         baseOblivion: 400,
         cooldownCards: 5,
         costs: [],
@@ -75,14 +112,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Rose-Spine Drake',
-    description: 'On play: +35 Oblivion; Gain 2 Monochromatic Shards. While on board: +10 Oblivion per card played while active',
+    description: 'On play: +35 Oblivion; Gain 2 Monochromatic Shards; Gain 2 Black Flame. While on board: +10 Oblivion per card played while active',
     artKey: 'bgi_ser_rose_spine_drake',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-rose-spine-drake:unsynergized',
         label: 'Unsynergized',
         name: 'Rose-Spine Drake Vector Break',
-        description: '130 base Oblivion · 2 cards cooldown · Cost: discard 1 card',
+        description: '165 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
         baseOblivion: 205,
         cooldownCards: 4,
         costs: [],
@@ -92,7 +129,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-rose-spine-drake:synergized',
         label: 'Synergized',
         name: 'Rose-Spine Drake Angelic Verdict',
-        description: '396 base Oblivion · 8 cards cooldown · Requires Angel',
+        description: '850 base Oblivion · 8 cards cooldown · Requires Angel',
         baseOblivion: 349,
         cooldownCards: 5,
         costs: [],
@@ -109,14 +146,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Chromatic Ashwarden',
-    description: 'On play: +45 Oblivion; Gain 3 Monochromatic Shards. While on board: Each new Cherubim summoned while active gains +1 durability',
+    description: 'On play: +45 Oblivion; Gain 3 Monochromatic Shards; Gain 2 Black Flame. While on board: Each new Cherubim summoned while active gains +1 durability',
     artKey: 'bgi_ser_chromatic_ashwarden',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-chromatic-ashwarden:unsynergized',
         label: 'Unsynergized',
         name: 'Chromatic Ashwarden Vector Break',
-        description: '153 base Oblivion · 3 cards cooldown · Cost: discard 1 card',
+        description: '194 base Oblivion · 3 cards cooldown · Cost: discard 1 card',
         baseOblivion: 225,
         cooldownCards: 4,
         costs: [],
@@ -126,7 +163,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-chromatic-ashwarden:synergized',
         label: 'Synergized',
         name: 'Chromatic Ashwarden Angelic Verdict',
-        description: '411 base Oblivion · 4 cards cooldown · Requires Angel',
+        description: '881 base Oblivion · 4 cards cooldown · Requires Angel',
         baseOblivion: 383,
         cooldownCards: 5,
         costs: [],
@@ -143,14 +180,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Mourning Crest',
-    description: 'On play: Draw 1 card; Gain 3 Monochromatic Shards. While on board: Gain +120 Oblivion when a Cherubim expires while active',
+    description: 'On play: Draw 1 card; Gain 3 Monochromatic Shards; Gain 2 Black Flame. While on board: Gain +120 Oblivion when a Cherubim expires while active',
     artKey: 'bgi_ser_mourning_crest',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-mourning-crest:unsynergized',
         label: 'Unsynergized',
         name: 'Mourning Crest Vector Break',
-        description: '176 base Oblivion · 3 cards cooldown · Cost: discard 1 card',
+        description: '222 base Oblivion · 3 cards cooldown · Cost: discard 1 card',
         baseOblivion: 410,
         cooldownCards: 4,
         costs: [],
@@ -160,7 +197,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-mourning-crest:synergized',
         label: 'Synergized',
         name: 'Mourning Crest Angelic Verdict',
-        description: '542 base Oblivion · 5 cards cooldown · Requires Angel',
+        description: '1162 base Oblivion · 5 cards cooldown · Requires Angel',
         baseOblivion: 720,
         cooldownCards: 5,
         costs: [],
@@ -177,14 +214,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Void-Mandible Archon',
-    description: 'On play: Empower the next card you play; Gain 3 Monochromatic Shards. While on board: +30 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Empower the next card you play; Gain 3 Monochromatic Shards; Gain 2 Black Flame. While on board: +30 Oblivion whenever you play an Ophanim while active',
     artKey: 'bgi_ser_void_mandible_archon',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-void-mandible-archon:unsynergized',
         label: 'Unsynergized',
         name: 'Void-Mandible Archon Vector Break',
-        description: '162 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
+        description: '205 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
         baseOblivion: 370,
         cooldownCards: 4,
         costs: [],
@@ -194,7 +231,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-void-mandible-archon:synergized',
         label: 'Synergized',
         name: 'Void-Mandible Archon Angelic Verdict',
-        description: '560 base Oblivion · 8 cards cooldown · Requires Angel',
+        description: '1201 base Oblivion · 8 cards cooldown · Requires Angel',
         baseOblivion: 629,
         cooldownCards: 5,
         costs: [],
@@ -211,14 +248,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Cinder-Vow Leviathan',
-    description: 'On play: Look at the top 3 cards, take 1 card, and put the rest on the bottom; Gain 4 Monochromatic Shards. While on board: +14 Oblivion per card played while active',
+    description: 'On play: Look at the top 3 cards, take 1 card, and put the rest on the bottom; Gain 4 Monochromatic Shards; Gain 2 Black Flame. While on board: +14 Oblivion per card played while active',
     artKey: 'bgi_ser_cinder_vow_leviathan',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-cinder-vow-leviathan:unsynergized',
         label: 'Unsynergized',
         name: 'Cinder-Vow Leviathan Vector Break',
-        description: '155 base Oblivion · 2 cards cooldown · Cost: discard 1 card',
+        description: '197 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
         baseOblivion: 340,
         cooldownCards: 4,
         costs: [],
@@ -228,7 +265,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-cinder-vow-leviathan:synergized',
         label: 'Synergized',
         name: 'Cinder-Vow Leviathan Angelic Verdict',
-        description: '452 base Oblivion · 8 cards cooldown · Requires Angel',
+        description: '969 base Oblivion · 8 cards cooldown · Requires Angel',
         baseOblivion: 578,
         cooldownCards: 5,
         costs: [],
@@ -245,14 +282,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Epic',
     name: 'Blackglass Cathedral',
-    description: 'On play: Draw 1 card; Gain 4 Monochromatic Shards. While on board: +22 Oblivion per card played while active',
+    description: 'On play: Draw 1 card; Gain 4 Monochromatic Shards; Gain 2 Black Flame. While on board: +22 Oblivion per card played while active',
     artKey: 'bgi_ser_blackglass_cathedral',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-blackglass-cathedral:unsynergized',
         label: 'Unsynergized',
         name: 'Blackglass Cathedral Vector Break',
-        description: '217 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
+        description: '276 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
         baseOblivion: 600,
         cooldownCards: 5,
         costs: [],
@@ -262,7 +299,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-blackglass-cathedral:synergized',
         label: 'Synergized',
         name: 'Blackglass Cathedral Angelic Verdict',
-        description: '530 base Oblivion · 8 cards cooldown · Requires Angel',
+        description: '1136 base Oblivion · 8 cards cooldown · Requires Angel',
         baseOblivion: 1020,
         cooldownCards: 6,
         costs: [],
@@ -279,14 +316,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Epic',
     name: 'Hatred Astralwyrm',
-    description: 'On play: +60 Oblivion; Gain 4 Monochromatic Shards. While on board: +20 Oblivion per card played while active',
+    description: 'On play: +60 Oblivion; Gain 4 Monochromatic Shards; Gain 2 Black Flame. While on board: +20 Oblivion per card played while active',
     artKey: 'bgi_ser_hatred_astralwyrm',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-hatred-astralwyrm:unsynergized',
         label: 'Unsynergized',
         name: 'Hatred Astralwyrm Vector Break',
-        description: '185 base Oblivion · 2 cards cooldown · Cost: discard 1 card',
+        description: '235 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
         baseOblivion: 550,
         cooldownCards: 5,
         costs: [],
@@ -296,7 +333,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-hatred-astralwyrm:synergized',
         label: 'Synergized',
         name: 'Hatred Astralwyrm Angelic Verdict',
-        description: '530 base Oblivion · 8 cards cooldown · Requires Angel',
+        description: '1136 base Oblivion · 8 cards cooldown · Requires Angel',
         baseOblivion: 935,
         cooldownCards: 6,
         costs: [],
@@ -313,14 +350,14 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Infernal Griefforge',
-    description: 'On play: Draw 2 cards; Gain 5 Monochromatic Shards. While on board: Gain +260 Oblivion when a Cherubim expires while active',
+    description: 'On play: Draw 2 cards; Gain 5 Monochromatic Shards; Gain 2 Black Flame. While on board: Gain +260 Oblivion when a Cherubim expires while active',
     artKey: 'bgi_ser_infernal_griefforge',
     attacks: {
       unsynergized: {
         id: 'bgi-ser-infernal-griefforge:unsynergized',
         label: 'Unsynergized',
         name: 'Infernal Griefforge Vector Break',
-        description: '280 base Oblivion · 4 cards cooldown · Cost: discard 1 card',
+        description: '354 base Oblivion · 4 cards cooldown · Cost: discard 1 card',
         baseOblivion: 1080,
         cooldownCards: 5,
         costs: [],
@@ -330,7 +367,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
         id: 'bgi-ser-infernal-griefforge:synergized',
         label: 'Synergized',
         name: 'Infernal Griefforge Angelic Verdict',
-        description: '747 base Oblivion · 6 cards cooldown · Requires Angel',
+        description: '1599 base Oblivion · 6 cards cooldown · Requires Angel',
         baseOblivion: 1880,
         cooldownCards: 6,
         costs: [],
@@ -340,9 +377,9 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'cherubim_expire_bonus', bonusValue: 260, synergyRequirement: 'Dark' },
     onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'monochromatic_shards_gain', value: 5 }],
-  }];
+  }] as SeraphimDefinition[]).map((card) => withBlackFlameSeraphim(card));
 
-export const blackGlassInfernoOphanims: OphanimDefinition[] = [
+export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
   {
     definitionId: 'bgi-ophanim-cinder-litany',
     type: 'Ophanim',
@@ -359,7 +396,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Veilplane Shard',
-    description: 'Look at the top 4 cards, take 1 card, and put the rest on the bottom; chain_gain',
+    description: 'Look at the top 4 cards, take 1 card, and put the rest on the bottom',
     artKey: 'bgi_seek_veilplane_shard',
     effects: [{ type: 'look_top_take', look: 4, take: 1 }],
   },
@@ -391,7 +428,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Sable Descent',
-    description: 'Draw 1 card; chain_gain',
+    description: 'Draw 1 card',
     artKey: 'bgi_seek_sable_descent',
     effects: [{ type: 'draw', value: 1 }],
   },
@@ -411,7 +448,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Bladewind Keening',
-    description: '+35 Oblivion; Empower the next card you play; chain_gain',
+    description: '+35 Oblivion; Empower the next card you play',
     artKey: 'bgi_seek_bladewind_keening',
     effects: [{ type: 'oblivion_flat', value: 35 }, { type: 'multiply_next' }],
   },
@@ -441,7 +478,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Covenant Split',
-    description: 'chain_gain; If you control 1+ active Seraphim, Draw 1 card; Draw 1 card',
+    description: 'If you control 1+ active Seraphim, Draw 1 card; Draw 1 card',
     artKey: 'bgi_seek_covenant_split',
     effects: [
       { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'draw', value: 1 }] }],
@@ -474,7 +511,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Grief Lattice',
-    description: 'chain_multiplier_set; Draw 1 card',
+    description: 'Draw 1 card',
     artKey: 'bgi_seek_grief_lattice',
     effects: [{ type: 'draw', value: 1 }],
   },
@@ -494,7 +531,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Epic',
     name: 'Copper Hate Psalm',
-    description: '+160 Oblivion; chain_gain; Empower the next card you play; Draw 1 card',
+    description: '+160 Oblivion; Empower the next card you play; Draw 1 card',
     artKey: 'bgi_seek_copper_hate_psalm',
     effects: [{ type: 'oblivion_flat', value: 160 }, { type: 'multiply_next' }],
   },
@@ -514,7 +551,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Epic',
     name: 'White-Black Supernova',
-    description: 'Draw 3 cards; chain_multiplier_set',
+    description: 'Draw 3 cards',
     artKey: 'bgi_seek_whiteblack_supernova',
     effects: [{ type: 'draw', value: 3 }],
   },
@@ -534,7 +571,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: "Sorveth's Eleventh Second",
-    description: 'Draw 4 cards; chain_gain; Empower the next card you play',
+    description: 'Draw 4 cards; Empower the next card you play',
     artKey: 'bgi_seek_sorveths_eleventh_second',
     effects: [{ type: 'draw', value: 4 }, { type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 8 }],
   },
@@ -551,16 +588,16 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = [
       { type: 'oblivion_flat', value: 220 },
       { type: 'monochromatic_shards_gain', value: 6 },
       { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 220 }] }],
-  }];
+  }] as OphanimDefinition[]).map((card) => withBlackFlameOphanim(card));
 
-export const blackGlassInfernoCherubim: CherubimDefinition[] = [
+export const blackGlassInfernoCherubim: CherubimDefinition[] = ([
   {
     definitionId: 'bgi-cherubim-glassrose-pyre',
       type: 'Cherubim',
     element: 'Dark',
     rarity: 'Common',
     name: 'Glassrose Pyre',
-      description: 'On play: Draw 2 cards; Salvage 1 card matching Ophanim. While on board: Adjacent active Seraphim gain +8 Oblivion per card played; Buffs Seraphim and Angel attacks: base +6, cooldown +0, multiplier x1.00',
+      description: 'On play: Draw 2 cards; Salvage 1 card matching Ophanim; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +8 Oblivion per card played; Buffs Seraphim and Angel attacks: base +6, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_glassrose_pyre',
     maxDurability: 2,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 8 }],
@@ -572,7 +609,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Ashen Court Sigil',
-      description: 'On play: Draw 1 card; +30 Oblivion. While on board: Adjacent active Seraphim gain +12 Oblivion per card played; Buffs Seraphim and Angel attacks: base +12, cooldown +0, multiplier x1.00',
+      description: 'On play: Draw 1 card; +30 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +12 Oblivion per card played; Buffs Seraphim and Angel attacks: base +12, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_ashencourt_sigil',
     maxDurability: 2,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 12 }],
@@ -584,7 +621,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Cinderborn Oath',
-      description: 'On play: +50 Oblivion; Draw 1 card. While on board: Adjacent active Seraphim chain +0.1; Buffs Angel attacks: base +26, cooldown +0, multiplier x1.00',
+      description: 'On play: +50 Oblivion; Draw 1 card; Gain 2 White Flame. While on board: Adjacent active Seraphim chain +0.1; Buffs Angel attacks: base +26, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_cinderborn_oath',
     maxDurability: 3,
       effects: [],
@@ -596,7 +633,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Veilplane Fissure',
-      description: 'On play: Salvage any 1 card; Draw 2 cards; +80 Oblivion. While on board: Adjacent active Seraphim gain +16 Oblivion per card played; Buffs Seraphim attacks: base +17, cooldown -1, multiplier x1.00',
+      description: 'On play: Salvage any 1 card; Draw 2 cards; +80 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +16 Oblivion per card played; Buffs Seraphim attacks: base +17, cooldown -1, multiplier x1.00',
     artKey: 'bgi_cherubim_veilplane_fissure',
     maxDurability: 3,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 16 }],
@@ -608,7 +645,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Chromatic Crater',
-      description: 'On play: Draw 2 cards. While on board: Adjacent active Seraphim gain +14 Oblivion per card played; Buffs Angel attacks: base +13, cooldown +0, multiplier x1.00',
+      description: 'On play: Draw 2 cards; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +14 Oblivion per card played; Buffs Angel attacks: base +13, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_chromatic_crater',
     maxDurability: 3,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 14 }],
@@ -620,7 +657,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Ruin Garden',
-      description: 'On play: Shuffle discard into deck; Salvage any 1 card; Draw 1 card. While on board: Adjacent active Seraphim chain +0.14; Buffs Seraphim and Angel attacks: base +33, cooldown +0, multiplier x1.00',
+      description: 'On play: Shuffle discard into deck; Salvage any 1 card; Draw 1 card; Gain 2 White Flame. While on board: Adjacent active Seraphim chain +0.14; Buffs Seraphim and Angel attacks: base +33, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_ruin_garden',
     maxDurability: 2,
       effects: [],
@@ -632,7 +669,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Epic',
     name: "Sorveth's Ring",
-      description: 'On play: Empower the next card you play; Draw 3 cards; +90 Oblivion. While on board: Adjacent active Seraphim gain +16 Oblivion per card played; Buffs Seraphim attacks: base +17, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +13, cooldown +0, multiplier x1.00',
+      description: 'On play: Empower the next card you play; Draw 3 cards; +90 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +16 Oblivion per card played; Buffs Seraphim attacks: base +17, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +13, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_sorveths_ring',
     maxDurability: 4,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 16 }],
@@ -644,7 +681,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Epic',
     name: 'Veth Serath Midplace',
-      description: 'On play: Salvage 2 cards matching Ophanim or Cherubim; Draw 1 card. While on board: Adjacent active Seraphim gain +18 Oblivion per card played; Buffs Angel attacks: base +16, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +12, cooldown +0, multiplier x1.00',
+      description: 'On play: Salvage 2 cards matching Ophanim or Cherubim; Draw 1 card; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +18 Oblivion per card played; Buffs Angel attacks: base +16, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +12, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_veth_serath_midplace',
     maxDurability: 4,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 18 }],
@@ -656,7 +693,7 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Vaelthorax Grieffire',
-      description: 'On play: Draw 3 cards; +180 Oblivion. While on board: Adjacent active Seraphim gain +20 Oblivion per card played; Buffs Seraphim attacks: base +21, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +16, cooldown -1, multiplier x1.00',
+      description: 'On play: Draw 3 cards; +180 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +20 Oblivion per card played; Buffs Seraphim attacks: base +21, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +16, cooldown -1, multiplier x1.00',
     artKey: 'bgi_cherubim_vaelthorax_grieffire',
     maxDurability: 5,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 20 }],
@@ -668,21 +705,21 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: "Morvakael's Answer",
-      description: 'On play: Draw 2 cards; Salvage any 1 card; +140 Oblivion. While on board: Adjacent active Seraphim gain +22 Oblivion per card played; Buffs Seraphim and Angel attacks: base +18, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +14, cooldown -1, multiplier x1.00',
+      description: 'On play: Draw 2 cards; Salvage any 1 card; +140 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +22 Oblivion per card played; Buffs Seraphim and Angel attacks: base +18, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +14, cooldown -1, multiplier x1.00',
     artKey: 'bgi_cherubim_morvakaels_answer',
     maxDurability: 5,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 22 }],
       onPlayEffects: [{ type: 'draw', value: 2 }, { type: 'salvage_any' }, { type: 'oblivion_flat', value: 140 }],
-  }];
+  }] as CherubimDefinition[]).map((card) => withWhiteFlameCherubim(card));
 
-export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
+export const blackGlassInfernoCherubimCards: CherubimDefinition[] = ([
   {
     definitionId: 'cherubim-dark-null-obsidian',
     type: 'Cherubim',
     element: 'Dark',
     rarity: 'Common',
     name: 'Null Obsidian',
-    description: 'On play: Draw 1 card; +25 Oblivion. While on board: Adjacent active Seraphim gain +9 Oblivion per card played; Buffs Seraphim and Angel attacks: base +7, cooldown +0, multiplier x1.00',
+    description: 'On play: Draw 1 card; +25 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +9 Oblivion per card played; Buffs Seraphim and Angel attacks: base +7, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_null_obsidian',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 9 }],
     onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 25 }],
@@ -693,7 +730,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Rose Shroud',
-    description: 'On play: Empower the next card you play. While on board: Adjacent active Seraphim gain +2 Oblivion per card played; Buffs Angel attacks: base +2, cooldown +0, multiplier x1.00',
+    description: 'On play: Empower the next card you play; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +2 Oblivion per card played; Buffs Angel attacks: base +2, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_rose_shroud',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 2 }],
     onPlayEffects: [{ type: 'multiply_next' }],
@@ -704,7 +741,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Common',
     name: 'Void Veil',
-    description: 'On play: Shuffle discard into deck. While on board: Adjacent active Seraphim gain +11 Oblivion per card played; Buffs Seraphim attacks: base +12, cooldown -1, multiplier x1.00',
+    description: 'On play: Shuffle discard into deck; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +11 Oblivion per card played; Buffs Seraphim attacks: base +12, cooldown -1, multiplier x1.00',
     artKey: 'bgi_cherubim_void_veil',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 11 }],
     onPlayEffects: [{ type: 'shuffle_discard' }],
@@ -715,7 +752,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Chromatic Ward',
-    description: 'On play: +60 Oblivion. While on board: Adjacent active Seraphim chain +0.09; Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'On play: +60 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim chain +0.09; Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_chromatic_ward',
     effects: [],
     onPlayEffects: [{ type: 'oblivion_flat', value: 60 }],
@@ -726,7 +763,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Rare',
     name: 'Collision Shell',
-    description: 'On play: Look at the top 3 cards, take 1 card, and put the rest on the bottom. While on board: If you control 1+ active Cherubim, this Cherubim grants +1.7 bonus power; Buffs Seraphim and Angel attacks: base +38, cooldown +0, multiplier x1.70',
+    description: 'On play: Look at the top 3 cards, take 1 card, and put the rest on the bottom; Gain 2 White Flame. While on board: If you control 1+ active Cherubim, this Cherubim grants +1.7 bonus power; Buffs Seraphim and Angel attacks: base +38, cooldown +0, multiplier x1.70',
     artKey: 'bgi_cherubim_collision_shell',
     effects: [{ type: 'cherubim_conditional_buff', condition: { type: 'cherubim_active_gte', value: 1 }, value: 1.7 }],
     onPlayEffects: [{ type: 'look_top_take', look: 3, take: 1 }],
@@ -737,7 +774,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Epic',
     name: 'Grieffire Ascent',
-    description: 'On play: Draw 2 cards. While on board: Draw 2 cards per card played; Buffs Seraphim and Angel attacks: base +48, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +37, cooldown +0, multiplier x1.00',
+    description: 'On play: Draw 2 cards; Gain 2 White Flame. While on board: Draw 2 cards per card played; Buffs Seraphim and Angel attacks: base +48, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +37, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_grieffire_ascent',
     effects: [{ type: 'cherubim_draw_per_card', value: 2 }],
     onPlayEffects: [{ type: 'draw', value: 2 }],
@@ -748,7 +785,7 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Epic',
     name: 'Mourning Mantle',
-    description: 'On play: Salvage 2 cards matching Ophanim or Cherubim; Draw 1 card. While on board: Adjacent active Seraphim gain +15 Oblivion per card played; Buffs Seraphim and Angel attacks: base +13, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +10, cooldown +0, multiplier x1.00',
+    description: 'On play: Salvage 2 cards matching Ophanim or Cherubim; Draw 1 card; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +15 Oblivion per card played; Buffs Seraphim and Angel attacks: base +13, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +10, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_mourning_mantle',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 15 }],
     onPlayEffects: [{ type: 'salvage_by_type', filter: ['Ophanim', 'Cherubim'] }, { type: 'draw', value: 1 }],
@@ -759,9 +796,9 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Abyss Throne',
-    description: 'On play: +100 Oblivion; Gain 2 White Flame; Gain 2 Black Flame. While on board: Adjacent active Seraphim gain +20 Oblivion per card played; Buffs Seraphim attacks: base +21, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +16, cooldown -1, multiplier x1.00',
+    description: 'On play: +100 Oblivion; Gain 2 White Flame; Gain 2 Black Flame; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +20 Oblivion per card played; Buffs Seraphim attacks: base +21, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +16, cooldown -1, multiplier x1.00',
     artKey: 'bgi_cherubim_abyss_throne',
     maxDurability: 8,
     effects: [{ type: 'cherubim_global_oblivion_mult', value: 0.36 }],
     onPlayEffects: [{ type: 'oblivion_flat', value: 100 }, { type: 'black_glass_white_flame_gain', value: 2 }, { type: 'black_glass_black_flame_gain', value: 2 }],
-  }];
+  }] as CherubimDefinition[]).map((card) => withWhiteFlameCherubim(card));

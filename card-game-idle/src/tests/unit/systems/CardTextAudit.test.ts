@@ -53,12 +53,17 @@ describe('card text audit', () => {
   });
 
   it('preserves exact mechanical values in summary text', () => {
-    const card = CardRegistry.get('angel-light-seraphiel');
-    expect(card?.type).toBe('Angel');
+    const card = CardRegistry.getAll().find((entry): entry is Extract<CardDefinition, { type: 'Seraphim' | 'Angel' }> =>
+      (entry.type === 'Seraphim' || entry.type === 'Angel')
+      && entry.baseStats.bonusType === 'power_amplifier',
+    );
+    expect(card).toBeTruthy();
+
+    const expectedMultiplier = `x${String(card!.baseStats.bonusValue).replace(/\.0+$/, '')}`;
 
     const summaryLines = getCardSummarySections(card!).flatMap(section => section.lines);
-    expect(summaryLines.some(line => line.includes('x1.8'))).toBe(true);
-    expect(summaryLines.some(line => line.includes('x.8'))).toBe(false);
+    expect(summaryLines.some(line => line.includes(expectedMultiplier))).toBe(true);
+    expect(summaryLines.some(line => /\bx\.\d/.test(line))).toBe(false);
   });
 
   it('avoids duplicate preview copy for simple Ophanim cards', () => {

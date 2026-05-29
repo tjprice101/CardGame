@@ -58,7 +58,7 @@ export function FrontSlotCard({ slot }: { slot: FrontSlot }) {
         flexDirection: 'column',
         position: 'relative',
         flexShrink: 0,
-        ...getCardFaceBackgroundStyle(def ?? undefined, slot.finish),
+        ...getCardFaceBackgroundStyle(def ?? undefined, slot.finish, slot.faceState),
       }}
     >
       {/* Element stripe */}
@@ -128,7 +128,7 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
         flexDirection: 'column',
         position: 'relative',
         flexShrink: 0,
-        ...getCardFaceBackgroundStyle(def ?? undefined, slot.finish),
+        ...getCardFaceBackgroundStyle(def ?? undefined, slot.finish, slot.faceState),
       }}
     >
       <div style={{

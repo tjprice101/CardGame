@@ -11,6 +11,7 @@ import RadianceDisplay from './RadianceDisplay';
 import TrailDisplay from './TrailDisplay';
 import StrainDisplay from './StrainDisplay';
 import EmberDisplay from './EmberDisplay';
+import FoamDisplay from './FoamDisplay';
 import DeckStatus from './DeckStatus';
 import SetEngineDisplay from './SetEngineDisplay';
 import TurnControls from './TurnControls';
@@ -259,6 +260,7 @@ export default function HUD() {
       {!inBattleground && <ScoreDisplay />}
       <AngelStatPanel />
       <RadianceDisplay />
+      <FoamDisplay />
       <TrailDisplay />
       <StrainDisplay />
       <EmberDisplay />

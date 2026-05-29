@@ -54,6 +54,7 @@ export interface DeckCard {
   instanceId: string;
   definitionId: string;
   finish: CardFinish;
+  faceState?: 'front' | 'back';
 }
 
 export interface DeckState {
@@ -122,6 +123,7 @@ export interface TurnState {
   neutralityPatienceChargedThisTurn?: number;
   neutralityPatienceConsumedThisTurn?: number;
   neutralityChainGainedThisTurn?: number;
+  neutralityPatientLightStacks?: number;
   neutralityTriggeredEffects?: string[];
   neutralityVesselInstanceId?: string | null;
   neutralityVesselCopyPercent?: number;
@@ -141,6 +143,10 @@ export interface TurnState {
   pyroCrossSetConversionDistinctSources?: string[];
   pyroEngineSignatures?: string[];
   pyroFurnacePressure?: number;
+  pyroFurnaceRiseStreak?: number;
+  pyroFurnacePeak?: number;
+  pyroChronoCatalyst?: boolean;
+  pyroChronoEmbers?: number;
   pyroAbyssFault?: number;
   pyroRuinWindows?: number;
     pyroFervor?: number;
@@ -166,6 +172,11 @@ export interface TurnState {
   mechanicalResolvedInstructions?: number;
   mechanicalInstructionDiversity?: MechanicalInstruction[];
   mechanicalKernelLocked?: boolean;
+  mechanicalClockTicks?: number;
+  mechanicalNextChimeTick?: number;
+  mechanicalPrimedChimes?: number;
+  mechanicalChimeInterval?: number;
+  mechanicalChimesFired?: number;
   prismaticCurrentChannel?: PrismaticChannel | null;
   prismaticDistinctChannels?: PrismaticChannel[];
   prismaticRecentChannels?: PrismaticChannel[];
@@ -199,9 +210,11 @@ export interface TurnState {
   prismaticSentencingDraw?: number;
   prismaticSentencingDrawPerfect?: number;
   prismaticNextOphanimRefund?: number;
+  prismaticResonanceCharge?: number;
   blackGlassWhiteFlame?: number;
   blackGlassBlackFlame?: number;
   blackGlassFracture?: number;
+  blackGlassLastPolarity?: 'white' | 'black' | 'both' | null;
   blackGlassGriefOaths?: number;
   blackGlassCollapsePending?: boolean;
   blackGlassLastPayoff?: number;
@@ -258,6 +271,10 @@ export interface TurnState {
   butterflySpectrum?: number;
   butterflyStance?: 'Reflect' | 'Absorb' | 'Dual' | null;
   butterflyFlutterLevel?: number;
+  butterflyFormation?: number;
+  butterflyFormationTypesSeen?: Array<'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel'>;
+  eternalSeasUndertow?: number;
+  eternalSeasFoam?: number;
   eternalSeasCurrent?: number;
   eternalSeasPolarity?: 'White' | 'Black' | null;
   eternalSeasWhiteFlow?: number;
@@ -272,6 +289,9 @@ export interface TurnState {
   forgeTemperQueue?: number; // pending +temper factor for the next attack on a board-wide source
   forgeRecastEventsThisTurn?: number;
   forgePendingCherubimTemper?: number; // queued factor from a Cherubim passive; applied to next Seraphim played
+  // Death-flamed Hell Eternal/Infinite overlay.
+  dfhVeilMarks?: number;
+  dfhVeilOblivionPerMark?: number;
   // Eternal/Infinity per-set amplifier stacks. Keyed by EternalStackKind.
   eternalStacks?: Partial<Record<import('./effects').EternalStackKind, number>>;
   // Per-set secondary keyword counters (gain/spend/cashout). One per set.

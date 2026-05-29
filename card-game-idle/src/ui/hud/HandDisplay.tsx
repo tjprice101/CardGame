@@ -21,6 +21,7 @@ import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
 import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { warmTheme } from '@/ui/theme';
 import type { CardFinish, SeraphimDefinition, AngelDefinition } from '@/types/cards';
+import { isDeathFlamedHellBaseDefinitionId } from '@/utils/cardFaces';
 
 const IDLE_SHOWCASE_SLOTS = 6;
 const IDLE_SHOWCASE_INTERVAL_MS = 2600;
@@ -235,7 +236,7 @@ export default function HandDisplay() {
   const showTopPanel = cardArtDisplay === 'both' || cardArtDisplay === 'top-only';
   const showBottomPanel = cardArtDisplay === 'both' || cardArtDisplay === 'bottom-only';
   const artOnlyMode = cardArtDisplay === 'art-only';
-  const { playCard, toggleMulliganCard, summonAngel } = useStore.getState();
+  const { playCard, toggleMulliganCard, summonAngel, toggleCardFace } = useStore.getState();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -392,7 +393,7 @@ export default function HandDisplay() {
   // Cards to render in the bottom hand strip. Either the live hand (default)
   // or a read-only relocation of the Extra Deck. Synthetic instanceIds for
   // extra-deck entries keep React keys stable across renders.
-  const viewCards: Array<{ instanceId: string; definitionId: string; finish: typeof hand[number]['finish'] }> =
+  const viewCards: Array<{ instanceId: string; definitionId: string; finish: typeof hand[number]['finish']; faceState?: 'front' | 'back' }> =
     isExtraDeckView
       ? deck.extraDeck.map((entry, i) => ({
           instanceId: `extra-${i}-${entry.definitionId}-${entry.finish}`,
@@ -401,7 +402,7 @@ export default function HandDisplay() {
         }))
       : hand
           .filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'Angel')
-          .map(c => ({ instanceId: c.instanceId, definitionId: c.definitionId, finish: c.finish }));
+          .map(c => ({ instanceId: c.instanceId, definitionId: c.definitionId, finish: c.finish, faceState: c.faceState }));
   const hasActiveHandCards = viewCards.length > 0;
 
   const hoveredDeckCard = hoveredId
@@ -685,7 +686,7 @@ export default function HandDisplay() {
               draggable={isDraggable}
               style={{
                 ...styles.card,
-                ...getCardFaceBackgroundStyle(def, deckCard.finish),
+                ...getCardFaceBackgroundStyle(def, deckCard.finish, deckCard.faceState),
                 ...(selected ? styles.cardMulligan : {}),
                 ...(!isPlayable ? { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.5)' } : {}),
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
@@ -713,6 +714,35 @@ export default function HandDisplay() {
               }}
               onDragEnd={() => setDraggingId(null)}
             >
+              {def && isDeathFlamedHellBaseDefinitionId(def.definitionId) && (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    toggleCardFace(deckCard.instanceId);
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: 6,
+                    right: 6,
+                    zIndex: 14,
+                    borderRadius: 999,
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    background: deckCard.faceState === 'back' ? 'rgba(28, 14, 10, 0.82)' : 'rgba(14, 8, 22, 0.72)',
+                    color: deckCard.faceState === 'back' ? '#f1d6bf' : '#dcbcff',
+                    fontSize: 9,
+                    fontFamily: 'Georgia, serif',
+                    letterSpacing: 1,
+                    textTransform: 'uppercase',
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                  }}
+                >
+                  {deckCard.faceState === 'back' ? 'Reveal' : 'Flip'}
+                </button>
+              )}
+
               {showTopPanel && (
                 <div style={getCardNameRibbonStyle('hand')}>
                   {def?.type && (

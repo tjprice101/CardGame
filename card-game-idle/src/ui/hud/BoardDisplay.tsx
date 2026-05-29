@@ -21,6 +21,7 @@ import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionC
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES, isSnowboundCard } from '@/data/elements';
 import type { DeckCard } from '@/types/game';
+import { isDeathFlamedHellBaseDefinitionId } from '@/utils/cardFaces';
 import type {
   AngelDefinition,
   AngelInstance,
@@ -319,8 +320,8 @@ function renderVesselBadge() {
   );
 }
 
-function renderSnowboundBadge(phase?: 'Frost' | 'Voltage' | null, potential?: number, conduits?: number) {
-  if (!phase && (potential ?? 0) <= 0 && (conduits ?? 0) <= 0) return null;
+function renderSnowboundBadge(phase?: 'Frost' | 'Voltage' | null, arcticCharge?: number) {
+  if (!phase && (arcticCharge ?? 0) <= 0) return null;
   const isFrost = phase !== 'Voltage';
   return (
     <div style={{
@@ -333,13 +334,25 @@ function renderSnowboundBadge(phase?: 'Frost' | 'Voltage' | null, potential?: nu
       fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
       boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
     }}>
-      {`${phase ?? 'Frost'} · P${potential ?? 0}${(conduits ?? 0) > 0 ? ` · C${conduits}` : ''}`}
+      {`${phase ?? 'Frost'} · AC${arcticCharge ?? 0}`}
     </div>
   );
 }
 
-function renderForgeBadge(charges?: number, cap?: number, pearls?: number) {
-  if ((charges ?? 0) <= 0 && (pearls ?? 0) <= 0) return null;
+function renderForgeBadge(
+  charges?: number,
+  cap?: number,
+  pearls?: number,
+  recastLedger?: Array<{ instanceId: string; imprintStacks?: number }> | undefined,
+  instanceId?: string,
+) {
+  const imprintTotal = (recastLedger ?? []).reduce((sum, entry) => sum + Math.max(0, entry.imprintStacks ?? 0), 0);
+  const localImprint = instanceId
+    ? (recastLedger ?? [])
+        .filter(entry => entry.instanceId === instanceId)
+        .reduce((sum, entry) => sum + Math.max(0, entry.imprintStacks ?? 0), 0)
+    : 0;
+  if ((charges ?? 0) <= 0 && (pearls ?? 0) <= 0 && imprintTotal <= 0) return null;
   return (
     <div style={{
       position: 'absolute', top: 7, left: 7, zIndex: 8,
@@ -351,12 +364,55 @@ function renderForgeBadge(charges?: number, cap?: number, pearls?: number) {
       fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
       boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
     }}>
-      {`Rg ${charges ?? 0}/${cap ?? 5}${(pearls ?? 0) > 0 ? ` · Pr ${pearls}` : ''}`}
+      {`Charges ${charges ?? 0}/${cap ?? 5}${(pearls ?? 0) > 0 ? ` · Pearls ${pearls}` : ''}${imprintTotal > 0 ? ` · Imp ${imprintTotal}` : ''}${localImprint > 0 ? ` · This ${localImprint}` : ''}`}
     </div>
   );
 }
 
-function renderSeasBadge(polarity?: 'White' | 'Black' | null, current?: number) {
+function renderSeasBadge(
+  rarity: string | undefined,
+  polarity?: 'White' | 'Black' | null,
+  current?: number,
+  undertow?: number,
+  foam?: number,
+  deepwake?: number,
+) {
+  const isBase = rarity === 'Common' || rarity === 'Rare' || rarity === 'Epic' || rarity === 'Legendary';
+  if (isBase) {
+    if ((undertow ?? 0) <= 0 && (foam ?? 0) <= 0) return null;
+    return (
+      <div style={{
+        position: 'absolute', top: 7, left: 7, zIndex: 8,
+        padding: '2px 6px', borderRadius: 999,
+        border: '1px solid rgba(102,217,240,0.42)',
+        background: 'rgba(6, 34, 47, 0.86)',
+        color: 'rgba(215,248,255,0.96)',
+        fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+        fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+      }}>
+        {`Und ${undertow ?? 0} · Fm ${foam ?? 0}`}
+      </div>
+    );
+  }
+
+  if ((undertow ?? 0) > 0 || (foam ?? 0) > 0 || (deepwake ?? 0) > 0) {
+    return (
+      <div style={{
+        position: 'absolute', top: 7, left: 7, zIndex: 8,
+        padding: '2px 6px', borderRadius: 999,
+        border: '1px solid rgba(120,225,245,0.44)',
+        background: 'rgba(8, 36, 52, 0.88)',
+        color: 'rgba(220,250,255,0.97)',
+        fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
+        fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
+        boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
+      }}>
+        {`Und ${undertow ?? 0} · Fm ${foam ?? 0} · Dw ${deepwake ?? 0}`}
+      </div>
+    );
+  }
+
   if (!polarity && (current ?? 0) <= 0) return null;
   const isWhite = polarity !== 'Black';
   return (
@@ -393,8 +449,9 @@ function renderBlackGlassBadge(white?: number, black?: number, fracture?: number
   );
 }
 
-function renderButterflyBadge(stance?: 'Reflect' | 'Absorb' | 'Dual' | null, spectrum?: number) {
-  if (!stance && (spectrum ?? 0) <= 0) return null;
+function renderButterflyBadge(formation?: number, spectrum?: number, flutterLevel?: number) {
+  const hasSignal = (formation ?? 0) > 0 || (spectrum ?? 0) > 0 || (flutterLevel ?? 0) > 0;
+  if (!hasSignal) return null;
   return (
     <div style={{
       position: 'absolute', top: 7, left: 7, zIndex: 8,
@@ -406,7 +463,7 @@ function renderButterflyBadge(stance?: 'Reflect' | 'Absorb' | 'Dual' | null, spe
       fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
       boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
     }}>
-      {`${stance ?? 'None'}${(spectrum ?? 0) > 0 ? ` · S${spectrum}` : ''}`}
+      {`F${formation ?? 0}${(spectrum ?? 0) > 0 ? ` · S${spectrum}` : ''}${(flutterLevel ?? 0) > 0 ? ` · T${flutterLevel}` : ''}`}
     </div>
   );
 }
@@ -429,9 +486,8 @@ function renderLightBadge(radiance?: number, resonance?: number) {
   );
 }
 
-function renderThornboundBadge(trail?: number, warPath?: string | null) {
-  if ((trail ?? 0) <= 0 && !warPath) return null;
-  const pathLabel = warPath === 'Aggression' ? 'Agg' : warPath === 'Endurance' ? 'End' : null;
+function renderThornboundBadge(trail?: number, scar?: number) {
+  if ((trail ?? 0) <= 0 && (scar ?? 0) <= 0) return null;
   return (
     <div style={{
       position: 'absolute', top: 7, left: 7, zIndex: 8,
@@ -443,7 +499,7 @@ function renderThornboundBadge(trail?: number, warPath?: string | null) {
       fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
       boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
     }}>
-      {`Trail ${trail ?? 0}${pathLabel ? ` · ${pathLabel}` : ''}`}
+      {`Trail ${trail ?? 0} · Scar ${scar ?? 0}`}
     </div>
   );
 }
@@ -572,6 +628,7 @@ export default function BoardDisplay() {
     activateAngel,
     activateSeraphimAttack,
     activateAngelAttack,
+    toggleCardFace,
   } = useStore.getState();
 
   const hand = deck.hand;
@@ -1044,7 +1101,7 @@ export default function BoardDisplay() {
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
-                  ...getCardFaceBackgroundStyle(angelDef, slot.finish),
+                  ...getCardFaceBackgroundStyle(angelDef, slot.finish, slot.faceState),
                   border: `2px solid ${isFocused ? focusPalette.rim : isReady ? warmTheme.accent : warmTheme.borderStrong}`,
                   borderRadius: 14,
                   boxShadow: isFocused
@@ -1064,17 +1121,46 @@ export default function BoardDisplay() {
                   position: 'relative',
                 }}
               >
+                {angelDef && isDeathFlamedHellBaseDefinitionId(angelDef.definitionId) && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      toggleCardFace(slot.instanceId);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      zIndex: 15,
+                      borderRadius: 999,
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      background: slot.faceState === 'back' ? 'rgba(28, 14, 10, 0.82)' : 'rgba(14, 8, 22, 0.72)',
+                      color: slot.faceState === 'back' ? '#f1d6bf' : '#dcbcff',
+                      fontSize: 9,
+                      fontFamily: 'Georgia, serif',
+                      letterSpacing: 1,
+                      textTransform: 'uppercase',
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    {slot.faceState === 'back' ? 'Reveal' : 'Flip'}
+                  </button>
+                )}
+
                 {/* Element top stripe */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${angelElementColor}cc, ${angelElementColor}, ${angelElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 {renderBurningGardenBadge(angelDef?.element === 'BlazingGarden' ? slot.burningGardenPhase : undefined, slot.chromaticCounters, slot.isEcho)}
                 {renderPrismaticBadge(angelDef?.prismaticDepth, slot.spectrumTokens)}
-                {angelDef && isSnowboundCard(angelDef) && renderSnowboundBadge(turn.snowboundPhase, turn.snowboundPotential, turn.snowboundConduits)}
-                {angelDef?.element === 'AbyssalForge' && renderForgeBadge(turn.reforgeCharges, turn.reforgeChargeCap, turn.pearls)}
-                {angelDef?.element === 'EternalSeas' && renderSeasBadge(turn.eternalSeasPolarity, turn.eternalSeasCurrent)}
+                {angelDef && isSnowboundCard(angelDef) && renderSnowboundBadge(turn.snowboundPhase, turn.arcticCharge)}
+                {angelDef?.element === 'AbyssalForge' && renderForgeBadge(turn.reforgeCharges, turn.reforgeChargeCap, turn.pearls, turn.recastLedger, slot.instanceId)}
+                {angelDef?.element === 'EternalSeas' && renderSeasBadge(angelDef?.rarity, turn.eternalSeasPolarity, turn.eternalSeasCurrent, turn.eternalSeasUndertow, turn.eternalSeasFoam, turn.secondaryCounters?.deepwake)}
                 {angelDef?.element === 'Dark' && renderBlackGlassBadge(turn.blackGlassWhiteFlame, turn.blackGlassBlackFlame, turn.blackGlassFracture)}
-                {angelDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyStance, turn.butterflySpectrum)}
+                {angelDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyFormation, turn.butterflySpectrum, turn.butterflyFlutterLevel)}
                 {angelDef?.element === 'Light' && renderLightBadge(turn.radiance, turn.lightResonance)}
-                {angelDef?.element === 'Thornbound' && renderThornboundBadge(turn.trail, turn.thornWarPath)}
+                {angelDef?.element === 'Thornbound' && renderThornboundBadge(turn.trail, turn.thornScar)}
                 {angelDef?.element === 'Mechanical' && angelDef && !isSnowboundCard(angelDef) && renderMechanicalBadge(turn.strain)}
                 {angelDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
                 {angelDef?.element === 'DeathFlamedHell' && renderDeathFlamedHellBadge(turn.eternalStacks?.pyre)}
@@ -1159,7 +1245,7 @@ export default function BoardDisplay() {
                   height: SLOT_H,
                   pointerEvents: 'auto',
                   cursor: 'pointer',
-                  ...getCardFaceBackgroundStyle(serDef, slot.finish),
+                  ...getCardFaceBackgroundStyle(serDef, slot.finish, slot.faceState),
                   border: `1px solid ${isFocused ? focusPalette.rim : borderColor}`,
                   borderRadius: 12,
                   boxShadow: isFocused
@@ -1193,17 +1279,46 @@ export default function BoardDisplay() {
                 }}
                 title={`${serDef?.name ?? 'Seraphim'} · Left-click attacks panel · Right-click remove from board`}
               >
+                {serDef && isDeathFlamedHellBaseDefinitionId(serDef.definitionId) && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      toggleCardFace(slot.instanceId);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      zIndex: 15,
+                      borderRadius: 999,
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      background: slot.faceState === 'back' ? 'rgba(28, 14, 10, 0.82)' : 'rgba(14, 8, 22, 0.72)',
+                      color: slot.faceState === 'back' ? '#f1d6bf' : '#dcbcff',
+                      fontSize: 9,
+                      fontFamily: 'Georgia, serif',
+                      letterSpacing: 1,
+                      textTransform: 'uppercase',
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    {slot.faceState === 'back' ? 'Reveal' : 'Flip'}
+                  </button>
+                )}
+
                 {/* Element top stripe */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${serElementColor}cc, ${serElementColor}, ${serElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 {renderBurningGardenBadge(serDef?.element === 'BlazingGarden' ? slot.burningGardenPhase : undefined, slot.chromaticCounters, slot.isEcho)}
                 {renderPrismaticBadge(serDef?.prismaticDepth, slot.spectrumTokens)}
-                {serDef && isSnowboundCard(serDef) && renderSnowboundBadge(turn.snowboundPhase, turn.snowboundPotential, turn.snowboundConduits)}
-                {serDef?.element === 'AbyssalForge' && renderForgeBadge(turn.reforgeCharges, turn.reforgeChargeCap, turn.pearls)}
-                {serDef?.element === 'EternalSeas' && renderSeasBadge(turn.eternalSeasPolarity, turn.eternalSeasCurrent)}
+                {serDef && isSnowboundCard(serDef) && renderSnowboundBadge(turn.snowboundPhase, turn.arcticCharge)}
+                {serDef?.element === 'AbyssalForge' && renderForgeBadge(turn.reforgeCharges, turn.reforgeChargeCap, turn.pearls, turn.recastLedger, slot.instanceId)}
+                {serDef?.element === 'EternalSeas' && renderSeasBadge(serDef?.rarity, turn.eternalSeasPolarity, turn.eternalSeasCurrent, turn.eternalSeasUndertow, turn.eternalSeasFoam, turn.secondaryCounters?.deepwake)}
                 {serDef?.element === 'Dark' && renderBlackGlassBadge(turn.blackGlassWhiteFlame, turn.blackGlassBlackFlame, turn.blackGlassFracture)}
-                {serDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyStance, turn.butterflySpectrum)}
+                {serDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyFormation, turn.butterflySpectrum, turn.butterflyFlutterLevel)}
                 {serDef?.element === 'Light' && renderLightBadge(turn.radiance, turn.lightResonance)}
-                {serDef?.element === 'Thornbound' && renderThornboundBadge(turn.trail, turn.thornWarPath)}
+                {serDef?.element === 'Thornbound' && renderThornboundBadge(turn.trail, turn.thornScar)}
                 {serDef?.element === 'Mechanical' && serDef && !isSnowboundCard(serDef) && renderMechanicalBadge(turn.strain)}
                 {serDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
                 {serDef?.element === 'DeathFlamedHell' && renderDeathFlamedHellBadge(turn.eternalStacks?.pyre)}
@@ -1599,7 +1714,7 @@ export default function BoardDisplay() {
                               className="attack-cost-choice"
                               onClick={() => setSelectedDiscardIds(current => toggleSelectedId(current, card.instanceId, discardCost))}
                               style={{
-                                ...getCardFaceBackgroundStyle(def, card.finish),
+                                ...getCardFaceBackgroundStyle(def, card.finish, card.faceState),
                                 width: '100%',
                                 aspectRatio: '0.73',
                                 borderRadius: 7,
@@ -1636,7 +1751,7 @@ export default function BoardDisplay() {
                               className="attack-cost-choice"
                               onClick={() => setSelectedSacrificeSeraphimIds(current => toggleSelectedId(current, unit.instanceId, seraphimSacCost))}
                               style={{
-                                ...getCardFaceBackgroundStyle(def, unit.finish),
+                                ...getCardFaceBackgroundStyle(def, unit.finish, unit.faceState),
                                 width: '100%',
                                 aspectRatio: '0.73',
                                 borderRadius: 7,
@@ -1672,7 +1787,7 @@ export default function BoardDisplay() {
                               className="attack-cost-choice"
                               onClick={() => setSelectedSacrificeAngelIds(current => toggleSelectedId(current, unit.instanceId, angelSacCost))}
                               style={{
-                                ...getCardFaceBackgroundStyle(def, unit.finish),
+                                ...getCardFaceBackgroundStyle(def, unit.finish, unit.faceState),
                                 width: '100%',
                                 aspectRatio: '0.73',
                                 borderRadius: 7,
@@ -1867,7 +1982,7 @@ export default function BoardDisplay() {
                               className="attack-cost-choice"
                               onClick={() => setSelectedDiscardIds(current => toggleSelectedId(current, card.instanceId, discardCost))}
                               style={{
-                                ...getCardFaceBackgroundStyle(def, card.finish),
+                                ...getCardFaceBackgroundStyle(def, card.finish, card.faceState),
                                 width: '100%',
                                 aspectRatio: '0.73',
                                 borderRadius: 7,
@@ -2097,7 +2212,7 @@ export default function BoardDisplay() {
                   : undefined}
                 style={{
                   width: CHERUBIM_W, height: CHERUBIM_H,
-                  ...getCardFaceBackgroundStyle(cardDef, cherubim.finish),
+                  ...getCardFaceBackgroundStyle(cardDef, cherubim.finish, cherubim.faceState),
                   border: `1px solid ${isHovered ? focusPalette.rim : 'rgba(143,116,169,0.5)'}`,
                   borderRadius: 12,
                   boxShadow: isHovered
@@ -2116,6 +2231,35 @@ export default function BoardDisplay() {
                   ? `${cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')} - ${cherubim.durability} play${cherubim.durability !== 1 ? 's' : ''} remaining - click to discard`
                   : `${cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')} - ${conditionText} - click to discard`}
               >
+                {cardDef && isDeathFlamedHellBaseDefinitionId(cardDef.definitionId) && (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      toggleCardFace(cherubim.instanceId);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      zIndex: 15,
+                      borderRadius: 999,
+                      border: '1px solid rgba(255,255,255,0.18)',
+                      background: cherubim.faceState === 'back' ? 'rgba(28, 14, 10, 0.82)' : 'rgba(14, 8, 22, 0.72)',
+                      color: cherubim.faceState === 'back' ? '#f1d6bf' : '#dcbcff',
+                      fontSize: 9,
+                      fontFamily: 'Georgia, serif',
+                      letterSpacing: 1,
+                      textTransform: 'uppercase',
+                      padding: '4px 8px',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                    }}
+                  >
+                    {cherubim.faceState === 'back' ? 'Reveal' : 'Flip'}
+                  </button>
+                )}
+
                 {/* Element top stripe */}
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${cherubElementColor}cc, ${cherubElementColor}, ${cherubElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 {renderBurningGardenBadge(cardDef?.element === 'BlazingGarden' ? cherubim.burningGardenPhase : undefined, cherubim.chromaticCounters, cherubim.isEcho)}

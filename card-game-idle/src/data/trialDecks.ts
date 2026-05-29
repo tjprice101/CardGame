@@ -62,7 +62,7 @@ const neutralityTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'ophanim-neutral-neutral-cycle',
-      hint: 'Neutral Cycle. Shuffle discard back in, draw 1. Then **click Equilibrium Seraphim → Attack**: 7+ Patience × 15 = ~105 + base 335 + per-card bonus (~64) → ~500-700 Oblivion. Patience threshold 4 also draws 2 — you keep going next turn.',
+      hint: 'Neutral Cycle. Core mechanic: Patience stacking across multiple Seraphim and Vessel routing. Why it scales: every card played adds Patience, and each Patience adds +15 Oblivion on attack while Equilibrium also gains per-card pressure. Exact payoff: click Equilibrium Seraphim → Attack now for a large burst (~500+ Oblivion) and the 4+ Patience extra draws to continue the chain.',
     },
   ],
   guidedOpeningHand: [
@@ -155,7 +155,7 @@ const pyroabyssTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'ophanim-fire-void-combustion',
-      hint: 'Void Combustion: cash 2 Ruin Windows for +680 Oblivion. Then click Cinder Seraphim → Vector Break (~270 Oblivion). Total: ~950+ in one chain.',
+      hint: 'Void Combustion. Core mechanic: Ruin Window banking from earlier setup. Why it scales: Furnace/Fault setup feeds repeated Window generation, then cashout converts stacked windows into one huge spike. Exact payoff: play Void Combustion for the window cashout, then click Cinder Seraphim → Vector Break for the finisher (~900+ combined Oblivion).',
     },
   ],
   guidedOpeningHand: [
@@ -189,8 +189,7 @@ const pyroabyssTrial: TrialDeckDefinition = {
 };
 
 // ── Heavenly Light ────────────────────────────────────────────────────────────
-// Resource: Radiance. Seraphim attacks cost 25 Radiance; trial accumulates 27+ across
-// 8 steps before instructing the player to fire an unsynergized Emberchoir attack.
+// Resource: Radiance. Build to 25+ Radiance, then spend it on the final Seraphim hit.
 const heavenlyLightTrial: TrialDeckDefinition = {
   packId: 'pack-heavenly-light',
   displayName: 'Heavenly Light — Radiance',
@@ -217,35 +216,35 @@ const heavenlyLightTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'ser-light-dawn',
-      hint: 'Dawnfire Seraphim (Slot A). On play: +1 Radiance. While active: +15 Oblivion per Ophanim played. Radiance: 1.',
+      hint: 'Dawnfire Seraphim (Slot A). On play: +1 Radiance. While active: +15 Oblivion per Ophanim played.',
     },
     {
       cardDefinitionId: 'ser-light-choir',
-      hint: 'Emberchoir Seraphim (Slot B). On play: +3 Radiance. While active: +12 Oblivion per card played. Radiance: 4.',
+      hint: 'Emberchoir Seraphim (Slot B). On play: +3 Radiance. While active: +12 Oblivion per card played.',
     },
     {
       cardDefinitionId: 'hr-light-mornings-grace',
-      hint: "Emberdawn Grace. Not first card → +3 Radiance bonus, then +3 base = +6 Radiance. Radiance: 10.",
+      hint: 'Emberdawn Grace. If it is not your first card, gain +3 Radiance, then +3 more.',
     },
     {
       cardDefinitionId: 'hr-light-celestial-grace',
-      hint: 'Emberwing Grace. +60% Oblivion multiplier this turn; +5 Radiance. Radiance: 15.',
+      hint: 'Emberwing Grace. +60% Oblivion this turn; +5 Radiance.',
     },
     {
       cardDefinitionId: 'hr-light-angelic-vision',
-      hint: 'Thornhalo Vision. Draw 3 cards (the next three Ophanim — Sacred Memory, Divine Clarity, Radiant Surge).',
+      hint: 'Thornhalo Vision. Draw 3 cards; the next plays are Sacred Memory, Divine Clarity, and Radiant Surge.',
     },
     {
       cardDefinitionId: 'hr-light-sacred-memory',
-      hint: 'Ashen Remembrance. +4 Radiance. Radiance: 19.',
+      hint: 'Ashen Remembrance. +4 Radiance.',
     },
     {
       cardDefinitionId: 'hr-light-divine-clarity',
-      hint: 'Whiteflame Clarity. +4 Radiance. Radiance: 23.',
+      hint: 'Whiteflame Clarity. +4 Radiance.',
     },
     {
       cardDefinitionId: 'hr-light-radiant-surge',
-      hint: 'Ember Surge. +4 Radiance. Radiance: 27. Now click Emberchoir Seraphim → Unsynergized "Canticle Cleave" (spend 25 Radiance). Base 213 × 1.6 mult + Choir per-card bonus 12×8 cards ≈ 440+ Oblivion delivered, on top of the 1k+ score already accrued from on-play effects.',
+      hint: 'Ember Surge. Build Radiance with setup Ophanim, then spend 25 on Emberchoir Seraphim for the burst finisher.',
     },
   ],
   guidedOpeningHand: [
@@ -339,7 +338,7 @@ const thornboundTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'tbp-ser-thornplate-sentry',
-      hint: '(Drawn) Thornplate Sentry (Seraphim). +1 Trail (Trail: 27). Now click Thornplate Sentry → Unsynergized attack: spend 25 Trail. Base 174 × 1.45 chain ≈ 250+ Oblivion delivered, plus per-card bonuses already accrued.',
+      hint: '(Drawn) Thornplate Sentry (Seraphim). Core mechanic: Trail banking via Cherubim bursts and net-positive Ophanim conversion. Why it scales: repeated Trail injections outpace spends, and chain bonus amplifies the final hit. Exact payoff: click Thornplate Sentry → Unsynergized attack (spend 25 Trail) for the Trial finisher.',
     },
   ],
   guidedOpeningHand: [
@@ -380,8 +379,8 @@ const thornboundTrial: TrialDeckDefinition = {
 };
 
 // ── Mechanical Dreams ─────────────────────────────────────────────────────────
-// Resource: Strain. Cogbound Aegis attack costs 25 Strain; trial reaches 28 over
-// 8 steps via two Chorus + Rust Halo Chamber + Turbines + Directive Zero.
+// Resource: Strain + Clock-Chime timing. Cogbound Aegis still spends 25 Strain,
+// while the line demonstrates building Strain before a primed Chime attack turn.
 const mechanicalTrial: TrialDeckDefinition = {
   packId: 'pack-mechanical-dreams',
   displayName: 'Mechanical Dreams — Strain',
@@ -405,65 +404,54 @@ const mechanicalTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'md-cherubim-white-iron-chorus',
-      hint: 'White Iron Chorus (Cherubim). On play: +6 Strain. Cherubim are the Strain engine — large upfront bursts, not a trickle. Strain: 6.',
+      hint: 'White Iron Chorus (Cherubim). On play: +6 Strain and 1 Clock tick. Cherubim are your fuel cards; they set up stronger Chime bursts. Strain: 6.',
     },
     {
       cardDefinitionId: 'md-cherubim-rust-halo-chamber',
-      hint: 'Rust Halo Chamber (Cherubim). On play: +7 Strain — the single biggest dump in the set. Strain: 13.',
-    },
-    {
-      cardDefinitionId: 'md-cherubim-dreambreak-turbine',
-      hint: 'Dreambreak Turbine (Cherubim). On play: +2 Strain. Strain: 15.',
-    },
-    {
-      cardDefinitionId: 'md-ophanim-brass-mind-litany',
-      hint: 'Brass-Mind Litany. Draw 1, +2 Embers. Strain unchanged but you cycle into a fresh Cherubim.',
+      hint: 'Rust Halo Chamber (Cherubim). On play: +7 Strain and 1 Clock tick. This is your biggest Strain jump before Chime. Strain: 13.',
     },
     {
       cardDefinitionId: 'md-cherubim-white-iron-chorus',
-      hint: '(Drawn) White Iron Chorus again. +6 Strain. Strain: 21.',
+      hint: 'Second White Iron Chorus. Another +6 Strain and another tick. You are now set to cash the next Chime window. Strain: 19.',
     },
     {
       cardDefinitionId: 'md-ophanim-directive-zero',
-      hint: 'Directive Zero. +1 Strain, draw 1, search deck for an Ophanim — pick Flareline Primer. Strain: 22.',
+      hint: 'Directive Zero. Search your deck for an Ophanim and gain +3 Strain — pick Flareline Primer. Strain: 22.',
     },
     {
       cardDefinitionId: 'md-ophanim-flareline-primer',
-      hint: '(Searched) Flareline Primer. +1 Strain, +1.2× chain multiplier this turn. Strain: 23.',
+      hint: '(Searched) Flareline Primer. Gain +1 Strain and immediate Oblivion with a strain-threshold bonus. Strain: 23.',
     },
     {
       cardDefinitionId: 'md-ser-cogbound-aegis',
-      hint: '(Drawn) Cogbound Aegis (Seraphim). On play: +1 Ember. Now click Cogbound Aegis → Unsynergized attack: spend 25 Strain — but wait, Rust Halo Chamber was also drawn earlier (Strain 30 actual). Base 152 × 1.2 chain ≈ 180+ Oblivion delivered, on top of all per-card bonuses already scored.',
+      hint: '(Opening hand) Cogbound Aegis (Seraphim). Core mechanic: build Strain, let Chime prime your next attack, then spend 25 Strain on the swing. Why it scales: Cherubim fuel raises Chime burst and attack value together. Exact payoff: click Cogbound Aegis and attack on a primed window for the closing Oblivion spike.',
     },
   ],
   guidedOpeningHand: [
     'md-cherubim-white-iron-chorus',
     'md-cherubim-rust-halo-chamber',
-    'md-cherubim-dreambreak-turbine',
-    'md-ophanim-brass-mind-litany',
+    'md-cherubim-white-iron-chorus',
     'md-ophanim-directive-zero',
+    'md-ser-cogbound-aegis',
   ],
   guidedDeckOrder: [
     // Splice fodder — mirror of opening hand (positions 1-5)
     d('md-cherubim-white-iron-chorus', 1),
     d('md-cherubim-rust-halo-chamber', 1),
-    d('md-cherubim-dreambreak-turbine', 1),
-    d('md-ophanim-brass-mind-litany', 1),
+    d('md-cherubim-white-iron-chorus', 1),
     d('md-ophanim-directive-zero', 1),
+    d('md-ser-cogbound-aegis', 1),
     // True top of deck after splice (positions 6+):
-    d('md-cherubim-white-iron-chorus', 1),  // drawn by brass-mind (step 4)
-    d('md-cherubim-rust-halo-chamber', 1),  // drawn by directive-zero (step 6)
-    d('md-ser-cogbound-aegis', 1),          // drawn next (kept for step 8)
+    d('md-ophanim-brass-mind-litany', 1),   // drawn by directive-zero (step 4)
+    d('md-cherubim-rust-halo-chamber', 1),  // drawn by brass-mind (step 5)
     // Flareline Primer somewhere in deck for directive-zero search:
     d('md-ophanim-flareline-primer', 1),
-    // Filler — 36 entries to reach 45
-    d('md-ser-cogbound-aegis', 3),
+    // Filler — 37 entries to reach 45
+    d('md-ser-cogbound-aegis', 2),
     d('md-ser-steel-hymn-executor', 4),
     d('md-ser-dreamforge-lancer', 4),
     d('md-ser-ivory-null-operator', 2),
-    d('md-cherubim-white-iron-chorus', 1),
-    d('md-cherubim-dreambreak-turbine', 3),
-    d('md-cherubim-rust-halo-chamber', 1),
+    d('md-cherubim-dreambreak-turbine', 4),
     d('md-ophanim-gearwake-courier', 4),
     d('md-ophanim-brass-mind-litany', 3),
     d('md-ophanim-servo-divination', 4),
@@ -477,7 +465,7 @@ const mechanicalTrial: TrialDeckDefinition = {
 // ── Prismatic Accord ──────────────────────────────────────────────────────────
 const prismaticTrial: TrialDeckDefinition = {
   packId: 'pack-prismatic-accord',
-  displayName: 'Prismatic Accord — Prismatic Light',
+  displayName: 'Prismatic — Refraction Depth & Prism Charge',
   deckList: [
     d('pa-ser-skyglass-veltharion', 4),
     d('pa-ser-plainshush-drossken', 4),
@@ -498,27 +486,27 @@ const prismaticTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'pa-cherubim-mirrorfield-locus',
-      hint: 'Place Mirrorfield Locus (Cherubim). On play: salvage an Ophanim and gain 4 Prismatic Light. While active, adjacent Seraphim gain +8 Oblivion per card played. Prismatic Light is the Accord resource — every card you play this session adds to the pool.',
+      hint: 'Place Mirrorfield Locus (Cherubim). On play: salvage an Ophanim. While active, adjacent Seraphim gain +8 Oblivion per card played. Use this as setup while you rotate channels to build Refraction Depth and Prism Charge.',
     },
     {
       cardDefinitionId: 'pa-ser-skyglass-veltharion',
-      hint: 'Board Skyglass Veltharion (Seraphim). On play: gain 4 Prismatic Light. While active, +22 Oblivion each Ophanim played. Its attack costs discarding 1 card — Prismatic Seraphim spend your hand, not Prismatic Light, to fire.',
+      hint: 'Board Skyglass Veltharion (Seraphim). While active, each Ophanim grants +22 Oblivion. Its attack costs discarding 1 card. Build Depth first by switching channels, then use Ophanim to scale the swing.',
     },
     {
       cardDefinitionId: 'pa-ophanim-prismwake-glint',
-      hint: 'Play Prismwake Glint: +20 Oblivion and gain 4 Prismatic Light. Veltharion\'s +22 Ophanim bonus stacks on top. Every Ophanim is a double contribution: direct Oblivion plus a Seraphim passive trigger.',
+      hint: 'Play Prismwake Glint for direct Oblivion and an Ophanim trigger on Veltharion. If you switched channels into this play, you also bank Prism Charge for later fixed-spend payoffs.',
     },
     {
       cardDefinitionId: 'pa-ophanim-fracture-road-reading',
-      hint: 'Play Fracture Road Reading: look at the top 4 cards — **take Accord Reflection** (others go to bottom). Gain 2 Prismatic Light. Accord Reflection is the big +5 Light burst for the closer.',
+      hint: 'Play Fracture Road Reading: look at the top 4 cards and take the best payoff enabler. Keep rotating channels; this turn pattern should raise both Refraction Depth and Prism Charge.',
     },
     {
       cardDefinitionId: 'pa-ophanim-drift-canopy-slip',
-      hint: 'Play Drift Canopy Slip: discard 1 draw 2, +20 Oblivion, gain 2 Prismatic Light. Activate Veltharion\'s attack (cost: discard 1) — base 235 Oblivion amplified by accumulated per-Ophanim bonuses from every card played this turn.',
+      hint: 'Play Drift Canopy Slip to cycle hand and trigger another Ophanim bonus. Then activate Veltharion: base damage plus stacked per-Ophanim pressure gets stronger when your setup maintained channel switching.',
     },
     {
       cardDefinitionId: 'pa-ophanim-accord-reflection',
-      hint: 'Play Accord Reflection: gain 5 Prismatic Light. Prismatic Accord builds a growing Light reserve across turns. The set rewards board density — more Seraphim means every Ophanim triggers more bonuses and attacks scale higher each session.',
+      hint: 'Play Accord Reflection as your closer setup card. Core mechanic now is Depth + Prism Charge from channel switching, with Ophanim-triggered Seraphim scaling layered on top. Finish by firing Skyglass Veltharion to convert the full stack into one large burst.',
     },
   ],
   guidedOpeningHand: [
@@ -621,7 +609,7 @@ const blackGlassTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'bgi-ophanim-sable-descent',
-      hint: 'Play Sable Descent: draw 1 and gain chain bonus. Black Glass\'s pattern is adjacency-first: place Cherubim next to Seraphim each cycle, let per-card bonuses compound over a long play sequence, then cash attacks for a massive final hit. The longer the turn, the larger the payout.',
+      hint: 'Play Sable Descent. Core mechanic: adjacency stacking between Cherubim and Seraphim. Why it scales: each card play repeatedly triggers both adjacency and Seraphim per-card bonuses. Exact payoff: click Obsidian Choir → Attack (discard 1) to cash the compounded board for a large burst.',
     },
   ],
   guidedOpeningHand: [
@@ -706,35 +694,35 @@ const snowboundTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'sv-cher-polar-sanctum',
-      hint: 'Polar Sanctum (Cherubim). +4 Strain, +7 Arctic Charge. Arctic Charge fills the discharge chamber. AC: 7.',
+      hint: 'Polar Sanctum (Frost Cherubim). +4 Strain, +8 Arctic Charge. Start by banking charge instead of rushing payoff. AC: 8.',
     },
     {
       cardDefinitionId: 'sv-oph-first-static',
-      hint: 'The First Static. +4 Strain, +5 Arctic Charge, Empower next card. AC: 12.',
+      hint: 'The First Static (Voltage). +3 Strain, empower the next card, then discharge. It is a spender, not a builder.',
     },
     {
       cardDefinitionId: 'sv-oph-sleetline-highway',
-      hint: 'The Sleetline Highway. +2 Strain, +3 Arctic Charge, draw 1. AC: 15.',
+      hint: 'The Sleetline Highway (Frost). +2 Strain, draw 1, +6 Arctic Charge. Frost cards are the battery builders. AC: 14.',
     },
     {
       cardDefinitionId: 'sv-oph-signal-collapse',
-      hint: 'The Signal Collapse. +2 Arctic Charge, draw 2 — feeds the rest of the chain. AC: 17.',
+      hint: 'The Signal Collapse (Frost). Draw 2, shuffle discard, +8 Arctic Charge. Use it to refill hand and battery together. AC: 22.',
     },
     {
       cardDefinitionId: 'sv-ser-frostcoil',
-      hint: '(Drawn) Frostcoil (Seraphim). +1 Strain, +4 Arctic Charge. While active, +10 Oblivion per card played. AC: 21.',
+      hint: '(Drawn) Frostcoil (Frost Seraphim). +1 Strain, +6 Arctic Charge. While active, every follow-up card gets extra Oblivion. AC: 28.',
     },
     {
       cardDefinitionId: 'sv-oph-static-archive',
-      hint: '(Drawn) The Static Archive. +2 Radiance, +3 Arctic Charge, draw 1. AC: 24.',
+      hint: '(Drawn) The Static Archive (Frost). +2 Radiance, draw 1, +6 Arctic Charge. Keep building before the real Voltage release. AC: 34.',
     },
     {
       cardDefinitionId: 'sv-oph-glacier-abyss',
-      hint: '(Drawn) The Glacier Abyss. +3 Strain, +4 Arctic Charge, +1.3× chain, +3 Prismatic Light, draw 1. AC: 28.',
+      hint: '(Drawn) The Glacier Abyss (Voltage). +2 Strain, +3 Arctic Charge, +60 Oblivion, then discharge Arctic Charge. This is the cashout turn.',
     },
     {
       cardDefinitionId: 'sv-ser-glacier-relay',
-      hint: '(In hand) Glacier Relay (Seraphim). Now click Glacier Relay → Unsynergized attack: discard 1 card from hand (no Strain cost). Base 311 Oblivion × 1.3 chain ≈ 400+ Oblivion delivered, on top of all per-card bonuses from Frostcoil + Polar Sanctum and the stored Arctic Charge fueling the Overcurrent Chorus Angel discharge.',
+      hint: '(In hand) Glacier Relay (Frost Seraphim). The set is no longer about hidden Potential math: Frost cards load Arctic Charge, Voltage cards release it. Use this line to feel the battery pattern directly.',
     },
   ],
   guidedOpeningHand: [
@@ -778,7 +766,7 @@ const snowboundTrial: TrialDeckDefinition = {
 // ── Glass Absolute ────────────────────────────────────────────────────────────
 const glassAbsoluteTrial: TrialDeckDefinition = {
   packId: 'pack-glass-absolute',
-  displayName: 'Glass Absolute — Proof',
+  displayName: 'Glass Absolute — Fragments',
   deckList: [
     d('ga-ser-prismwake', 4),
     d('ga-ser-lattice-canticle', 4),
@@ -799,27 +787,27 @@ const glassAbsoluteTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'ga-cher-mirrorbody-archivist',
-      hint: 'Place Mirrorbody Archivist (Cherubim). On play: gain 8 Proof. While active, adjacent Seraphim gain +28 Oblivion per card played, and Seraphim attacks receive a base bonus. Proof is the Glass Absolute resource — accumulated globally across the session.',
+      hint: 'Place Mirrorbody Archivist (Cherubim). On play: draw 1. While active, adjacent Seraphim gain +28 Oblivion per card played, so this is your first board-pressure anchor.',
     },
     {
       cardDefinitionId: 'ga-ser-prismwake',
-      hint: 'Board Prismwake (Seraphim) adjacent to Mirrorbody Archivist. On play: gain 12 Proof. While active, +12 Oblivion per card played. With Archivist adjacent, each card played generates 12+28=40 Oblivion before bonuses and before the attack fires.',
+      hint: 'Board Prismwake (Seraphim) adjacent to Mirrorbody Archivist. With both active, each card played generates strong per-card Oblivion pressure while you build fragment tiers.',
     },
     {
       cardDefinitionId: 'ga-oph-spectral-current',
-      hint: 'Play Spectral Current: gain 6 Proof and a chain bonus. Proof stacks fast — Seraphim enter with 8-30 Proof each, so by the second Seraphim the pool is already substantial.',
+      hint: 'Play Spectral Current to draw and keep the turn moving. Base Glass scales from fragment count and formation tiers, so velocity matters more than side resources.',
     },
     {
       cardDefinitionId: 'ga-oph-triune-prism-flow',
-      hint: 'Play Triune Prism Flow: look at the top 5 cards — **take Lumen Cascade** plus 1 other of your choice. Lumen Cascade is required for the final +16 Proof + Empower burst.',
+      hint: 'Play Triune Prism Flow: look at the top 5 cards — take Lumen Cascade plus one other setup or payoff piece to keep dense formation online.',
     },
     {
       cardDefinitionId: 'ga-oph-glassroad-oracle',
-      hint: 'Play Glassroad Oracle: salvage any card and gain 10 Proof. Activate Prismwake\'s attack (cost: discard 1) — base 240 Oblivion amplified by per-card bonuses that have been compounding all turn.',
+      hint: 'Play Glassroad Oracle to salvage and draw, then attack with Prismwake (discard 1). Cash attacks after your fragment tiers are already online.',
     },
     {
       cardDefinitionId: 'ga-oph-lumen-cascade',
-      hint: 'Play Lumen Cascade: gain 16 Proof, Empower the next card, draw 3. Empowering doubles the next card\'s effect. Glass Absolute scales fast — every Seraphim boarded injects 8-30 Proof, so more Seraphim means faster resource growth every subsequent turn.',
+      hint: 'Play Lumen Cascade (draw 3 + empower). Core mechanic: fragment density first, attack cashout second. Once you hit 5+ fragments, empowered Seraphim attacks are your burst window.',
     },
   ],
   guidedOpeningHand: [
@@ -881,7 +869,7 @@ const glassAbsoluteTrial: TrialDeckDefinition = {
 // ── Blazing Garden ────────────────────────────────────────────────────────────
 const blazingGardenTrial: TrialDeckDefinition = {
   packId: 'pack-blazing-garden',
-  displayName: 'Blazing Garden — Bloom & Embers',
+  displayName: 'Blazing Garden — Burn, Grove & Echo',
   deckList: [
     d('bg-ser-serevathi-ember-spiral', 4),
     d('bg-ser-aureveth-noon-petal', 4),
@@ -906,11 +894,11 @@ const blazingGardenTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'bg-ser-serevathi-ember-spiral',
-      hint: 'Board Serevathi Ember Spiral (Seraphim). On play: draw 1 and gain 4 Bloom. While active, gains 3 Embers per card played. Embers scale Seraphim attack power; Bloom is the universal garden resource accumulated by every card.',
+      hint: 'Board Serevathi Ember Spiral (Seraphim). On play: draw 1 and gain 4 Bloom. This is base Blazing Garden setup: build Bloom, keep Burn units online, and start preparing your Grove and Echo cycle.',
     },
     {
       cardDefinitionId: 'bg-oph-petal-route-initiate',
-      hint: 'Play Petal Route Initiate: draw 1, gain 3 Bloom. Root Lantern fires +24 adjacency bonus. Serevathi gains 3 Embers. After one card, you\'ve contributed to three resource pools simultaneously.',
+      hint: 'Play Petal Route Initiate: draw 1, gain 3 Bloom. Root Lantern fires +24 adjacency bonus. After one card, you\'ve advanced Bloom pressure, card velocity, and Seraphim scaling together.',
     },
     {
       cardDefinitionId: 'bg-oph-sunvein-wayfinder',
@@ -922,7 +910,7 @@ const blazingGardenTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'bg-oph-spiral-memory-bloom',
-      hint: 'Play Spiral Memory Bloom: replay the last Ophanim played this turn, gain 8 Bloom, Empower the next card. Then activate Serevathi\'s attack (cost: discard 1) — base 236 Oblivion amplified by Root Lantern\'s +24 adjacency per card and accumulated Embers. Every card played this turn fed the payout.',
+      hint: 'Play Spiral Memory Bloom. Core mechanic: Bloom plus replay chaining to extend Burn/Grove setup. Why it scales: replay effects add extra triggers while adjacency keeps raising attack value. Exact payoff: click Serevathi Ember Spiral → Attack (discard 1) for the Trial finisher burst.',
     },
   ],
   guidedOpeningHand: [
@@ -984,7 +972,7 @@ const blazingGardenTrial: TrialDeckDefinition = {
 // ── Age of the Butterfly ──────────────────────────────────────────────────────
 const butterflyTrial: TrialDeckDefinition = {
   packId: 'pack-age-of-the-butterfly',
-  displayName: 'Age of the Butterfly — Spectrum',
+  displayName: 'Age of the Butterfly — Flutter Formation + Wing Resonance',
   deckList: [
     d('bf-ser-unfurling-cantor', 4),
     d('bf-ser-ferrathi-iron-hum', 4),
@@ -1005,27 +993,27 @@ const butterflyTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'bf-cher-mireth-flutterlings',
-      hint: 'Place Mireth Flutterlings (Cherubim). It gains 2 Spectrum and draws 1 on entry. Its passive makes each adjacent active Seraphim give an extra card whenever you play — the draw engine that sustains the Butterfly loop.',
+      hint: 'Place Mireth Flutterlings (Cherubim). It gains Spectrum and draws on entry. It also logs your Cherubim Formation type for this cycle and fuels your hand through adjacent Seraphim draw support.',
     },
     {
       cardDefinitionId: 'bf-ser-unfurling-cantor',
-      hint: 'Board Unfurling Cantor (Seraphim). On play it gains 2 Spectrum, tunes your stance to Reflect, and draws 1. While on board it grants +8 Oblivion per card played. Reflect stance unlocks the Cantor\'s synergized attack mode.',
+      hint: 'Board Unfurling Cantor (Seraphim). On play it gains Spectrum and draws. It logs your Seraphim Formation type and grants +8 Oblivion per card played while active.',
     },
     {
       cardDefinitionId: 'bf-oph-lens-current',
-      hint: 'Play Lens Current. Tunes stance to Reflect, gains 2 Spectrum, then look at the top 3 cards — **take Midair Citadel** (others go to bottom). Midair Citadel is the Release payoff anchor.',
+      hint: 'Play Lens Current. It logs your Ophanim Formation type, gains Spectrum, and filters the top 3 cards — **take Midair Citadel** for your first release payoff line.',
     },
     {
       cardDefinitionId: 'bf-oph-ridge-trace',
-      hint: 'Play Ridge Trace: +2 Spectrum and draw 1. Every Ophanim that gains Spectrum fills the Release gauge — the more stacked before a Release, the bigger the burst.',
+      hint: 'Play Ridge Trace: +2 Spectrum and draw 1. Ophanim accelerate Flutter climb, helping you reach the 4 and 8 thresholds before your release turn.',
     },
     {
       cardDefinitionId: 'bf-oph-crystal-ornament-route',
-      hint: 'Play Crystal Ornament Route: +3 Spectrum and draw 2. A strong Spectrum ramp that also refuels your hand, setting up the Release turn.',
+      hint: 'Play Crystal Ornament Route: +3 Spectrum and draw 2. Use this to stabilize hand size while pushing toward major-tier Flutter.',
     },
     {
       cardDefinitionId: 'bf-oph-midair-citadel',
-      hint: 'Play Midair Citadel — the Butterfly payoff. Gain 5 Spectrum then immediately Release up to 2 Spectrum (+110 Oblivion each). With Spectrum stacked from prior plays, each Released stack hits hard. Unfurling Cantor\'s attack fires next at peak per-card bonus scaling.',
+      hint: 'Play Midair Citadel. Core mechanic: threshold climb then Release conversion. Resolve the release after your Formation types are online, then attack with Unfurling Cantor for the layered finisher.',
     },
   ],
   guidedOpeningHand: [
@@ -1087,7 +1075,7 @@ const butterflyTrial: TrialDeckDefinition = {
 // ── Eternal Seas ──────────────────────────────────────────────────────────────
 const eternalSeasTrial: TrialDeckDefinition = {
   packId: 'pack-eternal-seas',
-  displayName: 'Eternal Seas — Current & Polarity',
+  displayName: 'Eternal Seas — Undertow & Foam',
   deckList: [
     d('es-ser-velthiri-bloomschool', 4),
     d('es-ser-kethavar-helixhunter', 4),
@@ -1108,27 +1096,27 @@ const eternalSeasTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'es-cher-silver-shallow-attendant',
-      hint: 'Place Silver Shallow Attendant (Cherubim). It gains 2 Current and shifts polarity to White. Its passive makes each adjacent active Seraphim give an extra card per play — the draw engine that sustains the Current loop.',
+      hint: 'Place Silver Shallow Attendant (Cherubim). It gives 2 Undertow and 1 Foam. Its passive makes each adjacent active Seraphim give an extra card per play — the refill engine that keeps your Undertow turn moving.',
     },
     {
       cardDefinitionId: 'es-ser-velthiri-bloomschool',
-      hint: 'Board Velthiri Bloomschool (Seraphim). On play it gains 2 Current, shifts to White polarity, and draws 1. While on board: +8 Oblivion per card played. Start building the White Current lane.',
+      hint: 'Board Velthiri Bloomschool (Seraphim). On play it gives 2 Undertow, 1 Foam, and draws 1. While on board: +8 Oblivion per card played. Start loading Undertow before your release cards come down.',
     },
     {
       cardDefinitionId: 'es-oph-veilmargin-crossflow',
-      hint: 'Play Veilmargin Crossflow. It gains 2 Current then shifts White → Black in one motion — builds Current while establishing dual-polarity flow for Veilmargin Cartographer.',
+      hint: 'Play Veilmargin Crossflow. It gives 2 Undertow and 2 Foam in one clean setup play. This is one of the easiest ways to move both the main pool and the light draw-support pool forward together.',
     },
     {
       cardDefinitionId: 'es-oph-whitewater-cant',
-      hint: 'Play Whitewater Cant: shift to White, +3 Current, draw 1. Alternate lanes — each polarity shift deepens the dual-flow pattern that powers the Release payoff.',
+      hint: 'Play Whitewater Cant: +3 Undertow, +1 Foam, draw 1. This is the kind of setup card you want before your first release because it advances both pools without slowing hand flow.',
     },
     {
       cardDefinitionId: 'es-oph-blackwater-cant',
-      hint: 'Play Blackwater Cant: shift to Black, +3 Current, +150 Oblivion. The Black lane delivers both immediate Oblivion and more Current stacks. Now both lanes are running.',
+      hint: 'Play Blackwater Cant: +3 Undertow, +1 Foam, +150 Oblivion. It keeps the turn dense by mixing setup with immediate pressure instead of asking for polarity maintenance.',
     },
     {
       cardDefinitionId: 'es-oph-depthless-sounding',
-      hint: 'Play Depthless Sounding — the Eternal Seas payoff. Gain 5 Current then immediately Release up to 3 Current (+125 Oblivion each). With accumulated Current from both White and Black lanes, this delivers maximum conversion in a single play.',
+      hint: 'Play Depthless Sounding. It converts a loaded Undertow pool into burst and also skims Foam while spending. Exact payoff: build Undertow first, fire Depthless Sounding, then click the 5-Foam HUD draw only if you need one more extender before the finishing attack.',
     },
   ],
   guidedOpeningHand: [
@@ -1190,7 +1178,7 @@ const eternalSeasTrial: TrialDeckDefinition = {
 // ── Abyssal Forge ─────────────────────────────────────────────────────────────
 const abyssalForgeTrial: TrialDeckDefinition = {
   packId: 'pack-abyssal-forge',
-  displayName: 'Abyssal Forge — Reforge & Pearls',
+  displayName: 'Abyssal Forge — Recasts, Pearls, and Imprint',
   deckList: [
     d('af-ser-lampfin-minnow-choir', 4),
     d('af-ser-slagback-crawler', 4),
@@ -1211,19 +1199,19 @@ const abyssalForgeTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'af-cher-bellows-acolyte',
-      hint: 'Place Bellows Acolyte (Cherubim). Gains 1 Reforge Charge on entry; passively generates 1 Charge every 3 cards played and buffs all attacks +18 Oblivion. Charges power every Recast in this deck — sustain the generation early.',
+      hint: 'Place Bellows Acolyte (Cherubim). Gains 1 Reforge Charge on entry; passively generates 1 Charge every 3 cards you play and buffs all attacks +18 Oblivion. Those Charges power every Recast in this deck, so sustain generation early.',
     },
     {
       cardDefinitionId: 'af-ser-lampfin-minnow-choir',
-      hint: 'Board Lampfin Minnow Choir (Seraphim). On play: +1 Reforge Charge and draw 1. While on board: +10 Oblivion per card played. More Seraphim = more compound Charge generation.',
+      hint: 'Board Lampfin Minnow Choir (Seraphim). On play: +1 Reforge Charge and draw 1. While on board: +10 Oblivion per card you play. More Seraphim means more compound Charge generation.',
     },
     {
       cardDefinitionId: 'af-oph-cobalt-ember-wheel',
-      hint: 'Play Cobalt Ember Wheel: drop 2 Pearls. Pearls accumulate toward the Anvilstorm Halo cashout — each Pearl is worth +100 Oblivion when spent. Drop them early and often.',
+      hint: 'Play Cobalt Ember Wheel: drop 2 Pearls. Pearls accumulate toward the Anvilstorm Halo cashout, and each Pearl is worth +100 Oblivion when spent. Drop them early and often.',
     },
     {
       cardDefinitionId: 'af-oph-forge-wheel-sigil',
-      hint: 'Play Forge Wheel Sigil: +1 Reforge Charge, Recast last card at 50% power, draw 1. The Recast fires Cobalt Ember Wheel again at half value, dropping an extra Pearl. This is the Forge loop: play → Recast → more Pearls.',
+      hint: 'Play Forge Wheel Sigil: +1 Reforge Charge, Recast the last card at 50% power, draw 1. The Recast fires Cobalt Ember Wheel again at half value, dropping an extra Pearl. This is the Forge loop: play, Recast, and gain more Pearls.',
     },
     {
       cardDefinitionId: 'af-oph-chromatic-ember-cluster',
@@ -1231,7 +1219,7 @@ const abyssalForgeTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'af-oph-anvilstorm-halo',
-      hint: 'Play Anvilstorm Halo — the Forge payoff. Spend up to 20 Pearls at +100 Oblivion each, then Recast 2 random prior cards at 50%. With Pearls banked through the turn this delivers a massive burst. Crown of the Forge-beneath then cashes accumulated Forge Crowns for +80 Oblivion each.',
+      hint: 'Play Anvilstorm Halo. Core base mechanic: Pearl generation via Recast loops. Why it scales: recasts duplicate prior value, rapidly increasing Pearls before cashout. Exact payoff: cash Anvilstorm Halo Pearls, then click Lampfin Minnow Choir → Attack to finish the turn with a massive spike. Higher-rarity Abyssal cards keep this base loop but add Imprint as the shared Eternal/Infinite overlay.',
     },
   ],
   guidedOpeningHand: [
@@ -1293,7 +1281,7 @@ const abyssalForgeTrial: TrialDeckDefinition = {
 // ── Death-flamed Hell ─────────────────────────────────────────────────────────
 const deathFlamedTrial: TrialDeckDefinition = {
   packId: 'pack-death-flamed-hell',
-  displayName: 'Death-flamed Hell — Pyre & Cinder Crown',
+  displayName: 'Death-flamed Hell — Funeral Procession & Veil Rite',
   deckList: [
     d('dfh-ser-soot-veiled-soldier', 4),
     d('dfh-ser-ash-marrow-reaver', 4),
@@ -1316,31 +1304,31 @@ const deathFlamedTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'dfh-cher-the-flayed-halo',
-      hint: 'The Flayed Halo (Cherubim). On play: draws 1; +3 Pyre Embers. Cherubim are the procession spine \u2014 they draw cards and stack Embers.',
+      hint: 'The Flayed Halo (Cherubim). Use it to build the base line, then flip the card when you are ready to reveal the setup. Cherubim are the spine of the procession and still keep Ember pressure moving.',
     },
     {
       cardDefinitionId: 'dfh-ser-sablecrown-herald',
-      hint: 'Sablecrown Herald (Seraphim). On play: +6 Pyre Embers, +2 Cinder Crowns. While active: +20 Oblivion per card.',
+      hint: 'Sablecrown Herald (Seraphim). The base loop now wants you to bank Ember first and flip later; this is one of the clearest reveal-turn payoffs.',
     },
     {
       cardDefinitionId: 'dfh-oph-ash-petal-strewer',
-      hint: 'Ash-petal Strewer. +4 Pyre Embers. Embers persist across turns.',
+      hint: 'Ash-petal Strewer. A simple Ember builder that is best when you are still veiling the line.',
     },
     {
       cardDefinitionId: 'dfh-oph-hollowkings-vacant-page',
-      hint: "Hollowking's Vacant Page. +4 Pyre Embers, +2 Cinder Crowns. Crowns will cash via the Sablecrown Angel for +120 each.",
+      hint: "Hollowking's Vacant Page. It keeps the reveal-side pressure going so your flip turn has something real to cash in.",
     },
     {
       cardDefinitionId: 'dfh-oph-veil-stitcher',
-      hint: 'Veil Stitcher. Draws 1; weaves the procession forward.',
+      hint: 'Veil Stitcher. A setup piece that fits the veiled half of the loop; flip only when you are ready to move forward.',
     },
     {
       cardDefinitionId: 'dfh-oph-hollow-throne-coronation',
-      hint: 'Hollow-throne Coronation. +5 Pyre Embers, +3 Cinder Crowns. Procession peak — Crown reserve now 7+.',
+      hint: 'Hollow-throne Coronation. This is a strong reveal-side pressure card; hold it until the flip turn can actually cash out.',
     },
     {
       cardDefinitionId: 'dfh-oph-wedding-procession-living-world',
-      hint: 'The Wedding Procession Into the Living World — apex. +10 Pyre Embers, +4 Cinder Crowns. Then click Sablecrown Herald → Attack: Crown cashout 11 × 120 = +1320 Oblivion this turn.',
+      hint: 'The Wedding Procession Into the Living World — apex. Core mechanic: flip base cards to veil setup, then reveal when Ember/Crown pressure is ready. Eternal and Infinite cards layer Veil Marks on top, and that reveal consumes them for burst value.',
     },
   ],
   guidedOpeningHand: [
@@ -1416,7 +1404,7 @@ const wishedUponAStarTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'wuas-oph-aeolian-nova',
-      hint: 'Aeolian Nova — apex. +4 Starlight, then Nova Wish Burst: 20 Starlight × (1 + 3 × 0.4) = 44 Oblivion direct + per-card bonuses fired this turn (~400+ total).',
+      hint: 'Aeolian Nova — apex. Core mechanic: Starlight + Dream Lattice ramp before Nova conversion. Why it scales: Dream multiplies Starlight cashout, so late-turn Nova grows sharply. Exact payoff: resolve Nova Wish Burst, then click Solarvex Fragment → Attack for the closing spike.',
     },
   ],
   guidedOpeningHand: [

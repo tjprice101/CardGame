@@ -1,85 +1,90 @@
+import { describe, expect, it } from 'vitest';
+import { CardRegistry } from '@/cards/CardRegistry';
 
-import { thornboundEternals } from '../../data/cards/thornboundCards';
-import { infiniteOphanimCards, infiniteSeraphimCards } from '../../data/cards/infiniteCards';
-import { describe, it, expect } from 'vitest';
-import { CardEffectExecutor } from '../../systems/cards/CardEffectExecutor';
+function extractEffects(definitionId: string): Array<{ type: string; [key: string]: unknown }> {
+  const card = CardRegistry.get(definitionId);
+  if (!card) return [];
 
-// Helper to flatten all effects from a card definition
-function flattenEffects(card) {
-  const effects = [];
-  if (card.effects) effects.push(...card.effects);
-  if (card.onPlayEffects) effects.push(...card.onPlayEffects);
-  if (card.activatedAbility && card.activatedAbility.effects) effects.push(...card.activatedAbility.effects);
-  if (Array.isArray(card.attacks)) {
-    card.attacks.forEach(atk => {
-      if (atk.effects) effects.push(...atk.effects);
-    });
+  const effects: Array<{ type: string; [key: string]: unknown }> = [];
+
+  if (card.type === 'Ophanim') {
+    effects.push(...card.effects);
   }
+
+  if (card.type === 'Cherubim') {
+    effects.push(...card.effects);
+    effects.push(...card.onPlayEffects);
+  }
+
+  if (card.type === 'Seraphim') {
+    effects.push(...card.onPlayEffects);
+  }
+
+  if (card.type === 'Angel') {
+    effects.push(...card.onSummonEffects);
+    effects.push(...card.activatedAbility.effects);
+  }
+
   return effects;
 }
 
-function getAllThornboundEternalAndInfinityCards() {
-  return [
-    ...thornboundEternals,
-    ...infiniteOphanimCards,
-    ...infiniteSeraphimCards,
-  ];
-}
-
-function getAllEffectTypes(cards) {
-  const types = new Set();
-  for (const card of cards) {
-    for (const eff of flattenEffects(card)) {
-      if (eff && typeof eff.type === 'string') types.add(eff.type);
-    }
+function hasEffectTypeRecursive(
+  effects: ReadonlyArray<{ type: string; then?: ReadonlyArray<{ type: string }> }>,
+  type: string,
+): boolean {
+  for (const effect of effects) {
+    if (effect.type === type) return true;
+    if (effect.type === 'conditional' && effect.then && hasEffectTypeRecursive(effect.then, type)) return true;
   }
-  return Array.from(types);
+  return false;
 }
 
-describe('Thornbound Plains Eternal and Infinity Card Effects & Abilities', () => {
-  const allCards = getAllThornboundEternalAndInfinityCards();
-  const allEffectTypes = getAllEffectTypes(allCards);
+describe('Thornbound Eternity and Infinity Briar Spiral wiring', () => {
+  it('keeps Briar Spiral on every Thornbound Eternity card in the package', () => {
+    const ids = [
+      'btei-thornbound-briar-siege',
+      'btei-thornbound-red-march',
+      'btei-thornbound-cathedral-lancer',
+      'btei-thornbound-funeral-bramble',
+      'btei-thornbound-gallowcrown-matron',
+    ];
 
-  it('Every effect type is present in at least one card', () => {
-    for (const type of allEffectTypes) {
+    for (const id of ids) {
+      const effects = extractEffects(id);
       expect(
-        allCards.some(card => flattenEffects(card).some(eff => eff.type === type))
+        hasEffectTypeRecursive(effects, 'set_secondary_gain') || hasEffectTypeRecursive(effects, 'thorn_briar_spiral_bloom'),
       ).toBe(true);
     }
   });
 
-  it('Every effect type is handled by CardEffectExecutor', () => {
-    // This test checks that CardEffectExecutor has a handler for each effect type
-    // by simulating execution and expecting no crash for each effect type
-    for (const type of allEffectTypes) {
-      // Find a card and effect instance for this type
-      const card = allCards.find(c => flattenEffects(c).some(eff => eff.type === type));
-      const effect = flattenEffects(card).find(eff => eff.type === type);
-      // Minimal fake game state
-      const fakeDeckCard = { instanceId: 'test', definitionId: card.definitionId, finish: 'normal' as const };
-      const fakeTurn = { trail: 10, thornScar: 2, cardsPlayedThisTurn: 1, nextCardMultiplied: false };
-      const fakeBoard = { frontSlots: [], backSlots: [], activeBoardEffects: [] };
-      const fakeDeck = { deckList: [], extraDeck: [], drawPile: [], hand: [], discardPile: [] };
-      // Should not throw
-      expect(() => {
-        CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: [effect] });
-      }).not.toThrow();
+  it('keeps Thornbound Infinity payoffs wired to bloom Spirals', () => {
+    const ids = ['inf-thornbound-last-procession', 'inf-thorn-widow-engine', 'inf-thornbound-elegy-titan'];
+
+    for (const id of ids) {
+      const effects = extractEffects(id);
+      expect(hasEffectTypeRecursive(effects, 'thorn_briar_spiral_bloom')).toBe(true);
     }
   });
 
-  it('All effect types change state or are no-ops (smoke test)', () => {
-    for (const type of allEffectTypes) {
-      const card = allCards.find(c => flattenEffects(c).some(eff => eff.type === type));
-      const effect = flattenEffects(card).find(eff => eff.type === type);
-      const fakeDeckCard = { instanceId: 'test', definitionId: card.definitionId, finish: 'normal' as const };
-      const fakeTurn = { trail: 10, thornScar: 2, cardsPlayedThisTurn: 1, nextCardMultiplied: false };
-      const fakeBoard = { frontSlots: [], backSlots: [], activeBoardEffects: [] };
-      const fakeDeck = { deckList: [], extraDeck: [], drawPile: [], hand: [], discardPile: [] };
-      const before = JSON.stringify({ fakeTurn, fakeBoard, fakeDeck });
-      CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: [effect] });
-      const after = JSON.stringify({ fakeTurn, fakeBoard, fakeDeck });
-      // At least one property should change, or it's a no-op (which is allowed for some effects)
-      expect(before === after || before !== after).toBe(true);
-    }
+  it('keeps Thornbound Infinity cards mechanically distinct from each other', () => {
+    const forge = extractEffects('inf-gravebloom-singularity');
+    const refinery = extractEffects('inf-thornbound-last-procession');
+    const surge = extractEffects('inf-thorn-widow-engine');
+    const finisher = extractEffects('inf-thornbound-elegy-titan');
+
+    expect(hasEffectTypeRecursive(forge, 'set_secondary_gain')).toBe(true);
+    expect(hasEffectTypeRecursive(forge, 'thorn_briar_spiral_bloom')).toBe(false);
+
+    expect(hasEffectTypeRecursive(refinery, 'set_secondary_spend')).toBe(true);
+    expect(hasEffectTypeRecursive(refinery, 'draw')).toBe(true);
+    expect(hasEffectTypeRecursive(refinery, 'eternal_stack_cashout')).toBe(false);
+
+    expect(hasEffectTypeRecursive(surge, 'thorn_briar_spiral_bloom')).toBe(true);
+    expect(hasEffectTypeRecursive(surge, 'score_multiplier')).toBe(true);
+    expect(hasEffectTypeRecursive(surge, 'trail_gain')).toBe(true);
+
+    expect(hasEffectTypeRecursive(finisher, 'thorn_briar_spiral_bloom')).toBe(true);
+    expect(hasEffectTypeRecursive(finisher, 'set_secondary_spend')).toBe(true);
+    expect(hasEffectTypeRecursive(finisher, 'eternal_stack_cashout')).toBe(true);
   });
 });

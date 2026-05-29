@@ -23,7 +23,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Shroud',
-    description: 'On play: Shuffle discard into deck; All Seraphim gain +3 Patience. While on board: Buffs Seraphim and Angel attacks: base +24, cooldown +0, multiplier x1.00',
+    description: 'On play: Shuffle discard into deck; All Seraphim on board gain +3 Patience. While on board: Buffs Seraphim and Angel attacks: base +24, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_void_shroud',
     maxDurability: 2,
     effects: [
@@ -38,7 +38,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Mantle',
-    description: 'On play: Search your deck for 1 matching Seraphim or Cherubim; All Seraphim gain +2 Patience. While on board: Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'On play: Search your deck for 1 matching Seraphim or Cherubim; All Seraphim on board gain +2 Patience. While on board: Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_balance_mantle',
     maxDurability: 3,
     effects: [
@@ -67,7 +67,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Shell',
-    description: 'On play: All active Seraphim gain +2 Patience; Salvage any 1 card; Designate Vessel. While on board: All Oblivion gain +5%.',
+    description: 'On play: All Seraphim on board gain +2 Patience; Salvage any 1 card; Designate the Seraphim with the highest Patience as your Vessel. While on board: Buffs Seraphim attacks: base +54, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +42, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_still_shell',
     maxDurability: 7,
     effects: [
@@ -87,7 +87,7 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Null Fortification',
-    description: 'On play: All Seraphim gain +4 Patience; +40 Oblivion. While on board: Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'On play: All Seraphim on board gain +4 Patience; +40 Oblivion. While on board: Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
     artKey: 'cherubim_neutral_null_fortify',
     maxDurability: 3,
     effects: [

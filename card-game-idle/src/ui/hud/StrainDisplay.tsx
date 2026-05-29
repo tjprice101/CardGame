@@ -115,8 +115,8 @@ export default function StrainDisplay() {
       </div>
       {hovered && (
         <div style={styles.tooltip}>
-          Mechanical risk resource. Overclock effects usually add Strain for bigger immediate power.
-          Keep Strain controlled or cash it in with venting cards before it spikes too high.
+          Mechanical fuel resource. Build Strain before Chimes, then cash primed attack windows for burst damage.
+          Keep Strain controlled with venting cards so Chime turns stay efficient.
         </div>
       )}
     </div>

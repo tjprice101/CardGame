@@ -275,7 +275,7 @@ describe('Cross-set Eternity/Infinity mechanics', () => {
     }
   });
 
-  it('grants Prismatic Choir Splinter on-play resources and chain amplification', () => {
+  it('grants Prismatic Choir Splinter on-play Resonance resources', () => {
     const result = CardEffectExecutor.execute(
       { instanceId: 'play_1', definitionId: 'inf-prismatic-choir-splinter' },
       makePlayingTurn(),
@@ -283,13 +283,25 @@ describe('Cross-set Eternity/Infinity mechanics', () => {
       makeDeck('inf-prismatic-choir-splinter'),
     );
 
-    expect(result.turn.chainMultiplier).toBeGreaterThanOrEqual(4.2);
+    expect(result.turn.prismaticResonanceCharge).toBeGreaterThanOrEqual(4);
   });
 
-  it('lets Prismatic Judgement Array search Ophanim/Cherubim via its activated ability', () => {
+  it('lets Prismatic Judgement Array keep Ophanim/Cherubim search access', () => {
     const judgement = CardRegistry.get('inf-prismatic-judgement-array');
-    const abilityEffects = judgement && 'activatedAbility' in judgement ? (judgement as { activatedAbility?: { effects: Array<{ type: string; filter?: unknown }> } }).activatedAbility?.effects ?? [] : [];
-    const search = abilityEffects.find(effect => effect.type === 'search_deck_by_type');
+    const onSummonEffects = judgement && 'onSummonEffects' in judgement
+      ? (judgement as { onSummonEffects?: Array<{ type: string; filter?: unknown }> }).onSummonEffects ?? []
+      : [];
+    const abilityEffects = judgement && 'activatedAbility' in judgement
+      ? (judgement as { activatedAbility?: { effects: Array<{ type: string; filter?: unknown; then?: Array<{ type: string; filter?: unknown }> }> } }).activatedAbility?.effects ?? []
+      : [];
+
+    const topLevelSearch = onSummonEffects.find(effect => effect.type === 'search_deck_by_type')
+      ?? abilityEffects.find(effect => effect.type === 'search_deck_by_type');
+    const nestedSearch = abilityEffects
+      .flatMap(effect => effect.then ?? [])
+      .find(effect => effect.type === 'search_deck_by_type');
+    const search = topLevelSearch ?? nestedSearch;
+
     expect(search).toBeDefined();
     expect(search?.filter).toEqual(['Ophanim', 'Cherubim']);
   });
@@ -825,7 +837,6 @@ describe('Angel attack cost selection', () => {
       turn: {
         ...state.turn,
         phase: 'playing',
-        chainMultiplier: 1,
         embers: 10,
         radiance: 10,
         trail: 10,
@@ -899,7 +910,6 @@ describe('Angel attack cost selection', () => {
       turn: {
         ...state.turn,
         phase: 'playing',
-        chainMultiplier: 1,
       },
       progress: {
         ...state.progress,
@@ -975,7 +985,6 @@ describe('Angel attack cost selection', () => {
       turn: {
         ...state.turn,
         phase: 'playing',
-        chainMultiplier: 1,
       },
       progress: {
         ...state.progress,

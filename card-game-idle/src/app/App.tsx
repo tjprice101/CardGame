@@ -17,7 +17,6 @@ const PlayerInformationPage = lazy(() => import('@/ui/player/PlayerInformationPa
 const DailyRewardModal = lazy(() => import('@/ui/profile/DailyRewardModal'));
 const QuestsModal = lazy(() => import('@/ui/menus/QuestsModal'));
 const AchievementsModal = lazy(() => import('@/ui/menus/AchievementsModal'));
-const ArtifactsMenu = lazy(() => import('@/ui/artifacts/ArtifactsMenu'));
 const AscensionHub = lazy(() => import('@/ui/ascension/AscensionHub'));
 const NullRaidArena = lazy(() => import('@/ui/ascension/NullRaidArena'));
 const NullRaidResults = lazy(() => import('@/ui/ascension/NullRaidResults'));
@@ -145,7 +144,6 @@ export default function App() {
   const [showQuests, setShowQuests] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showMastery, setShowMastery] = useState(false);
-  const [showArtifacts, setShowArtifacts] = useState(false);
   const [showAscension, setShowAscension] = useState(false);
   const [showWakeTrials, setShowWakeTrials] = useState(false);
   const [showEndlessGauntlet, setShowEndlessGauntlet] = useState(false);
@@ -274,8 +272,6 @@ export default function App() {
         track = 'menu-shop';
       } else if (showInfinitude) {
         track = 'menu-infinitude';
-      } else if (showArtifacts) {
-        track = 'menu-artifacts';
       } else if (showEternitysWake || showEndlessGauntlet || showWakeTrials) {
         track = 'menu-eternity';
       } else if (turn.phase === 'mulligan' || turn.phase === 'playing') {
@@ -344,7 +340,6 @@ export default function App() {
     bossFight.gauntletDepth,
     showCardStore,
     showInfinitude,
-    showArtifacts,
     showEternitysWake,
     showEndlessGauntlet,
     showWakeTrials,
@@ -450,7 +445,6 @@ export default function App() {
         if (showQuests) { setShowQuests(false); e.preventDefault(); return; }
         if (showAchievements) { setShowAchievements(false); e.preventDefault(); return; }
         if (showMastery) { setShowMastery(false); e.preventDefault(); return; }
-        if (showArtifacts) { setShowArtifacts(false); e.preventDefault(); return; }
         if (showAscension) { setShowAscension(false); e.preventDefault(); return; }
         if (showWakeTrials) { setShowWakeTrials(false); e.preventDefault(); return; }
         if (showEndlessGauntlet) { setShowEndlessGauntlet(false); e.preventDefault(); return; }
@@ -472,7 +466,7 @@ export default function App() {
       // an active turn is in play (mulligan OR playing), in regular or boss
       // fight modes.
       if (e.code === controls.swapExtraDeck && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts || showAscension;
+        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showAscension;
         if (anyModalOpen) return;
         const phase = useStore.getState().turn.phase;
         if (phase === 'playing' || phase === 'mulligan') {
@@ -483,7 +477,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showWakeTrials, showEndlessGauntlet, showEventWuas, showArtifacts, showAscension, settings.controls, trialDeck.mode]);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showWakeTrials, showEndlessGauntlet, showEventWuas, showAscension, settings.controls, trialDeck.mode]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -497,7 +491,7 @@ export default function App() {
 
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showArtifacts || showBattleground || showAscension;
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showBattleground || showAscension;
 
   // Auto-sync scene to gameplay state once the player has reached the menu.
   // Entering an active turn or boss fight moves us into the arena; finishing
@@ -597,7 +591,6 @@ export default function App() {
             onQuests={() => setShowQuests(true)}
             onAchievements={() => setShowAchievements(true)}
             onMastery={() => setShowMastery(true)}
-            onArtifacts={() => setShowArtifacts(true)}
             onSettings={() => setShowSettings(true)}
             onAscension={() => setShowAscension(true)}
             onBeginTurn={() => {
@@ -757,11 +750,6 @@ export default function App() {
       {showMastery && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><CardMasteryModal onClose={() => setShowMastery(false)} /></Suspense>
-        </div>
-      )}
-      {showArtifacts && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><ArtifactsMenu onClose={() => setShowArtifacts(false)} /></Suspense>
         </div>
       )}
       {showWakeTrials && (

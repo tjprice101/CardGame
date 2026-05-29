@@ -828,6 +828,8 @@ function isOphanimUtilityEffect(effect: CardEffect): boolean {
     case 'eternal_stack_gain':
     case 'bloom_gain':
     case 'butterfly_spectrum_gain':
+    case 'seas_undertow_gain':
+    case 'seas_foam_gain':
     case 'seas_current_gain':
     case 'radiance_gain':
     case 'ember_gain':
@@ -986,14 +988,30 @@ const NEUTRALITY_REWORK_IDS = new Set<string>([
   'sv-infinite-aurora-collapse',
 ]);
 
+const BUTTERFLY_BASE_OPHANIM_SOURCE_IDS = new Set<string>([
+  'bf-oph-ridge-trace',
+  'bf-oph-lens-current',
+  'bf-oph-copper-green-trail',
+  'bf-oph-crystal-ornament-route',
+  'bf-oph-suppression-wake',
+  'bf-oph-electromagnetic-arrival',
+  'bf-oph-midair-citadel',
+  'bf-oph-velmargin-lensfall',
+]);
+
 function shouldKeepSourceDefinition(definitionId: string): boolean {
   if (NEUTRALITY_REWORK_IDS.has(definitionId)) return true;
+  if (BUTTERFLY_BASE_OPHANIM_SOURCE_IDS.has(definitionId)) return true;
+  if (definitionId.startsWith('md-')) return true;
   // Infinite reward cards must execute the exact source-defined effects so UI text matches behavior.
   if (definitionId.startsWith('inf-')) return true;
+  // Base Snowbound cards were explicitly reauthored around Frost/Voltage + Arctic Charge.
+  if (definitionId.startsWith('sv-')) return true;
   // Defensive catch-all: any future Snowbound Eternal/Infinite IDs should keep authored effects.
   if (definitionId.startsWith('sv-eternal-')) return true;
   if (definitionId.startsWith('sv-infinite-')) return true;
   if (definitionId.startsWith('btei-bgi-')) return true;
+  if (definitionId.startsWith('btei-mech-')) return true;
   if (definitionId.startsWith('inf-bgi-')) return true;
   if (definitionId.startsWith('btei-pyroabyss-')) return true;
   if (definitionId.startsWith('btei-light-')) return true;
@@ -1002,6 +1020,7 @@ function shouldKeepSourceDefinition(definitionId: string): boolean {
   if (definitionId.startsWith('af-')) return true;
   if (definitionId.startsWith('wuas-')) return true;
   if (definitionId.startsWith('inf-wuas-')) return true;
+  if (definitionId.startsWith('es-')) return true;
   return false;
 }
 
@@ -1105,15 +1124,30 @@ function buildDisplayAttackDescription(attack: {
   cooldownCards: number;
   costs?: ReadonlyArray<AttackCost>;
   requiresAngelOnBoard?: boolean;
-}): string {
+  tags?: ReadonlyArray<string>;
+}, options?: { infiniteFireLabel?: boolean; fireChromaTier?: 'eternal' | 'infinite' | null }): string {
   const angelText = attack.requiresAngelOnBoard ? ' · Requires Angel' : '';
   const costText = attack.costs && attack.costs.length > 0
     ? ` · Cost: ${attack.costs.map(formatDisplayAttackCost).join(', ')}`
     : '';
-  return `${attack.baseOblivion} base Oblivion · ${attack.cooldownCards} cards cooldown${angelText}${costText}`;
+  const furnaceText = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire')
+    ? (options?.infiniteFireLabel
+      ? ' · +2.5% attack per Inferno Tier (max +75%)'
+      : ' · +2.5% attack per Furnace (max +75%)')
+    : '';
+  const chromaText = options?.fireChromaTier === 'eternal'
+    ? ' · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)'
+    : options?.fireChromaTier === 'infinite'
+      ? ' · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)'
+      : '';
+  return `${attack.baseOblivion} base Oblivion · ${attack.cooldownCards} cards cooldown${angelText}${costText}${furnaceText}${chromaText}`;
 }
 
 function displayCardDefinition(def: CardDefinition): CardDefinition {
+  const infiniteFireLabel = def.element === 'Fire' && def.definitionId.startsWith('inf-');
+  const fireChromaTier = def.element === 'Fire'
+    ? (def.rarity === 'Eternal' ? 'eternal' : def.rarity === 'Infinite' ? 'infinite' : null)
+    : null;
   const displayDef = {
     ...def,
     name: formatDisplayCardText(def.name),
@@ -1127,12 +1161,12 @@ function displayCardDefinition(def: CardDefinition): CardDefinition {
         unsynergized: {
           ...def.attacks.unsynergized,
           name: formatDisplayCardText(def.attacks.unsynergized.name),
-          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.unsynergized)),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.unsynergized, { infiniteFireLabel, fireChromaTier })),
         },
         synergized: {
           ...def.attacks.synergized,
           name: formatDisplayCardText(def.attacks.synergized.name),
-          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.synergized)),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.synergized, { infiniteFireLabel, fireChromaTier })),
         },
       },
     } as CardDefinition;
@@ -1150,12 +1184,12 @@ function displayCardDefinition(def: CardDefinition): CardDefinition {
         primary: {
           ...def.attacks.primary,
           name: formatDisplayCardText(def.attacks.primary.name),
-          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.primary)),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.primary, { infiniteFireLabel, fireChromaTier })),
         },
         exalted: {
           ...def.attacks.exalted,
           name: formatDisplayCardText(def.attacks.exalted.name),
-          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.exalted)),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.exalted, { infiniteFireLabel, fireChromaTier })),
         },
       } : def.attacks,
     } as CardDefinition;

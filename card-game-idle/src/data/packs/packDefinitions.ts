@@ -468,7 +468,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
   {
     id: 'pack-age-of-the-butterfly',
     name: 'Age of the Butterfly Pack',
-    description: `Cards from Age of the Butterfly - metallic wings, glass refractions, and generation-defining Flutter pulses. Set size: ${BUTTERFLY_PACK_POOL.length} cards.`,
+    description: `Cards from Age of the Butterfly - metallic wings, glass refractions, and generation-defining Flutter Formation plus Wing Resonance payoffs. Set size: ${BUTTERFLY_PACK_POOL.length} cards.`,
     element: 'Butterfly',
     cost: 3552870,
     cardsPerOpen: 5,
@@ -478,7 +478,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
   {
     id: 'pack-eternal-seas',
     name: 'Eternal Seas Pack',
-    description: `Cards from Eternal Seas - white/black waters, Veilmargin currents, and neon deep-ocean mythics. Set size: ${ETERNAL_SEAS_PACK_POOL.length} cards.`,
+    description: `Cards from Eternal Seas - undertow surges, foam skims, deepwake overlays, and neon deep-ocean mythics. Set size: ${ETERNAL_SEAS_PACK_POOL.length} cards.`,
     element: 'EternalSeas',
     cost: 7105741,
     cardsPerOpen: 5,
@@ -488,7 +488,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
   {
     id: 'pack-abyssal-forge',
     name: 'Abyssal Forge Pack',
-    description: `Cards from Abyssal Forge - molten anvils, nacre-touched pilgrims, and pearl-welded reforgings. Set size: ${ABYSSAL_FORGE_PACK_POOL.length} cards.`,
+    description: `Cards from Abyssal Forge - molten anvils, recast-forged pressure lines, and Imprint-bound Eternal/Infinite overlays. Set size: ${ABYSSAL_FORGE_PACK_POOL.length} cards.`,
     element: 'AbyssalForge',
     cost: 14211482,
     cardsPerOpen: 5,

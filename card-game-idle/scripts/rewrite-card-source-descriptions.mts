@@ -137,92 +137,96 @@ function collectDescriptionReplacements(sourceFile: ts.SourceFile): Replacement[
       if (definitionId) {
         const card = CardRegistry.get(definitionId);
         if (card) {
-          pushStringReplacement(sourceFile, getProperty(node, 'description'), getCanonicalCardDescription(card), replacements);
-
-          if (card.type === 'Seraphim' && card.attacks) {
-            pushStringReplacement(
-              sourceFile,
-              getProperty(node, 'unsynergizedDescription'),
-              getCanonicalAttackDescription(card.attacks.unsynergized),
-              replacements,
-            );
-            pushStringReplacement(
-              sourceFile,
-              getProperty(node, 'synergizedDescription'),
-              getCanonicalAttackDescription(card.attacks.synergized),
-              replacements,
-            );
-
-            const attacksObject = getObjectLiteralProperty(node, 'attacks');
-            if (attacksObject) {
-              const unsynergizedAttack = getObjectLiteralProperty(attacksObject, 'unsynergized');
-              const synergizedAttack = getObjectLiteralProperty(attacksObject, 'synergized');
-              if (unsynergizedAttack) {
-                pushStringReplacement(
-                  sourceFile,
-                  getProperty(unsynergizedAttack, 'description'),
-                  getCanonicalAttackDescription(card.attacks.unsynergized),
-                  replacements,
-                );
-              }
-              if (synergizedAttack) {
-                pushStringReplacement(
-                  sourceFile,
-                  getProperty(synergizedAttack, 'description'),
-                  getCanonicalAttackDescription(card.attacks.synergized),
-                  replacements,
-                );
-              }
-            }
-          }
-
-          if (card.type === 'Angel') {
-            pushStringReplacement(
-              sourceFile,
-              getProperty(node, 'primaryDescription'),
-              card.attacks ? getCanonicalAttackDescription(card.attacks.primary) : '',
-              replacements,
-            );
-            pushStringReplacement(
-              sourceFile,
-              getProperty(node, 'exaltedDescription'),
-              card.attacks ? getCanonicalAttackDescription(card.attacks.exalted) : '',
-              replacements,
-            );
-
-            const activatedAbility = getObjectLiteralProperty(node, 'activatedAbility');
-            if (activatedAbility) {
+          try {
+            pushStringReplacement(sourceFile, getProperty(node, 'description'), getCanonicalCardDescription(card), replacements);
+            if (card.type === 'Seraphim' && card.attacks) {
               pushStringReplacement(
                 sourceFile,
-                getProperty(activatedAbility, 'description'),
-                getCanonicalActivatedAbilityDescription(card),
+                getProperty(node, 'unsynergizedDescription'),
+                getCanonicalAttackDescription(card.attacks.unsynergized),
                 replacements,
               );
-            }
+              pushStringReplacement(
+                sourceFile,
+                getProperty(node, 'synergizedDescription'),
+                getCanonicalAttackDescription(card.attacks.synergized),
+                replacements,
+              );
 
-            if (card.attacks) {
               const attacksObject = getObjectLiteralProperty(node, 'attacks');
               if (attacksObject) {
-                const primaryAttack = getObjectLiteralProperty(attacksObject, 'primary');
-                const exaltedAttack = getObjectLiteralProperty(attacksObject, 'exalted');
-                if (primaryAttack) {
+                const unsynergizedAttack = getObjectLiteralProperty(attacksObject, 'unsynergized');
+                const synergizedAttack = getObjectLiteralProperty(attacksObject, 'synergized');
+                if (unsynergizedAttack) {
                   pushStringReplacement(
                     sourceFile,
-                    getProperty(primaryAttack, 'description'),
-                    getCanonicalAttackDescription(card.attacks.primary),
+                    getProperty(unsynergizedAttack, 'description'),
+                    getCanonicalAttackDescription(card.attacks.unsynergized),
                     replacements,
                   );
                 }
-                if (exaltedAttack) {
+                if (synergizedAttack) {
                   pushStringReplacement(
                     sourceFile,
-                    getProperty(exaltedAttack, 'description'),
-                    getCanonicalAttackDescription(card.attacks.exalted),
+                    getProperty(synergizedAttack, 'description'),
+                    getCanonicalAttackDescription(card.attacks.synergized),
                     replacements,
                   );
                 }
               }
             }
+
+            if (card.type === 'Angel') {
+              pushStringReplacement(
+                sourceFile,
+                getProperty(node, 'primaryDescription'),
+                card.attacks ? getCanonicalAttackDescription(card.attacks.primary) : '',
+                replacements,
+              );
+              pushStringReplacement(
+                sourceFile,
+                getProperty(node, 'exaltedDescription'),
+                card.attacks ? getCanonicalAttackDescription(card.attacks.exalted) : '',
+                replacements,
+              );
+
+              const activatedAbility = getObjectLiteralProperty(node, 'activatedAbility');
+              if (activatedAbility) {
+                pushStringReplacement(
+                  sourceFile,
+                  getProperty(activatedAbility, 'description'),
+                  getCanonicalActivatedAbilityDescription(card),
+                  replacements,
+                );
+              }
+
+              if (card.attacks) {
+                const attacksObject = getObjectLiteralProperty(node, 'attacks');
+                if (attacksObject) {
+                  const primaryAttack = getObjectLiteralProperty(attacksObject, 'primary');
+                  const exaltedAttack = getObjectLiteralProperty(attacksObject, 'exalted');
+                  if (primaryAttack) {
+                    pushStringReplacement(
+                      sourceFile,
+                      getProperty(primaryAttack, 'description'),
+                      getCanonicalAttackDescription(card.attacks.primary),
+                      replacements,
+                    );
+                  }
+                  if (exaltedAttack) {
+                    pushStringReplacement(
+                      sourceFile,
+                      getProperty(exaltedAttack, 'description'),
+                      getCanonicalAttackDescription(card.attacks.exalted),
+                      replacements,
+                    );
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            console.warn(`Skipping canonical rewrite for ${definitionId}: ${message}`);
           }
         }
       }

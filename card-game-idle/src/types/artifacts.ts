@@ -24,7 +24,7 @@ export type ArtifactEffectType =
   | 'trail_spend_discount'            // Trail spend abilities cost N less (min 0)
 
   // Mechanical Dreams
-  | 'queue_capacity_bonus'            // +N instruction queue capacity
+  | 'queue_capacity_bonus'            // +N Mechanical Clock buffer capacity
 
   // Prismatic Accord
   | 'channel_count_bonus'             // +N Spectrum tokens per Prismatic card played
@@ -39,13 +39,13 @@ export type ArtifactEffectType =
   | 'proof_threshold_reduction'       // Glass Absolute Seraphim start each turn with N extra Proof tokens
 
   // Blazing Garden
-  | 'ember_start_bonus'               // +N Embers at the start of each turn
+  | 'bloom_start_bonus'               // +N Bloom at the start of each turn
 
   // Age of the Butterfly
   | 'wing_resonance_gain_bonus'       // +N Wing Resonance per Butterfly card played
 
-  // Eternal Seas
-  | 'tide_crown_rate_bonus'           // +N Tide Crown tokens at turn start
+  // Eternal Seas (legacy key kept for back-compat data)
+  | 'tide_crown_rate_bonus'           // +N legacy Tide Crown tokens at turn start
 
   // Abyssal Forge
   | 'iron_charge_start_bonus'         // +N Iron Charge at turn start

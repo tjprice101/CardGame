@@ -60,11 +60,44 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 8px 18px rgba(0,0,0,0.35)',
     zIndex: 20,
   },
+  scar: {
+    marginTop: 4,
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: '#f0caca',
+    fontFamily: 'Georgia, serif',
+  },
+  spiral: {
+    marginTop: 2,
+    fontSize: 10,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: '#f5d8b2',
+    fontFamily: 'Georgia, serif',
+  },
+  convertButton: {
+    marginTop: 6,
+    border: '1px solid rgba(211, 70, 70, 0.6)',
+    background: 'rgba(55, 18, 18, 0.92)',
+    color: '#ffd9d9',
+    fontFamily: 'Georgia, serif',
+    fontSize: 10,
+    letterSpacing: 0.5,
+    padding: '4px 8px',
+    borderRadius: 6,
+    cursor: 'pointer',
+  },
+  convertButtonDisabled: {
+    opacity: 0.45,
+    cursor: 'default',
+  },
 };
 
 export default function TrailDisplay() {
   const turn = useStore(selectTurn);
   const deckList = useStore(s => s.deck.deckList);
+  const convertTrailToScar = useStore(s => s.convertTrailToScar);
   const [hovered, setHovered] = useState(false);
   const prevTrailRef = useRef(turn.trail);
   const [flashing, setFlashing] = useState(false);
@@ -91,6 +124,7 @@ export default function TrailDisplay() {
   if (turn.phase === 'idle' || !hasThornboundCards) return null;
 
   const active = turn.trail > 0;
+  const briarSpiral = turn.secondaryCounters?.thorn ?? 0;
 
   return (
     <div
@@ -105,10 +139,24 @@ export default function TrailDisplay() {
       >
         {turn.trail}
       </div>
+      <div style={styles.scar}>Scar {turn.thornScar ?? 0}</div>
+      <div style={styles.spiral}>Briar Spiral {briarSpiral}</div>
+      <button
+        type="button"
+        onClick={convertTrailToScar}
+        disabled={turn.trail <= 0}
+        style={{
+          ...styles.convertButton,
+          ...(turn.trail <= 0 ? styles.convertButtonDisabled : {}),
+        }}
+      >
+        Convert 1 Trail -&gt; 1 Scar
+      </button>
       {hovered && (
         <div style={styles.tooltip}>
-          Thornbound resource. Many Thornbound cards gain, spend, or check Trail.
-          Build Trail through risky lines, then cash it in for heavy payoff turns.
+          Build Trail by playing Thornbound cards, then convert Trail into Scar one point at a time.
+          Base Thornbound cards check Scar thresholds for bonus effects, while Eternal Thornbound
+          cards build and bloom Briar Spiral for extra Trail scaling.
         </div>
       )}
     </div>

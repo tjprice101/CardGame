@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import type { CardDefinition } from '@/types/cards';
+import type { CardDefinition, CardFaceState } from '@/types/cards';
 import type { CardFinish } from '@/types/cards';
 import { warmTheme } from '@/ui/theme';
 import { getCardThemePackStyle, getFontScale } from '@/ui/preferences';
@@ -398,10 +398,22 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
   return `${CARD_BACKGROUND_ROOT}/${folder}/${encodeURI(fileName)}`;
 }
 
-export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal'): CSSProperties {
+export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal', faceState: CardFaceState = 'front'): CSSProperties {
   const theme = getCardThemePackStyle(card);
+  const isBackFace = faceState === 'back';
   const isInfinite = card?.rarity === 'Infinite';
   const isEternal = card?.rarity === 'Eternal';
+  if (isBackFace) {
+    const backUrl = getCardBackUrl(card);
+    return {
+      backgroundImage: backUrl ? `url("${backUrl}")` : theme.baseGradient,
+      backgroundColor: warmTheme.surfaceStrong,
+      backgroundPosition: 'center',
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      boxShadow: cardFacePalette.shadow,
+    };
+  }
   const infiniteGlassStyle = isInfinite ? getInfiniteGlassAnimationStyle() : {};
   const eternalGlassStyle = isEternal ? getEternalGlassAnimationStyle() : {};
 

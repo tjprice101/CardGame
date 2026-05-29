@@ -254,7 +254,7 @@ const TX_CHERUBIM: CardDefinition[] = [
     rarity: 'Eternal',
     name: 'Overclock Circuit',
     description:
-      'Queue Expansion: Instruction Queue capacity is increased by 2 while in the back row.\n' +
+      'Clock Buffer Expansion: Mechanical timing buffer is increased by 2 while in the back row.\n' +
       'Activate: Place in any back slot; effect is permanent until this card expires.',
     artKey: 'tx_cher_mech_overclock',
     effects: [
@@ -500,9 +500,9 @@ const TX_ANGELS = [
     rarity: 'Legendary' as const,
     name: 'Scar Warden',
     description:
-      'On summon: Maximize Trail stacks and grant 35 Oblivion. ' +
-      'After 4 cards played: All Scar bonuses are doubled this turn. ' +
-      'While on board: +20 Oblivion per Trail spent.',
+      'On summon: Gain 10 Trail; +35 Oblivion. ' +
+      'After 4 cards played: +35 Oblivion. ' +
+      'While on board: +20 Oblivion per card played while on board',
     artKey: 'tx_angel_thorn_scar_warden',
     summonCost: ['ser-thorn-briar', 'ser-thorn-briar'],
     onSummonEffects: [
@@ -512,7 +512,7 @@ const TX_ANGELS = [
     activatedAbility: {
       name: 'Scar Culmination',
       cardsPlayedRequirement: 4,
-      description: 'All Scar bonuses are doubled this turn.',
+      description: '+35 Oblivion',
       effects: [{ type: 'oblivion_flat' as const, value: 35 }],
     },
     attacks: {
@@ -546,7 +546,7 @@ const TX_ANGELS = [
     rarity: 'Legendary' as const,
     name: 'Kernel Sovereign',
     description:
-      'On summon: Fill the Instruction Queue to capacity and grant 40 Oblivion. ' +
+      'On summon: Fill the Clock buffer to capacity and grant 40 Oblivion. ' +
       'After 3 cards played: Kernel triggers cost 0 Oblivion until end of turn. ' +
       'While on board: +25 Oblivion when Kernel triggers.',
     artKey: 'tx_angel_machine_kernel_sovereign',

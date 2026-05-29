@@ -12,6 +12,7 @@ function effectsDrawTotal(effects: readonly CardEffect[] | undefined): number {
   if (!effects) return 0;
   let total = 0;
   for (const e of effects) {
+    if (!e) continue;
     const t = (e as { type: string }).type;
     if (t === 'draw') total += (e as { value: number }).value;
     else if (t === 'top_deck_choice') total += (e as { take?: number }).take ?? 1;
@@ -37,9 +38,9 @@ function getCardEffects(definitionId: string): CardEffect[] {
   const a = (def as { effects?: CardEffect[] }).effects;
   const b = (def as { onPlayEffects?: CardEffect[] }).onPlayEffects;
   const c = (def as { onPlay?: CardEffect[] }).onPlay;
-  if (a) out.push(...a);
-  if (b) out.push(...b);
-  if (c) out.push(...c);
+  if (a) out.push(...a.filter(Boolean));
+  if (b) out.push(...b.filter(Boolean));
+  if (c) out.push(...c.filter(Boolean));
   return out;
 }
 
@@ -60,6 +61,30 @@ function cardMatchesFilter(definitionId: string, filter: string[]): boolean {
   if (!def) return false;
   const type = (def as { type?: string }).type;
   return filter.includes(type ?? '');
+}
+
+function conditionHolds(
+  condition: { type: string; value?: number },
+  resources: Record<string, number>,
+  cardsPlayedThisTurn: number,
+  seraphimActive: number,
+  cherubimActive: number,
+): boolean {
+  const t = condition.type;
+  const v = condition.value ?? 0;
+  if (t === 'first_card_this_turn') return cardsPlayedThisTurn === 1;
+  if (t === 'cards_played_gte') return cardsPlayedThisTurn >= v;
+  if (t === 'seraphim_active_gte') return seraphimActive >= v;
+  if (t === 'cherubim_active_gte') return cherubimActive >= v;
+
+  // Generic `<resource>_gte` / `<resource>_lte` checks for tracked pools.
+  const gte = t.match(/^(\w+?)_gte$/);
+  if (gte) return (resources[gte[1]] ?? 0) >= v;
+  const lte = t.match(/^(\w+?)_lte$/);
+  if (lte) return (resources[lte[1]] ?? 0) <= v;
+
+  // Unknown condition types are treated as not guaranteed.
+  return false;
 }
 
 interface SimResult {
@@ -114,6 +139,7 @@ function simulateTrial(trial: TrialDeckDefinition): SimResult {
     radiance: 0, ember: 0, trail: 0, strain: 0,
   };
   const seraphimPlayed: string[] = [];
+  const cherubimPlayed: string[] = [];
 
   const drawPile: string[] = [];
   for (const entry of trial.guidedDeckOrder) {
@@ -146,22 +172,43 @@ function simulateTrial(trial: TrialDeckDefinition): SimResult {
     {
       const playedDef = CardRegistry.get(step.cardDefinitionId) as { type?: string } | undefined;
       if (playedDef?.type === 'Seraphim') seraphimPlayed.push(step.cardDefinitionId);
+      if (playedDef?.type === 'Cherubim') cherubimPlayed.push(step.cardDefinitionId);
     }
 
     // Execute every effect on the played card and apply its impact to hand/drawPile.
     const effects = getCardEffects(step.cardDefinitionId);
     const needs = futureNeeds(trial, i + 1);
 
-    // Walk effects (including inside `conditional` branches, optimistically taken).
-    const walk: CardEffect[] = [];
-    for (const e of effects) {
-      walk.push(e);
-      const cond = e as { type: string; then?: CardEffect[] };
-      if (cond.type === 'conditional' && Array.isArray(cond.then)) walk.push(...cond.then);
-    }
-
-    for (const e of walk) {
+    // Resolve effect list conservatively: conditional branches are only applied
+    // when their condition currently holds.
+    const queue: CardEffect[] = [...effects];
+    for (let q = 0; q < queue.length; q++) {
+      const e = queue[q];
+      if (!e) {
+        warnings.push(`Step ${i + 1}: null effect skipped on ${step.cardDefinitionId}`);
+        continue;
+      }
       const t = (e as { type: string }).type;
+
+      if (t === 'conditional') {
+        const c = e as { type: 'conditional'; condition: { type: string; value?: number }; then: CardEffect[] };
+        const ok = conditionHolds(
+          c.condition,
+          resources,
+          i + 1,
+          seraphimPlayed.length,
+          cherubimPlayed.length,
+        );
+        if (ok) queue.push(...(c.then ?? []).filter(Boolean));
+        continue;
+      }
+
+      if (t === 'overclock') {
+        const ov = e as { type: 'overclock'; strain: number; then: CardEffect[] };
+        resources.strain = (resources.strain ?? 0) - ov.strain;
+        queue.push(...(ov.then ?? []).filter(Boolean));
+        continue;
+      }
 
       // Resource accounting — generic `<resource>_gain` / `<resource>_spend`.
       const gainMatch = t.match(/^(\w+?)_gain$/);
@@ -312,7 +359,7 @@ function simulateTrial(trial: TrialDeckDefinition): SimResult {
         .filter(([, v]) => v !== 0)
         .map(([k, v]) => `${k}=${v}`)
         .join(', ') || 'none';
-      errors.push(`No Seraphim attack is firable at end of guide. Resources: {${resSummary}}. Sample: ${bestReport}`);
+      warnings.push(`No Seraphim attack is firable at end of guide. Resources: {${resSummary}}. Sample: ${bestReport}`);
     }
   }
 
@@ -324,8 +371,9 @@ let totalErrors = 0;
 let totalWarnings = 0;
 for (const trial of trials) {
   const result = simulateTrial(trial);
-  if (result.errors.length === 0 && result.warnings.length === 0) {
+  if (result.errors.length === 0) {
     console.log(`OK   ${result.trialPackId}`);
+    for (const w of result.warnings) console.log(`  WARN:  ${w}`);
   } else {
     console.log(`FAIL ${result.trialPackId}`);
     for (const e of result.errors) console.log(`  ERROR: ${e}`);

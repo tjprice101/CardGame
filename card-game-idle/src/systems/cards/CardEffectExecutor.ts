@@ -120,27 +120,26 @@ function computeNeutralityEternalOblivionBonus(definitionId: string, turn: TurnS
 }
 
 function computePyroInfiniteOblivionBonus(definitionId: string, turn: TurnState, embersDrained = 0): number | null {
-  const pressure = Math.max(0, turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0);
-  const fault = Math.max(0, turn.pyroAbyssFault ?? turn.pyroRupture ?? 0);
-  const windows = Math.max(0, turn.pyroRuinWindows ?? 0);
+  const tiers = Math.max(0, turn.eternalStacks?.pyro ?? 0);
+  const echoes = Math.max(0, turn.secondaryCounters?.pyro ?? 0);
   const heat = Math.max(0, turn.pyroHeat ?? 0);
   const debt = Math.max(0, turn.pyroBurnDebt ?? 0);
   const brokenClasses = Math.min(4, turn.pyroAttenuationBrokenClasses?.length ?? 0);
   const sourceCount = Math.min(4, turn.pyroCrossSetConversionDistinctSources?.length ?? 0);
   const setupCount = Math.min(6, turn.pyroSetupCount ?? 0);
   const signatures = Math.min(6, turn.pyroEngineSignatures?.length ?? 0);
-  const balancedBonus = Math.abs(pressure - fault) <= 3 ? 540 : 0;
+  const balancedBonus = Math.abs(tiers - echoes) <= 2 ? 540 : 0;
   const lowDebtBonus = debt <= 2 ? 460 : debt <= 5 ? 180 : 0;
 
   switch (definitionId) {
     case 'inf-ash-kings-apocalypse':
-      return 1100 + pressure * 42 + fault * 68 + windows * 260 + sourceCount * 200 + signatures * 90 + lowDebtBonus;
+      return 1100 + tiers * 620 + echoes * 210 + sourceCount * 200 + signatures * 90 + lowDebtBonus;
     case 'inf-pyraxis-colossus':
-      return 980 + pressure * 54 + windows * 310 + setupCount * 95 + balancedBonus + lowDebtBonus;
+      return 980 + tiers * 540 + echoes * 260 + setupCount * 95 + balancedBonus + lowDebtBonus;
     case 'inf-pyroclasm-engine':
-      return 1050 + fault * 56 + windows * 280 + brokenClasses * 260 + signatures * 100 + sourceCount * 120 + balancedBonus;
+      return 1050 + tiers * 420 + echoes * 300 + brokenClasses * 260 + signatures * 100 + sourceCount * 120 + balancedBonus;
     case 'inf-riftborn-sovereign':
-      return 1300 + embersDrained * 20 + pressure * 28 + fault * 44 + windows * 360 + sourceCount * 180 + lowDebtBonus + (heat >= 12 ? 320 : 0);
+      return 1300 + embersDrained * 20 + tiers * 680 + echoes * 180 + sourceCount * 180 + lowDebtBonus + (heat >= 12 ? 320 : 0);
     default:
       return null;
   }
@@ -221,6 +220,16 @@ function cloneBoard(board: BoardState): BoardState {
   };
 }
 
+function ensureEternalSeasState(turn: TurnState): void {
+  if (turn.eternalSeasUndertow === undefined) turn.eternalSeasUndertow = 0;
+  if (turn.eternalSeasFoam === undefined) turn.eternalSeasFoam = 0;
+  if (turn.eternalSeasCurrent === undefined) turn.eternalSeasCurrent = 0;
+  if (turn.eternalSeasPolarity === undefined) turn.eternalSeasPolarity = null;
+  if (turn.eternalSeasWhiteFlow === undefined) turn.eternalSeasWhiteFlow = 0;
+  if (turn.eternalSeasBlackFlow === undefined) turn.eternalSeasBlackFlow = 0;
+  if (turn.eternalSeasMarginCharge === undefined) turn.eternalSeasMarginCharge = 0;
+}
+
 // ─── Abyssal Forge: per-turn state shim + recast runner ─────────────────────
 function ensureForgeTurn(turn: TurnState): void {
   if (turn.recastLedger === undefined) turn.recastLedger = [];
@@ -298,6 +307,53 @@ function runRecast(
   };
 }
 
+function getForgeImprintTotal(turn: TurnState): number {
+  return (turn.recastLedger ?? []).reduce((sum, entry) => sum + Math.max(0, entry.imprintStacks ?? 0), 0);
+}
+
+function applyForgeImprintGain(
+  turn: TurnState,
+  effect: { value: number; targetMode: 'last' | 'lastN' | 'all_played'; count?: number }
+): number {
+  ensureForgeTurn(turn);
+  const ledger = turn.recastLedger ?? [];
+  const gain = Math.max(0, Math.floor(effect.value));
+  if (gain <= 0 || ledger.length === 0) return 0;
+
+  let targets = ledger;
+  if (effect.targetMode === 'last') {
+    targets = ledger.slice(-1);
+  } else if (effect.targetMode === 'lastN') {
+    targets = ledger.slice(-Math.max(1, effect.count ?? 1));
+  }
+
+  for (const entry of targets) {
+    entry.imprintStacks = (entry.imprintStacks ?? 0) + gain;
+  }
+
+  return targets.length * gain;
+}
+
+function spendForgeImprint(turn: TurnState, requestedSpend: number): number {
+  ensureForgeTurn(turn);
+  const ledger = turn.recastLedger ?? [];
+  let remaining = Math.max(0, Math.floor(requestedSpend));
+  if (remaining <= 0 || ledger.length === 0) return 0;
+
+  let spent = 0;
+  for (let i = ledger.length - 1; i >= 0 && remaining > 0; i--) {
+    const entry = ledger[i];
+    const available = Math.max(0, entry.imprintStacks ?? 0);
+    if (available <= 0) continue;
+    const consume = Math.min(available, remaining);
+    entry.imprintStacks = available - consume;
+    remaining -= consume;
+    spent += consume;
+  }
+
+  return spent;
+}
+
 export class CardEffectExecutor {
   static execute(
     deckCard: { instanceId: string; definitionId: string; finish?: import('@/types/cards').CardFinish },
@@ -333,6 +389,10 @@ export class CardEffectExecutor {
     let radianceDrained = 0; // tracks radiance before radiance_spend:9999 for dynamic sentinels
     let snowboundAlternatedThisPlay = false; // tracks if this card play caused a snowbound phase alternation
 
+    if (def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
+      mutableTurn.pyroChronoCatalyst = true;
+    }
+
     const multiplier = useNextCardMultiplier && mutableTurn.nextCardMultiplied ? 2 : 1;
     if (useNextCardMultiplier && mutableTurn.nextCardMultiplied) {
       mutableTurn.nextCardMultiplied = false;
@@ -349,6 +409,39 @@ export class CardEffectExecutor {
     function applyRadianceGain(base: number): void {
       const adjusted = throneActive ? Math.ceil(base * 1.5) : base;
       mutableTurn.radiance += adjusted;
+    }
+
+    function computePyroIgniteBonus(pressure: number, streak: number): number {
+      const p = Math.max(0, Math.floor(pressure));
+      let base = 0;
+      const t1 = Math.min(p, 4);
+      if (t1 > 0) base += t1 * 120;
+      const t2 = Math.max(0, Math.min(p, 9) - 4);
+      if (t2 > 0) base += t2 * 180;
+      const t3 = Math.max(0, Math.min(p, 14) - 9);
+      if (t3 > 0) base += t3 * 260;
+      const t4 = Math.max(0, p - 14);
+      if (t4 > 0) base += t4 * 360;
+
+      const s = Math.max(0, Math.floor(streak));
+      const streakMult = s <= 2 ? 1 : s <= 4 ? 1.2 : s <= 6 ? 1.5 : 1.9;
+      return Math.floor(base * streakMult);
+    }
+
+    function hasEternalFireSourceActive(): boolean {
+      if (mutableTurn.pyroChronoCatalyst ?? false) return true;
+      if (def?.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) return true;
+      for (const slot of mutableBoard.frontSlots) {
+        if (!slot) continue;
+        const slotDef = CardRegistry.get(slot.definitionId);
+        if (slotDef?.element === 'Fire' && (slotDef.rarity === 'Eternal' || slotDef.rarity === 'Infinite')) return true;
+      }
+      for (const slot of mutableBoard.backSlots) {
+        if (!slot) continue;
+        const slotDef = CardRegistry.get(slot.definitionId);
+        if (slotDef?.element === 'Fire' && (slotDef.rarity === 'Eternal' || slotDef.rarity === 'Infinite')) return true;
+      }
+      return false;
     }
 
     function processEffect(effect: CardEffect): boolean {
@@ -712,6 +805,31 @@ export class CardEffectExecutor {
           break;
         }
 
+        case 'black_glass_eclipse_burst': {
+          const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+          const available = Math.max(0, stacks.glass ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          stacks.glass = Math.max(0, available - consume);
+
+          const white = mutableTurn.blackGlassWhiteFlame ?? 0;
+          const black = mutableTurn.blackGlassBlackFlame ?? 0;
+          const fracture = Math.max(0, mutableTurn.blackGlassFracture ?? 0);
+          const gap = Math.abs(white - black);
+          const balanceTier = Math.max(0, 3 - gap);
+
+          let burst = consume * effect.oblivionPerEclipse;
+          if ((effect.balanceBonusPerEclipse ?? 0) > 0 && balanceTier > 0) {
+            burst += consume * balanceTier * (effect.balanceBonusPerEclipse ?? 0);
+          }
+          if ((effect.fractureBonusPerEclipse ?? 0) > 0 && fracture > 0) {
+            burst += consume * fracture * (effect.fractureBonusPerEclipse ?? 0);
+          }
+
+          oblivionBonus += burst * multiplier;
+          break;
+        }
+
         case 'black_glass_register_state': {
           if (effect.key === 'grief_oaths') {
             mutableTurn.blackGlassGriefOaths = Math.max(0, (mutableTurn.blackGlassGriefOaths ?? 0) + effect.value * multiplier);
@@ -749,6 +867,32 @@ export class CardEffectExecutor {
           break;
         }
 
+        case 'resonance_charge_gain': {
+          const gain = effect.value * multiplier;
+          mutableTurn.prismaticResonanceCharge = (mutableTurn.prismaticResonanceCharge ?? 0) + gain;
+          break;
+        }
+
+        case 'resonance_charge_spend': {
+          if (effect.value >= 9999) {
+            mutableTurn.prismaticResonanceCharge = 0;
+          } else {
+            if ((mutableTurn.prismaticResonanceCharge ?? 0) < effect.value) return false;
+            mutableTurn.prismaticResonanceCharge = (mutableTurn.prismaticResonanceCharge ?? 0) - effect.value;
+          }
+          break;
+        }
+
+        case 'prismatic_charge_spend': {
+          if (effect.value >= 9999) {
+            mutableTurn.prismaticNodeCharges = 0;
+          } else {
+            if ((mutableTurn.prismaticNodeCharges ?? 0) < effect.value) return false;
+            mutableTurn.prismaticNodeCharges = (mutableTurn.prismaticNodeCharges ?? 0) - effect.value;
+          }
+          break;
+        }
+
         case 'channel_lock_gain': {
           const topCards = TurnSystem.peekTop(mutableDeck, effect.look);
           const prismaticCount = topCards.reduce((count, card) => {
@@ -766,64 +910,6 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'channel_memory_init': {
-          mutableTurn.prismaticStormMemoryEnabled = true;
-          mutableTurn.prismaticPendingSwitchDepthMark = Math.max(0, effect.markDepthOnSwitch ?? 1);
-          break;
-        }
-
-        case 'accord_channel_set': {
-          if (pendingEffect === null) {
-            pendingEffect = { type: 'prismatic_channel_choice', sourceCard: deckCard.instanceId };
-          }
-          break;
-        }
-
-        case 'refraction_echo_gain': {
-          const distinctChannels = new Set(mutableTurn.prismaticDistinctChannels ?? []).size;
-          mutableTurn.prismaticRefractionEchoes = Math.min(effect.max, (mutableTurn.prismaticRefractionEchoes ?? 0) + distinctChannels);
-          break;
-        }
-
-        case 'refraction_echo_cascade': {
-          mutableTurn.prismaticEchoCascadeArmed = true;
-          mutableTurn.prismaticEchoCascadeDepthThreshold = effect.depthThreshold ?? 4;
-          mutableTurn.prismaticEchoCascadeGainPerToken = 0.08;
-          mutableTurn.prismaticEchoCascadeDrawRefund = effect.drawRefund ?? 1;
-          if (deckCard.definitionId === 'inf-prismatic-axiom-rain') {
-            const fullFireReady = new Set(mutableTurn.prismaticDistinctChannels ?? []).size >= 4
-              && (mutableTurn.prismaticRefractionDepth ?? 0) >= 3;
-            if (fullFireReady) {
-              mutableDeck = TurnSystem.drawCards(mutableDeck, 3);
-              mutableTurn.prismaticNextOphanimRefund = (mutableTurn.prismaticNextOphanimRefund ?? 0) + 1;
-            }
-          }
-          break;
-        }
-
-        case 'chord_token_gain': {
-          const perCherubim = effect.perCherubim ?? 1;
-          const cherubimCount = mutableBoard.backSlots.filter(slot => slot?.type === 'Cherubim').length;
-          const gain = cherubimCount * perCherubim;
-          mutableTurn.prismaticChordTokens = Math.min(effect.max, (mutableTurn.prismaticChordTokens ?? 0) + gain);
-          break;
-        }
-
-        case 'chord_token_multiplier': {
-          const tokens = mutableTurn.prismaticChordTokens ?? 0;
-          mutableTurn.prismaticChordAttackBaseBonus = tokens * effect.baseOblivionPerToken;
-          if (effect.permanentOnFullFire) {
-            const fullFireReady = new Set(mutableTurn.prismaticDistinctChannels ?? []).size >= 4
-              && (mutableTurn.prismaticRefractionDepth ?? 0) >= 3;
-            if (fullFireReady) {
-              mutableTurn.prismaticChordPermanent = true;
-              const bonus = (effect.bonusOblivionPerTokenOnFullFire ?? 0) * tokens;
-              mutableTurn.prismaticChordAttackBaseBonus += bonus;
-            }
-          }
-          break;
-        }
-
         case 'refraction_depth_sync': {
           const distinctChannels = new Set(mutableTurn.prismaticDistinctChannels ?? []).size;
           if (effect.mode === 'set') {
@@ -833,37 +919,6 @@ export class CardEffectExecutor {
           } else {
             mutableTurn.prismaticRefractionDepth = (mutableTurn.prismaticRefractionDepth ?? 0) + distinctChannels;
           }
-          break;
-        }
-
-        case 'refraction_spike_init': {
-          mutableTurn.prismaticRefractionSpikeMax = effect.max;
-          mutableTurn.prismaticRefractionSpikes = Math.min(effect.max, mutableTurn.prismaticRefractionSpikes ?? 0);
-          break;
-        }
-
-        case 'prismatic_search_ophanim_cherubim': {
-          if (pendingEffect !== null) break;
-          const maxTake = Math.min(effect.maxTake, Math.max(0, mutableTurn.prismaticNodeCharges ?? 0), 3);
-          if (maxTake <= 0) break;
-          const matching = mutableDeck.drawPile.filter(card => {
-            const cardDef = CardRegistry.get(card.definitionId);
-            return cardDef?.type === 'Ophanim' || cardDef?.type === 'Cherubim';
-          });
-          if (matching.length === 0) break;
-          pendingEffect = { type: 'search_deck', cards: matching, filter: ['Ophanim', 'Cherubim'], take: Math.min(maxTake, matching.length) };
-          break;
-        }
-
-        case 'sentencing_cast': {
-          if (pendingEffect !== null) break;
-          if ((mutableTurn.prismaticDistinctNonAccordChannels ?? []).length < 2) break;
-          pendingEffect = {
-            type: 'prismatic_sentence_choice',
-            cards: [...mutableDeck.hand],
-            draw: effect.draw,
-            drawPerfect: effect.drawPerfect ?? effect.draw,
-          };
           break;
         }
 
@@ -1138,6 +1193,63 @@ export class CardEffectExecutor {
           break;
         }
 
+        case 'seas_undertow_gain': {
+          ensureEternalSeasState(mutableTurn);
+          mutableTurn.eternalSeasUndertow = Math.max(0, (mutableTurn.eternalSeasUndertow ?? 0) + effect.value * multiplier);
+          break;
+        }
+
+        case 'seas_foam_gain': {
+          ensureEternalSeasState(mutableTurn);
+          mutableTurn.eternalSeasFoam = Math.max(0, (mutableTurn.eternalSeasFoam ?? 0) + effect.value * multiplier);
+          break;
+        }
+
+        case 'seas_undertow_release': {
+          ensureEternalSeasState(mutableTurn);
+          const undertow = Math.max(0, mutableTurn.eternalSeasUndertow ?? 0);
+          const spend = effect.spend >= 9999 ? undertow : Math.min(undertow, effect.spend);
+          if (spend <= 0) break;
+
+          mutableTurn.eternalSeasUndertow = Math.max(0, undertow - spend);
+          oblivionBonus += spend * effect.oblivionPerUndertow * multiplier;
+          if ((effect.foamPerSpent ?? 0) > 0) {
+            mutableTurn.eternalSeasFoam = Math.max(0, (mutableTurn.eternalSeasFoam ?? 0) + spend * (effect.foamPerSpent ?? 0) * multiplier);
+          }
+          break;
+        }
+
+        case 'seas_deepwake_surge': {
+          ensureEternalSeasState(mutableTurn);
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.deepwake ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+
+          counters.deepwake = available - consume;
+
+          const undertowGain = consume * effect.undertowPerDeepwake * multiplier;
+          mutableTurn.eternalSeasUndertow = Math.max(0, (mutableTurn.eternalSeasUndertow ?? 0) + undertowGain);
+
+          const undertowPool = Math.max(0, mutableTurn.eternalSeasUndertow ?? 0);
+          const releaseSpend = effect.releaseSpend === undefined
+            ? undertowPool
+            : effect.releaseSpend >= 9999
+              ? undertowPool
+              : Math.min(undertowPool, effect.releaseSpend);
+
+          if (releaseSpend > 0) {
+            mutableTurn.eternalSeasUndertow = Math.max(0, undertowPool - releaseSpend);
+            const perUndertow = effect.oblivionPerUndertow + consume * effect.oblivionPerDeepwakeBonus;
+            oblivionBonus += releaseSpend * perUndertow * multiplier;
+          }
+
+          if ((effect.foamPerDeepwake ?? 0) > 0) {
+            mutableTurn.eternalSeasFoam = Math.max(0, (mutableTurn.eternalSeasFoam ?? 0) + consume * (effect.foamPerDeepwake ?? 0) * multiplier);
+          }
+          break;
+        }
+
         case 'seas_current_gain': {
           const gain = effect.value * multiplier;
           mutableTurn.eternalSeasCurrent = Math.max(0, (mutableTurn.eternalSeasCurrent ?? 0) + gain);
@@ -1278,6 +1390,19 @@ export class CardEffectExecutor {
             mutableTurn.neutralityTriggeredEffects = [
               ...(mutableTurn.neutralityTriggeredEffects ?? []),
               `${deckCard.definitionId}: doubled ${consumedForDoubling} patience`,
+            ].slice(-8);
+          }
+          break;
+        }
+
+        case 'neutrality_patient_light_gain': {
+          const gain = Math.max(0, effect.value);
+          if (gain <= 0) break;
+          mutableTurn.neutralityPatientLightStacks = (mutableTurn.neutralityPatientLightStacks ?? 0) + gain;
+          if (def?.element === 'Neutrality') {
+            mutableTurn.neutralityTriggeredEffects = [
+              ...(mutableTurn.neutralityTriggeredEffects ?? []),
+              `${deckCard.definitionId}: +${gain} Patient Light`,
             ].slice(-8);
           }
           break;
@@ -1437,7 +1562,12 @@ export class CardEffectExecutor {
         }
 
         case 'pyro_furnace_pressure_gain': {
-          mutableTurn.pyroFurnacePressure = Math.min(60, (mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0) + effect.value * multiplier);
+          const gain = Math.max(0, effect.value * multiplier);
+          mutableTurn.pyroFurnacePressure = (mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0) + gain;
+          if (gain > 0) {
+            mutableTurn.pyroFurnaceRiseStreak = (mutableTurn.pyroFurnaceRiseStreak ?? 0) + 1;
+            mutableTurn.pyroFurnacePeak = Math.max(mutableTurn.pyroFurnacePeak ?? 0, mutableTurn.pyroFurnacePressure);
+          }
           mutableTurn.pyroFervor = mutableTurn.pyroFurnacePressure;
           break;
         }
@@ -1446,7 +1576,26 @@ export class CardEffectExecutor {
           const current = mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0;
           if (current < effect.value) return false;
           mutableTurn.pyroFurnacePressure = current - effect.value;
+          mutableTurn.pyroFurnaceRiseStreak = 0;
           mutableTurn.pyroFervor = mutableTurn.pyroFurnacePressure;
+          break;
+        }
+
+        case 'pyro_furnace_ignite': {
+          const pressure = Math.max(0, mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0);
+          if (pressure <= 0) break;
+          const streak = Math.max(0, mutableTurn.pyroFurnaceRiseStreak ?? 0);
+          const igniteOblivion = computePyroIgniteBonus(pressure, streak) * multiplier;
+          oblivionBonus += igniteOblivion;
+          if (hasEternalFireSourceActive()) {
+            const gainedChronoEmbers = Math.floor(igniteOblivion / 450);
+            if (gainedChronoEmbers > 0) {
+              mutableTurn.pyroChronoEmbers = (mutableTurn.pyroChronoEmbers ?? 0) + gainedChronoEmbers;
+            }
+          }
+          mutableTurn.pyroFurnacePressure = 0;
+          mutableTurn.pyroFervor = 0;
+          mutableTurn.pyroFurnaceRiseStreak = 0;
           break;
         }
 
@@ -1558,7 +1707,7 @@ export class CardEffectExecutor {
         }
 
         // ── 11 bespoke per-set cashout payoffs ───────────────────────────────
-        // Pyroabyss — Cinder Echo: quadratic oblivion (echoes² × X)
+        // Pyroabyss — Chroma Ember Ignite: quadratic oblivion (embers² × X)
         case 'pyro_cinder_echo_ignite': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.pyro ?? 0);
@@ -1568,7 +1717,7 @@ export class CardEffectExecutor {
           oblivionBonus += consume * consume * effect.oblivionPerEchoSquared * multiplier;
           break;
         }
-        // Heavenly Light — Halo Cascade: bonus oblivion per cascade
+        // Heavenly Light — Halo Resonance: bonus oblivion per stored resonance
         case 'light_halo_cascade_resound': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.light ?? 0);
@@ -1589,7 +1738,7 @@ export class CardEffectExecutor {
           oblivionBonus += (mutableTurn.trail ?? 0) * (effect.oblivionPerTrail ?? 0) * multiplier;
           break;
         }
-        // Mechanical — Reactor Flux: vent Strain → oblivion + score multiplier
+        // Mechanical legacy vent payload: vent Strain → oblivion + score multiplier
         case 'mech_reactor_flux_vent': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.mech ?? 0);
@@ -1616,7 +1765,8 @@ export class CardEffectExecutor {
           oblivionBonus += consume * distinct * effect.oblivionPerEchoPerChannel * multiplier;
           break;
         }
-        // Black Glass Inferno — Veil Shard: swap flames; oblivion per higher flame
+        // Black Glass Inferno — Legacy Veil Shard branch (deprecated):
+        // swap flames; oblivion per higher flame
         case 'glass_veil_shard_swap': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.glass ?? 0);
@@ -1631,7 +1781,24 @@ export class CardEffectExecutor {
           oblivionBonus += consume * higher * effect.oblivionPerHigherFlame * multiplier;
           break;
         }
-        // Snowbound Voltage — Static Pulse: phase-conditional split
+        // Snowbound Voltage — Polar Capacitor: phase-conditional split
+        case 'snow_polar_capacitor_release': {
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const available = Math.max(0, counters.snow ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          counters.snow = available - consume;
+          const phase = mutableTurn.snowboundPhase ?? 'Frost';
+          if (phase === 'Voltage') {
+            oblivionBonus += consume * effect.voltageOblivionPerCapacitor * multiplier;
+          } else {
+            const chargeGain = Math.floor(consume * effect.frostArcticChargePerCapacitor);
+            mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + chargeGain;
+          }
+          break;
+        }
+
+        // Legacy Snowbound compatibility path (Static Pulse alias of Polar Capacitor release)
         case 'snow_static_pulse_discharge': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.snow ?? 0);
@@ -1655,7 +1822,7 @@ export class CardEffectExecutor {
           }
           break;
         }
-        // Glass Absolute — Cascade Proof: bonus oblivion per proof depth
+        // Glass Absolute legacy amplifier (older cards): spend `absol` counter for extra Oblivion.
         case 'absol_cascade_proof_amplify': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.absol ?? 0);
@@ -1665,22 +1832,14 @@ export class CardEffectExecutor {
           oblivionBonus += consume * (effect.oblivionPerProofDepth ?? 0) * multiplier;
           break;
         }
-        // Burning Garden — Wild Pollen: +Embers per pollen; score mult per Bloom
+        // Burning Garden — Wild Pollen: +Oblivion per pollen; score mult per Bloom
         case 'garden_wild_pollen_seed': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.garden ?? 0);
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           counters.garden = available - consume;
-          const embers = (mutableBoard.emberGrove ?? (mutableBoard.emberGrove = []));
-          const embersToAdd = Math.floor(consume * effect.embersPerPollen);
-          for (let i = 0; i < embersToAdd; i++) {
-            embers.push({
-              id: `${deckCard.definitionId}:wildpollen:${mutableTurn.turnNumber ?? 0}:${i}:${embers.length}`,
-              source: 'wild-pollen',
-              decayTurns: 3,
-            } as never);
-          }
+          oblivionBonus += consume * effect.oblivionPerPollen * multiplier;
           const blooms = Math.max(0, mutableTurn.bloom ?? 0);
           if (effect.scoreMultPerBloom > 0 && blooms > 0) {
             mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: blooms * effect.scoreMultPerBloom });
@@ -1695,6 +1854,61 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           counters.flutter = available - consume;
           mutableTurn.flutterWingPulseDoubles = (mutableTurn.flutterWingPulseDoubles ?? 0) + consume * effect.doubleNextGains;
+          break;
+        }
+        case 'flutter_resonance_harmonize': {
+          const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+          const available = Math.max(0, stacks.flutter ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          stacks.flutter = available - consume;
+
+          const spectrumGain = Math.max(0, consume * (effect.spectrumPerResonance ?? 0));
+          if (spectrumGain > 0) {
+            const ok = processEffect({ type: 'butterfly_spectrum_gain', value: spectrumGain });
+            if (!ok) break;
+          }
+
+          const formation = Math.max(0, mutableTurn.butterflyFormation ?? 0);
+          const resonanceOblivion = consume * (effect.oblivionPerResonance ?? 0);
+          const formationOblivion = formation * (effect.oblivionPerFormation ?? 0);
+          oblivionBonus += (resonanceOblivion + formationOblivion) * multiplier;
+
+          const extraDraw = Math.floor(consume * (effect.drawPerResonance ?? 0));
+          for (let i = 0; i < extraDraw; i++) {
+            const ok = processEffect({ type: 'draw', value: 1 });
+            if (!ok) break;
+          }
+
+          if (effect.empowerNext) {
+            mutableTurn.nextCardMultiplied = true;
+          }
+          break;
+        }
+        case 'flutter_resonance_apex': {
+          const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+          const available = Math.max(0, stacks.flutter ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          stacks.flutter = available - consume;
+
+          const spectrum = Math.max(0, mutableTurn.butterflySpectrum ?? 0);
+          const formation = Math.max(0, mutableTurn.butterflyFormation ?? 0);
+          oblivionBonus += (
+            consume * effect.oblivionPerResonance
+            + spectrum * effect.oblivionPerSpectrum
+            + formation * effect.oblivionPerFormation
+          ) * multiplier;
+
+          const extraDraw = Math.floor(formation * (effect.drawPerFormation ?? 0));
+          for (let i = 0; i < extraDraw; i++) {
+            const ok = processEffect({ type: 'draw', value: 1 });
+            if (!ok) break;
+          }
+
+          if ((effect.empowerAtFormation ?? 0) > 0 && formation >= (effect.empowerAtFormation ?? 0)) {
+            mutableTurn.nextCardMultiplied = true;
+          }
           break;
         }
         // Eternal Seas — Tide Echo: polarity split
@@ -1826,6 +2040,51 @@ export class CardEffectExecutor {
           }
           break;
         }
+        case 'forge_imprint_gain': {
+          ensureForgeTurn(mutableTurn);
+          applyForgeImprintGain(mutableTurn, effect);
+          break;
+        }
+        case 'forge_imprint_spend_burst': {
+          ensureForgeTurn(mutableTurn);
+          const spent = spendForgeImprint(mutableTurn, effect.spend);
+          if (spent > 0) {
+            oblivionBonus += spent * effect.oblivionPerImprint * multiplier;
+          }
+          break;
+        }
+        case 'forge_imprint_spend_recast': {
+          if (suppressForgeRecursion) break;
+          ensureForgeTurn(mutableTurn);
+          const spent = spendForgeImprint(mutableTurn, effect.spend);
+          if (spent <= 0) break;
+
+          const ledger = mutableTurn.recastLedger ?? [];
+          let targets: import('@/types/game').RecastLedgerEntry[] = [];
+          if (effect.targetMode === 'last') {
+            targets = ledger.slice(-1);
+          } else if (effect.targetMode === 'lastN') {
+            targets = ledger.slice(-Math.max(1, effect.count ?? 1));
+          } else {
+            const count = Math.max(1, effect.count ?? 1);
+            for (let i = 0; i < count && ledger.length > 0; i++) {
+              targets.push(ledger[Math.floor(Math.random() * ledger.length)]);
+            }
+          }
+
+          if (targets.length === 0) break;
+          const bonusPower = (effect.bonusPowerPerImprint ?? 0) * spent;
+          const finalPower = effect.power + bonusPower;
+
+          for (const entry of targets) {
+            const r = runRecast(entry, finalPower, mutableTurn, mutableBoard, mutableDeck);
+            mutableTurn = r.turn;
+            mutableBoard = r.board;
+            mutableDeck = r.deck;
+            oblivionBonus += r.oblivionBonus * multiplier;
+          }
+          break;
+        }
         case 'forge_unrecorded_ignite': {
           ensureForgeTurn(mutableTurn);
           mutableTurn.unrecordedHueActive = true;
@@ -1839,7 +2098,54 @@ export class CardEffectExecutor {
           break;
         }
 
-        // ───── Death-flamed Hell — Cinder Crown finale ────────────────────
+        // ───── Death-flamed Hell — Eternal Veil Rite + Cinder Crown finale ─
+        case 'dfh_eternal_veil_rite': {
+          mutableTurn.dfhVeilMarks = (mutableTurn.dfhVeilMarks ?? 0) + effect.marks * multiplier;
+          mutableTurn.dfhVeilOblivionPerMark = Math.max(
+            mutableTurn.dfhVeilOblivionPerMark ?? 0,
+            effect.oblivionPerMark,
+          );
+          break;
+        }
+
+        case 'dfh_veil_marks_amplify': {
+          const current = Math.max(0, mutableTurn.dfhVeilMarks ?? 0);
+          if (current <= 0) break;
+          const scaled = Math.floor(current * effect.factor * Math.max(1, multiplier));
+          mutableTurn.dfhVeilMarks = Math.max(current, scaled);
+          break;
+        }
+
+        case 'dfh_veil_marks_transmute': {
+          let consume = 0;
+          if (effect.source === 'pyre') {
+            const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+            const available = Math.max(0, stacks.pyre ?? 0);
+            consume = Math.min(available, effect.consume ?? available);
+            stacks.pyre = available - consume;
+          } else {
+            const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+            const available = Math.max(0, counters.pyre ?? 0);
+            consume = Math.min(available, effect.consume ?? available);
+            counters.pyre = available - consume;
+          }
+          if (consume <= 0) break;
+          const gained = Math.floor(consume * effect.marksPerResource * Math.max(1, multiplier));
+          if (gained > 0) {
+            mutableTurn.dfhVeilMarks = (mutableTurn.dfhVeilMarks ?? 0) + gained;
+          }
+          break;
+        }
+
+        case 'dfh_veil_marks_cashout': {
+          const available = Math.max(0, mutableTurn.dfhVeilMarks ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          mutableTurn.dfhVeilMarks = available - consume;
+          oblivionBonus += consume * effect.oblivionPerMark * multiplier;
+          break;
+        }
+
         case 'dfh_crown_cashout': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.pyre ?? 0);
@@ -2155,9 +2461,12 @@ export class CardEffectExecutor {
         return (turn.lightChorusAnchors ?? 0) >= condition.value;
       case 'ember_gte':         return turn.embers >= condition.value;
       case 'trail_gte':         return turn.trail >= condition.value;
+      case 'scar_count_gte':    return (turn.thornScar ?? 0) >= condition.value;
       case 'strain_gte':        return turn.strain >= condition.value;
       case 'strain_lte':        return turn.strain <= condition.value;
       case 'prismatic_light_gte': return (turn.prismaticLight ?? 0) >= condition.value;
+      case 'resonance_charge_gte':
+        return (turn.prismaticResonanceCharge ?? 0) >= condition.value;
       case 'prismatic_refraction_depth_gte':
         return (turn.prismaticRefractionDepth ?? 0) >= condition.value;
       case 'prismatic_node_charges_gte':
@@ -2234,6 +2543,8 @@ export class CardEffectExecutor {
         return (turn.pearls ?? 0) >= condition.value;
       case 'forge_recast_count_gte':
         return (turn.forgeRecastEventsThisTurn ?? 0) >= condition.value;
+      case 'forge_imprint_gte':
+        return getForgeImprintTotal(turn) >= condition.value;
       case 'forge_unrecorded_hue_active':
         return turn.unrecordedHueActive === true;
       case 'starlight_gte':

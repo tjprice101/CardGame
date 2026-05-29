@@ -14,8 +14,6 @@ import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
 import { warmTheme } from '@/ui/theme';
-import { ARTIFACT_DEFINITIONS, ARTIFACT_SET_COLORS } from '@/data/artifacts/artifactDefinitions';
-import { getMasteryLevel, getMasteryMultiplier } from '@/types/artifacts';
 import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { AngelDefinition, CardDefinition, CardFinish } from '@/types/cards';
@@ -327,9 +325,6 @@ export default function DeckBuilder({ onClose }: Props) {
   const setCardLock = useStore(s => s.setCardLock);
   const savedDecks = useStore(s => s.progress.savedDecks);
   const activeDeckId = useStore(s => s.progress.activeDeckId);
-  const ownedArtifacts = useStore(s => s.progress.ownedArtifacts ?? {});
-  const equipArtifact = useStore(s => s.equipArtifact);
-  const unequipArtifact = useStore(s => s.unequipArtifact);
   const setDeckNotes = useStore(s => s.setDeckNotes);
   const uniqueOwned = Object.keys(collection).length;
   const isLocked = uniqueOwned < 15;
@@ -346,7 +341,6 @@ export default function DeckBuilder({ onClose }: Props) {
   const [elementFilter, setElementFilter] = useState<string | null>(null);
   const [saveMode, setSaveMode] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
-  const [artifactPickerSlot, setArtifactPickerSlot] = useState<number | null>(null);
   const [notesOpen, setNotesOpen] = useState(false);
   const [notesDraft, setNotesDraft] = useState('');
 
@@ -647,71 +641,28 @@ export default function DeckBuilder({ onClose }: Props) {
               {activeDeck.isStarter ? '🔒 ' : ''}{activeDeck.name}
             </div>
           )}
-          {/* Artifact equip slots — functional. Up to 3 artifacts per deck. */}
-          <div style={{ display: 'flex', gap: 6, marginTop: 6, alignItems: 'center' }}>
-            {[0, 1, 2].map(i => {
-              const equipped = activeDeck?.equippedArtifacts?.[i];
-              const def = equipped ? ARTIFACT_DEFINITIONS.find(a => a.id === equipped) : undefined;
-              const color = def ? (ARTIFACT_SET_COLORS[def.setElementKey] ?? '#f0bd78') : '#f0bd78';
-              const copies = def ? (ownedArtifacts[def.id] ?? 0) : 0;
-              const level = def ? getMasteryLevel(copies) : -1;
-              return (
-                <button
-                  key={i}
-                  className="menu-tactile-btn"
-                  title={def ? `${def.name} — ML ${level} (×${getMasteryMultiplier(copies).toFixed(2)}). Click to unequip.` : (activeDeck ? 'Click to equip an artifact' : 'Save deck to equip artifacts')}
-                  onClick={() => {
-                    if (!activeDeck) return;
-                    if (def) { unequipArtifact(activeDeck.id, def.id); }
-                    else { setArtifactPickerSlot(i); }
-                  }}
-                  disabled={!activeDeck}
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 8,
-                    border: def ? `1px solid ${color}90` : '1px dashed rgba(90,170,220,0.28)',
-                    background: def
-                      ? `linear-gradient(180deg, ${color}28, ${color}10)`
-                      : 'rgba(90,170,220,0.05)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: def ? color : 'rgba(90,170,220,0.42)',
-                    fontSize: 16,
-                    cursor: activeDeck ? 'pointer' : 'not-allowed',
-                    padding: 0,
-                    boxShadow: def ? `0 0 12px ${color}30 inset, 0 0 8px ${color}18` : 'none',
-                    transition: 'all 180ms ease',
-                  }}
-                >
-                  ✦
-                </button>
-              );
-            })}
-            {activeDeck && (
-              <button
-                className="menu-tactile-btn"
-                title="Edit how-to-play notes for this deck"
-                onClick={() => { setNotesDraft(activeDeck.notes ?? ''); setNotesOpen(true); }}
-                style={{
-                  marginLeft: 4,
-                  padding: '4px 10px',
-                  borderRadius: 7,
-                  border: '1px solid rgba(90,170,220,0.28)',
-                  background: 'rgba(90,170,220,0.06)',
-                  color: 'rgba(190,215,245,0.70)',
-                  fontSize: 10,
-                  letterSpacing: 1,
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                  fontFamily: 'Georgia, serif',
-                }}
-              >
-                {(activeDeck.notes && activeDeck.notes.trim().length > 0) ? '📝 Notes' : '📝 Add Notes'}
-              </button>
-            )}
-          </div>
+          {activeDeck && (
+            <button
+              className="menu-tactile-btn"
+              title="Edit how-to-play notes for this deck"
+              onClick={() => { setNotesDraft(activeDeck.notes ?? ''); setNotesOpen(true); }}
+              style={{
+                marginTop: 6,
+                padding: '4px 10px',
+                borderRadius: 7,
+                border: '1px solid rgba(90,170,220,0.28)',
+                background: 'rgba(90,170,220,0.06)',
+                color: 'rgba(190,215,245,0.70)',
+                fontSize: 10,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              {(activeDeck.notes && activeDeck.notes.trim().length > 0) ? '📝 Notes' : '📝 Add Notes'}
+            </button>
+          )}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
           <div>
@@ -1171,19 +1122,6 @@ export default function DeckBuilder({ onClose }: Props) {
         </div>
       </div>
 
-      {/* ── Artifact Picker Modal ───────────────────────────────────────── */}
-      {artifactPickerSlot !== null && activeDeck && (
-        <ArtifactPickerModal
-          ownedArtifacts={ownedArtifacts}
-          equippedIds={activeDeck.equippedArtifacts ?? []}
-          onPick={(artifactId) => {
-            equipArtifact(activeDeck.id, artifactId);
-            setArtifactPickerSlot(null);
-          }}
-          onClose={() => setArtifactPickerSlot(null)}
-        />
-      )}
-
       {/* ── Notes Modal ─────────────────────────────────────────────────── */}
       {notesOpen && activeDeck && (
         <NotesModal
@@ -1239,118 +1177,6 @@ export default function DeckBuilder({ onClose }: Props) {
           />
         </div>
       )}
-    </div>
-  );
-}
-
-// ────────────────────────────────────────────────────────────────────────────
-// Artifact Picker Modal
-// ────────────────────────────────────────────────────────────────────────────
-
-interface ArtifactPickerProps {
-  ownedArtifacts: Record<string, number>;
-  equippedIds: string[];
-  onPick: (artifactId: string) => void;
-  onClose: () => void;
-}
-
-function ArtifactPickerModal({ ownedArtifacts, equippedIds, onPick, onClose }: ArtifactPickerProps) {
-  const ownedDefs = ARTIFACT_DEFINITIONS
-    .filter(def => (ownedArtifacts[def.id] ?? 0) > 0)
-    .sort((a, b) => a.setName.localeCompare(b.setName) || a.tier.localeCompare(b.tier));
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'absolute', inset: 0, zIndex: 80,
-        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: 'min(720px, 100%)', maxHeight: '80vh',
-          background: 'linear-gradient(180deg, rgba(8, 12, 22, 0.98) 0%, rgba(5, 8, 16, 0.98) 100%)',
-          border: '1px solid rgba(200, 155, 72, 0.28)',
-          borderRadius: 14,
-          overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
-          fontFamily: 'Georgia, serif',
-          color: '#ead9c0',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(200, 155, 72, 0.08)',
-        }}
-      >
-        <div style={{
-          padding: '18px 22px',
-          borderBottom: '1px solid rgba(200, 155, 72, 0.16)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'rgba(4, 7, 14, 0.5)',
-        }}>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 'bold', color: '#f5c96c', letterSpacing: 3, textTransform: 'uppercase', textShadow: '0 0 20px rgba(240,189,120,0.3)' }}>Equip Artifact</div>
-            <div style={{ fontSize: 11, color: 'rgba(234,217,192,0.55)', marginTop: 4 }}>Select one of your owned artifacts to equip in this slot.</div>
-          </div>
-          <button className="menu-tactile-btn" style={{ ...styles.closeBtn }} onClick={onClose}>Cancel</button>
-        </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-          {ownedDefs.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: 'rgba(232,215,191,0.5)', fontStyle: 'italic' }}>
-              No artifacts owned yet. Visit the Artifacts menu to purchase your first one.
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
-              {ownedDefs.map(def => {
-                const copies = ownedArtifacts[def.id] ?? 0;
-                const level = getMasteryLevel(copies);
-                const mult = getMasteryMultiplier(copies);
-                const color = ARTIFACT_SET_COLORS[def.setElementKey] ?? '#f0bd78';
-                const alreadyEquipped = equippedIds.includes(def.id);
-                return (
-                  <button
-                    key={def.id}
-                    onClick={() => !alreadyEquipped && onPick(def.id)}
-                    disabled={alreadyEquipped}
-                    style={{
-                      textAlign: 'left',
-                      padding: 12,
-                      borderRadius: 10,
-                      border: `1px solid ${alreadyEquipped ? 'rgba(255,255,255,0.1)' : color + '60'}`,
-                      background: alreadyEquipped
-                        ? 'rgba(255,255,255,0.02)'
-                        : `linear-gradient(180deg, ${color}18, transparent)`,
-                      color: alreadyEquipped ? 'rgba(232,215,191,0.4)' : '#ead9c0',
-                      cursor: alreadyEquipped ? 'not-allowed' : 'pointer',
-                      fontFamily: 'Georgia, serif',
-                      transition: 'all 160ms ease',
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: alreadyEquipped ? undefined : color }}>{def.name}</div>
-                      <div style={{ fontSize: 9, padding: '2px 6px', borderRadius: 4, background: `${color}30`, color, letterSpacing: 1 }}>
-                        {level === 3 ? 'APEX' : `ML ${level}`}
-                      </div>
-                    </div>
-                    <div style={{ fontSize: 10, opacity: 0.7, marginBottom: 6 }}>
-                      {def.setName} · ×{mult.toFixed(2)} effect
-                    </div>
-                    <div style={{ fontSize: 11, color: 'rgba(232,215,191,0.7)', lineHeight: 1.4 }}>
-                      {def.description}
-                    </div>
-                    {alreadyEquipped && (
-                      <div style={{ marginTop: 6, fontSize: 9, color: '#80e860', letterSpacing: 1.5, textTransform: 'uppercase', padding: '2px 7px', background: 'rgba(128, 232, 96, 0.12)', border: '1px solid rgba(128, 232, 96, 0.3)', borderRadius: 4, display: 'inline-block' }}>
-                        ✓ Equipped
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
     </div>
   );
 }

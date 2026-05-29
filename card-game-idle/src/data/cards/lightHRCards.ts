@@ -38,7 +38,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Thornfire Fury',
-    description: 'Spend 3 Radiance; Seraphim bonuses are amplified by +25; chain_gain',
+    description: 'Spend 3 Radiance; Seraphim bonuses are amplified by +25',
     artKey: 'hr_light_sacred_fury',
     effects: [
       { type: 'radiance_spend', value: 3 },
@@ -50,7 +50,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Cinderstrike',
-    description: '+40 Oblivion; If you control 1+ active Seraphim, +40 Oblivion; chain_gain',
+    description: '+40 Oblivion; If you control 1+ active Seraphim, +40 Oblivion',
     artKey: 'hr_light_luminous_strike',
     effects: [
       { type: 'oblivion_flat', value: 40 },
@@ -65,7 +65,7 @@ export const lightHRCards: OphanimDefinition[] = [
     type: 'Ophanim',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Ember Surge',
+    name: 'Cinder Surge',
     description: '+0 Oblivion; Shuffle discard into deck; Gain 4 Radiance',
     artKey: 'hr_light_radiant_surge',
     effects: [
@@ -78,7 +78,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberforged',
-    description: 'Spend 9999 Radiance; +0 Oblivion; chain_gain',
+    description: 'Spend 9999 Radiance; +0 Oblivion',
     artKey: 'hr_light_sunforged',
     effects: [
       { type: 'radiance_spend', value: 9999 },
@@ -91,7 +91,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Seraphfire Wrath',
-    description: '+60 Oblivion; Gain 2 Radiance; chain_gain',
+    description: '+60 Oblivion; Gain 2 Radiance',
     artKey: 'hr_light_angelic_wrath',
     effects: [
       { type: 'oblivion_flat', value: 60 },
@@ -103,7 +103,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Mantle',
-    description: 'Empower the next card you play; chain_gain',
+    description: 'Empower the next card you play',
     artKey: 'hr_light_exalted_mantle',
     effects: [
       { type: 'multiply_next' }],
@@ -114,7 +114,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Silverthorn Blessing',
-    description: '+35 Oblivion; If you have played 3+ cards this turn, Gain 2 Radiance; chain_gain',
+    description: '+35 Oblivion; If you have played 3+ cards this turn, Gain 2 Radiance',
     artKey: 'hr_light_aureate_blessing',
     effects: [
       { type: 'oblivion_flat', value: 35 },
@@ -298,7 +298,7 @@ export const lightHRCards: OphanimDefinition[] = [
     type: 'Ophanim',
     element: 'Light',
     rarity: 'Rare',
-    name: 'Ember Echo',
+    name: 'Cinder Echo',
     description: 'Replay last Ophanim played this turn; Gain 3 Radiance',
     artKey: 'hr_light_radiant_echo',
     effects: [
@@ -310,8 +310,8 @@ export const lightHRCards: OphanimDefinition[] = [
     type: 'Ophanim',
     element: 'Light',
     rarity: 'Common',
-    name: 'Ember Cycle',
-    description: 'Choose and discard 3 cards; chain_gain',
+    name: 'Cinder Cycle',
+    description: 'Choose and discard 3 cards',
     artKey: 'hr_light_luminous_cycle',
     effects: [
       { type: 'discard_choice', value: 3 }],
@@ -396,7 +396,8 @@ export const lightHRCards: OphanimDefinition[] = [
     description: 'Sacred Covenant; Gain 3 Radiance',
     artKey: 'hr_light_sacred_covenant',
     effects: [
-      { type: 'sacred_covenant' }],
+      { type: 'radiance_gain', value: 3 },
+      { type: 'seraphim_bonus_amplifier', value: 15 }],
   },
   {
     definitionId: 'hr-light-grand-illumination',
@@ -404,7 +405,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'The Emberthorn Revelation',
-    description: 'Double current Radiance; +0 Oblivion; chain_gain',
+    description: 'Double current Radiance; +0 Oblivion',
     artKey: 'hr_light_grand_illumination',
     effects: [
       { type: 'radiance_double' },

@@ -1,9 +1,11 @@
 import type { Element } from './elements';
 import type { CardEffect, CherubimPassiveEffect } from './effects';
+import type { SnowboundPhase } from './game';
 
 export type CardType = 'Ophanim' | 'Cherubim' | 'Seraphim' | 'Angel';
 export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal' | 'Infinite';
 export type CardFinish = 'normal' | 'holo';
+export type CardFaceState = 'front' | 'back';
 export type PrismaticDepth = 1 | 2 | 3 | 4 | 5;
 export type BurningGardenPhase = 'Bloom' | 'Burn';
 
@@ -87,6 +89,7 @@ export interface AngelDefinition {
   readonly type: 'Angel';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly snowboundPhase?: SnowboundPhase;
   readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
@@ -107,6 +110,7 @@ export interface AngelInstance {
   readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
+  faceState?: CardFaceState;
   prismaticDepth?: PrismaticDepth;
   spectrumTokens?: number;
   burningGardenPhase?: BurningGardenPhase;
@@ -133,6 +137,7 @@ export interface SeraphimDefinition {
   readonly type: 'Seraphim';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly snowboundPhase?: SnowboundPhase;
   readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
@@ -152,6 +157,7 @@ export interface SeraphimInstance {
   readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
+  faceState?: CardFaceState;
   prismaticDepth?: PrismaticDepth;
   spectrumTokens?: number;
   burningGardenPhase?: BurningGardenPhase;
@@ -177,6 +183,7 @@ export interface CherubimDefinition {
   readonly type: 'Cherubim';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly snowboundPhase?: SnowboundPhase;
   readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
@@ -194,6 +201,7 @@ export interface CherubimInstance {
   readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
+  faceState?: CardFaceState;
   prismaticDepth?: PrismaticDepth;
   spectrumTokens?: number;
   burningGardenPhase?: BurningGardenPhase;
@@ -212,6 +220,7 @@ export interface OphanimDefinition {
   readonly type: 'Ophanim';
   readonly element: Element;
   readonly rarity: CardRarity;
+  readonly snowboundPhase?: SnowboundPhase;
   readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
@@ -226,6 +235,7 @@ export interface OphanimInstance {
   readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
+  faceState?: CardFaceState;
   burningGardenPhase?: BurningGardenPhase;
   chromaticCounters?: number;
   chromaticSources?: string[];

@@ -16,7 +16,6 @@ interface MainMenuHubProps {
   onQuests: () => void;
   onAchievements: () => void;
   onMastery: () => void;
-  onArtifacts: () => void;
   onSettings: () => void;
   /** Opens the Wished Upon A Star event landing page. */
   onEventWishedUponAStar?: () => void;
@@ -530,25 +529,28 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         </button>
         <button
           className="menu-tactile-btn"
-          onClick={props.onArtifacts}
+          disabled
+          onClick={undefined}
+          aria-disabled="true"
           style={{
             width: 150, minHeight: 52,
             padding: '10px 14px',
             borderRadius: 4,
-            border: `1px solid ${warmTheme.border}`,
-            background: 'rgba(10,18,36,0.82)',
-            color: '#e8f2fc',
+            border: '1px solid rgba(120,140,170,0.42)',
+            background: 'rgba(10,18,36,0.55)',
+            color: 'rgba(210,220,236,0.72)',
             fontFamily: uiTypography.display,
-            fontSize: 14,
+            fontSize: 12,
             letterSpacing: 1.4,
             textAlign: 'left',
             textTransform: 'uppercase',
-            cursor: 'pointer',
+            cursor: 'not-allowed',
             backdropFilter: 'blur(4px)',
+            opacity: 0.7,
           }}
         >
-          <div>Artifacts</div>
-          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.7, textTransform: 'none' }}>Set relics & dissolve</div>
+          <div>Artifacts! Coming Soon</div>
+          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.7, textTransform: 'none' }}>Unavailable in this build</div>
         </button>
       </div>
 

@@ -19,6 +19,7 @@ export type ImmediateEffect =
   | { type: 'black_glass_fracture_gain'; value: number }
   | { type: 'black_glass_flames_swap' }
   | { type: 'black_glass_fracture_collapse'; value: number }
+  | { type: 'black_glass_eclipse_burst'; oblivionPerEclipse: number; balanceBonusPerEclipse?: number; fractureBonusPerEclipse?: number; consume?: number }
   | { type: 'black_glass_register_state'; key: 'grief_oaths' | 'collapse_pending' | 'last_payoff'; value: number }
   | { type: 'light_resonance_gain'; value: number }
   | { type: 'light_anchor_gain'; value: number }
@@ -43,18 +44,12 @@ export type ImmediateEffect =
   | { type: 'sacred_covenant' }
   | { type: 'prismatic_light_gain'; value: number }
   | { type: 'prismatic_light_spend'; value: number }
+  | { type: 'resonance_charge_gain'; value: number }
+  | { type: 'resonance_charge_spend'; value: number }
+  | { type: 'prismatic_charge_spend'; value: number }
   | { type: 'channel_lock_gain'; look: number; max: number }
   | { type: 'memory_shard_gain'; value: number; max?: number }
-  | { type: 'channel_memory_init'; markDepthOnSwitch?: number }
-  | { type: 'accord_channel_set' }
-  | { type: 'refraction_echo_gain'; max: number }
-  | { type: 'refraction_echo_cascade'; depthThreshold?: number; drawRefund?: number }
-  | { type: 'chord_token_gain'; perCherubim?: number; max: number }
-  | { type: 'chord_token_multiplier'; baseOblivionPerToken: number; permanentOnFullFire?: boolean; bonusOblivionPerTokenOnFullFire?: number }
   | { type: 'refraction_depth_sync'; mode: 'set' | 'set_to_distinct' | 'add_distinct'; value?: number }
-  | { type: 'refraction_spike_init'; max: number }
-  | { type: 'prismatic_search_ophanim_cherubim'; maxTake: number }
-  | { type: 'sentencing_cast'; draw: number; drawPerfect?: number }
   | { type: 'monochromatic_shards_gain'; value: number }
   | { type: 'monochromatic_shards_spend'; value: number }
   | { type: 'arctic_charge_gain'; value: number }
@@ -84,6 +79,18 @@ export type ImmediateEffect =
   | { type: 'butterfly_spectrum_gain'; value: number }
   | { type: 'butterfly_tune'; stance: 'Reflect' | 'Absorb' | 'Dual' }
   | { type: 'butterfly_release'; spend: number; oblivionPerSpectrum: number }
+  | { type: 'seas_undertow_gain'; value: number }
+  | { type: 'seas_foam_gain'; value: number }
+  | { type: 'seas_undertow_release'; spend: number; oblivionPerUndertow: number; foamPerSpent?: number }
+  | {
+      type: 'seas_deepwake_surge';
+      consume?: number;
+      undertowPerDeepwake: number;
+      releaseSpend?: number;
+      oblivionPerUndertow: number;
+      oblivionPerDeepwakeBonus: number;
+      foamPerDeepwake?: number;
+    }
   | { type: 'seas_current_gain'; value: number }
   | { type: 'seas_polarity_shift'; polarity: 'White' | 'Black' }
   | { type: 'seas_release'; spend: number; oblivionPerCurrent: number }
@@ -110,6 +117,7 @@ export type ImmediateEffect =
   | { type: 'scar_reset' } // Reset scars
   | { type: 'patience_gain_all'; value: number }
   | { type: 'patience_double_all' }
+  | { type: 'neutrality_patient_light_gain'; value: number }
   | { type: 'neutrality_designate_vessel' }
   | { type: 'neutrality_vessel_copy_gain'; percent: number }
   | { type: 'neutrality_vessel_redistribute'; value: number }
@@ -119,6 +127,7 @@ export type ImmediateEffect =
   | { type: 'neutrality_linked_mode'; gain: number; retainPercent: number }
   | { type: 'pyro_furnace_pressure_gain'; value: number }
   | { type: 'pyro_furnace_pressure_spend'; value: number }
+  | { type: 'pyro_furnace_ignite' }
   | { type: 'pyro_abyss_fault_gain'; value: number }
   | { type: 'pyro_abyss_fault_spend'; value: number }
   | { type: 'pyro_ruin_window_gain'; value: number }
@@ -127,24 +136,24 @@ export type ImmediateEffect =
   | { type: 'pyro_balance_bonus'; oblivionPerPair: number }
   // Eternal/Infinity per-set amplifier stacks. Each set has its own thematic
   // "stack" keyword that only Eternal and Infinite cards interact with.
-  // pyro=Inferno Tier, light=Halo Crown, thorn=Thorncrown, glass=Eclipse Mark,
+  // pyro=Inferno Tier, light=Halo, thorn=Thorncrown, glass=Eclipse Mark,
   // snow=Voltage Surge, mech=Reactor Core, prism=Mirror Chain, absol=Proof Cascade,
-  // garden=Ember Bloom, flutter=Wing Resonance, tide=Tide Crown.
+  // garden=Wild Pollen, flutter=Wing Resonance, tide=Tide Crown.
   | { type: 'eternal_stack_gain'; stack: EternalStackKind; value: number }
   | { type: 'eternal_stack_spend'; stack: EternalStackKind; value: number }
   | { type: 'eternal_stack_cashout'; stack: EternalStackKind; oblivionPerStack: number; drawPerStack?: number; consume?: number }
   // ---------------------------------------------------------------------------
   // Per-set secondary keywords. Generic counter storage (turn.secondaryCounters)
   // but each set's cashout has a thematically distinct payoff:
-  //   pyro    = Cinder Echo     -> quadratic oblivion
-  //   light   = Halo Cascade    -> raises chain floor
+  //   pyro    = Chroma Ember    -> quadratic oblivion
+  //   light   = Halo Resonance  -> raises chain floor
   //   thorn   = Briar Spiral    -> spirals -> Trail; chain scales with Trail
-  //   mech    = Reactor Flux    -> strain vent: Strain -> oblivion + score mult
+  //   mech    = Reactor Core (legacy vent payloads may still reference flux naming)
   //   prism   = Spectrum Echo   -> oblivion * distinctChannelsThisTurn
-  //   glass   = Veil Shard      -> swap flames, ob per higher flame
-  //   snow    = Static Pulse    -> phase-conditional: Voltage->ob, Frost->draw
-  //   absol   = Cascade Proof   -> chain multiplier per cascade depth
-  //   garden  = Wild Pollen     -> +Embers per pollen, score mult per Bloom
+  //   glass   = Veil Shard (legacy/deprecated) -> swap flames, ob per higher flame
+  //   snow    = Polar Capacitor -> phase-conditional: Voltage->ob, Frost->Arctic Charge
+  //   absol   = Refraction Charge -> Glass Eternal/Infinite conversion thresholds and riders
+  //   garden  = Wild Pollen     -> +Oblivion per pollen, score mult per Bloom
   //   flutter = Wing Pulse      -> doubles next N spectrum gains
   //   tide    = Tide Echo       -> polarity split
   | { type: 'set_secondary_gain'; kind: SetSecondaryKind; value: number }
@@ -155,10 +164,30 @@ export type ImmediateEffect =
   | { type: 'mech_reactor_flux_vent'; oblivionPerFlux: number; scoreMultPerFlux: number; consume?: number }
   | { type: 'prism_spectrum_echo_refract'; oblivionPerEchoPerChannel: number; consume?: number }
   | { type: 'glass_veil_shard_swap'; oblivionPerHigherFlame: number; consume?: number }
+  | { type: 'snow_polar_capacitor_release'; voltageOblivionPerCapacitor: number; frostArcticChargePerCapacitor: number; consume?: number }
+  // Legacy alias retained for backwards compatibility with older materialized definitions.
   | { type: 'snow_static_pulse_discharge'; voltageOblivionPerPulse: number; frostDrawPerPulse?: number; frostArcticChargePerPulse?: number; consume?: number }
   | { type: 'absol_cascade_proof_amplify'; oblivionPerProofDepth: number; consume?: number }
-  | { type: 'garden_wild_pollen_seed'; embersPerPollen: number; scoreMultPerBloom: number; consume?: number }
+  | { type: 'garden_wild_pollen_seed'; oblivionPerPollen: number; scoreMultPerBloom: number; consume?: number }
   | { type: 'flutter_wing_pulse_amplify'; doubleNextGains: number; consume?: number }
+  | {
+      type: 'flutter_resonance_harmonize';
+      consume?: number;
+      spectrumPerResonance?: number;
+      oblivionPerResonance?: number;
+      drawPerResonance?: number;
+      oblivionPerFormation?: number;
+      empowerNext?: boolean;
+    }
+  | {
+      type: 'flutter_resonance_apex';
+      consume?: number;
+      oblivionPerResonance: number;
+      oblivionPerSpectrum: number;
+      oblivionPerFormation: number;
+      drawPerFormation?: number;
+      empowerAtFormation?: number;
+    }
   | { type: 'tide_echo_resolve'; oblivionPerPositive: number; oblivionPerNegative: number; consume?: number }
   // ── Abyssal Forge — The Reforging ────────────────────────────────────────
   | { type: 'forge_reforge_charge_gain'; value: number }
@@ -173,9 +202,24 @@ export type ImmediateEffect =
   | { type: 'forge_temper'; targetMode: 'self' | 'all_seraphim_on_board' | 'last_played'; factor: number }
   | { type: 'forge_anvil_seal'; target: 'self' | 'last_played'; burstOblivion: number }
   | { type: 'forge_nacre_coat'; targetMode: 'all_played' | 'last_played' }
+  | { type: 'forge_imprint_gain'; value: number; targetMode: 'last' | 'lastN' | 'all_played'; count?: number }
+  | { type: 'forge_imprint_spend_burst'; spend: number; oblivionPerImprint: number }
+  | {
+      type: 'forge_imprint_spend_recast';
+      spend: number;
+      targetMode: 'last' | 'lastN' | 'random';
+      count?: number;
+      power: number;
+      bonusPowerPerImprint?: number;
+    }
   | { type: 'forge_unrecorded_ignite' }
   | { type: 'forge_crown_cashout'; oblivionPerCrown: number }
-  // ── Death-flamed Hell — Pyre Ascendancy ───────────────────────────────────
+  // ── Death-flamed Hell — Veil Rite + Pyre Ascendancy ───────────────────────
+  // Eternal and Infinite cards grant Veil Marks and tune reveal-time payout for base cards.
+  | { type: 'dfh_eternal_veil_rite'; marks: number; oblivionPerMark: number }
+  | { type: 'dfh_veil_marks_amplify'; factor: number }
+  | { type: 'dfh_veil_marks_transmute'; source: 'pyre' | 'crowns'; consume?: number; marksPerResource: number }
+  | { type: 'dfh_veil_marks_cashout'; oblivionPerMark: number; consume?: number }
   // Pyre Embers live on eternalStacks['pyre']; Cinder Crowns live on
   // secondaryCounters['pyre']. dfh_crown_cashout consumes Crowns for a
   // big oblivion+chain finale (the Eternal/Infinite tier signature).
@@ -206,6 +250,7 @@ export type EternalStackKind =
   | 'absol'
   | 'garden'
   | 'flutter'
+  | 'deepwake'
   | 'tide'
   | 'forge'
   | 'pyre'
@@ -234,6 +279,7 @@ export type EffectCondition =
   | { type: 'strain_gte'; value: number }
   | { type: 'strain_lte'; value: number }
   | { type: 'prismatic_light_gte'; value: number }
+  | { type: 'resonance_charge_gte'; value: number }
   | { type: 'prismatic_refraction_depth_gte'; value: number }
   | { type: 'prismatic_node_charges_gte'; value: number }
   | { type: 'prismatic_memory_shards_gte'; value: number }
@@ -282,6 +328,7 @@ export type EffectCondition =
   | { type: 'forge_reforge_charges_gte'; value: number }
   | { type: 'forge_pearls_gte'; value: number }
   | { type: 'forge_recast_count_gte'; value: number }
+  | { type: 'forge_imprint_gte'; value: number }
   | { type: 'forge_unrecorded_hue_active' }
   | { type: 'starlight_gte'; value: number }
   | { type: 'dream_lattice_gte'; value: number }

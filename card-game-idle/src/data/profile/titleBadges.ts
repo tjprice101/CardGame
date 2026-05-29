@@ -428,7 +428,7 @@ const CATEGORY_TITLE_OVERRIDES: Record<BossCategory, { text: string; description
   'Glass Absolute': { text: 'Pane of the Glass Absolute', description: 'Defeat every Glass Absolute boss in Eternity\'s Wake.' },
   'The Blazing Garden': { text: 'Tender of the Blazing Garden', description: 'Defeat every Blazing Garden boss in Eternity\'s Wake.' },
   'Age of the Butterfly': { text: 'Witness to the Butterfly', description: 'Defeat every Age of the Butterfly boss in Eternity\'s Wake.' },
-  'Eternal Seas': { text: 'Tide-Bearer of the Eternal Seas', description: 'Defeat every Eternal Seas boss in Eternity\'s Wake.' },
+  'Eternal Seas': { text: 'Deepwake-Bearer of the Eternal Seas', description: 'Defeat every Eternal Seas boss in Eternity\'s Wake.' },
   'Abyssal Forge': { text: 'Hammerlord of the Abyssal Forge', description: 'Defeat every Abyssal Forge boss in Eternity\'s Wake.' },
   'Death-flamed Hell': { text: 'Pallbearer of the Death-flame', description: 'Defeat every Death-flamed Hell boss in Eternity\'s Wake.' },
   '[EVENT] Wished Upon A Star': { text: 'Starwarden', description: 'Defeat every Wished Upon A Star boss in Eternity\'s Wake.' },
@@ -659,7 +659,7 @@ const SET_SPECS: SetSpec[] = [
   { category: 'Glass Absolute', title: 'Of the Glass Absolute', prefixes: ['ga-'] },
   { category: 'The Blazing Garden', title: 'Of the Blazing Garden', prefixes: ['bg-'] },
   { category: 'Age of the Butterfly', title: 'Heir of the Butterfly Age', prefixes: ['bf-'] },
-  { category: 'Eternal Seas', title: 'Tide of the Eternal', prefixes: ['es-'] },
+  { category: 'Eternal Seas', title: 'Deepwake of the Eternal', prefixes: ['es-'] },
   { category: 'Abyssal Forge', title: 'Of the Abyssal Forge', prefixes: ['af-'] },
   { category: 'Death-flamed Hell', title: 'Of the Death-flame', prefixes: ['dfh-'] },
 ];
