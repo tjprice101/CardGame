@@ -1,7 +1,12 @@
 import { useState, lazy, Suspense } from 'react';
 import { useStore, selectProgress, selectBossFight } from '@/state/store';
 import { useSocialStore, selectSocialStatus } from '@/state/socialStore';
-import { getGauntletMasteryPerCard, getResonanceVictoryLine, previewMasteryReward } from '@/systems/progression/cardMastery';
+import {
+  getGauntletMasteryPerCard,
+  getResonanceVictoryLine,
+  MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
+  previewMasteryReward,
+} from '@/systems/progression/cardMastery';
 
 const FriendsLeaderboard = lazy(() => import('@/ui/social/FriendsLeaderboard'));
 
@@ -197,8 +202,10 @@ export default function EndlessGauntletModal({ onClose }: Props) {
               <div style={{ fontSize: 9, letterSpacing: 2.4, color: EW.violet, textTransform: 'uppercase', marginBottom: 4 }}>
                 Opening Reward Preview
               </div>
-              <div style={{ fontSize: 11, color: EW.gold, fontWeight: 'bold', lineHeight: 1.35 }}>{getResonanceVictoryLine(gauntletMasteryPerCard)}</div>
-              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Depth {currentDepth} formula: min(20, max(5, depth × 6))</div>
+              <div style={{ fontSize: 11, color: EW.gold, fontWeight: 'bold', lineHeight: 1.35 }}>
+                {getResonanceVictoryLine(gauntletMasteryPerCard, MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET)}
+              </div>
+              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Depth {currentDepth} formula: min(35, max(5, depth × 6))</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 9, letterSpacing: 2.4, color: '#8ce6ff', textTransform: 'uppercase', marginBottom: 4 }}>

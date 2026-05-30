@@ -50,30 +50,33 @@ export interface MasteryRewardPreview {
   entries: MasteryRewardEntry[];
 }
 
-export const MAX_MASTERY_PROGRESS_PER_CARD = 20;
+export const MAX_MASTERY_PROGRESS_PER_CARD_BOSS = 20;
+export const MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET = 35;
 
 export function getBossBaseMasteryPerCard(bossIndex: number, totalBosses: number): number {
   const raw = Math.round(3 + (bossIndex / Math.max(1, totalBosses - 1)) * 32);
-  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD, Math.max(1, raw));
+  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD_BOSS, Math.max(1, raw));
 }
 
 export function getBossFightMasteryPerCard(
   bossIndex: number,
   totalBosses: number,
   trialRewardMultiplier = 1,
+  maxPerCard = MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
 ): number {
   const mult = Math.min(Math.max(1, trialRewardMultiplier), 2.0);
-  const raw = Math.round(getBossBaseMasteryPerCard(bossIndex, totalBosses) * mult);
-  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD, Math.max(1, raw));
+  const baseRaw = Math.round(3 + (bossIndex / Math.max(1, totalBosses - 1)) * 32);
+  const raw = Math.round(baseRaw * mult);
+  return Math.min(maxPerCard, Math.max(1, raw));
 }
 
 export function getGauntletMasteryPerCard(depth: number): number {
   const raw = Math.max(5, depth * 6);
-  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD, raw);
+  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET, raw);
 }
 
-export function getResonanceVictoryLine(masteryPerCard: number): string {
-  return `Resonance on bossfight victory per unique deck card: +${masteryPerCard} Tier Progress (max ${MAX_MASTERY_PROGRESS_PER_CARD}; Resonance on tier-up).`;
+export function getResonanceVictoryLine(masteryPerCard: number, maxPerCard = MAX_MASTERY_PROGRESS_PER_CARD_BOSS): string {
+  return `Resonance on bossfight victory per unique deck card: +${masteryPerCard} Tier Progress (max ${maxPerCard}; Resonance on tier-up).`;
 }
 
 function getReachedTierForCount(count: number): number {

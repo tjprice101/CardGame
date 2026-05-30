@@ -54,6 +54,8 @@ import {
   getBossFightMasteryPerCard,
   getGauntletMasteryPerCard,
   getMasteryClaimKey,
+  MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
+  MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
 } from '@/systems/progression/cardMastery';
 import { getDailyTrials as _getDailyTrials, getWeeklyTrial, type TrialModifier } from '@/systems/progression/wakeTrials';
 void _getDailyTrials;
@@ -1304,13 +1306,14 @@ function completeBossFight(s: Store, victory: boolean): void {
         }
       }
       // Award card mastery for every card in the fight deck. Boss index drives
-      // the base amount (higher-tier bosses give more), then a hard per-card
-      // cap keeps all boss/trial rewards bounded.
+      // the base amount (higher-tier bosses give more), then mode-specific
+      // caps keep rewards bounded (normal 20, trial 35).
       const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
       const masteryPerCard = getBossFightMasteryPerCard(
         bossIdx,
         BOSS_DEFINITIONS.length,
         kind === 'trial' ? trialMult : 1,
+        kind === 'trial' ? MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET : MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
       );
       const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, masteryPerCard);
       rewardSummary = {
@@ -1336,7 +1339,7 @@ function completeBossFight(s: Store, victory: boolean): void {
     if (gauntletShardsBanked > best.bestShards) best.bestShards = gauntletShardsBanked;
     best.runs += 1;
     // Award card mastery scaled by how many bosses were cleared this run,
-    // then clamp to the same global per-card cap used by other boss content.
+    // then clamp to the gauntlet cap (35 per card).
     const gauntletMasteryPerCard = getGauntletMasteryPerCard(gauntletDepth);
     const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, gauntletMasteryPerCard);
     rewardSummary = {

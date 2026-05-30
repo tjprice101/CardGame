@@ -2,7 +2,12 @@ import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { getDailyTrials, getWeeklyTrial, type WakeTrial } from '@/systems/progression/wakeTrials';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
-import { getBossFightMasteryPerCard, getResonanceVictoryLine, previewMasteryReward } from '@/systems/progression/cardMastery';
+import {
+  getBossFightMasteryPerCard,
+  getResonanceVictoryLine,
+  MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
+  previewMasteryReward,
+} from '@/systems/progression/cardMastery';
 
 interface Props {
   onClose: () => void;
@@ -43,7 +48,12 @@ export default function WakeTrialsModal({ onClose }: Props) {
   const selectedDeck = progress.savedDecks.find(d => d.id === selectedDeckId) ?? null;
   const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === selectedBossId));
   const trialMasteryPerCard = trial
-    ? getBossFightMasteryPerCard(bossIdx, BOSS_DEFINITIONS.length, trial.rewardMultiplier)
+    ? getBossFightMasteryPerCard(
+      bossIdx,
+      BOSS_DEFINITIONS.length,
+      trial.rewardMultiplier,
+      MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
+    )
     : 0;
   const trialRewardPreview = selectedDeck && trial
     ? previewMasteryReward(progress, selectedDeck.deckList, selectedDeck.extraDeck ?? [], trialMasteryPerCard)
@@ -264,7 +274,9 @@ export default function WakeTrialsModal({ onClose }: Props) {
           }}>
             <div>
               <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: EW.textMuted, marginBottom: 4 }}>Trial Reward Preview</div>
-              <div style={{ fontSize: 11, color: EW.gold, fontWeight: 'bold', lineHeight: 1.35 }}>{getResonanceVictoryLine(trialMasteryPerCard)}</div>
+              <div style={{ fontSize: 11, color: EW.gold, fontWeight: 'bold', lineHeight: 1.35 }}>
+                {getResonanceVictoryLine(trialMasteryPerCard, MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET)}
+              </div>
               <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Selected deck: {selectedDeck.name}</div>
             </div>
             <div style={{ textAlign: 'right' }}>
