@@ -49,6 +49,15 @@ export interface SavedGameState {
   settings: SettingsState;
 }
 
+export interface BossRewardSummary {
+  shardsEarned?: number;
+  entropicEnergyEarned?: number;
+  masteryPerCard?: number;
+  totalTierProgress?: number;
+  resonanceGained?: number;
+  cardsTieredUp?: number;
+}
+
 export interface BossFightState {
   mode: BossFightMode;
   activeBossId: string | null;
@@ -83,4 +92,6 @@ export interface BossFightState {
   nullRaidAccumulatedEntropy?: number;
   /** Null Raid: total aberrated shards accumulated from completed encounters. */
   nullRaidAccumulatedShards?: number;
+  /** Snapshot of rewards granted when the result screen opened. */
+  rewardSummary?: BossRewardSummary | null;
 }

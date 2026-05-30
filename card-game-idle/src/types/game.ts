@@ -33,7 +33,7 @@ export interface ComputedBoardStats {
   embersPerCardBonus: number;     // flat Embers added per card played (from ember_per_card Seraphim, Pyroabyss)
   globalOblivionMult: number;     // additive % bonus applied to ALL oblivion grants (from cherubim_global_oblivion_mult passives)
   fullBoardActive: boolean;       // true when all 9 board slots are filled
-  /** Global resonance score — sum of (copies × masteryContribution) across all owned cards. Exposed for UI gating. */
+  /** Global resonance score — sum of each card's highest reached mastery-tier contribution. Exposed for UI gating. */
   resonanceScore?: number;
 }
 

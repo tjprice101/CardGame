@@ -57,6 +57,7 @@ export default function BossResultModal() {
   const kind = bossFight.kind ?? 'normal';
   const gauntletDepth = bossFight.gauntletDepth ?? 0;
   const trialMult = bossFight.trialRewardMult ?? 1;
+  const rewardSummary = bossFight.rewardSummary ?? null;
 
   // Compute base mastery-per-card using the same formula as the store.
   let masteryPerCard: number | null = null;
@@ -231,6 +232,21 @@ export default function BossResultModal() {
               </span>
               <span style={{ fontSize: 10, color: 'rgba(125,232,160,0.55)', letterSpacing: 0.5 }}>
                 {masteryNote}
+              </span>
+            </div>
+          )}
+          {rewardSummary && ((rewardSummary.resonanceGained ?? 0) > 0 || (rewardSummary.cardsTieredUp ?? 0) > 0) && (
+            <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: 8.5, letterSpacing: 1.5, color: EW_TEXT_MUTED, textTransform: 'uppercase' }}>
+                Resonance Awarded
+              </span>
+              <span style={{ fontSize: 18, fontWeight: 'bold', color: '#8ce6ff', textShadow: '0 0 14px rgba(140,232,255,0.45)' }}>
+                +{(rewardSummary.resonanceGained ?? 0).toLocaleString()} Resonance
+              </span>
+              <span style={{ fontSize: 10, color: 'rgba(140,232,255,0.58)', letterSpacing: 0.5 }}>
+                {(rewardSummary.cardsTieredUp ?? 0) > 0
+                  ? `${rewardSummary.cardsTieredUp} deck cards crossed a Card-born Tier threshold.`
+                  : 'No Card-born Tier thresholds were crossed this run.'}
               </span>
             </div>
           )}

@@ -209,4 +209,49 @@ describe('Holofoil progression', () => {
     expect(next.progress.collection['ophanim-neutral-null-seek']).toBe(2);
     expect(next.deck.hand.some(card => card.definitionId === 'ophanim-neutral-null-seek')).toBe(true);
   });
+
+  it('records boss-fight resonance gains in reward summary when mastery tiers are crossed', () => {
+    const boss = BOSS_DEFINITIONS.find(entry => entry.id === 'boss-hollow-king');
+    expect(boss).toBeDefined();
+    if (!boss) return;
+
+    const seedProgress = cloneDefaultState().progress;
+    seedProgress.cardPlayCounts = {
+      'ser-neutral-null': 24,
+      'angel-light-seraphiel': 74,
+    };
+    const saved = makeSavedGameState(seedProgress);
+
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [{ definitionId: 'ser-neutral-null', copies: 1, finish: 'normal' }],
+        extraDeck: [{ definitionId: 'angel-light-seraphiel', finish: 'normal' }],
+        drawPile: [],
+        hand: [{ instanceId: 'play_reward', definitionId: 'ser-neutral-null', finish: 'normal' }],
+        discardPile: [],
+      },
+      board: { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] },
+      turn: { ...state.turn, phase: 'playing', pendingEffect: null },
+      bossFight: {
+        mode: 'active',
+        activeBossId: boss.id,
+        bossCurrentHp: 1,
+        bossMaxHp: boss.hp,
+        damageDealtThisFight: 0,
+        fightTimeRemaining: BOSS_FIGHT_ROUND_SECONDS,
+        cooldowns: {},
+        savedGameState: saved,
+      },
+    }));
+
+    useStore.getState().playCard('play_reward');
+
+    const next = useStore.getState();
+    expect(next.bossFight.mode).toBe('victory');
+    expect(next.bossFight.rewardSummary?.masteryPerCard).toBe(3);
+    expect(next.bossFight.rewardSummary?.resonanceGained).toBe(3);
+    expect(next.bossFight.rewardSummary?.cardsTieredUp).toBe(2);
+  });
 });

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { getDailyTrials, getWeeklyTrial, type WakeTrial } from '@/systems/progression/wakeTrials';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+import { previewMasteryReward } from '@/systems/progression/cardMastery';
 
 interface Props {
   onClose: () => void;
@@ -39,6 +40,14 @@ export default function WakeTrialsModal({ onClose }: Props) {
   const trial = trials.find(t => t.id === selectedTrialId) ?? null;
   const hasDecks = progress.savedDecks.length > 0;
   const selectedBoss = BOSS_DEFINITIONS.find(b => b.id === selectedBossId);
+  const selectedDeck = progress.savedDecks.find(d => d.id === selectedDeckId) ?? null;
+  const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === selectedBossId));
+  const trialMasteryPerCard = trial
+    ? Math.round((Math.round(3 + (bossIdx / Math.max(1, BOSS_DEFINITIONS.length - 1)) * 32)) * Math.min(Math.max(1, trial.rewardMultiplier), 2.0))
+    : 0;
+  const trialRewardPreview = selectedDeck && trial
+    ? previewMasteryReward(progress, selectedDeck.deckList, selectedDeck.extraDeck ?? [], trialMasteryPerCard)
+    : null;
 
   function launch() {
     if (!trial || !selectedBossId || !selectedDeckId) return;
@@ -241,6 +250,30 @@ export default function WakeTrialsModal({ onClose }: Props) {
             )}
           </PickerColumn>
         </div>
+
+        {trial && selectedDeck && trialRewardPreview && (
+          <div style={{
+            marginBottom: 16,
+            padding: '10px 12px',
+            background: 'rgba(70, 26, 34, 0.42)',
+            border: `1px solid ${EW.border}`,
+            borderRadius: 10,
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: 10,
+          }}>
+            <div>
+              <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: EW.textMuted, marginBottom: 4 }}>Trial Reward Preview</div>
+              <div style={{ fontSize: 15, color: EW.gold, fontWeight: 'bold' }}>+{trialMasteryPerCard} Tier Progress / unique card</div>
+              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Selected deck: {selectedDeck.name}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(140,230,255,0.7)', marginBottom: 4 }}>Resonance Now</div>
+              <div style={{ fontSize: 15, color: '#8ce6ff', fontWeight: 'bold' }}>+{trialRewardPreview.resonanceGain.toLocaleString()}</div>
+              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>{trialRewardPreview.cardsTieredUp} tier-up{trialRewardPreview.cardsTieredUp === 1 ? '' : 's'} this clear</div>
+            </div>
+          </div>
+        )}
 
         {/* CTA */}
         <button

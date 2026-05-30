@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useStore, selectProgress, selectComputedStats } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { MASTERY_TIERS, getMasteryClaimKey, listMasteryProgress } from '@/systems/progression/cardMastery';
+import { MASTERY_TIERS, computeGlobalResonanceScore, getMasteryClaimKey, listMasteryProgress } from '@/systems/progression/cardMastery';
 import type { MasteryView } from '@/systems/progression/cardMastery';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 
@@ -311,22 +311,7 @@ export default function CardMasteryModal({ onClose }: Props) {
   const masteryList = useMemo(() => listMasteryProgress(progress), [progress]);
 
   // Global Resonance Score
-  const resonanceScore = useMemo(() => {
-    const collection = progress.collection ?? {};
-    const counts = progress.cardPlayCounts ?? {};
-    let score = 0;
-    for (const definitionId of Object.keys(collection)) {
-      const copies = collection[definitionId] ?? 0;
-      if (copies <= 0) continue;
-      const playCount = counts[definitionId] ?? 0;
-      let contribution = 0;
-      for (const tier of MASTERY_TIERS) {
-        if (playCount >= tier.threshold) contribution = tier.resonanceContribution;
-      }
-      score += contribution;
-    }
-    return score;
-  }, [progress.collection, progress.cardPlayCounts]);
+  const resonanceScore = useMemo(() => computeGlobalResonanceScore(progress), [progress]);
 
   const claimableSummary = useMemo(() => {
     let tiersClaimable = 0;

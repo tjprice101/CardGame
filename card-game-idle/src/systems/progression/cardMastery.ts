@@ -32,6 +32,117 @@ export const MASTERY_TIERS: MasteryTier[] = [
   { tier: 8, threshold: 30_000, shardReward: 2_000, label: 'Infinite Bond', resonanceContribution: 320 },
 ];
 
+export interface MasteryRewardEntry {
+  definitionId: string;
+  currentCount: number;
+  nextCount: number;
+  appliedProgress: number;
+  resonanceBefore: number;
+  resonanceAfter: number;
+  resonanceGain: number;
+}
+
+export interface MasteryRewardPreview {
+  uniqueCards: number;
+  totalAppliedProgress: number;
+  resonanceGain: number;
+  cardsTieredUp: number;
+  entries: MasteryRewardEntry[];
+}
+
+function getReachedTierForCount(count: number): number {
+  let reachedTier = 0;
+  for (const tier of MASTERY_TIERS) {
+    if (count >= tier.threshold) reachedTier = tier.tier;
+  }
+  return reachedTier;
+}
+
+export function getResonanceContributionForCount(count: number): number {
+  let contribution = 0;
+  for (const tier of MASTERY_TIERS) {
+    if (count >= tier.threshold) contribution = tier.resonanceContribution;
+  }
+  return contribution;
+}
+
+export function computeGlobalResonanceScore(progress: ProgressState): number {
+  const counts = progress.cardPlayCounts ?? {};
+  let score = 0;
+  for (const definitionId of Object.keys(counts)) {
+    const playCount = counts[definitionId] ?? 0;
+    if (playCount <= 0) continue;
+    score += getResonanceContributionForCount(playCount);
+  }
+  return score;
+}
+
+export function previewMasteryReward(
+  progress: ProgressState,
+  deckList: Array<{ definitionId: string }>,
+  extraDeck: Array<{ definitionId: string }>,
+  baseAmount: number,
+): MasteryRewardPreview {
+  if (baseAmount <= 0) {
+    return { uniqueCards: 0, totalAppliedProgress: 0, resonanceGain: 0, cardsTieredUp: 0, entries: [] };
+  }
+
+  const counts = progress.cardPlayCounts ?? {};
+  const seen = new Set<string>();
+  const entries: MasteryRewardEntry[] = [];
+  let totalAppliedProgress = 0;
+  let resonanceGain = 0;
+  let cardsTieredUp = 0;
+
+  for (const definitionId of [...deckList.map(entry => entry.definitionId), ...extraDeck.map(entry => entry.definitionId)]) {
+    if (seen.has(definitionId)) continue;
+    seen.add(definitionId);
+
+    const currentCount = counts[definitionId] ?? 0;
+    const reachedTier = getReachedTierForCount(currentCount);
+    const appliedProgress = Math.round(baseAmount * (1 + reachedTier * 0.05));
+    const nextCount = currentCount + appliedProgress;
+    const resonanceBefore = getResonanceContributionForCount(currentCount);
+    const resonanceAfter = getResonanceContributionForCount(nextCount);
+    const entry: MasteryRewardEntry = {
+      definitionId,
+      currentCount,
+      nextCount,
+      appliedProgress,
+      resonanceBefore,
+      resonanceAfter,
+      resonanceGain: resonanceAfter - resonanceBefore,
+    };
+    entries.push(entry);
+    totalAppliedProgress += appliedProgress;
+    resonanceGain += entry.resonanceGain;
+    if (entry.resonanceGain > 0) cardsTieredUp += 1;
+  }
+
+  return {
+    uniqueCards: entries.length,
+    totalAppliedProgress,
+    resonanceGain,
+    cardsTieredUp,
+    entries,
+  };
+}
+
+export function applyMasteryReward(
+  progress: ProgressState,
+  deckList: Array<{ definitionId: string }>,
+  extraDeck: Array<{ definitionId: string }>,
+  baseAmount: number,
+): MasteryRewardPreview {
+  const preview = previewMasteryReward(progress, deckList, extraDeck, baseAmount);
+  if (preview.entries.length === 0) return preview;
+  if (!progress.cardPlayCounts) progress.cardPlayCounts = {};
+  for (const entry of preview.entries) {
+    progress.cardPlayCounts[entry.definitionId] = entry.nextCount;
+  }
+  return preview;
+}
+
 export function getMasteryClaimKey(definitionId: string, tier: number): string {
   return `${definitionId}::${tier}`;
 }

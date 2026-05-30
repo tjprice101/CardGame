@@ -9,6 +9,7 @@ import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import BossCodex from './BossCodex';
+import { previewMasteryReward } from '@/systems/progression/cardMastery';
 
 const FriendsLeaderboard = lazy(() => import('@/ui/social/FriendsLeaderboard'));
 import type { BossCategory } from '@/types/bossFight';
@@ -287,6 +288,8 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           const displayBossArtUrl = bossArtUrl ?? rewardCardArtUrl;
           const isSelected = selectedBossId === boss.id;
           const rewardDisplayName = boss.category === 'Black Glass Inferno' ? boss.name : rewardDef?.name ?? '';
+          const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(entry => entry.id === boss.id));
+          const baseMasteryPerCard = Math.round(3 + (bossIdx / Math.max(1, BOSS_DEFINITIONS.length - 1)) * 32);
 
           return (
             <div key={boss.id} className={onCooldown ? undefined : 'ui-tile-hover'} style={{
@@ -335,6 +338,10 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,180,180,0.62)' }}>
                 <div>Category: {boss.category}</div>
                 <div>Shards: {boss.firstClearShards} first / {boss.repeatClearShards} repeat</div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(160,220,255,0.64)' }}>
+                <div>Tier Progress: +{baseMasteryPerCard} per unique deck card</div>
+                <div>Resonance: on tier-up</div>
               </div>
 
               {/* Reward card */}
@@ -405,20 +412,28 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                   {!hasSavedDecks ? (
                     <div style={{ fontSize: 11, color: 'rgba(255,107,107,0.5)' }}>No saved decks found.</div>
                   ) : (
-                    progress.savedDecks.map(deck => (
-                      <button
-                        key={deck.id}
-                        onClick={() => handleChallenge(boss.id, deck.id)}
-                        style={{
-                          background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.35)',
-                          color: '#ff9999', padding: '6px 10px', borderRadius: 5, cursor: 'pointer',
-                          fontFamily: 'Georgia, serif', fontSize: 12, textAlign: 'left',
-                        }}
-                      >
-                        {deck.name}
-                        {deck.deckList.length > 0 ? ` (${deck.deckList.reduce((a, e) => a + e.copies, 0)} cards)` : ''}
-                      </button>
-                    ))
+                    progress.savedDecks.map(deck => {
+                      const rewardPreview = previewMasteryReward(progress, deck.deckList, deck.extraDeck ?? [], baseMasteryPerCard);
+                      return (
+                        <button
+                          key={deck.id}
+                          onClick={() => handleChallenge(boss.id, deck.id)}
+                          style={{
+                            background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.35)',
+                            color: '#ff9999', padding: '6px 10px', borderRadius: 5, cursor: 'pointer',
+                            fontFamily: 'Georgia, serif', fontSize: 12, textAlign: 'left',
+                          }}
+                        >
+                          <div>
+                            {deck.name}
+                            {deck.deckList.length > 0 ? ` (${deck.deckList.reduce((a, e) => a + e.copies, 0)} cards)` : ''}
+                          </div>
+                          <div style={{ fontSize: 10, color: 'rgba(160,220,255,0.74)', marginTop: 3 }}>
+                            +{rewardPreview.resonanceGain.toLocaleString()} Resonance now • {rewardPreview.cardsTieredUp} tier-up{rewardPreview.cardsTieredUp === 1 ? '' : 's'}
+                          </div>
+                        </button>
+                      );
+                    })
                   )}
                   <button
                     onClick={() => setSelectedBossId(null)}

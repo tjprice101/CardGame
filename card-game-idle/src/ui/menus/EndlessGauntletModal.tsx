@@ -1,6 +1,7 @@
 import { useState, lazy, Suspense } from 'react';
 import { useStore, selectProgress, selectBossFight } from '@/state/store';
 import { useSocialStore, selectSocialStatus } from '@/state/socialStore';
+import { previewMasteryReward } from '@/systems/progression/cardMastery';
 
 const FriendsLeaderboard = lazy(() => import('@/ui/social/FriendsLeaderboard'));
 
@@ -31,6 +32,11 @@ export default function EndlessGauntletModal({ onClose }: Props) {
   const gauntletActive = bossFight.mode === 'active' && bossFight.kind === 'gauntlet';
   const currentDepth = bossFight.gauntletDepth ?? 0;
   const banked = bossFight.gauntletShardsBanked ?? 0;
+  const selectedDeck = progress.savedDecks.find(d => d.id === selectedDeckId) ?? null;
+  const gauntletMasteryPerCard = Math.max(5, currentDepth * 6);
+  const gauntletRewardPreview = selectedDeck
+    ? previewMasteryReward(progress, selectedDeck.deckList, selectedDeck.extraDeck ?? [], gauntletMasteryPerCard)
+    : null;
 
   function launch() {
     if (!selectedDeckId) return;
@@ -178,6 +184,31 @@ export default function EndlessGauntletModal({ onClose }: Props) {
             </div>
           )}
         </div>
+
+        {selectedDeck && gauntletRewardPreview && (
+          <div style={{
+            marginBottom: 16, padding: '10px 12px',
+            background: 'rgba(140, 90, 255, 0.08)',
+            border: `1px solid rgba(194, 168, 255, 0.32)`,
+            borderRadius: 10,
+            display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
+          }}>
+            <div>
+              <div style={{ fontSize: 9, letterSpacing: 2.4, color: EW.violet, textTransform: 'uppercase', marginBottom: 4 }}>
+                Opening Reward Preview
+              </div>
+              <div style={{ fontSize: 15, color: EW.gold, fontWeight: 'bold' }}>+{gauntletMasteryPerCard} Tier Progress / unique card</div>
+              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Depth {currentDepth} formula: max(5, depth × 6)</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 9, letterSpacing: 2.4, color: '#8ce6ff', textTransform: 'uppercase', marginBottom: 4 }}>
+                Resonance Now
+              </div>
+              <div style={{ fontSize: 15, color: '#8ce6ff', fontWeight: 'bold' }}>+{gauntletRewardPreview.resonanceGain.toLocaleString()}</div>
+              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>{gauntletRewardPreview.cardsTieredUp} tier-up{gauntletRewardPreview.cardsTieredUp === 1 ? '' : 's'} on clear</div>
+            </div>
+          </div>
+        )}
 
         {/* Personal bests */}
         <div style={{

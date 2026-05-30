@@ -47,7 +47,7 @@ import {
 } from '@/systems/progression/quests';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import { getAchievementShardReward, getAchievementOblivionReward } from '@/systems/progression/achievements';
-import { MASTERY_TIERS, getMasteryClaimKey } from '@/systems/progression/cardMastery';
+import { MASTERY_TIERS, applyMasteryReward, computeGlobalResonanceScore, getMasteryClaimKey } from '@/systems/progression/cardMastery';
 import { getDailyTrials as _getDailyTrials, getWeeklyTrial, type TrialModifier } from '@/systems/progression/wakeTrials';
 void _getDailyTrials;
 import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/spotlightPack';
@@ -338,6 +338,7 @@ const defaultBossFight: BossFightState = {
   fightTimeRemaining: 0,
   cooldowns: {},
   savedGameState: null,
+  rewardSummary: null,
 };
 
 const defaultBattleground: BattlegroundState = {
@@ -898,27 +899,6 @@ function getEntropicEnergyBalance(progress: ProgressState): number {
   return (progress.entropicEnergyBalance ?? progress.entropyBalance ?? 0);
 }
 
-/**
- * Sums each card's resonanceContribution at its highest reached mastery tier.
- * Copy count is irrelevant — owning 1 or 10 copies of a card contributes the
- * same amount. Only play-count mastery (what the player has actually earned)
- * determines the contribution.
- */
-function computeGlobalResonanceScore(progress: ProgressState): number {
-  const counts = progress.cardPlayCounts ?? {};
-  let score = 0;
-  for (const definitionId of Object.keys(counts)) {
-    const playCount = counts[definitionId] ?? 0;
-    if (playCount <= 0) continue;
-    let contribution = 0;
-    for (const tier of MASTERY_TIERS) {
-      if (playCount >= tier.threshold) contribution = tier.resonanceContribution;
-    }
-    score += contribution;
-  }
-  return score;
-}
-
 function recompute(state: Store): void {
   state.computedStats = ScoreSystem.compute(state.board);
   const resonanceScore = computeGlobalResonanceScore(state.progress);
@@ -1062,38 +1042,6 @@ function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEF
 }
 
 /**
- * Award play-count mastery to every card in the fight deck and extra deck.
- * Used by boss fights, trials, and endless gauntlet completions so that
- * repeated content engagement meaningfully advances card mastery.
- *
- * `amount` is added to each card's cardPlayCounts entry; this advances
- * mastery tiers (which drive the Global Resonance Score) independently of
- * actual hand-play counts.
- */
-function awardDeckMastery(progress: ProgressState, deckList: import('@/types/game').DeckEntry[], extraDeck: import('@/types/game').ExtraDeckEntry[], baseAmount: number): void {
-  if (baseAmount <= 0) return;
-  if (!progress.cardPlayCounts) progress.cardPlayCounts = {};
-  const seen = new Set<string>();
-  const allIds = [
-    ...deckList.map(e => e.definitionId),
-    ...extraDeck.map(e => e.definitionId),
-  ];
-  for (const definitionId of allIds) {
-    if (seen.has(definitionId)) continue;
-    seen.add(definitionId);
-    const current = progress.cardPlayCounts[definitionId] ?? 0;
-    // Find the highest mastery tier this card has already reached.
-    let reachedTier = 0;
-    for (const tier of MASTERY_TIERS) {
-      if (current >= tier.threshold) reachedTier = tier.tier;
-    }
-    // +5% per tier already reached — rewards continued play on well-mastered cards.
-    const scaled = Math.round(baseAmount * (1 + reachedTier * 0.05));
-    progress.cardPlayCounts[definitionId] = current + scaled;
-  }
-}
-
-/**
  * Apply quest progress to the daily + weekly rotations. Pure on the
  * `progress` object (mutates immer-managed draft). Also lazily rolls fresh
  * quests if the rotation is stale.
@@ -1156,6 +1104,7 @@ function completeBossFight(s: Store, victory: boolean): void {
   const gauntletShardsBanked = s.bossFight.gauntletShardsBanked ?? 0;
   const gauntletDepth = s.bossFight.gauntletDepth ?? 0;
   const saved = s.bossFight.savedGameState;
+  let rewardSummary: BossFightState['rewardSummary'] = null;
 
   // ── Gauntlet continuation: on victory in gauntlet mode, advance to the
   //    next boss instead of restoring saved state.
@@ -1191,6 +1140,7 @@ function completeBossFight(s: Store, victory: boolean): void {
         gauntletDepth: gauntletDepth + 1,
         gauntletShardsBanked: newBanked,
         gauntletHpCarryFrac: hpFrac,
+        rewardSummary: null,
       };
       // Count this clear toward quests.
       emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
@@ -1240,6 +1190,7 @@ function completeBossFight(s: Store, victory: boolean): void {
           nullRaidEncounterIndex: nextIndex,
           nullRaidAccumulatedEntropy: accEntropy,
           nullRaidAccumulatedShards: accShards,
+          rewardSummary: null,
         };
         emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
         recompute(s);
@@ -1289,6 +1240,10 @@ function completeBossFight(s: Store, victory: boolean): void {
       nullRaidEncounterIndex: encounterIndex,
       nullRaidAccumulatedEntropy: accEntropy,
       nullRaidAccumulatedShards: accShards,
+      rewardSummary: {
+        entropicEnergyEarned: accEntropy,
+        shardsEarned: accShards,
+      },
     };
     recompute(s);
     return;
@@ -1312,6 +1267,7 @@ function completeBossFight(s: Store, victory: boolean): void {
   if (victory && bossId) {
     const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
     if (boss) {
+      const priorShards = s.progress.aberratedShards;
       awardBossVictoryRewards(s.progress, boss);
       // Boss Codex personal-best tracking (save v13+).
       if (!s.progress.bossCodex) s.progress.bossCodex = {};
@@ -1348,7 +1304,15 @@ function completeBossFight(s: Store, victory: boolean): void {
       // Cap trial multiplier at 2× so a fully-stacked trial awards at most
       // double the base — significant, but not grind-skipping.
       const masteryMult = kind === 'trial' ? Math.min(Math.max(1, trialMult), 2.0) : 1;
-      awardDeckMastery(s.progress, fightDeckList, fightExtraDeck, Math.round(baseMasteryPerCard * masteryMult));
+      const masteryPerCard = Math.round(baseMasteryPerCard * masteryMult);
+      const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, masteryPerCard);
+      rewardSummary = {
+        shardsEarned: s.progress.aberratedShards - priorShards,
+        masteryPerCard,
+        totalTierProgress: masteryAward.totalAppliedProgress,
+        resonanceGained: masteryAward.resonanceGain,
+        cardsTieredUp: masteryAward.cardsTieredUp,
+      };
     }
   }
 
@@ -1368,7 +1332,14 @@ function completeBossFight(s: Store, victory: boolean): void {
     // Each depth level of consecutive clears is harder than a single clear,
     // so the per-depth rate is modest to keep higher tiers a real grind.
     const gauntletMasteryPerCard = Math.max(5, gauntletDepth * 6);
-    awardDeckMastery(s.progress, fightDeckList, fightExtraDeck, gauntletMasteryPerCard);
+    const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, gauntletMasteryPerCard);
+    rewardSummary = {
+      shardsEarned: gauntletShardsBanked,
+      masteryPerCard: gauntletMasteryPerCard,
+      totalTierProgress: masteryAward.totalAppliedProgress,
+      resonanceGained: masteryAward.resonanceGain,
+      cardsTieredUp: masteryAward.cardsTieredUp,
+    };
   }
 
   const finalHp = s.bossFight.bossCurrentHp;
@@ -1389,6 +1360,7 @@ function completeBossFight(s: Store, victory: boolean): void {
     gauntletDepth,
     gauntletShardsBanked,
     gauntletHpCarryFrac: 1,
+    rewardSummary,
   };
   // Suppress reference to unused vars if linter cares
   void modifiers;
@@ -6463,6 +6435,7 @@ export const useStore = create<Store>()(
           gauntletShardsBanked: 0,
           gauntletHpCarryFrac: 1,
           bossWeaknessActive,
+          rewardSummary: null,
         };
         recompute(s);
       });
@@ -6533,6 +6506,7 @@ export const useStore = create<Store>()(
           nullRaidEncounterIndex: 0,
           nullRaidAccumulatedEntropy: 0,
           nullRaidAccumulatedShards: 0,
+          rewardSummary: null,
         };
         recompute(s);
       });
