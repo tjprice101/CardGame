@@ -47,7 +47,14 @@ import {
 } from '@/systems/progression/quests';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import { getAchievementShardReward, getAchievementOblivionReward } from '@/systems/progression/achievements';
-import { MASTERY_TIERS, applyMasteryReward, computeGlobalResonanceScore, getMasteryClaimKey } from '@/systems/progression/cardMastery';
+import {
+  MASTERY_TIERS,
+  applyMasteryReward,
+  computeGlobalResonanceScore,
+  getBossFightMasteryPerCard,
+  getGauntletMasteryPerCard,
+  getMasteryClaimKey,
+} from '@/systems/progression/cardMastery';
 import { getDailyTrials as _getDailyTrials, getWeeklyTrial, type TrialModifier } from '@/systems/progression/wakeTrials';
 void _getDailyTrials;
 import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/spotlightPack';
@@ -1297,14 +1304,14 @@ function completeBossFight(s: Store, victory: boolean): void {
         }
       }
       // Award card mastery for every card in the fight deck. Boss index drives
-      // the base amount (higher-tier bosses give more); Wake Trials apply a
-      // capped multiplier so stacked modifiers don't trivialise higher tiers.
+      // the base amount (higher-tier bosses give more), then a hard per-card
+      // cap keeps all boss/trial rewards bounded.
       const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
-      const baseMasteryPerCard = Math.round(3 + (bossIdx / Math.max(1, BOSS_DEFINITIONS.length - 1)) * 32);
-      // Cap trial multiplier at 2× so a fully-stacked trial awards at most
-      // double the base — significant, but not grind-skipping.
-      const masteryMult = kind === 'trial' ? Math.min(Math.max(1, trialMult), 2.0) : 1;
-      const masteryPerCard = Math.round(baseMasteryPerCard * masteryMult);
+      const masteryPerCard = getBossFightMasteryPerCard(
+        bossIdx,
+        BOSS_DEFINITIONS.length,
+        kind === 'trial' ? trialMult : 1,
+      );
       const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, masteryPerCard);
       rewardSummary = {
         shardsEarned: s.progress.aberratedShards - priorShards,
@@ -1328,10 +1335,9 @@ function completeBossFight(s: Store, victory: boolean): void {
     if (gauntletDepth > best.bestDepth) best.bestDepth = gauntletDepth;
     if (gauntletShardsBanked > best.bestShards) best.bestShards = gauntletShardsBanked;
     best.runs += 1;
-    // Award card mastery scaled by how many bosses were cleared this run.
-    // Each depth level of consecutive clears is harder than a single clear,
-    // so the per-depth rate is modest to keep higher tiers a real grind.
-    const gauntletMasteryPerCard = Math.max(5, gauntletDepth * 6);
+    // Award card mastery scaled by how many bosses were cleared this run,
+    // then clamp to the same global per-card cap used by other boss content.
+    const gauntletMasteryPerCard = getGauntletMasteryPerCard(gauntletDepth);
     const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, gauntletMasteryPerCard);
     rewardSummary = {
       shardsEarned: gauntletShardsBanked,

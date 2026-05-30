@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useStore, selectBossFight } from '@/state/store';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getBossFightMasteryPerCard, getGauntletMasteryPerCard, getResonanceVictoryLine } from '@/systems/progression/cardMastery';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { SfxManager } from '@/audio/SfxManager';
@@ -59,20 +60,13 @@ export default function BossResultModal() {
   const trialMult = bossFight.trialRewardMult ?? 1;
   const rewardSummary = bossFight.rewardSummary ?? null;
 
-  // Compute base mastery-per-card using the same formula as the store.
+  // Compute mastery-per-card using the same capped helpers as the store.
   let masteryPerCard: number | null = null;
-  let masteryNote = '+5% per tier already reached on each card';
   if (kind === 'gauntlet') {
-    masteryPerCard = Math.max(5, gauntletDepth * 6);
-    masteryNote = `Depth ${gauntletDepth} · +5% per tier already reached on each card`;
+    masteryPerCard = getGauntletMasteryPerCard(gauntletDepth);
   } else if (isVictory && boss) {
     const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
-    const base = Math.round(3 + (bossIdx / Math.max(1, BOSS_DEFINITIONS.length - 1)) * 32);
-    const mult = kind === 'trial' ? Math.min(Math.max(1, trialMult), 2.0) : 1;
-    masteryPerCard = Math.round(base * mult);
-    if (kind === 'trial') {
-      masteryNote = `×${mult.toFixed(2)} trial bonus · +5% per tier already reached on each card`;
-    }
+    masteryPerCard = getBossFightMasteryPerCard(bossIdx, BOSS_DEFINITIONS.length, kind === 'trial' ? trialMult : 1);
   }
   const rewardDef = isVictory && boss ? CardRegistry.get(boss.rewardCardId) : undefined;
 
@@ -228,10 +222,10 @@ export default function BossResultModal() {
                 Tier Progress Awarded
               </span>
               <span style={{ fontSize: 18, fontWeight: 'bold', color: '#7de8a0', textShadow: '0 0 14px rgba(125,232,160,0.5)' }}>
-                +{masteryPerCard} per deck card (base)
+                +{masteryPerCard} per unique deck card
               </span>
               <span style={{ fontSize: 10, color: 'rgba(125,232,160,0.55)', letterSpacing: 0.5 }}>
-                {masteryNote}
+                {getResonanceVictoryLine(masteryPerCard)}
               </span>
             </div>
           )}

@@ -9,7 +9,7 @@ import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import BossCodex from './BossCodex';
-import { previewMasteryReward } from '@/systems/progression/cardMastery';
+import { getBossBaseMasteryPerCard, getResonanceVictoryLine, previewMasteryReward } from '@/systems/progression/cardMastery';
 
 const FriendsLeaderboard = lazy(() => import('@/ui/social/FriendsLeaderboard'));
 import type { BossCategory } from '@/types/bossFight';
@@ -289,7 +289,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           const isSelected = selectedBossId === boss.id;
           const rewardDisplayName = boss.category === 'Black Glass Inferno' ? boss.name : rewardDef?.name ?? '';
           const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(entry => entry.id === boss.id));
-          const baseMasteryPerCard = Math.round(3 + (bossIdx / Math.max(1, BOSS_DEFINITIONS.length - 1)) * 32);
+          const baseMasteryPerCard = getBossBaseMasteryPerCard(bossIdx, BOSS_DEFINITIONS.length);
 
           return (
             <div key={boss.id} className={onCooldown ? undefined : 'ui-tile-hover'} style={{
@@ -339,9 +339,8 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                 <div>Category: {boss.category}</div>
                 <div>Shards: {boss.firstClearShards} first / {boss.repeatClearShards} repeat</div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(160,220,255,0.64)' }}>
-                <div>Tier Progress: +{baseMasteryPerCard} per unique deck card</div>
-                <div>Resonance: on tier-up</div>
+              <div style={{ fontSize: 11, color: 'rgba(160,220,255,0.64)', lineHeight: 1.35 }}>
+                {getResonanceVictoryLine(baseMasteryPerCard)}
               </div>
 
               {/* Reward card */}
@@ -429,7 +428,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                             {deck.deckList.length > 0 ? ` (${deck.deckList.reduce((a, e) => a + e.copies, 0)} cards)` : ''}
                           </div>
                           <div style={{ fontSize: 10, color: 'rgba(160,220,255,0.74)', marginTop: 3 }}>
-                            +{rewardPreview.resonanceGain.toLocaleString()} Resonance now • {rewardPreview.cardsTieredUp} tier-up{rewardPreview.cardsTieredUp === 1 ? '' : 's'}
+                            +{rewardPreview.resonanceGain.toLocaleString()} Resonance on victory • {rewardPreview.cardsTieredUp} tier-up{rewardPreview.cardsTieredUp === 1 ? '' : 's'}
                           </div>
                         </button>
                       );

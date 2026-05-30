@@ -50,6 +50,32 @@ export interface MasteryRewardPreview {
   entries: MasteryRewardEntry[];
 }
 
+export const MAX_MASTERY_PROGRESS_PER_CARD = 20;
+
+export function getBossBaseMasteryPerCard(bossIndex: number, totalBosses: number): number {
+  const raw = Math.round(3 + (bossIndex / Math.max(1, totalBosses - 1)) * 32);
+  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD, Math.max(1, raw));
+}
+
+export function getBossFightMasteryPerCard(
+  bossIndex: number,
+  totalBosses: number,
+  trialRewardMultiplier = 1,
+): number {
+  const mult = Math.min(Math.max(1, trialRewardMultiplier), 2.0);
+  const raw = Math.round(getBossBaseMasteryPerCard(bossIndex, totalBosses) * mult);
+  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD, Math.max(1, raw));
+}
+
+export function getGauntletMasteryPerCard(depth: number): number {
+  const raw = Math.max(5, depth * 6);
+  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD, raw);
+}
+
+export function getResonanceVictoryLine(masteryPerCard: number): string {
+  return `Resonance on bossfight victory per unique deck card: +${masteryPerCard} Tier Progress (max ${MAX_MASTERY_PROGRESS_PER_CARD}; Resonance on tier-up).`;
+}
+
 function getReachedTierForCount(count: number): number {
   let reachedTier = 0;
   for (const tier of MASTERY_TIERS) {
