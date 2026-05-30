@@ -75,8 +75,8 @@ export function getGauntletMasteryPerCard(depth: number): number {
   return Math.min(MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET, raw);
 }
 
-export function getResonanceVictoryLine(masteryPerCard: number, maxPerCard = MAX_MASTERY_PROGRESS_PER_CARD_BOSS): string {
-  return `Resonance on bossfight victory per unique deck card: +${masteryPerCard} Tier Progress (max ${maxPerCard}; Resonance on tier-up).`;
+export function getResonanceVictoryLine(masteryPerCard: number, _maxPerCard = MAX_MASTERY_PROGRESS_PER_CARD_BOSS): string {
+  return `Victory Awards +${masteryPerCard} Resonance to each card used.`;
 }
 
 function getReachedTierForCount(count: number): number {
