@@ -4,6 +4,7 @@ import { uiTypography } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { MASTERY_TIERS, getMasteryClaimKey, listMasteryProgress } from '@/systems/progression/cardMastery';
 import type { MasteryView } from '@/systems/progression/cardMastery';
+import VirtualizedList from '@/ui/components/VirtualizedList';
 
 interface Props {
   onClose: () => void;
@@ -167,9 +168,8 @@ function SystemInfoPanel() {
 }
 
 // ── Single card mastery row ────────────────────────────────────────────────
-function MasteryCardRow({ m, onClaim, claimCardMastery, progress }: {
+function MasteryCardRow({ m, claimCardMastery, progress }: {
   m: MasteryView;
-  onClaim: (definitionId: string, tier: number) => void;
   claimCardMastery: (definitionId: string, tier: number) => void;
   progress: ReturnType<typeof selectProgress>;
 }) {
@@ -532,15 +532,24 @@ export default function CardMasteryModal({ onClose }: Props) {
                       : 'No cards found.'}
                 </div>
               ) : (
-                filtered.map(m => (
-                  <MasteryCardRow
-                    key={m.definitionId}
-                    m={m}
-                    onClaim={claimCardMastery}
-                    claimCardMastery={claimCardMastery}
-                    progress={progress}
-                  />
-                ))
+                <VirtualizedList
+                  items={filtered}
+                  getItemKey={(item) => item.definitionId}
+                  getItemHeight={(item) => item.nextTier ? 172 : 148}
+                  topPadding={0}
+                  bottomPadding={16}
+                  overscanPx={480}
+                  style={{ flex: 1 }}
+                  renderItem={(item) => (
+                    <div style={{ paddingBottom: 8 }}>
+                      <MasteryCardRow
+                        m={item}
+                        claimCardMastery={claimCardMastery}
+                        progress={progress}
+                      />
+                    </div>
+                  )}
+                />
               )}
             </div>
           </div>

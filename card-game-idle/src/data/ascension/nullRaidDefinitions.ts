@@ -2,8 +2,8 @@
  * Null Raid definitions for the Ascension game mode.
  *
  * A Null Raid is a timed, multi-encounter sequence of boss fights that must
- * be completed without pause. Completing encounters awards Entropy and
- * Aberrated Shards. A 5% chance on the final boss kill drops a rare Angel
+ * be completed without pause. Completing encounters awards Entropic Energy and
+ * Aberrated Shards. A 1% chance on the final boss kill drops a rare Angel
  * card unique to that raid's associated card set.
  */
 
@@ -37,13 +37,15 @@ export interface NullRaidDefinition {
   recommendedResonance: number;
   /** Ordered list of boss ids for each encounter. */
   encounterBossIds: string[];
-  /** Entropy granted per defeated encounter boss. */
+  /** Entropic Energy required to start the raid (currently 0 for all raids). */
+  entryEntropyCost: number;
+  /** Entropic Energy granted per defeated encounter boss. */
   entropyPerEncounter: number;
   /** Aberrated Shards granted per defeated encounter boss. */
   shardsPerEncounter: number;
   /** Cooldown after a failed run (ms). Default: 5 minutes. */
   cooldownMs: number;
-  /** Definition id of the rare Angel dropped on final boss kill (5% chance). */
+  /** Definition id of the rare Angel dropped on final boss kill (1% chance). */
   completionAngelId?: string;
 }
 
@@ -55,20 +57,36 @@ export interface NullRaidDefinition {
 //   3-star encounters: 10M – 2.5B
 
 const NULL_RAID_BOSSES: NullRaidBoss[] = [
-  // ── The Fractured Verdict (1★, Neutrality) ────────────────────────────
+  // ── The Null Verdict of Stars (1★, Neutrality) ─────────────────────────
   {
-    id: 'nr-verdict-voidfract',
-    name: 'Voidfract, the Undecided',
-    hp: 2_500_000,
+    id: 'nr-neutrality-event-horizon-arbiter',
+    name: 'Event Horizon Arbiter',
+    hp: 3_000_000,
     description:
-      'A fragment of shattered neutrality that cannot commit to either side of balance.',
+      'A cosmic neutrality judge that erases nebulae and timelines with a single breath.',
   },
   {
-    id: 'nr-verdict-null-arbitrator',
-    name: 'The Null Arbitrator',
-    hp: 8_000_000,
+    id: 'nr-neutrality-verdant-null',
+    name: 'Verdant Null, Last Wish Executioner',
+    hp: 8_500_000,
     description:
-      'The final judge of the Fractured Verdict — its silence is absolute, its verdict final.',
+      'The last wish-judge of the void court — it closes the universe like a final verdict.',
+  },
+
+  // ── Crown of the Abyssal Inferno (1★, Pyroabyss) ───────────────────────
+  {
+    id: 'nr-pyroabyss-ember-eventide-tyrant',
+    name: 'Ember Eventide Tyrant',
+    hp: 3_250_000,
+    description:
+      'An infernal war-beast of ash and stardust whose roars shatter spacetime.',
+  },
+  {
+    id: 'nr-pyroabyss-pyraxis-nullstar-sovereign',
+    name: 'Pyraxis Nullstar Sovereign',
+    hp: 9_000_000,
+    description:
+      'A regal voidfire sovereign that extinguishes galaxies and reignites them as auroras.',
   },
 ];
 
@@ -83,19 +101,35 @@ export const NULL_RAID_BOSS_MAP = new Map<string, NullRaidBoss>(
 export const NULL_RAID_DEFINITIONS: NullRaidDefinition[] = [
   // ── 1-Star Raids ─────────────────────────────────────────────────────────
   {
-    id: 'raid-fractured-verdict',
-    name: 'The Fractured Verdict',
+    id: 'raid-null-verdict-of-stars',
+    name: 'The Null Verdict of Stars',
     stars: 1,
     description:
-      'The equilibrium shattered. Two forces that refuse to settle demand a reckoning. ' +
-      'Neutrality-focused decks excel here — Patience and Attenuation are rewarded.',
+      'The final courtroom of stars has opened. Neutrality and wish-light merge into a verdict that deletes timelines.',
     associatedSet: 'Neutrality',
-    resonanceRequired: 50_000,
-    recommendedResonance: 120_000,
-    encounterBossIds: ['nr-verdict-voidfract', 'nr-verdict-null-arbitrator'],
-    entropyPerEncounter: 75,
-    shardsPerEncounter: 20,
+    resonanceRequired: 120_000,
+    recommendedResonance: 240_000,
+    encounterBossIds: ['nr-neutrality-event-horizon-arbiter', 'nr-neutrality-verdant-null'],
+    entryEntropyCost: 0,
+    entropyPerEncounter: 85,
+    shardsPerEncounter: 22,
     cooldownMs: 5 * 60 * 1000,
-    completionAngelId: 'tx-angel-null-verdant',
+    completionAngelId: 'tx-angel-starbound-null-archangel',
+  },
+  {
+    id: 'raid-crown-of-the-dying-constellation',
+    name: 'Crown of the Abyssal Inferno',
+    stars: 1,
+    description:
+      'The Abyss Furnace has swallowed a dead wish-star and crowned two infernal sovereigns in its place.',
+    associatedSet: 'Pyroabyss',
+    resonanceRequired: 140_000,
+    recommendedResonance: 260_000,
+    encounterBossIds: ['nr-pyroabyss-ember-eventide-tyrant', 'nr-pyroabyss-pyraxis-nullstar-sovereign'],
+    entryEntropyCost: 0,
+    entropyPerEncounter: 90,
+    shardsPerEncounter: 24,
+    cooldownMs: 5 * 60 * 1000,
+    completionAngelId: 'tx-angel-pyro-first-ember',
   },
 ];

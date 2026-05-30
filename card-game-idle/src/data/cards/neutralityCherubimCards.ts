@@ -1,6 +1,6 @@
 import type { CherubimDefinition } from '@/types/cards';
 
-// ���� Starter Cherubim cards ��������������������������������������������������������������������������������������������������������
+// Starter Cherubim cards.
 
 export const neutralityStarterCherubimCards: CherubimDefinition[] = [
   {
@@ -78,7 +78,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
       { type: 'neutrality_designate_vessel' }],
   }];
 
-// ���� Pack-exclusive Cherubim cards ������������������������������������������������������������������������������������������
+// Pack-exclusive Cherubim cards.
 
 export const neutralityPackCherubimCards: CherubimDefinition[] = [
   {

@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import type { CardDefinition, CardFaceState } from '@/types/cards';
 import type { CardFinish } from '@/types/cards';
 import { warmTheme } from '@/ui/theme';
-import { getCardThemePackStyle, getFontScale } from '@/ui/preferences';
+import { getCardThemePackForElement, getCardThemePackStyle, getFontScale } from '@/ui/preferences';
 
 const CARD_BACKGROUND_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
 const CARD_BACKGROUND_FOLDERS: Partial<Record<string, string>> = {
@@ -114,6 +114,14 @@ interface CardFaceMetrics {
 }
 
 const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
+  'tx-angel-starbound-null-archangel': 'Starbound Null Archangel.png',
+  'tx-angel-pyro-first-ember': 'Starflame Cataclysm Archangel.png',
+  'tx-sera-null-entropy': 'Null Entropy.png',
+  'tx-cher-null-sentinel': 'Null Sentinel.png',
+  'tx-oph-null-convergence': 'Null Convergence.png',
+  'tx-sera-pyro-singularity': 'Abyssal Singularity Seraph.png',
+  'tx-cher-pyro-vow': 'Cinder Vow Cherub.png',
+  'tx-oph-pyro-hellstar': 'Hellstar Ophanim.png',
   'ophanim-neutral-cherubim-recall': 'Chaos Recall.png',
   'ser-fire-voidflame': 'Void-flame Seraphim.png',
   'bgi-ophanim-whiteblack-supernova': 'White-black Supernova.png',
@@ -150,6 +158,10 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'sv-eternal-glacier-signal': 'Glacier Beacon.png',
   'sv-eternal-white-static': 'White Requiem.png',
   'sv-eternal-sleet-choir': 'Blizzard Requiem.png',
+  'sv-infinite-aurora-collapse': 'Aurora Singularity.png',
+  'sv-infinite-black-ice-throne': 'Black Ice Dominion.png',
+  'sv-infinite-crystal-storm': 'Crystal Maelstrom.png',
+  'sv-infinite-neon-snowfall': 'Neon Deluge.png',
   // Reworked cherubim without dedicated exported PNGs yet: keep them on set-matched art.
   'cherubim-thornbound-null-thorn': 'Thornwake Ditch.png',
   'cherubim-thornbound-path-keeper': 'Spitebloom Sink.png',
@@ -322,6 +334,93 @@ function getHolofoilAnimationStyle(definitionId: string): CSSProperties {
   };
 }
 
+function isTranscendentCard(card: CardDefinition | null | undefined): boolean {
+  if (!card) return false;
+  // Keep rarity visuals authoritative: Infinity/Eternal cards should never render
+  // with Transcendent red framing, even if their definitionId uses tx-.
+  if (card.rarity === 'Infinite' || card.rarity === 'Eternal') return false;
+  return card.definitionId.startsWith('tx-');
+}
+
+function getTranscendentFoilAnimationStyle(definitionId: string): CSSProperties {
+  const hash = hashDefinitionId(definitionId);
+  const stagger = -((hash % 13) * 0.19);
+
+  return {
+    animationName: 'transcendentFoilShift, transcendentFoilPulse, transcendentFoilGlint',
+    animationDuration: '7.6s, 7.6s, 7.6s',
+    animationTimingFunction: 'ease-in-out, ease-in-out, ease-in-out',
+    animationIterationCount: 'infinite, infinite, infinite',
+    animationDirection: 'alternate, alternate, alternate',
+    animationDelay: `${stagger}s, ${stagger * 0.74}s, ${stagger * 1.12}s`,
+  };
+}
+
+function mergeAnimationStyles(...styles: CSSProperties[]): CSSProperties {
+  const valid = styles.filter(style => typeof style.animationName === 'string' && style.animationName.length > 0);
+  if (valid.length === 0) return {};
+  if (valid.length === 1) return valid[0];
+
+  const names: string[] = [];
+  const durations: string[] = [];
+  const timings: string[] = [];
+  const counts: string[] = [];
+  const directions: string[] = [];
+  const delays: string[] = [];
+
+  const splitList = (value: unknown, fallback: string): string[] => {
+    if (typeof value !== 'string' || value.length === 0) return [];
+    return value.split(',').map(v => v.trim()).map(v => (v.length > 0 ? v : fallback));
+  };
+
+  for (const style of valid) {
+    const localNames = splitList(style.animationName, '').filter(Boolean);
+    const localDurations = splitList(style.animationDuration, '6s');
+    const localTimings = splitList(style.animationTimingFunction, 'ease-in-out');
+    const localCounts = splitList(style.animationIterationCount, 'infinite');
+    const localDirections = splitList(style.animationDirection, 'alternate');
+    const localDelays = splitList(style.animationDelay, '0s');
+
+    localNames.forEach((name, index) => {
+      names.push(name);
+      durations.push(localDurations[index] ?? localDurations[localDurations.length - 1] ?? '6s');
+      timings.push(localTimings[index] ?? localTimings[localTimings.length - 1] ?? 'ease-in-out');
+      counts.push(localCounts[index] ?? localCounts[localCounts.length - 1] ?? 'infinite');
+      directions.push(localDirections[index] ?? localDirections[localDirections.length - 1] ?? 'alternate');
+      delays.push(localDelays[index] ?? localDelays[localDelays.length - 1] ?? '0s');
+    });
+  }
+
+  return {
+    animationName: names.join(', '),
+    animationDuration: durations.join(', '),
+    animationTimingFunction: timings.join(', '),
+    animationIterationCount: counts.join(', '),
+    animationDirection: directions.join(', '),
+    animationDelay: delays.join(', '),
+  };
+}
+
+const DENSE_CARD_FACE_STYLE_CACHE = new Map<string, CSSProperties>();
+const DENSE_CARD_FACE_STYLE_CACHE_VERSION = 'dense-face-v4-transcedence-precedence';
+
+function getDenseCardFaceCacheKey(
+  card: CardDefinition | null | undefined,
+  finish: CardFinish,
+  faceState: CardFaceState,
+): string {
+  if (!card) return `${DENSE_CARD_FACE_STYLE_CACHE_VERSION}::null::${finish}::${faceState}::${warmTheme.surfaceStrong}`;
+  return [
+    DENSE_CARD_FACE_STYLE_CACHE_VERSION,
+    card.definitionId,
+    finish,
+    faceState,
+    card.rarity,
+    getCardThemePackForElement(card.element),
+    warmTheme.surfaceStrong,
+  ].join('::');
+}
+
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
 
@@ -401,6 +500,7 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
 export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal', faceState: CardFaceState = 'front'): CSSProperties {
   const theme = getCardThemePackStyle(card);
   const isBackFace = faceState === 'back';
+  const isTranscendent = isTranscendentCard(card);
   const isInfinite = card?.rarity === 'Infinite';
   const isEternal = card?.rarity === 'Eternal';
   if (isBackFace) {
@@ -416,15 +516,28 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   }
   const infiniteGlassStyle = isInfinite ? getInfiniteGlassAnimationStyle() : {};
   const eternalGlassStyle = isEternal ? getEternalGlassAnimationStyle() : {};
+  const transcendentGlassStyle = isTranscendent && card ? getTranscendentFoilAnimationStyle(card.definitionId) : {};
 
   const holofoilStyle = finish === 'holo' && card
     ? getHolofoilAnimationStyle(card.definitionId)
     : {};
 
-  const animStyle = isInfinite ? infiniteGlassStyle : isEternal ? eternalGlassStyle : holofoilStyle;
+  const tierAnimationStyle = isTranscendent
+    ? transcendentGlassStyle
+    : isInfinite
+      ? infiniteGlassStyle
+      : isEternal
+        ? eternalGlassStyle
+        : {};
+  const animStyle = mergeAnimationStyles(tierAnimationStyle, holofoilStyle);
 
   const imageUrl = getCardBackgroundUrl(card);
   const fallbackImageUrl = getCardBackUrl(card);
+
+  const infiniteFrameLayer =
+    'linear-gradient(180deg, rgba(4,4,8,0.96) 0%, rgba(10,10,14,0.95) 8%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 86%, rgba(10,10,14,0.95) 92%, rgba(4,4,8,0.96) 100%)';
+  const eternalFrameLayer =
+    'linear-gradient(180deg, rgba(20,10,34,0.97) 0%, rgba(30,16,50,0.96) 8%, rgba(176,42,58,0.32) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(176,42,58,0.36) 90%, rgba(30,16,50,0.96) 92%, rgba(20,10,34,0.97) 100%)';
 
   const infiniteLayers = [
     'linear-gradient(125deg, rgba(255,255,255,0.22) 0%, rgba(196,222,255,0.12) 24%, rgba(255,255,255,0.05) 48%, rgba(24,28,38,0.14) 74%, rgba(255,255,255,0.14) 100%)',
@@ -440,6 +553,17 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     'linear-gradient(180deg, rgba(10,8,14,0.1) 0%, rgba(12,10,16,0.03) 52%, rgba(10,8,14,0.12) 100%)',
   ];
 
+  const transcendentFrameLayer =
+    'linear-gradient(180deg, rgba(62, 0, 18, 0.98) 0%, rgba(118, 8, 30, 0.95) 8%, rgba(255, 245, 248, 0.24) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(255, 214, 226, 0.28) 90%, rgba(118, 8, 30, 0.95) 92%, rgba(62, 0, 18, 0.98) 100%)';
+
+  const transcendentLayers = [
+    'linear-gradient(118deg, rgba(255,255,255,0.22) 0%, rgba(255, 222, 232, 0.18) 18%, rgba(255, 132, 164, 0.18) 42%, rgba(98, 0, 24, 0.2) 70%, rgba(255, 240, 245, 0.16) 100%)',
+    'radial-gradient(ellipse at 22% 14%, rgba(255,255,255,0.26) 0%, rgba(255, 214, 226, 0.16) 18%, rgba(255,255,255,0) 48%)',
+    'radial-gradient(circle at 34% 28%, rgba(255,255,255,0.9) 0 1.4px, rgba(255, 220, 232, 0.55) 1.4px 2.2px, rgba(255,255,255,0) 2.4px)',
+    'linear-gradient(212deg, rgba(255,255,255,0) 22%, rgba(255, 244, 248, 0.26) 44%, rgba(255, 176, 202, 0.14) 58%, rgba(255,255,255,0) 74%)',
+    'linear-gradient(180deg, rgba(18, 0, 6, 0.08) 0%, rgba(18, 0, 6, 0.02) 52%, rgba(18, 0, 6, 0.12) 100%)',
+  ];
+
   const holoLayers = [
     'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0.42) 49%, rgba(255,255,255,0.08) 64%, rgba(255,255,255,0) 100%)',
     'linear-gradient(108deg, rgba(255, 78, 156, 0.3) 0%, rgba(255, 174, 64, 0.28) 18%, rgba(250, 241, 112, 0.22) 34%, rgba(82, 226, 255, 0.28) 52%, rgba(114, 255, 187, 0.24) 70%, rgba(173, 130, 255, 0.3) 86%, rgba(255, 78, 156, 0.24) 100%)',
@@ -448,7 +572,9 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     'linear-gradient(180deg, rgba(26, 18, 12, 0.1) 0%, rgba(26, 18, 12, 0.03) 55%, rgba(26, 18, 12, 0.08) 100%)',
   ];
 
-  const overlayLayers = isInfinite ? infiniteLayers : isEternal ? eternalLayers : (finish === 'holo' ? holoLayers : []);
+  const frameLayers = isTranscendent ? [transcendentFrameLayer] : isInfinite ? [infiniteFrameLayer] : isEternal ? [eternalFrameLayer] : [];
+  const overlayCoreLayers = isTranscendent ? transcendentLayers : isInfinite ? infiniteLayers : isEternal ? eternalLayers : (finish === 'holo' ? holoLayers : []);
+  const overlayLayers = [...frameLayers, ...overlayCoreLayers];
 
   const infiniteRibbon = [
     'linear-gradient(180deg, rgba(12,12,16,0.95) 0%, rgba(24,24,30,0.94) 100%)',
@@ -460,13 +586,50 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   ].join(', ');
 
   const themeVars: CSSProperties & Record<string, string> = {
-    '--card-face-text': isInfinite ? 'rgba(244,246,255,0.96)' : CONSISTENT_CARD_TEXT,
-    '--card-face-text-soft': isInfinite ? 'rgba(236,240,255,0.92)' : CONSISTENT_CARD_TEXT_SOFT,
-    '--card-face-text-muted': isInfinite ? 'rgba(218,224,244,0.84)' : CONSISTENT_CARD_TEXT_MUTED,
-    '--card-face-ribbon': isInfinite ? infiniteRibbon : theme.ribbon,
-    '--card-face-panel': isInfinite ? infinitePanel : theme.panel,
-    '--card-face-border': isInfinite ? 'rgba(214,226,255,0.52)' : theme.border,
+    '--card-face-text': isInfinite
+      ? 'rgba(244,246,255,0.96)'
+      : isTranscendent
+        ? 'rgba(255,246,249,0.97)'
+      : isEternal
+        ? 'rgba(246,230,248,0.96)'
+        : CONSISTENT_CARD_TEXT,
+    '--card-face-text-soft': isInfinite
+      ? 'rgba(236,240,255,0.92)'
+      : isTranscendent
+        ? 'rgba(255,232,240,0.94)'
+      : isEternal
+        ? 'rgba(238,214,244,0.92)'
+        : CONSISTENT_CARD_TEXT_SOFT,
+    '--card-face-text-muted': isInfinite
+      ? 'rgba(218,224,244,0.84)'
+      : isTranscendent
+        ? 'rgba(255,214,226,0.88)'
+      : isEternal
+        ? 'rgba(226,198,234,0.84)'
+        : CONSISTENT_CARD_TEXT_MUTED,
+    '--card-face-ribbon': isInfinite
+      ? infiniteRibbon
+      : isTranscendent
+        ? 'linear-gradient(180deg, rgba(66, 0, 16, 0.97) 0%, rgba(122, 10, 34, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255, 214, 226, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
+      : isEternal
+        ? 'linear-gradient(180deg, rgba(16, 6, 34, 0.98) 0%, rgba(36, 14, 68, 0.97) 100%), linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(180, 32, 66, 0.16) 48%, rgba(255,255,255,0.02) 100%)'
+        : theme.ribbon,
+    '--card-face-panel': isInfinite
+      ? infinitePanel
+      : isTranscendent
+        ? 'linear-gradient(180deg, rgba(54, 0, 14, 0.96) 0%, rgba(102, 8, 30, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255, 204, 220, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
+      : isEternal
+        ? 'linear-gradient(180deg, rgba(14, 6, 28, 0.97) 0%, rgba(28, 12, 54, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(188, 28, 62, 0.14) 50%, rgba(255,255,255,0.02) 100%)'
+        : theme.panel,
+    '--card-face-border': isInfinite ? 'rgba(214,226,255,0.52)' : isTranscendent ? 'rgba(255, 126, 150, 0.72)' : isEternal ? 'rgba(210,92,132,0.56)' : theme.border,
     '--card-face-shadow': theme.shadow,
+    '--card-face-ribbon-animation-name': isEternal && !isTranscendent ? 'eternalBarCrimsonPulse' : 'none',
+    '--card-face-ribbon-animation-duration': isEternal && !isTranscendent ? '4.1s' : '0s',
+    '--card-face-panel-animation-name': isEternal && !isTranscendent ? 'eternalBarCrimsonPulse' : 'none',
+    '--card-face-panel-animation-duration': isEternal && !isTranscendent ? '4.1s' : '0s',
+    '--card-face-animation-timing': 'ease-in-out',
+    '--card-face-animation-iteration': 'infinite',
+    '--card-face-animation-direction': 'alternate',
   };
   const tintOverlay = [
     `radial-gradient(circle at 78% 14%, ${theme.highlight} 0%, rgba(255,255,255,0) 36%)`,
@@ -480,7 +643,11 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   const layerPositions = Array(layerCount).fill('center').join(', ');
   const layerSizes = Array(layerCount).fill('cover').join(', ');
   const baseBlendModes = [
-    ...overlayLayers.map((_, index) => (index === 0 ? 'screen' : index === overlayLayers.length - 1 ? 'multiply' : 'overlay')),
+    ...overlayLayers.map((_, index) => {
+      if (index < frameLayers.length) return 'normal';
+      const coreIndex = index - frameLayers.length;
+      return coreIndex === 0 ? 'screen' : coreIndex === overlayCoreLayers.length - 1 ? 'multiply' : 'overlay';
+    }),
     'screen',
     'overlay',
   ];
@@ -525,6 +692,150 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   };
 }
 
+export function getDenseCardFaceBackgroundStyle(
+  card: CardDefinition | null | undefined,
+  finish: CardFinish = 'normal',
+  faceState: CardFaceState = 'front',
+): CSSProperties {
+  const cacheKey = getDenseCardFaceCacheKey(card, finish, faceState);
+  const cached = DENSE_CARD_FACE_STYLE_CACHE.get(cacheKey);
+  if (cached) return cached;
+
+  const theme = getCardThemePackStyle(card);
+  const isBackFace = faceState === 'back';
+  const isTranscendent = isTranscendentCard(card);
+  const isInfinite = card?.rarity === 'Infinite';
+  const isEternal = card?.rarity === 'Eternal';
+  const tierAnimationStyle = isTranscendent && card
+    ? getTranscendentFoilAnimationStyle(card.definitionId)
+    : isInfinite
+      ? getInfiniteGlassAnimationStyle()
+      : isEternal
+        ? getEternalGlassAnimationStyle()
+        : {};
+  const holofoilAnimationStyle = finish === 'holo' && card
+    ? getHolofoilAnimationStyle(card.definitionId)
+    : {};
+  const animStyle = mergeAnimationStyles(tierAnimationStyle, holofoilAnimationStyle);
+
+  if (isBackFace) {
+    const backStyle = getCardBackBackgroundStyle(card, { dimmed: false });
+    const style: CSSProperties = {
+      ...backStyle,
+      backgroundColor: warmTheme.surfaceStrong,
+      boxShadow: cardFacePalette.shadow,
+    };
+    DENSE_CARD_FACE_STYLE_CACHE.set(cacheKey, style);
+    return style;
+  }
+
+  const imageUrl = getCardBackgroundUrl(card);
+  const fallbackImageUrl = getCardBackUrl(card);
+  const imageLayers: string[] = [];
+  if (imageUrl) imageLayers.push(`url("${imageUrl}")`);
+  if (fallbackImageUrl && fallbackImageUrl !== imageUrl) imageLayers.push(`url("${fallbackImageUrl}")`);
+
+  const tintLayers = [
+    `radial-gradient(circle at 78% 14%, ${theme.highlight} 0%, rgba(255,255,255,0) 38%)`,
+  ];
+
+  const rarityFrameOverlay = isTranscendent
+    ? 'linear-gradient(180deg, rgba(62, 0, 18, 0.98) 0%, rgba(118, 8, 30, 0.95) 8%, rgba(255, 238, 244, 0.18) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(255, 214, 226, 0.2) 90%, rgba(118, 8, 30, 0.95) 92%, rgba(62, 0, 18, 0.98) 100%)'
+    : isInfinite
+    ? 'linear-gradient(180deg, rgba(4,4,8,0.96) 0%, rgba(10,10,14,0.95) 8%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 86%, rgba(10,10,14,0.95) 92%, rgba(4,4,8,0.96) 100%)'
+    : isEternal
+      ? 'linear-gradient(180deg, rgba(20,10,34,0.97) 0%, rgba(30,16,50,0.96) 8%, rgba(176,42,58,0.32) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(176,42,58,0.36) 90%, rgba(30,16,50,0.96) 92%, rgba(20,10,34,0.97) 100%)'
+      : null;
+
+  const rarityToneOverlay = isTranscendent
+    ? 'linear-gradient(116deg, rgba(255,255,255,0.18) 0%, rgba(255, 224, 234, 0.18) 24%, rgba(255, 120, 154, 0.16) 50%, rgba(108, 0, 24, 0.18) 76%, rgba(255, 238, 244, 0.14) 100%)'
+    : isInfinite
+    ? 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(196,222,255,0.08) 34%, rgba(20,24,36,0.14) 100%)'
+    : isEternal
+      ? 'linear-gradient(135deg, rgba(184,78,124,0.26) 0%, rgba(124,34,94,0.18) 36%, rgba(18,10,28,0.24) 100%)'
+      : finish === 'holo'
+        ? 'linear-gradient(110deg, rgba(255,255,255,0.12) 0%, rgba(255,210,110,0.10) 28%, rgba(90,230,255,0.08) 56%, rgba(173,130,255,0.10) 100%)'
+        : null;
+
+  const sparkleOverlay = isTranscendent
+    ? 'radial-gradient(circle at 32% 26%, rgba(255,255,255,0.92) 0 1px, rgba(255, 224, 236, 0.6) 1px 2px, rgba(255,255,255,0) 2.2px)'
+    : null;
+
+  const backgroundLayers = [
+    ...(rarityFrameOverlay ? [rarityFrameOverlay] : []),
+    ...(rarityToneOverlay ? [rarityToneOverlay] : []),
+    ...(sparkleOverlay ? [sparkleOverlay] : []),
+    ...tintLayers,
+    ...(imageLayers.length > 0 ? imageLayers : [theme.baseGradient]),
+  ];
+
+  const backgroundBlendMode = [
+    ...(rarityFrameOverlay ? ['normal'] : []),
+    ...(rarityToneOverlay ? ['screen'] : []),
+    ...(sparkleOverlay ? ['screen'] : []),
+    'overlay',
+    ...(imageLayers.length > 0 ? imageLayers.map(() => 'normal') : ['normal']),
+  ].join(', ');
+
+  const style: CSSProperties = {
+    backgroundImage: backgroundLayers.join(', '),
+    backgroundColor: warmTheme.surfaceStrong,
+    backgroundPosition: Array(backgroundLayers.length).fill('center').join(', '),
+    backgroundSize: Array(backgroundLayers.length).fill('cover').join(', '),
+    backgroundRepeat: 'no-repeat',
+    backgroundBlendMode,
+    boxShadow: cardFacePalette.shadow,
+    '--card-face-text': isInfinite
+      ? 'rgba(244,246,255,0.96)'
+      : isTranscendent
+        ? 'rgba(255,246,249,0.97)'
+      : isEternal
+        ? 'rgba(246,230,248,0.96)'
+        : CONSISTENT_CARD_TEXT,
+    '--card-face-text-soft': isInfinite
+      ? 'rgba(236,240,255,0.92)'
+      : isTranscendent
+        ? 'rgba(255,232,240,0.94)'
+      : isEternal
+        ? 'rgba(238,214,244,0.92)'
+        : CONSISTENT_CARD_TEXT_SOFT,
+    '--card-face-text-muted': isInfinite
+      ? 'rgba(218,224,244,0.84)'
+      : isTranscendent
+        ? 'rgba(255,214,226,0.88)'
+      : isEternal
+        ? 'rgba(226,198,234,0.84)'
+        : CONSISTENT_CARD_TEXT_MUTED,
+    '--card-face-ribbon': isInfinite
+      ? 'linear-gradient(180deg, rgba(12,12,16,0.95) 0%, rgba(24,24,30,0.94) 100%)'
+      : isTranscendent
+        ? 'linear-gradient(180deg, rgba(66, 0, 16, 0.97) 0%, rgba(122, 10, 34, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255, 214, 226, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
+      : isEternal
+        ? 'linear-gradient(180deg, rgba(16, 6, 34, 0.98) 0%, rgba(36, 14, 68, 0.97) 100%), linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(180, 32, 66, 0.16) 48%, rgba(255,255,255,0.02) 100%)'
+      : theme.ribbon,
+    '--card-face-panel': isInfinite
+      ? 'linear-gradient(180deg, rgba(10,10,14,0.94) 0%, rgba(20,20,26,0.94) 100%)'
+      : isTranscendent
+        ? 'linear-gradient(180deg, rgba(54, 0, 14, 0.96) 0%, rgba(102, 8, 30, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255, 204, 220, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
+      : isEternal
+        ? 'linear-gradient(180deg, rgba(14, 6, 28, 0.97) 0%, rgba(28, 12, 54, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(188, 28, 62, 0.14) 50%, rgba(255,255,255,0.02) 100%)'
+      : theme.panel,
+    '--card-face-border': isInfinite ? 'rgba(214,226,255,0.52)' : isTranscendent ? 'rgba(255, 126, 150, 0.72)' : isEternal ? 'rgba(210,92,132,0.56)' : theme.border,
+    '--card-face-shadow': theme.shadow,
+    '--card-face-ribbon-animation-name': isEternal && !isTranscendent ? 'eternalBarCrimsonPulse' : 'none',
+    '--card-face-ribbon-animation-duration': isEternal && !isTranscendent ? '4.1s' : '0s',
+    '--card-face-panel-animation-name': isEternal && !isTranscendent ? 'eternalBarCrimsonPulse' : 'none',
+    '--card-face-panel-animation-duration': isEternal && !isTranscendent ? '4.1s' : '0s',
+    '--card-face-animation-timing': 'ease-in-out',
+    '--card-face-animation-iteration': 'infinite',
+    '--card-face-animation-direction': 'alternate',
+    ...animStyle,
+  } as CSSProperties;
+
+  DENSE_CARD_FACE_STYLE_CACHE.set(cacheKey, style);
+  return style;
+}
+
 export function getCardFaceMetrics(variant: CardFaceVariant) {
   const base = CARD_FACE_METRICS_BASE[variant];
   return Object.defineProperties({} as CardFaceMetrics, {
@@ -546,6 +857,11 @@ export function getCardNameRibbonStyle(variant: CardFaceVariant): CSSProperties 
     boxShadow: '0 1px 0 rgba(255, 255, 255, 0.5)',
     color: cardFacePalette.text,
     padding: CARD_FACE_METRICS_BASE[variant].ribbonPadding,
+    animationName: 'var(--card-face-ribbon-animation-name, none)',
+    animationDuration: 'var(--card-face-ribbon-animation-duration, 0s)',
+    animationTimingFunction: 'var(--card-face-animation-timing, ease-in-out)',
+    animationIterationCount: 'var(--card-face-animation-iteration, infinite)',
+    animationDirection: 'var(--card-face-animation-direction, alternate)',
   };
 }
 
@@ -567,7 +883,50 @@ export function getCardRulesPanelStyle(variant: CardFaceVariant): CSSProperties 
     marginTop: 'auto',
     maxHeight: maxHeights[variant],
     overflow: 'hidden',
+    animationName: 'var(--card-face-panel-animation-name, none)',
+    animationDuration: 'var(--card-face-panel-animation-duration, 0s)',
+    animationTimingFunction: 'var(--card-face-animation-timing, ease-in-out)',
+    animationIterationCount: 'var(--card-face-animation-iteration, infinite)',
+    animationDirection: 'var(--card-face-animation-direction, alternate)',
   };
+}
+
+export function getCardArtTopBottomBorderOverlayStyle(accent = 'rgba(236, 214, 176, 0.9)'): CSSProperties {
+  const accentSoft = 'rgba(236, 214, 176, 0.34)';
+  const accentFade = 'rgba(236, 214, 176, 0.0)';
+  const shadowSoft = 'rgba(28, 16, 9, 0.42)';
+
+  return {
+    position: 'absolute',
+    inset: 0,
+    borderRadius: 'inherit',
+    pointerEvents: 'none',
+    backgroundImage: [
+      `linear-gradient(90deg, ${accentFade} 0%, ${accentSoft} 18%, ${accent} 50%, ${accentSoft} 82%, ${accentFade} 100%)`,
+      `linear-gradient(90deg, ${accentFade} 0%, ${accentSoft} 30%, ${accentSoft} 70%, ${accentFade} 100%)`,
+      'radial-gradient(circle at 50% 0%, rgba(255, 242, 217, 0.55) 0 8px, rgba(255, 242, 217, 0) 13px)',
+      `linear-gradient(90deg, ${accentFade} 0%, ${accentSoft} 18%, ${accent} 50%, ${accentSoft} 82%, ${accentFade} 100%)`,
+      `linear-gradient(90deg, ${accentFade} 0%, ${accentSoft} 30%, ${accentSoft} 70%, ${accentFade} 100%)`,
+      'radial-gradient(circle at 50% 100%, rgba(255, 242, 217, 0.55) 0 8px, rgba(255, 242, 217, 0) 13px)',
+      `linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0) 80%, ${shadowSoft} 100%)`,
+    ].join(', '),
+    backgroundSize: '100% 1px, 100% 7px, 26px 14px, 100% 1px, 100% 7px, 26px 14px, 100% 100%',
+    backgroundPosition: 'center 8px, center 9px, center top, center calc(100% - 8px), center calc(100% - 15px), center bottom, center center',
+    backgroundRepeat: 'no-repeat',
+  };
+}
+
+export function getCardArtTopBottomBorderOverlayStyleForCard(card: CardDefinition | null | undefined): CSSProperties {
+  if (card?.rarity === 'Infinite') {
+    return getCardArtTopBottomBorderOverlayStyle('rgba(14, 14, 18, 0.98)');
+  }
+  if (card?.rarity === 'Eternal') {
+    return {
+      ...getCardArtTopBottomBorderOverlayStyle('rgba(42, 22, 72, 0.96)'),
+      boxShadow: 'inset 0 11px 22px rgba(188,44,62,0.26), inset 0 -11px 22px rgba(188,44,62,0.26)',
+    };
+  }
+  return getCardArtTopBottomBorderOverlayStyle();
 }
 
 export function getAdaptiveDescriptionMetrics(variant: CardFaceVariant, text: string) {

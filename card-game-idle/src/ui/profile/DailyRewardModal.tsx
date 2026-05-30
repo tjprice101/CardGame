@@ -51,7 +51,7 @@ export default function DailyRewardModal({ onClose }: Props) {
       }}>
         {/* Header */}
         <div className="ui-title-glow" style={{
-          fontSize: 18, fontWeight: 'bold', color: warmTheme.accentDeep,
+          fontSize: 18, fontWeight: 'bold', color: warmTheme.text,
           letterSpacing: 2, textAlign: 'center', marginBottom: 6,
         }}>
           Daily Login Reward
@@ -78,8 +78,8 @@ export default function DailyRewardModal({ onClose }: Props) {
                 padding: '8px 4px', textAlign: 'center',
                 borderRadius: 8,
                 background: isToday
-                  ? warmTheme.accentSoft
-                  : claimed ? 'rgba(0,0,0,0.06)' : 'rgba(0,0,0,0.03)',
+                  ? warmTheme.surfaceMuted
+                  : claimed ? warmTheme.surface : warmTheme.surfaceStrong,
                 border: isToday
                   ? `2px solid ${warmTheme.accent}`
                   : `1px solid ${warmTheme.border}`,
@@ -91,7 +91,7 @@ export default function DailyRewardModal({ onClose }: Props) {
                 }}>D{day}</div>
                 <div style={{
                   fontSize: 13, fontWeight: 'bold',
-                  color: isToday ? warmTheme.accentDeep : warmTheme.text,
+                  color: warmTheme.text,
                   marginTop: 2,
                 }}>{reward.shards}</div>
               </div>
@@ -102,7 +102,7 @@ export default function DailyRewardModal({ onClose }: Props) {
         {/* Pending reward callout */}
         <div style={{
           padding: '14px 16px', marginBottom: 18,
-          background: 'rgba(0,0,0,0.05)',
+          background: warmTheme.surface,
           border: `1px solid ${warmTheme.border}`,
           borderRadius: 10, textAlign: 'center',
         }}>
@@ -111,7 +111,7 @@ export default function DailyRewardModal({ onClose }: Props) {
           </div>
           <div style={{
             fontSize: 26, fontWeight: 'bold',
-            color: warmTheme.accentDeep, marginTop: 4,
+            color: warmTheme.text, marginTop: 4,
           }}>
             ✦ {pendingShards} Aberrated Shards
           </div>
@@ -141,7 +141,7 @@ export default function DailyRewardModal({ onClose }: Props) {
               background: warmTheme.button,
               border: `1px solid ${warmTheme.borderStrong}`,
               borderRadius: 8,
-              color: warmTheme.accentDeep,
+              color: warmTheme.text,
               cursor: 'pointer', fontWeight: 'bold',
               fontFamily: 'Georgia, serif', fontSize: 14, letterSpacing: 1,
             }}

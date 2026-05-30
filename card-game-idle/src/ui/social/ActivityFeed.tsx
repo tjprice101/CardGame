@@ -15,6 +15,7 @@ import {
   type ActivityKind,
 } from '@/state/activityStore';
 import { useSocialStore, selectSocialStatus } from '@/state/socialStore';
+import { useStore, selectProgress } from '@/state/store';
 import { AVATAR_BY_ID, DEFAULT_AVATAR_ID } from '@/data/profile/avatars';
 import { resolveTitleBadge } from '@/data/profile/titleBadges';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
@@ -89,6 +90,7 @@ export default function ActivityFeed() {
   const loadFeed = useActivityStore((s) => s.loadFeed);
   const connect = useActivityStore((s) => s.connectRealtime);
   const disconnect = useActivityStore((s) => s.disconnectRealtime);
+  const progress = useStore(selectProgress);
 
   useEffect(() => {
     if (status !== 'authenticated') return;
@@ -109,8 +111,8 @@ export default function ActivityFeed() {
   return (
     <ul style={list}>
       {items.map((event) => {
-        const avatar = AVATAR_BY_ID.get(event.avatarId) ?? AVATAR_BY_ID.get(DEFAULT_AVATAR_ID);
-        const badge = resolveTitleBadge(event.titleId);
+        const avatar = AVATAR_BY_ID[event.avatarId] ?? AVATAR_BY_ID[DEFAULT_AVATAR_ID];
+        const badge = resolveTitleBadge(event.titleId, progress);
         return (
           <li key={event.id} style={row}>
             <div style={avatarChip}>{avatar?.glyph ?? '?'}</div>

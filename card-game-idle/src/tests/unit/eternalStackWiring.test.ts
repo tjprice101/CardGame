@@ -101,20 +101,51 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     expect((r as any).turn.secondaryCounters.pyro).toBe(0);
   });
 
-  it('Mechanical Eternity cards are Core-only and do not require Reactor Flux effects', () => {
+  it('pyro_transcendent_confluence spends matched Inferno and Chroma pairs', () => {
+    const fakeDeckCard = { instanceId: 't', definitionId: 'tx-sera-pyro-singularity', finish: 'normal' as const };
+    const fakeBoard: any = { frontSlots: [], backSlots: [], activeBoardEffects: [] };
+    const fakeDeck: any = {
+      deckList: [],
+      extraDeck: [],
+      drawPile: [{ instanceId: 'draw_1', definitionId: 'ophanim-fire-cinder-draw' }],
+      hand: [],
+      discardPile: [],
+    };
+    const fakeTurn: any = {
+      trail: 0,
+      cardsPlayedThisTurn: 0,
+      nextCardMultiplied: false,
+      eternalStacks: { pyro: 5 },
+      secondaryCounters: { pyro: 4 },
+    };
+    const confluence: CardEffect = {
+      type: 'pyro_transcendent_confluence',
+      consume: 3,
+      oblivionPerPair: 1000,
+      drawAtPairs: 3,
+      empowerAtPairs: 3,
+    } as any;
+
+    const result = CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: [confluence] });
+    expect((result as any).oblivionBonus).toBe(3000);
+    expect((result as any).turn.eternalStacks.pyro).toBe(2);
+    expect((result as any).turn.secondaryCounters.pyro).toBe(1);
+    expect((result as any).turn.nextCardMultiplied).toBe(true);
+    expect((result as any).deck.hand).toHaveLength(1);
+  });
+
+  it('Mechanical Eternity cards are Core-only and do not require retired secondary effects', () => {
     const mechEternals = eternalCards.filter(card => card.definitionId.startsWith('btei-mech-'));
     expect(mechEternals.length).toBeGreaterThan(0);
 
     for (const card of mechEternals) {
       const effects = flatten(card as any);
       const hasFluxGain = effects.some((effect: any) => effect.type === 'set_secondary_gain' && effect.kind === 'mech');
-      const hasFluxVent = effects.some((effect: any) => effect.type === 'mech_reactor_flux_vent');
       expect(hasFluxGain).toBe(false);
-      expect(hasFluxVent).toBe(false);
     }
   });
 
-  it('Mechanical Infinite cards are Core-only and do not require Reactor Flux effects', () => {
+  it('Mechanical Infinite cards are Core-only and do not require retired secondary effects', () => {
     const mechInfinites = infiniteCards.filter(card => (
       card.definitionId === 'inf-machina-eternal-loop'
       || card.definitionId === 'inf-brass-eidolon-prime'
@@ -126,10 +157,8 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     for (const card of mechInfinites) {
       const effects = flatten(card as any);
       const hasFluxGain = effects.some((effect: any) => effect.type === 'set_secondary_gain' && effect.kind === 'mech');
-      const hasFluxVent = effects.some((effect: any) => effect.type === 'mech_reactor_flux_vent');
       const hasOverclock = effects.some((effect: any) => effect.type === 'overclock');
       expect(hasFluxGain).toBe(false);
-      expect(hasFluxVent).toBe(false);
       expect(hasOverclock).toBe(false);
     }
   });
@@ -177,5 +206,22 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     const r = CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: summary });
     // Verifies the effects don't crash the executor (gain runs; ignite no-op with 0; resound no-op with 0).
     expect(r).toBeTruthy();
+  });
+
+  it('UI renders Pyro Confluence with human labels', () => {
+    const summary = getCardSummarySections({
+      definitionId: 'tx-test-confluence',
+      type: 'Ophanim',
+      element: 'Fire',
+      rarity: 'Legendary',
+      name: 'Confluence Test',
+      description: '',
+      artKey: 'tx_test_confluence',
+      effects: [{ type: 'pyro_transcendent_confluence', consume: 2, oblivionPerPair: 900, empowerAtPairs: 2 }],
+    } as any, { abilityTextMode: 'canonical' });
+    const flat = summary.flatMap(section => section.lines).join(' | ');
+    expect(flat).toMatch(/Confluence/);
+    expect(flat).toMatch(/Inferno Tier/);
+    expect(flat).toMatch(/Chroma Ember/);
   });
 });

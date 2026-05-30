@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -7,17 +7,17 @@ import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions
 import { getCardFinishKey, getCardFinishLabel, getOwnedCopiesForFinish, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import {
   cardFacePalette,
+  getDenseCardFaceBackgroundStyle,
   getCardBackBackgroundStyle,
-  getCardFaceBackgroundStyle,
+  getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
-import CardEngineCallout from '@/ui/components/CardEngineCallout';
+import VirtualizedList from '@/ui/components/VirtualizedList';
 import CollectionCardDetail from './CollectionCardDetail';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -51,6 +51,14 @@ interface SelectedCard {
   owned: number;
 }
 
+interface CollectionVirtualRow {
+  key: string;
+  kind: 'cards' | 'heading' | 'subheading';
+  height: number;
+  label?: string;
+  entries?: CollectionVariantEntry[];
+}
+
 export default function CollectionViewer({ onClose }: Props) {
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
   // Use larger readable sizes than the default 'grid' metrics (7/9/8px is too small)
@@ -63,6 +71,7 @@ export default function CollectionViewer({ onClose }: Props) {
   const toggleFavoriteCard = useStore(s => s.toggleFavoriteCard);
   const markCollectionViewed = useStore(s => s.markCollectionViewed);
   const lastViewedSnapshotRef = useRef<number>(lastCollectionViewedAt);
+  const gridViewportRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     // Snapshot the previous viewed-time once on mount so NEW badges remain visible
     // for this entire session and only clear next time the user opens the viewer.
@@ -70,14 +79,30 @@ export default function CollectionViewer({ onClose }: Props) {
     markCollectionViewed();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const [gridViewportWidth, setGridViewportWidth] = useState(0);
+  useEffect(() => {
+    const node = gridViewportRef.current;
+    if (!node) return;
+
+    const updateWidth = () => setGridViewportWidth(Math.max(0, node.clientWidth - 48));
+    updateWidth();
+
+    const resizeObserver = new ResizeObserver(() => updateWidth());
+    resizeObserver.observe(node);
+    return () => resizeObserver.disconnect();
+  }, []);
   const [activeElement, setActiveElement] = useState<string>('All');
   const [searchText, setSearchText] = useState('');
   const [ownedFilter, setOwnedFilter] = useState<'all' | 'owned' | 'missing'>('all');
   const [rarityFilter, setRarityFilter] = useState<string>('All');
   const [sortMode, setSortMode] = useState<'set' | 'rarity' | 'name' | 'recent'>('set');
-  const categoryOrderRank = new Map(STORE_COLLECTION_SET_ORDER.map((category, index) => [category, index]));
+  const categoryOrderRank = useMemo(
+    () => new Map(STORE_COLLECTION_SET_ORDER.map((category, index) => [category, index] as const)),
+    [],
+  );
+  const registryCards = useMemo(() => CardRegistry.getAll(), []);
 
-  const allCards = CardRegistry.getAll().flatMap(card => {
+  const allCards = useMemo(() => registryCards.flatMap(card => {
     const variants: CollectionVariantEntry[] = [];
     if (!isHoloOnlyCard(card)) {
       variants.push({
@@ -96,8 +121,9 @@ export default function CollectionViewer({ onClose }: Props) {
     return variants;
   }).sort((a, b) => {
     if (sortMode === 'rarity') {
-      if (RARITY_ORDER[a.card.rarity] !== RARITY_ORDER[b.card.rarity])
+      if (RARITY_ORDER[a.card.rarity] !== RARITY_ORDER[b.card.rarity]) {
         return RARITY_ORDER[b.card.rarity] - RARITY_ORDER[a.card.rarity];
+      }
       return a.card.name.localeCompare(b.card.name);
     }
     if (sortMode === 'name') {
@@ -110,28 +136,30 @@ export default function CollectionViewer({ onClose }: Props) {
       if (ta !== tb) return tb - ta;
       return a.card.name.localeCompare(b.card.name);
     }
-    // 'set' (default)
     const categoryA = getCardCategoryKey(a.card);
     const categoryB = getCardCategoryKey(b.card);
     const categoryRankA = categoryOrderRank.get(categoryA) ?? Number.MAX_SAFE_INTEGER;
     const categoryRankB = categoryOrderRank.get(categoryB) ?? Number.MAX_SAFE_INTEGER;
     if (categoryRankA !== categoryRankB) return categoryRankA - categoryRankB;
     if (categoryA !== categoryB) return categoryA.localeCompare(categoryB);
-    if (RARITY_ORDER[a.card.rarity] !== RARITY_ORDER[b.card.rarity])
+    if (RARITY_ORDER[a.card.rarity] !== RARITY_ORDER[b.card.rarity]) {
       return RARITY_ORDER[a.card.rarity] - RARITY_ORDER[b.card.rarity];
+    }
     if (a.card.name !== b.card.name) return a.card.name.localeCompare(b.card.name);
     return a.finish.localeCompare(b.finish);
-  });
+  }), [categoryOrderRank, collection, holoCollection, recentlyAcquired, registryCards, sortMode]);
 
-  const availableCategories = new Set(allCards.map(card => getCardCategoryKey(card.card)));
-  const orderedCategories = STORE_COLLECTION_SET_ORDER.filter(category => availableCategories.has(category));
-  const orderedCategorySet = new Set(orderedCategories);
-  const remainingCategories = Array.from(availableCategories)
-    .filter(category => !orderedCategorySet.has(category))
-    .sort((a, b) => a.localeCompare(b));
-  const elements = ['All', ...orderedCategories, ...remainingCategories];
+  const elements = useMemo(() => {
+    const availableCategories = new Set(allCards.map(card => getCardCategoryKey(card.card)));
+    const orderedCategories = STORE_COLLECTION_SET_ORDER.filter(category => availableCategories.has(category));
+    const orderedCategorySet = new Set(orderedCategories);
+    const remainingCategories = Array.from(availableCategories)
+      .filter(category => !orderedCategorySet.has(category))
+      .sort((a, b) => a.localeCompare(b));
+    return ['All', ...orderedCategories, ...remainingCategories];
+  }, [allCards]);
   const lowerSearch = searchText.trim().toLowerCase();
-  const filtered = allCards.filter(entry => {
+  const filtered = useMemo(() => allCards.filter(entry => {
     if (activeElement !== 'All' && getCardCategoryKey(entry.card) !== activeElement) return false;
     if (rarityFilter !== 'All' && entry.card.rarity !== rarityFilter) return false;
     if (ownedFilter === 'owned' && entry.owned <= 0) return false;
@@ -141,21 +169,62 @@ export default function CollectionViewer({ onClose }: Props) {
       if (!hay.includes(lowerSearch)) return false;
     }
     return true;
-  });
+  }), [activeElement, allCards, lowerSearch, ownedFilter, rarityFilter]);
 
-  const standardFiltered = filtered.filter(entry => entry.card.rarity !== 'Infinite');
-  const infiniteSections = INFINITE_TYPE_ORDER
+  const standardFiltered = useMemo(
+    () => filtered.filter(entry => entry.card.rarity !== 'Infinite'),
+    [filtered],
+  );
+  const infiniteSections = useMemo(() => INFINITE_TYPE_ORDER
     .map(typeLabel => ({
       typeLabel,
       entries: filtered.filter(entry => entry.card.rarity === 'Infinite' && entry.card.type === typeLabel),
     }))
-    .filter(section => section.entries.length > 0);
+    .filter(section => section.entries.length > 0), [filtered]);
 
-  const totalOwned = allCards.filter(card => card.owned > 0).length;
+  const totalOwned = useMemo(() => allCards.filter(card => card.owned > 0).length, [allCards]);
   const totalCards = allCards.length;
-  const visibleOwned = filtered.filter(card => card.owned > 0).length;
+  const visibleOwned = useMemo(() => filtered.filter(card => card.owned > 0).length, [filtered]);
   const visibleTotal = filtered.length;
   const isFilteringActive = activeElement !== 'All' || rarityFilter !== 'All' || ownedFilter !== 'all' || lowerSearch.length > 0;
+  const gridColumns = Math.max(1, Math.floor((gridViewportWidth + 10) / 158));
+
+  const virtualRows = useMemo(() => {
+    const rows: CollectionVirtualRow[] = [];
+    const pushCardRows = (entries: CollectionVariantEntry[], prefix: string) => {
+      for (let index = 0; index < entries.length; index += gridColumns) {
+        rows.push({
+          key: `${prefix}-${index}`,
+          kind: 'cards',
+          height: 214,
+          entries: entries.slice(index, index + gridColumns),
+        });
+      }
+    };
+
+    pushCardRows(standardFiltered, 'standard');
+
+    if (infiniteSections.length > 0) {
+      rows.push({
+        key: 'infinite-heading',
+        kind: 'heading',
+        height: standardFiltered.length > 0 ? 46 : 28,
+        label: 'Infinite Cards',
+      });
+
+      infiniteSections.forEach((section) => {
+        rows.push({
+          key: `${section.typeLabel}-label`,
+          kind: 'subheading',
+          height: 28,
+          label: section.typeLabel,
+        });
+        pushCardRows(section.entries, `infinite-${section.typeLabel}`);
+      });
+    }
+
+    return rows;
+  }, [gridColumns, infiniteSections, standardFiltered]);
 
   const renderCardEntry = (entry: CollectionVariantEntry) => {
     const { card, finish, owned } = entry;
@@ -163,8 +232,10 @@ export default function CollectionViewer({ onClose }: Props) {
     const acquiredAt = recentlyAcquired?.[card.definitionId] ?? 0;
     const isNew = owned > 0 && acquiredAt > lastViewedSnapshotRef.current;
     const isLockedStandardHolo = owned <= 0 && finish === 'holo' && card.rarity !== 'Infinite' && card.rarity !== 'Eternal';
+    const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
+    const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
     const cardSurfaceStyle = owned > 0
-      ? getCardFaceBackgroundStyle(card, finish)
+      ? getDenseCardFaceBackgroundStyle(card, finish)
       : (isLockedStandardHolo
         ? getLockedHoloCardBackStyle(card)
         : getCardBackBackgroundStyle(card, { dimmed: false }));
@@ -173,9 +244,6 @@ export default function CollectionViewer({ onClose }: Props) {
       <div
         key={entry.key}
         onClick={() => setSelectedCard({ card, finish, owned })}
-        className={finish === 'holo' || card.rarity === 'Infinite' || card.rarity === 'Eternal'
-          ? `holofoil-menu-card${card.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${card.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
-          : undefined}
         style={{
           width: 148,
           ...cardSurfaceStyle,
@@ -260,9 +328,11 @@ export default function CollectionViewer({ onClose }: Props) {
           </button>
         )}
 
+        <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
+
         <div style={getCardNameRibbonStyle('grid')}>
           <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
-            {getDisplayCardTypeLabel(card.type)} · {getCardFinishLabel(finish)}
+            {finishLabel ? `${getDisplayCardTypeLabel(card.type)} · ${finishLabel}` : getDisplayCardTypeLabel(card.type)}
           </div>
           <div style={{
             fontSize: faceMetrics.nameSize,
@@ -277,30 +347,17 @@ export default function CollectionViewer({ onClose }: Props) {
         </div>
 
         <div style={getCardRulesPanelStyle('grid')}>
-          {owned > 0 && (
-            <div style={{ marginBottom: 6 }}>
-              <CardEngineCallout card={card} variant="compact" tone="light" />
-            </div>
-          )}
           <div style={{
             fontSize: faceMetrics.descSize,
             color: cardFacePalette.textSoft,
             lineHeight: faceMetrics.descLineHeight,
             textAlign: 'center',
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 3,
+            overflow: 'hidden',
           }}>
-            {owned > 0 ? (
-              <CardRulesDigest
-                card={card}
-                variant="preview"
-                maxSections={4}
-                maxLinesPerSection={10}
-                lineClamp={3}
-                labelColor={cardFacePalette.textMuted}
-                textColor={cardFacePalette.textSoft}
-                sectionBackground="transparent"
-                sectionBorder="transparent"
-              />
-            ) : '???'}
+            {previewText}
           </div>
           <div style={{
             marginTop: 6,
@@ -494,47 +551,73 @@ export default function CollectionViewer({ onClose }: Props) {
       </div>
 
       {/* Card grid */}
-      <div style={{
-        flex: 1, overflowY: 'auto', padding: '20px 24px',
-        display: 'flex', flexWrap: 'wrap', gap: 10, alignContent: 'flex-start',
-      }}>
-        {standardFiltered.map(renderCardEntry)}
-        {infiniteSections.length > 0 && (
-          <>
-            <div style={{
-              width: '100%',
-              marginTop: standardFiltered.length > 0 ? 18 : 0,
-              fontSize: 12,
-              fontWeight: 'bold',
-              letterSpacing: 2,
-              textTransform: 'uppercase',
-              color: '#dfe5ff',
-              textShadow: '0 0 16px rgba(220, 224, 255, 0.35)',
-            }}>
-              Infinite Cards
-            </div>
-            {infiniteSections.map(section => (
-              <>
-                <div
-                  key={`${section.typeLabel}-heading`}
-                  style={{
-                    width: '100%',
-                    marginTop: 10,
-                    marginBottom: 2,
-                    fontSize: 10,
-                    letterSpacing: 1.8,
-                    textTransform: 'uppercase',
-                    color: 'rgba(223, 229, 255, 0.82)',
-                  }}
-                >
-                  {section.typeLabel}
+      {filtered.length === 0 ? (
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px 24px',
+          color: 'rgba(190,215,245,0.72)',
+          fontStyle: 'italic',
+        }}>
+          No cards match the current filters.
+        </div>
+      ) : (
+        <VirtualizedList
+          items={virtualRows}
+          getItemKey={(row) => row.key}
+          getItemHeight={(row) => row.height}
+          topPadding={20}
+          bottomPadding={24}
+          overscanPx={520}
+          viewportRef={gridViewportRef}
+          style={{ flex: 1 }}
+          renderItem={(row) => {
+            if (row.kind === 'heading') {
+              return (
+                <div style={{
+                  padding: '0 24px',
+                  fontSize: 12,
+                  fontWeight: 'bold',
+                  letterSpacing: 2,
+                  textTransform: 'uppercase',
+                  color: '#dfe5ff',
+                  textShadow: '0 0 16px rgba(220, 224, 255, 0.35)',
+                  paddingTop: standardFiltered.length > 0 ? 18 : 0,
+                }}>
+                  {row.label}
                 </div>
-                {section.entries.map(renderCardEntry)}
-              </>
-            ))}
-          </>
-        )}
-      </div>
+              );
+            }
+
+            if (row.kind === 'subheading') {
+              return (
+                <div style={{
+                  padding: '10px 24px 2px',
+                  fontSize: 10,
+                  letterSpacing: 1.8,
+                  textTransform: 'uppercase',
+                  color: 'rgba(223, 229, 255, 0.82)',
+                }}>
+                  {row.label}
+                </div>
+              );
+            }
+
+            return (
+              <div style={{
+                display: 'flex',
+                gap: 10,
+                padding: '0 24px 10px',
+                alignItems: 'flex-start',
+              }}>
+                {row.entries?.map(renderCardEntry)}
+              </div>
+            );
+          }}
+        />
+      )}
     </div>
     </>
   );

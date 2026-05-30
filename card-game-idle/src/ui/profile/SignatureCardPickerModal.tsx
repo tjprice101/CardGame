@@ -1,14 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
-  getCardFaceBackgroundStyle,
+  getDenseCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
+import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 
 interface Props {
@@ -28,10 +29,29 @@ const RARITY_COLORS: Record<string, string> = {
 
 const faceMetrics = getCardFaceMetrics('grid');
 
+interface SignatureCardRow {
+  key: string;
+  cards: NonNullable<ReturnType<typeof CardRegistry.get>>[];
+}
+
 export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }: Props) {
   const progress = useStore(selectProgress);
   const [search, setSearch] = useState('');
   const [rarityFilter, setRarityFilter] = useState<string>('All');
+  const gridViewportRef = useRef<HTMLDivElement | null>(null);
+  const [gridViewportWidth, setGridViewportWidth] = useState(0);
+
+  useEffect(() => {
+    const node = gridViewportRef.current;
+    if (!node) return;
+
+    const updateWidth = () => setGridViewportWidth(Math.max(0, node.clientWidth - 44));
+    updateWidth();
+
+    const resizeObserver = new ResizeObserver(() => updateWidth());
+    resizeObserver.observe(node);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const ownedCards = useMemo(() => {
     const col = progress.collection ?? {};
@@ -60,6 +80,18 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
       return true;
     });
   }, [ownedCards, search, rarityFilter]);
+
+  const gridColumns = Math.max(1, Math.floor((gridViewportWidth + 10) / 126));
+  const virtualRows = useMemo(() => {
+    const rows: SignatureCardRow[] = [];
+    for (let index = 0; index < filtered.length; index += gridColumns) {
+      rows.push({
+        key: `row-${index}`,
+        cards: filtered.slice(index, index + gridColumns) as NonNullable<ReturnType<typeof CardRegistry.get>>[],
+      });
+    }
+    return rows;
+  }, [filtered, gridColumns]);
 
   return (
     <div
@@ -165,73 +197,85 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
         </div>
 
         {/* ── Card grid ── */}
-        <div style={{
-          flex: 1, overflowY: 'auto',
-          padding: '18px 22px 24px',
-          display: 'flex', flexWrap: 'wrap', gap: 10, alignContent: 'flex-start',
-        }}>
-          {filtered.length === 0 && (
-            <div style={{
-              width: '100%', textAlign: 'center',
-              padding: '56px 12px',
-              color: 'rgba(232,215,191,0.42)', fontStyle: 'italic', fontSize: 13,
-            }}>
-              No cards found.
-            </div>
-          )}
-          {filtered.map(d => {
-            const rarityColor = RARITY_COLORS[d!.rarity] ?? '#888';
-            return (
-              <div
-                key={d!.definitionId}
-                onClick={() => onPick(d!.definitionId)}
-                style={{
-                  width: 116, height: 160,
-                  ...getCardFaceBackgroundStyle(d!, 'normal'),
-                  backgroundColor: warmTheme.surfaceStrong,
-                  border: `1px solid ${rarityColor}55`,
-                  borderRadius: 12,
-                  position: 'relative',
-                  display: 'flex', flexDirection: 'column', alignItems: 'stretch',
-                  overflow: 'hidden', cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  userSelect: 'none',
-                }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 24px ${rarityColor}66, 0 0 12px ${rarityColor}44`;
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                }}
-                title={`${d!.name} · ${d!.rarity}`}
-              >
-                {/* Top: type ribbon */}
-                <div style={getCardNameRibbonStyle('grid')}>
-                  <div style={{
-                    fontSize: faceMetrics.typeSize, letterSpacing: 1,
-                    textTransform: 'uppercase', color: cardFacePalette.text,
-                  }}>
-                    {getDisplayCardTypeLabel(d!.type)}
-                  </div>
-                </div>
-                {/* Bottom: name + rarity panel */}
-                <div style={getCardRulesPanelStyle('grid')}>
-                  <div style={{
-                    fontSize: faceMetrics.nameSize, fontWeight: 'bold',
-                    color: cardFacePalette.text, lineHeight: 1.25,
-                  }}>
-                    {d!.name}
-                  </div>
-                  <div style={{ fontSize: faceMetrics.typeSize, color: rarityColor, letterSpacing: 0.4, marginTop: 2 }}>
-                    {d!.rarity}
-                  </div>
-                </div>
+        {filtered.length === 0 ? (
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '18px 22px 24px',
+            color: 'rgba(232,215,191,0.42)',
+            fontStyle: 'italic',
+            fontSize: 13,
+          }}>
+            No cards found.
+          </div>
+        ) : (
+          <VirtualizedList
+            items={virtualRows}
+            getItemKey={(row) => row.key}
+            getItemHeight={() => 170}
+            topPadding={18}
+            bottomPadding={24}
+            overscanPx={420}
+            viewportRef={gridViewportRef}
+            style={{ flex: 1 }}
+            renderItem={(row) => (
+              <div style={{ display: 'flex', gap: 10, padding: '0 22px 10px', alignItems: 'flex-start' }}>
+                {row.cards.map(d => {
+                  const rarityColor = RARITY_COLORS[d.rarity] ?? '#888';
+                  return (
+                    <div
+                      key={d.definitionId}
+                      onClick={() => onPick(d.definitionId)}
+                      style={{
+                        width: 116, height: 160,
+                        ...getDenseCardFaceBackgroundStyle(d, 'normal'),
+                        backgroundColor: warmTheme.surfaceStrong,
+                        border: `1px solid ${rarityColor}55`,
+                        borderRadius: 12,
+                        position: 'relative',
+                        display: 'flex', flexDirection: 'column', alignItems: 'stretch',
+                        overflow: 'hidden', cursor: 'pointer',
+                        transition: 'all 0.15s',
+                        userSelect: 'none',
+                      }}
+                      onMouseEnter={e => {
+                        (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 24px ${rarityColor}66, 0 0 12px ${rarityColor}44`;
+                        (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
+                      }}
+                      onMouseLeave={e => {
+                        (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                        (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                      }}
+                      title={`${d.name} · ${d.rarity}`}
+                    >
+                      <div style={getCardNameRibbonStyle('grid')}>
+                        <div style={{
+                          fontSize: faceMetrics.typeSize, letterSpacing: 1,
+                          textTransform: 'uppercase', color: cardFacePalette.text,
+                        }}>
+                          {getDisplayCardTypeLabel(d.type)}
+                        </div>
+                      </div>
+                      <div style={getCardRulesPanelStyle('grid')}>
+                        <div style={{
+                          fontSize: faceMetrics.nameSize, fontWeight: 'bold',
+                          color: cardFacePalette.text, lineHeight: 1.25,
+                        }}>
+                          {d.name}
+                        </div>
+                        <div style={{ fontSize: faceMetrics.typeSize, color: rarityColor, letterSpacing: 0.4, marginTop: 2 }}>
+                          {d.rarity}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
+            )}
+          />
+        )}
 
         {/* ── Footer ── */}
         <div style={{

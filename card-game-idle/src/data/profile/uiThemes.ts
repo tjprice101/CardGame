@@ -1,5 +1,4 @@
 import type { ProgressState } from '@/types/game';
-import type { BossCategory } from '@/types/bossFight';
 import { DEFAULT_WARM_PALETTE, applyUiPalette, type UiPalette } from '@/ui/theme';
 
 /**
@@ -18,10 +17,6 @@ export interface UiThemeDefinition {
   palette: UiPalette;
   /** True ⇒ available to the player. */
   isUnlocked: (progress: ProgressState) => boolean;
-  /** Optional BossCategory grouping. */
-  category?: BossCategory;
-  /** Hint shown when the theme is locked. */
-  unlockHint?: string;
 }
 
 // ── Palette builders ───────────────────────────────────────────────────────
@@ -31,7 +26,7 @@ function makePalette(overrides: Partial<UiPalette>): UiPalette {
   return { ...DEFAULT_WARM_PALETTE, ...overrides };
 }
 
-// ── Theme palettes (12 sets + default) ─────────────────────────────────────
+// ── Theme palettes ─────────────────────────────────────────────────────────
 
 const WARM_DEFAULT: UiPalette = { ...DEFAULT_WARM_PALETTE };
 
@@ -161,78 +156,6 @@ const BLACK_GLASS_INFERNO: UiPalette = makePalette({
   glow: '0 12px 30px rgba(230, 180, 84, 0.32)',
 });
 
-const GLASS_ABSOLUTE: UiPalette = makePalette({
-  appBackground: 'radial-gradient(circle at 50% -10%, #f4f9ff 0%, rgba(244,249,255,0) 55%), linear-gradient(180deg, #e8eef6 0%, #d2dce9 45%, #b8c4d4 100%)',
-  surface: 'rgba(255, 255, 255, 0.92)',
-  surfaceStrong: 'rgba(255, 255, 255, 0.98)',
-  surfaceMuted: 'rgba(228, 234, 244, 0.92)',
-  border: 'rgba(120, 140, 170, 0.34)',
-  borderStrong: 'rgba(120, 140, 170, 0.58)',
-  text: '#1a2535',
-  textSoft: 'rgba(26, 37, 53, 0.86)',
-  textMuted: 'rgba(26, 37, 53, 0.66)',
-  textFaint: 'rgba(26, 37, 53, 0.48)',
-  accent: '#6c8aaa',
-  accentSoft: '#a8c0d8',
-  accentDeep: '#2a3a52',
-  button: 'linear-gradient(180deg, #c8d8e8 0%, #6c8aaa 100%)',
-  glow: '0 12px 30px rgba(168, 192, 216, 0.45)',
-});
-
-const BLAZING_GARDEN: UiPalette = makePalette({
-  appBackground: 'radial-gradient(circle at 50% -10%, #ffd9b0 0%, rgba(255,217,176,0) 55%), linear-gradient(180deg, #2a0e08 0%, #4a1a0c 45%, #190504 100%)',
-  surface: 'rgba(74, 26, 12, 0.92)',
-  surfaceStrong: 'rgba(96, 34, 16, 0.96)',
-  surfaceMuted: 'rgba(56, 20, 10, 0.9)',
-  border: 'rgba(255, 178, 90, 0.34)',
-  borderStrong: 'rgba(255, 178, 90, 0.6)',
-  text: '#ffe6c8',
-  textSoft: 'rgba(255, 230, 200, 0.86)',
-  textMuted: 'rgba(255, 230, 200, 0.66)',
-  textFaint: 'rgba(255, 230, 200, 0.48)',
-  accent: '#ff9444',
-  accentSoft: '#ffc28a',
-  accentDeep: '#4a1a0c',
-  button: 'linear-gradient(180deg, #ffb670 0%, #c45a18 100%)',
-  glow: '0 12px 28px rgba(255, 148, 68, 0.3)',
-});
-
-const BUTTERFLY: UiPalette = makePalette({
-  appBackground: 'radial-gradient(circle at 30% -10%, #d6b8ff 0%, rgba(214,184,255,0) 55%), linear-gradient(180deg, #1a0a2a 0%, #2c1448 45%, #0a0418 100%)',
-  surface: 'rgba(48, 24, 76, 0.92)',
-  surfaceStrong: 'rgba(64, 34, 100, 0.96)',
-  surfaceMuted: 'rgba(36, 18, 56, 0.9)',
-  border: 'rgba(210, 168, 255, 0.32)',
-  borderStrong: 'rgba(210, 168, 255, 0.58)',
-  text: '#efe2ff',
-  textSoft: 'rgba(239, 226, 255, 0.86)',
-  textMuted: 'rgba(239, 226, 255, 0.66)',
-  textFaint: 'rgba(239, 226, 255, 0.48)',
-  accent: '#b88aff',
-  accentSoft: '#d6b8ff',
-  accentDeep: '#2c1448',
-  button: 'linear-gradient(180deg, #c8a4ff 0%, #6a3ac4 100%)',
-  glow: '0 12px 30px rgba(184, 138, 255, 0.34)',
-});
-
-const ETERNAL_SEAS: UiPalette = makePalette({
-  appBackground: 'radial-gradient(circle at 30% -10%, #1a4858 0%, rgba(10,40,52,0) 55%), linear-gradient(180deg, #04161e 0%, #0a2c3a 45%, #02080c 100%)',
-  surface: 'rgba(14, 44, 56, 0.92)',
-  surfaceStrong: 'rgba(20, 60, 76, 0.96)',
-  surfaceMuted: 'rgba(10, 32, 42, 0.9)',
-  border: 'rgba(120, 210, 220, 0.32)',
-  borderStrong: 'rgba(120, 210, 220, 0.58)',
-  text: '#dff4f5',
-  textSoft: 'rgba(223, 244, 245, 0.86)',
-  textMuted: 'rgba(223, 244, 245, 0.66)',
-  textFaint: 'rgba(223, 244, 245, 0.48)',
-  accent: '#3fc7c5',
-  accentSoft: '#7be0dd',
-  accentDeep: '#0a2c3a',
-  button: 'linear-gradient(180deg, #5fdcd9 0%, #1a7a78 100%)',
-  glow: '0 10px 28px rgba(63, 199, 197, 0.3)',
-});
-
 const ABYSSAL_FORGE: UiPalette = makePalette({
   appBackground: 'radial-gradient(circle at 20% -10%, #ffae3a 0%, rgba(255,174,58,0) 55%), linear-gradient(180deg, #0e0805 0%, #1f120a 45%, #060302 100%)',
   surface: 'rgba(40, 22, 12, 0.92)',
@@ -287,13 +210,6 @@ const NEUTRALITY: UiPalette = makePalette({
   glow: '0 10px 28px rgba(154, 154, 178, 0.24)',
 });
 
-// ── Unlock predicates ──────────────────────────────────────────────────────
-
-function ownsAny(p: ProgressState, prefixes: string[]): boolean {
-  const keys = Object.keys(p.infiniteCollection);
-  return keys.some((k) => (p.infiniteCollection[k] ?? 0) > 0 && prefixes.some((pre) => k.startsWith(pre)));
-}
-
 // ── Theme registry ─────────────────────────────────────────────────────────
 
 export const DEFAULT_UI_THEME_ID = 'theme-warm-default';
@@ -302,135 +218,79 @@ export const UI_THEMES: UiThemeDefinition[] = [
   {
     id: DEFAULT_UI_THEME_ID,
     name: 'Warm Hearth',
-    description: 'The default amber palette.',
+    description: 'Soft amber and parchment tones with cozy contrast.',
     palette: WARM_DEFAULT,
     isUnlocked: () => true,
   },
   {
-    id: 'theme-neutrality',
-    name: 'Neutral Equilibrium',
-    description: 'Silver, slate, and starlight — the founding balance.',
+    id: 'theme-moonstone',
+    name: 'Moonstone Slate',
+    description: 'Balanced slate blues with clean neutral contrast.',
     palette: NEUTRALITY,
-    category: 'Neutrality',
-    isUnlocked: (p) => ownsAny(p, ['inf-oblivion-', 'inf-void-cascade', 'inf-entropic-crown', 'inf-annihilation-field', 'inf-sovereign-void', 'inf-eternity-rupture', 'inf-genesis-throne', 'inf-null-apex']),
-    unlockHint: 'Unlock any Neutrality Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-pyroabyss',
-    name: 'Pyroabyss Ember',
-    description: 'Black coals and screaming cinders.',
+    id: 'theme-cinder-velvet',
+    name: 'Cinder Velvet',
+    description: 'Deep ember reds with warm highlights.',
     palette: PYROABYSS,
-    category: 'Pyroabyss',
-    isUnlocked: (p) => ownsAny(p, ['inf-pyraxis-colossus', 'inf-ash-kings-apocalypse', 'inf-pyroclasm-engine', 'inf-riftborn-sovereign']),
-    unlockHint: 'Unlock any Pyroabyss Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-heavenly-light',
-    name: 'Heavenly Radiance',
-    description: 'Dawn-gold sanctum.',
+    id: 'theme-sunrise-ivory',
+    name: 'Sunrise Ivory',
+    description: 'Bright ivory and golden morning accents.',
     palette: HEAVENLY_LIGHT,
-    category: 'Heavenly Light',
-    isUnlocked: (p) => ownsAny(p, ['inf-celestial-blackout', 'inf-lucent-cataclysm-archon', 'inf-heliarch-eclipse-engine']),
-    unlockHint: 'Unlock any Heavenly Light Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-thornbound',
-    name: 'Thornbound Briar',
-    description: 'Bleeding-road crimson and iron.',
+    id: 'theme-rosewood',
+    name: 'Rosewood Noir',
+    description: 'Burgundy dusk with polished copper accents.',
     palette: THORNBOUND,
-    category: 'Thornbound Plains',
-    isUnlocked: (p) => ownsAny(p, ['inf-thornbound-', 'inf-thorn-widow-engine', 'inf-gravebloom-singularity']),
-    unlockHint: 'Unlock any Thornbound Plains Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-mechanical',
-    name: 'Mechanical Brass',
-    description: 'Furnace-mind brass and oil.',
+    id: 'theme-brass-atelier',
+    name: 'Brass Atelier',
+    description: 'Brushed brass and workshop charcoal.',
     palette: MECHANICAL,
-    category: 'Mechanical Dreams',
-    isUnlocked: (p) => ownsAny(p, ['inf-machina-eternal-loop', 'inf-brass-eidolon-prime', 'inf-mech-entropy-foundry', 'inf-mechanical-apotheosis-core']),
-    unlockHint: 'Unlock any Mechanical Dreams Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-prismatic',
-    name: 'Prismatic Spectrum',
-    description: 'Cool spectrum and refracting steel.',
+    id: 'theme-ocean-glass',
+    name: 'Ocean Glass',
+    description: 'Cool ocean blues with crisp luminous text.',
     palette: PRISMATIC,
-    category: 'Prismatic Accord',
-    isUnlocked: (p) => ownsAny(p, ['inf-prismatic-']),
-    unlockHint: 'Unlock any Prismatic Accord Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-snowbound',
-    name: 'Snowbound Aurora',
-    description: 'Cyan voltage on glacier blue.',
+    id: 'theme-arctic-mist',
+    name: 'Arctic Mist',
+    description: 'Icy cyan highlights over deep polar blues.',
     palette: SNOWBOUND,
-    category: 'Snowbound Voltage',
-    isUnlocked: (p) => ownsAny(p, ['inf-sv-']),
-    unlockHint: 'Unlock any Snowbound Voltage Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-blackglass',
-    name: 'Black Glass Inferno',
-    description: 'Obsidian glass and gold-fire.',
+    id: 'theme-obsidian-gilt',
+    name: 'Obsidian Gilt',
+    description: 'Dark obsidian with restrained gilded accents.',
     palette: BLACK_GLASS_INFERNO,
-    category: 'Black Glass Inferno',
-    isUnlocked: (p) => ownsAny(p, ['inf-bgi-']),
-    unlockHint: 'Unlock any Black Glass Inferno Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-glass-absolute',
-    name: 'Glass Absolute',
-    description: 'First-white crystal and steel-frost.',
-    palette: GLASS_ABSOLUTE,
-    category: 'Glass Absolute',
-    isUnlocked: (p) => ownsAny(p, ['inf-ga-']),
-    unlockHint: 'Unlock any Glass Absolute Infinite card.',
-  },
-  {
-    id: 'theme-blazing-garden',
-    name: 'Blazing Garden',
-    description: 'Petal-fire ember and ember-noon.',
-    palette: BLAZING_GARDEN,
-    category: 'The Blazing Garden',
-    isUnlocked: (p) => ownsAny(p, ['inf-bg-']),
-    unlockHint: 'Unlock any Blazing Garden Infinite card.',
-  },
-  {
-    id: 'theme-butterfly',
-    name: 'Butterfly Chrysalis',
-    description: 'Seven-layered violet wings.',
-    palette: BUTTERFLY,
-    category: 'Age of the Butterfly',
-    isUnlocked: (p) => ownsAny(p, ['inf-bf-']),
-    unlockHint: 'Unlock any Butterfly Age Infinite card.',
-  },
-  {
-    id: 'theme-eternal-seas',
-    name: 'Eternal Tide',
-    description: 'Veilmargin cyan and oldlight teal.',
-    palette: ETERNAL_SEAS,
-    category: 'Eternal Seas',
-    isUnlocked: (p) => ownsAny(p, ['inf-es-']),
-    unlockHint: 'Unlock any Eternal Seas Infinite card.',
-  },
-  {
-    id: 'theme-abyssal-forge',
-    name: 'Abyssal Forge',
-    description: 'Molten copper-gold over basalt black.',
+    id: 'theme-copper-forge',
+    name: 'Copper Forge',
+    description: 'Molten copper energy over grounded dark basalt.',
     palette: ABYSSAL_FORGE,
-    category: 'Abyssal Forge',
-    isUnlocked: (p) => ownsAny(p, ['af-inf-']),
-    unlockHint: 'Unlock any Abyssal Forge Infinite card.',
+    isUnlocked: () => true,
   },
   {
-    id: 'theme-death-flamed-hell',
-    name: 'Death-flamed Hell',
-    description: 'Pale-fire bone over oxblood deep.',
+    id: 'theme-soft-crimson',
+    name: 'Soft Crimson',
+    description: 'Muted crimson with parchment-light details.',
     palette: DEATH_FLAMED_HELL,
-    category: 'Death-flamed Hell',
-    isUnlocked: (p) => ownsAny(p, ['dfh-inf-']),
-    unlockHint: 'Unlock any Death-flamed Hell Infinite card.',
+    isUnlocked: () => true,
   },
 ];
 

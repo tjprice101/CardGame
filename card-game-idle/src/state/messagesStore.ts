@@ -53,7 +53,7 @@ interface MessagesState {
 
 const EMPTY_THREADS: Record<string, DmThreadSummary> = Object.freeze({});
 const EMPTY_BY_OTHER: Readonly<Record<string, string>> = Object.freeze({});
-const EMPTY_MESSAGES: DmMessage[] = Object.freeze([]) as DmMessage[];
+const EMPTY_MESSAGES: DmMessage[] = [];
 
 const LAST_READ_KEY = 'pantheon.dm.lastReadByThread.v1';
 function loadLastRead(): Record<string, string> {

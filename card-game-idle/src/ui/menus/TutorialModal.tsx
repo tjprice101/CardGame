@@ -206,8 +206,6 @@ function BoardBody() {
         <div style={sectionHeadingStyle}>Board Layout</div>
         <pre style={{
           margin: 0,
-          fontFamily: 'ui-monospace, "Cascadia Mono", "Consolas", monospace',
-          fontSize: 12.5,
           lineHeight: 1.5,
           color: PALETTE.inkDeep,
           background: 'rgba(255, 246, 226, 0.6)',
@@ -324,7 +322,7 @@ function SetsBody() {
   const sets: Array<[string, string, string]> = [
     ['Neutrality', 'Patience / Stasis', 'Stockpile Patience on Seraphim, cash it out on attack. The friendly starter engine.'],
     ['Heavenly Light', 'Cadence, Radiance & Halo', 'Build note variety and Anchors for Cadence, then spend stocked Halo on your biggest Light burst turns.'],
-    ['Pyroabyss', 'Furnace & Chroma', 'Build Furnace Pressure for Ignite and Fire attack scaling, then on Eternal/Infinite turns convert Ignite into same-turn Chroma Embers for a higher-rarity burst.'],
+    ['Pyroabyss', 'Inferno Tier & Chroma', 'Build Inferno Tier for Ignite and Fire attack scaling, then on Eternal/Infinite turns convert ignition into same-turn Chroma Embers for a higher-rarity burst.'],
     ['Thornbound Plains', 'Trail, Scar & Briar Spiral', 'Build Trail, convert to Scar manually in the HUD, then use Eternal Briar Spirals to amplify your payoff turn.'],
     ['Snowbound Voltage', 'Frost, Voltage & Polar Capacitors', 'Frost cards build Arctic Charge and Voltage cards cash it out; Eternity/Infinite cards add Polar Capacitor bank-and-release lines.'],
     ['Mechanical Dreams', 'Strain & Clock-Chime', 'Build Strain, track the 3-tick Clock, and spend stored Chimes on your strongest Mechanical attacks.'],
@@ -340,7 +338,7 @@ function SetsBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Twelve Set Engines</div>
+        <div style={sectionHeadingStyle}>Set Engines</div>
         <div style={bodyTextStyle}>
           Each set has a distinctive engine. You can build a mono-set deck for clean synergy or mix sets for
           cross-resource conversion. The in-game <Tag>Engine</Tag> panel always shows your current state for

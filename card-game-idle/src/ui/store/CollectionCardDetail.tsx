@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useStore } from '@/state/store';
 import { ELEMENT_SET_NAMES, ELEMENT_COLORS } from '@/data/elements';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { getCardFaceBackgroundStyle, getCardBackBackgroundStyle } from '@/ui/cardBackgrounds';
+import { getCardFaceBackgroundStyle, getCardBackBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
-import { getCardFinishLabel } from '@/systems/progression/HolofoilSystem';
+import { getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { warmTheme } from '@/ui/theme';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
@@ -115,6 +115,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
   const elementColor = ELEMENT_COLORS[card.element] ?? '#aaa';
   const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
   const actionClassLabel = getActionClassLabel(getCardActionClass(card));
+  const finishLabel = isHoloOnlyCard(card) ? 'Intrinsic Foil' : getCardFinishLabel(finish);
 
   useEffect(() => {
     if (!favoriteFeedback) return;
@@ -185,7 +186,9 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               position: 'relative',
               overflow: 'hidden',
             }}
-          />
+          >
+            <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
+          </div>
         </div>
 
         {/* Right: Info panel */}
@@ -271,7 +274,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                 Finish
               </div>
               <div style={{ fontSize: 14, color: '#ead9c0', fontWeight: 500 }}>
-                {getCardFinishLabel(finish)}
+                {finishLabel}
               </div>
             </div>
             <div>

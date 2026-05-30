@@ -708,3 +708,353 @@ Ohhhhh-ahhhhh
 Ohhh-ahhh
 Ahhhhhhhh
 ```
+
+---
+
+## 14. Neutrality Raid Boss Theme — "Verdict Through the Stars" (Event Horizon Arbiter)
+
+### STYLE
+
+```
+folk epic orchestral progressive metal, 165 BPM, iron-disciplined cosmic war march, absolute determination with controlled heroic fire, monochrome cathedral atmosphere pierced by silver-prismatic accents, low-tuned palm-muted gallop guitars precise and machine-tight, relentless double-kick, massive taiko and snare unison on downbeats, wordless male choir dark and stoic foundation, wordless female choir enters as radiant resolve on choruses, baroque violin in stern ascending motifs, low Irish flute in sparse commanding calls, orchestral brass stabs like final verdict strikes, no soft intro, no collapse in intensity, triumphant without sounding cheerful, wordless ahh ohh mmm vocalizations only
+```
+
+### LYRICS
+
+```
+[Entry - full rhythm section from beat one, male choir on a long held drone]
+Mmmmm-ohhhhh
+Ohhh-mmmm-ohhh
+
+[Verse 1 - gallop guitars and double-kick lock, violin rises in strict motif]
+Ohhh-ohhh-ohhh-ohhh
+Mmmm-ohhh-mmmm-ohhh
+Ohhh-ohhh-mmmm-ohhh
+
+[Chorus 1 - female choir joins as heroic resolve, brass stabs on phrase endings]
+Ahhhhh-ohhhhh-ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh
+
+[Bridge - half-bar restraint then immediate re-engage, flute command phrase]
+Mmmm-ohhh
+Ohhh-mmmm-ohhh
+
+[Verse 2 - same motif but heavier, choir thicker, snare accents intensified]
+Ohhh-ohhh-ohhh-ohhh
+Mmmm-ohhh-mmmm-ohhh
+Ohhh-ohhh-mmmm-ohhh
+
+[Final Chorus - full stack choirs, unwavering forward motion, no relaxation]
+Ahhhhh-ohhhhh-ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh-ahhhhh
+Ohhh-ahhh-ohhh
+
+[Outro - ringing power chord and held choir, cut with authority]
+Ohhhhhhhhh
+Ahhhhhhhhh
+```
+
+---
+
+## 15. Neutrality Final Raid Boss Theme — "Last Wish, Final Sentence" (Verdant Null, Last Wish Executioner)
+
+### STYLE
+
+```
+folk epic orchestral progressive metal, 165 BPM, apocalyptic final-boss determination, sacred dread fused with unbreakable courage, split-light-and-void harmonic language shifting between austere minor and blazing heroic suspended modes, crushing palm-muted rhythm guitars with wide cinematic power chords, relentless double-kick and giant tom impacts, wordless male choir as judicial gravity, wordless female choir as defiant final stand, violin and flute in intertwined ascending lines that never fully resolve, colossal synth undertow, one short collapse before terminal climax, no softness, no comedy, no spoken words, wordless ahh ohh mmm vocalizations only
+```
+
+### LYRICS
+
+```
+[Intro - immediate full density, court-bell strike, male choir deep drone]
+Mmmmmmm
+Ohhhhh-ohhh
+
+[Phase 1 - relentless march, violin and flute alternating rising statements]
+Ohhh-ohhh-ohhh-ohhh
+Mmmm-ohhh-mmmm-ohhh
+Ohhh-mmmm-ohhh-ohhh
+
+[Phase 1 Chorus - female choir bursts in, heroism under impossible pressure]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh
+
+[Judgement Break - one short half-time abyss moment, choir holds tension]
+Mmmm-ohhhhh
+Ohhhhh-mmmm
+
+[Phase 2 Return - heavier re-entry, doubled guitars and thicker strings]
+Ohhh-ohhh-ohhh-ohhh
+Mmmm-ohhh-mmmm-ohhh
+Ohhh-mmmm-ohhh-ohhh
+
+[Terminal Chorus - maximum density, all voices and instruments locked forward]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh
+
+[Coda - sustained final chord like a sealed verdict]
+Ohhhhhhhhh
+Ahhhhhhhhh
+```
+
+---
+
+## 16. Pyroabyss Raid Boss Theme — "Crown of Burning Resolve" (Ember Eventide Tyrant)
+
+### STYLE
+
+```
+folk epic orchestral progressive metal, 165 BPM, volcanic battle anthem, ferocious but disciplined determination, courage as living fire not chaos, drop-C palm-muted gallop guitars with wide infernal chord slams, nonstop double-kick with flame-like tom rolls, taiko reinforcement, aggressive orchestral strings in unison riffs, wordless male and female choirs both active and rhythmic, Irish flute and violin trading rapid ascending blaze motifs, molten synth sublayer, no intro delay full combat from bar one, no major-key pop uplift, heroic infernal minor with burning momentum, wordless ahh ohh mmm vocalizations only
+```
+
+### LYRICS
+
+```
+[Ignition - all instruments hit instantly, choir enters on downbeat]
+Ohhh-ahhh-ohhh
+Ahhh-ohhh-ahhh
+
+[Verse 1 - infernal gallop, violin blaze motif, flute answers sharply]
+Ohhh-ohhh-ohhh-ohhh
+Ahhh-ohhh-ahhh-ohhh
+Ohhh-mmmm-ohhh-ahhh
+
+[Chorus 1 - choirs expand, power chords widen, taiko crushes downbeats]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh
+
+[Drive Section - no slowdown, rhythmic choir pulses with guitars]
+Ohhh-ahhh-ohhh-ahhh
+Mmmm-ohhh-mmmm-ohhh
+
+[Chorus 2 - higher violin register, flute in octave harmony]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh, ohhhhh
+
+[Final Surge - all layers at full heat, no retreat]
+Ahhhhh-ohhhhh-ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh-ahhhhh
+
+[End Strike - hard final hit with sustained choir tail]
+Ohhhhhhhhh
+Ahhhhhhhhh
+```
+
+---
+
+## 17. Pyroabyss Final Raid Boss Theme — "Nullstar Oath" (Pyraxis Nullstar Sovereign)
+
+### STYLE
+
+```
+folk epic orchestral progressive metal, 165 BPM, final infernal-cosmic duel soundtrack, unstoppable determination under extinction-level stakes, dark heroic harmonic center with abyssal tension and blazing upper-octave courage motifs, low-tuned guitars in relentless gallop and syncopated choke hits, continuous double-kick, huge cinematic tom fills between sections, wordless choir wall from first measure, violin and flute execute high-speed ascending hooks that sound like fighting upward against collapse, cathedral brass and string stabs punctuating each tactical turn, no soft passages, one brief void-drop then immediate firestorm return, wordless ahh ohh mmm vocalizations only
+```
+
+### LYRICS
+
+```
+[Opening Clash - immediate full stack, choir and guitars strike together]
+Ohhh-ahhh-ohhh-ahhh
+Mmmm-ohhh-mmmm
+
+[Verse 1 - tight chug and gallop blend, violin hook repeats with variations]
+Ohhh-ohhh-ohhh-ohhh
+Ahhh-ohhh-ahhh-ohhh
+Ohhh-mmmm-ohhh-ohhh
+
+[Chorus 1 - choirs soar while rhythm stays brutal and forward]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh
+
+[Void-Drop - short half-time abyss pulse, choir low and tense]
+Mmmmm-ohhhhh
+Ohhhhh-mmmmm
+
+[Rekindle - immediate return at higher intensity, flute doubles violin]
+Ohhh-ohhh-ohhh-ohhh
+Ahhh-ohhh-ahhh-ohhh
+Ohhh-mmmm-ohhh-ohhh
+
+[Final Chorus - all voices stacked, oath-like repeated phrase]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh
+
+[End - sustained infernal chord then decisive cutoff]
+Ahhhhhhhhh
+Ohhhhhhhhh
+```
+
+---
+
+## 18. Opening Main Menu Theme — "Flamebound Dawn Protocol"
+
+### STYLE
+
+```
+folk epic orchestral progressive metal, 152 BPM, opening menu hero anthem, immediate confidence and disciplined courage, brighter than boss themes but still hard-edged, marching snare and double-kick hybrid groove, palm-muted guitars with uplifting ascending chord motion, violin carries a noble high-register hook, Irish flute answers with quick rising phrases, wordless choir in broad anthemic layers from first chorus onward, warm expansive synth bed, radio-friendly structure with clear hook repetition, designed for menu replay without fatigue, wordless ahh ohh mmm vocalizations only
+```
+
+### LYRICS
+
+```
+[Intro - marching snare and guitar hook, violin enters by bar 2]
+Ohhh-ahhh
+Ahhh-ohhh-ahhh
+
+[Verse - focused stride, male choir foundation, flute punctuations]
+Ohhh-ahhh-ohhh, ahhh-ohhh
+Mmmm-ohhh-mmmm-ohhh
+
+[Chorus - broad heroic hook, full choir and wide chords]
+Ahhhhh-ohhhhh-ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh
+
+[Verse 2 - same hook with ornamented violin and denser rhythm]
+Ohhh-ahhh-ohhh, ahhh-ohhh
+Mmmm-ohhh-mmmm-ohhh
+
+[Final Chorus - full stack with extra harmony layer]
+Ahhhhh-ohhhhh-ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh-ahhhhh
+
+[Outro - confident held chord, clean loop-ready tail]
+Ohhhhhhhhh
+Ahhhhhhhhh
+```
+
+---
+
+## 19. Opening Main Menu Theme — "Courage Never Sleeps"
+
+### STYLE
+
+```
+folk epic orchestral progressive metal, 150 BPM, resilient opening menu track, determined optimism under pressure, acoustic arpeggio and palm-muted riff dual backbone, steady snare march with supportive kick drive, violin sings a memorable four-bar theme that returns every chorus, flute countermelody in higher register, male choir low sustained bed and female choir anthem line on chorus, subtle brass support, wide warm synth, strong replay value, emotionally uplifting but still battle-ready, wordless ahh ohh mmm vocalizations only
+```
+
+### LYRICS
+
+```
+[Intro - acoustic and muted riff interlock, choir pad fades in]
+Mmmmm-ohhh
+Ohhh-ahhh
+
+[Verse 1 - violin theme statement, flute response]
+Ohhh-ahhh-ohhh-ahhh
+Mmmm-ohhh-mmmm-ohhh
+Ohhh-ahhh-ohhh
+
+[Chorus - anthem line, female choir leads, full rhythm and synth widen]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh
+
+[Verse 2 - ornamented melody, tighter drums]
+Ohhh-ahhh-ohhh-ahhh
+Mmmm-ohhh-mmmm-ohhh
+
+[Final Chorus - strongest lift with stacked choirs]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh, ohhhhh, ahhhhh
+
+[Outro - warm sustained landing chord]
+Ohhhhhhhhh
+Ahhhhhhhhh
+```
+
+---
+
+## 20. Main Turn Radio Battle Theme — "No Card Wasted"
+
+### STYLE
+
+```
+folk epic orchestral progressive metal, 165 BPM, battle-radio engine track for long turn cycles, relentless precision and tactical courage, tight palm-muted riff as core ostinato, nonstop double-kick at controlled mix level, violin and flute share a short repeatable hook every 16 bars, wordless choir used rhythmically on downbeats and sustained in chorus, synth pulse follows kick for momentum, no long breakdowns, consistent intensity for gameplay focus, loop-ready ending with harmonic continuity, wordless ahh ohh mmm vocalizations only
+```
+
+### LYRICS
+
+```
+[Launch - riff and kick immediately, short choir hit]
+Ohhh-ahhh
+Mmmm-ohhh
+
+[Verse 1 - tactical momentum, violin hook appears then repeats]
+Ohhh-ohhh-ahhh-ohhh
+Mmmm-ohhh-mmmm-ohhh
+Ohhh-ahhh-ohhh-ahhh
+
+[Chorus - wider chords and stacked choir, still driving]
+Ahhhhh-ohhhhh-ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh
+
+[Verse 2 - same engine with flute leading hook]
+Ohhh-ohhh-ahhh-ohhh
+Mmmm-ohhh-mmmm-ohhh
+
+[Final Chorus - maximum clarity and force]
+Ahhhhh-ohhhhh-ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh-ahhhhh
+
+[Loop Tail - riff sustains and reconnects to bar 1]
+Ohhhhhhh
+Ahhhhhhh
+```
+
+---
+
+## 21. Main Turn Radio Battle Theme — "Victory Is a Habit"
+
+### STYLE
+
+```
+folk epic orchestral progressive metal, 165 BPM, high-stamina battle theme with heroic fire, unstoppable upward drive, palm-muted guitar wall with synchronized orchestral string accents every two bars, hard-snare plus double-kick propulsion, violin carries repeated rising motif that symbolizes determination, flute doubles motif in later sections, choirs stacked in thick rhythmic pulses on choruses, one brief bridge with reduced texture then immediate full-power return, designed for repeat listening during turn-based combat, no vocals with words, wordless ahh ohh mmm vocalizations only
+```
+
+### LYRICS
+
+```
+[Entry - full pace from beat one, riff + strings hit together]
+Ohhh-ahhh-ohhh
+Mmmm-ohhh
+
+[Verse 1 - rising motif introduced, choir low support]
+Ohhh-ohhh-ohhh-ahhh
+Mmmm-ohhh-mmmm-ohhh
+Ohhh-ahhh-ohhh
+
+[Chorus 1 - stacked choir pulses, bigger chords, motif in higher octave]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh-ohhhhh
+
+[Bridge - short reduction to drums + low choir + violin]
+Mmmm-ohhh
+Ohhh-mmmm-ohhh
+
+[Final Chorus - immediate full return, all layers at max]
+Ahhhhh, ohhhhh, ahhhhh
+Ohhh-ahhh-ohhh-ahhh
+Ahhhhh, ohhhhh, ahhhhh
+
+[Outro/Loop - held chord and motif pickup into restart]
+Ohhhhhhhhh
+Ahhhhhhhhh
+```

@@ -109,7 +109,7 @@ const neutralityTrial: TrialDeckDefinition = {
 // ── Pyroabyss ─────────────────────────────────────────────────────────────────
 const pyroabyssTrial: TrialDeckDefinition = {
   packId: 'pack-pyroabyss',
-  displayName: 'Pyroabyss — Furnace & Fault',
+  displayName: 'Pyroabyss — Inferno Tier & Chroma Ember',
   deckList: [
     d('ser-fire-cinder', 4),
     d('ser-fire-abyssal', 4),
@@ -131,31 +131,31 @@ const pyroabyssTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'cherubim-fire-ember-shroud',
-      hint: 'Ember Shroud (Slot A). On play: +4 Furnace Pressure, +1 Abyss Fault, +1 Ruin Window. While active: +2 Pressure per card.',
+      hint: 'Ember Shroud (Slot A). On play: Gain 8 Inferno Tier. While active: gain 1 Chroma Ember per card.',
     },
     {
       cardDefinitionId: 'ser-fire-cinder',
-      hint: 'Cinder Seraphim (Slot A). On play: +20 Oblivion, +3 Pressure, +1 Ruin Window. While active: +10 Oblivion per card.',
+      hint: 'Cinder Seraphim (Slot A). On play: +15 Oblivion, gain 5 Inferno Tier. While active: +10 Oblivion per card.',
     },
     {
       cardDefinitionId: 'ophanim-fire-cinder-draw',
-      hint: 'Cinder Draw. +2 Pressure; draw 1.',
+      hint: 'Cinder Draw. Gain 2 Inferno Tier; draw 1.',
     },
     {
       cardDefinitionId: 'ophanim-fire-void-kindling',
-      hint: 'Void Kindling. +2 Ruin Windows, +3 Pressure. ~4 Windows banked.',
+      hint: 'Void Kindling. Gain 5 Inferno Tier. This is your setup ramp before ember ignition.',
     },
     {
       cardDefinitionId: 'ophanim-fire-abyssal-kindle',
-      hint: 'Abyssal Kindle. +20 Oblivion, +1 Abyss Fault.',
+      hint: 'Abyssal Kindle. +20 Oblivion; gain 2 Inferno Tier.',
     },
     {
       cardDefinitionId: 'ophanim-fire-cinder-draw',
-      hint: 'Cinder Draw again. +2 Pressure; draws Void Combustion.',
+      hint: 'Cinder Draw again. Gain 2 Inferno Tier; draws Void Combustion.',
     },
     {
       cardDefinitionId: 'ophanim-fire-void-combustion',
-      hint: 'Void Combustion. Core mechanic: Ruin Window banking from earlier setup. Why it scales: Furnace/Fault setup feeds repeated Window generation, then cashout converts stacked windows into one huge spike. Exact payoff: play Void Combustion for the window cashout, then click Cinder Seraphim → Vector Break for the finisher (~900+ combined Oblivion).',
+      hint: 'Void Combustion. Core mechanic: ignite banked Chroma Ember after stacking Inferno Tier. Why it scales: setup cards build attack scaling while ember ignition adds burst. Exact payoff: play Void Combustion, then click Cinder Seraphim → Vector Break for the finisher (~900+ combined Oblivion).',
     },
   ],
   guidedOpeningHand: [

@@ -9,14 +9,14 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinder Seraphim',
-    description: 'On play: +15 Oblivion; Stoke 3 Furnace Pressure; Stoke 2 Furnace Pressure. While on board: +10 Oblivion per card played while active',
+    description: 'On play: +15 Oblivion; Gain 3 Inferno Tier; Gain 2 Inferno Tier. While on board: +10 Oblivion per card played while active',
     artKey: 'ser_fire_cinder',
     attacks: {
       unsynergized: {
         id: 'ser-fire-cinder:unsynergized',
         label: 'Unsynergized',
         name: 'Cinder Seraphim Vector Break',
-        description: '200 base Oblivion · 4 cards cooldown · +2.5% attack per Furnace (max +75%)',
+        description: '200 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 200,
         cooldownCards: 4,
         costs: [],
@@ -26,7 +26,7 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-cinder:synergized',
         label: 'Synergized',
         name: 'Cinder Seraphim Angelic Verdict',
-        description: '340 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Furnace (max +75%)',
+        description: '340 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 340,
         cooldownCards: 5,
         costs: [],
@@ -37,8 +37,8 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 10, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 15 },
-      { type: 'pyro_furnace_pressure_gain', value: 3 },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 3 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   },
   {
     definitionId: 'ser-fire-abyssal',
@@ -46,14 +46,14 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Seraphim',
-    description: 'On play: Stoke 2 Furnace Pressure; Stoke 2 Furnace Pressure. While on board: +22 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 2 Inferno Tier; Gain 2 Inferno Tier. While on board: +22 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_fire_abyssal',
     attacks: {
       unsynergized: {
         id: 'ser-fire-abyssal:unsynergized',
         label: 'Unsynergized',
         name: 'Abyssal Seraphim Vector Break',
-        description: '225 base Oblivion · 4 cards cooldown · +2.5% attack per Furnace (max +75%)',
+        description: '225 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 225,
         cooldownCards: 4,
         costs: [],
@@ -63,7 +63,7 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-abyssal:synergized',
         label: 'Synergized',
         name: 'Abyssal Seraphim Angelic Verdict',
-        description: '383 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Furnace (max +75%)',
+        description: '383 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 383,
         cooldownCards: 5,
         costs: [],
@@ -73,8 +73,8 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 22, synergyRequirement: 'Fire' },
     onPlayEffects: [
-      { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   },
   {
     definitionId: 'ser-fire-pyre',
@@ -82,14 +82,14 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyre Seraphim',
-    description: 'On play: +45 Oblivion; Stoke 3 Furnace Pressure. While on board: +14 Oblivion per card played while active',
+    description: 'On play: +45 Oblivion; Gain 3 Inferno Tier. While on board: +14 Oblivion per card played while active',
     artKey: 'ser_fire_pyre',
     attacks: {
       unsynergized: {
         id: 'ser-fire-pyre:unsynergized',
         label: 'Unsynergized',
         name: 'Pyre Seraphim Vector Break',
-        description: '360 base Oblivion · 4 cards cooldown · +2.5% attack per Furnace (max +75%)',
+        description: '360 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 360,
         cooldownCards: 4,
         costs: [],
@@ -99,7 +99,7 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-pyre:synergized',
         label: 'Synergized',
         name: 'Pyre Seraphim Angelic Verdict',
-        description: '612 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Furnace (max +75%)',
+        description: '612 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 612,
         cooldownCards: 5,
         costs: [],
@@ -110,7 +110,7 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 14, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 45 },
-      { type: 'pyro_furnace_pressure_gain', value: 3 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 3 }],
   },
   {
     definitionId: 'ser-fire-infernal',
@@ -118,14 +118,14 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Infernal Seraphim',
-    description: 'On play: +25 Oblivion; Stoke 3 Furnace Pressure; Stoke 2 Furnace Pressure. While on board: +16 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: +25 Oblivion; Gain 3 Inferno Tier; Gain 2 Inferno Tier. While on board: +16 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_fire_infernal',
     attacks: {
       unsynergized: {
         id: 'ser-fire-infernal:unsynergized',
         label: 'Unsynergized',
         name: 'Infernal Seraphim Vector Break',
-        description: '325 base Oblivion · 4 cards cooldown · +2.5% attack per Furnace (max +75%)',
+        description: '325 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 325,
         cooldownCards: 4,
         costs: [],
@@ -135,7 +135,7 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-infernal:synergized',
         label: 'Synergized',
         name: 'Infernal Seraphim Angelic Verdict',
-        description: '553 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Furnace (max +75%)',
+        description: '553 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 553,
         cooldownCards: 5,
         costs: [],
@@ -146,8 +146,8 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 16, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 25 },
-      { type: 'pyro_furnace_pressure_gain', value: 3 },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 3 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   },
   {
     definitionId: 'ser-fire-voidflame',
@@ -155,14 +155,14 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void-Flame Seraphim',
-    description: 'On play: +60 Oblivion; Stoke 6 Furnace Pressure; Stoke 2 Furnace Pressure; Stoke 2 Furnace Pressure. While on board: +20 Oblivion per card played while active',
+    description: 'On play: +60 Oblivion; Gain 6 Inferno Tier; Gain 2 Inferno Tier; Gain 2 Inferno Tier. While on board: +20 Oblivion per card played while active',
     artKey: 'ser_fire_voidflame',
     attacks: {
       unsynergized: {
         id: 'ser-fire-voidflame:unsynergized',
         label: 'Unsynergized',
         name: 'Void-Flame Seraphim Vector Break',
-        description: '530 base Oblivion · 5 cards cooldown · +2.5% attack per Furnace (max +75%)',
+        description: '530 base Oblivion · 5 cards cooldown · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 530,
         cooldownCards: 5,
         costs: [],
@@ -172,7 +172,7 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
         id: 'ser-fire-voidflame:synergized',
         label: 'Synergized',
         name: 'Void-Flame Seraphim Angelic Verdict',
-        description: '901 base Oblivion · 6 cards cooldown · Requires Angel · +2.5% attack per Furnace (max +75%)',
+        description: '901 base Oblivion · 6 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)',
         baseOblivion: 901,
         cooldownCards: 6,
         costs: [],
@@ -183,9 +183,9 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 20, synergyRequirement: 'Fire' },
     onPlayEffects: [
       { type: 'oblivion_flat', value: 60 },
-      { type: 'pyro_furnace_pressure_gain', value: 6 },
-      { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 6 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   }];
 
 // Ophanim cards
@@ -198,10 +198,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinder Draw',
-    description: 'Stoke 2 Furnace Pressure; Draw 1 card',
+    description: 'Gain 2 Inferno Tier; Draw 1 card',
     artKey: 'seek_fire_cinder_draw',
     effects: [
-      { type: 'pyro_furnace_pressure_gain', value: 2 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
       { type: 'draw', value: 1 }],
   },
   {
@@ -210,11 +210,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Kindle',
-    description: '+20 Oblivion; Stoke 2 Furnace Pressure',
+    description: '+20 Oblivion; Gain 2 Inferno Tier',
     artKey: 'seek_fire_abyssal_kindle',
     effects: [
       { type: 'oblivion_flat', value: 20 },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   },
   {
     definitionId: 'ophanim-fire-pyre-ignite',
@@ -222,10 +222,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Pyre Ignite',
-    description: 'Stoke 3 Furnace Pressure',
+    description: 'Gain 3 Inferno Tier',
     artKey: 'seek_fire_pyre_ignite',
     effects: [
-      { type: 'pyro_furnace_pressure_gain', value: 3 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 3 }],
   },
   {
     definitionId: 'ophanim-fire-infernal-surge',
@@ -233,11 +233,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Infernal Surge',
-    description: '+30 Oblivion; If you control 1+ active Cherubim, Stoke 2 Furnace Pressure; Stoke 2 Furnace Pressure',
+    description: '+30 Oblivion; If you control 1+ active Cherubim, Gain 2 Inferno Tier; Gain 2 Inferno Tier',
     artKey: 'seek_fire_infernal_surge',
     effects: [
       { type: 'oblivion_flat', value: 30 },
-      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'pyro_furnace_pressure_gain', value: 2 }, { type: 'pyro_furnace_pressure_gain', value: 2 }] }],
+      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'eternal_stack_gain', stack: 'pyro', value: 2 }, { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-fire-void-kindling',
@@ -245,11 +245,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Void Kindling',
-    description: 'Stoke 2 Furnace Pressure; Stoke 3 Furnace Pressure',
+    description: 'Gain 2 Inferno Tier; Gain 3 Inferno Tier',
     artKey: 'seek_fire_void_kindling',
     effects: [
-      { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'pyro_furnace_pressure_gain', value: 3 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 3 }],
   },
   {
     definitionId: 'ophanim-fire-void-flare',
@@ -257,11 +257,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Void Flare',
-    description: '+25 Oblivion; If Furnace Pressure is 6+, Stoke 2 Furnace Pressure',
+    description: '+25 Oblivion; If Inferno Tiers are 6+, Gain 2 Inferno Tier',
     artKey: 'seek_fire_void_flare',
     effects: [
       { type: 'oblivion_flat', value: 25 },
-      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 6 }, then: [{ type: 'pyro_furnace_pressure_gain', value: 2 }] }],
+      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 6 }, then: [{ type: 'eternal_stack_gain', stack: 'pyro', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-fire-smoldering-cycle',
@@ -269,12 +269,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Smoldering Cycle',
-    description: 'Shuffle discard into deck; Stoke 2 Furnace Pressure; Stoke 2 Furnace Pressure',
+    description: 'Shuffle discard into deck; Gain 2 Inferno Tier; Gain 2 Inferno Tier',
     artKey: 'seek_fire_smoldering_cycle',
     effects: [
       { type: 'shuffle_discard' },
-      { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   },
   {
     definitionId: 'ophanim-fire-abyssal-recall',
@@ -282,11 +282,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Recall',
-    description: 'Salvage 1 card matching Seraphim; Stoke 2 Furnace Pressure',
+    description: 'Salvage 1 card matching Seraphim; Gain 2 Inferno Tier',
     artKey: 'seek_fire_abyssal_recall',
     effects: [
       { type: 'salvage_by_type', filter: ['Seraphim'] },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   },
   // Rares
   {
@@ -295,10 +295,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Flame Burst',
-    description: 'Ignite Furnace (tiered heat payout scaled by your rise streak); +50 Oblivion',
+    description: 'Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2); +50 Oblivion',
     artKey: 'seek_fire_flame_burst',
     effects: [
-      { type: 'pyro_furnace_ignite' },
+      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 },
       { type: 'oblivion_flat', value: 50 }],
   },
   {
@@ -307,10 +307,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Abyssal Detonation',
-    description: 'Ignite Furnace (tiered heat payout scaled by your rise streak); +105 Oblivion; Draw 1 card',
+    description: 'Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2); +105 Oblivion; Draw 1 card',
     artKey: 'seek_fire_abyssal_detonation',
     effects: [
-      { type: 'pyro_furnace_ignite' },
+      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 },
       { type: 'oblivion_flat', value: 105 },
       { type: 'draw', value: 1 }],
   },
@@ -320,12 +320,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyroclast',
-    description: 'Ignite Furnace (tiered heat payout scaled by your rise streak); +90 Oblivion; If you control 3+ active Seraphim, Stoke 2 Furnace Pressure; Stoke 2 Furnace Pressure',
+    description: 'Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2); +90 Oblivion; If you control 3+ active Seraphim, Gain 2 Inferno Tier; Gain 2 Inferno Tier',
     artKey: 'seek_fire_pyroclast',
     effects: [
-      { type: 'pyro_furnace_ignite' },
+      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 },
       { type: 'oblivion_flat', value: 90 },
-      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'pyro_furnace_pressure_gain', value: 2 }, { type: 'pyro_furnace_pressure_gain', value: 2 }] }],
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'eternal_stack_gain', stack: 'pyro', value: 2 }, { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-fire-ember-threshold',
@@ -333,11 +333,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Cinder Threshold',
-    description: '+40 Oblivion; If Furnace Pressure is 8+, +30 Oblivion; Stoke 2 Furnace Pressure',
+    description: '+40 Oblivion; If Inferno Tiers are 8+, +30 Oblivion; Gain 2 Inferno Tier',
     artKey: 'seek_fire_ember_threshold',
     effects: [
       { type: 'oblivion_flat', value: 40 },
-      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 8 }, then: [{ type: 'oblivion_flat', value: 30 }, { type: 'pyro_furnace_pressure_gain', value: 2 }] }],
+      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 8 }, then: [{ type: 'oblivion_flat', value: 30 }, { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-fire-conflagration',
@@ -345,11 +345,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Conflagration',
-    description: 'Ignite Furnace (tiered heat payout scaled by your rise streak); Stoke 2 Furnace Pressure',
+    description: 'Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2); Gain 2 Inferno Tier',
     artKey: 'seek_fire_conflagration',
     effects: [
-      { type: 'pyro_furnace_ignite' },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   },
   {
     definitionId: 'ophanim-fire-pyre-hunt',
@@ -357,11 +357,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyre Hunt',
-    description: 'Search your deck for 1 matching Cherubim; Stoke 1 Furnace Pressure',
+    description: 'Search your deck for 1 matching Cherubim; Gain 1 Inferno Tier',
     artKey: 'seek_fire_pyre_hunt',
     effects: [
       { type: 'search_deck_by_type', filter: ['Cherubim'] },
-      { type: 'pyro_furnace_pressure_gain', value: 1 }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 1 }],
   },
   {
     definitionId: 'ophanim-fire-ember-chain',
@@ -369,12 +369,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Cinder Chain',
-    description: 'Stoke 2 Furnace Pressure; Stoke 2 Furnace Pressure; If Furnace Pressure is 10+, Stoke 2 Furnace Pressure',
+    description: 'Gain 2 Inferno Tier; Gain 2 Inferno Tier; If Inferno Tiers are 10+, Gain 2 Inferno Tier',
     artKey: 'seek_fire_ember_chain',
     effects: [
-      { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'conditional', condition: { type: 'pyro_furnace_pressure_gte', value: 10 }, then: [{ type: 'pyro_furnace_pressure_gain', value: 2 }] }],
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
+      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 10 }, then: [{ type: 'eternal_stack_gain', stack: 'pyro', value: 2 }] }],
   },
   // Epics
   {
@@ -383,10 +383,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void Combustion',
-    description: 'Ignite Furnace (tiered heat payout scaled by your rise streak); +25 Oblivion',
+    description: 'Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2); +25 Oblivion',
     artKey: 'seek_fire_void_combustion',
     effects: [
-      { type: 'pyro_furnace_ignite' },
+      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 },
       { type: 'oblivion_flat', value: 25 }],
   },
   {
@@ -395,11 +395,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Inferno',
-    description: 'Ignite Furnace (tiered heat payout scaled by your rise streak); Stoke 2 Furnace Pressure',
+    description: 'Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2); Gain 2 Inferno Tier',
     artKey: 'seek_fire_inferno',
     effects: [
-      { type: 'pyro_furnace_ignite' },
-      { type: 'pyro_furnace_pressure_gain', value: 2 }],
+      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
   },
   // Legendary
   {
@@ -408,10 +408,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Legendary',
     name: 'Void Apocalypse',
-    description: 'Ignite Furnace (tiered heat payout scaled by your rise streak); Stoke 2 Furnace Pressure; Ignite Furnace (tiered heat payout scaled by your rise streak)',
+    description: 'Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2); Gain 2 Inferno Tier; Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2)',
     artKey: 'seek_fire_void_apocalypse',
     effects: [
-      { type: 'pyro_furnace_ignite' },
-      { type: 'pyro_furnace_pressure_gain', value: 2 },
-      { type: 'pyro_furnace_ignite' }],
+      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 },
+      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
+      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 }],
   }];

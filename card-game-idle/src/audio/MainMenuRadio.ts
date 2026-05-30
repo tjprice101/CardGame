@@ -44,12 +44,6 @@ export const MAIN_MENU_RADIO_PLAYLIST: RadioTrack[] = [
     filename: 'the-first-draw-of-eternity-main-menu.mp3',
     gain: 1.0,
   },
-  {
-    id: 'sovereign-of-the-infinite-deck',
-    title: 'Sovereign of the Infinite Deck',
-    filename: 'sovereign-of-the-infinite-deck-main-menu.mp3',
-    gain: 1.0,
-  },
 ];
 
 const CROSSFADE_MS = 1400;
@@ -94,8 +88,18 @@ class MainMenuRadioImpl {
     this.clearFade();
     const live = this.live();
     const other = this.other();
-    if (live) { live.onended = null; this.fadeOut(live); }
-    if (other) { other.onended = null; this.fadeOut(other); }
+    if (live) {
+      live.onended = null;
+      live.pause();
+      live.volume = 0;
+      live.currentTime = 0;
+    }
+    if (other) {
+      other.onended = null;
+      other.pause();
+      other.volume = 0;
+      other.currentTime = 0;
+    }
     this.onPausedChangeCb?.(false);
   }
 
@@ -239,22 +243,6 @@ class MainMenuRadioImpl {
         this.clearFade();
         incoming.volume = targetIn;
         if (outgoing) { outgoing.pause(); outgoing.volume = 0; }
-      }
-    }, Math.max(16, Math.floor(CROSSFADE_MS / FADE_STEPS)));
-  }
-
-  private fadeOut(el: HTMLAudioElement | null) {
-    if (!el) return;
-    const start = el.volume;
-    if (start <= 0) { el.pause(); return; }
-    let step = 0;
-    const timer = window.setInterval(() => {
-      step++;
-      el.volume = Math.max(0, start * (1 - step / FADE_STEPS));
-      if (step >= FADE_STEPS) {
-        el.pause();
-        el.volume = 0;
-        window.clearInterval(timer);
       }
     }, Math.max(16, Math.floor(CROSSFADE_MS / FADE_STEPS)));
   }

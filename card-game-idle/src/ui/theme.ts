@@ -28,24 +28,18 @@ export interface UiPalette {
 }
 
 export const DEFAULT_WARM_PALETTE: UiPalette = {
-  // Deep navy — visible behind modals/panels, matches the dark overlay
-  // tones of the main menu art (InfiniteCardsMenuArt.png).
   appBackground: 'radial-gradient(circle at 22% -8%, #1e3a58 0%, rgba(30,58,88,0) 55%), linear-gradient(180deg, #0c1a2c 0%, #111f35 42%, #08111e 100%)',
-  overlay: 'rgba(230, 237, 248, 0.92)',
-  backdrop: 'rgba(8, 18, 38, 0.52)',
-  // Surfaces: clean neutral cream — matches the main menu tile colour
-  surface: 'rgba(244, 241, 234, 0.94)',
-  surfaceStrong: 'rgba(252, 249, 244, 0.97)',
-  surfaceMuted: 'rgba(222, 218, 208, 0.94)',
-  // Borders: cool blue-grey (not warm amber)
-  border: 'rgba(100, 140, 188, 0.28)',
-  borderStrong: 'rgba(62, 112, 168, 0.52)',
-  // Text: very dark blue-grey (reads on cream; close to the tile text colour)
-  text: '#1a2535',
-  textSoft: 'rgba(26, 37, 53, 0.88)',
-  textMuted: 'rgba(26, 37, 53, 0.65)',
-  textFaint: 'rgba(26, 37, 53, 0.46)',
-  // Accents: steel blue — matches the primary "Begin Turn" tile
+  overlay: 'rgba(10, 18, 30, 0.88)',
+  backdrop: 'rgba(8, 18, 38, 0.56)',
+  surface: 'rgba(20, 32, 50, 0.92)',
+  surfaceStrong: 'rgba(26, 40, 62, 0.95)',
+  surfaceMuted: 'rgba(16, 26, 40, 0.9)',
+  border: 'rgba(100, 140, 188, 0.34)',
+  borderStrong: 'rgba(92, 152, 220, 0.58)',
+  text: '#eaf2ff',
+  textSoft: 'rgba(234, 242, 255, 0.9)',
+  textMuted: 'rgba(234, 242, 255, 0.72)',
+  textFaint: 'rgba(234, 242, 255, 0.52)',
   accent: '#3a8ec8',
   accentSoft: '#58aada',
   accentDeep: '#0d1e34',
@@ -64,9 +58,163 @@ export const DEFAULT_WARM_PALETTE: UiPalette = {
  */
 export const warmTheme: UiPalette = { ...DEFAULT_WARM_PALETTE };
 
+type Rgba = { r: number; g: number; b: number; a: number };
+
+function clamp01(n: number): number {
+  return Math.max(0, Math.min(1, n));
+}
+
+function clamp255(n: number): number {
+  return Math.max(0, Math.min(255, Math.round(n)));
+}
+
+function rgbaToCss({ r, g, b, a }: Rgba): string {
+  const alpha = Math.round(clamp01(a) * 1000) / 1000;
+  return `rgba(${clamp255(r)}, ${clamp255(g)}, ${clamp255(b)}, ${alpha})`;
+}
+
+function hexToRgba(hex: string): Rgba | null {
+  const v = hex.trim().replace('#', '');
+  if (v.length === 3) {
+    const r = parseInt(v[0] + v[0], 16);
+    const g = parseInt(v[1] + v[1], 16);
+    const b = parseInt(v[2] + v[2], 16);
+    return { r, g, b, a: 1 };
+  }
+  if (v.length === 6) {
+    const r = parseInt(v.slice(0, 2), 16);
+    const g = parseInt(v.slice(2, 4), 16);
+    const b = parseInt(v.slice(4, 6), 16);
+    return { r, g, b, a: 1 };
+  }
+  if (v.length === 8) {
+    const r = parseInt(v.slice(0, 2), 16);
+    const g = parseInt(v.slice(2, 4), 16);
+    const b = parseInt(v.slice(4, 6), 16);
+    const a = parseInt(v.slice(6, 8), 16) / 255;
+    return { r, g, b, a };
+  }
+  return null;
+}
+
+function parseRgbFn(value: string): Rgba | null {
+  const match = value.match(/rgba?\(([^)]+)\)/i);
+  if (!match) return null;
+  const parts = match[1].split(',').map(p => p.trim());
+  if (parts.length < 3) return null;
+  const r = Number(parts[0]);
+  const g = Number(parts[1]);
+  const b = Number(parts[2]);
+  const a = parts.length >= 4 ? Number(parts[3]) : 1;
+  if ([r, g, b, a].some(n => Number.isNaN(n))) return null;
+  return { r, g, b, a: clamp01(a) };
+}
+
+function extractFirstColorToken(value: string): string | null {
+  const match = value.match(/(#[0-9a-fA-F]{3,8}|rgba?\([^)]*\))/);
+  return match ? match[1] : null;
+}
+
+function parseColor(value: string): Rgba | null {
+  const token = extractFirstColorToken(value.trim());
+  if (!token) return null;
+  if (token.startsWith('#')) return hexToRgba(token);
+  if (token.startsWith('rgb')) return parseRgbFn(token);
+  return null;
+}
+
+function compositeOver(fg: Rgba, bg: Rgba): Rgba {
+  const a = clamp01(fg.a + bg.a * (1 - fg.a));
+  if (a <= 0) return { r: 0, g: 0, b: 0, a: 0 };
+  const r = (fg.r * fg.a + bg.r * bg.a * (1 - fg.a)) / a;
+  const g = (fg.g * fg.a + bg.g * bg.a * (1 - fg.a)) / a;
+  const b = (fg.b * fg.a + bg.b * bg.a * (1 - fg.a)) / a;
+  return { r, g, b, a };
+}
+
+function linearize(v: number): number {
+  const c = v / 255;
+  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance(c: Rgba): number {
+  const r = linearize(clamp255(c.r));
+  const g = linearize(clamp255(c.g));
+  const b = linearize(clamp255(c.b));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+function contrastRatio(fg: Rgba, bg: Rgba): number {
+  const effectiveFg = fg.a < 1 ? compositeOver(fg, bg) : fg;
+  const l1 = luminance(effectiveFg);
+  const l2 = luminance(bg);
+  const hi = Math.max(l1, l2);
+  const lo = Math.min(l1, l2);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+function minContrastAgainstBackgrounds(fg: Rgba, bgs: Rgba[]): number {
+  let min = Number.POSITIVE_INFINITY;
+  for (const bg of bgs) {
+    min = Math.min(min, contrastRatio(fg, bg));
+  }
+  return Number.isFinite(min) ? min : 0;
+}
+
+function withAlpha(c: Rgba, a: number): Rgba {
+  return { r: c.r, g: c.g, b: c.b, a: clamp01(a) };
+}
+
+function normalizePaletteForLegibility(palette: UiPalette): UiPalette {
+  const fallbackBg: Rgba = { r: 20, g: 28, b: 40, a: 1 };
+  const bgs = [palette.surface, palette.surfaceStrong, palette.surfaceMuted]
+    .map(parseColor)
+    .filter((v): v is Rgba => !!v)
+    .map(bg => (bg.a < 1 ? compositeOver(bg, fallbackBg) : bg));
+
+  if (bgs.length === 0) return palette;
+
+  const preferredText = parseColor(palette.text) ?? parseColor(DEFAULT_WARM_PALETTE.text) ?? { r: 234, g: 242, b: 255, a: 1 };
+  const candidateTexts: Rgba[] = [
+    withAlpha(preferredText, 1),
+    { r: 245, g: 249, b: 255, a: 1 },
+    { r: 248, g: 241, b: 225, a: 1 },
+    { r: 20, g: 25, b: 36, a: 1 },
+    { r: 35, g: 29, b: 20, a: 1 },
+  ];
+
+  let best = candidateTexts[0];
+  let bestScore = minContrastAgainstBackgrounds(best, bgs);
+  for (const c of candidateTexts.slice(1)) {
+    const score = minContrastAgainstBackgrounds(c, bgs);
+    if (score > bestScore) {
+      best = c;
+      bestScore = score;
+    }
+  }
+
+  const minPrimaryContrast = 4.5;
+  const chosenText = bestScore >= minPrimaryContrast ? best : candidateTexts.reduce((acc, c) => {
+    const s = minContrastAgainstBackgrounds(c, bgs);
+    return s > minContrastAgainstBackgrounds(acc, bgs) ? c : acc;
+  }, best);
+
+  const chosenSoft = withAlpha(chosenText, 0.92);
+  const chosenMuted = withAlpha(chosenText, 0.78);
+  const chosenFaint = withAlpha(chosenText, 0.62);
+
+  return {
+    ...palette,
+    text: rgbaToCss(withAlpha(chosenText, 1)),
+    textSoft: rgbaToCss(chosenSoft),
+    textMuted: rgbaToCss(chosenMuted),
+    textFaint: rgbaToCss(chosenFaint),
+  };
+}
+
 /** Overwrite warmTheme in-place with `palette`. */
 export function applyUiPalette(palette: UiPalette): void {
-  Object.assign(warmTheme, palette);
+  Object.assign(warmTheme, normalizePaletteForLegibility(palette));
 }
 
 /** Reset warmTheme to the default warm palette. */

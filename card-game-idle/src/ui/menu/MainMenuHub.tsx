@@ -421,7 +421,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
                 fontFamily: uiTypography.body, fontSize: 11, fontStyle: 'italic',
                 color: warmTheme.accentSoft, letterSpacing: 0.6, textShadow: '0 1px 6px rgba(0,0,0,0.6)',
               }}>
-                {titleBadge.label}
+                {titleBadge.text}
               </div>
             )}
             <div style={{

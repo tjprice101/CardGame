@@ -47,9 +47,9 @@ export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
     setName: 'Pyroabyss',
     tier: 'basic',
     name: 'Smoldering Core',
-    description: '+3 to the Heat cap. Push the furnace hotter before it turns against you.',
+    description: 'Pyroabyss Infinite payout increases by +0.08.',
     powderCost: T1,
-    effects: [{ type: 'heat_cap_bonus', value: 3 }],
+    effects: [{ type: 'pyro_infinite_payout_bonus', value: 0.08 }],
   },
   {
     id: 'artifact-pyroabyss-t2',
@@ -57,9 +57,9 @@ export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
     setName: 'Pyroabyss',
     tier: 'advanced',
     name: 'Deeper Abyss',
-    description: '+5 to the Heat cap. The furnace runs deeper, giving you more room to push before Burn Debt strikes.',
+    description: 'Pyroabyss Infinite payout increases by +0.14.',
     powderCost: T2,
-    effects: [{ type: 'heat_cap_bonus', value: 5 }],
+    effects: [{ type: 'pyro_infinite_payout_bonus', value: 0.14 }],
   },
   {
     id: 'artifact-pyroabyss-t3',
@@ -67,9 +67,9 @@ export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
     setName: 'Pyroabyss',
     tier: 'apex',
     name: 'Inferno Sovereign',
-    description: 'The Pyroabyss full-fire gate multiplier increases by +0.22. The abyss recognizes your mastery.',
+    description: 'Pyroabyss Infinite payout increases by +0.22. The abyss recognizes your mastery.',
     powderCost: T3,
-    effects: [{ type: 'pyro_full_fire_mult_bonus', value: 0.22 }],
+    effects: [{ type: 'pyro_infinite_payout_bonus', value: 0.22 }],
   },
 
   // ── Heavenly Light ──────────────────────────────────────────────────────────

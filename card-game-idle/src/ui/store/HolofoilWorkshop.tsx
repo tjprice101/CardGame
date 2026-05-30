@@ -1,18 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES, getCardCategoryKey } from '@/data/elements';
 import { canConvertCardToHolo, getCardFinishLabel, getHolofoilConversionCost, getHoloOwnedCopies, getNormalOwnedCopies } from '@/systems/progression/HolofoilSystem';
 import { useStore } from '@/state/store';
 import {
   cardFacePalette,
-  getCardFaceBackgroundStyle,
+  getDenseCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
-import { warmTheme } from '@/ui/theme';
 
 const faceMetrics = getCardFaceMetrics('grid');
 
@@ -25,6 +24,11 @@ const RARITY_ORDER: Record<string, number> = {
 };
 
 type SortMode = 'set' | 'name' | 'rarity' | 'cost-asc' | 'cost-desc' | 'normal-owned';
+
+interface HolofoilCardRow {
+  key: string;
+  cards: ReturnType<typeof CardRegistry.getAll>;
+}
 
 const styles: Record<string, React.CSSProperties> = {
   wrapper: {
@@ -175,9 +179,24 @@ export default function HolofoilWorkshop() {
   const [affordableOnly, setAffordableOnly] = useState(false);
   const [multiCopyOnly, setMultiCopyOnly] = useState(false);
   const [lastConverted, setLastConverted] = useState<string | null>(null);
+  const gridViewportRef = useRef<HTMLDivElement | null>(null);
+  const [gridViewportWidth, setGridViewportWidth] = useState(0);
+  const registryCards = useMemo(() => CardRegistry.getAll(), []);
+
+  useEffect(() => {
+    const node = gridViewportRef.current;
+    if (!node) return;
+
+    const updateWidth = () => setGridViewportWidth(Math.max(0, node.clientWidth - 48));
+    updateWidth();
+
+    const resizeObserver = new ResizeObserver(() => updateWidth());
+    resizeObserver.observe(node);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const cards = useMemo(() => {
-    return CardRegistry.getAll()
+    return registryCards
       .filter(def => canConvertCardToHolo(def, collection, holoCollection))
       .sort((a, b) => {
         const categoryA = getCardCategoryKey(a);
@@ -187,7 +206,7 @@ export default function HolofoilWorkshop() {
         if (rarityDelta !== 0) return rarityDelta;
         return a.name.localeCompare(b.name);
       });
-  }, [collection, holoCollection]);
+  }, [collection, holoCollection, registryCards]);
 
   const rarityFilters = useMemo(
     () => ['All', ...Array.from(new Set(cards.map(card => card.type === 'Angel' ? 'Angel' : card.rarity)))],
@@ -261,6 +280,18 @@ export default function HolofoilWorkshop() {
     const timeoutId = window.setTimeout(() => setLastConverted(null), 2400);
     return () => window.clearTimeout(timeoutId);
   }, [lastConverted]);
+
+  const gridColumns = Math.max(1, Math.floor((gridViewportWidth + 14) / 162));
+  const virtualRows = useMemo(() => {
+    const rows: HolofoilCardRow[] = [];
+    for (let index = 0; index < filtered.length; index += gridColumns) {
+      rows.push({
+        key: `row-${index}`,
+        cards: filtered.slice(index, index + gridColumns),
+      });
+    }
+    return rows;
+  }, [filtered, gridColumns]);
 
   return (
     <div style={styles.wrapper}>
@@ -345,78 +376,81 @@ export default function HolofoilWorkshop() {
 
       {lastConverted && <div style={styles.successBanner}>{lastConverted}</div>}
 
-      <div style={styles.body}>
-        {filtered.length === 0 && (
+      {filtered.length === 0 ? (
+        <div style={styles.body}>
           <div style={styles.empty}>
             No owned normal-finish cards are available for conversion in this filter.
           </div>
-        )}
+        </div>
+      ) : (
+        <VirtualizedList
+          items={virtualRows}
+          getItemKey={(row) => row.key}
+          getItemHeight={() => 296}
+          topPadding={0}
+          bottomPadding={24}
+          overscanPx={560}
+          viewportRef={gridViewportRef}
+          style={{ flex: 1 }}
+          renderItem={(row) => (
+            <div style={{ display: 'flex', gap: 14, padding: '0 24px 14px', alignItems: 'flex-start' }}>
+              {row.cards.map(def => {
+                const normalOwned = getNormalOwnedCopies(def, collection, holoCollection);
+                const holoOwned = getHoloOwnedCopies(collection, holoCollection, def.definitionId);
+                const cost = getHolofoilConversionCost(def, holoCollection) ?? 0;
+                const canAfford = shards >= cost;
+                const previewText = getCardPreviewLines(def, 3).join(' ');
 
-        {filtered.map(def => {
-          const normalOwned = getNormalOwnedCopies(def, collection, holoCollection);
-          const holoOwned = getHoloOwnedCopies(collection, holoCollection, def.definitionId);
-          const cost = getHolofoilConversionCost(def, holoCollection) ?? 0;
-          const canAfford = shards >= cost;
+                return (
+                  <div key={def.definitionId} style={styles.cardTile}>
+                    <div
+                      style={{ ...styles.card, ...getDenseCardFaceBackgroundStyle(def, 'holo') }}
+                      title={getCardPreviewLines(def, 4).join('\n')}
+                    >
+                      <div style={getCardNameRibbonStyle('grid')}>
+                        <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.3, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
+                          {def.type} · {getCardFinishLabel('holo')}
+                        </div>
+                        <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 }}>
+                          {def.name}
+                        </div>
+                      </div>
 
-          return (
-            <div key={def.definitionId} style={styles.cardTile}>
-              <div
-                className={`holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`}
-                style={{ ...styles.card, ...getCardFaceBackgroundStyle(def, 'holo') }}
-                title={getCardPreviewLines(def, 4).join('\n')}
-              >
-                <div style={getCardNameRibbonStyle('grid')}>
-                  <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.3, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
-                    {def.type} · {getCardFinishLabel('holo')}
+                      <div style={getCardRulesPanelStyle('grid')}>
+                        <div style={{ ...styles.desc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 3 }}>
+                          {previewText}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={styles.infoPanel}>
+                      <div style={styles.countRow}>
+                        <span>Normal: {normalOwned}</span>
+                        <span>Holo: {holoOwned}</span>
+                      </div>
+                      <div style={{ ...styles.countRow, marginTop: 4 }}>
+                        <span>{def.rarity}</span>
+                        <span>{cost} Shards</span>
+                      </div>
+                      <button className="menu-tactile-btn"
+                        style={{
+                          ...styles.convertBtn,
+                          opacity: canAfford ? 1 : 0.4,
+                          cursor: canAfford ? 'pointer' : 'not-allowed',
+                        }}
+                        onClick={() => canAfford && handleConvert(def.definitionId, def.name)}
+                        disabled={!canAfford}
+                      >
+                        {canAfford ? `Convert (${cost} Shards)` : `Need ${cost - shards} More`}
+                      </button>
+                    </div>
                   </div>
-                  <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 }}>
-                    {def.name}
-                  </div>
-                </div>
-
-                <div style={getCardRulesPanelStyle('grid')}>
-                  <div style={{ ...styles.desc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
-                    <CardRulesDigest
-                      card={def}
-                      variant="preview"
-                      maxSections={4}
-                      maxLinesPerSection={10}
-                      lineClamp={3}
-                      labelColor={cardFacePalette.textMuted}
-                      textColor={cardFacePalette.textSoft}
-                      sectionBackground="transparent"
-                      sectionBorder="transparent"
-                      lightBg
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div style={styles.infoPanel}>
-                <div style={styles.countRow}>
-                  <span>Normal: {normalOwned}</span>
-                  <span>Holo: {holoOwned}</span>
-                </div>
-                <div style={{ ...styles.countRow, marginTop: 4 }}>
-                  <span>{def.rarity}</span>
-                  <span>{cost} Shards</span>
-                </div>
-                <button className="menu-tactile-btn"
-                  style={{
-                    ...styles.convertBtn,
-                    opacity: canAfford ? 1 : 0.4,
-                    cursor: canAfford ? 'pointer' : 'not-allowed',
-                  }}
-                  onClick={() => canAfford && handleConvert(def.definitionId, def.name)}
-                  disabled={!canAfford}
-                >
-                  {canAfford ? `Convert (${cost} Shards)` : `Need ${cost - shards} More`}
-                </button>
-              </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
+          )}
+        />
+      )}
     </div>
   );
 }

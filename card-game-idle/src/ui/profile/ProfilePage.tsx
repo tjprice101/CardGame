@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
-import { warmTheme } from '@/ui/theme';
+import { warmTheme, uiTypography } from '@/ui/theme';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
 import { UI_THEMES, DEFAULT_UI_THEME_ID } from '@/data/profile/uiThemes';
@@ -48,6 +48,10 @@ export default function ProfilePage({ onClose }: Props) {
     else setNameDraft(profile.name);
   }
 
+  useEffect(() => {
+    setNameDraft(profile.name);
+  }, [profile.name]);
+
   return (
     <>
     <div style={{
@@ -55,7 +59,7 @@ export default function ProfilePage({ onClose }: Props) {
       inset: 0,
       background: 'radial-gradient(circle at 50% 14%, rgba(201, 170, 112, 0.2) 0%, rgba(201, 170, 112, 0) 36%), radial-gradient(circle at 10% 86%, rgba(104, 134, 174, 0.2) 0%, rgba(104, 134, 174, 0) 40%), repeating-linear-gradient(35deg, rgba(222, 196, 148, 0.06) 0px, rgba(222, 196, 148, 0.06) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 20px), linear-gradient(180deg, rgba(16, 18, 23, 0.965) 0%, rgba(19, 24, 31, 0.965) 100%)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      zIndex: 50, pointerEvents: 'auto', fontFamily: 'Georgia, serif',
+      zIndex: 50, pointerEvents: 'auto', fontFamily: uiTypography.body,
       ['--ui-accent' as any]: '230, 196, 132',
       ['--ui-accent-soft' as any]: '250, 224, 184',
     }}>
@@ -122,7 +126,7 @@ export default function ProfilePage({ onClose }: Props) {
                 width: '100%', fontSize: 17, fontWeight: 'bold',
                 color: warmTheme.text, background: 'transparent',
                 border: 'none', borderBottom: `1px solid ${warmTheme.border}`,
-                outline: 'none', fontFamily: 'Georgia, serif', padding: '2px 0',
+                outline: 'none', fontFamily: uiTypography.body, padding: '2px 0',
               }}
             />
             <div style={{ fontSize: 12, color: warmTheme.text, marginTop: 4, fontStyle: 'italic' }}>
@@ -190,7 +194,7 @@ export default function ProfilePage({ onClose }: Props) {
               background: warmTheme.button,
               color: warmTheme.accentDeep,
               fontSize: 11,
-              fontFamily: 'Georgia, serif',
+              fontFamily: uiTypography.body,
               cursor: 'pointer',
               letterSpacing: 0.5,
               whiteSpace: 'nowrap',
@@ -226,7 +230,7 @@ export default function ProfilePage({ onClose }: Props) {
               background: warmTheme.button,
               color: warmTheme.accentDeep,
               fontSize: 12,
-              fontFamily: 'Georgia, serif',
+              fontFamily: uiTypography.body,
               cursor: 'pointer',
               letterSpacing: 0.5,
               whiteSpace: 'nowrap',
@@ -253,7 +257,7 @@ export default function ProfilePage({ onClose }: Props) {
                 key={t.id}
                 disabled={!unlocked}
                 onClick={() => unlocked && setUiThemeId(t.id)}
-                title={unlocked ? t.description : (t.unlockHint ?? 'Locked')}
+                title={t.description}
                 style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
                   padding: 10, gap: 6,
@@ -263,7 +267,7 @@ export default function ProfilePage({ onClose }: Props) {
                   cursor: unlocked ? 'pointer' : 'not-allowed',
                   opacity: unlocked ? 1 : 0.42,
                   color: warmTheme.text,
-                  fontFamily: 'Georgia, serif',
+                  fontFamily: uiTypography.body,
                   textAlign: 'left',
                 }}
               >
@@ -275,7 +279,7 @@ export default function ProfilePage({ onClose }: Props) {
                 </div>
                 <div style={{ fontSize: 12, fontWeight: 'bold' }}>{t.name}</div>
                 <div style={{ fontSize: 9, color: warmTheme.textMuted, lineHeight: 1.3 }}>
-                  {unlocked ? t.description : (t.unlockHint ?? 'Locked')}
+                  {t.description}
                 </div>
               </button>
             );

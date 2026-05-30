@@ -1,5 +1,5 @@
 import type { Element } from './elements';
-import type { CardEffect, CherubimPassiveEffect } from './effects';
+import type { CardEffect, CherubimPassiveEffect, EternalStackKind, SetSecondaryKind } from './effects';
 import type { SnowboundPhase } from './game';
 
 export type CardType = 'Ophanim' | 'Cherubim' | 'Seraphim' | 'Angel';
@@ -78,11 +78,10 @@ export interface AngelAttackSet {
 export type SummonCondition =
   | { type: 'cherubim_active_gte'; value: number }
   | { type: 'seraphim_on_board_gte'; value: number }
-  | { type: 'pyro_fervor_gte'; value: number }
-  | { type: 'pyro_rupture_gte'; value: number }
-  | { type: 'pyro_furnace_pressure_gte'; value: number }
-  | { type: 'pyro_abyss_fault_gte'; value: number }
-  | { type: 'pyro_ruin_window_gte'; value: number };
+  | { type: 'board_definition_gte'; definitionId: string; value: number }
+  | { type: 'equilibrium_sigils_gte'; value: number }
+  | { type: 'eternal_stack_gte'; stack: EternalStackKind; value: number }
+  | { type: 'set_secondary_gte'; kind: SetSecondaryKind; value: number };
 
 export interface AngelDefinition {
   readonly definitionId: string;

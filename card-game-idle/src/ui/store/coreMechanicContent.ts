@@ -212,28 +212,28 @@ const PLAYSTYLE_MAP: Record<EngineKey, CoreMechanicPlaystyle[]> = {
   ],
   pyro: [
     {
-      name: 'Furnace Climb',
-      pattern: 'Open with pure Stoke lines and keep Furnace rising every step of the turn.',
-      pilotTips: 'Treat every non-Stoke action as a cost: it slows streak growth before Ignite and lowers your next attack multiplier.',
-      winCondition: 'Tier 3+ Furnace with a live streak, then attack windows and Ignite both cash higher.',
+      name: 'Inferno Climb',
+      pattern: 'Open with pure Inferno gain lines and keep Inferno Tier rising every step of the turn.',
+      pilotTips: 'Treat every non-Inferno gain action as a cost: it slows streak growth before Ignite and lowers your next attack multiplier.',
+      winCondition: 'Tier 3+ Inferno Tier with a live streak, then attacks and Ignite both cash higher.',
     },
     {
       name: 'Eternity Ember Window',
       pattern: 'With Eternal or Infinite Fire cards active, Ignite first to mint Chroma Embers, then spend them on higher-rarity Fire attacks in the same turn.',
       pilotTips: 'Chroma Embers are one-turn only and are consumed on Eternal/Infinite Fire attacks, so order your attacks after Ignite.',
-      winCondition: 'Furnace-scaled attack plus Chroma Ember bonus on a single focused higher-rarity strike.',
+      winCondition: 'Inferno-scaled attack plus Chroma Ember bonus on a single focused higher-rarity strike.',
     },
     {
       name: 'Tier Timing',
-      pattern: 'Delay Ignite until crossing tier breakpoints at Furnace 5, 10, and 15.',
+      pattern: 'Delay Ignite until crossing tier breakpoints at Inferno Tier 5, 10, and 15.',
       pilotTips: 'Tier jumps are the biggest payoff spikes; do not cash out one step early.',
       winCondition: 'Ignite after entering a hotter tier instead of settling for Tier 1/2 payouts.',
     },
     {
       name: 'Streak Detonation',
-      pattern: 'String together uninterrupted Furnace gains, then convert the streak into burst damage.',
+      pattern: 'String together uninterrupted Inferno Tier gains, then convert the streak into burst damage.',
       pilotTips: 'A long streak often beats one extra card of flat value.',
-      winCondition: 'High-streak Ignite that converts both tiered heat and consistency multiplier.',
+      winCondition: 'High-streak Ignite that converts both tiered Inferno growth and consistency multiplier.',
     },
     {
       name: 'Infinite Fire Roles',
@@ -480,13 +480,13 @@ const ADVANCED_LINES_MAP: Record<EngineKey, CoreMechanicAdvancedLine[]> = {
   pyro: [
     {
       name: 'Tier Push Line',
-      sequence: 'Stoke repeatedly until Furnace crosses 10+, then spend attack cooldowns and Ignite before turn ends.',
-      whyItWorks: 'Furnace now scales both attack damage and Ignite payout, so late-tier turns double-dip on value.',
+      sequence: 'Build Inferno Tiers repeatedly until Inferno crosses 10+, then spend attack cooldowns and Ignite before turn ends.',
+      whyItWorks: 'Inferno Tiers now scale both attack damage and Ignite payout, so late-tier turns double-dip on value.',
     },
     {
       name: 'Streak Hold Finisher',
-      sequence: 'Prioritize consecutive Stoke effects, hold Ignite until streak 5+, then cash once.',
-      whyItWorks: 'Streak multiplier compounds on top of tiered heat payout for the biggest turn-end spike.',
+      sequence: 'Prioritize consecutive Inferno-building effects, hold Ignite until your payoff turn, then cash once.',
+      whyItWorks: 'Dense Inferno sequencing compounds on top of tiered payout for the biggest turn-end spike.',
     },
     {
       name: 'Ignite-Then-Eternity Attack',
@@ -610,9 +610,9 @@ const COMMON_MISTAKES_MAP: Record<EngineKey, CoreMechanicMistake[]> = {
     { mistake: 'Entering Infinite lines undercharged', consequence: 'Queue and ledger riders underperform or stall.', correction: 'Build Refraction Charge first, then trigger Infinite conversion windows.' },
   ],
   pyro: [
-    { mistake: 'Igniting below tier breakpoints', consequence: 'You cash out before the hottest payout rates are active.', correction: 'Delay Ignite until Furnace crosses 5, 10, or ideally 15+.' },
-    { mistake: 'Breaking the rise streak mid-turn', consequence: 'Ignite multiplier stays low even at decent Furnace.', correction: 'Sequence consecutive Stoke effects before pressing Ignite.' },
-    { mistake: 'Firing attacks at low Furnace', consequence: 'Seraphim and Angel attacks miss their Furnace-based multiplier.', correction: 'Delay attacks until Furnace is built unless survival requires an immediate hit.' },
+    { mistake: 'Igniting below tier breakpoints', consequence: 'You cash out before the hottest payout rates are active.', correction: 'Delay Ignite until Inferno crosses 5, 10, or ideally 15+.' },
+    { mistake: 'Breaking your Inferno ramp mid-turn', consequence: 'Your burst turn lands before your tier scaling is properly online.', correction: 'Sequence your Inferno-building effects before pressing Ignite.' },
+    { mistake: 'Firing attacks at low Inferno', consequence: 'Seraphim and Angel attacks miss their Inferno-based multiplier.', correction: 'Delay attacks until Inferno is built unless survival requires an immediate hit.' },
     { mistake: 'Attacking before Ignite in higher-rarity Fire turns', consequence: 'You miss Chroma Ember attack scaling and lose same-turn value.', correction: 'In Eternal/Infinite Fire lines, Ignite first, then attack with Fire Seraphim/Angels.' },
   ],
   blazingGarden: [

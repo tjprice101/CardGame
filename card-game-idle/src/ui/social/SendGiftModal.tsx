@@ -12,6 +12,7 @@ import { useGiftsStore } from '@/state/giftsStore';
 import { CardRegistry } from '@/cards/CardRegistry';
 import type { CardFinish } from '@/types/cards';
 import type { FriendProfileLite } from '@/state/friendsStore';
+import VirtualizedList from '@/ui/components/VirtualizedList';
 
 interface Props {
   recipient: FriendProfileLite;
@@ -103,34 +104,45 @@ export default function SendGiftModal({ recipient, onClose }: Props) {
           style={inputStyle}
         />
 
-        <div style={listStyle}>
-          {filtered.length === 0 && (
+        {filtered.length === 0 ? (
+          <div style={listStyle}>
             <div style={hintStyle}>No matching cards in your collection.</div>
-          )}
-          {filtered.map(e => {
-            const active = selectedId === e.definitionId;
-            return (
-              <button
-                key={e.definitionId}
-                onClick={() => {
-                  setSelectedId(e.definitionId);
-                  setFinish('normal');
-                  setCount(1);
-                }}
-                style={{
-                  ...listRowStyle,
-                  background: active ? warmTheme.accentSoft : 'transparent',
-                  borderColor: active ? warmTheme.accent : warmTheme.border,
-                }}
-              >
-                <span style={{ flex: 1, textAlign: 'left' }}>{e.name}</span>
-                <span style={{ fontSize: 10, color: warmTheme.textMuted }}>
-                  {e.total} {e.holo > 0 ? `(${e.holo} holo)` : ''}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+          </div>
+        ) : (
+          <VirtualizedList
+            items={filtered}
+            getItemKey={(entry) => entry.definitionId}
+            getItemHeight={() => 36}
+            topPadding={6}
+            bottomPadding={6}
+            overscanPx={220}
+            style={listStyle}
+            renderItem={(entry) => {
+              const active = selectedId === entry.definitionId;
+              return (
+                <div style={{ padding: '0 0 2px' }}>
+                  <button
+                    onClick={() => {
+                      setSelectedId(entry.definitionId);
+                      setFinish('normal');
+                      setCount(1);
+                    }}
+                    style={{
+                      ...listRowStyle,
+                      background: active ? warmTheme.accentSoft : 'transparent',
+                      borderColor: active ? warmTheme.accent : warmTheme.border,
+                    }}
+                  >
+                    <span style={{ flex: 1, textAlign: 'left' }}>{entry.name}</span>
+                    <span style={{ fontSize: 10, color: warmTheme.textMuted }}>
+                      {entry.total} {entry.holo > 0 ? `(${entry.holo} holo)` : ''}
+                    </span>
+                  </button>
+                </div>
+              );
+            }}
+          />
+        )}
 
         {selected && (
           <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>

@@ -830,12 +830,9 @@ function isOphanimUtilityEffect(effect: CardEffect): boolean {
     case 'butterfly_spectrum_gain':
     case 'seas_undertow_gain':
     case 'seas_foam_gain':
-    case 'seas_current_gain':
     case 'radiance_gain':
     case 'ember_gain':
     case 'monochromatic_shards_gain':
-    case 'pyro_furnace_pressure_gain':
-    case 'pyro_abyss_fault_gain':
       return true;
     // Recurse into overclock/conditional so nested resource gains are recognised
     case 'overclock':
@@ -1131,9 +1128,7 @@ function buildDisplayAttackDescription(attack: {
     ? ` · Cost: ${attack.costs.map(formatDisplayAttackCost).join(', ')}`
     : '';
   const furnaceText = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire')
-    ? (options?.infiniteFireLabel
-      ? ' · +2.5% attack per Inferno Tier (max +75%)'
-      : ' · +2.5% attack per Furnace (max +75%)')
+    ? ' · +2.5% attack per Inferno Tier (max +75%)'
     : '';
   const chromaText = options?.fireChromaTier === 'eternal'
     ? ' · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)'
@@ -1200,16 +1195,20 @@ function displayCardDefinition(def: CardDefinition): CardDefinition {
 
 registerAll(SOURCE_DEFINITIONS);
 
+const DISPLAY_DEFINITIONS = Array.from(registry.values()).map(displayCardDefinition);
+const DISPLAY_DEFINITION_BY_ID = new Map(
+  DISPLAY_DEFINITIONS.map((definition) => [definition.definitionId, definition] as const),
+);
+
 ScoreSystem.getDefinition = (id: string) => registry.get(resolveCardId(id));
 
 export const CardRegistry = {
   get: (id: string): CardDefinition | undefined => {
-    const def = registry.get(resolveCardId(id));
-    return def ? displayCardDefinition(def) : undefined;
+    return DISPLAY_DEFINITION_BY_ID.get(resolveCardId(id));
   },
-  getAll: (): CardDefinition[] => Array.from(registry.values()).map(displayCardDefinition),
+  getAll: (): CardDefinition[] => DISPLAY_DEFINITIONS,
   getByType: (type: CardDefinition['type']): CardDefinition[] =>
-    Array.from(registry.values()).filter(d => d.type === type).map(displayCardDefinition),
+    DISPLAY_DEFINITIONS.filter(d => d.type === type),
   has: (id: string): boolean => registry.has(resolveCardId(id)),
 };
 

@@ -1,6 +1,10 @@
-import { useStore, selectBossFight, selectProgress } from '@/state/store';
+import { useEffect, useMemo, useState } from 'react';
+import { useStore, selectBossFight } from '@/state/store';
+import { useCoopRaidStore } from '@/state/coopRaidStore';
 import { NULL_RAID_DEFINITIONS } from '@/data/ascension/nullRaidDefinitions';
 import { uiTypography } from '@/ui/theme';
+import { CardRegistry } from '@/cards/CardRegistry';
+import { getCardFaceBackgroundStyle } from '@/ui/cardBackgrounds';
 
 const G = {
   bg: 'linear-gradient(160deg, #060310 0%, #040210 55%, #020108 100%)',
@@ -11,7 +15,7 @@ const G = {
   borderStrong: 'rgba(185,135,255,0.55)',
   text: '#ece6ff',
   textMuted: 'rgba(220,210,255,0.72)',
-  cinzel: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+  cinzel: uiTypography.display,
   entropyColor: '#c0a8ff',
   shardColor: '#80ffcc',
   goldBorder: 'rgba(255,212,112,0.30)',
@@ -19,8 +23,14 @@ const G = {
 
 export default function NullRaidResults() {
   const bossFight = useStore(selectBossFight);
-  const progress = useStore(selectProgress);
+  const progress = useStore(s => s.progress);
+  const addTranscendentCard = useStore(s => s.addTranscendentCard);
+  const finalizeNullRaidAngelOutcome = useStore(s => s.finalizeNullRaidAngelOutcome);
   const dismissBossResult = useStore(s => s.dismissBossResult);
+  const activeCoopSessionId = useCoopRaidStore(s => s.activeSessionId);
+  const activeCoopRaidId = useCoopRaidStore(s => s.activeRaidId);
+  const completeActiveSession = useCoopRaidStore(s => s.completeActiveSession);
+  const [rewardSlots, setRewardSlots] = useState<Array<'empty' | 'miss' | 'hit'>>(['empty', 'empty', 'empty']);
 
   if (bossFight.kind !== 'null_raid') return null;
   if (bossFight.mode !== 'victory' && bossFight.mode !== 'defeat') return null;
@@ -35,10 +45,47 @@ export default function NullRaidResults() {
   const entropyEarned = bossFight.nullRaidAccumulatedEntropy ?? 0;
   const shardsEarned = bossFight.nullRaidAccumulatedShards ?? 0;
 
-  // Detect angel drop: check if transcendentCollection has the angel card from this raid
   const angelId = raidDef?.completionAngelId;
-  const transcendentCollection = progress.transcendentCollection ?? {};
-  const angelDropped = isVictory && angelId && (transcendentCollection[angelId] ?? 0) > 0;
+  const angelDef = angelId ? CardRegistry.get(angelId) : null;
+  const raidId = bossFight.nullRaidId ?? '';
+  const pityActive = isVictory && !!angelId && raidId.length > 0 && ((progress.nullRaidAngelMissStreak?.[raidId] ?? 0) >= 10);
+  const revealSlotCount = pityActive ? 1 : 3;
+  const revealChance = pityActive ? 0.5 : 0.01;
+  const visibleSlots = useMemo(() => rewardSlots.slice(0, revealSlotCount), [rewardSlots, revealSlotCount]);
+  const allRevealed = visibleSlots.every(slot => slot !== 'empty');
+  const hasAngelDrop = visibleSlots.some(slot => slot === 'hit');
+
+  useEffect(() => {
+    setRewardSlots(['empty', 'empty', 'empty']);
+  }, [raidId, pityActive]);
+
+  const angelName = angelDef?.name
+    ?? (angelId
+      ? angelId.replace('tx-angel-', '').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      : 'Angel');
+
+  function handleRewardSlotClick(index: number) {
+    if (!isVictory || !angelId) return;
+    setRewardSlots(current => {
+      if (current[index] !== 'empty') return current;
+      const next = [...current] as Array<'empty' | 'miss' | 'hit'>;
+      const hit = Math.random() < revealChance;
+      next[index] = hit ? 'hit' : 'miss';
+      if (hit) addTranscendentCard(angelId);
+      return next;
+    });
+  }
+
+  async function handleReturn() {
+    if (isVictory && angelId && raidId) {
+      if (!allRevealed) return;
+      finalizeNullRaidAngelOutcome(raidId, hasAngelDrop, pityActive);
+    }
+    if (activeCoopSessionId && activeCoopRaidId === raidId) {
+      await completeActiveSession();
+    }
+    dismissBossResult();
+  }
 
   const accentColor = isVictory ? '#a080ff' : '#ff6060';
   const titleText = isVictory ? 'RAID COMPLETE' : 'RAID FAILED';
@@ -139,7 +186,7 @@ export default function NullRaidResults() {
             display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
           }}>
             <div style={{ fontSize: 8, letterSpacing: 3, textTransform: 'uppercase', color: `${G.entropyColor}80` }}>
-              Entropy Earned
+              Entropic Energy Earned
             </div>
             <div style={{ fontSize: 24, fontWeight: 700, color: G.entropyColor, fontVariantNumeric: 'tabular-nums', textShadow: `0 0 20px ${G.entropyColor}55` }}>
               +{entropyEarned.toLocaleString()}
@@ -160,22 +207,91 @@ export default function NullRaidResults() {
           </div>
         </div>
 
-        {/* Angel drop reveal */}
-        {angelDropped && angelId && (
+        {/* Angel reward slots */}
+        {isVictory && angelId && (
           <div style={{
-            padding: '20px 32px',
+            padding: '18px 24px 24px',
             background: 'rgba(30,20,8,0.70)',
             borderBottom: `1px solid ${G.goldBorder}`,
-            textAlign: 'center',
           }}>
-            <div style={{ fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(220,180,100,0.70)', fontFamily: G.cinzel, marginBottom: 10 }}>
-              Angel Manifestation — 5% Drop
+            <div style={{ fontSize: 9, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(220,180,100,0.70)', fontFamily: G.cinzel, marginBottom: 14, textAlign: 'center' }}>
+              {pityActive ? 'Angel Manifestation - Pity Roll (1 Reveal at 50%)' : 'Angel Manifestation - 3 Rolls at 1% Each'}
             </div>
-            <div style={{ fontFamily: G.cinzel, fontSize: 16, letterSpacing: 2, color: '#ffd08a', textShadow: '0 0 30px rgba(255,180,80,0.50)', marginBottom: 6 }}>
-              ✦ Unique Angel Obtained ✦
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'nowrap' }}>
+              {visibleSlots.map((slotState, index) => {
+                const rolled = slotState !== 'empty';
+                const hit = slotState === 'hit';
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleRewardSlotClick(index)}
+                    disabled={rolled}
+                    style={{
+                      width: 124,
+                      height: 172,
+                      borderRadius: 14,
+                      border: `1px solid ${rolled ? (hit ? 'rgba(255,208,138,0.60)' : 'rgba(150,100,255,0.24)') : 'rgba(255,208,138,0.30)'}`,
+                      background: rolled
+                        ? (hit
+                          ? 'linear-gradient(180deg, rgba(80,50,10,0.92) 0%, rgba(35,18,8,0.94) 100%)'
+                          : 'linear-gradient(180deg, rgba(15,10,28,0.94) 0%, rgba(8,6,16,0.96) 100%)')
+                        : 'linear-gradient(180deg, rgba(20,14,34,0.88) 0%, rgba(6,4,14,0.94) 100%)',
+                      boxShadow: hit
+                        ? '0 0 28px rgba(255,190,90,0.28)'
+                        : '0 0 0 rgba(0,0,0,0)',
+                      color: G.text,
+                      cursor: rolled ? 'default' : 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                      transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+                    }}
+                  >
+                    <div style={{
+                      width: 92,
+                      height: 128,
+                      borderRadius: 10,
+                      border: `1px solid ${rolled ? (hit ? 'rgba(255,208,138,0.35)' : 'rgba(150,100,255,0.18)') : 'rgba(255,208,138,0.18)'}`,
+                      ...(rolled && hit && angelDef
+                        ? {
+                            ...getCardFaceBackgroundStyle(angelDef, 'normal', 'front'),
+                            backgroundSize: '100% 100%',
+                          }
+                        : {
+                            background: rolled
+                              ? (hit
+                                ? 'radial-gradient(circle at 50% 28%, rgba(255,220,150,0.30), transparent 58%), linear-gradient(180deg, rgba(255,220,150,0.14), rgba(0,0,0,0))'
+                                : 'linear-gradient(180deg, rgba(16,11,28,0.92), rgba(4,3,10,0.96))')
+                              : 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.14))',
+                          }),
+                      backgroundPosition: 'center',
+                      backgroundSize: 'cover',
+                      backgroundRepeat: 'no-repeat',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      textAlign: 'center',
+                      padding: 10,
+                    }}>
+                      {!(rolled && hit && angelDef) && (
+                        <div style={{ fontFamily: G.cinzel, fontSize: hit ? 15 : 12, letterSpacing: 2, color: hit ? '#ffd48a' : G.textMuted, lineHeight: 1.2 }}>
+                          {rolled ? (hit ? angelName : 'Empty') : 'Click\nTo Reveal'}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: hit ? 'rgba(255,210,140,0.80)' : G.textMuted }}>
+                      {rolled ? (hit ? 'Angel' : 'No Drop') : (pityActive ? 'Pity Slot' : `Slot ${index + 1}`)}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(220,180,100,0.60)' }}>
-              {angelId.replace('tx-angel-', '').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')} has been added to your collection.
+            <div style={{ fontSize: 11, color: 'rgba(220,180,100,0.60)', textAlign: 'center', marginTop: 12 }}>
+              {pityActive
+                ? `Pity active: one reveal only. A successful roll adds ${angelName} to your collection.`
+                : `Each empty zone can be clicked once. A successful roll adds ${angelName} to your collection.`}
             </div>
           </div>
         )}
@@ -183,7 +299,8 @@ export default function NullRaidResults() {
         {/* Action button */}
         <div style={{ padding: '20px 32px', display: 'flex', justifyContent: 'center' }}>
           <button
-            onClick={dismissBossResult}
+            onClick={() => void handleReturn()}
+            disabled={isVictory && !!angelId && !allRevealed}
             style={{
               padding: '12px 40px', borderRadius: 10, cursor: 'pointer',
               background: `linear-gradient(135deg, rgba(100,50,220,0.50) 0%, rgba(70,30,180,0.40) 100%)`,
@@ -192,6 +309,7 @@ export default function NullRaidResults() {
               textTransform: 'uppercase',
               textShadow: `0 0 16px rgba(160,128,255,0.40)`,
               transition: 'all 0.18s ease',
+              opacity: isVictory && !!angelId && !allRevealed ? 0.6 : 1,
             }}
           >
             Return

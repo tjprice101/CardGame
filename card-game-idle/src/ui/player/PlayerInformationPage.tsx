@@ -1,15 +1,15 @@
-// PlayerInformationPage — unified full-screen home for everything that
+// PlayerInformationPage  Eunified full-screen home for everything that
 // describes "you, the player": identity (avatar / title / theme), social
 // (account, friends, leaderboards), and save data (save / export / import /
 // wipe). Replaces the separate Profile, Social, and Save-section-inside-
 // Settings surfaces with one calm, soft-hued, well-organised page.
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
-import { subMenuWarm as warmTheme, warmTheme as cardRenderTheme } from '@/ui/theme';
+import { warmTheme, uiTypography, resetUiPalette, applyUiPalette, type UiPalette } from '@/ui/theme';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
-import { UI_THEMES } from '@/data/profile/uiThemes';
+import { DEFAULT_UI_THEME_ID, UI_THEME_BY_ID, UI_THEMES, applyEffectiveTheme } from '@/data/profile/uiThemes';
 import TitlesModal from '@/ui/profile/TitlesModal';
 import ProfilePictureModal from '@/ui/profile/ProfilePictureModal';
 import SignatureCardPickerModal from '@/ui/profile/SignatureCardPickerModal';
@@ -34,6 +34,7 @@ import {
 } from '@/state/friendsStore';
 import AuthPanel from '@/ui/social/AuthPanel';
 import FriendsPanel from '@/ui/social/FriendsPanel';
+import { flushCloudSaveNow } from '@/social/cloudSaveSync';
 
 interface Props {
   onClose: () => void;
@@ -46,24 +47,48 @@ interface Props {
 type TabId = 'profile' | 'social' | 'save';
 
 const TABS: { id: TabId; label: string; glyph: string; caption: string }[] = [
-  { id: 'profile', label: 'Profile',     glyph: '◆', caption: 'Identity, titles & themes' },
-  { id: 'social',  label: 'Social',      glyph: '⊕', caption: 'Account, friends & boards' },
-  { id: 'save',    label: 'Save & Data', glyph: '◈', caption: 'Save, export, import, wipe' },
+  { id: 'profile', label: 'Profile',     glyph: 'ID', caption: 'Identity, titles & themes' },
+  { id: 'social',  label: 'Social',      glyph: 'SO', caption: 'Account, friends & boards' },
+  { id: 'save',    label: 'Save & Data', glyph: 'SV', caption: 'Save, export, import, wipe' },
 ];
 
-// Dark cinematic gold palette — all UI colour constants in one place.
+const UI_THEME_EDITABLE_KEYS: Array<keyof UiPalette> = [
+  'appBackground',
+  'overlay',
+  'backdrop',
+  'surface',
+  'surfaceStrong',
+  'surfaceMuted',
+  'border',
+  'borderStrong',
+  'text',
+  'textSoft',
+  'textMuted',
+  'textFaint',
+  'accent',
+  'accentSoft',
+  'accentDeep',
+  'success',
+  'danger',
+  'cherubim',
+  'glow',
+  'shadow',
+  'button',
+];
+
+// Dark cinematic gold palette  Eall UI colour constants in one place.
 const G = {
-  gold:             '#c8803a',
-  goldSoft:         '#daa058',
-  goldBorder:       'rgba(200,128,58,0.28)',
-  goldBorderStrong: 'rgba(200,128,58,0.55)',
-  goldGlass:        'rgba(200,128,58,0.08)',
-  text:             '#f0dfc0',
-  cinzel:           '"Cinzel", "Cormorant Garamond", Georgia, serif',
-  success:          '#4f8a47',
-  danger:           '#b85c4f',
-  dangerSoft:       'rgba(184,92,79,0.18)',
-  dangerBorder:     'rgba(184,92,79,0.45)',
+  gold:             'var(--profile-accent)',
+  goldSoft:         'var(--profile-accent-soft)',
+  goldBorder:       'var(--profile-border)',
+  goldBorderStrong: 'var(--profile-border-strong)',
+  goldGlass:        'var(--profile-accent-glass)',
+  text:             'var(--profile-text)',
+  cinzel:           uiTypography.display,
+  success:          'var(--profile-success)',
+  danger:           'var(--profile-danger)',
+  dangerSoft:       'var(--profile-danger-soft)',
+  dangerBorder:     'var(--profile-danger-border)',
 } as const;
 
 export default function PlayerInformationPage({
@@ -78,12 +103,15 @@ export default function PlayerInformationPage({
   const setPlayerName = useStore(s => s.setPlayerName);
   const setBio = useStore(s => s.setBio);
   const setUiThemeId = useStore(s => s.setUiThemeId);
+  const setCustomUiThemeColor = useStore(s => s.setCustomUiThemeColor);
+  const resetCustomUiTheme = useStore(s => s.resetCustomUiTheme);
   const setSignatureCard = useStore(s => s.setSignatureCard);
   const dailyLogin = useStore(s => s.progress.dailyLogin);
   const saveTampered = useStore(s => s.saveTampered ?? false);
 
   const status = useSocialStore(selectSocialStatus);
   const socialUser = useSocialStore(selectSocialUser);
+  const syncOwnProfile = useSocialStore(s => s.syncOwnProfile);
   const friends = useFriendsStore(selectFriendsList);
   const incoming = useFriendsStore(selectIncomingRequests);
   const blocked = useFriendsStore(selectBlockedList);
@@ -99,6 +127,12 @@ export default function PlayerInformationPage({
   const [confirmDelete, setConfirmDelete] = useState(0); // 0=none 1=first 2=second
   const [importStatus, setImportStatus] =
     useState<{ kind: 'ok' | 'err'; msg: string } | null>(null);
+  const [themeBaseId, setThemeBaseId] = useState(profile.uiThemeId || DEFAULT_UI_THEME_ID);
+  const [themeDraft, setThemeDraft] = useState<Record<string, string>>(profile.customUiTheme ?? {});
+  const [themeSaved, setThemeSaved] = useState(false);
+  const [bioSaved, setBioSaved] = useState(false);
+  const [titleSaved, setTitleSaved] = useState(false);
+  const [, forceThemeRender] = useReducer((n: number) => n + 1, 0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const currentAvatar = resolveAvatar(profile.avatarId, progress);
@@ -123,17 +157,113 @@ export default function PlayerInformationPage({
     return 'Offline · not signed in';
   }, [status]);
 
-  function commitName() {
-    if (nameDraft.trim()) setPlayerName(nameDraft);
-    else setNameDraft(profile.name);
+  useEffect(() => {
+    setThemeBaseId(profile.uiThemeId || DEFAULT_UI_THEME_ID);
+    setThemeDraft(profile.customUiTheme ?? {});
+  }, [profile.uiThemeId, profile.customUiTheme]);
+
+  // Profile data can arrive asynchronously after auth/cloud reconcile.
+  // Keep editable drafts in sync so the header shows restored account values.
+  useEffect(() => {
+    setNameDraft(profile.name);
+  }, [profile.name]);
+
+  useEffect(() => {
+    setBioDraft(profile.bio ?? '');
+  }, [profile.bio]);
+
+  // Apply the active theme when the profile screen opens; reset to default on close.
+  // This keeps theme changes scoped to this screen only.
+  useEffect(() => {
+    const progress = useStore.getState().progress;
+    applyEffectiveTheme(profile.uiThemeId, profile.customUiTheme as Record<string, string> | null, progress);
+    forceThemeRender();
+    return () => { resetUiPalette(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Re-apply whenever the draft changes so preview is live while editing.
+  useEffect(() => {
+    const base = UI_THEME_BY_ID[themeBaseId]?.palette;
+    if (!base) return;
+    applyUiPalette({ ...base, ...themeDraft });
+    forceThemeRender();
+  }, [themeBaseId, themeDraft]);
+
+  function chooseThemeBase(themeId: string) {
+    setThemeBaseId(themeId);
+    // Selecting a base theme starts from a clean palette to avoid mixed styles.
+    setThemeDraft({});
+    setThemeSaved(false);
   }
 
-  function commitBio() {
+  function updateThemeDraft(key: keyof UiPalette, value: string) {
+    setThemeDraft(prev => ({ ...prev, [key]: value }));
+    setThemeSaved(false);
+  }
+
+  function saveUiTheme() {
+    setUiThemeId(themeBaseId);
+    resetCustomUiTheme();
+    for (const key of UI_THEME_EDITABLE_KEYS) {
+      const value = themeDraft[key];
+      if (typeof value === 'string' && value.trim().length > 0) {
+        setCustomUiThemeColor(key, value.trim());
+      }
+    }
+    setThemeSaved(true);
+    setTimeout(() => setThemeSaved(false), 1600);
+    void syncProfileNow();
+  }
+
+  function resetUiThemeDraft() {
+    setThemeDraft({});
+    setThemeSaved(false);
+  }
+
+  function commitName() {
+    const clean = nameDraft.trim();
+    if (clean) {
+      setPlayerName(clean);
+      void syncProfileNow({ displayName: clean });
+    } else {
+      setNameDraft(profile.name);
+    }
+  }
+
+  function persistBio() {
     setBio(bioDraft);
+    void syncProfileNow({ bio: bioDraft });
+    setBioSaved(true);
+    setTimeout(() => setBioSaved(false), 1600);
+  }
+
+  async function syncProfileNow(overrides?: Partial<{
+    displayName: string;
+    bio: string;
+    avatarId: string;
+    titleId: string | null;
+    uiThemeId: string | null;
+    customUiTheme: Record<string, string> | null;
+    signatureCardIds: string[];
+  }>) {
+    if (status !== 'authenticated') return;
+    const p = useStore.getState().progress.profile;
+    await syncOwnProfile({
+      displayName: overrides?.displayName ?? p.name,
+      bio: overrides?.bio ?? (p.bio ?? ''),
+      avatarId: overrides?.avatarId ?? p.avatarId,
+      titleId: overrides?.titleId ?? p.titleId,
+      uiThemeId: overrides?.uiThemeId ?? (p.uiThemeId ?? null),
+      customUiTheme: overrides?.customUiTheme ?? (p.customUiTheme ?? null),
+      signatureCardIds: overrides?.signatureCardIds ?? (p.signatureCardIds ?? []),
+    });
   }
 
   function handleSaveGame() {
     onSave();
+    void syncProfileNow();
+    void flushCloudSaveNow();
     setGameSaved(true);
     setTimeout(() => setGameSaved(false), 2000);
   }
@@ -186,7 +316,29 @@ export default function PlayerInformationPage({
   }
 
   return (
-    <div style={S.backdrop}>
+    <div style={{
+      ...S.backdrop,
+      ['--profile-accent' as any]: warmTheme.accent,
+      ['--profile-accent-soft' as any]: warmTheme.accentSoft,
+      ['--profile-accent-deep' as any]: warmTheme.accentDeep,
+      ['--profile-text' as any]: warmTheme.text,
+      ['--profile-text-soft' as any]: warmTheme.textSoft,
+      ['--profile-text-muted' as any]: warmTheme.textMuted,
+      ['--profile-text-faint' as any]: warmTheme.textFaint,
+      ['--profile-border' as any]: warmTheme.border,
+      ['--profile-border-strong' as any]: warmTheme.borderStrong,
+      ['--profile-accent-glass' as any]: warmTheme.surfaceMuted,
+      ['--profile-app-bg' as any]: warmTheme.appBackground,
+      ['--profile-surface' as any]: warmTheme.surface,
+      ['--profile-surface-strong' as any]: warmTheme.surfaceStrong,
+      ['--profile-surface-muted' as any]: warmTheme.surfaceMuted,
+      ['--profile-button' as any]: warmTheme.button,
+      ['--profile-glow' as any]: warmTheme.glow,
+      ['--profile-success' as any]: warmTheme.success,
+      ['--profile-danger' as any]: warmTheme.danger,
+      ['--profile-danger-soft' as any]: 'rgba(184,92,79,0.2)',
+      ['--profile-danger-border' as any]: 'rgba(184,92,79,0.58)',
+    }}>
       {/* Atmospheric layered washes */}
       <div style={S.washWarm} />
       <div style={S.washCool} />
@@ -206,7 +358,7 @@ export default function PlayerInformationPage({
             </div>
             <div style={S.headerSub}>Identity · Social · Save Data</div>
           </div>
-          <button onClick={onClose} style={S.closeBtn} aria-label="Close">✕</button>
+          <button onClick={onClose} style={S.closeBtn} aria-label="Close">×</button>
         </header>
 
         {/* ── Identity Hero ── */}
@@ -242,12 +394,21 @@ export default function PlayerInformationPage({
             <textarea
               value={bioDraft}
               onChange={e => setBioDraft(e.target.value)}
-              onBlur={commitBio}
               maxLength={200}
               rows={2}
               placeholder="Write a short bio…"
               style={S.bioInput as React.CSSProperties}
             />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6 }}>
+              <button
+                onClick={persistBio}
+                className="menu-tactile-btn"
+                style={{ ...S.outlineBtn, padding: '6px 12px', fontSize: 11 }}
+              >
+                Save Bio
+              </button>
+              {bioSaved && <span style={{ fontSize: 10, color: G.success }}>Bio saved</span>}
+            </div>
             <div style={S.statusRow}>
               <span style={{
                 ...S.statusDot,
@@ -286,7 +447,7 @@ export default function PlayerInformationPage({
                   ...S.tabBtn,
                   background: active ? G.goldGlass : 'transparent',
                   borderBottom: active ? `3px solid ${G.gold}` : '3px solid transparent',
-                  boxShadow: active ? '0 4px 16px rgba(200,128,58,0.28)' : 'none',
+                  boxShadow: active ? warmTheme.glow : 'none',
                 }}
               >
                 <span style={{ ...S.tabGlyph, opacity: active ? 0.9 : 0.35 }}>{tab.glyph}</span>
@@ -315,7 +476,13 @@ export default function PlayerInformationPage({
                 dailyLogin={dailyLogin}
                 onOpenTitles={() => setShowTitles(true)}
                 onChangePicture={() => setShowPictures(true)}
-                onChangeTheme={setUiThemeId}
+                themeBaseId={themeBaseId}
+                themeDraft={themeDraft}
+                onChooseTheme={chooseThemeBase}
+                onUpdateThemeDraft={updateThemeDraft}
+                onSaveTheme={saveUiTheme}
+                onResetThemeDraft={resetUiThemeDraft}
+                themeSaved={themeSaved}
                 onPickSignatureCard={setSigPickerSlot}
                 onClearSignatureCard={(slot) => setSignatureCard(slot, null)}
               />
@@ -342,14 +509,52 @@ export default function PlayerInformationPage({
         </main>
       </div>
 
-      {showTitles && <TitlesModal onClose={() => setShowTitles(false)} />}
-      {showPictures && <ProfilePictureModal currentAvatarId={profile.avatarId ?? ''} onClose={() => setShowPictures(false)} />}
+      {showTitles && (
+        <TitlesModal
+          onClose={() => setShowTitles(false)}
+          onApply={() => {
+            setTitleSaved(true);
+            setTimeout(() => setTitleSaved(false), 1600);
+            void syncProfileNow();
+          }}
+        />
+      )}
+      {showPictures && (
+        <ProfilePictureModal
+          currentAvatarId={profile.avatarId ?? ''}
+          onClose={() => setShowPictures(false)}
+          onApply={(avatarId) => {
+            setTimeout(() => { void syncProfileNow({ avatarId }); }, 0);
+          }}
+        />
+      )}
       {sigPickerSlot !== null && (
         <SignatureCardPickerModal
           slotIndex={sigPickerSlot}
           onClose={() => setSigPickerSlot(null)}
-          onPick={(cardId) => { setSignatureCard(sigPickerSlot, cardId); setSigPickerSlot(null); }}
+          onPick={(cardId) => {
+            setSignatureCard(sigPickerSlot, cardId);
+            setSigPickerSlot(null);
+            setTimeout(() => { void syncProfileNow(); }, 0);
+          }}
         />
+      )}
+
+      {titleSaved && (
+        <div style={{
+          position: 'absolute',
+          top: 18,
+          right: 64,
+          padding: '6px 10px',
+          borderRadius: 999,
+          border: `1px solid ${G.success}`,
+          background: 'rgba(79,138,71,0.12)',
+          color: G.success,
+          fontSize: 11,
+          letterSpacing: 0.5,
+        }}>
+          Title applied
+        </div>
       )}
     </div>
   );
@@ -383,7 +588,13 @@ function ProfileTab(props: {
   dailyLogin: { streak: number; totalClaims: number };
   onOpenTitles: () => void;
   onChangePicture: () => void;
-  onChangeTheme: (id: string) => void;
+  themeBaseId: string;
+  themeDraft: Record<string, string>;
+  onChooseTheme: (id: string) => void;
+  onUpdateThemeDraft: (key: keyof UiPalette, value: string) => void;
+  onSaveTheme: () => void;
+  onResetThemeDraft: () => void;
+  themeSaved: boolean;
   onPickSignatureCard: (slot: number) => void;
   onClearSignatureCard: (slot: number) => void;
 }) {
@@ -391,7 +602,8 @@ function ProfileTab(props: {
     progress, profile, currentAvatar, currentTitle,
     totalCollection, distinctCards, totalBossClears, distinctBosses,
     unlockedTitlesCount, titlesTotal, dailyLogin,
-    onOpenTitles, onChangePicture, onChangeTheme,
+    onOpenTitles, onChangePicture, themeBaseId,
+    onChooseTheme, onSaveTheme, onResetThemeDraft, themeSaved,
     onPickSignatureCard, onClearSignatureCard,
   } = props;
 
@@ -450,26 +662,19 @@ function ProfileTab(props: {
       <GlassCard title="UI Theme" wide>
         <div style={S.themeGrid}>
           {UI_THEMES.map(t => {
-            const unlocked = t.isUnlocked(progress);
-            const active = profile.uiThemeId === t.id;
+            const active = themeBaseId === t.id;
             return (
               <button
                 key={t.id}
-                disabled={!unlocked}
-                onClick={() => unlocked && onChangeTheme(t.id)}
-                title={unlocked ? t.description : (t.unlockHint ?? 'Locked')}
+                onClick={() => onChooseTheme(t.id)}
+                title={t.description}
                 style={{
                   ...S.themeCard,
-                  background: active
-                    ? 'linear-gradient(145deg, rgba(200,128,58,0.16) 0%, rgba(160,88,30,0.10) 100%)'
-                    : 'linear-gradient(145deg, rgba(22,11,3,0.75) 0%, rgba(12,6,2,0.85) 100%)',
-                  border: active
-                    ? '2px solid rgba(200,128,58,0.65)'
-                    : '1px solid rgba(200,128,58,0.2)',
-                  boxShadow: active ? '0 0 18px rgba(200,128,58,0.16)' : 'none',
-                  cursor: unlocked ? 'pointer' : 'not-allowed',
-                  filter: unlocked ? 'none' : 'grayscale(0.55)',
-                  opacity: unlocked ? 1 : 0.5,
+                  background: active ? warmTheme.surfaceStrong : warmTheme.surface,
+                  border: active ? `2px solid ${warmTheme.accent}` : `1px solid ${warmTheme.border}`,
+                  boxShadow: active ? warmTheme.glow : 'none',
+                  cursor: 'pointer',
+                  opacity: 1,
                 }}
               >
                 <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
@@ -479,12 +684,22 @@ function ProfileTab(props: {
                   <ThemeSwatch color={t.palette.text} />
                 </div>
                 <div style={S.themeName}>{t.name}</div>
-                <div style={S.themeDesc}>
-                  {unlocked ? t.description : (t.unlockHint ?? 'Locked')}
-                </div>
+                <div style={S.themeDesc}>{t.description}</div>
               </button>
             );
           })}
+        </div>
+
+        <div style={S.themeActionRow}>
+          <button onClick={onResetThemeDraft} className="menu-tactile-btn" style={S.outlineBtn}>
+            Reset Theme
+          </button>
+          <button onClick={onSaveTheme} className="menu-tactile-btn" style={S.goldBtn}>
+            {themeSaved ? 'Saved UI Theme' : 'Save UI Theme'}
+          </button>
+        </div>
+        <div style={S.saveHint}>
+          Save locks your selected base theme plus custom colors as your active UI theme.
         </div>
       </GlassCard>
 
@@ -494,7 +709,7 @@ function ProfileTab(props: {
           {Array.from({ length: 5 }, (_, i) => {
             const cardId = (profile.signatureCardIds ?? [])[i] ?? null;
             const def = cardId ? CardRegistry.get(cardId) : null;
-            const rarityColor = def ? (SIG_RARITY_COLOR[def.rarity] ?? G.gold) : 'rgba(200,128,58,0.28)';
+            const rarityColor = def ? (SIG_RARITY_COLOR[def.rarity] ?? G.gold) : warmTheme.border;
             return (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
                 <button
@@ -502,9 +717,9 @@ function ProfileTab(props: {
                   title={def ? `Change: ${def.name}` : `Pick card for slot ${i + 1}`}
                   style={{
                     width: 90, height: 124, borderRadius: 12,
-                    border: def ? `1px solid ${rarityColor}55` : '1px dashed rgba(200,128,58,0.30)',
+                    border: def ? `1px solid ${rarityColor}55` : `1px dashed ${warmTheme.border}`,
                     ...(def ? getCardFaceBackgroundStyle(def, 'normal') : {}),
-                    backgroundColor: def ? cardRenderTheme.surfaceStrong : 'rgba(200,128,58,0.04)',
+                    backgroundColor: def ? warmTheme.surfaceStrong : warmTheme.surface,
                     position: 'relative',
                     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
                     overflow: 'hidden', cursor: 'pointer', padding: 0,
@@ -534,8 +749,8 @@ function ProfileTab(props: {
                       position: 'absolute', inset: 0,
                       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
                     }}>
-                      <span style={{ fontSize: 20, color: 'rgba(200,128,58,0.30)', fontWeight: 300, lineHeight: 1 }}>+</span>
-                      <span style={{ fontSize: 7, color: 'rgba(200,128,58,0.28)', letterSpacing: 1, textTransform: 'uppercase' }}>
+                      <span style={{ fontSize: 20, color: warmTheme.textMuted, fontWeight: 300, lineHeight: 1 }}>+</span>
+                      <span style={{ fontSize: 7, color: warmTheme.textFaint, letterSpacing: 1, textTransform: 'uppercase' }}>
                         Slot {i + 1}
                       </span>
                     </div>
@@ -550,7 +765,7 @@ function ProfileTab(props: {
                       color: 'rgba(184,92,79,0.65)',
                       background: 'transparent', border: 'none',
                       cursor: 'pointer', padding: '1px 4px',
-                      fontFamily: '"Cinzel", Georgia, serif', lineHeight: 1,
+                      fontFamily: uiTypography.display, lineHeight: 1,
                     }}
                   >Remove</button>
                 )}
@@ -559,7 +774,7 @@ function ProfileTab(props: {
           })}
         </div>
         <div style={S.saveHint}>
-          Showcase up to 5 cards on your profile — visible to friends.
+          Showcase up to 5 cards on your profile  Evisible to friends.
         </div>
       </GlassCard>
     </div>
@@ -578,8 +793,8 @@ function SocialTab(props: {
 }) {
   const { authed, friends, incoming, blocked } = props;
   return (
-    <div style={S.tabGrid}>
-      <GlassCard title="Account" tone="cool">
+    <div style={S.socialLayout}>
+      <GlassCard title="Account" tone="cool" wide>
         <AuthPanel />
         {!authed && (
           <div style={S.hintBox}>
@@ -595,6 +810,7 @@ function SocialTab(props: {
         tone="cool"
         wide
         meta={authed ? `${friends.length} friends · ${incoming.length} requests · ${blocked.length} blocked` : undefined}
+        bodyStyle={S.socialFriendsBody}
       >
         {authed ? (
           <FriendsPanel />
@@ -644,15 +860,13 @@ function SaveTab(props: {
           style={{
             ...S.goldBtn,
             width: '100%',
-            background: gameSaved
-              ? 'linear-gradient(135deg, rgba(79,138,71,0.75) 0%, rgba(55,110,50,0.85) 100%)'
-              : 'linear-gradient(135deg, rgba(200,128,58,0.85) 0%, rgba(160,88,30,0.9) 100%)',
+            background: gameSaved ? 'linear-gradient(135deg, rgba(79,138,71,0.75) 0%, rgba(55,110,50,0.85) 100%)' : warmTheme.button,
             border: gameSaved ? '1px solid rgba(79,138,71,0.6)' : `1px solid ${G.goldBorderStrong}`,
-            color: gameSaved ? '#c8edc4' : '#1a0c04',
-            boxShadow: gameSaved ? '0 4px 14px rgba(79,138,71,0.28)' : '0 4px 14px rgba(200,128,58,0.28)',
+            color: gameSaved ? '#c8edc4' : warmTheme.accentDeep,
+            boxShadow: gameSaved ? '0 4px 14px rgba(79,138,71,0.28)' : warmTheme.glow,
           }}
         >
-          {gameSaved ? '✓  Saved!' : 'Save Game Data'}
+          {gameSaved ? '✁E Saved!' : 'Save Game Data'}
         </button>
         <div style={S.saveHint}>
           Manually flushes your progress to disk. Your save is also written automatically in the background.
@@ -704,7 +918,7 @@ function SaveTab(props: {
         <GlassCard title="Integrity Warning" tone="danger" wide>
           <div style={{ ...S.statusBanner, borderColor: G.dangerBorder, background: G.dangerSoft, color: G.danger }}>
             ⚠ This save's integrity check failed. The file may have been edited outside the game.
-            Your progress was still loaded — saving again will re-sign the file with the current state.
+            Your progress was still loaded  Esaving again will re-sign the file with the current state.
           </div>
         </GlassCard>
       )}
@@ -760,11 +974,13 @@ function GlassCard(props: {
   tone?: 'warm' | 'cool' | 'danger';
   wide?: boolean;
   meta?: string;
+  cardStyle?: React.CSSProperties;
+  bodyStyle?: React.CSSProperties;
   children: React.ReactNode;
 }) {
   const tone = props.tone ?? 'warm';
   const toneBorderColor: Record<string, string> = {
-    warm:   'rgba(200,128,58,0.32)',
+    warm:   warmTheme.border,
     cool:   'rgba(110,140,210,0.32)',
     danger: 'rgba(184,92,79,0.38)',
   };
@@ -774,13 +990,14 @@ function GlassCard(props: {
     danger: G.danger,
   };
   const toneInsetGlow: Record<string, string> = {
-    warm:   'rgba(200,128,58,0.10)',
+    warm:   warmTheme.surfaceMuted,
     cool:   'rgba(100,130,200,0.08)',
     danger: 'rgba(184,92,79,0.10)',
   };
   return (
     <div style={{
       ...S.card,
+      ...props.cardStyle,
       borderColor: toneBorderColor[tone],
       boxShadow: `0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 ${toneInsetGlow[tone]}`,
       gridColumn: props.wide ? '1 / -1' : 'auto',
@@ -792,7 +1009,7 @@ function GlassCard(props: {
         </div>
         {props.meta && <div style={S.cardMeta}>{props.meta}</div>}
       </div>
-      <div style={S.cardBody}>{props.children}</div>
+      <div style={{ ...S.cardBody, ...props.bodyStyle }}>{props.children}</div>
     </div>
   );
 }
@@ -814,7 +1031,7 @@ function EmblemStat({ label, value, highlight }: { label: string; value: string;
       <div style={{
         ...S.emblemValue,
         color: highlight ? G.goldSoft : G.text,
-        textShadow: highlight ? '0 0 16px rgba(218,160,88,0.45)' : 'none',
+        textShadow: highlight ? warmTheme.glow : 'none',
       }}>{value}</div>
     </div>
   );
@@ -842,18 +1059,18 @@ const S: Record<string, React.CSSProperties> = {
   backdrop: {
     position: 'absolute',
     inset: 0,
-    background: 'linear-gradient(160deg, #0d0703 0%, #070402 55%, #050203 100%)',
+    background: 'var(--profile-app-bg)',
     display: 'flex',
     zIndex: 30,
     overflowY: 'auto',
     overflowX: 'hidden',
-    fontFamily: 'Georgia, serif',
+    fontFamily: uiTypography.body,
     animation: 'backdropFade 0.22s ease',
   },
   washWarm: {
     position: 'absolute',
     top: '-22%', left: '-10%', width: '75%', height: '85%',
-    background: 'radial-gradient(ellipse, rgba(200,128,58,0.24) 0%, rgba(160,88,30,0.10) 42%, transparent 68%)',
+    background: 'radial-gradient(ellipse, rgba(88,170,218,0.24) 0%, rgba(58,142,200,0.10) 42%, transparent 68%)',
     filter: 'blur(80px)',
     pointerEvents: 'none',
   },
@@ -900,9 +1117,9 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: 'clamp(24px,2.6vw,36px)',
     fontWeight: 300,
     letterSpacing: 7,
-    color: '#daa058',
-    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
-    textShadow: '0 2px 28px rgba(218,160,88,0.42), 0 0 60px rgba(200,128,58,0.15)',
+    color: 'var(--profile-accent-soft)',
+    fontFamily: uiTypography.display,
+    textShadow: '0 2px 24px rgba(88,170,218,0.30)',
     lineHeight: 1.1,
   },
   headerRule: {
@@ -910,11 +1127,11 @@ const S: Record<string, React.CSSProperties> = {
   },
   headerRuleLine: {
     height: 1, width: 100, flexShrink: 0,
-    background: 'linear-gradient(90deg, rgba(200,128,58,0.5) 0%, transparent 100%)',
+    background: 'linear-gradient(90deg, var(--profile-accent-soft) 0%, transparent 100%)',
   },
   headerRuleGlyph: {
     fontSize: 11,
-    color: 'rgba(200,128,58,0.55)',
+    color: 'var(--profile-text-muted)',
     lineHeight: 1,
     flexShrink: 0,
     userSelect: 'none',
@@ -923,15 +1140,15 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: 9,
     letterSpacing: 4,
     textTransform: 'uppercase',
-    color: 'rgba(218,160,88,0.42)',
+    color: 'var(--profile-text-muted)',
     fontWeight: 400,
   },
   closeBtn: {
     width: 42, height: 42,
     borderRadius: '50%',
-    border: '1px solid rgba(200,128,58,0.38)',
-    background: 'rgba(200,128,58,0.07)',
-    color: 'rgba(218,160,88,0.72)',
+    border: '1px solid var(--profile-border-strong)',
+    background: 'var(--profile-accent-glass)',
+    color: 'var(--profile-text)',
     fontSize: 14,
     cursor: 'pointer',
     flexShrink: 0,
@@ -950,8 +1167,8 @@ const S: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     gap: 28,
     padding: 'clamp(14px,1.6vw,22px) clamp(40px,4vw,80px) clamp(16px,1.8vw,24px)',
-    borderBottom: '1px solid rgba(200,128,58,0.16)',
-    background: 'rgba(8,4,1,0.5)',
+    borderBottom: '1px solid var(--profile-border)',
+    background: 'var(--profile-surface)',
     flexShrink: 0,
   },
 
@@ -961,21 +1178,21 @@ const S: Record<string, React.CSSProperties> = {
     borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
-    background: 'rgba(200,128,58,0.05)',
-    boxShadow: '0 0 50px rgba(200,128,58,0.18), 0 0 100px rgba(200,128,58,0.06)',
+    background: 'var(--profile-accent-glass)',
+    boxShadow: 'var(--profile-glow)',
   },
   avatarMiddle: {
     width: 104, height: 104,
     borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    border: '2px solid rgba(200,128,58,0.48)',
-    boxShadow: '0 0 14px rgba(200,128,58,0.2)',
+    border: '2px solid var(--profile-border-strong)',
+    boxShadow: 'var(--profile-glow)',
   },
   avatarInner: {
     width: 88, height: 88,
     borderRadius: '50%',
-    border: '2.5px solid rgba(218,160,88,0.82)',
-    background: 'linear-gradient(160deg, rgba(40,20,5,0.96) 0%, rgba(18,9,2,1) 100%)',
+    border: '2.5px solid var(--profile-accent-soft)',
+    background: 'var(--profile-surface-strong)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     overflow: 'hidden',
     boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.65)',
@@ -989,14 +1206,14 @@ const S: Record<string, React.CSSProperties> = {
   nameInput: {
     background: 'transparent',
     border: 'none',
-    borderBottom: '1px solid rgba(200,128,58,0.22)',
-    color: '#f0dfc0',
+    borderBottom: '1px solid var(--profile-border)',
+    color: 'var(--profile-text)',
     fontSize: 28,
     fontWeight: 300,
     letterSpacing: 2,
     padding: '3px 0',
     outline: 'none',
-    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+    fontFamily: uiTypography.display,
     maxWidth: 340,
     lineHeight: 1.2,
   },
@@ -1006,24 +1223,24 @@ const S: Record<string, React.CSSProperties> = {
     alignSelf: 'flex-start',
     padding: '4px 14px',
     borderRadius: 999,
-    background: 'rgba(200,128,58,0.10)',
-    border: '1px solid rgba(200,128,58,0.30)',
+    background: 'var(--profile-accent-glass)',
+    border: '1px solid var(--profile-border-strong)',
     fontSize: 12,
     fontStyle: 'italic',
-    color: 'rgba(218,160,88,0.88)',
+    color: 'var(--profile-text)',
     letterSpacing: 0.5,
   },
   bioInput: {
     background: 'transparent',
     border: 'none',
-    borderBottom: '1px solid rgba(200,128,58,0.14)',
-    color: 'rgba(240,223,192,0.60)',
+    borderBottom: '1px solid var(--profile-border)',
+    color: 'var(--profile-text-muted)',
     fontSize: 12,
     fontStyle: 'italic',
     lineHeight: 1.6,
     padding: '3px 0',
     outline: 'none',
-    fontFamily: 'Georgia, serif',
+    fontFamily: uiTypography.body,
     resize: 'none',
     maxWidth: 340,
     width: '100%',
@@ -1031,7 +1248,7 @@ const S: Record<string, React.CSSProperties> = {
   },
   statusRow: {
     display: 'flex', alignItems: 'center', gap: 8,
-    fontSize: 10, color: 'rgba(218,160,88,0.48)', letterSpacing: 0.6, marginTop: 2,
+    fontSize: 10, color: 'var(--profile-text-muted)', letterSpacing: 0.6, marginTop: 2,
   },
   statusDot: {
     width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
@@ -1046,7 +1263,7 @@ const S: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     paddingLeft: 28,
-    borderLeft: '1px solid rgba(200,128,58,0.2)',
+    borderLeft: '1px solid var(--profile-border)',
     flexShrink: 0,
   },
   emblemStat: {
@@ -1057,7 +1274,7 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: 8,
     letterSpacing: 3,
     textTransform: 'uppercase',
-    color: 'rgba(218,160,88,0.48)',
+    color: 'var(--profile-text-muted)',
     fontWeight: 400,
     whiteSpace: 'nowrap',
   },
@@ -1065,12 +1282,12 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: 20,
     fontWeight: 600,
     letterSpacing: 0.5,
-    color: '#f0dfc0',
+    color: 'var(--profile-text)',
     fontVariantNumeric: 'tabular-nums',
   },
   emblemDivider: {
     width: 1, height: 30,
-    background: 'rgba(200,128,58,0.18)',
+    background: 'var(--profile-accent-glass)',
     flexShrink: 0,
   },
 
@@ -1079,8 +1296,8 @@ const S: Record<string, React.CSSProperties> = {
     display: 'flex',
     gap: 2,
     padding: '0 clamp(40px,4vw,80px)',
-    background: 'rgba(5,2,0,0.92)',
-    borderBottom: '1px solid rgba(200,128,58,0.2)',
+    background: 'var(--profile-surface-muted)',
+    borderBottom: '1px solid var(--profile-border)',
     flexShrink: 0,
     position: 'sticky',
     top: 0,
@@ -1101,7 +1318,7 @@ const S: Record<string, React.CSSProperties> = {
   },
   tabGlyph: {
     fontSize: 8,
-    color: '#daa058',
+    color: 'var(--profile-accent-soft)',
     display: 'block',
     marginBottom: 3,
   },
@@ -1110,20 +1327,20 @@ const S: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     letterSpacing: 3.5,
     textTransform: 'uppercase',
-    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+    fontFamily: uiTypography.display,
   },
   tabCaption: {
     fontSize: 9,
     letterSpacing: 0.5,
     marginTop: 3,
-    color: 'rgba(218,160,88,0.55)',
+    color: 'var(--profile-text-muted)',
   },
 
   /* ── Content area ── */
   content: {
     padding: 'clamp(24px,2.4vw,40px) clamp(40px,4vw,80px) clamp(40px,4vw,80px)',
   },
-  contentInner: { maxWidth: 1180, margin: '0 auto' },
+  contentInner: { maxWidth: 1480, margin: '0 auto' },
 
   /* ── Card grid ── */
   tabGrid: {
@@ -1132,12 +1349,21 @@ const S: Record<string, React.CSSProperties> = {
     gap: 18,
     alignItems: 'start',
   },
+  socialLayout: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 18,
+  },
+  socialFriendsBody: {
+    padding: '14px 16px 16px',
+    minHeight: 520,
+  },
 
   /* ── Glass card base ── */
   card: {
     borderRadius: 16,
-    border: '1px solid rgba(200,128,58,0.28)',
-    background: 'linear-gradient(148deg, rgba(20,10,3,0.92) 0%, rgba(11,5,1,0.96) 100%)',
+    border: '1px solid var(--profile-border)',
+    background: 'var(--profile-surface-strong)',
     backdropFilter: 'blur(8px)',
     display: 'flex', flexDirection: 'column',
     overflow: 'hidden',
@@ -1145,7 +1371,7 @@ const S: Record<string, React.CSSProperties> = {
   cardHeader: {
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
     padding: '15px 22px 13px',
-    borderBottom: '1px solid rgba(200,128,58,0.12)',
+    borderBottom: '1px solid var(--profile-border)',
   },
   cardAccentBar: {
     width: 3, height: 18, borderRadius: 2, flexShrink: 0,
@@ -1154,14 +1380,14 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: 10,
     letterSpacing: 4,
     textTransform: 'uppercase',
-    color: 'rgba(218,160,88,0.82)',
+    color: 'var(--profile-text)',
     fontWeight: 600,
-    fontFamily: '"Cinzel", Georgia, serif',
+    fontFamily: uiTypography.display,
   },
   cardMeta: {
     fontSize: 9,
     letterSpacing: 1,
-    color: 'rgba(218,160,88,0.42)',
+    color: 'var(--profile-text-muted)',
     fontVariantNumeric: 'tabular-nums',
   },
   cardBody: {
@@ -1178,22 +1404,22 @@ const S: Record<string, React.CSSProperties> = {
   medallion: {
     padding: '15px 10px 13px',
     borderRadius: 12,
-    background: 'rgba(200,128,58,0.05)',
-    border: '1px solid rgba(200,128,58,0.15)',
+    background: 'var(--profile-accent-glass)',
+    border: '1px solid var(--profile-border)',
     textAlign: 'center',
     display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'center',
   },
   medallionLabel: {
     fontSize: 8, letterSpacing: 2, textTransform: 'uppercase',
-    color: 'rgba(218,160,88,0.48)',
-    fontFamily: '"Cinzel", Georgia, serif',
+    color: 'var(--profile-text-muted)',
+    fontFamily: uiTypography.display,
   },
   medallionValue: {
-    fontSize: 26, fontWeight: 300, color: '#daa058',
+    fontSize: 26, fontWeight: 300, color: 'var(--profile-accent-soft)',
     fontVariantNumeric: 'tabular-nums', letterSpacing: 0.3, lineHeight: 1.15,
   },
   medallionSub: {
-    fontSize: 9, color: 'rgba(218,160,88,0.38)', letterSpacing: 0.4,
+    fontSize: 9, color: 'var(--profile-text-faint)', letterSpacing: 0.4,
   },
 
   /* ── Avatar showcase (Profile Picture card) ── */
@@ -1204,24 +1430,24 @@ const S: Record<string, React.CSSProperties> = {
     width: 74, height: 74,
     borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'rgba(200,128,58,0.05)',
-    border: '1.5px solid rgba(200,128,58,0.38)',
-    boxShadow: '0 0 20px rgba(200,128,58,0.14)',
+    background: 'var(--profile-accent-glass)',
+    border: '1.5px solid var(--profile-border-strong)',
+    boxShadow: 'var(--profile-glow)',
     flexShrink: 0,
   },
   showcaseRingInner: {
     width: 60, height: 60,
     borderRadius: '50%',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    border: '2px solid rgba(218,160,88,0.80)',
-    background: 'linear-gradient(160deg, rgba(40,20,5,0.95) 0%, rgba(18,9,2,1) 100%)',
+    border: '2px solid var(--profile-accent-soft)',
+    background: 'var(--profile-surface-strong)',
     overflow: 'hidden',
   },
   showcaseName: {
-    fontSize: 13, fontWeight: 600, color: '#f0dfc0', letterSpacing: 0.5,
+    fontSize: 13, fontWeight: 600, color: 'var(--profile-text)', letterSpacing: 0.5,
   },
   showcaseDesc: {
-    fontSize: 11, color: 'rgba(218,160,88,0.58)', marginTop: 4, lineHeight: 1.45,
+    fontSize: 11, color: 'var(--profile-text-muted)', marginTop: 4, lineHeight: 1.45,
   },
 
   /* ── Title scroll ── */
@@ -1231,13 +1457,13 @@ const S: Record<string, React.CSSProperties> = {
   },
   titleScrollRule: {
     width: '100%', height: 1,
-    background: 'linear-gradient(90deg, transparent 0%, rgba(200,128,58,0.42) 25%, rgba(200,128,58,0.42) 75%, transparent 100%)',
+    background: 'linear-gradient(90deg, transparent 0%, var(--profile-border-strong) 25%, var(--profile-border-strong) 75%, transparent 100%)',
   },
   titleScrollText: {
     fontSize: 15,
     fontStyle: 'italic',
-    color: 'rgba(218,160,88,0.88)',
-    fontFamily: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+    color: 'var(--profile-text)',
+    fontFamily: uiTypography.display,
     textAlign: 'center',
     padding: '8px 20px',
     letterSpacing: 0.8,
@@ -1259,37 +1485,69 @@ const S: Record<string, React.CSSProperties> = {
     transition: 'all 0.18s ease',
   },
   themeName: {
-    fontSize: 12, fontWeight: 600, color: '#daa058',
+    fontSize: 12, fontWeight: 600, color: 'var(--profile-text)',
     letterSpacing: 1.5,
-    fontFamily: '"Cinzel", Georgia, serif',
+    fontFamily: uiTypography.display,
   },
   themeDesc: {
-    fontSize: 9, color: 'rgba(218,160,88,0.52)', lineHeight: 1.4, marginTop: 4,
+    fontSize: 9, color: 'var(--profile-text-muted)', lineHeight: 1.4, marginTop: 4,
+  },
+  themeEditorGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gap: 8,
+  },
+  themeFieldLabel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 4,
+  },
+  themeFieldName: {
+    fontSize: 10,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    color: 'var(--profile-text-muted)',
+  },
+  themeFieldInput: {
+    borderRadius: 8,
+    border: '1px solid var(--profile-border)',
+    background: 'var(--profile-surface)',
+    color: 'var(--profile-text)',
+    padding: '8px 10px',
+    fontSize: 11,
+    fontFamily: uiTypography.body,
+    outline: 'none',
+  },
+  themeActionRow: {
+    display: 'flex',
+    gap: 10,
+    justifyContent: 'flex-end',
+    flexWrap: 'wrap',
   },
 
   /* ── Buttons ── */
   goldBtn: {
     padding: '11px 22px',
     borderRadius: 999,
-    border: '1px solid rgba(200,128,58,0.55)',
-    background: 'linear-gradient(135deg, rgba(200,128,58,0.85) 0%, rgba(160,88,30,0.9) 100%)',
-    color: '#1a0c04',
+    border: '1px solid var(--profile-border-strong)',
+    background: 'var(--profile-button)',
+    color: 'var(--profile-accent-deep)',
     fontSize: 11,
     fontWeight: 700,
     letterSpacing: 2,
     textTransform: 'uppercase',
     cursor: 'pointer',
-    fontFamily: '"Cinzel", Georgia, serif',
-    boxShadow: '0 4px 14px rgba(200,128,58,0.26)',
+    fontFamily: uiTypography.display,
+    boxShadow: 'var(--profile-glow)',
     whiteSpace: 'nowrap',
   },
   outlineBtn: {
-    padding: '10px 0', borderRadius: 10,
-    border: '1px solid rgba(200,128,58,0.4)',
-    background: 'rgba(200,128,58,0.06)',
-    color: '#daa058',
-    fontSize: 11, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase',
-    cursor: 'pointer', fontFamily: '"Cinzel", Georgia, serif',
+    padding: '10px 14px', borderRadius: 10,
+    border: '1px solid var(--profile-border)',
+    background: 'var(--profile-surface)',
+    color: 'var(--profile-text)',
+    fontSize: 11, fontWeight: 600, letterSpacing: 1.2, textTransform: 'uppercase',
+    cursor: 'pointer', fontFamily: uiTypography.display,
     whiteSpace: 'nowrap',
   },
 
@@ -1309,20 +1567,20 @@ const S: Record<string, React.CSSProperties> = {
     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
   },
   lockedGlyph: {
-    fontSize: 30, color: 'rgba(200,128,58,0.2)',
+    fontSize: 30, color: 'var(--profile-text-faint)',
   },
   lockedTitle: {
     fontSize: 13, fontWeight: 600, letterSpacing: 2.5, textTransform: 'uppercase',
-    color: 'rgba(218,160,88,0.55)',
-    fontFamily: '"Cinzel", Georgia, serif',
+    color: 'var(--profile-text-muted)',
+    fontFamily: uiTypography.display,
   },
   lockedBody: {
-    fontSize: 12, color: 'rgba(218,160,88,0.38)', lineHeight: 1.6, maxWidth: 420,
+    fontSize: 12, color: 'var(--profile-text-faint)', lineHeight: 1.6, maxWidth: 420,
   },
 
   /* ── Save & Data ── */
   saveHint: {
-    fontSize: 11, color: 'rgba(218,160,88,0.42)', lineHeight: 1.55,
+    fontSize: 11, color: 'var(--profile-text-faint)', lineHeight: 1.55,
   },
   exportRow: {
     display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10,
@@ -1342,7 +1600,7 @@ const S: Record<string, React.CSSProperties> = {
     background: 'rgba(184,92,79,0.12)',
     color: G.danger,
     fontSize: 12, fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase',
-    cursor: 'pointer', fontFamily: '"Cinzel", Georgia, serif',
+    cursor: 'pointer', fontFamily: uiTypography.display,
   },
   dangerConfirm: {
     padding: '14px 16px', borderRadius: 12,
@@ -1359,16 +1617,19 @@ const S: Record<string, React.CSSProperties> = {
     border: '1px solid rgba(184,92,79,0.5)',
     background: 'rgba(184,92,79,0.16)',
     color: G.danger,
-    fontSize: 12, letterSpacing: 1, cursor: 'pointer', fontFamily: 'Georgia, serif',
+    fontSize: 12, letterSpacing: 1, cursor: 'pointer', fontFamily: uiTypography.body,
   },
   cancelBtn: {
     flex: 1, padding: '10px 0', borderRadius: 8,
-    border: '1px solid rgba(200,128,58,0.25)',
-    background: 'rgba(200,128,58,0.06)',
-    color: 'rgba(218,160,88,0.62)',
-    fontSize: 12, letterSpacing: 1, cursor: 'pointer', fontFamily: 'Georgia, serif',
+    border: '1px solid var(--profile-border)',
+    background: 'var(--profile-surface)',
+    color: 'var(--profile-text)',
+    fontSize: 12, letterSpacing: 1, cursor: 'pointer', fontFamily: uiTypography.body,
   },
 };
 
 // Keep import alive \u2014 warmTheme used by AuthPanel / FriendsPanel sub-trees.
 void warmTheme;
+
+
+

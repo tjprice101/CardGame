@@ -1,18 +1,10 @@
 import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
 
-// -----------------------------------------------------------------------------
-// Abyssal Forge - "The Reforging"
-// -----------------------------------------------------------------------------
-//
+// Abyssal Forge - The Reforging.
 // Set #15. Comes after Eternal Seas.
-// Base loop: Reforge Charges + Recast Ledger chaining (with Pearls/Crowns as
-// supporting payoff resources).
-// Higher-rarity overlay: Eternal and Infinite cards both route through one
-// shared mechanic, Imprint. Imprint marks recast ledger entries, then gets
-// spent by specific effects for recast spikes or direct Oblivion bursts.
-//
-// Engine: see `CardEffectExecutor.ts` for forge_* effect handlers and
-// `ensureForgeTurn`. Per-turn state lives on TurnState.
+// Base loop: Reforge Charges + Recast Ledger chaining (with Pearls/Crowns as supporting payoff resources).
+// Higher-rarity overlay: Eternal and Infinite cards both route through one shared mechanic, Imprint.
+// Engine: see `CardEffectExecutor.ts` for forge_* effect handlers and `ensureForgeTurn`.
 
 const ABYSSAL_FORGE = 'AbyssalForge' as const;
 
@@ -175,7 +167,7 @@ function buildAngel(spec: AngelSpec): AngelDefinition {
   };
 }
 
-// ���� Seraphim (8) ������������������������������������������������������������������������������������������������������������������������
+// Seraphim (8).
 const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'af-ser-lampfin-minnow-choir',
@@ -290,7 +282,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   })];
 
-// ���� Cherubim (8) ������������������������������������������������������������������������������������������������������������������������
+// Cherubim (8).
 const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'af-cher-bellows-acolyte',
@@ -366,7 +358,7 @@ const baseCherubim: CherubimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 3 }, { type: 'forge_pearl_drop', value: 3 }, { type: 'eternal_stack_gain', stack: 'forge', value: 1 }],
   })];
 
-// ���� Ophanim (8) ��������������������������������������������������������������������������������������������������������������������������
+// Ophanim (8).
 const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'af-oph-saffron-ember-wheel',
@@ -433,7 +425,7 @@ const baseOphanim: OphanimDefinition[] = [
     effects: [{ type: 'eternal_stack_gain', stack: 'forge', value: 2 }, { type: 'forge_recast_last_n', count: 4, power: 0.6 }, { type: 'forge_pearl_drop', value: 2 }],
   })];
 
-// ���� Angels (6) ����������������������������������������������������������������������������������������������������������������������������
+// Angels (6)
 const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'af-angel-covenant-herald',
@@ -562,7 +554,7 @@ const baseAngels: AngelDefinition[] = [
     baseStats: { basePower: 98, bonusType: 'oblivion_per_card', bonusValue: 70 },
   })];
 
-// ���� Eternal (5) ��������������������������������������������������������������������������������������������������������������������������
+// Eternal (5)
 const eternalCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-et-forge-beneath',
@@ -652,7 +644,7 @@ const eternalCards: CardDefinition[] = [
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   })];
 
-// ���� Infinite (5) ������������������������������������������������������������������������������������������������������������������������
+// Infinite (5)
 const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-ouroglas-uncoiled',

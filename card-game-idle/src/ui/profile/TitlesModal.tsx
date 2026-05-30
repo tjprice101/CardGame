@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
 import { TITLE_BADGES, type TitleBadgeGroup } from '@/data/profile/titleBadges';
 
 interface Props {
   onClose: () => void;
+  onApply?: () => void;
 }
 
 type FilterGroup = 'all' | TitleBadgeGroup;
@@ -38,10 +39,12 @@ const SORT_MODES: { value: SortMode; label: string }[] = [
   { value: 'alpha', label: 'A–Z' },
 ];
 
-export default function TitlesModal({ onClose }: Props) {
+export default function TitlesModal({ onClose, onApply }: Props) {
   const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
   const setTitleId = useStore(s => s.setTitleId);
+  const activeTitle = profile.titleId;
+  const [selectedTitle, setSelectedTitle] = useState<string | null>(activeTitle);
 
   const [filterGroup, setFilterGroup] = useState<FilterGroup>('all');
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('all');
@@ -53,6 +56,9 @@ export default function TitlesModal({ onClose }: Props) {
     [progress],
   );
 
+  useEffect(() => {
+    setSelectedTitle(activeTitle);
+  }, [activeTitle]);
   const filtered = useMemo(() => {
     let list = TITLE_BADGES.slice();
     if (filterGroup !== 'all') list = list.filter(t => t.group === filterGroup);
@@ -84,8 +90,6 @@ export default function TitlesModal({ onClose }: Props) {
     }
     return list;
   }, [filterGroup, filterStatus, sortMode, search, progress]);
-
-  const activeTitle = profile.titleId;
 
   return (
     <div
@@ -268,8 +272,8 @@ export default function TitlesModal({ onClose }: Props) {
             <TitleCard
               text="— None —" description="Display no title."
               group={null} unlocked={true}
-              active={activeTitle === null}
-              onEquip={() => setTitleId(null)}
+              active={selectedTitle === null}
+              onEquip={() => setSelectedTitle(null)}
             />
           )}
 
@@ -284,12 +288,12 @@ export default function TitlesModal({ onClose }: Props) {
           ) : (
             filtered.map(t => {
               const unlocked = t.isUnlocked(progress);
-              const active = activeTitle === t.id && unlocked;
+              const active = selectedTitle === t.id && unlocked;
               return (
                 <TitleCard
                   key={t.id} text={t.text} description={t.description}
                   group={t.group} unlocked={unlocked} active={active}
-                  onEquip={() => unlocked && setTitleId(t.id)}
+                  onEquip={() => unlocked && setSelectedTitle(t.id)}
                 />
               );
             })
@@ -304,8 +308,30 @@ export default function TitlesModal({ onClose }: Props) {
         }}>
           <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, rgba(200,128,58,0.18) 50%, transparent 100%)' }} />
           <div style={{ fontSize: 9.5, color: 'rgba(218,160,88,0.35)', letterSpacing: 1, textAlign: 'center' }}>
-            Titles unlock as you earn milestones · Click an unlocked title to equip
+            Titles unlock as you earn milestones · Select a title and apply it
           </div>
+          <button
+            onClick={() => {
+              setTitleId(selectedTitle);
+              onApply?.();
+              onClose();
+            }}
+            className="menu-tactile-btn"
+            style={{
+              border: '1px solid rgba(200,128,58,0.36)',
+              background: 'rgba(200,128,58,0.11)',
+              color: '#e8c793',
+              borderRadius: 8,
+              padding: '6px 12px',
+              fontFamily: 'Georgia, serif',
+              fontSize: 11,
+              letterSpacing: 0.5,
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            Apply Title
+          </button>
           <div style={{ height: 1, flex: 1, background: 'linear-gradient(90deg, transparent, rgba(200,128,58,0.18) 50%, transparent 100%)' }} />
         </div>
       </div>

@@ -205,7 +205,7 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
 
       <ol style={list}>
         {entries.map((e, i) => {
-          const avatar = AVATAR_BY_ID.get(e.avatarId) ?? AVATAR_BY_ID.get(DEFAULT_AVATAR_ID);
+          const avatar = AVATAR_BY_ID[e.avatarId] ?? AVATAR_BY_ID[DEFAULT_AVATAR_ID];
           const value = metricValue(e, metric);
           return (
             <li key={e.userId} style={{

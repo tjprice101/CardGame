@@ -6,6 +6,7 @@ import { warmTheme } from '@/ui/theme';
 interface Props {
   currentAvatarId: string;
   onClose: () => void;
+  onApply?: (avatarId: string) => void;
 }
 
 const SECTIONS: { label: string; prefix: string }[] = [
@@ -14,7 +15,7 @@ const SECTIONS: { label: string; prefix: string }[] = [
   { label: 'Classic Achievements', prefix: 'pic-classic-' },
 ];
 
-export default function ProfilePictureModal({ currentAvatarId, onClose }: Props) {
+export default function ProfilePictureModal({ currentAvatarId, onClose, onApply }: Props) {
   const progress = useStore(selectProgress);
   const setAvatarId = useStore(s => s.setAvatarId);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export default function ProfilePictureModal({ currentAvatarId, onClose }: Props)
   function handleSelect(avatar: AvatarDefinition) {
     if (!avatar.isUnlocked(progress)) return;
     setAvatarId(avatar.id);
+    onApply?.(avatar.id);
     onClose();
   }
 

@@ -174,6 +174,13 @@ describe('ui theme registry', () => {
     }
   });
 
+  it('falls back to default for removed legacy theme ids', () => {
+    expect(resolveThemeId('theme-glass-absolute', baseProgress())).toBe(DEFAULT_UI_THEME_ID);
+    expect(resolveThemeId('theme-blazing-garden', baseProgress())).toBe(DEFAULT_UI_THEME_ID);
+    expect(resolveThemeId('theme-butterfly', baseProgress())).toBe(DEFAULT_UI_THEME_ID);
+    expect(resolveThemeId('theme-eternal-seas', baseProgress())).toBe(DEFAULT_UI_THEME_ID);
+  });
+
   it('applyEffectiveTheme overlays customTheme on top of the resolved theme', () => {
     resetUiPalette();
     applyEffectiveTheme(DEFAULT_UI_THEME_ID, { accent: '#abcdef' }, baseProgress());

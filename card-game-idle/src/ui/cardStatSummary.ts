@@ -71,7 +71,7 @@ const SET_SECONDARY_LABELS: Record<string, { singular: string; plural: string }>
   pyro: { singular: 'Chroma Ember', plural: 'Chroma Embers' },
   light: { singular: 'Halo Resonance', plural: 'Halo Resonances' },
   thorn: { singular: 'Briar Spiral', plural: 'Briar Spirals' },
-  glass: { singular: 'Legacy Veil Shard', plural: 'Legacy Veil Shards' },
+  glass: { singular: 'Veil Shard', plural: 'Veil Shards' },
   snow: { singular: 'Polar Capacitor', plural: 'Polar Capacitors' },
   mech: { singular: 'Reactor Core', plural: 'Reactor Cores' },
   prism: { singular: 'Spectrum Echo', plural: 'Spectrum Echoes' },
@@ -127,6 +127,13 @@ function formatEffectsInline(effects: CardEffect[]): string {
 function formatSummonCondition(condition: NonNullable<AngelDefinition['extraSummonConditions']>[number]): string {
   if (condition.type === 'cherubim_active_gte') return `${condition.value}+ active Cherubim`;
   if (condition.type === 'seraphim_on_board_gte') return `${condition.value}+ Seraphim on board`;
+  if (condition.type === 'board_definition_gte') {
+    const def = CardRegistry.get(condition.definitionId);
+    return `${condition.value}+ ${def?.name ?? condition.definitionId} on board`;
+  }
+  if (condition.type === 'equilibrium_sigils_gte') return `${condition.value}+ Equilibrium Sigils`;
+  if (condition.type === 'eternal_stack_gte') return `${condition.value}+ ${eternalStackName(condition.stack)}`;
+  if (condition.type === 'set_secondary_gte') return `${condition.value}+ ${setSecondaryName(condition.kind)}`;
   return 'special condition';
 }
 
@@ -185,6 +192,8 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ Trail`;
     case 'scar_count_gte':
       return `you have ${condition.value}+ Scar`;
+    case 'equilibrium_sigils_gte':
+      return `you have ${condition.value}+ Equilibrium Sigils`;
     case 'strain_gte':
       return `you have ${condition.value}+ Strain`;
     case 'strain_lte':
@@ -217,18 +226,6 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ ${eternalStackName(condition.stack)}`;
     case 'set_secondary_gte':
       return `you have ${condition.value}+ ${setSecondaryName(condition.kind)}`;
-    case 'pyro_furnace_pressure_gte':
-      return `Furnace Pressure is ${condition.value}+`;
-    case 'pyro_abyss_fault_gte':
-      return `Abyss Fault is ${condition.value}+`;
-    case 'pyro_ruin_window_gte':
-      return `you have ${condition.value}+ Ruin Windows open`;
-    case 'pyro_pressure_higher':
-      return 'Furnace Pressure exceeds Abyss Fault';
-    case 'pyro_fault_higher':
-      return 'Abyss Fault exceeds Furnace Pressure';
-    case 'pyro_pools_balanced':
-      return 'Pressure and Fault are balanced';
     case 'light_chorus_anchors_gte':
       return `you have ${condition.value}+ Chorus Anchors`;
     case 'light_resonance_gte':
@@ -299,6 +296,10 @@ function formatEffect(effect: CardEffect): string {
     case 'seraphim_bonus_amplifier': return `Seraphim bonuses are amplified by +${effect.value}`;
     case 'patience_gain_all': return `All Seraphim on board gain +${effect.value} Patience`;
     case 'patience_double_all': return 'Double all Patience on the board';
+    case 'neutrality_equilibrium_sigil_gain': return `Gain ${effect.value} Equilibrium Sigil${effect.value === 1 ? '' : 's'}`;
+    case 'neutrality_equilibrium_sigil_cap_bonus': return `Increase Equilibrium Sigil cap by +${effect.value} this turn`;
+    case 'neutrality_equilibrium_starbound_cashout': return `Spend all Equilibrium Sigils: double all Patience and gain +${effect.oblivionPerSigil} Oblivion per Sigil spent`;
+    case 'neutrality_equilibrium_tactical_spend': return `If you have ${effect.spend}+ Equilibrium Sigils, spend ${effect.spend} for either +${effect.burstOblivion} Oblivion burst or ${effect.restorePercent}% team Patience restore`;
     case 'neutrality_patient_light_gain': return `Grant ${effect.value} Patient Light stack${effect.value === 1 ? '' : 's'} (card-play Patience gain becomes 1 + Patient Light stacks)`;
     case 'neutrality_designate_vessel': return 'Designate the Seraphim with the highest Patience as your Vessel';
     case 'neutrality_vessel_copy_gain': return `Your Vessel copies ${effect.percent}% of Patience gained by other Seraphim this turn`;
@@ -311,19 +312,6 @@ function formatEffect(effect: CardEffect): string {
       return `Overclock: gain ${effect.strain} Strain, then ${effect.then.filter(Boolean).map(formatEffect).join('; ')}`;
     case 'conditional':
       return `If ${formatCondition(effect.condition)}, ${effect.then.filter(Boolean).map(formatEffect).join('; ')}`;
-    case 'pyro_furnace_pressure_gain': return `Stoke ${effect.value} Furnace Pressure`;
-    case 'pyro_furnace_pressure_spend': return `Spend ${effect.value} Furnace Pressure`;
-    case 'pyro_furnace_ignite': return 'Ignite Furnace (tiered heat payout scaled by your rise streak)';
-    case 'pyro_abyss_fault_gain': return `Forge ${effect.value} Abyss Fault`;
-    case 'pyro_abyss_fault_spend': return `Spend ${effect.value} Abyss Fault`;
-    case 'pyro_ruin_window_gain': return `Open ${formatCount(effect.value, 'Ruin Window')}`;
-    case 'pyro_convert_pressure_to_fault':
-      return `Convert Pressure to Fault (${effect.pressurePerFault} Pressure per Fault, gain ${effect.faultGain}${effect.maxFaultGain !== undefined ? ` up to ${effect.maxFaultGain}` : ''})`;
-    case 'pyro_window_cashout': {
-      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Cash out ${scope} Ruin Windows (+${effect.oblivionPerWindow} Oblivion per window)`;
-    }
-    case 'pyro_balance_bonus': return `If pools are balanced, +${effect.oblivionPerPair} Oblivion per Pressure-Fault pair`;
     case 'eternal_stack_gain':
       return `Gain ${formatEternalStack(effect.stack, effect.value)}`;
     case 'eternal_stack_spend':
@@ -346,6 +334,16 @@ function formatEffect(effect: CardEffect): string {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Ignite ${scope} ${setSecondaryName('pyro')} (+${formatExactValue(effect.oblivionPerEchoSquared)} Oblivion × echoes²)`;
     }
+    case 'pyro_transcendent_confluence': {
+      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
+      const extras: string[] = [];
+      if ((effect.gainInfernoPerPair ?? 0) > 0) extras.push(`+${effect.gainInfernoPerPair} Inferno Tier per pair`);
+      if ((effect.gainChromaPerPair ?? 0) > 0) extras.push(`+${effect.gainChromaPerPair} Chroma Ember per pair`);
+      if ((effect.drawAtPairs ?? 0) > 0) extras.push(`draw 1 per ${effect.drawAtPairs} pair${effect.drawAtPairs === 1 ? '' : 's'}`);
+      if ((effect.empowerAtPairs ?? 0) > 0) extras.push(`empower next card at ${effect.empowerAtPairs}+ pair${effect.empowerAtPairs === 1 ? '' : 's'}`);
+      const suffix = extras.length > 0 ? `; ${extras.join('; ')}` : '';
+      return `Confluence ${scope} matched Inferno Tier and Chroma Ember pairs (+${formatExactValue(effect.oblivionPerPair)} Oblivion per pair${suffix})`;
+    }
     case 'light_halo_cascade_resound': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Resound ${scope} ${setSecondaryName('light')} (resound bonus per Halo Resonance)`;
@@ -354,28 +352,13 @@ function formatEffect(effect: CardEffect): string {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Bloom ${scope} ${setSecondaryName('thorn')} (+${effect.trailPerSpiral} Trail per spiral)`;
     }
-    case 'mech_reactor_flux_vent': {
-      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Vent ${scope} ${setSecondaryName('mech')} (consume matching Strain: +${formatExactValue(effect.oblivionPerFlux)} Oblivion per Strain vented, +${formatExactValue(effect.scoreMultPerFlux)}% score per Core)`;
-    }
     case 'prism_spectrum_echo_refract': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Refract ${scope} ${setSecondaryName('prism')} (+${formatExactValue(effect.oblivionPerEchoPerChannel)} Oblivion per echo × distinct channels)`;
     }
-    case 'glass_veil_shard_swap': {
-      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Shatter ${scope} ${setSecondaryName('glass')} (swap flames, +${formatExactValue(effect.oblivionPerHigherFlame)} Oblivion per higher flame per shard)`;
-    }
     case 'snow_polar_capacitor_release': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Release ${scope} ${setSecondaryName('snow')} (Voltage: +${formatExactValue(effect.voltageOblivionPerCapacitor)} Oblivion per capacitor · Frost: +${formatExactValue(effect.frostArcticChargePerCapacitor)} Arctic Charge per capacitor)`;
-    }
-    case 'snow_static_pulse_discharge': {
-      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      const frostPart = (effect.frostArcticChargePerPulse ?? 0) > 0
-        ? `+${formatExactValue(effect.frostArcticChargePerPulse!)} Arctic Charge per capacitor`
-        : `+${formatExactValue(effect.frostDrawPerPulse ?? 0)} draw per capacitor`;
-      return `Discharge ${scope} ${setSecondaryName('snow')} (Voltage: +${formatExactValue(effect.voltageOblivionPerPulse)} Oblivion per capacitor · Frost: ${frostPart})`;
     }
     case 'absol_cascade_proof_amplify': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -410,10 +393,6 @@ function formatEffect(effect: CardEffect): string {
       if ((effect.empowerAtFormation ?? 0) > 0) parts.push(`empower your next card at Formation ${effect.empowerAtFormation}+`);
       return `Apex ${scope} ${eternalStackName('flutter')} (${parts.join(', ')})`;
     }
-    case 'tide_echo_resolve': {
-      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Resolve ${scope} ${setSecondaryName('tide')} (White polarity: +${effect.oblivionPerPositive} Oblivion per echo · Black polarity: +${formatExactValue(effect.oblivionPerNegative)} Oblivion per echo)`;
-    }
     case 'light_resonance_gain': return `Gain ${effect.value} Cadence`;
     case 'butterfly_spectrum_gain': return `Gain ${effect.value} Flutter Spectrum`;
     case 'butterfly_tune': return `Set Butterfly stance to ${effect.stance}`;
@@ -440,12 +419,6 @@ function formatEffect(effect: CardEffect): string {
         : '';
       return `Surge ${scope} Deepwake (+${effect.undertowPerDeepwake} Undertow per Deepwake, then release ${releaseScope} at +${effect.oblivionPerUndertow} Oblivion per Undertow with +${effect.oblivionPerDeepwakeBonus} per Deepwake${foamText})`;
     }
-    case 'seas_current_gain': return `Gain ${effect.value} Current`;
-    case 'seas_polarity_shift': return `Shift polarity to ${effect.polarity}`;
-    case 'seas_release': {
-      const scope = effect.spend >= 9999 ? 'all' : `up to ${effect.spend}`;
-      return `Release ${scope} Current (+${effect.oblivionPerCurrent} Oblivion per current)`;
-    }
     case 'light_anchor_gain': return `Gain ${effect.value} Anchor`;
     case 'black_glass_white_flame_gain': return `Gain ${effect.value} White Flame`;
     case 'black_glass_black_flame_gain': return `Gain ${effect.value} Black Flame`;
@@ -455,11 +428,13 @@ function formatEffect(effect: CardEffect): string {
     case 'black_glass_eclipse_burst': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       const parts = [`Burst ${scope} Eclipse (+${formatExactValue(effect.oblivionPerEclipse)} Oblivion per Eclipse)`];
-      if ((effect.balanceBonusPerEclipse ?? 0) > 0) {
-        parts.push(`+${formatExactValue(effect.balanceBonusPerEclipse)} per Eclipse per balance tier`);
+      const balanceBonus = effect.balanceBonusPerEclipse;
+      if ((balanceBonus ?? 0) > 0) {
+        parts.push(`+${formatExactValue(balanceBonus!)} per Eclipse per balance tier`);
       }
-      if ((effect.fractureBonusPerEclipse ?? 0) > 0) {
-        parts.push(`+${formatExactValue(effect.fractureBonusPerEclipse)} per Eclipse per Fracture`);
+      const fractureBonus = effect.fractureBonusPerEclipse;
+      if ((fractureBonus ?? 0) > 0) {
+        parts.push(`+${formatExactValue(fractureBonus!)} per Eclipse per Fracture`);
       }
       return parts.join('; ');
     }
@@ -610,11 +585,10 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
     case 'cherubim_draw_per_card': return `Draw ${formatCount(effect.value, 'card')} per card played`;
     case 'cherubim_resource_per_card': {
       const resourceLabel =
-        effect.resource === 'pyroFurnacePressure' ? 'Furnace Pressure'
-          : effect.resource === 'butterflySpectrum' ? 'Spectrum'
-            : effect.resource === 'radiance' ? 'Radiance'
-              : effect.resource === 'trail' ? 'Trail'
-                : 'Strain';
+        effect.resource === 'butterflySpectrum' ? 'Spectrum'
+          : effect.resource === 'radiance' ? 'Radiance'
+            : effect.resource === 'trail' ? 'Trail'
+              : 'Strain';
       return `Gain ${effect.value} ${resourceLabel} per card played`;
     }
     case 'cherubim_adjacent_seraphim_bonus': {
@@ -802,11 +776,8 @@ export function getCanonicalAttackDescription(attack: {
 }, options?: { eternityChrono?: boolean }): string {
   const costText = (attack.costs && attack.costs.length > 0) ? ` · Cost: ${formatCosts(attack.costs)}` : '';
   const angelText = attack.requiresAngelOnBoard ? ' · Requires Angel' : '';
-  const infiniteFireAttack = typeof attack.id === 'string' && attack.id.startsWith('inf-');
   const furnaceText = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire')
-    ? (infiniteFireAttack
-      ? ' · +2.5% attack per Inferno Tier (max +75%)'
-      : ' · +2.5% attack per Furnace (max +75%)')
+    ? ' · +2.5% attack per Inferno Tier (max +75%)'
     : '';
   const eternalFireAttack = typeof attack.id === 'string' && attack.id.startsWith('btei-pyroabyss-');
   const infiniteFireAttackForChroma = typeof attack.id === 'string' && attack.id.startsWith('inf-') && (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire');
@@ -876,13 +847,6 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
 
   if (card.type === 'Seraphim') {
     const seraphim = card as SeraphimDefinition;
-        const chromaAttackText = seraphim.element === 'Fire'
-          ? (seraphim.rarity === 'Eternal'
-            ? ' · +4% attack per Chroma Ember (max +16%)'
-            : seraphim.rarity === 'Infinite'
-              ? ' · +5% attack per Chroma Ember (max +25%)'
-              : '')
-          : '';
     pushSummarySection(sections, 'On Play', seraphim.onPlayEffects.map(formatEffect));
     pushSummarySection(sections, 'On Board', [
       formatSeraphimPassive(seraphim.baseStats.bonusType, seraphim.baseStats.bonusValue),
@@ -1017,9 +981,14 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
   if (card.type === 'Seraphim') {
     const seraphim = card as SeraphimDefinition;
     const fireScalingText = seraphim.element === 'Fire'
-      ? (seraphim.definitionId.startsWith('inf-')
-        ? ' · +2.5% attack per Inferno Tier (max +75%)'
-        : ' · +2.5% attack per Furnace (max +75%)')
+      ? ' · +2.5% attack per Inferno Tier (max +75%)'
+      : '';
+    const chromaAttackText = seraphim.element === 'Fire'
+      ? (seraphim.rarity === 'Eternal'
+        ? ' · +4% attack per Chroma Ember (max +16%)'
+        : seraphim.rarity === 'Infinite'
+          ? ' · +5% attack per Chroma Ember (max +25%)'
+          : '')
       : '';
     lines.push(`On Play: ${formatEffectsInline(seraphim.onPlayEffects)}`);
     lines.push(`On Board: ${formatSeraphimPassive(seraphim.baseStats.bonusType, seraphim.baseStats.bonusValue)}`);
@@ -1053,9 +1022,7 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
               : '')
           : '';
     const fireScalingText = angel.element === 'Fire'
-      ? (angel.definitionId.startsWith('inf-')
-        ? ' · +2.5% attack per Inferno Tier (max +75%)'
-        : ' · +2.5% attack per Furnace (max +75%)')
+      ? ' · +2.5% attack per Inferno Tier (max +75%)'
       : '';
     const summonCostText = angel.summonCost.length > 0
       ? angel.summonCost.map(id => CardRegistry.get(id)?.name ?? id).join(', ')

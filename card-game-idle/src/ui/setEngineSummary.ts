@@ -82,7 +82,6 @@ const ENGINE_ORDER: EngineKey[] = [
   'deathFlamedHell',
   'wishedUponAStar',
 ];
-
 const ENGINE_META: Record<EngineKey, { label: string; accent: string }> = {
   neutrality: { label: 'Neutrality', accent: ELEMENT_COLORS.Neutrality },
   light: { label: 'Heavenly Light', accent: ELEMENT_COLORS.Light },
@@ -176,12 +175,12 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     finisher: 'Cashes high-charge formation turns into large multi-step Glass burst windows.',
   },
   pyro: {
-    setup: 'Adds raw Furnace so later plays can cross hotter ignite tiers.',
-    support: 'Keeps Furnace rising turn after turn to protect streak scaling.',
-    resource: 'Converts card flow directly into more Furnace height this turn.',
-    payoff: 'Ignites Furnace into tiered Oblivion burst based on current heat.',
-    amplifier: 'Extends or multiplies rise streak so ignite cashouts spike harder.',
-    finisher: 'Detonates a long, high-heat streak at the end of a fully built turn.',
+    setup: 'Adds Inferno Tier early so later cards enter live Ember windows.',
+    support: 'Keeps Inferno Tier and Chroma Ember flow moving between setup and payoff.',
+    resource: 'Builds the Inferno Tier and Chroma Ember pools that Fire cashes out.',
+    payoff: 'Converts prepared Inferno Tier and Chroma Ember into immediate burst.',
+    amplifier: 'Raises ember output or multiplies the next payoff once setup is online.',
+    finisher: 'Cashes a prepared Inferno Tier plus Ember stockpile into one decisive Fire turn.',
   },
   blazingGarden: {
     setup: 'Establishes Burn uptime and branches lineages while Eternal cards start Wild Pollen banking.',
@@ -332,11 +331,11 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
     return 'setup';
   }
 
-  if (hasSomeEffect(def, ['radiance_gain', 'radiance_spend', 'ember_gain', 'ember_spend', 'trail_gain', 'trail_spend', 'strain_gain', 'strain_vent', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'seas_current_gain'])) {
+  if (hasSomeEffect(def, ['radiance_gain', 'radiance_spend', 'ember_gain', 'ember_spend', 'trail_gain', 'trail_spend', 'strain_gain', 'strain_vent', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain'])) {
     return 'resource';
   }
 
-  if (hasSomeEffect(def, ['multiply_next', 'score_flat', 'score_multiplier', 'oblivion_flat', 'power_flat', 'power_percent', 'butterfly_release', 'seas_undertow_release', 'seas_release'])) {
+  if (hasSomeEffect(def, ['multiply_next', 'score_flat', 'score_multiplier', 'oblivion_flat', 'power_flat', 'power_percent', 'butterfly_release', 'seas_undertow_release'])) {
     return 'payoff';
   }
 
@@ -344,7 +343,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
 }
 
 function getCardRoleDetail(def: CardDefinition): string {
-  if (hasSomeEffect(def, ['radiance_gain', 'ember_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'seas_current_gain', 'radiance_double'])) {
+  if (hasSomeEffect(def, ['radiance_gain', 'ember_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
     return 'It stocks the resources this engine spends to stay online.';
   }
 
@@ -742,38 +741,34 @@ function buildEngineSnapshot(
       };
     }
     case 'pyro': {
-      const pressure = turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0;
-      const streak = turn.pyroFurnaceRiseStreak ?? 0;
-      const peak = turn.pyroFurnacePeak ?? pressure;
-      const chrono = turn.pyroChronoEmbers ?? 0;
+      const infernoTiers = turn.eternalStacks?.pyro ?? 0;
+      const chromaEmbers = turn.secondaryCounters?.pyro ?? 0;
       return {
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: `Furnace ${pressure} | Streak ${streak} | Peak ${peak} | Chroma ${chrono}`,
-        detail: 'Tiers: 1-4 Minor, 5-9 Major, 10-14 Inferno, 15+ Cataclysm · Fire attacks scale with current Furnace',
-        tagline: 'Stoke constantly, climb tiers, then Ignite before your streak breaks.',
-        summary: 'Pyroabyss runs a single-loop engine. Stoke effects raise uncapped Furnace Pressure; each consecutive rise extends your streak. Fire Seraphim and Angel attacks scale from current Furnace, and Ignite turns current Furnace into tiered payout multiplied by streak quality, then resets Furnace and streak. If a Fire Eternal or Infinite card is active or was played this turn, Ignite also creates same-turn Chroma Embers, consumed by Eternal/Infinite Fire attacks.',
+        compact: `Inferno ${infernoTiers} | Chroma ${chromaEmbers}`,
+        detail: 'Inferno Tiers are your primary Fire stack; Chroma Embers are the cashout layer.',
+        tagline: 'Build Inferno Tiers, seed Chroma Embers, then fire Ember ignite cashouts.',
+        summary: 'Fire now runs on streamlined stacks. Inferno Tiers are generated and spent through Eternal stack effects, while Chroma Embers are generated and spent through set-secondary effects. Fire payout cards convert Chroma Embers with ignite effects and tier-aware riders.',
         metrics: [
-          createMetric('Furnace', pressure, 'Uncapped heat pool generated by Stoke effects.'),
-          createMetric('Rise Streak', streak, 'Counts consecutive Furnace increases this turn and scales Ignite payout.'),
-          createMetric('Peak Furnace', peak, 'Highest Furnace reached this turn; useful to measure whether you are cashing too early.'),
-          createMetric('Chroma Embers', chrono, 'Generated on Ignite when a Fire Eternal or Infinite source is active or was played this turn. Same-turn only.'),
-          createMetric('Attack Furnace Mult', `x${(1 + Math.min(0.75, pressure * 0.025)).toFixed(2)}`, 'Fire Seraphim and Angel attacks gain +2.5% per Furnace, capped at +75%.'),
-          createMetric('Eternal Chroma Mult', `x${(1 + Math.min(0.16, chrono * 0.04)).toFixed(2)}`, 'Eternal Fire Seraphim and Angel attacks gain +4% per Chroma Ember, capped at +16%, then consume all Chroma Embers.'),
-          createMetric('Infinite Chroma Mult', `x${(1 + Math.min(0.25, chrono * 0.05)).toFixed(2)}`, 'Infinite Fire Seraphim and Angel attacks gain +5% per Chroma Ember, capped at +25%, then consume all Chroma Embers.'),
-          createMetric('Current Tier', pressure >= 15 ? 'Cataclysm' : pressure >= 10 ? 'Inferno' : pressure >= 5 ? 'Major' : pressure >= 1 ? 'Minor' : 'Cold', 'Higher tiers pay more per Furnace when you Ignite.'),
+          createMetric('Inferno Tiers', infernoTiers, 'Primary Fire stack used by modern Eternal/Infinite Fire lines.'),
+          createMetric('Chroma Embers', chromaEmbers, 'Secondary Fire stack consumed by ember ignite payoff cards.'),
+          createMetric('Attack Tier Mult', `x${(1 + Math.min(0.75, infernoTiers * 0.025)).toFixed(2)}`, 'Fire Seraphim and Angel attacks gain +2.5% per Inferno Tier, capped at +75%.'),
+          createMetric('Eternal Chroma Mult', `x${(1 + Math.min(0.16, chromaEmbers * 0.04)).toFixed(2)}`, 'Eternal Fire Seraphim and Angel attacks gain +4% per Chroma Ember, capped at +16%, then consume all Chroma Embers.'),
+          createMetric('Infinite Chroma Mult', `x${(1 + Math.min(0.25, chromaEmbers * 0.05)).toFixed(2)}`, 'Infinite Fire Seraphim and Angel attacks gain +5% per Chroma Ember, capped at +25%, then consume all Chroma Embers.'),
+          createMetric('Current Tier', infernoTiers >= 15 ? 'Cataclysm' : infernoTiers >= 10 ? 'Inferno' : infernoTiers >= 5 ? 'Major' : infernoTiers >= 1 ? 'Minor' : 'Cold', 'Higher Inferno Tier counts increase Fire attack and payout scaling.'),
         ],
         nextSteps: [
-          createStep('Cross Major tier', pressure >= 5, pressure >= 5
-            ? 'Major tier reached. Keep stoking unless you need emergency cashout.'
-            : 'Stack early Stoke effects before committing Ignite cards.'),
-          createStep('Build live streak', streak >= 4, streak >= 4
-            ? 'Streak multiplier is online. This is where Ignite starts spiking.'
-            : 'Avoid plays that stall Furnace growth until streak is established.'),
-          createStep('Cash at Inferno+', pressure >= 10, pressure >= 10
-            ? 'Inferno tier is active. Fire Ignite for your best burst windows.'
-            : 'Keep climbing Furnace tiers before spending your main Ignite payoff.'),
+          createStep('Cross Major tier', infernoTiers >= 5, infernoTiers >= 5
+            ? 'Major tier reached. Keep layering ember generators before spending.'
+            : 'Stack early Inferno Tier generators before committing cashout lines.'),
+          createStep('Seed ember bank', chromaEmbers >= 3, chromaEmbers >= 3
+            ? 'Ember bank is online. Your ignite cards will now convert efficiently.'
+            : 'Add Chroma Ember generators before your first ignite payoff card.'),
+          createStep('Cash at Inferno+', infernoTiers >= 10, infernoTiers >= 10
+            ? 'Inferno tier is active. This is your strongest ignite/burst window.'
+            : 'Keep building Inferno Tiers before spending your main Fire finisher.'),
         ],
       };
     }
@@ -856,15 +851,12 @@ function buildEngineSnapshot(
       const undertow = turn.eternalSeasUndertow ?? 0;
       const foam = turn.eternalSeasFoam ?? 0;
       const deepwake = turn.secondaryCounters?.deepwake ?? 0;
-      const current = turn.eternalSeasCurrent ?? 0;
-      const polarity = turn.eternalSeasPolarity ?? 'Unset';
-      const tide = turn.secondaryCounters?.tide ?? 0;
       return {
         key,
         label: meta.label,
         accent: meta.accent,
         compact: `Undertow ${undertow} | Foam ${foam} | Deepwake ${deepwake}`,
-        detail: tide > 0 || current > 0 ? `Legacy meter still present: Tide ${tide} | Current ${current} | Polarity ${polarity}` : 'Spend 5 Foam in the HUD to draw 1 card',
+        detail: 'Spend 5 Foam in the HUD to draw 1 card',
         tagline: 'Build Undertow in-turn, release it for burst, and skim Foam into manual draw.',
         summary: 'Base Eternal Seas cards build Undertow and same-turn Foam. Higher-rarity cards now share one overlay keyword, Deepwake: Eternal cards bank and surge it for precision or apex conversions, while Infinite cards use stronger but role-distinct Deepwake profiles (reservoir, micro-surge, pressure hybrid, recursive loop, and catastrophic all-in).',
         metrics: [
@@ -1100,7 +1092,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Eternity Extension: Reactor Core',
-        body: 'Mechanical Eternity cards now use one extension layer only: Reactor Core. Every Chime also grants Reactor Core progress, and Eternity cards convert Reactor Cores into burst payoffs through simple spend/cashout checkpoints.\n\nYou no longer need a separate Reactor Flux subsystem to understand or pilot Mechanical Eternity turns.',
+        body: 'Mechanical Eternity cards now use one extension layer only: Reactor Core. Every Chime also grants Reactor Core progress, and Eternity cards convert Reactor Cores into burst payoffs through simple spend/cashout checkpoints.\n\nYou no longer need a separate secondary subsystem to understand or pilot Mechanical Eternity turns.',
       },
       {
         heading: 'Infinite Card Amplification',
@@ -1112,7 +1104,7 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   prismatic: {
     engineKey: 'prismatic',
     title: 'User Guide to: Prismatic',
-    intro: 'Prismatic is a channel-switching engine. Base cards use one clean loop: switch channels to build Refraction Depth and Prism Charge, then spend fixed charge amounts on payoff cards.',
+    intro: 'Prismatic is a channel-switching engine. Base cards build Refraction Depth, and higher-rarity cards use Resonance Charge as the shared payoff layer.',
     sections: [
       {
         heading: 'Color Channels',
@@ -1123,16 +1115,16 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
         body: 'Refraction Depth accumulates when you switch channels between consecutive plays (max 9). Every channel switch grants +1 Refraction Depth; a Multiplier-class card on a channel switch grants +2.\n\nEvery channel switch increases your attack power. If you stay on the same channel, you do not gain Refraction Depth.',
       },
       {
-        heading: 'Prism Charge (Base Loop)',
-        body: 'Base Prismatic cards gain +1 Prism Charge whenever you switch channels (max 3).\n\nPayoff cards spend a fixed amount of Prism Charge (usually 1 or 2) for explicit bonus value. This makes turns readable: switch to build, then spend on purpose.',
+        heading: 'Higher-Rarity Resonance',
+        body: 'Prismatic Eternity and Infinite cards use one overlay resource only: Resonance Charge. Resonance Charge is built by explicit card effects and spent by explicit spend checkpoints.\n\nThe base loop stays channel switching plus Refraction Depth, while higher-rarity cards layer Resonance spending on top.',
       },
       {
         heading: 'Resonance Overlay (Eternity + Infinity)',
-        body: 'Prismatic Eternity and Infinite cards use one overlay resource only: Resonance Charge. Resonance Charge is built by explicit card effects and spent by explicit spend checkpoints.\n\nBase channel-switch events do not generate Resonance Charge. The base loop stays Depth + Prism Charge, while higher-rarity cards layer Resonance spending on top.',
+        body: 'Prismatic Eternity and Infinite cards use one overlay resource only: Resonance Charge. Resonance Charge is built by explicit card effects and spent by explicit spend checkpoints.\n\nBase channel-switch events do not generate Resonance Charge; they only deepen Refraction. The higher-rarity layer is where Resonance lives.',
       },
       {
         heading: 'Infinite Extension: Resonance Finishers',
-        body: 'The base spectrum loop works fully without Infinite cards: switching channels grows Depth and Charge, and fixed-spend base payoffs convert that setup into burst value.\n\nPrismatic Infinite cards stay on the same Resonance system as Eternity cards, but at higher spend thresholds with stronger riders:\n\n- Axiom Rain: deep deck filter plus Resonance cashout.\n- Choir Splinter: turn-wide score scaling with Resonance spend.\n- Collapse Lattice: back-row support that banks then spends Resonance.\n- Judgement Array: Angel finisher with large Resonance gate and search support.\n\nChannel spread and refraction depth still matter because several Infinite riders check distinct channels and depth before awarding full value.',
+        body: 'The base spectrum loop works fully without Infinite cards: switching channels grows Refraction Depth, and higher-rarity payoffs convert that setup into burst value.\n\nPrismatic Infinite cards stay on the same Resonance system as Eternity cards, but at higher spend thresholds with stronger riders:\n\n- Axiom Rain: deep deck filter plus Resonance cashout.\n- Choir Splinter: turn-wide score scaling with Resonance spend.\n- Collapse Lattice: back-row support that banks then spends Resonance.\n- Judgement Array: Angel finisher with large Resonance gate and search support.\n\nChannel spread and refraction depth still matter because several Infinite riders check distinct channels and depth before awarding full value.',
       },
     ],
   },
@@ -1224,31 +1216,27 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   pyro: {
     engineKey: 'pyro',
     title: 'User Guide to: Pyroabyss',
-    intro: 'Pyroabyss uses a single uncapped Furnace loop: Stoke to raise Furnace, keep it rising to build streak, scale Fire attacks with current Furnace, then Ignite for a tiered burst. Eternal and Infinite Fire cards add a same-turn Chroma Ember overlay.',
+    intro: 'Pyroabyss uses a streamlined two-layer Fire loop: build Inferno Tiers, use them to scale Fire attacks and unlock payoff windows, then Ignite Chroma Embers for burst. Eternal and Infinite Fire cards add the Chroma Ember overlay on top of that base engine.',
     sections: [
       {
         heading: 'Core Loop',
-        body: 'Stoke effects add Furnace Pressure. Furnace has no cap. Every time Furnace rises, your rise streak increases.\n\nFire Seraphim and Angel attacks scale from current Furnace at +2.5% per Furnace (up to +75%).\n\nIgnite cashes your current Furnace into Oblivion and resets Furnace plus streak to 0.',
+        body: 'Inferno gain effects add Inferno Tier. Inferno Tier has no cap.\n\nFire Seraphim and Angel attacks scale from current Inferno Tier at +2.5% per tier (up to +75%).\n\nIgnite spends Chroma Embers for burst Oblivion while your Inferno Tier setup powers follow-up attacks.',
       },
       {
         heading: 'Higher-Rarity Overlay: Chroma Embers',
-        body: 'When a Fire Eternal or Infinite source is active or one has been played this turn, Ignite also creates Chroma Embers: floor(Ignite payout / 450). Chroma Embers are same-turn only and reset at turn end.\n\nEternal Fire attacks gain +4% damage per Chroma Ember (up to +16%). Infinite Fire attacks gain +5% per Chroma Ember (up to +25%). Both consume all Chroma Embers on attack.',
+        body: 'Fire Eternal and Infinite cards explicitly generate Chroma Embers through their own effects. Those Chroma Embers are then spent by Ignite payoffs or consumed by higher-rarity Fire attacks.\n\nEternal Fire attacks gain +4% damage per Chroma Ember (up to +16%). Infinite Fire attacks gain +5% per Chroma Ember (up to +25%). Both consume all Chroma Embers on attack.',
       },
       {
         heading: 'Infinite Fire Roles',
-        body: '• Ash Kings\' Apocalypse: the catastrophic seeder. It loads Inferno Tier and Chroma Embers, then ignites a large burst while preserving some setup for follow-up.\n\n• Pyraxis Colossus: the threshold transmuter. It converts high Inferno Tier into Chroma Ember momentum, then spends that burst in a compressed payoff.\n\n• Pyroclasm Engine: the reserve accumulator. It banks Chroma Embers quickly, then trades a small ember slice for side value while keeping pressure online.\n\n• Riftborn Sovereign: the apex finisher. It cashes major Inferno Tier, detonates Chroma Ember ignition at capstone thresholds, and tutors the next closer.',
+        body: '• Ash Kings\' Apocalypse: the catastrophic seeder. It loads Inferno Tier and Chroma Embers, then ignites a large burst while preserving some setup for follow-up.\n\n• Pyraxis Colossus: the threshold transmuter. It converts high Inferno Tier into Chroma Ember momentum, then spends that burst in a compressed payoff.\n\n• Pyroclasm Engine: the reserve accumulator. It banks Chroma Embers quickly, then trades a small ember slice for side value while keeping momentum online.\n\n• Riftborn Sovereign: the apex finisher. It cashes major Inferno Tier, detonates Chroma Ember ignition at capstone thresholds, and tutors the next closer.',
       },
       {
-        heading: 'Heat Tiers',
-        body: 'Ignite payout per Furnace gets hotter by tier:\n\n- Furnace 1-4: +120 each\n- Furnace 5-9: +180 each\n- Furnace 10-14: +260 each\n- Furnace 15+: +360 each',
-      },
-      {
-        heading: 'Consistency Multiplier',
-        body: 'Ignite multiplies tiered payout by rise streak:\n\n- Streak 1-2: x1.0\n- Streak 3-4: x1.2\n- Streak 5-6: x1.5\n- Streak 7+: x1.9',
+        heading: 'Inferno Tier Bands',
+        body: 'Higher Inferno Tier counts mark your stronger attack and payoff windows:\n\n- Inferno Tier 1-4: early setup\n- Inferno Tier 5-9: stable payoff band\n- Inferno Tier 10-14: major burst band\n- Inferno Tier 15+: capstone finisher band',
       },
       {
         heading: 'Pilot Rule',
-        body: 'The mechanic rewards turns where Furnace keeps rising. In practice: Stoke repeatedly, cross tier breakpoints, then Ignite once your streak is healthy.',
+        body: 'The mechanic rewards turns where you build Inferno first, then convert that setup into Chroma Ember payoffs. In practice: gain Inferno Tier repeatedly, cross major tier breakpoints, then Ignite once your Chroma bank is ready.',
       },
     ],
   },

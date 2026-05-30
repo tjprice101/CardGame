@@ -199,20 +199,27 @@ export function initStatsSync(): void {
     if (useSocialStore.getState().status !== 'authenticated') return;
     if (state.progress === prev.progress) return;
     const next = snapshot(state.progress);
-    if (!lastSnapshot) {
+    const before = lastSnapshot;
+    if (!before) {
       lastSnapshot = next;
+      // First observed snapshot after auth/reload; ensure DB catches up.
+      scheduleStatsUpsert();
       return;
     }
-    const fired = detectAndPostTransitions(lastSnapshot, next);
+    const fired = detectAndPostTransitions(before, next);
+    const driftChanged =
+      next.bossClearTotal !== before.bossClearTotal
+      || next.infiniteTotal !== before.infiniteTotal
+      || next.gauntletBestDepth !== before.gauntletBestDepth
+      || next.gauntletBestShards !== before.gauntletBestShards
+      || next.battlegroundWins !== before.battlegroundWins
+      || next.battlegroundBestScore !== before.battlegroundBestScore
+      || next.battlegroundTotalMatches !== before.battlegroundTotalMatches;
     lastSnapshot = next;
     if (fired) {
       // Push stats up immediately on a notable transition.
       void upsertStats();
-    } else if (
-      next.bossClearTotal !== lastSnapshot.bossClearTotal
-      || next.infiniteTotal !== lastSnapshot.infiniteTotal
-      || next.battlegroundTotalMatches !== lastSnapshot.battlegroundTotalMatches
-    ) {
+    } else if (driftChanged) {
       // Routine drift; throttle.
       scheduleStatsUpsert();
     }

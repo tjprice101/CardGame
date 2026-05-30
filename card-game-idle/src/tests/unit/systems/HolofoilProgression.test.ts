@@ -178,4 +178,35 @@ describe('Holofoil progression', () => {
     expect(next.deck.extraDeck[0]?.finish).toBe('normal');
     expect(next.deck.hand[0]?.finish).toBe('normal');
   });
+
+  it('strips stale deleted card ids from loaded collection and deck state', () => {
+    const loaded = cloneDefaultState();
+    loaded.progress.collection = {
+      ...loaded.progress.collection,
+      'ophanim-neutral-null-seek': 2,
+      'tx-oph-star-wishbeam': 1,
+    };
+    loaded.progress.transcendentCollection = {
+      ...(loaded.progress.transcendentCollection ?? {}),
+      'tx-oph-star-wishbeam': 2,
+    };
+    loaded.progress.recentlyAcquired = {
+      ...(loaded.progress.recentlyAcquired ?? {}),
+      'tx-oph-star-wishbeam': Date.now(),
+    };
+    loaded.deck.hand = [
+      { instanceId: 'ghost_1', definitionId: 'tx-oph-star-wishbeam', finish: 'normal' },
+      { instanceId: 'real_1', definitionId: 'ophanim-neutral-null-seek', finish: 'normal' },
+    ];
+
+    useStore.getState().loadState(loaded as unknown as typeof defaultGameState);
+
+    const next = useStore.getState();
+    expect(next.progress.collection['tx-oph-star-wishbeam']).toBeUndefined();
+    expect(next.progress.transcendentCollection?.['tx-oph-star-wishbeam']).toBeUndefined();
+    expect(next.progress.recentlyAcquired?.['tx-oph-star-wishbeam']).toBeUndefined();
+    expect(next.deck.hand.some(card => card.definitionId === 'tx-oph-star-wishbeam')).toBe(false);
+    expect(next.progress.collection['ophanim-neutral-null-seek']).toBe(2);
+    expect(next.deck.hand.some(card => card.definitionId === 'ophanim-neutral-null-seek')).toBe(true);
+  });
 });

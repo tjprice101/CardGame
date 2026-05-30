@@ -107,8 +107,6 @@ export default function BattlegroundMatch() {
     ? `CPU (${(battleground.cpuDifficulty ?? 'normal').toUpperCase()})`
     : (battleground.opponentProfile?.displayName ?? 'Opponent');
 
-  const total   = battleground.myScore + battleground.opponentScore;
-  const myRatio = total > 0 ? battleground.myScore / total : 0.5;
   const isIdle  = turn.phase === 'idle';
   // "Begin Turn" is only offered once per match — hide it after the player's turn is taken.
   const canBeginTurn = isIdle && !battleground.turnTaken;

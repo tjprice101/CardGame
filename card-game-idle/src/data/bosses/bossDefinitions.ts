@@ -77,7 +77,7 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(15, 'boss-pyroabyss-cinder-leviathan', 'Cinder Leviathan', 'Pyroabyss', 'btei-pyroabyss-cinder-cataclysm', 'A furnace-beast that breathes embers dense enough to bend steel halos.', 'boss_pyroabyss_cinder_leviathan'),
   createBoss(16, 'boss-pyroabyss-ash-kings', 'Ash Kings Unbound', 'Pyroabyss', 'btei-pyroabyss-ashfall-engine', 'Twin monarchs of collapse that ignite both board and discard into one blaze.', 'boss_pyroabyss_ash_kings'),
   createBoss(17, 'boss-pyroabyss-infernal-sun', 'Infernal Suncore', 'Pyroabyss', 'btei-pyroabyss-infernal-archon', 'A black star wrapped in screaming cinder-rings.', 'boss_pyroabyss_infernal_sun'),
-  createBoss(18, 'boss-pyroabyss-rift-bell', 'Riftbell Catastrophe', 'Pyroabyss', 'btei-pyroabyss-hellrift-mandala', 'Each toll multiplies chain growth and doubles the heat debt.', 'boss_pyroabyss_rift_bell'),
+  createBoss(18, 'boss-pyroabyss-rift-bell', 'Riftbell Catastrophe', 'Pyroabyss', 'btei-pyroabyss-hellrift-mandala', 'Each toll multiplies chain growth and turns the furnace chorus into catastrophic burst.', 'boss_pyroabyss_rift_bell'),
   createBoss(19, 'boss-pyroabyss-phoenix-judge', 'Phoenix Judge of the Abyss', 'Pyroabyss', 'btei-pyroabyss-oblivion-phoenix', 'It burns, returns, and arrives stronger than the concept of last time.', 'boss_pyroabyss_phoenix_judge'),
 
   // Heavenly Light (5)

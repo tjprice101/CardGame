@@ -79,6 +79,13 @@ export type PendingEffect =
   | { type: 'discard_choice'; count: number; sourceCard: string }
   | { type: 'prismatic_channel_choice'; sourceCard: string }
   | { type: 'prismatic_sentence_choice'; cards: DeckCard[]; draw: number; drawPerfect: number }
+  | {
+      type: 'neutrality_equilibrium_tactical_choice';
+      spend: number;
+      burstOblivion: number;
+      restorePercent: number;
+      patientLightGain: number;
+    }
   | { type: 'look_top_take'; cards: DeckCard[]; take: number }
   | { type: 'look_top_take_drop'; cards: DeckCard[]; take: number; drop: number }
   | { type: 'look_top_take_type'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number }
@@ -124,6 +131,11 @@ export interface TurnState {
   neutralityPatienceConsumedThisTurn?: number;
   neutralityChainGainedThisTurn?: number;
   neutralityPatientLightStacks?: number;
+  neutralityEquilibriumSigils?: number;
+  neutralityEquilibriumSigilsGainedThisTurn?: number;
+  neutralityEquilibriumPatientLightFromSigilsThisTurn?: number;
+  neutralityEquilibriumSigilCapBonus?: number;
+  neutralityEquilibriumSentinelTempoUsed?: boolean;
   neutralityTriggeredEffects?: string[];
   neutralityVesselInstanceId?: string | null;
   neutralityVesselCopyPercent?: number;
@@ -133,33 +145,6 @@ export interface TurnState {
   neutralityAttackRestorePercent?: number;
   neutralityLinkedGainBonus?: number;
   neutralityLinkedRetainPercent?: number;
-  pyroHeat?: number;
-  pyroBurnDebt?: number;
-  pyroStability?: number;
-  pyroSetupCount?: number;
-  pyroAttenuationClassUses?: Partial<Record<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher', number>>;
-  pyroAttenuationBreaksUsed?: number;
-  pyroAttenuationBrokenClasses?: Array<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher'>;
-  pyroCrossSetConversionDistinctSources?: string[];
-  pyroEngineSignatures?: string[];
-  pyroFurnacePressure?: number;
-  pyroFurnaceRiseStreak?: number;
-  pyroFurnacePeak?: number;
-  pyroChronoCatalyst?: boolean;
-  pyroChronoEmbers?: number;
-  pyroAbyssFault?: number;
-  pyroRuinWindows?: number;
-    pyroFervor?: number;
-    pyroRupture?: number;
-    pyroUnstableFervorTokens?: number;
-    pyroAshTokens?: number;
-    pyroResonanceStacks?: number;
-    pyroConvergenceLocked?: boolean;
-    pyroEquilibriumState?: 'fervor' | 'rupture' | 'balanced' | null;
-    pyroFurnaceLoopCounter?: number;
-    pyroCascadeTuningRatio?: { fervor: number; rupture: number };
-    pyroRuptureSingularityActive?: boolean;
-    pyroAbsoluteConvergenceActive?: boolean;
   lightCadenceNotes?: HeavenlyNote[];
   lightDistinctNotes?: HeavenlyNote[];
   lightResonance?: number;
@@ -394,12 +379,16 @@ export interface ProgressState {
    * cannot be dissolved. Save v19.
    */
   cardLocks?: Record<string, number>;
-  /** Ascension mode — Entropy currency balance. Save v21. */
+  /** Ascension mode — Entropic Energy currency balance. Save v22. */
+  entropicEnergyBalance?: number;
+  /** Legacy save v21 field retained for migration compatibility. */
   entropyBalance?: number;
   /** Ascension mode — per-raid cooldowns. raidId → Unix-ms when cooldown expires. Save v21. */
   nullRaidCooldowns?: Record<string, number>;
   /** Ascension mode — total clear count per raid. raidId → number. Save v21. */
   nullRaidClears?: Record<string, number>;
+  /** Ascension mode — consecutive full clears without the raid angel drop. Save v22. */
+  nullRaidAngelMissStreak?: Record<string, number>;
   /** Ascension mode — owned Transcendent Card copies. definitionId → count. Save v21. */
   transcendentCollection?: Record<string, number>;
   /** Ascension mode — purchased cosmetic ids (profile pics, UI themes). Save v21. */

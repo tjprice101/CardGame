@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
-import { useStore, selectBoard, selectBossFight, selectBattleground, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
+import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
@@ -576,8 +576,8 @@ function renderGlassAbsoluteBadge(proof?: number, depth?: number) {
   );
 }
 
-function renderPyroBadge(pressure?: number, fault?: number, windows?: number) {
-  if ((pressure ?? 0) <= 0 && (fault ?? 0) <= 0 && (windows ?? 0) <= 0) return null;
+function renderFireBadge(infernoTiers?: number, chromaEmbers?: number) {
+  if ((infernoTiers ?? 0) <= 0 && (chromaEmbers ?? 0) <= 0) return null;
   return (
     <div style={{
       position: 'absolute', top: 7, left: 7, zIndex: 8,
@@ -589,7 +589,7 @@ function renderPyroBadge(pressure?: number, fault?: number, windows?: number) {
       fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
       boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
     }}>
-      {`P${pressure ?? 0} / F${fault ?? 0}${(windows ?? 0) > 0 ? ` · W${windows}` : ''}`}
+      {`Tier ${infernoTiers ?? 0}${(chromaEmbers ?? 0) > 0 ? ` · Ember ${chromaEmbers}` : ''}`}
     </div>
   );
 }
@@ -612,7 +612,6 @@ function formatAttackSummary(attack: {
 export default function BoardDisplay() {
   const board = useStore(selectBoard);
   const bossFight     = useStore(selectBossFight);
-  const battleground  = useStore(selectBattleground);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
@@ -1080,7 +1079,7 @@ export default function BoardDisplay() {
               <div
                 className={[
                   isNewlyPlaced && angelDef?.element === 'Neutrality' ? 'anim-angel-summon-pop' : 'anim-angel-breath',
-                  slot.finish === 'holo'
+                  (slot.finish === 'holo' || angelDef?.rarity === 'Infinite' || angelDef?.rarity === 'Eternal')
                     ? `holofoil-live-card${angelDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${angelDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
                     : undefined,
                 ].filter(Boolean).join(' ')}
@@ -1165,7 +1164,7 @@ export default function BoardDisplay() {
                 {angelDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
                 {angelDef?.element === 'DeathFlamedHell' && renderDeathFlamedHellBadge(turn.eternalStacks?.pyre)}
                 {angelDef?.element === 'GlassAbsolute' && renderGlassAbsoluteBadge(turn.proof, turn.glassProofDepth)}
-                {angelDef?.element === 'Fire' && renderPyroBadge(turn.pyroFurnacePressure, turn.pyroAbyssFault, turn.pyroRuinWindows)}
+                {angelDef?.element === 'Fire' && renderFireBadge(turn.eternalStacks?.pyro, turn.secondaryCounters?.pyro)}
                 <div style={getCardNameRibbonStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
                     Angel
@@ -1236,7 +1235,7 @@ export default function BoardDisplay() {
                 className={[
                   isNewlyPlaced ? 'anim-seraphim-pop' : undefined,
                   isActive && !isNewlyPlaced ? 'anim-synergy-pulse' : undefined,
-                  slot.finish === 'holo'
+                  (slot.finish === 'holo' || serDef?.rarity === 'Infinite' || serDef?.rarity === 'Eternal')
                     ? `holofoil-live-card${serDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${serDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
                     : undefined,
                 ].filter(Boolean).join(' ') || undefined}
@@ -1323,7 +1322,7 @@ export default function BoardDisplay() {
                 {serDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
                 {serDef?.element === 'DeathFlamedHell' && renderDeathFlamedHellBadge(turn.eternalStacks?.pyre)}
                 {serDef?.element === 'GlassAbsolute' && renderGlassAbsoluteBadge(turn.proof, turn.glassProofDepth)}
-                {serDef?.element === 'Fire' && renderPyroBadge(turn.pyroFurnacePressure, turn.pyroAbyssFault, turn.pyroRuinWindows)}
+                {serDef?.element === 'Fire' && renderFireBadge(turn.eternalStacks?.pyro, turn.secondaryCounters?.pyro)}
                 <div style={getCardNameRibbonStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
                     {getDisplayCardTypeLabel('Seraphim')}
@@ -2089,6 +2088,14 @@ export default function BoardDisplay() {
       {/* Active Neutrality turn mechanics chips */}
       {canPlay && (() => {
         const chips: { label: string; title: string }[] = [];
+        const eqSigils = Math.max(0, turn.neutralityEquilibriumSigils ?? 0);
+        if (eqSigils > 0) {
+          const gainBonus = Math.floor(eqSigils / 2);
+          chips.push({
+            label: `Sigils ${eqSigils} (+${gainBonus} Pat Gain)`,
+            title: `Equilibrium Sigils: every 2 Sigils adds +1 to future Patience gains this turn.`,
+          });
+        }
         if (turn.neutralityVesselInstanceId) {
           const vesselName = board.frontSlots.find(s => s?.instanceId === turn.neutralityVesselInstanceId)
             ? (CardRegistry.get(board.frontSlots.find(s => s?.instanceId === turn.neutralityVesselInstanceId)!.definitionId)?.name ?? 'Vessel')
@@ -2207,7 +2214,7 @@ export default function BoardDisplay() {
             const cherubElementColor = cardDef?.element ? (ELEMENT_COLORS[cardDef.element] ?? '#c888f0') : '#c888f0';
             return (
               <div
-                className={cherubim.finish === 'holo'
+                className={(cherubim.finish === 'holo' || cardDef?.rarity === 'Infinite' || cardDef?.rarity === 'Eternal')
                   ? `holofoil-live-card${cardDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${cardDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
                   : undefined}
                 style={{

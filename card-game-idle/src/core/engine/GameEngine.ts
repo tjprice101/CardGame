@@ -153,6 +153,10 @@ export class GameEngine {
     if (!result) return false;
     useStore.getState().loadState(result.state);
     useStore.setState({ saveTampered: result.tampered });
+    // Imported envelopes can carry very old lastSavedAt values. Re-save now so
+    // cloud sync sees a fresh timestamp and propagates this imported state to
+    // the account without requiring extra manual actions.
+    this.saveManager.save();
     return true;
   }
 

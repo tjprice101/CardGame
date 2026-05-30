@@ -27,4 +27,19 @@ describe('card background resolution', () => {
       expect(getCardBackgroundUrl(def!)).toBe(expectedUrl);
     }
   });
+
+  it('maps Snowbound Infinite angels to existing exported filenames', () => {
+    const cases: Array<[string, string]> = [
+      ['sv-infinite-aurora-collapse', '/assets/card-backgrounds/infinite/Aurora%20Singularity.png'],
+      ['sv-infinite-black-ice-throne', '/assets/card-backgrounds/infinite/Black%20Ice%20Dominion.png'],
+      ['sv-infinite-crystal-storm', '/assets/card-backgrounds/infinite/Crystal%20Maelstrom.png'],
+      ['sv-infinite-neon-snowfall', '/assets/card-backgrounds/infinite/Neon%20Deluge.png'],
+    ];
+
+    for (const [definitionId, expectedUrl] of cases) {
+      const def = CardRegistry.get(definitionId);
+      expect(def).toBeTruthy();
+      expect(getCardBackgroundUrl(def!)).toBe(expectedUrl);
+    }
+  });
 });

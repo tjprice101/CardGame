@@ -269,10 +269,8 @@ describe('Set mechanic reworks', () => {
 
     expect(sounding?.effects?.some(effect => effect.type === 'seas_undertow_gain')).toBe(true);
     expect(sounding?.effects?.some(effect => effect.type === 'seas_undertow_release')).toBe(true);
-    expect(sounding?.effects?.some(effect => effect.type === 'seas_release')).toBe(false);
 
     expect(crossflow?.effects?.some(effect => effect.type === 'seas_foam_gain')).toBe(true);
-    expect(crossflow?.effects?.some(effect => effect.type === 'seas_polarity_shift')).toBe(false);
   });
 
   it('keeps Eternal Seas Eternity cards on Deepwake overlay roles', () => {
@@ -285,9 +283,6 @@ describe('Set mechanic reworks', () => {
     expect(reservoir?.onPlayEffects?.some(effect => effect.type === 'set_secondary_gain' && effect.kind === 'deepwake' && effect.value === 3)).toBe(true);
     expect(resolver?.effects?.some(effect => effect.type === 'seas_deepwake_surge')).toBe(true);
     expect(apex?.activatedAbility.effects.some(effect => effect.type === 'seas_deepwake_surge')).toBe(true);
-
-    expect(battery?.onPlayEffects?.some(effect => effect.type === 'seas_polarity_shift')).toBe(false);
-    expect(resolver?.effects?.some(effect => effect.type === 'tide_echo_resolve')).toBe(false);
   });
 
   it('lets Deepwake surge consume deepwake and enhance Undertow/Foam turn flow', () => {
@@ -435,9 +430,6 @@ describe('Set mechanic reworks', () => {
     expect(microSurge?.onPlayEffects?.some(effect => effect.type === 'seas_deepwake_surge' && (effect as any).releaseSpend === 2)).toBe(true);
     expect(allInApex?.activatedAbility.effects.some(effect => effect.type === 'seas_deepwake_surge' && (effect as any).consume === 9999)).toBe(true);
     expect(recursiveLoop?.effects?.some(effect => effect.type === 'set_secondary_gain' && effect.kind === 'deepwake' && effect.value === 1)).toBe(true);
-
-    expect(pressureHybrid?.onPlayEffects?.some(effect => effect.type === 'tide_echo_resolve')).toBe(false);
-    expect(allInApex?.activatedAbility.effects.some(effect => effect.type === 'tide_echo_resolve')).toBe(false);
   });
 
   it('does not grant base Thornbound end-turn burst from Scar', () => {
@@ -714,9 +706,6 @@ describe('Set mechanic reworks', () => {
       expect(card?.onSummonEffects?.some(effect => effect.type === 'set_secondary_gain' && effect.kind === 'snow')
         ?? card?.effects?.some(effect => effect.type === 'set_secondary_gain' && effect.kind === 'snow')).toBe(true);
 
-      expect(hasEffectTypeRecursive(card?.activatedAbility?.effects, 'snow_static_pulse_discharge')).toBe(false);
-      expect(hasEffectTypeRecursive(card?.effects, 'snow_static_pulse_discharge')).toBe(false);
-
       const abilityRelease = (card?.activatedAbility?.effects ?? []).find(
         effect => effect.type === 'snow_polar_capacitor_release',
       );
@@ -853,20 +842,18 @@ describe('Set mechanic reworks', () => {
     expect(state.progress.oblivion).toBeGreaterThan(beforeEndTurn);
   });
 
-  it('records Pyro cross-set conversion sources on mixed-element sequencing', () => {
+  it('records Pyro stack growth on mixed-element sequencing', () => {
     seedPlayingState(['hr-light-divine-smite', 'cherubim-fire-pyre-mantle']);
 
     useStore.getState().playCard('hand_0');
     useStore.getState().playCard('hand_1');
 
     const state = useStore.getState();
-    expect(state.turn.pyroHeat).toBeGreaterThan(0);
-    expect(state.turn.pyroFurnacePressure ?? 0).toBeGreaterThan(0);
-    expect(state.turn.pyroEngineSignatures).toContain('Cherubim:conversion');
-    expect(state.turn.pyroCrossSetConversionDistinctSources).toContain('Light');
+    expect(state.turn.eternalStacks?.pyro ?? 0).toBeGreaterThan(0);
+    expect(state.turn.secondaryCounters?.pyro ?? 0).toBe(0);
   });
 
-  it('lets Cinder Leviathan trade embers for chain and stability', () => {
+  it('lets Cinder Leviathan trade embers for chain and Inferno pressure', () => {
     seedPlayingState(['btei-pyroabyss-cinder-cataclysm']);
 
     useStore.getState().playCard('hand_0');
@@ -874,7 +861,6 @@ describe('Set mechanic reworks', () => {
     const state = useStore.getState();
     expect(state.turn.eternalStacks?.pyro ?? 0).toBeGreaterThanOrEqual(2);
     expect(state.turn.secondaryCounters?.pyro ?? 0).toBeGreaterThanOrEqual(3);
-    expect(state.turn.pyroHeat).toBeGreaterThan(0);
   });
 
   it('lets Pyraxis Colossus use its tuned ember cost and furnace tempo', () => {
@@ -887,17 +873,13 @@ describe('Set mechanic reworks', () => {
     expect(state.turn.secondaryCounters?.pyro ?? 0).toBeGreaterThanOrEqual(2);
   });
 
-  it('lets Ash Kings Apocalypse cash live Pyro heat, debt control, and cross-fuel sources', () => {
+  it('lets Ash Kings Apocalypse cash prepared Pyro tier and ember fuel', () => {
     seedPlayingState(['inf-ash-kings-apocalypse']);
 
     useStore.setState(state => ({
       ...state,
       turn: {
         ...state.turn,
-        pyroHeat: 12,
-        pyroBurnDebt: 1,
-        pyroStability: 4,
-        pyroSetupCount: 3,
         eternalStacks: {
           ...state.turn.eternalStacks,
           pyro: 6,
@@ -906,8 +888,6 @@ describe('Set mechanic reworks', () => {
           ...state.turn.secondaryCounters,
           pyro: 5,
         },
-        pyroCrossSetConversionDistinctSources: ['Light', 'Mechanical'],
-        pyroEngineSignatures: ['Ophanim:refund', 'Cherubim:conversion', 'Angel:finisher'],
       },
     }));
 
@@ -946,10 +926,6 @@ describe('Set mechanic reworks', () => {
         turn: {
           ...state.turn,
           embers: 90,
-          pyroHeat: 14,
-          pyroBurnDebt: 1,
-          pyroStability: 5,
-          pyroSetupCount: 3,
           eternalStacks: {
             ...state.turn.eternalStacks,
             pyro: 9,
@@ -958,8 +934,6 @@ describe('Set mechanic reworks', () => {
             ...state.turn.secondaryCounters,
             pyro: 8,
           },
-          pyroCrossSetConversionDistinctSources: ['Light'],
-          pyroEngineSignatures: ['Cherubim:conversion', 'Angel:finisher', 'Ophanim:refund'],
         },
       };
     });
@@ -969,7 +943,6 @@ describe('Set mechanic reworks', () => {
 
     const state = useStore.getState();
     expect(state.progress.oblivion - before).toBeGreaterThan(2400);
-    expect(state.turn.pyroHeat).toBeGreaterThan(0);
     expect(state.turn.eternalStacks?.pyro ?? 0).toBeLessThanOrEqual(0);
     expect(state.turn.secondaryCounters?.pyro ?? 0).toBe(0);
   });

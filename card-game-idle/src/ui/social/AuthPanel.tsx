@@ -4,20 +4,22 @@
 // VITE_SUPABASE_URL / KEY at build time), renders a single info line so single-
 // player builds stay visually clean.
 
-import { useEffect, useState } from 'react';
-// Dark gold palette shared with PlayerInformationPage — authoring here avoids
-// importing the mutable warmTheme which defaults to the blue steel palette.
-const A = {
-  gold:             '#c8803a',
-  goldSoft:         '#daa058',
-  goldBorder:       'rgba(200,128,58,0.28)',
-  goldBorderStrong: 'rgba(200,128,58,0.55)',
-  goldGlass:        'rgba(200,128,58,0.10)',
-  text:             '#f0dfc0',
-  textSoft:         'rgba(240,223,192,0.62)',
-  textMuted:        'rgba(240,223,192,0.40)',
-  success:          '#4f8a47',
-  danger:           '#b85c4f',
+import { useEffect, useRef, useState } from 'react';
+import { warmTheme } from '@/ui/theme';
+const C = {
+  text: `var(--profile-text, ${warmTheme.text})`,
+  textSoft: `var(--profile-text-soft, ${warmTheme.textSoft})`,
+  textMuted: `var(--profile-text-muted, ${warmTheme.textMuted})`,
+  border: `var(--profile-border, ${warmTheme.border})`,
+  borderStrong: `var(--profile-border-strong, ${warmTheme.borderStrong})`,
+  accent: `var(--profile-accent, ${warmTheme.accent})`,
+  accentSoft: `var(--profile-accent-soft, ${warmTheme.accentSoft})`,
+  surface: `var(--profile-surface, ${warmTheme.surface})`,
+  surfaceMuted: `var(--profile-surface-muted, ${warmTheme.surfaceMuted})`,
+  button: `var(--profile-button, ${warmTheme.button})`,
+  buttonText: `var(--profile-button-text, ${warmTheme.text})`,
+  success: `var(--profile-success, ${warmTheme.success})`,
+  danger: `var(--profile-danger, ${warmTheme.danger})`,
 } as const;
 import {
   useSocialStore,
@@ -26,8 +28,7 @@ import {
   selectSocialError,
   isSupabaseConfigured,
 } from '@/state/socialStore';
-import { useStore, selectProfile } from '@/state/store';
-import { useMessagesStore } from '@/state/messagesStore';
+import { useStore } from '@/state/store';
 import {
   getNotificationPrefs,
   updateNotificationPrefs,
@@ -40,17 +41,20 @@ export default function AuthPanel() {
   const status = useSocialStore(selectSocialStatus);
   const socialProfile = useSocialStore(selectSocialProfile);
   const errorMessage = useSocialStore(selectSocialError);
-  const localProfile = useStore(selectProfile);
 
   const initialize = useSocialStore(s => s.initialize);
   const signIn = useSocialStore(s => s.signInWithEmail);
   const signUp = useSocialStore(s => s.signUpWithEmail);
   const signOut = useSocialStore(s => s.signOut);
-  const syncOwnProfile = useSocialStore(s => s.syncOwnProfile);
-  const loadThreads = useMessagesStore(s => s.loadThreads);
+  const applyRemoteProfile = useStore(s => s.applyRemoteProfile);
+
+  // Track whether we have already applied the remote profile for the current
+  // session, so we only overwrite local values immediately after sign-in rather
+  // than on every re-render while authenticated.
+  const appliedSessionRef = useRef<string | null>(null);
 
   const [mode, setMode] = useState<Mode>('signin');
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -59,33 +63,23 @@ export default function AuthPanel() {
     if (configured) void initialize();
   }, [configured, initialize]);
 
-  // Once authenticated, mirror any local profile edits up to the server.
+  // On sign-in: apply the server profile to the local game store (read path).
+  // Only fires once per session (tracked by profile id) so local edits made
+  // afterward are not clobbered by re-renders.
   useEffect(() => {
     if (status !== 'authenticated' || !socialProfile) return;
-    void syncOwnProfile({
-      displayName: localProfile.name,
-      bio: localProfile.bio ?? '',
-      avatarId: localProfile.avatarId,
-      titleId: localProfile.titleId,
-      uiThemeId: localProfile.uiThemeId ?? null,
-      signatureCardIds: localProfile.signatureCardIds ?? [],
+    if (appliedSessionRef.current === socialProfile.id) return;
+    appliedSessionRef.current = socialProfile.id;
+    applyRemoteProfile({
+      name: socialProfile.displayName,
+      bio: socialProfile.bio ?? '',
+      avatarId: socialProfile.avatarId,
+      titleId: socialProfile.titleId,
+      uiThemeId: socialProfile.uiThemeId,
+      customUiTheme: socialProfile.customUiTheme,
+      signatureCardIds: socialProfile.signatureCardIds,
     });
-  }, [
-    status,
-    socialProfile,
-    localProfile.name,
-    localProfile.bio,
-    localProfile.avatarId,
-    localProfile.titleId,
-    localProfile.uiThemeId,
-    localProfile.signatureCardIds,
-    syncOwnProfile,
-  ]);
-
-  // Once authenticated, load DM thread summaries so unread badges are accurate.
-  useEffect(() => {
-    if (status === 'authenticated') void loadThreads();
-  }, [status, loadThreads]);
+  }, [status, socialProfile, applyRemoteProfile]);
 
   if (!configured) {
     return (
@@ -100,15 +94,15 @@ export default function AuthPanel() {
       <div style={cardStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 'bold', color: A.text }}>
+            <div style={{ fontSize: 13, fontWeight: 'bold', color: C.text }}>
               Signed in as {socialProfile.displayName}
             </div>
-            <div style={{ fontSize: 10, color: A.textSoft, marginTop: 2 }}>
-              Friend code: <span style={{ fontFamily: 'monospace', color: A.goldSoft }}>{socialProfile.friendCode}</span>
+            <div style={{ fontSize: 10, color: C.textSoft, marginTop: 2 }}>
+              Friend code: <span style={{ fontFamily: 'monospace', color: C.accentSoft }}>{socialProfile.friendCode}</span>
             </div>
           </div>
           <button
-            onClick={() => void signOut()}
+            onClick={() => { appliedSessionRef.current = null; void signOut(); }}
             style={ghostBtn}
           >Sign out</button>
         </div>
@@ -120,10 +114,10 @@ export default function AuthPanel() {
   if (status === 'confirmation_pending') {
     return (
       <div style={cardStyle}>
-        <div style={{ fontSize: 13, color: '#6ecf7c', fontWeight: 700, marginBottom: 6 }}>
+        <div style={{ fontSize: 13, color: C.success, fontWeight: 700, marginBottom: 6 }}>
           Almost there!
         </div>
-        <div style={{ fontSize: 12, color: A.textSoft, lineHeight: 1.6 }}>
+        <div style={{ fontSize: 12, color: C.textSoft, lineHeight: 1.6 }}>
           A confirmation email has been sent. Click the link in that email, then come back and sign in.
         </div>
         <button
@@ -141,9 +135,9 @@ export default function AuthPanel() {
     setBusy(true);
     try {
       if (mode === 'signin') {
-        await signIn(email.trim(), password);
+        await signIn(username.trim(), password);
       } else {
-        await signUp(email.trim(), password, localProfile.name);
+        await signUp(username.trim(), password, username.trim());
       }
     } catch (err) {
       setLocalError(
@@ -165,11 +159,11 @@ export default function AuthPanel() {
         <ModeTab active={mode === 'signup'} onClick={() => setMode('signup')}>Create account</ModeTab>
       </div>
       <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={e => setEmail(e.target.value)}
-        autoComplete="email"
+        type="text"
+        placeholder={mode === 'signin' ? 'Username' : 'Choose username'}
+        value={username}
+        onChange={e => setUsername(e.target.value)}
+        autoComplete="username"
         style={inputStyle}
       />
       <input
@@ -181,24 +175,23 @@ export default function AuthPanel() {
         style={inputStyle}
       />
       {(localError || errorMessage) && (
-        <div style={{ fontSize: 10, color: '#b86060', marginBottom: 6 }}>
+        <div style={{ fontSize: 10, color: C.danger, marginBottom: 6 }}>
           {localError ?? errorMessage}
         </div>
       )}
       <button
-        disabled={busy || !email || password.length < 6}
+        disabled={busy || !username || password.length < 6}
         onClick={() => void submit()}
         style={{
           ...primaryBtn,
-          opacity: busy || !email || password.length < 6 ? 0.5 : 1,
+          opacity: busy || !username || password.length < 6 ? 0.5 : 1,
           cursor: busy ? 'wait' : 'pointer',
         }}
       >
         {busy ? 'Working…' : mode === 'signin' ? 'Sign in' : 'Create account'}
       </button>
-      <div style={{ fontSize: 9, color: A.textMuted, marginTop: 8, lineHeight: 1.4 }}>
-        Your account is separate from your local save. Saves stay on this device; the account
-        is used for friends, messages, and friend leaderboards.
+      <div style={{ fontSize: 9, color: C.textMuted, marginTop: 8, lineHeight: 1.4 }}>
+        Sign in with your username. Your profile, social identity, theme, and cloud save sync to your account.
       </div>
     </div>
   );
@@ -214,10 +207,10 @@ function ModeTab({
         flex: 1,
         padding: '6px 8px',
         fontSize: 11,
-        background: active ? A.goldGlass : 'transparent',
-        border: `1px solid ${active ? A.goldBorderStrong : A.goldBorder}`,
+        background: active ? C.surfaceMuted : 'transparent',
+        border: `1px solid ${active ? C.borderStrong : C.border}`,
         borderRadius: 6,
-        color: active ? A.goldSoft : A.textSoft,
+        color: active ? C.accentSoft : C.textSoft,
         cursor: 'pointer',
         fontFamily: 'Georgia, serif',
         fontWeight: active ? 600 : 400,
@@ -231,15 +224,15 @@ function ModeTab({
 const cardStyle: React.CSSProperties = {
   padding: 12,
   marginBottom: 12,
-  background: 'rgba(200,128,58,0.04)',
-  border: `1px solid ${A.goldBorder}`,
+  background: C.surfaceMuted,
+  border: `1px solid ${C.border}`,
   borderRadius: 10,
 };
 
 const hintStyle: React.CSSProperties = {
   ...cardStyle,
   fontSize: 10,
-  color: A.textMuted,
+  color: C.textMuted,
   fontStyle: 'italic',
 };
 
@@ -248,10 +241,10 @@ const inputStyle: React.CSSProperties = {
   padding: '7px 10px',
   marginBottom: 6,
   fontSize: 12,
-  background: 'rgba(0,0,0,0.35)',
-  border: `1px solid ${A.goldBorder}`,
+  background: C.surface,
+  border: `1px solid ${C.border}`,
   borderRadius: 6,
-  color: A.text,
+  color: C.text,
   fontFamily: 'Georgia, serif',
   boxSizing: 'border-box',
   outline: 'none',
@@ -262,24 +255,24 @@ const primaryBtn: React.CSSProperties = {
   padding: '9px 12px',
   fontSize: 12,
   fontWeight: 700,
-  background: 'linear-gradient(135deg, rgba(200,128,58,0.85) 0%, rgba(160,88,30,0.9) 100%)',
-  border: `1px solid ${A.goldBorderStrong}`,
+  background: C.button,
+  border: `1px solid ${C.borderStrong}`,
   borderRadius: 8,
-  color: '#1a0c04',
+  color: C.buttonText,
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
   letterSpacing: 1,
   textTransform: 'uppercase',
-  boxShadow: '0 4px 14px rgba(200,128,58,0.26)',
+  boxShadow: 'none',
 };
 
 const ghostBtn: React.CSSProperties = {
   padding: '5px 12px',
   fontSize: 11,
   background: 'transparent',
-  border: `1px solid ${A.goldBorder}`,
+  border: `1px solid ${C.border}`,
   borderRadius: 6,
-  color: A.textSoft,
+  color: C.textSoft,
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
 };
@@ -297,10 +290,10 @@ function NotificationSettings() {
   }
 
   return (
-    <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${A.goldBorder}` }}>
+    <div style={{ marginTop: 10, paddingTop: 10, borderTop: `1px solid ${C.border}` }}>
       <div style={{
         fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-        color: A.textMuted, marginBottom: 6,
+        color: C.textMuted, marginBottom: 6,
       }}>Notifications</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         <NotifToggle on={prefs.dms} label="Direct messages" onToggle={() => toggle('dms')} />
@@ -329,10 +322,10 @@ function NotifToggle({
         justifyContent: 'space-between',
         alignItems: 'center',
         padding: '4px 8px',
-        background: on ? A.goldGlass : 'transparent',
-        border: `1px solid ${on ? A.goldBorderStrong : A.goldBorder}`,
+        background: on ? C.surfaceMuted : 'transparent',
+        border: `1px solid ${on ? C.borderStrong : C.border}`,
         borderRadius: 6,
-        color: on ? A.goldSoft : A.textSoft,
+        color: on ? C.accentSoft : C.textSoft,
         cursor: 'pointer',
         fontFamily: 'Georgia, serif',
         fontSize: 11,

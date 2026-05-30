@@ -23,10 +23,10 @@ const STARGLOW = '0 0 32px rgba(160,190,255,0.35), 0 0 64px rgba(130,160,255,0.1
 const STAR_BORDER = 'rgba(184,200,232,0.7)';
 
 const MECHANIC_ROWS: { label: string; desc: string }[] = [
-  { label: 'Starlight Charges', desc: 'Built up by playing cards. Drives every cashout in the set — Nova Wish Burst, the Full-fire Gate, and Infinite Starbirth all scale with your Starlight total.' },
+  { label: 'Starlight Charges', desc: 'Built up by playing cards. Drives every cashout in the set — Nova Wish Burst, Crown release, and Infinite Starbirth all scale with your Starlight total.' },
   { label: 'Dream Lattice',     desc: 'A secondary amplifier. Multiplies Nova Wish Burst output by (1 + Dream × 0.4) and feeds chain bonuses on several cards. Resets each turn unless a Ward preserves it.' },
   { label: 'Nova Wish Burst',   desc: 'A massive single-shot cashout: Oblivion = Starlight × (1 + Dream Lattice × 0.4). Triggered by Ophanim cards (Aeolian Nova) and Angel activated abilities (Eclipse Decree, Wishwright Absolute).' },
-  { label: 'Full-fire Gate',    desc: 'Once Nullspire Monolith is on the board, reaching Starlight ≥ 10 AND Dream Lattice ≥ 4 fires a ×1.40 multiplier bonus on top of everything else.' },
+  { label: 'Constellation Lock', desc: 'The Eternal Crown cashout lane. Bank Star Crowns with Eternal and Infinite cards, then release them for high-value Oblivion bursts.' },
   { label: 'Star Crowns',       desc: 'The Eternal-tier resource. Aethervex banks a huge stockpile (no cashout); Selenira detonates it alongside a Nova Wish Burst; Draethos waits for a 3-card window then cashes out at the highest rate.' },
   { label: 'Infinite Starbirth', desc: 'The Infinite-tier cashout: Oblivion = Seraphim on board × Starlight × coefficient. Stellarborn Throne is the pure Starbirth specialist; Wishwright Absolute folds Starbirth into a triple-cashout finisher.' },
 ];
@@ -167,7 +167,7 @@ export default function WishedUponAStarEvent({ onClose, onCardStore, onEternitys
                 <li><strong>Solarvex Ward</strong> (Cherubim) and <strong>Lune Choir Ascension</strong> (Infinite) keep Dream Lattice alive between turns, enabling long combo windows.</li>
                 <li><strong>Starlace Binding</strong> (Cherubim) buffs every Seraphim and Angel attack by +55 Oblivion and +0.06 chain once Starlight reaches 5.</li>
                 <li><strong>Selenira's Vigil</strong> (Seraphim) turns Dream Lattice stacks into chain growth — pair with Wards for runaway chains.</li>
-                <li><strong>Nullspire Monolith</strong> is the only card that opens the Full-fire Gate. Keep it on the board if you want the ×1.40 multiplier active.</li>
+                <li><strong>Nullspire Monolith</strong> frontloads both Starlight and Dream while adding board power amplification, making it a reliable bridge into Crown release turns.</li>
               </ul>
             </div>
           </div>

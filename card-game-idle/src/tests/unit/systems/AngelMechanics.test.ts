@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { defaultGameState, useStore } from '@/state/store';
-import type { AngelInstance, SeraphimInstance } from '@/types/cards';
+import type { AngelInstance, CherubimInstance, SeraphimInstance } from '@/types/cards';
 import type { DeckCard, TurnState } from '@/types/game';
 
 function resetStore(): void {
@@ -53,6 +53,25 @@ function makeAngel(
     cardsPlayedSinceSummon: overrides.cardsPlayedSinceSummon ?? 0,
     activated: overrides.activated ?? false,
     boardSlot: slot,
+  };
+}
+
+function makeCherubim(instanceId: string, definitionId: string, slot: 0 | 1 | 2 | 3): CherubimInstance {
+  const def = CardRegistry.get(definitionId);
+  if (!def || def.type !== 'Cherubim') {
+    throw new Error(`Expected Cherubim definition for ${definitionId}`);
+  }
+  return {
+    instanceId,
+    definitionId,
+    type: 'Cherubim',
+    element: def.element,
+    rarity: def.rarity,
+    finish: 'normal',
+    level: 1,
+    backSlot: slot,
+    durability: def.maxDurability,
+    maxDurability: def.maxDurability,
   };
 }
 
@@ -195,5 +214,63 @@ describe('Angel mechanics', () => {
     const activatedAngel = state.board.frontSlots[0] as AngelInstance;
     expect(activatedAngel.activated).toBe(true);
     expect(state.turn.radiance).toBe(8);
+  });
+
+  it('enforces board-specific and sigil summon conditions for transcendents', () => {
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        frontSlots: [
+          makeSeraphim('inf_null', 'inf-null-apex', 0),
+          makeSeraphim('tx_null', 'tx-sera-null-entropy', 1),
+          null,
+          null,
+          null,
+        ],
+        backSlots: [
+          null,
+          null,
+          null,
+          null,
+        ],
+      },
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [{ definitionId: 'tx-angel-starbound-null-archangel', finish: 'normal' }],
+        drawPile: [],
+        hand: [],
+        discardPile: [],
+      },
+      turn: makePlayingTurn({ neutralityEquilibriumSigils: 10 }),
+      progress: {
+        ...state.progress,
+        oblivion: 0,
+      },
+    }));
+    useStore.getState().refreshComputedStats();
+
+    useStore.getState().summonAngel('tx-angel-starbound-null-archangel');
+    let state = useStore.getState();
+    expect(state.board.frontSlots.some(slot => slot?.definitionId === 'tx-angel-starbound-null-archangel')).toBe(false);
+
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        backSlots: [
+          makeCherubim('tx_cher', 'tx-cher-null-sentinel', 0),
+          null,
+          null,
+          null,
+        ],
+      },
+    }));
+    useStore.getState().refreshComputedStats();
+
+    useStore.getState().summonAngel('tx-angel-starbound-null-archangel');
+    state = useStore.getState();
+    expect(state.board.frontSlots.some(slot => slot?.definitionId === 'tx-angel-starbound-null-archangel')).toBe(true);
   });
 });

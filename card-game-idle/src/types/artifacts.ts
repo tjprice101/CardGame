@@ -13,8 +13,7 @@ export type ArtifactEffectType =
   | 'patience_threshold_reduction'    // Seraphim Patience threshold reduced by N (min 1)
 
   // Pyroabyss
-  | 'heat_cap_bonus'
-  | 'pyro_full_fire_mult_bonus'       // added to the full-fire gate base multiplier
+  | 'pyro_infinite_payout_bonus'      // added to Pyro Infinite payout multiplier
 
   // Heavenly Light
   | 'resonance_gain_bonus'             // +N Cadence per Light card played (Heavenly Light set)

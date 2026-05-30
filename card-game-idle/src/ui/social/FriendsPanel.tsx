@@ -17,6 +17,7 @@ import {
   selectOutgoingRequests,
   selectBlockedList,
   selectFriendsPresence,
+  selectFriendsActivityByUser,
   selectFriendsLoaded,
   selectFriendsError,
   type FriendRequestRow,
@@ -32,6 +33,20 @@ const FriendsLeaderboard = lazy(() => import('@/ui/social/FriendsLeaderboard'));
 
 type Tab = 'friends' | 'requests' | 'add' | 'blocked' | 'feed' | 'boards';
 
+const C = {
+  text: `var(--profile-text, ${warmTheme.text})`,
+  textMuted: `var(--profile-text-muted, ${warmTheme.textMuted})`,
+  textFaint: `var(--profile-text-faint, ${warmTheme.textFaint})`,
+  border: `var(--profile-border, ${warmTheme.border})`,
+  borderStrong: `var(--profile-border-strong, ${warmTheme.borderStrong})`,
+  accent: `var(--profile-accent, ${warmTheme.accent})`,
+  accentSoft: `var(--profile-accent-soft, ${warmTheme.accentSoft})`,
+  accentDeep: `var(--profile-accent-deep, ${warmTheme.accentDeep})`,
+  panel: 'var(--profile-accent-glass, rgba(0,0,0,0.05))',
+  surface: 'var(--profile-surface, rgba(0,0,0,0.06))',
+  danger: '#b86060',
+};
+
 export default function FriendsPanel() {
   const status = useSocialStore(selectSocialStatus);
   const loaded = useFriendsStore(selectFriendsLoaded);
@@ -40,6 +55,7 @@ export default function FriendsPanel() {
   const outgoing = useFriendsStore(selectOutgoingRequests);
   const blocked = useFriendsStore(selectBlockedList);
   const presence = useFriendsStore(selectFriendsPresence);
+  const activityByUser = useFriendsStore(selectFriendsActivityByUser);
   const errorMessage = useFriendsStore(selectFriendsError);
 
   const load = useFriendsStore(s => s.load);
@@ -47,6 +63,7 @@ export default function FriendsPanel() {
   const disconnectPresence = useFriendsStore(s => s.disconnectPresence);
 
   const [tab, setTab] = useState<Tab>('friends');
+  const [profileTarget, setProfileTarget] = useState<FriendProfileLite | null>(null);
 
   useEffect(() => {
     if (status !== 'authenticated') return;
@@ -77,19 +94,19 @@ export default function FriendsPanel() {
       </div>
 
       {errorMessage && (
-        <div style={{ fontSize: 10, color: '#b86060', marginBottom: 6 }}>{errorMessage}</div>
+        <div style={{ fontSize: 10, color: C.danger, marginBottom: 6 }}>{errorMessage}</div>
       )}
 
       {!loaded && <div style={hintStyle}>Loading…</div>}
 
       {loaded && tab === 'friends' && (
-        <FriendsList rows={friends} presence={presence} />
+        <FriendsList rows={friends} presence={presence} onViewProfile={setProfileTarget} />
       )}
       {loaded && tab === 'requests' && (
-        <RequestsList incoming={incoming} outgoing={outgoing} />
+        <RequestsList incoming={incoming} outgoing={outgoing} onViewProfile={setProfileTarget} />
       )}
       {loaded && tab === 'add' && <AddByCode />}
-      {loaded && tab === 'blocked' && <BlockedList rows={blocked} />}
+      {loaded && tab === 'blocked' && <BlockedList rows={blocked} onViewProfile={setProfileTarget} />}
       {loaded && tab === 'feed' && (
         <SocialErrorBoundary label="Activity feed">
           <Suspense fallback={<div style={hintStyle}>Loading feed…</div>}>
@@ -108,6 +125,17 @@ export default function FriendsPanel() {
       <SocialErrorBoundary label="Gift inbox" silent>
         <Suspense fallback={null}><GiftInbox /></Suspense>
       </SocialErrorBoundary>
+
+      {profileTarget && (
+        <Suspense fallback={null}>
+          <FriendProfileModal
+            profile={profileTarget}
+            online={presence[profileTarget.id] === true}
+            currentActivity={activityByUser[profileTarget.id] ?? null}
+            onClose={() => setProfileTarget(null)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
@@ -130,7 +158,7 @@ class SocialErrorBoundary extends Component<
     return (
       <div style={{
         fontSize: 10,
-        color: '#b86060',
+        color: C.danger,
         padding: '6px 8px',
         border: '1px solid rgba(184,96,96,0.45)',
         background: 'rgba(184,96,96,0.08)',
@@ -144,12 +172,15 @@ class SocialErrorBoundary extends Component<
 }
 
 function FriendsList({
-  rows, presence,
-}: { rows: FriendRequestRow[]; presence: Readonly<Record<string, boolean>> }) {
+  rows, presence, onViewProfile,
+}: {
+  rows: FriendRequestRow[];
+  presence: Readonly<Record<string, boolean>>;
+  onViewProfile: (profile: FriendProfileLite) => void;
+}) {
   const unfriend = useFriendsStore(s => s.unfriend);
   const blockUser = useFriendsStore(s => s.blockUser);
   const openConversation = useMessagesStore(s => s.openConversation);
-  const [profileTarget, setProfileTarget] = useState<FriendProfileLite | null>(null);
   const [giftTarget, setGiftTarget] = useState<FriendProfileLite | null>(null);
   if (rows.length === 0) {
     return <div style={hintStyle}>No friends yet. Use the Add tab to send a request.</div>;
@@ -162,28 +193,22 @@ function FriendsList({
           <li key={r.other.id} style={rowStyle}>
             <PresenceDot online={online} />
             <button
-              onClick={() => setProfileTarget(r.other)}
+              onClick={() => onViewProfile(r.other)}
               style={identityBtn}
               title="View profile"
             >
               <Identity p={r.other} />
             </button>
-            <button style={primaryBtn} onClick={() => void openConversation(r.other.id)}>Message</button>
-            <button style={ghostBtn} onClick={() => setGiftTarget(r.other)}>Gift</button>
-            <button style={ghostBtn} onClick={() => void unfriend(r.other.id)}>Unfriend</button>
-            <button style={ghostBtn} onClick={() => void blockUser(r.other.id)}>Block</button>
+            <div style={rowActionsStyle}>
+              <button style={ghostBtn} onClick={() => onViewProfile(r.other)}>Profile</button>
+              <button style={primaryBtn} onClick={() => void openConversation(r.other.id)}>Message</button>
+              <button style={ghostBtn} onClick={() => setGiftTarget(r.other)}>Gift</button>
+              <button style={ghostBtn} onClick={() => void unfriend(r.other.id)}>Unfriend</button>
+              <button style={ghostBtn} onClick={() => void blockUser(r.other.id)}>Block</button>
+            </div>
           </li>
         );
       })}
-      {profileTarget && (
-        <Suspense fallback={null}>
-          <FriendProfileModal
-            profile={profileTarget}
-            online={presence[profileTarget.id] === true}
-            onClose={() => setProfileTarget(null)}
-          />
-        </Suspense>
-      )}
       {giftTarget && (
         <Suspense fallback={null}>
           <SendGiftModal recipient={giftTarget} onClose={() => setGiftTarget(null)} />
@@ -194,8 +219,12 @@ function FriendsList({
 }
 
 function RequestsList({
-  incoming, outgoing,
-}: { incoming: FriendRequestRow[]; outgoing: FriendRequestRow[] }) {
+  incoming, outgoing, onViewProfile,
+}: {
+  incoming: FriendRequestRow[];
+  outgoing: FriendRequestRow[];
+  onViewProfile: (profile: FriendProfileLite) => void;
+}) {
   const accept = useFriendsStore(s => s.acceptRequest);
   const decline = useFriendsStore(s => s.declineRequest);
   const cancel = useFriendsStore(s => s.cancelOutgoing);
@@ -212,6 +241,7 @@ function RequestsList({
             {incoming.map(r => (
               <li key={r.fromUser} style={rowStyle}>
                 <Identity p={r.other} />
+                <button style={ghostBtn} onClick={() => onViewProfile(r.other)}>Profile</button>
                 <button style={primaryBtn} onClick={() => void accept(r.fromUser)}>Accept</button>
                 <button style={ghostBtn} onClick={() => void decline(r.fromUser)}>Decline</button>
               </li>
@@ -226,6 +256,7 @@ function RequestsList({
             {outgoing.map(r => (
               <li key={r.toUser} style={rowStyle}>
                 <Identity p={r.other} />
+                <button style={ghostBtn} onClick={() => onViewProfile(r.other)}>Profile</button>
                 <button style={ghostBtn} onClick={() => void cancel(r.toUser)}>Cancel</button>
               </li>
             ))}
@@ -260,7 +291,7 @@ function AddByCode() {
 
   return (
     <div>
-      <div style={{ fontSize: 10, color: warmTheme.textMuted, marginBottom: 6 }}>
+      <div style={{ fontSize: 10, color: C.textMuted, marginBottom: 6 }}>
         Enter the 8-character friend code of the player you want to add.
       </div>
       <input
@@ -272,8 +303,8 @@ function AddByCode() {
         spellCheck={false}
         style={{ ...inputStyle, fontFamily: 'monospace', letterSpacing: 2 }}
       />
-      {localError && <div style={{ fontSize: 10, color: '#b86060', marginBottom: 6 }}>{localError}</div>}
-      {success && <div style={{ fontSize: 10, color: warmTheme.accentDeep, marginBottom: 6 }}>{success}</div>}
+      {localError && <div style={{ fontSize: 10, color: C.danger, marginBottom: 6 }}>{localError}</div>}
+      {success && <div style={{ fontSize: 10, color: C.accentDeep, marginBottom: 6 }}>{success}</div>}
       <button
         disabled={busy || code.length !== 8}
         onClick={() => void submit()}
@@ -287,7 +318,7 @@ function AddByCode() {
   );
 }
 
-function BlockedList({ rows }: { rows: FriendProfileLite[] }) {
+function BlockedList({ rows, onViewProfile }: { rows: FriendProfileLite[]; onViewProfile: (profile: FriendProfileLite) => void }) {
   const unblockUser = useFriendsStore(s => s.unblockUser);
   if (rows.length === 0) return <div style={hintStyle}>No blocked players.</div>;
   return (
@@ -295,6 +326,7 @@ function BlockedList({ rows }: { rows: FriendProfileLite[] }) {
       {rows.map(p => (
         <li key={p.id} style={rowStyle}>
           <Identity p={p} />
+          <button style={ghostBtn} onClick={() => onViewProfile(p)}>Profile</button>
           <button style={ghostBtn} onClick={() => void unblockUser(p.id)}>Unblock</button>
         </li>
       ))}
@@ -307,10 +339,10 @@ function BlockedList({ rows }: { rows: FriendProfileLite[] }) {
 function Identity({ p }: { p: FriendProfileLite }) {
   return (
     <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ fontSize: 12, fontWeight: 'bold', color: warmTheme.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div style={{ fontSize: 12, fontWeight: 'bold', color: C.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {p.displayName}
       </div>
-      <div style={{ fontSize: 9, color: warmTheme.textMuted, fontFamily: 'monospace' }}>
+      <div style={{ fontSize: 9, color: C.textMuted, fontFamily: 'monospace' }}>
         {p.friendCode}
       </div>
     </div>
@@ -340,10 +372,10 @@ function TabBtn({
       style={{
         padding: '4px 8px',
         fontSize: 10,
-        background: active ? warmTheme.accentSoft : 'transparent',
-        border: `1px solid ${active ? warmTheme.accent : warmTheme.border}`,
+        background: active ? C.accentSoft : 'transparent',
+        border: `1px solid ${active ? C.accent : C.border}`,
         borderRadius: 6,
-        color: warmTheme.text,
+        color: C.text,
         cursor: 'pointer',
         fontFamily: 'Georgia, serif',
       }}
@@ -355,7 +387,7 @@ function SubHeader({ children }: { children: React.ReactNode }) {
   return (
     <div style={{
       fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
-      color: warmTheme.textMuted, margin: '8px 0 4px',
+      color: C.textMuted, margin: '8px 0 4px',
     }}>{children}</div>
   );
 }
@@ -363,14 +395,14 @@ function SubHeader({ children }: { children: React.ReactNode }) {
 const cardStyle: React.CSSProperties = {
   padding: 12,
   marginBottom: 12,
-  background: 'rgba(0,0,0,0.04)',
-  border: `1px solid ${warmTheme.border}`,
+  background: C.panel,
+  border: `1px solid ${C.border}`,
   borderRadius: 10,
 };
 
 const hintStyle: React.CSSProperties = {
   fontSize: 10,
-  color: warmTheme.textMuted,
+  color: C.textFaint,
   fontStyle: 'italic',
   padding: '4px 0',
 };
@@ -387,11 +419,19 @@ const listStyle: React.CSSProperties = {
 const rowStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 8,
-  padding: '6px 8px',
-  background: 'rgba(0,0,0,0.04)',
-  border: `1px solid ${warmTheme.border}`,
+  flexWrap: 'wrap',
+  gap: 10,
+  padding: '8px 10px',
+  background: C.surface,
+  border: `1px solid ${C.border}`,
   borderRadius: 6,
+};
+
+const rowActionsStyle: React.CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 6,
+  marginLeft: 'auto',
 };
 
 const inputStyle: React.CSSProperties = {
@@ -399,35 +439,37 @@ const inputStyle: React.CSSProperties = {
   padding: '6px 8px',
   marginBottom: 6,
   fontSize: 12,
-  background: 'rgba(0,0,0,0.06)',
-  border: `1px solid ${warmTheme.border}`,
+  background: C.surface,
+  border: `1px solid ${C.border}`,
   borderRadius: 6,
-  color: warmTheme.text,
+  color: C.text,
   fontFamily: 'Georgia, serif',
   boxSizing: 'border-box',
 };
 
 const primaryBtn: React.CSSProperties = {
-  padding: '4px 10px',
+  padding: '5px 10px',
   fontSize: 11,
   fontWeight: 'bold',
-  background: warmTheme.accentSoft,
-  border: `1px solid ${warmTheme.accent}`,
+  background: C.accentSoft,
+  border: `1px solid ${C.accent}`,
   borderRadius: 6,
-  color: warmTheme.accentDeep,
+  color: C.accentDeep,
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
+  minWidth: 72,
 };
 
 const ghostBtn: React.CSSProperties = {
-  padding: '4px 8px',
+  padding: '5px 8px',
   fontSize: 11,
   background: 'transparent',
-  border: `1px solid ${warmTheme.border}`,
+  border: `1px solid ${C.borderStrong}`,
   borderRadius: 6,
-  color: warmTheme.textMuted,
+  color: C.textMuted,
   cursor: 'pointer',
   fontFamily: 'Georgia, serif',
+  minWidth: 64,
 };
 
 const identityBtn: React.CSSProperties = {

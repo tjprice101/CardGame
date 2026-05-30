@@ -4,6 +4,19 @@ import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefini
 import { CardRegistry } from '../../cards/CardRegistry';
 import { TurnSystem } from './TurnSystem';
 
+function countBoardDefinitionIds(board: BoardState): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const slot of board.frontSlots) {
+    if (!slot) continue;
+    counts[slot.definitionId] = (counts[slot.definitionId] ?? 0) + 1;
+  }
+  for (const slot of board.backSlots) {
+    if (!slot) continue;
+    counts[slot.definitionId] = (counts[slot.definitionId] ?? 0) + 1;
+  }
+  return counts;
+}
+
 export interface ExecutionResult {
   deck: DeckState;
   turn: TurnState;
@@ -122,24 +135,17 @@ function computeNeutralityEternalOblivionBonus(definitionId: string, turn: TurnS
 function computePyroInfiniteOblivionBonus(definitionId: string, turn: TurnState, embersDrained = 0): number | null {
   const tiers = Math.max(0, turn.eternalStacks?.pyro ?? 0);
   const echoes = Math.max(0, turn.secondaryCounters?.pyro ?? 0);
-  const heat = Math.max(0, turn.pyroHeat ?? 0);
-  const debt = Math.max(0, turn.pyroBurnDebt ?? 0);
-  const brokenClasses = Math.min(4, turn.pyroAttenuationBrokenClasses?.length ?? 0);
-  const sourceCount = Math.min(4, turn.pyroCrossSetConversionDistinctSources?.length ?? 0);
-  const setupCount = Math.min(6, turn.pyroSetupCount ?? 0);
-  const signatures = Math.min(6, turn.pyroEngineSignatures?.length ?? 0);
   const balancedBonus = Math.abs(tiers - echoes) <= 2 ? 540 : 0;
-  const lowDebtBonus = debt <= 2 ? 460 : debt <= 5 ? 180 : 0;
 
   switch (definitionId) {
     case 'inf-ash-kings-apocalypse':
-      return 1100 + tiers * 620 + echoes * 210 + sourceCount * 200 + signatures * 90 + lowDebtBonus;
+      return 1100 + tiers * 640 + echoes * 260 + balancedBonus;
     case 'inf-pyraxis-colossus':
-      return 980 + tiers * 540 + echoes * 260 + setupCount * 95 + balancedBonus + lowDebtBonus;
+      return 980 + tiers * 560 + echoes * 280 + balancedBonus;
     case 'inf-pyroclasm-engine':
-      return 1050 + tiers * 420 + echoes * 300 + brokenClasses * 260 + signatures * 100 + sourceCount * 120 + balancedBonus;
+      return 1050 + tiers * 440 + echoes * 340 + balancedBonus;
     case 'inf-riftborn-sovereign':
-      return 1300 + embersDrained * 20 + tiers * 680 + echoes * 180 + sourceCount * 180 + lowDebtBonus + (heat >= 12 ? 320 : 0);
+      return 1300 + embersDrained * 20 + tiers * 700 + echoes * 240 + balancedBonus;
     default:
       return null;
   }
@@ -389,10 +395,6 @@ export class CardEffectExecutor {
     let radianceDrained = 0; // tracks radiance before radiance_spend:9999 for dynamic sentinels
     let snowboundAlternatedThisPlay = false; // tracks if this card play caused a snowbound phase alternation
 
-    if (def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
-      mutableTurn.pyroChronoCatalyst = true;
-    }
-
     const multiplier = useNextCardMultiplier && mutableTurn.nextCardMultiplied ? 2 : 1;
     if (useNextCardMultiplier && mutableTurn.nextCardMultiplied) {
       mutableTurn.nextCardMultiplied = false;
@@ -411,37 +413,58 @@ export class CardEffectExecutor {
       mutableTurn.radiance += adjusted;
     }
 
-    function computePyroIgniteBonus(pressure: number, streak: number): number {
-      const p = Math.max(0, Math.floor(pressure));
-      let base = 0;
-      const t1 = Math.min(p, 4);
-      if (t1 > 0) base += t1 * 120;
-      const t2 = Math.max(0, Math.min(p, 9) - 4);
-      if (t2 > 0) base += t2 * 180;
-      const t3 = Math.max(0, Math.min(p, 14) - 9);
-      if (t3 > 0) base += t3 * 260;
-      const t4 = Math.max(0, p - 14);
-      if (t4 > 0) base += t4 * 360;
-
-      const s = Math.max(0, Math.floor(streak));
-      const streakMult = s <= 2 ? 1 : s <= 4 ? 1.2 : s <= 6 ? 1.5 : 1.9;
-      return Math.floor(base * streakMult);
+    function getNeutralityEquilibriumSigilCap(): number {
+      let capBonus = Math.max(0, mutableTurn.neutralityEquilibriumSigilCapBonus ?? 0);
+      const starboundPresent = mutableBoard.frontSlots.some(sl => sl?.type === 'Angel' && sl.definitionId === 'tx-angel-starbound-null-archangel');
+      if (starboundPresent) capBonus = Math.max(capBonus, 4);
+      return Math.max(0, 12 + capBonus);
     }
 
-    function hasEternalFireSourceActive(): boolean {
-      if (mutableTurn.pyroChronoCatalyst ?? false) return true;
-      if (def?.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) return true;
-      for (const slot of mutableBoard.frontSlots) {
-        if (!slot) continue;
-        const slotDef = CardRegistry.get(slot.definitionId);
-        if (slotDef?.element === 'Fire' && (slotDef.rarity === 'Eternal' || slotDef.rarity === 'Infinite')) return true;
+    function getNeutralityEquilibriumPatienceGainBonus(): number {
+      const base = Math.floor(Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0) / 2);
+      if (base === 0) return base;
+      const sentinelPresent = mutableBoard.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel');
+      return sentinelPresent ? base * 2 : base;
+    }
+
+    function grantNeutralityEquilibriumSigils(value: number, sourceTag?: string): number {
+      const gain = Math.max(0, Math.floor(value));
+      if (gain <= 0) return 0;
+
+      const before = Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0);
+      const next = Math.min(getNeutralityEquilibriumSigilCap(), before + gain);
+      const gained = Math.max(0, next - before);
+      if (gained <= 0) return 0;
+
+      mutableTurn.neutralityEquilibriumSigils = next;
+      const gainedThisTurn = Math.max(0, mutableTurn.neutralityEquilibriumSigilsGainedThisTurn ?? 0) + gained;
+      mutableTurn.neutralityEquilibriumSigilsGainedThisTurn = gainedThisTurn;
+
+      const patientLightAlready = Math.max(0, mutableTurn.neutralityEquilibriumPatientLightFromSigilsThisTurn ?? 0);
+      const patientLightEligible = Math.min(2, Math.floor(gainedThisTurn / 4));
+      const patientLightToGrant = Math.max(0, patientLightEligible - patientLightAlready);
+      if (patientLightToGrant > 0) {
+        mutableTurn.neutralityPatientLightStacks = Math.max(0, mutableTurn.neutralityPatientLightStacks ?? 0) + patientLightToGrant;
+        mutableTurn.neutralityEquilibriumPatientLightFromSigilsThisTurn = patientLightAlready + patientLightToGrant;
       }
-      for (const slot of mutableBoard.backSlots) {
-        if (!slot) continue;
-        const slotDef = CardRegistry.get(slot.definitionId);
-        if (slotDef?.element === 'Fire' && (slotDef.rarity === 'Eternal' || slotDef.rarity === 'Infinite')) return true;
+
+      if (sourceTag) {
+        mutableTurn.neutralityTriggeredEffects = [
+          ...(mutableTurn.neutralityTriggeredEffects ?? []),
+          `${sourceTag}: +${gained} Equilibrium Sigils`,
+        ].slice(-8);
       }
-      return false;
+
+      return gained;
+    }
+
+    function spendNeutralityEquilibriumSigils(requested: number): number {
+      const spend = Math.max(0, Math.floor(requested));
+      if (spend <= 0) return 0;
+      const before = Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0);
+      const spent = Math.min(before, spend);
+      mutableTurn.neutralityEquilibriumSigils = before - spent;
+      return spent;
     }
 
     function processEffect(effect: CardEffect): boolean {
@@ -1250,53 +1273,6 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'seas_current_gain': {
-          const gain = effect.value * multiplier;
-          mutableTurn.eternalSeasCurrent = Math.max(0, (mutableTurn.eternalSeasCurrent ?? 0) + gain);
-
-          const polarity = mutableTurn.eternalSeasPolarity ?? 'White';
-          if (polarity === 'White') {
-            mutableTurn.eternalSeasWhiteFlow = Math.max(0, (mutableTurn.eternalSeasWhiteFlow ?? 0) + 1);
-          } else {
-            mutableTurn.eternalSeasBlackFlow = Math.max(0, (mutableTurn.eternalSeasBlackFlow ?? 0) + 1);
-          }
-
-          const white = mutableTurn.eternalSeasWhiteFlow ?? 0;
-          const black = mutableTurn.eternalSeasBlackFlow ?? 0;
-          if (white > 0 && black > 0) {
-            mutableTurn.eternalSeasMarginCharge = Math.min(20, (mutableTurn.eternalSeasMarginCharge ?? 0) + 1);
-          }
-
-          const margin = mutableTurn.eternalSeasMarginCharge ?? 0;
-          if (margin >= 6) {
-            mutableTurn.eternalSeasMarginCharge = margin - 6;
-            mutableDeck = TurnSystem.drawCards(mutableDeck, 1);
-          }
-          break;
-        }
-
-        case 'seas_polarity_shift': {
-          mutableTurn.eternalSeasPolarity = effect.polarity;
-          if (effect.polarity === 'White') {
-            mutableTurn.eternalSeasWhiteFlow = Math.max(0, (mutableTurn.eternalSeasWhiteFlow ?? 0) + 1);
-          } else {
-            mutableTurn.eternalSeasBlackFlow = Math.max(0, (mutableTurn.eternalSeasBlackFlow ?? 0) + 1);
-          }
-          break;
-        }
-
-        case 'seas_release': {
-          const current = Math.max(0, mutableTurn.eternalSeasCurrent ?? 0);
-          const spend = effect.spend >= 9999 ? current : Math.min(current, effect.spend);
-          if (spend <= 0) break;
-
-          mutableTurn.eternalSeasCurrent = Math.max(0, current - spend);
-          const margin = Math.max(0, mutableTurn.eternalSeasMarginCharge ?? 0);
-          const marginBonus = margin * 60;
-          oblivionBonus += (spend * effect.oblivionPerCurrent + marginBonus) * multiplier;
-          mutableTurn.eternalSeasMarginCharge = Math.max(0, margin - 2);
-          break;
-        }
 
         // �E�E�E��E�E�E��E�E�E��E�E�E� Thornbound / Mechanical Dreams resources �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'trail_gain':
@@ -1337,9 +1313,10 @@ export class CardEffectExecutor {
 
         case 'patience_gain_all': {
           const linkedBonus = Math.max(0, mutableTurn.neutralityLinkedGainBonus ?? 0);
+          const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus();
           const vesselId = mutableTurn.neutralityVesselInstanceId ?? null;
           const vesselCopyPercent = Math.max(0, mutableTurn.neutralityVesselCopyPercent ?? 0);
-          const perUnitGain = effect.value + linkedBonus;
+          const perUnitGain = effect.value + linkedBonus + equilibriumBonus;
           let totalGain = 0;
           let nonVesselGain = 0;
 
@@ -1371,6 +1348,9 @@ export class CardEffectExecutor {
               ...(mutableTurn.neutralityTriggeredEffects ?? []),
               `${deckCard.definitionId}: +${totalGain} total patience`,
             ].slice(-8);
+            if (effect.value >= 4) {
+              grantNeutralityEquilibriumSigils(1, deckCard.definitionId);
+            }
           }
           break;
         }
@@ -1391,6 +1371,58 @@ export class CardEffectExecutor {
               ...(mutableTurn.neutralityTriggeredEffects ?? []),
               `${deckCard.definitionId}: doubled ${consumedForDoubling} patience`,
             ].slice(-8);
+          }
+          break;
+        }
+
+        case 'neutrality_equilibrium_sigil_gain': {
+          grantNeutralityEquilibriumSigils(effect.value, deckCard.definitionId);
+          break;
+        }
+
+        case 'neutrality_equilibrium_sigil_cap_bonus': {
+          mutableTurn.neutralityEquilibriumSigilCapBonus = Math.max(
+            0,
+            Math.max(0, mutableTurn.neutralityEquilibriumSigilCapBonus ?? 0) + Math.max(0, effect.value),
+          );
+          if ((mutableTurn.neutralityEquilibriumSigils ?? 0) > getNeutralityEquilibriumSigilCap()) {
+            mutableTurn.neutralityEquilibriumSigils = getNeutralityEquilibriumSigilCap();
+          }
+          break;
+        }
+
+        case 'neutrality_equilibrium_starbound_cashout': {
+          const available = Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0);
+          const spent = spendNeutralityEquilibriumSigils(available);
+          if (spent <= 0) break;
+
+          for (const unit of mutableBoard.frontSlots) {
+            if (unit?.type === 'Seraphim' && unit.isActive) {
+              unit.patienceStacks = (unit.patienceStacks ?? 0) * 2;
+            }
+          }
+          oblivionBonus += spent * Math.max(0, effect.oblivionPerSigil);
+
+          const patientLightPerSigils = Math.max(1, effect.patientLightPerSigils ?? 5);
+          const patientLightGain = Math.floor(spent / patientLightPerSigils);
+          if (patientLightGain > 0) {
+            mutableTurn.neutralityPatientLightStacks = Math.max(0, mutableTurn.neutralityPatientLightStacks ?? 0) + patientLightGain;
+          }
+          break;
+        }
+
+        case 'neutrality_equilibrium_tactical_spend': {
+          const spend = Math.max(0, effect.spend);
+          if (spend <= 0) break;
+          if ((mutableTurn.neutralityEquilibriumSigils ?? 0) < spend) break;
+          if (pendingEffect === null) {
+            pendingEffect = {
+              type: 'neutrality_equilibrium_tactical_choice',
+              spend,
+              burstOblivion: Math.max(0, effect.burstOblivion),
+              restorePercent: Math.max(0, effect.restorePercent),
+              patientLightGain: Math.max(0, effect.patientLightGain ?? 0),
+            };
           }
           break;
         }
@@ -1561,97 +1593,6 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'pyro_furnace_pressure_gain': {
-          const gain = Math.max(0, effect.value * multiplier);
-          mutableTurn.pyroFurnacePressure = (mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0) + gain;
-          if (gain > 0) {
-            mutableTurn.pyroFurnaceRiseStreak = (mutableTurn.pyroFurnaceRiseStreak ?? 0) + 1;
-            mutableTurn.pyroFurnacePeak = Math.max(mutableTurn.pyroFurnacePeak ?? 0, mutableTurn.pyroFurnacePressure);
-          }
-          mutableTurn.pyroFervor = mutableTurn.pyroFurnacePressure;
-          break;
-        }
-
-        case 'pyro_furnace_pressure_spend': {
-          const current = mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0;
-          if (current < effect.value) return false;
-          mutableTurn.pyroFurnacePressure = current - effect.value;
-          mutableTurn.pyroFurnaceRiseStreak = 0;
-          mutableTurn.pyroFervor = mutableTurn.pyroFurnacePressure;
-          break;
-        }
-
-        case 'pyro_furnace_ignite': {
-          const pressure = Math.max(0, mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0);
-          if (pressure <= 0) break;
-          const streak = Math.max(0, mutableTurn.pyroFurnaceRiseStreak ?? 0);
-          const igniteOblivion = computePyroIgniteBonus(pressure, streak) * multiplier;
-          oblivionBonus += igniteOblivion;
-          if (hasEternalFireSourceActive()) {
-            const gainedChronoEmbers = Math.floor(igniteOblivion / 450);
-            if (gainedChronoEmbers > 0) {
-              mutableTurn.pyroChronoEmbers = (mutableTurn.pyroChronoEmbers ?? 0) + gainedChronoEmbers;
-            }
-          }
-          mutableTurn.pyroFurnacePressure = 0;
-          mutableTurn.pyroFervor = 0;
-          mutableTurn.pyroFurnaceRiseStreak = 0;
-          break;
-        }
-
-        case 'pyro_abyss_fault_gain': {
-          mutableTurn.pyroAbyssFault = Math.min(40, (mutableTurn.pyroAbyssFault ?? mutableTurn.pyroRupture ?? 0) + effect.value * multiplier);
-          mutableTurn.pyroRupture = mutableTurn.pyroAbyssFault;
-          break;
-        }
-
-        case 'pyro_abyss_fault_spend': {
-          const current = mutableTurn.pyroAbyssFault ?? mutableTurn.pyroRupture ?? 0;
-          if (current < effect.value) return false;
-          mutableTurn.pyroAbyssFault = current - effect.value;
-          mutableTurn.pyroRupture = mutableTurn.pyroAbyssFault;
-          break;
-        }
-
-        case 'pyro_ruin_window_gain': {
-          mutableTurn.pyroRuinWindows = Math.min(10, (mutableTurn.pyroRuinWindows ?? 0) + effect.value * multiplier);
-          break;
-        }
-
-        case 'pyro_convert_pressure_to_fault': {
-          const pressure = mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0;
-          const pressurePerFault = Math.max(1, effect.pressurePerFault);
-          const converted = Math.floor(pressure / pressurePerFault);
-          const capped = Math.max(0, effect.maxFaultGain ?? converted * effect.faultGain);
-          const faultGain = Math.min(capped, converted * effect.faultGain);
-          if (faultGain <= 0) break;
-
-          mutableTurn.pyroFurnacePressure = Math.max(0, pressure - Math.floor(faultGain / effect.faultGain) * pressurePerFault);
-          mutableTurn.pyroAbyssFault = Math.min(40, (mutableTurn.pyroAbyssFault ?? mutableTurn.pyroRupture ?? 0) + faultGain);
-          mutableTurn.pyroFervor = mutableTurn.pyroFurnacePressure;
-          mutableTurn.pyroRupture = mutableTurn.pyroAbyssFault;
-          break;
-        }
-
-        case 'pyro_window_cashout': {
-          const available = Math.max(0, mutableTurn.pyroRuinWindows ?? 0);
-          const consume = Math.min(available, effect.consume ?? available);
-          if (consume <= 0) break;
-          mutableTurn.pyroRuinWindows = Math.max(0, available - consume);
-          oblivionBonus += consume * effect.oblivionPerWindow * multiplier;
-          break;
-        }
-
-        case 'pyro_balance_bonus': {
-          const pressure = mutableTurn.pyroFurnacePressure ?? mutableTurn.pyroFervor ?? 0;
-          const fault = mutableTurn.pyroAbyssFault ?? mutableTurn.pyroRupture ?? 0;
-          const balancedPairs = Math.min(pressure, fault);
-          if (balancedPairs > 0) {
-            oblivionBonus += balancedPairs * effect.oblivionPerPair * multiplier;
-          }
-          break;
-        }
-
         // Eternal/Infinity per-set amplifier stacks.
         case 'eternal_stack_gain': {
           const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
@@ -1717,6 +1658,35 @@ export class CardEffectExecutor {
           oblivionBonus += consume * consume * effect.oblivionPerEchoSquared * multiplier;
           break;
         }
+        case 'pyro_transcendent_confluence': {
+          const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
+          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
+          const inferno = Math.max(0, stacks.pyro ?? 0);
+          const chroma = Math.max(0, counters.pyro ?? 0);
+          const pairs = Math.min(inferno, chroma, effect.consume ?? Math.min(inferno, chroma));
+          if (pairs <= 0) break;
+
+          stacks.pyro = inferno - pairs;
+          counters.pyro = chroma - pairs;
+          oblivionBonus += pairs * effect.oblivionPerPair * multiplier;
+
+          if ((effect.gainInfernoPerPair ?? 0) > 0) {
+            stacks.pyro = Math.max(0, stacks.pyro ?? 0) + pairs * (effect.gainInfernoPerPair ?? 0);
+          }
+          if ((effect.gainChromaPerPair ?? 0) > 0) {
+            counters.pyro = Math.max(0, counters.pyro ?? 0) + pairs * (effect.gainChromaPerPair ?? 0);
+          }
+          if ((effect.drawAtPairs ?? 0) > 0) {
+            const draws = Math.floor(pairs / Math.max(1, effect.drawAtPairs ?? 0));
+            if (draws > 0) {
+              mutableDeck = TurnSystem.drawCards(mutableDeck, draws);
+            }
+          }
+          if ((effect.empowerAtPairs ?? 0) > 0 && pairs >= (effect.empowerAtPairs ?? 0)) {
+            mutableTurn.nextCardMultiplied = true;
+          }
+          break;
+        }
         // Heavenly Light — Halo Resonance: bonus oblivion per stored resonance
         case 'light_halo_cascade_resound': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
@@ -1738,22 +1708,6 @@ export class CardEffectExecutor {
           oblivionBonus += (mutableTurn.trail ?? 0) * (effect.oblivionPerTrail ?? 0) * multiplier;
           break;
         }
-        // Mechanical legacy vent payload: vent Strain → oblivion + score multiplier
-        case 'mech_reactor_flux_vent': {
-          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
-          const available = Math.max(0, counters.mech ?? 0);
-          const consume = Math.min(available, effect.consume ?? available);
-          if (consume <= 0) break;
-          counters.mech = available - consume;
-          const strain = Math.max(0, mutableTurn.strain ?? 0);
-          const vented = Math.min(strain, consume);
-          mutableTurn.strain = strain - vented;
-          oblivionBonus += vented * effect.oblivionPerFlux * multiplier;
-          if (effect.scoreMultPerFlux > 0 && consume > 0) {
-            mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: consume * effect.scoreMultPerFlux });
-          }
-          break;
-        }
         // Prismatic — Spectrum Echo: oblivion = consumed × distinctChannelsThisTurn
         case 'prism_spectrum_echo_refract': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
@@ -1763,22 +1717,6 @@ export class CardEffectExecutor {
           counters.prism = available - consume;
           const distinct = new Set(mutableTurn.prismaticDistinctChannels ?? []).size;
           oblivionBonus += consume * distinct * effect.oblivionPerEchoPerChannel * multiplier;
-          break;
-        }
-        // Black Glass Inferno — Legacy Veil Shard branch (deprecated):
-        // swap flames; oblivion per higher flame
-        case 'glass_veil_shard_swap': {
-          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
-          const available = Math.max(0, counters.glass ?? 0);
-          const consume = Math.min(available, effect.consume ?? available);
-          if (consume <= 0) break;
-          counters.glass = available - consume;
-          const white = mutableTurn.blackGlassWhiteFlame ?? 0;
-          const black = mutableTurn.blackGlassBlackFlame ?? 0;
-          mutableTurn.blackGlassWhiteFlame = black;
-          mutableTurn.blackGlassBlackFlame = white;
-          const higher = Math.max(white, black);
-          oblivionBonus += consume * higher * effect.oblivionPerHigherFlame * multiplier;
           break;
         }
         // Snowbound Voltage — Polar Capacitor: phase-conditional split
@@ -1798,31 +1736,7 @@ export class CardEffectExecutor {
           break;
         }
 
-        // Legacy Snowbound compatibility path (Static Pulse alias of Polar Capacitor release)
-        case 'snow_static_pulse_discharge': {
-          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
-          const available = Math.max(0, counters.snow ?? 0);
-          const consume = Math.min(available, effect.consume ?? available);
-          if (consume <= 0) break;
-          counters.snow = available - consume;
-          const phase = mutableTurn.snowboundPhase ?? 'Frost';
-          if (phase === 'Voltage') {
-            oblivionBonus += consume * effect.voltageOblivionPerPulse * multiplier;
-          } else {
-            if ((effect.frostArcticChargePerPulse ?? 0) > 0) {
-              const chargeGain = Math.floor(consume * effect.frostArcticChargePerPulse!);
-              mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + chargeGain;
-            } else if ((effect.frostDrawPerPulse ?? 0) > 0) {
-              const extraDraw = Math.floor(consume * effect.frostDrawPerPulse!);
-              for (let i = 0; i < extraDraw; i++) {
-                const ok = processEffect({ type: 'draw', value: 1 });
-                if (!ok) break;
-              }
-            }
-          }
-          break;
-        }
-        // Glass Absolute legacy amplifier (older cards): spend `absol` counter for extra Oblivion.
+        // Glass Absolute amplifier: spend `absol` counter for extra Oblivion.
         case 'absol_cascade_proof_amplify': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
           const available = Math.max(0, counters.absol ?? 0);
@@ -1908,21 +1822,6 @@ export class CardEffectExecutor {
 
           if ((effect.empowerAtFormation ?? 0) > 0 && formation >= (effect.empowerAtFormation ?? 0)) {
             mutableTurn.nextCardMultiplied = true;
-          }
-          break;
-        }
-        // Eternal Seas — Tide Echo: polarity split
-        case 'tide_echo_resolve': {
-          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
-          const available = Math.max(0, counters.tide ?? 0);
-          const consume = Math.min(available, effect.consume ?? available);
-          if (consume <= 0) break;
-          counters.tide = available - consume;
-          const polarity = mutableTurn.eternalSeasPolarity ?? 'White';
-          if (polarity === 'White') {
-            oblivionBonus += consume * effect.oblivionPerPositive * multiplier;
-          } else {
-            oblivionBonus += consume * effect.oblivionPerNegative * multiplier;
           }
           break;
         }
@@ -2462,6 +2361,8 @@ export class CardEffectExecutor {
       case 'ember_gte':         return turn.embers >= condition.value;
       case 'trail_gte':         return turn.trail >= condition.value;
       case 'scar_count_gte':    return (turn.thornScar ?? 0) >= condition.value;
+      case 'equilibrium_sigils_gte':
+        return (turn.neutralityEquilibriumSigils ?? 0) >= condition.value;
       case 'strain_gte':        return turn.strain >= condition.value;
       case 'strain_lte':        return turn.strain <= condition.value;
       case 'prismatic_light_gte': return (turn.prismaticLight ?? 0) >= condition.value;
@@ -2493,18 +2394,6 @@ export class CardEffectExecutor {
       case 'bloom_gte':         return (turn.bloom ?? 0) >= condition.value;
       case 'butterfly_spectrum_gte':
         return (turn.butterflySpectrum ?? 0) >= condition.value;
-      case 'seas_current_gte':
-        return (turn.eternalSeasCurrent ?? 0) >= condition.value;
-      case 'seas_margin_gte':
-        return (turn.eternalSeasMarginCharge ?? 0) >= condition.value;
-      case 'seas_polarity_is':
-        return (turn.eternalSeasPolarity ?? null) === condition.polarity;
-      case 'pyro_furnace_pressure_gte':
-        return (turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0) >= condition.value;
-      case 'pyro_abyss_fault_gte':
-        return (turn.pyroAbyssFault ?? turn.pyroRupture ?? 0) >= condition.value;
-      case 'pyro_ruin_window_gte':
-        return (turn.pyroRuinWindows ?? 0) >= condition.value;
       case 'burn_phase_cards_gte': {
         const burnCount = [...board.frontSlots, ...board.backSlots].filter(unit => {
           if (!unit) return false;
@@ -2514,17 +2403,11 @@ export class CardEffectExecutor {
       }
       case 'grove_cards_gte':
         return (board.emberGrove?.length ?? 0) >= condition.value;
-      case 'pyro_pressure_higher':
-        return (turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0) > (turn.pyroAbyssFault ?? turn.pyroRupture ?? 0);
-      case 'pyro_fault_higher':
-        return (turn.pyroAbyssFault ?? turn.pyroRupture ?? 0) > (turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0);
-      case 'pyro_pools_balanced': {
-        const pressure = turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0;
-        const fault = turn.pyroAbyssFault ?? turn.pyroRupture ?? 0;
-        return Math.abs(pressure - fault) <= 2;
-      }
       case 'cards_played_gte':  return turn.cardsPlayedThisTurn >= condition.value;
       case 'first_card_this_turn': return turn.cardsPlayedThisTurn === 0;
+      case 'played_after_non_matching_element': {
+        return turn.cardsPlayedThisTurn > 0 && !!turn.lastPlayedElement;
+      }
       case 'seraphim_active_gte':
         return board.frontSlots.filter(s => s?.type === 'Seraphim' && s.isActive).length >= condition.value;
       case 'cherubim_active_gte':
@@ -2571,6 +2454,7 @@ export class CardEffectExecutor {
       for (const slot of board.frontSlots) {
         if (slot) boardCount[slot.definitionId] = (boardCount[slot.definitionId] ?? 0) + 1;
       }
+      const boardDefinitionCount = countBoardDefinitionIds(board);
       for (const [id, needed] of Object.entries(costCount)) {
         if ((boardCount[id] ?? 0) < needed) return false;
       }
@@ -2585,25 +2469,19 @@ export class CardEffectExecutor {
             const activeSeraphim = board.frontSlots.filter(s => s?.type === 'Seraphim').length;
             if (activeSeraphim < cond.value) return false;
           }
-          if (cond.type === 'pyro_fervor_gte') {
-            const pressure = turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0;
-            if (pressure < cond.value) return false;
+          if (cond.type === 'board_definition_gte') {
+            if ((boardDefinitionCount[cond.definitionId] ?? 0) < cond.value) return false;
           }
-          if (cond.type === 'pyro_rupture_gte') {
-            const fault = turn.pyroAbyssFault ?? turn.pyroRupture ?? 0;
-            if (fault < cond.value) return false;
+          if (cond.type === 'equilibrium_sigils_gte') {
+            if ((turn.neutralityEquilibriumSigils ?? 0) < cond.value) return false;
           }
-          if (cond.type === 'pyro_furnace_pressure_gte') {
-            const pressure = turn.pyroFurnacePressure ?? turn.pyroFervor ?? 0;
-            if (pressure < cond.value) return false;
+          if (cond.type === 'eternal_stack_gte') {
+            const stacks = turn.eternalStacks?.[cond.stack] ?? 0;
+            if (stacks < cond.value) return false;
           }
-          if (cond.type === 'pyro_abyss_fault_gte') {
-            const fault = turn.pyroAbyssFault ?? turn.pyroRupture ?? 0;
-            if (fault < cond.value) return false;
-          }
-          if (cond.type === 'pyro_ruin_window_gte') {
-            const windows = turn.pyroRuinWindows ?? 0;
-            if (windows < cond.value) return false;
+          if (cond.type === 'set_secondary_gte') {
+            const counters = turn.secondaryCounters?.[cond.kind] ?? 0;
+            if (counters < cond.value) return false;
           }
         }
       }

@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 21;
+export const CURRENT_VERSION = 22;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -321,6 +321,17 @@ const migrations: Record<number, Migration> = {
       if (p.nullRaidClears === undefined) p.nullRaidClears = {};
       if (p.transcendentCollection === undefined) p.transcendentCollection = {};
       if (p.purchasedAscensionCosmetics === undefined) p.purchasedAscensionCosmetics = [];
+    }
+    return data;
+  },
+  22: (data) => {
+    // v22 renames Ascension currency to Entropic Energy and adds raid angel pity streaks.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      if (p.entropicEnergyBalance === undefined) {
+        p.entropicEnergyBalance = (p.entropyBalance as number | undefined) ?? 0;
+      }
+      if (p.nullRaidAngelMissStreak === undefined) p.nullRaidAngelMissStreak = {};
     }
     return data;
   },

@@ -23,6 +23,7 @@ import { useFriendsStore } from '@/state/friendsStore';
 import { useGiftsStore } from '@/state/giftsStore';
 import { useStore } from '@/state/store';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
+import { useCoopRaidStore } from '@/state/coopRaidStore';
 
 const PREF_KEY = 'pantheon.social.notifications.v1';
 
@@ -74,6 +75,7 @@ let installed = false;
 let dmChannel: RealtimeChannel | null = null;
 let giftChannel: RealtimeChannel | null = null;
 let friendChannel: RealtimeChannel | null = null;
+let coopInviteChannel: RealtimeChannel | null = null;
 let unsubscribeAuth: (() => void) | null = null;
 
 // Cache for sender name lookups so we don't refetch profiles for every DM.
@@ -138,6 +140,13 @@ interface GiftRow {
 interface FriendRequestRow {
   from_user: string;
   to_user: string;
+  status: string;
+}
+
+interface CoopRaidInviteRow {
+  from_user: string;
+  to_user: string;
+  raid_id: string;
   status: string;
 }
 
@@ -225,6 +234,28 @@ function connectChannels(): void {
       .subscribe();
   }
 
+  if (!coopInviteChannel) {
+    coopInviteChannel = sb
+      .channel(`notify:coop:${me}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'coop_raid_invites', filter: `to_user=eq.${me}` },
+        (payload) => {
+          const row = payload.new as CoopRaidInviteRow;
+          if (row.status !== 'pending') return;
+          if (!prefs.osNotificationsWhenUnfocused) return;
+          if (isWindowFocused()) return;
+          void resolveDisplayName(row.from_user).then((name) => {
+            void window.pantheonNotify?.show({
+              title: 'Co-op Raid Invite',
+              body: `${name} invited you to ${row.raid_id}.`,
+            });
+          });
+        },
+      )
+      .subscribe();
+  }
+
   // Keep the gifts store realtime synced so the inbox badge is current even
   // before the user opens the panel.
   useGiftsStore.getState().connectRealtime();
@@ -233,6 +264,9 @@ function connectChannels(): void {
   // Battleground invites: the battlegroundStore handles in-app toast;
   // we supplement with an OS notification when the window is unfocused.
   useBattlegroundStore.getState().connectRealtime();
+
+  // Co-op raid invites use the same always-on lifecycle as battleground invites.
+  useCoopRaidStore.getState().connectRealtime();
 }
 
 function disconnectChannels(): void {
@@ -249,9 +283,14 @@ function disconnectChannels(): void {
     if (sb) void sb.removeChannel(friendChannel);
     friendChannel = null;
   }
+  if (coopInviteChannel) {
+    if (sb) void sb.removeChannel(coopInviteChannel);
+    coopInviteChannel = null;
+  }
   profileNameCache.clear();
   useGiftsStore.getState().disconnectRealtime();
   useBattlegroundStore.getState().disconnectRealtime();
+  useCoopRaidStore.getState().disconnectRealtime();
 }
 
 // ── Public init ─────────────────────────────────────────────────────────────

@@ -12,11 +12,13 @@
 
 export type MusicTrackId =
   | 'menu-main'
+  | 'menu-ascension'
   | 'menu-artifacts'
   | 'menu-eternity'
   | 'menu-infinitude'
   | 'menu-shop'
   | 'battle-normal'
+  | 'battle-null-raid'
   | 'battle-eternity'
   | 'battle-wake-trials'
   | 'battle-gauntlet'
@@ -32,11 +34,13 @@ interface TrackDef {
 const AUDIO_BASE = `${import.meta.env.BASE_URL}assets/audio/music`;
 const TRACKS: Record<MusicTrackId, TrackDef> = {
   'menu-main':         { src: `${AUDIO_BASE}/the-space-between-eternities-main-menu.mp3`,             gain: 1.0 },
+  'menu-ascension':    { src: `${AUDIO_BASE}/sovereign-of-the-infinite-deck-main-menu.mp3`,           gain: 1.0 },
   'menu-artifacts':    { src: `${AUDIO_BASE}/artifacts-of-infinity-artifact-menu.mp3`,                gain: 1.0 },
   'menu-eternity':     { src: `${AUDIO_BASE}/brink-of-eternity-eternitys-wake-menu.mp3`,              gain: 1.0 },
   'menu-infinitude':   { src: `${AUDIO_BASE}/precipice-of-infinity-infinity-card-menu.mp3`,           gain: 1.0 },
   'menu-shop':         { src: `${AUDIO_BASE}/store-by-the-event-horizon-shop-menu.mp3`,               gain: 1.0 },
   'battle-normal':     { src: `${AUDIO_BASE}/for-every-card-a-whisper-main-turn-fight.mp3`,           gain: 1.0 },
+  'battle-null-raid':  { src: `${AUDIO_BASE}/sovereign-of-the-infinite-deck-main-menu.mp3`,           gain: 1.0 },
   'battle-eternity':   { src: `${AUDIO_BASE}/lifelong-fight-eternitys-wake-fight.mp3`,                gain: 1.0 },
   'battle-wake-trials':{ src: `${AUDIO_BASE}/by-the-cards-everlasting-moment-wake-trials.mp3`,        gain: 1.0 },
   'battle-gauntlet':   { src: `${AUDIO_BASE}/the-endless-dream-endless-gauntlet.mp3`,                 gain: 1.0 },
@@ -117,8 +121,18 @@ class MusicManagerImpl {
       window.clearInterval(this.fadeTimer);
       this.fadeTimer = null;
     }
-    this.fadeOut(this.live());
-    this.fadeOut(this.other());
+    const live = this.live();
+    const other = this.other();
+    if (live) {
+      live.pause();
+      live.volume = 0;
+      live.currentTime = 0;
+    }
+    if (other) {
+      other.pause();
+      other.volume = 0;
+      other.currentTime = 0;
+    }
     this.currentTrack = null;
   }
 
@@ -170,23 +184,6 @@ class MusicManagerImpl {
         if (incoming) incoming.volume = targetIn;
         if (this.fadeTimer !== null) window.clearInterval(this.fadeTimer);
         this.fadeTimer = null;
-      }
-    }, Math.max(16, Math.floor(CROSSFADE_MS / FADE_STEPS)));
-  }
-
-  private fadeOut(el: HTMLAudioElement | null) {
-    if (!el) return;
-    const start = el.volume;
-    if (start <= 0) { el.pause(); return; }
-    let step = 0;
-    const timer = window.setInterval(() => {
-      step += 1;
-      const t = step / FADE_STEPS;
-      el.volume = Math.max(0, start * (1 - t));
-      if (step >= FADE_STEPS) {
-        el.pause();
-        el.volume = 0;
-        window.clearInterval(timer);
       }
     }, Math.max(16, Math.floor(CROSSFADE_MS / FADE_STEPS)));
   }

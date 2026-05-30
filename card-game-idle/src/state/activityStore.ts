@@ -75,7 +75,7 @@ function rowToEvent(row: RawRow): ActivityEvent {
   };
 }
 
-export const useActivityStore = create<ActivityState>((set, get) => ({
+export const useActivityStore = create<ActivityState>((set) => ({
   loaded: false,
   loading: false,
   errorMessage: null,

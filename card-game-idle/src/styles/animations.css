@@ -35,8 +35,19 @@ html.reduced-motion .radio-toast-exit { animation: none; }
 }
 
 /* ── Font size scaling via settings ── */
-:root { --ui-font-scale: 1; }
+:root {
+  --ui-font-scale: 1;
+  --ui-font-family: Georgia, "Iowan Old Style", "Cambria", "Times New Roman", serif;
+}
 html { font-size: calc(16px * var(--ui-font-scale, 1)); }
+body,
+#root,
+button,
+input,
+textarea,
+select {
+  font-family: var(--ui-font-family);
+}
 
 /* ── Shimmer sweep across a card surface ── */
 /* ── Shimmer sweep across a card surface (top-to-bottom) ── */
@@ -532,6 +543,50 @@ html { font-size: calc(16px * var(--ui-font-scale, 1)); }
   }
 }
 
+@keyframes eternalBarCrimsonPulse {
+  0%, 100% {
+    filter: brightness(1.02) saturate(1.04);
+    box-shadow: inset 0 0 0 rgba(208, 38, 78, 0), 0 0 0 rgba(208, 38, 78, 0);
+  }
+  50% {
+    filter: brightness(1.12) saturate(1.18);
+    box-shadow: inset 0 0 18px rgba(208, 38, 78, 0.22), 0 0 12px rgba(208, 38, 78, 0.12);
+  }
+}
+
+@keyframes transcendentFoilShift {
+  0% {
+    background-position: 50% -20%, 24% 16%, 34% 22%, 50% 12%, 50% 10%, center, -18% 50%;
+  }
+  50% {
+    background-position: 50% 40%, 42% 34%, 52% 44%, 50% 58%, 50% 52%, center, 50% 50%;
+  }
+  100% {
+    background-position: 50% 126%, 62% 118%, 68% 124%, 50% 132%, 50% 118%, center, 118% 50%;
+  }
+}
+
+@keyframes transcendentFoilPulse {
+  0%, 100% {
+    filter: brightness(1.04) saturate(1.18) contrast(1.08);
+  }
+  50% {
+    filter: brightness(1.18) saturate(1.36) contrast(1.16);
+  }
+}
+
+@keyframes transcendentFoilGlint {
+  0% {
+    box-shadow: inset 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(255,128,156,0);
+  }
+  50% {
+    box-shadow: inset 0 0 24px rgba(255,245,248,0.18), 0 0 18px rgba(255,128,156,0.3);
+  }
+  100% {
+    box-shadow: inset 0 0 0 rgba(255,255,255,0), 0 0 0 rgba(255,128,156,0);
+  }
+}
+
 @keyframes gamePatternDrift {
   0% {
     transform: translate3d(0, 0, 0) scale(1);
@@ -634,20 +689,24 @@ html { font-size: calc(16px * var(--ui-font-scale, 1)); }
 }
 
 .holofoil-menu-card.infinite-holo-bw-hover::before {
+  opacity: 0.56;
   background-image:
     linear-gradient(142deg, rgba(255, 255, 255, 0.26) 0%, rgba(255, 255, 255, 0.06) 34%, rgba(0, 0, 0, 0.2) 62%, rgba(255, 255, 255, 0.12) 100%),
     radial-gradient(ellipse at 30% 18%, rgba(255, 255, 255, 0.22) 0%, rgba(210, 228, 255, 0.1) 28%, rgba(0, 0, 0, 0) 58%),
     linear-gradient(132deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.05) 30%, rgba(0, 0, 0, 0.22) 58%, rgba(255, 255, 255, 0.12) 100%);
   background-size: 170% 170%, 160% 160%, 130% 130%;
   mix-blend-mode: luminosity;
+  animation: infiniteShardOverlayShift 1.44s linear infinite alternate;
 }
 
 .holofoil-menu-card.infinite-holo-bw-hover::after {
+  opacity: 0.34;
   background-image:
     linear-gradient(110deg, rgba(255,255,255,0) 18%, rgba(255,255,255,0.24) 34%, rgba(255,255,255,0.04) 48%, rgba(0,0,0,0.18) 62%, rgba(255,255,255,0) 76%),
     linear-gradient(164deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.02) 26%, rgba(0,0,0,0.2) 52%, rgba(255,255,255,0.12) 100%);
   background-size: 180% 180%, 160% 160%;
   mix-blend-mode: overlay;
+  animation: holoEtchShift 1.52s linear infinite alternate;
 }
 
 .holofoil-menu-card.infinite-holo-bw-hover:hover::before {
@@ -659,20 +718,24 @@ html { font-size: calc(16px * var(--ui-font-scale, 1)); }
 }
 
 .holofoil-menu-card.eternal-holo-red-hover::before {
+  opacity: 0.58;
   background-image:
     linear-gradient(142deg, rgba(148, 28, 56, 0.3) 0%, rgba(222, 148, 184, 0.14) 34%, rgba(44, 20, 60, 0.24) 62%, rgba(238, 176, 208, 0.16) 100%),
     radial-gradient(ellipse at 30% 18%, rgba(242, 176, 206, 0.22) 0%, rgba(166, 62, 118, 0.14) 28%, rgba(26, 10, 32, 0) 58%),
     linear-gradient(132deg, rgba(108, 34, 70, 0.3) 0%, rgba(196, 118, 164, 0.12) 30%, rgba(34, 14, 54, 0.26) 58%, rgba(232, 170, 206, 0.14) 100%);
   background-size: 170% 170%, 160% 160%, 130% 130%;
   mix-blend-mode: luminosity;
+  animation: eternalSparkShift 1.28s linear infinite alternate;
 }
 
 .holofoil-menu-card.eternal-holo-red-hover::after {
+  opacity: 0.36;
   background-image:
     linear-gradient(112deg, rgba(255,255,255,0) 18%, rgba(242, 186, 214, 0.24) 34%, rgba(255,255,255,0.03) 48%, rgba(36, 16, 52, 0.28) 62%, rgba(255,255,255,0) 76%),
     linear-gradient(166deg, rgba(128, 42, 88, 0.24) 0%, rgba(204, 128, 170, 0.08) 24%, rgba(34, 12, 48, 0.3) 52%, rgba(232, 168, 206, 0.16) 100%);
   background-size: 178% 178%, 156% 156%;
   mix-blend-mode: overlay;
+  animation: holoEtchShift 1.36s linear infinite alternate;
 }
 
 .holofoil-menu-card.eternal-holo-red-hover:hover::before {
@@ -724,24 +787,24 @@ html { font-size: calc(16px * var(--ui-font-scale, 1)); }
 }
 
 .holofoil-live-card--infinite::before {
-  opacity: 0;
+  opacity: 0.56;
   background-image:
     linear-gradient(142deg, rgba(255,255,255,0.24) 0%, rgba(255,255,255,0.05) 34%, rgba(0,0,0,0.2) 62%, rgba(255,255,255,0.1) 100%),
     radial-gradient(ellipse at 28% 18%, rgba(255,255,255,0.2) 0%, rgba(210,228,255,0.1) 26%, rgba(0,0,0,0) 56%),
     linear-gradient(132deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.05) 28%, rgba(0,0,0,0.2) 58%, rgba(255,255,255,0.1) 100%);
   background-size: 170% 170%, 156% 156%, 128% 128%;
   mix-blend-mode: luminosity;
-  animation: none;
+  animation: infiniteShardOverlayShift 1.34s linear infinite alternate;
 }
 
 .holofoil-live-card--infinite::after {
-  opacity: 0;
+  opacity: 0.34;
   background-image:
     linear-gradient(112deg, rgba(255,255,255,0) 18%, rgba(255,255,255,0.22) 36%, rgba(255,255,255,0.04) 50%, rgba(0,0,0,0.16) 64%, rgba(255,255,255,0) 78%),
     linear-gradient(164deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 24%, rgba(0,0,0,0.18) 52%, rgba(255,255,255,0.1) 100%);
   background-size: 178% 178%, 156% 156%;
   mix-blend-mode: overlay;
-  animation: none;
+  animation: holoEtchShift 1.42s linear infinite alternate;
 }
 
 .holofoil-live-card--infinite:hover::before {
@@ -765,24 +828,24 @@ html { font-size: calc(16px * var(--ui-font-scale, 1)); }
 }
 
 .holofoil-live-card--eternal::before {
-  opacity: 0;
+  opacity: 0.58;
   background-image:
     linear-gradient(142deg, rgba(144, 30, 58, 0.28) 0%, rgba(220, 152, 188, 0.12) 34%, rgba(42, 18, 60, 0.24) 62%, rgba(236, 178, 208, 0.14) 100%),
     radial-gradient(ellipse at 28% 18%, rgba(242, 184, 210, 0.2) 0%, rgba(164, 62, 116, 0.14) 26%, rgba(24, 10, 32, 0) 56%),
     linear-gradient(132deg, rgba(106, 34, 72, 0.26) 0%, rgba(192, 122, 164, 0.1) 28%, rgba(34, 14, 54, 0.24) 58%, rgba(232, 170, 204, 0.12) 100%);
   background-size: 170% 170%, 156% 156%, 128% 128%;
   mix-blend-mode: luminosity;
-  animation: none;
+  animation: eternalSparkShift 1.24s linear infinite alternate;
 }
 
 .holofoil-live-card--eternal::after {
-  opacity: 0;
+  opacity: 0.36;
   background-image:
     linear-gradient(112deg, rgba(255,255,255,0) 18%, rgba(242, 186, 214, 0.22) 36%, rgba(255,255,255,0.03) 50%, rgba(34, 14, 50, 0.24) 64%, rgba(255,255,255,0) 78%),
     linear-gradient(166deg, rgba(124, 42, 86, 0.22) 0%, rgba(204, 128, 170, 0.08) 24%, rgba(34, 12, 48, 0.28) 52%, rgba(232, 168, 204, 0.14) 100%);
   background-size: 176% 176%, 154% 154%;
   mix-blend-mode: overlay;
-  animation: none;
+  animation: holoEtchShift 1.32s linear infinite alternate;
 }
 
 .holofoil-live-card--eternal:hover::before {
@@ -1555,7 +1618,7 @@ html.reduced-motion .result-panel-slide-up {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════ */
-   Triggered by hud-flash CustomEvents from the game engine on major in-turn
+/* Triggered by hud-flash CustomEvents from the game engine on major in-turn
    moments: angel summon, angel/seraphim attack, synergy, boss defeated, etc.
    Color and peak alpha are driven by CSS custom properties set per-event.   */
 

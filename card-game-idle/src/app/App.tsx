@@ -34,9 +34,11 @@ const BattlegroundLobby = lazy(() => import('@/ui/battleground/BattlegroundLobby
 const BattlegroundMatch = lazy(() => import('@/ui/battleground/BattlegroundMatch'));
 const BattlegroundRewards = lazy(() => import('@/ui/battleground/BattlegroundRewards'));
 const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/BattlegroundInviteModal'));
+const CoopRaidInviteModal = lazy(() => import('@/ui/ascension/CoopRaidInviteModal'));
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
-import { warmTheme } from '@/ui/theme';
-import { useStore, selectBoard, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProfile, selectProgress, selectTrialDeck } from '@/state/store';
+import { DEFAULT_WARM_PALETTE } from '@/ui/theme';
+import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress, selectTrialDeck } from '@/state/store';
+import { useFriendsStore } from '@/state/friendsStore';
 import TrialDeckHUD from '@/ui/hud/TrialDeckHUD';
 const TrialDeckSummaryModal = lazy(() => import('@/ui/trialDeck/TrialDeckSummaryModal'));
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
@@ -45,7 +47,9 @@ import { getFontScale, setUiPreferences } from '@/ui/preferences';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { evaluateDailyLogin } from '@/systems/progression/dailyLogin';
 import { TITLE_BADGES } from '@/data/profile/titleBadges';
+import { initAccountSync } from '@/social/accountSync';
 import { initStatsSync } from '@/social/statsSync';
+import { initCloudSaveSync } from '@/social/cloudSaveSync';
 import { initSocialNotifications } from '@/social/notificationsService';
 import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
 import { MainMenuRadio } from '@/audio/MainMenuRadio';
@@ -124,9 +128,13 @@ const engine = new GameEngine();
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hasSeenSaveRef = useRef(false);
+  useEffect(() => { initAccountSync(); }, []);
   // Phase 5: install activity-event + leaderboard stats sync. Idempotent;
   // safely no-ops without Supabase or while signed out.
   useEffect(() => { initStatsSync(); }, []);
+  // Account-owned progression: on sign-in, reconcile local vs cloud save and
+  // continuously upload fresh autosaves for cross-device continuity.
+  useEffect(() => { initCloudSaveSync(); }, []);
   // Phase 6: install desktop / in-app push notifications for DMs, gifts, and
   // friend requests. Idempotent; channels start/stop with auth status.
   useEffect(() => { initSocialNotifications(); }, []);
@@ -167,15 +175,86 @@ export default function App() {
   // first boot of each app session; subsequent navigation cycles only between
   // menu and arena.
   const [scene, setScene] = useState<AppScene>('splash');
-  const board = useStore(selectBoard);
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
   const settings = useStore(selectSettings);
-  const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
   const trialDeck = useStore(selectTrialDeck);
   const lastSavedAt = useStore(s => s.lastSavedAt);
+  const setPresenceActivity = useFriendsStore(s => s.setPresenceActivity);
+
+  useEffect(() => {
+    const activeBoss = bossFight.activeBossId
+      ? BOSS_DEFINITIONS.find(b => b.id === bossFight.activeBossId)
+      : null;
+
+    let label = 'Home Menu';
+    let detail: string | null = null;
+    let bossId: string | null = null;
+    let bossName: string | null = null;
+
+    if (scene === 'splash') {
+      label = 'Booting Game';
+      detail = 'Splash screen';
+    } else if (scene === 'title') {
+      label = 'Title Screen';
+      detail = 'At the title screen';
+    } else if (bossFight.mode === 'active' && activeBoss) {
+      label = bossFight.kind === 'null_raid'
+        ? 'Null Raid'
+        : bossFight.kind === 'gauntlet'
+          ? 'Endless Gauntlet'
+          : bossFight.kind === 'trial'
+            ? 'Wake Trial'
+            : 'Boss Fight';
+      detail = `Fighting ${activeBoss.name}`;
+      bossId = activeBoss.id;
+      bossName = activeBoss.name;
+    } else if (battleground.mode === 'active') {
+      label = 'Battleground Match';
+      detail = 'In a card-born duel';
+    } else if (showDeckBuilder) {
+      label = 'Deck Builder';
+      detail = 'Editing a deck';
+    } else if (showCardStore) {
+      label = 'Card Store';
+      detail = 'Browsing packs';
+    } else if (showInfinitude) {
+      label = 'Infinitude';
+      detail = 'Hunting Infinite cards';
+    } else if (showEternitysWake || showWakeTrials || showEndlessGauntlet) {
+      label = "Eternity's Wake";
+      detail = 'Browsing boss challenges';
+    } else if (showAscension) {
+      label = 'Ascension';
+      detail = 'Running Ascension content';
+    } else if (showPlayerInfo) {
+      label = 'Player Profile';
+      detail = 'Updating profile and social settings';
+    } else if (turn.phase === 'mulligan' || turn.phase === 'playing') {
+      label = 'In a Run';
+      detail = 'Playing a standard run';
+    }
+
+    setPresenceActivity({ label, detail, bossId, bossName, at: Date.now() });
+  }, [
+    scene,
+    turn.phase,
+    bossFight.mode,
+    bossFight.kind,
+    bossFight.activeBossId,
+    battleground.mode,
+    showDeckBuilder,
+    showCardStore,
+    showInfinitude,
+    showEternitysWake,
+    showWakeTrials,
+    showEndlessGauntlet,
+    showAscension,
+    showPlayerInfo,
+    setPresenceActivity,
+  ]);
 
   useEffect(() => {
     document.documentElement.classList.toggle('reduced-motion', settings.reducedMotion);
@@ -197,7 +276,7 @@ export default function App() {
   // (or the "Music Enabled" checkbox unchecked, which forces volume to 0)
   // pauses playback entirely.
   useEffect(() => {
-    const vol = settings.musicVolume ?? 0;
+    const vol = settings.musicVolume ?? 0.5;
     MusicManager.setVolume(vol);
     MainMenuRadio.setVolume(vol);
     MainTurnRadio.setVolume(vol);
@@ -265,9 +344,13 @@ export default function App() {
           track = (bossFight.gauntletDepth ?? 0) >= 5 ? 'battle-gauntlet-p2' : 'battle-gauntlet-p1';
         } else if (bossFight.kind === 'trial') {
           track = 'battle-wake-trials';
+        } else if (bossFight.kind === 'null_raid') {
+          track = 'battle-null-raid';
         } else {
           track = 'battle-eternity';
         }
+      } else if (showAscension) {
+        track = 'menu-ascension';
       } else if (showCardStore) {
         track = 'menu-shop';
       } else if (showInfinitude) {
@@ -339,6 +422,7 @@ export default function App() {
     bossFight.kind,
     bossFight.gauntletDepth,
     showCardStore,
+    showAscension,
     showInfinitude,
     showEternitysWake,
     showEndlessGauntlet,
@@ -346,17 +430,6 @@ export default function App() {
     turn.phase,
   ]);
   // ─────────────────────────────────────────────────────────────────────
-
-  // Apply UI theme palette in-place whenever the player switches themes or
-  // edits custom colors. Re-mounts the overlay tree to flush stale style props.
-  const [themeKey, setThemeKey] = useState(0);
-  useEffect(() => {
-    const progress = useStore.getState().progress;
-    void import('@/data/profile/uiThemes').then(({ applyEffectiveTheme }) => {
-      applyEffectiveTheme(profile.uiThemeId, profile.customUiTheme as Record<string, string> | null, progress);
-      setThemeKey(k => k + 1);
-    });
-  }, [profile.uiThemeId, profile.customUiTheme]);
 
   const [saveHydrated, setSaveHydrated] = useState(false);
   useEffect(() => {
@@ -515,8 +588,8 @@ export default function App() {
         position: 'relative',
         width: '100%',
         height: '100%',
-        background: warmTheme.appBackground,
-        color: warmTheme.text,
+        background: DEFAULT_WARM_PALETTE.appBackground,
+        color: DEFAULT_WARM_PALETTE.text,
         overflow: 'hidden',
       }}
     >
@@ -524,7 +597,7 @@ export default function App() {
         ref={canvasRef}
         style={{ display: 'block', width: '100%', height: '100%' }}
       />
-      <React.Fragment key={`theme-${themeKey}`}>
+      <React.Fragment>
       <div className="game-bg-pattern game-bg-pattern--grain" />
       <div className="game-bg-pattern game-bg-pattern--sigils" />
 
@@ -797,7 +870,7 @@ export default function App() {
         transition: 'opacity 0.2s ease, transform 0.2s ease',
         padding: '6px 10px',
         borderRadius: 8,
-        border: `1px solid ${warmTheme.border}`,
+        border: `1px solid ${DEFAULT_WARM_PALETTE.border}`,
         background: 'rgba(12,12,16,0.62)',
         color: '#d6ead6',
         fontFamily: 'Georgia, serif',
@@ -857,6 +930,9 @@ export default function App() {
 
       {/* Battleground PvP incoming invite — global, shown regardless of scene */}
       <Suspense fallback={null}><BattlegroundInviteModal /></Suspense>
+
+      {/* Co-op raid incoming invite — global, shown regardless of scene */}
+      <Suspense fallback={null}><CoopRaidInviteModal /></Suspense>
 
     </div>
   );

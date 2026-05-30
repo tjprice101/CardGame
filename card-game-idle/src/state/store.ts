@@ -63,6 +63,7 @@ import {
 import { getArtifactEffect } from '@/systems/artifacts/artifactRuntime';
 import { DEFAULT_CARD_THEME_PACKS, setUiPreferences } from '@/ui/preferences';
 import { getTrialDeckDefinition } from '@/data/trialDecks';
+import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
@@ -72,8 +73,6 @@ const ATTENUATION_CLASSES: AttenuationClass[] = ['setup', 'conversion', 'multipl
 const ATTENUATION_TIERS = [1, 0.75, 0.55, 0.4] as const;
 const NEUTRALITY_SETUP_FOR_FULL_FIRE = 3;
 const NEUTRALITY_ENGINES_FOR_FULL_FIRE = 3;
-const PYRO_SETUP_FOR_FULL_FIRE = 3;
-const PYRO_ENGINES_FOR_FULL_FIRE = 3;
 const DFH_ETERNAL_VEIL_DEFAULT_OBLIVION_PER_MARK = 160;
 
 // �E��E��E��E� Defaults �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
@@ -123,23 +122,12 @@ const defaultTurn: TurnState = {
   neutralityPatienceConsumedThisTurn: 0,
   neutralityChainGainedThisTurn: 0,
   neutralityPatientLightStacks: 0,
+  neutralityEquilibriumSigils: 0,
+  neutralityEquilibriumSigilsGainedThisTurn: 0,
+  neutralityEquilibriumPatientLightFromSigilsThisTurn: 0,
+  neutralityEquilibriumSigilCapBonus: 0,
+  neutralityEquilibriumSentinelTempoUsed: false,
   neutralityTriggeredEffects: [],
-  pyroHeat: 0,
-  pyroBurnDebt: 0,
-  pyroStability: 0,
-  pyroSetupCount: 0,
-  pyroAttenuationClassUses: { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 },
-  pyroAttenuationBreaksUsed: 0,
-  pyroAttenuationBrokenClasses: [],
-  pyroCrossSetConversionDistinctSources: [],
-  pyroEngineSignatures: [],
-  pyroFurnacePressure: 0,
-  pyroFurnaceRiseStreak: 0,
-  pyroFurnacePeak: 0,
-  pyroChronoCatalyst: false,
-  pyroChronoEmbers: 0,
-  pyroAbyssFault: 0,
-  pyroRuinWindows: 0,
   lightCadenceNotes: [],
   lightDistinctNotes: [],
   lightResonance: 0,
@@ -310,9 +298,11 @@ const defaultProgress: ProgressState = {
   ownedArtifacts: {},
   cardbaneLight: 0,
   cardLocks: {},
+  entropicEnergyBalance: 0,
   entropyBalance: 0,
   nullRaidCooldowns: {},
   nullRaidClears: {},
+  nullRaidAngelMissStreak: {},
   transcendentCollection: {},
   purchasedAscensionCosmetics: [],
   battlegroundStats: { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] },
@@ -818,19 +808,33 @@ interface StoreActions {
   resetCustomUiTheme: () => void;
   /** Set a Signature Card slot (0-4). Pass null cardId to clear the slot. */
   setSignatureCard: (slot: number, cardId: string | null) => void;
+  /** Overwrite the entire profile from a remote (Supabase) snapshot. Called after sign-in. */
+  applyRemoteProfile: (remote: {
+    name: string;
+    bio: string;
+    avatarId: string;
+    titleId: string | null;
+    uiThemeId: string | null;
+    customUiTheme: Record<string, string> | null;
+    signatureCardIds: string[];
+  }) => void;
   // Ascension mode
-  /** Add Entropy currency to the player's balance. */
+  /** Add Entropic Energy currency to the player's balance. */
   addEntropy: (amount: number) => void;
-  /** Spend Entropy. Returns false if insufficient balance. */
+  /** Spend Entropic Energy. Returns false if insufficient balance. */
   spendEntropy: (amount: number) => boolean;
   /** Record a Null Raid clear and apply post-raid cooldown. */
   recordNullRaidClear: (raidId: string, cooldownMs: number) => void;
   /** Add a Transcendent Card copy to the collection. */
   addTranscendentCard: (definitionId: string) => void;
+  /** Purchase a Transcendent shop card with Entropic Energy. */
+  purchaseTranscendentCard: (definitionId: string, cost: number) => boolean;
+  /** Finalize raid angel drop outcome and update per-raid pity streak state. */
+  finalizeNullRaidAngelOutcome: (raidId: string, dropped: boolean, pityConsumed: boolean) => void;
   /** Mark an Ascension cosmetic as purchased. */
   purchaseAscensionCosmetic: (cosmeticId: string) => void;
   /** Begin a Null Raid run. Validates cooldown, resonance gate, and idle state. */
-  startNullRaid: (raidId: string, savedDeckId: string) => void;
+  startNullRaid: (raidId: string, savedDeckId: string) => boolean;
   claimDailyReward: () => { shards: number; streak: number } | null;
   /** Engagement: claim a single quest. */
   claimQuest: (questId: string) => { shards: number; oblivion?: number } | null;
@@ -889,6 +893,10 @@ interface AttackPaymentSelection {
  * Lower value = stronger resonance; higher value = weaker.
  */
 const RESONANCE_SCALE_CONSTANT = 500;
+
+function getEntropicEnergyBalance(progress: ProgressState): number {
+  return (progress.entropicEnergyBalance ?? progress.entropyBalance ?? 0);
+}
 
 /**
  * Sums each card's resonanceContribution at its highest reached mastery tier.
@@ -1249,25 +1257,19 @@ function completeBossFight(s: Store, victory: boolean): void {
     }
 
     // Grant accumulated rewards.
-    s.progress.entropyBalance = (s.progress.entropyBalance ?? 0) + accEntropy;
+    s.progress.entropicEnergyBalance = getEntropicEnergyBalance(s.progress) + accEntropy;
     s.progress.aberratedShards += accShards;
 
-    // Apply cooldown.
-    if (!s.progress.nullRaidCooldowns) s.progress.nullRaidCooldowns = {};
-    s.progress.nullRaidCooldowns[raidId] = Date.now() + (raidDef?.cooldownMs ?? 5 * 60 * 1000);
+    // Apply cooldown only on successful full clear.
+    if (victory) {
+      if (!s.progress.nullRaidCooldowns) s.progress.nullRaidCooldowns = {};
+      s.progress.nullRaidCooldowns[raidId] = Date.now() + 60_000;
+    }
 
     if (victory) {
       // Record clear.
       if (!s.progress.nullRaidClears) s.progress.nullRaidClears = {};
       s.progress.nullRaidClears[raidId] = (s.progress.nullRaidClears[raidId] ?? 0) + 1;
-
-      // 5% chance to drop completion Angel.
-      if (raidDef?.completionAngelId && Math.random() < 0.05) {
-        addCollectionCard(s.progress, raidDef.completionAngelId, 'holo');
-        if (!s.progress.transcendentCollection) s.progress.transcendentCollection = {};
-        s.progress.transcendentCollection[raidDef.completionAngelId] =
-          (s.progress.transcendentCollection[raidDef.completionAngelId] ?? 0) + 1;
-      }
 
       emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
     }
@@ -1555,34 +1557,16 @@ function ensureNeutralityTurnState(turn: TurnState): void {
   if (turn.neutralityPatienceConsumedThisTurn === undefined) turn.neutralityPatienceConsumedThisTurn = 0;
   if (turn.neutralityChainGainedThisTurn === undefined) turn.neutralityChainGainedThisTurn = 0;
   if (turn.neutralityPatientLightStacks === undefined) turn.neutralityPatientLightStacks = 0;
+  if (turn.neutralityEquilibriumSigils === undefined) turn.neutralityEquilibriumSigils = 0;
+  if (turn.neutralityEquilibriumSigilsGainedThisTurn === undefined) turn.neutralityEquilibriumSigilsGainedThisTurn = 0;
+  if (turn.neutralityEquilibriumPatientLightFromSigilsThisTurn === undefined) turn.neutralityEquilibriumPatientLightFromSigilsThisTurn = 0;
+  if (turn.neutralityEquilibriumSigilCapBonus === undefined) turn.neutralityEquilibriumSigilCapBonus = 0;
+  if (turn.neutralityEquilibriumSentinelTempoUsed === undefined) turn.neutralityEquilibriumSentinelTempoUsed = false;
   if (turn.neutralityTriggeredEffects === undefined) turn.neutralityTriggeredEffects = [];
   if (turn.lastPlayedElement === undefined) turn.lastPlayedElement = null;
 }
 
 function ensurePyroTurnState(turn: TurnState): void {
-  if (turn.pyroHeat === undefined) turn.pyroHeat = 0;
-  if (turn.pyroBurnDebt === undefined) turn.pyroBurnDebt = 0;
-  if (turn.pyroStability === undefined) turn.pyroStability = 0;
-  if (turn.pyroSetupCount === undefined) turn.pyroSetupCount = 0;
-  if (turn.pyroAttenuationClassUses === undefined) {
-    turn.pyroAttenuationClassUses = { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 };
-  }
-  for (const cls of ATTENUATION_CLASSES) {
-    turn.pyroAttenuationClassUses[cls] = turn.pyroAttenuationClassUses[cls] ?? 0;
-  }
-  if (turn.pyroAttenuationBreaksUsed === undefined) turn.pyroAttenuationBreaksUsed = 0;
-  if (turn.pyroAttenuationBrokenClasses === undefined) turn.pyroAttenuationBrokenClasses = [];
-  if (turn.pyroCrossSetConversionDistinctSources === undefined) turn.pyroCrossSetConversionDistinctSources = [];
-  if (turn.pyroEngineSignatures === undefined) turn.pyroEngineSignatures = [];
-  if (turn.pyroFurnacePressure === undefined) turn.pyroFurnacePressure = 0;
-  if (turn.pyroFurnaceRiseStreak === undefined) turn.pyroFurnaceRiseStreak = 0;
-  if (turn.pyroFurnacePeak === undefined) turn.pyroFurnacePeak = turn.pyroFurnacePressure;
-  if (turn.pyroChronoCatalyst === undefined) turn.pyroChronoCatalyst = false;
-  if (turn.pyroChronoEmbers === undefined) turn.pyroChronoEmbers = 0;
-  if (turn.pyroAbyssFault === undefined) turn.pyroAbyssFault = 0;
-  if (turn.pyroRuinWindows === undefined) turn.pyroRuinWindows = 0;
-  if (turn.pyroFervor === undefined) turn.pyroFervor = turn.pyroFurnacePressure;
-  if (turn.pyroRupture === undefined) turn.pyroRupture = turn.pyroAbyssFault;
   if (turn.lastPlayedElement === undefined) turn.lastPlayedElement = null;
 }
 
@@ -1846,10 +1830,6 @@ function captureTurnSnapshot(turn: TurnState): TurnState {
     attenuationBrokenClasses: [...(turn.attenuationBrokenClasses ?? [])],
     crossSetConversionDistinctSources: [...(turn.crossSetConversionDistinctSources ?? [])],
     neutralityEngineSignatures: [...(turn.neutralityEngineSignatures ?? [])],
-    pyroAttenuationClassUses: { ...(turn.pyroAttenuationClassUses ?? {}) },
-    pyroAttenuationBrokenClasses: [...(turn.pyroAttenuationBrokenClasses ?? [])],
-    pyroCrossSetConversionDistinctSources: [...(turn.pyroCrossSetConversionDistinctSources ?? [])],
-    pyroEngineSignatures: [...(turn.pyroEngineSignatures ?? [])],
     lightCadenceNotes: [...(turn.lightCadenceNotes ?? [])],
     lightDistinctNotes: [...(turn.lightDistinctNotes ?? [])],
     mechanicalInstructionQueue: [...(turn.mechanicalInstructionQueue ?? [])],
@@ -2067,27 +2047,23 @@ function getNeutralityFullFireMultiplier(s: Store, def: CardDefinition): number 
   return setupReady && enginesReady ? 1.35 : 0.70;
 }
 
-function getPyroFullFireMultiplier(s: Store, def: CardDefinition): number {
+function getPyroInfinitePayoutMultiplier(s: Store, def: CardDefinition): number {
   if (def.element !== 'Fire' || def.rarity !== 'Infinite') return 1;
   ensurePyroTurnState(s.turn);
-  const setupReady = (s.turn.pyroSetupCount ?? 0) >= PYRO_SETUP_FOR_FULL_FIRE;
-  const enginesReady = (s.turn.pyroEngineSignatures?.length ?? 0) >= PYRO_ENGINES_FOR_FULL_FIRE;
-  const baseFullFire = 1.35 + getArtifactEffect(s.turn, 'pyro_full_fire_mult_bonus', s.progress.ownedArtifacts);
-  return setupReady && enginesReady ? baseFullFire : 0.70;
+  return 1 + getArtifactEffect(s.turn, 'pyro_infinite_payout_bonus', s.progress.ownedArtifacts);
 }
 
 function getPyroFurnaceAttackMultiplier(s: Store, def: CardDefinition): number {
   if (def.element !== 'Fire') return 1;
   ensurePyroTurnState(s.turn);
-  const pressure = Math.max(0, s.turn.pyroFurnacePressure ?? 0);
-  // Fire attacks gain +2.5% per Furnace Pressure, capped at +75%.
-  return 1 + Math.min(0.75, pressure * 0.025);
+  const inferno = Math.max(0, s.turn.eternalStacks?.pyro ?? 0);
+  // Fire attacks gain +2.5% per Inferno Tier, capped at +75%.
+  return 1 + Math.min(0.75, inferno * 0.025);
 }
 
-function getPyroChronoEternityAttackMultiplier(s: Store, def: CardDefinition): number {
+function getPyroChromaAttackMultiplier(s: Store, def: CardDefinition): number {
   if (def.element !== 'Fire' || (def.rarity !== 'Eternal' && def.rarity !== 'Infinite')) return 1;
-  ensurePyroTurnState(s.turn);
-  const chromaEmbers = Math.max(0, s.turn.pyroChronoEmbers ?? 0);
+  const chromaEmbers = Math.max(0, s.turn.secondaryCounters?.pyro ?? 0);
   // Fire Eternal/Infinite attacks gain Chroma Ember scaling.
   // Eternal is intentionally weaker than Infinite.
   if (def.rarity === 'Eternal') {
@@ -2239,7 +2215,6 @@ function getEternalSeasFullFireMultiplier(s: Store, def: CardDefinition): number
 
 function getSetFullFireMultiplier(s: Store, def: CardDefinition): number {
   return getNeutralityFullFireMultiplier(s, def)
-    * getPyroFullFireMultiplier(s, def)
     * getLightFullFireMultiplier(s, def)
     * getThornboundFullFireMultiplier(s, def)
     * getMechanicalFullFireMultiplier(s, def)
@@ -2335,131 +2310,15 @@ function applyNeutralityPlayState(
   s.turn.lastPlayedElement = def.element;
 }
 
-function applyPyroAttenuationMultiplier(s: Store, actionClass: AttenuationClass): number {
-  ensurePyroTurnState(s.turn);
-  const uses = s.turn.pyroAttenuationClassUses?.[actionClass] ?? 0;
-  const index = Math.min(uses, ATTENUATION_TIERS.length - 1);
-  let multiplier = ATTENUATION_TIERS[index];
-
-  const deckSetCount = getDeckSetCount(s);
-  const maxBreaks = deckSetCount >= 2 ? 2 : 1;
-  const canBreak = (s.turn.pyroStability ?? 0) >= 3
-    && (s.turn.pyroAttenuationBreaksUsed ?? 0) < maxBreaks
-    && !(s.turn.pyroAttenuationBrokenClasses ?? []).includes(actionClass);
-
-  if (canBreak) {
-    multiplier = 1;
-    s.turn.pyroStability = Math.max(0, (s.turn.pyroStability ?? 0) - 3);
-    s.turn.pyroAttenuationBreaksUsed = (s.turn.pyroAttenuationBreaksUsed ?? 0) + 1;
-    s.turn.pyroAttenuationBrokenClasses = [...(s.turn.pyroAttenuationBrokenClasses ?? []), actionClass];
-  }
-
-  s.turn.pyroAttenuationClassUses = {
-    ...(s.turn.pyroAttenuationClassUses ?? {}),
-    [actionClass]: uses + 1,
-  };
-
-  return multiplier;
-}
-
 function applyPyroPlayState(
   s: Store,
   def: CardDefinition,
-  beforeTurn: TurnState,
-  actionClass: AttenuationClass,
+  _beforeTurn: TurnState,
+  _actionClass: AttenuationClass,
 ): void {
   if (def.element !== 'Fire') return;
 
   ensurePyroTurnState(s.turn);
-
-  const embersDelta = (s.turn.embers ?? 0) - (beforeTurn.embers ?? 0);
-  const radianceDelta = (s.turn.radiance ?? 0) - (beforeTurn.radiance ?? 0);
-
-  const heatGain = Math.max(0, embersDelta) + (actionClass === 'conversion' ? 2 : 0) + (def.type === 'Ophanim' ? 1 : 0);
-  const heatCooling = Math.max(0, -embersDelta) + (radianceDelta > 0 ? 1 : 0);
-  const heatCapBonus = getArtifactEffect(s.turn, 'heat_cap_bonus', s.progress.ownedArtifacts);
-  s.turn.pyroHeat = Math.max(0, Math.min(40 + heatCapBonus, (s.turn.pyroHeat ?? 0) + heatGain - heatCooling));
-
-  const overheatThreshold = 14 + heatCapBonus;
-  const overheatDebtGain = Math.max(0, (s.turn.pyroHeat ?? 0) - overheatThreshold) * 0.08;
-  const debtRecovery = actionClass === 'setup' || actionClass === 'refund' ? 0.35 : 0.1;
-  const nextDebt = (s.turn.pyroBurnDebt ?? 0) + overheatDebtGain - debtRecovery;
-  s.turn.pyroBurnDebt = Math.max(0, Math.min(18, Number(nextDebt.toFixed(2))));
-
-  let stabilityDelta = 0;
-  if ((s.turn.pyroHeat ?? 0) >= 5 && (s.turn.pyroHeat ?? 0) <= 18) stabilityDelta += 1;
-  else stabilityDelta -= 1;
-  if (Math.max(0, embersDelta) > 0 && Math.max(0, -embersDelta) > 0) stabilityDelta += 1;
-  if (actionClass === 'setup') stabilityDelta += 1;
-  if (def.rarity === 'Eternal') stabilityDelta += 1;
-
-  s.turn.pyroStability = Math.max(0, Math.min(12, (s.turn.pyroStability ?? 0) + stabilityDelta));
-
-  // New Pyro core loop: Furnace Pressure (setup), Abyss Fault (conversion), Ruin Windows (cashout).
-  let pressureGain = 0;
-  let faultGain = 0;
-  let windowGain = 0;
-
-  switch (actionClass) {
-    case 'setup':
-      pressureGain += 2;
-      break;
-    case 'conversion':
-      pressureGain += 1;
-      faultGain += 2;
-      break;
-    case 'multiplier':
-      pressureGain += 1;
-      windowGain += 1;
-      break;
-    case 'refund':
-      pressureGain += 1;
-      break;
-    case 'finisher':
-      faultGain += 1;
-      windowGain += 1;
-      break;
-  }
-
-  if (def.type === 'Seraphim') pressureGain += 1;
-  if (def.type === 'Ophanim') faultGain += 1;
-  if (def.type === 'Angel') windowGain += 1;
-  if (def.rarity === 'Eternal') windowGain += 1;
-  if (def.rarity === 'Infinite') {
-    pressureGain += 1;
-    faultGain += 1;
-  }
-
-  const previousPressure = s.turn.pyroFurnacePressure ?? 0;
-  const netPressureGain = Math.max(0, pressureGain + faultGain + windowGain);
-  const nextPressure = Math.max(0, previousPressure + netPressureGain);
-  s.turn.pyroFurnacePressure = nextPressure;
-  s.turn.pyroFurnaceRiseStreak = netPressureGain > 0
-    ? (s.turn.pyroFurnaceRiseStreak ?? 0) + 1
-    : 0;
-  s.turn.pyroFurnacePeak = Math.max(s.turn.pyroFurnacePeak ?? 0, nextPressure);
-  s.turn.pyroEquilibriumState = nextPressure >= 15 ? 'fervor' : nextPressure >= 8 ? 'balanced' : 'rupture';
-
-  // Keep legacy pool names in sync for compatibility with existing UI/tests/cards.
-  s.turn.pyroFervor = s.turn.pyroFurnacePressure;
-  s.turn.pyroRupture = s.turn.pyroAbyssFault;
-
-  if (def.rarity !== 'Infinite') {
-    s.turn.pyroSetupCount = Math.min(6, (s.turn.pyroSetupCount ?? 0) + 1);
-  }
-
-  const signature = `${def.type}:${actionClass}`;
-  if (!(s.turn.pyroEngineSignatures ?? []).includes(signature)) {
-    s.turn.pyroEngineSignatures = [...(s.turn.pyroEngineSignatures ?? []), signature].slice(-6);
-  }
-
-  if (actionClass === 'conversion') {
-    const previousElement = beforeTurn.lastPlayedElement;
-    if (previousElement && previousElement !== def.element) {
-      const nextSources = new Set([...(s.turn.pyroCrossSetConversionDistinctSources ?? []), previousElement]);
-      s.turn.pyroCrossSetConversionDistinctSources = Array.from(nextSources).slice(0, 6);
-    }
-  }
 
   s.turn.lastPlayedElement = def.element;
 }
@@ -2721,7 +2580,6 @@ function applyGlassAbsolutePlayState(
   s: Store,
   def: CardDefinition,
   beforeTurn: TurnState,
-  actionClass: AttenuationClass,
 ): void {
   if (def.element !== 'GlassAbsolute') return;
 
@@ -2859,7 +2717,7 @@ function applyAllSetPlayStates(
   applyPrismaticPlayState(s, def, beforeTurn, actionClass);
   applyBlackGlassPlayState(s, def, actionClass);
   applySnowboundPlayState(s, def, beforeTurn, actionClass);
-  applyGlassAbsolutePlayState(s, def, beforeTurn, actionClass);
+  applyGlassAbsolutePlayState(s, def, beforeTurn);
   applyBurningGardenPlayState(s, def, actionClass);
 }
 
@@ -3133,6 +2991,84 @@ function endTurnInternal(s: Store): void {
 function countFrontDefinitionIds(board: BoardState): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const slot of board.frontSlots) {
+    if (!slot) continue;
+    counts[slot.definitionId] = (counts[slot.definitionId] ?? 0) + 1;
+  }
+  return counts;
+}
+
+function isKnownCardDefinitionId(definitionId: string | null | undefined): definitionId is string {
+  return typeof definitionId === 'string' && definitionId.length > 0 && CardRegistry.get(definitionId) !== undefined;
+}
+
+function sanitizeCountRecord(record: Record<string, number> | undefined): Record<string, number> {
+  const cleaned: Record<string, number> = {};
+  for (const [definitionId, rawValue] of Object.entries(record ?? {})) {
+    if (!isKnownCardDefinitionId(definitionId)) continue;
+    const value = Math.max(0, Math.floor(Number(rawValue) || 0));
+    if (value <= 0) continue;
+    cleaned[definitionId] = value;
+  }
+  return cleaned;
+}
+
+function sanitizeTimestampRecord(record: Record<string, number> | undefined): Record<string, number> {
+  const cleaned: Record<string, number> = {};
+  for (const [definitionId, rawValue] of Object.entries(record ?? {})) {
+    if (!isKnownCardDefinitionId(definitionId)) continue;
+    const value = Math.max(0, Math.floor(Number(rawValue) || 0));
+    if (value <= 0) continue;
+    cleaned[definitionId] = value;
+  }
+  return cleaned;
+}
+
+function sanitizeDeckCards<T extends { definitionId: string }>(cards: T[] | undefined): T[] {
+  return (cards ?? []).filter(card => isKnownCardDefinitionId(card?.definitionId));
+}
+
+function sanitizeNullableBoardCards<T extends { definitionId: string }>(cards: Array<T | null> | undefined): Array<T | null> {
+  return (cards ?? []).map(card => (card && isKnownCardDefinitionId(card.definitionId) ? card : null));
+}
+
+function sanitizeLoadedCardReferences(loaded: GameState): void {
+  loaded.progress.collection = sanitizeCountRecord(loaded.progress.collection);
+  loaded.progress.holoCollection = sanitizeCountRecord(loaded.progress.holoCollection);
+  loaded.progress.infiniteCollection = sanitizeCountRecord(loaded.progress.infiniteCollection);
+  loaded.progress.cardPlayCounts = sanitizeCountRecord(loaded.progress.cardPlayCounts);
+  loaded.progress.cardLocks = sanitizeCountRecord(loaded.progress.cardLocks);
+  loaded.progress.transcendentCollection = sanitizeCountRecord(loaded.progress.transcendentCollection);
+  loaded.progress.recentlyAcquired = sanitizeTimestampRecord(loaded.progress.recentlyAcquired);
+
+  loaded.progress.savedDecks = (loaded.progress.savedDecks ?? []).map(savedDeck => ({
+    ...savedDeck,
+    deckList: sanitizeDeckCards(savedDeck.deckList),
+    extraDeck: sanitizeDeckCards(savedDeck.extraDeck),
+  }));
+
+  loaded.deck.hand = sanitizeDeckCards(loaded.deck.hand);
+  loaded.deck.drawPile = sanitizeDeckCards(loaded.deck.drawPile);
+  loaded.deck.discardPile = sanitizeDeckCards(loaded.deck.discardPile);
+  loaded.deck.deckList = sanitizeDeckCards(loaded.deck.deckList);
+  loaded.deck.extraDeck = sanitizeDeckCards(loaded.deck.extraDeck);
+
+  loaded.board.frontSlots = sanitizeNullableBoardCards(loaded.board.frontSlots) as BoardState['frontSlots'];
+  loaded.board.backSlots = sanitizeNullableBoardCards(loaded.board.backSlots) as BoardState['backSlots'];
+
+  if (!isKnownCardDefinitionId(loaded.turn.lastPlayedDefinitionId)) {
+    loaded.turn.lastPlayedDefinitionId = null;
+  }
+  if (loaded.turn.pendingEffect && 'cards' in loaded.turn.pendingEffect && Array.isArray(loaded.turn.pendingEffect.cards)) {
+    loaded.turn.pendingEffect.cards = sanitizeDeckCards(loaded.turn.pendingEffect.cards);
+  }
+  if (loaded.turn.pendingEffect && 'allCards' in loaded.turn.pendingEffect && Array.isArray(loaded.turn.pendingEffect.allCards)) {
+    loaded.turn.pendingEffect.allCards = sanitizeDeckCards(loaded.turn.pendingEffect.allCards);
+  }
+}
+
+function countBoardDefinitionIds(board: BoardState): Record<string, number> {
+  const counts = countFrontDefinitionIds(board);
+  for (const slot of board.backSlots) {
     if (!slot) continue;
     counts[slot.definitionId] = (counts[slot.definitionId] ?? 0) + 1;
   }
@@ -3748,15 +3684,8 @@ function awardOblivionForCardPlay(
   }
 
   if (sourceDef?.element === 'Fire' && totalAward > 0) {
-    const resolvedClass = actionClass ?? classifyActionClass(sourceDef, getDefinitionOnPlayEffects(sourceDef));
-    const attenuationMultiplier = applyPyroAttenuationMultiplier(s, resolvedClass);
-    const sourceCap = Math.min(3, s.turn.pyroCrossSetConversionDistinctSources?.length ?? 0);
-    const crossSetMultiplier = resolvedClass === 'conversion' ? (1 + sourceCap * 0.2) : 1;
-    const fullFireMultiplier = getPyroFullFireMultiplier(s, sourceDef);
-    const heatMultiplier = 1 + Math.min(0.6, (s.turn.pyroHeat ?? 0) * 0.02);
-    const debtPenalty = 1 - Math.min(0.65, (s.turn.pyroBurnDebt ?? 0) * 0.03);
-    const stabilityFlat = Math.max(0, Math.round((s.turn.pyroStability ?? 0) * 5));
-    totalAward = Math.round(totalAward * attenuationMultiplier * crossSetMultiplier * fullFireMultiplier * heatMultiplier * debtPenalty) + stabilityFlat;
+    const infiniteMultiplier = getPyroInfinitePayoutMultiplier(s, sourceDef);
+    totalAward = Math.round(totalAward * infiniteMultiplier);
   }
 
   if (sourceDef?.element === 'Light' && totalAward > 0) {
@@ -4025,16 +3954,74 @@ function tickCherubimDurability(s: Store): void {
   applyCherubimExpireBonuses(s, expiredCount);
 }
 
+function getNeutralityEquilibriumSigilCap(turn: TurnState, board?: BoardState): number {
+  let capBonus = Math.max(0, turn.neutralityEquilibriumSigilCapBonus ?? 0);
+  if (board) {
+    const starboundPresent = board.frontSlots.some(sl => sl?.type === 'Angel' && sl.definitionId === 'tx-angel-starbound-null-archangel');
+    if (starboundPresent) capBonus = Math.max(capBonus, 4);
+  }
+  return Math.max(0, 12 + capBonus);
+}
+
+function getNeutralityEquilibriumPatienceGainBonus(turn: TurnState, board?: BoardState): number {
+  const base = Math.floor(Math.max(0, turn.neutralityEquilibriumSigils ?? 0) / 2);
+  if (base === 0 || !board) return base;
+  const sentinelPresent = board.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel');
+  return sentinelPresent ? base * 2 : base;
+}
+
+function grantNeutralityEquilibriumSigils(s: Store, value: number, sourceTag?: string): number {
+  const gain = Math.max(0, Math.floor(value));
+  if (gain <= 0) return 0;
+
+  const before = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
+  const cap = getNeutralityEquilibriumSigilCap(s.turn, s.board);
+  const next = Math.min(cap, before + gain);
+  const gained = Math.max(0, next - before);
+  if (gained <= 0) return 0;
+
+  s.turn.neutralityEquilibriumSigils = next;
+  const gainedThisTurn = Math.max(0, s.turn.neutralityEquilibriumSigilsGainedThisTurn ?? 0) + gained;
+  s.turn.neutralityEquilibriumSigilsGainedThisTurn = gainedThisTurn;
+
+  const patientLightAlready = Math.max(0, s.turn.neutralityEquilibriumPatientLightFromSigilsThisTurn ?? 0);
+  const patientLightEligible = Math.min(2, Math.floor(gainedThisTurn / 4));
+  const patientLightToGrant = Math.max(0, patientLightEligible - patientLightAlready);
+  if (patientLightToGrant > 0) {
+    s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + patientLightToGrant;
+    s.turn.neutralityEquilibriumPatientLightFromSigilsThisTurn = patientLightAlready + patientLightToGrant;
+  }
+
+  if (sourceTag) {
+    s.turn.neutralityTriggeredEffects = [
+      ...(s.turn.neutralityTriggeredEffects ?? []),
+      `${sourceTag}: +${gained} Equilibrium Sigils`,
+    ].slice(-8);
+  }
+
+  return gained;
+}
+
+function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
+  const spend = Math.max(0, Math.floor(requested));
+  if (spend <= 0) return 0;
+  const before = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
+  const spent = Math.min(before, spend);
+  s.turn.neutralityEquilibriumSigils = before - spent;
+  return spent;
+}
+
 function applyPatienceGainAll(s: Store, value: number): void {
   const vesselId = s.turn.neutralityVesselInstanceId ?? null;
   const vesselCopyPercent = Math.max(0, s.turn.neutralityVesselCopyPercent ?? 0);
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
+  const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
   let nonVesselGain = 0;
 
   // Patience flows to every Seraphim on board regardless of Angel-synergy activation.
   for (const unit of s.board.frontSlots) {
     if (!unit || unit.type !== 'Seraphim') continue;
-    const gain = value + linkedBonus;
+    const gain = value + linkedBonus + equilibriumBonus;
     unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
     if (vesselId && unit.instanceId !== vesselId) {
       nonVesselGain += gain;
@@ -4051,6 +4038,10 @@ function applyPatienceGainAll(s: Store, value: number): void {
         vessel.patienceStacks = (vessel.patienceStacks ?? 0) + copied;
       }
     }
+  }
+
+  if (value >= 4) {
+    grantNeutralityEquilibriumSigils(s, 1, 'neutrality mark');
   }
 }
 
@@ -4072,6 +4063,7 @@ function applyCherubimPassiveEffects(s: Store): void {
   const vesselId = s.turn.neutralityVesselInstanceId ?? null;
   const vesselCopyPercent = Math.max(0, s.turn.neutralityVesselCopyPercent ?? 0);
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
+  const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
   const patientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0);
   const patientLightGain = 1 + patientLightStacks;
   let nonVesselGain = 0;
@@ -4082,7 +4074,7 @@ function applyCherubimPassiveEffects(s: Store): void {
     const unitDef = ScoreSystem.getDefinition(unit.definitionId);
     if (unitDef?.type === 'Seraphim' && (unitDef as import('@/types/cards').SeraphimDefinition).patienceThreshold !== undefined) {
       const patienceGainBonus = Math.floor(getArtifactEffect(s.turn, 'patience_gain_bonus', s.progress.ownedArtifacts));
-      const gain = patientLightGain + linkedBonus + patienceGainBonus;
+      const gain = patientLightGain + linkedBonus + equilibriumBonus + patienceGainBonus;
       unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
       if (vesselId && unit.instanceId !== vesselId) nonVesselGain += gain;
     }
@@ -4091,7 +4083,7 @@ function applyCherubimPassiveEffects(s: Store): void {
   if (patientLightStacks > 0) {
     for (const unit of s.board.frontSlots) {
       if (!unit || unit.type !== 'Angel') continue;
-      const gain = patientLightGain + linkedBonus;
+      const gain = patientLightGain + linkedBonus + equilibriumBonus;
       unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
     }
   }
@@ -4113,13 +4105,6 @@ function applyCherubimPassiveEffects(s: Store): void {
       switch (effect.type) {
         case 'cherubim_resource_per_card': {
           switch (effect.resource) {
-            case 'pyroFurnacePressure':
-              s.turn.pyroFurnacePressure = Math.max(0, (s.turn.pyroFurnacePressure ?? 0) + effect.value);
-              if (effect.value > 0) {
-                s.turn.pyroFurnaceRiseStreak = (s.turn.pyroFurnaceRiseStreak ?? 0) + 1;
-              }
-              s.turn.pyroFurnacePeak = Math.max(s.turn.pyroFurnacePeak ?? 0, s.turn.pyroFurnacePressure ?? 0);
-              break;
             case 'butterflySpectrum':
               s.turn.butterflySpectrum = (s.turn.butterflySpectrum ?? 0) + effect.value;
               break;
@@ -4147,7 +4132,7 @@ function applyCherubimPassiveEffects(s: Store): void {
           const rightFront = s.board.frontSlots[i + 1];
           for (const frontUnit of [leftFront, rightFront]) {
             if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
-            const gain = effect.value + linkedBonus;
+            const gain = effect.value + linkedBonus + equilibriumBonus;
             frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
             if (vesselId && frontUnit.type === 'Seraphim' && frontUnit.instanceId !== vesselId) {
               nonVesselGain += gain;
@@ -4503,6 +4488,7 @@ export const useStore = create<Store>()(
         const costCount: Record<string, number> = {};
         for (const id of angelDef.summonCost) costCount[id] = (costCount[id] ?? 0) + 1;
         const boardCount = countFrontDefinitionIds(s.board);
+        const boardDefinitionCount = countBoardDefinitionIds(s.board);
         for (const [id, needed] of Object.entries(costCount)) {
           if ((boardCount[id] ?? 0) < needed) return;
         }
@@ -4511,6 +4497,10 @@ export const useStore = create<Store>()(
           for (const cond of angelDef.extraSummonConditions) {
             if (cond.type === 'cherubim_active_gte' && s.board.backSlots.filter(sl => sl !== null).length < cond.value) return;
             if (cond.type === 'seraphim_on_board_gte' && s.board.frontSlots.filter(sl => sl?.type === 'Seraphim').length < cond.value) return;
+            if (cond.type === 'board_definition_gte' && (boardDefinitionCount[cond.definitionId] ?? 0) < cond.value) return;
+            if (cond.type === 'equilibrium_sigils_gte' && (s.turn.neutralityEquilibriumSigils ?? 0) < cond.value) return;
+            if (cond.type === 'eternal_stack_gte' && (s.turn.eternalStacks?.[cond.stack] ?? 0) < cond.value) return;
+            if (cond.type === 'set_secondary_gte' && (s.turn.secondaryCounters?.[cond.kind] ?? 0) < cond.value) return;
           }
         }
 
@@ -4676,15 +4666,23 @@ export const useStore = create<Store>()(
         const seraphimDef = def as import('@/types/cards').SeraphimDefinition;
         const capturedPatience = seraphimDef.patienceThreshold !== undefined ? (unit.patienceStacks ?? 0) : 0;
         const patienceOblivion = Math.round(attack.baseOblivion * capturedPatience * 0.015);
-        const chronoEmbers = def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')
-          ? Math.max(0, s.turn.pyroChronoEmbers ?? 0)
+        const chromaEmbers = def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')
+          ? Math.max(0, s.turn.secondaryCounters?.pyro ?? 0)
           : 0;
-        const chronoMultiplier = getPyroChronoEternityAttackMultiplier(s, def);
+        const chromaMultiplier = getPyroChromaAttackMultiplier(s, def);
 
         let amount = Math.round(
           Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + patienceOblivion)
-          * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit) * chronoMultiplier),
+          * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit) * chromaMultiplier),
         );
+
+        if (def.definitionId === 'tx-sera-null-entropy') {
+          const sigils = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
+          amount += sigils * 420;
+          if (sigils > 0) {
+            amount = Math.round(amount * (1 + Math.min(0.6, sigils * 0.03)));
+          }
+        }
 
         if (def.definitionId === 'inf-prismatic-choir-splinter') {
           amount += Math.max(0, Math.round(s.turn.prismaticChordAttackBaseBonus ?? 0));
@@ -4763,8 +4761,15 @@ export const useStore = create<Store>()(
           s.turn.mechanicalPrimedChimes = 0;
         }
         grantOblivion(s, amount);
-        if (chronoEmbers > 0 && def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
-          s.turn.pyroChronoEmbers = 0;
+        if (capturedPatience > 0 && def.element === 'Neutrality') {
+          grantNeutralityEquilibriumSigils(s, 1, `${def.definitionId} attack`);
+        }
+        if (def.definitionId === 'tx-sera-null-entropy' && capturedPatience >= 10) {
+          s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
+        }
+        if (chromaEmbers > 0 && def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
+          const secondary = (s.turn.secondaryCounters ??= {} as NonNullable<TurnState['secondaryCounters']>);
+          secondary.pyro = 0;
         }
         eventBus.emit('seraphim:attacked', { slot, attackId: attack.id, amount });
 
@@ -4775,7 +4780,16 @@ export const useStore = create<Store>()(
               ? 1
               : 0;
           const spikeReduction = usedSpike ? 1 : 0;
-          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - crownCooldownReduction - spikeReduction);
+          let sentinelReduction = 0;
+          const sentinelOnBoard = s.board.backSlots.some(back => back?.type === 'Cherubim' && back.definitionId === 'tx-cher-null-sentinel');
+          if (sentinelOnBoard) {
+            const spent = spendNeutralityEquilibriumSigils(s, 4);
+            if (spent >= 4) {
+              sentinelReduction = 2;
+              s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
+            }
+          }
+          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - crownCooldownReduction - spikeReduction - sentinelReduction);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
           // Reset patience after consuming it.
           if (seraphimDef.patienceThreshold !== undefined) {
@@ -4791,7 +4805,12 @@ export const useStore = create<Store>()(
               }
             }
             const preservePercent = Math.max(0, s.turn.neutralityAttackPreservePercent ?? 0);
-            const restorePercent = Math.max(0, s.turn.neutralityAttackRestorePercent ?? 0);
+            const baseRestorePercent = Math.max(0, s.turn.neutralityAttackRestorePercent ?? 0);
+            const entropySigils = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
+            const entropyRestorePercent = def.definitionId === 'tx-sera-null-entropy'
+              ? Math.min(70, entropySigils * 7)
+              : 0;
+            const restorePercent = baseRestorePercent + entropyRestorePercent;
             const preserved = Math.floor(capturedPatience * (preservePercent / 100));
             const restored = Math.floor(capturedPatience * (restorePercent / 100));
             refreshed.patienceStacks = Math.max(0, preserved + restored);
@@ -4843,14 +4862,14 @@ export const useStore = create<Store>()(
         const costs = attack.costs ?? [];
         if (!canPayAttackCosts(s, costs, { type: 'Angel', instanceId: unit.instanceId }, paymentSelection)) return;
         payAttackCosts(s, costs, paymentSelection);
-        const chronoEmbers = def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')
-          ? Math.max(0, s.turn.pyroChronoEmbers ?? 0)
+        const chromaEmbers = def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')
+          ? Math.max(0, s.turn.secondaryCounters?.pyro ?? 0)
           : 0;
-        const chronoMultiplier = getPyroChronoEternityAttackMultiplier(s, def);
+        const chromaMultiplier = getPyroChromaAttackMultiplier(s, def);
 
         let amount = Math.round(
           Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus)
-          * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit) * chronoMultiplier),
+          * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit) * chromaMultiplier),
         );
 
         if (def.definitionId === 'inf-prismatic-judgement-array') {
@@ -4881,8 +4900,9 @@ export const useStore = create<Store>()(
           s.turn.mechanicalPrimedChimes = 0;
         }
         grantOblivion(s, amount);
-        if (chronoEmbers > 0 && def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
-          s.turn.pyroChronoEmbers = 0;
+        if (chromaEmbers > 0 && def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
+          const secondary = (s.turn.secondaryCounters ??= {} as NonNullable<TurnState['secondaryCounters']>);
+          secondary.pyro = 0;
         }
         eventBus.emit('angel:attacked', { slot, attackId: attack.id, amount });
 
@@ -5493,6 +5513,34 @@ export const useStore = create<Store>()(
           const reshuffledCards = pending.allCards.filter(c => !keptIds.has(c.instanceId));
           s.deck.hand = keptCards;
           s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, ...reshuffledCards]);
+        } else if (pending.type === 'neutrality_equilibrium_tactical_choice') {
+          const choice = selected[0];
+          if (choice !== 'burst' && choice !== 'restore') return;
+
+          const available = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
+          const spend = Math.max(0, pending.spend);
+          if (available < spend || spend <= 0) return;
+
+          s.turn.neutralityEquilibriumSigils = available - spend;
+
+          const activeSeraphim = s.board.frontSlots.filter(
+            (unit): unit is SeraphimInstance => unit?.type === 'Seraphim' && unit.isActive,
+          );
+
+          if (choice === 'burst') {
+            grantOblivion(s, Math.max(0, pending.burstOblivion));
+          } else {
+            const restorePercent = Math.max(0, pending.restorePercent);
+            for (const unit of activeSeraphim) {
+              const current = Math.max(0, unit.patienceStacks ?? 0);
+              const restored = Math.floor(current * (restorePercent / 100));
+              unit.patienceStacks = current + restored;
+            }
+          }
+
+          if (pending.patientLightGain > 0) {
+            s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + pending.patientLightGain;
+          }
         }
 
         s.deck = normalizeDeckInstanceIds(s.deck);
@@ -5919,14 +5967,27 @@ export const useStore = create<Store>()(
       });
     },
 
+    applyRemoteProfile: (remote) => {
+      set(s => {
+        const p = s.progress.profile;
+        if (remote.name.trim()) p.name = remote.name.trim().slice(0, 24);
+        p.bio = remote.bio.slice(0, 200);
+        p.avatarId = remote.avatarId;
+        p.titleId = remote.titleId;
+        if (remote.uiThemeId) p.uiThemeId = remote.uiThemeId;
+        p.customUiTheme = remote.customUiTheme;
+        p.signatureCardIds = remote.signatureCardIds;
+      });
+    },
+
     addEntropy: (amount) => {
-      set(s => { s.progress.entropyBalance = (s.progress.entropyBalance ?? 0) + amount; });
+      set(s => { s.progress.entropicEnergyBalance = getEntropicEnergyBalance(s.progress) + amount; });
     },
 
     spendEntropy: (amount) => {
       const state = get();
-      if ((state.progress.entropyBalance ?? 0) < amount) return false;
-      set(s => { s.progress.entropyBalance = (s.progress.entropyBalance ?? 0) - amount; });
+      if (getEntropicEnergyBalance(state.progress) < amount) return false;
+      set(s => { s.progress.entropicEnergyBalance = getEntropicEnergyBalance(s.progress) - amount; });
       return true;
     },
 
@@ -5940,6 +6001,33 @@ export const useStore = create<Store>()(
     addTranscendentCard: (definitionId) => {
       set(s => {
         s.progress.transcendentCollection = { ...(s.progress.transcendentCollection ?? {}), [definitionId]: ((s.progress.transcendentCollection ?? {})[definitionId] ?? 0) + 1 };
+      });
+    },
+
+    purchaseTranscendentCard: (definitionId, cost) => {
+      if (!TRANSCENDENT_SHOP_IDS.has(definitionId)) return false;
+      if (cost <= 0) return false;
+      const state = get();
+      if (getEntropicEnergyBalance(state.progress) < cost) return false;
+      set(s => {
+        s.progress.entropicEnergyBalance = getEntropicEnergyBalance(s.progress) - cost;
+        s.progress.transcendentCollection = {
+          ...(s.progress.transcendentCollection ?? {}),
+          [definitionId]: ((s.progress.transcendentCollection ?? {})[definitionId] ?? 0) + 1,
+        };
+      });
+      return true;
+    },
+
+    finalizeNullRaidAngelOutcome: (raidId, dropped, pityConsumed) => {
+      set(s => {
+        const missStreak = { ...(s.progress.nullRaidAngelMissStreak ?? {}) };
+        if (dropped || pityConsumed) {
+          missStreak[raidId] = 0;
+        } else {
+          missStreak[raidId] = (missStreak[raidId] ?? 0) + 1;
+        }
+        s.progress.nullRaidAngelMissStreak = missStreak;
       });
     },
 
@@ -6392,31 +6480,32 @@ export const useStore = create<Store>()(
     },
 
     startNullRaid: (raidId, savedDeckId) => {
+      const state = get();
+      if (state.bossFight.mode !== 'idle') return false;
+
+      const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === raidId);
+      if (!raidDef) return false;
+
+      // Cooldown gate.
+      const now = Date.now();
+      const cooldown = state.progress.nullRaidCooldowns?.[raidId];
+      if (cooldown && cooldown > now) return false;
+
+      // Resonance gate.
+      const resonanceScore = computeGlobalResonanceScore(state.progress);
+      if (resonanceScore < raidDef.resonanceRequired) return false;
+
+      // Deck must exist.
+      const savedDeck = state.progress.savedDecks.find(d => d.id === savedDeckId);
+      if (!savedDeck) return false;
+
+      // First encounter boss must exist.
+      const firstBossId = raidDef.encounterBossIds[0];
+      if (!firstBossId) return false;
+      const firstBoss = NULL_RAID_BOSS_MAP.get(firstBossId);
+      if (!firstBoss) return false;
+
       set(s => {
-        if (s.bossFight.mode !== 'idle') return;
-
-        const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === raidId);
-        if (!raidDef) return;
-
-        // Cooldown gate.
-        const now = Date.now();
-        const cooldown = s.progress.nullRaidCooldowns?.[raidId];
-        if (cooldown && cooldown > now) return;
-
-        // Resonance gate.
-        const resonanceScore = computeGlobalResonanceScore(s.progress);
-        if (resonanceScore < raidDef.resonanceRequired) return;
-
-        // Deck must exist.
-        const savedDeck = s.progress.savedDecks.find(d => d.id === savedDeckId);
-        if (!savedDeck) return;
-
-        // First encounter boss must exist.
-        const firstBossId = raidDef.encounterBossIds[0];
-        if (!firstBossId) return;
-        const firstBoss = NULL_RAID_BOSS_MAP.get(firstBossId);
-        if (!firstBoss) return;
-
         // Save current game state so we can restore it after the raid.
         const savedState: SavedGameState = {
           deck: JSON.parse(JSON.stringify(s.deck)) as typeof s.deck,
@@ -6436,7 +6525,7 @@ export const useStore = create<Store>()(
           bossMaxHp: firstBoss.hp,
           damageDealtThisFight: 0,
           fightTimeRemaining: NULL_RAID_ENCOUNTER_SECONDS,
-          cooldowns: { ...s.bossFight.cooldowns },
+          cooldowns: s.bossFight.cooldowns,
           savedGameState: savedState,
           kind: 'null_raid',
           nullRaidId: raidId,
@@ -6447,6 +6536,8 @@ export const useStore = create<Store>()(
         };
         recompute(s);
       });
+
+      return true;
     },
 
     tickBossTimer: (deltaSeconds) => {
@@ -6558,10 +6649,14 @@ export const useStore = create<Store>()(
         delete op['scoreBoostTicks'];
         delete op['scoreBoostMultiplier'];
         if (op['aberratedShards'] === undefined) op['aberratedShards'] = 0;
+        if (op['entropicEnergyBalance'] === undefined) {
+          op['entropicEnergyBalance'] = (op['entropyBalance'] as number | undefined) ?? 0;
+        }
         if (op['holoCollection'] === undefined) op['holoCollection'] = {};
         if (op['infiniteCollection'] === undefined) op['infiniteCollection'] = {};
         if (op['favoriteCollection'] === undefined) op['favoriteCollection'] = {};
         if (op['bossClearCounts'] === undefined) op['bossClearCounts'] = {};
+        if (op['nullRaidAngelMissStreak'] === undefined) op['nullRaidAngelMissStreak'] = {};
         // Profile + daily login backfill (introduced in save v9).
         if (op['profile'] === undefined) {
           op['profile'] = { name: 'Wanderer', bio: '', avatarId: 'pic-classic-acolyte', titleId: null, uiThemeId: 'theme-warm-default', customUiTheme: null };
@@ -6584,9 +6679,24 @@ export const useStore = create<Store>()(
         }
         if (loaded.settings === undefined) loaded.settings = { ...defaultSettings };
         const settings = loaded.settings as unknown as Record<string, unknown>;
+        if (typeof settings['musicVolume'] !== 'number') settings['musicVolume'] = defaultSettings.musicVolume;
+        if (typeof settings['sfxVolume'] !== 'number') settings['sfxVolume'] = defaultSettings.sfxVolume;
+        if (typeof settings['particlesEnabled'] !== 'boolean') settings['particlesEnabled'] = defaultSettings.particlesEnabled;
+        if (typeof settings['reducedMotion'] !== 'boolean') settings['reducedMotion'] = defaultSettings.reducedMotion;
         if (settings['language'] === undefined) settings['language'] = defaultSettings.language;
         if (settings['fontSizePreset'] === undefined) settings['fontSizePreset'] = defaultSettings.fontSizePreset;
         if (settings['cardArtDisplay'] === undefined) settings['cardArtDisplay'] = defaultSettings.cardArtDisplay;
+        if (typeof settings['compactMode'] !== 'boolean') settings['compactMode'] = defaultSettings.compactMode;
+        if (typeof settings['instantPackReveal'] !== 'boolean') settings['instantPackReveal'] = defaultSettings.instantPackReveal;
+        if (typeof settings['highlightRulesText'] !== 'boolean') settings['highlightRulesText'] = defaultSettings.highlightRulesText;
+        if (!settings['controls'] || typeof settings['controls'] !== 'object') {
+          settings['controls'] = { ...DEFAULT_CONTROL_BINDINGS };
+        } else {
+          settings['controls'] = {
+            ...DEFAULT_CONTROL_BINDINGS,
+            ...(settings['controls'] as Record<string, string>),
+          };
+        }
         if (settings['cardThemePacks'] === undefined) {
           settings['cardThemePacks'] = { ...DEFAULT_CARD_THEME_PACKS };
         } else {
@@ -6625,7 +6735,6 @@ export const useStore = create<Store>()(
         if (ot['prismaticSentencingChainGainBonus'] === undefined && ot['prismaticSentencingChainFloorBonus'] !== undefined) {
           ot['prismaticSentencingChainGainBonus'] = ot['prismaticSentencingChainFloorBonus'];
         }
-        const pending = ot['pendingEffect'] as Record<string, unknown> | null | undefined;
         if (ot['oblivionEarnedThisTurn'] === undefined) ot['oblivionEarnedThisTurn'] = 0;
         if (ot['embers'] === undefined) ot['embers'] = 0;
         if (ot['trail'] === undefined) ot['trail'] = 0;
@@ -6646,27 +6755,33 @@ export const useStore = create<Store>()(
         if (ot['neutralityPatienceConsumedThisTurn'] === undefined) ot['neutralityPatienceConsumedThisTurn'] = 0;
         if (ot['neutralityChainGainedThisTurn'] === undefined) ot['neutralityChainGainedThisTurn'] = 0;
         if (ot['neutralityPatientLightStacks'] === undefined) ot['neutralityPatientLightStacks'] = 0;
+        if (ot['neutralityEquilibriumSigils'] === undefined) ot['neutralityEquilibriumSigils'] = 0;
+        if (ot['neutralityEquilibriumSigilsGainedThisTurn'] === undefined) ot['neutralityEquilibriumSigilsGainedThisTurn'] = 0;
+        if (ot['neutralityEquilibriumPatientLightFromSigilsThisTurn'] === undefined) ot['neutralityEquilibriumPatientLightFromSigilsThisTurn'] = 0;
+        if (ot['neutralityEquilibriumSigilCapBonus'] === undefined) ot['neutralityEquilibriumSigilCapBonus'] = 0;
+        if (ot['neutralityEquilibriumSentinelTempoUsed'] === undefined) ot['neutralityEquilibriumSentinelTempoUsed'] = false;
         if (ot['neutralityTriggeredEffects'] === undefined) ot['neutralityTriggeredEffects'] = [];
-        if (ot['pyroHeat'] === undefined) ot['pyroHeat'] = 0;
-        if (ot['pyroBurnDebt'] === undefined) ot['pyroBurnDebt'] = 0;
-        if (ot['pyroStability'] === undefined) ot['pyroStability'] = 0;
-        if (ot['pyroSetupCount'] === undefined) ot['pyroSetupCount'] = 0;
-        if (ot['pyroAttenuationClassUses'] === undefined) {
-          ot['pyroAttenuationClassUses'] = { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 };
+        // One-time legacy import shim: old Fire pools are folded
+        // into modern Inferno Tier (eternalStacks.pyro) and Chroma Ember
+        // (secondaryCounters.pyro), then removed.
+        const legacyPressure = Number(ot['pyroFurnacePressure'] ?? ot['pyroFervor'] ?? 0) || 0;
+        const legacyFault = Number(ot['pyroAbyssFault'] ?? ot['pyroRupture'] ?? 0) || 0;
+        const legacyWindows = Number(ot['pyroRuinWindows'] ?? 0) || 0;
+        if (legacyPressure > 0 || legacyFault > 0 || legacyWindows > 0) {
+          const stacks = (ot['eternalStacks'] ?? {}) as Record<string, number>;
+          const secondary = (ot['secondaryCounters'] ?? {}) as Record<string, number>;
+          stacks['pyro'] = (stacks['pyro'] ?? 0) + Math.max(0, legacyPressure + Math.floor(legacyFault / 2));
+          secondary['pyro'] = (secondary['pyro'] ?? 0) + Math.max(0, legacyWindows + Math.floor(legacyFault / 2));
+          ot['eternalStacks'] = stacks;
+          ot['secondaryCounters'] = secondary;
         }
-        if (ot['pyroAttenuationBreaksUsed'] === undefined) ot['pyroAttenuationBreaksUsed'] = 0;
-        if (ot['pyroAttenuationBrokenClasses'] === undefined) ot['pyroAttenuationBrokenClasses'] = [];
-        if (ot['pyroCrossSetConversionDistinctSources'] === undefined) ot['pyroCrossSetConversionDistinctSources'] = [];
-        if (ot['pyroEngineSignatures'] === undefined) ot['pyroEngineSignatures'] = [];
-        if (ot['pyroFurnacePressure'] === undefined) ot['pyroFurnacePressure'] = ot['pyroFervor'] ?? 0;
-        if (ot['pyroFurnaceRiseStreak'] === undefined) ot['pyroFurnaceRiseStreak'] = 0;
-        if (ot['pyroFurnacePeak'] === undefined) ot['pyroFurnacePeak'] = ot['pyroFurnacePressure'] ?? 0;
-        if (ot['pyroChronoCatalyst'] === undefined) ot['pyroChronoCatalyst'] = false;
-        if (ot['pyroChronoEmbers'] === undefined) ot['pyroChronoEmbers'] = 0;
-        if (ot['pyroAbyssFault'] === undefined) ot['pyroAbyssFault'] = ot['pyroRupture'] ?? 0;
-        if (ot['pyroRuinWindows'] === undefined) ot['pyroRuinWindows'] = 0;
-        if (ot['pyroFervor'] === undefined) ot['pyroFervor'] = ot['pyroFurnacePressure'] ?? 0;
-        if (ot['pyroRupture'] === undefined) ot['pyroRupture'] = ot['pyroAbyssFault'] ?? 0;
+        delete ot['pyroFurnacePressure'];
+        delete ot['pyroFurnaceRiseStreak'];
+        delete ot['pyroFurnacePeak'];
+        delete ot['pyroAbyssFault'];
+        delete ot['pyroRuinWindows'];
+        delete ot['pyroFervor'];
+        delete ot['pyroRupture'];
         if (ot['lightCadenceNotes'] === undefined) ot['lightCadenceNotes'] = [];
         if (ot['lightDistinctNotes'] === undefined) ot['lightDistinctNotes'] = [];
         if (ot['lightResonance'] === undefined) ot['lightResonance'] = 0;
@@ -6878,6 +6993,10 @@ export const useStore = create<Store>()(
 
         // Migrate trialDeck: always reset to idle on load (no in-progress trials survive restarts).
         (loaded as unknown as Record<string, unknown>)['trialDeck'] = { ...defaultTrialDeckState };
+
+        // Strip orphaned saved card ids so deleted definitions cannot surface as
+        // "Card data unavailable" placeholders in collection or Ascension views.
+        sanitizeLoadedCardReferences(loaded);
 
         Object.assign(s, loaded);
         setUiPreferences(s.settings);

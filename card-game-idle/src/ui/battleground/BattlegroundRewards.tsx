@@ -5,7 +5,7 @@
 import { useEffect } from 'react';
 import { useStore, selectBattleground, selectProgress } from '@/state/store';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
-import { warmTheme, uiTypography } from '@/ui/theme';
+import { uiTypography } from '@/ui/theme';
 
 export default function BattlegroundRewards() {
   const battleground = useStore(selectBattleground);

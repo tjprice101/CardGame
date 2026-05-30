@@ -18,7 +18,6 @@ import type { CardDefinition } from '@/types/cards';
 
 const INFINITE_COLOR = '#e8e8f0';
 const INFINITE_GLOW = 'rgba(220, 224, 255, 0.55)';
-const ACCENT = '#b8c8ff';
 
 type RecipeListEntry = {
   recipe: InfiniteRecipe;

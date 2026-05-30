@@ -1,20 +1,23 @@
-import { useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useStore, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES, getCardCategoryKey } from '@/data/elements';
 import {
   cardFacePalette,
-  getCardFaceBackgroundStyle,
+  getDenseCardFaceBackgroundStyle,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
+import VirtualizedList from '@/ui/components/VirtualizedList';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
 import { warmTheme } from '@/ui/theme';
 import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
+import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { AngelDefinition, CardDefinition, CardFinish } from '@/types/cards';
 
@@ -242,6 +245,14 @@ interface CardVariantDisplay {
   def: CardDefinition;
 }
 
+interface DeckPoolVirtualRow {
+  key: string;
+  kind: 'heading' | 'cards';
+  sectionLabel: string;
+  countText?: string;
+  entries?: CardVariantDisplay[];
+}
+
 function getVariantKey(definitionId: string, finish: CardFinish): string {
   return `${definitionId}::${finish}`;
 }
@@ -258,12 +269,13 @@ function getOwnedCopiesForFinish(
 ): number {
   const totalOwned = collection[def.definitionId] ?? 0;
   const holoOwned = getHoloOwnedCount(collection, holoCollection, def.definitionId);
+  if (isHoloOnlyCard(def)) return finish === 'holo' ? totalOwned : 0;
   if (finish === 'holo') return holoOwned;
-  if (def.rarity === 'Eternal') return 0;
   return Math.max(0, totalOwned - holoOwned);
 }
 
-function getFinishLabel(finish: CardFinish): string {
+function getFinishLabel(def: CardDefinition, finish: CardFinish): string | null {
+  if (isHoloOnlyCard(def)) return null;
   return finish === 'holo' ? 'Holofoil' : 'Normal';
 }
 
@@ -349,6 +361,20 @@ export default function DeckBuilder({ onClose }: Props) {
   const tooltipTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mousePosRef = useRef({ x: 0, y: 0 });
+  const cardPoolViewportRef = useRef<HTMLDivElement | null>(null);
+  const [cardPoolViewportWidth, setCardPoolViewportWidth] = useState(0);
+
+  useEffect(() => {
+    const node = cardPoolViewportRef.current;
+    if (!node) return;
+
+    const updateWidth = () => setCardPoolViewportWidth(Math.max(0, node.clientWidth - 40));
+    updateWidth();
+
+    const resizeObserver = new ResizeObserver(() => updateWidth());
+    resizeObserver.observe(node);
+    return () => resizeObserver.disconnect();
+  }, []);
 
   function startTooltip(card: CardDefinition) {
     if (tooltipDismissRef.current !== null) { clearTimeout(tooltipDismissRef.current); tooltipDismissRef.current = null; }
@@ -458,6 +484,42 @@ export default function DeckBuilder({ onClose }: Props) {
   );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
   const validation = DeckSystem.validate(deckList);
+  const poolColumns = Math.max(1, Math.floor((cardPoolViewportWidth + 10) / 126));
+  const deckPoolRows = useMemo(() => {
+    const rows: DeckPoolVirtualRow[] = [];
+    const pushCardRows = (entries: CardVariantDisplay[], prefix: string, sectionLabel: string) => {
+      for (let index = 0; index < entries.length; index += poolColumns) {
+        rows.push({
+          key: `${prefix}-${index}`,
+          kind: 'cards',
+          sectionLabel,
+          entries: entries.slice(index, index + poolColumns),
+        });
+      }
+    };
+
+    if (angelSection.length > 0) {
+      rows.push({
+        key: 'heading-Angel',
+        kind: 'heading',
+        sectionLabel: 'Angel',
+        countText: `${extraDeckList.length} / 10 selected`,
+      });
+      pushCardRows(angelSection, 'Angel', 'Angel');
+    }
+
+    mainSections.forEach((section) => {
+      rows.push({
+        key: `heading-${section.label}`,
+        kind: 'heading',
+        sectionLabel: section.label,
+        countText: `${section.cards.length} card${section.cards.length !== 1 ? 's' : ''}`,
+      });
+      pushCardRows(section.cards, section.label, section.label);
+    });
+
+    return rows;
+  }, [angelSection, extraDeckList.length, mainSections, poolColumns]);
 
   // Aggregate deck stats: element distribution + rarity breakdown.
   const deckStats = useMemo(() => {
@@ -612,6 +674,67 @@ export default function DeckBuilder({ onClose }: Props) {
     );
   }
 
+  function renderPoolCard(def: CardVariantDisplay, sectionLabel: string): React.ReactNode {
+    const isAngel = sectionLabel === 'Angel';
+    const variantKey = getVariantKey(def.def.definitionId, def.finish);
+    const count = isAngel ? (extraDeckCountMap.get(variantKey) ?? 0) : (deckMap.get(variantKey) ?? 0);
+    const owned = def.ownedCopies;
+    const cap = Math.min(4, collection[def.def.definitionId] ?? 0);
+    const totalForDefinition = isAngel
+      ? (extraDeckDefinitionCountMap.get(def.def.definitionId) ?? 0)
+      : (deckDefinitionCountMap.get(def.def.definitionId) ?? 0);
+    const canAdd = isAngel
+      ? count < owned && totalForDefinition < cap && extraDeckList.length < 10
+      : !(count >= owned || totalForDefinition >= cap);
+    const previewText = getCardPreviewLines(def.def, isAngel ? 3 : 2).join(' ');
+
+    return (
+      <div key={def.key} style={styles.cardWithMeta}>
+        <div
+          style={{
+            ...styles.card,
+            ...getDenseCardFaceBackgroundStyle(def.def, def.finish),
+            ...(count > 0 ? styles.cardAdded : {}),
+            ...((isAngel ? (count === 0 && !canAdd) : !canAdd) ? styles.cardFull : {}),
+          }}
+          onClick={() => addCard(def.def.definitionId, def.finish)}
+          onMouseMove={(e) => { mousePosRef.current = { x: e.clientX, y: e.clientY }; }}
+          onMouseEnter={() => startTooltip(def.def)}
+          onMouseLeave={clearTooltip}
+        >
+          <div style={getCardNameRibbonStyle('grid')}>
+                          <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
+                            {(() => {
+                              const baseLabel = isAngel ? 'Angel' : getDisplayCardTypeLabel(def.def.type);
+                              const finishLabel = getFinishLabel(def.def, def.finish);
+                              return finishLabel ? `${baseLabel} · ${finishLabel}` : baseLabel;
+                            })()}
+                          </div>
+            <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
+          </div>
+          <div style={getCardRulesPanelStyle('grid')}>
+            <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: isAngel ? 3 : 2 }}>
+              {previewText}
+            </div>
+            {isAngel && def.def.type === 'Angel' && (
+              <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
+                Cost: {(def.def as AngelDefinition).summonCost.length} materials
+              </div>
+            )}
+          </div>
+          {count > 0 && <div style={styles.badge}>{count}</div>}
+        </div>
+        <div style={styles.ownedLabelBelow}>owns {owned}</div>
+        {renderLockControl(
+          def.def.definitionId,
+          collection,
+          cardLocks,
+          setCardLock,
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="ui-panel-intro" style={{ ...styles.overlay, ['--ui-accent' as any]: '240, 189, 120', ['--ui-accent-soft' as any]: '250, 224, 184' } as React.CSSProperties}>
       {isLocked && (
@@ -718,164 +841,48 @@ export default function DeckBuilder({ onClose }: Props) {
 
       <div style={styles.body}>
         {/* Card Pool */}
-        <div style={styles.cardPool}>
-          {/* Extra Deck section */}
-          {angelSection.length > 0 && (
-            <div>
-              <div style={styles.sectionHeader}>
-                <div style={{ width: 4, height: 20, borderRadius: 2, background: SECTION_COLORS['Angel'] ?? '#f0bd78', boxShadow: `0 0 8px ${(SECTION_COLORS['Angel'] ?? '#f0bd78')}60`, flexShrink: 0 }} />
-                <span style={{ ...styles.sectionLabel, color: SECTION_COLORS['Angel'] }}>
-                  Extra Deck (Angels)
-                </span>
-                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${(SECTION_COLORS['Angel'] ?? '#f0bd78')}50, transparent)`, marginLeft: 4 }} />
-                <span style={styles.sectionCount}>{extraDeckList.length} / 10 selected</span>
-              </div>
-              <div style={styles.sectionGrid}>
-                {angelSection.map(def => {
-                  const variantKey = getVariantKey(def.def.definitionId, def.finish);
-                  const count = extraDeckCountMap.get(variantKey) ?? 0;
-                  const owned = def.ownedCopies;
-                  const cap = Math.min(4, collection[def.def.definitionId] ?? 0);
-                  const totalForDefinition = extraDeckDefinitionCountMap.get(def.def.definitionId) ?? 0;
-                  const canAdd = count < owned && totalForDefinition < cap && extraDeckList.length < 10;
-                  return (
-                    <div key={def.key} style={styles.cardWithMeta}>
-                      <div
-                        className={def.finish === 'holo' || def.def.rarity === 'Infinite' || def.def.rarity === 'Eternal'
-                          ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
-                          : undefined}
-                        style={{
-                          ...styles.card,
-                          ...getCardFaceBackgroundStyle(def.def, def.finish),
-                          ...(count > 0 ? styles.cardAdded : {}),
-                          ...(count === 0 && !canAdd ? styles.cardFull : {}),
-                          border: `1px solid ${count > 0 ? 'rgba(255,215,0,0.65)' : 'rgba(255,215,0,0.3)'}`,
-                        }}
-                        onClick={() => addCard(def.def.definitionId, def.finish)}
-                        onMouseMove={(e) => { mousePosRef.current = { x: e.clientX, y: e.clientY }; }}
-                        onMouseEnter={() => startTooltip(def.def)}
-                        onMouseLeave={clearTooltip}
-                      >
-                        <div style={getCardNameRibbonStyle('grid')}>
-                          <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
-                            Angel · {getFinishLabel(def.finish)}
-                          </div>
-                          <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
-                        </div>
-                        <div style={getCardRulesPanelStyle('grid')}>
-                          <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
-                            <CardRulesDigest
-                              card={def.def}
-                              variant="preview"
-                            maxSections={4}
-                            maxLinesPerSection={10}
-                            lineClamp={3}
-                              labelColor={cardFacePalette.textMuted}
-                              textColor={cardFacePalette.textSoft}
-                              sectionBackground="transparent"
-                              sectionBorder="transparent"
-                            />
-                          </div>
-                          {def.def.type === 'Angel' && (
-                            <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
-                              Cost: {(def.def as AngelDefinition).summonCost.length} materials
-                            </div>
-                          )}
-                        </div>
-                        {count > 0 && <div style={styles.badge}>{count}</div>}
-                      </div>
-                      <div style={styles.ownedLabelBelow}>owns {owned}</div>
-                      {renderLockControl(
-                        def.def.definitionId,
-                        collection,
-                        cardLocks,
-                        setCardLock,
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Main deck sections */}
-          {mainSections.length === 0 && angelSection.length === 0 && (
+        {mainSections.length === 0 && angelSection.length === 0 ? (
+          <div style={styles.cardPool}>
             <div style={styles.empty}>
               No {elementFilter ? (ELEMENT_SET_NAMES[elementFilter] ?? elementFilter) : ''} cards in your collection yet.
             </div>
-          )}
-          {mainSections.map(section => (
-            <div key={section.label}>
-              <div style={styles.sectionHeader}>
-                <div style={{ width: 4, height: 20, borderRadius: 2, background: SECTION_COLORS[section.label] ?? '#58aada', boxShadow: `0 0 8px ${(SECTION_COLORS[section.label] ?? '#58aada')}50`, flexShrink: 0 }} />
-                <span style={{ ...styles.sectionLabel, color: SECTION_COLORS[section.label] ?? '#58aada' }}>
-                  {section.label}
-                </span>
-                <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${(SECTION_COLORS[section.label] ?? '#58aada')}45, transparent)`, marginLeft: 4 }} />
-                <span style={styles.sectionCount}>{section.cards.length} card{section.cards.length !== 1 ? 's' : ''}</span>
-              </div>
-              <div style={styles.sectionGrid}>
-                {section.cards.map(def => {
-                  const variantKey = getVariantKey(def.def.definitionId, def.finish);
-                  const count = deckMap.get(variantKey) ?? 0;
-                  const owned = def.ownedCopies;
-                  const cap = Math.min(4, collection[def.def.definitionId] ?? 0);
-                  const totalForDefinition = deckDefinitionCountMap.get(def.def.definitionId) ?? 0;
-                  const full = count >= owned || totalForDefinition >= cap;
-                  return (
-                    <div key={def.key} style={styles.cardWithMeta}>
-                      <div
-                        className={def.finish === 'holo' || def.def.rarity === 'Infinite' || def.def.rarity === 'Eternal'
-                          ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
-                          : undefined}
-                        style={{
-                          ...styles.card,
-                          ...getCardFaceBackgroundStyle(def.def, def.finish),
-                          ...(count > 0 ? styles.cardAdded : {}),
-                          ...(full ? styles.cardFull : {}),
-                        }}
-                        onClick={() => addCard(def.def.definitionId, def.finish)}
-                        onMouseMove={(e) => { mousePosRef.current = { x: e.clientX, y: e.clientY }; }}
-                        onMouseEnter={() => startTooltip(def.def)}
-                        onMouseLeave={clearTooltip}
-                      >
-                        <div style={getCardNameRibbonStyle('grid')}>
-                          <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
-                            {getDisplayCardTypeLabel(def.def.type)} · {getFinishLabel(def.finish)}
-                          </div>
-                          <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
-                        </div>
-                        <div style={getCardRulesPanelStyle('grid')}>
-                          <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
-                            <CardRulesDigest
-                              card={def.def}
-                              variant="preview"
-                              maxSections={2}
-                              maxLinesPerSection={1}
-                              lineClamp={1}
-                              labelColor={cardFacePalette.textMuted}
-                              textColor={cardFacePalette.textSoft}
-                              sectionBackground="transparent"
-                              sectionBorder="transparent"
-                            />
-                          </div>
-                        </div>
-                        {count > 0 && <div style={styles.badge}>{count}</div>}
-                      </div>
-                      <div style={styles.ownedLabelBelow}>owns {owned}</div>
-                      {renderLockControl(
-                        def.def.definitionId,
-                        collection,
-                        cardLocks,
-                        setCardLock,
-                      )}
+          </div>
+        ) : (
+          <VirtualizedList
+            items={deckPoolRows}
+            getItemKey={(row) => row.key}
+            getItemHeight={(row) => row.kind === 'heading' ? 44 : 214}
+            topPadding={16}
+            bottomPadding={24}
+            overscanPx={520}
+            viewportRef={cardPoolViewportRef}
+            style={styles.cardPool}
+            renderItem={(row) => {
+              if (row.kind === 'heading') {
+                const accent = SECTION_COLORS[row.sectionLabel] ?? '#58aada';
+                const title = row.sectionLabel === 'Angel' ? 'Extra Deck (Angels)' : row.sectionLabel;
+                return (
+                  <div style={{ padding: '0 20px' }}>
+                    <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
+                      <div style={{ width: 4, height: 20, borderRadius: 2, background: accent, boxShadow: `0 0 8px ${accent}50`, flexShrink: 0 }} />
+                      <span style={{ ...styles.sectionLabel, color: accent }}>
+                        {title}
+                      </span>
+                      <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${accent}45, transparent)`, marginLeft: 4 }} />
+                      <span style={styles.sectionCount}>{row.countText}</span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
+                  </div>
+                );
+              }
+
+              return (
+                <div style={{ display: 'flex', gap: 10, padding: '0 20px 24px', alignItems: 'flex-start' }}>
+                  {row.entries?.map((entry) => renderPoolCard(entry, row.sectionLabel))}
+                </div>
+              );
+            }}
+          />
+        )}
 
         {/* Sidebar */}
         <div style={styles.sidebar}>

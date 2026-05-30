@@ -76,14 +76,8 @@ export default function EmberDisplay() {
   if (turn.phase === 'idle' || !hasFireCards) return null;
 
   const active = turn.embers > 0;
-  const heat = turn.pyroHeat ?? 0;
-  const heatPct = Math.round(Math.min(100, (heat / 40) * 100));
-  const heatColor = heat >= 30 ? '#ff4040' : heat >= 15 ? '#ff8840' : '#ff6030';
 
-  const tooltipText = [
-    `Embers: ${turn.embers} (spent by Fire attacks)`,
-    heat > 0 ? `Heat: ${heat}/40 (+${Math.round(heat * 2)}% Oblivion)` : 'Heat: 0 (play Fire cards to charge)',
-  ].join('\n');
+  const tooltipText = `Embers: ${turn.embers} (spent by Fire attacks and Eternal/Infinite Pyro payoffs)`;
 
   return (
     <div style={styles.container} title={tooltipText}>
@@ -94,37 +88,6 @@ export default function EmberDisplay() {
       >
         {turn.embers}
       </div>
-      {heat > 0 && (
-        <div style={{
-          marginTop: 5,
-          width: 44,
-          height: 5,
-          borderRadius: 3,
-          background: 'rgba(255,255,255,0.08)',
-          overflow: 'hidden',
-        }}>
-          <div style={{
-            width: `${heatPct}%`,
-            height: '100%',
-            background: heatColor,
-            borderRadius: 3,
-            transition: 'width 0.3s ease',
-            boxShadow: `0 0 4px ${heatColor}88`,
-          }} />
-        </div>
-      )}
-      {heat > 0 && (
-        <div style={{
-          fontSize: 8,
-          color: heatColor,
-          marginTop: 2,
-          fontFamily: 'Georgia, serif',
-          letterSpacing: 1,
-          opacity: 0.85,
-        }}>
-          {heat} heat
-        </div>
-      )}
     </div>
   );
 }

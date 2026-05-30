@@ -48,7 +48,7 @@ export class ScoreSystem {
         case 'cherubim_extra_plays':   cherubimExtraPlays      += Math.round(bonusValue * burnMultiplier); break;
         case 'ember_per_card':      embersPerCardBonus   += bonusValue * burnMultiplier; break;
         // chain_bonus, cherubim_expire_bonus are handled at play-time
-        // legacy Light types (power_amplifier, tick_acceleration, etc.) are no-ops until Light rework
+        // Light-only bonus types are handled elsewhere in the current rework model.
       }
     }
 

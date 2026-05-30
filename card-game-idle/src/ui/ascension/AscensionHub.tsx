@@ -1,8 +1,16 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useStore, selectProgress } from '@/state/store';
+import { useFriendsStore, selectFriendsList, selectFriendsLoaded } from '@/state/friendsStore';
+import { useCoopRaidStore } from '@/state/coopRaidStore';
 import { uiTypography } from '@/ui/theme';
-import { NULL_RAID_DEFINITIONS, type NullRaidDefinition } from '@/data/ascension/nullRaidDefinitions';
-import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
+import { CardRegistry } from '@/cards/CardRegistry';
+import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import CollectionCardDetail from '@/ui/store/CollectionCardDetail';
+import { getDenseCardFaceBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
+import { NULL_RAID_DEFINITIONS, NULL_RAID_BOSS_MAP, type NullRaidDefinition } from '@/data/ascension/nullRaidDefinitions';
+import { getNullRaidBossArtUrl } from '@/ui/ascension/nullRaidArt';
+import { TRANSCENDENT_SHOP_COSTS, TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
 
 // ── Void Violet palette ───────────────────────────────────────────────
 const G = {
@@ -16,7 +24,7 @@ const G = {
   text: '#ece6ff',
   textMuted: 'rgba(220,210,255,0.72)',
   textFaint: 'rgba(190,175,240,0.46)',
-  cinzel: '"Cinzel", "Cormorant Garamond", Georgia, serif',
+  cinzel: uiTypography.display,
   entropyColor: '#c0a8ff',
   raidColor: '#8ac8ff',
   transcendentColor: '#ffe4a0',
@@ -30,8 +38,14 @@ export default function AscensionHub({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const computedStats = useStore(s => s.computedStats);
   const startNullRaid = useStore(s => s.startNullRaid);
+  const purchaseTranscendentCard = useStore(s => s.purchaseTranscendentCard);
+  const enqueueToast = useStore(s => s.enqueueToast);
+  const friends = useFriendsStore(selectFriendsList);
+  const friendsLoaded = useFriendsStore(selectFriendsLoaded);
+  const loadFriends = useFriendsStore(s => s.load);
+  const sendCoopInvite = useCoopRaidStore(s => s.sendInvite);
 
-  const entropy = progress.entropyBalance ?? 0;
+  const entropy = progress.entropicEnergyBalance ?? progress.entropyBalance ?? 0;
   const nullRaidClears = progress.nullRaidClears ?? {};
   const totalClears = Object.values(nullRaidClears).reduce((sum, n) => sum + n, 0);
   const transcendentCollection = progress.transcendentCollection ?? {};
@@ -43,6 +57,8 @@ export default function AscensionHub({ onClose }: Props) {
   const [selectedDeckId, setSelectedDeckId] = useState<string>(savedDecks[0]?.id ?? '');
   const [showShop, setShowShop] = useState(false);
   const [now, setNow] = useState(() => Date.now());
+  const [sendingInviteTo, setSendingInviteTo] = useState<string | null>(null);
+  const [selectedDropCardId, setSelectedDropCardId] = useState<string | null>(null);
 
   // Refresh cooldown timers every second.
   const refreshNow = useCallback(() => setNow(Date.now()), []);
@@ -50,6 +66,12 @@ export default function AscensionHub({ onClose }: Props) {
     const id = setInterval(refreshNow, 1000);
     return () => clearInterval(id);
   }, [refreshNow]);
+
+  useEffect(() => {
+    if (!friendsLoaded) {
+      void loadFriends();
+    }
+  }, [friendsLoaded, loadFriends]);
 
   function getCooldownRemaining(raidId: string): number {
     const cd = progress.nullRaidCooldowns?.[raidId];
@@ -71,30 +93,110 @@ export default function AscensionHub({ onClose }: Props) {
 
   function handleEnterRaid() {
     if (!selectedRaid || !selectedDeckId) return;
-    startNullRaid(selectedRaid.id, selectedDeckId);
-    onClose();
+    const started = startNullRaid(selectedRaid.id, selectedDeckId);
+    if (started) onClose();
+  }
+
+  async function handleSendCoopInvite(friendId: string, displayName: string, avatarId: string, titleId: string | null) {
+    if (!selectedRaid || !selectedDeckId) return;
+    if (sendingInviteTo) return;
+    setSendingInviteTo(friendId);
+    const sessionId = await sendCoopInvite(friendId, { displayName, avatarId, titleId }, selectedRaid.id, selectedDeckId);
+    if (!sessionId) {
+      enqueueToast('Failed to send co-op raid invite.', 'warning');
+      setSendingInviteTo(null);
+      return;
+    }
+    enqueueToast(`Co-op invite sent to ${displayName}.`, 'success');
+    setSendingInviteTo(null);
   }
 
   const raidsByStars: Record<1 | 2 | 3, NullRaidDefinition[]> = { 1: [], 2: [], 3: [] };
   for (const r of NULL_RAID_DEFINITIONS) raidsByStars[r.stars].push(r);
 
-  const SHOP_PRICES: Record<string, number> = {
-    'tx-sera-null-entropy': 800,
-    'tx-sera-pyro-singularity': 800,
-    'tx-sera-sea-current': 800,
-    'tx-sera-star-lattice': 800,
-    'tx-sera-void-nullform': 1000,
-    'tx-cher-null-sentinel': 600,
-    'tx-cher-pyro-infernal': 600,
-    'tx-cher-sea-deepbond': 600,
-    'tx-cher-mech-overclock': 600,
-    'tx-cher-glass-theorem': 700,
-    'tx-oph-null-convergence': 400,
-    'tx-oph-pyro-ashen-crown': 400,
-    'tx-oph-sea-tidal-echo': 400,
-    'tx-oph-star-wishbeam': 400,
-    'tx-oph-void-null-pulse': 500,
-  };
+  const raidShopSections = useMemo(() => {
+    const elementToSet: Record<string, string> = {
+      neutrality: 'Neutrality',
+      fire: 'Pyroabyss',
+    };
+    const mechanicOverviewBySet: Record<string, { title: string; body: string }> = {
+      Neutrality: {
+        title: 'Equilibrium Sigils',
+        body:
+          'These cards create and spend Equilibrium Sigils. Sigils amplify Patience growth passively, then convert into tactical spikes: burst Oblivion, Patience restoration, and cooldown pressure relief when spent at the right moment.',
+      },
+      Pyroabyss: {
+        title: 'Inferno Confluence',
+        body:
+          'These cards build matched Inferno Tier and Chroma Ember pairs, then cash those pairs in through Confluence. The suite rewards balancing both pools, correcting lopsided states, and timing the angel ritual after the Seraph and Cherub are online.',
+      },
+    };
+
+    const entries = Array.from(TRANSCENDENT_SHOP_IDS)
+      .map(definitionId => {
+        const card = CardRegistry.get(definitionId);
+        if (!card) return null;
+        const cost = TRANSCENDENT_SHOP_COSTS[definitionId] ?? 0;
+        if (cost <= 0) return null;
+        const normalizedElement = card.element.toLowerCase();
+        const associatedSet = elementToSet[normalizedElement] ?? card.element;
+        const matchingRaid = NULL_RAID_DEFINITIONS.find(r => r.associatedSet.toLowerCase() === associatedSet.toLowerCase()) ?? null;
+        return { card, cost, associatedSet, raid: matchingRaid };
+      })
+      .filter((entry): entry is {
+        card: NonNullable<ReturnType<typeof CardRegistry.get>>;
+        cost: number;
+        associatedSet: string;
+        raid: NullRaidDefinition | null;
+      } => entry !== null)
+      .sort((a, b) => a.cost - b.cost || a.card.name.localeCompare(b.card.name));
+
+    const grouped = new Map<string, {
+      raid: NullRaidDefinition | null;
+      associatedSet: string;
+      mechanic: { title: string; body: string };
+      entries: typeof entries;
+    }>();
+
+    for (const entry of entries) {
+      const groupKey = entry.raid?.id ?? `set:${entry.associatedSet.toLowerCase()}`;
+      const existing = grouped.get(groupKey);
+      if (existing) {
+        existing.entries.push(entry);
+        continue;
+      }
+      grouped.set(groupKey, {
+        raid: entry.raid,
+        associatedSet: entry.associatedSet,
+        mechanic: mechanicOverviewBySet[entry.associatedSet] ?? {
+          title: 'Set Core Overlay',
+          body: 'These cards extend their set\'s core loop with a raid-focused endgame conversion pattern.',
+        },
+        entries: [entry],
+      });
+    }
+
+    const raidOrder = new Map<string, number>(NULL_RAID_DEFINITIONS.map((raid, idx) => [raid.id, idx]));
+    return Array.from(grouped.values()).sort((a, b) => {
+      const aOrder = a.raid ? (raidOrder.get(a.raid.id) ?? 999) : 999;
+      const bOrder = b.raid ? (raidOrder.get(b.raid.id) ?? 999) : 999;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return a.associatedSet.localeCompare(b.associatedSet);
+    });
+  }, []);
+
+  function handleBuyRaidShopCard(definitionId: string, cost: number) {
+    const card = CardRegistry.get(definitionId);
+    if (!card) return;
+    const purchased = purchaseTranscendentCard(definitionId, cost);
+    if (!purchased) {
+      enqueueToast(`Not enough Entropic Energy for ${card.name}.`, 'warning');
+      return;
+    }
+    enqueueToast(`Purchased ${card.name} for ${cost.toLocaleString()} Entropic Energy.`, 'success');
+  }
+
+  const selectedDropCard = selectedDropCardId ? CardRegistry.get(selectedDropCardId) : null;
 
   const STAR_LABEL: Record<number, string> = { 1: '✦ 1-STAR RAIDS', 2: '✦✦ 2-STAR RAIDS', 3: '✦✦✦ 3-STAR RAIDS' };
   const STAR_COLOR: Record<number, string> = { 1: '#8ac8ff', 2: '#c89aff', 3: '#ffd070' };
@@ -157,7 +259,7 @@ export default function AscensionHub({ onClose }: Props) {
                 textTransform: 'uppercase', transition: 'all 0.18s ease',
               }}
             >
-              Raid Shop
+              Spoils
             </button>
             <button
               onClick={onClose}
@@ -182,7 +284,7 @@ export default function AscensionHub({ onClose }: Props) {
           flexShrink: 0, gap: 0,
         }}>
           {[
-            { label: 'Entropy', value: entropy.toLocaleString(), color: G.entropyColor },
+            { label: 'Entropic Energy', value: entropy.toLocaleString(), color: G.entropyColor },
             { label: 'Resonance', value: Math.floor(resonanceScore).toLocaleString(), color: '#a0e8c0' },
             { label: 'Raid Clears', value: totalClears.toLocaleString(), color: G.raidColor },
             { label: 'Transcendents', value: transcendentCount.toLocaleString(), color: G.transcendentColor },
@@ -211,50 +313,138 @@ export default function AscensionHub({ onClose }: Props) {
                 <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${G.accent}, ${G.accentSoft}, ${G.accent}, transparent)`, boxShadow: `0 0 20px rgba(130,80,255,0.40)` }} />
                 <div style={{ padding: '20px 28px' }}>
                   <div style={{ fontFamily: G.cinzel, fontSize: 12, letterSpacing: 4, color: G.accentSoft, marginBottom: 6, textTransform: 'uppercase' }}>
-                    Entropy Shop — Transcendent Cards
+                    Spoils of the Eternal Battlefield
                   </div>
                   <div style={{ fontSize: 11, color: G.textMuted, marginBottom: 20, lineHeight: 1.6 }}>
-                    Purchase Transcendent Seraphim, Cherubim, and Ophanim cards with Entropy. Angels are drop-only.
+                    Spend Entropic Energy on Transcendent cards recovered from each Null Raid front. Cards are organized by raid origin and each section includes its mechanic overview.
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 12 }}>
-                    {[...TRANSCENDENT_SHOP_IDS].map(id => {
-                      const price = SHOP_PRICES[id] ?? 500;
-                      const owned = transcendentCollection[id] ?? 0;
-                      const canAfford = entropy >= price;
-                      const type = id.includes('-sera-') ? 'Seraphim' : id.includes('-cher-') ? 'Cherubim' : 'Ophanim';
-                      const typeColor = type === 'Seraphim' ? '#c0a0ff' : type === 'Cherubim' ? '#a0d0ff' : '#a0ffcc';
-                      const name = id.replace('tx-sera-', '').replace('tx-cher-', '').replace('tx-oph-', '').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-                      return (
-                        <div key={id} style={{
-                          borderRadius: 10, padding: '12px 16px',
-                          border: `1px solid ${canAfford ? G.border : 'rgba(80,60,120,0.20)'}`,
-                          background: 'rgba(10,5,25,0.80)',
-                          display: 'flex', flexDirection: 'column', gap: 8,
-                          opacity: canAfford ? 1 : 0.6,
-                        }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: typeColor, fontFamily: G.cinzel }}>
-                              {type}
-                            </span>
-                            {owned > 0 && <span style={{ fontSize: 9, color: G.transcendentColor, letterSpacing: 1 }}>OWNED ×{owned}</span>}
+                  {raidShopSections.length === 0 ? (
+                    <div style={{ fontSize: 12, color: G.textMuted }}>
+                      No Raid Shop cards are currently configured.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {raidShopSections.map(section => (
+                        <div key={section.raid?.id ?? section.associatedSet} style={{ border: `1px solid ${G.border}`, borderRadius: 12, padding: 12, background: 'rgba(8,4,20,0.68)' }}>
+                          <div style={{ marginBottom: 10 }}>
+                            <div style={{ fontSize: 9, color: G.raidColor, letterSpacing: 3, textTransform: 'uppercase', fontFamily: G.cinzel, marginBottom: 4 }}>
+                              Raid
+                            </div>
+                            <div style={{ fontSize: 14, color: G.text, fontFamily: G.cinzel, letterSpacing: 1 }}>
+                              {section.raid?.name ?? `${section.associatedSet} Front`}
+                            </div>
                           </div>
-                          <div style={{ fontSize: 13, color: G.text, fontFamily: G.cinzel, letterSpacing: 1 }}>{name}</div>
-                          <button
-                            disabled={!canAfford}
-                            style={{
-                              padding: '6px 12px', borderRadius: 6, cursor: canAfford ? 'pointer' : 'not-allowed',
-                              background: canAfford ? `rgba(130,80,255,0.22)` : 'rgba(60,40,100,0.10)',
-                              border: `1px solid ${canAfford ? G.borderStrong : 'rgba(80,60,120,0.20)'}`,
-                              color: canAfford ? G.accentSoft : G.textFaint,
-                              fontSize: 11, letterSpacing: 1,
-                            }}
-                          >
-                            {price.toLocaleString()} Entropy
-                          </button>
+
+                          <div style={{ border: `1px solid ${G.border}`, borderRadius: 8, background: 'rgba(16,8,34,0.75)', padding: '10px 12px', marginBottom: 12 }}>
+                            <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: G.accentSoft, fontFamily: G.cinzel, marginBottom: 4 }}>
+                              Mechanic Overview · {section.mechanic.title}
+                            </div>
+                            <div style={{ fontSize: 11, color: G.textMuted, lineHeight: 1.6 }}>
+                              {section.mechanic.body}
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
+                            {section.entries.map(({ card, cost }) => {
+                              const owned = transcendentCollection[card.definitionId] ?? 0;
+                              const canAfford = entropy >= cost;
+                              return (
+                                <div
+                                  key={card.definitionId}
+                                  style={{
+                                    borderRadius: 12,
+                                    padding: '12px',
+                                    border: `1px solid ${G.border}`,
+                                    background: 'rgba(10,5,25,0.82)',
+                                    display: 'grid',
+                                    gridTemplateColumns: '110px 1fr',
+                                    gap: 12,
+                                    color: G.text,
+                                  }}
+                                >
+                                  <button
+                                    onClick={() => setSelectedDropCardId(card.definitionId)}
+                                    style={{
+                                      width: 110,
+                                      aspectRatio: '148 / 204',
+                                      borderRadius: 10,
+                                      position: 'relative',
+                                      overflow: 'hidden',
+                                      border: `1px solid ${G.border}`,
+                                      padding: 0,
+                                      cursor: 'pointer',
+                                      background: 'transparent',
+                                      ...getDenseCardFaceBackgroundStyle(card, 'normal'),
+                                    }}
+                                  >
+                                    <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
+                                  </button>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                                      <button
+                                        onClick={() => setSelectedDropCardId(card.definitionId)}
+                                        style={{
+                                          fontSize: 14,
+                                          color: G.text,
+                                          fontFamily: G.cinzel,
+                                          letterSpacing: 1,
+                                          background: 'transparent',
+                                          border: 'none',
+                                          padding: 0,
+                                          textAlign: 'left',
+                                          cursor: 'pointer',
+                                        }}
+                                      >
+                                        {card.name}
+                                      </button>
+                                      <div style={{ fontSize: 10, color: G.transcendentColor, letterSpacing: 1 }}>
+                                        OWNED ×{owned}
+                                      </div>
+                                    </div>
+                                    <div style={{ fontSize: 10, color: G.textMuted, textTransform: 'uppercase', letterSpacing: 2 }}>
+                                      {getDisplayCardTypeLabel(card.type)} · {card.rarity}
+                                    </div>
+                                    <CardRulesDigest
+                                      card={card}
+                                      variant="preview"
+                                      maxSections={3}
+                                      maxLinesPerSection={1}
+                                      lineClamp={2}
+                                      labelColor="rgba(220,210,255,0.65)"
+                                      textColor="rgba(236,230,255,0.90)"
+                                      sectionBackground="rgba(255,255,255,0.03)"
+                                      sectionBorder="rgba(255,255,255,0.08)"
+                                    />
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                                      <div style={{ fontSize: 11, color: G.entropyColor, fontVariantNumeric: 'tabular-nums' }}>
+                                        Cost: {cost.toLocaleString()} Entropic Energy
+                                      </div>
+                                      <button
+                                        onClick={() => handleBuyRaidShopCard(card.definitionId, cost)}
+                                        disabled={!canAfford}
+                                        style={{
+                                          padding: '6px 10px',
+                                          borderRadius: 7,
+                                          border: `1px solid ${canAfford ? G.borderStrong : G.border}`,
+                                          background: canAfford ? 'rgba(120,70,220,0.26)' : 'rgba(40,20,80,0.32)',
+                                          color: canAfford ? G.accentSoft : G.textFaint,
+                                          fontSize: 10,
+                                          letterSpacing: 1,
+                                          cursor: canAfford ? 'pointer' : 'not-allowed',
+                                        }}
+                                      >
+                                        Buy
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -291,25 +481,45 @@ export default function AscensionHub({ onClose }: Props) {
                       Encounter Lineup — {selectedRaid.encounterBossIds.length} Bosses · 2:00 per encounter
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {selectedRaid.encounterBossIds.map((id, idx) => (
+                      {selectedRaid.encounterBossIds.map((id, idx) => {
+                        const bossData = NULL_RAID_BOSS_MAP.get(id);
+                        const bossArtUrl = getNullRaidBossArtUrl(id);
+                        return (
                         <div key={id} style={{
                           display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '7px 12px', borderRadius: 8,
+                          padding: '9px 14px', borderRadius: 8,
                           background: 'rgba(10,5,25,0.80)', border: `1px solid ${G.border}`,
                         }}>
                           <span style={{ fontSize: 10, color: G.textFaint, fontFamily: G.cinzel, minWidth: 22 }}>
                             {String(idx + 1).padStart(2, '0')}
                           </span>
-                          <span style={{ fontSize: 12, color: G.text }}>{id.replace(/^nr-[a-z]+-/, '').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
+                          {bossArtUrl && (
+                            <div
+                              style={{
+                                width: 92,
+                                height: 54,
+                                borderRadius: 6,
+                                border: `1px solid ${G.border}`,
+                                backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.10) 0%, rgba(10,4,16,0.45) 100%), url("${bossArtUrl}")`,
+                                backgroundPosition: 'center',
+                                backgroundSize: 'cover',
+                                backgroundRepeat: 'no-repeat',
+                                boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05)',
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
+                          <span style={{ fontSize: 13, color: G.text }}>{bossData?.name ?? id.replace(/^nr-[a-z]+-/, '').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
 
                   {/* Rewards per encounter */}
                   <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     {[
-                      { label: 'Entropy / Encounter', value: selectedRaid.entropyPerEncounter, color: G.entropyColor },
+                      { label: 'Entropic Energy / Encounter', value: selectedRaid.entropyPerEncounter, color: G.entropyColor },
                       { label: 'Shards / Encounter', value: selectedRaid.shardsPerEncounter, color: '#a0ffcc' },
                       { label: 'Recommended Resonance', value: selectedRaid.recommendedResonance.toLocaleString(), color: '#a0e8c0' },
                     ].map(r => (
@@ -354,6 +564,55 @@ export default function AscensionHub({ onClose }: Props) {
                     <div style={{ fontSize: 12, color: G.textMuted }}>No saved decks. Save a deck from the deck builder to enter a raid.</div>
                   )}
 
+                  {/* Co-op invite controls */}
+                  {savedDecks.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: G.textMuted, fontFamily: G.cinzel }}>
+                        Co-op Party Invite
+                      </div>
+                      {friends.length === 0 ? (
+                        <div style={{ fontSize: 12, color: G.textMuted }}>Add at least one friend to invite a co-op raid partner.</div>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
+                          {friends.map(f => {
+                            const friendId = f.other.id;
+                            const sending = sendingInviteTo === friendId;
+                            return (
+                              <div key={friendId} style={{
+                                padding: '8px 10px',
+                                borderRadius: 8,
+                                border: `1px solid ${G.border}`,
+                                background: 'rgba(10,5,25,0.80)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                gap: 8,
+                              }}>
+                                <span style={{ fontSize: 12, color: G.text }}>{f.other.displayName}</span>
+                                <button
+                                  disabled={!!sendingInviteTo}
+                                  onClick={() => void handleSendCoopInvite(friendId, f.other.displayName, f.other.avatarId, f.other.titleId)}
+                                  style={{
+                                    padding: '6px 10px',
+                                    borderRadius: 7,
+                                    border: `1px solid ${sending ? G.border : G.borderStrong}`,
+                                    background: sending ? 'rgba(80,40,120,0.24)' : 'rgba(120,70,220,0.26)',
+                                    color: sending ? G.textMuted : G.accentSoft,
+                                    fontSize: 10,
+                                    letterSpacing: 1,
+                                    cursor: sendingInviteTo ? 'not-allowed' : 'pointer',
+                                  }}
+                                >
+                                  {sending ? 'Sending...' : 'Invite'}
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Enter button */}
                   {(() => {
                     const locked = isRaidLocked(selectedRaid);
@@ -394,6 +653,9 @@ export default function AscensionHub({ onClose }: Props) {
                     const cdMs = getCooldownRemaining(raid.id);
                     const onCd = cdMs > 0;
                     const clears = nullRaidClears[raid.id] ?? 0;
+                    const finalBossId = raid.encounterBossIds[raid.encounterBossIds.length - 1] ?? raid.encounterBossIds[0];
+                    const finalBossArtUrl = getNullRaidBossArtUrl(finalBossId);
+                    const finalBossName = finalBossId ? (NULL_RAID_BOSS_MAP.get(finalBossId)?.name ?? 'Unknown Final Boss') : null;
                     return (
                       <div
                         key={raid.id}
@@ -409,39 +671,57 @@ export default function AscensionHub({ onClose }: Props) {
                         }}
                       >
                         <div style={{ width: 4, alignSelf: 'stretch', background: locked ? 'rgba(80,60,120,0.30)' : STAR_COLOR[stars], flexShrink: 0 }} />
-                        <div style={{ flex: 1, padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+                          {finalBossArtUrl && (
+                            <div
+                              style={{
+                                width: 168,
+                                height: 96,
+                                borderRadius: 10,
+                                border: `1px solid ${G.border}`,
+                                backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.10) 0%, rgba(10,4,16,0.45) 100%), url("${finalBossArtUrl}")`,
+                                backgroundPosition: 'center',
+                                backgroundSize: 'cover',
+                                backgroundRepeat: 'no-repeat',
+                                boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05)',
+                                flexShrink: 0,
+                              }}
+                            />
+                          )}
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 200 }}>
-                            <div style={{ fontFamily: G.cinzel, fontSize: 14, letterSpacing: 1.5, color: locked ? G.textMuted : G.text }}>
+                            <div style={{ fontFamily: G.cinzel, fontSize: 16, letterSpacing: 1.5, color: locked ? G.textMuted : G.text }}>
                               {raid.name}
                             </div>
-                            <div style={{ fontSize: 10, color: G.textMuted }}>
+                            <div style={{ fontSize: 11, color: G.textMuted }}>
                               {raid.associatedSet} · {raid.encounterBossIds.length} Encounters · {Array.from({ length: raid.stars }).map(() => '✦').join('')}
                             </div>
+                            {finalBossName && (
+                              <div style={{ fontSize: 10, color: G.accentSoft, letterSpacing: 0.5 }}>
+                                Final Boss Splash: {finalBossName}
+                              </div>
+                            )}
                           </div>
                           <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                             {clears > 0 && (
-                              <span style={{ fontSize: 10, color: G.transcendentColor, padding: '2px 8px', border: `1px solid ${G.goldBorder}`, borderRadius: 4 }}>
+                              <span style={{ fontSize: 11, color: G.transcendentColor, padding: '4px 10px', border: `1px solid ${G.goldBorder}`, borderRadius: 5 }}>
                                 ×{clears} clears
                               </span>
                             )}
                             {locked && (
-                              <span style={{ fontSize: 10, color: '#ff8080', padding: '2px 8px', border: '1px solid rgba(255,80,80,0.20)', borderRadius: 4 }}>
+                              <span style={{ fontSize: 11, color: '#ff8080', padding: '4px 10px', border: '1px solid rgba(255,80,80,0.20)', borderRadius: 5 }}>
                                 🔒 {raid.resonanceRequired.toLocaleString()} Resonance
                               </span>
                             )}
                             {onCd && !locked && (
-                              <span style={{ fontSize: 10, color: '#ffb860', padding: '2px 8px', border: '1px solid rgba(255,180,80,0.22)', borderRadius: 4 }}>
+                              <span style={{ fontSize: 11, color: '#ffb860', padding: '4px 10px', border: '1px solid rgba(255,180,80,0.22)', borderRadius: 5 }}>
                                 ⏱ {formatCooldown(cdMs)}
                               </span>
                             )}
                             {!locked && !onCd && (
-                              <span style={{ fontSize: 10, color: G.accentSoft, padding: '2px 8px', border: `1px solid ${G.border}`, borderRadius: 4 }}>
+                              <span style={{ fontSize: 11, color: G.accentSoft, padding: '4px 10px', border: `1px solid ${G.border}`, borderRadius: 5 }}>
                                 READY
                               </span>
                             )}
-                            <span style={{ fontSize: 10, color: G.entropyColor }}>
-                              {raid.entropyPerEncounter * raid.encounterBossIds.length} Entropy max
-                            </span>
                           </div>
                         </div>
                       </div>
@@ -454,6 +734,15 @@ export default function AscensionHub({ onClose }: Props) {
           </div>
         </div>
       </div>
+
+      {showShop && selectedDropCard && (
+        <CollectionCardDetail
+          card={selectedDropCard}
+          finish="normal"
+          owned={transcendentCollection[selectedDropCard.definitionId] ?? 0}
+          onClose={() => setSelectedDropCardId(null)}
+        />
+      )}
     </div>
   );
 }

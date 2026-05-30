@@ -149,10 +149,11 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - Heavenly Light should read as a two-resource engine: build Cadence, spend Radiance, and keep the sequence intact when it matters.
 
 ### Pyroabyss — "Embers"
-- **Furnace Pressure** is the core resource. Stoke effects raise Furnace; Ignite converts it into tiered Oblivion and resets Furnace.
-- **Rise Streak** tracks consecutive Furnace increases and multiplies Ignite payout.
-- Fire Seraphim and Angel attacks scale with current Furnace (`+2.5%` per Furnace, max `+75%`).
-- **Eternity Fire overlay (same turn only)**: when a Fire Eternity source is active or a Fire Eternity card was played this turn, Ignite generates Chrono Embers (`floor(ignite/450)`). Eternity Fire Seraphim/Angel attacks gain `+5%` per Chrono Ember (max `+20%`) and consume all Chrono Embers on attack.
+- **Inferno Tiers** are the core Fire stack. Base Fire cards primarily build Inferno Tiers, and Fire Seraphim/Angel attacks scale from them (`+2.5%` per Inferno Tier, max `+75%`).
+- **Chroma Embers** are the higher-rarity cashout layer. Eternal and Infinite Fire cards explicitly generate and spend Chroma Embers through their own effects.
+- **Ignite** converts Chroma Embers into burst Oblivion; it is the main Fire cashout action rather than a reset of the Inferno engine.
+- **Higher-rarity Fire attacks** also consume Chroma Embers for bonus scaling: Eternal Fire attacks gain `+4%` per Chroma Ember (max `+16%`), Infinite Fire attacks gain `+5%` per Chroma Ember (max `+25%`).
+- Pyroabyss should read as a two-layer engine: build Inferno first, seed Chroma second, then choose between ignite payoffs and Chroma-fueled higher-rarity attacks.
 
 ### Thornbound Plains — "Trail / War-Path"
 - **Trail** is the resource. Accumulated via card plays, spent on high-power effects and attack costs.
@@ -171,8 +172,9 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 
 ### Prismatic Accord — "Spectrum Tokens / Refraction"
 - **prismaticDepth** on card definitions (defaults by rarity: Common 1, Rare 2, Epic 3, Legendary 4, Eternal/Infinite 5).
-- **spectrumTokens** on board instances. Playing a Glass Absolute or Prismatic card refracts tokens onto boarded cards whose depth differs by 1.
-- Chord bonus computed from connected token-bearing board clusters.
+- **Resonance Charge** is the higher-rarity overlay. Prismatic Eternity and Infinite cards build and spend Resonance Charge through explicit effects.
+- Prismatic base play is refraction-first: switching channels builds Refraction Depth, while the higher-rarity overlay handles the spend layer.
+- Chord bonus is computed from connected token-bearing board clusters.
 
 ### Black Glass Inferno — "Twin-Flame / Fracture"
 - **Twin-flame** and **Fracture** are the core mechanics.

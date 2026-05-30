@@ -10,7 +10,7 @@ export type BoardEffect =
   | { type: 'score_multiplier'; value: number }
   | { type: 'seraphim_bonus_amplifier'; value: number };
 
-export type CardSubtypeFilter = 'Seraphim' | 'Cherubim' | 'Ophanim';
+export type CardSubtypeFilter = 'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel';
 
 export type ImmediateEffect =
   | { type: 'oblivion_flat'; value: number }
@@ -91,9 +91,6 @@ export type ImmediateEffect =
       oblivionPerDeepwakeBonus: number;
       foamPerDeepwake?: number;
     }
-  | { type: 'seas_current_gain'; value: number }
-  | { type: 'seas_polarity_shift'; polarity: 'White' | 'Black' }
-  | { type: 'seas_release'; spend: number; oblivionPerCurrent: number }
   | { type: 'trail_gain'; value: number }
   | { type: 'trail_spend'; value: number }
   | { type: 'strain_gain'; value: number }
@@ -117,6 +114,21 @@ export type ImmediateEffect =
   | { type: 'scar_reset' } // Reset scars
   | { type: 'patience_gain_all'; value: number }
   | { type: 'patience_double_all' }
+  | { type: 'neutrality_equilibrium_sigil_gain'; value: number }
+  | { type: 'neutrality_equilibrium_sigil_cap_bonus'; value: number }
+  | {
+      type: 'neutrality_equilibrium_starbound_cashout';
+      oblivionPerSigil: number;
+      patientLightPerSigils?: number;
+      spendAll?: boolean;
+    }
+  | {
+      type: 'neutrality_equilibrium_tactical_spend';
+      spend: number;
+      burstOblivion: number;
+      restorePercent: number;
+      patientLightGain?: number;
+    }
   | { type: 'neutrality_patient_light_gain'; value: number }
   | { type: 'neutrality_designate_vessel' }
   | { type: 'neutrality_vessel_copy_gain'; percent: number }
@@ -125,15 +137,6 @@ export type ImmediateEffect =
   | { type: 'neutrality_attack_preserve'; percent: number }
   | { type: 'neutrality_attack_restore'; percent: number }
   | { type: 'neutrality_linked_mode'; gain: number; retainPercent: number }
-  | { type: 'pyro_furnace_pressure_gain'; value: number }
-  | { type: 'pyro_furnace_pressure_spend'; value: number }
-  | { type: 'pyro_furnace_ignite' }
-  | { type: 'pyro_abyss_fault_gain'; value: number }
-  | { type: 'pyro_abyss_fault_spend'; value: number }
-  | { type: 'pyro_ruin_window_gain'; value: number }
-  | { type: 'pyro_convert_pressure_to_fault'; pressurePerFault: number; faultGain: number; maxFaultGain?: number }
-  | { type: 'pyro_window_cashout'; oblivionPerWindow: number; consume?: number }
-  | { type: 'pyro_balance_bonus'; oblivionPerPair: number }
   // Eternal/Infinity per-set amplifier stacks. Each set has its own thematic
   // "stack" keyword that only Eternal and Infinite cards interact with.
   // pyro=Inferno Tier, light=Halo, thorn=Thorncrown, glass=Eclipse Mark,
@@ -148,9 +151,9 @@ export type ImmediateEffect =
   //   pyro    = Chroma Ember    -> quadratic oblivion
   //   light   = Halo Resonance  -> raises chain floor
   //   thorn   = Briar Spiral    -> spirals -> Trail; chain scales with Trail
-  //   mech    = Reactor Core (legacy vent payloads may still reference flux naming)
+  //   mech    = Reactor Core
   //   prism   = Spectrum Echo   -> oblivion * distinctChannelsThisTurn
-  //   glass   = Veil Shard (legacy/deprecated) -> swap flames, ob per higher flame
+  //   glass   = Veil Shard
   //   snow    = Polar Capacitor -> phase-conditional: Voltage->ob, Frost->Arctic Charge
   //   absol   = Refraction Charge -> Glass Eternal/Infinite conversion thresholds and riders
   //   garden  = Wild Pollen     -> +Oblivion per pollen, score mult per Bloom
@@ -159,14 +162,19 @@ export type ImmediateEffect =
   | { type: 'set_secondary_gain'; kind: SetSecondaryKind; value: number }
   | { type: 'set_secondary_spend'; kind: SetSecondaryKind; value: number }
   | { type: 'pyro_cinder_echo_ignite'; oblivionPerEchoSquared: number; consume?: number }
+  | {
+      type: 'pyro_transcendent_confluence';
+      oblivionPerPair: number;
+      consume?: number;
+      empowerAtPairs?: number;
+      drawAtPairs?: number;
+      gainInfernoPerPair?: number;
+      gainChromaPerPair?: number;
+    }
   | { type: 'light_halo_cascade_resound'; oblivionPerCascade: number; consume?: number }
   | { type: 'thorn_briar_spiral_bloom'; trailPerSpiral: number; oblivionPerTrail: number; consume?: number }
-  | { type: 'mech_reactor_flux_vent'; oblivionPerFlux: number; scoreMultPerFlux: number; consume?: number }
   | { type: 'prism_spectrum_echo_refract'; oblivionPerEchoPerChannel: number; consume?: number }
-  | { type: 'glass_veil_shard_swap'; oblivionPerHigherFlame: number; consume?: number }
   | { type: 'snow_polar_capacitor_release'; voltageOblivionPerCapacitor: number; frostArcticChargePerCapacitor: number; consume?: number }
-  // Legacy alias retained for backwards compatibility with older materialized definitions.
-  | { type: 'snow_static_pulse_discharge'; voltageOblivionPerPulse: number; frostDrawPerPulse?: number; frostArcticChargePerPulse?: number; consume?: number }
   | { type: 'absol_cascade_proof_amplify'; oblivionPerProofDepth: number; consume?: number }
   | { type: 'garden_wild_pollen_seed'; oblivionPerPollen: number; scoreMultPerBloom: number; consume?: number }
   | { type: 'flutter_wing_pulse_amplify'; doubleNextGains: number; consume?: number }
@@ -188,7 +196,6 @@ export type ImmediateEffect =
       drawPerFormation?: number;
       empowerAtFormation?: number;
     }
-  | { type: 'tide_echo_resolve'; oblivionPerPositive: number; oblivionPerNegative: number; consume?: number }
   // ── Abyssal Forge — The Reforging ────────────────────────────────────────
   | { type: 'forge_reforge_charge_gain'; value: number }
   | { type: 'forge_reforge_charge_cap_raise'; value: number }
@@ -274,6 +281,7 @@ export type EffectCondition =
   | { type: 'seraphim_active_gte'; value: number }
   | { type: 'cherubim_active_gte'; value: number }
   | { type: 'first_card_this_turn' }
+  | { type: 'played_after_non_matching_element' }
   | { type: 'ember_gte'; value: number }
   | { type: 'trail_gte'; value: number }
   | { type: 'strain_gte'; value: number }
@@ -295,17 +303,8 @@ export type EffectCondition =
   | { type: 'proof_gte'; value: number }
   | { type: 'bloom_gte'; value: number }
   | { type: 'butterfly_spectrum_gte'; value: number }
-  | { type: 'seas_current_gte'; value: number }
-  | { type: 'seas_margin_gte'; value: number }
-  | { type: 'seas_polarity_is'; polarity: 'White' | 'Black' }
-  | { type: 'pyro_furnace_pressure_gte'; value: number }
-  | { type: 'pyro_abyss_fault_gte'; value: number }
-  | { type: 'pyro_ruin_window_gte'; value: number }
   | { type: 'burn_phase_cards_gte'; value: number }
   | { type: 'grove_cards_gte'; value: number }
-  | { type: 'pyro_pressure_higher' }
-  | { type: 'pyro_fault_higher' }
-  | { type: 'pyro_pools_balanced' }
   // Thornbound Plains overhaul effect conditions
   | { type: 'trail_linked_gte'; value: number }
   | { type: 'scar_count_gte'; value: number }
@@ -323,6 +322,7 @@ export type EffectCondition =
   | { type: 'scar_consume_active' }
   | { type: 'scar_amplify_active' }
   | { type: 'scar_reset_active' }
+  | { type: 'equilibrium_sigils_gte'; value: number }
   | { type: 'eternal_stack_gte'; stack: EternalStackKind; value: number }
   | { type: 'set_secondary_gte'; kind: SetSecondaryKind; value: number }
   | { type: 'forge_reforge_charges_gte'; value: number }
@@ -345,7 +345,7 @@ export type CherubimPassiveEffect =
   | { type: 'cherubim_seraphim_amp'; value: number }
   | { type: 'cherubim_ember_gain'; value: number }
   | { type: 'cherubim_draw_per_card'; value: number }
-  | { type: 'cherubim_resource_per_card'; resource: 'pyroFurnacePressure' | 'butterflySpectrum' | 'radiance' | 'trail' | 'strain'; value: number }
+  | { type: 'cherubim_resource_per_card'; resource: 'butterflySpectrum' | 'radiance' | 'trail' | 'strain'; value: number }
   | { type: 'cherubim_adjacent_seraphim_bonus'; value: number; bonusType: 'oblivion' | 'draw' }
   | { type: 'cherubim_conditional_buff'; condition: EffectCondition; value: number }
   | { type: 'cherubim_patience_per_card'; value: number }

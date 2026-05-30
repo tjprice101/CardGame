@@ -55,7 +55,7 @@ interface GiftsState {
 
 // ── Frozen empties (avoid Zustand v5 snapshot-cache thrash) ─────────────────
 
-const EMPTY_GIFTS: GiftRow[] = Object.freeze([]) as GiftRow[];
+const EMPTY_GIFTS: GiftRow[] = [];
 
 // ── Module-level realtime handle ────────────────────────────────────────────
 

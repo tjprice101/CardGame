@@ -9,6 +9,14 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { getSupabase } from '@/net/supabaseClient';
 import { useSocialStore } from '@/state/socialStore';
 
+export interface FriendCurrentActivity {
+  label: string;
+  detail: string | null;
+  bossId: string | null;
+  bossName: string | null;
+  at: number;
+}
+
 export interface FriendProfileLite {
   id: string;
   friendCode: string;
@@ -44,6 +52,8 @@ interface FriendsState {
 
   // userId -> online (from presence channel).
   presence: Readonly<Record<string, boolean>>;
+  // userId -> current activity metadata (when online + published).
+  activityByUser: Readonly<Record<string, FriendCurrentActivity>>;
 
   load: () => Promise<void>;
   sendRequestByFriendCode: (friendCode: string) => Promise<void>;
@@ -55,13 +65,23 @@ interface FriendsState {
   unblockUser: (targetUserId: string) => Promise<void>;
   connectPresence: () => void;
   disconnectPresence: () => void;
+  setPresenceActivity: (activity: FriendCurrentActivity) => void;
 }
 
-const EMPTY_ARRAY = Object.freeze<never[]>([]);
+const EMPTY_FRIEND_ROWS: FriendRequestRow[] = [];
+const EMPTY_PROFILES: FriendProfileLite[] = [];
 const EMPTY_PRESENCE: Readonly<Record<string, boolean>> = Object.freeze({});
+const EMPTY_ACTIVITY: Readonly<Record<string, FriendCurrentActivity>> = Object.freeze({});
 
 let realtimeChannel: RealtimeChannel | null = null;
 let presenceChannel: RealtimeChannel | null = null;
+let latestPresenceActivity: FriendCurrentActivity = {
+  label: 'Home Menu',
+  detail: null,
+  bossId: null,
+  bossName: null,
+  at: Date.now(),
+};
 
 function rowToProfile(row: {
   id: string;
@@ -91,11 +111,12 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
   loaded: false,
   loading: false,
   errorMessage: null,
-  friends: EMPTY_ARRAY as FriendRequestRow[],
-  incoming: EMPTY_ARRAY as FriendRequestRow[],
-  outgoing: EMPTY_ARRAY as FriendRequestRow[],
-  blocked: EMPTY_ARRAY as FriendProfileLite[],
+  friends: EMPTY_FRIEND_ROWS,
+  incoming: EMPTY_FRIEND_ROWS,
+  outgoing: EMPTY_FRIEND_ROWS,
+  blocked: EMPTY_PROFILES,
   presence: EMPTY_PRESENCE,
+  activityByUser: EMPTY_ACTIVITY,
 
   async load() {
     const sb = getSupabase();
@@ -310,12 +331,26 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
     channel.on('presence', { event: 'sync' }, () => {
       const stateMap = channel.presenceState();
       const next: Record<string, boolean> = {};
-      for (const key of Object.keys(stateMap)) next[key] = true;
-      set({ presence: Object.freeze(next) });
+      const activity: Record<string, FriendCurrentActivity> = {};
+      for (const key of Object.keys(stateMap)) {
+        next[key] = true;
+        const metas = stateMap[key] as Array<{ activity?: FriendCurrentActivity }> | undefined;
+        const maybeActivity = metas?.[metas.length - 1]?.activity;
+        if (maybeActivity && typeof maybeActivity.label === 'string') {
+          activity[key] = {
+            label: maybeActivity.label,
+            detail: maybeActivity.detail ?? null,
+            bossId: maybeActivity.bossId ?? null,
+            bossName: maybeActivity.bossName ?? null,
+            at: Number(maybeActivity.at ?? Date.now()),
+          };
+        }
+      }
+      set({ presence: Object.freeze(next), activityByUser: Object.freeze(activity) });
     });
     channel.subscribe(async status => {
       if (status === 'SUBSCRIBED') {
-        await channel.track({ at: Date.now() });
+        await channel.track({ at: Date.now(), activity: latestPresenceActivity });
       }
     });
     presenceChannel = channel;
@@ -326,8 +361,20 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
     if (presenceChannel && sb) {
       void sb.removeChannel(presenceChannel);
       presenceChannel = null;
-      set({ presence: EMPTY_PRESENCE });
+      set({ presence: EMPTY_PRESENCE, activityByUser: EMPTY_ACTIVITY });
     }
+  },
+
+  setPresenceActivity(activity) {
+    latestPresenceActivity = {
+      label: activity.label,
+      detail: activity.detail ?? null,
+      bossId: activity.bossId ?? null,
+      bossName: activity.bossName ?? null,
+      at: activity.at || Date.now(),
+    };
+    if (!presenceChannel) return;
+    void presenceChannel.track({ at: Date.now(), activity: latestPresenceActivity });
   },
 }));
 
@@ -335,9 +382,23 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
 // Idempotent — re-calling load() sets up exactly one channel.
 function ensureFriendsRealtime() {
   const sb = getSupabase();
-  if (!sb || realtimeChannel) return;
+  const me = useSocialStore.getState().user?.id;
+  if (!sb || !me || realtimeChannel) return;
+  const topic = `friends-graph:${me}`;
+
+  // During HMR or auth/session churn, Supabase can still hold a previously
+  // subscribed channel object for the same topic. Re-registering callbacks on
+  // that object throws "cannot add `postgres_changes` callbacks after `subscribe()`".
+  // Remove stale topic matches before creating a fresh channel.
+  for (const ch of sb.getChannels()) {
+    const chTopic = (ch as { topic?: string }).topic ?? '';
+    if (chTopic === topic || chTopic.endsWith(`:${topic}`)) {
+      void sb.removeChannel(ch);
+    }
+  }
+
   realtimeChannel = sb
-    .channel('friends-graph')
+    .channel(topic)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'friend_requests' }, () => {
       void useFriendsStore.getState().load();
     })
@@ -359,5 +420,6 @@ export const selectIncomingRequests = (s: FriendsState) => s.incoming;
 export const selectOutgoingRequests = (s: FriendsState) => s.outgoing;
 export const selectBlockedList = (s: FriendsState) => s.blocked;
 export const selectFriendsPresence = (s: FriendsState) => s.presence;
+export const selectFriendsActivityByUser = (s: FriendsState) => s.activityByUser;
 export const selectFriendsLoaded = (s: FriendsState) => s.loaded;
 export const selectFriendsError = (s: FriendsState) => s.errorMessage;

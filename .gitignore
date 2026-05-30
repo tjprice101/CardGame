@@ -4,3 +4,18 @@ card-game-idle/release/
 card-game-idle/tsconfig.tsbuildinfo
 *.log
 Thumbs.db
+
+# Supabase local/generated artifacts (keep migrations tracked)
+card-game-idle/supabase/.temp/
+card-game-idle/supabase/.cache/
+card-game-idle/supabase/.branches/
+card-game-idle/supabase/.history/
+card-game-idle/supabase/prompts/
+card-game-idle/supabase/**/*.prompt
+card-game-idle/supabase/**/*.prompts
+!card-game-idle/supabase/migrations/
+!card-game-idle/supabase/migrations/*.sql
+
+# Prompt document folders
+Midjourney Art/
+Music/

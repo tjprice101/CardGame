@@ -533,7 +533,7 @@ export default function HandDisplay() {
             <div className="ornate-scroll" style={styles.idleShowcase}>
               {idleCards.map(({ card, def }, idx) => {
                 if (!def) return null;
-                const showHolo = card.finish === 'holo';
+                const showHolo = card.finish === 'holo' || def.rarity === 'Infinite' || def.rarity === 'Eternal';
                 const previewText = getCardPreviewText(def, 2);
                 const descMetrics = getAdaptiveDescriptionMetrics('pack', previewText);
                 const cardClass = [
@@ -678,7 +678,7 @@ export default function HandDisplay() {
               key={`${deckCard.instanceId}_${deckCard.definitionId}_${idx}`}
               className={[
                 isAnimatingOut ? 'anim-card-play-out' : undefined,
-                deckCard.finish === 'holo'
+                (deckCard.finish === 'holo' || def?.rarity === 'Infinite' || def?.rarity === 'Eternal')
                   ? `holofoil-live-card${def?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${def?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
                   : undefined,
                 isGuideHighlighted ? 'trial-guide-pulse' : undefined,
