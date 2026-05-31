@@ -1773,6 +1773,56 @@ function isBlackGlassCard(def: CardDefinition | undefined): boolean {
   return Boolean(def && def.element === 'Dark');
 }
 
+function isHighRarityMechanicCard(def: CardDefinition | undefined): boolean {
+  return Boolean(def && (
+    def.rarity === 'Eternal'
+    || def.rarity === 'Infinite'
+    || def.definitionId.startsWith('tx-')
+  ));
+}
+
+type AdvancedSetKey = 'glass' | 'light' | 'mech' | 'prism';
+
+function matchesAdvancedSetKey(def: CardDefinition | undefined, key: AdvancedSetKey): boolean {
+  if (!def) return false;
+
+  switch (key) {
+    case 'glass':
+      return isBlackGlassCard(def);
+    case 'light':
+      return def.element === 'Light';
+    case 'mech':
+      return isMechanicalDreamsCard(def);
+    case 'prism':
+      return def.element === 'Prismatic';
+  }
+}
+
+function boardHasAdvancedSetEnabler(board: BoardState, key: AdvancedSetKey): boolean {
+  for (const slot of board.frontSlots) {
+    if (!slot) continue;
+    const def = CardRegistry.get(slot.definitionId);
+    if (matchesAdvancedSetKey(def, key) && isHighRarityMechanicCard(def)) {
+      return true;
+    }
+  }
+
+  for (const slot of board.backSlots) {
+    if (!slot) continue;
+    const def = CardRegistry.get(slot.definitionId);
+    if (matchesAdvancedSetKey(def, key) && isHighRarityMechanicCard(def)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function canUseAdvancedSetMechanics(board: BoardState, def: CardDefinition | undefined, key: AdvancedSetKey): boolean {
+  return (matchesAdvancedSetKey(def, key) && isHighRarityMechanicCard(def))
+    || boardHasAdvancedSetEnabler(board, key);
+}
+
 function storeContainsCard(s: Store, predicate: (def: CardDefinition) => boolean): boolean {
   const visit = (definitionId: string): boolean => {
     const def = CardRegistry.get(definitionId);
@@ -1839,7 +1889,7 @@ function getMechanicalInstruction(def: CardDefinition, actionClass: AttenuationC
   return 'convert';
 }
 
-function triggerMechanicalChime(s: Store, efficiency = 1): void {
+function triggerMechanicalChime(s: Store, efficiency = 1, sourceDef?: CardDefinition): void {
   ensureMechanicalTurnState(s.turn);
 
   const spend = Math.min(3, Math.max(0, s.turn.strain ?? 0));
@@ -1850,10 +1900,12 @@ function triggerMechanicalChime(s: Store, efficiency = 1): void {
 
   s.turn.mechanicalPrimedChimes = 1;
   s.turn.mechanicalChimesFired = (s.turn.mechanicalChimesFired ?? 0) + 1;
-  s.turn.eternalStacks = {
-    ...(s.turn.eternalStacks ?? {}),
-    mech: Math.max(0, (s.turn.eternalStacks?.mech ?? 0) + 1),
-  };
+  if (canUseAdvancedSetMechanics(s.board, sourceDef, 'mech')) {
+    s.turn.eternalStacks = {
+      ...(s.turn.eternalStacks ?? {}),
+      mech: Math.max(0, (s.turn.eternalStacks?.mech ?? 0) + 1),
+    };
+  }
   s.turn.mechanicalResolvedInstructions = (s.turn.mechanicalResolvedInstructions ?? 0) + 1;
   s.turn.mechanicalInstructionDiversity = appendDistinct(s.turn.mechanicalInstructionDiversity, 'trigger', 6);
   s.turn.mechanicalInstructionQueue = [];
@@ -1863,7 +1915,7 @@ function triggerMechanicalChime(s: Store, efficiency = 1): void {
   }
 }
 
-function advanceMechanicalClock(s: Store, advances: number, efficiency = 1): void {
+function advanceMechanicalClock(s: Store, advances: number, efficiency = 1, sourceDef?: CardDefinition): void {
   ensureMechanicalTurnState(s.turn);
 
   for (let i = 0; i < advances; i++) {
@@ -1871,7 +1923,7 @@ function advanceMechanicalClock(s: Store, advances: number, efficiency = 1): voi
     const interval = Math.max(1, s.turn.mechanicalChimeInterval ?? 3);
 
     if ((s.turn.mechanicalClockTicks ?? 0) >= (s.turn.mechanicalNextChimeTick ?? interval)) {
-      triggerMechanicalChime(s, efficiency);
+      triggerMechanicalChime(s, efficiency, sourceDef);
       s.turn.mechanicalNextChimeTick = (s.turn.mechanicalNextChimeTick ?? interval) + interval;
     }
   }
@@ -1983,7 +2035,7 @@ function recordLossEvent(
     s.turn.thornLossesThisTurn = Math.min(40, (s.turn.thornLossesThisTurn ?? 0) + lostCards.length);
   }
 
-  if (storeContainsCard(s, def => isBlackGlassCard(def))) {
+  if (boardHasAdvancedSetEnabler(s.board, 'glass')) {
     ensureBlackGlassTurnState(s.turn);
     let white = s.turn.blackGlassWhiteFlame ?? 0;
     let black = s.turn.blackGlassBlackFlame ?? 0;
@@ -2314,6 +2366,8 @@ function applyLightPlayState(
 
   ensureLightTurnState(s.turn);
 
+  const advancedLightAccess = canUseAdvancedSetMechanics(s.board, def, 'light');
+
   const note = getHeavenlyNote(def);
   const previousNotes = beforeTurn.lightCadenceNotes ?? [];
   const previousNote = previousNotes.length > 0 ? previousNotes[previousNotes.length - 1] : undefined;
@@ -2323,17 +2377,21 @@ function applyLightPlayState(
   if (repeatedNote && anchors <= 0) {
     s.turn.lightCadenceNotes = [note];
     s.turn.lightDistinctNotes = [note];
-    s.turn.lightResonance = Math.max(0, (s.turn.lightResonance ?? 0) - 1);
+    if (advancedLightAccess) {
+      s.turn.lightResonance = Math.max(0, (s.turn.lightResonance ?? 0) - 1);
+    }
   } else {
-    if (repeatedNote) {
+    if (advancedLightAccess && repeatedNote) {
       s.turn.lightChorusAnchors = Math.max(0, anchors - 1);
     }
     s.turn.lightCadenceNotes = [...(s.turn.lightCadenceNotes ?? []), note].slice(-6);
     s.turn.lightDistinctNotes = appendDistinct(s.turn.lightDistinctNotes, note, 4);
-    s.turn.lightResonance = Math.min(6, (s.turn.lightResonance ?? 0) + 1 + (actionClass === 'multiplier' ? 1 : 0));
+    if (advancedLightAccess) {
+      s.turn.lightResonance = Math.min(6, (s.turn.lightResonance ?? 0) + 1 + (actionClass === 'multiplier' ? 1 : 0));
+    }
   }
 
-  if (def.rarity === 'Eternal') {
+  if (advancedLightAccess && def.rarity === 'Eternal') {
     s.turn.lightChorusAnchors = Math.min(3, (s.turn.lightChorusAnchors ?? 0) + 1);
   }
 
@@ -2373,7 +2431,7 @@ function applyMechanicalPlayState(
   }
 
   const advances = def.type === 'Ophanim' || def.type === 'Angel' ? 2 : 1;
-  advanceMechanicalClock(s, advances);
+  advanceMechanicalClock(s, advances, 1, def);
   s.turn.lastPlayedElement = def.element;
 }
 
@@ -2387,6 +2445,7 @@ function applyPrismaticPlayState(
 
   ensurePrismaticTurnState(s.turn);
 
+  const advancedPrismaticAccess = canUseAdvancedSetMechanics(s.board, def, 'prism');
   const isBasePrismatic = def.rarity !== 'Eternal' && def.rarity !== 'Infinite';
   const isInfinitePrismatic = def.rarity === 'Infinite';
 
@@ -2398,7 +2457,7 @@ function applyPrismaticPlayState(
   const hadLock = (s.turn.prismaticChannelLocks ?? 0) > 0;
   s.turn.prismaticLastPlaySwitchedChannel = switchedChannel;
 
-  if (switchedChannel) {
+  if (switchedChannel && advancedPrismaticAccess) {
     let depthGain = 1 + (actionClass === 'multiplier' ? 1 : 0);
 
     if (isInfinitePrismatic && recentMatch && hadLock) {
@@ -2425,7 +2484,9 @@ function applyPrismaticPlayState(
     }
   } else if (previousChannel === channel) {
   } else {
-    s.turn.prismaticRefractionDepth = Math.max(1, s.turn.prismaticRefractionDepth ?? 0);
+    if (advancedPrismaticAccess) {
+      s.turn.prismaticRefractionDepth = Math.max(1, s.turn.prismaticRefractionDepth ?? 0);
+    }
   }
 
   s.turn.prismaticCurrentChannel = channel;
@@ -2433,7 +2494,7 @@ function applyPrismaticPlayState(
   s.turn.prismaticRecentChannels = [...(beforeTurn.prismaticRecentChannels ?? []), channel].slice(-3);
 
   const accordChannel = s.turn.prismaticAccordChannel ?? null;
-  if (isInfinitePrismatic && accordChannel) {
+  if (advancedPrismaticAccess && isInfinitePrismatic && accordChannel) {
     if (channel === accordChannel) {
       s.turn.prismaticNodeCharges = Math.min(5, (s.turn.prismaticNodeCharges ?? 0) + 2);
     } else {
@@ -2447,7 +2508,13 @@ function applyPrismaticPlayState(
   if (choirActive && def.type === 'Cherubim' && switchedChannel) {
   }
 
-  if (isInfinitePrismatic && beforeTurn.lastPlayedElement && beforeTurn.lastPlayedElement !== def.element && actionClass === 'conversion') {
+  if (
+    advancedPrismaticAccess
+    && isInfinitePrismatic
+    && beforeTurn.lastPlayedElement
+    && beforeTurn.lastPlayedElement !== def.element
+    && actionClass === 'conversion'
+  ) {
     grantOblivion(s, 18);
   }
 
@@ -2476,6 +2543,11 @@ function applyBlackGlassPlayState(
   if (!isBlackGlassCard(def)) return;
 
   ensureBlackGlassTurnState(s.turn);
+
+  if (!canUseAdvancedSetMechanics(s.board, def, 'glass')) {
+    s.turn.lastPlayedElement = def.element;
+    return;
+  }
 
   const effectCounts = countBlackGlassFlameEffects(getDefinitionOnPlayEffects(def));
   let whiteGain = effectCounts.white;
@@ -3935,52 +4007,11 @@ function tickCherubimDurability(s: Store): void {
   applyCherubimExpireBonuses(s, expiredCount);
 }
 
-function getNeutralityEquilibriumSigilCap(turn: TurnState, board?: BoardState): number {
-  let capBonus = Math.max(0, turn.neutralityEquilibriumSigilCapBonus ?? 0);
-  if (board) {
-    const starboundPresent = board.frontSlots.some(sl => sl?.type === 'Angel' && sl.definitionId === 'tx-angel-starbound-null-archangel');
-    if (starboundPresent) capBonus = Math.max(capBonus, 4);
-  }
-  return Math.max(0, 12 + capBonus);
-}
-
 function getNeutralityEquilibriumPatienceGainBonus(turn: TurnState, board?: BoardState): number {
+  const sentinelPresent = board?.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel') ?? false;
+  if (!sentinelPresent) return 0;
   const base = Math.floor(Math.max(0, turn.neutralityEquilibriumSigils ?? 0) / 2);
-  if (base === 0 || !board) return base;
-  const sentinelPresent = board.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel');
-  return sentinelPresent ? base * 2 : base;
-}
-
-function grantNeutralityEquilibriumSigils(s: Store, value: number, sourceTag?: string): number {
-  const gain = Math.max(0, Math.floor(value));
-  if (gain <= 0) return 0;
-
-  const before = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
-  const cap = getNeutralityEquilibriumSigilCap(s.turn, s.board);
-  const next = Math.min(cap, before + gain);
-  const gained = Math.max(0, next - before);
-  if (gained <= 0) return 0;
-
-  s.turn.neutralityEquilibriumSigils = next;
-  const gainedThisTurn = Math.max(0, s.turn.neutralityEquilibriumSigilsGainedThisTurn ?? 0) + gained;
-  s.turn.neutralityEquilibriumSigilsGainedThisTurn = gainedThisTurn;
-
-  const patientLightAlready = Math.max(0, s.turn.neutralityEquilibriumPatientLightFromSigilsThisTurn ?? 0);
-  const patientLightEligible = Math.min(2, Math.floor(gainedThisTurn / 4));
-  const patientLightToGrant = Math.max(0, patientLightEligible - patientLightAlready);
-  if (patientLightToGrant > 0) {
-    s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + patientLightToGrant;
-    s.turn.neutralityEquilibriumPatientLightFromSigilsThisTurn = patientLightAlready + patientLightToGrant;
-  }
-
-  if (sourceTag) {
-    s.turn.neutralityTriggeredEffects = [
-      ...(s.turn.neutralityTriggeredEffects ?? []),
-      `${sourceTag}: +${gained} Equilibrium Sigils`,
-    ].slice(-8);
-  }
-
-  return gained;
+  return base > 0 ? base * 2 : 0;
 }
 
 function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
@@ -4021,9 +4052,6 @@ function applyPatienceGainAll(s: Store, value: number): void {
     }
   }
 
-  if (value >= 4) {
-    grantNeutralityEquilibriumSigils(s, 1, 'neutrality mark');
-  }
 }
 
 function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
@@ -4742,9 +4770,6 @@ export const useStore = create<Store>()(
           s.turn.mechanicalPrimedChimes = 0;
         }
         grantOblivion(s, amount);
-        if (capturedPatience > 0 && def.element === 'Neutrality') {
-          grantNeutralityEquilibriumSigils(s, 1, `${def.definitionId} attack`);
-        }
         if (def.definitionId === 'tx-sera-null-entropy' && capturedPatience >= 10) {
           s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
         }
