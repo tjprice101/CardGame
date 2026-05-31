@@ -106,14 +106,14 @@ describe('Set mechanic reworks', () => {
     resetStore();
   });
 
-  it('builds Heavenly Light cadence through alternating note types', () => {
+  it('keeps base Heavenly Light from generating choir resonance without a higher-rarity enabler', () => {
     seedPlayingState(['ser-light-dawn', 'hr-light-divine-smite']);
 
     useStore.getState().playCard('hand_0');
     useStore.getState().playCard('hand_1');
 
     const state = useStore.getState();
-    expect(state.turn.lightResonance).toBeGreaterThanOrEqual(2);
+    expect(state.turn.lightResonance ?? 0).toBe(0);
     expect(new Set(state.turn.lightDistinctNotes ?? []).size).toBeGreaterThanOrEqual(2);
   });
 
@@ -614,7 +614,7 @@ describe('Set mechanic reworks', () => {
     expect(state.turn.eternalStacks?.mech ?? 0).toBeGreaterThanOrEqual(9);
   });
 
-  it('tracks Prismatic channels and refraction depth across different cards', () => {
+  it('tracks base Prismatic channels without opening refraction depth by itself', () => {
     seedPlayingState(['pa-ser-plainshush-drossken', 'pa-ser-mirrorback-mirshan']);
 
     useStore.getState().playCard('hand_0');
@@ -622,10 +622,10 @@ describe('Set mechanic reworks', () => {
 
     const state = useStore.getState();
     expect(new Set(state.turn.prismaticDistinctChannels ?? []).size).toBeGreaterThanOrEqual(2);
-    expect(state.turn.prismaticRefractionDepth).toBeGreaterThanOrEqual(2);
+    expect(state.turn.prismaticRefractionDepth ?? 0).toBe(0);
   });
 
-  it('builds Black Glass contradiction and fracture through grief events', () => {
+  it('keeps base Black Glass from building flame resources without a higher-rarity enabler', () => {
     seedPlayingState(['bgi-cherubim-ashencourt-sigil', 'bgi-ser-void-mandible-archon']);
 
     useStore.getState().playCard('hand_0');
@@ -633,9 +633,19 @@ describe('Set mechanic reworks', () => {
     useStore.getState().removeCherubim(0);
 
     const state = useStore.getState();
-    expect(state.turn.blackGlassWhiteFlame).toBeGreaterThan(0);
-    expect(state.turn.blackGlassBlackFlame).toBeGreaterThan(0);
-    expect(state.turn.blackGlassFracture).toBeGreaterThan(0);
+    expect(state.turn.blackGlassWhiteFlame ?? 0).toBe(0);
+    expect(state.turn.blackGlassBlackFlame ?? 0).toBe(0);
+    expect(state.turn.blackGlassFracture ?? 0).toBe(0);
+  });
+
+  it('keeps base Butterfly cards from granting Wing Pulse without a higher-rarity enabler', () => {
+    seedPlayingState(['bf-ser-pyrethkai-whiteflame']);
+
+    useStore.getState().playCard('hand_0');
+
+    const state = useStore.getState();
+    expect(state.turn.secondaryCounters?.flutter ?? 0).toBe(0);
+    expect(state.turn.butterflySpectrum ?? 0).toBeGreaterThanOrEqual(3);
   });
 
   it('moves Snowbound from Frost setup into a Voltage charge cashout window', () => {
@@ -842,14 +852,14 @@ describe('Set mechanic reworks', () => {
     expect(state.progress.oblivion).toBeGreaterThan(beforeEndTurn);
   });
 
-  it('records Pyro stack growth on mixed-element sequencing', () => {
+  it('keeps base Pyro sequencing from generating Eternal stacks by itself', () => {
     seedPlayingState(['hr-light-divine-smite', 'cherubim-fire-pyre-mantle']);
 
     useStore.getState().playCard('hand_0');
     useStore.getState().playCard('hand_1');
 
     const state = useStore.getState();
-    expect(state.turn.eternalStacks?.pyro ?? 0).toBeGreaterThan(0);
+    expect(state.turn.eternalStacks?.pyro ?? 0).toBe(0);
     expect(state.turn.secondaryCounters?.pyro ?? 0).toBe(0);
   });
 

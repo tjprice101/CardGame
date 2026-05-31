@@ -408,6 +408,118 @@ export class CardEffectExecutor {
       s => s?.type === 'Seraphim' && s.isActive && s.definitionId === 'ser-light-throne'
     );
 
+    const isHighRarityMechanicCard = (cardDef: CardDefinition | undefined): boolean => Boolean(cardDef && (
+      cardDef.rarity === 'Eternal'
+      || cardDef.rarity === 'Infinite'
+      || cardDef.definitionId.startsWith('tx-')
+    ));
+
+    const isSnowboundVoltageDefinition = (cardDef: CardDefinition | undefined): boolean => Boolean(
+      cardDef && (cardDef.definitionId.startsWith('sv-') || cardDef.definitionId.startsWith('inf-sv-')),
+    );
+
+    const isMechanicalDreamsDefinition = (cardDef: CardDefinition | undefined): boolean => Boolean(
+      cardDef && cardDef.element === 'Mechanical' && !isSnowboundVoltageDefinition(cardDef),
+    );
+
+    const isButterflyDefinition = (cardDef: CardDefinition | undefined): boolean => Boolean(
+      cardDef && (cardDef.definitionId.startsWith('bf-') || cardDef.definitionId.startsWith('inf-bf-')),
+    );
+
+    const isEternalSeasDefinition = (cardDef: CardDefinition | undefined): boolean => Boolean(
+      cardDef && (cardDef.definitionId.startsWith('es-') || cardDef.definitionId.startsWith('inf-es-')),
+    );
+
+    const cardMatchesAdvancedSetKey = (cardDef: CardDefinition | undefined, key: string): boolean => {
+      if (!cardDef) return false;
+
+      switch (key) {
+        case 'absol':
+          return cardDef.element === 'GlassAbsolute';
+        case 'deepwake':
+          return isEternalSeasDefinition(cardDef);
+        case 'flutter':
+          return isButterflyDefinition(cardDef);
+        case 'garden':
+          return cardDef.element === 'BlazingGarden';
+        case 'glass':
+          return cardDef.element === 'Dark';
+        case 'light':
+          return cardDef.element === 'Light';
+        case 'mech':
+          return isMechanicalDreamsDefinition(cardDef);
+        case 'prism':
+          return cardDef.element === 'Prismatic';
+        case 'pyro':
+          return cardDef.element === 'Fire';
+        case 'snow':
+          return isSnowboundVoltageDefinition(cardDef);
+        case 'thorn':
+          return cardDef.element === 'Thornbound';
+        default:
+          return false;
+      }
+    };
+
+    const boardHasAdvancedSetEnabler = (key: string): boolean => {
+      for (const slot of mutableBoard.frontSlots) {
+        if (!slot) continue;
+        const slotDef = CardRegistry.get(slot.definitionId);
+        if (cardMatchesAdvancedSetKey(slotDef, key) && isHighRarityMechanicCard(slotDef)) {
+          return true;
+        }
+      }
+
+      for (const slot of mutableBoard.backSlots) {
+        if (!slot) continue;
+        const slotDef = CardRegistry.get(slot.definitionId);
+        if (cardMatchesAdvancedSetKey(slotDef, key) && isHighRarityMechanicCard(slotDef)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    const sourceHasAdvancedSetAccess = (key: string): boolean => {
+      return (cardMatchesAdvancedSetKey(def, key) && isHighRarityMechanicCard(def))
+        || boardHasAdvancedSetEnabler(key);
+    };
+
+    const getAdvancedSetKeyForEffect = (effect: CardEffect): string | null => {
+      switch (effect.type) {
+        case 'black_glass_white_flame_gain':
+        case 'black_glass_black_flame_gain':
+        case 'black_glass_fracture_gain':
+        case 'black_glass_fracture_collapse':
+        case 'black_glass_eclipse_burst':
+          return 'glass';
+        case 'eternal_stack_gain':
+        case 'eternal_stack_spend':
+        case 'eternal_stack_cashout':
+          return effect.stack;
+        case 'garden_wild_pollen_seed':
+          return 'garden';
+        case 'light_anchor_gain':
+        case 'light_resonance_gain':
+          return 'light';
+        case 'set_secondary_gain':
+        case 'set_secondary_spend':
+          return effect.kind;
+        case 'seas_deepwake_surge':
+          return 'deepwake';
+        case 'snow_polar_capacitor_release':
+          return 'snow';
+        case 'thorn_briar_spiral_bloom':
+          return 'thorn';
+        case 'flutter_resonance_apex':
+        case 'flutter_resonance_harmonize':
+          return 'flutter';
+        default:
+          return null;
+      }
+    };
+
     function applyRadianceGain(base: number): void {
       const adjusted = throneActive ? Math.ceil(base * 1.5) : base;
       mutableTurn.radiance += adjusted;
@@ -489,6 +601,11 @@ export class CardEffectExecutor {
       };
 
       const distinctLineages = (): number => new Set(mutableTurn.burningGardenLineagesPlayed ?? []).size;
+      const advancedSetKey = getAdvancedSetKeyForEffect(effect);
+
+      if (advancedSetKey && !sourceHasAdvancedSetAccess(advancedSetKey)) {
+        return true;
+      }
 
       // --- Blazing Garden Eternal/Infinity custom effect types ---
       switch (effect.type) {
