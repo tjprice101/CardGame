@@ -484,6 +484,11 @@ export default function HandDisplay() {
                 <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
                   Attacks: Primary + Exalted (cards-play cooldown)
                 </span>
+                {hoveredDef.element === 'Fire' && (
+                  <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                    Fire attacks: +2.5% attack per Heat (max +75%) and spend up to 5 Heat for +1% attack per Heat spent (max +5%)
+                  </span>
+                )}
               </>
             )}
             {hoveredDef.type === 'Seraphim' && (
@@ -511,6 +516,11 @@ export default function HandDisplay() {
                       <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
                         Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} | Cost: {formatAttackCosts(attacks.synergized.costs)}
                       </span>
+                      {hoveredDef.element === 'Fire' && (
+                        <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                          Fire attacks: +2.5% attack per Heat (max +75%) and spend up to 5 Heat for +1% attack per Heat spent (max +5%)
+                        </span>
+                      )}
                     </>
                   );
                 })()}

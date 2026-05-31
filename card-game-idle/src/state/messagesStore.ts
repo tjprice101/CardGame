@@ -12,6 +12,7 @@ import { create } from 'zustand';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { getSupabase } from '@/net/supabaseClient';
 import { useSocialStore } from '@/state/socialStore';
+import { useStore } from '@/state/store';
 
 export interface DmMessage {
   id: string;
@@ -187,6 +188,13 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
     });
     set({ sending: false });
     if (error) set({ errorMessage: error.message });
+    else {
+      const game = useStore.getState();
+      game.recordSocialProgress('message_sent');
+      if (attachment !== undefined && attachment !== null) {
+        game.recordSocialProgress('message_with_attachment');
+      }
+    }
   },
 
   async reportMessage(messageId, targetUserId, reason) {

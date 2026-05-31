@@ -226,6 +226,7 @@ export const useGiftsStore = create<GiftsState>((set, get) => ({
     const row = mapRow(data as Parameters<typeof mapRow>[0]);
     if (row) {
       set(s => ({ outgoing: [row, ...s.outgoing] }));
+      useStore.getState().recordSocialProgress('gift_sent');
     }
     return row;
   },

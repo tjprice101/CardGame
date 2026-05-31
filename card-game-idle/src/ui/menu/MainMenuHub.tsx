@@ -7,6 +7,7 @@ import { t } from '@/ui/preferences';
 
 interface MainMenuHubProps {
   onCardStore: () => void;
+  onCardBoundCoop: () => void;
   onEternitysWake: () => void;
   onInfinitude: () => void;
   onDeckViewer: () => void;
@@ -607,6 +608,19 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             onClick={props.onInfinitude}
             clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
             glassAngle={142}
+          />
+        </div>
+
+        {/* Row: Battleground of the Card-born */}
+        <div style={{ gridColumn: '1 / -1', transform: 'rotate(0.5deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.48))' }}>
+          <TileButton
+            label="Card-bound Co-op"
+            caption="Global party · squad chat · activity invites"
+            tone="primary"
+            size="wide"
+            onClick={props.onCardBoundCoop}
+            clipPath="polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%)"
+            glassAngle={137}
           />
         </div>
 

@@ -80,6 +80,7 @@ export type SummonCondition =
   | { type: 'seraphim_on_board_gte'; value: number }
   | { type: 'board_definition_gte'; definitionId: string; value: number }
   | { type: 'equilibrium_sigils_gte'; value: number }
+  | { type: 'pyro_heat_gte'; value: number }
   | { type: 'eternal_stack_gte'; stack: EternalStackKind; value: number }
   | { type: 'set_secondary_gte'; kind: SetSecondaryKind; value: number };
 

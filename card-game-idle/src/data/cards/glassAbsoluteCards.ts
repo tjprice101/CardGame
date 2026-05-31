@@ -231,7 +231,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-facet-gate-ward',
     name: 'Facet Gate Ward',
-    description: 'While on board: Adjacent active Seraphim chain +0.05; Buffs Seraphim attacks: base +42, cooldown -1, multiplier x1.00',
+    description: 'While on board: Buffs Seraphim attacks: base +42',
     rarity: 'Rare',
     artKey: 'ga_cher_facet_gate_ward',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Seraphim', bonusBaseOblivion: 42 }],
@@ -285,7 +285,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-light-archive',
     name: 'Light Archive of Glass',
-    description: 'On play: Look at the top 5 cards, take 2 cards, and put the rest on the bottom. While on board: Adjacent active Seraphim chain +0.06; Buffs Seraphim and Angel attacks: base +59, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +46, cooldown -1, multiplier x1.00',
+    description: 'On play: Look at the top 5 cards, take 2 cards, and put the rest on the bottom. While on board: Buffs Seraphim and Angel attacks: base +59',
     rarity: 'Legendary',
     artKey: 'ga_cher_light_archive',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 59 }],
@@ -320,7 +320,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-glassroad-oracle',
     name: 'Glassroad Oracle',
-    description: 'Salvage any 1 card; Gain 10 Proof',
+    description: 'Salvage any 1 card; Draw 1 card',
     rarity: 'Rare',
     artKey: 'ga_oph_glassroad_oracle',
     effects: [{ type: 'salvage_any' }, { type: 'draw', value: 1 }],
@@ -344,7 +344,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-crystal-echo-archive',
     name: 'Crystal Echo Archive',
-    description: 'Shuffle discard into deck; Gain 12 Proof',
+    description: 'Shuffle discard into deck; Draw 2 cards',
     rarity: 'Epic',
     artKey: 'ga_oph_crystal_echo_archive',
     effects: [{ type: 'shuffle_discard' }, { type: 'draw', value: 2 }],
@@ -352,7 +352,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-white-transit',
     name: 'White Transit',
-    description: 'Draw 4 cards; Gain 24 Radiance; Gain 20 Proof',
+    description: 'Draw 4 cards; Gain 24 Radiance',
     rarity: 'Legendary',
     artKey: 'ga_oph_white_transit',
     effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 24 }],
@@ -368,7 +368,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-lattice-horizon',
     name: 'Lattice Horizon',
-    description: 'Gain 18 Proof',
+    description: 'Draw 2 cards',
     rarity: 'Epic',
     artKey: 'ga_oph_lattice_horizon',
     effects: [{ type: 'draw', value: 2 }],
@@ -376,7 +376,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-spectral-afterimage',
     name: 'Spectral Afterimage',
-    description: 'Replay last Ophanim played this turn; Draw 1 card; Gain 8 Proof',
+    description: 'Replay last Ophanim played this turn; Draw 1 card',
     rarity: 'Legendary',
     artKey: 'ga_oph_spectral_afterimage',
     effects: [{ type: 'copy_last_hr' }, { type: 'draw', value: 1 }],

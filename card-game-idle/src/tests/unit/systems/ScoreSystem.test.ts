@@ -147,6 +147,8 @@ describe('ScoreSystem', () => {
       ophanimOblivionBonus: 0,
       cherubimExtraPlays: 0,
       embersPerCardBonus: 0,
+      globalOblivionMult: 0,
+      fullBoardActive: false,
     });
   });
 

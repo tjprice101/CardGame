@@ -14,6 +14,7 @@ interface Props {
   onPause: () => void;
   onResume: () => void;
   onSkip: () => void;
+  placement?: 'menu' | 'arena';
 }
 
 // Main menu navy / ice-blue palette.
@@ -24,6 +25,7 @@ const G = {
   iceBlue:   '#a8c8f0',
   text:      '#e8f2fc',
   textDim:   'rgba(190,225,252,0.55)',
+  hint:      'rgba(245, 248, 252, 0.48)',
   btnBg:     'rgba(30,55,100,0.55)',
   btnHover:  'rgba(50,90,155,0.75)',
   display:   '"Cinzel", "Cormorant Garamond", Georgia, serif',
@@ -105,7 +107,7 @@ function IconRadio() {
   );
 }
 
-export default function RadioControlBar({ radioActive, paused, currentTrack, onPausedChange, onPause, onResume, onSkip }: Props) {
+export default function RadioControlBar({ radioActive, paused, currentTrack, onPausedChange, onPause, onResume, onSkip, placement = 'menu' }: Props) {
   const handlePauseResume = useCallback(() => {
     if (paused) {
       onResume();
@@ -120,26 +122,49 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
     onSkip();
   }, [onSkip]);
 
+  const barStyle: React.CSSProperties = {
+    ...(radioActive ? BAR : BAR_HIDDEN),
+    ...(placement === 'arena'
+      ? {
+          right: 22,
+          bottom: 18,
+        }
+      : null),
+  };
+
   return (
-    <div style={radioActive ? BAR : BAR_HIDDEN} aria-hidden={!radioActive}>
+    <div style={barStyle} aria-hidden={!radioActive}>
       {/* Radio glyph */}
       <span style={{ color: G.iceBlue, opacity: 0.80, display: 'flex', alignItems: 'center' }}>
         <IconRadio />
       </span>
 
       {/* Track title */}
-      <span style={{
-        fontFamily:   G.display,
-        fontSize:     11,
-        color:        G.text,
-        maxWidth:     180,
-        overflow:     'hidden',
-        whiteSpace:   'nowrap',
-        textOverflow: 'ellipsis',
-        letterSpacing: '0.03em',
-      }}>
-        {currentTrack?.title ?? '—'}
-      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, maxWidth: 200, gap: 1 }}>
+        <span style={{
+          fontFamily:   G.display,
+          fontSize:     11,
+          color:        G.text,
+          overflow:     'hidden',
+          whiteSpace:   'nowrap',
+          textOverflow: 'ellipsis',
+          letterSpacing: '0.03em',
+        }}>
+          {currentTrack?.title ?? '—'}
+        </span>
+        <span style={{
+          fontFamily: G.display,
+          fontSize: 8,
+          color: G.hint,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>
+          Press R to hide/show radio
+        </span>
+      </div>
 
       {/* Pause / Resume */}
       <button
@@ -162,6 +187,7 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
       >
         <IconSkip />
       </button>
+
     </div>
   );
 }

@@ -115,7 +115,7 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
       baseOblivion,
       cooldownCards: unsyncedCooldown,
       costs: [],
-      tags: ['seraphim', 'unsynergized'],
+      tags: ['seraphim', 'unsynergized', def.element.toLowerCase()],
     },
     synergized: {
       id: `${def.definitionId}:synergized`,
@@ -126,7 +126,7 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
       cooldownCards: unsyncedCooldown + 2,
       costs: [],
       requiresAngelOnBoard: true,
-      tags: ['seraphim', 'synergized'],
+      tags: ['seraphim', 'synergized', def.element.toLowerCase()],
     },
   };
 }
@@ -155,7 +155,7 @@ function getAngelUiAttacks(def: AngelDefinition) {
       baseOblivion,
       cooldownCards: summonTax + 2,
       costs: [],
-      tags: ['angel', 'primary'],
+      tags: ['angel', 'primary', def.element.toLowerCase()],
     },
     exalted: {
       id: `${def.definitionId}:exalted`,
@@ -165,7 +165,7 @@ function getAngelUiAttacks(def: AngelDefinition) {
       baseOblivion: Math.round(baseOblivion * 2.05),
       cooldownCards: summonTax + 5,
       costs: [],
-      tags: ['angel', 'exalted'],
+      tags: ['angel', 'exalted', def.element.toLowerCase()],
     },
   };
 }
@@ -604,9 +604,14 @@ function formatAttackSummary(attack: {
   cooldownCards: number;
   costs?: ReadonlyArray<{ type: string; value: number }>;
   requiresAngelOnBoard?: boolean;
+  tags?: ReadonlyArray<string>;
 }): string {
   const requirement = attack.requiresAngelOnBoard ? 'Requires Angel on board · ' : '';
-  return `${requirement}Base ${attack.baseOblivion} · Cooldown ${attack.cooldownCards} cards · Cost ${formatAttackCosts(attack.costs)}`;
+  const isFire = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire');
+  const fireText = isFire
+    ? ' · +2.5%/Heat (max +75%) · Spend up to 5 Heat: +1% per Heat spent (max +5%)'
+    : '';
+  return `${requirement}Base ${attack.baseOblivion} · Cooldown ${attack.cooldownCards} cards · Cost ${formatAttackCosts(attack.costs)}${fireText}`;
 }
 
 export default function BoardDisplay() {

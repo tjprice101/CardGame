@@ -52,7 +52,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: "Ash Kings' Apocalypse",
-    description: 'Gain 6 Inferno Tiers; Gain 10 Chroma Embers; If you have 6+ Inferno Tiers, Spend 6 Inferno Tiers; Gain 4 Chroma Embers; +2600 Oblivion; Ignite up to 5 Chroma Embers (+122.0 Oblivion × echoes²); If you have 7+ Chroma Embers, Empower the next card you play; +2200 Oblivion; Draw 1 card',
+    description: 'Gain 6 Furnace Heat; Gain 10 Chroma Embers; If you have 6+ Furnace Heat, Spend 6 Furnace Heat; Gain 4 Chroma Embers; +2600 Oblivion; Ignite up to 5 Chroma Embers (+122.0 Oblivion × echoes²); If you have 7+ Chroma Embers, Empower the next card you play; +2200 Oblivion; Draw 1 card',
     artKey: 'inf_ash_kings_apocalypse',
     // Role: catastrophic seeder. Front-loads an oversized Chroma pool, ignites
     // only part of it, and leaves reserve embers for subsequent finishers.
@@ -236,14 +236,14 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyraxis Colossus',
-    description: 'On play: Gain 5 Inferno Tiers; Gain 3 Chroma Embers; If you have 7+ Inferno Tiers, Spend 7 Inferno Tiers; Gain 4 Chroma Embers; +2200 Oblivion; Empower the next card you play; If you have 4+ Chroma Embers, Ignite up to 3 Chroma Embers (+108.0 Oblivion × echoes²); +1200 Oblivion. While on board: +760 Oblivion per card played while active',
+    description: 'On play: Gain 5 Furnace Heat; Gain 3 Chroma Embers; If you have 7+ Furnace Heat, Spend 7 Furnace Heat; Gain 4 Chroma Embers; +2200 Oblivion; Empower the next card you play; If you have 4+ Chroma Embers, Ignite up to 3 Chroma Embers (+108.0 Oblivion × echoes²); +1200 Oblivion. While on board: +760 Oblivion per card played while active',
     artKey: 'inf_pyraxis_colossus',
     attacks: {
       unsynergized: {
         id: 'inf-pyraxis-colossus:unsynergized',
         label: 'Unsynergized',
         name: 'Pyraxis Colossus Vector Break',
-        description: '4525 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)',
+        description: '4525 base Oblivion · 6 cards cooldown · +2.5% attack per Heat (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)',
         baseOblivion: 4525,
         cooldownCards: 6,
         costs: [],
@@ -253,7 +253,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
         id: 'inf-pyraxis-colossus:synergized',
         label: 'Synergized',
         name: 'Pyraxis Colossus Angelic Verdict',
-        description: '7693 base Oblivion · 7 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)',
+        description: '7693 base Oblivion · 7 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)',
         baseOblivion: 7693,
         cooldownCards: 7,
         costs: [],
@@ -479,7 +479,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyroclasm Engine',
-      description: 'On play: Gain 4 Inferno Tiers; Gain 8 Chroma Embers; Salvage any 1 card; If you have 5+ Inferno Tiers, Gain 3 Chroma Embers; Draw 1 card; +1700 Oblivion; If you have 9+ Chroma Embers, Spend 3 Chroma Embers; +1800 Oblivion. While on board: Adjacent active Seraphim gain +235 Oblivion per card played',
+      description: 'On play: Gain 4 Furnace Heat; Gain 8 Chroma Embers; Salvage any 1 card; If you have 5+ Furnace Heat, Gain 3 Chroma Embers; Draw 1 card; +1700 Oblivion; If you have 9+ Chroma Embers, Spend 3 Chroma Embers; +1800 Oblivion. While on board: Adjacent active Seraphim gain +235 Oblivion per card played',
     artKey: 'inf_pyroclasm_engine',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 235 }],
     // Role: reserve accumulator. Builds the largest non-angel Chroma pool and
@@ -648,7 +648,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Riftborn Sovereign',
-    description: 'On summon: Gain 7 Inferno Tiers; Gain 5 Chroma Embers; +1800 Oblivion. After 5 cards played: If you have 9+ Inferno Tiers, Cash out up to 9 Inferno Tiers (+1000 Oblivion per stack); +4800 Oblivion; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118.0 Oblivion × echoes²); Spend all Chroma Embers; +1600 Oblivion; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play. While on board: +400 Oblivion per card played while on board',
+    description: 'On summon: Gain 7 Furnace Heat; Gain 5 Chroma Embers; +1800 Oblivion. After 5 cards played: If you have 9+ Furnace Heat, Cash out up to 9 Furnace Heat (+1000 Oblivion per stack); +4800 Oblivion; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118.0 Oblivion × echoes²); Spend all Chroma Embers; +1600 Oblivion; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play. While on board: +400 Oblivion per card played while on board',
     artKey: 'inf_riftborn_sovereign',
     summonCost: [],
     extraSummonConditions: [
@@ -660,7 +660,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Rift Conflagration',
       cardsPlayedRequirement: 5,
-      description: 'If you have 9+ Inferno Tiers, Cash out up to 9 Inferno Tiers (+1000 Oblivion per stack); +4800 Oblivion; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118.0 Oblivion × echoes²); Spend all Chroma Embers; +1600 Oblivion; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play',
+      description: 'If you have 9+ Furnace Heat, Cash out up to 9 Furnace Heat (+1000 Oblivion per stack); +4800 Oblivion; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118.0 Oblivion × echoes²); Spend all Chroma Embers; +1600 Oblivion; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play',
       effects: [
         { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 9 }, then: [{ type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 1000, consume: 9 }, { type: 'oblivion_flat', value: 4800 }] },
         { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'pyro', value: 8 }, then: [{ type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 118, consume: 8 }] },
@@ -674,7 +674,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
         id: 'inf-riftborn-sovereign:primary',
         label: 'Primary',
         name: 'Riftborn Sovereign Ordinance',
-        description: '3770 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)',
+        description: '3770 base Oblivion · 6 cards cooldown · +2.5% attack per Heat (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)',
         baseOblivion: 3770,
         cooldownCards: 6,
         costs: [],
@@ -684,7 +684,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
         id: 'inf-riftborn-sovereign:exalted',
         label: 'Exalted',
         name: 'Riftborn Sovereign Throne Decree',
-        description: '10370 base Oblivion · 9 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)',
+        description: '10370 base Oblivion · 9 cards cooldown · +2.5% attack per Heat (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)',
         baseOblivion: 10370,
         cooldownCards: 9,
         costs: [],

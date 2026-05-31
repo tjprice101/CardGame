@@ -10,6 +10,7 @@ const SettingsPanel = lazy(() => import('@/ui/settings/SettingsPanel'));
 const EternitysWake = lazy(() => import('@/ui/eternitysWake/EternitysWake'));
 const BossFightArena = lazy(() => import('@/ui/eternitysWake/BossFightArena'));
 const BossResultModal = lazy(() => import('@/ui/eternitysWake/BossResultModal'));
+const CardBoundCoopHub = lazy(() => import('@/ui/menu/CardBoundCoopHub'));
 const Infinitude = lazy(() => import('@/ui/infinitude/Infinitude'));
 const WishedUponAStarEvent = lazy(() => import('@/ui/eventWishedUponAStar/WishedUponAStarEvent'));
 const TutorialModal = lazy(() => import('@/ui/menus/TutorialModal'));
@@ -30,11 +31,14 @@ const RadioControlBar = lazy(() => import('@/ui/components/RadioControlBar'));
 const SplashScreen = lazy(() => import('@/ui/boot/SplashScreen'));
 const TitleScreen = lazy(() => import('@/ui/boot/TitleScreen'));
 const MainMenuHub = lazy(() => import('@/ui/menu/MainMenuHub'));
+const PartyInviteModal = lazy(() => import('@/ui/social/PartyInviteModal'));
+const PartyHub = lazy(() => import('@/ui/social/PartyHub'));
 const BattlegroundLobby = lazy(() => import('@/ui/battleground/BattlegroundLobby'));
 const BattlegroundMatch = lazy(() => import('@/ui/battleground/BattlegroundMatch'));
 const BattlegroundRewards = lazy(() => import('@/ui/battleground/BattlegroundRewards'));
 const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/BattlegroundInviteModal'));
 const CoopRaidInviteModal = lazy(() => import('@/ui/ascension/CoopRaidInviteModal'));
+const EternityBossCoopInviteModal = lazy(() => import('@/ui/eternitysWake/EternityBossCoopInviteModal'));
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
 import { DEFAULT_WARM_PALETTE } from '@/ui/theme';
 import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress, selectTrialDeck } from '@/state/store';
@@ -55,6 +59,7 @@ import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
 import { MainMenuRadio } from '@/audio/MainMenuRadio';
 import { MainTurnRadio } from '@/audio/MainTurnRadio';
 import type { NowPlayingEvent } from '@/ui/components/RadioNowPlaying';
+import { usePartyStore } from '@/state/partyStore';
 
 /**
  * Top-level scene state machine. Splash plays once on app boot, advances
@@ -145,6 +150,7 @@ export default function App() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [showEternitysWake, setShowEternitysWake] = useState(false);
   const [showBattleground, setShowBattleground] = useState(false);
+  const [showCardBoundCoop, setShowCardBoundCoop] = useState(false);
   const [showInfinitude, setShowInfinitude] = useState(false);
   const [showEventWuas, setShowEventWuas] = useState(false);
   const [showPlayerInfo, setShowPlayerInfo] = useState(false);
@@ -171,6 +177,11 @@ export default function App() {
   const [turnRadioPaused, setTurnRadioPaused] = useState(false);
   const [turnRadioActive, setTurnRadioActive] = useState(false);
   const [turnRadioCurrentTrack, setTurnRadioCurrentTrack] = useState<import('@/audio/MainTurnRadio').RadioTrackInfo | null>(null);
+  const [hideRadioUi, setHideRadioUi] = useState(false);
+  const partyOverlayHidden = usePartyStore(s => s.overlayHidden);
+  const partyHubOpen = usePartyStore(s => s.hubOpen);
+  const partyActiveId = usePartyStore(s => s.activePartyId);
+  const partyIncomingInvite = usePartyStore(s => s.incomingInvite);
   // Top-level scene state machine. Splash and title only display on the very
   // first boot of each app session; subsequent navigation cycles only between
   // menu and arena.
@@ -183,6 +194,24 @@ export default function App() {
   const trialDeck = useStore(selectTrialDeck);
   const lastSavedAt = useStore(s => s.lastSavedAt);
   const setPresenceActivity = useFriendsStore(s => s.setPresenceActivity);
+
+  useEffect(() => {
+    const onOpenPartyHub = (e: Event) => {
+      const detail = (e as CustomEvent<{ draft?: { type: 'battleground' | 'null_raid' | 'eternity_boss'; label: string; raidId?: string; bossId?: string; deckId?: string } }>).detail;
+      if (detail?.draft) {
+        usePartyStore.getState().setActivityDraft(detail.draft as any);
+      }
+      setShowCardBoundCoop(true);
+      usePartyStore.getState().openHub(detail?.draft as any ?? null);
+    };
+    window.addEventListener('open-card-bound-coop', onOpenPartyHub as EventListener);
+    return () => window.removeEventListener('open-card-bound-coop', onOpenPartyHub as EventListener);
+  }, []);
+
+  useEffect(() => {
+    void usePartyStore.getState().connectRealtime();
+    return () => { usePartyStore.getState().disconnectRealtime(); };
+  }, []);
 
   useEffect(() => {
     const activeBoss = bossFight.activeBossId
@@ -429,6 +458,7 @@ export default function App() {
     showWakeTrials,
     turn.phase,
   ]);
+
   // ─────────────────────────────────────────────────────────────────────
 
   const [saveHydrated, setSaveHydrated] = useState(false);
@@ -503,6 +533,19 @@ export default function App() {
       if (isTyping) return;
 
       const controls = { ...DEFAULT_CONTROL_BINDINGS, ...(settings.controls ?? {}) };
+
+      // Global radio-UI toggle (default R): show/hide radio widgets without stopping playback.
+      if (e.code === controls.toggleRadioUi && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        setHideRadioUi(v => !v);
+        e.preventDefault();
+        return;
+      }
+
+      if (e.code === controls.togglePartyUi && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        usePartyStore.getState().toggleOverlayHidden();
+        e.preventDefault();
+        return;
+      }
 
       // Close-overlay binding (default Escape): close topmost modal/overlay in priority order
       if (e.code === controls.closeOverlay) {
@@ -580,6 +623,7 @@ export default function App() {
 
   // Unified Eternity's Wake background overlay during any active boss fight (matches selection menu).
   const showBossBackdrop = inBossFight && BOSS_DEFINITIONS.some(b => b.id === bossFight.activeBossId);
+  const showPartyShell = showCardBoundCoop || partyHubOpen || partyActiveId !== null || partyIncomingInvite !== null;
   const ETERNITYS_WAKE_BG = 'radial-gradient(circle at 50% -8%, rgba(255, 108, 108, 0.22) 0%, rgba(255, 108, 108, 0) 35%), radial-gradient(circle at 18% 86%, rgba(149, 62, 95, 0.22) 0%, rgba(149, 62, 95, 0) 44%), repeating-linear-gradient(126deg, rgba(255, 130, 130, 0.08) 0px, rgba(255, 130, 130, 0.08) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 24px), linear-gradient(180deg, rgba(8, 4, 12, 0.985) 0%, rgba(18, 9, 20, 0.985) 100%)';
 
   return (
@@ -653,6 +697,7 @@ export default function App() {
         <Suspense fallback={null}>
           <MainMenuHub
             onCardStore={() => setShowCardStore(true)}
+            onCardBoundCoop={() => { setShowCardBoundCoop(true); usePartyStore.getState().openHub(); }}
             onEternitysWake={() => setShowEternitysWake(true)}
             onBattleground={() => setShowBattleground(true)}
             onInfinitude={() => setShowInfinitude(true)}
@@ -726,6 +771,13 @@ export default function App() {
       {showBattleground && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><BattlegroundLobby onClose={() => setShowBattleground(false)} /></Suspense>
+        </div>
+      )}
+
+      {/* Card-bound Co-op home */}
+      {showCardBoundCoop && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
+          <Suspense fallback={null}><CardBoundCoopHub onClose={() => setShowCardBoundCoop(false)} /></Suspense>
         </div>
       )}
 
@@ -843,6 +895,13 @@ export default function App() {
         </div>
       )}
 
+      {/* Party overlay / invite banner */}
+      {showPartyShell && !partyOverlayHidden && (
+        <Suspense fallback={null}><PartyHub /></Suspense>
+      )}
+
+      <Suspense fallback={null}><PartyInviteModal /></Suspense>
+
       {/* Trial Deck summary modal */}
       {showTrialSummary && trialDeck.mode === 'active' && (
         <Suspense fallback={null}>
@@ -894,11 +953,12 @@ export default function App() {
       )}
       <Suspense fallback={null}><ToastQueue /></Suspense>
       {/* Main menu radio — now-playing toast and control bar (home menu only, hidden when any submenu is open) */}
-      {scene === 'menu' && !isMenuOpen && (
+      {scene === 'menu' && !isMenuOpen && !hideRadioUi && (
         <>
           <Suspense fallback={null}><RadioNowPlaying nowPlaying={nowPlayingEvent} /></Suspense>
           <Suspense fallback={null}>
             <RadioControlBar
+              placement="menu"
               radioActive={radioActive}
               paused={radioPaused}
               currentTrack={radioCurrentTrack}
@@ -911,11 +971,12 @@ export default function App() {
         </>
       )}
       {/* Main turn radio — now-playing toast and control bar (arena, non-boss fights only) */}
-      {scene === 'arena' && !inBossFight && !isMenuOpen && (
+      {scene === 'arena' && !inBossFight && !isMenuOpen && !hideRadioUi && (
         <>
           <Suspense fallback={null}><RadioNowPlaying nowPlaying={turnNowPlayingEvent} /></Suspense>
           <Suspense fallback={null}>
             <RadioControlBar
+              placement="arena"
               radioActive={turnRadioActive}
               paused={turnRadioPaused}
               currentTrack={turnRadioCurrentTrack}
@@ -933,6 +994,9 @@ export default function App() {
 
       {/* Co-op raid incoming invite — global, shown regardless of scene */}
       <Suspense fallback={null}><CoopRaidInviteModal /></Suspense>
+
+      {/* Eternity's Wake co-op boss incoming invite — global, shown regardless of scene */}
+      <Suspense fallback={null}><EternityBossCoopInviteModal /></Suspense>
 
     </div>
   );

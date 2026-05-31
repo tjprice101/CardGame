@@ -774,7 +774,7 @@ function ProfileTab(props: {
           })}
         </div>
         <div style={S.saveHint}>
-          Showcase up to 5 cards on your profile  Evisible to friends.
+          Showcase up to 5 cards on your profile - visible to friends.
         </div>
       </GlassCard>
     </div>

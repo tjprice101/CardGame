@@ -83,7 +83,7 @@ describe('Eternal stack wiring', () => {
     const canonical = getCanonicalCardDescription(card as any) + ' | ' + getCanonicalActivatedAbilityDescription(card as any);
     const flat = sections + ' | ' + canonical;
     expect(flat).not.toMatch(/eternal_stack_gain|eternal_stack_cashout|eternal_stack_spend|eternal_stack_gte/);
-    expect(flat).toMatch(/Inferno Tier/);
+    expect(flat).toMatch(/Heat|Furnace Heat/);
   });
 });
 
@@ -221,7 +221,7 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     } as any, { abilityTextMode: 'canonical' });
     const flat = summary.flatMap(section => section.lines).join(' | ');
     expect(flat).toMatch(/Confluence/);
-    expect(flat).toMatch(/Inferno Tier/);
+    expect(flat).toMatch(/Heat|Furnace Heat/);
     expect(flat).toMatch(/Chroma Ember/);
   });
 });

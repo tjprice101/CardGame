@@ -28,6 +28,9 @@ export type ImmediateEffect =
   | { type: 'radiance_spend'; value: number }
   | { type: 'ember_gain'; value: number }
   | { type: 'ember_spend'; value: number }
+  | { type: 'pyro_heat_gain'; value: number }
+  | { type: 'pyro_heat_spend'; value: number }
+  | { type: 'pyro_heat_burst'; oblivionPerHeat: number; consume?: number }
   | { type: 'draw'; value: number }
   | { type: 'discard_choice'; value: number }
   | { type: 'discard_draw'; discard: number; draw: number }
@@ -283,6 +286,7 @@ export type EffectCondition =
   | { type: 'first_card_this_turn' }
   | { type: 'played_after_non_matching_element' }
   | { type: 'ember_gte'; value: number }
+  | { type: 'pyro_heat_gte'; value: number }
   | { type: 'trail_gte'; value: number }
   | { type: 'strain_gte'; value: number }
   | { type: 'strain_lte'; value: number }

@@ -212,7 +212,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Seraph Recall',
-    description: 'Salvage 1 card matching Seraphim',
+    description: 'Salvage 1 card matching Seraphim; Choose and discard 1 card',
     artKey: 'seek_neutral_seraph_recall',
     effects: [
       { type: 'salvage_by_type', filter: ['Seraphim'] },
@@ -224,7 +224,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Neutral Cycle',
-    description: 'Shuffle discard into deck; Draw 1 card',
+    description: 'Shuffle discard into deck; All Seraphim on board gain +4 Patience',
     artKey: 'seek_neutral_neutral_cycle',
     effects: [
       { type: 'shuffle_discard' },
@@ -247,7 +247,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Surge',
-    description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion; Empower the next card you play; Draw 1 card',
+    description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion; Empower the next card you play; Empower the next card you play; Draw 1 card',
     artKey: 'seek_neutral_void_surge',
     effects: [
       { type: 'oblivion_flat', value: 25 },
@@ -260,7 +260,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Still Pulse',
-    description: 'Draw 1 card; If you control 3+ active Seraphim, Draw 1 card',
+    description: 'All Seraphim on board gain +3 Patience; If you control 3+ active Seraphim, All Seraphim on board gain +3 Patience; Gain 3 Prismatic Light; Draw 1 card',
     artKey: 'seek_neutral_still_pulse',
     effects: [
       { type: 'patience_gain_all', value: 3 },
@@ -272,7 +272,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Oblivion Pulse',
-    description: 'All Seraphim on board gain +2 Patience; +0 Oblivion; Draw 1 card',
+    description: 'All Seraphim on board gain +2 Patience; +20 Oblivion; Empower the next card you play; Gain 4 Prismatic Light; Draw 1 card',
     artKey: 'seek_neutral_chain_pulse',
     effects: [
       { type: 'patience_gain_all', value: 2 },
@@ -285,7 +285,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Cherubim Recall',
-    description: 'Salvage 1 card matching Cherubim',
+    description: 'Salvage 1 card matching Cherubim; Choose and discard 1 card',
     artKey: 'seek_neutral_cherubim_recall',
     effects: [
       { type: 'salvage_by_type', filter: ['Cherubim'] },
@@ -297,7 +297,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Deep Seek',
-    description: 'Search your deck for 1 matching Seraphim or Cherubim',
+    description: 'Search your deck for 1 matching Seraphim or Cherubim; Choose and discard 1 card',
     artKey: 'seek_neutral_deep_seek',
     effects: [
       { type: 'search_deck_by_type', filter: ['Seraphim', 'Cherubim'] },
@@ -313,7 +313,7 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Grand Seek',
-    description: 'Draw 3 cards; +10 Oblivion',
+    description: 'Draw 2 cards; All Seraphim on board gain +2 Patience',
     artKey: 'seek_neutral_grand_seek',
     effects: [
       { type: 'draw', value: 2 },
@@ -325,7 +325,7 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Echo Pulse',
-    description: '+0 Oblivion; Draw 1 card',
+    description: 'All Seraphim on board gain +5 Patience; Empower the next card you play; Draw 1 card',
     artKey: 'seek_neutral_echo_pulse',
     effects: [
       { type: 'patience_gain_all', value: 5 },

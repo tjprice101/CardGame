@@ -24,6 +24,7 @@ import { useGiftsStore } from '@/state/giftsStore';
 import { useStore } from '@/state/store';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
 import { useCoopRaidStore } from '@/state/coopRaidStore';
+import { useEternityBossCoopStore } from '@/state/eternityBossCoopStore';
 
 const PREF_KEY = 'pantheon.social.notifications.v1';
 
@@ -76,6 +77,7 @@ let dmChannel: RealtimeChannel | null = null;
 let giftChannel: RealtimeChannel | null = null;
 let friendChannel: RealtimeChannel | null = null;
 let coopInviteChannel: RealtimeChannel | null = null;
+let eternityBossInviteChannel: RealtimeChannel | null = null;
 let unsubscribeAuth: (() => void) | null = null;
 
 // Cache for sender name lookups so we don't refetch profiles for every DM.
@@ -147,6 +149,13 @@ interface CoopRaidInviteRow {
   from_user: string;
   to_user: string;
   raid_id: string;
+  status: string;
+}
+
+interface EternityBossInviteRow {
+  from_user: string;
+  to_user: string;
+  boss_id: string;
   status: string;
 }
 
@@ -256,6 +265,28 @@ function connectChannels(): void {
       .subscribe();
   }
 
+  if (!eternityBossInviteChannel) {
+    eternityBossInviteChannel = sb
+      .channel(`notify:eternity-coop:${me}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'eternity_wake_coop_invites', filter: `to_user=eq.${me}` },
+        (payload) => {
+          const row = payload.new as EternityBossInviteRow;
+          if (row.status !== 'pending') return;
+          if (!prefs.osNotificationsWhenUnfocused) return;
+          if (isWindowFocused()) return;
+          void resolveDisplayName(row.from_user).then((name) => {
+            void window.pantheonNotify?.show({
+              title: "Eternity's Wake Co-op Invite",
+              body: `${name} invited you to co-op against ${row.boss_id}.`,
+            });
+          });
+        },
+      )
+      .subscribe();
+  }
+
   // Keep the gifts store realtime synced so the inbox badge is current even
   // before the user opens the panel.
   useGiftsStore.getState().connectRealtime();
@@ -267,6 +298,7 @@ function connectChannels(): void {
 
   // Co-op raid invites use the same always-on lifecycle as battleground invites.
   useCoopRaidStore.getState().connectRealtime();
+  useEternityBossCoopStore.getState().connectRealtime();
 }
 
 function disconnectChannels(): void {
@@ -287,10 +319,15 @@ function disconnectChannels(): void {
     if (sb) void sb.removeChannel(coopInviteChannel);
     coopInviteChannel = null;
   }
+  if (eternityBossInviteChannel) {
+    if (sb) void sb.removeChannel(eternityBossInviteChannel);
+    eternityBossInviteChannel = null;
+  }
   profileNameCache.clear();
   useGiftsStore.getState().disconnectRealtime();
   useBattlegroundStore.getState().disconnectRealtime();
   useCoopRaidStore.getState().disconnectRealtime();
+  useEternityBossCoopStore.getState().disconnectRealtime();
 }
 
 // ── Public init ─────────────────────────────────────────────────────────────

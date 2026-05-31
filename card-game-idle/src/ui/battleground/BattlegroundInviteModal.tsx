@@ -10,7 +10,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
 import { useFriendsStore, selectFriendsList } from '@/state/friendsStore';
-import { uiTypography } from '@/ui/theme';
+import { uiTypography, warmTheme } from '@/ui/theme';
 
 const INVITE_TIMEOUT_MS = 60_000;
 
@@ -131,20 +131,20 @@ export default function BattlegroundInviteModal() {
   const urgentColor = timeLeft <= 10 ? '#ff6a4d' : timeLeft <= 20 ? '#ffc04d' : '#9dffc4';
 
   return (
-    <div style={BACKDROP} role="dialog" aria-modal="true" aria-label="Battleground challenge received">
-      <div style={PANEL}>
+    <div style={{ ...BACKDROP, background: warmTheme.backdrop }} role="dialog" aria-modal="true" aria-label="Battleground challenge received">
+      <div style={{ ...PANEL, background: warmTheme.surfaceStrong, border: `1px solid ${warmTheme.borderStrong}`, boxShadow: warmTheme.shadow }}>
         {/* Icon */}
         <div style={{
           width: 56,
           height: 56,
           borderRadius: '50%',
-          background: 'radial-gradient(ellipse at center, rgba(232,80,64,0.32) 0%, rgba(160,30,20,0.18) 100%)',
-          border: '1px solid rgba(232,80,64,0.50)',
+          background: warmTheme.surfaceMuted,
+          border: `1px solid ${warmTheme.borderStrong}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontSize: '1.6rem',
-          boxShadow: '0 0 24px rgba(232,80,64,0.28)',
+          boxShadow: warmTheme.glow,
         }}>
           ⚔️
         </div>
@@ -155,7 +155,7 @@ export default function BattlegroundInviteModal() {
             fontSize: '0.65rem',
             letterSpacing: 3,
             textTransform: 'uppercase',
-            color: 'rgba(240,100,80,0.80)',
+            color: warmTheme.textMuted,
             fontFamily: uiTypography.display,
           }}>
             Battleground Challenge
@@ -164,12 +164,12 @@ export default function BattlegroundInviteModal() {
             fontFamily: uiTypography.display,
             fontSize: '1.3rem',
             fontWeight: 700,
-            color: '#f0e8e0',
+            color: warmTheme.text,
             letterSpacing: '0.06em',
           }}>
             {challengerName}
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'rgba(240,220,210,0.55)', letterSpacing: '0.02em' }}>
+          <div style={{ fontSize: '0.8rem', color: warmTheme.textSoft, letterSpacing: '0.02em' }}>
             challenges you to a 3-minute Oblivion race.
           </div>
         </div>
@@ -196,20 +196,20 @@ export default function BattlegroundInviteModal() {
         {/* Buttons */}
         <div style={{ display: 'flex', gap: 12, width: '100%' }}>
           <button
-            style={BTN_DECLINE}
+            style={{ ...BTN_DECLINE, background: warmTheme.surfaceMuted, border: `1px solid ${warmTheme.border}`, color: warmTheme.textMuted }}
             onClick={handleDecline}
             disabled={accepting}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(232,80,64,0.18)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(232,80,64,0.08)')}
+            onMouseEnter={e => (e.currentTarget.style.background = warmTheme.surface)}
+            onMouseLeave={e => (e.currentTarget.style.background = warmTheme.surfaceMuted)}
           >
             Decline
           </button>
           <button
-            style={{ ...BTN_ACCEPT, opacity: accepting ? 0.6 : 1, cursor: accepting ? 'not-allowed' : 'pointer' }}
+            style={{ ...BTN_ACCEPT, background: warmTheme.button, border: `1px solid ${warmTheme.borderStrong}`, color: warmTheme.accentDeep, opacity: accepting ? 0.6 : 1, cursor: accepting ? 'not-allowed' : 'pointer' }}
             onClick={() => void handleAccept()}
             disabled={accepting}
-            onMouseEnter={e => { if (!accepting) e.currentTarget.style.background = 'linear-gradient(135deg, rgba(80,200,100,0.44) 0%, rgba(50,160,70,0.30) 100%)'; }}
-            onMouseLeave={e => (e.currentTarget.style.background = 'linear-gradient(135deg, rgba(80,200,100,0.28) 0%, rgba(50,160,70,0.18) 100%)')}
+            onMouseEnter={e => { if (!accepting) e.currentTarget.style.filter = 'brightness(1.08)'; }}
+            onMouseLeave={e => { e.currentTarget.style.filter = 'none'; }}
           >
             {accepting ? 'Joining…' : 'Accept'}
           </button>

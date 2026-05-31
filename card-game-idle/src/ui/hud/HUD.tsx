@@ -154,15 +154,15 @@ function LeftRailFrame() {
       aria-hidden="true"
       style={{
         position: 'absolute',
-        left: 8, top: 'clamp(180px, 22vh, 260px)', bottom: 'clamp(210px, 26vh, 280px)',
-        width: 80,
+        left: 12, top: 'clamp(232px, 30vh, 340px)', bottom: 'clamp(210px, 26vh, 280px)',
+        width: 72,
         background: 'linear-gradient(180deg, rgba(5,5,7,0.4) 0%, rgba(5,5,7,0.62) 50%, rgba(5,5,7,0.4) 100%)',
         border: '1px solid rgba(244,244,248,0.08)',
         borderRadius: 18,
         boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(244,244,248,0.05)',
         backdropFilter: 'blur(6px)',
         pointerEvents: 'none',
-        zIndex: 10,
+        zIndex: 2,
       }}
     >
       {/* Top accent cap */}

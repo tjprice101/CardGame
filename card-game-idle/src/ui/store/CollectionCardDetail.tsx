@@ -63,6 +63,11 @@ function renderCombatOverview(card: Props['card']) {
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
             Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} · Cost: {formatAttackCosts(attacks.synergized.costs)}
           </div>
+          {card.element === 'Fire' && (
+            <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
+              Fire attacks: +2.5% per Heat (max +75%) and spend up to 5 Heat for +1% per Heat spent (max +5%).
+            </div>
+          )}
         </div>
       </div>
     );
@@ -87,6 +92,11 @@ function renderCombatOverview(card: Props['card']) {
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
             Cost: {formatAttackCosts(attacks.exalted.costs)}
           </div>
+          {card.element === 'Fire' && (
+            <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
+              Fire attacks: +2.5% per Heat (max +75%) and spend up to 5 Heat for +1% per Heat spent (max +5%).
+            </div>
+          )}
         </div>
       </div>
     );

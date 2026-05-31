@@ -109,7 +109,7 @@ const neutralityTrial: TrialDeckDefinition = {
 // ── Pyroabyss ─────────────────────────────────────────────────────────────────
 const pyroabyssTrial: TrialDeckDefinition = {
   packId: 'pack-pyroabyss',
-  displayName: 'Pyroabyss — Inferno Tier & Chroma Ember',
+  displayName: 'Pyroabyss — Heat Roles and Burst Windows',
   deckList: [
     d('ser-fire-cinder', 4),
     d('ser-fire-abyssal', 4),
@@ -131,31 +131,31 @@ const pyroabyssTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'cherubim-fire-ember-shroud',
-      hint: 'Ember Shroud (Slot A). On play: Gain 8 Inferno Tier. While active: gain 1 Chroma Ember per card.',
+      hint: 'Cinder Shroud (Slot A). On play: gain 4 Heat and draw 1. While active: gain 1 Chroma Ember per card.',
     },
     {
       cardDefinitionId: 'ser-fire-cinder',
-      hint: 'Cinder Seraphim (Slot A). On play: +15 Oblivion, gain 5 Inferno Tier. While active: +10 Oblivion per card.',
+      hint: 'Cinder Seraphim (Slot A). On play: +12 Oblivion, gain 3 Heat, draw 1. While active: +9 Oblivion per card.',
     },
     {
       cardDefinitionId: 'ophanim-fire-cinder-draw',
-      hint: 'Cinder Draw. Gain 2 Inferno Tier; draw 1.',
+      hint: 'Cinder Draw. Gain 2 Heat, draw 1, and add +8 Oblivion. This is your smooth setup cantrip.',
     },
     {
       cardDefinitionId: 'ophanim-fire-void-kindling',
-      hint: 'Void Kindling. Gain 5 Inferno Tier. This is your setup ramp before ember ignition.',
+      hint: 'Void Kindling. Shuffle discard into deck and gain 3 Heat. Use it to reset fuel before a burst turn.',
     },
     {
       cardDefinitionId: 'ophanim-fire-abyssal-kindle',
-      hint: 'Abyssal Kindle. +20 Oblivion; gain 2 Inferno Tier.',
+      hint: 'Abyssal Kindle. +28 Oblivion and gain 1 Heat. This is your clean mid-sequence scaler.',
     },
     {
       cardDefinitionId: 'ophanim-fire-cinder-draw',
-      hint: 'Cinder Draw again. Gain 2 Inferno Tier; draws Void Combustion.',
+      hint: 'Cinder Draw again. Keep Heat climbing while drawing into your finisher.',
     },
     {
       cardDefinitionId: 'ophanim-fire-void-combustion',
-      hint: 'Void Combustion. Core mechanic: ignite banked Chroma Ember after stacking Inferno Tier. Why it scales: setup cards build attack scaling while ember ignition adds burst. Exact payoff: play Void Combustion, then click Cinder Seraphim → Vector Break for the finisher (~900+ combined Oblivion).',
+      hint: 'Void Combustion. Burst up to 4 Heat at +56 each, then draw 2 if Heat is 12+. Finish with a Seraphim attack for the payoff window.',
     },
   ],
   guidedOpeningHand: [

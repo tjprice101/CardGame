@@ -852,14 +852,14 @@ describe('Set mechanic reworks', () => {
     expect(state.progress.oblivion).toBeGreaterThan(beforeEndTurn);
   });
 
-  it('keeps base Pyro sequencing from generating Eternal stacks by itself', () => {
+  it('lets base Pyro sequencing build Heat without needing higher-rarity overlays', () => {
     seedPlayingState(['hr-light-divine-smite', 'cherubim-fire-pyre-mantle']);
 
     useStore.getState().playCard('hand_0');
     useStore.getState().playCard('hand_1');
 
     const state = useStore.getState();
-    expect(state.turn.eternalStacks?.pyro ?? 0).toBe(0);
+    expect(state.turn.pyroHeat ?? 0).toBeGreaterThan(0);
     expect(state.turn.secondaryCounters?.pyro ?? 0).toBe(0);
   });
 

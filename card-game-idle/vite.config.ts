@@ -7,6 +7,10 @@ const isGhPages = process.env.DEPLOY_TARGET === 'ghpages';
 
 export default defineConfig({
   base: isGhPages ? '/CardGame/' : '/',
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
   plugins: [
     react(),
     glsl({ compress: false }),

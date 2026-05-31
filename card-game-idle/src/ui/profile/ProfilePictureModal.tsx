@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { AVATARS, type AvatarDefinition } from '@/data/profile/avatars';
+import { AVATARS, isAvatarUnlocked, type AvatarDefinition } from '@/data/profile/avatars';
 import { warmTheme } from '@/ui/theme';
 
 interface Props {
@@ -28,7 +28,7 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
   }, []);
 
   function handleSelect(avatar: AvatarDefinition) {
-    if (!avatar.isUnlocked(progress)) return;
+    if (!isAvatarUnlocked(avatar.id, progress)) return;
     setAvatarId(avatar.id);
     onApply?.(avatar.id);
     onClose();
@@ -119,7 +119,7 @@ export default function ProfilePictureModal({ currentAvatarId, onClose, onApply 
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: 8 }}>
                 {sec.avatars.map(avatar => {
-                  const unlocked = avatar.isUnlocked(progress);
+                  const unlocked = isAvatarUnlocked(avatar.id, progress);
                   const selected = avatar.id === currentAvatarId;
                   const isHovered = hoveredId === avatar.id;
 

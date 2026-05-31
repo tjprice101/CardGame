@@ -8,6 +8,7 @@ import { create } from 'zustand';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { getSupabase } from '@/net/supabaseClient';
 import { useSocialStore } from '@/state/socialStore';
+import { useStore } from '@/state/store';
 
 export interface FriendCurrentActivity {
   label: string;
@@ -224,6 +225,7 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
         .eq('from_user', target.id)
         .eq('to_user', me);
       if (accErr) throw accErr;
+      useStore.getState().recordSocialProgress('friend_added');
     } else {
       const { error: insErr } = await sb
         .from('friend_requests')
@@ -233,6 +235,7 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
         if (insErr.code === '23505') throw new Error('A request to that player already exists.');
         throw insErr;
       }
+      useStore.getState().recordSocialProgress('friend_request_sent');
     }
     await get().load();
   },
@@ -247,6 +250,7 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
       .eq('from_user', fromUserId)
       .eq('to_user', me);
     if (error) { set({ errorMessage: messageOf(error) }); return; }
+    useStore.getState().recordSocialProgress('friend_added');
     await get().load();
   },
 

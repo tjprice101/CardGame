@@ -244,6 +244,7 @@ export interface TurnState {
   burningGardenGeometryMode?: boolean;
   burningGardenZenithNextInfinite?: boolean;
   burningGardenSkyLaw?: 'Rose' | 'Sunflower' | 'Thistle' | null;
+  pyroHeat?: number;
   lastPlayedElement?: string | null;
   /** Distinct card elements played this turn — used for 'play_unique_sets_in_turn' quest tracking. */
   uniqueElementsPlayedThisTurn?: string[];
@@ -326,6 +327,21 @@ export interface BossCodexEntry {
   highestFightDamage?: number;
 }
 
+/**
+ * Persistent social interaction counters used for social title/achievement
+ * unlocks. Save v24.
+ */
+export interface SocialProgressStats {
+  friendRequestsSent: number;
+  friendsAccepted: number;
+  messagesSent: number;
+  messagesWithAttachment: number;
+  giftsSent: number;
+  battlegroundInvitesSent: number;
+  coopBossInvitesSent: number;
+  coopBossInvitesAccepted: number;
+}
+
 export interface ProgressState {
   oblivion: number;
   /** Total Oblivion ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
@@ -404,6 +420,8 @@ export interface ProgressState {
     /** Unix-ms timestamps of recent reward-bearing matches (for daily cap). */
     dailyMatchTimestamps: number[];
   };
+  /** Social interaction counters used by social achievements/titles. Save v24. */
+  socialStats?: SocialProgressStats;
 }
 
 export interface PackOpenEntry {
@@ -437,6 +455,8 @@ export interface PlayerProfileState {
   customUiTheme: Record<string, string> | null;
   /** Up to 5 card definition ids the player has chosen to showcase. Save v21. */
   signatureCardIds?: string[];
+  /** Permanently latched avatar ids unlocked at least once. Save v23. */
+  unlockedAvatarIds?: string[];
 }
 
 export interface DailyLoginState {
@@ -475,13 +495,17 @@ export interface SettingsState {
 export type KeybindActionId =
   | 'swapExtraDeck'
   | 'openTutorial'
-  | 'closeOverlay';
+  | 'closeOverlay'
+  | 'toggleRadioUi'
+  | 'togglePartyUi';
 
 /** Default keyboard control bindings (KeyboardEvent.code values). */
 export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
   swapExtraDeck: 'KeyE',
   openTutorial: 'Slash',
   closeOverlay: 'Escape',
+  toggleRadioUi: 'KeyR',
+  togglePartyUi: 'KeyP',
 };
 
 export type UiLanguage = 'en' | 'es' | 'fr';

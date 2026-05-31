@@ -97,6 +97,7 @@ export const useBattlegroundStore = create<BattlegroundStoreState>((set, get) =>
     }
 
     set({ activeSessionId: sessionId });
+    useStore.getState().recordSocialProgress('battleground_invite_sent');
     // Start the match on the host side immediately (CPU-mode stand-in until guest accepts).
     useStore.getState().enterBattleground('pvp', undefined, toProfile);
     get().connectBoardChannel(sessionId);

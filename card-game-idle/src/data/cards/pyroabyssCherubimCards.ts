@@ -7,15 +7,14 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinder Shroud',
-    description: 'On play: Gain 4 Inferno Tier; Gain 2 Inferno Tier; Gain 2 Inferno Tier. While on board: Gain 1 Chroma Ember per card played',
+    description: 'On play: Gain 4 Heat; Draw 1 card. While on board: Gain 1 Ember per card played',
     artKey: 'cherubim_fire_ember_shroud',
     maxDurability: 2,
     effects: [
       { type: 'cherubim_ember_gain', value: 1 }],
     onPlayEffects: [
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 4 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
+      { type: 'pyro_heat_gain', value: 4 },
+      { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'cherubim-fire-abyssal-veil',
@@ -23,16 +22,14 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Veil',
-    description: 'On play: +40 Oblivion; Gain 3 Inferno Tier; Gain 2 Inferno Tier; Gain 2 Inferno Tier. While on board: +10 Oblivion per card played',
+    description: 'On play: +35 Oblivion; Gain 3 Heat. While on board: +12 Oblivion per card played',
     artKey: 'cherubim_fire_abyssal_veil',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_oblivion_per_card', value: 10 }],
+      { type: 'cherubim_oblivion_per_card', value: 12 }],
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 40 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 3 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
+      { type: 'oblivion_flat', value: 35 },
+      { type: 'pyro_heat_gain', value: 3 }],
   },
   {
     definitionId: 'cherubim-fire-pyre-mantle',
@@ -40,15 +37,15 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyre Mantle',
-    description: 'On play: Gain 4 Inferno Tier; +50 Oblivion; Gain 2 Inferno Tier. While on board: Gain 3 Chroma Ember per card played',
+    description: 'On play: Gain 3 Heat; +40 Oblivion; Search your deck for 1 matching Ophanim. While on board: Gain 2 Embers per card played',
     artKey: 'cherubim_fire_pyre_mantle',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_ember_gain', value: 3 }],
+      { type: 'cherubim_ember_gain', value: 2 }],
     onPlayEffects: [
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 4 },
-      { type: 'oblivion_flat', value: 50 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
+      { type: 'pyro_heat_gain', value: 3 },
+      { type: 'oblivion_flat', value: 40 },
+      { type: 'search_deck_by_type', filter: ['Ophanim'] }],
   },
   {
     definitionId: 'cherubim-fire-infernal-ward',
@@ -56,14 +53,15 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Infernal Ward',
-    description: 'On play: +60 Oblivion; Gain 2 Inferno Tier. While on board: Buffs Seraphim and Angel attacks: base +32, cooldown +0',
+    description: 'On play: +45 Oblivion; Gain 2 Heat; Draw 1 card. While on board: Buffs Seraphim and Angel attacks: base +34, cooldown -1',
     artKey: 'cherubim_fire_infernal_ward',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 32, cooldownDeltaCards: 0 }],
+      { type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 34, cooldownDeltaCards: -1 }],
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 60 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
+      { type: 'oblivion_flat', value: 45 },
+      { type: 'pyro_heat_gain', value: 2 },
+      { type: 'draw', value: 1 }],
   },
   {
     definitionId: 'cherubim-fire-void-cinder-shell',
@@ -71,16 +69,15 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void Cinder Shell',
-    description: 'On play: +100 Oblivion; Gain 5 Inferno Tier; Empower the next card you play; Gain 2 Inferno Tier. While on board: All Oblivion gain +8%',
+    description: 'On play: +90 Oblivion; Gain 4 Heat; Empower the next card you play. While on board: All Oblivion gain +10%',
     artKey: 'cherubim_fire_void_cinder_shell',
     maxDurability: 7,
     effects: [
-      { type: 'cherubim_global_oblivion_mult', value: 0.08 }],
+      { type: 'cherubim_global_oblivion_mult', value: 0.1 }],
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 100 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 5 },
-      { type: 'multiply_next' },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
+      { type: 'oblivion_flat', value: 90 },
+      { type: 'pyro_heat_gain', value: 4 },
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'cherubim-fire-flame-fortify',
@@ -88,15 +85,15 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Flame Fortification',
-    description: 'On play: Search your deck for 1 matching Seraphim; Gain 4 Inferno Tier; Gain 2 Inferno Tier. While on board: +14 Oblivion per card played',
+    description: 'On play: Search your deck for 1 matching Seraphim; Gain 3 Heat; +20 Oblivion. While on board: +14 Oblivion per card played',
     artKey: 'cherubim_fire_flame_fortify',
     maxDurability: 3,
     effects: [
       { type: 'cherubim_oblivion_per_card', value: 14 }],
     onPlayEffects: [
       { type: 'search_deck_by_type', filter: ['Seraphim'] },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 4 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
+      { type: 'pyro_heat_gain', value: 3 },
+      { type: 'oblivion_flat', value: 20 }],
   },
   {
     definitionId: 'cherubim-fire-abyss-amp',
@@ -104,15 +101,14 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Abyss Amplifier',
-    description: 'On play: Gain 4 Inferno Tier; Gain 2 Inferno Tier; Ignite up to 1 Chroma Ember (+72 Oblivion x echoes^2); +80 Oblivion; Gain 2 Inferno Tier. While on board: Ophanim plays gain +26 Oblivion',
+    description: 'On play: Gain 3 Heat; Burst up to 2 Heat (+40.0 Oblivion per Heat); +60 Oblivion; Draw 1 card. While on board: Ophanim plays gain +30 Oblivion',
     artKey: 'cherubim_fire_abyss_amp',
     maxDurability: 4,
     effects: [
-      { type: 'cherubim_ophanim_bonus', value: 26 }],
+      { type: 'cherubim_ophanim_bonus', value: 30 }],
     onPlayEffects: [
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 4 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 },
-      { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 72, consume: 1 },
-      { type: 'oblivion_flat', value: 80 },
-      { type: 'eternal_stack_gain', stack: 'pyro', value: 2 }],
+        { type: 'pyro_heat_gain', value: 3 },
+        { type: 'pyro_heat_burst', oblivionPerHeat: 40, consume: 2 },
+        { type: 'oblivion_flat', value: 60 },
+        { type: 'draw', value: 1 }],
   }];

@@ -691,6 +691,9 @@ export default function DeckBuilder({ onClose }: Props) {
     return (
       <div key={def.key} style={styles.cardWithMeta}>
         <div
+          className={def.finish === 'holo' || def.def.rarity === 'Infinite' || def.def.rarity === 'Eternal'
+            ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
+            : undefined}
           style={{
             ...styles.card,
             ...getDenseCardFaceBackgroundStyle(def.def, def.finish),

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { uiTypography } from '@/ui/theme';
 import { useStore, selectProgress } from '@/state/store';
-import { useBattlegroundStore } from '@/state/battlegroundStore';
-import { useFriendsStore, selectFriendsList, selectFriendsLoaded } from '@/state/friendsStore';
 import type { CpuDifficulty } from '@/types/battleground';
 
 interface Props {
@@ -12,9 +10,7 @@ interface Props {
 type Step =
   | 'select-mode'
   | 'select-cpu-difficulty'
-  | 'cpu-ready'          // brief "AI accepted — match starting" countdown
-  | 'select-friend'      // friend picker for PvP invite
-  | 'pvp-pending';       // waiting for friend to accept/decline
+  | 'cpu-ready';
 
 const OVERLAY: React.CSSProperties = {
   position: 'absolute',
@@ -119,17 +115,9 @@ export default function BattlegroundLobby({ onClose }: Props) {
   const [step, setStep] = useState<Step>('select-mode');
   const [pendingDiff, setPendingDiff] = useState<CpuDifficulty>('normal');
   const [countdown, setCountdown] = useState(3);
-  const [sendingInviteTo, setSendingInviteTo] = useState<string | null>(null);
-  const [inviteError, setInviteError] = useState<string | null>(null);
   const enterBattleground = useStore(s => s.enterBattleground);
-  const incomingInvite = useBattlegroundStore(s => s.incomingInvite);
-  const sendInvite = useBattlegroundStore(s => s.sendInvite);
   const progress = useStore(selectProgress);
   const stats = progress.battlegroundStats;
-  const friends = useFriendsStore(selectFriendsList);
-  const friendsLoaded = useFriendsStore(selectFriendsLoaded);
-  const loadFriends = useFriendsStore(s => s.load);
-  const presence = useFriendsStore(s => s.presence);
 
   // When step is 'cpu-ready', count down 3 → 0 then start the match.
   useEffect(() => {
@@ -161,22 +149,15 @@ export default function BattlegroundLobby({ onClose }: Props) {
   }
 
   function handlePvp() {
-    if (!friendsLoaded) void loadFriends();
-    setInviteError(null);
-    setStep('select-friend');
-  }
-
-  async function handleChallengeFriend(friendId: string, displayName: string, avatarId: string) {
-    if (sendingInviteTo) return;
-    setSendingInviteTo(friendId);
-    setInviteError(null);
-    const sessionId = await sendInvite(friendId, { displayName, avatarId });
-    if (sessionId) {
-      setStep('pvp-pending');
-    } else {
-      setInviteError('Could not send invite. Please try again.');
-    }
-    setSendingInviteTo(null);
+    window.dispatchEvent(new CustomEvent('open-card-bound-coop', {
+      detail: {
+        draft: {
+          type: 'battleground',
+          label: 'Battleground of the Card-born · PvP',
+        },
+      },
+    }));
+    onClose();
   }
 
   // When an incoming invite resolves (accepted/declined), reflect it.
@@ -246,7 +227,7 @@ export default function BattlegroundLobby({ onClose }: Props) {
             />
             <ModeCard
               title="vs Friend (PvP)"
-              sub="Invite a friend for a real-time Oblivion race."
+              sub="Route through Card-bound Co-op party command."
               icon="◉"
               onClick={handlePvp}
             />
@@ -297,203 +278,9 @@ export default function BattlegroundLobby({ onClose }: Props) {
           </div>
         )}
 
-        {/* ── Friend picker ──────────────────────────────────────── */}
-        {step === 'select-friend' && (
-          <>
-            <button
-              onClick={() => setStep('select-mode')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e85040', fontSize: '0.82rem', textAlign: 'left', padding: 0, letterSpacing: '0.02em' }}
-            >
-              ← Back
-            </button>
-            <p style={{ ...CAPTION, marginBottom: 2, letterSpacing: 2, textTransform: 'uppercase', fontSize: '0.7rem' }}>
-              Choose a friend to challenge:
-            </p>
-            {inviteError && (
-              <div style={{ fontSize: '0.78rem', color: '#ff7060', textAlign: 'center' }}>{inviteError}</div>
-            )}
-            {!friendsLoaded ? (
-              <div style={{ color: 'rgba(240,220,210,0.55)', fontSize: '0.82rem', textAlign: 'center', padding: '12px 0' }}>Loading friends…</div>
-            ) : friends.length === 0 ? (
-              <div style={{ color: 'rgba(240,220,210,0.55)', fontSize: '0.82rem', textAlign: 'center', padding: '12px 0' }}>
-                No friends yet. Add friends from the Player Info panel to challenge them here.
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 240, overflowY: 'auto' }}>
-                {friends.map(f => {
-                  const isOnline = !!presence[f.other.id];
-                  const isSending = sendingInviteTo === f.other.id;
-                  return (
-                    <div
-                      key={f.other.id}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '10px 14px',
-                        background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid rgba(255,255,255,0.10)',
-                        borderRadius: 10,
-                        gap: 12,
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-                        <div style={{
-                          width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                          background: isOnline ? '#5de88a' : 'rgba(255,255,255,0.22)',
-                          boxShadow: isOnline ? '0 0 6px #5de88a88' : 'none',
-                        }} />
-                        <span style={{
-                          fontFamily: uiTypography.display,
-                          fontSize: '0.88rem',
-                          color: '#f0e8e0',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}>
-                          {f.other.displayName}
-                        </span>
-                      </div>
-                      <button
-                        disabled={!!sendingInviteTo}
-                        onClick={() => void handleChallengeFriend(f.other.id, f.other.displayName, f.other.avatarId)}
-                        style={{
-                          background: isSending ? 'rgba(232,80,64,0.10)' : 'rgba(232,80,64,0.18)',
-                          border: '1px solid rgba(232,80,64,0.45)',
-                          borderRadius: 7,
-                          color: '#f0e8e0',
-                          fontFamily: uiTypography.display,
-                          fontSize: '0.72rem',
-                          letterSpacing: '0.06em',
-                          textTransform: 'uppercase',
-                          padding: '5px 12px',
-                          cursor: sendingInviteTo ? 'not-allowed' : 'pointer',
-                          opacity: sendingInviteTo && !isSending ? 0.45 : 1,
-                          flexShrink: 0,
-                          whiteSpace: 'nowrap',
-                        }}
-                        onMouseEnter={e => { if (!sendingInviteTo) e.currentTarget.style.background = 'rgba(232,80,64,0.32)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = isSending ? 'rgba(232,80,64,0.10)' : 'rgba(232,80,64,0.18)'; }}
-                      >
-                        {isSending ? 'Sending…' : 'Challenge'}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* ── PvP pending invite ─────────────────────────────────── */}
-        {step === 'pvp-pending' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, alignItems: 'center', padding: '16px 0' }}>
-            <div style={{ fontSize: '0.85rem', color: '#f0e8e0', letterSpacing: '0.02em' }}>
-              Waiting for opponent to accept…
-            </div>
-            <div style={{
-              width: 28,
-              height: 28,
-              border: '2px solid #e85040',
-              borderTopColor: 'transparent',
-              borderRadius: '50%',
-              animation: 'spin 0.9s linear infinite',
-            }} />
-            <p style={{ fontSize: '0.75rem', color: 'rgba(240,220,210,0.60)', margin: 0, textAlign: 'center' }}>
-              Your challenge has been sent. The match begins once they accept.
-            </p>
-            <button
-              onClick={() => setStep('select-mode')}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#e85040', fontSize: '0.82rem', padding: 0, letterSpacing: '0.02em' }}
-            >
-              ← Cancel
-            </button>
-          </div>
-        )}
-
-        {/* ── Incoming invite banner ─────────────────────────────── */}
-        {incomingInvite && (
-          <IncomingInviteBanner invite={incomingInvite} onClose={onClose} />
-        )}
-
         <p style={{ ...CAPTION, fontSize: '0.7rem', borderTop: '1px solid rgba(232,80,64,0.16)', paddingTop: 12, margin: 0, letterSpacing: '0.02em' }}>
-          Every match grants Aberrated Shards. Win/loss rewards scale with difficulty. Score milestones grant bonus pulls.
+          Every match grants Aberrated Shards. PvP invites now live in Card-bound Co-op so all social activities share one command home.
         </p>
-      </div>
-    </div>
-  );
-}
-
-// ── Incoming invite sub-component ─────────────────────────────────────────────
-
-import type { BattlegroundInviteRow } from '@/state/battlegroundStore';
-
-function IncomingInviteBanner({ invite, onClose }: { invite: BattlegroundInviteRow; onClose: () => void }) {
-  const { acceptInvite, declineInvite } = useBattlegroundStore();
-  const [busy, setBusy] = useState(false);
-
-  async function handleAccept() {
-    setBusy(true);
-    await acceptInvite(invite);
-    onClose();
-  }
-
-  async function handleDecline() {
-    setBusy(true);
-    await declineInvite(invite.id);
-  }
-
-  return (
-    <div style={{
-      background: 'rgba(232,80,64,0.08)',
-      border: '1px solid rgba(232,80,64,0.38)',
-      borderRadius: 12,
-      padding: '14px 16px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 10,
-    }}>
-      <div style={{ fontWeight: 700, color: '#f0e8e0', fontSize: '0.9rem' }}>
-        Incoming challenge!
-      </div>
-      <div style={{ fontSize: '0.82rem', color: 'rgba(240,220,210,0.65)' }}>
-        A player wants to battle — accept or decline.
-      </div>
-      <div style={{ display: 'flex', gap: 10 }}>
-        <button
-          disabled={busy}
-          onClick={handleAccept}
-          style={{
-            flex: 1,
-            background: 'rgba(232,80,64,0.22)',
-            color: '#f0e8e0',
-            border: '1px solid rgba(232,80,64,0.55)',
-            borderRadius: 8,
-            padding: '10px 0',
-            fontWeight: 700,
-            cursor: busy ? 'wait' : 'pointer',
-            fontSize: '0.85rem',
-            letterSpacing: '0.04em',
-          }}
-        >
-          Accept
-        </button>
-        <button
-          disabled={busy}
-          onClick={handleDecline}
-          style={{
-            flex: 1,
-            background: 'transparent',
-            color: 'rgba(240,220,210,0.55)',
-            border: `1px solid rgba(255,255,255,0.12)`,
-            borderRadius: 8,
-            padding: '10px 0',
-            cursor: busy ? 'wait' : 'pointer',
-            fontSize: '0.85rem',
-          }}
-        >
-          Decline
-        </button>
       </div>
     </div>
   );

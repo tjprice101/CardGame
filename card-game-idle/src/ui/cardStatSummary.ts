@@ -40,7 +40,7 @@ function formatSubtypeList(filters: ReadonlyArray<CardSubtypeFilter>): string {
 }
 
 const ETERNAL_STACK_LABELS: Record<string, { singular: string; plural: string }> = {
-  pyro: { singular: 'Inferno Tier', plural: 'Inferno Tiers' },
+  pyro: { singular: 'Furnace Heat', plural: 'Furnace Heat' },
   light: { singular: 'Halo', plural: 'Halo' },
   thorn: { singular: 'Thorncrown', plural: 'Thorncrowns' },
   glass: { singular: 'Eclipse', plural: 'Eclipse' },
@@ -132,6 +132,7 @@ function formatSummonCondition(condition: NonNullable<AngelDefinition['extraSumm
     return `${condition.value}+ ${def?.name ?? condition.definitionId} on board`;
   }
   if (condition.type === 'equilibrium_sigils_gte') return `${condition.value}+ Equilibrium Sigils`;
+  if (condition.type === 'pyro_heat_gte') return `${condition.value}+ Heat`;
   if (condition.type === 'eternal_stack_gte') return `${condition.value}+ ${eternalStackName(condition.stack)}`;
   if (condition.type === 'set_secondary_gte') return `${condition.value}+ ${setSecondaryName(condition.kind)}`;
   return 'special condition';
@@ -188,6 +189,8 @@ function formatCondition(condition: EffectCondition): string {
       return `you control ${condition.value}+ active Cherubim`;
     case 'ember_gte':
       return `you have ${condition.value}+ Embers`;
+    case 'pyro_heat_gte':
+      return `you have ${condition.value}+ Heat`;
     case 'trail_gte':
       return `you have ${condition.value}+ Trail`;
     case 'scar_count_gte':
@@ -256,6 +259,12 @@ function formatEffect(effect: CardEffect): string {
     case 'radiance_spend': return `Spend ${effect.value} Radiance`;
     case 'ember_gain': return `Gain ${effect.value} ${effect.value === 1 ? 'Ember' : 'Embers'}`;
     case 'ember_spend': return `Spend ${effect.value} ${effect.value === 1 ? 'Ember' : 'Embers'}`;
+    case 'pyro_heat_gain': return `Gain ${effect.value} Heat`;
+    case 'pyro_heat_spend': return effect.value >= 9999 ? 'Spend all Heat' : `Spend ${effect.value} Heat`;
+    case 'pyro_heat_burst': {
+      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
+      return `Burst ${scope} Heat (+${formatExactValue(effect.oblivionPerHeat)} Oblivion per Heat)`;
+    }
     case 'draw': return `Draw ${formatCount(effect.value, 'card')}`;
     case 'discard_choice': return `Choose and discard ${formatCount(effect.value, 'card')}`;
     case 'discard_draw': return `Discard ${formatCount(effect.discard, 'card')}, then draw ${formatCount(effect.draw, 'card')}`;
@@ -337,12 +346,12 @@ function formatEffect(effect: CardEffect): string {
     case 'pyro_transcendent_confluence': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       const extras: string[] = [];
-      if ((effect.gainInfernoPerPair ?? 0) > 0) extras.push(`+${effect.gainInfernoPerPair} Inferno Tier per pair`);
+      if ((effect.gainInfernoPerPair ?? 0) > 0) extras.push(`+${effect.gainInfernoPerPair} Heat per pair`);
       if ((effect.gainChromaPerPair ?? 0) > 0) extras.push(`+${effect.gainChromaPerPair} Chroma Ember per pair`);
       if ((effect.drawAtPairs ?? 0) > 0) extras.push(`draw 1 per ${effect.drawAtPairs} pair${effect.drawAtPairs === 1 ? '' : 's'}`);
       if ((effect.empowerAtPairs ?? 0) > 0) extras.push(`empower next card at ${effect.empowerAtPairs}+ pair${effect.empowerAtPairs === 1 ? '' : 's'}`);
       const suffix = extras.length > 0 ? `; ${extras.join('; ')}` : '';
-      return `Confluence ${scope} matched Inferno Tier and Chroma Ember pairs (+${formatExactValue(effect.oblivionPerPair)} Oblivion per pair${suffix})`;
+      return `Confluence ${scope} matched Heat and Chroma Ember pairs (+${formatExactValue(effect.oblivionPerPair)} Oblivion per pair${suffix})`;
     }
     case 'light_halo_cascade_resound': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -777,7 +786,7 @@ export function getCanonicalAttackDescription(attack: {
   const costText = (attack.costs && attack.costs.length > 0) ? ` · Cost: ${formatCosts(attack.costs)}` : '';
   const angelText = attack.requiresAngelOnBoard ? ' · Requires Angel' : '';
   const furnaceText = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire')
-    ? ' · +2.5% attack per Inferno Tier (max +75%)'
+    ? ' · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)'
     : '';
   const eternalFireAttack = typeof attack.id === 'string' && attack.id.startsWith('btei-pyroabyss-');
   const infiniteFireAttackForChroma = typeof attack.id === 'string' && attack.id.startsWith('inf-') && (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire');
@@ -981,7 +990,7 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
   if (card.type === 'Seraphim') {
     const seraphim = card as SeraphimDefinition;
     const fireScalingText = seraphim.element === 'Fire'
-      ? ' · +2.5% attack per Inferno Tier (max +75%)'
+      ? ' · +2.5% attack per Heat (max +75%)'
       : '';
     const chromaAttackText = seraphim.element === 'Fire'
       ? (seraphim.rarity === 'Eternal'
@@ -1022,7 +1031,7 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
               : '')
           : '';
     const fireScalingText = angel.element === 'Fire'
-      ? ' · +2.5% attack per Inferno Tier (max +75%)'
+      ? ' · +2.5% attack per Heat (max +75%)'
       : '';
     const summonCostText = angel.summonCost.length > 0
       ? angel.summonCost.map(id => CardRegistry.get(id)?.name ?? id).join(', ')

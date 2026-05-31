@@ -999,6 +999,11 @@ const BUTTERFLY_BASE_OPHANIM_SOURCE_IDS = new Set<string>([
 function shouldKeepSourceDefinition(definitionId: string): boolean {
   if (NEUTRALITY_REWORK_IDS.has(definitionId)) return true;
   if (BUTTERFLY_BASE_OPHANIM_SOURCE_IDS.has(definitionId)) return true;
+  // Base Pyroabyss cards are authored reworks and must remain source-driven.
+  if (definitionId.startsWith('ser-fire-')) return true;
+  if (definitionId.startsWith('ophanim-fire-')) return true;
+  if (definitionId.startsWith('cherubim-fire-')) return true;
+  if (definitionId.startsWith('angel-fire-')) return true;
   if (definitionId.startsWith('md-')) return true;
   // Infinite reward cards must execute the exact source-defined effects so UI text matches behavior.
   if (definitionId.startsWith('inf-')) return true;
@@ -1128,7 +1133,7 @@ function buildDisplayAttackDescription(attack: {
     ? ` · Cost: ${attack.costs.map(formatDisplayAttackCost).join(', ')}`
     : '';
   const furnaceText = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire')
-    ? ' · +2.5% attack per Inferno Tier (max +75%)'
+    ? ' · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)'
     : '';
   const chromaText = options?.fireChromaTier === 'eternal'
     ? ' · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)'

@@ -520,13 +520,13 @@ describe('Heavenly Light balance', () => {
       makeDeck('hr-light-pillar-of-heaven'),
     );
 
-    expect(spireResult.turn.radiance).toBe(6);
+    expect(spireResult.turn.radiance).toBe(0);
     expect(spireResult.board.activeBoardEffects).toContainEqual({ type: 'score_multiplier', value: 250 });
   });
 });
 
 describe('Pyroabyss dynamic effects', () => {
-  it('counts Ophanim cards in hand for Ember Chain ember gain', () => {
+  it('builds Heat from Ember Chain base effects', () => {
     const result = CardEffectExecutor.execute(
       { instanceId: 'play_1', definitionId: 'ophanim-fire-ember-chain', finish: 'normal' },
       makePlayingTurn(),
@@ -544,7 +544,7 @@ describe('Pyroabyss dynamic effects', () => {
       },
     );
 
-    expect(result.turn.embers).toBe(2);
+    expect(result.turn.pyroHeat ?? 0).toBe(4);
   });
 });
 
@@ -585,7 +585,7 @@ describe('Cherubim on-play resolution', () => {
     const state = useStore.getState();
     expect(state.turn.pendingEffect?.type).toBe('search_deck');
     expect(state.turn.pendingEffect?.filter).toEqual(['Seraphim']);
-    expect(state.deck.hand).toHaveLength(1);
+    expect(state.deck.hand).toHaveLength(0);
   });
 });
 

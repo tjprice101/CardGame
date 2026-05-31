@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 22;
+export const CURRENT_VERSION = 24;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -332,6 +332,48 @@ const migrations: Record<number, Migration> = {
         p.entropicEnergyBalance = (p.entropyBalance as number | undefined) ?? 0;
       }
       if (p.nullRaidAngelMissStreak === undefined) p.nullRaidAngelMissStreak = {};
+    }
+    return data;
+  },
+  23: (data) => {
+    // v23 adds permanent profile avatar unlock tracking.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      const prof = p.profile as Record<string, unknown> | undefined;
+      if (prof) {
+        if (!Array.isArray(prof.unlockedAvatarIds)) {
+          prof.unlockedAvatarIds = [];
+        } else {
+          prof.unlockedAvatarIds = (prof.unlockedAvatarIds as unknown[])
+            .filter((id): id is string => typeof id === 'string');
+        }
+      }
+    }
+    return data;
+  },
+  24: (data) => {
+    // v24 adds social interaction counters used by social achievements/titles.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      const defaults = {
+        friendRequestsSent: 0,
+        friendsAccepted: 0,
+        messagesSent: 0,
+        messagesWithAttachment: 0,
+        giftsSent: 0,
+        battlegroundInvitesSent: 0,
+        coopBossInvitesSent: 0,
+        coopBossInvitesAccepted: 0,
+      };
+      if (!p.socialStats || typeof p.socialStats !== 'object') {
+        p.socialStats = defaults;
+      } else {
+        const ss = p.socialStats as Record<string, unknown>;
+        for (const [k, fallback] of Object.entries(defaults)) {
+          const raw = Number(ss[k]);
+          ss[k] = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : fallback;
+        }
+      }
     }
     return data;
   },

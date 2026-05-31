@@ -32,6 +32,15 @@ const sumValues = (record: Record<string, number>): number =>
 const totalBossClears = (counts: Record<string, number>): number =>
   Object.values(counts).reduce((a, b) => a + b, 0);
 
+const totalNullRaidClears = (p: ProgressState): number =>
+  Object.values(p.nullRaidClears ?? {}).reduce((a, b) => a + b, 0);
+
+const totalTranscendentCards = (p: ProgressState): number =>
+  Object.values(p.transcendentCollection ?? {}).reduce((a, b) => a + b, 0);
+
+const socialCount = (p: ProgressState, key: keyof NonNullable<ProgressState['socialStats']>): number =>
+  p.socialStats?.[key] ?? 0;
+
 // ── Static milestone titles ────────────────────────────────────────────────
 // All display text is title-cased and reads cleanly standalone under the
 // player's name (e.g. "Wanderer · The Newborn").
@@ -395,6 +404,155 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     text: 'Sovereign of Shards',
     description: 'Accumulate 10,000 Aberrated Shards.',
     isUnlocked: (p) => p.aberratedShards >= 10_000,
+    group: 'milestone',
+  },
+  // ── New-content milestones: Ascension, PvP, and social ────────────────
+  {
+    id: 'title-null-raid-initiate',
+    text: 'Null-Raid Initiate',
+    description: 'Clear any Null Raid once.',
+    isUnlocked: (p) => totalNullRaidClears(p) >= 1,
+    group: 'milestone',
+  },
+  {
+    id: 'title-null-raid-legend',
+    text: 'Legend of the Void Corridor',
+    description: 'Clear 25 Null Raids in total.',
+    isUnlocked: (p) => totalNullRaidClears(p) >= 25,
+    group: 'milestone',
+  },
+  {
+    id: 'title-transcendent-caller',
+    text: 'Caller of Transcendence',
+    description: 'Own 3 Transcendent cards.',
+    isUnlocked: (p) => totalTranscendentCards(p) >= 3,
+    group: 'milestone',
+  },
+  {
+    id: 'title-transcendent-pantheon',
+    text: 'Pantheon of Transcendence',
+    description: 'Own 12 Transcendent cards.',
+    isUnlocked: (p) => totalTranscendentCards(p) >= 12,
+    group: 'milestone',
+  },
+  {
+    id: 'title-entropic-ascendant',
+    text: 'Entropic Ascendant',
+    description: 'Hold 10,000 Entropic Energy at once.',
+    isUnlocked: (p) => (p.entropicEnergyBalance ?? p.entropyBalance ?? 0) >= 10_000,
+    group: 'milestone',
+  },
+  {
+    id: 'title-cosmic-curator',
+    text: 'Cosmic Curator',
+    description: 'Purchase 6 Ascension cosmetics.',
+    isUnlocked: (p) => (p.purchasedAscensionCosmetics ?? []).length >= 6,
+    group: 'milestone',
+  },
+  {
+    id: 'title-battleground-contender',
+    text: 'Contender of the Card-born',
+    description: 'Finish 10 Battleground matches.',
+    isUnlocked: (p) => (p.battlegroundStats?.totalMatches ?? 0) >= 10,
+    group: 'milestone',
+  },
+  {
+    id: 'title-battleground-warmarshal',
+    text: 'Warmarshal of the Card-born',
+    description: 'Win 25 Battleground matches.',
+    isUnlocked: (p) => (p.battlegroundStats?.wins ?? 0) >= 25,
+    group: 'milestone',
+  },
+  {
+    id: 'title-battleground-overlord',
+    text: 'Overlord of the Card-born',
+    description: 'Reach a Battleground best score of 250,000.',
+    isUnlocked: (p) => (p.battlegroundStats?.bestScore ?? 0) >= 250_000,
+    group: 'milestone',
+  },
+  {
+    id: 'title-social-first-friend',
+    text: 'Handshake of Eternity',
+    description: 'Add your first friend.',
+    isUnlocked: (p) => socialCount(p, 'friendsAccepted') >= 1,
+    group: 'milestone',
+  },
+  {
+    id: 'title-social-circle',
+    text: 'Constellation of Allies',
+    description: 'Add 5 friends.',
+    isUnlocked: (p) => socialCount(p, 'friendsAccepted') >= 5,
+    group: 'milestone',
+  },
+  {
+    id: 'title-social-messenger',
+    text: 'Courier of Echoes',
+    description: 'Send 25 direct messages.',
+    isUnlocked: (p) => socialCount(p, 'messagesSent') >= 25,
+    group: 'milestone',
+  },
+  {
+    id: 'title-social-attachment-archivist',
+    text: 'Archivist of Threaded Relics',
+    description: 'Send 10 messages with attachments.',
+    isUnlocked: (p) => socialCount(p, 'messagesWithAttachment') >= 10,
+    group: 'milestone',
+  },
+  {
+    id: 'title-social-giftbearer',
+    text: 'Giftbearer of the Wake',
+    description: 'Send 5 gifts to friends.',
+    isUnlocked: (p) => socialCount(p, 'giftsSent') >= 5,
+    group: 'milestone',
+  },
+  {
+    id: 'title-social-arena-herald',
+    text: 'Arena Herald',
+    description: 'Send 5 Battleground invites.',
+    isUnlocked: (p) => socialCount(p, 'battlegroundInvitesSent') >= 5,
+    group: 'milestone',
+  },
+  {
+    id: 'title-social-raid-convener',
+    text: 'Convener of the Wake',
+    description: 'Send 3 co-op Eternity boss invites.',
+    isUnlocked: (p) => socialCount(p, 'coopBossInvitesSent') >= 3,
+    group: 'milestone',
+  },
+  {
+    id: 'title-social-wingmate',
+    text: 'Wingmate of the Wake',
+    description: 'Accept 3 co-op Eternity boss invites.',
+    isUnlocked: (p) => socialCount(p, 'coopBossInvitesAccepted') >= 3,
+    group: 'milestone',
+  },
+  // ── Silly milestones ────────────────────────────────────────────────────
+  {
+    id: 'title-chaos-pigeon',
+    text: 'Chaos Pigeon',
+    description: 'Send 3 friend requests.',
+    isUnlocked: (p) => socialCount(p, 'friendRequestsSent') >= 3,
+    group: 'milestone',
+  },
+  {
+    id: 'title-loot-goblin',
+    text: 'Loot Goblin Supreme',
+    description: 'Open 30 total packs/boxes/cases.',
+    isUnlocked: (p) => (p.packOpenHistory ?? []).length >= 30,
+    group: 'milestone',
+  },
+  {
+    id: 'title-midnight-deck-gremlin',
+    text: 'Midnight Deck Gremlin',
+    description: 'Save at least 12 decks.',
+    isUnlocked: (p) => p.savedDecks.length >= 12,
+    group: 'milestone',
+  },
+  {
+    id: 'title-signature-showoff',
+    text: 'Signature Showoff',
+    description: 'Fill all 5 Signature Card slots.',
+    isUnlocked: (p) => (p.profile.signatureCardIds?.filter(Boolean).length ?? 0) >= 5,
     group: 'milestone',
   },
   {

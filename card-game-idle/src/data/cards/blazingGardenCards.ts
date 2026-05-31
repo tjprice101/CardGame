@@ -215,7 +215,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bg-cher-auric-floret-keeper',
     name: 'Auric Floret Keeper',
-    description: 'On play: Gain 7 Bloom. While on board: Adjacent active Seraphim chain +0.05; Buffs Seraphim and Angel attacks: base +33, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 7 Bloom. While on board: Buffs Seraphim and Angel attacks: base +33, cooldown +0, multiplier x1.00',
     rarity: 'Rare',
     artKey: 'bg_cher_auric_floret_keeper',
     effects: [],
@@ -251,7 +251,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bg-cher-golden-petal-vicar',
     name: 'Golden Petal Vicar',
-    description: 'On play: Draw 2 cards; Gain 10 Bloom. While on board: Adjacent active Seraphim chain +0.06; Buffs Seraphim and Angel attacks: base +59, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +46, cooldown -1, multiplier x1.00',
+    description: 'On play: Draw 2 cards; Gain 10 Bloom. While on board: All Oblivion gain +48%',
     rarity: 'Legendary',
     artKey: 'bg_cher_golden_petal_vicar',
     maxDurability: 9,
@@ -288,7 +288,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-oph-violet-crown-drift',
     name: 'Violet Crown Drift',
-    description: 'Gain 5 Bloom; Empower the next card you play; Draw 1 card',
+    description: 'Gain 5 Bloom; Draw 1 card; Gain 1 Echo',
     rarity: 'Rare',
     artKey: 'bg_oph_violet_crown_drift',
     effects: [{ type: 'bloom_gain', value: 5 }, { type: 'draw', value: 1 }, { type: 'gain_echo', value: 1 }],
@@ -304,7 +304,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-oph-rootflare-transit',
     name: 'Rootflare Transit',
-    description: 'Draw 3 cards',
+    description: 'Draw 3 cards; Gain 1 Echo',
     rarity: 'Epic',
     artKey: 'bg_oph_rootflare_transit',
     effects: [{ type: 'draw', value: 3 }, { type: 'gain_echo', value: 1 }],
@@ -312,7 +312,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-oph-spiral-memory-bloom',
     name: 'Spiral Memory Bloom',
-    description: 'Replay last Ophanim played this turn; Gain 8 Bloom; Empower the next card you play; Draw 1 card',
+    description: 'Replay the last Burn-phase card played this turn; Gain 8 Bloom; Gain 1 Echo',
     rarity: 'Epic',
     artKey: 'bg_oph_spiral_memory_bloom',
     effects: [{ type: 'replay_last_burn_card' }, { type: 'bloom_gain', value: 8 }, { type: 'gain_echo', value: 1 }],
@@ -320,7 +320,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-oph-chordbearing-migration',
     name: 'Chordbearing Migration',
-    description: 'Draw 4 cards; Gain 10 Bloom',
+    description: 'Draw 4 cards; Gain 10 Bloom; Ignite up to 1 unit into Burn',
     rarity: 'Legendary',
     artKey: 'bg_oph_chordbearing_migration',
     effects: [{ type: 'draw', value: 4 }, { type: 'bloom_gain', value: 10 }, { type: 'ignite_units_burn', count: 1 }],
@@ -374,7 +374,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bg-et-vethkorath-seven-crown-proof',
     name: 'Vethkorath Seven-Crown Proof',
-    description: 'On play: Gain 5 Wild Pollen; Draw 1 card. While on board: Adjacent active Seraphim chain +0.08; Each adjacent active Seraphim adds 1 extra card whenever you play a card; Buffs Seraphim and Angel attacks: cooldown -1',
+    description: 'On play: Gain 5 Wild Pollen; Draw 1 card. While on board: Each adjacent active Seraphim adds 1 extra card whenever you play a card; Buffs Seraphim and Angel attacks: base +72, cooldown -1, multiplier x1.00',
     rarity: 'Eternal',
     artKey: 'bg_et_vethkorath_seven_crown',
     // Role: BACK-ROW RESERVOIR (Cherubim Eternal).
@@ -386,7 +386,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bg-et-embergrove-codex',
     name: 'Embergrove Codex',
-    description: 'On play: Gain 1 Wild Pollen; Seed up to 1 Wild Pollen (+26.0 Oblivion per pollen, +0.02% score per Bloom); Replay the last Burn-phase card played this turn. While on board: Adjacent active Seraphim gain +44 Oblivion per card played; Buffs Seraphim and Angel attacks: base +37, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +29, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 1 Wild Pollen; Seed up to 1 Wild Pollen (+26.0 Oblivion per pollen, +0.02% score per Bloom); Replay the last Burn-phase card played this turn. While on board: Seraphim bonuses are amplified by +0.18; Buffs Seraphim and Angel attacks: base +58, cooldown -1, multiplier x1.00',
     rarity: 'Eternal',
     artKey: 'bg_et_embergrove_codex',
     // Role: DRIP CONVERTER + REPLAY ENGINE (Cherubim Eternal).
@@ -465,7 +465,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bg-inf-embergrove-resurrection-array',
     name: 'Embergrove Resurrection Array',
-    description: 'On play: Replay the last Burn-phase card played this turn; Draw 2 cards; Seed up to 3 Wild Pollen (+32.0 Oblivion per pollen, +0.08% score per Bloom). While on board: Seraphim bonuses are amplified by +0.2; Draw 0.5 cards per card played; Buffs Seraphim and Angel attacks: base +80, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +62, cooldown -1, multiplier x1.00',
+    description: 'On play: Replay the last Burn-phase card played this turn; Draw 2 cards; Seed up to 3 Wild Pollen (+32.0 Oblivion per pollen, +0.08% score per Bloom). While on board: Choose up to 2 Burn cards, then On char, revive as Echo with doubled effects for 1 turn; Echoes persist for 2 turns; Buffs Seraphim and Angel attacks: base +80, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +62, cooldown -1, multiplier x1.00',
     rarity: 'Infinite',
     artKey: 'bg_inf_embergrove_resurrection_array',
     // Role: RECURSIVE CONVERTER SUPPORT (Cherubim Infinite).
@@ -480,7 +480,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bg-inf-choir-of-rekindled-geometry',
     name: 'Choir of Rekindled Geometry',
-    description: 'On play: Seed up to 2 Wild Pollen (+29.0 Oblivion per pollen, +0.11% score per Bloom). While on board: Adjacent active Seraphim chain +0.16; If you have 22+ Bloom, this Cherubim grants +1.2 bonus power; Buffs Seraphim attacks: base +76, cooldown -1, multiplier x1.27; Buffs Angel attacks: base +59, cooldown -1, multiplier x1.20',
+    description: 'On play: Seed up to 2 Wild Pollen (+29.0 Oblivion per pollen, +0.11% score per Bloom). While on board: On new lineage, Geometry Mode applies: All Burn-phase effects gain +1 and cooldown reduction 1; If 3 lineages are played, Geometry Mode applies next turn; Buffs Seraphim attacks: base +76, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +59, cooldown -1, multiplier x1.00',
     rarity: 'Infinite',
     artKey: 'bg_inf_choir_of_rekindled_geometry',
     // Role: SCORE-SPIKE MICRO SEEDER (Cherubim Infinite).
@@ -492,7 +492,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-inf-noon-that-never-sets',
     name: 'Noon That Never Sets',
-    description: 'For each fulfilled gate: if you have played 4+ cards this turn then Draw 2 cards; if you have 2+ Burn-phase cards then Gain 2 Echo; if you have 1+ cards in the Grove then Trigger 1 Burn-phase attack; If all gates are fulfilled, apply Zenith for 1 turn: All Burn-phase effects gain +2; Seed up to 1 Wild Pollen (+30.0 Oblivion per pollen, +0.13% score per Bloom); Gain 30 Bloom',
+    description: 'For each fulfilled gate: if you have played 4+ cards this turn then Draw 2 cards; if you have 2+ Burn-phase cards then Gain 2 Echo; if you have 1+ cards in the Grove then Trigger 1 Burn-phase attack; If all gates are fulfilled, apply Zenith for 1 turn: All Burn-phase effects gain +2; Seed up to 1 Wild Pollen (+30.0 Oblivion per pollen, +0.13% score per Bloom); Gain 6 Prismatic Light; Draw 1 card',
     rarity: 'Infinite',
     artKey: 'bg_inf_noon_that_never_sets',
     // Role: GATED SINGLE-SEED SPIKER (Ophanim Infinite).
@@ -507,7 +507,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bg-inf-proof-completed-sky',
     name: 'Proof Completed Sky',
-    description: 'Replay the last Burn-phase card played this turn; Gain 2 Echo; Salvage a Burn-phase card from discard; Copy Garden Law to Sky Law (Rose: Echo effects are doubled for 1 turn; Sunflower: Burn cards return to hand as Echoes for 1 turn; Thistle: Burn cards gain 2 cooldown reduction for 1 turn); Seed up to 5 Wild Pollen (+36.0 Oblivion per pollen, +0.07% score per Bloom)',
+    description: 'Replay the last Burn-phase card played this turn; Gain 2 Echo; Salvage a Burn-phase card from discard; Copy Garden Law to Sky Law (Rose: Echo effects are doubled for 1 turn; Sunflower: Burn cards return to hand as Echoes for 1 turn; Thistle: Burn cards gain 2 cooldown reduction for 1 turn); Seed up to 5 Wild Pollen (+36.0 Oblivion per pollen, +0.07% score per Bloom); Gain 6 Prismatic Light; Draw 1 card',
     rarity: 'Infinite',
     artKey: 'bg_inf_proof_completed_sky',
     // Role: BULK-CONSUME REPLAY FINISHER (Ophanim Infinite).

@@ -15,6 +15,7 @@ const styles: Record<string, React.CSSProperties> = {
     minWidth: 200,
     backdropFilter: 'blur(8px)',
     pointerEvents: 'none',
+    zIndex: 12,
     boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
   },
   title: {

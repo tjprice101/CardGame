@@ -1,7 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { useFriendsStore, selectFriendsList, selectFriendsLoaded } from '@/state/friendsStore';
-import { useCoopRaidStore } from '@/state/coopRaidStore';
 import { uiTypography } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
@@ -40,10 +38,6 @@ export default function AscensionHub({ onClose }: Props) {
   const startNullRaid = useStore(s => s.startNullRaid);
   const purchaseTranscendentCard = useStore(s => s.purchaseTranscendentCard);
   const enqueueToast = useStore(s => s.enqueueToast);
-  const friends = useFriendsStore(selectFriendsList);
-  const friendsLoaded = useFriendsStore(selectFriendsLoaded);
-  const loadFriends = useFriendsStore(s => s.load);
-  const sendCoopInvite = useCoopRaidStore(s => s.sendInvite);
 
   const entropy = progress.entropicEnergyBalance ?? progress.entropyBalance ?? 0;
   const nullRaidClears = progress.nullRaidClears ?? {};
@@ -57,7 +51,6 @@ export default function AscensionHub({ onClose }: Props) {
   const [selectedDeckId, setSelectedDeckId] = useState<string>(savedDecks[0]?.id ?? '');
   const [showShop, setShowShop] = useState(false);
   const [now, setNow] = useState(() => Date.now());
-  const [sendingInviteTo, setSendingInviteTo] = useState<string | null>(null);
   const [selectedDropCardId, setSelectedDropCardId] = useState<string | null>(null);
 
   // Refresh cooldown timers every second.
@@ -66,12 +59,6 @@ export default function AscensionHub({ onClose }: Props) {
     const id = setInterval(refreshNow, 1000);
     return () => clearInterval(id);
   }, [refreshNow]);
-
-  useEffect(() => {
-    if (!friendsLoaded) {
-      void loadFriends();
-    }
-  }, [friendsLoaded, loadFriends]);
 
   function getCooldownRemaining(raidId: string): number {
     const cd = progress.nullRaidCooldowns?.[raidId];
@@ -97,18 +84,13 @@ export default function AscensionHub({ onClose }: Props) {
     if (started) onClose();
   }
 
-  async function handleSendCoopInvite(friendId: string, displayName: string, avatarId: string, titleId: string | null) {
+  function handleOpenCardBoundCoop() {
     if (!selectedRaid || !selectedDeckId) return;
-    if (sendingInviteTo) return;
-    setSendingInviteTo(friendId);
-    const sessionId = await sendCoopInvite(friendId, { displayName, avatarId, titleId }, selectedRaid.id, selectedDeckId);
-    if (!sessionId) {
-      enqueueToast('Failed to send co-op raid invite.', 'warning');
-      setSendingInviteTo(null);
-      return;
-    }
-    enqueueToast(`Co-op invite sent to ${displayName}.`, 'success');
-    setSendingInviteTo(null);
+    window.dispatchEvent(new CustomEvent('open-card-bound-coop', {
+      detail: {
+        draft: { type: 'null_raid', label: `Null Raid · ${selectedRaid.name}`, raidId: selectedRaid.id, deckId: selectedDeckId },
+      },
+    }));
   }
 
   const raidsByStars: Record<1 | 2 | 3, NullRaidDefinition[]> = { 1: [], 2: [], 3: [] };
@@ -128,7 +110,7 @@ export default function AscensionHub({ onClose }: Props) {
       Pyroabyss: {
         title: 'Inferno Confluence',
         body:
-          'These cards build matched Inferno Tier and Chroma Ember pairs, then cash those pairs in through Confluence. The suite rewards balancing both pools, correcting lopsided states, and timing the angel ritual after the Seraph and Cherub are online.',
+          'These cards build matched Heat and Chroma Ember pairs, then cash those pairs in through Confluence. The suite rewards balancing both pools, correcting lopsided states, and timing the angel ritual after the Seraph and Cherub are online.',
       },
     };
 
@@ -564,53 +546,18 @@ export default function AscensionHub({ onClose }: Props) {
                     <div style={{ fontSize: 12, color: G.textMuted }}>No saved decks. Save a deck from the deck builder to enter a raid.</div>
                   )}
 
-                  {/* Co-op invite controls */}
                   {savedDecks.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      <div style={{ fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', color: G.textMuted, fontFamily: G.cinzel }}>
-                        Co-op Party Invite
-                      </div>
-                      {friends.length === 0 ? (
-                        <div style={{ fontSize: 12, color: G.textMuted }}>Add at least one friend to invite a co-op raid partner.</div>
-                      ) : (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 8 }}>
-                          {friends.map(f => {
-                            const friendId = f.other.id;
-                            const sending = sendingInviteTo === friendId;
-                            return (
-                              <div key={friendId} style={{
-                                padding: '8px 10px',
-                                borderRadius: 8,
-                                border: `1px solid ${G.border}`,
-                                background: 'rgba(10,5,25,0.80)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                gap: 8,
-                              }}>
-                                <span style={{ fontSize: 12, color: G.text }}>{f.other.displayName}</span>
-                                <button
-                                  disabled={!!sendingInviteTo}
-                                  onClick={() => void handleSendCoopInvite(friendId, f.other.displayName, f.other.avatarId, f.other.titleId)}
-                                  style={{
-                                    padding: '6px 10px',
-                                    borderRadius: 7,
-                                    border: `1px solid ${sending ? G.border : G.borderStrong}`,
-                                    background: sending ? 'rgba(80,40,120,0.24)' : 'rgba(120,70,220,0.26)',
-                                    color: sending ? G.textMuted : G.accentSoft,
-                                    fontSize: 10,
-                                    letterSpacing: 1,
-                                    cursor: sendingInviteTo ? 'not-allowed' : 'pointer',
-                                  }}
-                                >
-                                  {sending ? 'Sending...' : 'Invite'}
-                                </button>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
+                    <button
+                      onClick={handleOpenCardBoundCoop}
+                      style={{
+                        alignSelf: 'flex-start', padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                        background: 'rgba(120,70,220,0.20)', border: `1px solid ${G.borderStrong}`,
+                        color: G.accentSoft, fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Open Card-bound Co-op
+                    </button>
                   )}
 
                   {/* Enter button */}

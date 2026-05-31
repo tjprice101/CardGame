@@ -26,6 +26,7 @@ export type BossFightMode = 'idle' | 'active' | 'victory' | 'defeat';
  * with HP carry-over, Null Raid = timed multi-encounter Ascension raid.
  */
 export type BossFightKind = 'normal' | 'trial' | 'gauntlet' | 'null_raid';
+export type BossFightCoopRole = 'host' | 'guest';
 
 export interface TrialModifierRef {
   kind:
@@ -81,6 +82,12 @@ export interface BossFightState {
   gauntletHpCarryFrac?: number;
   /** True when the active deck's plurality element matches the boss's weakElement. */
   bossWeaknessActive?: boolean;
+  /** Co-op party size for Eternity's Wake fights (1..3 total players). */
+  coopPartySize?: number;
+  /** Optional co-op session id when the fight was launched via an invite. */
+  coopSessionId?: string;
+  /** Whether local player is host or guest in a co-op boss session. */
+  coopRole?: BossFightCoopRole;
   // ── Null Raid fields ─────────────────────────────────────────────────────
   /** Null Raid: the active raid definition id. */
   nullRaidId?: string;

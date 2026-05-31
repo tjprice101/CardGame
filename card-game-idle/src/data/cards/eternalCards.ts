@@ -383,7 +383,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Fire',
     rarity: 'Eternal',
     name: 'Cinder Leviathan',
-    description: 'On play: Gain 2 Inferno Tiers; Gain 3 Chroma Embers; If you have 3+ Inferno Tiers, Gain 2 Chroma Embers; Draw 1 card; +700 Oblivion. While on board: Adjacent active Seraphim gain +90 Oblivion per card played',
+    description: 'On play: Gain 2 Furnace Heat; Gain 3 Chroma Embers; If you have 3+ Furnace Heat, Gain 2 Chroma Embers; Draw 1 card; +700 Oblivion. While on board: Adjacent active Seraphim gain +90 Oblivion per card played',
     artKey: 'btei_pyroabyss_cinder_cataclysm',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 90 }],
     // Role: low-variance Chroma battery. Slow, reliable Ember generation that
@@ -396,7 +396,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Fire',
     rarity: 'Eternal',
     name: 'Ash Kings Unbound',
-    description: 'Gain 3 Inferno Tiers; Gain 2 Chroma Embers; If you have 2+ Chroma Embers, Ignite up to 1 Chroma Embers (+68.0 Oblivion × echoes²); Gain 1 Inferno Tier; +900 Oblivion',
+    description: 'Gain 3 Furnace Heat; Gain 2 Chroma Embers; If you have 2+ Chroma Embers, Ignite up to 1 Chroma Embers (+68.0 Oblivion × echoes²); Gain 1 Furnace Heat; +900 Oblivion',
     artKey: 'btei_pyroabyss_ashfall_engine',
     // Role: quick spark opener. Converts a tiny Chroma pool into immediate
     // tempo and re-seeds Inferno Tier for follow-up cards.
@@ -408,14 +408,14 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Fire',
     rarity: 'Eternal',
     name: 'Infernal Suncore',
-    description: 'On play: Gain 2 Inferno Tiers; Gain 2 Chroma Embers; Empower the next card you play; If you have 4+ Inferno Tiers, Spend 4 Inferno Tiers; Gain 4 Chroma Embers; Ignite up to 2 Chroma Embers (+74.0 Oblivion × echoes²); +1200 Oblivion; Empower the next card you play. While on board: +35 Oblivion per card played while active',
+    description: 'On play: Gain 2 Furnace Heat; Gain 2 Chroma Embers; Empower the next card you play; If you have 4+ Furnace Heat, Spend 4 Furnace Heat; Gain 4 Chroma Embers; Ignite up to 2 Chroma Embers (+74.0 Oblivion × echoes²); +1200 Oblivion; Empower the next card you play. While on board: +35 Oblivion per card played while active',
     artKey: 'btei_pyroabyss_infernal_archon',
     attacks: {
       unsynergized: {
         id: 'btei-pyroabyss-infernal-archon:unsynergized',
         label: 'Unsynergized',
         name: 'Infernal Suncore Vector Break',
-        description: '2130 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%)',
+        description: '2130 base Oblivion · 6 cards cooldown · +2.5% attack per Heat (max +75%)',
         baseOblivion: 2130,
         cooldownCards: 6,
         costs: [],
@@ -425,7 +425,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
         id: 'btei-pyroabyss-infernal-archon:synergized',
         label: 'Synergized',
         name: 'Infernal Suncore Angelic Verdict',
-        description: '3621 base Oblivion · 7 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)',
+        description: '3621 base Oblivion · 7 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%)',
         baseOblivion: 3621,
         cooldownCards: 7,
         costs: [],
@@ -444,7 +444,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Fire',
     rarity: 'Eternal',
     name: 'Riftbell Catastrophe',
-    description: 'On summon: Gain 4 Inferno Tiers; Gain 4 Chroma Embers; +1000 Oblivion. After 5 cards played: If you have 5+ Inferno Tiers, Spend 5 Inferno Tiers; +2600 Oblivion; If you have 6+ Chroma Embers, Ignite up to 4 Chroma Embers (+82.0 Oblivion × echoes²); Spend 2 Chroma Embers; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play. While on board: +175 Oblivion per card played while on board',
+    description: 'On summon: Gain 4 Furnace Heat; Gain 4 Chroma Embers; +1000 Oblivion. After 5 cards played: If you have 5+ Furnace Heat, Spend 5 Furnace Heat; +2600 Oblivion; If you have 6+ Chroma Embers, Ignite up to 4 Chroma Embers (+82.0 Oblivion × echoes²); Spend 2 Chroma Embers; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play. While on board: +175 Oblivion per card played while on board',
     artKey: 'btei_pyroabyss_hellrift_mandala',
     summonCost: [],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
@@ -454,7 +454,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     activatedAbility: {
       name: 'Rift Verdict',
       cardsPlayedRequirement: 5,
-      description: 'If you have 5+ Inferno Tiers, Spend 5 Inferno Tiers; +2600 Oblivion; If you have 6+ Chroma Embers, Ignite up to 4 Chroma Embers (+82.0 Oblivion × echoes²); Spend 2 Chroma Embers; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play',
+      description: 'If you have 5+ Furnace Heat, Spend 5 Furnace Heat; +2600 Oblivion; If you have 6+ Chroma Embers, Ignite up to 4 Chroma Embers (+82.0 Oblivion × echoes²); Spend 2 Chroma Embers; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play',
       effects: [{ type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'pyro', value: 5 }, { type: 'oblivion_flat', value: 2600 }] }, { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'pyro', value: 6 }, then: [{ type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 82, consume: 4 }, { type: 'set_secondary_spend', kind: 'pyro', value: 2 }] }, { type: 'search_deck_by_type', filter: ['Ophanim', 'Cherubim'] }, { type: 'multiply_next' }],
     },
     attacks: {
@@ -462,7 +462,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
         id: 'btei-pyroabyss-hellrift-mandala:primary',
         label: 'Primary',
         name: 'Riftbell Catastrophe Ordinance',
-        description: '2020 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%)',
+        description: '2020 base Oblivion · 6 cards cooldown · +2.5% attack per Heat (max +75%)',
         baseOblivion: 2020,
         cooldownCards: 6,
         costs: [],
@@ -472,7 +472,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
         id: 'btei-pyroabyss-hellrift-mandala:exalted',
         label: 'Exalted',
         name: 'Riftbell Catastrophe Throne Decree',
-        description: '5150 base Oblivion · 9 cards cooldown · +2.5% attack per Inferno Tier (max +75%)',
+        description: '5150 base Oblivion · 9 cards cooldown · +2.5% attack per Heat (max +75%)',
         baseOblivion: 5150,
         cooldownCards: 9,
         costs: [],
@@ -487,7 +487,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Fire',
     rarity: 'Eternal',
     name: 'Phoenix Judge of the Abyss',
-    description: 'Gain 2 Inferno Tiers; Gain 1 Chroma Ember; +900 Oblivion; If this is the first card you played this turn, Gain 2 Chroma Embers; Draw 1 card; If you have played 4+ cards this turn, Gain 2 Chroma Embers; Ignite up to 2 Chroma Embers (+70.0 Oblivion × echoes²); +1500 Oblivion; Empower the next card you play',
+    description: 'Gain 2 Furnace Heat; Gain 1 Chroma Ember; +900 Oblivion; If this is the first card you played this turn, Gain 2 Chroma Embers; Draw 1 card; If you have played 4+ cards this turn, Gain 2 Chroma Embers; Ignite up to 2 Chroma Embers (+70.0 Oblivion × echoes²); +1500 Oblivion; Empower the next card you play',
     artKey: 'btei_pyroabyss_oblivion_phoenix',
     // Role: timing escalator. Rewards either opener timing or late-turn density,
     // then converts the gained Chroma pool into a small focused burst.
@@ -995,7 +995,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Prismatic',
     rarity: 'Eternal',
     name: 'Whitebeam Concordat',
-    description: 'Draw 4 cards; If you control 2+ active Cherubim, +2000 Oblivion; Empower the next card you play',
+    description: 'Draw 4 cards; Gain 2 Resonance Charge; If you control 2+ active Cherubim, Gain 2 Resonance Charge; +2000 Oblivion; If you have 4+ Resonance Charge, Spend 4 Resonance Charge; +2200 Oblivion; If Refraction Depth is 3+, +1200 Oblivion; Empower the next card you play',
     artKey: 'btei_prismatic_ninefold_accord',
     effects: [
       { type: 'draw', value: 4 },

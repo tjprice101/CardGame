@@ -224,7 +224,7 @@ synergizedDescription: '335 base Oblivion 5 cards cooldown Requires Angel',
   buildSeraphim({
     definitionId: 'wuas-ser-seleniras-vigil',
     name: "Selenira's Vigil",
-    description: 'On play: Gain 2 Starlight Charges; Gain 1 Dream Lattice stack. While on board: +40 Oblivion per card played while active',
+    description: 'On play: Gain 2 Starlight Charges; Gain 1 Dream Lattice stack. While on board: +44 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'wuas_ser_seleniras_vigil',
     bonusType: 'oblivion_per_card',
@@ -239,7 +239,7 @@ synergizedDescription: '470 base Oblivion 5 cards cooldown Requires Angel',
   buildSeraphim({
     definitionId: 'wuas-ser-lune-refrain',
     name: 'Lune Refrain',
-    description: 'On play: Gain 2 Starlight Charges; Look at the top 3 cards, take 1 card, and put the rest on the bottom. While on board: +100 Oblivion per card played while active',
+    description: 'On play: Gain 2 Starlight Charges; Look at the top 3 cards, take 1 card, and put the rest on the bottom. While on board: +96 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'wuas_ser_lune_refrain',
     bonusType: 'oblivion_per_card',
@@ -254,7 +254,7 @@ synergizedDescription: '502 base Oblivion 5 cards cooldown Requires Angel',
   buildSeraphim({
     definitionId: 'wuas-ser-draethos-gravity',
     name: 'Draethos Gravity',
-    description: 'On play: Gain 3 Starlight Charges; Gain 1 Dream Lattice stack. While on board: +40 Oblivion per card played while active',
+    description: 'On play: Gain 3 Starlight Charges; Gain 1 Dream Lattice stack. While on board: +52 Oblivion per card played while active',
     rarity: 'Epic',
     artKey: 'wuas_ser_draethos_gravity',
     bonusType: 'oblivion_per_card',
@@ -299,7 +299,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'wuas-cher-dreamvault-keeper',
     name: 'Dreamvault Keeper',
-    description: 'On play: Gain 1 Starlight Charge; Gain 1 Dream Lattice stack. While on board: Draw 0.35 cards per card played',
+    description: 'On play: Gain 1 Starlight Charge; Gain 1 Dream Lattice stack. While on board: Draw 0.3 cards per card played',
     rarity: 'Rare',
     artKey: 'wuas_cher_dreamvault_keeper',
     effects: [{ type: 'cherubim_draw_per_card', value: 0.3 }],
@@ -334,7 +334,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'wuas-cher-voidbane-doctrine',
     name: 'Voidbane Doctrine',
-    description: 'On play: Gain 3 Starlight Charges; Gain 2 Dream Lattice stacks. While on board: Buffs Seraphim and Angel attacks: base +70, when you have played 6+ cards this turn',
+    description: 'On play: Gain 3 Starlight Charges; Gain 2 Dream Lattice stacks. While on board: Buffs Seraphim and Angel attacks: base +78, when you have played 5+ cards this turn',
     rarity: 'Legendary',
     artKey: 'wuas_cher_voidbane_doctrine',
     effects: [{
@@ -389,7 +389,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-wishfire-surge',
     name: 'Wishfire Surge',
-    description: 'Gain 1 Starlight Charge; Gain 1 Dream Lattice stack; +70 Oblivion',
+    description: 'Gain 1 Starlight Charge; Gain 1 Dream Lattice stack; +85 Oblivion',
     rarity: 'Rare',
     artKey: 'wuas_oph_wishfire_surge',
     effects: [
@@ -400,7 +400,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-celestine-cascade',
     name: 'Celestine Cascade',
-    description: 'Gain 4 Starlight Charges; Gain 2 Dream Lattice stacks',
+    description: 'Gain 5 Starlight Charges; Gain 2 Dream Lattice stacks',
     rarity: 'Epic',
     artKey: 'wuas_oph_celestine_cascade',
     effects: [{ type: 'starlight_gain', amount: 5 }, { type: 'dream_lattice_gain', amount: 2 }],
@@ -474,7 +474,7 @@ exaltedDescription: '1338 base Oblivion 8 cards cooldown',
   buildAngel({
     definitionId: 'wuas-ang-aethervex-triumphant',
     name: 'Aethervex, Triumphant',
-    description: 'On summon: Gain 6 Starlight Charges; Gain 4 Dream Lattice stacks; Draw 1 card. After 3 cards played: Gain 5 Starlight Charges; Gain 5 Dream Lattice stacks. While on board: +65 Oblivion per card played while on board',
+    description: 'On summon: Gain 6 Starlight Charges; Gain 4 Dream Lattice stacks; Draw 1 card. After 3 cards played: Gain 6 Starlight Charges; Gain 4 Dream Lattice stacks. While on board: +65 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'wuas_ang_aethervex_triumphant',
     summonCost: ['wuas-ser-nullspire-monolith', 'wuas-ser-draethos-gravity'],

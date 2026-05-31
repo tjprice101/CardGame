@@ -175,12 +175,12 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     finisher: 'Cashes high-charge formation turns into large multi-step Glass burst windows.',
   },
   pyro: {
-    setup: 'Adds Inferno Tier early so later cards enter live Ember windows.',
-    support: 'Keeps Inferno Tier and Chroma Ember flow moving between setup and payoff.',
-    resource: 'Builds the Inferno Tier and Chroma Ember pools that Fire cashes out.',
-    payoff: 'Converts prepared Inferno Tier and Chroma Ember into immediate burst.',
-    amplifier: 'Raises ember output or multiplies the next payoff once setup is online.',
-    finisher: 'Cashes a prepared Inferno Tier plus Ember stockpile into one decisive Fire turn.',
+    setup: 'Builds Heat early so Fire attacks and burst cards come online quickly.',
+    support: 'Keeps Heat gain, threshold checks, and burst timing aligned between setup and payoff.',
+    resource: 'Stocks Heat as the core base resource that all Pyro lines build around.',
+    payoff: 'Converts banked Heat into immediate Oblivion burst at the right window.',
+    amplifier: 'Boosts Heat generation or sharpens burst timing once the core loop is active.',
+    finisher: 'Cashes a prepared Heat bank into one decisive Fire turn.',
   },
   blazingGarden: {
     setup: 'Establishes Burn uptime and branches lineages while Eternal cards start Wild Pollen banking.',
@@ -244,11 +244,53 @@ function capitalize(value: string | null | undefined): string {
 }
 
 function createMetric(label: string, value: string | number, hint: string): EngineMetric {
-  return { label, value: String(value), hint };
+  return {
+    label: sanitizeEngineText(label),
+    value: sanitizeEngineText(String(value)),
+    hint: sanitizeEngineText(hint),
+  };
 }
 
 function createStep(title: string, ready: boolean, detail: string): EnginePlanStep {
-  return { title, detail, ready };
+  return {
+    title: sanitizeEngineText(title),
+    detail: sanitizeEngineText(detail),
+    ready,
+  };
+}
+
+function sanitizeEngineText(value: string): string {
+  return value
+    .replace(/\uFEFF/g, '')
+    // Corruption artifacts observed in shipped copy (e.g. "Evisible", " Eand", "ↁEdraw").
+    .replace(/[\u2000-\u200A]\s*E(?=[A-Za-z])/g, ' ')
+    .replace(/ↁ\s*E/g, ' - ')
+    .replace(/�\s*f?E/g, ' - ')
+    .replace(/\bE(?=visible\b)/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function sanitizeSnapshot(snapshot: SetEngineSnapshot): SetEngineSnapshot {
+  return {
+    ...snapshot,
+    label: sanitizeEngineText(snapshot.label),
+    compact: sanitizeEngineText(snapshot.compact),
+    detail: sanitizeEngineText(snapshot.detail),
+    tagline: sanitizeEngineText(snapshot.tagline),
+    summary: sanitizeEngineText(snapshot.summary),
+    metrics: snapshot.metrics.map(metric => ({
+      ...metric,
+      label: sanitizeEngineText(metric.label),
+      value: sanitizeEngineText(metric.value),
+      hint: sanitizeEngineText(metric.hint),
+    })),
+    nextSteps: snapshot.nextSteps.map(step => ({
+      ...step,
+      title: sanitizeEngineText(step.title),
+      detail: sanitizeEngineText(step.detail),
+    })),
+  };
 }
 
 function countBurningGardenUnits(board: BoardState | undefined): number {
@@ -331,7 +373,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
     return 'setup';
   }
 
-  if (hasSomeEffect(def, ['radiance_gain', 'radiance_spend', 'ember_gain', 'ember_spend', 'trail_gain', 'trail_spend', 'strain_gain', 'strain_vent', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain'])) {
+  if (hasSomeEffect(def, ['radiance_gain', 'radiance_spend', 'ember_gain', 'ember_spend', 'pyro_heat_gain', 'pyro_heat_spend', 'trail_gain', 'trail_spend', 'strain_gain', 'strain_vent', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain'])) {
     return 'resource';
   }
 
@@ -343,7 +385,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
 }
 
 function getCardRoleDetail(def: CardDefinition): string {
-  if (hasSomeEffect(def, ['radiance_gain', 'ember_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
+  if (hasSomeEffect(def, ['radiance_gain', 'ember_gain', 'pyro_heat_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
     return 'It stocks the resources this engine spends to stay online.';
   }
 
@@ -741,34 +783,39 @@ function buildEngineSnapshot(
       };
     }
     case 'pyro': {
+      const heat = turn.pyroHeat ?? 0;
       const infernoTiers = turn.eternalStacks?.pyro ?? 0;
       const chromaEmbers = turn.secondaryCounters?.pyro ?? 0;
       return {
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: `Inferno ${infernoTiers} | Chroma ${chromaEmbers}`,
-        detail: 'Inferno Tiers are your primary Fire stack; Chroma Embers are the cashout layer.',
-        tagline: 'Build Inferno Tiers, seed Chroma Embers, then fire Ember ignite cashouts.',
-        summary: 'Fire now runs on streamlined stacks. Inferno Tiers are generated and spent through Eternal stack effects, while Chroma Embers are generated and spent through set-secondary effects. Fire payout cards convert Chroma Embers with ignite effects and tier-aware riders.',
+        compact: `Heat ${heat} | Inferno ${infernoTiers} | Chroma ${chromaEmbers}`,
+        detail: 'Base Fire uses Heat; Eternal/Infinite/Transcendent layers add Inferno + Chroma overlays.',
+        tagline: 'Build Heat, burst from Heat, then layer Inferno and Chroma for high-tier conversions.',
+        summary: 'Pyroabyss now has a base-first loop: gain Heat, hit thresholds, and cash Heat burst windows. Eternal/Infinite/Transcendent cards stay scalable by adding Inferno stack interactions and Chroma Ember ignition on top of that same base rhythm.',
         metrics: [
-          createMetric('Inferno Tiers', infernoTiers, 'Primary Fire stack used by modern Eternal/Infinite Fire lines.'),
-          createMetric('Chroma Embers', chromaEmbers, 'Secondary Fire stack consumed by ember ignite payoff cards.'),
-          createMetric('Attack Tier Mult', `x${(1 + Math.min(0.75, infernoTiers * 0.025)).toFixed(2)}`, 'Fire Seraphim and Angel attacks gain +2.5% per Inferno Tier, capped at +75%.'),
+          createMetric('Heat', heat, 'Base Pyro resource. Built by stoke cards and spent by burst cards.'),
+          createMetric('Inferno', infernoTiers, 'Higher-rarity Fire stack used by Eternal/Infinite/Transcendent effects.'),
+          createMetric('Chroma Embers', chromaEmbers, 'Higher-rarity secondary stack consumed by ignite payoffs.'),
+          createMetric('Attack Heat Mult', `x${(1 + Math.min(0.75, heat * 0.025)).toFixed(2)}`, 'Fire Seraphim and Angel attacks gain +2.5% per Heat, capped at +75%.'),
           createMetric('Eternal Chroma Mult', `x${(1 + Math.min(0.16, chromaEmbers * 0.04)).toFixed(2)}`, 'Eternal Fire Seraphim and Angel attacks gain +4% per Chroma Ember, capped at +16%, then consume all Chroma Embers.'),
           createMetric('Infinite Chroma Mult', `x${(1 + Math.min(0.25, chromaEmbers * 0.05)).toFixed(2)}`, 'Infinite Fire Seraphim and Angel attacks gain +5% per Chroma Ember, capped at +25%, then consume all Chroma Embers.'),
-          createMetric('Current Tier', infernoTiers >= 15 ? 'Cataclysm' : infernoTiers >= 10 ? 'Inferno' : infernoTiers >= 5 ? 'Major' : infernoTiers >= 1 ? 'Minor' : 'Cold', 'Higher Inferno Tier counts increase Fire attack and payout scaling.'),
+          createMetric('Heat Tier', heat >= 15 ? 'Cataclysm' : heat >= 10 ? 'Inferno' : heat >= 5 ? 'Major' : heat >= 1 ? 'Minor' : 'Cold', 'Higher Heat counts increase Fire attack and base burst scaling.'),
         ],
         nextSteps: [
-          createStep('Cross Major tier', infernoTiers >= 5, infernoTiers >= 5
-            ? 'Major tier reached. Keep layering ember generators before spending.'
-            : 'Stack early Inferno Tier generators before committing cashout lines.'),
+          createStep('Cross Major Heat', heat >= 5, heat >= 5
+            ? 'Major Heat reached. Your base burst cards are now efficient.'
+            : 'Stack early Heat builders before committing burst cards.'),
+          createStep('Burst at high Heat', heat >= 10, heat >= 10
+            ? 'High Heat online. This is a strong base Pyro cashout window.'
+            : 'Keep building Heat before your largest base burst card.'),
           createStep('Seed ember bank', chromaEmbers >= 3, chromaEmbers >= 3
             ? 'Ember bank is online. Your ignite cards will now convert efficiently.'
             : 'Add Chroma Ember generators before your first ignite payoff card.'),
-          createStep('Cash at Inferno+', infernoTiers >= 10, infernoTiers >= 10
-            ? 'Inferno tier is active. This is your strongest ignite/burst window.'
-            : 'Keep building Inferno Tiers before spending your main Fire finisher.'),
+          createStep('Layer Inferno/Chroma', infernoTiers >= 6 && chromaEmbers >= 4, infernoTiers >= 6 && chromaEmbers >= 4
+            ? 'Overlay resources are primed. This is a full high-tier Pyro window.'
+            : 'When running higher-rarity Pyro cards, build both Inferno and Chroma before apex spenders.'),
         ],
       };
     }
@@ -972,7 +1019,7 @@ export interface EngineGuide {
   sections: GuideSection[];
 }
 
-export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
+const RAW_SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   neutrality: {
     engineKey: 'neutrality',
     title: 'User Guide to: Neutrality',
@@ -1216,27 +1263,27 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   pyro: {
     engineKey: 'pyro',
     title: 'User Guide to: Pyroabyss',
-    intro: 'Pyroabyss uses a streamlined two-layer Fire loop: build Inferno Tiers, use them to scale Fire attacks and unlock payoff windows, then Ignite Chroma Embers for burst. Eternal and Infinite Fire cards add the Chroma Ember overlay on top of that base engine.',
+    intro: 'Pyroabyss now uses a role-split Heat loop: stoke cards build Heat, tutor cards line up payoffs, threshold cards reward timing, and burst cards convert the bank.',
     sections: [
       {
-        heading: 'Core Loop',
-        body: 'Inferno gain effects add Inferno Tier. Inferno Tier has no cap.\n\nFire Seraphim and Angel attacks scale from current Inferno Tier at +2.5% per tier (up to +75%).\n\nIgnite spends Chroma Embers for burst Oblivion while your Inferno Tier setup powers follow-up attacks.',
+        heading: 'Core Loop: Heat',
+        body: 'Base Pyro cards use one core resource: Heat.\n\n• Stoke cards add Heat and maintain hand flow.\n• Tutor cards fetch Seraphim/Cherubim pieces for planned turns.\n• Threshold cards reward crossing Heat bands with extra value.\n• Burst cards convert stocked Heat into direct Oblivion.\n\nFire Seraphim and Angel attacks scale at +2.5% per Heat (up to +75%).',
       },
       {
-        heading: 'Higher-Rarity Overlay: Chroma Embers',
-        body: 'Fire Eternal and Infinite cards explicitly generate Chroma Embers through their own effects. Those Chroma Embers are then spent by Ignite payoffs or consumed by higher-rarity Fire attacks.\n\nEternal Fire attacks gain +4% damage per Chroma Ember (up to +16%). Infinite Fire attacks gain +5% per Chroma Ember (up to +25%). Both consume all Chroma Embers on attack.',
+        heading: 'Higher-Rarity Overlay: Inferno + Chroma',
+        body: 'Eternal, Infinite, and Transcendent Fire cards add two overlay lanes on top of base Heat:\n\n• Inferno stack interactions for threshold and conversion turns.\n• Chroma Ember generation and ignition for high-rarity burst spikes.\n\nThese overlays amplify the same turn planning instead of replacing the base Heat engine.',
       },
       {
         heading: 'Infinite Fire Roles',
-        body: '• Ash Kings\' Apocalypse: the catastrophic seeder. It loads Inferno Tier and Chroma Embers, then ignites a large burst while preserving some setup for follow-up.\n\n• Pyraxis Colossus: the threshold transmuter. It converts high Inferno Tier into Chroma Ember momentum, then spends that burst in a compressed payoff.\n\n• Pyroclasm Engine: the reserve accumulator. It banks Chroma Embers quickly, then trades a small ember slice for side value while keeping momentum online.\n\n• Riftborn Sovereign: the apex finisher. It cashes major Inferno Tier, detonates Chroma Ember ignition at capstone thresholds, and tutors the next closer.',
+        body: '• Ash Kings\' Apocalypse: the catastrophic seeder. It loads Heat and Chroma Embers, then ignites a large burst while preserving some setup for follow-up.\n\n• Pyraxis Colossus: the threshold transmuter. It converts high Heat into Chroma Ember momentum, then spends that burst in a compressed payoff.\n\n• Pyroclasm Engine: the reserve accumulator. It banks Chroma Embers quickly, then trades a small ember slice for side value while keeping momentum online.\n\n• Riftborn Sovereign: the apex finisher. It cashes major Heat, detonates Chroma Ember ignition at capstone thresholds, and tutors the next closer.',
       },
       {
-        heading: 'Inferno Tier Bands',
-        body: 'Higher Inferno Tier counts mark your stronger attack and payoff windows:\n\n- Inferno Tier 1-4: early setup\n- Inferno Tier 5-9: stable payoff band\n- Inferno Tier 10-14: major burst band\n- Inferno Tier 15+: capstone finisher band',
+        heading: 'Heat Bands',
+        body: 'Heat bands mark your base Pyro windows:\n\n- Heat 1-4: setup\n- Heat 5-9: stable burst\n- Heat 10-14: major burst\n- Heat 15+: capstone window',
       },
       {
         heading: 'Pilot Rule',
-        body: 'The mechanic rewards turns where you build Inferno first, then convert that setup into Chroma Ember payoffs. In practice: gain Inferno Tier repeatedly, cross major tier breakpoints, then Ignite once your Chroma bank is ready.',
+        body: 'Base play: build Heat first, then burst it in one clean window. Higher-rarity play: keep the same Heat timing, then layer Inferno and Chroma right before your apex card.',
       },
     ],
   },
@@ -1406,6 +1453,21 @@ export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   },
 };
 
+export const SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = Object.fromEntries(
+  Object.entries(RAW_SET_ENGINE_GUIDES).map(([key, guide]) => [
+    key,
+    {
+      ...guide,
+      title: sanitizeEngineText(guide.title),
+      intro: sanitizeEngineText(guide.intro),
+      sections: guide.sections.map(section => ({
+        heading: sanitizeEngineText(section.heading),
+        body: sanitizeEngineText(section.body),
+      })),
+    } satisfies EngineGuide,
+  ]),
+) as Record<EngineKey, EngineGuide>;
+
 // ─── End User Guides ─────────────────────────────────────────────────────────
 
 export function getSetEngineSnapshotForCard(
@@ -1414,7 +1476,7 @@ export function getSetEngineSnapshotForCard(
   board?: BoardState,
 ): SetEngineSnapshot | null {
   const key = getEngineKeyForCard(def);
-  return key ? buildEngineSnapshot(key, turn, board) : null;
+  return key ? sanitizeSnapshot(buildEngineSnapshot(key, turn, board)) : null;
 }
 
 export function getSetEngineSnapshotsForCards(
@@ -1434,5 +1496,5 @@ export function getSetEngineSnapshotsForCards(
     : ENGINE_ORDER.filter(key => present.has(key));
 
   return keys
-    .map(key => buildEngineSnapshot(key, turn, board));
+    .map(key => sanitizeSnapshot(buildEngineSnapshot(key, turn, board)));
 }

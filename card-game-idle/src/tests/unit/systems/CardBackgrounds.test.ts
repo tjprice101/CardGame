@@ -42,4 +42,11 @@ describe('card background resolution', () => {
       expect(getCardBackgroundUrl(def!)).toBe(expectedUrl);
     }
   });
+
+  it('maps Cinder Shroud to the exported Ember Shroud filename', () => {
+    const cinderShroud = CardRegistry.get('cherubim-fire-ember-shroud');
+
+    expect(cinderShroud).toBeTruthy();
+    expect(getCardBackgroundUrl(cinderShroud!)).toBe('/assets/card-backgrounds/pyroabyss/Ember%20Shroud.png');
+  });
 });

@@ -62,6 +62,7 @@ void _getDailyTrials;
 import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost } from '@/systems/progression/dailyDeal';
 import { TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
+import { latchUnlockedAvatars } from '@/data/profile/avatars';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { NULL_RAID_DEFINITIONS, NULL_RAID_BOSS_MAP, NULL_RAID_ENCOUNTER_SECONDS } from '@/data/ascension/nullRaidDefinitions';
 import { eventBus } from '@/core/events/EventBus';
@@ -83,6 +84,11 @@ const ATTENUATION_TIERS = [1, 0.75, 0.55, 0.4] as const;
 const NEUTRALITY_SETUP_FOR_FULL_FIRE = 3;
 const NEUTRALITY_ENGINES_FOR_FULL_FIRE = 3;
 const DFH_ETERNAL_VEIL_DEFAULT_OBLIVION_PER_MARK = 160;
+const COOP_BOSS_HP_SCALE_BY_PARTY_SIZE: Record<number, number> = {
+  1: 1,
+  2: 1.68,
+  3: 2.28,
+};
 
 // �E��E��E��E� Defaults �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
 
@@ -230,6 +236,7 @@ const defaultTurn: TurnState = {
   burningGardenGeometryMode: false,
   burningGardenZenithNextInfinite: false,
   burningGardenSkyLaw: null,
+  pyroHeat: 0,
   lastPlayedElement: null,
   uniqueElementsPlayedThisTurn: [],
   prismaticLight: 0,
@@ -287,6 +294,7 @@ const defaultProgress: ProgressState = {
     uiThemeId: 'theme-warm-default',
     customUiTheme: null,
     signatureCardIds: [],
+    unlockedAvatarIds: [],
   },
   dailyLogin: {
     lastClaimedDayIndex: -1,
@@ -315,6 +323,16 @@ const defaultProgress: ProgressState = {
   transcendentCollection: {},
   purchasedAscensionCosmetics: [],
   battlegroundStats: { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] },
+  socialStats: {
+    friendRequestsSent: 0,
+    friendsAccepted: 0,
+    messagesSent: 0,
+    messagesWithAttachment: 0,
+    giftsSent: 0,
+    battlegroundInvitesSent: 0,
+    coopBossInvitesSent: 0,
+    coopBossInvitesAccepted: 0,
+  },
 };
 
 const defaultSettings: SettingsState = {
@@ -343,6 +361,7 @@ const defaultBossFight: BossFightState = {
   gauntletDepth: 0,
   gauntletShardsBanked: 0,
   gauntletHpCarryFrac: 1,
+  coopPartySize: 1,
   damageDealtThisFight: 0,
   fightTimeRemaining: 0,
   cooldowns: {},
@@ -798,7 +817,14 @@ interface StoreActions {
   updateSettings: (patch: Partial<SettingsState>) => void;
   loadState: (state: GameState) => void;
   resetToDefault: () => void;
-  startBossFight: (bossId: string, savedDeckId: string, options?: { kind?: 'normal' | 'trial' | 'gauntlet'; modifiers?: TrialModifier[]; trialRewardMult?: number }) => void;
+  startBossFight: (bossId: string, savedDeckId: string, options?: {
+    kind?: 'normal' | 'trial' | 'gauntlet';
+    modifiers?: TrialModifier[];
+    trialRewardMult?: number;
+    coopPartySize?: number;
+    coopSessionId?: string;
+    coopRole?: 'host' | 'guest';
+  }) => void;
   startWakeTrial: (bossId: string, savedDeckId: string, modifiers: TrialModifier[], rewardMult: number) => void;
   startEndlessGauntlet: (savedDeckId: string) => void;
   tickBossTimer: (deltaSeconds: number) => void;
@@ -818,6 +844,19 @@ interface StoreActions {
   resetCustomUiTheme: () => void;
   /** Set a Signature Card slot (0-4). Pass null cardId to clear the slot. */
   setSignatureCard: (slot: number, cardId: string | null) => void;
+  /** Increment persistent social interaction counters used by social titles/achievements. */
+  recordSocialProgress: (
+    event:
+      | 'friend_request_sent'
+      | 'friend_added'
+      | 'message_sent'
+      | 'message_with_attachment'
+      | 'gift_sent'
+      | 'battleground_invite_sent'
+      | 'coop_boss_invite_sent'
+      | 'coop_boss_invite_accepted',
+    amount?: number,
+  ) => void;
   /** Overwrite the entire profile from a remote (Supabase) snapshot. Called after sign-in. */
   applyRemoteProfile: (remote: {
     name: string;
@@ -908,7 +947,34 @@ function getEntropicEnergyBalance(progress: ProgressState): number {
   return (progress.entropicEnergyBalance ?? progress.entropyBalance ?? 0);
 }
 
+type SocialProgressEvent =
+  | 'friend_request_sent'
+  | 'friend_added'
+  | 'message_sent'
+  | 'message_with_attachment'
+  | 'gift_sent'
+  | 'battleground_invite_sent'
+  | 'coop_boss_invite_sent'
+  | 'coop_boss_invite_accepted';
+
+function ensureSocialStats(progress: ProgressState): NonNullable<ProgressState['socialStats']> {
+  const current = progress.socialStats ?? {
+    friendRequestsSent: 0,
+    friendsAccepted: 0,
+    messagesSent: 0,
+    messagesWithAttachment: 0,
+    giftsSent: 0,
+    battlegroundInvitesSent: 0,
+    coopBossInvitesSent: 0,
+    coopBossInvitesAccepted: 0,
+  };
+  progress.socialStats = current;
+  return current;
+}
+
 function recompute(state: Store): void {
+  // Latch profile avatar unlocks permanently once their condition is met.
+  latchUnlockedAvatars(state.progress);
   state.computedStats = ScoreSystem.compute(state.board);
   const resonanceScore = computeGlobalResonanceScore(state.progress);
   if (resonanceScore > 0) {
@@ -1354,6 +1420,9 @@ function completeBossFight(s: Store, victory: boolean): void {
   const finalHp = s.bossFight.bossCurrentHp;
   const damageDealt = s.bossFight.damageDealtThisFight;
   const maxHp = s.bossFight.bossMaxHp;
+  const coopPartySize = s.bossFight.coopPartySize ?? 1;
+  const coopSessionId = s.bossFight.coopSessionId;
+  const coopRole = s.bossFight.coopRole;
   s.bossFight = {
     mode: victory ? 'victory' : 'defeat',
     activeBossId: bossId,
@@ -1369,6 +1438,9 @@ function completeBossFight(s: Store, victory: boolean): void {
     gauntletDepth,
     gauntletShardsBanked,
     gauntletHpCarryFrac: 1,
+    coopPartySize,
+    coopSessionId,
+    coopRole,
     rewardSummary,
   };
   // Suppress reference to unused vars if linter cares
@@ -1548,6 +1620,7 @@ function ensureNeutralityTurnState(turn: TurnState): void {
 }
 
 function ensurePyroTurnState(turn: TurnState): void {
+  if (turn.pyroHeat === undefined) turn.pyroHeat = 0;
   if (turn.lastPlayedElement === undefined) turn.lastPlayedElement = null;
 }
 
@@ -2089,9 +2162,20 @@ function getPyroInfinitePayoutMultiplier(s: Store, def: CardDefinition): number 
 function getPyroFurnaceAttackMultiplier(s: Store, def: CardDefinition): number {
   if (def.element !== 'Fire') return 1;
   ensurePyroTurnState(s.turn);
-  const inferno = Math.max(0, s.turn.eternalStacks?.pyro ?? 0);
-  // Fire attacks gain +2.5% per Inferno Tier, capped at +75%.
-  return 1 + Math.min(0.75, inferno * 0.025);
+  const heat = Math.max(0, s.turn.pyroHeat ?? 0);
+  // Fire attacks gain +2.5% per Heat, capped at +75%.
+  return 1 + Math.min(0.75, heat * 0.025);
+}
+
+function consumePyroHeatAttackAmplifier(s: Store, def: CardDefinition): number {
+  if (def.element !== 'Fire') return 1;
+  ensurePyroTurnState(s.turn);
+  const available = Math.max(0, Math.floor(s.turn.pyroHeat ?? 0));
+  const consume = Math.min(5, available);
+  if (consume <= 0) return 1;
+  s.turn.pyroHeat = available - consume;
+  // Slight bonus so Heat spend is meaningful without overshadowing base scaling.
+  return 1 + (consume * 0.01);
 }
 
 function getPyroChromaAttackMultiplier(s: Store, def: CardDefinition): number {
@@ -4762,6 +4846,7 @@ export const useStore = create<Store>()(
         }
 
         amount = Math.round(amount * getBurningGardenEchoPenalty(unit));
+        amount = Math.round(amount * consumePyroHeatAttackAmplifier(s, def));
         amount = Math.round(amount * getPyroFurnaceAttackMultiplier(s, def));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
         if (isMechanicalDreamsCard(def) && (s.turn.mechanicalPrimedChimes ?? 0) > 0) {
@@ -4898,6 +4983,7 @@ export const useStore = create<Store>()(
         }
 
         amount = Math.round(amount * getBurningGardenEchoPenalty(unit));
+        amount = Math.round(amount * consumePyroHeatAttackAmplifier(s, def));
         amount = Math.round(amount * getPyroFurnaceAttackMultiplier(s, def));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
         if (isMechanicalDreamsCard(def) && (s.turn.mechanicalPrimedChimes ?? 0) > 0) {
@@ -5973,6 +6059,39 @@ export const useStore = create<Store>()(
       });
     },
 
+    recordSocialProgress: (event, amount = 1) => {
+      const delta = Number.isFinite(amount) ? Math.max(1, Math.floor(amount)) : 1;
+      set(s => {
+        const stats = ensureSocialStats(s.progress);
+        switch (event as SocialProgressEvent) {
+          case 'friend_request_sent':
+            stats.friendRequestsSent += delta;
+            break;
+          case 'friend_added':
+            stats.friendsAccepted += delta;
+            break;
+          case 'message_sent':
+            stats.messagesSent += delta;
+            break;
+          case 'message_with_attachment':
+            stats.messagesWithAttachment += delta;
+            break;
+          case 'gift_sent':
+            stats.giftsSent += delta;
+            break;
+          case 'battleground_invite_sent':
+            stats.battlegroundInvitesSent += delta;
+            break;
+          case 'coop_boss_invite_sent':
+            stats.coopBossInvitesSent += delta;
+            break;
+          case 'coop_boss_invite_accepted':
+            stats.coopBossInvitesAccepted += delta;
+            break;
+        }
+      });
+    },
+
     applyRemoteProfile: (remote) => {
       set(s => {
         const p = s.progress.profile;
@@ -6415,12 +6534,14 @@ export const useStore = create<Store>()(
         };
 
         const modifiers = options?.modifiers ?? [];
+        const coopPartySize = Math.max(1, Math.min(3, options?.coopPartySize ?? 1));
 
         // Apply boss-hp boost modifier
         let maxHp = boss.hp;
         if (modifiers.some(m => m.kind === 'boss_hp_boost')) {
           maxHp = Math.round(maxHp * 1.25);
         }
+        maxHp = Math.round(maxHp * (COOP_BOSS_HP_SCALE_BY_PARTY_SIZE[coopPartySize] ?? 1));
 
         // Time pressure
         let roundSeconds = BOSS_FIGHT_ROUND_SECONDS;
@@ -6469,6 +6590,9 @@ export const useStore = create<Store>()(
           gauntletShardsBanked: 0,
           gauntletHpCarryFrac: 1,
           bossWeaknessActive,
+          coopPartySize,
+          coopSessionId: options?.coopSessionId,
+          coopRole: options?.coopRole,
           rewardSummary: null,
         };
         recompute(s);
@@ -6665,9 +6789,45 @@ export const useStore = create<Store>()(
         if (op['favoriteCollection'] === undefined) op['favoriteCollection'] = {};
         if (op['bossClearCounts'] === undefined) op['bossClearCounts'] = {};
         if (op['nullRaidAngelMissStreak'] === undefined) op['nullRaidAngelMissStreak'] = {};
+        if (op['socialStats'] === undefined) {
+          op['socialStats'] = {
+            friendRequestsSent: 0,
+            friendsAccepted: 0,
+            messagesSent: 0,
+            messagesWithAttachment: 0,
+            giftsSent: 0,
+            battlegroundInvitesSent: 0,
+            coopBossInvitesSent: 0,
+            coopBossInvitesAccepted: 0,
+          };
+        } else {
+          const ss = op['socialStats'] as Record<string, unknown>;
+          const keys = [
+            'friendRequestsSent',
+            'friendsAccepted',
+            'messagesSent',
+            'messagesWithAttachment',
+            'giftsSent',
+            'battlegroundInvitesSent',
+            'coopBossInvitesSent',
+            'coopBossInvitesAccepted',
+          ] as const;
+          for (const key of keys) {
+            const raw = Number(ss[key]);
+            ss[key] = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : 0;
+          }
+        }
         // Profile + daily login backfill (introduced in save v9).
         if (op['profile'] === undefined) {
-          op['profile'] = { name: 'Wanderer', bio: '', avatarId: 'pic-classic-acolyte', titleId: null, uiThemeId: 'theme-warm-default', customUiTheme: null };
+          op['profile'] = {
+            name: 'Wanderer',
+            bio: '',
+            avatarId: 'pic-classic-acolyte',
+            titleId: null,
+            uiThemeId: 'theme-warm-default',
+            customUiTheme: null,
+            unlockedAvatarIds: [],
+          };
         } else {
           const prof = op['profile'] as Record<string, unknown>;
           if (typeof prof['name'] !== 'string' || !prof['name']) prof['name'] = 'Wanderer';
@@ -6676,6 +6836,12 @@ export const useStore = create<Store>()(
           if (prof['titleId'] === undefined) prof['titleId'] = null;
           if (typeof prof['uiThemeId'] !== 'string') prof['uiThemeId'] = 'theme-warm-default';
           if (prof['customUiTheme'] === undefined) prof['customUiTheme'] = null;
+          if (!Array.isArray(prof['unlockedAvatarIds'])) {
+            prof['unlockedAvatarIds'] = [];
+          } else {
+            prof['unlockedAvatarIds'] = (prof['unlockedAvatarIds'] as unknown[])
+              .filter((id): id is string => typeof id === 'string');
+          }
         }
         if (op['dailyLogin'] === undefined) {
           op['dailyLogin'] = { lastClaimedDayIndex: -1, streak: 0, totalClaims: 0 };

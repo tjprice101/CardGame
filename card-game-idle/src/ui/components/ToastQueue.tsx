@@ -1,15 +1,9 @@
 import { useEffect } from 'react';
 import { useStore } from '@/state/store';
 import type { ToastEntry } from '@/types/game';
+import { warmTheme } from '@/ui/theme';
 
 const EMPTY_TOASTS: ToastEntry[] = [];
-
-const KIND_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  info:    { bg: 'rgba(28, 22, 16, 0.92)', border: 'rgba(218, 167, 109, 0.55)', text: '#f1c486' },
-  success: { bg: 'rgba(20, 30, 18, 0.92)', border: 'rgba(120, 200, 110, 0.6)',  text: '#b9e7a0' },
-  warning: { bg: 'rgba(40, 20, 12, 0.92)', border: 'rgba(255, 140, 100, 0.6)',  text: '#ffc89a' },
-  reward:  { bg: 'rgba(34, 24, 12, 0.94)', border: 'rgba(255, 196, 100, 0.8)',  text: '#ffe2a0' },
-};
 
 /**
  * Renders the in-memory toast queue. Auto-dismisses each toast after its
@@ -46,7 +40,12 @@ export default function ToastQueue() {
       }}
     >
       {toasts.map(t => {
-        const palette = KIND_COLORS[t.kind ?? 'info'] ?? KIND_COLORS.info;
+        const accent = (
+          t.kind === 'success' ? warmTheme.success
+          : t.kind === 'warning' ? warmTheme.danger
+          : t.kind === 'reward' ? warmTheme.accentSoft
+          : warmTheme.accent
+        );
         return (
           <div
             key={t.id}
@@ -56,12 +55,12 @@ export default function ToastQueue() {
               cursor: 'pointer',
               padding: '10px 14px',
               borderRadius: 8,
-              background: palette.bg,
-              border: `1px solid ${palette.border}`,
-              color: palette.text,
+              background: warmTheme.surfaceStrong,
+              border: `1px solid ${accent}`,
+              color: warmTheme.text,
               fontSize: 12,
               lineHeight: 1.4,
-              boxShadow: '0 6px 22px rgba(0,0,0,0.45)',
+              boxShadow: `${warmTheme.shadow}, 0 0 0 1px ${accent}33 inset`,
               animation: 'toastSlideIn 0.32s cubic-bezier(.16,.84,.44,1)',
             }}
           >

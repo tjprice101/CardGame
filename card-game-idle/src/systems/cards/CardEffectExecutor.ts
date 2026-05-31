@@ -437,11 +437,14 @@ export class CardEffectExecutor {
         case 'absol':
           return cardDef.element === 'GlassAbsolute';
         case 'deepwake':
+        case 'tide':
           return isEternalSeasDefinition(cardDef);
         case 'flutter':
           return isButterflyDefinition(cardDef);
         case 'garden':
           return cardDef.element === 'BlazingGarden';
+        case 'forge':
+          return cardDef.element === 'AbyssalForge';
         case 'glass':
           return cardDef.element === 'Dark';
         case 'light':
@@ -450,12 +453,16 @@ export class CardEffectExecutor {
           return isMechanicalDreamsDefinition(cardDef);
         case 'prism':
           return cardDef.element === 'Prismatic';
+        case 'pyre':
+          return cardDef.element === 'DeathFlamedHell';
         case 'pyro':
           return cardDef.element === 'Fire';
         case 'snow':
           return isSnowboundVoltageDefinition(cardDef);
         case 'thorn':
           return cardDef.element === 'Thornbound';
+        case 'wuas':
+          return cardDef.element === 'WishedUponAStar';
         default:
           return false;
       }
@@ -871,18 +878,8 @@ export class CardEffectExecutor {
           if (deckCard.definitionId === 'ophanim-neutral-echo-pulse') {
             val = (mutableTurn.cardsPlayedThisTurn + 1) * 15 * multiplier;
           }
-          // Conflagration ? +10 Oblivion per card played this turn (Pyroabyss)
-          if (deckCard.definitionId === 'ophanim-fire-conflagration') {
-            val = (mutableTurn.cardsPlayedThisTurn + 1) * 10 * multiplier;
-          }
-          // Void Combustion ? +25 Oblivion per Ember drained
-          if (deckCard.definitionId === 'ophanim-fire-void-combustion') {
-            val = embersDrained * 25 * multiplier;
-          }
-          // Void Apocalypse ? +30 Oblivion per Ember drained
-          if (deckCard.definitionId === 'ophanim-fire-void-apocalypse') {
-            val = embersDrained * 30 * multiplier;
-          }
+          // Pyroabyss base cards now resolve exclusively from authored typed effects
+          // (pyro_heat_* / conditional / draw / oblivion_flat) in source definitions.
           // Radiant Surge ? +8 Oblivion per Radiance (max 80)
           if (deckCard.definitionId === 'hr-light-radiant-surge') {
             val = Math.min(mutableTurn.radiance * 8, 80) * multiplier;
@@ -1707,10 +1704,42 @@ export class CardEffectExecutor {
           break;
         }
 
+        // Base Pyroabyss core loop: Heat build, threshold, and burst.
+        case 'pyro_heat_gain': {
+          const current = Math.max(0, mutableTurn.pyroHeat ?? 0);
+          mutableTurn.pyroHeat = current + (effect.value * multiplier);
+          break;
+        }
+
+        case 'pyro_heat_spend': {
+          const current = Math.max(0, mutableTurn.pyroHeat ?? 0);
+          if (effect.value >= 9999) {
+            mutableTurn.pyroHeat = 0;
+          } else {
+            if (current < effect.value) return false;
+            mutableTurn.pyroHeat = current - effect.value;
+          }
+          break;
+        }
+
+        case 'pyro_heat_burst': {
+          const available = Math.max(0, mutableTurn.pyroHeat ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          mutableTurn.pyroHeat = available - consume;
+          oblivionBonus += consume * effect.oblivionPerHeat * multiplier;
+          break;
+        }
+
         // Eternal/Infinity per-set amplifier stacks.
         case 'eternal_stack_gain': {
           const stacks = (mutableTurn.eternalStacks ?? (mutableTurn.eternalStacks = {})) as Record<string, number>;
-          stacks[effect.stack] = (stacks[effect.stack] ?? 0) + effect.value * multiplier;
+          const gain = effect.value * multiplier;
+          stacks[effect.stack] = (stacks[effect.stack] ?? 0) + gain;
+          // Higher-rarity Pyro overlays should amplify, not replace, the base Heat loop.
+          if (effect.stack === 'pyro') {
+            mutableTurn.pyroHeat = Math.max(0, mutableTurn.pyroHeat ?? 0) + gain;
+          }
           break;
         }
 
@@ -1746,7 +1775,13 @@ export class CardEffectExecutor {
         // ── Per-set secondary keyword counters (generic gain/spend) ──────────
         case 'set_secondary_gain': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
-          counters[effect.kind] = (counters[effect.kind] ?? 0) + effect.value * multiplier;
+          const gain = effect.value * multiplier;
+          counters[effect.kind] = (counters[effect.kind] ?? 0) + gain;
+          // Chroma gain feeds back into the core Heat rhythm at a reduced rate.
+          if (effect.kind === 'pyro') {
+            const heatFromChroma = Math.max(1, Math.floor(gain / 2));
+            mutableTurn.pyroHeat = Math.max(0, mutableTurn.pyroHeat ?? 0) + heatFromChroma;
+          }
           break;
         }
         case 'set_secondary_spend': {
@@ -1770,6 +1805,8 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           counters.pyro = available - consume;
           oblivionBonus += consume * consume * effect.oblivionPerEchoSquared * multiplier;
+          // Ignition restokes Furnace Heat to keep the core loop active.
+          mutableTurn.pyroHeat = Math.max(0, mutableTurn.pyroHeat ?? 0) + consume;
           break;
         }
         case 'pyro_transcendent_confluence': {
@@ -1785,11 +1822,13 @@ export class CardEffectExecutor {
           oblivionBonus += pairs * effect.oblivionPerPair * multiplier;
 
           if ((effect.gainInfernoPerPair ?? 0) > 0) {
-            stacks.pyro = Math.max(0, stacks.pyro ?? 0) + pairs * (effect.gainInfernoPerPair ?? 0);
+            mutableTurn.pyroHeat = Math.max(0, mutableTurn.pyroHeat ?? 0) + pairs * (effect.gainInfernoPerPair ?? 0);
           }
           if ((effect.gainChromaPerPair ?? 0) > 0) {
             counters.pyro = Math.max(0, counters.pyro ?? 0) + pairs * (effect.gainChromaPerPair ?? 0);
           }
+          // Confluence is a transcendent amplifier: it should spike Heat beyond base cadence.
+          mutableTurn.pyroHeat = Math.max(0, mutableTurn.pyroHeat ?? 0) + pairs * 2;
           if ((effect.drawAtPairs ?? 0) > 0) {
             const draws = Math.floor(pairs / Math.max(1, effect.drawAtPairs ?? 0));
             if (draws > 0) {
@@ -2473,6 +2512,7 @@ export class CardEffectExecutor {
       case 'light_chorus_anchors_gte':
         return (turn.lightChorusAnchors ?? 0) >= condition.value;
       case 'ember_gte':         return turn.embers >= condition.value;
+      case 'pyro_heat_gte':     return (turn.pyroHeat ?? 0) >= condition.value;
       case 'trail_gte':         return turn.trail >= condition.value;
       case 'scar_count_gte':    return (turn.thornScar ?? 0) >= condition.value;
       case 'equilibrium_sigils_gte':
@@ -2588,6 +2628,9 @@ export class CardEffectExecutor {
           }
           if (cond.type === 'equilibrium_sigils_gte') {
             if ((turn.neutralityEquilibriumSigils ?? 0) < cond.value) return false;
+          }
+          if (cond.type === 'pyro_heat_gte') {
+            if ((turn.pyroHeat ?? 0) < cond.value) return false;
           }
           if (cond.type === 'eternal_stack_gte') {
             const stacks = turn.eternalStacks?.[cond.stack] ?? 0;

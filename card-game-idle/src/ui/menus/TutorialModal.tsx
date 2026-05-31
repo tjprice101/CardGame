@@ -322,7 +322,7 @@ function SetsBody() {
   const sets: Array<[string, string, string]> = [
     ['Neutrality', 'Patience / Stasis', 'Stockpile Patience on Seraphim, cash it out on attack. The friendly starter engine.'],
     ['Heavenly Light', 'Cadence, Radiance & Halo', 'Build note variety and Anchors for Cadence, then spend stocked Halo on your biggest Light burst turns.'],
-    ['Pyroabyss', 'Inferno Tier & Chroma', 'Build Inferno Tier for Ignite and Fire attack scaling, then on Eternal/Infinite turns convert ignition into same-turn Chroma Embers for a higher-rarity burst.'],
+    ['Pyroabyss', 'Heat Roles and Burst Windows', 'Base cards now split into stoke, threshold, tutor, and burst roles. Build Heat first, then cash in one burst window; add Chroma overlays only on higher-rarity turns.'],
     ['Thornbound Plains', 'Trail, Scar & Briar Spiral', 'Build Trail, convert to Scar manually in the HUD, then use Eternal Briar Spirals to amplify your payoff turn.'],
     ['Snowbound Voltage', 'Frost, Voltage & Polar Capacitors', 'Frost cards build Arctic Charge and Voltage cards cash it out; Eternity/Infinite cards add Polar Capacitor bank-and-release lines.'],
     ['Mechanical Dreams', 'Strain & Clock-Chime', 'Build Strain, track the 3-tick Clock, and spend stored Chimes on your strongest Mechanical attacks.'],

@@ -4,6 +4,7 @@ import {
   AVATAR_BY_ID,
   DEFAULT_AVATAR_ID,
   isAvatarUnlocked,
+  latchUnlockedAvatars,
   resolveAvatar,
 } from '@/data/profile/avatars';
 import {
@@ -39,8 +40,25 @@ function baseProgress(overrides: Partial<ProgressState> = {}): ProgressState {
     pityCounters: {},
     savedDecks: [],
     activeDeckId: null,
-    profile: { name: 'Wanderer', avatarId: DEFAULT_AVATAR_ID, titleId: null, uiThemeId: DEFAULT_UI_THEME_ID, customUiTheme: null },
+    profile: {
+      name: 'Wanderer',
+      avatarId: DEFAULT_AVATAR_ID,
+      titleId: null,
+      uiThemeId: DEFAULT_UI_THEME_ID,
+      customUiTheme: null,
+      unlockedAvatarIds: [],
+    },
     dailyLogin: { lastClaimedDayIndex: -1, streak: 0, totalClaims: 0 },
+    socialStats: {
+      friendRequestsSent: 0,
+      friendsAccepted: 0,
+      messagesSent: 0,
+      messagesWithAttachment: 0,
+      giftsSent: 0,
+      battlegroundInvitesSent: 0,
+      coopBossInvitesSent: 0,
+      coopBossInvitesAccepted: 0,
+    },
     ...overrides,
   };
 }
@@ -63,7 +81,7 @@ describe('avatar registry', () => {
   });
 
   it('unlocks Eternal at 1,000,000 oblivion', () => {
-    const p = baseProgress({ oblivion: 1_000_000 });
+    const p = baseProgress({ oblivion: 1_000_000, bestSingleTurnOblivion: 10_000 });
     expect(isAvatarUnlocked('avatar-eternal', p)).toBe(true);
     expect(isAvatarUnlocked('avatar-oblivion-touched', p)).toBe(true);
   });
@@ -85,6 +103,16 @@ describe('avatar registry', () => {
     const p = baseProgress();
     expect(resolveAvatar('avatar-eternal', p).id).toBe(DEFAULT_AVATAR_ID);
     expect(resolveAvatar('avatar-does-not-exist', p).id).toBe(DEFAULT_AVATAR_ID);
+  });
+
+  it('keeps avatars unlocked after requirements are no longer met once latched', () => {
+    const p = baseProgress({ bestSingleTurnOblivion: 10_000 });
+    latchUnlockedAvatars(p);
+    p.bestSingleTurnOblivion = 0;
+
+    expect(isAvatarUnlocked('pic-classic-oblivion-touched', p)).toBe(true);
+    expect(isAvatarUnlocked('avatar-oblivion-touched', p)).toBe(true);
+    expect(resolveAvatar('pic-classic-oblivion-touched', p).id).toBe('pic-classic-oblivion-touched');
   });
 });
 
@@ -115,6 +143,45 @@ describe('title badge registry', () => {
     const badge = resolveTitleBadge('title-newborn', p);
     expect(badge).not.toBeNull();
     expect(badge!.id).toBe('title-newborn');
+  });
+
+  it('unlocks new social milestone titles from social progression counters', () => {
+    const p = baseProgress({
+      socialStats: {
+        friendRequestsSent: 3,
+        friendsAccepted: 5,
+        messagesSent: 40,
+        messagesWithAttachment: 10,
+        giftsSent: 5,
+        battlegroundInvitesSent: 5,
+        coopBossInvitesSent: 3,
+        coopBossInvitesAccepted: 3,
+      },
+    });
+    expect(isTitleUnlocked('title-social-circle', p)).toBe(true);
+    expect(isTitleUnlocked('title-social-messenger', p)).toBe(true);
+    expect(isTitleUnlocked('title-social-wingmate', p)).toBe(true);
+  });
+
+  it('unlocks new ascension and battleground milestone titles', () => {
+    const p = baseProgress({
+      nullRaidClears: { a: 10, b: 15 },
+      transcendentCollection: { one: 6, two: 6 },
+      entropicEnergyBalance: 10_000,
+      purchasedAscensionCosmetics: ['a', 'b', 'c', 'd', 'e', 'f'],
+      battlegroundStats: {
+        wins: 25,
+        losses: 3,
+        bestScore: 250_000,
+        totalMatches: 40,
+        claimedMilestones: [],
+        dailyMatchTimestamps: [],
+      },
+    });
+    expect(isTitleUnlocked('title-null-raid-legend', p)).toBe(true);
+    expect(isTitleUnlocked('title-transcendent-pantheon', p)).toBe(true);
+    expect(isTitleUnlocked('title-entropic-ascendant', p)).toBe(true);
+    expect(isTitleUnlocked('title-battleground-overlord', p)).toBe(true);
   });
 });
 
