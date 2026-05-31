@@ -421,10 +421,10 @@ export class CardEffectExecutor {
     }
 
     function getNeutralityEquilibriumPatienceGainBonus(): number {
-      const base = Math.floor(Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0) / 2);
-      if (base === 0) return base;
       const sentinelPresent = mutableBoard.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel');
-      return sentinelPresent ? base * 2 : base;
+      if (!sentinelPresent) return 0;
+      const base = Math.floor(Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0) / 2);
+      return base > 0 ? base * 2 : 0;
     }
 
     function grantNeutralityEquilibriumSigils(value: number, sourceTag?: string): number {
@@ -1348,9 +1348,6 @@ export class CardEffectExecutor {
               ...(mutableTurn.neutralityTriggeredEffects ?? []),
               `${deckCard.definitionId}: +${totalGain} total patience`,
             ].slice(-8);
-            if (effect.value >= 4) {
-              grantNeutralityEquilibriumSigils(1, deckCard.definitionId);
-            }
           }
           break;
         }

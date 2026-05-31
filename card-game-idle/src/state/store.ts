@@ -3935,52 +3935,11 @@ function tickCherubimDurability(s: Store): void {
   applyCherubimExpireBonuses(s, expiredCount);
 }
 
-function getNeutralityEquilibriumSigilCap(turn: TurnState, board?: BoardState): number {
-  let capBonus = Math.max(0, turn.neutralityEquilibriumSigilCapBonus ?? 0);
-  if (board) {
-    const starboundPresent = board.frontSlots.some(sl => sl?.type === 'Angel' && sl.definitionId === 'tx-angel-starbound-null-archangel');
-    if (starboundPresent) capBonus = Math.max(capBonus, 4);
-  }
-  return Math.max(0, 12 + capBonus);
-}
-
 function getNeutralityEquilibriumPatienceGainBonus(turn: TurnState, board?: BoardState): number {
+  const sentinelPresent = board?.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel') ?? false;
+  if (!sentinelPresent) return 0;
   const base = Math.floor(Math.max(0, turn.neutralityEquilibriumSigils ?? 0) / 2);
-  if (base === 0 || !board) return base;
-  const sentinelPresent = board.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel');
-  return sentinelPresent ? base * 2 : base;
-}
-
-function grantNeutralityEquilibriumSigils(s: Store, value: number, sourceTag?: string): number {
-  const gain = Math.max(0, Math.floor(value));
-  if (gain <= 0) return 0;
-
-  const before = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
-  const cap = getNeutralityEquilibriumSigilCap(s.turn, s.board);
-  const next = Math.min(cap, before + gain);
-  const gained = Math.max(0, next - before);
-  if (gained <= 0) return 0;
-
-  s.turn.neutralityEquilibriumSigils = next;
-  const gainedThisTurn = Math.max(0, s.turn.neutralityEquilibriumSigilsGainedThisTurn ?? 0) + gained;
-  s.turn.neutralityEquilibriumSigilsGainedThisTurn = gainedThisTurn;
-
-  const patientLightAlready = Math.max(0, s.turn.neutralityEquilibriumPatientLightFromSigilsThisTurn ?? 0);
-  const patientLightEligible = Math.min(2, Math.floor(gainedThisTurn / 4));
-  const patientLightToGrant = Math.max(0, patientLightEligible - patientLightAlready);
-  if (patientLightToGrant > 0) {
-    s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + patientLightToGrant;
-    s.turn.neutralityEquilibriumPatientLightFromSigilsThisTurn = patientLightAlready + patientLightToGrant;
-  }
-
-  if (sourceTag) {
-    s.turn.neutralityTriggeredEffects = [
-      ...(s.turn.neutralityTriggeredEffects ?? []),
-      `${sourceTag}: +${gained} Equilibrium Sigils`,
-    ].slice(-8);
-  }
-
-  return gained;
+  return base > 0 ? base * 2 : 0;
 }
 
 function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
@@ -4021,9 +3980,6 @@ function applyPatienceGainAll(s: Store, value: number): void {
     }
   }
 
-  if (value >= 4) {
-    grantNeutralityEquilibriumSigils(s, 1, 'neutrality mark');
-  }
 }
 
 function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
@@ -4742,9 +4698,6 @@ export const useStore = create<Store>()(
           s.turn.mechanicalPrimedChimes = 0;
         }
         grantOblivion(s, amount);
-        if (capturedPatience > 0 && def.element === 'Neutrality') {
-          grantNeutralityEquilibriumSigils(s, 1, `${def.definitionId} attack`);
-        }
         if (def.definitionId === 'tx-sera-null-entropy' && capturedPatience >= 10) {
           s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
         }
