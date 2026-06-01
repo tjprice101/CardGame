@@ -5371,14 +5371,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 24
       },
       {
-        "type": "light_resonance_gain",
-        "value": 2
-      },
-      {
-        "type": "light_anchor_gain",
-        "value": 1
-      },
-      {
         "type": "eternal_stack_gain",
         "stack": "light",
         "value": 3
@@ -5399,14 +5391,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "radiance_gain",
         "value": 26
-      },
-      {
-        "type": "light_resonance_gain",
-        "value": 2
-      },
-      {
-        "type": "light_anchor_gain",
-        "value": 1
       },
       {
         "type": "eternal_stack_gain",
@@ -6264,14 +6248,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 31
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "thorn",
-        "value": 2
-      },
-      {
         "type": "set_secondary_gain",
         "kind": "thorn",
-        "value": 2
+        "value": 4
       },
       {
         "type": "salvage_any"
@@ -6375,14 +6354,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 50
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "thorn",
-        "value": 4
-      },
-      {
         "type": "set_secondary_gain",
         "kind": "thorn",
-        "value": 2
+        "value": 5
       },
       {
         "type": "score_multiplier",
@@ -6391,15 +6365,15 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "conditional",
         "condition": {
-          "type": "eternal_stack_gte",
-          "stack": "thorn",
+          "type": "set_secondary_gte",
+          "kind": "thorn",
           "value": 5
         },
         "then": [
           {
-            "type": "eternal_stack_spend",
-            "stack": "thorn",
-            "value": 5
+            "type": "set_secondary_spend",
+            "kind": "thorn",
+            "value": 3
           },
           {
             "type": "set_secondary_gain",
@@ -6743,7 +6717,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Cherubim",
     "effects": [
       {
-        "type": "cherubim_ember_gain",
+        "type": "cherubim_pyro_heat_gain",
         "value": 1
       }
     ]
@@ -6772,7 +6746,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Cherubim",
     "effects": [
       {
-        "type": "cherubim_ember_gain",
+        "type": "cherubim_pyro_heat_gain",
         "value": 3
       }
     ]
@@ -11326,14 +11300,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 120
       },
       {
-        "type": "light_resonance_gain",
-        "value": 4
-      },
-      {
-        "type": "light_anchor_gain",
-        "value": 2
-      },
-      {
         "type": "eternal_stack_gain",
         "stack": "light",
         "value": 8
@@ -12203,14 +12169,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 112
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "thorn",
-        "value": 6
-      },
-      {
         "type": "set_secondary_gain",
         "kind": "thorn",
-        "value": 5
+        "value": 9
       },
       {
         "type": "salvage_any"
@@ -12222,15 +12183,15 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "conditional",
         "condition": {
-          "type": "eternal_stack_gte",
-          "stack": "thorn",
+          "type": "set_secondary_gte",
+          "kind": "thorn",
           "value": 6
         },
         "then": [
           {
-            "type": "eternal_stack_spend",
-            "stack": "thorn",
-            "value": 6
+            "type": "set_secondary_spend",
+            "kind": "thorn",
+            "value": 3
           },
           {
             "type": "set_secondary_gain",

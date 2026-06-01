@@ -91,7 +91,7 @@ export default function TrialDeckModeModal({ packName, onConfirm, onClose }: Pro
         </div>
 
         <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.60)', lineHeight: 1.5 }}>
-          Play a curated practice deck. No mastery, oblivion, or resonance is gained. Your collection is fully restored when the trial ends.
+          Play a curated practice deck. No Card-light, mastery rewards, oblivion, or Resonance points are gained. Your collection is fully restored when the trial ends.
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

@@ -23,7 +23,7 @@ export type ArtifactEffectType =
   | 'trail_spend_discount'            // Trail spend abilities cost N less (min 0)
 
   // Mechanical Dreams
-  | 'queue_capacity_bonus'            // +N Mechanical Clock buffer capacity
+  | 'queue_capacity_bonus'            // +N Reactor Core at start of each turn (Mechanical Dreams)
 
   // Prismatic Accord
   | 'channel_count_bonus'             // +N Spectrum tokens per Prismatic card played
@@ -47,7 +47,6 @@ export type ArtifactEffectType =
   | 'tide_crown_rate_bonus'           // +N legacy Tide Crown tokens at turn start
 
   // Abyssal Forge
-  | 'iron_charge_start_bonus'         // +N Iron Charge at turn start
   | 'forge_full_fire_mult_bonus'      // added to the Forge full-fire gate base multiplier
 
   // Death-flamed Hell

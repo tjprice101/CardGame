@@ -60,7 +60,7 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
     ophanim_bonus: 'Ophanim-linked burst conversion',
     cherubim_extra_plays: 'expanded Cherubim sequencing',
     cherubim_expire_bonus: 'Cherubim expiry detonations',
-    ember_per_card: 'ember overflow scaling',
+    pyro_heat_per_card: 'ember overflow scaling',
     power_amplifier: 'board power amplification',
     score_per_second: 'passive score accumulation',
     resource_generation: 'resource generation pressure',
@@ -93,7 +93,7 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
     arctic_charge_gain: 'arctic charge build',
     proof_gain: 'proof stacking',
     bloom_gain: 'bloom growth',
-    ember_gain: 'ember loading',
+    pyro_heat_gain: 'ember loading',
     radiance_gain: 'radiance loading',
     trail_gain: 'trail loading',
     strain_gain: 'strain loading',
@@ -181,14 +181,14 @@ function getAttackCostCount(
 
 function hasRequiredAttackResources(
   costs: ReadonlyArray<{ type: string; value: number }> | undefined,
-  resources: { embers: number; radiance: number; trail: number; strain: number },
+  resources: { pyroHeat: number; radiance: number; trail: number; strain: number },
 ): boolean {
-  const emberCost = getAttackCostCount(costs, 'spend_embers');
+  const pyroHeatCost = getAttackCostCount(costs, 'spend_pyro_heat');
   const radianceCost = getAttackCostCount(costs, 'spend_radiance');
   const trailCost = getAttackCostCount(costs, 'spend_trail');
   const strainCost = getAttackCostCount(costs, 'spend_strain');
 
-  return resources.embers >= emberCost
+  return resources.pyroHeat >= pyroHeatCost
     && resources.radiance >= radianceCost
     && resources.trail >= trailCost
     && resources.strain >= strainCost;
@@ -1625,12 +1625,12 @@ export default function BoardDisplay() {
             const discardCost = getAttackCostCount(activeAttack.costs, 'discard_from_hand');
             const seraphimSacCost = getAttackCostCount(activeAttack.costs, 'sacrifice_seraphim');
             const angelSacCost = getAttackCostCount(activeAttack.costs, 'sacrifice_angel');
-            const emberCost = getAttackCostCount(activeAttack.costs, 'spend_embers');
+            const pyroHeatCost = getAttackCostCount(activeAttack.costs, 'spend_pyro_heat');
             const radianceCost = getAttackCostCount(activeAttack.costs, 'spend_radiance');
             const trailCost = getAttackCostCount(activeAttack.costs, 'spend_trail');
             const strainCost = getAttackCostCount(activeAttack.costs, 'spend_strain');
             const hasResourceBudget = hasRequiredAttackResources(activeAttack.costs, {
-              embers: turn.embers,
+              pyroHeat: turn.pyroHeat ?? 0,
               radiance: turn.radiance,
               trail: turn.trail,
               strain: turn.strain,
@@ -1814,11 +1814,11 @@ export default function BoardDisplay() {
                     </div>
                   )}
 
-                  {(emberCost > 0 || radianceCost > 0 || trailCost > 0 || strainCost > 0) && (
+                  {(pyroHeatCost > 0 || radianceCost > 0 || trailCost > 0 || strainCost > 0) && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                       <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Spend resources</div>
                       <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.45 }}>
-                        {emberCost > 0 && <div>Embers: {turn.embers}/{emberCost}</div>}
+                        {pyroHeatCost > 0 && <div>Heat: {turn.pyroHeat ?? 0}/{pyroHeatCost}</div>}
                         {radianceCost > 0 && <div>Radiance: {turn.radiance}/{radianceCost}</div>}
                         {trailCost > 0 && <div>Trail: {turn.trail}/{trailCost}</div>}
                         {strainCost > 0 && <div>Strain: {turn.strain}/{strainCost}</div>}
@@ -1899,12 +1899,12 @@ export default function BoardDisplay() {
             const attacks = getSeraphimUiAttacks(selectedDef);
             const activeAttack = pendingSeraphimAttack.attackId === 'synergized' ? attacks.synergized : attacks.unsynergized;
             const discardCost = getAttackCostCount(activeAttack.costs, 'discard_from_hand');
-            const emberCost = getAttackCostCount(activeAttack.costs, 'spend_embers');
+            const pyroHeatCost = getAttackCostCount(activeAttack.costs, 'spend_pyro_heat');
             const radianceCost = getAttackCostCount(activeAttack.costs, 'spend_radiance');
             const trailCost = getAttackCostCount(activeAttack.costs, 'spend_trail');
             const strainCost = getAttackCostCount(activeAttack.costs, 'spend_strain');
             const hasResourceBudget = hasRequiredAttackResources(activeAttack.costs, {
-              embers: turn.embers,
+              pyroHeat: turn.pyroHeat ?? 0,
               radiance: turn.radiance,
               trail: turn.trail,
               strain: turn.strain,
@@ -2010,11 +2010,11 @@ export default function BoardDisplay() {
                     </div>
                   )}
 
-                  {(emberCost > 0 || radianceCost > 0 || trailCost > 0 || strainCost > 0) && (
+                  {(pyroHeatCost > 0 || radianceCost > 0 || trailCost > 0 || strainCost > 0) && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                       <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Spend resources</div>
                       <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.45 }}>
-                        {emberCost > 0 && <div>Embers: {turn.embers}/{emberCost}</div>}
+                        {pyroHeatCost > 0 && <div>Heat: {turn.pyroHeat ?? 0}/{pyroHeatCost}</div>}
                         {radianceCost > 0 && <div>Radiance: {turn.radiance}/{radianceCost}</div>}
                         {trailCost > 0 && <div>Trail: {turn.trail}/{trailCost}</div>}
                         {strainCost > 0 && <div>Strain: {turn.strain}/{strainCost}</div>}
@@ -2204,7 +2204,6 @@ export default function BoardDisplay() {
               hand_size_lte: 'Discard when hand <= {val}',
               chain_lte: 'Discard when chain <= {val}',
               oblivion_lte: 'Discard when Oblivion <= {val}',
-              embers_lte: 'Discard when embers <= {val}',
               radiance_lte: 'Discard when radiance <= {val}',
               cards_played_gte: 'Discard after {val}+ cards',
               seraphim_count_lte: 'Discard when Seraphim <= {val}',

@@ -101,8 +101,8 @@ function formatAttackCost(cost: AttackCost): string {
       return `sacrifice ${formatCount(cost.value, 'Seraphim')}`;
     case 'sacrifice_angel':
       return `sacrifice ${formatCount(cost.value, 'Angel')}`;
-    case 'spend_embers':
-      return `spend ${cost.value} ${cost.value === 1 ? 'Ember' : 'Embers'}`;
+    case 'spend_pyro_heat':
+      return `spend ${cost.value} Heat`;
     case 'spend_radiance':
       return `spend ${cost.value} Radiance`;
     case 'spend_trail':
@@ -120,8 +120,35 @@ function formatCosts(costs: ReadonlyArray<AttackCost> | undefined): string {
 }
 
 function formatEffectsInline(effects: CardEffect[]): string {
-  if (effects.length === 0) return 'none';
-  return effects.filter(Boolean).map(formatEffect).join('; ');
+  const lines = formatEffectLines(effects);
+  if (lines.length === 0) return 'none';
+  return lines.join('; ');
+}
+
+function formatEffectLines(effects: CardEffect[]): string[] {
+  if (effects.length === 0) return [];
+
+  let radianceGainTotal = 0;
+  const lines: string[] = [];
+  const seen = new Set<string>();
+
+  for (const effect of effects.filter(Boolean)) {
+    if (effect.type === 'radiance_gain') {
+      radianceGainTotal += effect.value;
+      continue;
+    }
+
+    const line = formatEffect(effect).trim();
+    if (!line || seen.has(line)) continue;
+    seen.add(line);
+    lines.push(line);
+  }
+
+  if (radianceGainTotal > 0) {
+    lines.unshift(`Gain ${radianceGainTotal} Radiance`);
+  }
+
+  return lines;
 }
 
 function formatSummonCondition(condition: NonNullable<AngelDefinition['extraSummonConditions']>[number]): string {
@@ -138,6 +165,27 @@ function formatSummonCondition(condition: NonNullable<AngelDefinition['extraSumm
   return 'special condition';
 }
 
+function getDisplayableSummonConditions(
+  angel: AngelDefinition,
+): NonNullable<AngelDefinition['extraSummonConditions']> {
+  const conditions = angel.extraSummonConditions ?? [];
+  if (conditions.length === 0) return [];
+
+  const summonMaterialCounts = angel.summonCost.reduce<Record<string, number>>((acc, definitionId) => {
+    acc[definitionId] = (acc[definitionId] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return conditions.filter((condition) => {
+    if (condition.type === 'board_definition_gte') {
+      const materialCopiesRequired = summonMaterialCounts[condition.definitionId] ?? 0;
+      return materialCopiesRequired < condition.value;
+    }
+
+    return true;
+  });
+}
+
 function formatContinuousBonus(
   bonusType: AngelDefinition['baseStats']['bonusType'] | SeraphimDefinition['baseStats']['bonusType'],
   bonusValue: number,
@@ -152,16 +200,14 @@ function formatContinuousBonus(
       return `Each new Cherubim summoned ${scope} gains +${bonusValue} durability`;
     case 'cherubim_expire_bonus':
       return `Gain +${bonusValue} Oblivion when a Cherubim expires ${scope}`;
-    case 'ember_per_card':
-      return `Gain ${bonusValue} ${bonusValue === 1 ? 'Ember' : 'Embers'} per card played ${scope}`;
+    case 'pyro_heat_per_card':
+      return `Gain ${bonusValue} Heat per card played ${scope}`;
     case 'power_amplifier':
       return `Your board's power is amplified by x${formatExactValue(bonusValue)} ${scope}`;
     case 'score_per_second':
       return `Gain +${bonusValue} Oblivion per second ${scope}`;
     case 'resource_generation':
       return `Resource generation +${bonusValue} ${scope}`;
-    case 'tick_acceleration':
-      return `Tick speed +${bonusValue} ${scope}`;
     case 'power_per_seraphim':
       return `+${bonusValue} power for each Seraphim on board ${scope}`;
     case 'oblivion_per_seraphim':
@@ -187,8 +233,6 @@ function formatCondition(condition: EffectCondition): string {
       return `you control ${condition.value}+ active Seraphim`;
     case 'cherubim_active_gte':
       return `you control ${condition.value}+ active Cherubim`;
-    case 'ember_gte':
-      return `you have ${condition.value}+ Embers`;
     case 'pyro_heat_gte':
       return `you have ${condition.value}+ Heat`;
     case 'trail_gte':
@@ -209,8 +253,6 @@ function formatCondition(condition: EffectCondition): string {
       return `Refraction Depth is ${condition.value}+`;
     case 'prismatic_node_charges_gte':
       return `you have ${condition.value}+ Prism Charges`;
-    case 'prismatic_memory_shards_gte':
-      return `you have ${condition.value}+ Memory Shards`;
     case 'prismatic_distinct_channels_gte':
       return `you have played ${condition.value}+ distinct channels this turn`;
     case 'shards_gte':
@@ -229,8 +271,6 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ ${eternalStackName(condition.stack)}`;
     case 'set_secondary_gte':
       return `you have ${condition.value}+ ${setSecondaryName(condition.kind)}`;
-    case 'light_chorus_anchors_gte':
-      return `you have ${condition.value}+ Chorus Anchors`;
     case 'light_resonance_gte':
       return `you have ${condition.value}+ Cadence`;
     case 'black_glass_white_flame_gte':
@@ -257,8 +297,6 @@ function formatEffect(effect: CardEffect): string {
     case 'score_flat': return `+${effect.value}% total Oblivion this turn`;
     case 'radiance_gain': return `Gain ${effect.value} Radiance`;
     case 'radiance_spend': return `Spend ${effect.value} Radiance`;
-    case 'ember_gain': return `Gain ${effect.value} ${effect.value === 1 ? 'Ember' : 'Embers'}`;
-    case 'ember_spend': return `Spend ${effect.value} ${effect.value === 1 ? 'Ember' : 'Embers'}`;
     case 'pyro_heat_gain': return `Gain ${effect.value} Heat`;
     case 'pyro_heat_spend': return effect.value >= 9999 ? 'Spend all Heat' : `Spend ${effect.value} Heat`;
     case 'pyro_heat_burst': {
@@ -284,9 +322,6 @@ function formatEffect(effect: CardEffect): string {
     case 'resonance_charge_gain': return `Gain ${effect.value} Resonance Charge`;
     case 'resonance_charge_spend': return `Spend ${effect.value} Resonance Charge`;
     case 'prismatic_charge_spend': return `Spend ${effect.value} Prism Charge${effect.value === 1 ? '' : 's'}`;
-    case 'channel_lock_gain': return `Look at top ${formatCount(effect.look, 'card')}; gain up to ${effect.max} Channel Lock tokens from Prismatic cards`;
-    case 'memory_shard_gain': return `Gain ${effect.value} Memory Shard${effect.value === 1 ? '' : 's'}${effect.max !== undefined ? ` (max ${effect.max})` : ''}`;
-    case 'refraction_depth_sync': return 'Synchronize Refraction Depth with current channel state';
     case 'monochromatic_shards_gain': return `Gain ${effect.value} Monochromatic Shards`;
     case 'monochromatic_shards_spend': return `Spend ${effect.value} Monochromatic Shards`;
     case 'arctic_charge_gain': return `Gain ${effect.value} Arctic Charge`;
@@ -318,9 +353,9 @@ function formatEffect(effect: CardEffect): string {
     case 'neutrality_attack_restore': return `After each Seraphim attack this turn, restore ${effect.percent}% of consumed Patience to that attacker`;
     case 'neutrality_linked_mode': return `Link Seraphim this turn: patience gains grant +${effect.gain} extra to all linked Seraphim and non-attacking linked Seraphim retain ${effect.retainPercent}% Patience after each linked attack`;
     case 'overclock':
-      return `Overclock: gain ${effect.strain} Strain, then ${effect.then.filter(Boolean).map(formatEffect).join('; ')}`;
+      return `Overclock: gain ${effect.strain} Strain, then ${formatEffectsInline(effect.then.filter(Boolean))}`;
     case 'conditional':
-      return `If ${formatCondition(effect.condition)}, ${effect.then.filter(Boolean).map(formatEffect).join('; ')}`;
+      return `If ${formatCondition(effect.condition)}, ${formatEffectsInline(effect.then.filter(Boolean))}`;
     case 'eternal_stack_gain':
       return `Gain ${formatEternalStack(effect.stack, effect.value)}`;
     case 'eternal_stack_spend':
@@ -353,17 +388,9 @@ function formatEffect(effect: CardEffect): string {
       const suffix = extras.length > 0 ? `; ${extras.join('; ')}` : '';
       return `Confluence ${scope} matched Heat and Chroma Ember pairs (+${formatExactValue(effect.oblivionPerPair)} Oblivion per pair${suffix})`;
     }
-    case 'light_halo_cascade_resound': {
-      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Resound ${scope} ${setSecondaryName('light')} (resound bonus per Halo Resonance)`;
-    }
     case 'thorn_briar_spiral_bloom': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Bloom ${scope} ${setSecondaryName('thorn')} (+${effect.trailPerSpiral} Trail per spiral)`;
-    }
-    case 'prism_spectrum_echo_refract': {
-      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Refract ${scope} ${setSecondaryName('prism')} (+${formatExactValue(effect.oblivionPerEchoPerChannel)} Oblivion per echo × distinct channels)`;
     }
     case 'snow_polar_capacitor_release': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -402,8 +429,6 @@ function formatEffect(effect: CardEffect): string {
       if ((effect.empowerAtFormation ?? 0) > 0) parts.push(`empower your next card at Formation ${effect.empowerAtFormation}+`);
       return `Apex ${scope} ${eternalStackName('flutter')} (${parts.join(', ')})`;
     }
-    case 'light_resonance_gain': return `Gain ${effect.value} Cadence`;
-    case 'butterfly_spectrum_gain': return `Gain ${effect.value} Flutter Spectrum`;
     case 'butterfly_tune': return `Set Butterfly stance to ${effect.stance}`;
     case 'butterfly_release': {
       const scope = effect.spend >= 9999 ? 'all' : `up to ${effect.spend}`;
@@ -428,7 +453,7 @@ function formatEffect(effect: CardEffect): string {
         : '';
       return `Surge ${scope} Deepwake (+${effect.undertowPerDeepwake} Undertow per Deepwake, then release ${releaseScope} at +${effect.oblivionPerUndertow} Oblivion per Undertow with +${effect.oblivionPerDeepwakeBonus} per Deepwake${foamText})`;
     }
-    case 'light_anchor_gain': return `Gain ${effect.value} Anchor`;
+    case 'butterfly_spectrum_gain': return `Gain ${effect.value} Flutter Spectrum`;
     case 'black_glass_white_flame_gain': return `Gain ${effect.value} White Flame`;
     case 'black_glass_black_flame_gain': return `Gain ${effect.value} Black Flame`;
     case 'black_glass_fracture_gain': return `Gain ${effect.value} Fracture`;
@@ -447,8 +472,6 @@ function formatEffect(effect: CardEffect): string {
       }
       return parts.join('; ');
     }
-    case 'black_glass_register_state':
-      return `Register state: ${effect.key === 'grief_oaths' ? 'Grief Oaths' : effect.key === 'collapse_pending' ? 'Collapse Pending' : 'Last Payoff'} += ${effect.value}`;
     case 'set_garden_law': return `Set Garden Law to ${effect.law} if unset`;
     case 'effect_plus': return `Increase linked effect value by ${effect.value}`;
     case 'choose_lineage': return `Choose a lineage, then ${formatEffect(effect.effect)}`;
@@ -590,7 +613,7 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
     case 'cherubim_oblivion_per_card': return `+${effect.value} Oblivion per card played`;
     case 'cherubim_ophanim_bonus': return `Ophanim plays gain +${effect.value} Oblivion`;
     case 'cherubim_seraphim_amp': return `Seraphim bonuses are amplified by +${effect.value}`;
-    case 'cherubim_ember_gain': return `Gain ${effect.value} ${effect.value === 1 ? 'Ember' : 'Embers'} per card played`;
+    case 'cherubim_pyro_heat_gain': return `Gain ${effect.value} Heat per card played`;
     case 'cherubim_draw_per_card': return `Draw ${formatCount(effect.value, 'card')} per card played`;
     case 'cherubim_resource_per_card': {
       const resourceLabel =
@@ -724,13 +747,14 @@ export function getCanonicalActivatedAbilityDescription(card: AngelDefinition): 
 }
 
 function pushEffectBlock(lines: string[], label: string, effects: CardEffect[]): void {
-  if (effects.length === 0) {
+  const formatted = formatEffectLines(effects);
+  if (formatted.length === 0) {
     lines.push(`${label}: none`);
     return;
   }
   lines.push(`${label}:`);
-  for (const effect of effects) {
-    lines.push(`- ${formatEffect(effect)}`);
+  for (const line of formatted) {
+    lines.push(`- ${line}`);
   }
 }
 
@@ -807,6 +831,26 @@ function normalizePreviewFingerprint(text: string): string {
     .trim();
 }
 
+export function formatReadableRuleText(text: string): string {
+  return formatDisplayCardText(text)
+    .replace(/On play:/g, 'Play:')
+    .replace(/On summon:/g, 'Summon:')
+    .replace(/After (\d+) cards played:/g, 'After $1 cards:')
+    .replace(/Grant (\d+) Patient Light stacks? \(card-play Patience gain becomes 1 \+ Patient Light stacks\)/g, '+$1 Patient Light')
+    .replace(/Grant (\d+) Patient Light stack \(card-play Patience gain becomes 1 \+ Patient Light stacks\)/g, '+$1 Patient Light')
+    .replace(/card-play Patience gain becomes 1 \+ Patient Light stacks/g, 'card-play Patience = 1 + Patient Light stacks')
+    .replace(/All Seraphim on board gain \+/g, 'All Seraphim +')
+    .replace(/If this is the first card you played this turn,?/g, 'First card this turn:')
+    .replace(/If you have played (\d+)\+ cards this turn/g, 'After $1+ cards:')
+    .replace(/If you have played 1\+ cards this turn/g, 'After 1+ cards:')
+    .replace(/On board:/g, 'Board:')
+    .replace(/While on board:/g, 'Board:')
+    .replace(/On attack, each Patience stack grants \+15 Oblivion \(stacks then reset\)/g, 'Attack: each Patience stack +15 Oblivion, then reset')
+    .replace(/;\s*;+/g, '; ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function shouldUseCanonicalAbility(card: CardDefinition): boolean {
   return card.rarity === 'Infinite' || card.rarity === 'Eternal';
 }
@@ -839,7 +883,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
   }
 
   if (card.type === 'Ophanim') {
-    pushSummarySection(sections, 'Play', card.effects.map(formatEffect));
+    pushSummarySection(sections, 'Play', formatEffectLines(card.effects));
   }
 
   if (card.type === 'Cherubim') {
@@ -851,12 +895,12 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       hooks.push(`Auto-discard: ${formatDisplayCardText(cherubim.discardCondition.description)}`);
     }
     pushSummarySection(sections, 'Passive', cherubim.effects.map(formatCherubimPassive));
-    pushSummarySection(sections, 'On Play', cherubim.onPlayEffects.map(formatEffect));
+    pushSummarySection(sections, 'On Play', formatEffectLines(cherubim.onPlayEffects));
   }
 
   if (card.type === 'Seraphim') {
     const seraphim = card as SeraphimDefinition;
-    pushSummarySection(sections, 'On Play', seraphim.onPlayEffects.map(formatEffect));
+    pushSummarySection(sections, 'On Play', formatEffectLines(seraphim.onPlayEffects));
     pushSummarySection(sections, 'On Board', [
       formatSeraphimPassive(seraphim.baseStats.bonusType, seraphim.baseStats.bonusValue),
       `Synergy element ${seraphim.baseStats.synergyRequirement}`,
@@ -886,14 +930,15 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       ? angel.summonCost.map(id => CardRegistry.get(id)?.name ?? id).join(', ')
       : 'none';
     const summonLines = [`Materials: ${summonCostText}`];
-    if (angel.extraSummonConditions && angel.extraSummonConditions.length > 0) {
-      summonLines.push(`Extra: ${angel.extraSummonConditions.map(formatSummonCondition).join('; ')}`);
+    const displayableSummonConditions = getDisplayableSummonConditions(angel);
+    if (displayableSummonConditions.length > 0) {
+      summonLines.push(`Extra: ${displayableSummonConditions.map(formatSummonCondition).join('; ')}`);
     }
     pushSummarySection(sections, 'Summon', summonLines);
-    pushSummarySection(sections, 'On Summon', angel.onSummonEffects.map(formatEffect));
+    pushSummarySection(sections, 'On Summon', formatEffectLines(angel.onSummonEffects));
     pushSummarySection(sections, 'Awaken', [
       `${angel.activatedAbility.name}: ${getCanonicalActivatedAbilityDescription(angel)}`,
-      ...angel.activatedAbility.effects.map(formatEffect),
+      ...formatEffectLines(angel.activatedAbility.effects),
     ]);
     pushSummarySection(sections, 'On Board', [formatAngelBoardBonus(angel.baseStats)]);
     if (angel.attacks) {
@@ -928,7 +973,8 @@ export function getCardPreviewLines(card: CardDefinition, limit = 3): string[] {
       const candidate = section.title === 'Ability' && index === 0
         ? (isOphanim ? `Play: ${line}` : line)
         : `${section.title}: ${line}`;
-      const fingerprint = normalizePreviewFingerprint(candidate);
+      const readableCandidate = formatReadableRuleText(candidate);
+      const fingerprint = normalizePreviewFingerprint(readableCandidate);
       if (
         fingerprint.length > 0
         && seenFingerprints.some(existing => existing === fingerprint || existing.includes(fingerprint) || fingerprint.includes(existing))
@@ -936,7 +982,7 @@ export function getCardPreviewLines(card: CardDefinition, limit = 3): string[] {
         continue;
       }
 
-      preview.push(candidate);
+      preview.push(readableCandidate);
       if (fingerprint.length > 0) {
         seenFingerprints.push(fingerprint);
       }
@@ -955,7 +1001,7 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
   const lines: string[] = [
     `${card.name}`,
     `${card.type} | ${card.element} | ${card.rarity}`,
-    formatDisplayCardText(card.description),
+    formatReadableRuleText(getCanonicalCardDescription(card)),
   ];
 
   if (card.type === 'Ophanim') {
@@ -1040,8 +1086,9 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
       lines.push(`Prismatic Depth: ${angel.prismaticDepth}`);
     }
     lines.push(`Summon Cost: ${summonCostText}`);
-    if (angel.extraSummonConditions && angel.extraSummonConditions.length > 0) {
-      lines.push(`Extra Summon Conditions: ${angel.extraSummonConditions.map(formatSummonCondition).join('; ')}`);
+    const displayableSummonConditions = getDisplayableSummonConditions(angel);
+    if (displayableSummonConditions.length > 0) {
+      lines.push(`Extra Summon Conditions: ${displayableSummonConditions.map(formatSummonCondition).join('; ')}`);
     }
     lines.push(`On Summon: ${formatEffectsInline(angel.onSummonEffects)}`);
     lines.push(`Awaken (${angel.activatedAbility.cardsPlayedRequirement} cards) · ${angel.activatedAbility.name}: ${formatEffectsInline(angel.activatedAbility.effects)}`);

@@ -356,14 +356,14 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
 
   if (def.type === 'Seraphim') {
     if (def.baseStats.bonusType === 'ophanim_bonus' || hasTextSnippet(def, ['ophanim'])) return 'amplifier';
-    if (def.baseStats.bonusType === 'ember_per_card' || def.baseStats.bonusType === 'resource_generation') return 'resource';
+    if (def.baseStats.bonusType === 'pyro_heat_per_card' || def.baseStats.bonusType === 'resource_generation') return 'resource';
     if (hasTextSnippet(def, ['chain'])) return 'setup';
     if (def.baseStats.bonusType === 'power_amplifier' || def.baseStats.bonusType === 'score_per_second') return 'amplifier';
     return 'payoff';
   }
 
   if (def.type === 'Cherubim') {
-    if (hasSomeEffect(def, ['cherubim_resource_per_card', 'cherubim_ember_gain', 'cherubim_draw_per_card'])) return 'resource';
+    if (hasSomeEffect(def, ['cherubim_resource_per_card', 'cherubim_pyro_heat_gain', 'cherubim_draw_per_card'])) return 'resource';
     if (hasSomeEffect(def, ['cherubim_adjacent_seraphim_bonus', 'cherubim_seraphim_amp', 'cherubim_attack_buff'])) return 'amplifier';
     if (hasSomeEffect(def, ['draw', 'search_deck_by_type', 'look_top_take', 'look_top_take_drop', 'salvage_any', 'salvage_by_type'])) return 'setup';
     return 'support';
@@ -373,7 +373,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
     return 'setup';
   }
 
-  if (hasSomeEffect(def, ['radiance_gain', 'radiance_spend', 'ember_gain', 'ember_spend', 'pyro_heat_gain', 'pyro_heat_spend', 'trail_gain', 'trail_spend', 'strain_gain', 'strain_vent', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain'])) {
+  if (hasSomeEffect(def, ['radiance_gain', 'radiance_spend', 'pyro_heat_gain', 'pyro_heat_spend', 'trail_gain', 'trail_spend', 'strain_gain', 'strain_vent', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain'])) {
     return 'resource';
   }
 
@@ -385,7 +385,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
 }
 
 function getCardRoleDetail(def: CardDefinition): string {
-  if (hasSomeEffect(def, ['radiance_gain', 'ember_gain', 'pyro_heat_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
+  if (hasSomeEffect(def, ['radiance_gain', 'pyro_heat_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
     return 'It stocks the resources this engine spends to stay online.';
   }
 
@@ -555,19 +555,17 @@ function buildEngineSnapshot(
       const notes = turn.lightDistinctNotes ?? [];
       const cadence = notes.length;
       const resonance = turn.lightResonance ?? 0;
-      const anchors = turn.lightChorusAnchors ?? 0;
       return {
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: `Notes ${cadence} | Cadence ${resonance} | Anchors ${anchors} | Halo ${(turn.eternalStacks?.light ?? 0)}`,
+        compact: `Notes ${cadence} | Cadence ${resonance} | Halo ${(turn.eternalStacks?.light ?? 0)}`,
         detail: `Notes ${formatPreview(notes)} | Echoes ${(turn.lightCadenceNotes ?? []).length}`,
         tagline: 'Build Cadence cleanly, then convert stocked Halo and Radiance into a focused burst.',
-        summary: 'Alternate card types to build note variety and Cadence, then use Anchors to protect the line from repeat penalties. Eternity and Infinity Light cards add Halo as a direct stock-and-spend layer for burst turns. If your deck includes Infinite cards, meeting Cadence 3 + 3 distinct notes amplifies them to x1.22. Open the Guide for full details.',
+        summary: 'Alternate card types to build note variety and Cadence. Eternity and Infinity Light cards add Halo as a direct stock-and-spend layer for burst turns. If your deck includes Infinite cards, meeting Cadence 3 + 3 distinct notes amplifies them to x1.35. Open the Guide for full details.',
         metrics: [
           createMetric('Hymn Notes', cadence, 'Distinct Hymn Note types played this turn.'),
-          createMetric('Cadence', resonance, 'Builds attack power. Drops on repeated notes without an Anchor.'),
-          createMetric('Anchors', anchors, 'Absorbs one repeated-note penalty per charge.'),
+          createMetric('Cadence', resonance, 'Builds attack power. Drops on repeated notes.'),
           createMetric('Halo', turn.eternalStacks?.light ?? 0, 'Stocked by Eternity/Infinity Light cards and spent by Halo threshold/cashout effects.'),
           createMetric('Echoes', (turn.lightCadenceNotes ?? []).length, 'Total note triggers in the rolling cadence window.'),
         ],
@@ -575,9 +573,6 @@ function buildEngineSnapshot(
           createStep('Add new notes', cadence >= 3, cadence >= 3
             ? 'Note variety is healthy. Start aiming for the payoff side of the choir.'
             : 'Play distinct Light notes first so note variety grows before the payoff turn.'),
-          createStep('Hold anchors', anchors >= 1, anchors >= 1
-            ? 'At least one anchor is holding the choir. Protect it while Cadence builds.'
-            : 'Anchor the choir with persistent Light pieces before leaning on payoff cards.'),
           createStep('Build Cadence', resonance >= 3, resonance >= 3
             ? 'Cadence is stocked. Shift into Seraphim or Angel payoff pieces.'
             : 'Keep sequencing Light setup until Cadence is worth cashing.'),
@@ -617,36 +612,30 @@ function buildEngineSnapshot(
       };
     }
     case 'mechanical': {
-      const ticks = turn.mechanicalClockTicks ?? 0;
-      const nextChime = turn.mechanicalNextChimeTick ?? 3;
-      const interval = Math.max(1, turn.mechanicalChimeInterval ?? 3);
-      const ticksToChime = Math.max(0, nextChime - ticks);
-      const chimes = turn.mechanicalChimesFired ?? 0;
-      const primed = Math.min(1, turn.mechanicalPrimedChimes ?? 0);
+      const strain = turn.strain ?? 0;
+      const reactorCores = turn.eternalStacks?.mech ?? 0;
       return {
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: `Clock ${ticks} | Next Chime in ${ticksToChime} | Primed ${primed > 0 ? 'Yes' : 'No'} | Strain ${turn.strain}`,
-        detail: `Interval ${interval} ticks | Chimes fired ${chimes}`,
-        tagline: 'Build Strain, tick the Clock, then cash Chimes on Mechanical attacks.',
-        summary: 'Mechanical is now a Clock-Chime loop: every Mechanical play advances ticks, every 3 ticks fires a Chime burst, and Chime also primes your next Mechanical attack. If your Chime lands on a non-attack play, the prime is stored (max 1).',
+        compact: `Strain ${strain} | Reactor Cores ${reactorCores}`,
+        detail: `Strain band peaks at 6\u201312 | Reactor Cores cash out for +oblivion`,
+        tagline: 'Build Strain to fuel Reactor Cores, then cash out on big plays.',
+        summary: 'Mechanical Dreams now runs on a clean Strain \u2192 Reactor Core loop. Strain in the 6\u201312 band amplifies every Mechanical play; Reactor Cores stack via Eternal/Infinite cards and cash out for burst damage.',
         metrics: [
-          createMetric('Clock', ticks, 'Total Mechanical ticks this turn.'),
-          createMetric('Next Chime', ticksToChime, 'Ticks remaining until the next Chime burst.'),
-          createMetric('Primed Chime', primed > 0 ? 'Ready' : 'Not Ready', 'Ready = your next Mechanical attack gets the Chime bonus.'),
-          createMetric('Chimes Fired', chimes, 'Number of Chime bursts resolved this turn.'),
+          createMetric('Strain', strain, 'Strain in the 6\u201312 band multiplies Mechanical oblivion.'),
+          createMetric('Reactor Cores', reactorCores, 'Eternal/Infinite Mechanical stack \u2014 spend or cash out for bursts.'),
         ],
         nextSteps: [
-          createStep('Build before burst', turn.strain >= 3, turn.strain >= 3
-            ? 'Strain is online. You can convert the next Chime into meaningful damage.'
-            : 'Play setup cards that add Strain before your next Chime lands.'),
-          createStep('Watch Chime timing', ticksToChime <= 1, ticksToChime <= 1
-            ? 'A Chime is imminent. Sequence your strongest Mechanical line now.'
-            : 'Advance the clock with safe cards until Chime timing is favorable.'),
-          createStep('Spend primed attack', primed > 0, primed > 0
-            ? 'Primed Chime is ready. Fire a Mechanical attack to cash it.'
-            : 'No primed bonus stored right now. Set up the next Chime first.'),
+          createStep('Build Strain', strain >= 6, strain >= 6
+            ? 'Strain band is active. Mechanical plays are amplified.'
+            : 'Play setup cards that add Strain until you hit 6.'),
+          createStep('Accrue Reactor Cores', reactorCores >= 4, reactorCores >= 4
+            ? 'You have enough Cores to fire a meaningful cashout.'
+            : 'Play Eternal/Infinite Mechanical cards that gain Reactor Cores.'),
+          createStep('Vent before overload', strain <= 12, strain <= 12
+            ? 'Strain is within the productive band.'
+            : 'Vent Strain to drop back into the 6\u201312 band before the penalty bites.'),
         ],
       };
     }
@@ -1072,10 +1061,6 @@ const RAW_SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       {
         heading: 'Halo (Eternity/Infinity Layer)',
         body: 'Halo is not required for the base Light loop, but Eternity and Infinity Light cards convert it into major burst. Build Halo on setup turns, then spend or cash it out only when your Cadence and Radiance state is already strong.',
-      },
-      {
-        heading: 'Chorus Anchors',
-        body: 'Chorus Anchors stop repeat notes from breaking your flow. Each Eternal-rarity Light card gives +1 Chorus Anchor, up to 3. If you repeat a note while you have an Anchor, the repeat is ignored and your Cadence stays intact.',
       },
       {
         heading: 'Infinite Card Amplification',

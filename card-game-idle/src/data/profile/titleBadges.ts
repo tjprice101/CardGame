@@ -443,13 +443,6 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     group: 'milestone',
   },
   {
-    id: 'title-cosmic-curator',
-    text: 'Cosmic Curator',
-    description: 'Purchase 6 Ascension cosmetics.',
-    isUnlocked: (p) => (p.purchasedAscensionCosmetics ?? []).length >= 6,
-    group: 'milestone',
-  },
-  {
     id: 'title-battleground-contender',
     text: 'Contender of the Card-born',
     description: 'Finish 10 Battleground matches.',

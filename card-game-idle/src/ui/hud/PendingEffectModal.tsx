@@ -182,61 +182,6 @@ export default function PendingEffectModal() {
     );
   };
 
-  if (pending.type === 'prismatic_channel_choice') {
-    const channels: Array<{ id: string; label: string }> = [
-      { id: 'amber', label: 'Amber' },
-      { id: 'azure', label: 'Azure' },
-      { id: 'crimson', label: 'Crimson' },
-      { id: 'emerald', label: 'Emerald' },
-      { id: 'violet', label: 'Violet' },
-      { id: 'white', label: 'White' },
-    ];
-    const selectedChannel = selected[0] ?? null;
-    const canConfirm = selectedChannel !== null;
-
-    return (
-      <div className="anim-backdrop-fade" style={backdropStyle}>
-        <div className="anim-panel-slide-up" style={styles.panel}>
-          <div style={styles.title}>Choose Focus Channel</div>
-          <div style={styles.subtitle}>Pick 1 channel for this turn. This is used by advanced Prismatic cards.</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(120px, 1fr))', gap: 10, marginBottom: 16 }}>
-            {channels.map(channel => {
-              const isSel = selectedChannel === channel.id;
-              return (
-                <button
-                  key={channel.id}
-                  className="menu-tactile-btn"
-                  onClick={() => setSelected([channel.id])}
-                  style={{
-                    ...styles.secondaryBtn,
-                    border: isSel ? '2px solid rgba(255,120,80,0.85)' : styles.secondaryBtn.border,
-                    background: isSel ? 'rgba(255, 226, 188, 0.92)' : styles.secondaryBtn.background,
-                    color: '#532912',
-                    fontFamily: DISPLAY_FONT,
-                    letterSpacing: 0.7,
-                    fontSize: 12,
-                  }}
-                >
-                  {channel.label}
-                </button>
-              );
-            })}
-          </div>
-          <div style={styles.footer}>
-            <div style={styles.info}>{selectedChannel ? `Selected: ${selectedChannel}` : 'Select one channel'}</div>
-            <button
-              className="menu-tactile-btn"
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (pending.type === 'neutrality_equilibrium_tactical_choice') {
     const selectedMode = selected[0] ?? null;
     const canConfirm = selectedMode === 'burst' || selectedMode === 'restore';
@@ -283,44 +228,6 @@ export default function PendingEffectModal() {
           <div style={styles.footer}>
             <div style={styles.info}>Both modes grant +{pending.patientLightGain} Patient Light.</div>
             <button className="menu-tactile-btn"
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (pending.type === 'prismatic_sentence_choice') {
-    const canConfirm = selected.length === 1;
-    const toggleCard = (id: string) => setSelected(prev => prev.includes(id) ? [] : [id]);
-
-    return (
-      <div className="anim-backdrop-fade" style={backdropStyle}>
-        <div className="anim-panel-slide-up" style={styles.panel}>
-          <div style={styles.title}>Sentencing</div>
-          <div style={styles.subtitle}>Choose 1 card in your hand to sentence. It will gain enhanced follow-up effects when played.</div>
-          <div style={styles.cardGrid}>
-            {pending.cards.map(c => {
-              const isTake = selected.includes(c.instanceId);
-              return (
-                <div
-                  key={c.instanceId}
-                  style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
-                  onClick={() => toggleCard(c.instanceId)}
-                >
-                  {renderCardFace(c, isTake ? 'Sentence' : undefined, warmTheme.success)}
-                </div>
-              );
-            })}
-          </div>
-          <div style={styles.footer}>
-            <div style={styles.info}>{selected.length} / 1 chosen</div>
-            <button
-              className="menu-tactile-btn"
               style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
               onClick={canConfirm ? confirm : undefined}
             >

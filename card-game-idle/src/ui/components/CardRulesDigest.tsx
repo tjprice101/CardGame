@@ -1,5 +1,5 @@
 import { memo, useMemo } from 'react';
-import { getCardSummarySections } from '@/ui/cardStatSummary';
+import { formatReadableRuleText, getCardSummarySections } from '@/ui/cardStatSummary';
 import type { AbilityTextMode } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
 import { useStore } from '@/state/store';
@@ -41,7 +41,11 @@ function CardRulesDigest({
     const visible = variant === 'preview'
       ? all.filter(s => s.title !== 'On Play' && s.title !== 'Play' && s.title !== 'Hooks')
       : all;
-    return visible.slice(0, maxSections ?? (variant === 'preview' ? 3 : Number.MAX_SAFE_INTEGER));
+    const readable = visible.map(section => ({
+      ...section,
+      lines: section.lines.map(formatReadableRuleText),
+    }));
+    return readable.slice(0, maxSections ?? (variant === 'preview' ? 3 : Number.MAX_SAFE_INTEGER));
   }, [abilityTextMode, card, maxSections, variant]);
   if (sections.length === 0) return null;
 

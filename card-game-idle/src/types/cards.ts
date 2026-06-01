@@ -14,11 +14,10 @@ export const SERAPHIM_BONUS_TYPES = [
   'ophanim_bonus',
   'cherubim_extra_plays',
   'cherubim_expire_bonus',
-  'ember_per_card',
+  'pyro_heat_per_card',
   'power_amplifier',
   'score_per_second',
   'resource_generation',
-  'tick_acceleration',
 ] as const;
 export type SeraphimBonusType = typeof SERAPHIM_BONUS_TYPES[number];
 export type AngelBonusType = SeraphimBonusType | 'power_per_seraphim' | 'oblivion_per_card' | 'oblivion_per_seraphim';
@@ -40,7 +39,7 @@ export type AttackCostType =
   | 'discard_from_hand'
   | 'sacrifice_seraphim'
   | 'sacrifice_angel'
-  | 'spend_embers'
+  | 'spend_pyro_heat'
   | 'spend_radiance'
   | 'spend_trail'
   | 'spend_strain';
@@ -173,7 +172,7 @@ export interface SeraphimInstance {
 }
 
 export interface CherubimDiscardCondition {
-  readonly type: 'hand_size_lte' | 'chain_lte' | 'oblivion_lte' | 'embers_lte' | 'radiance_lte' | 'cards_played_gte' | 'seraphim_count_lte' | 'trail_lte' | 'strain_gte';
+  readonly type: 'hand_size_lte' | 'chain_lte' | 'oblivion_lte' | 'radiance_lte' | 'cards_played_gte' | 'seraphim_count_lte' | 'trail_lte' | 'strain_gte';
   readonly value: number;
   readonly description: string;
 }

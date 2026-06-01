@@ -70,7 +70,7 @@ const defs: CardDefinition[] = [
     name: 'Fire Ember Seraph',
     description: '',
     artKey: 'ser_fire_ember',
-    baseStats: { bonusType: 'ember_per_card', bonusValue: 3, synergyRequirement: 'Fire' },
+    baseStats: { bonusType: 'pyro_heat_per_card', bonusValue: 3, synergyRequirement: 'Fire' },
     onPlayEffects: [],
   },
 ];
@@ -146,7 +146,6 @@ describe('ScoreSystem', () => {
       oblivionPerCardBonus: 0,
       ophanimOblivionBonus: 0,
       cherubimExtraPlays: 0,
-      embersPerCardBonus: 0,
       globalOblivionMult: 0,
       fullBoardActive: false,
     });
@@ -168,7 +167,7 @@ describe('ScoreSystem', () => {
     expect(stats.oblivionPerCardBonus).toBe(19);
   });
 
-  it('adds ophanim bonus, cherubim extra plays, and ember gain from active seraphim', () => {
+  it('adds ophanim bonus and cherubim extra plays from active seraphim', () => {
     const board = makeBoard({
       frontSlots: [
         makeAngel('angel-light-card-bonus', 0),
@@ -180,22 +179,9 @@ describe('ScoreSystem', () => {
       backSlots: [makeCherubim(0), null, null, null],
     });
 
-    const fireBoard = makeBoard({
-      frontSlots: [
-        makeAngel('angel-light-card-bonus', 0, 'Fire'),
-        makeSeraphim('ser-fire-ember', 1, 'Fire', true),
-        null,
-        null,
-        null,
-      ],
-    });
-
     const stats = ScoreSystem.compute(board);
     expect(stats.ophanimOblivionBonus).toBe(15);
     expect(stats.cherubimExtraPlays).toBe(2);
-
-    const fireStats = ScoreSystem.compute(fireBoard);
-    expect(fireStats.embersPerCardBonus).toBe(3);
   });
 
   it('scales angel per-seraphim bonuses by active synergy count', () => {
@@ -212,33 +198,6 @@ describe('ScoreSystem', () => {
     const stats = ScoreSystem.compute(board);
     expect(stats.activeSynergies).toBe(2);
     expect(stats.oblivionPerCardBonus).toBe(14 + 8);
-  });
-
-  it('counts prismatic chord clusters as additional oblivion-per-card bonus', () => {
-    const prismaticBoard = makeBoard({
-      frontSlots: [
-        {
-          ...makeSeraphim('ser-light-oblivion', 0, 'Light', true),
-          prismaticDepth: 1,
-          spectrumTokens: 1,
-        },
-        {
-          ...makeAngel('angel-light-card-bonus', 1),
-          prismaticDepth: 2,
-          spectrumTokens: 1,
-        },
-        {
-          ...makeSeraphim('ser-light-ophanim', 2, 'Light', true),
-          prismaticDepth: 3,
-          spectrumTokens: 1,
-        },
-        null,
-        null,
-      ],
-    });
-
-    const stats = ScoreSystem.compute(prismaticBoard);
-    expect(stats.oblivionPerCardBonus).toBeGreaterThanOrEqual(29);
   });
 });
 

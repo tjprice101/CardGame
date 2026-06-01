@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
@@ -11,7 +11,6 @@ import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { uiTypography } from '@/ui/theme';
-import TrialDeckModeModal from '@/ui/trialDeck/TrialDeckModeModal';
 import { buildCoreMechanicContent } from './coreMechanicContent';
 import type { CardDefinition } from '@/types/cards';
 
@@ -20,7 +19,7 @@ interface Props {
   packName: string;
   cardPool: string[];
   onClose: () => void;
-  onStartTrial: (packId: string, mode: 'solo' | 'guided') => void;
+  onStartTrial: (packId: string) => void;
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -262,8 +261,6 @@ export default function CoreMechanicEngineModal({
   onClose,
   onStartTrial,
 }: Props) {
-  const [showTrialMode, setShowTrialMode] = useState(false);
-
   const content = useMemo(() => buildCoreMechanicContent(packId, cardPool), [packId, cardPool]);
 
   const exampleCards = useMemo(() => {
@@ -289,23 +286,11 @@ export default function CoreMechanicEngineModal({
               <div style={styles.sectionTitle}>No Guide Data</div>
               <div style={styles.introText}>This set does not currently expose engine guide data. Trial Deck is still available through the button below.</div>
               <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                <button type="button" onClick={() => setShowTrialMode(true)} style={styles.trialBtn}>Start Trial Deck</button>
+                <button type="button" onClick={() => { onStartTrial(packId); onClose(); }} style={styles.trialBtn}>Start Trial Deck</button>
                 <button type="button" onClick={onClose} style={styles.closeBtn}>x</button>
               </div>
             </div>
           </div>
-          {showTrialMode && (
-            <TrialDeckModeModal
-              packId={packId}
-              packName={packName}
-              onConfirm={(mode) => {
-                onStartTrial(packId, mode);
-                setShowTrialMode(false);
-                onClose();
-              }}
-              onClose={() => setShowTrialMode(false)}
-            />
-          )}
         </div>
       </div>
     );
@@ -320,7 +305,7 @@ export default function CoreMechanicEngineModal({
             <div style={styles.subtitle}>{packName} - {content.title.replace('User Guide to: ', '')}</div>
           </div>
           <div style={styles.headerActions}>
-            <button type="button" onClick={() => setShowTrialMode(true)} style={styles.trialBtn}>Start Trial Deck</button>
+            <button type="button" onClick={() => { onStartTrial(packId); onClose(); }} style={styles.trialBtn}>Start Trial Deck</button>
             <button type="button" onClick={onClose} style={styles.closeBtn}>x</button>
           </div>
         </div>
@@ -407,19 +392,6 @@ export default function CoreMechanicEngineModal({
           </div>
         </div>
       </div>
-
-      {showTrialMode && (
-        <TrialDeckModeModal
-          packId={packId}
-          packName={packName}
-          onConfirm={(mode) => {
-            onStartTrial(packId, mode);
-            setShowTrialMode(false);
-            onClose();
-          }}
-          onClose={() => setShowTrialMode(false)}
-        />
-      )}
     </div>
   );
 }

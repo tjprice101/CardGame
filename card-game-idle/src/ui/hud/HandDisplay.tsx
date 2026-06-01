@@ -213,8 +213,8 @@ function formatSeraphimSynergyLine(def: SeraphimDefinition): string {
       return `Synergy: Cherubim gain +${bonusValue} durability`;
     case 'ophanim_bonus':
       return `Synergy: Ophanim plays gain +${bonusValue} Oblivion`;
-    case 'ember_per_card':
-      return `Synergy: +${bonusValue} embers per card played`;
+    case 'pyro_heat_per_card':
+      return `Synergy: +${bonusValue} Heat per card played`;
     case 'oblivion_per_card':
       return `Synergy: attack profile scales with card-play Oblivion focus (+${bonusValue})`;
     default:

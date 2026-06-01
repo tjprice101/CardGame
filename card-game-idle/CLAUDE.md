@@ -145,8 +145,8 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - **Radiance** is a per-turn fuel counter that resets at turn end.
 - Cards generate Radiance, spend Radiance, or scale off current Radiance.
 - Radiance is **exclusive to Heavenly Light**. No other element may use `radiance_gain`, `radiance_spend`, `radiance_double`, or any Radiance effect.
-- Chorus Anchors protect repeat notes from breaking the sequence.
-- Heavenly Light should read as a two-resource engine: build Cadence, spend Radiance, and keep the sequence intact when it matters.
+- **Halo** is the Eternity/Infinity-only ancillary: Eternal and Infinite Light cards stack Halo via `eternal_stack_gain stack:'light'` and spend/cash it via threshold and cashout effects.
+- Heavenly Light should read as a two-resource engine: build Cadence cleanly, then spend Radiance and Halo to convert into a focused burst.
 
 ### Pyroabyss — "Embers"
 - **Inferno Tiers** are the core Fire stack. Base Fire cards primarily build Inferno Tiers, and Fire Seraphim/Angel attacks scale from them (`+2.5%` per Inferno Tier, max `+75%`).
@@ -155,31 +155,35 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - **Higher-rarity Fire attacks** also consume Chroma Embers for bonus scaling: Eternal Fire attacks gain `+4%` per Chroma Ember (max `+16%`), Infinite Fire attacks gain `+5%` per Chroma Ember (max `+25%`).
 - Pyroabyss should read as a two-layer engine: build Inferno first, seed Chroma second, then choose between ignite payoffs and Chroma-fueled higher-rarity attacks.
 
-### Thornbound Plains — "Trail / War-Path"
-- **Trail** is the resource. Accumulated via card plays, spent on high-power effects and attack costs.
-- **Scar** and **war-path payout** mechanics: Seraphim build scars and pay out Oblivion on thresholds.
+### Thornbound Plains — "Trail / Scar"
+- **Trail** is the base resource. Accumulated via card plays, spent on high-power effects and attack costs.
+- **Scar** is built only by the manual Trail→Scar HUD orb (1 Trail → 1 Scar). Base cards check Scar thresholds (`scar_count_gte`) for riders.
+- **Briar Spiral** (`set_secondary_*` kind:'thorn', `thorn_briar_spiral_bloom`) is the sole Eternal/Infinity ancillary — generators stack it, bloom cards spend it for Trail + Oblivion bursts.
 - Extra Cherubim plays per turn (`cherubim_extra_plays` bonusType) is a Thornbound Seraphim trait.
 
 ### Snowbound Voltage — "Frost / Voltage / Arctic Charge"
 - **Arctic Charge** is the core Snowbound resource.
 - Frost cards build Arctic Charge; Voltage cards cash it out into Oblivion output.
 
-### Mechanical Dreams — "Clock / Chime / Strain"
-- **Clock-Chime** is the primary loop. Each Mechanical play advances the Clock; every 3 ticks, a Chime fires.
-- **Chime** delivers immediate burst, vents/spends Strain pressure, and primes your next Mechanical attack (stored up to 1 if no attack is used immediately).
-- **Strain** remains the core fuel for Mechanical effects and attack costs.
-- **Reactor Core** is the Eternity/Infinity extension layer. Mechanical Eternity and Infinite cards build, spend, or cash out Reactor Cores for larger burst windows.
+### Mechanical Dreams — "Strain / Reactor Core"
+- **Strain** is the core resource. Most Mechanical cards `strain_gain`/`strain_vent`; `spend_strain` is a real attack cost; `overclock` consumes Strain to unlock an inline effect block. Strain in the 6–12 band amplifies all Mechanical oblivion.
+- **Reactor Core** (`eternal_stack_*` stack:'mech') is the sole Eternal/Infinity ancillary. Eternal/Infinite cards gain, spend, or cash out Reactor Cores for burst payoffs.
 
-### Prismatic Accord — "Spectrum Tokens / Refraction"
-- **prismaticDepth** on card definitions (defaults by rarity: Common 1, Rare 2, Epic 3, Legendary 4, Eternal/Infinite 5).
-- **Resonance Charge** is the higher-rarity overlay. Prismatic Eternity and Infinite cards build and spend Resonance Charge through explicit effects.
-- Prismatic base play is refraction-first: switching channels builds Refraction Depth, while the higher-rarity overlay handles the spend layer.
-- Chord bonus is computed from connected token-bearing board clusters.
+### Prismatic Accord — "Prism Charge / Channels"
+- **Core mechanic — Prism Charge (Node Charges):** every channel switch grants +1 Prism Charge (capped at 3) and is spent via `prismatic_charge_spend`. Tracked on `turn.prismaticNodeCharges`.
+- **Ancillary 1 — Distinct Channels:** unique channels played this turn (`prismaticDistinctChannels`), gated via `prismatic_distinct_channels_gte`.
+- **Ancillary 2 — Refraction Depth:** switching channels increases `prismaticRefractionDepth` by 1 (or 2 with multiplier), capped at 9; gated via `prismatic_refraction_depth_gte`.
+- **Ancillary 3 — Resonance Charge:** Eternal/Infinite overlay. Prismatic Eternity and Infinite cards build/spend Resonance Charge via `resonance_charge_gain` / `resonance_charge_spend`, gated via `resonance_charge_gte`.
+- **Removed/deprecated (do not re-introduce):** channel locks, memory shards, storm memories, switch-depth marks, accord channel, refraction echoes, echo cascade, chord scoring, refraction spikes, sentencing chains, lattice resonance. Save migration silently strips these legacy fields.
+- **Board fields kept:** `prismaticDepth` and `spectrumTokens` on card instances remain live for Glass Absolute formations and `refractSpectrumTokens`. They no longer contribute a chord bonus inside `ScoreSystem`.
 
-### Black Glass Inferno — "Twin-Flame / Fracture"
-- **Twin-flame** and **Fracture** are the core mechanics.
+### Black Glass Inferno — "Twin Flames / Fracture / Eclipse"
+- **Core (base loop):** every base Seraphim/Cherubim/Ophanim seeds **Monochromatic Shards** (gated by `shards_gte`, spent via `monochromatic_shards_spend`) and **Twin Flames** — `black_glass_white_flame_gain` / `black_glass_black_flame_gain`. Both flames cap at 30; tracked on TurnState as `blackGlassWhiteFlame`/`blackGlassBlackFlame`, with `blackGlassLastPolarity` updated by `applyBlackGlassPlayState`. Conditions: `black_glass_white_flame_gte`, `black_glass_black_flame_gte`, `black_glass_flames_equal`.
+- **Ancillary 1 (Eternal/Infinite): Fracture.** Built when flames are balanced via `black_glass_fracture_gain` (`blackGlassFracture`, caps 18). Gated by `black_glass_fracture_gte`; collapsed for payoff via `black_glass_fracture_collapse`. Scales Eclipse bursts (`fractureBonusPerEclipse`). Setup-ready = fracture ≥ 2; engines-ready = `min(white,black) ≥ 6 && |white-black| ≤ 2` (see `getDarkFullFireMultiplier`).
+- **Ancillary 2 (Eternal/Infinite): Eclipse.** Uses `eternal_stack_gain`/`eternal_stack_consume` with `stack: 'glass'`, cashed via `black_glass_eclipse_burst` (per-Eclipse Oblivion plus `balanceBonusPerEclipse` × `max(0, 3 - |W-B|)` and `fractureBonusPerEclipse` × Fracture). `black_glass_flames_swap` (1 Infinite card) inverts White/Black for control plays.
 - Dark element; uses `cherubim_adjacent_seraphim_bonus` passives (Oblivion/chain to adjacent Seraphim attacks).
-- Cards tend toward high-value Ophanim with conditional scaling.
+- `blackGlassLastPayoff` is HUD-only (auto-written by store on burst, displayed in `setEngineSummary`).
+- **Deprecated/removed (Nov 2025 audit):** `blackGlassGriefOaths`, `blackGlassCollapsePending` TurnState fields; `black_glass_register_state` effect (all 3 keys); `black_glass_flame_delta_gte` / `black_glass_flame_delta_lte` conditions. Two cards (`btei-bgi-elegy-of-veth-serath`, `inf-bgi-midplace-apocalypse`) had `register_state` lines stripped from their effect arrays + descriptions.
 
 ### Glass Absolute — "Fragments & Formation"
 - Base loop is fragments-first: fill the board with Glass cards and cash tiered formation bonuses (3/5/7 fragments).

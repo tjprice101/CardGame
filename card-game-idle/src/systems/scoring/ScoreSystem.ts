@@ -1,5 +1,5 @@
 import type { BoardState, ComputedBoardStats } from '@/types/game';
-import type { AngelInstance, CherubimInstance, SeraphimInstance } from '@/types/cards';
+import type { AngelInstance, SeraphimInstance } from '@/types/cards';
 
 export class ScoreSystem {
   static compute(board: BoardState): ComputedBoardStats {
@@ -26,14 +26,12 @@ export class ScoreSystem {
       board.backSlots.every(s => s !== null);
 
     if (activeSynergies === 0) {
-      return { activeSynergies: 0, oblivionPerCardBonus: 0, ophanimOblivionBonus: 0, cherubimExtraPlays: 0, embersPerCardBonus: 0, globalOblivionMult, fullBoardActive };
+      return { activeSynergies: 0, oblivionPerCardBonus: 0, ophanimOblivionBonus: 0, cherubimExtraPlays: 0, globalOblivionMult, fullBoardActive };
     }
 
     let oblivionPerCardBonus = 0;
     let ophanimOblivionBonus = 0;
     let cherubimExtraPlays = 0;
-    let embersPerCardBonus = 0;
-    const prismaticChordBonus = computePrismaticChordBonus(board);
 
     for (const s of activeSeraphims) {
       const def = ScoreSystem.getDefinition(s.definitionId);
@@ -46,7 +44,7 @@ export class ScoreSystem {
         case 'oblivion_per_card':   oblivionPerCardBonus += bonusValue * burnMultiplier; break;
         case 'ophanim_bonus':        ophanimOblivionBonus  += bonusValue * burnMultiplier; break;
         case 'cherubim_extra_plays':   cherubimExtraPlays      += Math.round(bonusValue * burnMultiplier); break;
-        case 'ember_per_card':      embersPerCardBonus   += bonusValue * burnMultiplier; break;
+        case 'pyro_heat_per_card':    break;
         // chain_bonus, cherubim_expire_bonus are handled at play-time
         // Light-only bonus types are handled elsewhere in the current rework model.
       }
@@ -68,81 +66,9 @@ export class ScoreSystem {
       }
     }
 
-    oblivionPerCardBonus += prismaticChordBonus;
-
-    return { activeSynergies, oblivionPerCardBonus, ophanimOblivionBonus, cherubimExtraPlays, embersPerCardBonus, globalOblivionMult, fullBoardActive };
+    return { activeSynergies, oblivionPerCardBonus, ophanimOblivionBonus, cherubimExtraPlays, globalOblivionMult, fullBoardActive };
   }
 
   static getDefinition: (id: string) => import('@/types/cards').CardDefinition | undefined =
     () => undefined;
-}
-
-type PrismaticBoardCard = (SeraphimInstance | AngelInstance | CherubimInstance) & { spectrumTokens?: number; prismaticDepth?: number };
-
-function computePrismaticChordBonus(board: BoardState): number {
-  const nodes = new Map<string, PrismaticBoardCard>();
-
-  board.frontSlots.forEach((slot, index) => {
-    if (slot && (slot.prismaticDepth ?? 0) > 0 && (slot.spectrumTokens ?? 0) > 0) {
-      nodes.set(`front:${index}`, slot);
-    }
-  });
-
-  board.backSlots.forEach((slot, index) => {
-    if (slot && (slot.prismaticDepth ?? 0) > 0 && (slot.spectrumTokens ?? 0) > 0) {
-      nodes.set(`back:${index}`, slot);
-    }
-  });
-
-  if (nodes.size < 3) return 0;
-
-  const visited = new Set<string>();
-  let bonus = 0;
-
-  for (const key of nodes.keys()) {
-    if (visited.has(key)) continue;
-
-    const stack = [key];
-    let componentSize = 0;
-
-    while (stack.length > 0) {
-      const current = stack.pop()!;
-      if (visited.has(current)) continue;
-      visited.add(current);
-      componentSize += 1;
-
-      for (const neighbor of getPrismaticNeighbors(current)) {
-        if (nodes.has(neighbor) && !visited.has(neighbor)) {
-          stack.push(neighbor);
-        }
-      }
-    }
-
-    if (componentSize >= 3) {
-      bonus += 10 + (componentSize - 3) * 5;
-    }
-  }
-
-  return bonus;
-}
-
-function getPrismaticNeighbors(key: string): string[] {
-  const [row, rawIndex] = key.split(':');
-  const index = Number(rawIndex);
-
-  if (row === 'front') {
-    const neighbors: string[] = [];
-    if (index > 0) neighbors.push(`front:${index - 1}`);
-    if (index < 4) neighbors.push(`front:${index + 1}`);
-    if (index > 0) neighbors.push(`back:${index - 1}`);
-    if (index < 4) neighbors.push(`back:${index}`);
-    return neighbors;
-  }
-
-  const neighbors: string[] = [];
-  if (index > 0) neighbors.push(`back:${index - 1}`);
-  if (index < 3) neighbors.push(`back:${index + 1}`);
-  neighbors.push(`front:${index}`);
-  if (index < 4) neighbors.push(`front:${index + 1}`);
-  return neighbors;
 }

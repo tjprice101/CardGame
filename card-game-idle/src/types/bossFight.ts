@@ -65,6 +65,8 @@ export interface BossFightState {
   bossCurrentHp: number;
   bossMaxHp: number;
   damageDealtThisFight: number;
+  /** Damage dealt during the first 60s of the current encounter/fight. */
+  damageDealtFirstMinute?: number;
   fightTimeRemaining: number;
   cooldowns: Record<string, number>;
   savedGameState: SavedGameState | null;
@@ -99,6 +101,17 @@ export interface BossFightState {
   nullRaidAccumulatedEntropy?: number;
   /** Null Raid: total aberrated shards accumulated from completed encounters. */
   nullRaidAccumulatedShards?: number;
+  /** Null Raid: best first-minute damage across encounters in this raid run. */
+  nullRaidBestDamageFirstMinute?: number;
+  /** Null Raid: true when this run is a Prove Yourself test (no raid rewards/clear). */
+  nullRaidProvingOnly?: boolean;
   /** Snapshot of rewards granted when the result screen opened. */
   rewardSummary?: BossRewardSummary | null;
+  // ── Card-break (stagger) meter ────────────────────────────────────────────
+  /** Current stagger charge, 0–100. Filled by Synergized / Exalted attacks. */
+  bossCardBreakMeter?: number;
+  /** Seconds remaining on a Card-break timer freeze (counts down in tickBossTimer). */
+  bossCardBreakFreezeLeft?: number;
+  /** Total number of successful Card-breaks landed this fight. */
+  bossCardBreakCount?: number;
 }

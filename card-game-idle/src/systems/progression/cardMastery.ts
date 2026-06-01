@@ -2,9 +2,9 @@ import type { ProgressState } from '@/types/game';
 import { CardRegistry } from '@/cards/CardRegistry';
 
 /**
- * Per-card play-count mastery system. Counts increment each time a card is
- * played from hand (any type). Thresholds award shards on claim — the player
- * can claim each tier once.
+ * Per-card Card-light mastery system. Card-light increments each time a card
+ * is played from hand (any type). Thresholds award shards on claim — the
+ * player can claim each tier once.
  *
  * Claim state is stored as a packed string key:
  *   `${definitionId}::${tier}` -> true
@@ -76,7 +76,7 @@ export function getGauntletMasteryPerCard(depth: number): number {
 }
 
 export function getResonanceVictoryLine(masteryPerCard: number, _maxPerCard = MAX_MASTERY_PROGRESS_PER_CARD_BOSS): string {
-  return `Victory Awards +${masteryPerCard} Resonance to each card used.`;
+  return `Awards +${masteryPerCard} Card-light for each card in your deck upon completion.`;
 }
 
 function getReachedTierForCount(count: number): number {
@@ -148,10 +148,16 @@ export function previewMasteryReward(
     if (entry.resonanceGain > 0) cardsTieredUp += 1;
   }
 
+  // Resonance payout is global/universal per fight difficulty.
+  // It should not vary by deck composition or which cards are near tier breakpoints.
+  const guaranteedResonanceGain = entries.length > 0
+    ? Math.max(1, baseAmount)
+    : 0;
+
   return {
     uniqueCards: entries.length,
     totalAppliedProgress,
-    resonanceGain,
+    resonanceGain: guaranteedResonanceGain,
     cardsTieredUp,
     entries,
   };

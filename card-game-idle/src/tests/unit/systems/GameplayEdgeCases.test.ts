@@ -92,6 +92,45 @@ describe('CardEffectExecutor look-top menu routing', () => {
       }
     );
 
+    describe('Seraphim on-play salvage routing', () => {
+      beforeEach(() => {
+        resetStore();
+      });
+
+      it('preserves pending salvage choices for Seraphim on-play salvage effects', () => {
+        useStore.setState(state => ({
+          ...state,
+          deck: {
+            ...state.deck,
+            hand: [{ instanceId: 'play_1', definitionId: 'ser-fire-abyssal', finish: 'normal' }],
+            drawPile: [],
+            discardPile: [
+              { instanceId: 'discard_1', definitionId: 'ophanim-neutral-void-surge', finish: 'normal' },
+            ],
+          },
+          board: {
+            ...state.board,
+            frontSlots: [null, null, null, null, null],
+            backSlots: [null, null, null, null],
+          },
+          turn: {
+            ...state.turn,
+            phase: 'playing',
+            pendingEffect: null,
+          },
+        }));
+
+        useStore.getState().playCard('play_1');
+
+        const state = useStore.getState();
+        expect(state.turn.pendingEffect?.type).toBe('salvage');
+        if (state.turn.pendingEffect?.type === 'salvage') {
+          expect(state.turn.pendingEffect.filter).toEqual(['Ophanim']);
+          expect(state.turn.pendingEffect.cards).toHaveLength(1);
+        }
+      });
+    });
+
     expect(result.pendingEffect?.type).toBe('look_top_take_drop');
     if (result.pendingEffect?.type === 'look_top_take_drop') {
       expect(result.pendingEffect.take).toBe(2);
@@ -161,7 +200,7 @@ describe('Card definition menu invariants', () => {
 });
 
 describe('Neutrality patience stacking', () => {
-  it('applies linked-mode bonus to patience gain effects for active Seraphim only', () => {
+  it('does not apply linked-mode bonus across set boundaries', () => {
     const activeA: SeraphimInstance = {
       instanceId: 'ser_active_a',
       definitionId: 'ser-neutral-equilibrium',
@@ -193,7 +232,7 @@ describe('Neutrality patience stacking', () => {
     const nextActive = result.board.frontSlots[0];
     expect(nextActive?.type).toBe('Seraphim');
     if (nextActive?.type === 'Seraphim') {
-      expect(nextActive.patienceStacks).toBe(4);
+      expect(nextActive.patienceStacks).toBe(1);
     }
   });
 
@@ -246,8 +285,8 @@ describe('Neutrality patience stacking', () => {
     expect(nextVessel?.type).toBe('Seraphim');
     expect(nextAlly?.type).toBe('Seraphim');
     if (nextVessel?.type === 'Seraphim' && nextAlly?.type === 'Seraphim') {
-      expect(nextVessel.patienceStacks).toBe(7);
-      expect(nextAlly.patienceStacks).toBe(4);
+      expect(nextVessel.patienceStacks).toBe(3);
+      expect(nextAlly.patienceStacks).toBe(1);
     }
   });
 });
@@ -475,7 +514,7 @@ describe('Custom deck activation', () => {
 });
 
 describe('Heavenly Light balance', () => {
-  it('does not let Thorncrown amplify Radiance doubling and uses the reduced Revelation payout', () => {
+  it('does not let Halo amplify Radiance doubling and uses the reduced Revelation payout', () => {
     const throne: SeraphimInstance = {
       instanceId: 'ser_throne_1',
       definitionId: 'ser-light-throne',
@@ -544,7 +583,7 @@ describe('Pyroabyss dynamic effects', () => {
       },
     );
 
-    expect(result.turn.pyroHeat ?? 0).toBe(4);
+    expect(result.turn.pyroHeat ?? 0).toBe(3);
   });
 });
 
@@ -837,7 +876,7 @@ describe('Angel attack cost selection', () => {
       turn: {
         ...state.turn,
         phase: 'playing',
-        embers: 10,
+        pyroHeat: 10,
         radiance: 10,
         trail: 10,
         strain: 10,
@@ -1074,5 +1113,237 @@ describe('Seraphim synergy activation', () => {
     };
     const withAngelResult = SynergySystem.computeActiveSlots(withAngelBoard);
     expect(withAngelResult[0]?.type === 'Seraphim' ? withAngelResult[0].isActive : false).toBe(true);
+  });
+});
+
+describe('Abyssal Forge Cherubim passives', () => {
+  it('awards ember, charge, and queued temper bonuses while cards are played', () => {
+    const playCardDef = CardRegistry.getAll().find(def => def.type === 'Seraphim' && def.definitionId === 'ser-neutral-equilibrium');
+    if (!playCardDef || playCardDef.type !== 'Seraphim') {
+      throw new Error('ser-neutral-equilibrium not found');
+    }
+
+    const emberCherubim = CardRegistry.get('cherubim-fire-ember-shroud');
+    const chargeCherubim = CardRegistry.get('af-cher-bellows-acolyte');
+    const temperCherubim = CardRegistry.get('af-cher-apprentice-lampwright');
+    if (!emberCherubim || emberCherubim.type !== 'Cherubim') throw new Error('cherubim-fire-ember-shroud not found');
+    if (!chargeCherubim || chargeCherubim.type !== 'Cherubim') throw new Error('af-cher-bellows-acolyte not found');
+    if (!temperCherubim || temperCherubim.type !== 'Cherubim') throw new Error('af-cher-apprentice-lampwright not found');
+
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        frontSlots: [null, null, null, null, null],
+        backSlots: [
+          {
+            instanceId: 'cher_ember',
+            definitionId: emberCherubim.definitionId,
+            type: 'Cherubim',
+            element: emberCherubim.element,
+            rarity: emberCherubim.rarity,
+            finish: 'normal',
+            level: 1,
+            backSlot: 0,
+          },
+          {
+            instanceId: 'cher_charge',
+            definitionId: chargeCherubim.definitionId,
+            type: 'Cherubim',
+            element: chargeCherubim.element,
+            rarity: chargeCherubim.rarity,
+            finish: 'normal',
+            level: 1,
+            backSlot: 1,
+          },
+          {
+            instanceId: 'cher_temper',
+            definitionId: temperCherubim.definitionId,
+            type: 'Cherubim',
+            element: temperCherubim.element,
+            rarity: temperCherubim.rarity,
+            finish: 'normal',
+            level: 1,
+            backSlot: 2,
+          },
+          null,
+        ],
+      },
+      deck: {
+        ...state.deck,
+        hand: [
+          { instanceId: 'play_1', definitionId: playCardDef.definitionId, finish: 'normal' },
+          { instanceId: 'play_2', definitionId: playCardDef.definitionId, finish: 'normal' },
+          { instanceId: 'play_3', definitionId: playCardDef.definitionId, finish: 'normal' },
+        ],
+        drawPile: [],
+        discardPile: [],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'playing',
+        cardsPlayedThisTurn: 0,
+        pyroHeat: 0,
+        reforgeCharges: 0,
+        reforgeChargeCap: 6,
+        forgePendingCherubimTemper: 0,
+        forgeTemperQueue: 0,
+      },
+    }));
+
+    useStore.getState().playCard('play_1');
+    useStore.getState().playCard('play_2');
+    useStore.getState().playCard('play_3');
+
+    const state = useStore.getState();
+    expect(state.turn.cardsPlayedThisTurn).toBe(3);
+    expect(state.turn.pyroHeat).toBe(3);
+    expect(state.turn.reforgeCharges).toBe(1);
+    expect(state.turn.forgePendingCherubimTemper ?? 0).toBe(0);
+    expect(state.turn.forgeTemperQueue).toBeCloseTo(0.9, 5);
+  });
+
+  it('applies queued temper and recast bonuses when Seraphim attacks or recasts', () => {
+    const seraphim = CardRegistry.getAll().find(def => (
+      def.type === 'Seraphim'
+      && (def.attacks?.unsynergized.costs ?? []).some(cost => cost.type === 'discard_from_hand')
+    ));
+    if (!seraphim || seraphim.type !== 'Seraphim') throw new Error('No discard-cost Seraphim found');
+
+    const recastBonusCherubim = CardRegistry.get('af-cher-pearl-welded-cantor');
+    const recastPearlCherubim = CardRegistry.get('af-cher-nacre-touched-initiate');
+    if (!recastBonusCherubim || recastBonusCherubim.type !== 'Cherubim') throw new Error('af-cher-pearl-welded-cantor not found');
+    if (!recastPearlCherubim || recastPearlCherubim.type !== 'Cherubim') throw new Error('af-cher-nacre-touched-initiate not found');
+
+    const setup = () => {
+      resetStore();
+      const serUnit: SeraphimInstance = {
+        instanceId: 'ser_attack_test_1',
+        definitionId: seraphim.definitionId,
+        type: 'Seraphim',
+        element: seraphim.element,
+        rarity: seraphim.rarity,
+        finish: 'normal',
+        level: 1,
+        isActive: true,
+        attackCooldowns: {},
+        boardSlot: 0,
+      };
+      useStore.setState(state => ({
+        ...state,
+        board: {
+          ...state.board,
+          frontSlots: [serUnit, null, null, null, null],
+          backSlots: [null, null, null, null],
+        },
+        turn: {
+          ...state.turn,
+          phase: 'playing',
+          forgeTemperQueue: 0,
+          reforgeCharges: 0,
+          pyroHeat: 0,
+          pendingEffect: null,
+        },
+        deck: {
+          ...state.deck,
+          hand: [{ instanceId: 'attack_pay_1', definitionId: 'seek-neutral-measured-seek', finish: 'normal' }],
+        },
+        progress: {
+          ...state.progress,
+          oblivion: 0,
+        },
+      }));
+    };
+
+    setup();
+    useStore.getState().activateSeraphimAttack(0, 'unsynergized', {
+      discardInstanceIds: ['attack_pay_1'],
+      sacrificeSeraphimInstanceIds: [],
+      sacrificeAngelInstanceIds: [],
+    });
+    const baselineOblivion = useStore.getState().progress.oblivion;
+
+    setup();
+    useStore.setState(state => ({
+      ...state,
+      turn: {
+        ...state.turn,
+        forgeTemperQueue: 0.3,
+      },
+    }));
+    useStore.getState().activateSeraphimAttack(0, 'unsynergized', {
+      discardInstanceIds: ['attack_pay_1'],
+      sacrificeSeraphimInstanceIds: [],
+      sacrificeAngelInstanceIds: [],
+    });
+    const temperedState = useStore.getState();
+
+    expect(temperedState.progress.oblivion).toBeGreaterThan(baselineOblivion);
+    expect(temperedState.turn.forgeTemperQueue ?? 0).toBe(0);
+
+    const runRecast = (backSlots: BoardState['backSlots']) => CardEffectExecutor.execute(
+      { instanceId: 'recast_play_1', definitionId: recastBonusCherubim.definitionId },
+      makePlayingTurn({
+        recastLedger: [{
+          definitionId: seraphim.definitionId,
+          instanceId: 'recast_target_1',
+          ledgerIndex: 0,
+          recastCount: 0,
+          imprintStacks: 0,
+          isAnvilSealed: false,
+          isNacreCoated: false,
+        }],
+        pearls: 0,
+        forgeRecastEventsThisTurn: 0,
+      }),
+      {
+        frontSlots: [null, null, null, null, null],
+        backSlots,
+        activeBoardEffects: [],
+      },
+      {
+        deckList: [],
+        extraDeck: [],
+        drawPile: [],
+        hand: [],
+        discardPile: [],
+      },
+      false,
+      {
+        effects: [{ type: 'forge_recast_last', power: 1 }],
+        countAsPlay: false,
+      },
+    );
+
+    const baselineRecastResult = runRecast([null, null, null, null]);
+    const buffedRecastResult = runRecast([
+      {
+        instanceId: 'cher_recast_bonus',
+        definitionId: recastBonusCherubim.definitionId,
+        type: 'Cherubim',
+        element: recastBonusCherubim.element,
+        rarity: recastBonusCherubim.rarity,
+        finish: 'normal',
+        level: 1,
+        backSlot: 0,
+      },
+      {
+        instanceId: 'cher_recast_pearl',
+        definitionId: recastPearlCherubim.definitionId,
+        type: 'Cherubim',
+        element: recastPearlCherubim.element,
+        rarity: recastPearlCherubim.rarity,
+        finish: 'normal',
+        level: 1,
+        backSlot: 1,
+      },
+      null,
+      null,
+    ]);
+
+    expect(buffedRecastResult.oblivionBonus - baselineRecastResult.oblivionBonus).toBeCloseTo(60, 5);
+    expect(buffedRecastResult.turn.pearls - baselineRecastResult.turn.pearls).toBeCloseTo(0.5, 5);
+    expect(buffedRecastResult.turn.forgeRecastEventsThisTurn).toBe(1);
   });
 });

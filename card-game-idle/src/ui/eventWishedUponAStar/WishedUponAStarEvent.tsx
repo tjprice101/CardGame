@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import { useStore } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+import { BOSS_DEFINITIONS, getBossDisplayHp } from '@/data/bosses/bossDefinitions';
 
 interface Props {
   onClose: () => void;
@@ -44,6 +44,7 @@ const overlay: React.CSSProperties = {
 
 export default function WishedUponAStarEvent({ onClose, onCardStore, onEternitysWake }: Props) {
   const shards = useStore(s => s.progress.aberratedShards);
+  const progress = useStore(s => s.progress);
   const [activeTab, setActiveTab] = useState<'story' | 'mechanic' | 'packs' | 'bosses'>('story');
 
   const wuasPack = PACK_DEFINITIONS.find(p => p.id === 'pack-wished-upon-a-star');
@@ -247,7 +248,7 @@ export default function WishedUponAStarEvent({ onClose, onCardStore, onEternitys
                     </div>
                   </div>
                   <div style={{ fontSize: 11, color: 'rgba(184,200,255,0.5)', textAlign: 'right', flexShrink: 0 }}>
-                    <div>HP: {boss.hp.toLocaleString()}</div>
+                    <div>HP: {getBossDisplayHp(progress, boss).toLocaleString()}</div>
                     <div style={{ color: '#ffd070', marginTop: 2 }}>+{boss.firstClearShards} shards (first clear)</div>
                     <div style={{ color: 'rgba(255,208,112,0.6)' }}>+{boss.repeatClearShards} shards (repeat)</div>
                   </div>

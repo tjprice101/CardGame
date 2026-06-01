@@ -1,4 +1,5 @@
 import { useStore, selectTrialDeck } from '@/state/store';
+import { isNeutralityTutorialTrialPackId } from '@/data/trialDecks';
 import { uiTypography } from '@/ui/theme';
 
 interface Props {
@@ -113,19 +114,16 @@ const styles: Record<string, React.CSSProperties> = {
 export default function TrialDeckSummaryModal({ packName, onConfirm, onClose }: Props) {
   const trialDeck = useStore(selectTrialDeck);
 
-  const isGuided = trialDeck.trialMode === 'guided';
+  const isTutorialTurn = isNeutralityTutorialTrialPackId(trialDeck.packId);
   const turnCount = trialDeck.turnCount ?? 0;
   const oblivionTotal = Math.floor(trialDeck.trialOblivionTotal ?? 0);
-  const guideComplete = trialDeck.guideComplete ?? false;
-  const guideStep = trialDeck.guideStep ?? 0;
-  const guideTotal = trialDeck.guideSteps?.length ?? 0;
 
   return (
     <div style={styles.backdrop} onClick={onClose}>
       <div style={styles.modal} onClick={e => e.stopPropagation()}>
         <div>
           <div style={styles.title}>Trial Summary</div>
-          <div style={styles.subtitle}>{packName} · {isGuided ? 'Guided Mode' : 'Solo Mode'}</div>
+          <div style={styles.subtitle}>{packName} · Solo Mode</div>
         </div>
 
         <div style={styles.statsGrid}>
@@ -139,18 +137,15 @@ export default function TrialDeckSummaryModal({ packName, onConfirm, onClose }: 
           </div>
         </div>
 
-        {isGuided && (
+        {isTutorialTurn && (
           <div style={styles.guideResult}>
-            {guideComplete ? (
-              <>✅ <strong>Guide completed!</strong> You played through all {guideTotal} highlighted cards successfully.</>
-            ) : (
-              <>📖 Guide progress: {guideStep} of {guideTotal} steps completed. Try Guided Mode again to finish the walkthrough!</>
-            )}
+            <strong>You cleared a tutorial lane.</strong> Keep climbing into stronger tiers, seek greater cards,
+            and master every engine until your deck can command them all.
           </div>
         )}
 
         <div style={styles.note}>
-          No oblivion, mastery, or resonance was gained during this trial. Your deck and collection are unchanged.
+          No oblivion, Card-light, mastery rewards, or Resonance points were gained during this trial. Your deck and collection are unchanged.
         </div>
 
         <div style={styles.btnRow}>

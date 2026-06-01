@@ -37,7 +37,7 @@ export interface PartyInviteRow {
 export type PartyActivityDraft =
   | { type: 'battleground'; label: string }
   | { type: 'null_raid'; label: string; raidId: string; deckId: string }
-  | { type: 'eternity_boss'; label: string; bossId: string; deckId: string };
+  | { type: 'eternity_boss'; label: string; bossId: string; deckId?: string };
 
 interface PartyStoreState {
   activePartyId: string | null;
@@ -179,7 +179,7 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
     await sb.from('party_members').upsert({ party_id: partyId, user_id: me, role: 'host', ready: true }, { onConflict: 'party_id,user_id' });
 
     const data = await fetchPartyData(partyId);
-    set({ activePartyId: partyId, members: data.members, chat: data.chat, hubOpen: true });
+    set({ activePartyId: partyId, members: data.members, chat: data.chat, hubOpen: true, overlayHidden: false });
     connectPartyChannel(partyId, set, get);
     useStore.getState().enqueueToast('Card-bound party created.', 'success');
     return partyId;
@@ -261,7 +261,7 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
     await sb.from('party_invites').update({ status: 'accepted' }).eq('id', invite.id);
 
     const data = await fetchPartyData(invite.party_id);
-    set({ activePartyId: invite.party_id, members: data.members, chat: data.chat, incomingInvite: null, hubOpen: true });
+    set({ activePartyId: invite.party_id, members: data.members, chat: data.chat, incomingInvite: null, hubOpen: true, overlayHidden: false });
     connectPartyChannel(invite.party_id, set, get);
     useStore.getState().enqueueToast('Joined Card-bound party.', 'success');
     return true;
@@ -296,7 +296,7 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
       void sb.removeChannel(partyChannel);
       partyChannel = null;
     }
-    set({ activePartyId: null, members: [], chat: [], activityDraft: null, hubOpen: false });
+    set({ activePartyId: null, members: [], chat: [], activityDraft: null, hubOpen: false, overlayHidden: false });
   },
 
   async kickMember(userId) {

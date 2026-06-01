@@ -13,7 +13,7 @@ import {
 } from '@/ui/cardBackgrounds';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
-import { getCardPreviewLines } from '@/ui/cardStatSummary';
+import { getCardPreviewLines, getCardSummarySections } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
 
 const INFINITE_COLOR = '#e8e8f0';
@@ -77,6 +77,9 @@ export default function Infinitude({ onClose }: Props) {
 
   const selectedRecipe = orderedRecipes.find(e => e.recipe.resultId === selectedRecipeId)?.recipe ?? null;
   const resultDef = selectedRecipe ? CardRegistry.get(selectedRecipe.resultId) : null;
+  const resultSummarySections = useMemo(() => (
+    resultDef ? getCardSummarySections(resultDef, { abilityTextMode: 'canonical' }) : []
+  ), [resultDef]);
 
   function canCombine(recipe: InfiniteRecipe): boolean {
     return recipe.ingredients.every(ing => (progress.collection[ing.definitionId] ?? 0) >= ing.count);
@@ -240,6 +243,18 @@ export default function Infinitude({ onClose }: Props) {
                         {'\u201C'}{selectedRecipe.lore}{'\u201D'}
                       </blockquote>
                     )}
+
+                    <section style={styles.rulesPanel}>
+                      <div style={styles.rulesPanelHead}>Card Details</div>
+                      {resultSummarySections.map(section => (
+                        <div key={section.title} style={styles.rulesSection}>
+                          <div style={styles.rulesSectionTitle}>{section.title}</div>
+                          {section.lines.map((line, index) => (
+                            <div key={`${section.title}-${index}`} style={styles.rulesLine}>{line}</div>
+                          ))}
+                        </div>
+                      ))}
+                    </section>
                   </div>
                 </div>
 
@@ -696,6 +711,43 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.65,
     color: 'rgba(220,220,240,0.62)',
     letterSpacing: 0.3,
+  },
+  rulesPanel: {
+    marginTop: 6,
+    padding: '14px 16px',
+    borderRadius: 12,
+    border: '1px solid rgba(220,224,255,0.14)',
+    background: 'rgba(15,17,36,0.62)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+    maxHeight: 'clamp(260px, 40vh, 460px)',
+    overflowY: 'auto',
+  },
+  rulesPanelHead: {
+    fontSize: 10,
+    letterSpacing: 2.6,
+    textTransform: 'uppercase',
+    color: 'rgba(220,224,255,0.68)',
+  },
+  rulesSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+    paddingBottom: 10,
+    borderBottom: '1px solid rgba(220,224,255,0.08)',
+  },
+  rulesSectionTitle: {
+    fontSize: 10,
+    letterSpacing: 1.6,
+    textTransform: 'uppercase',
+    color: 'rgba(200,200,220,0.46)',
+  },
+  rulesLine: {
+    fontSize: 12,
+    lineHeight: 1.5,
+    color: 'rgba(232,232,240,0.84)',
+    letterSpacing: 0.25,
   },
   divider: {
     height: 1,

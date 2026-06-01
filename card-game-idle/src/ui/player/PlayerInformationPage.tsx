@@ -197,11 +197,6 @@ export default function PlayerInformationPage({
     setThemeSaved(false);
   }
 
-  function updateThemeDraft(key: keyof UiPalette, value: string) {
-    setThemeDraft(prev => ({ ...prev, [key]: value }));
-    setThemeSaved(false);
-  }
-
   function saveUiTheme() {
     setUiThemeId(themeBaseId);
     resetCustomUiTheme();
@@ -477,9 +472,7 @@ export default function PlayerInformationPage({
                 onOpenTitles={() => setShowTitles(true)}
                 onChangePicture={() => setShowPictures(true)}
                 themeBaseId={themeBaseId}
-                themeDraft={themeDraft}
                 onChooseTheme={chooseThemeBase}
-                onUpdateThemeDraft={updateThemeDraft}
                 onSaveTheme={saveUiTheme}
                 onResetThemeDraft={resetUiThemeDraft}
                 themeSaved={themeSaved}
@@ -589,9 +582,7 @@ function ProfileTab(props: {
   onOpenTitles: () => void;
   onChangePicture: () => void;
   themeBaseId: string;
-  themeDraft: Record<string, string>;
   onChooseTheme: (id: string) => void;
-  onUpdateThemeDraft: (key: keyof UiPalette, value: string) => void;
   onSaveTheme: () => void;
   onResetThemeDraft: () => void;
   themeSaved: boolean;
@@ -866,7 +857,7 @@ function SaveTab(props: {
             boxShadow: gameSaved ? '0 4px 14px rgba(79,138,71,0.28)' : warmTheme.glow,
           }}
         >
-          {gameSaved ? '✁E Saved!' : 'Save Game Data'}
+          {gameSaved ? '✓ Saved!' : 'Save Game Data'}
         </button>
         <div style={S.saveHint}>
           Manually flushes your progress to disk. Your save is also written automatically in the background.

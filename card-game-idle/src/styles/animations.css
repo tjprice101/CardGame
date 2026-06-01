@@ -1015,7 +1015,7 @@ html.reduced-motion .holofoil-card {
   transition-duration: 0.001ms !important;
 }
 
-/* ���� Eternity's Wake / Boss Fight dramatic UI ���� */
+/* Eternity's Wake / Boss Fight dramatic UI */
 @keyframes ewEmberFloat {
   0%   { transform: translateY(0) translateX(0); opacity: 0; }
   10%  { opacity: 1; }
@@ -1653,7 +1653,7 @@ html.reduced-motion .arena-flash-active {
   animation-iteration-count: 1 !important;
 }
 
-/* ���� Deck Builder: play button ready pulse ���� */
+/* Deck Builder: play button ready pulse */
 @keyframes deckPlayBtnPulse {
   0%, 100% { box-shadow: 0 2px 14px rgba(180, 120, 10, 0.38), inset 0 1px 0 rgba(255,255,255,0.14); }
   50%       { box-shadow: 0 4px 28px rgba(200, 140, 10, 0.62), 0 0 36px rgba(240, 189, 120, 0.18), inset 0 1px 0 rgba(255,255,255,0.2); }

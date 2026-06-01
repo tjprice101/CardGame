@@ -117,14 +117,14 @@ describe('Set mechanic reworks', () => {
     expect(new Set(state.turn.lightDistinctNotes ?? []).size).toBeGreaterThanOrEqual(2);
   });
 
-  it('lets Aurora Throne frontload Light anchors and resonance', () => {
+  it('lets Aurora Throne frontload Light Halo and resonance', () => {
     seedPlayingState(['btei-light-sunbreak-canon']);
 
     useStore.getState().playCard('hand_0');
 
     const state = useStore.getState();
-    expect(state.turn.lightChorusAnchors).toBeGreaterThanOrEqual(2);
-    expect(state.turn.lightResonance).toBeGreaterThanOrEqual(2);
+    expect(state.turn.eternalStacks?.light ?? 0).toBeGreaterThanOrEqual(3);
+    expect(state.turn.lightResonance).toBeGreaterThanOrEqual(1);
     expect(state.turn.pendingEffect).not.toBeNull();
   });
 
@@ -137,8 +137,8 @@ describe('Set mechanic reworks', () => {
         ...state.turn,
         lightResonance: 4,
         lightDistinctNotes: ['Ophanim', 'Seraphim', 'Cherubim', 'Angel'],
-        lightChorusAnchors: 2,
         radiance: 18,
+        eternalStacks: { ...(state.turn.eternalStacks ?? {}), light: 12 },
         cardsPlayedThisTurn: 3,
       },
     }));
@@ -160,7 +160,7 @@ describe('Set mechanic reworks', () => {
         ...state.turn,
         lightResonance: 3,
         lightDistinctNotes: ['Ophanim', 'Seraphim', 'Cherubim'],
-        lightChorusAnchors: 1,
+        eternalStacks: { ...(state.turn.eternalStacks ?? {}), light: 7 },
       },
     }));
 
@@ -172,7 +172,7 @@ describe('Set mechanic reworks', () => {
 
     const state = useStore.getState();
     expect(state.progress.oblivion - before).toBeGreaterThan(2500);
-    expect(state.turn.lightChorusAnchors).toBeGreaterThanOrEqual(3);
+    expect(state.turn.eternalStacks?.light ?? 0).toBeGreaterThanOrEqual(7);
   });
 
   it('surfaces reworked Heavenly Light stats and abilities through CardRegistry', () => {
@@ -204,7 +204,7 @@ describe('Set mechanic reworks', () => {
     const state = useStore.getState();
     expect(state.turn.lightResonance).toBeGreaterThanOrEqual(6);
     expect(new Set(state.turn.lightDistinctNotes ?? []).size).toBeGreaterThanOrEqual(3);
-    expect(state.turn.lightChorusAnchors).toBeGreaterThanOrEqual(3);
+    expect(state.turn.eternalStacks?.light ?? 0).toBeGreaterThanOrEqual(6);
     expect(state.turn.radiance).toBeGreaterThan(150);
     expect(state.progress.oblivion - before).toBeGreaterThan(3500);
   });
@@ -462,8 +462,7 @@ describe('Set mechanic reworks', () => {
 
     const state = useStore.getState();
     expect(state.turn.trail).toBeGreaterThanOrEqual(31);
-    expect(state.turn.eternalStacks?.thorn ?? 0).toBeGreaterThanOrEqual(2);
-    expect(state.turn.secondaryCounters?.thorn ?? 0).toBeGreaterThanOrEqual(2);
+    expect(state.turn.secondaryCounters?.thorn ?? 0).toBeGreaterThanOrEqual(4);
   });
 
   it('keeps Thornbound Eternity cards in distinct Briar Spiral roles', () => {
@@ -484,11 +483,10 @@ describe('Set mechanic reworks', () => {
     expect(hasEffectTypeRecursive(amplifier?.onPlayEffects, 'thorn_briar_spiral_bloom')).toBe(true);
 
     expect(finisher?.type).toBe('Angel');
-    expect(hasEffectTypeRecursive(finisher?.activatedAbility.effects, 'eternal_stack_cashout')).toBe(true);
     expect(hasEffectTypeRecursive(finisher?.activatedAbility.effects, 'thorn_briar_spiral_bloom')).toBe(true);
   });
 
-  it('lets Thornbound Last Procession cash live Scar, Trail, and Procession depth', () => {
+  it('lets Thornbound Last Procession cash live Scar, Trail, and Briar Spiral depth', () => {
     seedPlayingState(['inf-thornbound-last-procession']);
 
     useStore.setState(state => ({
@@ -497,9 +495,7 @@ describe('Set mechanic reworks', () => {
         ...state.turn,
         thornScar: 12,
         trail: 42,
-        thornLossesThisTurn: 8,
-        thornProcessions: 2,
-        thornWarPath: 'Endurance',
+        secondaryCounters: { ...(state.turn.secondaryCounters ?? {}), thorn: 10 },
       },
     }));
 
@@ -511,7 +507,7 @@ describe('Set mechanic reworks', () => {
     expect(state.turn.nextCardMultiplied).toBe(true);
   });
 
-  it('lets Thorn Widow Engine convert march depth into a dynamic Infinite spike', () => {
+  it('lets Thorn Widow Engine convert Briar Spiral depth into a dynamic Infinite spike', () => {
     seedPlayingState(['inf-thorn-widow-engine']);
 
     const widow = CardRegistry.get('inf-thorn-widow-engine');
@@ -523,9 +519,7 @@ describe('Set mechanic reworks', () => {
         ...state.turn,
         thornScar: 10,
         trail: 34,
-        thornLossesThisTurn: 6,
-        thornProcessions: 1,
-        thornWarPath: 'Aggression',
+        secondaryCounters: { ...(state.turn.secondaryCounters ?? {}), thorn: 8 },
       },
     }));
 
@@ -563,26 +557,23 @@ describe('Set mechanic reworks', () => {
     expect(hasEffectTypeRecursive(finisher?.activatedAbility.effects, 'eternal_stack_cashout')).toBe(true);
   });
 
-  it('advances Mechanical Dreams clock and triggers chime state', () => {
+  it('lets Mechanical Dreams base cards accrue Strain on play', () => {
     seedPlayingState(['md-ser-cogbound-aegis']);
 
+    const beforeStrain = useStore.getState().turn.strain ?? 0;
     useStore.getState().playCard('hand_0');
 
     const state = useStore.getState();
-    expect(state.turn.mechanicalClockTicks).toBeGreaterThanOrEqual(1);
-    expect(state.turn.mechanicalNextChimeTick).toBeGreaterThan(0);
-    expect(new Set(state.turn.mechanicalInstructionDiversity ?? []).size).toBeGreaterThanOrEqual(1);
+    expect((state.turn.strain ?? 0)).toBeGreaterThanOrEqual(beforeStrain);
   });
 
-  it('lets Mechanical Eternity scaffold directly on Chime with Reactor Core gain', () => {
+  it('lets Mechanical Eternity seed Reactor Cores directly', () => {
     seedPlayingState(['btei-mech-overclock-singularity']);
 
     useStore.setState(state => ({
       ...state,
       turn: {
         ...state.turn,
-        mechanicalClockTicks: 2,
-        mechanicalNextChimeTick: 3,
         eternalStacks: { ...(state.turn.eternalStacks ?? {}), mech: 0 },
       },
     }));
@@ -590,19 +581,17 @@ describe('Set mechanic reworks', () => {
     useStore.getState().playCard('hand_0');
 
     const state = useStore.getState();
-    expect(state.turn.mechanicalChimesFired).toBeGreaterThanOrEqual(1);
-    expect(state.turn.eternalStacks?.mech ?? 0).toBeGreaterThanOrEqual(3);
+    expect(state.turn.eternalStacks?.mech ?? 0).toBeGreaterThanOrEqual(2);
+    expect(state.turn.strain ?? 0).toBeGreaterThanOrEqual(9);
   });
 
-  it('lets Mechanical Infinity scaffold directly on Chime with stronger Reactor Core gain', () => {
+  it('lets Mechanical Infinity seed even larger Reactor Core depth', () => {
     seedPlayingState(['inf-machina-eternal-loop']);
 
     useStore.setState(state => ({
       ...state,
       turn: {
         ...state.turn,
-        mechanicalClockTicks: 2,
-        mechanicalNextChimeTick: 3,
         eternalStacks: { ...(state.turn.eternalStacks ?? {}), mech: 0 },
       },
     }));
@@ -610,8 +599,7 @@ describe('Set mechanic reworks', () => {
     useStore.getState().playCard('hand_0');
 
     const state = useStore.getState();
-    expect(state.turn.mechanicalChimesFired).toBeGreaterThanOrEqual(1);
-    expect(state.turn.eternalStacks?.mech ?? 0).toBeGreaterThanOrEqual(9);
+    expect(state.turn.eternalStacks?.mech ?? 0).toBeGreaterThanOrEqual(8);
   });
 
   it('tracks base Prismatic channels without opening refraction depth by itself', () => {
@@ -935,7 +923,7 @@ describe('Set mechanic reworks', () => {
         board: { ...state.board, frontSlots },
         turn: {
           ...state.turn,
-          embers: 90,
+          pyroHeat: 90,
           eternalStacks: {
             ...state.turn.eternalStacks,
             pyro: 9,

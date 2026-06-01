@@ -10,6 +10,10 @@
 // ── Encounter time limit ────────────────────────────────────────────────────
 /** Each encounter in a null raid is limited to 120 seconds (2 minutes). */
 export const NULL_RAID_ENCOUNTER_SECONDS = 120;
+/** Prove Yourself check window for raid unlocks. */
+export const NULL_RAID_PROVE_YOURSELF_SECONDS = 60;
+/** Unlock threshold: deal one-third of the first encounter boss HP in time. */
+export const NULL_RAID_PROVE_YOURSELF_DAMAGE_FRACTION = 1 / 3;
 
 // ── Null Raid Boss ──────────────────────────────────────────────────────────
 
@@ -31,14 +35,8 @@ export interface NullRaidDefinition {
   description: string;
   /** Element key of the primary card set this raid is themed after. */
   associatedSet: string;
-  /** Minimum resonance score required to enter (hard lock). */
-  resonanceRequired: number;
-  /** Suggested resonance for comfortable clear (shown as recommendation). */
-  recommendedResonance: number;
   /** Ordered list of boss ids for each encounter. */
   encounterBossIds: string[];
-  /** Entropic Energy required to start the raid (currently 0 for all raids). */
-  entryEntropyCost: number;
   /** Entropic Energy granted per defeated encounter boss. */
   entropyPerEncounter: number;
   /** Aberrated Shards granted per defeated encounter boss. */
@@ -107,10 +105,7 @@ export const NULL_RAID_DEFINITIONS: NullRaidDefinition[] = [
     description:
       'The final courtroom of stars has opened. Neutrality and wish-light merge into a verdict that deletes timelines.',
     associatedSet: 'Neutrality',
-    resonanceRequired: 120_000,
-    recommendedResonance: 240_000,
     encounterBossIds: ['nr-neutrality-event-horizon-arbiter', 'nr-neutrality-verdant-null'],
-    entryEntropyCost: 0,
     entropyPerEncounter: 85,
     shardsPerEncounter: 22,
     cooldownMs: 5 * 60 * 1000,
@@ -123,13 +118,22 @@ export const NULL_RAID_DEFINITIONS: NullRaidDefinition[] = [
     description:
       'The Abyss Furnace has swallowed a dead wish-star and crowned two infernal sovereigns in its place.',
     associatedSet: 'Pyroabyss',
-    resonanceRequired: 140_000,
-    recommendedResonance: 260_000,
     encounterBossIds: ['nr-pyroabyss-ember-eventide-tyrant', 'nr-pyroabyss-pyraxis-nullstar-sovereign'],
-    entryEntropyCost: 0,
     entropyPerEncounter: 90,
     shardsPerEncounter: 24,
     cooldownMs: 5 * 60 * 1000,
     completionAngelId: 'tx-angel-pyro-first-ember',
   },
 ];
+
+export function getNullRaidFirstEncounterBoss(raid: NullRaidDefinition): NullRaidBoss | null {
+  const firstBossId = raid.encounterBossIds[0];
+  if (!firstBossId) return null;
+  return NULL_RAID_BOSS_MAP.get(firstBossId) ?? null;
+}
+
+export function getNullRaidProveYourselfTargetDamage(raid: NullRaidDefinition): number {
+  const firstBoss = getNullRaidFirstEncounterBoss(raid);
+  if (!firstBoss) return 0;
+  return Math.max(1, Math.floor(firstBoss.hp * NULL_RAID_PROVE_YOURSELF_DAMAGE_FRACTION));
+}

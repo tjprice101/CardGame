@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { type NeutralityTutorialTier } from '@/data/trialDecks';
 import { uiTypography } from '@/ui/theme';
 
 interface Props {
   onClose: () => void;
+  onPlayTutorialTurn: (tier: NeutralityTutorialTier) => void;
 }
 
 const DISPLAY_FONT = uiTypography.display;
@@ -172,7 +174,7 @@ function TurnFlowBody() {
         <div style={sectionHeadingStyle}>A Single Turn</div>
         <NumberedStep n={1} title="Begin Turn">
           From the main menu, press the large <Tag>Begin Turn</Tag> button. A fresh hand draws and
-          per-turn resources (Radiance, Embers, Strain, etc.) reset.
+          per-turn resources (Radiance, Heat, Strain, etc.) reset.
         </NumberedStep>
         <NumberedStep n={2} title="Mulligan">
           Click cards in hand to mark them for replacement, then confirm. Use it to dig for setup pieces or to
@@ -332,7 +334,6 @@ function SetsBody() {
     ['Blazing Garden', 'Burn, Grove, Echo & Wild Pollen', 'Keep units in Burn, let charred cards seed Ember Grove, generate Wild Pollen from Eternal cards, then spend seeded payoffs for your lineage burst turn.'],
     ['Age of the Butterfly', 'Flutter Formation + Wing Resonance', 'Charge shared Spectrum, complete Formation across unit types, then cash Wing Resonance windows on Eternity/Infinite turns before Descent reset.'],
     ['Eternal Seas', 'Undertow, Foam & Deepwake', 'Build Undertow during the turn, release it for burst, spend 5 Foam in the HUD to draw 1 card, and use Deepwake on Eternal/Infinite cards to amplify your conversion turns.'],
-    ['Iron Dominion', 'Forge & Weld-Mark', 'Accumulate Iron Charge and Weld Marks; fracture-vent for Oblivion; Tungsten Overclock gates the full-fire multiplier.'],
   ];
 
   return (
@@ -424,7 +425,7 @@ function ModesBody() {
         <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Oblivion you generate is dealt as damage instead of banked.</ListItem>
         <ListItem label="Categories">Bosses are organized by set &mdash; Neutrality, Pyroabyss, Heavenly Light, Thornbound Plains, and so on. Use the tab strip at the top of the Wake menu to switch.</ListItem>
         <ListItem label="Rewards">First clear and repeat clears both grant Aberrated Shards and the boss's signature Eternal card. 60-second cooldown after any attempt.</ListItem>
-        <ListItem label="Tier Progress">Every card in your deck and Extra Deck earns <Tag>Tier Progress</Tag> on a boss victory. Higher-tier bosses give more — early bosses grant ~3 per card, the hardest grant ~35. Wake Trials apply a bonus multiplier (capped at ×2). The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
+        <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more — early bosses grant ~3 per card, the hardest grant ~35. Wake Trials apply a bonus multiplier (capped at ×2). The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
@@ -462,12 +463,12 @@ function CardBornTierBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>What is Card-born Tier?</div>
         <div style={bodyTextStyle}>
-          Every card you play from hand is tracked individually. As its play count climbs through{' '}
+          Every card you play from hand gains <Tag>+1 Card-light</Tag>. As its Card-light climbs through{' '}
           <Tag>8 tiers</Tag> — from Practiced to Infinite Bond — it earns{' '}
           <Tag>Resonance points</Tag> and a one-time shard reward at each milestone. Resonance feeds
           directly into your <Tag>Collection Power</Tag> multiplier, permanently boosting Oblivion
           earned from all attacks. Owning more copies of a card has no effect on Resonance — only the
-          play count on each unique card matters.
+          Card-light value on each unique card matters.
         </div>
       </div>
 
@@ -482,7 +483,7 @@ function CardBornTierBody() {
           }}>
             <div style={{ fontSize: 14, color: PALETTE.accent, textAlign: 'center' }}>{glyph}</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT }}>{name}</div>
-            <div style={{ fontSize: 11, color: PALETTE.inkSoft }}>{threshold.toLocaleString()} plays</div>
+            <div style={{ fontSize: 11, color: PALETTE.inkSoft }}>{threshold.toLocaleString()} Card-light</div>
             <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>{desc}</div>
           </div>
         ))}
@@ -511,8 +512,8 @@ function CardBornTierBody() {
         <div style={sectionHeadingStyle}>Tier Progress from Boss Content</div>
         <div style={bodyTextStyle}>
           Completing Eternity's Wake boss fights, Wake Trials, and the Endless Gauntlet awards{' '}
-          <Tag>Tier Progress</Tag> to every card in your active deck and Extra Deck — on top of the
-          plays you earn in-hand. The base amount scales with difficulty:
+          <Tag>+X Card-light for each card in your deck upon completion</Tag>. This stacks with
+          Card-light gained from in-hand plays. The base amount scales with difficulty:
         </div>
         <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <ListItem label="Boss fights">~3 per card for the easiest bosses, up to ~35 for the hardest. Higher-index bosses in each set are harder and grant more.</ListItem>
@@ -560,7 +561,7 @@ function ProgressionBody() {
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card-born Tier</div>
         <div style={bodyTextStyle}>
-          Every card you play accumulates play-count mastery across <Tag>8 tiers</Tag> (Practiced → Infinite Bond).
+          Every card you play accumulates Card-light mastery across <Tag>8 tiers</Tag> (Practiced → Infinite Bond).
           Each tier grants <Tag>Resonance points</Tag> and a shard reward. Resonance feeds your{' '}
           <Tag>Collection Power</Tag> multiplier, permanently boosting Oblivion earned from attacks.
           See the <Tag>Card-born Tier</Tag> section in this guide for the full breakdown.
@@ -577,24 +578,90 @@ function ProgressionBody() {
   );
 }
 
+function PlayTutorialTurnBody({ onPlayTutorialTurn }: { onPlayTutorialTurn: (tier: NeutralityTutorialTier) => void }) {
+  const launch = (tier: NeutralityTutorialTier) => () => onPlayTutorialTurn(tier);
+
+  return (
+    <>
+      <div style={cardStyle}>
+        <div style={sectionHeadingStyle}>Neutrality Training Lanes</div>
+        <div style={bodyTextStyle}>
+          Pick a single-turn tutorial lane and jump directly into a practice turn. These runs are training-only:
+          no Card-light, no mastery rewards, no Resonance points, and no permanent account rewards.
+        </div>
+      </div>
+
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Starter Lane</div>
+        <div style={{ ...bodyTextStyle, marginBottom: 10 }}>
+          Default Neutrality deck. Learn patience flow and setup rhythm before moving up.
+        </div>
+        <button className="menu-tactile-btn" style={styles.playTurnBtn} onClick={launch('starter')}>
+          Play Tutorial Turn: Neutrality Starter
+        </button>
+      </div>
+
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Eternal Lane</div>
+        <div style={{ ...bodyTextStyle, marginBottom: 10 }}>
+          Neutrality Eternal practice deck with advanced lines and heavier payoffs.
+        </div>
+        <button className="menu-tactile-btn" style={styles.playTurnBtn} onClick={launch('eternal')}>
+          Play Tutorial Turn: Neutrality Eternal
+        </button>
+      </div>
+
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Infinite Lane</div>
+        <div style={{ ...bodyTextStyle, marginBottom: 10 }}>
+          Neutrality Infinite practice deck for endgame sequencing and high-pressure turns.
+        </div>
+        <button className="menu-tactile-btn" style={styles.playTurnBtn} onClick={launch('infinite')}>
+          Play Tutorial Turn: Neutrality Infinite
+        </button>
+      </div>
+    </>
+  );
+}
+
 // --- Modal -------------------------------------------------------------------
 
-const SECTIONS: Section[] = [
-  { id: 'overview', label: 'Overview', title: 'How To Play', subtitle: 'The game loop, currencies, and modes.', body: <OverviewBody /> },
-  { id: 'turn-flow', label: 'Turn Flow', title: 'Turn Flow', subtitle: 'Begin -> Mulligan -> Play -> End.', body: <TurnFlowBody /> },
-  { id: 'board', label: 'Board & Cards', title: 'The Board', subtitle: 'Slots, card types, and click behavior.', body: <BoardBody /> },
-  { id: 'attacks', label: 'Attacks', title: 'Attacks', subtitle: 'How Seraphim and Angel attacks pay out.', body: <AttacksBody /> },
-  { id: 'patience', label: 'Patience', title: 'Patience System', subtitle: 'The Neutrality starter engine.', body: <PatienceBody /> },
-  { id: 'sets', label: 'Sets', title: 'Set Engines', subtitle: 'The mechanical identity of every set.', body: <SetsBody /> },
-  { id: 'rarities', label: 'Rarities', title: 'Rarity Tiers', subtitle: 'From Common through Infinite.', body: <RaritiesBody /> },
-  { id: 'modes', label: 'Modes', title: 'Wake, Infinitude & Packs', subtitle: 'Boss fights, crafting, and the store.', body: <ModesBody /> },
-  { id: 'card-born-tier', label: 'Card-born Tier', title: 'Card-born Tier', subtitle: 'Play-count mastery, Resonance, and Collection Power.', body: <CardBornTierBody /> },
-  { id: 'progression', label: 'Progression', title: 'Progression & Cosmetics', subtitle: 'Shards, holofoils, profile, and themes.', body: <ProgressionBody /> },
-];
+const styles: Record<string, React.CSSProperties> = {
+  playTurnBtn: {
+    borderRadius: 10,
+    border: `1px solid ${PALETTE.border}`,
+    background: 'linear-gradient(180deg, rgba(255, 249, 240, 0.95) 0%, rgba(243, 223, 192, 0.92) 100%)',
+    color: PALETTE.inkDeep,
+    cursor: 'pointer',
+    fontSize: 12,
+    padding: '8px 12px',
+    fontFamily: DISPLAY_FONT,
+    letterSpacing: 0.45,
+    width: '100%',
+    textAlign: 'left',
+  },
+};
 
-export default function TutorialModal({ onClose }: Props) {
-  const [activeId, setActiveId] = useState<string>(SECTIONS[0].id);
-  const active = SECTIONS.find(s => s.id === activeId) ?? SECTIONS[0];
+function buildSections(onPlayTutorialTurn: (tier: NeutralityTutorialTier) => void): Section[] {
+  return [
+    { id: 'overview', label: 'Overview', title: 'How To Play', subtitle: 'The game loop, currencies, and modes.', body: <OverviewBody /> },
+    { id: 'play-turn', label: 'Play Tutorial Turn', title: 'Play Tutorial Turn', subtitle: 'Neutrality Starter -> Eternal -> Infinite practice lanes.', body: <PlayTutorialTurnBody onPlayTutorialTurn={onPlayTutorialTurn} /> },
+    { id: 'turn-flow', label: 'Turn Flow', title: 'Turn Flow', subtitle: 'Begin -> Mulligan -> Play -> End.', body: <TurnFlowBody /> },
+    { id: 'board', label: 'Board & Cards', title: 'The Board', subtitle: 'Slots, card types, and click behavior.', body: <BoardBody /> },
+    { id: 'attacks', label: 'Attacks', title: 'Attacks', subtitle: 'How Seraphim and Angel attacks pay out.', body: <AttacksBody /> },
+    { id: 'patience', label: 'Patience', title: 'Patience System', subtitle: 'The Neutrality starter engine.', body: <PatienceBody /> },
+    { id: 'sets', label: 'Sets', title: 'Set Engines', subtitle: 'The mechanical identity of every set.', body: <SetsBody /> },
+    { id: 'rarities', label: 'Rarities', title: 'Rarity Tiers', subtitle: 'From Common through Infinite.', body: <RaritiesBody /> },
+    { id: 'modes', label: 'Modes', title: 'Wake, Infinitude & Packs', subtitle: 'Boss fights, crafting, and the store.', body: <ModesBody /> },
+    { id: 'card-born-tier', label: 'Card-born Tier', title: 'Card-born Tier', subtitle: 'Card-light mastery, Resonance, and Collection Power.', body: <CardBornTierBody /> },
+    { id: 'progression', label: 'Progression', title: 'Progression & Cosmetics', subtitle: 'Shards, holofoils, profile, and themes.', body: <ProgressionBody /> },
+  ];
+}
+
+export default function TutorialModal({ onClose, onPlayTutorialTurn }: Props) {
+  const sections = buildSections(onPlayTutorialTurn);
+  const [activeId, setActiveId] = useState<string>(sections[0].id);
+  const active = sections.find(s => s.id === activeId) ?? sections[0];
 
   return (
     <div
@@ -686,7 +753,7 @@ export default function TutorialModal({ onClose }: Props) {
             gap: 3,
             overflowY: 'auto',
           }}>
-            {SECTIONS.map(section => {
+            {sections.map(section => {
               const isActive = section.id === activeId;
               return (
                 <button

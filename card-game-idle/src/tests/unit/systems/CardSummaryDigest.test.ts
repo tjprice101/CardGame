@@ -32,4 +32,13 @@ describe('card summary digest', () => {
     const ability = getCardSummarySections(eternalCard!).find(section => section.title === 'Ability');
     expect(ability?.lines[0]).toBe(getCanonicalCardDescription(eternalCard!));
   });
+
+  it('streams Patient Light wording in previews', () => {
+    const card = CardRegistry.get('btei-voids-reaping');
+    expect(card).toBeTruthy();
+
+    const preview = getCardPreviewLines(card!, 3).join(' ');
+    expect(preview).not.toContain('card-play Patience gain becomes 1 + Patient Light stacks');
+    expect(preview).toContain('+1 Patient Light');
+  });
 });

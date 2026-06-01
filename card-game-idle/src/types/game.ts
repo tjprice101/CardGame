@@ -30,7 +30,6 @@ export interface ComputedBoardStats {
   oblivionPerCardBonus: number;   // flat Oblivion added per card played (from active Seraphim)
   ophanimOblivionBonus: number;    // bonus Oblivion when Ophanim cards are played (from active Seraphim)
   cherubimExtraPlays: number;        // extra durability added to placed Cherubim cards (from active Seraphim)
-  embersPerCardBonus: number;     // flat Embers added per card played (from ember_per_card Seraphim, Pyroabyss)
   globalOblivionMult: number;     // additive % bonus applied to ALL oblivion grants (from cherubim_global_oblivion_mult passives)
   fullBoardActive: boolean;       // true when all 9 board slots are filled
   /** Global resonance score — sum of each card's highest reached mastery-tier contribution. Exposed for UI gating. */
@@ -69,16 +68,12 @@ export interface DeckState {
 
 export type TurnPhase = 'idle' | 'mulligan' | 'playing';
 export type HeavenlyNote = 'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel';
-export type ThornboundWarPath = 'Aggression' | 'Endurance';
-export type MechanicalInstruction = 'draw' | 'gain' | 'copy' | 'multiply' | 'convert' | 'trigger';
 export type PrismaticChannel = 'amber' | 'azure' | 'crimson' | 'emerald' | 'violet' | 'white';
 export type SnowboundPhase = 'Frost' | 'Voltage';
 export type GlassAxiom = 'multiplier' | 'bridge' | 'cascade';
 
 export type PendingEffect =
   | { type: 'discard_choice'; count: number; sourceCard: string }
-  | { type: 'prismatic_channel_choice'; sourceCard: string }
-  | { type: 'prismatic_sentence_choice'; cards: DeckCard[]; draw: number; drawPerfect: number }
   | {
       type: 'neutrality_equilibrium_tactical_choice';
       spend: number;
@@ -107,7 +102,6 @@ export interface RecastLedgerEntry {
 export interface TurnState {
   phase: TurnPhase;
   radiance: number;
-  embers: number;
   trail: number;
   strain: number;
   cherubimDrawFraction: number;
@@ -148,60 +142,17 @@ export interface TurnState {
   lightCadenceNotes?: HeavenlyNote[];
   lightDistinctNotes?: HeavenlyNote[];
   lightResonance?: number;
-  lightChorusAnchors?: number;
   thornScar?: number;
-  thornWarPath?: ThornboundWarPath | null;
-  thornLossesThisTurn?: number;
-  thornProcessions?: number;
-  mechanicalInstructionQueue?: MechanicalInstruction[];
-  mechanicalResolvedInstructions?: number;
-  mechanicalInstructionDiversity?: MechanicalInstruction[];
-  mechanicalKernelLocked?: boolean;
-  mechanicalClockTicks?: number;
-  mechanicalNextChimeTick?: number;
-  mechanicalPrimedChimes?: number;
-  mechanicalChimeInterval?: number;
-  mechanicalChimesFired?: number;
   prismaticCurrentChannel?: PrismaticChannel | null;
   prismaticDistinctChannels?: PrismaticChannel[];
   prismaticRecentChannels?: PrismaticChannel[];
   prismaticRefractionDepth?: number;
   prismaticNodeCharges?: number;
-  prismaticChannelLocks?: number;
-  prismaticMemoryShards?: number;
-  prismaticStormMemories?: PrismaticChannel[];
-  prismaticStormMemoryEnabled?: boolean;
-  prismaticPendingSwitchDepthMark?: number;
-  prismaticSwitchMarkedCardIds?: string[];
-  prismaticAccordChannel?: PrismaticChannel | null;
-  prismaticDistinctNonAccordChannels?: PrismaticChannel[];
-  prismaticRefractionEchoes?: number;
-  prismaticEchoCascadeArmed?: boolean;
-  prismaticEchoCascadeDepthThreshold?: number;
-  prismaticEchoCascadeGainPerToken?: number;
-  prismaticEchoCascadeDrawRefund?: number;
-  prismaticChordTokens?: number;
-  prismaticChordPermanent?: boolean;
-  prismaticChordAttackBaseBonus?: number;
-  prismaticChordAttackChainBonus?: number;
-  prismaticRefractionSpikes?: number;
-  prismaticRefractionSpikeMax?: number;
-  prismaticRefractionSpikesPersistent?: boolean;
-  prismaticLastPlaySwitchedChannel?: boolean;
-  prismaticLatticeResonant?: boolean;
-  prismaticSentencedCardIds?: string[];
-  prismaticSentencingPerfect?: boolean;
-  prismaticSentencingChainGainBonus?: number;
-  prismaticSentencingDraw?: number;
-  prismaticSentencingDrawPerfect?: number;
-  prismaticNextOphanimRefund?: number;
   prismaticResonanceCharge?: number;
   blackGlassWhiteFlame?: number;
   blackGlassBlackFlame?: number;
   blackGlassFracture?: number;
   blackGlassLastPolarity?: 'white' | 'black' | 'both' | null;
-  blackGlassGriefOaths?: number;
-  blackGlassCollapsePending?: boolean;
   blackGlassLastPayoff?: number;
   snowboundPhase?: SnowboundPhase | null;
   snowboundPotential?: number;
@@ -342,6 +293,11 @@ export interface SocialProgressStats {
   coopBossInvitesAccepted: number;
 }
 
+export interface EventBossHpSnapshot {
+  cycleId: string;
+  hp: number;
+}
+
 export interface ProgressState {
   oblivion: number;
   /** Total Oblivion ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
@@ -372,6 +328,8 @@ export interface ProgressState {
   quests: import('@/systems/progression/quests').QuestState;
   /** Achievement claim flags (one-shot shard rewards). Save v11. Keyed by title-badge id. */
   achievementClaims: Record<string, boolean>;
+  /** Achievement unlock latches. Once true, the achievement stays unlocked. Save v25. */
+  achievementUnlocks?: Record<string, boolean>;
   /** Lifetime per-card play counts. Save v12. Keyed by definitionId. */
   cardPlayCounts: Record<string, number>;
   /** Card mastery tier claim flags. Save v12. Keyed by `${definitionId}::${tier}`. */
@@ -403,12 +361,14 @@ export interface ProgressState {
   nullRaidCooldowns?: Record<string, number>;
   /** Ascension mode — total clear count per raid. raidId → number. Save v21. */
   nullRaidClears?: Record<string, number>;
+  /** Ascension mode — Prove Yourself unlocks per raid. raidId → true. */
+  nullRaidProveUnlocks?: Record<string, boolean>;
   /** Ascension mode — consecutive full clears without the raid angel drop. Save v22. */
   nullRaidAngelMissStreak?: Record<string, number>;
   /** Ascension mode — owned Transcendent Card copies. definitionId → count. Save v21. */
   transcendentCollection?: Record<string, number>;
-  /** Ascension mode — purchased cosmetic ids (profile pics, UI themes). Save v21. */
-  purchasedAscensionCosmetics?: string[];
+  /** Event-boss HP snapshots frozen per cycle. category → {cycleId,hp}. */
+  eventBossHpSnapshots?: Record<string, EventBossHpSnapshot>;
   /** Battleground of the Card-born lifetime stats. Save v20. */
   battlegroundStats?: {
     wins: number;

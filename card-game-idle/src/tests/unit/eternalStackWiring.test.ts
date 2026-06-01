@@ -194,7 +194,7 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
   });
 
   it('UI renders set_secondary effects with human labels (not raw enum)', () => {
-    const summary = ['set_secondary_gain', 'pyro_cinder_echo_ignite', 'light_halo_cascade_resound']
+    const summary = ['set_secondary_gain', 'pyro_cinder_echo_ignite']
       .map(t => ({ type: t } as any));
     // We exercise via formatEffect indirectly through getCardSummarySections for a real card if available.
     // Minimal smoke: ensure the labels map contains Chroma Ember (used by Pyroabyss higher-rarity Fire).

@@ -61,8 +61,7 @@ interface CollectionVirtualRow {
 
 export default function CollectionViewer({ onClose }: Props) {
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
-  // Use larger readable sizes than the default 'grid' metrics (7/9/8px is too small)
-  const faceMetrics = { ...getCardFaceMetrics('grid'), typeSize: 10, nameSize: 13, descSize: 10, descLineHeight: 1.35 };
+  const faceMetrics = getCardFaceMetrics('grid');
   const collection = useStore(s => s.progress.collection);
   const holoCollection = useStore(s => s.progress.holoCollection);
   const favoriteCollection = useStore(s => s.progress.favoriteCollection);

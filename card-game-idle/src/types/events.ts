@@ -14,6 +14,7 @@ export interface EventPayloads {
   'angel:attacked': { slot: number; attackId: string; amount: number };
   'oblivion:earned': { delta: number; total: number };
   'boss:damaged': { delta: number; remaining: number };
+  'boss:cardbreak': { count: number };
   'boss:defeated': { bossId: string; victory: boolean };
   'cherubim:expired': { backSlot: 0 | 1 | 2 | 3; definitionId: string };
   'milestone:reached': { threshold: number; label: string };

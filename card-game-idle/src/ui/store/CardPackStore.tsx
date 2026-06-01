@@ -232,7 +232,7 @@ const styles: Record<string, React.CSSProperties> = {
   } as React.CSSProperties,
 };
 
-interface Props { onClose: () => void; onStartTrial: (packId: string, mode: 'solo' | 'guided') => void }
+interface Props { onClose: () => void; onStartTrial: (packId: string) => void }
 
 export default function CardPackStore({ onClose, onStartTrial }: Props) {
   const oblivion = useStore(s => s.progress.oblivion);

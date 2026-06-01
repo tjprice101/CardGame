@@ -29,19 +29,6 @@ function motivationalLabel(value: number): string | null {
 export default function BossFightArena() {
   const bossFight = useStore(selectBossFight);
   const turn = useStore(selectTurn);
-  const tickBossTimer = useStore(s => s.tickBossTimer);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (bossFight.mode !== 'active') {
-      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-      return;
-    }
-    timerRef.current = setInterval(() => { tickBossTimer(1); }, 1000);
-    return () => {
-      if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-    };
-  }, [bossFight.mode, tickBossTimer]);
 
   const damageThisTurn = turn.oblivionEarnedThisTurn;
   const currentLabel = motivationalLabel(damageThisTurn);
@@ -78,7 +65,7 @@ export default function BossFightArena() {
   const timeCritical = timePercent <= 0.25;
   const timeWarn = timePercent <= 0.5;
   const timeColor = timeCritical ? '#ff4d4d' : timeWarn ? '#ffcc00' : '#4dff91';
-  const remainingSeconds = Math.max(0, Math.ceil(bossFight.fightTimeRemaining));
+  const remainingSeconds = Math.max(0, Math.floor(bossFight.fightTimeRemaining));
   const timerMinutes = Math.floor(remainingSeconds / 60);
   const timerSeconds = String(remainingSeconds % 60).padStart(2, '0');
 
@@ -217,6 +204,13 @@ export default function BossFightArena() {
         </div>
 
         <HpBar hpPercent={hpPercent} damageDealtPct={damageDealtPct} color={hpColor} lowHp={lowHp} />
+
+        {/* Card-break Meter — stagger the boss by Synergized Seraphim or Exalted Angel attacks */}
+        <CardBreakMeter
+          meter={bossFight.bossCardBreakMeter ?? 0}
+          freezeLeft={bossFight.bossCardBreakFreezeLeft ?? 0}
+          breakCount={bossFight.bossCardBreakCount ?? 0}
+        />
 
         <div style={{
           display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6,
@@ -403,6 +397,67 @@ function Stat({ label, value, color, align, emphasize }: {
         fontVariantNumeric: 'tabular-nums',
         textShadow: emphasize ? `0 0 10px ${color}88` : undefined,
       }}>{value}</span>
+    </div>
+  );
+}
+
+const CARD_BREAK_COLOR = '#7de8ff';
+const CARD_BREAK_FROZEN_COLOR = '#43e8d8';
+
+function CardBreakMeter({ meter, freezeLeft, breakCount }: {
+  meter: number;
+  freezeLeft: number;
+  breakCount: number;
+}) {
+  const pct = Math.min(100, Math.max(0, meter));
+  const isFrozen = freezeLeft > 0;
+  const barColor = isFrozen ? CARD_BREAK_FROZEN_COLOR : CARD_BREAK_COLOR;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{
+          fontSize: 8.5, letterSpacing: 1.4,
+          color: isFrozen ? CARD_BREAK_FROZEN_COLOR : EW_TEXT_MUTED,
+          fontFamily: 'Georgia, serif',
+          fontWeight: isFrozen ? 'bold' : 'normal',
+          textShadow: isFrozen ? `0 0 8px ${CARD_BREAK_FROZEN_COLOR}aa` : undefined,
+          transition: 'color 0.3s',
+        }}>
+          {isFrozen ? `CARD-BREAK! TIMER FROZEN ${Math.ceil(freezeLeft)}s` : 'CARD-BREAK METER'}
+        </span>
+        {breakCount > 0 && (
+          <span style={{
+            fontSize: 8, color: CARD_BREAK_COLOR, letterSpacing: 0.8,
+            fontFamily: 'Georgia, serif',
+          }}>×{breakCount} STAGGER{breakCount !== 1 ? 'S' : ''}</span>
+        )}
+      </div>
+      <div style={{
+        position: 'relative', height: 6, background: 'rgba(0,0,0,0.55)', borderRadius: 4,
+        border: `1px solid ${barColor}44`, overflow: 'hidden',
+        boxShadow: isFrozen ? `0 0 10px ${CARD_BREAK_FROZEN_COLOR}55` : undefined,
+        transition: 'box-shadow 0.3s',
+      }}>
+        <div style={{
+          position: 'absolute', top: 0, left: 0, height: '100%',
+          width: `${pct}%`,
+          background: isFrozen
+            ? `linear-gradient(90deg, ${CARD_BREAK_FROZEN_COLOR}, #a0ffee)`
+            : `linear-gradient(90deg, ${CARD_BREAK_COLOR}, #a8f0ff)`,
+          borderRadius: 4,
+          transition: 'width 0.3s ease, background 0.4s ease',
+          boxShadow: `0 0 8px ${barColor}77`,
+        }} />
+        {/* Sheen sweep */}
+        {!isFrozen && (
+          <div style={{
+            position: 'absolute', top: 0, left: 0, bottom: 0, width: '35%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+            animation: 'ewHpSheen 2.4s ease-in-out infinite',
+          }} />
+        )}
+      </div>
     </div>
   );
 }

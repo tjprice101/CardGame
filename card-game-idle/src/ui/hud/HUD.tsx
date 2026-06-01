@@ -10,7 +10,6 @@ import HandDisplay from './HandDisplay';
 import RadianceDisplay from './RadianceDisplay';
 import TrailDisplay from './TrailDisplay';
 import StrainDisplay from './StrainDisplay';
-import EmberDisplay from './EmberDisplay';
 import FoamDisplay from './FoamDisplay';
 import DeckStatus from './DeckStatus';
 import SetEngineDisplay from './SetEngineDisplay';
@@ -263,7 +262,6 @@ export default function HUD() {
       <FoamDisplay />
       <TrailDisplay />
       <StrainDisplay />
-      <EmberDisplay />
 
       {/* Top status bar — set · turn · phase */}
       <TopStatusBar onOpenOblivionScreen={() => setShowOblivionScreen(true)} />

@@ -1,11 +1,20 @@
 import { useState, lazy, Suspense } from 'react';
 import { useStore, selectBossFight, selectProgress } from '@/state/store';
 import { useSocialStore, selectSocialStatus } from '@/state/socialStore';
-import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
+import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS, getBossDisplayHp } from '@/data/bosses/bossDefinitions';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
-import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
+import {
+  cardFacePalette,
+  getCardArtTopBottomBorderOverlayStyleForCard,
+  getCardBackgroundUrl,
+  getCardFaceMetrics,
+  getDenseCardFaceBackgroundStyle,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import BossCodex from './BossCodex';
@@ -24,6 +33,9 @@ const G = {
   accentSoft: '#ff9a9a',
   cinzel: 'Georgia, serif',
 } as const;
+
+const REWARD_FACE_WIDTH = 116;
+const REWARD_FACE_HEIGHT = 164;
 
 const BOSS_ART_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
 const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
@@ -147,6 +159,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
   const startBossFight = useStore(s => s.startBossFight);
   const enqueueToast = useStore(s => s.enqueueToast);
   const [selectedBossId, setSelectedBossId] = useState<string | null>(null);
+  const [challengeMode, setChallengeMode] = useState<'solo' | 'coop' | null>(null);
   const [activeBossTab, setActiveBossTab] = useState<BossCategory>('Neutrality');
   const [showCodex, setShowCodex] = useState(false);
   const [showFriendsBoard, setShowFriendsBoard] = useState(false);
@@ -164,14 +177,14 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
     onClose();
   }
 
-  function handleOpenCardBoundCoop(bossId: string, deckId: string, label: string) {
+  function handleOpenCardBoundCoop(bossId: string, label: string) {
     if (socialStatus !== 'authenticated') {
       enqueueToast('Sign in to use co-op party invites.', 'warning');
       return;
     }
     window.dispatchEvent(new CustomEvent('open-card-bound-coop', {
       detail: {
-        draft: { type: 'eternity_boss', bossId, deckId, label },
+        draft: { type: 'eternity_boss', bossId, label },
       },
     }));
   }
@@ -261,6 +274,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
               onClick={() => {
                 setActiveBossTab(tab);
                 setSelectedBossId(null);
+                setChallengeMode(null);
               }}
               style={{
                 padding: '6px 12px',
@@ -301,18 +315,23 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
         {visibleBosses.map(boss => {
           const cooldown = getCooldownRemaining(boss.id);
           const onCooldown = cooldown > 0;
+          const bossDifficultyStars = difficultyByBossId.get(boss.id) ?? 1;
           const rewardDef = CardRegistry.get(boss.rewardCardId);
           const bossArtUrl = getBossArtUrl(boss.keyArt);
           const rewardCardArtUrl = rewardDef ? getCardBackgroundUrl(rewardDef) : null;
           const displayBossArtUrl = bossArtUrl ?? rewardCardArtUrl;
           const isSelected = selectedBossId === boss.id;
           const rewardDisplayName = boss.category === 'Black Glass Inferno' ? boss.name : rewardDef?.name ?? '';
+          const rewardPreviewText = rewardDef
+            ? getCardPreviewLines(rewardDef, rewardDef.type === 'Angel' ? 3 : 2).join(' ')
+            : '';
+          const rewardFaceMetrics = getCardFaceMetrics('grid');
           const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(entry => entry.id === boss.id));
           const baseMasteryPerCard = getBossBaseMasteryPerCard(bossIdx, BOSS_DEFINITIONS.length);
 
           return (
             <div key={boss.id} className={onCooldown ? undefined : 'ui-tile-hover'} style={{
-              width: 300, background: 'rgba(10,4,16,0.95)',
+              width: 460, background: 'rgba(10,4,16,0.95)',
               border: `1px solid ${onCooldown ? 'rgba(255,107,107,0.2)' : 'rgba(255,107,107,0.5)'}`,
               borderRadius: 12, padding: '20px', display: 'flex', flexDirection: 'column', gap: 12,
               opacity: onCooldown ? 0.65 : 1,
@@ -330,6 +349,69 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                 }} />
               )}
 
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 6,
+              }}>
+                <div style={{
+                  fontSize: 18,
+                  color: '#ffd7bf',
+                  fontWeight: 'bold',
+                  letterSpacing: 1,
+                  lineHeight: 1.15,
+                }}>
+                  {boss.name}
+                </div>
+                <div style={{
+                  fontSize: 11,
+                  color: 'rgba(255,190,190,0.74)',
+                  lineHeight: 1.45,
+                }}>
+                  {boss.description}
+                </div>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: 11,
+                color: 'rgba(255,190,190,0.74)',
+                letterSpacing: 0.7,
+              }}>
+                <div style={{
+                  color: 'rgba(255,220,170,0.92)',
+                  fontWeight: 'bold',
+                  letterSpacing: 0.5,
+                }}>
+                  {'★'.repeat(bossDifficultyStars)}
+                </div>
+                <div>
+                  Max HP: <span style={{ color: '#ffd87a', fontWeight: 'bold' }}>{Math.floor(getBossDisplayHp(progress, boss)).toLocaleString()}</span>
+                </div>
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: 8,
+              }}>
+                <div style={bossStatTileStyle}>
+                  <span style={bossStatLabelStyle}>First Clear</span>
+                  <span style={bossStatValueStyle}>{boss.firstClearShards.toLocaleString()} Shards</span>
+                </div>
+                <div style={bossStatTileStyle}>
+                  <span style={bossStatLabelStyle}>Repeat Clear</span>
+                  <span style={bossStatValueStyle}>{boss.repeatClearShards.toLocaleString()} Shards</span>
+                </div>
+                <div style={bossStatTileStyle}>
+                  <span style={bossStatLabelStyle}>Time Limit</span>
+                  <span style={bossStatValueStyle}>{Math.floor(BOSS_FIGHT_ROUND_SECONDS / 60)} min</span>
+                </div>
+              </div>
+
               {/* Reward card */}
               {rewardDef && (
                 <div style={{
@@ -343,44 +425,177 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                     height: 4,
                     borderBottom: '1px solid rgba(255,107,107,0.18)',
                   }} />
-                  <div style={{ padding: '10px 12px 12px' }}>
-                    <div style={{ fontSize: 10, color: 'rgba(255,150,150,0.5)', letterSpacing: 1 }}>REWARD</div>
-                    <div style={{ fontSize: 13, color: '#ff6b6b', marginTop: 2, fontWeight: 'bold', lineHeight: 1.15 }}>{rewardDisplayName}</div>
-                    <div style={{ fontSize: 10, color: RARITY_COLORS[rewardDef.rarity], marginTop: 2 }}>
-                      {rewardDef.rarity} · {rewardDef.type}
-                    </div>
-                    <div style={{ marginTop: 8 }}>
-                      <CardEngineCallout card={rewardDef} variant="compact" />
-                    </div>
-                    <div style={{ marginTop: 6 }}>
-                      <CardRulesDigest
-                        card={rewardDef}
-                        variant="preview"
-                        maxSections={2}
-                        maxLinesPerSection={10}
-                        lineClamp={3}
-                        labelColor="rgba(255,150,150,0.5)"
-                        textColor="rgba(255,200,200,0.68)"
-                        sectionBackground="transparent"
-                        sectionBorder="transparent"
-                      />
+                  <div style={{ padding: '12px 12px 12px' }}>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: `${REWARD_FACE_WIDTH}px minmax(0, 1fr)`,
+                      gap: 10,
+                      alignItems: 'start',
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'center',
+                      }}>
+                        <div
+                          className={rewardDef.rarity === 'Infinite' || rewardDef.rarity === 'Eternal'
+                            ? `holofoil-menu-card${rewardDef.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${rewardDef.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
+                            : undefined}
+                          style={{
+                            width: REWARD_FACE_WIDTH,
+                            height: REWARD_FACE_HEIGHT,
+                            ...getDenseCardFaceBackgroundStyle(rewardDef, 'normal'),
+                            borderRadius: 10,
+                            border: '1px solid rgba(255,107,107,0.3)',
+                            position: 'relative',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'stretch',
+                          }}
+                        >
+                          <div style={getCardArtTopBottomBorderOverlayStyleForCard(rewardDef)} />
+                          <div style={getCardNameRibbonStyle('grid')}>
+                            <div style={{
+                              color: cardFacePalette.textMuted,
+                              letterSpacing: 1.4,
+                              marginBottom: 4,
+                              textAlign: 'center',
+                              textTransform: 'uppercase',
+                              fontSize: rewardFaceMetrics.typeSize,
+                            }}>
+                              {getDisplayCardTypeLabel(rewardDef.type)}
+                            </div>
+                            <div style={{
+                              color: cardFacePalette.text,
+                              fontSize: rewardFaceMetrics.nameSize,
+                              fontWeight: 'bold',
+                              lineHeight: 1.25,
+                              textAlign: 'center',
+                              minHeight: 24,
+                            }}>
+                              {rewardDef.name}
+                            </div>
+                          </div>
+                          <div style={getCardRulesPanelStyle('grid')}>
+                            <div style={{
+                              color: cardFacePalette.textSoft,
+                              display: '-webkit-box',
+                              fontSize: rewardFaceMetrics.descSize,
+                              lineHeight: rewardFaceMetrics.descLineHeight,
+                              overflow: 'hidden',
+                              textAlign: 'center',
+                              WebkitBoxOrient: 'vertical',
+                              WebkitLineClamp: rewardDef.type === 'Angel' ? 3 : 2,
+                            }}>
+                              {rewardPreviewText}
+                            </div>
+                            {rewardDef.type === 'Angel' && (
+                              <div style={{
+                                fontSize: 6,
+                                color: cardFacePalette.textMuted,
+                                marginTop: 5,
+                                textAlign: 'center',
+                              }}>
+                                Cost: {rewardDef.summonCost.length} materials
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 8,
+                        minWidth: 0,
+                        background: 'rgba(10, 4, 16, 0.62)',
+                        border: '1px solid rgba(255,107,107,0.14)',
+                        borderRadius: 10,
+                        padding: '10px 10px 9px',
+                      }}>
+                        <div style={{ fontSize: 10, color: 'rgba(255,150,150,0.5)', letterSpacing: 1 }}>REWARD CARD</div>
+                        <div style={{ fontSize: 13, color: '#ff6b6b', marginTop: 1, fontWeight: 'bold', lineHeight: 1.15 }}>{rewardDisplayName}</div>
+                        <div style={{ fontSize: 10, color: RARITY_COLORS[rewardDef.rarity], marginTop: 1 }}>
+                          {rewardDef.rarity} · {rewardDef.type}
+                        </div>
+                        <div style={{ marginTop: 4 }}>
+                          <CardEngineCallout card={rewardDef} variant="compact" />
+                        </div>
+                        <div style={{ marginTop: 2 }}>
+                          <CardRulesDigest
+                            card={rewardDef}
+                            variant="preview"
+                            maxSections={6}
+                            maxLinesPerSection={8}
+                            lineClamp={6}
+                            labelColor="rgba(255,150,150,0.5)"
+                            textColor="rgba(255,220,220,0.76)"
+                            sectionBackground="transparent"
+                            sectionBorder="transparent"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
               {hasSavedDecks && (
-                <button
-                  onClick={() => handleOpenCardBoundCoop(boss.id, progress.savedDecks[0]?.id ?? '', `Eternity's Wake · ${boss.name}`)}
-                  style={{
-                    alignSelf: 'flex-start', padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
-                    background: 'rgba(120,70,220,0.20)', border: `1px solid ${G.borderStrong}`,
-                    color: G.accentSoft, fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
-                    textTransform: 'uppercase',
-                  }}
-                >
-                  Open Card-bound Co-op
-                </button>
+                <>
+                  {!isSelected ? (
+                    <button
+                      onClick={() => {
+                        setSelectedBossId(boss.id);
+                        setChallengeMode(null);
+                      }}
+                      style={{
+                        alignSelf: 'flex-start', padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                        background: 'rgba(255,107,107,0.18)', border: `1px solid ${G.borderStrong}`,
+                        color: G.accentSoft, fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Challenge
+                    </button>
+                  ) : challengeMode === null ? (
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => setChallengeMode('solo')}
+                        style={{
+                          alignSelf: 'flex-start', padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                          background: 'rgba(255,107,107,0.18)', border: `1px solid ${G.borderStrong}`,
+                          color: G.accentSoft, fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Solo
+                      </button>
+                      <button
+                        onClick={() => setChallengeMode('coop')}
+                        style={{
+                          alignSelf: 'flex-start', padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                          background: 'rgba(120,70,220,0.20)', border: `1px solid ${G.borderStrong}`,
+                          color: G.accentSoft, fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Co-op
+                      </button>
+                    </div>
+                  ) : challengeMode === 'coop' ? (
+                    <button
+                      onClick={() => handleOpenCardBoundCoop(boss.id, `Eternity's Wake · ${boss.name}`)}
+                      style={{
+                        alignSelf: 'flex-start', padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                        background: 'rgba(120,70,220,0.20)', border: `1px solid ${G.borderStrong}`,
+                        color: G.accentSoft, fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Open Co-op Home
+                    </button>
+                  ) : null}
+                </>
               )}
 
               {/* Collection count */}
@@ -395,20 +610,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                 <div style={{ textAlign: 'center', color: 'rgba(255,107,107,0.6)', fontSize: 12 }}>
                   Cooldown: {Math.floor(cooldown / 60)}:{String(cooldown % 60).padStart(2, '0')}
                 </div>
-              ) : !isSelected ? (
-                <button
-                  onClick={() => {
-                    setSelectedBossId(boss.id);
-                  }}
-                  style={{
-                    background: 'rgba(255,107,107,0.15)', border: '1px solid rgba(255,107,107,0.5)',
-                    color: '#ff6b6b', padding: '8px 0', borderRadius: 6, cursor: 'pointer',
-                    fontFamily: 'Georgia, serif', fontSize: 13, letterSpacing: 1,
-                  }}
-                >
-                  Challenge
-                </button>
-              ) : (
+              ) : isSelected && challengeMode === 'solo' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <div style={{ fontSize: 11, color: 'rgba(255,200,200,0.6)' }}>Select a deck:</div>
                   {!hasSavedDecks ? (
@@ -436,7 +638,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                                 {deck.deckList.length > 0 ? ` (${deck.deckList.reduce((a, e) => a + e.copies, 0)} cards)` : ''}
                               </div>
                               <div style={{ fontSize: 10, color: 'rgba(160,220,255,0.74)', marginTop: 3 }}>
-                                +{rewardPreview.resonanceGain.toLocaleString()} Resonance on victory • {rewardPreview.cardsTieredUp} tier-up{rewardPreview.cardsTieredUp === 1 ? '' : 's'}
+                                Awards +{rewardPreview.resonanceGain.toLocaleString()} Card-light for each card in your deck upon completion
                               </div>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 134 }}>
@@ -456,22 +658,6 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                               >
                                 Challenge Solo
                               </button>
-                              <button
-                                onClick={() => handleOpenCardBoundCoop(boss.id, deck.id, `Eternity's Wake · ${boss.name}`)}
-                                style={{
-                                  background: 'rgba(120,180,255,0.14)',
-                                  border: '1px solid rgba(120,180,255,0.32)',
-                                  color: '#9cd6ff',
-                                  padding: '5px 8px',
-                                  borderRadius: 5,
-                                  cursor: 'pointer',
-                                  fontFamily: 'Georgia, serif',
-                                  fontSize: 11,
-                                  letterSpacing: 0.4,
-                                }}
-                              >
-                                Open Co-op Home
-                              </button>
                             </div>
                           </div>
                         </div>
@@ -479,7 +665,10 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                     })
                   )}
                   <button
-                    onClick={() => setSelectedBossId(null)}
+                    onClick={() => {
+                      setSelectedBossId(null);
+                      setChallengeMode(null);
+                    }}
                     style={{
                       background: 'none', border: 'none', color: 'rgba(255,150,150,0.4)',
                       cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 11, textAlign: 'left',
@@ -488,7 +677,26 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                     Cancel
                   </button>
                 </div>
-              )}
+              ) : isSelected && challengeMode === 'coop' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ fontSize: 11, color: 'rgba(255,200,200,0.6)' }}>Co-op setup:</div>
+                  <div style={{ fontSize: 11, color: 'rgba(160,220,255,0.74)', lineHeight: 1.45 }}>
+                    Open Card-bound Co-op to pick a deck, ready your party, and launch the boss together.
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedBossId(null);
+                      setChallengeMode(null);
+                    }}
+                    style={{
+                      background: 'none', border: 'none', color: 'rgba(255,150,150,0.4)',
+                      cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 11, textAlign: 'left',
+                    }}
+                  >
+                    Back
+                  </button>
+                </div>
+              ) : null}
             </div>
           );
         })}
@@ -562,6 +770,30 @@ const headerSecondaryButton: React.CSSProperties = {
   borderRadius: 6,
   letterSpacing: 1,
   transition: 'all 220ms ease',
+};
+
+const bossStatTileStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  background: 'rgba(255,107,107,0.08)',
+  border: '1px solid rgba(255,107,107,0.2)',
+  borderRadius: 8,
+  padding: '7px 8px',
+};
+
+const bossStatLabelStyle: React.CSSProperties = {
+  color: 'rgba(255,150,150,0.56)',
+  fontSize: 9,
+  letterSpacing: 0.9,
+  textTransform: 'uppercase',
+};
+
+const bossStatValueStyle: React.CSSProperties = {
+  color: 'rgba(255,225,190,0.92)',
+  fontSize: 11,
+  fontWeight: 'bold',
+  lineHeight: 1.2,
 };
 
 function FeaturedBossBanner() {

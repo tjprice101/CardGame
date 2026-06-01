@@ -504,10 +504,10 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Aurora Throne',
-    description: 'Gain 24 Radiance; Gain 2 Cadence; Gain 1 Anchor; Gain 3 Halo; Look at the top 7 cards and take 1 matching Ophanim or Seraphim',
+    description: 'Gain 24 Radiance; Gain 3 Halo; Look at the top 7 cards and take 1 matching Ophanim or Seraphim',
     artKey: 'btei_light_sunbreak_canon',
     // Role: HALO starter. Frontloads Halo stacks and consistency.
-    effects: [{ type: 'radiance_gain', value: 24 }, { type: 'light_resonance_gain', value: 2 }, { type: 'light_anchor_gain', value: 1 }, { type: 'eternal_stack_gain', stack: 'light', value: 3 }, { type: 'look_top_take_type', look: 7, filter: ['Ophanim', 'Seraphim'] }],
+    effects: [{ type: 'radiance_gain', value: 24 }, { type: 'eternal_stack_gain', stack: 'light', value: 3 }, { type: 'look_top_take_type', look: 7, filter: ['Ophanim', 'Seraphim'] }],
   },
   {
     definitionId: 'btei-light-aureate-rapture',
@@ -515,7 +515,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Sanctum Breaker',
-    description: 'On play: Gain 26 Radiance; Gain 2 Cadence; Gain 1 Anchor; Gain 3 Halo; If you have 6+ Halo, Spend 6 Halo; +2600 Oblivion; Empower the next card you play; Search your deck for 1 matching Ophanim or Cherubim. While on board: +170 Oblivion per card played while active',
+    description: 'On play: Gain 26 Radiance; Gain 3 Halo; If you have 6+ Halo, Spend 6 Halo; +2600 Oblivion; Empower the next card you play; Search your deck for 1 matching Ophanim or Cherubim. While on board: +170 Oblivion per card played while active',
     artKey: 'btei_light_aureate_rapture',
     attacks: {
       unsynergized: {
@@ -542,7 +542,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 170, synergyRequirement: 'Light' },
     // Role: HALO spender bridge. Converts built Halo directly into burst.
-    onPlayEffects: [{ type: 'radiance_gain', value: 26 }, { type: 'light_resonance_gain', value: 2 }, { type: 'light_anchor_gain', value: 1 }, { type: 'eternal_stack_gain', stack: 'light', value: 3 }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 6 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 6 }, { type: 'oblivion_flat', value: 2600 }, { type: 'multiply_next' }] }, { type: 'search_deck_by_type', filter: ['Ophanim', 'Cherubim'] }],
+    onPlayEffects: [{ type: 'radiance_gain', value: 26 }, { type: 'eternal_stack_gain', stack: 'light', value: 3 }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 6 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 6 }, { type: 'oblivion_flat', value: 2600 }, { type: 'multiply_next' }] }, { type: 'search_deck_by_type', filter: ['Ophanim', 'Cherubim'] }],
   },
   {
     definitionId: 'btei-light-choir-imperator',
@@ -550,12 +550,12 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Choral Tyrant',
-    description: 'On play: Gain 18 Radiance; Gain 1 Anchor; Gain 3 Halo; Salvage 1 card matching Ophanim. While on board: All Oblivion gain +12%',
+    description: 'On play: Gain 18 Radiance; Gain 3 Halo; Salvage 1 card matching Ophanim. While on board: All Oblivion gain +12%',
     artKey: 'btei_light_choir_imperator',
     maxDurability: 7,
     effects: [{ type: 'cherubim_global_oblivion_mult', value: 0.12 }],
     // Role: PASSIVE Halo battery. Back-row support that feeds Halo cashouts.
-    onPlayEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'light_anchor_gain', value: 1 }, { type: 'eternal_stack_gain', stack: 'light', value: 3 }, { type: 'salvage_by_type', filter: ['Ophanim'] }],
+    onPlayEffects: [{ type: 'radiance_gain', value: 18 }, { type: 'eternal_stack_gain', stack: 'light', value: 3 }, { type: 'salvage_by_type', filter: ['Ophanim'] }],
   },
   {
     definitionId: 'btei-light-halo-dominion',
@@ -563,17 +563,17 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Halo Legion Prime',
-    description: 'On summon: Gain 38 Radiance; Gain 3 Cadence; Gain 1 Anchor; Gain 6 Halo. After 6 cards played: Double current Radiance; Gain 3 Cadence; Gain 1 Anchor; Cash out all Halo (+500 Oblivion per stack); Gain 6 Radiance; +1800 Oblivion. While on board: +210 Oblivion per card played while on board',
+    description: 'On summon: Gain 38 Radiance; Gain 6 Halo. After 6 cards played: Double current Radiance; Cash out all Halo (+500 Oblivion per stack); Gain 6 Radiance; +1800 Oblivion. While on board: +210 Oblivion per card played while on board',
     artKey: 'btei_light_halo_dominion',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 3 }],
     // Role: APEX cashout. Converts all Halo into the largest burst in the set.
-    onSummonEffects: [{ type: 'radiance_gain', value: 38 }, { type: 'light_resonance_gain', value: 3 }, { type: 'light_anchor_gain', value: 1 }, { type: 'eternal_stack_gain', stack: 'light', value: 6 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 38 }, { type: 'eternal_stack_gain', stack: 'light', value: 6 }],
     activatedAbility: {
       name: 'Dominion Hymn',
       cardsPlayedRequirement: 6,
-      description: 'Double current Radiance; Gain 3 Cadence; Gain 1 Anchor; Cash out all Halo (+500 Oblivion per stack); Gain 6 Radiance; +1800 Oblivion',
-      effects: [{ type: 'radiance_double' }, { type: 'light_resonance_gain', value: 3 }, { type: 'light_anchor_gain', value: 1 }, { type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 500 }, { type: 'radiance_gain', value: 6 }, { type: 'oblivion_flat', value: 1800 }],
+      description: 'Double current Radiance; Cash out all Halo (+500 Oblivion per stack); Gain 6 Radiance; +1800 Oblivion',
+      effects: [{ type: 'radiance_double' }, { type: 'eternal_stack_cashout', stack: 'light', oblivionPerStack: 500 }, { type: 'radiance_gain', value: 6 }, { type: 'oblivion_flat', value: 1800 }],
     },
     attacks: {
       primary: {
@@ -605,13 +605,11 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Light',
     rarity: 'Eternal',
     name: 'Morning Crown Absolute',
-    description: 'Gain 26 Radiance; Gain 2 Cadence; Gain 1 Anchor; Gain 4 Halo; If you have 8+ Halo, Spend 8 Halo; +4200 Oblivion; Empower the next card you play; If you control 3+ active Seraphim, +2000 Oblivion',
+    description: 'Gain 26 Radiance; Gain 4 Halo; If you have 8+ Halo, Spend 8 Halo; +4200 Oblivion; Empower the next card you play; If you control 3+ active Seraphim, +2000 Oblivion',
     artKey: 'btei_light_throne_of_morning',
     // Role: ESCALATOR. Rewards Halo banking with a large threshold spender.
     effects: [
       { type: 'radiance_gain', value: 26 },
-      { type: 'light_resonance_gain', value: 2 },
-      { type: 'light_anchor_gain', value: 1 },
       { type: 'eternal_stack_gain', stack: 'light', value: 4 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 8 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 8 }, { type: 'oblivion_flat', value: 4200 }, { type: 'multiply_next' }] },
       { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 2000 }] }],
@@ -622,13 +620,12 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Thornbound',
     rarity: 'Eternal',
     name: 'Bleeding Road Matriarch',
-    description: 'Gain 31 Trail; Gain 2 Thorncrowns; Gain 2 Briar Spirals; Salvage any 1 card; If you have 60+ Trail, Spend 25 Trail; +1400 Oblivion; Empower the next card you play',
+    description: 'Gain 31 Trail; Gain 4 Briar Spirals; Salvage any 1 card; If you have 60+ Trail, Spend 25 Trail; +1400 Oblivion; Empower the next card you play',
     artKey: 'btei_thornbound_briar_siege',
     // Role: GENERATOR. Frontloads Briar Spirals and sets up every later Thornbound payoff.
     effects: [
       { type: 'trail_gain', value: 31 },
-      { type: 'eternal_stack_gain', stack: 'thorn', value: 2 },
-      { type: 'set_secondary_gain', kind: 'thorn', value: 2 },
+      { type: 'set_secondary_gain', kind: 'thorn', value: 4 },
       { type: 'salvage_any' },
       { type: 'conditional', condition: { type: 'trail_gte', value: 60 }, then: [{ type: 'trail_spend', value: 25 }, { type: 'oblivion_flat', value: 1400 }, { type: 'multiply_next' }] }],
   },
@@ -638,16 +635,15 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Thornbound',
     rarity: 'Eternal',
     name: 'Ragged Banner Host',
-    description: 'On play: Gain 30 Trail; Gain 1 Thorncrown; Gain 1 Briar Spiral; If you have 50+ Trail, Spend 20 Trail; +1200 Oblivion; Gain 1 Briar Spiral; If you have 100+ Trail, Gain 2 Thorncrowns; Gain 2 Briar Spirals. While on board: Adjacent active Seraphim gain +120 Oblivion per card played',
+    description: 'On play: Gain 30 Trail; Gain 2 Briar Spirals; If you have 50+ Trail, Spend 20 Trail; +1200 Oblivion; Gain 1 Briar Spiral; If you have 100+ Trail, Gain 4 Briar Spirals. While on board: Adjacent active Seraphim gain +120 Oblivion per card played',
     artKey: 'btei_thornbound_red_march',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 120 }],
     // Role: CONVERTER. Converts a large Trail bank into immediate pressure while adding Spiral fuel.
     onPlayEffects: [
       { type: 'trail_gain', value: 30 },
-      { type: 'eternal_stack_gain', stack: 'thorn', value: 1 },
-      { type: 'set_secondary_gain', kind: 'thorn', value: 1 },
+      { type: 'set_secondary_gain', kind: 'thorn', value: 2 },
       { type: 'conditional', condition: { type: 'trail_gte', value: 50 }, then: [{ type: 'trail_spend', value: 20 }, { type: 'oblivion_flat', value: 1200 }, { type: 'set_secondary_gain', kind: 'thorn', value: 1 }] },
-      { type: 'conditional', condition: { type: 'trail_gte', value: 100 }, then: [{ type: 'eternal_stack_gain', stack: 'thorn', value: 2 }, { type: 'set_secondary_gain', kind: 'thorn', value: 2 }] }],
+      { type: 'conditional', condition: { type: 'trail_gte', value: 100 }, then: [{ type: 'set_secondary_gain', kind: 'thorn', value: 4 }] }],
   },
   {
     definitionId: 'btei-thornbound-cathedral-lancer',
@@ -655,7 +651,7 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Thornbound',
     rarity: 'Eternal',
     name: 'Cathedral Lance',
-    description: 'On play: Gain 28 Trail; Gain 2 Thorncrowns; Gain 1 Briar Spiral; Gain 2 Trail; Gain +90% total Oblivion this turn; If you have 4+ Thorncrowns, Spend 4 Thorncrowns; +1600 Oblivion; Bloom up to 1 Briar Spirals (+25 Trail per spiral); Empower the next card you play; If you have 70+ Trail, Spend 30 Trail; Empower the next card you play; +1000 Oblivion. While on board: Each new Cherubim summoned while active gains +1 durability',
+    description: 'On play: Gain 28 Trail; Gain 3 Briar Spirals; Gain 2 Trail; Gain +90% total Oblivion this turn; If you have 4+ Briar Spirals, Spend 2 Briar Spirals; +1600 Oblivion; Bloom up to 1 Briar Spirals (+25 Trail per spiral); Empower the next card you play; If you have 70+ Trail, Spend 30 Trail; Empower the next card you play; +1000 Oblivion. While on board: Each new Cherubim summoned while active gains +1 durability',
     artKey: 'btei_thornbound_cathedral_lancer',
     attacks: {
       unsynergized: {
@@ -681,14 +677,13 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
       },
     },
     baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 1, synergyRequirement: 'Thornbound' },
-    // Role: THRESHOLD AMPLIFIER. Uses Thorncrowns to trigger a precise one-spiral bloom window.
+    // Role: THRESHOLD AMPLIFIER. Uses Briar Spirals to trigger a precise one-spiral bloom window.
     onPlayEffects: [
       { type: 'trail_gain', value: 28 },
-      { type: 'eternal_stack_gain', stack: 'thorn', value: 2 },
-      { type: 'set_secondary_gain', kind: 'thorn', value: 1 },
+      { type: 'set_secondary_gain', kind: 'thorn', value: 3 },
       { type: 'trail_gain', value: 2 },
       { type: 'score_multiplier', value: 90 },
-      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'thorn', value: 4 }, then: [{ type: 'eternal_stack_spend', stack: 'thorn', value: 4 }, { type: 'oblivion_flat', value: 1600 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 25, oblivionPerTrail: 12, consume: 1 }, { type: 'multiply_next' }] },
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'thorn', value: 4 }, then: [{ type: 'set_secondary_spend', kind: 'thorn', value: 2 }, { type: 'oblivion_flat', value: 1600 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 25, oblivionPerTrail: 12, consume: 1 }, { type: 'multiply_next' }] },
       { type: 'conditional', condition: { type: 'trail_gte', value: 70 }, then: [{ type: 'trail_spend', value: 30 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 1000 }] }],
   },
   {
@@ -697,17 +692,17 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Thornbound',
     rarity: 'Eternal',
     name: 'Grave Hedge Reliquary',
-    description: 'On summon: Gain 35 Trail; Gain 3 Thorncrowns; Gain 2 Briar Spirals; Look at the top 6 cards, take 2 cards, put 2 cards on the bottom, and discard the rest. After 5 cards played: Spend 50 Trail; Cash out all Thorncrowns (+500 Oblivion per stack); Bloom all Briar Spirals (+30 Trail per spiral); Salvage any 1 card; Gain 6 Trail; +1800 Oblivion; If you have 80+ Trail, Empower the next card you play; +1500 Oblivion. While on board: +205 Oblivion per card played while on board',
+    description: 'On summon: Gain 35 Trail; Gain 5 Briar Spirals; Look at the top 6 cards, take 2 cards, put 2 cards on the bottom, and discard the rest. After 5 cards played: Spend 50 Trail; Bloom all Briar Spirals (+30 Trail per spiral, +125 Oblivion per Trail); Salvage any 1 card; Gain 6 Trail; +1800 Oblivion; If you have 80+ Trail, Empower the next card you play; +1500 Oblivion. While on board: +205 Oblivion per card played while on board',
     artKey: 'btei_thornbound_funeral_bramble',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }],
-    onSummonEffects: [{ type: 'trail_gain', value: 35 }, { type: 'eternal_stack_gain', stack: 'thorn', value: 3 }, { type: 'set_secondary_gain', kind: 'thorn', value: 2 }, { type: 'look_top_take_drop', look: 6, take: 2, drop: 2 }],
+    onSummonEffects: [{ type: 'trail_gain', value: 35 }, { type: 'set_secondary_gain', kind: 'thorn', value: 5 }, { type: 'look_top_take_drop', look: 6, take: 2, drop: 2 }],
     activatedAbility: {
       name: 'Dirge Corridor',
       cardsPlayedRequirement: 5,
-      description: 'Spend 50 Trail; Cash out all Thorncrowns (+500 Oblivion per stack); Bloom all Briar Spirals (+30 Trail per spiral); Salvage any 1 card; Gain 6 Trail; +1800 Oblivion; If you have 80+ Trail, Empower the next card you play; +1500 Oblivion',
-      // Role: FINISHER. Converts all stacked Thorncrowns and Spirals into one burst turn.
-      effects: [{ type: 'trail_spend', value: 50 }, { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 500 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 30, oblivionPerTrail: 125 }, { type: 'salvage_any' }, { type: 'trail_gain', value: 6 }, { type: 'oblivion_flat', value: 1800 }, { type: 'conditional', condition: { type: 'trail_gte', value: 80 }, then: [{ type: 'multiply_next' }, { type: 'oblivion_flat', value: 1500 }] }],
+      description: 'Spend 50 Trail; Bloom all Briar Spirals (+30 Trail per spiral, +125 Oblivion per Trail); Salvage any 1 card; Gain 6 Trail; +1800 Oblivion; If you have 80+ Trail, Empower the next card you play; +1500 Oblivion',
+      // Role: FINISHER. Converts all stacked Briar Spirals into one burst turn.
+      effects: [{ type: 'trail_spend', value: 50 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 30, oblivionPerTrail: 125 }, { type: 'salvage_any' }, { type: 'trail_gain', value: 6 }, { type: 'oblivion_flat', value: 1800 }, { type: 'conditional', condition: { type: 'trail_gte', value: 80 }, then: [{ type: 'multiply_next' }, { type: 'oblivion_flat', value: 1500 }] }],
     },
     attacks: {
       primary: {
@@ -739,10 +734,10 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Thornbound',
     rarity: 'Eternal',
     name: 'Gallowcrown Matron',
-    description: 'Gain 50 Trail; Gain 4 Thorncrowns; Gain 2 Briar Spirals; Gain +160% total Oblivion this turn; If you have 5+ Thorncrowns, Spend 5 Thorncrowns; Gain 2 Briar Spirals; Gain 20 Trail; Empower the next card you play',
+    description: 'Gain 50 Trail; Gain 5 Briar Spirals; Gain +160% total Oblivion this turn; If you have 5+ Briar Spirals, Spend 3 Briar Spirals; Gain 2 Briar Spirals; Gain 20 Trail; Empower the next card you play',
     artKey: 'btei_thornbound_gallowcrown_matron',
-    // Role: TEMPO BRIDGE. Reinvests Thorncrowns into more Spirals and Trail before the finisher turn.
-    effects: [{ type: 'trail_gain', value: 50 }, { type: 'eternal_stack_gain', stack: 'thorn', value: 4 }, { type: 'set_secondary_gain', kind: 'thorn', value: 2 }, { type: 'score_multiplier', value: 160 }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'thorn', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'thorn', value: 5 }, { type: 'set_secondary_gain', kind: 'thorn', value: 2 }, { type: 'trail_gain', value: 20 }, { type: 'multiply_next' }] }],
+    // Role: TEMPO BRIDGE. Reinvests Briar Spirals into more Spirals and Trail before the finisher turn.
+    effects: [{ type: 'trail_gain', value: 50 }, { type: 'set_secondary_gain', kind: 'thorn', value: 5 }, { type: 'score_multiplier', value: 160 }, { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'thorn', value: 5 }, then: [{ type: 'set_secondary_spend', kind: 'thorn', value: 3 }, { type: 'set_secondary_gain', kind: 'thorn', value: 2 }, { type: 'trail_gain', value: 20 }, { type: 'multiply_next' }] }],
   },
   {
     definitionId: 'btei-mech-overclock-singularity',
@@ -1243,11 +1238,11 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     element: 'Dark',
     rarity: 'Eternal',
     name: 'Elegy of Veth Serath',
-    description: 'On summon: Gain 12 White Flame; Gain 3 Eclipse; Gain 12 Monochromatic Shards; Look at the top 7 cards, take 2 cards, and put the rest on the bottom; Register state: Grief Oaths += 1. After 6 cards played: Gain 12 Black Flame; Gain 4 Eclipse; Fracture collapses by 0.5; Burst all Eclipse (+330.0 Oblivion per Eclipse); +60.0 per Eclipse per balance tier; +30.0 per Eclipse per Fracture; Salvage any 1 card; Empower the next card you play; +1900 Oblivion. While on board: +230 Oblivion per card played while on board',
+    description: 'On summon: Gain 12 White Flame; Gain 3 Eclipse; Gain 12 Monochromatic Shards; Look at the top 7 cards, take 2 cards, and put the rest on the bottom. After 6 cards played: Gain 12 Black Flame; Gain 4 Eclipse; Fracture collapses by 0.5; Burst all Eclipse (+330.0 Oblivion per Eclipse); +60.0 per Eclipse per balance tier; +30.0 per Eclipse per Fracture; Salvage any 1 card; Empower the next card you play; +1900 Oblivion. While on board: +230 Oblivion per card played while on board',
     artKey: 'btei_bgi_elegy_of_veth_serath',
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 3 }],
-    onSummonEffects: [{ type: 'black_glass_white_flame_gain', value: 12 }, { type: 'eternal_stack_gain', stack: 'glass', value: 3 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'look_top_take', look: 7, take: 2 }, { type: 'black_glass_register_state', key: 'grief_oaths', value: 1 }],
+    onSummonEffects: [{ type: 'black_glass_white_flame_gain', value: 12 }, { type: 'eternal_stack_gain', stack: 'glass', value: 3 }, { type: 'monochromatic_shards_gain', value: 12 }, { type: 'look_top_take', look: 7, take: 2 }],
     activatedAbility: {
       name: 'Midplace Requiem',
       cardsPlayedRequirement: 6,

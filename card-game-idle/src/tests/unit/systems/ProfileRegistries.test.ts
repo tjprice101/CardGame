@@ -168,7 +168,6 @@ describe('title badge registry', () => {
       nullRaidClears: { a: 10, b: 15 },
       transcendentCollection: { one: 6, two: 6 },
       entropicEnergyBalance: 10_000,
-      purchasedAscensionCosmetics: ['a', 'b', 'c', 'd', 'e', 'f'],
       battlegroundStats: {
         wins: 25,
         losses: 3,

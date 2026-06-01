@@ -11,7 +11,7 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     artKey: 'cherubim_fire_ember_shroud',
     maxDurability: 2,
     effects: [
-      { type: 'cherubim_ember_gain', value: 1 }],
+      { type: 'cherubim_pyro_heat_gain', value: 1 }],
     onPlayEffects: [
       { type: 'pyro_heat_gain', value: 4 },
       { type: 'draw', value: 1 }],
@@ -37,11 +37,11 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyre Mantle',
-    description: 'On play: Gain 3 Heat; +40 Oblivion; Search your deck for 1 matching Ophanim. While on board: Gain 2 Embers per card played',
+    description: 'On play: Gain 3 Heat; +40 Oblivion; Search your deck for 1 matching Ophanim. While on board: Gain 2 Heat per card played',
     artKey: 'cherubim_fire_pyre_mantle',
     maxDurability: 3,
     effects: [
-      { type: 'cherubim_ember_gain', value: 2 }],
+      { type: 'cherubim_pyro_heat_gain', value: 2 }],
     onPlayEffects: [
       { type: 'pyro_heat_gain', value: 3 },
       { type: 'oblivion_flat', value: 40 },

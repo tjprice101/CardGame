@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectBossFight } from '@/state/store';
 import { useCoopRaidStore } from '@/state/coopRaidStore';
-import { NULL_RAID_DEFINITIONS } from '@/data/ascension/nullRaidDefinitions';
+import {
+  NULL_RAID_DEFINITIONS,
+  NULL_RAID_PROVE_YOURSELF_SECONDS,
+  getNullRaidProveYourselfTargetDamage,
+} from '@/data/ascension/nullRaidDefinitions';
 import { uiTypography } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getCardFaceBackgroundStyle } from '@/ui/cardBackgrounds';
@@ -36,6 +40,7 @@ export default function NullRaidResults() {
   if (bossFight.mode !== 'victory' && bossFight.mode !== 'defeat') return null;
 
   const isVictory = bossFight.mode === 'victory';
+  const provingOnly = bossFight.nullRaidProvingOnly === true;
   const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === bossFight.nullRaidId);
   const totalEncounters = bossFight.nullRaidEncounterBossIds?.length ?? 0;
   const completedEncounters = isVictory
@@ -48,12 +53,14 @@ export default function NullRaidResults() {
   const angelId = raidDef?.completionAngelId;
   const angelDef = angelId ? CardRegistry.get(angelId) : null;
   const raidId = bossFight.nullRaidId ?? '';
-  const pityActive = isVictory && !!angelId && raidId.length > 0 && ((progress.nullRaidAngelMissStreak?.[raidId] ?? 0) >= 10);
+  const pityActive = !provingOnly && isVictory && !!angelId && raidId.length > 0 && ((progress.nullRaidAngelMissStreak?.[raidId] ?? 0) >= 10);
   const revealSlotCount = pityActive ? 1 : 3;
   const revealChance = pityActive ? 0.5 : 0.01;
   const visibleSlots = useMemo(() => rewardSlots.slice(0, revealSlotCount), [rewardSlots, revealSlotCount]);
   const allRevealed = visibleSlots.every(slot => slot !== 'empty');
   const hasAngelDrop = visibleSlots.some(slot => slot === 'hit');
+  const proveTarget = raidDef ? getNullRaidProveYourselfTargetDamage(raidDef) : 0;
+  const proveDamage = bossFight.nullRaidBestDamageFirstMinute ?? bossFight.damageDealtFirstMinute ?? 0;
 
   useEffect(() => {
     setRewardSlots(['empty', 'empty', 'empty']);
@@ -77,7 +84,7 @@ export default function NullRaidResults() {
   }
 
   async function handleReturn() {
-    if (isVictory && angelId && raidId) {
+    if (!provingOnly && isVictory && angelId && raidId) {
       if (!allRevealed) return;
       finalizeNullRaidAngelOutcome(raidId, hasAngelDrop, pityActive);
     }
@@ -88,10 +95,14 @@ export default function NullRaidResults() {
   }
 
   const accentColor = isVictory ? '#a080ff' : '#ff6060';
-  const titleText = isVictory ? 'RAID COMPLETE' : 'RAID FAILED';
-  const subtitleText = isVictory
-    ? `All ${totalEncounters} encounters cleared. Rewards granted.`
-    : `${completedEncounters} of ${totalEncounters} encounters cleared. Partial rewards granted.`;
+  const titleText = provingOnly
+    ? (isVictory ? 'PROVE YOURSELF PASSED' : 'PROVE YOURSELF FAILED')
+    : (isVictory ? 'RAID COMPLETE' : 'RAID FAILED');
+  const subtitleText = provingOnly
+    ? `Dealt ${proveDamage.toLocaleString()} of ${proveTarget.toLocaleString()} required within ${NULL_RAID_PROVE_YOURSELF_SECONDS}s.`
+    : (isVictory
+      ? `All ${totalEncounters} encounters cleared. Rewards granted.`
+      : `${completedEncounters} of ${totalEncounters} encounters cleared. Partial rewards granted.`);
 
   return (
     <div
@@ -189,7 +200,7 @@ export default function NullRaidResults() {
               Entropic Energy Earned
             </div>
             <div style={{ fontSize: 24, fontWeight: 700, color: G.entropyColor, fontVariantNumeric: 'tabular-nums', textShadow: `0 0 20px ${G.entropyColor}55` }}>
-              +{entropyEarned.toLocaleString()}
+              +{(provingOnly ? 0 : entropyEarned).toLocaleString()}
             </div>
           </div>
           <div style={{
@@ -202,13 +213,13 @@ export default function NullRaidResults() {
               Aberrated Shards
             </div>
             <div style={{ fontSize: 24, fontWeight: 700, color: G.shardColor, fontVariantNumeric: 'tabular-nums', textShadow: `0 0 20px ${G.shardColor}55` }}>
-              +{shardsEarned.toLocaleString()}
+              +{(provingOnly ? 0 : shardsEarned).toLocaleString()}
             </div>
           </div>
         </div>
 
         {/* Angel reward slots */}
-        {isVictory && angelId && (
+        {!provingOnly && isVictory && angelId && (
           <div style={{
             padding: '18px 24px 24px',
             background: 'rgba(30,20,8,0.70)',

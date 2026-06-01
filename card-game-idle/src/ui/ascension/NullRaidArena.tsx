@@ -21,6 +21,7 @@ const G = {
 
 export default function NullRaidArena() {
   const bossFight = useStore(selectBossFight);
+  const forfeitBossFight = useStore(s => s.forfeitBossFight);
   const activeCoopSessionId = useCoopRaidStore(s => s.activeSessionId);
   const activeCoopRaidId = useCoopRaidStore(s => s.activeRaidId);
   const broadcastProgress = useCoopRaidStore(s => s.broadcastProgress);
@@ -74,7 +75,7 @@ export default function NullRaidArena() {
         position: 'absolute',
         top: 0, left: 0, right: 0,
         zIndex: 28,
-        pointerEvents: 'none',
+        pointerEvents: 'auto',
         padding: '12px 18px',
         background: G.bg,
         borderBottom: `1px solid ${G.borderStrong}`,
@@ -161,6 +162,29 @@ export default function NullRaidArena() {
             {accShards.toLocaleString()}
           </div>
         </div>
+
+        <button
+          className="menu-tactile-btn"
+          style={{
+            marginLeft: 'auto',
+            pointerEvents: 'auto',
+            padding: '8px 14px',
+            borderRadius: 8,
+            border: '1px solid rgba(255,120,120,0.55)',
+            background: 'linear-gradient(180deg, rgba(95,18,18,0.88) 0%, rgba(52,10,10,0.94) 100%)',
+            color: '#ffd0d0',
+            fontFamily: G.cinzel,
+            fontSize: 10,
+            letterSpacing: 1.6,
+            textTransform: 'uppercase',
+            cursor: 'pointer',
+            boxShadow: '0 0 16px rgba(255,80,80,0.22)',
+          }}
+          title="Exit this raid immediately and count it as a failed run."
+          onClick={forfeitBossFight}
+        >
+          Leave Raid
+        </button>
       </div>
 
       {/* Boss HP bar row */}
@@ -205,6 +229,12 @@ export default function NullRaidArena() {
               transition: 'width 0.25s ease, background 0.4s ease',
             }} />
           </div>
+          {/* Card-break Meter */}
+          <NullRaidCardBreakMeter
+            meter={bossFight.bossCardBreakMeter ?? 0}
+            freezeLeft={bossFight.bossCardBreakFreezeLeft ?? 0}
+            breakCount={bossFight.bossCardBreakCount ?? 0}
+          />
         </div>
       </div>
 
@@ -251,6 +281,59 @@ export default function NullRaidArena() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+const CARD_BREAK_COLOR = '#7de8ff';
+const CARD_BREAK_FROZEN_COLOR = '#43e8d8';
+
+function NullRaidCardBreakMeter({ meter, freezeLeft, breakCount }: {
+  meter: number;
+  freezeLeft: number;
+  breakCount: number;
+}) {
+  const pct = Math.min(100, Math.max(0, meter));
+  const isFrozen = freezeLeft > 0;
+  const barColor = isFrozen ? CARD_BREAK_FROZEN_COLOR : CARD_BREAK_COLOR;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginTop: 2 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{
+          fontSize: 8, letterSpacing: 1.4, textTransform: 'uppercase',
+          color: isFrozen ? CARD_BREAK_FROZEN_COLOR : `${G.electric}99`,
+          fontWeight: isFrozen ? 'bold' : 'normal',
+          textShadow: isFrozen ? `0 0 8px ${CARD_BREAK_FROZEN_COLOR}aa` : undefined,
+          transition: 'color 0.3s',
+        }}>
+          {isFrozen ? `Card-break! Timer Frozen ${Math.ceil(freezeLeft)}s` : 'Card-break Meter'}
+        </span>
+        {breakCount > 0 && (
+          <span style={{ fontSize: 8, color: CARD_BREAK_COLOR, letterSpacing: 0.8 }}>
+            ×{breakCount} Stagger{breakCount !== 1 ? 's' : ''}
+          </span>
+        )}
+      </div>
+      <div style={{
+        position: 'relative', height: 5, borderRadius: 4,
+        background: 'rgba(30,15,60,0.70)',
+        border: `1px solid ${barColor}44`,
+        overflow: 'hidden',
+        boxShadow: isFrozen ? `0 0 10px ${CARD_BREAK_FROZEN_COLOR}55` : undefined,
+        transition: 'box-shadow 0.3s',
+      }}>
+        <div style={{
+          position: 'absolute', top: 0, left: 0, height: '100%',
+          width: `${pct}%`,
+          background: isFrozen
+            ? `linear-gradient(90deg, ${CARD_BREAK_FROZEN_COLOR}, #a0ffee)`
+            : `linear-gradient(90deg, ${CARD_BREAK_COLOR}, #a8f0ff)`,
+          borderRadius: 4,
+          transition: 'width 0.3s ease, background 0.4s ease',
+          boxShadow: `0 0 8px ${barColor}77`,
+        }} />
+      </div>
     </div>
   );
 }

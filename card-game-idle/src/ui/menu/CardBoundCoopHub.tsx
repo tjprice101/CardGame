@@ -2,9 +2,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { useFriendsStore, selectFriendsList, selectFriendsLoaded } from '@/state/friendsStore';
 import { useSocialStore } from '@/state/socialStore';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
+import { useEternityBossCoopStore } from '@/state/eternityBossCoopStore';
 import { useStore } from '@/state/store';
 import { usePartyStore } from '@/state/partyStore';
-import { uiTypography } from '@/ui/theme';
+import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+import { uiTypography, DEFAULT_WARM_PALETTE, type UiPalette } from '@/ui/theme';
+import { DEFAULT_UI_THEME_ID, UI_THEME_BY_ID, resolveThemeId } from '@/data/profile/uiThemes';
 
 const MODE_THEME = {
   general: {
@@ -40,12 +43,16 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   const activityDraft = usePartyStore(s => s.activityDraft);
   const createParty = usePartyStore(s => s.createParty);
   const leaveParty = usePartyStore(s => s.leaveParty);
+  const setReady = usePartyStore(s => s.setReady);
   const setOverlayHidden = usePartyStore(s => s.setOverlayHidden);
   const inviteFriend = usePartyStore(s => s.inviteFriend);
   const setActivityDraft = usePartyStore(s => s.setActivityDraft);
   const me = useSocialStore(s => s.user?.id ?? null);
   const sendBattlegroundInvite = useBattlegroundStore(s => s.sendInvite);
+  const sendEternityInvites = useEternityBossCoopStore(s => s.sendInvites);
   const enqueueToast = useStore(s => s.enqueueToast);
+  const profile = useStore(s => s.progress.profile);
+  const progress = useStore(s => s.progress);
   const friends = useFriendsStore(selectFriendsList);
   const friendsLoaded = useFriendsStore(selectFriendsLoaded);
   const loadFriends = useFriendsStore(s => s.load);
@@ -55,8 +62,65 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   useEffect(() => { if (!friendsLoaded) void loadFriends(); }, [friendsLoaded, loadFriends]);
   const inviteables = useMemo(() => friends.filter(f => !members.some(m => m.userId === f.other.id)), [friends, members]);
   const mode = activityDraft?.type ?? 'general';
-  const theme = MODE_THEME[mode];
+  const modeTheme = MODE_THEME[mode];
   const partyTargets = members.filter(m => m.userId !== me);
+  const localMemberId = me ?? (members.length === 1 ? members[0]?.userId ?? null : null);
+  const eternityDraft = activityDraft?.type === 'eternity_boss' ? activityDraft : null;
+  const uiTheme = useMemo<UiPalette>(() => {
+    const resolvedId = resolveThemeId(profile.uiThemeId || DEFAULT_UI_THEME_ID, progress);
+    const base = UI_THEME_BY_ID[resolvedId]?.palette ?? DEFAULT_WARM_PALETTE;
+    return profile.customUiTheme ? { ...base, ...profile.customUiTheme } : { ...base };
+  }, [profile.uiThemeId, profile.customUiTheme, progress]);
+  const selectedBoss = eternityDraft ? BOSS_DEFINITIONS.find(boss => boss.id === eternityDraft.bossId) ?? null : null;
+  const selectedDeckId = eternityDraft ? (eternityDraft.deckId ?? progress.savedDecks[0]?.id ?? '') : '';
+  const selectedDeck = eternityDraft
+    ? progress.savedDecks.find(deck => deck.id === selectedDeckId) ?? null
+    : null;
+  const allPartyReady = members.length > 0 && members.every(member => member.ready);
+  const coOpInviteTargets = partyTargets.slice(0, 2);
+
+  async function handleSetEternityDeck(deckId: string) {
+    if (!eternityDraft) return;
+    setActivityDraft({ ...eternityDraft, deckId });
+  }
+
+  async function handleStartEternityCoop() {
+    if (!eternityDraft?.bossId) return;
+    if (!selectedDeck) {
+      enqueueToast('Pick a deck first.', 'warning');
+      return;
+    }
+    if (members.length < 2) {
+      enqueueToast('Unable to start the requested activity if player count is less than two.', 'warning');
+      return;
+    }
+    if (partyTargets.length === 0) {
+      enqueueToast('Invite party members before starting co-op.', 'warning');
+      return;
+    }
+    if (partyTargets.length > 2) {
+      enqueueToast('Eternity co-op fights support up to 3 total players right now.', 'warning');
+      return;
+    }
+    if (!allPartyReady) {
+      enqueueToast('Everyone in the party must be ready before starting.', 'warning');
+      return;
+    }
+    if (!selectedBoss) {
+      enqueueToast('That boss is no longer available.', 'warning');
+      return;
+    }
+    const sessionId = await sendEternityInvites(
+      coOpInviteTargets.map(member => ({ id: member.userId, displayName: member.displayName, avatarId: member.avatarId, titleId: member.titleId })),
+      selectedBoss.id,
+      selectedDeck.id,
+    );
+    if (!sessionId) {
+      enqueueToast('Could not start the co-op fight.', 'warning');
+      return;
+    }
+    enqueueToast(`Co-op fight launched for ${selectedBoss.name}.`, 'success');
+  }
 
   async function handleChallengePartyMember(userId: string, displayName: string, avatarId: string, titleId: string | null) {
     if (sendingBattleTo) return;
@@ -72,78 +136,158 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 34, background: theme.bg, color: '#f0e8e0', overflow: 'hidden' }}>
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(120deg, rgba(255,255,255,0.04) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.03) 100%)', pointerEvents: 'none' }} />
+    <div style={{ position: 'absolute', inset: 0, zIndex: 34, background: uiTheme.appBackground, color: uiTheme.text, overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', inset: 0, background: uiTheme.backdrop, pointerEvents: 'none' }} />
       <div style={{ position: 'relative', zIndex: 1, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '18px 24px', borderBottom: '1px solid rgba(255,255,255,0.10)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '18px 24px', borderBottom: `1px solid ${uiTheme.border}` }}>
           <div>
-            <div style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: theme.accent, fontFamily: uiTypography.display }}>Social Home</div>
-            <div style={{ fontSize: 26, fontFamily: uiTypography.display, letterSpacing: 1.8 }}>{theme.title}</div>
-            <div style={{ fontSize: 12, color: 'rgba(240,220,210,0.68)', marginTop: 4 }}>{theme.subtitle}</div>
+            <div style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Social Home</div>
+            <div style={{ fontSize: 26, fontFamily: uiTypography.display, letterSpacing: 1.8 }}>{modeTheme.title}</div>
+            <div style={{ fontSize: 12, color: uiTheme.textMuted, marginTop: 4 }}>{modeTheme.subtitle}</div>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="menu-tactile-btn" onClick={() => void createParty()} style={{ padding: '8px 12px', borderRadius: 8 }}>Create Party</button>
-            <button className="menu-tactile-btn" onClick={() => setOverlayHidden(!overlayHidden)} style={{ padding: '8px 12px', borderRadius: 8 }}>{overlayHidden ? 'Show Overlay' : 'Hide Overlay'}</button>
-            <button className="menu-tactile-btn" onClick={onClose} style={{ padding: '8px 12px', borderRadius: 8 }}>Close</button>
+            <button className="menu-tactile-btn" onClick={() => void createParty()} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.button, color: uiTheme.accentDeep, border: `1px solid ${uiTheme.borderStrong}` }}>Create Party</button>
+            <button className="menu-tactile-btn" onClick={() => setOverlayHidden(!overlayHidden)} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>{overlayHidden ? 'Show Overlay' : 'Hide Overlay'}</button>
+            <button className="menu-tactile-btn" onClick={onClose} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>Close</button>
           </div>
         </div>
 
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 18, padding: 18, overflow: 'hidden' }}>
-          <section style={{ background: 'rgba(12,6,18,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 18, overflow: 'auto' }}>
-            <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: 'rgba(255,220,190,0.62)', fontFamily: uiTypography.display }}>Party Controls</div>
+          <section style={{ background: uiTheme.surfaceStrong, border: `1px solid ${uiTheme.border}`, borderRadius: 18, padding: 18, overflow: 'auto' }}>
+            <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Party Controls</div>
             <div style={{ marginTop: 12, display: 'grid', gap: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
                 <div style={{ fontSize: 14 }}>Status: {activePartyId ? `Active (${members.length}/4)` : 'No active party'}</div>
-                <button className="menu-tactile-btn" onClick={() => void leaveParty()} style={{ padding: '7px 12px', borderRadius: 8 }}>Leave/Disband</button>
+                <button className="menu-tactile-btn" onClick={() => void leaveParty()} style={{ padding: '7px 12px', borderRadius: 8, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>Leave/Disband</button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {members.map(member => (
-                  <div key={member.userId} style={{ padding: 12, borderRadius: 12, border: '1px solid rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.04)', display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+                  <div key={member.userId} style={{ padding: 12, borderRadius: 12, border: `1px solid ${uiTheme.border}`, background: uiTheme.surfaceMuted, display: 'flex', justifyContent: 'space-between', gap: 10 }}>
                     <div>
                       <div style={{ fontSize: 13, fontFamily: uiTypography.display }}>{member.displayName} {member.role === 'host' ? '(Leader)' : ''}</div>
-                      <div style={{ fontSize: 11, color: 'rgba(240,220,210,0.62)' }}>{member.ready ? 'Ready' : 'Not ready'}</div>
+                      <div style={{ fontSize: 11, color: uiTheme.textMuted }}>{member.ready ? 'Ready' : 'Not ready'}</div>
                     </div>
-                    <button className="menu-tactile-btn" onClick={() => void inviteFriend(member.userId)} style={{ display: 'none' }}>noop</button>
+                    {member.userId === localMemberId ? (
+                      <button
+                        className="menu-tactile-btn"
+                        onClick={() => void setReady(!member.ready)}
+                        style={{
+                          padding: '7px 12px',
+                          borderRadius: 999,
+                          border: `1px solid ${member.ready ? 'rgba(120, 220, 160, 0.74)' : uiTheme.borderStrong}`,
+                          background: member.ready
+                            ? 'linear-gradient(180deg, rgba(56, 122, 76, 0.98), rgba(35, 82, 50, 0.98))'
+                            : 'linear-gradient(180deg, rgba(80, 124, 188, 0.98), rgba(52, 84, 136, 0.98))',
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          fontSize: 11,
+                          minWidth: 88,
+                          alignSelf: 'center',
+                          boxShadow: '0 6px 14px rgba(0,0,0,0.22)',
+                        }}
+                      >
+                        {member.ready ? 'Unready' : 'Ready up'}
+                      </button>
+                    ) : (
+                      <div style={{ alignSelf: 'center', fontSize: 11, color: member.ready ? uiTheme.success : uiTheme.textMuted }}>
+                        {member.ready ? 'Ready' : 'Waiting'}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
               {!activePartyId && (
-                <button className="menu-tactile-btn" onClick={() => { setBusy(true); void createParty().finally(() => setBusy(false)); }} style={{ padding: 14, borderRadius: 12 }}>{busy ? 'Creating...' : 'Create Global Party'}</button>
+                <button className="menu-tactile-btn" onClick={() => { setBusy(true); void createParty().finally(() => setBusy(false)); }} style={{ padding: 14, borderRadius: 12, background: uiTheme.button, color: uiTheme.accentDeep, border: `1px solid ${uiTheme.borderStrong}` }}>{busy ? 'Creating...' : 'Create Global Party'}</button>
               )}
-              <div style={{ fontSize: 12, color: 'rgba(240,220,210,0.64)' }}>{activityDraft ? `Selected activity: ${activityDraft.label}` : 'No activity selected yet.'}</div>
+              <div style={{ fontSize: 12, color: uiTheme.textMuted }}>{activityDraft ? `Selected activity: ${activityDraft.label}` : 'No activity selected yet.'}</div>
             </div>
           </section>
 
           <section style={{ display: 'grid', gridTemplateRows: 'auto auto 1fr', gap: 18 }}>
-            <div style={{ background: 'rgba(12,6,18,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 18 }}>
-              <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: 'rgba(255,220,190,0.62)', fontFamily: uiTypography.display }}>Invite Friends</div>
+            {mode === 'eternity_boss' && selectedBoss && (
+              <div style={{ background: uiTheme.surfaceStrong, border: `1px solid ${uiTheme.border}`, borderRadius: 18, padding: 18 }}>
+                <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Eternity Setup</div>
+                <div style={{ marginTop: 10, fontSize: 13, fontFamily: uiTypography.display }}>{selectedBoss.name}</div>
+                <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
+                  <div style={{ fontSize: 12, color: uiTheme.textSoft }}>Choose a deck for co-op, then wait for every party member to ready up.</div>
+                  <div style={{ display: 'grid', gap: 6, maxHeight: 180, overflowY: 'auto' }}>
+                    {progress.savedDecks.map(deck => {
+                      const active = deck.id === selectedDeckId;
+                      return (
+                        <button
+                          key={deck.id}
+                          className="menu-tactile-btn"
+                          onClick={() => void handleSetEternityDeck(deck.id)}
+                          style={{
+                            display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center',
+                            padding: '8px 10px', borderRadius: 10,
+                            border: `1px solid ${active ? uiTheme.borderStrong : uiTheme.border}`,
+                            background: active ? uiTheme.surface : uiTheme.surfaceMuted,
+                            color: uiTheme.text,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                          }}
+                        >
+                          <span style={{ fontSize: 12 }}>{deck.name}</span>
+                          <span style={{ fontSize: 10, color: active ? uiTheme.accentSoft : uiTheme.textMuted }}>{active ? 'Selected' : 'Choose'}</span>
+                        </button>
+                      );
+                    })}
+                    {!progress.savedDecks.length && <div style={{ fontSize: 12, color: uiTheme.textMuted }}>No saved decks available.</div>}
+                  </div>
+                  <div style={{ fontSize: 12, color: uiTheme.textMuted }}>Ready status: {allPartyReady ? 'Everyone is ready' : 'Waiting for party members'}</div>
+                  {members.length < 2 && (
+                    <div style={{ fontSize: 11, color: 'rgba(255,160,140,0.88)', lineHeight: 1.4 }}>
+                      Unable to start the requested activity if player count is less than two.
+                    </div>
+                  )}
+                  <button
+                    className="menu-tactile-btn"
+                    onClick={() => void handleStartEternityCoop()}
+                    style={{
+                      padding: '10px 12px', borderRadius: 10,
+                      background: uiTheme.button,
+                      color: uiTheme.accentDeep,
+                      border: `1px solid ${uiTheme.borderStrong}`,
+                      opacity: selectedDeck ? 1 : 0.55,
+                      cursor: selectedDeck ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    Start Co-op Fight
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div style={{ background: uiTheme.surfaceStrong, border: `1px solid ${uiTheme.border}`, borderRadius: 18, padding: 18 }}>
+              <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Invite Friends</div>
               <div style={{ marginTop: 10, display: 'grid', gap: 8, maxHeight: 210, overflow: 'auto' }}>
                 {inviteables.map(friend => (
-                  <div key={friend.other.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)' }}>
+                  <div key={friend.other.id} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '8px 10px', borderRadius: 10, border: `1px solid ${uiTheme.border}`, background: uiTheme.surfaceMuted }}>
                     <span style={{ fontSize: 12 }}>{friend.other.displayName}</span>
-                    <button className="menu-tactile-btn" onClick={() => void inviteFriend(friend.other.id)} style={{ padding: '6px 10px', borderRadius: 8 }}>Invite</button>
+                    <button className="menu-tactile-btn" onClick={() => void inviteFriend(friend.other.id)} style={{ padding: '6px 10px', borderRadius: 8, background: uiTheme.button, color: uiTheme.accentDeep, border: `1px solid ${uiTheme.borderStrong}` }}>Invite</button>
                   </div>
                 ))}
-                {!inviteables.length && <div style={{ fontSize: 12, color: 'rgba(240,220,210,0.55)' }}>No inviteable friends right now.</div>}
+                {!inviteables.length && <div style={{ fontSize: 12, color: uiTheme.textMuted }}>No inviteable friends right now.</div>}
               </div>
             </div>
 
-            <div style={{ background: 'rgba(12,6,18,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 18 }}>
-              <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: 'rgba(255,220,190,0.62)', fontFamily: uiTypography.display }}>Activity Selection</div>
+            <div style={{ background: uiTheme.surfaceStrong, border: `1px solid ${uiTheme.border}`, borderRadius: 18, padding: 18 }}>
+              <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Activity Selection</div>
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ fontSize: 12, color: 'rgba(240,220,210,0.78)', lineHeight: 1.6 }}>
+                <div style={{ fontSize: 12, color: uiTheme.textSoft, lineHeight: 1.6 }}>
                   Matchmaking no longer quick-queues from this hub. Create your party here first, then choose the exact activity from Battleground, Ascension, or Eternity's Wake.
                 </div>
                 {activityDraft && (
-                  <button className="menu-tactile-btn" onClick={() => setActivityDraft(null)} style={{ padding: '10px 12px', borderRadius: 10 }}>
+                  <button className="menu-tactile-btn" onClick={() => setActivityDraft(null)} style={{ padding: '10px 12px', borderRadius: 10, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>
                     Clear Selected Activity
                   </button>
                 )}
               </div>
             </div>
 
-            <div style={{ background: 'rgba(12,6,18,0.72)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 18, padding: 18 }}>
-              <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: 'rgba(255,220,190,0.62)', fontFamily: uiTypography.display }}>
+            <div style={{ background: uiTheme.surfaceStrong, border: `1px solid ${uiTheme.border}`, borderRadius: 18, padding: 18 }}>
+              <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: modeTheme.accent, fontFamily: uiTypography.display }}>
                 {mode === 'battleground' ? 'Battleground Actions' : 'Overlay'}
               </div>
               {mode === 'battleground' && (
@@ -151,7 +295,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
                   {partyTargets.map(member => {
                     const sending = sendingBattleTo === member.userId;
                     return (
-                      <div key={member.userId} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '8px 10px', borderRadius: 10, border: '1px solid rgba(255,140,120,0.28)', background: 'rgba(255,110,90,0.10)' }}>
+                      <div key={member.userId} style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '8px 10px', borderRadius: 10, border: `1px solid ${modeTheme.accent}`, background: 'rgba(255,110,90,0.10)' }}>
                         <span style={{ fontSize: 12 }}>{member.displayName}</span>
                         <button
                           className="menu-tactile-btn"
@@ -164,10 +308,10 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
                       </div>
                     );
                   })}
-                  {partyTargets.length === 0 && <div style={{ fontSize: 12, color: 'rgba(240,220,210,0.55)' }}>Invite at least one party member to issue a battleground challenge.</div>}
+                  {partyTargets.length === 0 && <div style={{ fontSize: 12, color: uiTheme.textMuted }}>Invite at least one party member to issue a battleground challenge.</div>}
                 </div>
               )}
-              <div style={{ marginTop: 10, fontSize: 12, color: 'rgba(240,220,210,0.72)', lineHeight: 1.6 }}>
+              <div style={{ marginTop: 10, fontSize: 12, color: uiTheme.textSoft, lineHeight: 1.6 }}>
                 {mode === 'battleground'
                   ? 'Battleground mode uses red command cards and direct Challenge actions from your party roster.'
                   : 'Any activity that creates or joins a party appears here. Press P to hide or show the floating party overlay in any menu.'}

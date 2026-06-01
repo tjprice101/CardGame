@@ -3,8 +3,6 @@ import { useStore, selectProgress, selectBossFight } from '@/state/store';
 import { useSocialStore, selectSocialStatus } from '@/state/socialStore';
 import {
   getGauntletMasteryPerCard,
-  getResonanceVictoryLine,
-  MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
   previewMasteryReward,
 } from '@/systems/progression/cardMastery';
 
@@ -202,17 +200,18 @@ export default function EndlessGauntletModal({ onClose }: Props) {
               <div style={{ fontSize: 9, letterSpacing: 2.4, color: EW.violet, textTransform: 'uppercase', marginBottom: 4 }}>
                 Opening Reward Preview
               </div>
-              <div style={{ fontSize: 11, color: EW.gold, fontWeight: 'bold', lineHeight: 1.35 }}>
-                {getResonanceVictoryLine(gauntletMasteryPerCard, MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET)}
-              </div>
               <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Depth {currentDepth} formula: min(35, max(5, depth × 6))</div>
+              <div style={{ fontSize: 10, color: 'rgba(160,220,255,0.82)', marginTop: 4 }}>
+                Awards +{gauntletRewardPreview.resonanceGain.toLocaleString()} Card-light for each card in your deck upon completion.
+              </div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 9, letterSpacing: 2.4, color: '#8ce6ff', textTransform: 'uppercase', marginBottom: 4 }}>
-                Resonance Now
+                Card-light Award
               </div>
-              <div style={{ fontSize: 15, color: '#8ce6ff', fontWeight: 'bold' }}>+{gauntletRewardPreview.resonanceGain.toLocaleString()}</div>
-              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>{gauntletRewardPreview.cardsTieredUp} tier-up{gauntletRewardPreview.cardsTieredUp === 1 ? '' : 's'} on clear</div>
+              {gauntletRewardPreview.resonanceGain > 0 && (
+                <div style={{ fontSize: 15, color: '#8ce6ff', fontWeight: 'bold' }}>+{gauntletRewardPreview.resonanceGain.toLocaleString()}</div>
+              )}
             </div>
           </div>
         )}

@@ -3,8 +3,10 @@ import type {
   AngelDefinition,
   AttackCost,
   CardDefinition,
+  CardRarity,
   CherubimDefinition,
   OphanimDefinition,
+  SummonCondition,
   SeraphimAttackSet,
   SeraphimDefinition,
 } from '@/types/cards';
@@ -37,6 +39,7 @@ import { wishedUponAStarCards } from '../data/cards/wishedUponAStarCards';
 import { snowboundVoltageAngels, snowboundVoltageCherubimCards, snowboundVoltageOphanimCards, snowboundVoltageSeraphims } from '../data/cards/snowboundVoltageCards';
 import { infiniteCards } from '../data/cards/infiniteCards';
 import { transcendentCardDefinitions } from '../data/ascension/transcendentCards';
+import { getCardCategoryKey } from '../data/elements';
 import { MATERIALIZED_CARD_BALANCE } from '../data/cards/materializedCardBalance';
 import { ScoreSystem } from '../systems/scoring/ScoreSystem';
 import { formatDisplayCardText } from '../ui/preferences';
@@ -151,8 +154,35 @@ function primaryFamily(definitionId: string): string {
   return tags[1] ?? tags[0] ?? 'core';
 }
 
+const CARD_RARITY_RANK: Record<CardRarity, number> = {
+  Common: 0,
+  Rare: 1,
+  Epic: 2,
+  Legendary: 3,
+  Eternal: 4,
+  Infinite: 5,
+};
+
+function angelTierRank(def: Pick<CardDefinition, 'definitionId' | 'rarity'>): number {
+  if (def.definitionId.startsWith('tx-')) return 6;
+  return CARD_RARITY_RANK[def.rarity];
+}
+
+function seraphimTierRank(def: Pick<SeraphimDefinition, 'rarity'>): number {
+  return CARD_RARITY_RANK[def.rarity];
+}
+
 const sourceSeraphim = SOURCE_DEFINITIONS.filter(def => def.type === 'Seraphim') as SeraphimDefinition[];
 const sourceAngels = SOURCE_DEFINITIONS.filter(def => def.type === 'Angel') as AngelDefinition[];
+const sourceDefinitionsById = new Map(SOURCE_DEFINITIONS.map(def => [def.definitionId, def] as const));
+const RESERVED_HIGH_TIER_SUMMON_FINGERPRINTS = new Map<string, string>();
+
+for (const angel of sourceAngels) {
+  const isHighTier = angel.rarity === 'Eternal' || angel.rarity === 'Infinite';
+  if (isHighTier || angel.summonCost.length === 0) continue;
+  const fingerprint = [...angel.summonCost].sort().join('|');
+  RESERVED_HIGH_TIER_SUMMON_FINGERPRINTS.set(fingerprint, angel.definitionId);
+}
 
 function findRelatedUnitIds(
   unitType: 'Seraphim' | 'Angel',
@@ -167,6 +197,346 @@ function findRelatedUnitIds(
   const merged = [...exactFamily, ...fallbackFamily, ...elementMatches]
     .filter((def, index, arr) => arr.findIndex(other => other.definitionId === def.definitionId) === index);
   return merged.slice(0, maxCount).map(def => def.definitionId);
+}
+
+function areCardsInSameSet(
+  left: Pick<CardDefinition, 'definitionId' | 'element' | 'rarity'>,
+  right: Pick<CardDefinition, 'definitionId' | 'element' | 'rarity'>,
+): boolean {
+  return getCardCategoryKey(left) === getCardCategoryKey(right);
+}
+
+function isSummonCostSetAligned(def: AngelDefinition, summonCost: ReadonlyArray<string>): boolean {
+  if (summonCost.length === 0) return false;
+  return summonCost.every((definitionId) => {
+    const material = sourceDefinitionsById.get(definitionId);
+    return !!material && areCardsInSameSet(def, material);
+  });
+}
+
+function collectEffectTraitTokens(effects: ReadonlyArray<CardEffect> | undefined, into: Set<string>): void {
+  if (!effects || effects.length === 0) return;
+
+  for (const effect of effects) {
+    const node = effect as unknown as {
+      type?: string;
+      stack?: string;
+      kind?: string;
+      targetUnitType?: string;
+      filter?: string[];
+      then?: CardEffect[];
+      else?: CardEffect[];
+    };
+
+    if (typeof node.type === 'string') into.add(`type:${node.type}`);
+    if (typeof node.stack === 'string') into.add(`stack:${node.stack}`);
+    if (typeof node.kind === 'string') into.add(`kind:${node.kind}`);
+    if (typeof node.targetUnitType === 'string') into.add(`target:${node.targetUnitType}`);
+    if (Array.isArray(node.filter)) {
+      for (const value of node.filter) {
+        into.add(`filter:${String(value)}`);
+      }
+    }
+    if (Array.isArray(node.then)) collectEffectTraitTokens(node.then, into);
+    if (Array.isArray(node.else)) collectEffectTraitTokens(node.else, into);
+  }
+}
+
+function extractCardTraitTokens(def: CardDefinition): Set<string> {
+  const tokens = new Set<string>();
+  tokens.add(`element:${def.element.toLowerCase()}`);
+  tokens.add(`family:${primaryFamily(def.definitionId)}`);
+
+  switch (def.type) {
+    case 'Seraphim':
+      collectEffectTraitTokens(def.onPlayEffects, tokens);
+      tokens.add(`seraphim-bonus:${def.baseStats.bonusType}`);
+      break;
+    case 'Cherubim':
+      collectEffectTraitTokens(def.effects, tokens);
+      collectEffectTraitTokens(def.onPlayEffects, tokens);
+      break;
+    case 'Ophanim':
+      collectEffectTraitTokens(def.effects, tokens);
+      break;
+    case 'Angel':
+      collectEffectTraitTokens(def.onSummonEffects, tokens);
+      collectEffectTraitTokens(def.activatedAbility?.effects, tokens);
+      tokens.add(`angel-bonus:${def.baseStats.bonusType}`);
+      break;
+  }
+
+  return tokens;
+}
+
+function reserveSummonFingerprint(definitionId: string, summonCost: ReadonlyArray<string>): void {
+  if (summonCost.length === 0) return;
+  const fingerprint = [...summonCost].sort().join('|');
+  RESERVED_HIGH_TIER_SUMMON_FINGERPRINTS.set(fingerprint, definitionId);
+}
+
+function pickHighTierMaterialCount(def: AngelDefinition, maxAvailable: number): number {
+  const safeMax = Math.max(1, maxAvailable);
+  const roll = hashString(`${def.definitionId}:material-count`) % 100;
+
+  if (def.rarity === 'Infinite') {
+    const desired = roll < 15 ? 2 : roll < 55 ? 3 : roll < 85 ? 4 : 5;
+    return clampNumber(desired, 1, safeMax);
+  }
+
+  const desired = roll < 30 ? 1 : roll < 75 ? 2 : 3;
+  return clampNumber(desired, 1, safeMax);
+}
+
+function conditionFingerprint(condition: SummonCondition): string {
+  switch (condition.type) {
+    case 'board_definition_gte':
+      return `${condition.type}:${condition.definitionId}:${condition.value}`;
+    case 'eternal_stack_gte':
+      return `${condition.type}:${condition.stack}:${condition.value}`;
+    case 'set_secondary_gte':
+      return `${condition.type}:${condition.kind}:${condition.value}`;
+    default:
+      return `${condition.type}:${condition.value}`;
+  }
+}
+
+function pushUniqueSummonCondition(conditions: SummonCondition[], condition: SummonCondition): void {
+  const fingerprint = conditionFingerprint(condition);
+  if (!conditions.some(existing => conditionFingerprint(existing) === fingerprint)) {
+    conditions.push(condition);
+  }
+}
+
+function summarizePrimarySummonResourceGate(def: AngelDefinition): SummonCondition {
+  const isInfinite = def.rarity === 'Infinite';
+  const bump = hashString(def.definitionId) % 3;
+
+  switch (def.element) {
+    case 'Neutrality':
+      return { type: 'equilibrium_sigils_gte', value: (isInfinite ? 8 : 6) + bump };
+    case 'Fire':
+      return { type: 'pyro_heat_gte', value: (isInfinite ? 9 : 7) + bump };
+    case 'Light':
+      return { type: 'eternal_stack_gte', stack: 'light', value: (isInfinite ? 7 : 5) + bump };
+    case 'Thornbound':
+      return { type: 'set_secondary_gte', kind: 'thorn', value: (isInfinite ? 7 : 5) + bump };
+    case 'Mechanical':
+      return { type: 'set_secondary_gte', kind: 'mech', value: (isInfinite ? 8 : 6) + bump };
+    case 'Prismatic':
+      return { type: 'set_secondary_gte', kind: 'prism', value: (isInfinite ? 8 : 6) + bump };
+    case 'Dark':
+      return { type: 'eternal_stack_gte', stack: 'glass', value: (isInfinite ? 7 : 5) + bump };
+    case 'SnowboundVoltage':
+      return { type: 'eternal_stack_gte', stack: 'snow', value: (isInfinite ? 8 : 6) + bump };
+    default:
+      return { type: 'equilibrium_sigils_gte', value: (isInfinite ? 7 : 5) + bump };
+  }
+}
+
+function pickHighTierSupportDefinitionId(
+  def: AngelDefinition,
+  summonCost: ReadonlyArray<string>,
+): string | undefined {
+  const summonMaterialSet = new Set(summonCost);
+  const family = primaryFamily(def.definitionId);
+  const familyRoot = family.split('-')[0] ?? family;
+  const pool = SOURCE_DEFINITIONS
+    .filter(card => card.type === 'Seraphim' || card.type === 'Cherubim')
+    .filter(card => areCardsInSameSet(def, card))
+    .filter(card => !summonMaterialSet.has(card.definitionId));
+
+  if (pool.length === 0) return undefined;
+
+  const ranked = pool
+    .map((card) => {
+      let score = 0;
+      const candidateFamily = primaryFamily(card.definitionId);
+      if (card.element === def.element) score += 80;
+      if (candidateFamily === family) score += 100;
+      else if (candidateFamily.startsWith(familyRoot)) score += 40;
+      if (card.type === 'Seraphim') score += 15;
+      return { definitionId: card.definitionId, score };
+    })
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+      const hashDelta = hashString(`${def.definitionId}:${left.definitionId}:support`) - hashString(`${def.definitionId}:${right.definitionId}:support`);
+      if (hashDelta !== 0) return hashDelta;
+      return left.definitionId.localeCompare(right.definitionId);
+    });
+
+  return ranked[0]?.definitionId;
+}
+
+function buildHighTierAngelExtraConditions(def: AngelDefinition, summonCost: ReadonlyArray<string>): SummonCondition[] {
+  const conditions: SummonCondition[] = [];
+  const primaryGate = summarizePrimarySummonResourceGate(def);
+  pushUniqueSummonCondition(conditions, primaryGate);
+
+  const addSupportGate = () => {
+    const supportDefinitionId = pickHighTierSupportDefinitionId(def, summonCost);
+    if (!supportDefinitionId) return;
+    pushUniqueSummonCondition(conditions, {
+      type: 'board_definition_gte',
+      definitionId: supportDefinitionId,
+      value: 1,
+    });
+  };
+
+  const materialCount = summonCost.length;
+  if (materialCount <= 1) {
+    pushUniqueSummonCondition(conditions, { type: 'seraphim_on_board_gte', value: def.rarity === 'Infinite' ? 4 : 3 });
+    pushUniqueSummonCondition(conditions, { type: 'cherubim_active_gte', value: 1 + (hashString(`${def.definitionId}:solo-cherub`) % 2) });
+    addSupportGate();
+    return conditions;
+  }
+
+  if (materialCount === 2) {
+    const profile = hashString(`${def.definitionId}:summon-profile-m2`) % 3;
+    if (profile === 0) {
+      pushUniqueSummonCondition(conditions, { type: 'seraphim_on_board_gte', value: 3 });
+      addSupportGate();
+    } else if (profile === 1) {
+      pushUniqueSummonCondition(conditions, { type: 'cherubim_active_gte', value: 2 });
+      addSupportGate();
+    } else {
+      pushUniqueSummonCondition(conditions, { type: 'seraphim_on_board_gte', value: 2 });
+      pushUniqueSummonCondition(conditions, { type: 'cherubim_active_gte', value: 1 });
+    }
+    return conditions;
+  }
+
+  if (materialCount === 3) {
+    const profile = hashString(`${def.definitionId}:summon-profile-m3`) % 3;
+    if (profile === 0) {
+      addSupportGate();
+    } else if (profile === 1) {
+      pushUniqueSummonCondition(conditions, { type: 'seraphim_on_board_gte', value: 2 });
+    } else {
+      pushUniqueSummonCondition(conditions, { type: 'cherubim_active_gte', value: 1 });
+      addSupportGate();
+    }
+    return conditions;
+  }
+
+  const highProfile = hashString(`${def.definitionId}:summon-profile-high`) % 2;
+  if (highProfile === 0) {
+    pushUniqueSummonCondition(conditions, { type: 'seraphim_on_board_gte', value: 2 });
+  } else {
+    pushUniqueSummonCondition(conditions, { type: 'cherubim_active_gte', value: 1 });
+  }
+
+  return conditions;
+}
+
+function pickHighTierAngelMaterials(def: AngelDefinition): string[] {
+  const allowedTier = angelTierRank(def);
+  const family = primaryFamily(def.definitionId);
+  const familyRoot = family.split('-')[0] ?? family;
+  const angelTokens = extractCardTraitTokens(def);
+  const allowedSeraphim = sourceSeraphim.filter(seraphim => seraphimTierRank(seraphim) <= allowedTier);
+  const inSet = allowedSeraphim.filter(seraphim => areCardsInSameSet(def, seraphim));
+  const elementScoped = allowedSeraphim.filter(seraphim => seraphim.element === def.element);
+  const candidatePool = inSet.length > 0 ? inSet : (elementScoped.length > 0 ? elementScoped : allowedSeraphim);
+  const materialCount = pickHighTierMaterialCount(def, candidatePool.length);
+
+  const ranked = candidatePool
+    .map((seraphim) => {
+      let score = 0;
+      const seraphimFamily = primaryFamily(seraphim.definitionId);
+      if (seraphim.element === def.element) score += 80;
+      if (seraphimFamily === family) score += 120;
+      else if (seraphimFamily.startsWith(familyRoot)) score += 40;
+      if (areCardsInSameSet(def, seraphim)) score += 60;
+
+      const seraphimTokens = extractCardTraitTokens(seraphim);
+      for (const token of angelTokens) {
+        if (seraphimTokens.has(token)) score += 10;
+      }
+
+      score += seraphimTierRank(seraphim) * 2;
+      return { definitionId: seraphim.definitionId, score };
+    })
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+      const hashDelta = hashString(`${def.definitionId}:${left.definitionId}`) - hashString(`${def.definitionId}:${right.definitionId}`);
+      if (hashDelta !== 0) return hashDelta;
+      return left.definitionId.localeCompare(right.definitionId);
+    });
+
+  const maxStart = Math.max(0, ranked.length - materialCount);
+  for (let start = 0; start <= maxStart; start++) {
+    const candidate = ranked.slice(start, start + materialCount).map(entry => entry.definitionId);
+    if (candidate.length < materialCount) continue;
+    const fingerprint = [...candidate].sort().join('|');
+    const existingOwner = RESERVED_HIGH_TIER_SUMMON_FINGERPRINTS.get(fingerprint);
+    if (!existingOwner || existingOwner === def.definitionId) {
+      RESERVED_HIGH_TIER_SUMMON_FINGERPRINTS.set(fingerprint, def.definitionId);
+      return candidate;
+    }
+  }
+
+  const fallback = ranked.slice(0, materialCount).map(entry => entry.definitionId);
+  reserveSummonFingerprint(def.definitionId, fallback);
+  return fallback;
+}
+
+function buildHighTierAngelSummonProfile(def: AngelDefinition): Pick<AngelDefinition, 'summonCost' | 'extraSummonConditions'> {
+  const authoredSummonCost = [...def.summonCost];
+  const authoredConditions = def.extraSummonConditions ? [...def.extraSummonConditions] : undefined;
+
+  if (def.definitionId.startsWith('tx-')) {
+    return {
+      summonCost: authoredSummonCost,
+      extraSummonConditions: authoredConditions,
+    };
+  }
+
+  let finalSummonCost: string[] | null = null;
+
+  if (authoredSummonCost.length > 0) {
+    if (isSummonCostSetAligned(def, authoredSummonCost)) {
+      const authoredFingerprint = [...authoredSummonCost].sort().join('|');
+      const existingOwner = RESERVED_HIGH_TIER_SUMMON_FINGERPRINTS.get(authoredFingerprint);
+      if (!existingOwner || existingOwner === def.definitionId) {
+        reserveSummonFingerprint(def.definitionId, authoredSummonCost);
+        finalSummonCost = authoredSummonCost;
+      }
+    }
+  }
+
+  if (!finalSummonCost) {
+    finalSummonCost = pickHighTierAngelMaterials(def);
+  }
+
+  const generatedConditions = buildHighTierAngelExtraConditions(def, finalSummonCost);
+
+  return {
+    summonCost: finalSummonCost,
+    extraSummonConditions: generatedConditions,
+  };
+}
+
+function pruneRedundantSummonConditions(
+  summonCost: ReadonlyArray<string>,
+  extraSummonConditions: ReadonlyArray<NonNullable<AngelDefinition['extraSummonConditions']>[number]> | undefined,
+): NonNullable<AngelDefinition['extraSummonConditions']> {
+  const conditions = extraSummonConditions ?? [];
+  if (conditions.length === 0) return [];
+
+  const summonMaterialCounts = summonCost.reduce<Record<string, number>>((acc, definitionId) => {
+    acc[definitionId] = (acc[definitionId] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return conditions.filter((condition) => {
+    if (condition.type === 'board_definition_gte') {
+      const materialCopiesRequired = summonMaterialCounts[condition.definitionId] ?? 0;
+      return materialCopiesRequired < condition.value;
+    }
+
+    return true;
+  });
 }
 
 function motifFor(def: { definitionId: string; element: string }): string {
@@ -276,7 +646,7 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
       dominantCost = { type: 'spend_radiance', value: costValue };
       break;
     case 'Fire':
-      dominantCost = { type: 'spend_embers', value: costValue };
+      dominantCost = { type: 'spend_pyro_heat', value: costValue };
       break;
     case 'Thornbound':
       dominantCost = { type: 'spend_trail', value: Math.max(2, costValue - 1) };
@@ -294,7 +664,7 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
     const v = Math.max(1, Math.floor(costValue / 2));
     switch (def.element) {
       case 'Light':      return { type: 'spend_radiance' as const, value: v };
-      case 'Fire':       return { type: 'spend_embers' as const, value: v };
+      case 'Fire':       return { type: 'spend_pyro_heat' as const, value: v };
       case 'Thornbound': return { type: 'spend_trail' as const, value: Math.max(1, Math.floor(v / 2)) };
       case 'Mechanical': return { type: 'spend_strain' as const, value: v };
       default:           return { type: 'discard_from_hand' as const, value: 1 };
@@ -347,7 +717,7 @@ function dominantAngelCostForElement(element: string, value: number): AttackCost
     case 'Light':
       return { type: 'spend_radiance', value };
     case 'Fire':
-      return { type: 'spend_embers', value };
+      return { type: 'spend_pyro_heat', value };
     case 'Thornbound':
       return { type: 'spend_trail', value: Math.max(2, value - 1) };
     case 'Mechanical':
@@ -387,8 +757,8 @@ function parseAttackCostsFromDescription(description: string): AttackCost[] {
     if (spend) {
       const value = Number(spend[1]);
       const resource = spend[2].trim().toLowerCase();
-      if (resource === 'ember' || resource === 'embers') {
-        parsed.push({ type: 'spend_embers', value });
+      if (resource === 'heat' || resource === 'heats' || resource === 'ember' || resource === 'embers') {
+        parsed.push({ type: 'spend_pyro_heat', value });
         continue;
       }
       if (resource === 'radiance' || resource === 'radiances') {
@@ -428,7 +798,7 @@ function resolveAttackCosts(
 }
 
 function isStackingResourceCost(type: AttackCost['type']): boolean {
-  return type === 'spend_embers'
+  return type === 'spend_pyro_heat'
     || type === 'spend_radiance'
     || type === 'spend_trail'
     || type === 'spend_strain';
@@ -465,7 +835,7 @@ function firstSeraphimCostForDefinition(def: SeraphimDefinition, weight: number)
       case 'Light':
         return { type: 'spend_radiance', value: baseValue };
       case 'Fire':
-        return { type: 'spend_embers', value: baseValue };
+        return { type: 'spend_pyro_heat', value: baseValue };
       case 'Thornbound':
         return { type: 'spend_trail', value: baseValue };
       case 'Mechanical':
@@ -473,7 +843,7 @@ function firstSeraphimCostForDefinition(def: SeraphimDefinition, weight: number)
       case 'Prismatic':
         return (hashString(`${def.definitionId}:prismatic-choice`) % 2 === 0)
           ? { type: 'spend_radiance', value: baseValue }
-          : { type: 'spend_embers', value: baseValue };
+          : { type: 'spend_pyro_heat', value: baseValue };
       default:
         return { type: 'discard_from_hand', value: 1 };
     }
@@ -831,7 +1201,7 @@ function isOphanimUtilityEffect(effect: CardEffect): boolean {
     case 'seas_undertow_gain':
     case 'seas_foam_gain':
     case 'radiance_gain':
-    case 'ember_gain':
+    case 'pyro_heat_gain':
     case 'monochromatic_shards_gain':
       return true;
     // Recurse into overclock/conditional so nested resource gains are recognised
@@ -996,8 +1366,16 @@ const BUTTERFLY_BASE_OPHANIM_SOURCE_IDS = new Set<string>([
   'bf-oph-velmargin-lensfall',
 ]);
 
-function shouldKeepSourceDefinition(definitionId: string): boolean {
-  if (NEUTRALITY_REWORK_IDS.has(definitionId)) return true;
+function shouldKeepSourceDefinition(def: CardDefinition): boolean {
+  const { definitionId } = def;
+  const isHighTierAngel = def.type === 'Angel' && (def.rarity === 'Eternal' || def.rarity === 'Infinite');
+  if (NEUTRALITY_REWORK_IDS.has(definitionId)) {
+    if (isHighTierAngel) {
+      // High-tier Angels must keep summon materials normalized even when effects stay source-authored.
+    } else {
+      return true;
+    }
+  }
   if (BUTTERFLY_BASE_OPHANIM_SOURCE_IDS.has(definitionId)) return true;
   // Base Pyroabyss cards are authored reworks and must remain source-driven.
   if (definitionId.startsWith('ser-fire-')) return true;
@@ -1006,28 +1384,33 @@ function shouldKeepSourceDefinition(definitionId: string): boolean {
   if (definitionId.startsWith('angel-fire-')) return true;
   if (definitionId.startsWith('md-')) return true;
   // Infinite reward cards must execute the exact source-defined effects so UI text matches behavior.
-  if (definitionId.startsWith('inf-')) return true;
+  // High-rarity Angels are the one exception: they are normalized centrally so summon gates stay consistent.
+  if (definitionId.startsWith('inf-') && def.type !== 'Angel') return true;
   // Base Snowbound cards were explicitly reauthored around Frost/Voltage + Arctic Charge.
-  if (definitionId.startsWith('sv-')) return true;
-  // Defensive catch-all: any future Snowbound Eternal/Infinite IDs should keep authored effects.
-  if (definitionId.startsWith('sv-eternal-')) return true;
-  if (definitionId.startsWith('sv-infinite-')) return true;
-  if (definitionId.startsWith('btei-bgi-')) return true;
-  if (definitionId.startsWith('btei-mech-')) return true;
-  if (definitionId.startsWith('inf-bgi-')) return true;
-  if (definitionId.startsWith('btei-pyroabyss-')) return true;
-  if (definitionId.startsWith('btei-light-')) return true;
-  if (definitionId.startsWith('btei-thornbound-')) return true;
+  // Keep source behavior except for Eternal/Infinite Angels, which are normalized for summon gating.
+  if (definitionId.startsWith('sv-')) {
+    if (def.type === 'Angel' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
+      // Continue to normalized handling for high-tier Snowbound Angels.
+    } else {
+      return true;
+    }
+  }
+  if (definitionId.startsWith('btei-bgi-') && !isHighTierAngel) return true;
+  if (definitionId.startsWith('btei-mech-') && !isHighTierAngel) return true;
+  if (definitionId.startsWith('inf-bgi-') && !isHighTierAngel) return true;
+  if (definitionId.startsWith('btei-pyroabyss-') && !isHighTierAngel) return true;
+  if (definitionId.startsWith('btei-light-') && !isHighTierAngel) return true;
+  if (definitionId.startsWith('btei-thornbound-') && !isHighTierAngel) return true;
   if (definitionId.startsWith('dfh-')) return true;
   if (definitionId.startsWith('af-')) return true;
-  if (definitionId.startsWith('wuas-')) return true;
-  if (definitionId.startsWith('inf-wuas-')) return true;
-  if (definitionId.startsWith('es-')) return true;
+  if (definitionId.startsWith('wuas-') && !isHighTierAngel) return true;
+  if (definitionId.startsWith('inf-wuas-') && !isHighTierAngel) return true;
+  if (definitionId.startsWith('es-') && !isHighTierAngel) return true;
   return false;
 }
 
 function normalizeDefinition(def: CardDefinition): CardDefinition {
-  if (shouldKeepSourceDefinition(def.definitionId)) {
+  if (shouldKeepSourceDefinition(def)) {
     return def;
   }
   const materialized = MATERIALIZED_CARD_BALANCE[def.definitionId as keyof typeof MATERIALIZED_CARD_BALANCE];
@@ -1052,17 +1435,38 @@ function normalizeDefinition(def: CardDefinition): CardDefinition {
 
   if (def.type === 'Angel') {
     const angel = def as AngelDefinition;
+    const shouldNormalizeSummonProfile = angel.rarity === 'Eternal' || angel.rarity === 'Infinite';
+    const normalizedAngel: AngelDefinition = shouldNormalizeSummonProfile
+      ? (() => {
+        const summonProfile = buildHighTierAngelSummonProfile(angel);
+        return {
+          ...angel,
+          summonCost: summonProfile.summonCost,
+          extraSummonConditions: summonProfile.extraSummonConditions,
+        };
+      })()
+      : angel;
+    const cleanedSummonConditions = pruneRedundantSummonConditions(
+      normalizedAngel.summonCost,
+      normalizedAngel.extraSummonConditions,
+    );
+    const conditionCleanAngel: AngelDefinition = {
+      ...normalizedAngel,
+      extraSummonConditions: cleanedSummonConditions.length > 0 ? cleanedSummonConditions : undefined,
+    };
+
     if (materialized?.type === 'Angel') {
-      const tunedAttacks = tuneAngelAttackSet(angel, materialized.attacks as unknown as AngelAttackSet);
+      const tunedAttacks = tuneAngelAttackSet(conditionCleanAngel, materialized.attacks as unknown as AngelAttackSet);
       return {
-        ...angel,
+        ...conditionCleanAngel,
         attacks: tunedAttacks,
         attackTags: [...materialized.attackTags],
       };
     }
-    const tunedAttacks = tuneAngelAttackSet(angel, angel.attacks ?? buildAngelAttacks(angel));
+
+    const tunedAttacks = tuneAngelAttackSet(conditionCleanAngel, angel.attacks ?? buildAngelAttacks(conditionCleanAngel));
     return {
-      ...angel,
+      ...conditionCleanAngel,
       attacks: tunedAttacks,
       attackTags: angel.attackTags ?? [angel.element.toLowerCase(), ...familyTags(angel.definitionId)],
     };
@@ -1110,8 +1514,8 @@ function formatDisplayAttackCost(cost: AttackCost): string {
       return `sacrifice ${cost.value} Seraphim`;
     case 'sacrifice_angel':
       return `sacrifice ${cost.value} Angel`;
-    case 'spend_embers':
-      return `spend ${cost.value} Ember${cost.value === 1 ? '' : 's'}`;
+    case 'spend_pyro_heat':
+      return `spend ${cost.value} Heat`;
     case 'spend_radiance':
       return `spend ${cost.value} Radiance`;
     case 'spend_trail':

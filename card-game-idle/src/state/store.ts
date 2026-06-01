@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
@@ -46,7 +46,11 @@ import {
   type QuestKind,
 } from '@/systems/progression/quests';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
-import { getAchievementShardReward, getAchievementOblivionReward } from '@/systems/progression/achievements';
+import {
+  getAchievementShardReward,
+  getAchievementOblivionReward,
+  isAchievementUnlocked,
+} from '@/systems/progression/achievements';
 import {
   MASTERY_TIERS,
   applyMasteryReward,
@@ -61,10 +65,21 @@ import { getDailyTrials as _getDailyTrials, getWeeklyTrial, type TrialModifier }
 void _getDailyTrials;
 import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost } from '@/systems/progression/dailyDeal';
-import { TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
+import { TITLE_BADGES, TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
 import { latchUnlockedAvatars } from '@/data/profile/avatars';
-import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
-import { NULL_RAID_DEFINITIONS, NULL_RAID_BOSS_MAP, NULL_RAID_ENCOUNTER_SECONDS } from '@/data/ascension/nullRaidDefinitions';
+import {
+  BOSS_DEFINITIONS,
+  BOSS_FIGHT_ROUND_SECONDS,
+  ensureEventBossHpSnapshot,
+  isEventBossCategory,
+} from '@/data/bosses/bossDefinitions';
+import {
+  NULL_RAID_DEFINITIONS,
+  NULL_RAID_BOSS_MAP,
+  NULL_RAID_ENCOUNTER_SECONDS,
+  NULL_RAID_PROVE_YOURSELF_SECONDS,
+  getNullRaidProveYourselfTargetDamage,
+} from '@/data/ascension/nullRaidDefinitions';
 import { eventBus } from '@/core/events/EventBus';
 import { isDeathFlamedHellBaseDefinitionId } from '@/utils/cardFaces';
 import {
@@ -72,8 +87,14 @@ import {
 } from '@/types/artifacts';
 import { getArtifactEffect } from '@/systems/artifacts/artifactRuntime';
 import { DEFAULT_CARD_THEME_PACKS, setUiPreferences } from '@/ui/preferences';
-import { getTrialDeckDefinition } from '@/data/trialDecks';
+import {
+  NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS,
+  getTrialDeckDefinition,
+  isNeutralityTutorialTrialPackId,
+  type NeutralityTutorialTier,
+} from '@/data/trialDecks';
 import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
+import { getCardCategoryKey } from '@/data/elements';
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
@@ -113,7 +134,6 @@ const defaultDeck: DeckState = {
 const defaultTurn: TurnState = {
   phase: 'idle',
   radiance: 0,
-  embers: 0,
   trail: 0,
   strain: 0,
   cherubimDrawFraction: 0,
@@ -146,57 +166,17 @@ const defaultTurn: TurnState = {
   lightCadenceNotes: [],
   lightDistinctNotes: [],
   lightResonance: 0,
-  lightChorusAnchors: 0,
   thornScar: 0,
-  mechanicalInstructionQueue: [],
-  mechanicalResolvedInstructions: 0,
-  mechanicalInstructionDiversity: [],
-  mechanicalKernelLocked: false,
-  mechanicalClockTicks: 0,
-  mechanicalNextChimeTick: 3,
-  mechanicalPrimedChimes: 0,
-  mechanicalChimeInterval: 3,
-  mechanicalChimesFired: 0,
   prismaticCurrentChannel: null,
   prismaticDistinctChannels: [],
   prismaticRecentChannels: [],
   prismaticRefractionDepth: 0,
   prismaticNodeCharges: 0,
-  prismaticChannelLocks: 0,
-  prismaticMemoryShards: 0,
-  prismaticStormMemories: [],
-  prismaticStormMemoryEnabled: false,
-  prismaticPendingSwitchDepthMark: 0,
-  prismaticSwitchMarkedCardIds: [],
-  prismaticAccordChannel: null,
-  prismaticDistinctNonAccordChannels: [],
-  prismaticRefractionEchoes: 0,
-  prismaticEchoCascadeArmed: false,
-  prismaticEchoCascadeDepthThreshold: 4,
-  prismaticEchoCascadeGainPerToken: 0.08,
-  prismaticEchoCascadeDrawRefund: 1,
-  prismaticChordTokens: 0,
-  prismaticChordPermanent: false,
-  prismaticChordAttackBaseBonus: 0,
-  prismaticChordAttackChainBonus: 0,
-  prismaticRefractionSpikes: 0,
-  prismaticRefractionSpikeMax: 3,
-  prismaticRefractionSpikesPersistent: false,
-  prismaticLastPlaySwitchedChannel: false,
-  prismaticLatticeResonant: false,
-  prismaticSentencedCardIds: [],
-  prismaticSentencingPerfect: false,
-  prismaticSentencingChainGainBonus: 0.3,
-  prismaticSentencingDraw: 2,
-  prismaticSentencingDrawPerfect: 3,
-  prismaticNextOphanimRefund: 0,
   prismaticResonanceCharge: 0,
   blackGlassWhiteFlame: 0,
   blackGlassBlackFlame: 0,
   blackGlassFracture: 0,
   blackGlassLastPolarity: null,
-  blackGlassGriefOaths: 0,
-  blackGlassCollapsePending: false,
   blackGlassLastPayoff: 0,
   snowboundPhase: null,
   snowboundPotential: 0,
@@ -303,6 +283,7 @@ const defaultProgress: ProgressState = {
   },
   quests: { daily: [], weekly: [], lastDailyRollDay: -1, lastWeeklyRollWeek: -1 },
   achievementClaims: {},
+  achievementUnlocks: {},
   cardPlayCounts: {},
   cardMasteryClaims: {},
   packPityCounters: {},
@@ -319,9 +300,10 @@ const defaultProgress: ProgressState = {
   entropyBalance: 0,
   nullRaidCooldowns: {},
   nullRaidClears: {},
+  nullRaidProveUnlocks: {},
   nullRaidAngelMissStreak: {},
   transcendentCollection: {},
-  purchasedAscensionCosmetics: [],
+  eventBossHpSnapshots: {},
   battlegroundStats: { wins: 0, losses: 0, bestScore: 0, totalMatches: 0, claimedMilestones: [], dailyMatchTimestamps: [] },
   socialStats: {
     friendRequestsSent: 0,
@@ -367,6 +349,9 @@ const defaultBossFight: BossFightState = {
   cooldowns: {},
   savedGameState: null,
   rewardSummary: null,
+  bossCardBreakMeter: 0,
+  bossCardBreakFreezeLeft: 0,
+  bossCardBreakCount: 0,
 };
 
 const defaultBattleground: BattlegroundState = {
@@ -828,10 +813,13 @@ interface StoreActions {
   startWakeTrial: (bossId: string, savedDeckId: string, modifiers: TrialModifier[], rewardMult: number) => void;
   startEndlessGauntlet: (savedDeckId: string) => void;
   tickBossTimer: (deltaSeconds: number) => void;
+  forfeitBossFight: () => void;
   dismissBossResult: () => void;
   // ── Trial Deck ──────────────────────────────────────────────────────────────
   /** Begin a Trial Deck practice session for the given pack. Saves current game state; restores on exit. */
-  startTrialDeck: (packId: string, mode: 'solo' | 'guided') => void;
+  startTrialDeck: (packId: string) => void;
+  /** Begin a Play Tutorial Turn practice session in Neutrality at the selected tier. */
+  startTutorialTurn: (tier: NeutralityTutorialTier) => void;
   /** End the active Trial Deck session and restore the saved game state. */
   endTrialDeck: () => void;
   // Profile & daily login
@@ -880,9 +868,9 @@ interface StoreActions {
   purchaseTranscendentCard: (definitionId: string, cost: number) => boolean;
   /** Finalize raid angel drop outcome and update per-raid pity streak state. */
   finalizeNullRaidAngelOutcome: (raidId: string, dropped: boolean, pityConsumed: boolean) => void;
-  /** Mark an Ascension cosmetic as purchased. */
-  purchaseAscensionCosmetic: (cosmeticId: string) => void;
-  /** Begin a Null Raid run. Validates cooldown, resonance gate, and idle state. */
+  /** Launch a 60s Prove Yourself test versus the first encounter boss. */
+  startNullRaidProveYourself: (raidId: string, savedDeckId: string) => boolean;
+  /** Begin a Null Raid run. Validates cooldown, Prove Yourself unlock, and idle state. */
   startNullRaid: (raidId: string, savedDeckId: string) => boolean;
   claimDailyReward: () => { shards: number; streak: number } | null;
   /** Engagement: claim a single quest. */
@@ -916,7 +904,7 @@ interface StoreActions {
   // ── Battleground of the Card-born ────────────────────────────────────────────
   /** Enter lobby phase. Saves the current idle game state. */
   enterBattleground: (kind: BattlegroundKind, cpuDifficulty?: CpuDifficulty, opponentProfile?: BattlegroundOpponentProfile) => void;
-  /** Tick the countdown timer. Call once per second from the match component. */
+  /** Tick the countdown timer. Called by centralized app-level timer loops. */
   tickBattlegroundTimer: (deltaSeconds: number) => void;
   /** Complete the match — computes result, grants rewards, restores saved state. */
   completeBattleground: () => void;
@@ -972,9 +960,19 @@ function ensureSocialStats(progress: ProgressState): NonNullable<ProgressState['
   return current;
 }
 
+function latchUnlockedAchievements(progress: ProgressState): void {
+  if (!progress.achievementUnlocks) progress.achievementUnlocks = {};
+  for (const badge of TITLE_BADGES) {
+    if (progress.achievementUnlocks[badge.id]) continue;
+    if (badge.isUnlocked(progress)) progress.achievementUnlocks[badge.id] = true;
+  }
+}
+
 function recompute(state: Store): void {
   // Latch profile avatar unlocks permanently once their condition is met.
   latchUnlockedAvatars(state.progress);
+  // Latch achievements so newly-added achievements unlock retroactively.
+  latchUnlockedAchievements(state.progress);
   state.computedStats = ScoreSystem.compute(state.board);
   const resonanceScore = computeGlobalResonanceScore(state.progress);
   if (resonanceScore > 0) {
@@ -1071,6 +1069,137 @@ function createDeckState(deckList: DeckEntry[], extraDeck?: Array<ExtraDeckEntry
   };
 }
 
+function buildPracticeDeckListFromPool(pool: CardDefinition[], targetCopies: number): DeckEntry[] {
+  const sorted = [...pool].sort((a, b) => a.id.localeCompare(b.id));
+  if (!sorted.length) return [];
+
+  const counts = new Map<string, number>();
+  let remaining = targetCopies;
+
+  for (const def of sorted) {
+    if (remaining <= 0) break;
+    counts.set(def.id, 1);
+    remaining -= 1;
+  }
+
+  while (remaining > 0) {
+    let placed = false;
+    for (const def of sorted) {
+      if (remaining <= 0) break;
+      const current = counts.get(def.id) ?? 0;
+      if (current >= 4) continue;
+      counts.set(def.id, current + 1);
+      remaining -= 1;
+      placed = true;
+    }
+    if (!placed) break;
+  }
+
+  return [...counts.entries()].map(([definitionId, count]) => ({
+    definitionId,
+    copies: Math.max(1, Math.min(4, count)) as DeckEntry['copies'],
+    finish: 'normal' as const,
+  }));
+}
+
+function buildPracticeExtraDeckFromPool(pool: CardDefinition[]): ExtraDeckEntry[] {
+  return pool
+    .filter(def => def.type === 'Angel')
+    .sort((a, b) => a.id.localeCompare(b.id))
+    .slice(0, 5)
+    .map(def => ({ definitionId: def.id, finish: 'normal' as const }));
+}
+
+function buildNeutralityTutorialDeck(
+  tier: NeutralityTutorialTier,
+): {
+  packId: string;
+  deckList: DeckEntry[];
+  extraDeck: ExtraDeckEntry[];
+  guideSteps: TrialDeckState['guideSteps'];
+  guidedOpeningHand: string[];
+  guidedDeckOrder: DeckEntry[];
+} {
+  const starterDef = getTrialDeckDefinition('pack-neutrality');
+
+  const buildGuidedOpeningHand = (deckList: DeckEntry[]): string[] => {
+    const expanded: string[] = [];
+    for (const entry of deckList) {
+      for (let i = 0; i < entry.copies; i++) expanded.push(entry.definitionId);
+    }
+    return expanded.slice(0, 5);
+  };
+
+  const buildTierGuideSteps = (openingHand: string[]): TrialDeckState['guideSteps'] => {
+    const tierName = tier === 'starter' ? 'Starter' : tier === 'eternal' ? 'Eternal' : 'Infinite';
+    return openingHand.map((definitionId, index) => {
+      const def = CardRegistry.get(definitionId);
+      const cardName = def?.name ?? definitionId;
+      const cardType = def?.type ?? 'Card';
+      return {
+        cardDefinitionId: definitionId,
+        hint: `Turn ${index + 1}: play ${cardName} (${cardType}) to advance the ${tierName} Neutrality tutorial lane and build your setup before cashing attacks.`,
+      };
+    });
+  };
+
+  if (!starterDef) {
+    const fallbackOpeningHand = buildGuidedOpeningHand(cloneDeckList(STARTER_DECK_LIST));
+    return {
+      packId: NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.starter,
+      deckList: cloneDeckList(STARTER_DECK_LIST),
+      extraDeck: cloneExtraDeck(STARTER_EXTRA_DECK),
+      guideSteps: buildTierGuideSteps(fallbackOpeningHand),
+      guidedOpeningHand: fallbackOpeningHand,
+      guidedDeckOrder: cloneDeckList(STARTER_DECK_LIST),
+    };
+  }
+
+  if (tier === 'starter') {
+    return {
+      packId: NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.starter,
+      deckList: cloneDeckList(starterDef.deckList),
+      extraDeck: cloneExtraDeck(starterDef.extraDeck),
+      guideSteps: [...starterDef.guideSteps],
+      guidedOpeningHand: [...starterDef.guidedOpeningHand],
+      guidedDeckOrder: cloneDeckList(starterDef.guidedDeckOrder.length > 0 ? starterDef.guidedDeckOrder : starterDef.deckList),
+    };
+  }
+
+  const rarity = tier === 'eternal' ? 'Eternal' : 'Infinite';
+  const pool = CardRegistry.getAll().filter(def => def.element === 'Neutrality' && def.rarity === rarity);
+  const mainPool = pool.filter(def => def.type !== 'Angel');
+  const deckList = buildPracticeDeckListFromPool(mainPool, 45);
+  const extraDeck = buildPracticeExtraDeckFromPool(pool);
+
+  if (!deckList.length) {
+    const fallbackOpeningHand = buildGuidedOpeningHand(cloneDeckList(starterDef.deckList));
+    return {
+      packId: tier === 'eternal'
+        ? NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.eternal
+        : NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.infinite,
+      deckList: cloneDeckList(starterDef.deckList),
+      extraDeck: cloneExtraDeck(starterDef.extraDeck),
+      guideSteps: buildTierGuideSteps(fallbackOpeningHand),
+      guidedOpeningHand: fallbackOpeningHand,
+      guidedDeckOrder: cloneDeckList(starterDef.deckList),
+    };
+  }
+
+  const guidedOpeningHand = buildGuidedOpeningHand(deckList);
+
+  return {
+    packId: tier === 'eternal'
+      ? NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.eternal
+      : NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.infinite,
+    deckList,
+    extraDeck,
+    guideSteps: buildTierGuideSteps(guidedOpeningHand),
+    guidedOpeningHand,
+    guidedDeckOrder: cloneDeckList(deckList),
+  };
+}
+
 function addCollectionCard(progress: ProgressState, definitionId: string, finish: CardFinish = 'normal'): void {
   const definition = CardRegistry.get(definitionId);
   // No collection-side cap: every drawn copy is added so bulk pack opens always
@@ -1116,6 +1245,19 @@ function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEF
   emitQuestProgressToProgress(progress, { kind: 'win_boss', amount: 1 });
 }
 
+function applyNullRaidProveYourselfUnlock(progress: ProgressState, raidId: string, damageInFirstMinute: number): void {
+  if (!raidId) return;
+  if (!Number.isFinite(damageInFirstMinute) || damageInFirstMinute <= 0) return;
+  const raid = NULL_RAID_DEFINITIONS.find(def => def.id === raidId);
+  if (!raid) return;
+  if (!progress.nullRaidProveUnlocks) progress.nullRaidProveUnlocks = {};
+  if (progress.nullRaidProveUnlocks[raid.id] === true) return;
+  const targetDamage = getNullRaidProveYourselfTargetDamage(raid);
+  if (targetDamage > 0 && damageInFirstMinute >= targetDamage) {
+    progress.nullRaidProveUnlocks[raid.id] = true;
+  }
+}
+
 /**
  * Apply quest progress to the daily + weekly rotations. Pure on the
  * `progress` object (mutates immer-managed draft). Also lazily rolls fresh
@@ -1139,6 +1281,7 @@ function emitQuestProgressToProgress(
  * play has fully resolved (so `definitionId` is the real card played).
  */
 function recordCardPlay(s: Store, definitionId: string): void {
+  if (s.trialDeck.mode === 'active') return;
   s.progress.totalCardsPlayed += 1;
   if (!s.progress.cardPlayCounts) s.progress.cardPlayCounts = {};
   s.progress.cardPlayCounts[definitionId] = (s.progress.cardPlayCounts[definitionId] ?? 0) + 1;
@@ -1178,6 +1321,7 @@ function completeBossFight(s: Store, victory: boolean): void {
   const modifiers = s.bossFight.modifiers ?? [];
   const gauntletShardsBanked = s.bossFight.gauntletShardsBanked ?? 0;
   const gauntletDepth = s.bossFight.gauntletDepth ?? 0;
+  const damageFirstMinute = s.bossFight.damageDealtFirstMinute ?? 0;
   const saved = s.bossFight.savedGameState;
   let rewardSummary: BossFightState['rewardSummary'] = null;
 
@@ -1194,7 +1338,10 @@ function completeBossFight(s: Store, victory: boolean): void {
       // Carry HP fraction from current fight.
       const hpFrac = s.bossFight.bossMaxHp > 0 ? Math.max(0.25, s.bossFight.bossCurrentHp > 0 ? 1 : 1) : 1;
       // Continue with a fresh boss, slightly tougher each depth.
-      const nextMaxHp = Math.round(nextBoss.hp * (1 + gauntletDepth * 0.1));
+      const nextBossBaseHp = isEventBossCategory(nextBoss.category)
+        ? ensureEventBossHpSnapshot(s.progress)
+        : nextBoss.hp;
+      const nextMaxHp = Math.round(nextBossBaseHp * (1 + gauntletDepth * 0.1));
       // Reset board + turn but keep deck (shuffled fresh for next opponent).
       const savedDeckSnapshot = s.bossFight.savedGameState; // preserve baseline
       s.deck = { ...s.deck, hand: [], drawPile: DeckSystem.shuffle([...s.deck.hand, ...s.deck.drawPile, ...s.deck.discardPile]), discardPile: [] };
@@ -1206,6 +1353,7 @@ function completeBossFight(s: Store, victory: boolean): void {
         bossCurrentHp: nextMaxHp,
         bossMaxHp: nextMaxHp,
         damageDealtThisFight: 0,
+        damageDealtFirstMinute: 0,
         fightTimeRemaining: BOSS_FIGHT_ROUND_SECONDS,
         cooldowns: newCooldowns,
         savedGameState: savedDeckSnapshot,
@@ -1230,11 +1378,15 @@ function completeBossFight(s: Store, victory: boolean): void {
     const encounterBossIds = s.bossFight.nullRaidEncounterBossIds ?? [];
     const encounterIndex = s.bossFight.nullRaidEncounterIndex ?? 0;
     const raidId = s.bossFight.nullRaidId ?? '';
+    const provingOnly = s.bossFight.nullRaidProvingOnly === true;
     const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === raidId);
     const entropyGain = raidDef?.entropyPerEncounter ?? 75;
     const shardsGain = raidDef?.shardsPerEncounter ?? 20;
-    const accEntropy = (s.bossFight.nullRaidAccumulatedEntropy ?? 0) + (victory ? entropyGain : 0);
-    const accShards = (s.bossFight.nullRaidAccumulatedShards ?? 0) + (victory ? shardsGain : 0);
+    const accEntropy = provingOnly ? 0 : (s.bossFight.nullRaidAccumulatedEntropy ?? 0) + (victory ? entropyGain : 0);
+    const accShards = provingOnly ? 0 : (s.bossFight.nullRaidAccumulatedShards ?? 0) + (victory ? shardsGain : 0);
+    const raidBestDamageFirstMinute = Math.max(s.bossFight.nullRaidBestDamageFirstMinute ?? 0, damageFirstMinute);
+    const proveTargetDamage = raidDef ? getNullRaidProveYourselfTargetDamage(raidDef) : 0;
+    const provingPassed = provingOnly && proveTargetDamage > 0 && raidBestDamageFirstMinute >= proveTargetDamage;
     const nextIndex = encounterIndex + 1;
 
     // Advance to next encounter if victorious and more encounters remain.
@@ -1256,6 +1408,7 @@ function completeBossFight(s: Store, victory: boolean): void {
           bossCurrentHp: nextBoss.hp,
           bossMaxHp: nextBoss.hp,
           damageDealtThisFight: 0,
+          damageDealtFirstMinute: 0,
           fightTimeRemaining: NULL_RAID_ENCOUNTER_SECONDS,
           cooldowns: newCooldowns,
           savedGameState: s.bossFight.savedGameState,
@@ -1265,9 +1418,13 @@ function completeBossFight(s: Store, victory: boolean): void {
           nullRaidEncounterIndex: nextIndex,
           nullRaidAccumulatedEntropy: accEntropy,
           nullRaidAccumulatedShards: accShards,
+          nullRaidBestDamageFirstMinute: raidBestDamageFirstMinute,
+          nullRaidProvingOnly: provingOnly,
           rewardSummary: null,
         };
-        emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
+        if (!provingOnly) {
+          emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
+        }
         recompute(s);
         return;
       }
@@ -1282,17 +1439,21 @@ function completeBossFight(s: Store, victory: boolean): void {
       s.settings = saved.settings;
     }
 
-    // Grant accumulated rewards.
-    s.progress.entropicEnergyBalance = getEntropicEnergyBalance(s.progress) + accEntropy;
-    s.progress.aberratedShards += accShards;
+    applyNullRaidProveYourselfUnlock(s.progress, raidId, raidBestDamageFirstMinute);
+
+    if (!provingOnly) {
+      // Grant accumulated rewards.
+      s.progress.entropicEnergyBalance = getEntropicEnergyBalance(s.progress) + accEntropy;
+      s.progress.aberratedShards += accShards;
+    }
 
     // Apply cooldown only on successful full clear.
-    if (victory) {
+    if (!provingOnly && victory) {
       if (!s.progress.nullRaidCooldowns) s.progress.nullRaidCooldowns = {};
       s.progress.nullRaidCooldowns[raidId] = Date.now() + 60_000;
     }
 
-    if (victory) {
+    if (!provingOnly && victory) {
       // Record clear.
       if (!s.progress.nullRaidClears) s.progress.nullRaidClears = {};
       s.progress.nullRaidClears[raidId] = (s.progress.nullRaidClears[raidId] ?? 0) + 1;
@@ -1301,11 +1462,12 @@ function completeBossFight(s: Store, victory: boolean): void {
     }
 
     s.bossFight = {
-      mode: victory ? 'victory' : 'defeat',
+      mode: provingPassed || victory ? 'victory' : 'defeat',
       activeBossId: bossId,
       bossCurrentHp: s.bossFight.bossCurrentHp,
       bossMaxHp: s.bossFight.bossMaxHp,
       damageDealtThisFight: s.bossFight.damageDealtThisFight,
+      damageDealtFirstMinute: damageFirstMinute,
       fightTimeRemaining: 0,
       cooldowns: newCooldowns,
       savedGameState: null,
@@ -1315,6 +1477,8 @@ function completeBossFight(s: Store, victory: boolean): void {
       nullRaidEncounterIndex: encounterIndex,
       nullRaidAccumulatedEntropy: accEntropy,
       nullRaidAccumulatedShards: accShards,
+      nullRaidBestDamageFirstMinute: raidBestDamageFirstMinute,
+      nullRaidProvingOnly: provingOnly,
       rewardSummary: {
         entropicEnergyEarned: accEntropy,
         shardsEarned: accShards,
@@ -1429,6 +1593,7 @@ function completeBossFight(s: Store, victory: boolean): void {
     bossCurrentHp: finalHp,
     bossMaxHp: maxHp,
     damageDealtThisFight: damageDealt,
+    damageDealtFirstMinute: damageFirstMinute,
     fightTimeRemaining: 0,
     cooldowns: newCooldowns,
     savedGameState: null,
@@ -1454,10 +1619,6 @@ function grantOblivion(s: Store, amount: number): void {
   if (s.bossFight.mode === 'active' && s.bossFight.kind === 'trial' && s.bossFight.modifiers?.some(m => m.kind === 'patience_lock')) {
     amount = Math.max(1, Math.floor(amount * 0.85));
   }
-  // Elemental weakness bonus: ×1.25 when the deck's plurality element matches the boss's weak element.
-  if (s.bossFight.mode === 'active' && s.bossFight.bossWeaknessActive) {
-    amount = Math.round(amount * 1.25);
-  }
   // Global Oblivion multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
   if (s.computedStats.globalOblivionMult > 0) {
     amount = Math.round(amount * (1 + s.computedStats.globalOblivionMult));
@@ -1469,6 +1630,15 @@ function grantOblivion(s: Store, amount: number): void {
   s.turn.oblivionEarnedThisTurn += amount;
   if (s.bossFight.mode === 'active') {
     s.bossFight.damageDealtThisFight += amount;
+    const fightSeconds = s.bossFight.kind === 'null_raid' ? NULL_RAID_ENCOUNTER_SECONDS : BOSS_FIGHT_ROUND_SECONDS;
+    const elapsed = Math.max(0, fightSeconds - s.bossFight.fightTimeRemaining);
+    if (elapsed < NULL_RAID_PROVE_YOURSELF_SECONDS) {
+      s.bossFight.damageDealtFirstMinute = (s.bossFight.damageDealtFirstMinute ?? 0) + amount;
+      if (s.bossFight.kind === 'null_raid') {
+        const best = s.bossFight.nullRaidBestDamageFirstMinute ?? 0;
+        s.bossFight.nullRaidBestDamageFirstMinute = Math.max(best, s.bossFight.damageDealtFirstMinute ?? 0);
+      }
+    }
     s.bossFight.bossCurrentHp = Math.max(0, s.bossFight.bossCurrentHp - amount);
     eventBus.emit('boss:damaged', { delta: amount, remaining: s.bossFight.bossCurrentHp });
   } else {
@@ -1481,6 +1651,22 @@ function grantOblivion(s: Store, amount: number): void {
     s.battleground.myScore += amount;
   }
   emitQuestProgressToProgress(s.progress, { kind: 'earn_oblivion_in_turn', amount: 0, peak: s.turn.oblivionEarnedThisTurn });
+}
+
+/** Accumulate stagger on the boss Card-break meter. Triggers a 5-second timer
+ *  freeze every time the meter reaches 100. Each unit of `staggerAmount` is
+ *  one point on the 0-100 scale. */
+function applyCardBreakStagger(s: Store, staggerAmount: number): void {
+  if (s.bossFight.mode !== 'active' || staggerAmount <= 0) return;
+  const CARD_BREAK_MAX = 100;
+  const CARD_BREAK_FREEZE_SECONDS = 5;
+  s.bossFight.bossCardBreakMeter = (s.bossFight.bossCardBreakMeter ?? 0) + staggerAmount;
+  if (s.bossFight.bossCardBreakMeter >= CARD_BREAK_MAX) {
+    s.bossFight.bossCardBreakMeter = 0;
+    s.bossFight.bossCardBreakFreezeLeft = (s.bossFight.bossCardBreakFreezeLeft ?? 0) + CARD_BREAK_FREEZE_SECONDS;
+    s.bossFight.bossCardBreakCount = (s.bossFight.bossCardBreakCount ?? 0) + 1;
+    eventBus.emit('boss:cardbreak', { count: s.bossFight.bossCardBreakCount });
+  }
 }
 
 function checkBossDefeated(s: Store): void {
@@ -1628,23 +1814,14 @@ function ensureLightTurnState(turn: TurnState): void {
   if (turn.lightCadenceNotes === undefined) turn.lightCadenceNotes = [];
   if (turn.lightDistinctNotes === undefined) turn.lightDistinctNotes = [];
   if (turn.lightResonance === undefined) turn.lightResonance = 0;
-  if (turn.lightChorusAnchors === undefined) turn.lightChorusAnchors = 0;
 }
 
 function ensureThornboundTurnState(turn: TurnState): void {
   if (turn.thornScar === undefined) turn.thornScar = 0;
 }
 
-function ensureMechanicalTurnState(turn: TurnState): void {
-  if (turn.mechanicalInstructionQueue === undefined) turn.mechanicalInstructionQueue = [];
-  if (turn.mechanicalResolvedInstructions === undefined) turn.mechanicalResolvedInstructions = 0;
-  if (turn.mechanicalInstructionDiversity === undefined) turn.mechanicalInstructionDiversity = [];
-  if (turn.mechanicalKernelLocked === undefined) turn.mechanicalKernelLocked = false;
-  if (turn.mechanicalClockTicks === undefined) turn.mechanicalClockTicks = 0;
-  if (turn.mechanicalNextChimeTick === undefined) turn.mechanicalNextChimeTick = 3;
-  if (turn.mechanicalPrimedChimes === undefined) turn.mechanicalPrimedChimes = 0;
-  if (turn.mechanicalChimeInterval === undefined) turn.mechanicalChimeInterval = 3;
-  if (turn.mechanicalChimesFired === undefined) turn.mechanicalChimesFired = 0;
+function ensureMechanicalTurnState(_turn: TurnState): void {
+  // Mechanical Dreams uses only base TurnState.strain; no extra state required.
 }
 
 function ensurePrismaticTurnState(turn: TurnState): void {
@@ -1653,34 +1830,6 @@ function ensurePrismaticTurnState(turn: TurnState): void {
   if (turn.prismaticRecentChannels === undefined) turn.prismaticRecentChannels = [];
   if (turn.prismaticRefractionDepth === undefined) turn.prismaticRefractionDepth = 0;
   if (turn.prismaticNodeCharges === undefined) turn.prismaticNodeCharges = 0;
-  if (turn.prismaticChannelLocks === undefined) turn.prismaticChannelLocks = 0;
-  if (turn.prismaticMemoryShards === undefined) turn.prismaticMemoryShards = 0;
-  if (turn.prismaticStormMemories === undefined) turn.prismaticStormMemories = [];
-  if (turn.prismaticStormMemoryEnabled === undefined) turn.prismaticStormMemoryEnabled = false;
-  if (turn.prismaticPendingSwitchDepthMark === undefined) turn.prismaticPendingSwitchDepthMark = 0;
-  if (turn.prismaticSwitchMarkedCardIds === undefined) turn.prismaticSwitchMarkedCardIds = [];
-  if (turn.prismaticAccordChannel === undefined) turn.prismaticAccordChannel = null;
-  if (turn.prismaticDistinctNonAccordChannels === undefined) turn.prismaticDistinctNonAccordChannels = [];
-  if (turn.prismaticRefractionEchoes === undefined) turn.prismaticRefractionEchoes = 0;
-  if (turn.prismaticEchoCascadeArmed === undefined) turn.prismaticEchoCascadeArmed = false;
-  if (turn.prismaticEchoCascadeDepthThreshold === undefined) turn.prismaticEchoCascadeDepthThreshold = 4;
-  if (turn.prismaticEchoCascadeGainPerToken === undefined) turn.prismaticEchoCascadeGainPerToken = 0.08;
-  if (turn.prismaticEchoCascadeDrawRefund === undefined) turn.prismaticEchoCascadeDrawRefund = 1;
-  if (turn.prismaticChordTokens === undefined) turn.prismaticChordTokens = 0;
-  if (turn.prismaticChordPermanent === undefined) turn.prismaticChordPermanent = false;
-  if (turn.prismaticChordAttackBaseBonus === undefined) turn.prismaticChordAttackBaseBonus = 0;
-  if (turn.prismaticChordAttackChainBonus === undefined) turn.prismaticChordAttackChainBonus = 0;
-  if (turn.prismaticRefractionSpikes === undefined) turn.prismaticRefractionSpikes = 0;
-  if (turn.prismaticRefractionSpikeMax === undefined) turn.prismaticRefractionSpikeMax = 3;
-  if (turn.prismaticRefractionSpikesPersistent === undefined) turn.prismaticRefractionSpikesPersistent = false;
-  if (turn.prismaticLastPlaySwitchedChannel === undefined) turn.prismaticLastPlaySwitchedChannel = false;
-  if (turn.prismaticLatticeResonant === undefined) turn.prismaticLatticeResonant = false;
-  if (turn.prismaticSentencedCardIds === undefined) turn.prismaticSentencedCardIds = [];
-  if (turn.prismaticSentencingPerfect === undefined) turn.prismaticSentencingPerfect = false;
-  if (turn.prismaticSentencingChainGainBonus === undefined) turn.prismaticSentencingChainGainBonus = 0.3;
-  if (turn.prismaticSentencingDraw === undefined) turn.prismaticSentencingDraw = 2;
-  if (turn.prismaticSentencingDrawPerfect === undefined) turn.prismaticSentencingDrawPerfect = 3;
-  if (turn.prismaticNextOphanimRefund === undefined) turn.prismaticNextOphanimRefund = 0;
   if (turn.prismaticResonanceCharge === undefined) turn.prismaticResonanceCharge = 0;
 }
 
@@ -1689,8 +1838,6 @@ function ensureBlackGlassTurnState(turn: TurnState): void {
   if (turn.blackGlassBlackFlame === undefined) turn.blackGlassBlackFlame = 0;
   if (turn.blackGlassFracture === undefined) turn.blackGlassFracture = 0;
   if (turn.blackGlassLastPolarity === undefined) turn.blackGlassLastPolarity = null;
-  if (turn.blackGlassGriefOaths === undefined) turn.blackGlassGriefOaths = 0;
-  if (turn.blackGlassCollapsePending === undefined) turn.blackGlassCollapsePending = false;
   if (turn.blackGlassLastPayoff === undefined) turn.blackGlassLastPayoff = 0;
 }
 
@@ -1936,14 +2083,8 @@ function captureTurnSnapshot(turn: TurnState): TurnState {
     neutralityEngineSignatures: [...(turn.neutralityEngineSignatures ?? [])],
     lightCadenceNotes: [...(turn.lightCadenceNotes ?? [])],
     lightDistinctNotes: [...(turn.lightDistinctNotes ?? [])],
-    mechanicalInstructionQueue: [...(turn.mechanicalInstructionQueue ?? [])],
-    mechanicalInstructionDiversity: [...(turn.mechanicalInstructionDiversity ?? [])],
     prismaticDistinctChannels: [...(turn.prismaticDistinctChannels ?? [])],
     prismaticRecentChannels: [...(turn.prismaticRecentChannels ?? [])],
-    prismaticStormMemories: [...(turn.prismaticStormMemories ?? [])],
-    prismaticSwitchMarkedCardIds: [...(turn.prismaticSwitchMarkedCardIds ?? [])],
-    prismaticDistinctNonAccordChannels: [...(turn.prismaticDistinctNonAccordChannels ?? [])],
-    prismaticSentencedCardIds: [...(turn.prismaticSentencedCardIds ?? [])],
     glassAxioms: [...(turn.glassAxioms ?? [])],
     burningGardenLineagesPlayed: [...(turn.burningGardenLineagesPlayed ?? [])],
     burningGardenIncandescentSnapshot: [...(turn.burningGardenIncandescentSnapshot ?? [])],
@@ -1952,54 +2093,6 @@ function captureTurnSnapshot(turn: TurnState): TurnState {
 
 function getHeavenlyNote(def: CardDefinition): import('@/types/game').HeavenlyNote {
   return def.type;
-}
-
-function getMechanicalInstruction(def: CardDefinition, actionClass: AttenuationClass): import('@/types/game').MechanicalInstruction {
-  if (def.type === 'Cherubim') return 'gain';
-  if (def.type === 'Ophanim') return 'draw';
-  if (def.type === 'Angel') return 'trigger';
-  if (actionClass === 'multiplier') return 'multiply';
-  return 'convert';
-}
-
-function triggerMechanicalChime(s: Store, efficiency = 1, sourceDef?: CardDefinition): void {
-  ensureMechanicalTurnState(s.turn);
-
-  const spend = Math.min(3, Math.max(0, s.turn.strain ?? 0));
-  s.turn.strain = Math.max(0, (s.turn.strain ?? 0) - 3);
-
-  const burst = Math.max(24, Math.round((48 + spend * 34) * Math.max(0.35, efficiency)));
-  grantOblivion(s, burst);
-
-  s.turn.mechanicalPrimedChimes = 1;
-  s.turn.mechanicalChimesFired = (s.turn.mechanicalChimesFired ?? 0) + 1;
-  if (canUseAdvancedSetMechanics(s.board, sourceDef, 'mech')) {
-    s.turn.eternalStacks = {
-      ...(s.turn.eternalStacks ?? {}),
-      mech: Math.max(0, (s.turn.eternalStacks?.mech ?? 0) + 1),
-    };
-  }
-  s.turn.mechanicalResolvedInstructions = (s.turn.mechanicalResolvedInstructions ?? 0) + 1;
-  s.turn.mechanicalInstructionDiversity = appendDistinct(s.turn.mechanicalInstructionDiversity, 'trigger', 6);
-  s.turn.mechanicalInstructionQueue = [];
-
-  if (s.turn.mechanicalKernelLocked) {
-    s.turn.mechanicalKernelLocked = false;
-  }
-}
-
-function advanceMechanicalClock(s: Store, advances: number, efficiency = 1, sourceDef?: CardDefinition): void {
-  ensureMechanicalTurnState(s.turn);
-
-  for (let i = 0; i < advances; i++) {
-    s.turn.mechanicalClockTicks = (s.turn.mechanicalClockTicks ?? 0) + 1;
-    const interval = Math.max(1, s.turn.mechanicalChimeInterval ?? 3);
-
-    if ((s.turn.mechanicalClockTicks ?? 0) >= (s.turn.mechanicalNextChimeTick ?? interval)) {
-      triggerMechanicalChime(s, efficiency, sourceDef);
-      s.turn.mechanicalNextChimeTick = (s.turn.mechanicalNextChimeTick ?? interval) + interval;
-    }
-  }
 }
 
 function getPrismaticChannel(def: CardDefinition): import('@/types/game').PrismaticChannel {
@@ -2102,11 +2195,6 @@ function recordLossEvent(
   _source: 'discard' | 'board' | 'sacrifice' | 'expire',
 ): void {
   if (lostCards.length === 0) return;
-
-  if (storeContainsCard(s, def => def.element === 'Thornbound' && (def.rarity === 'Eternal' || def.rarity === 'Infinite'))) {
-    ensureThornboundTurnState(s.turn);
-    s.turn.thornLossesThisTurn = Math.min(40, (s.turn.thornLossesThisTurn ?? 0) + lostCards.length);
-  }
 
   if (boardHasAdvancedSetEnabler(s.board, 'glass')) {
     ensureBlackGlassTurnState(s.turn);
@@ -2225,9 +2313,10 @@ function getThornboundFullFireMultiplier(s: Store, def: CardDefinition): number 
 
 function getMechanicalFullFireMultiplier(s: Store, def: CardDefinition): number {
   if (!isMechanicalDreamsCard(def) || def.rarity !== 'Infinite') return 1;
-  ensureMechanicalTurnState(s.turn);
-  const setupReady = (s.turn.mechanicalResolvedInstructions ?? 0) >= 3;
-  const enginesReady = new Set(s.turn.mechanicalInstructionDiversity ?? []).size >= 3;
+  const strain = Math.max(0, s.turn.strain ?? 0);
+  const reactorCores = Math.max(0, s.turn.eternalStacks?.mech ?? 0);
+  const setupReady = strain >= 6;
+  const enginesReady = reactorCores >= 4;
   return setupReady && enginesReady ? 1.35 : 0.70;
 }
 
@@ -2385,12 +2474,12 @@ function applyNeutralityPlayState(
 
   ensureNeutralityTurnState(s.turn);
 
-  const embersDelta = (s.turn.embers ?? 0) - (beforeTurn.embers ?? 0);
+  const pyroHeatDelta = (s.turn.pyroHeat ?? 0) - (beforeTurn.pyroHeat ?? 0);
   const radianceDelta = (s.turn.radiance ?? 0) - (beforeTurn.radiance ?? 0);
   const trailDelta = (s.turn.trail ?? 0) - (beforeTurn.trail ?? 0);
   const strainDelta = (s.turn.strain ?? 0) - (beforeTurn.strain ?? 0);
-  const gain = [embersDelta, radianceDelta, trailDelta, strainDelta].filter(v => v > 0).reduce((sum, v) => sum + v, 0);
-  const spend = [embersDelta, radianceDelta, trailDelta, strainDelta].filter(v => v < 0).reduce((sum, v) => sum + Math.abs(v), 0);
+  const gain = [pyroHeatDelta, radianceDelta, trailDelta, strainDelta].filter(v => v > 0).reduce((sum, v) => sum + v, 0);
+  const spend = [pyroHeatDelta, radianceDelta, trailDelta, strainDelta].filter(v => v < 0).reduce((sum, v) => sum + Math.abs(v), 0);
 
   const oldDriftAbs = Math.abs(s.turn.equilibriumDrift ?? 0);
   s.turn.equilibriumDrift = Math.max(-60, Math.min(60, (s.turn.equilibriumDrift ?? 0) + gain - spend));
@@ -2456,27 +2545,19 @@ function applyLightPlayState(
   const previousNotes = beforeTurn.lightCadenceNotes ?? [];
   const previousNote = previousNotes.length > 0 ? previousNotes[previousNotes.length - 1] : undefined;
   const repeatedNote = previousNote === note;
-  const anchors = s.turn.lightChorusAnchors ?? 0;
 
-  if (repeatedNote && anchors <= 0) {
+  if (repeatedNote) {
     s.turn.lightCadenceNotes = [note];
     s.turn.lightDistinctNotes = [note];
     if (advancedLightAccess) {
       s.turn.lightResonance = Math.max(0, (s.turn.lightResonance ?? 0) - 1);
     }
   } else {
-    if (advancedLightAccess && repeatedNote) {
-      s.turn.lightChorusAnchors = Math.max(0, anchors - 1);
-    }
     s.turn.lightCadenceNotes = [...(s.turn.lightCadenceNotes ?? []), note].slice(-6);
     s.turn.lightDistinctNotes = appendDistinct(s.turn.lightDistinctNotes, note, 4);
     if (advancedLightAccess) {
       s.turn.lightResonance = Math.min(6, (s.turn.lightResonance ?? 0) + 1 + (actionClass === 'multiplier' ? 1 : 0));
     }
-  }
-
-  if (advancedLightAccess && def.rarity === 'Eternal') {
-    s.turn.lightChorusAnchors = Math.min(3, (s.turn.lightChorusAnchors ?? 0) + 1);
   }
 
   s.turn.lastPlayedElement = def.element;
@@ -2499,23 +2580,9 @@ function applyThornboundPlayState(
 function applyMechanicalPlayState(
   s: Store,
   def: CardDefinition,
-  actionClass: AttenuationClass,
+  _actionClass: AttenuationClass,
 ): void {
   if (!isMechanicalDreamsCard(def)) return;
-
-  ensureMechanicalTurnState(s.turn);
-
-  const instruction = getMechanicalInstruction(def, actionClass);
-  // Keep compatibility metrics populated for existing scaling hooks.
-  s.turn.mechanicalInstructionQueue = [];
-  s.turn.mechanicalInstructionDiversity = appendDistinct(s.turn.mechanicalInstructionDiversity, instruction, 6);
-
-  if (def.rarity === 'Eternal') {
-    s.turn.mechanicalKernelLocked = true;
-  }
-
-  const advances = def.type === 'Ophanim' || def.type === 'Angel' ? 2 : 1;
-  advanceMechanicalClock(s, advances, 1, def);
   s.turn.lastPlayedElement = def.element;
 }
 
@@ -2530,93 +2597,26 @@ function applyPrismaticPlayState(
   ensurePrismaticTurnState(s.turn);
 
   const advancedPrismaticAccess = canUseAdvancedSetMechanics(s.board, def, 'prism');
-  const isBasePrismatic = def.rarity !== 'Eternal' && def.rarity !== 'Infinite';
-  const isInfinitePrismatic = def.rarity === 'Infinite';
 
   const channel = getPrismaticChannel(def);
   const previousChannel = beforeTurn.prismaticCurrentChannel ?? null;
   const switchedChannel = previousChannel !== null && previousChannel !== channel;
-  const recentChannels = beforeTurn.prismaticRecentChannels ?? [];
-  const recentMatch = recentChannels.includes(channel);
-  const hadLock = (s.turn.prismaticChannelLocks ?? 0) > 0;
-  s.turn.prismaticLastPlaySwitchedChannel = switchedChannel;
 
   if (switchedChannel && advancedPrismaticAccess) {
-    let depthGain = 1 + (actionClass === 'multiplier' ? 1 : 0);
-
-    if (isInfinitePrismatic && recentMatch && hadLock) {
-      s.turn.prismaticChannelLocks = Math.max(0, (s.turn.prismaticChannelLocks ?? 0) - 1);
-      depthGain = 2;
-    }
-
+    const depthGain = 1 + (actionClass === 'multiplier' ? 1 : 0);
     s.turn.prismaticRefractionDepth = Math.min(9, (s.turn.prismaticRefractionDepth ?? 0) + depthGain);
-
-    if (isBasePrismatic) {
-      // Base Prismatic loop: each successful channel switch grants +1 Prism Charge.
-      s.turn.prismaticNodeCharges = Math.min(3, (s.turn.prismaticNodeCharges ?? 0) + 1);
-    } else if (isInfinitePrismatic) {
-      if ((s.turn.prismaticNodeCharges ?? 0) > 0) {
-        s.turn.prismaticNodeCharges = Math.max(0, (s.turn.prismaticNodeCharges ?? 0) - 1);
-      }
-
-      if ((s.turn.prismaticRefractionSpikeMax ?? 0) > 0) {
-        s.turn.prismaticRefractionSpikes = Math.min(
-          s.turn.prismaticRefractionSpikeMax ?? 3,
-          (s.turn.prismaticRefractionSpikes ?? 0) + 1,
-        );
-      }
-    }
-  } else if (previousChannel === channel) {
-  } else {
-    if (advancedPrismaticAccess) {
-      s.turn.prismaticRefractionDepth = Math.max(1, s.turn.prismaticRefractionDepth ?? 0);
-    }
+    // Channel switch grants +1 Prism Charge (max 3). Eternal/Infinite Prismatic cards
+    // build/spend Resonance Charge explicitly via card effects rather than auto-gaining here.
+    s.turn.prismaticNodeCharges = Math.min(3, (s.turn.prismaticNodeCharges ?? 0) + 1);
+  } else if (previousChannel !== channel && advancedPrismaticAccess) {
+    s.turn.prismaticRefractionDepth = Math.max(1, s.turn.prismaticRefractionDepth ?? 0);
   }
 
   s.turn.prismaticCurrentChannel = channel;
   s.turn.prismaticDistinctChannels = appendDistinct(s.turn.prismaticDistinctChannels, channel, 9);
   s.turn.prismaticRecentChannels = [...(beforeTurn.prismaticRecentChannels ?? []), channel].slice(-3);
 
-  const accordChannel = s.turn.prismaticAccordChannel ?? null;
-  if (advancedPrismaticAccess && isInfinitePrismatic && accordChannel) {
-    if (channel === accordChannel) {
-      s.turn.prismaticNodeCharges = Math.min(5, (s.turn.prismaticNodeCharges ?? 0) + 2);
-    } else {
-      s.turn.prismaticNodeCharges = Math.max(0, (s.turn.prismaticNodeCharges ?? 0) - 1);
-      s.turn.prismaticDistinctNonAccordChannels = appendDistinct(s.turn.prismaticDistinctNonAccordChannels, channel, 9);
-    }
-  }
-  const choirActive = s.board.frontSlots.some(
-    slot => slot?.type === 'Seraphim' && slot.isActive && slot.definitionId === 'inf-prismatic-choir-splinter',
-  );
-  if (choirActive && def.type === 'Cherubim' && switchedChannel) {
-  }
-
-  if (
-    advancedPrismaticAccess
-    && isInfinitePrismatic
-    && beforeTurn.lastPlayedElement
-    && beforeTurn.lastPlayedElement !== def.element
-    && actionClass === 'conversion'
-  ) {
-    grantOblivion(s, 18);
-  }
-
-  const fullFireReady = new Set(s.turn.prismaticDistinctChannels ?? []).size >= 4
-    && (s.turn.prismaticRefractionDepth ?? 0) >= 3;
-  const latticeActive = s.board.backSlots.some(slot => slot?.type === 'Cherubim' && slot.definitionId === 'inf-prismatic-collapse-lattice');
-  if (latticeActive && fullFireReady) {
-    s.turn.prismaticLatticeResonant = true;
-    s.turn.prismaticRefractionSpikesPersistent = true;
-  }
-
   s.turn.lastPlayedElement = def.element;
-}
-
-function applyPrismaticPostPlayTriggers(
-  s: Store,
-): void {
-  ensurePrismaticTurnState(s.turn);
 }
 
 function applyBlackGlassPlayState(
@@ -2998,6 +2998,8 @@ function applyBurningGardenPlayState(
 
 function endTurnInternal(s: Store): void {
   if (s.turn.phase !== 'playing') return;
+  // Boss fights are time-pressure encounters. Manually ending the turn during
+  // an active fight is treated as an immediate failure across all boss modes.
   if (s.bossFight.mode === 'active') {
     completeBossFight(s, false);
     return;
@@ -3068,9 +3070,6 @@ function endTurnInternal(s: Store): void {
           case 'oblivion_lte':
             shouldDiscard = s.progress.oblivion <= condition.value;
             break;
-          case 'embers_lte':
-            shouldDiscard = false; // embers resource scrapped
-            break;
           case 'radiance_lte':
             shouldDiscard = s.turn.radiance <= condition.value;
             break;
@@ -3116,6 +3115,19 @@ function endTurnInternal(s: Store): void {
     s.trialDeck.trialOblivionTotal = (s.trialDeck.trialOblivionTotal ?? 0) + (s.turn.oblivionEarnedThisTurn ?? 0);
     // Guided mode: mark complete when all guide steps have been played
     if (s.trialDeck.trialMode === 'guided' && !s.trialDeck.guideComplete) {
+      // Tutorial lanes sync their guide progression to completed turns so each
+      // turn naturally advances the guide even if card order differs.
+      if (isNeutralityTutorialTrialPackId(s.trialDeck.packId)) {
+        const targetStep = Math.min(s.trialDeck.turnCount ?? 0, s.trialDeck.guideSteps.length);
+        if (targetStep > s.trialDeck.guideStep) {
+          s.trialDeck.guideStep = targetStep;
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('trial-guide-step-changed', {
+              detail: { step: s.trialDeck.guideStep, total: s.trialDeck.guideSteps.length },
+            }));
+          }
+        }
+      }
       if (s.trialDeck.guideStep >= s.trialDeck.guideSteps.length) {
         s.trialDeck.guideComplete = true;
       }
@@ -3282,8 +3294,13 @@ function canResolveActivatedEffects(
         if (resourceTurn.radiance < effect.value) return false;
         resourceTurn.radiance -= effect.value;
         return true;
-      case 'ember_spend':
-        // embers resource scrapped — always passes
+      case 'pyro_heat_spend':
+        if (effect.value >= 9999) {
+          resourceTurn.pyroHeat = 0;
+          return true;
+        }
+        if ((resourceTurn.pyroHeat ?? 0) < effect.value) return false;
+        resourceTurn.pyroHeat = (resourceTurn.pyroHeat ?? 0) - effect.value;
         return true;
       case 'trail_spend':
         if (effect.value >= 9999) {
@@ -3379,7 +3396,7 @@ function buildDefaultAngelAttackSet(def: AngelDefinition): AngelAttackSet {
   const dominantCost: AttackCost = def.element === 'Light'
     ? { type: 'spend_radiance', value: 3 + power }
     : def.element === 'Fire'
-      ? { type: 'spend_embers', value: 3 + power }
+      ? { type: 'spend_pyro_heat', value: 3 + power }
       : def.element === 'Thornbound'
         ? { type: 'spend_trail', value: 2 + power }
         : def.element === 'Mechanical'
@@ -3438,11 +3455,15 @@ function collectAttackBuffs(
   let cooldownDeltaCards = 0;
   let multiplier = 1;
   const loweredTags = new Set(tags.map(tag => tag.toLowerCase()));
+  const targetDef = ScoreSystem.getDefinition(targetDefinitionId);
+  const targetSetKey = targetDef ? getCardCategoryKey(targetDef) : null;
 
   for (const back of board.backSlots) {
     if (!back || back.type !== 'Cherubim') continue;
     const def = ScoreSystem.getDefinition(back.definitionId);
     if (!def || def.type !== 'Cherubim') continue;
+    const sourceSetKey = getCardCategoryKey(def);
+    if (targetSetKey && targetSetKey !== sourceSetKey) continue;
     for (const effect of def.effects) {
       if (effect.type !== 'cherubim_attack_buff') continue;
       if (effect.targetUnitType !== 'Any' && effect.targetUnitType !== unitType) continue;
@@ -3535,8 +3556,8 @@ function canPayAttackCosts(
         if (available < cost.value) return false;
         break;
       }
-      case 'spend_embers':
-        // embers resource scrapped — no cost check
+      case 'spend_pyro_heat':
+        if ((s.turn.pyroHeat ?? 0) < cost.value) return false;
         break;
       case 'spend_radiance':
         if (s.turn.radiance < cost.value) return false;
@@ -3605,8 +3626,8 @@ function payAttackCosts(
         s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
         break;
       }
-      case 'spend_embers':
-        // embers resource scrapped — no deduction
+      case 'spend_pyro_heat':
+        s.turn.pyroHeat = Math.max(0, (s.turn.pyroHeat ?? 0) - cost.value);
         break;
       case 'spend_radiance':
         s.turn.radiance -= cost.value;
@@ -3621,8 +3642,10 @@ function payAttackCosts(
   }
 }
 
-function grantDominantAttackResource(s: Store, element: string | undefined, amount: number): void {
+function grantDominantAttackResource(s: Store, sourceDefinitionId: string, element: string | undefined, amount: number): void {
   if (amount <= 0) return;
+  const sourceDef = CardRegistry.get(sourceDefinitionId);
+  const sourceSetKey = sourceDef ? getCardCategoryKey(sourceDef) : null;
   switch (element) {
     case 'Light':
       s.turn.radiance += amount;
@@ -3633,7 +3656,12 @@ function grantDominantAttackResource(s: Store, element: string | undefined, amou
     case 'Neutrality': {
       const frontline = s.board.frontSlots.filter(
         (u): u is SeraphimInstance | AngelInstance =>
-          u !== null && (u.type === 'Seraphim' || u.type === 'Angel')
+          u !== null
+          && (u.type === 'Seraphim' || u.type === 'Angel')
+          && (!sourceSetKey || (() => {
+            const unitDef = CardRegistry.get(u.definitionId);
+            return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+          })())
       );
       if (frontline.length > 0) {
         const perUnit = Math.round(amount / frontline.length);
@@ -3709,7 +3737,7 @@ function applyLateGameAttackIdentity(
   const dominantResourceGain = identity.dominantResourceGain + suppressedDraws * (isInfinite ? 10 : 5);
   if (dominantResourceGain > 0) {
     const attackingDef = ScoreSystem.getDefinition(definitionId);
-    grantDominantAttackResource(s, attackingDef?.element, dominantResourceGain);
+    grantDominantAttackResource(s, attackingDef?.definitionId ?? '', attackingDef?.element, dominantResourceGain);
   }
 
   if (identity.cooldownReduction > 0) {
@@ -3750,14 +3778,19 @@ function computeCherubimAdjacentBonus(board: BoardState, bonusType: 'oblivion' |
   for (let i = 0; i < 4; i++) {
     const card = board.backSlots[i];
     if (!card || card.type !== 'Cherubim') continue;
+    const def = ScoreSystem.getDefinition(card.definitionId);
+    if (!def || def.type !== 'Cherubim') continue;
+    const sourceSetKey = getCardCategoryKey(def);
     const leftSlot = board.frontSlots[i];
     const rightSlot = board.frontSlots[i + 1];
     const adjacentActive = [leftSlot, rightSlot].filter(
-      s => s?.type === 'Seraphim' && (s as SeraphimInstance).isActive
+      s => {
+        if (!s || s.type !== 'Seraphim' || !(s as SeraphimInstance).isActive) return false;
+        const unitDef = ScoreSystem.getDefinition(s.definitionId);
+        return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+      }
     ).length;
     if (adjacentActive === 0) continue;
-    const def = ScoreSystem.getDefinition(card.definitionId);
-    if (!def || def.type !== 'Cherubim') continue;
     const burnMultiplier = isBurningGardenCard(def) ? computeBurningGardenBoardPower(card) : 1;
     for (const effect of (def as import('@/types/cards').CherubimDefinition).effects) {
       if (effect.type === 'cherubim_adjacent_seraphim_bonus' && effect.bonusType === bonusType) {
@@ -3831,11 +3864,9 @@ function awardOblivionForCardPlay(
     const noteCount = new Set(s.turn.lightDistinctNotes ?? []).size;
     const resonanceMultiplier = 1 + Math.min(0.5, resonance * 0.08);
     const cadenceMultiplier = 1 + Math.min(0.28, noteCount * 0.07);
-    const anchorMultiplier = 1 + Math.min(0.12, (s.turn.lightChorusAnchors ?? 0) * 0.04);
     const radianceMultiplier = 1 + Math.min(0.35, s.turn.radiance * 0.015);
-    const strainControl = s.turn.strain <= 8 ? 1.05 : Math.max(0.82, 1 - (s.turn.strain - 8) * 0.02);
     const fullFireMultiplier = getLightFullFireMultiplier(s, sourceDef);
-    totalAward = Math.round(totalAward * resonanceMultiplier * cadenceMultiplier * anchorMultiplier * radianceMultiplier * strainControl * fullFireMultiplier);
+    totalAward = Math.round(totalAward * resonanceMultiplier * cadenceMultiplier * radianceMultiplier * fullFireMultiplier);
     if (sourceDef.rarity === 'Infinite') {
       totalAward += noteCount * 34 + resonance * 10;
     }
@@ -3846,47 +3877,20 @@ function awardOblivionForCardPlay(
     const scar = s.turn.thornScar ?? 0;
     const trailMultiplier = 1 + Math.min(0.45, s.turn.trail * 0.02);
     const scarMultiplier = 1 + Math.min(0.4, scar * 0.04);
-    const marchStability = s.turn.strain <= s.turn.trail + 6
-      ? 1.08
-      : Math.max(0.75, 1 - (s.turn.strain - (s.turn.trail + 6)) * 0.03);
     const fullFireMultiplier = getThornboundFullFireMultiplier(s, sourceDef);
-    totalAward = Math.round(totalAward * trailMultiplier * scarMultiplier * marchStability * fullFireMultiplier);
-    if (sourceDef.rarity === 'Eternal' || sourceDef.rarity === 'Infinite') {
-      const losses = s.turn.thornLossesThisTurn ?? 0;
-      const path = s.turn.thornWarPath;
-      const pathMultiplier = path === 'Aggression' ? 1.16 : path === 'Endurance' ? 1.08 : 1;
-      totalAward = Math.round(totalAward * pathMultiplier)
-        + scar * (path === 'Aggression' ? 10 : 6)
-        + losses * 4;
-    }
-    if (sourceDef.rarity === 'Infinite') {
-      totalAward += scar * 22;
-      s.turn.thornScar = Math.max(1, Math.ceil(scar * 0.45));
-      s.turn.thornProcessions = (s.turn.thornProcessions ?? 0) + 1;
-    }
+    totalAward = Math.round(totalAward * trailMultiplier * scarMultiplier * fullFireMultiplier);
   }
 
   const mechanicalDef = sourceDef;
   if (mechanicalDef && isMechanicalDreamsCard(mechanicalDef) && totalAward > 0) {
-    ensureMechanicalTurnState(s.turn);
-    const primed = Math.min(1, s.turn.mechanicalPrimedChimes ?? 0);
-    const diversity = new Set(s.turn.mechanicalInstructionDiversity ?? []).size;
-    const resolved = s.turn.mechanicalChimesFired ?? 0;
-    const ticksToChime = Math.max(0, (s.turn.mechanicalNextChimeTick ?? 3) - (s.turn.mechanicalClockTicks ?? 0));
-    const strainBand = s.turn.strain <= 12
-      ? 1 + Math.min(0.18, s.turn.strain * 0.015)
-      : Math.max(0.78, 1 - (s.turn.strain - 12) * 0.03);
-    const rhythmMultiplier = 1 + Math.min(0.2, Math.max(0, 3 - ticksToChime) * 0.06);
-    const diversityMultiplier = 1 + Math.min(0.42, diversity * 0.07);
-    const resolvedMultiplier = 1 + Math.min(0.24, resolved * 0.05);
-    const primedMultiplier = primed > 0 ? 1.14 : 1;
-    const kernelMultiplier = s.turn.mechanicalKernelLocked ? 1.08 : 1;
+    const strain = Math.max(0, s.turn.strain ?? 0);
+    const reactorCores = Math.max(0, s.turn.eternalStacks?.mech ?? 0);
+    const strainBand = strain <= 12
+      ? 1 + Math.min(0.24, strain * 0.02)
+      : Math.max(0.78, 1 - (strain - 12) * 0.03);
+    const reactorMultiplier = 1 + Math.min(0.45, reactorCores * 0.05);
     const fullFireMultiplier = getMechanicalFullFireMultiplier(s, mechanicalDef);
-    totalAward = Math.round(totalAward * strainBand * rhythmMultiplier * diversityMultiplier * resolvedMultiplier * primedMultiplier * kernelMultiplier * fullFireMultiplier);
-    if (mechanicalDef.rarity === 'Infinite' && (s.turn.mechanicalPrimedChimes ?? 0) > 0) {
-      advanceMechanicalClock(s, 1, 0.65);
-      totalAward += diversity * 30;
-    }
+    totalAward = Math.round(totalAward * strainBand * reactorMultiplier * fullFireMultiplier);
   }
 
   if (sourceDef?.element === 'Prismatic' && totalAward > 0) {
@@ -4107,16 +4111,22 @@ function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
   return spent;
 }
 
-function applyPatienceGainAll(s: Store, value: number): void {
+function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: number): void {
+  const sourceDef = CardRegistry.get(sourceDefinitionId);
+  const sourceSetKey = sourceDef ? getCardCategoryKey(sourceDef) : null;
   const vesselId = s.turn.neutralityVesselInstanceId ?? null;
   const vesselCopyPercent = Math.max(0, s.turn.neutralityVesselCopyPercent ?? 0);
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
   const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
   let nonVesselGain = 0;
 
-  // Patience flows to every Seraphim on board regardless of Angel-synergy activation.
+  // Patience stays inside the source set; only matching-set frontline units receive it.
   for (const unit of s.board.frontSlots) {
-    if (!unit || unit.type !== 'Seraphim') continue;
+    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
+    if (sourceSetKey) {
+      const unitDef = CardRegistry.get(unit.definitionId);
+      if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) continue;
+    }
     const gain = value + linkedBonus + equilibriumBonus;
     unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
     if (vesselId && unit.instanceId !== vesselId) {
@@ -4125,9 +4135,12 @@ function applyPatienceGainAll(s: Store, value: number): void {
   }
 
   if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
-    const vessel = s.board.frontSlots.find(
-      unit => unit?.type === 'Seraphim' && unit.instanceId === vesselId,
-    );
+    const vessel = s.board.frontSlots.find(unit => {
+      if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel') || unit.instanceId !== vesselId) return false;
+      if (!sourceSetKey) return true;
+      const unitDef = CardRegistry.get(unit.definitionId);
+      return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+    });
     if (vessel) {
       const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
       if (copied > 0) {
@@ -4193,6 +4206,7 @@ function applyCherubimPassiveEffects(s: Store): void {
     const cherubim = card as import('@/types/cards').CherubimInstance;
     const def = ScoreSystem.getDefinition(cherubim.definitionId) as import('@/types/cards').CherubimDefinition | null;
     if (!def || def.type !== 'Cherubim' || !def.effects) continue;
+    const sourceSetKey = getCardCategoryKey(def);
 
     for (const effect of def.effects) {
       switch (effect.type) {
@@ -4214,17 +4228,38 @@ function applyCherubimPassiveEffects(s: Store): void {
           break;
         }
 
+        case 'cherubim_pyro_heat_gain': {
+          s.turn.pyroHeat = Math.max(0, s.turn.pyroHeat ?? 0) + effect.value;
+          break;
+        }
+
+        case 'cherubim_charge_per_n_cards': {
+          const playCount = (s.turn.cardsPlayedThisTurn ?? 0) + 1;
+          if (effect.n > 0 && playCount > 0 && playCount % effect.n === 0) {
+            const cap = s.turn.reforgeChargeCap ?? 6;
+            s.turn.reforgeCharges = Math.min(cap, (s.turn.reforgeCharges ?? 0) + 1);
+          }
+          break;
+        }
+
+        case 'cherubim_temper_on_next_seraphim': {
+          s.turn.forgePendingCherubimTemper = (s.turn.forgePendingCherubimTemper ?? 0) + effect.factor;
+          break;
+        }
+
         case 'cherubim_draw_per_card': {
           applyCherubimDrawPerCard(s, effect.value);
           break;
         }
 
         case 'cherubim_patience_per_card': {
-          // Give adjacent Seraphim (and Angels) +value Patience per card played.
+          // Give adjacent same-set Seraphim/Angels +value Patience per card played.
           const leftFront = s.board.frontSlots[i];
           const rightFront = s.board.frontSlots[i + 1];
           for (const frontUnit of [leftFront, rightFront]) {
             if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
+            const frontDef = CardRegistry.get(frontUnit.definitionId);
+            if (!frontDef || getCardCategoryKey(frontDef) !== sourceSetKey) continue;
             const gain = effect.value + linkedBonus + equilibriumBonus;
             frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
             if (vesselId && frontUnit.type === 'Seraphim' && frontUnit.instanceId !== vesselId) {
@@ -4243,8 +4278,8 @@ function applyCherubimPassiveEffects(s: Store): void {
               conditionMet = s.turn.cardsPlayedThisTurn >= effect.condition.value;
             } else if (effect.condition.type === 'radiance_gte') {
               conditionMet = s.turn.radiance >= effect.condition.value;
-            } else if (effect.condition.type === 'ember_gte') {
-              conditionMet = false; // embers resource scrapped
+            } else if (effect.condition.type === 'pyro_heat_gte') {
+              conditionMet = (s.turn.pyroHeat ?? 0) >= effect.condition.value;
             } else if (effect.condition.type === 'strain_gte') {
               conditionMet = s.turn.strain >= effect.condition.value;
             } else if (effect.condition.type === 'strain_lte') {
@@ -4297,13 +4332,13 @@ function applyCherubimPassiveEffects(s: Store): void {
   }
 }
 
-function resolveNeutralityMarkedCardTrigger(s: Store, playedInstanceId: string): void {
+function resolveNeutralityMarkedCardTrigger(s: Store, playedInstanceId: string, sourceDefinitionId: string): void {
   const marked = s.turn.neutralityMarkedCardIds ?? [];
   if (!marked.includes(playedInstanceId)) return;
 
   const gain = Math.max(0, s.turn.neutralityMarkedPatienceGain ?? 0);
   if (gain > 0) {
-    applyPatienceGainAll(s, gain);
+    applyPatienceGainAll(s, sourceDefinitionId, gain);
   }
   s.turn.neutralityMarkedCardIds = marked.filter(id => id !== playedInstanceId);
 }
@@ -4373,14 +4408,14 @@ export const useStore = create<Store>()(
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
+            if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
-            applyPrismaticPostPlayTriggers(s);
             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
           }
         }
 
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
+        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
         incrementAngelProgress(s.board);
         const newInst = s.board.frontSlots[slot];
         if (newInst?.type === 'Seraphim' && newInst.isActive) {
@@ -4463,13 +4498,13 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
+          if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
           applyAllSetPlayStates(s, def, turnBefore, actionClass);
           applyButterflyBasePlayProgression(s, def);
-          applyPrismaticPostPlayTriggers(s);
           awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
         }
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
+        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
         incrementAngelProgress(s.board);
         recordCardPlay(s, deckCard.definitionId);
         checkBossDefeated(s);
@@ -4541,7 +4576,6 @@ export const useStore = create<Store>()(
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
         applyAllSetPlayStates(s, def, turnBefore, actionClass);
         applyButterflyBasePlayProgression(s, def);
-        applyPrismaticPostPlayTriggers(s);
 
         s.turn.cardsPlayedThisTurn += 1;
 
@@ -4751,9 +4785,6 @@ export const useStore = create<Store>()(
         // Attacking increases the chain by this attack's chain value, locking in the gain via floor
         if (def.definitionId === 'inf-prismatic-choir-splinter') {
         }
-        const latticeActive = s.board.backSlots.some(slot => slot?.type === 'Cherubim' && slot.definitionId === 'inf-prismatic-collapse-lattice');
-        if (latticeActive && s.turn.prismaticLastPlaySwitchedChannel) {
-        }
 
         // Patience mechanic: consume stacks for bonus Oblivion (+1.5% of base attack per stack)
         const seraphimDef = def as import('@/types/cards').SeraphimDefinition;
@@ -4763,11 +4794,17 @@ export const useStore = create<Store>()(
           ? Math.max(0, s.turn.secondaryCounters?.pyro ?? 0)
           : 0;
         const chromaMultiplier = getPyroChromaAttackMultiplier(s, def);
+        const forgeTemperBonus = Math.max(0, s.turn.forgeTemperQueue ?? 0);
 
         let amount = Math.round(
           Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + patienceOblivion)
           * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit) * chromaMultiplier),
         );
+
+        if (forgeTemperBonus > 0) {
+          amount = Math.round(amount * (1 + forgeTemperBonus));
+          s.turn.forgeTemperQueue = 0;
+        }
 
         if (def.definitionId === 'tx-sera-null-entropy') {
           const sigils = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
@@ -4775,31 +4812,6 @@ export const useStore = create<Store>()(
           if (sigils > 0) {
             amount = Math.round(amount * (1 + Math.min(0.6, sigils * 0.03)));
           }
-        }
-
-        if (def.definitionId === 'inf-prismatic-choir-splinter') {
-          amount += Math.max(0, Math.round(s.turn.prismaticChordAttackBaseBonus ?? 0));
-          if (!(s.turn.prismaticChordPermanent ?? false)) {
-            s.turn.prismaticChordTokens = 0;
-            s.turn.prismaticChordAttackBaseBonus = 0;
-            s.turn.prismaticChordAttackChainBonus = 0;
-          }
-        }
-
-        if (latticeActive && s.turn.prismaticLastPlaySwitchedChannel) {
-          amount += 100;
-        }
-
-        const usedSpike = (s.turn.prismaticRefractionSpikes ?? 0) > 0;
-        if (usedSpike) {
-          amount += 200;
-          if (!(s.turn.prismaticRefractionSpikesPersistent ?? false)) {
-            s.turn.prismaticRefractionSpikes = Math.max(0, (s.turn.prismaticRefractionSpikes ?? 0) - 1);
-          }
-        }
-
-        if (latticeActive && (s.turn.prismaticLatticeResonant ?? false)) {
-          amount += 180;
         }
 
         if (def.definitionId === 'ga-et-lattice-archive-seraph') {
@@ -4849,12 +4861,9 @@ export const useStore = create<Store>()(
         amount = Math.round(amount * consumePyroHeatAttackAmplifier(s, def));
         amount = Math.round(amount * getPyroFurnaceAttackMultiplier(s, def));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
-        if (isMechanicalDreamsCard(def) && (s.turn.mechanicalPrimedChimes ?? 0) > 0) {
-          const chimeBonus = 120 + Math.min(220, (s.turn.strain ?? 0) * 10);
-          amount += chimeBonus;
-          s.turn.mechanicalPrimedChimes = 0;
-        }
         grantOblivion(s, amount);
+        // Card-break: synergized Seraphim attacks build +15 stagger.
+        if (attackId === 'synergized') applyCardBreakStagger(s, 15);
         if (def.definitionId === 'tx-sera-null-entropy' && capturedPatience >= 10) {
           s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
         }
@@ -4898,15 +4907,17 @@ export const useStore = create<Store>()(
             const preservePercent = Math.max(0, s.turn.neutralityAttackPreservePercent ?? 0);
             const baseRestorePercent = Math.max(0, s.turn.neutralityAttackRestorePercent ?? 0);
             const entropySigils = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
+            const attackSetKey = getCardCategoryKey(def);
             const entropyRestorePercent = def.definitionId === 'tx-sera-null-entropy'
               ? Math.min(70, entropySigils * 7)
               : 0;
-            const restorePercent = baseRestorePercent + entropyRestorePercent;
-            const preserved = Math.floor(capturedPatience * (preservePercent / 100));
+            const preserveApplied = attackSetKey === 'Neutrality' ? preservePercent : 0;
+            const restorePercent = attackSetKey === 'Neutrality' ? baseRestorePercent + entropyRestorePercent : 0;
+            const preserved = Math.floor(capturedPatience * (preserveApplied / 100));
             const restored = Math.floor(capturedPatience * (restorePercent / 100));
             refreshed.patienceStacks = Math.max(0, preserved + restored);
 
-            const linkedRetainPercent = Math.max(0, s.turn.neutralityLinkedRetainPercent ?? 0);
+            const linkedRetainPercent = attackSetKey === 'Neutrality' ? Math.max(0, s.turn.neutralityLinkedRetainPercent ?? 0) : 0;
             if (linkedRetainPercent > 0) {
               for (const other of s.board.frontSlots) {
                 if (!other || other.type !== 'Seraphim' || !other.isActive || other.instanceId === refreshed.instanceId) continue;
@@ -4986,12 +4997,9 @@ export const useStore = create<Store>()(
         amount = Math.round(amount * consumePyroHeatAttackAmplifier(s, def));
         amount = Math.round(amount * getPyroFurnaceAttackMultiplier(s, def));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
-        if (isMechanicalDreamsCard(def) && (s.turn.mechanicalPrimedChimes ?? 0) > 0) {
-          const chimeBonus = 120 + Math.min(220, (s.turn.strain ?? 0) * 10);
-          amount += chimeBonus;
-          s.turn.mechanicalPrimedChimes = 0;
-        }
         grantOblivion(s, amount);
+        // Card-break: exalted Angel attacks build +25 stagger.
+        if (attackId === 'exalted') applyCardBreakStagger(s, 25);
         if (chromaEmbers > 0 && def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
           const secondary = (s.turn.secondaryCounters ??= {} as NonNullable<TurnState['secondaryCounters']>);
           secondary.pyro = 0;
@@ -5000,10 +5008,7 @@ export const useStore = create<Store>()(
 
         const refreshed = s.board.frontSlots[slot];
         if (refreshed && refreshed.type === 'Angel') {
-          const prismaticCooldownReduction = def.definitionId === 'inf-prismatic-judgement-array'
-            ? Math.min(3, (s.turn.prismaticRefractionEchoes ?? 0) + (s.turn.prismaticMemoryShards ?? 0))
-            : 0;
-          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - prismaticCooldownReduction);
+          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
         }
 
@@ -5163,10 +5168,6 @@ export const useStore = create<Store>()(
         if (voltageStartBonus > 0) {
           // Snowbound Voltage: passive Arctic Charge priming each turn start.
           s.turn.arcticCharge = (s.turn.arcticCharge ?? 0) + voltageStartBonus;
-        }
-        const ironChargeStartBonus = getArtifactEffect(s.turn, 'iron_charge_start_bonus', s.progress.ownedArtifacts);
-        if (ironChargeStartBonus > 0) {
-          s.turn.reforgeCharges = (s.turn.reforgeCharges ?? 0) + ironChargeStartBonus;
         }
         const bloomStartBonus = Math.floor(getArtifactEffect(s.turn, 'bloom_start_bonus', s.progress.ownedArtifacts));
         if (bloomStartBonus > 0) {
@@ -5339,13 +5340,13 @@ export const useStore = create<Store>()(
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
+            if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
             applyButterflyBasePlayProgression(s, def);
-            applyPrismaticPostPlayTriggers(s);
             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
           }
           s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-          resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
+          resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
           incrementAngelProgress(s.board);
           recordCardPlay(s, deckCard.definitionId);
           advanceTrialGuideStep(s, deckCard.definitionId);
@@ -5404,7 +5405,6 @@ export const useStore = create<Store>()(
           if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
           applyAllSetPlayStates(s, def, turnBefore, actionClass);
           applyButterflyBasePlayProgression(s, def);
-          applyPrismaticPostPlayTriggers(s);
 
           s.turn.cardsPlayedThisTurn += 1;
 
@@ -5428,14 +5428,13 @@ export const useStore = create<Store>()(
         s.deck = result.deck;
         applyAllSetPlayStates(s, def, turnBefore, actionClass);
         applyButterflyBasePlayProgression(s, def);
-        applyPrismaticPostPlayTriggers(s);
 
         awardOblivionForCardPlay(s, result.oblivionBonus, true, undefined, def, actionClass);
         applyCherubimPassiveEffects(s);
         tickCherubimDurability(s);
 
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId);
+        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
         incrementAngelProgress(s.board);
         recordCardPlay(s, deckCard.definitionId);
         advanceTrialGuideStep(s, deckCard.definitionId);
@@ -5520,11 +5519,6 @@ export const useStore = create<Store>()(
             s.deck.drawPile = [...s.deck.drawPile.slice(pending.cards.length), ...pending.cards];
           } else {
             s.deck = TurnSystem.takeFromTop(s.deck, pending.cards.filter(c => selected.includes(c.instanceId)), pending.cards.filter(c => !selected.includes(c.instanceId)));
-            if ((s.turn.prismaticPendingSwitchDepthMark ?? 0) > 0) {
-              const marked = new Set(s.turn.prismaticSwitchMarkedCardIds ?? []);
-              selected.forEach(id => marked.add(id));
-              s.turn.prismaticSwitchMarkedCardIds = [...marked];
-            }
           }
         } else if (pending.type === 'look_top_take_drop') {
           const takeCount = Math.min(pending.take, pending.cards.length);
@@ -5650,6 +5644,7 @@ export const useStore = create<Store>()(
     endAndBeginAgain: () => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
+        // Match End Turn behavior during boss encounters.
         if (s.bossFight.mode === 'active') {
           completeBossFight(s, false);
           return;
@@ -5720,9 +5715,6 @@ export const useStore = create<Store>()(
                   break;
                 case 'oblivion_lte':
                   shouldDiscard = s.progress.oblivion <= condition.value;
-                  break;
-                case 'embers_lte':
-                  shouldDiscard = false; // embers resource scrapped
                   break;
                 case 'radiance_lte':
                   shouldDiscard = s.turn.radiance <= condition.value;
@@ -5796,10 +5788,6 @@ export const useStore = create<Store>()(
         const voltageStartBonus = getArtifactEffect(s.turn, 'voltage_surge_rate', s.progress.ownedArtifacts);
         if (voltageStartBonus > 0) {
           s.turn.arcticCharge = (s.turn.arcticCharge ?? 0) + voltageStartBonus;
-        }
-        const ironChargeStartBonus = getArtifactEffect(s.turn, 'iron_charge_start_bonus', s.progress.ownedArtifacts);
-        if (ironChargeStartBonus > 0) {
-          s.turn.reforgeCharges = (s.turn.reforgeCharges ?? 0) + ironChargeStartBonus;
         }
         const bloomStartBonus2 = Math.floor(getArtifactEffect(s.turn, 'bloom_start_bonus', s.progress.ownedArtifacts));
         if (bloomStartBonus2 > 0) {
@@ -6156,15 +6144,6 @@ export const useStore = create<Store>()(
       });
     },
 
-    purchaseAscensionCosmetic: (cosmeticId) => {
-      set(s => {
-        const existing = s.progress.purchasedAscensionCosmetics ?? [];
-        if (!existing.includes(cosmeticId)) {
-          s.progress.purchasedAscensionCosmetics = [...existing, cosmeticId];
-        }
-      });
-    },
-
     // ─── Daily login ──────────────────────────────────────────────────────
 
     claimDailyReward: () => {
@@ -6212,13 +6191,16 @@ export const useStore = create<Store>()(
       const s = get();
       const badge = TITLE_BADGE_BY_ID[achievementId];
       if (!badge) return null;
-      if (!badge.isUnlocked(s.progress)) return null;
+      if (!isAchievementUnlocked(s.progress, achievementId)) return null;
       const claims = s.progress.achievementClaims ?? {};
       if (claims[achievementId]) return null;
       const shardReward = getAchievementShardReward(badge.group);
       const oblivionReward = getAchievementOblivionReward(badge.group);
       set(state => {
+        latchUnlockedAchievements(state.progress);
         if (!state.progress.achievementClaims) state.progress.achievementClaims = {};
+        if (!state.progress.achievementUnlocks) state.progress.achievementUnlocks = {};
+        state.progress.achievementUnlocks[achievementId] = true;
         state.progress.achievementClaims[achievementId] = true;
         state.progress.aberratedShards += shardReward;
         if (oblivionReward > 0) {
@@ -6445,7 +6427,14 @@ export const useStore = create<Store>()(
     tickBattlegroundTimer: (deltaSeconds) => {
       set(s => {
         if (s.battleground.mode !== 'active') return;
-        s.battleground.timeRemaining = Math.max(0, s.battleground.timeRemaining - deltaSeconds);
+        const current = s.battleground.timeRemaining;
+        if (typeof current !== 'number' || !Number.isFinite(current) || current <= 0) {
+          completeBattlegroundFight(s);
+          return;
+        }
+        const delta = Math.max(0, Number.isFinite(deltaSeconds) ? deltaSeconds : 0);
+        const next = Math.max(0, current - Math.max(delta, 0.001));
+        s.battleground.timeRemaining = next;
         // Update my hand-empty state on every tick.
         // Also treat the player as done if they have used their one turn and are back in idle.
         const naturallyEmpty = s.deck.hand.length === 0 && s.deck.drawPile.length === 0;
@@ -6456,7 +6445,7 @@ export const useStore = create<Store>()(
         const myScore = s.battleground.myScore;
         const oppScore = s.battleground.opponentScore;
         // Win condition: timer expired → compare scores.
-        if (s.battleground.timeRemaining <= 0) {
+        if (next <= 0) {
           completeBattlegroundFight(s);
           return;
         }
@@ -6536,8 +6525,10 @@ export const useStore = create<Store>()(
         const modifiers = options?.modifiers ?? [];
         const coopPartySize = Math.max(1, Math.min(3, options?.coopPartySize ?? 1));
 
-        // Apply boss-hp boost modifier
-        let maxHp = boss.hp;
+        // Apply boss HP. Event bosses snapshot once per cycle and stay fixed.
+        let maxHp = isEventBossCategory(boss.category)
+          ? ensureEventBossHpSnapshot(s.progress)
+          : boss.hp;
         if (modifiers.some(m => m.kind === 'boss_hp_boost')) {
           maxHp = Math.round(maxHp * 1.25);
         }
@@ -6557,29 +6548,13 @@ export const useStore = create<Store>()(
         if (modifiers.some(m => m.kind === 'chain_start_low')) {
         }
 
-        // Detect elemental weakness: tally the deck's plurality element and
-        // compare to boss.weakElement. If they match, damage is boosted ×1.25.
-        let bossWeaknessActive = false;
-        if (boss.weakElement) {
-          const elementCounts: Record<string, number> = {};
-          for (const entry of savedDeck.deckList) {
-            const def = CardRegistry.get(entry.definitionId);
-            if (!def?.element) continue;
-            elementCounts[def.element] = (elementCounts[def.element] ?? 0) + entry.copies;
-          }
-          const pluralityElement = Object.keys(elementCounts).reduce(
-            (best, el) => (elementCounts[el] > (elementCounts[best] ?? 0) ? el : best),
-            ''
-          );
-          bossWeaknessActive = !!pluralityElement && pluralityElement === boss.weakElement;
-        }
-
         s.bossFight = {
           mode: 'active',
           activeBossId: bossId,
           bossCurrentHp: maxHp,
           bossMaxHp: maxHp,
           damageDealtThisFight: 0,
+          damageDealtFirstMinute: 0,
           fightTimeRemaining: roundSeconds,
           cooldowns: { ...s.bossFight.cooldowns },
           savedGameState: savedState,
@@ -6589,7 +6564,7 @@ export const useStore = create<Store>()(
           gauntletDepth: kind === 'gauntlet' ? 0 : 0,
           gauntletShardsBanked: 0,
           gauntletHpCarryFrac: 1,
-          bossWeaknessActive,
+          bossWeaknessActive: false,
           coopPartySize,
           coopSessionId: options?.coopSessionId,
           coopRole: options?.coopRole,
@@ -6610,6 +6585,59 @@ export const useStore = create<Store>()(
       get().startBossFight(firstBoss.id, savedDeckId, { kind: 'gauntlet', modifiers: [] });
     },
 
+    startNullRaidProveYourself: (raidId, savedDeckId) => {
+      const state = get();
+      if (state.bossFight.mode !== 'idle') return false;
+
+      const raidDef = NULL_RAID_DEFINITIONS.find(r => r.id === raidId);
+      if (!raidDef) return false;
+
+      const savedDeck = state.progress.savedDecks.find(d => d.id === savedDeckId);
+      if (!savedDeck) return false;
+
+      const firstBossId = raidDef.encounterBossIds[0];
+      if (!firstBossId) return false;
+      const firstBoss = NULL_RAID_BOSS_MAP.get(firstBossId);
+      if (!firstBoss) return false;
+
+      set(s => {
+        const savedState: SavedGameState = {
+          deck: JSON.parse(JSON.stringify(s.deck)) as typeof s.deck,
+          board: JSON.parse(JSON.stringify(s.board)) as typeof s.board,
+          turn: JSON.parse(JSON.stringify(s.turn)) as typeof s.turn,
+          progress: JSON.parse(JSON.stringify(s.progress)) as typeof s.progress,
+          settings: { ...s.settings },
+        };
+
+        s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
+        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.turn = { ...defaultTurn, phase: 'idle' };
+        s.bossFight = {
+          mode: 'active',
+          activeBossId: firstBossId,
+          bossCurrentHp: firstBoss.hp,
+          bossMaxHp: firstBoss.hp,
+          damageDealtThisFight: 0,
+          damageDealtFirstMinute: 0,
+          fightTimeRemaining: NULL_RAID_PROVE_YOURSELF_SECONDS,
+          cooldowns: s.bossFight.cooldowns,
+          savedGameState: savedState,
+          kind: 'null_raid',
+          nullRaidId: raidId,
+          nullRaidEncounterBossIds: [firstBossId],
+          nullRaidEncounterIndex: 0,
+          nullRaidAccumulatedEntropy: 0,
+          nullRaidAccumulatedShards: 0,
+          nullRaidBestDamageFirstMinute: 0,
+          nullRaidProvingOnly: true,
+          rewardSummary: null,
+        };
+        recompute(s);
+      });
+
+      return true;
+    },
+
     startNullRaid: (raidId, savedDeckId) => {
       const state = get();
       if (state.bossFight.mode !== 'idle') return false;
@@ -6622,9 +6650,8 @@ export const useStore = create<Store>()(
       const cooldown = state.progress.nullRaidCooldowns?.[raidId];
       if (cooldown && cooldown > now) return false;
 
-      // Resonance gate.
-      const resonanceScore = computeGlobalResonanceScore(state.progress);
-      if (resonanceScore < raidDef.resonanceRequired) return false;
+      // Prove Yourself gate.
+      if (state.progress.nullRaidProveUnlocks?.[raidId] !== true) return false;
 
       // Deck must exist.
       const savedDeck = state.progress.savedDecks.find(d => d.id === savedDeckId);
@@ -6655,6 +6682,7 @@ export const useStore = create<Store>()(
           bossCurrentHp: firstBoss.hp,
           bossMaxHp: firstBoss.hp,
           damageDealtThisFight: 0,
+          damageDealtFirstMinute: 0,
           fightTimeRemaining: NULL_RAID_ENCOUNTER_SECONDS,
           cooldowns: s.bossFight.cooldowns,
           savedGameState: savedState,
@@ -6664,6 +6692,8 @@ export const useStore = create<Store>()(
           nullRaidEncounterIndex: 0,
           nullRaidAccumulatedEntropy: 0,
           nullRaidAccumulatedShards: 0,
+          nullRaidBestDamageFirstMinute: 0,
+          nullRaidProvingOnly: false,
           rewardSummary: null,
         };
         recompute(s);
@@ -6675,10 +6705,52 @@ export const useStore = create<Store>()(
     tickBossTimer: (deltaSeconds) => {
       set(s => {
         if (s.bossFight.mode !== 'active') return;
-        s.bossFight.fightTimeRemaining = Math.max(0, s.bossFight.fightTimeRemaining - deltaSeconds);
-        if (s.bossFight.fightTimeRemaining <= 0) {
+        // Fast-fail: any non-positive or invalid timer should immediately resolve as defeat.
+        const current = s.bossFight.fightTimeRemaining;
+        if (typeof current !== 'number' || !Number.isFinite(current) || current <= 0) {
+          completeBossFight(s, false);
+          return;
+        }
+        const delta = Math.max(0, Number.isFinite(deltaSeconds) ? deltaSeconds : 0);
+        // Card-break freeze: consume freeze seconds before counting down the fight timer,
+        // but only while the player still has comfortable headroom on the clock. Once we're
+        // within the final second, freeze must NOT be allowed to keep the timer pinned —
+        // otherwise the screen gets stuck on 0:01 forever.
+        const freezeLeft = s.bossFight.bossCardBreakFreezeLeft ?? 0;
+        if (freezeLeft > 0 && current > 1) {
+          s.bossFight.bossCardBreakFreezeLeft = Math.max(0, freezeLeft - delta);
+          return;
+        }
+        if (freezeLeft > 0) {
+          // We're in the danger zone; drop the freeze entirely.
+          s.bossFight.bossCardBreakFreezeLeft = 0;
+        }
+        const next = Math.max(0, current - Math.max(delta, 0.001));
+        s.bossFight.fightTimeRemaining = next;
+        if (next <= 0) {
           completeBossFight(s, false);
         }
+      });
+    },
+
+    forfeitBossFight: () => {
+      set(s => {
+        if (s.bossFight.mode !== 'active') return;
+        if (s.bossFight.kind === 'null_raid') {
+          const saved = s.bossFight.savedGameState;
+          const cooldowns = { ...s.bossFight.cooldowns };
+          if (saved) {
+            s.deck = saved.deck;
+            s.board = saved.board;
+            s.turn = saved.turn;
+            s.progress = saved.progress;
+            s.settings = saved.settings;
+          }
+          s.bossFight = { ...defaultBossFight, cooldowns };
+          recompute(s);
+          return;
+        }
+        completeBossFight(s, false);
       });
     },
 
@@ -6693,12 +6765,13 @@ export const useStore = create<Store>()(
 
     // ── Trial Deck ──────────────────────────────────────────────────────────────
 
-    startTrialDeck: (packId, mode) => {
+    startTrialDeck: (packId) => {
       set(s => {
         if (s.trialDeck.mode !== 'idle') return;
         if (s.bossFight.mode !== 'idle') return;
         const def = getTrialDeckDefinition(packId);
         if (!def) return;
+        const trialMode: 'solo' = 'solo';
 
         const savedState: SavedGameState = {
           deck: JSON.parse(JSON.stringify(s.deck)) as DeckState,
@@ -6708,20 +6781,7 @@ export const useStore = create<Store>()(
           settings: { ...s.settings },
         };
 
-        // Build the trial deck state
-        if (mode === 'guided') {
-          // Ordered draw pile for guided mode
-          const drawPile = DeckSystem.buildOrdered(def.guidedDeckOrder);
-          s.deck = {
-            deckList: def.deckList,
-            extraDeck: def.extraDeck,
-            drawPile,
-            hand: [],
-            discardPile: [],
-          };
-        } else {
-          s.deck = createDeckState(def.deckList, def.extraDeck);
-        }
+        s.deck = createDeckState(def.deckList, def.extraDeck);
 
         s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
@@ -6729,12 +6789,51 @@ export const useStore = create<Store>()(
         s.trialDeck = {
           mode: 'active',
           packId,
-          trialMode: mode,
+          trialMode,
+          savedGameState: savedState,
+          guideStep: 0,
+          guideSteps: [],
+          guidedOpeningHand: [],
+          guidedDeckOrder: [],
+          guideComplete: false,
+          turnCount: 0,
+          trialOblivionTotal: 0,
+        };
+
+        recompute(s);
+      });
+    },
+
+    startTutorialTurn: (tier) => {
+      set(s => {
+        if (s.trialDeck.mode !== 'idle') return;
+        if (s.bossFight.mode !== 'idle') return;
+
+        const def = buildNeutralityTutorialDeck(tier);
+
+        const savedState: SavedGameState = {
+          deck: JSON.parse(JSON.stringify(s.deck)) as DeckState,
+          board: JSON.parse(JSON.stringify(s.board)) as BoardState,
+          turn: JSON.parse(JSON.stringify(s.turn)) as TurnState,
+          progress: JSON.parse(JSON.stringify(s.progress)) as ProgressState,
+          settings: { ...s.settings },
+        };
+
+        s.deck = createDeckState(def.deckList, def.extraDeck);
+        const guidedOrder = def.guidedDeckOrder.length > 0 ? def.guidedDeckOrder : def.deckList;
+        s.deck.drawPile = DeckSystem.buildOrdered(guidedOrder);
+        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.turn = { ...defaultTurn, phase: 'idle' };
+
+        s.trialDeck = {
+          mode: 'active',
+          packId: def.packId,
+          trialMode: 'guided',
           savedGameState: savedState,
           guideStep: 0,
           guideSteps: def.guideSteps,
-          guidedOpeningHand: mode === 'guided' ? def.guidedOpeningHand : [],
-          guidedDeckOrder: mode === 'guided' ? def.guidedDeckOrder : [],
+          guidedOpeningHand: def.guidedOpeningHand,
+          guidedDeckOrder: def.guidedDeckOrder,
           guideComplete: false,
           turnCount: 0,
           trialOblivionTotal: 0,
@@ -6780,6 +6879,7 @@ export const useStore = create<Store>()(
         delete op['totalTicksElapsed'];
         delete op['scoreBoostTicks'];
         delete op['scoreBoostMultiplier'];
+        delete op['purchasedAscensionCosmetics'];
         if (op['aberratedShards'] === undefined) op['aberratedShards'] = 0;
         if (op['entropicEnergyBalance'] === undefined) {
           op['entropicEnergyBalance'] = (op['entropyBalance'] as number | undefined) ?? 0;
@@ -6787,7 +6887,42 @@ export const useStore = create<Store>()(
         if (op['holoCollection'] === undefined) op['holoCollection'] = {};
         if (op['infiniteCollection'] === undefined) op['infiniteCollection'] = {};
         if (op['favoriteCollection'] === undefined) op['favoriteCollection'] = {};
+        if (op['achievementUnlocks'] === undefined || typeof op['achievementUnlocks'] !== 'object') {
+          op['achievementUnlocks'] = {};
+        } else {
+          const unlocks = op['achievementUnlocks'] as Record<string, unknown>;
+          for (const key of Object.keys(unlocks)) {
+            if (unlocks[key] !== true) delete unlocks[key];
+          }
+        }
         if (op['bossClearCounts'] === undefined) op['bossClearCounts'] = {};
+        if (op['nullRaidProveUnlocks'] === undefined || typeof op['nullRaidProveUnlocks'] !== 'object') {
+          op['nullRaidProveUnlocks'] = {};
+        } else {
+          const unlocks = op['nullRaidProveUnlocks'] as Record<string, unknown>;
+          for (const key of Object.keys(unlocks)) {
+            if (unlocks[key] !== true) delete unlocks[key];
+          }
+        }
+        if (op['eventBossHpSnapshots'] === undefined || typeof op['eventBossHpSnapshots'] !== 'object') {
+          op['eventBossHpSnapshots'] = {};
+        } else {
+          const snapshots = op['eventBossHpSnapshots'] as Record<string, unknown>;
+          for (const category of Object.keys(snapshots)) {
+            const snapshot = snapshots[category] as Record<string, unknown> | undefined;
+            if (!snapshot || typeof snapshot !== 'object') {
+              delete snapshots[category];
+              continue;
+            }
+            const cycleId = typeof snapshot.cycleId === 'string' ? snapshot.cycleId : '';
+            const hp = Number(snapshot.hp);
+            if (!cycleId || !Number.isFinite(hp) || hp <= 0) {
+              delete snapshots[category];
+              continue;
+            }
+            snapshots[category] = { cycleId, hp: Math.floor(hp) };
+          }
+        }
         if (op['nullRaidAngelMissStreak'] === undefined) op['nullRaidAngelMissStreak'] = {};
         if (op['socialStats'] === undefined) {
           op['socialStats'] = {
@@ -6903,14 +7038,9 @@ export const useStore = create<Store>()(
         const ot = loaded.turn as unknown as Record<string, unknown>;
         delete ot['sacredCovenantActive'];
         delete ot['undyingVigilActive'];
-        if (ot['prismaticEchoCascadeGainPerToken'] === undefined && ot['prismaticEchoCascadeFloorPerToken'] !== undefined) {
-          ot['prismaticEchoCascadeGainPerToken'] = ot['prismaticEchoCascadeFloorPerToken'];
-        }
-        if (ot['prismaticSentencingChainGainBonus'] === undefined && ot['prismaticSentencingChainFloorBonus'] !== undefined) {
-          ot['prismaticSentencingChainGainBonus'] = ot['prismaticSentencingChainFloorBonus'];
-        }
+        delete ot['prismaticEchoCascadeFloorPerToken'];
+        delete ot['prismaticSentencingChainFloorBonus'];
         if (ot['oblivionEarnedThisTurn'] === undefined) ot['oblivionEarnedThisTurn'] = 0;
-        if (ot['embers'] === undefined) ot['embers'] = 0;
         if (ot['trail'] === undefined) ot['trail'] = 0;
         if (ot['strain'] === undefined) ot['strain'] = 0;
         if (ot['turnNumber'] === undefined) ot['turnNumber'] = 0;
@@ -6959,7 +7089,6 @@ export const useStore = create<Store>()(
         if (ot['lightCadenceNotes'] === undefined) ot['lightCadenceNotes'] = [];
         if (ot['lightDistinctNotes'] === undefined) ot['lightDistinctNotes'] = [];
         if (ot['lightResonance'] === undefined) ot['lightResonance'] = 0;
-        if (ot['lightChorusAnchors'] === undefined) ot['lightChorusAnchors'] = 0;
         if (ot['thornScar'] === undefined) ot['thornScar'] = 0;
         if (ot['mechanicalInstructionQueue'] === undefined) ot['mechanicalInstructionQueue'] = [];
         if (ot['mechanicalResolvedInstructions'] === undefined) ot['mechanicalResolvedInstructions'] = 0;
@@ -6975,34 +7104,35 @@ export const useStore = create<Store>()(
         if (ot['prismaticRecentChannels'] === undefined) ot['prismaticRecentChannels'] = [];
         if (ot['prismaticRefractionDepth'] === undefined) ot['prismaticRefractionDepth'] = 0;
         if (ot['prismaticNodeCharges'] === undefined) ot['prismaticNodeCharges'] = 0;
-        if (ot['prismaticChannelLocks'] === undefined) ot['prismaticChannelLocks'] = 0;
-        if (ot['prismaticMemoryShards'] === undefined) ot['prismaticMemoryShards'] = 0;
-        if (ot['prismaticStormMemories'] === undefined) ot['prismaticStormMemories'] = [];
-        if (ot['prismaticStormMemoryEnabled'] === undefined) ot['prismaticStormMemoryEnabled'] = false;
-        if (ot['prismaticPendingSwitchDepthMark'] === undefined) ot['prismaticPendingSwitchDepthMark'] = 0;
-        if (ot['prismaticSwitchMarkedCardIds'] === undefined) ot['prismaticSwitchMarkedCardIds'] = [];
-        if (ot['prismaticAccordChannel'] === undefined) ot['prismaticAccordChannel'] = null;
-        if (ot['prismaticDistinctNonAccordChannels'] === undefined) ot['prismaticDistinctNonAccordChannels'] = [];
-        if (ot['prismaticRefractionEchoes'] === undefined) ot['prismaticRefractionEchoes'] = 0;
-        if (ot['prismaticEchoCascadeArmed'] === undefined) ot['prismaticEchoCascadeArmed'] = false;
-        if (ot['prismaticEchoCascadeDepthThreshold'] === undefined) ot['prismaticEchoCascadeDepthThreshold'] = 4;
-        if (ot['prismaticEchoCascadeGainPerToken'] === undefined) ot['prismaticEchoCascadeGainPerToken'] = 0.08;
-        if (ot['prismaticEchoCascadeDrawRefund'] === undefined) ot['prismaticEchoCascadeDrawRefund'] = 1;
-        if (ot['prismaticChordTokens'] === undefined) ot['prismaticChordTokens'] = 0;
-        if (ot['prismaticChordPermanent'] === undefined) ot['prismaticChordPermanent'] = false;
-        if (ot['prismaticChordAttackBaseBonus'] === undefined) ot['prismaticChordAttackBaseBonus'] = 0;
-        if (ot['prismaticChordAttackChainBonus'] === undefined) ot['prismaticChordAttackChainBonus'] = 0;
-        if (ot['prismaticRefractionSpikes'] === undefined) ot['prismaticRefractionSpikes'] = 0;
-        if (ot['prismaticRefractionSpikeMax'] === undefined) ot['prismaticRefractionSpikeMax'] = 3;
-        if (ot['prismaticRefractionSpikesPersistent'] === undefined) ot['prismaticRefractionSpikesPersistent'] = false;
-        if (ot['prismaticLastPlaySwitchedChannel'] === undefined) ot['prismaticLastPlaySwitchedChannel'] = false;
-        if (ot['prismaticLatticeResonant'] === undefined) ot['prismaticLatticeResonant'] = false;
-        if (ot['prismaticSentencedCardIds'] === undefined) ot['prismaticSentencedCardIds'] = [];
-        if (ot['prismaticSentencingPerfect'] === undefined) ot['prismaticSentencingPerfect'] = false;
-        if (ot['prismaticSentencingChainGainBonus'] === undefined) ot['prismaticSentencingChainGainBonus'] = 0.3;
-        if (ot['prismaticSentencingDraw'] === undefined) ot['prismaticSentencingDraw'] = 2;
-        if (ot['prismaticSentencingDrawPerfect'] === undefined) ot['prismaticSentencingDrawPerfect'] = 3;
-        if (ot['prismaticNextOphanimRefund'] === undefined) ot['prismaticNextOphanimRefund'] = 0;
+        if (ot['prismaticResonanceCharge'] === undefined) ot['prismaticResonanceCharge'] = 0;
+        delete ot['prismaticChannelLocks'];
+        delete ot['prismaticMemoryShards'];
+        delete ot['prismaticStormMemories'];
+        delete ot['prismaticStormMemoryEnabled'];
+        delete ot['prismaticPendingSwitchDepthMark'];
+        delete ot['prismaticSwitchMarkedCardIds'];
+        delete ot['prismaticAccordChannel'];
+        delete ot['prismaticDistinctNonAccordChannels'];
+        delete ot['prismaticRefractionEchoes'];
+        delete ot['prismaticEchoCascadeArmed'];
+        delete ot['prismaticEchoCascadeDepthThreshold'];
+        delete ot['prismaticEchoCascadeGainPerToken'];
+        delete ot['prismaticEchoCascadeDrawRefund'];
+        delete ot['prismaticChordTokens'];
+        delete ot['prismaticChordPermanent'];
+        delete ot['prismaticChordAttackBaseBonus'];
+        delete ot['prismaticChordAttackChainBonus'];
+        delete ot['prismaticRefractionSpikes'];
+        delete ot['prismaticRefractionSpikeMax'];
+        delete ot['prismaticRefractionSpikesPersistent'];
+        delete ot['prismaticLastPlaySwitchedChannel'];
+        delete ot['prismaticLatticeResonant'];
+        delete ot['prismaticSentencedCardIds'];
+        delete ot['prismaticSentencingPerfect'];
+        delete ot['prismaticSentencingChainGainBonus'];
+        delete ot['prismaticSentencingDraw'];
+        delete ot['prismaticSentencingDrawPerfect'];
+        delete ot['prismaticNextOphanimRefund'];
         delete ot['chainFloor'];
         delete ot['prismaticEchoCascadeFloorPerToken'];
         delete ot['prismaticSentencingChainFloorBonus'];
@@ -7010,8 +7140,8 @@ export const useStore = create<Store>()(
         if (ot['blackGlassBlackFlame'] === undefined) ot['blackGlassBlackFlame'] = 0;
         if (ot['blackGlassFracture'] === undefined) ot['blackGlassFracture'] = 0;
         if (ot['blackGlassLastPolarity'] === undefined) ot['blackGlassLastPolarity'] = null;
-        if (ot['blackGlassGriefOaths'] === undefined) ot['blackGlassGriefOaths'] = 0;
-        if (ot['blackGlassCollapsePending'] === undefined) ot['blackGlassCollapsePending'] = false;
+        delete ot['blackGlassGriefOaths'];
+        delete ot['blackGlassCollapsePending'];
         if (ot['blackGlassLastPayoff'] === undefined) ot['blackGlassLastPayoff'] = 0;
         if (ot['snowboundPhase'] === undefined) ot['snowboundPhase'] = null;
         if (ot['snowboundPotential'] === undefined) ot['snowboundPotential'] = 0;
@@ -7160,6 +7290,22 @@ export const useStore = create<Store>()(
         // Migrate bossFight: add if missing from saved state
         if (!loaded.bossFight) {
           (loaded as unknown as Record<string, unknown>)['bossFight'] = { ...defaultBossFight };
+        } else if (
+          loaded.bossFight.mode === 'active'
+          && loaded.bossFight.kind === 'null_raid'
+          && !loaded.bossFight.savedGameState
+        ) {
+          // Corrupted raid snapshots can trap the player in an unfinishable active raid on load.
+          loaded.bossFight = { ...defaultBossFight };
+        } else if (
+          loaded.bossFight.mode === 'active'
+          && (typeof loaded.bossFight.fightTimeRemaining !== 'number'
+            || !Number.isFinite(loaded.bossFight.fightTimeRemaining)
+            || loaded.bossFight.fightTimeRemaining <= 0)
+        ) {
+          // Active boss fight loaded with a missing/invalid/expired timer: reset to idle so
+          // the player isn't trapped on an arena screen whose timer can never tick down.
+          loaded.bossFight = { ...defaultBossFight };
         }
 
         // Migrate battleground: always reset to idle on load (never resume mid-match).

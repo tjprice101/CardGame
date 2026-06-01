@@ -43,10 +43,17 @@ export function getAchievementOblivionReward(group: TitleBadgeDefinition['group'
   return OBLIVION_BY_GROUP[group] ?? 0;
 }
 
+export function isAchievementUnlocked(progress: ProgressState, achievementId: string): boolean {
+  if (progress.achievementUnlocks?.[achievementId]) return true;
+  const badge = TITLE_BADGES.find(entry => entry.id === achievementId);
+  if (!badge) return false;
+  return badge.isUnlocked(progress);
+}
+
 export function listAchievements(progress: ProgressState): AchievementView[] {
   const claims = progress.achievementClaims ?? {};
   return TITLE_BADGES.map(badge => {
-    const unlocked = badge.isUnlocked(progress);
+    const unlocked = isAchievementUnlocked(progress, badge.id);
     return {
       id: badge.id,
       text: badge.text,
@@ -73,7 +80,7 @@ export function summarizeAchievements(progress: ProgressState): AchievementProgr
   let claimed = 0;
   let unclaimedShards = 0;
   for (const badge of TITLE_BADGES) {
-    const isUnlocked = badge.isUnlocked(progress);
+    const isUnlocked = isAchievementUnlocked(progress, badge.id);
     if (isUnlocked) unlocked++;
     if (claims[badge.id]) claimed++;
     if (isUnlocked && !claims[badge.id]) unclaimedShards += getAchievementShardReward(badge.group);

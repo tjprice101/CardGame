@@ -545,7 +545,7 @@ description: 'Gain 8 Starlight Charges; Gain 4 Dream Lattice stacks; Nova Wish B
     description: 'On summon: Gain 4 Starlight Charges; Gain 3 Dream Lattice stacks; Gain 6 Star Crowns. After 3 cards played: Gain 4 Starlight Charges; Gain 2 Dream Lattice stacks; Gain 6 Star Crowns; Nova Wish Burst (Oblivion = Starlight (1 + Dream 0.7)); Cash out up to 10 Star Crowns (+260 Oblivion per Crown). While on board: +70 Oblivion per card played while on board',
     rarity: 'Eternal',
     artKey: 'wuas_et_draethos_unforgotten',
-    summonCost: ['wuas-ser-nullspire-monolith', 'wuas-ser-draethos-gravity'],
+    summonCost: ['wuas-ang-aethervex-triumphant', 'wuas-ser-draethos-gravity'],
     onSummonEffects: [
       { type: 'starlight_gain', amount: 4 },
       { type: 'dream_lattice_gain', amount: 3 },

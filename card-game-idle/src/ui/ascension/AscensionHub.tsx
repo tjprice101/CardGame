@@ -4,29 +4,109 @@ import { uiTypography } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CollectionCardDetail from '@/ui/store/CollectionCardDetail';
-import { getDenseCardFaceBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
+import {
+  getDenseCardFaceBackgroundStyle,
+  getCardArtTopBottomBorderOverlayStyleForCard,
+  getCardFaceMetrics,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
-import { NULL_RAID_DEFINITIONS, NULL_RAID_BOSS_MAP, type NullRaidDefinition } from '@/data/ascension/nullRaidDefinitions';
-import { getNullRaidBossArtUrl } from '@/ui/ascension/nullRaidArt';
+import {
+  NULL_RAID_DEFINITIONS,
+  NULL_RAID_BOSS_MAP,
+  NULL_RAID_PROVE_YOURSELF_SECONDS,
+  getNullRaidProveYourselfTargetDamage,
+  type NullRaidDefinition,
+} from '@/data/ascension/nullRaidDefinitions';
+import { getNullRaidBossArtUrl, getNullRaidSplashArtUrl } from '@/ui/ascension/nullRaidArt';
 import { TRANSCENDENT_SHOP_COSTS, TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
 
-// ── Void Violet palette ───────────────────────────────────────────────
+// ── Obsidian + Gold + Chromatic palette ───────────────────────────────
 const G = {
-  bg: 'linear-gradient(160deg, #060310 0%, #040210 55%, #020108 100%)',
-  accent: '#b890ff',
-  accentSoft: '#d4bcff',
-  accentDeep: '#7050d0',
-  border: 'rgba(150,100,255,0.28)',
-  borderStrong: 'rgba(185,135,255,0.55)',
-  goldBorder: 'rgba(255,212,112,0.30)',
-  text: '#ece6ff',
-  textMuted: 'rgba(220,210,255,0.72)',
-  textFaint: 'rgba(190,175,240,0.46)',
+  bg: 'linear-gradient(160deg, #030303 0%, #050505 52%, #080707 100%)',
+  accent: '#e8c77a',
+  accentSoft: '#f6e4b8',
+  accentDeep: '#8f6a2a',
+  border: 'rgba(255,255,255,0.16)',
+  borderStrong: 'rgba(246,228,184,0.48)',
+  goldBorder: 'rgba(246,228,184,0.42)',
+  text: '#f3f3f3',
+  textMuted: 'rgba(235,235,235,0.72)',
+  textFaint: 'rgba(210,210,210,0.5)',
   cinzel: uiTypography.display,
-  entropyColor: '#c0a8ff',
-  raidColor: '#8ac8ff',
-  transcendentColor: '#ffe4a0',
+  entropyColor: '#f0cd7f',
+  raidColor: '#9fd8ff',
+  transcendentColor: '#f6e4b8',
 };
+
+type RaidVisualTheme = {
+  accent: string;
+  accentSoft: string;
+  chroma: string;
+  panelBg: string;
+  cardBg: string;
+  stripe: string;
+  glow: string;
+  badgeBg: string;
+  lockedBg: string;
+  buttonBg: string;
+  buttonBorder: string;
+};
+
+function getRaidVisualTheme(raid: NullRaidDefinition | null | undefined): RaidVisualTheme {
+  if (!raid) {
+    return {
+      accent: '#f6e4b8',
+      accentSoft: '#f3f3f3',
+      chroma: '#9fd8ff',
+      panelBg: 'linear-gradient(146deg, rgba(18,18,18,0.96) 0%, rgba(8,8,8,0.98) 100%)',
+      cardBg: 'linear-gradient(146deg, rgba(24,24,24,0.9) 0%, rgba(9,9,9,0.94) 100%)',
+      stripe: 'linear-gradient(180deg, rgba(246,228,184,0.8) 0%, rgba(159,216,255,0.7) 100%)',
+      glow: 'rgba(246,228,184,0.35)',
+      badgeBg: 'rgba(246,228,184,0.14)',
+      lockedBg: 'rgba(255,70,70,0.18)',
+      buttonBg: 'linear-gradient(136deg, rgba(246,228,184,0.22) 0%, rgba(140,180,255,0.18) 100%)',
+      buttonBorder: 'rgba(246,228,184,0.5)',
+    };
+  }
+
+  if (raid.associatedSet.toLowerCase() === 'neutrality') {
+    return {
+      accent: '#f7f7f7',
+      accentSoft: '#ffffff',
+      chroma: '#8de8ff',
+      panelBg: 'linear-gradient(148deg, rgba(16,16,16,0.97) 0%, rgba(6,6,6,0.98) 100%)',
+      cardBg: 'linear-gradient(148deg, rgba(26,26,26,0.9) 0%, rgba(8,8,8,0.94) 100%)',
+      stripe: 'linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(141,232,255,0.78) 100%)',
+      glow: 'rgba(141,232,255,0.28)',
+      badgeBg: 'rgba(255,255,255,0.12)',
+      lockedBg: 'rgba(255,100,100,0.16)',
+      buttonBg: 'linear-gradient(136deg, rgba(255,255,255,0.2) 0%, rgba(141,232,255,0.18) 100%)',
+      buttonBorder: 'rgba(255,255,255,0.5)',
+    };
+  }
+
+  if (raid.associatedSet.toLowerCase() === 'pyroabyss') {
+    return {
+      accent: '#ffcf9a',
+      accentSoft: '#ffe1bb',
+      chroma: '#ff7c52',
+      panelBg: 'linear-gradient(148deg, rgba(20,12,10,0.97) 0%, rgba(8,5,4,0.98) 100%)',
+      cardBg: 'linear-gradient(148deg, rgba(30,16,12,0.9) 0%, rgba(10,6,4,0.94) 100%)',
+      stripe: 'linear-gradient(180deg, rgba(255,207,154,0.9) 0%, rgba(255,124,82,0.82) 100%)',
+      glow: 'rgba(255,124,82,0.3)',
+      badgeBg: 'rgba(255,180,130,0.14)',
+      lockedBg: 'rgba(255,80,80,0.18)',
+      buttonBg: 'linear-gradient(136deg, rgba(255,180,120,0.22) 0%, rgba(255,96,72,0.2) 100%)',
+      buttonBorder: 'rgba(255,180,130,0.55)',
+    };
+  }
+
+  return getRaidVisualTheme(null);
+}
+
+const RAID_SHOP_FACE_METRICS = getCardFaceMetrics('compact');
 
 interface Props {
   onClose: () => void;
@@ -36,11 +116,13 @@ export default function AscensionHub({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const computedStats = useStore(s => s.computedStats);
   const startNullRaid = useStore(s => s.startNullRaid);
+  const startNullRaidProveYourself = useStore(s => s.startNullRaidProveYourself);
   const purchaseTranscendentCard = useStore(s => s.purchaseTranscendentCard);
   const enqueueToast = useStore(s => s.enqueueToast);
 
   const entropy = progress.entropicEnergyBalance ?? progress.entropyBalance ?? 0;
   const nullRaidClears = progress.nullRaidClears ?? {};
+  const nullRaidProveUnlocks = progress.nullRaidProveUnlocks ?? {};
   const totalClears = Object.values(nullRaidClears).reduce((sum, n) => sum + n, 0);
   const transcendentCollection = progress.transcendentCollection ?? {};
   const transcendentCount = Object.values(transcendentCollection).reduce((sum, n) => sum + n, 0);
@@ -75,12 +157,24 @@ export default function AscensionHub({ onClose }: Props) {
   }
 
   function isRaidLocked(raid: NullRaidDefinition): boolean {
-    return resonanceScore < raid.resonanceRequired;
+    return nullRaidProveUnlocks[raid.id] !== true;
+  }
+
+  function getRaidProveYourselfLabel(raid: NullRaidDefinition): string {
+    const target = getNullRaidProveYourselfTargetDamage(raid);
+    if (target <= 0) return 'Prove Yourself Required';
+    return `Prove Yourself: Deal ${target.toLocaleString()} in ${NULL_RAID_PROVE_YOURSELF_SECONDS}s`;
   }
 
   function handleEnterRaid() {
     if (!selectedRaid || !selectedDeckId) return;
     const started = startNullRaid(selectedRaid.id, selectedDeckId);
+    if (started) onClose();
+  }
+
+  function handleProveYourself(raid: NullRaidDefinition) {
+    if (!selectedDeckId) return;
+    const started = startNullRaidProveYourself(raid.id, selectedDeckId);
     if (started) onClose();
   }
 
@@ -181,7 +275,8 @@ export default function AscensionHub({ onClose }: Props) {
   const selectedDropCard = selectedDropCardId ? CardRegistry.get(selectedDropCardId) : null;
 
   const STAR_LABEL: Record<number, string> = { 1: '✦ 1-STAR RAIDS', 2: '✦✦ 2-STAR RAIDS', 3: '✦✦✦ 3-STAR RAIDS' };
-  const STAR_COLOR: Record<number, string> = { 1: '#8ac8ff', 2: '#c89aff', 3: '#ffd070' };
+  const STAR_COLOR: Record<number, string> = { 1: '#9fd8ff', 2: '#f5f5f5', 3: '#f0cd7f' };
+  const selectedRaidTheme = getRaidVisualTheme(selectedRaid);
 
   return (
     <div
@@ -196,11 +291,11 @@ export default function AscensionHub({ onClose }: Props) {
       }}
     >
       {/* Atmospheric washes */}
-      {/* Atmospheric washes — Void Violet nebula */}
-      <div style={{ position: 'absolute', top: '-22%', left: '-10%', width: '75%', height: '85%', background: 'radial-gradient(ellipse, rgba(140,80,255,0.26) 0%, rgba(80,30,200,0.10) 42%, transparent 68%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-22%', right: '-10%', width: '70%', height: '80%', background: 'radial-gradient(ellipse, rgba(60,200,255,0.12) 0%, rgba(180,40,220,0.08) 40%, transparent 65%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 44%, transparent 26%, rgba(0,0,0,0.65) 100%)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.03) 3px, rgba(0,0,0,0.03) 4px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-24%', left: '-12%', width: '78%', height: '88%', background: 'radial-gradient(ellipse, rgba(245,245,245,0.14) 0%, rgba(160,220,255,0.08) 38%, transparent 72%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-24%', right: '-12%', width: '72%', height: '82%', background: 'radial-gradient(ellipse, rgba(246,228,184,0.16) 0%, rgba(120,190,255,0.08) 42%, transparent 68%)', filter: 'blur(92px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 44%, transparent 22%, rgba(0,0,0,0.74) 100%)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.02) 3px, rgba(255,255,255,0.02) 4px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 12% 24%, rgba(255,255,255,0.13) 0 1px, transparent 1.5px), radial-gradient(circle at 72% 38%, rgba(246,228,184,0.16) 0 1px, transparent 1.5px), radial-gradient(circle at 44% 70%, rgba(150,220,255,0.16) 0 1px, transparent 1.5px)', backgroundSize: '220px 220px, 300px 300px, 260px 260px', pointerEvents: 'none', opacity: 0.75 }} />
 
       <div style={{ position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
@@ -234,20 +329,20 @@ export default function AscensionHub({ onClose }: Props) {
               onClick={() => { setShowShop(v => !v); setSelectedRaid(null); }}
               style={{
                 padding: '8px 18px', borderRadius: 8, cursor: 'pointer',
-                background: showShop ? `rgba(130,80,255,0.22)` : 'rgba(80,40,180,0.12)',
+                background: showShop ? 'rgba(246,228,184,0.2)' : 'rgba(255,255,255,0.08)',
                 border: `1px solid ${showShop ? G.borderStrong : G.border}`,
                 color: showShop ? G.accentSoft : G.textMuted,
                 fontSize: 11, letterSpacing: 2, fontFamily: G.cinzel,
                 textTransform: 'uppercase', transition: 'all 0.18s ease',
               }}
             >
-              Spoils
+              Spoils of Entropy
             </button>
             <button
               onClick={onClose}
               style={{
                 width: 40, height: 40, borderRadius: '50%', cursor: 'pointer',
-                background: 'rgba(100,60,220,0.10)', border: `1px solid ${G.border}`,
+                background: 'rgba(255,255,255,0.06)', border: `1px solid ${G.border}`,
                 color: G.textMuted, fontSize: 16, display: 'flex', alignItems: 'center',
                 justifyContent: 'center', flexShrink: 0, transition: 'all 0.18s ease', padding: 0,
               }}
@@ -295,7 +390,7 @@ export default function AscensionHub({ onClose }: Props) {
                 <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${G.accent}, ${G.accentSoft}, ${G.accent}, transparent)`, boxShadow: `0 0 20px rgba(130,80,255,0.40)` }} />
                 <div style={{ padding: '20px 28px' }}>
                   <div style={{ fontFamily: G.cinzel, fontSize: 12, letterSpacing: 4, color: G.accentSoft, marginBottom: 6, textTransform: 'uppercase' }}>
-                    Spoils of the Eternal Battlefield
+                    Spoils of Entropy
                   </div>
                   <div style={{ fontSize: 11, color: G.textMuted, marginBottom: 20, lineHeight: 1.6 }}>
                     Spend Entropic Energy on Transcendent cards recovered from each Null Raid front. Cards are organized by raid origin and each section includes its mechanic overview.
@@ -360,6 +455,53 @@ export default function AscensionHub({ onClose }: Props) {
                                     }}
                                   >
                                     <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
+                                    <div style={{
+                                      position: 'absolute',
+                                      inset: 0,
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      pointerEvents: 'none',
+                                    }}>
+                                      <div style={getCardNameRibbonStyle('compact')}>
+                                        <div style={{
+                                          fontSize: RAID_SHOP_FACE_METRICS.typeSize,
+                                          letterSpacing: 0.55,
+                                          textTransform: 'uppercase',
+                                          color: 'var(--card-face-text-muted, rgba(19, 13, 8, 0.78))',
+                                          lineHeight: 1.04,
+                                        }}>
+                                          {getDisplayCardTypeLabel(card.type)} · {card.rarity}
+                                        </div>
+                                        <div style={{
+                                          fontSize: RAID_SHOP_FACE_METRICS.nameSize,
+                                          fontWeight: 700,
+                                          lineHeight: 1.08,
+                                          whiteSpace: 'nowrap',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                        }}>
+                                          {card.name}
+                                        </div>
+                                      </div>
+
+                                      <div style={{
+                                        ...getCardRulesPanelStyle('compact'),
+                                        marginTop: 'auto',
+                                      }}>
+                                        <CardRulesDigest
+                                          card={card}
+                                          variant="preview"
+                                          maxSections={2}
+                                          maxLinesPerSection={1}
+                                          lineClamp={1}
+                                          labelColor="var(--card-face-text-muted, rgba(19, 13, 8, 0.78))"
+                                          textColor="var(--card-face-text-soft, rgba(19, 13, 8, 0.94))"
+                                          sectionBackground="transparent"
+                                          sectionBorder="transparent"
+                                          lightBg
+                                        />
+                                      </div>
+                                    </div>
                                   </button>
                                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
@@ -433,12 +575,12 @@ export default function AscensionHub({ onClose }: Props) {
 
             {/* ── RAID SELECT DETAIL ── */}
             {!showShop && selectedRaid && (
-              <div style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${G.borderStrong}`, background: 'linear-gradient(148deg, rgba(18,9,44,0.96) 0%, rgba(9,4,24,0.98) 100%)' }}>
-                <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${STAR_COLOR[selectedRaid.stars]}, transparent)`, boxShadow: `0 0 16px ${STAR_COLOR[selectedRaid.stars]}60` }} />
+              <div style={{ borderRadius: 16, overflow: 'hidden', border: `1px solid ${selectedRaidTheme.buttonBorder}`, background: selectedRaidTheme.panelBg, boxShadow: `0 8px 36px ${selectedRaidTheme.glow}` }}>
+                <div style={{ height: 3, background: `linear-gradient(90deg, transparent, ${selectedRaidTheme.accent}, ${selectedRaidTheme.chroma}, ${selectedRaidTheme.accent}, transparent)`, boxShadow: `0 0 22px ${selectedRaidTheme.glow}` }} />
                 <div style={{ padding: '20px 28px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <div>
-                      <div style={{ fontSize: 9, letterSpacing: 3, color: STAR_COLOR[selectedRaid.stars], fontFamily: G.cinzel, textTransform: 'uppercase', marginBottom: 6 }}>
+                      <div style={{ fontSize: 9, letterSpacing: 3, color: selectedRaidTheme.accent, fontFamily: G.cinzel, textTransform: 'uppercase', marginBottom: 6, textShadow: `0 0 14px ${selectedRaidTheme.glow}` }}>
                         {Array.from({ length: selectedRaid.stars }).map(() => '✦').join('')} {selectedRaid.stars}-Star Null Raid
                       </div>
                       <div style={{ fontFamily: G.cinzel, fontSize: 18, letterSpacing: 2, color: G.text, marginBottom: 6 }}>
@@ -450,7 +592,7 @@ export default function AscensionHub({ onClose }: Props) {
                     </div>
                     <button onClick={() => setSelectedRaid(null)} style={{
                       padding: '5px 12px', borderRadius: 6, cursor: 'pointer',
-                      background: 'rgba(80,40,160,0.12)', border: `1px solid ${G.border}`,
+                      background: selectedRaidTheme.badgeBg, border: `1px solid ${selectedRaidTheme.buttonBorder}`,
                       color: G.textMuted, fontSize: 11,
                     }}>
                       ← Back
@@ -470,28 +612,47 @@ export default function AscensionHub({ onClose }: Props) {
                         <div key={id} style={{
                           display: 'flex', alignItems: 'center', gap: 12,
                           padding: '9px 14px', borderRadius: 8,
-                          background: 'rgba(10,5,25,0.80)', border: `1px solid ${G.border}`,
+                          background: selectedRaidTheme.cardBg, border: `1px solid ${selectedRaidTheme.buttonBorder}`,
                         }}>
-                          <span style={{ fontSize: 10, color: G.textFaint, fontFamily: G.cinzel, minWidth: 22 }}>
-                            {String(idx + 1).padStart(2, '0')}
-                          </span>
-                          {bossArtUrl && (
-                            <div
-                              style={{
-                                width: 92,
-                                height: 54,
-                                borderRadius: 6,
-                                border: `1px solid ${G.border}`,
-                                backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.10) 0%, rgba(10,4,16,0.45) 100%), url("${bossArtUrl}")`,
-                                backgroundPosition: 'center',
-                                backgroundSize: 'cover',
-                                backgroundRepeat: 'no-repeat',
-                                boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05)',
-                                flexShrink: 0,
-                              }}
-                            />
-                          )}
-                          <span style={{ fontSize: 13, color: G.text }}>{bossData?.name ?? id.replace(/^nr-[a-z]+-/, '').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                            <span style={{ fontSize: 10, color: G.textFaint, fontFamily: G.cinzel, minWidth: 22 }}>
+                              {String(idx + 1).padStart(2, '0')}
+                            </span>
+                            {bossArtUrl && (
+                              <div
+                                style={{
+                                  width: 92,
+                                  height: 54,
+                                  borderRadius: 6,
+                                  border: `1px solid ${G.border}`,
+                                  backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.10) 0%, rgba(10,4,16,0.45) 100%), url("${bossArtUrl}")`,
+                                  backgroundPosition: 'center',
+                                  backgroundSize: 'cover',
+                                  backgroundRepeat: 'no-repeat',
+                                  boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05)',
+                                  flexShrink: 0,
+                                }}
+                              />
+                            )}
+                            <span style={{ fontSize: 13, color: G.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {bossData?.name ?? id.replace(/^nr-[a-z]+-/, '').split('-').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                            </span>
+                          </div>
+                          <div style={{
+                            marginLeft: 'auto',
+                            padding: '4px 10px',
+                            borderRadius: 999,
+                            border: `1px solid ${selectedRaidTheme.buttonBorder}`,
+                            background: selectedRaidTheme.badgeBg,
+                            color: selectedRaidTheme.accentSoft,
+                            fontSize: 11,
+                            letterSpacing: 0.4,
+                            fontVariantNumeric: 'tabular-nums',
+                            textShadow: `0 0 10px ${selectedRaidTheme.glow}`,
+                            whiteSpace: 'nowrap',
+                          }}>
+                            HP {Math.max(0, bossData?.hp ?? 0).toLocaleString()}
+                          </div>
                         </div>
                         );
                       })}
@@ -503,19 +664,26 @@ export default function AscensionHub({ onClose }: Props) {
                     {[
                       { label: 'Entropic Energy / Encounter', value: selectedRaid.entropyPerEncounter, color: G.entropyColor },
                       { label: 'Shards / Encounter', value: selectedRaid.shardsPerEncounter, color: '#a0ffcc' },
-                      { label: 'Recommended Resonance', value: selectedRaid.recommendedResonance.toLocaleString(), color: '#a0e8c0' },
                     ].map(r => (
-                      <div key={r.label} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${G.border}`, background: 'rgba(10,5,25,0.80)', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      <div key={r.label} style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${selectedRaidTheme.buttonBorder}`, background: selectedRaidTheme.cardBg, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <span style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: `${r.color}80` }}>{r.label}</span>
                         <span style={{ fontSize: 18, fontWeight: 600, color: r.color }}>{r.value}</span>
                       </div>
                     ))}
                     {selectedRaid.completionAngelId && (
-                      <div style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${G.goldBorder}`, background: 'rgba(10,5,25,0.80)', display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      <div style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${G.goldBorder}`, background: selectedRaidTheme.badgeBg, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <span style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(220,180,100,0.60)' }}>Final Boss Drop</span>
-                        <span style={{ fontSize: 13, color: '#ffd08a' }}>5% • Unique Angel</span>
+                        <span style={{ fontSize: 13, color: '#ffd08a' }}>
+                          5% Raid Unique Angel: {CardRegistry.get(selectedRaid.completionAngelId)?.name ?? selectedRaid.completionAngelId}
+                        </span>
                       </div>
                     )}
+                    <div style={{ padding: '8px 16px', borderRadius: 8, border: `1px solid ${selectedRaidTheme.buttonBorder}`, background: selectedRaidTheme.badgeBg, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                      <span style={{ fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', color: `${G.accentSoft}88` }}>Prove Yourself Unlock</span>
+                      <span style={{ fontSize: 13, color: selectedRaidTheme.accentSoft }}>
+                        Deal {getNullRaidProveYourselfTargetDamage(selectedRaid).toLocaleString()} in {NULL_RAID_PROVE_YOURSELF_SECONDS}s
+                      </span>
+                    </div>
                   </div>
 
                   {/* Deck selector */}
@@ -531,9 +699,9 @@ export default function AscensionHub({ onClose }: Props) {
                             onClick={() => setSelectedDeckId(deck.id)}
                             style={{
                               padding: '7px 14px', borderRadius: 7, cursor: 'pointer',
-                              background: selectedDeckId === deck.id ? 'rgba(130,80,255,0.22)' : 'rgba(10,5,25,0.80)',
-                              border: `1px solid ${selectedDeckId === deck.id ? G.borderStrong : G.border}`,
-                              color: selectedDeckId === deck.id ? G.accentSoft : G.textMuted,
+                              background: selectedDeckId === deck.id ? selectedRaidTheme.buttonBg : selectedRaidTheme.cardBg,
+                              border: `1px solid ${selectedDeckId === deck.id ? selectedRaidTheme.buttonBorder : G.border}`,
+                              color: selectedDeckId === deck.id ? selectedRaidTheme.accentSoft : G.textMuted,
                               fontSize: 12, transition: 'all 0.15s ease',
                             }}
                           >
@@ -551,9 +719,10 @@ export default function AscensionHub({ onClose }: Props) {
                       onClick={handleOpenCardBoundCoop}
                       style={{
                         alignSelf: 'flex-start', padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
-                        background: 'rgba(120,70,220,0.20)', border: `1px solid ${G.borderStrong}`,
-                        color: G.accentSoft, fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
+                        background: selectedRaidTheme.buttonBg, border: `1px solid ${selectedRaidTheme.buttonBorder}`,
+                        color: selectedRaidTheme.accentSoft, fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
                         textTransform: 'uppercase',
+                        boxShadow: `0 0 20px ${selectedRaidTheme.glow}`,
                       }}
                     >
                       Open Card-bound Co-op
@@ -567,21 +736,41 @@ export default function AscensionHub({ onClose }: Props) {
                     const onCd = cdMs > 0;
                     const canEnter = !locked && !onCd && selectedDeckId;
                     return (
-                      <button
-                        disabled={!canEnter}
-                        onClick={handleEnterRaid}
-                        style={{
-                          alignSelf: 'flex-start', padding: '12px 32px', borderRadius: 10, cursor: canEnter ? 'pointer' : 'not-allowed',
-                          background: canEnter ? `linear-gradient(135deg, rgba(100,50,220,0.55) 0%, rgba(70,30,180,0.45) 100%)` : 'rgba(40,20,80,0.30)',
-                          border: `1px solid ${canEnter ? G.borderStrong : G.border}`,
-                          color: canEnter ? G.accentSoft : G.textFaint,
-                          fontSize: 13, letterSpacing: 3, fontFamily: G.cinzel,
-                          textTransform: 'uppercase', textShadow: canEnter ? `0 0 20px rgba(160,128,255,0.50)` : 'none',
-                          transition: 'all 0.18s ease',
-                        }}
-                      >
-                        {locked ? `Requires ${selectedRaid.resonanceRequired.toLocaleString()} Resonance` : onCd ? `On Cooldown — ${formatCooldown(cdMs)}` : 'ENTER RAID'}
-                      </button>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {locked && (
+                          <button
+                            disabled={!selectedDeckId}
+                            onClick={() => handleProveYourself(selectedRaid)}
+                            style={{
+                              alignSelf: 'flex-start', padding: '12px 22px', borderRadius: 10, cursor: selectedDeckId ? 'pointer' : 'not-allowed',
+                              background: selectedDeckId ? selectedRaidTheme.buttonBg : 'rgba(40,40,40,0.4)',
+                              border: `1px solid ${selectedDeckId ? selectedRaidTheme.buttonBorder : G.border}`,
+                              color: selectedDeckId ? selectedRaidTheme.accentSoft : G.textFaint,
+                              fontSize: 12, letterSpacing: 2, fontFamily: G.cinzel,
+                              textTransform: 'uppercase', transition: 'all 0.18s ease',
+                              boxShadow: selectedDeckId ? `0 0 20px ${selectedRaidTheme.glow}` : 'none',
+                            }}
+                          >
+                            PROVE YOURSELF
+                          </button>
+                        )}
+                        <button
+                          disabled={!canEnter}
+                          onClick={handleEnterRaid}
+                          style={{
+                            alignSelf: 'flex-start', padding: '12px 32px', borderRadius: 10, cursor: canEnter ? 'pointer' : 'not-allowed',
+                            background: canEnter ? `linear-gradient(135deg, ${selectedRaidTheme.accent}55 0%, ${selectedRaidTheme.chroma}45 100%)` : 'rgba(40,40,40,0.4)',
+                            border: `1px solid ${canEnter ? selectedRaidTheme.buttonBorder : G.border}`,
+                            color: canEnter ? selectedRaidTheme.accentSoft : G.textFaint,
+                            fontSize: 13, letterSpacing: 3, fontFamily: G.cinzel,
+                            textTransform: 'uppercase', textShadow: canEnter ? `0 0 20px ${selectedRaidTheme.glow}` : 'none',
+                            transition: 'all 0.18s ease',
+                            boxShadow: canEnter ? `0 0 24px ${selectedRaidTheme.glow}` : 'none',
+                          }}
+                        >
+                          {locked ? getRaidProveYourselfLabel(selectedRaid) : onCd ? `On Cooldown — ${formatCooldown(cdMs)}` : 'ENTER RAID'}
+                        </button>
+                      </div>
                     );
                   })()}
                 </div>
@@ -596,76 +785,95 @@ export default function AscensionHub({ onClose }: Props) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {raidsByStars[stars].map(raid => {
+                    const raidTheme = getRaidVisualTheme(raid);
                     const locked = isRaidLocked(raid);
                     const cdMs = getCooldownRemaining(raid.id);
                     const onCd = cdMs > 0;
                     const clears = nullRaidClears[raid.id] ?? 0;
                     const finalBossId = raid.encounterBossIds[raid.encounterBossIds.length - 1] ?? raid.encounterBossIds[0];
                     const finalBossArtUrl = getNullRaidBossArtUrl(finalBossId);
-                    const finalBossName = finalBossId ? (NULL_RAID_BOSS_MAP.get(finalBossId)?.name ?? 'Unknown Final Boss') : null;
+                    const splashArtUrl = getNullRaidSplashArtUrl(raid.id) ?? finalBossArtUrl;
                     return (
                       <div
                         key={raid.id}
-                        onClick={() => !locked && setSelectedRaid(raid)}
+                        onClick={() => setSelectedRaid(raid)}
                         style={{
                           borderRadius: 12, overflow: 'hidden',
-                          border: `1px solid ${locked ? 'rgba(80,60,120,0.20)' : G.border}`,
-                          background: 'linear-gradient(148deg, rgba(14,7,34,0.92) 0%, rgba(7,3,18,0.96) 100%)',
+                          border: `1px solid ${locked ? `${raidTheme.buttonBorder}66` : raidTheme.buttonBorder}`,
+                          background: raidTheme.panelBg,
                           display: 'flex', alignItems: 'center',
-                          cursor: locked ? 'not-allowed' : 'pointer',
-                          opacity: locked ? 0.6 : 1,
+                          cursor: 'pointer',
+                          opacity: locked ? 0.72 : 1,
                           transition: 'all 0.18s ease',
+                          boxShadow: locked ? 'none' : `0 0 24px ${raidTheme.glow}`,
                         }}
                       >
-                        <div style={{ width: 4, alignSelf: 'stretch', background: locked ? 'rgba(80,60,120,0.30)' : STAR_COLOR[stars], flexShrink: 0 }} />
+                        <div style={{ width: 4, alignSelf: 'stretch', background: locked ? `${raidTheme.accent}66` : raidTheme.stripe, flexShrink: 0 }} />
                         <div style={{ flex: 1, padding: '18px 22px', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-                          {finalBossArtUrl && (
+                          {splashArtUrl && (
                             <div
                               style={{
                                 width: 168,
                                 height: 96,
                                 borderRadius: 10,
-                                border: `1px solid ${G.border}`,
-                                backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.10) 0%, rgba(10,4,16,0.45) 100%), url("${finalBossArtUrl}")`,
+                                border: `1px solid ${raidTheme.buttonBorder}`,
+                                backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.10) 0%, rgba(10,4,16,0.45) 100%), url("${splashArtUrl}")`,
                                 backgroundPosition: 'center',
                                 backgroundSize: 'cover',
                                 backgroundRepeat: 'no-repeat',
-                                boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05)',
+                                boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.06), 0 0 20px ${raidTheme.glow}`,
                                 flexShrink: 0,
                               }}
                             />
                           )}
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, minWidth: 200 }}>
-                            <div style={{ fontFamily: G.cinzel, fontSize: 16, letterSpacing: 1.5, color: locked ? G.textMuted : G.text }}>
+                            <div style={{ fontFamily: G.cinzel, fontSize: 16, letterSpacing: 1.5, color: locked ? G.textMuted : raidTheme.accentSoft, textShadow: locked ? 'none' : `0 0 18px ${raidTheme.glow}` }}>
                               {raid.name}
                             </div>
                             <div style={{ fontSize: 11, color: G.textMuted }}>
                               {raid.associatedSet} · {raid.encounterBossIds.length} Encounters · {Array.from({ length: raid.stars }).map(() => '✦').join('')}
                             </div>
-                            {finalBossName && (
-                              <div style={{ fontSize: 10, color: G.accentSoft, letterSpacing: 0.5 }}>
-                                Final Boss Splash: {finalBossName}
-                              </div>
-                            )}
                           </div>
                           <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
                             {clears > 0 && (
-                              <span style={{ fontSize: 11, color: G.transcendentColor, padding: '4px 10px', border: `1px solid ${G.goldBorder}`, borderRadius: 5 }}>
+                              <span style={{ fontSize: 11, color: G.transcendentColor, padding: '4px 10px', border: `1px solid ${G.goldBorder}`, borderRadius: 5, background: raidTheme.badgeBg }}>
                                 ×{clears} clears
                               </span>
                             )}
                             {locked && (
-                              <span style={{ fontSize: 11, color: '#ff8080', padding: '4px 10px', border: '1px solid rgba(255,80,80,0.20)', borderRadius: 5 }}>
-                                🔒 {raid.resonanceRequired.toLocaleString()} Resonance
-                              </span>
+                              <>
+                                <span style={{ fontSize: 11, color: '#ffb3b3', padding: '4px 10px', border: '1px solid rgba(255,80,80,0.36)', borderRadius: 5, background: raidTheme.lockedBg }}>
+                                  🔒 {getRaidProveYourselfLabel(raid)}
+                                </span>
+                                <button
+                                  disabled={!selectedDeckId}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleProveYourself(raid);
+                                  }}
+                                  style={{
+                                    padding: '5px 10px',
+                                    borderRadius: 5,
+                                    border: `1px solid ${selectedDeckId ? raidTheme.buttonBorder : G.border}`,
+                                    background: selectedDeckId ? raidTheme.buttonBg : 'rgba(40,40,40,0.4)',
+                                    color: selectedDeckId ? raidTheme.accentSoft : G.textFaint,
+                                    fontSize: 10,
+                                    letterSpacing: 1,
+                                    cursor: selectedDeckId ? 'pointer' : 'not-allowed',
+                                    boxShadow: selectedDeckId ? `0 0 18px ${raidTheme.glow}` : 'none',
+                                  }}
+                                >
+                                  PROVE YOURSELF
+                                </button>
+                              </>
                             )}
                             {onCd && !locked && (
-                              <span style={{ fontSize: 11, color: '#ffb860', padding: '4px 10px', border: '1px solid rgba(255,180,80,0.22)', borderRadius: 5 }}>
+                              <span style={{ fontSize: 11, color: '#ffcf95', padding: '4px 10px', border: '1px solid rgba(255,190,100,0.34)', borderRadius: 5, background: raidTheme.badgeBg }}>
                                 ⏱ {formatCooldown(cdMs)}
                               </span>
                             )}
                             {!locked && !onCd && (
-                              <span style={{ fontSize: 11, color: G.accentSoft, padding: '4px 10px', border: `1px solid ${G.border}`, borderRadius: 5 }}>
+                              <span style={{ fontSize: 11, color: raidTheme.accentSoft, padding: '4px 10px', border: `1px solid ${raidTheme.buttonBorder}`, borderRadius: 5, background: raidTheme.badgeBg }}>
                                 READY
                               </span>
                             )}

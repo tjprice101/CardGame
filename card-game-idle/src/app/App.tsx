@@ -46,6 +46,7 @@ import { useFriendsStore } from '@/state/friendsStore';
 import TrialDeckHUD from '@/ui/hud/TrialDeckHUD';
 const TrialDeckSummaryModal = lazy(() => import('@/ui/trialDeck/TrialDeckSummaryModal'));
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
+import { getTrialDeckDisplayName, type NeutralityTutorialTier } from '@/data/trialDecks';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import { getFontScale, setUiPreferences } from '@/ui/preferences';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
@@ -194,6 +195,54 @@ export default function App() {
   const trialDeck = useStore(selectTrialDeck);
   const lastSavedAt = useStore(s => s.lastSavedAt);
   const setPresenceActivity = useFriendsStore(s => s.setPresenceActivity);
+
+  useEffect(() => {
+    if (bossFight.mode !== 'active') return;
+    let lastTickMs = Date.now();
+    const timerId = setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = (now - lastTickMs) / 1000;
+      if (elapsedSeconds <= 0) return;
+      lastTickMs = now;
+      useStore.getState().tickBossTimer(elapsedSeconds);
+    }, 250);
+    return () => clearInterval(timerId);
+  }, [bossFight.mode]);
+
+  // Watchdog: if an active boss fight ever has a non-positive timer for any reason
+  // (interval skipped, state restored from save, freeze pinned us at 0:01), force the
+  // tick once so completeBossFight runs and transitions us to the defeat screen.
+  useEffect(() => {
+    if (bossFight.mode !== 'active') return;
+    if (typeof bossFight.fightTimeRemaining !== 'number' || bossFight.fightTimeRemaining > 0.5) return;
+    const id = setTimeout(() => {
+      useStore.getState().tickBossTimer(1);
+    }, 50);
+    return () => clearTimeout(id);
+  }, [bossFight.mode, bossFight.fightTimeRemaining]);
+
+  useEffect(() => {
+    if (battleground.mode !== 'active') return;
+    let lastTickMs = Date.now();
+    const timerId = setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = (now - lastTickMs) / 1000;
+      if (elapsedSeconds <= 0) return;
+      lastTickMs = now;
+      useStore.getState().tickBattlegroundTimer(elapsedSeconds);
+    }, 250);
+    return () => clearInterval(timerId);
+  }, [battleground.mode]);
+
+  // Battleground expiry watchdog: same idea as boss watchdog above.
+  useEffect(() => {
+    if (battleground.mode !== 'active') return;
+    if (typeof battleground.timeRemaining !== 'number' || battleground.timeRemaining > 0.5) return;
+    const id = setTimeout(() => {
+      useStore.getState().tickBattlegroundTimer(1);
+    }, 50);
+    return () => clearTimeout(id);
+  }, [battleground.mode, battleground.timeRemaining]);
 
   useEffect(() => {
     const onOpenPartyHub = (e: Event) => {
@@ -374,7 +423,15 @@ export default function App() {
         } else if (bossFight.kind === 'trial') {
           track = 'battle-wake-trials';
         } else if (bossFight.kind === 'null_raid') {
-          track = 'battle-null-raid';
+          if (bossFight.activeBossId === 'nr-neutrality-event-horizon-arbiter') {
+            track = 'battle-null-raid-event-horizon-arbiter';
+          } else if (bossFight.activeBossId === 'nr-neutrality-verdant-null') {
+            track = 'battle-null-raid-verdant-null';
+          } else if (bossFight.activeBossId === 'nr-pyroabyss-ember-eventide-tyrant') {
+            track = 'battle-null-raid-ember-eventide-tyrant';
+          } else {
+            track = 'battle-null-raid';
+          }
         } else {
           track = 'battle-eternity';
         }
@@ -449,6 +506,7 @@ export default function App() {
     scene,
     bossFight.mode,
     bossFight.kind,
+    bossFight.activeBossId,
     bossFight.gauntletDepth,
     showCardStore,
     showAscension,
@@ -737,9 +795,9 @@ export default function App() {
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><CardPackStore
             onClose={() => setShowCardStore(false)}
-            onStartTrial={(packId, mode) => {
+            onStartTrial={(packId) => {
               setShowCardStore(false);
-              useStore.getState().startTrialDeck(packId, mode);
+              useStore.getState().startTrialDeck(packId);
               setScene('arena');
             }}
           /></Suspense>
@@ -842,7 +900,14 @@ export default function App() {
       {/* Tutorial modal */}
       {showTutorial && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 31, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><TutorialModal onClose={() => setShowTutorial(false)} /></Suspense>
+          <Suspense fallback={null}><TutorialModal
+            onClose={() => setShowTutorial(false)}
+            onPlayTutorialTurn={(tier: NeutralityTutorialTier) => {
+              setShowTutorial(false);
+              useStore.getState().startTutorialTurn(tier);
+              setScene('arena');
+            }}
+          /></Suspense>
         </div>
       )}
 
@@ -906,7 +971,11 @@ export default function App() {
       {showTrialSummary && trialDeck.mode === 'active' && (
         <Suspense fallback={null}>
           <TrialDeckSummaryModal
-            packName={PACK_DEFINITIONS.find(p => p.id === trialDeck.packId)?.name.replace(/^\[EVENT\]\s*/, '') ?? (trialDeck.packId ?? 'Trial')}
+            packName={
+              (trialDeck.packId ? getTrialDeckDisplayName(trialDeck.packId) : null)
+              ?? PACK_DEFINITIONS.find(p => p.id === trialDeck.packId)?.name.replace(/^\[EVENT\]\s*/, '')
+              ?? (trialDeck.packId ?? 'Trial')
+            }
             onConfirm={() => {
               setShowTrialSummary(false);
               useStore.getState().endTrialDeck();

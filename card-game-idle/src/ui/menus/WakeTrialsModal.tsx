@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { getDailyTrials, getWeeklyTrial, type WakeTrial } from '@/systems/progression/wakeTrials';
-import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+import { BOSS_DEFINITIONS, getBossDisplayHp } from '@/data/bosses/bossDefinitions';
 import {
   getBossFightMasteryPerCard,
-  getResonanceVictoryLine,
   MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
   previewMasteryReward,
 } from '@/systems/progression/cardMastery';
@@ -238,7 +237,7 @@ export default function WakeTrialsModal({ onClose }: Props) {
             </select>
             {selectedBoss && (
               <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 6, fontStyle: 'italic' }}>
-                {selectedBoss.hp.toLocaleString()} HP · {selectedBoss.category}
+                {getBossDisplayHp(progress, selectedBoss).toLocaleString()} HP · {selectedBoss.category}
               </div>
             )}
           </PickerColumn>
@@ -274,15 +273,16 @@ export default function WakeTrialsModal({ onClose }: Props) {
           }}>
             <div>
               <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: EW.textMuted, marginBottom: 4 }}>Trial Reward Preview</div>
-              <div style={{ fontSize: 11, color: EW.gold, fontWeight: 'bold', lineHeight: 1.35 }}>
-                {getResonanceVictoryLine(trialMasteryPerCard, MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET)}
-              </div>
               <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Selected deck: {selectedDeck.name}</div>
+              <div style={{ fontSize: 10, color: 'rgba(160,220,255,0.82)', marginTop: 4 }}>
+                Awards +{trialRewardPreview.resonanceGain.toLocaleString()} Card-light for each card in your deck upon completion.
+              </div>
             </div>
             <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(140,230,255,0.7)', marginBottom: 4 }}>Resonance Now</div>
-              <div style={{ fontSize: 15, color: '#8ce6ff', fontWeight: 'bold' }}>+{trialRewardPreview.resonanceGain.toLocaleString()}</div>
-              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>{trialRewardPreview.cardsTieredUp} tier-up{trialRewardPreview.cardsTieredUp === 1 ? '' : 's'} this clear</div>
+              <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(140,230,255,0.7)', marginBottom: 4 }}>Card-light Award</div>
+              {trialRewardPreview.resonanceGain > 0 && (
+                <div style={{ fontSize: 15, color: '#8ce6ff', fontWeight: 'bold' }}>+{trialRewardPreview.resonanceGain.toLocaleString()}</div>
+              )}
             </div>
           </div>
         )}

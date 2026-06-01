@@ -24,7 +24,6 @@ const BATTLEGROUND_MATCH_SECONDS = 300;
 
 export default function BattlegroundMatch() {
   const battleground           = useStore(selectBattleground);
-  const tickTimer              = useStore(s => s.tickBattlegroundTimer);
   const completeBattleground   = useStore(s => s.completeBattleground);
   const updateOpponentBattleground = useStore(s => s.updateOpponentBattleground);
   const beginTurn              = useStore(s => s.beginTurn);
@@ -42,13 +41,6 @@ export default function BattlegroundMatch() {
     if (battleground.mode !== 'active' || battleground.kind !== 'pvp') return;
     broadcastBoard(board, battleground.myScore);
   }, [battleground.myScore, battleground.kind, battleground.mode, board, broadcastBoard]);
-
-  // 1-second countdown timer.
-  useEffect(() => {
-    if (battleground.mode !== 'active') return;
-    const id = setInterval(() => tickTimer(1), 1000);
-    return () => clearInterval(id);
-  }, [battleground.mode, tickTimer]);
 
   // CPU AI — accumulates score and updates the opponent board every 3 seconds.
   useEffect(() => {
@@ -95,7 +87,7 @@ export default function BattlegroundMatch() {
   // ── Derived display values ─────────────────────────────────────────────────
   const remainingSecs = Math.max(0, battleground.timeRemaining);
   const mins    = Math.floor(remainingSecs / 60);
-  const secs    = remainingSecs % 60;
+  const secs    = Math.floor(remainingSecs % 60);
   const timeStr = `${mins}:${String(secs).padStart(2, '0')}`;
   const timePercent = Math.max(0, remainingSecs / BATTLEGROUND_MATCH_SECONDS);
   const urgent  = remainingSecs <= 30;

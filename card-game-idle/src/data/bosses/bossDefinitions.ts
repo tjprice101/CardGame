@@ -1,10 +1,19 @@
+import { NULL_RAID_BOSS_MAP } from '@/data/ascension/nullRaidDefinitions';
+import type { ProgressState } from '@/types/game';
 import type { BossDefinition, BossCategory } from '@/types/bossFight';
 
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
-const FIRST_ETERNAL_BOSS_HP = 12_000;
+const FIRST_ETERNAL_BOSS_HP = 17_000;
 const FINAL_ETERNAL_BOSS_HP = 850_000;
-const FIRST_ETERNAL_BONUS_HP = 5_000;
+const BOSS_HP_CURVE_EXPONENT = 0.65;
+const EVENT_BOSS_CATEGORY: BossCategory = '[EVENT] Wished Upon A Star';
+
+// Bump this when rotating to a new live event cycle.
+export const EVENT_BOSS_HP_CYCLE_ID = 'wuas-cycle-2026-05';
+const EVENT_BOSS_ANCHOR_PERCENTILE = 0.84;
+const EVENT_BOSS_ABOVE_NON_EVENT_FACTOR = 1.08;
+const EVENT_BOSS_BELOW_RAID_FACTOR = 0.9;
 
 function roundBossHp(value: number): number {
   if (value >= 10_000_000) return Math.round(value / 25_000) * 25_000;
@@ -14,13 +23,20 @@ function roundBossHp(value: number): number {
 }
 
 function getScaledBossHp(index: number, totalBosses: number): number {
-  if (index <= 0 || totalBosses <= 1) return FIRST_ETERNAL_BOSS_HP + FIRST_ETERNAL_BONUS_HP;
+  if (index <= 0 || totalBosses <= 1) return FIRST_ETERNAL_BOSS_HP;
 
   const clampedIndex = Math.min(index, totalBosses - 1);
   const progress = clampedIndex / (totalBosses - 1);
-  const scaled = FIRST_ETERNAL_BOSS_HP * Math.pow(FINAL_ETERNAL_BOSS_HP / FIRST_ETERNAL_BOSS_HP, progress);
-  const scaledBonus = FIRST_ETERNAL_BONUS_HP * Math.pow(FINAL_ETERNAL_BOSS_HP / FIRST_ETERNAL_BOSS_HP, progress);
-  return roundBossHp(scaled + scaledBonus);
+  const easedProgress = Math.pow(progress, BOSS_HP_CURVE_EXPONENT);
+  const scaled = FIRST_ETERNAL_BOSS_HP * Math.pow(FINAL_ETERNAL_BOSS_HP / FIRST_ETERNAL_BOSS_HP, easedProgress);
+  return roundBossHp(Math.max(FIRST_ETERNAL_BOSS_HP, scaled));
+}
+
+function getPercentile(sortedValues: number[], percentile: number): number {
+  if (sortedValues.length === 0) return FIRST_ETERNAL_BOSS_HP;
+  const clamped = Math.max(0, Math.min(1, percentile));
+  const idx = Math.round((sortedValues.length - 1) * clamped);
+  return sortedValues[Math.max(0, Math.min(sortedValues.length - 1, idx))] ?? sortedValues[sortedValues.length - 1];
 }
 
 type BossBlueprint = Omit<BossDefinition, 'hp'>;
@@ -168,30 +184,81 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(81, 'boss-wuas-draethos-unforgotten', 'Draethos, The Unforgotten', '[EVENT] Wished Upon A Star', 'wuas-et-draethos-unforgotten', 'An unstable god shifting between child and titan, trailing nightmare-crystal fangs and funeral-ash wings.', 'boss_wuas_draethos_unforgotten'),
 ];
 
-/**
- * Thematic elemental weaknesses per boss category.
- * Deck plurality matching this element grants ×1.25 damage during the fight.
- */
-const CATEGORY_WEAKNESS: Partial<Record<BossCategory, string>> = {
-  'Neutrality':              'Fire',
-  'Pyroabyss':               'EternalSeas',
-  'Heavenly Light':          'Dark',
-  'Thornbound Plains':       'BlazingGarden',
-  'Mechanical Dreams':       'SnowboundVoltage',
-  'Prismatic Accord':        'Neutrality',
-  'Snowbound Voltage':       'BlazingGarden',
-  'Black Glass Inferno':     'Light',
-  'Glass Absolute':          'Mechanical',
-  'The Blazing Garden':      'EternalSeas',
-  'Age of the Butterfly':    'Thornbound',
-  'Eternal Seas':            'Butterfly',
-  'Abyssal Forge':           'DeathFlamedHell',
-  'Death-flamed Hell':       'Light',
-  '[EVENT] Wished Upon A Star': 'Prismatic',
-};
+const BOSS_SCALED_HP_BY_INDEX = BOSS_BLUEPRINTS.map((_, index, bosses) => getScaledBossHp(index, bosses.length));
+
+const NON_EVENT_BOSS_HP = BOSS_BLUEPRINTS
+  .map((boss, index) => (boss.category === EVENT_BOSS_CATEGORY ? null : BOSS_SCALED_HP_BY_INDEX[index]))
+  .filter((hp): hp is number => hp !== null)
+  .sort((a, b) => a - b);
+
+const NON_EVENT_BOSS_MAX_HP = NON_EVENT_BOSS_HP[NON_EVENT_BOSS_HP.length - 1] ?? FIRST_ETERNAL_BOSS_HP;
+const NON_EVENT_BOSS_ANCHOR_HP = getPercentile(NON_EVENT_BOSS_HP, EVENT_BOSS_ANCHOR_PERCENTILE);
+const NULL_RAID_MIN_HP = Math.min(...Array.from(NULL_RAID_BOSS_MAP.values()).map(boss => boss.hp));
+const EVENT_BOSS_HP_UPPER_BOUND = Number.isFinite(NULL_RAID_MIN_HP)
+  ? roundBossHp(NULL_RAID_MIN_HP * EVENT_BOSS_BELOW_RAID_FACTOR)
+  : roundBossHp(NON_EVENT_BOSS_MAX_HP * 3);
+const EVENT_BOSS_MIN_ABOVE_NON_EVENT = (() => {
+  const baseline = roundBossHp(NON_EVENT_BOSS_MAX_HP * EVENT_BOSS_ABOVE_NON_EVENT_FACTOR);
+  return baseline > NON_EVENT_BOSS_MAX_HP ? baseline : NON_EVENT_BOSS_MAX_HP + 2_500;
+})();
+
+const EVENT_BOSS_COMPUTED_HP = roundBossHp(Math.min(
+  EVENT_BOSS_HP_UPPER_BOUND,
+  Math.max(
+    EVENT_BOSS_MIN_ABOVE_NON_EVENT,
+    NON_EVENT_BOSS_ANCHOR_HP * EVENT_BOSS_ABOVE_NON_EVENT_FACTOR,
+  ),
+));
+
+export interface EventBossHpSnapshot {
+  cycleId: string;
+  hp: number;
+}
+
+export function isEventBossCategory(category: BossCategory): boolean {
+  return category === EVENT_BOSS_CATEGORY;
+}
+
+export function getCurrentCycleEventBossHp(): number {
+  return EVENT_BOSS_COMPUTED_HP;
+}
+
+export function getEventBossHpSnapshot(progress: ProgressState): EventBossHpSnapshot | null {
+  const snapshots = progress.eventBossHpSnapshots;
+  if (!snapshots) return null;
+  const snapshot = snapshots[EVENT_BOSS_CATEGORY];
+  if (!snapshot) return null;
+  if (snapshot.cycleId !== EVENT_BOSS_HP_CYCLE_ID) return null;
+  if (!Number.isFinite(snapshot.hp) || snapshot.hp <= 0) return null;
+  return { cycleId: snapshot.cycleId, hp: Math.floor(snapshot.hp) };
+}
+
+export function getEventBossHpForProgress(progress: ProgressState): number {
+  const snapshot = getEventBossHpSnapshot(progress);
+  return snapshot?.hp ?? getCurrentCycleEventBossHp();
+}
+
+export function ensureEventBossHpSnapshot(progress: ProgressState): number {
+  if (!progress.eventBossHpSnapshots) progress.eventBossHpSnapshots = {};
+  const existing = getEventBossHpSnapshot(progress);
+  if (existing) return existing.hp;
+
+  const hp = getCurrentCycleEventBossHp();
+  progress.eventBossHpSnapshots[EVENT_BOSS_CATEGORY] = {
+    cycleId: EVENT_BOSS_HP_CYCLE_ID,
+    hp,
+  };
+  return hp;
+}
+
+export function getBossDisplayHp(progress: ProgressState, boss: BossDefinition): number {
+  if (isEventBossCategory(boss.category)) return getEventBossHpForProgress(progress);
+  return boss.hp;
+}
 
 export const BOSS_DEFINITIONS: BossDefinition[] = BOSS_BLUEPRINTS.map((boss, index, bosses) => ({
   ...boss,
-  hp: getScaledBossHp(index, bosses.length),
-  weakElement: CATEGORY_WEAKNESS[boss.category],
+  hp: isEventBossCategory(boss.category)
+    ? EVENT_BOSS_COMPUTED_HP
+    : BOSS_SCALED_HP_BY_INDEX[index] ?? getScaledBossHp(index, bosses.length),
 }));

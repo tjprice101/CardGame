@@ -5,12 +5,21 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import {
   getBossFightMasteryPerCard,
   getGauntletMasteryPerCard,
-  getResonanceVictoryLine,
   MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
   MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
 } from '@/systems/progression/cardMastery';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
+import {
+  cardFacePalette,
+  getCardArtTopBottomBorderOverlayStyleForCard,
+  getCardFaceMetrics,
+  getDenseCardFaceBackgroundStyle,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { SfxManager } from '@/audio/SfxManager';
 
 // ── Cosmic palette (shared with BossFightArena) ──────────────────────────────
@@ -41,6 +50,9 @@ const VICTORY_EMBERS = [
   { x: 93, drift: -9,  dur: 3.3, delay: 0.15 },
 ];
 
+const REWARD_FACE_WIDTH = 116;
+const REWARD_FACE_HEIGHT = 164;
+
 export default function BossResultModal() {
   const bossFight = useStore(selectBossFight);
   const dismissBossResult = useStore(s => s.dismissBossResult);
@@ -64,14 +76,11 @@ export default function BossResultModal() {
   const kind = bossFight.kind ?? 'normal';
   const gauntletDepth = bossFight.gauntletDepth ?? 0;
   const trialMult = bossFight.trialRewardMult ?? 1;
-  const rewardSummary = bossFight.rewardSummary ?? null;
 
   // Compute mastery-per-card using the same capped helpers as the store.
   let masteryPerCard: number | null = null;
-  let masteryCap = MAX_MASTERY_PROGRESS_PER_CARD_BOSS;
   if (kind === 'gauntlet') {
     masteryPerCard = getGauntletMasteryPerCard(gauntletDepth);
-    masteryCap = MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET;
   } else if (isVictory && boss) {
     const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
     const trialFight = kind === 'trial';
@@ -81,9 +90,12 @@ export default function BossResultModal() {
       trialFight ? trialMult : 1,
       trialFight ? MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET : MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
     );
-    masteryCap = trialFight ? MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET : MAX_MASTERY_PROGRESS_PER_CARD_BOSS;
   }
   const rewardDef = isVictory && boss ? CardRegistry.get(boss.rewardCardId) : undefined;
+  const rewardPreviewText = rewardDef
+    ? getCardPreviewLines(rewardDef, rewardDef.type === 'Angel' ? 3 : 2).join(' ')
+    : '';
+  const rewardFaceMetrics = getCardFaceMetrics('grid');
 
   const ACCENT       = isVictory ? VICTORY_ACCENT : DEFEAT_ACCENT;
   const GLOW_COLOR   = isVictory ? VICTORY_GLOW   : DEFEAT_GLOW;
@@ -166,7 +178,7 @@ export default function BossResultModal() {
       <div style={{
         position: 'relative', zIndex: 1,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        gap: 28, width: '100%', maxWidth: 560,
+        gap: 28, width: '100%', maxWidth: 840,
         maxHeight: '100vh', overflowY: 'auto',
         padding: '48px 32px 48px',
         boxSizing: 'border-box',
@@ -234,28 +246,10 @@ export default function BossResultModal() {
           {masteryPerCard !== null && (
             <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 4 }}>
               <span style={{ fontSize: 8.5, letterSpacing: 1.5, color: EW_TEXT_MUTED, textTransform: 'uppercase' }}>
-                Tier Progress Awarded
+                Card-light Awarded
               </span>
               <span style={{ fontSize: 18, fontWeight: 'bold', color: '#7de8a0', textShadow: '0 0 14px rgba(125,232,160,0.5)' }}>
-                +{masteryPerCard} per unique deck card
-              </span>
-              <span style={{ fontSize: 10, color: 'rgba(125,232,160,0.55)', letterSpacing: 0.5 }}>
-                {getResonanceVictoryLine(masteryPerCard, masteryCap)}
-              </span>
-            </div>
-          )}
-          {rewardSummary && ((rewardSummary.resonanceGained ?? 0) > 0 || (rewardSummary.cardsTieredUp ?? 0) > 0) && (
-            <div style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <span style={{ fontSize: 8.5, letterSpacing: 1.5, color: EW_TEXT_MUTED, textTransform: 'uppercase' }}>
-                Resonance Awarded
-              </span>
-              <span style={{ fontSize: 18, fontWeight: 'bold', color: '#8ce6ff', textShadow: '0 0 14px rgba(140,232,255,0.45)' }}>
-                +{(rewardSummary.resonanceGained ?? 0).toLocaleString()} Resonance
-              </span>
-              <span style={{ fontSize: 10, color: 'rgba(140,232,255,0.58)', letterSpacing: 0.5 }}>
-                {(rewardSummary.cardsTieredUp ?? 0) > 0
-                  ? `${rewardSummary.cardsTieredUp} deck cards crossed a Card-born Tier threshold.`
-                  : 'No Card-born Tier thresholds were crossed this run.'}
+                Awards +{masteryPerCard} Card-light for each card in your deck upon completion.
               </span>
             </div>
           )}
@@ -267,7 +261,7 @@ export default function BossResultModal() {
             width: '100%',
             background: `linear-gradient(180deg, rgba(4,3,10,0.98) 0%, rgba(8,5,18,0.97) 100%)`,
             border: `1px solid ${VICTORY_ACCENT}66`,
-            borderRadius: 16, padding: '20px 24px',
+            borderRadius: 16, padding: '20px 20px',
             display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'flex-start',
             boxShadow: `0 0 24px ${VICTORY_GLOW}, inset 0 0 0 1px rgba(255,216,122,0.06)`,
             animation: 'resultPanelSlideUp 0.6s 0.45s ease both',
@@ -279,30 +273,120 @@ export default function BossResultModal() {
               Card Awarded
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <div style={{ fontSize: 20, fontWeight: 'bold', color: EW_TEXT, letterSpacing: 1 }}>
-                {rewardDef.name}
+            <div style={{
+              width: '100%',
+              display: 'grid',
+              gridTemplateColumns: `${REWARD_FACE_WIDTH}px minmax(0, 1fr)`,
+              gap: 10,
+              alignItems: 'start',
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+              }}>
+                <div
+                  className={rewardDef.rarity === 'Infinite' || rewardDef.rarity === 'Eternal'
+                    ? `holofoil-menu-card${rewardDef.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${rewardDef.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
+                    : undefined}
+                  style={{
+                    width: REWARD_FACE_WIDTH,
+                    height: REWARD_FACE_HEIGHT,
+                    ...getDenseCardFaceBackgroundStyle(rewardDef, 'normal'),
+                    borderRadius: 10,
+                    border: `1px solid ${VICTORY_ACCENT}55`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'stretch',
+                  }}
+                >
+                  <div style={getCardArtTopBottomBorderOverlayStyleForCard(rewardDef)} />
+                  <div style={getCardNameRibbonStyle('grid')}>
+                    <div style={{
+                      color: cardFacePalette.textMuted,
+                      letterSpacing: 1.4,
+                      marginBottom: 4,
+                      textAlign: 'center',
+                      textTransform: 'uppercase',
+                      fontSize: rewardFaceMetrics.typeSize,
+                    }}>
+                      {getDisplayCardTypeLabel(rewardDef.type)}
+                    </div>
+                    <div style={{
+                      color: cardFacePalette.text,
+                      fontSize: rewardFaceMetrics.nameSize,
+                      fontWeight: 'bold',
+                      lineHeight: 1.25,
+                      textAlign: 'center',
+                      minHeight: 24,
+                    }}>
+                      {rewardDef.name}
+                    </div>
+                  </div>
+                  <div style={getCardRulesPanelStyle('grid')}>
+                    <div style={{
+                      color: cardFacePalette.textSoft,
+                      display: '-webkit-box',
+                      fontSize: rewardFaceMetrics.descSize,
+                      lineHeight: rewardFaceMetrics.descLineHeight,
+                      overflow: 'hidden',
+                      textAlign: 'center',
+                      WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: rewardDef.type === 'Angel' ? 3 : 2,
+                    }}>
+                      {rewardPreviewText}
+                    </div>
+                    {rewardDef.type === 'Angel' && (
+                      <div style={{
+                        fontSize: 6,
+                        color: cardFacePalette.textMuted,
+                        marginTop: 5,
+                        textAlign: 'center',
+                      }}>
+                        Cost: {rewardDef.summonCost.length} materials
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: 11, color: RARITY_COLORS[rewardDef.rarity] ?? EW_TEXT_MUTED, letterSpacing: 1 }}>
-                {rewardDef.rarity} · {rewardDef.type}
-              </div>
-            </div>
 
-            <div style={{ width: '100%' }}>
-              <CardEngineCallout card={rewardDef} variant="compact" />
-            </div>
-            <div style={{ width: '100%' }}>
-              <CardRulesDigest
-                card={rewardDef}
-                variant="preview"
-                maxSections={3}
-                maxLinesPerSection={10}
-                lineClamp={3}
-                labelColor={EW_TEXT_MUTED}
-                textColor={EW_TEXT}
-                sectionBackground="transparent"
-                sectionBorder="transparent"
-              />
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 8,
+                minWidth: 0,
+                background: 'rgba(7, 4, 14, 0.76)',
+                border: `1px solid ${VICTORY_ACCENT}2a`,
+                borderRadius: 12,
+                padding: '11px 11px 10px',
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <div style={{ fontSize: 20, fontWeight: 'bold', color: EW_TEXT, letterSpacing: 1 }}>
+                    {rewardDef.name}
+                  </div>
+                  <div style={{ fontSize: 11, color: RARITY_COLORS[rewardDef.rarity] ?? EW_TEXT_MUTED, letterSpacing: 1 }}>
+                    {rewardDef.rarity} · {rewardDef.type}
+                  </div>
+                </div>
+
+                <div style={{ width: '100%', marginTop: 2 }}>
+                  <CardEngineCallout card={rewardDef} variant="compact" />
+                </div>
+                <div style={{ width: '100%', marginTop: 1 }}>
+                  <CardRulesDigest
+                    card={rewardDef}
+                    variant="preview"
+                    maxSections={6}
+                    maxLinesPerSection={9}
+                    lineClamp={6}
+                    labelColor={EW_TEXT_MUTED}
+                    textColor={EW_TEXT}
+                    sectionBackground="transparent"
+                    sectionBorder="transparent"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         )}

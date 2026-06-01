@@ -72,14 +72,8 @@ const PLAYSTYLE_MAP: Record<EngineKey, CoreMechanicPlaystyle[]> = {
       winCondition: 'A clean Cadence line that powers your Seraphim turns.',
     },
     {
-      name: 'Anchor Safety',
-      pattern: 'Use Chorus Anchors to protect your best sequence from repeat penalties.',
-      pilotTips: 'Save anchors for turns that matter; they are there to protect payoff turns, not mistakes.',
-      winCondition: 'A high-value turn where your Cadence never falls apart.',
-    },
-    {
       name: 'Radiance and Halo Cashout',
-      pattern: 'Spend Radiance and Halo only when Cadence and Anchors are already stable.',
+      pattern: 'Spend Radiance and Halo only when Cadence is already stable.',
       pilotTips: 'If sequence quality is weak, keep building instead of spending your Halo threshold early.',
       winCondition: 'One prepared burst turn where Cadence, Radiance, and Halo convert together.',
     },

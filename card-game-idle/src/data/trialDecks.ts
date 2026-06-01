@@ -6,6 +6,32 @@
  */
 import type { TrialDeckDefinition } from '@/types/game';
 
+export const NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS = {
+  starter: 'tutorial-neutrality-starter',
+  eternal: 'tutorial-neutrality-eternal',
+  infinite: 'tutorial-neutrality-infinite',
+} as const;
+
+export type NeutralityTutorialTier = keyof typeof NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS;
+
+const NEUTRALITY_TUTORIAL_TRIAL_DISPLAY_NAMES: Record<string, string> = {
+  [NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.starter]: 'Play Tutorial Turn - Neutrality Starter',
+  [NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.eternal]: 'Play Tutorial Turn - Neutrality Eternal',
+  [NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS.infinite]: 'Play Tutorial Turn - Neutrality Infinite',
+};
+
+export function isNeutralityTutorialTrialPackId(packId: string | null | undefined): boolean {
+  if (!packId) return false;
+  return Object.values(NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS).includes(packId as (typeof NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS)[NeutralityTutorialTier]);
+}
+
+export function getTrialDeckDisplayName(packId: string): string | null {
+  if (NEUTRALITY_TUTORIAL_TRIAL_DISPLAY_NAMES[packId]) {
+    return NEUTRALITY_TUTORIAL_TRIAL_DISPLAY_NAMES[packId];
+  }
+  return TRIAL_DECK_DEFINITIONS[packId]?.displayName ?? null;
+}
+
 function d(definitionId: string, copies: 1 | 2 | 3 | 4): { definitionId: string; copies: 1 | 2 | 3 | 4; finish: 'normal' } {
   return { definitionId, copies, finish: 'normal' };
 }

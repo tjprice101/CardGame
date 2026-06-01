@@ -19,6 +19,9 @@ export type MusicTrackId =
   | 'menu-shop'
   | 'battle-normal'
   | 'battle-null-raid'
+  | 'battle-null-raid-event-horizon-arbiter'
+  | 'battle-null-raid-verdant-null'
+  | 'battle-null-raid-ember-eventide-tyrant'
   | 'battle-eternity'
   | 'battle-wake-trials'
   | 'battle-gauntlet'
@@ -41,6 +44,9 @@ const TRACKS: Record<MusicTrackId, TrackDef> = {
   'menu-shop':         { src: `${AUDIO_BASE}/store-by-the-event-horizon-shop-menu.mp3`,               gain: 1.0 },
   'battle-normal':     { src: `${AUDIO_BASE}/for-every-card-a-whisper-main-turn-fight.mp3`,           gain: 1.0 },
   'battle-null-raid':  { src: `${AUDIO_BASE}/sovereign-of-the-infinite-deck-main-menu.mp3`,           gain: 1.0 },
+  'battle-null-raid-event-horizon-arbiter': { src: `${AUDIO_BASE}/null-raid-event-horizon-arbiter.mp3`, gain: 1.0 },
+  'battle-null-raid-verdant-null':          { src: `${AUDIO_BASE}/null-raid-verdant-null-last-wish-executioner.mp3`, gain: 1.0 },
+  'battle-null-raid-ember-eventide-tyrant': { src: `${AUDIO_BASE}/null-raid-ember-eventide-tyrant.mp3`, gain: 1.0 },
   'battle-eternity':   { src: `${AUDIO_BASE}/lifelong-fight-eternitys-wake-fight.mp3`,                gain: 1.0 },
   'battle-wake-trials':{ src: `${AUDIO_BASE}/by-the-cards-everlasting-moment-wake-trials.mp3`,        gain: 1.0 },
   'battle-gauntlet':   { src: `${AUDIO_BASE}/the-endless-dream-endless-gauntlet.mp3`,                 gain: 1.0 },

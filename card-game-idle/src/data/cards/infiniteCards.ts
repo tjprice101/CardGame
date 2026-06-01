@@ -95,17 +95,16 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Last Procession',
-    description: 'Gain 112 Trail; Gain 6 Thorncrowns; Gain 5 Briar Spirals; Salvage any 1 card; Gain +230% total Oblivion this turn; If you have 6+ Thorncrowns, Spend 6 Thorncrowns; Gain 3 Briar Spirals; Gain 40 Trail; +2600 Oblivion; If you have 5+ Briar Spirals, Spend 3 Briar Spirals; Bloom up to 3 Briar Spirals (+72 Trail per spiral); Empower the next card you play; If you have 150+ Trail, Spend 70 Trail; +3800 Oblivion; Draw 1 card',
+    description: 'Gain 112 Trail; Gain 9 Briar Spirals; Salvage any 1 card; Gain +230% total Oblivion this turn; If you have 6+ Briar Spirals, Spend 3 Briar Spirals; Gain 3 Briar Spirals; Gain 40 Trail; +2600 Oblivion; If you have 5+ Briar Spirals, Spend 3 Briar Spirals; Bloom up to 3 Briar Spirals (+72 Trail per spiral, +24 Oblivion per Trail); Empower the next card you play; If you have 150+ Trail, Spend 70 Trail; +3800 Oblivion; Draw 1 card',
     artKey: 'inf_thornbound_last_procession',
-    // Role: SPIRAL REFINERY. Converts Thorncrowns into extra Spirals, then
-    // performs a controlled high-yield bloom instead of an all-in cashout.
+    // Role: SPIRAL REFINERY. Stacks and refines Briar Spirals, then performs
+    // a controlled high-yield bloom instead of an all-in cashout.
     effects: [
       { type: 'trail_gain', value: 112 },
-      { type: 'eternal_stack_gain', stack: 'thorn', value: 6 },
-      { type: 'set_secondary_gain', kind: 'thorn', value: 5 },
+      { type: 'set_secondary_gain', kind: 'thorn', value: 9 },
       { type: 'salvage_any' },
       { type: 'score_multiplier', value: 230 },
-      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'thorn', value: 6 }, then: [{ type: 'eternal_stack_spend', stack: 'thorn', value: 6 }, { type: 'set_secondary_gain', kind: 'thorn', value: 3 }, { type: 'trail_gain', value: 40 }, { type: 'oblivion_flat', value: 2600 }] },
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'thorn', value: 6 }, then: [{ type: 'set_secondary_spend', kind: 'thorn', value: 3 }, { type: 'set_secondary_gain', kind: 'thorn', value: 3 }, { type: 'trail_gain', value: 40 }, { type: 'oblivion_flat', value: 2600 }] },
       { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'thorn', value: 5 }, then: [{ type: 'set_secondary_spend', kind: 'thorn', value: 3 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 72, oblivionPerTrail: 24, consume: 3 }, { type: 'multiply_next' }] },
       { type: 'conditional', condition: { type: 'trail_gte', value: 150 }, then: [{ type: 'trail_spend', value: 70 }, { type: 'oblivion_flat', value: 3800 }, { type: 'draw', value: 1 }] }],
   },
@@ -115,14 +114,12 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Celestial Blackout',
-    description: 'Gain 120 Radiance; Gain 4 Cadence; Gain 2 Anchor; Gain 8 Halo; If you have 10+ Halo, Spend 10 Halo; +5600 Oblivion; Empower the next card you play; Double current Radiance; Gain 120 Radiance; If you have 6+ Cadence, +4500 Oblivion; Look at the top 9 cards and take 1 matching Seraphim or Angel; +3600 Oblivion',
+    description: 'Gain 120 Radiance; Gain 8 Halo; If you have 10+ Halo, Spend 10 Halo; +5600 Oblivion; Empower the next card you play; Double current Radiance; Gain 120 Radiance; If you have 6+ Cadence, +4500 Oblivion; Look at the top 9 cards and take 1 matching Seraphim or Angel; +3600 Oblivion',
     artKey: 'inf_celestial_blackout',
     // Role: UBER opener-finisher. Frontloads Halo, then converts it into a massive
     // threshold burst while also fixing your next line with deep unit selection.
     effects: [
       { type: 'radiance_gain', value: 120 },
-      { type: 'light_resonance_gain', value: 4 },
-      { type: 'light_anchor_gain', value: 2 },
       { type: 'eternal_stack_gain', stack: 'light', value: 8 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 10 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 10 }, { type: 'oblivion_flat', value: 5600 }, { type: 'multiply_next' }] },
       { type: 'radiance_double' },
@@ -351,13 +348,12 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 2, synergyRequirement: 'Thornbound' },
-    // Role: SURGE AMPLIFIER. Converts Thorncrowns into a larger spiral bank,
+    // Role: SURGE AMPLIFIER. Stacks Briar Spirals heavily,
     // then executes a precision two-spiral bloom with heavy per-spiral scaling.
     onPlayEffects: [
       { type: 'trail_gain', value: 84 },
-      { type: 'eternal_stack_gain', stack: 'thorn', value: 4 },
-      { type: 'set_secondary_gain', kind: 'thorn', value: 2 },
-      { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'thorn', value: 5 }, then: [{ type: 'eternal_stack_spend', stack: 'thorn', value: 5 }, { type: 'set_secondary_gain', kind: 'thorn', value: 4 }, { type: 'oblivion_flat', value: 2600 }] },
+      { type: 'set_secondary_gain', kind: 'thorn', value: 6 },
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'thorn', value: 5 }, then: [{ type: 'set_secondary_spend', kind: 'thorn', value: 3 }, { type: 'set_secondary_gain', kind: 'thorn', value: 4 }, { type: 'oblivion_flat', value: 2600 }] },
       { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'thorn', value: 4 }, then: [{ type: 'set_secondary_spend', kind: 'thorn', value: 2 }, { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 78, oblivionPerTrail: 220, consume: 2 }, { type: 'multiply_next' }] },
       { type: 'score_multiplier', value: 150 },
       { type: 'conditional', condition: { type: 'trail_gte', value: 110 }, then: [{ type: 'trail_spend', value: 44 }, { type: 'trail_gain', value: 24 }, { type: 'oblivion_flat', value: 2800 }, { type: 'multiply_next' }] }],
@@ -368,7 +364,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Lucent Cataclysm Archon',
-    description: 'On play: Gain 96 Radiance; Gain 4 Cadence; Gain 1 Anchor; Gain 6 Halo; If you have 9+ Halo, Spend 9 Halo; +5200 Oblivion; Gain 96 Radiance; Empower the next card you play; If you have 6+ Cadence, Double current Radiance; +2600 Oblivion; Search your deck for 1 matching Ophanim or Angel. While on board: +760 Oblivion per card played while active',
+    description: 'On play: Gain 96 Radiance; Gain 6 Halo; If you have 9+ Halo, Spend 9 Halo; +5200 Oblivion; Gain 96 Radiance; Empower the next card you play; If you have 6+ Cadence, Double current Radiance; +2600 Oblivion; Search your deck for 1 matching Ophanim or Angel. While on board: +760 Oblivion per card played while active',
     artKey: 'inf_lucent_cataclysm_archon',
     attacks: {
       unsynergized: {
@@ -398,8 +394,6 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     // then converts Cadence into a second Radiance spike and tutor.
     onPlayEffects: [
       { type: 'radiance_gain', value: 96 },
-      { type: 'light_resonance_gain', value: 4 },
-      { type: 'light_anchor_gain', value: 1 },
       { type: 'eternal_stack_gain', stack: 'light', value: 6 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 9 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 9 }, { type: 'oblivion_flat', value: 5200 }] },
       { type: 'radiance_gain', value: 96 },
@@ -508,12 +502,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Gravebloom Singularity',
-      description: 'On play: Gain 96 Trail; Gain 5 Thorncrowns; Gain 6 Briar Spirals; Salvage any 1 card; If you have 120+ Trail, Spend 40 Trail; Gain 3 Briar Spirals; Draw 1 card; +1800 Oblivion; Empower the next card you play. While on board: Adjacent active Seraphim gain +280 Oblivion per card played',
+      description: 'On play: Gain 96 Trail; Gain 9 Briar Spirals; Salvage any 1 card; If you have 120+ Trail, Spend 40 Trail; Gain 3 Briar Spirals; Draw 1 card; +1800 Oblivion; Empower the next card you play. While on board: Adjacent active Seraphim gain +280 Oblivion per card played',
     artKey: 'inf_gravebloom_singularity',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 280 }],
         // Role: BACK-ROW SPIRAL FORGE. Mints a massive Spiral reserve and reinvests
         // Trail into even more Spirals for allied bloom cards.
-        onPlayEffects: [{ type: 'trail_gain', value: 96 }, { type: 'eternal_stack_gain', stack: 'thorn', value: 5 }, { type: 'set_secondary_gain', kind: 'thorn', value: 6 }, { type: 'salvage_any' }, { type: 'conditional', condition: { type: 'trail_gte', value: 120 }, then: [{ type: 'trail_spend', value: 40 }, { type: 'set_secondary_gain', kind: 'thorn', value: 3 }, { type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 1800 }, { type: 'multiply_next' }] }],
+        onPlayEffects: [{ type: 'trail_gain', value: 96 }, { type: 'set_secondary_gain', kind: 'thorn', value: 9 }, { type: 'salvage_any' }, { type: 'conditional', condition: { type: 'trail_gte', value: 120 }, then: [{ type: 'trail_spend', value: 40 }, { type: 'set_secondary_gain', kind: 'thorn', value: 3 }, { type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 1800 }, { type: 'multiply_next' }] }],
   },
   {
     definitionId: 'inf-heliarch-eclipse-engine',
@@ -521,12 +515,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Heliarch Eclipse Engine',
-      description: 'On play: Gain 112 Radiance; Gain 5 Cadence; Gain 2 Anchor; Gain 7 Halo; Double current Radiance; If you have 7+ Cadence, +3600 Oblivion; If you have 12+ Halo, Spend 6 Halo; +3400 Oblivion; Salvage 1 card matching Seraphim; +2400 Oblivion. While on board: Adjacent active Seraphim gain +320 Oblivion per card played',
+      description: 'On play: Gain 112 Radiance; Gain 7 Halo; Double current Radiance; If you have 7+ Cadence, +3600 Oblivion; If you have 12+ Halo, Spend 6 Halo; +3400 Oblivion; Salvage 1 card matching Seraphim; +2400 Oblivion. While on board: Adjacent active Seraphim gain +320 Oblivion per card played',
     artKey: 'inf_heliarch_eclipse_engine',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 320 }],
       // Role: Back-row Halo forge. Mints a large Halo reserve, amplifies Radiance,
       // and converts excess Halo into a selective support burst.
-      onPlayEffects: [{ type: 'radiance_gain', value: 112 }, { type: 'light_resonance_gain', value: 5 }, { type: 'light_anchor_gain', value: 2 }, { type: 'eternal_stack_gain', stack: 'light', value: 7 }, { type: 'radiance_double' }, { type: 'conditional', condition: { type: 'light_resonance_gte', value: 7 }, then: [{ type: 'oblivion_flat', value: 3600 }] }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 12 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 6 }, { type: 'oblivion_flat', value: 3400 }, { type: 'salvage_by_type', filter: ['Seraphim'] }] }, { type: 'oblivion_flat', value: 2400 }],
+      onPlayEffects: [{ type: 'radiance_gain', value: 112 }, { type: 'eternal_stack_gain', stack: 'light', value: 7 }, { type: 'radiance_double' }, { type: 'conditional', condition: { type: 'light_resonance_gte', value: 7 }, then: [{ type: 'oblivion_flat', value: 3600 }] }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 12 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 6 }, { type: 'oblivion_flat', value: 3400 }, { type: 'salvage_by_type', filter: ['Seraphim'] }] }, { type: 'oblivion_flat', value: 2400 }],
   },
   {
     definitionId: 'inf-mech-entropy-foundry',
@@ -758,28 +752,26 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Elegy Titan',
-    description: 'On summon: Gain 124 Trail; Gain 7 Thorncrowns; Gain 5 Briar Spirals; Gain +130% total Oblivion this turn. After 5 cards played: Spend 90 Trail; If you have 8+ Thorncrowns, Spend 8 Thorncrowns; +4200 Oblivion; Bloom all Briar Spirals (+56 Trail per spiral); Spend all Briar Spirals; Cash out all Thorncrowns (+980 Oblivion per stack); Salvage any 1 card; Gain 16 Trail; +3600 Oblivion; If you have 120+ Trail, Empower the next card you play; +3200 Oblivion; Draw 2 cards. While on board: +520 Oblivion per card played while on board',
+    description: 'On summon: Gain 124 Trail; Gain 12 Briar Spirals; Gain +130% total Oblivion this turn. After 5 cards played: Spend 90 Trail; If you have 8+ Briar Spirals, Spend 4 Briar Spirals; +4200 Oblivion; Bloom all Briar Spirals (+56 Trail per spiral, +18 Oblivion per Trail); Spend all Briar Spirals; Salvage any 1 card; Gain 16 Trail; +3600 Oblivion; If you have 120+ Trail, Empower the next card you play; +3200 Oblivion; Draw 2 cards. While on board: +520 Oblivion per card played while on board',
     artKey: 'inf_thornbound_elegy_titan',
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 }],
     onSummonEffects: [
       { type: 'trail_gain', value: 124 },
-      { type: 'eternal_stack_gain', stack: 'thorn', value: 7 },
-      { type: 'set_secondary_gain', kind: 'thorn', value: 5 },
+      { type: 'set_secondary_gain', kind: 'thorn', value: 12 },
       { type: 'score_multiplier', value: 130 }],
     activatedAbility: {
       name: 'Funeral Surge',
       cardsPlayedRequirement: 5,
-      description: 'Spend 90 Trail; If you have 8+ Thorncrowns, Spend 8 Thorncrowns; +4200 Oblivion; Bloom all Briar Spirals (+56 Trail per spiral); Spend all Briar Spirals; Cash out all Thorncrowns (+980 Oblivion per stack); Salvage any 1 card; Gain 16 Trail; +3600 Oblivion; If you have 120+ Trail, Empower the next card you play; +3200 Oblivion; Draw 2 cards',
+      description: 'Spend 90 Trail; If you have 8+ Briar Spirals, Spend 4 Briar Spirals; +4200 Oblivion; Bloom all Briar Spirals (+56 Trail per spiral, +18 Oblivion per Trail); Spend all Briar Spirals; Salvage any 1 card; Gain 16 Trail; +3600 Oblivion; If you have 120+ Trail, Empower the next card you play; +3200 Oblivion; Draw 2 cards',
       // Role: CATASTROPHIC FINISHER. Performs the largest all-in conversion:
-      // crown spend checkpoint, full bloom, spiral collapse, then final cashout.
+      // spiral spend checkpoint, full bloom, spiral collapse, then final cashout.
       effects: [
         { type: 'trail_spend', value: 90 },
-        { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'thorn', value: 8 }, then: [{ type: 'eternal_stack_spend', stack: 'thorn', value: 8 }, { type: 'oblivion_flat', value: 4200 }] },
+        { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'thorn', value: 8 }, then: [{ type: 'set_secondary_spend', kind: 'thorn', value: 4 }, { type: 'oblivion_flat', value: 4200 }] },
         { type: 'thorn_briar_spiral_bloom', trailPerSpiral: 56, oblivionPerTrail: 18 },
         { type: 'set_secondary_spend', kind: 'thorn', value: 9999 },
-        { type: 'eternal_stack_cashout', stack: 'thorn', oblivionPerStack: 980 },
         { type: 'salvage_any' },
         { type: 'trail_gain', value: 16 },
         { type: 'oblivion_flat', value: 3600 },
@@ -1082,7 +1074,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Infinite',
     name: 'Midplace Apocalypse',
-    description: 'On summon: Gain 16 White Flame; Gain 16 Black Flame; Gain 5 Eclipse; Gain 18 Monochromatic Shards; Register state: Collapse Pending += 1; Salvage any 1 card; Empower the next card you play. After 5 cards played: Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse; Burst all Eclipse (+340.0 Oblivion per Eclipse); +45.0 per Eclipse per balance tier; +32.0 per Eclipse per Fracture; Salvage any 1 card; Gain 10 Monochromatic Shards; +3500 Oblivion; If Fracture is 14+, +2500 Oblivion. While on board: +620 Oblivion per card played while on board',
+    description: 'On summon: Gain 16 White Flame; Gain 16 Black Flame; Gain 5 Eclipse; Gain 18 Monochromatic Shards; Salvage any 1 card; Empower the next card you play. After 5 cards played: Gain 8 Fracture; Fracture collapses by 0.5; Gain 4 Eclipse; Burst all Eclipse (+340.0 Oblivion per Eclipse); +45.0 per Eclipse per balance tier; +32.0 per Eclipse per Fracture; Salvage any 1 card; Gain 10 Monochromatic Shards; +3500 Oblivion; If Fracture is 14+, +2500 Oblivion. While on board: +620 Oblivion per card played while on board',
     artKey: 'inf_bgi_midplace_apocalypse',
     summonCost: [],
     extraSummonConditions: [
@@ -1093,7 +1085,6 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
       { type: 'black_glass_black_flame_gain', value: 16 },
       { type: 'eternal_stack_gain', stack: 'glass', value: 5 },
       { type: 'monochromatic_shards_gain', value: 18 },
-      { type: 'black_glass_register_state', key: 'collapse_pending', value: 1 },
       { type: 'salvage_any' },
       { type: 'multiply_next' }],
     activatedAbility: {

@@ -322,13 +322,17 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const avatar = useMemo(() => resolveAvatar(profile.avatarId, progress), [profile.avatarId, progress]);
   const titleBadge = useMemo(() => resolveTitleBadge(profile.titleId, progress), [profile.titleId, progress]);
   const dailyLine = useMemo(() => pickDailyLine(profile.name?.length ?? 0), [profile.name]);
+  const ownedCardCopies = useMemo(
+    () => Object.values(progress.collection ?? {}).reduce((sum, count) => sum + (count ?? 0), 0),
+    [progress.collection],
+  );
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => { const id = window.setTimeout(() => setMounted(true), 20); return () => window.clearTimeout(id); }, []);
 
   const shards = Math.floor(progress.aberratedShards ?? 0);
   const oblivion = Math.floor(progress.oblivion ?? 0);
-  const cards = progress.totalCardsPlayed ?? 0;
+  const cards = ownedCardCopies;
 
   return (
     <div

@@ -66,10 +66,10 @@ function SystemInfoPanel() {
           color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8,
         }}>What is Card-born Tier?</div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
-          Every card you play from hand earns it a <span style={{ color: P.accent, fontWeight: 700 }}>play count</span>.
-          As that count climbs through eight milestone thresholds — from <em>Practiced</em> to <em>Infinite Bond</em> —
+          Every card you play from hand gains <span style={{ color: P.accent, fontWeight: 700 }}>+1 Card-light</span>.
+          As its Card-light climbs through eight milestone thresholds — from <em>Practiced</em> to <em>Infinite Bond</em> —
           you unlock Tier rewards and permanently raise that card's <span style={{ color: P.gold, fontWeight: 700 }}>Resonance</span> contribution.
-          Owning more copies of a card has no effect — only the play count on each unique card matters.
+          Owning more copies of a card has no effect — only Card-light on each unique card matters.
         </div>
       </div>
 
@@ -109,7 +109,7 @@ function SystemInfoPanel() {
                 T{tier.tier} · {tier.label}
               </span>
               <span style={{ fontSize: 11, color: P.textMuted, flex: 1 }}>
-                {tier.threshold.toLocaleString()} plays
+                {tier.threshold.toLocaleString()} Card-light
               </span>
               <span style={{ fontSize: 11, color: P.success, fontWeight: 700 }}>
                 +{tier.shardReward} shards
@@ -127,8 +127,9 @@ function SystemInfoPanel() {
           Tier Progress from Boss Content
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body, marginBottom: 10 }}>
-          Completing boss fights, Wake Trials, and the Endless Gauntlet awards <span style={{ color: P.accent, fontWeight: 700 }}>Tier Progress</span> to
-          every card in your active deck and Extra Deck, on top of hand-play counts.
+          Completing boss fights, Wake Trials, and the Endless Gauntlet
+          <span style={{ color: P.accent, fontWeight: 700 }}> awards +X Card-light for each card in your deck upon completion</span>.
+          Active difficulty determines X, and Extra Deck cards are included.
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {([
@@ -161,7 +162,7 @@ function SystemInfoPanel() {
       }}>
         💡 <strong style={{ color: P.accent }}>Tip:</strong> Playing cards from hand is still the primary way to advance Tiers.
         Boss rewards supplement the grind — they cannot replace it. Higher tiers (T5–T8) require
-        tens of thousands of plays and remain a long-term investment even with boss bonuses.
+        tens of thousands of Card-light and remain a long-term investment even with boss bonuses.
       </div>
     </div>
   );
@@ -218,7 +219,7 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
             </div>
           )}
           <div style={{ fontSize: 11, color: P.textMuted }}>
-            {m.count.toLocaleString()} plays
+            {m.count.toLocaleString()} Card-light
           </div>
           {copies > 1 && (
             <div style={{ fontSize: 10, color: P.textFaint }}>
@@ -264,7 +265,7 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
               onClick={() => claimCardMastery(m.definitionId, tier.tier)}
               disabled={!reached || claimed}
               data-sfx="claim"
-              title={`${tier.label} — ${tier.threshold.toLocaleString()} plays · +${tier.resonanceContribution} Resonance pts · +${tier.shardReward} shards`}
+              title={`${tier.label} — ${tier.threshold.toLocaleString()} Card-light · +${tier.resonanceContribution} Resonance pts · +${tier.shardReward} shards`}
               style={{
                 flex: 1, minWidth: 0,
                 padding: '4px 6px', borderRadius: 5,
@@ -388,7 +389,7 @@ export default function CardMasteryModal({ onClose }: Props) {
               fontSize: 13, color: P.textMuted, marginTop: 5, fontFamily: uiTypography.body,
               letterSpacing: 0.3, lineHeight: 1.4,
             }}>
-              Play cards to raise their Tier. Each Tier unlocks shards and adds permanent Resonance to your collection.
+              Play cards to gain +1 Card-light per play. Each Tier unlocks shards and adds permanent Resonance to your collection.
             </div>
           </div>
 
@@ -513,7 +514,7 @@ export default function CardMasteryModal({ onClose }: Props) {
                   {filter === 'claimable'
                     ? 'No rewards waiting — keep playing your cards.'
                     : filter === 'in-progress'
-                      ? 'No cards with play counts yet. Start playing!'
+                      ? 'No cards with Card-light yet. Start playing!'
                       : 'No cards found.'}
                 </div>
               ) : (

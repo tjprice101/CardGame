@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 24;
+export const CURRENT_VERSION = 27;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -22,14 +22,14 @@ type Migration = (data: Partial<GameState>) => Partial<GameState>;
 
 const migrations: Record<number, Migration> = {
   6: (data) => {
-    // Add pityCounters field for v6��v7 migration
+    // Add pityCounters field for v6 -> v7 migration
     if (data.progress) {
       data.progress.pityCounters = {};
     }
     return data;
   },
   7: (data) => {
-    // v7��v8: remap seek-neutral-* deck IDs to ophanim-neutral-*
+    // v7 -> v8: remap seek-neutral-* deck IDs to ophanim-neutral-*
     //        convert CherubimInstance board state to CherubimInstance
     const idMap: Record<string, string> = {
       'seek-neutral-null-seek': 'ophanim-neutral-null-seek',
@@ -110,7 +110,7 @@ const migrations: Record<number, Migration> = {
         remapCards(pending.allCards);
       }
     }
-    // Convert CherubimInstance on board backSlots �� CherubimInstance
+    // Convert CherubimInstance on board backSlots -> CherubimInstance
     if (data.board?.backSlots) {
       const slots = data.board.backSlots as Array<Record<string, unknown> | null>;
       for (let i = 0; i < slots.length; i++) {
@@ -320,7 +320,6 @@ const migrations: Record<number, Migration> = {
       if (p.nullRaidCooldowns === undefined) p.nullRaidCooldowns = {};
       if (p.nullRaidClears === undefined) p.nullRaidClears = {};
       if (p.transcendentCollection === undefined) p.transcendentCollection = {};
-      if (p.purchasedAscensionCosmetics === undefined) p.purchasedAscensionCosmetics = [];
     }
     return data;
   },
@@ -373,6 +372,36 @@ const migrations: Record<number, Migration> = {
           const raw = Number(ss[k]);
           ss[k] = Number.isFinite(raw) && raw > 0 ? Math.floor(raw) : fallback;
         }
+      }
+    }
+    return data;
+  },
+  25: (data) => {
+    // v25 adds persistent achievement unlock latches for retroactive unlock behavior.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      if (!p.achievementUnlocks || typeof p.achievementUnlocks !== 'object') {
+        p.achievementUnlocks = {};
+      }
+    }
+    return data;
+  },
+  26: (data) => {
+    // v26 adds per-cycle event boss HP snapshots.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      if (!p.eventBossHpSnapshots || typeof p.eventBossHpSnapshots !== 'object') {
+        p.eventBossHpSnapshots = {};
+      }
+    }
+    return data;
+  },
+  27: (data) => {
+    // v27 adds per-raid Prove Yourself unlock latches.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      if (!p.nullRaidProveUnlocks || typeof p.nullRaidProveUnlocks !== 'object') {
+        p.nullRaidProveUnlocks = {};
       }
     }
     return data;

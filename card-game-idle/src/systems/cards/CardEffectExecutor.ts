@@ -1,7 +1,8 @@
 import type { BoardState, DeckState, PendingEffect, TurnState } from '@/types/game';
 import type { CardEffect } from '@/types/effects';
-import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition, SeraphimInstance } from '@/types/cards';
+import type { AngelDefinition, AngelInstance, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition, SeraphimInstance } from '@/types/cards';
 import { CardRegistry } from '../../cards/CardRegistry';
+import { getCardCategoryKey } from '@/data/elements';
 import { TurnSystem } from './TurnSystem';
 
 function countBoardDefinitionIds(board: BoardState): Record<string, number> {
@@ -37,8 +38,46 @@ interface ExecuteOptions {
   skipLedger?: boolean;
 }
 
+interface CherubimRecastPassiveBonus {
+  oblivionBonus: number;
+  pearlBonus: number;
+  seraphimRecastAmp: number;
+}
+
 function isActiveSeraphim(unit: BoardState['frontSlots'][number]): unit is SeraphimInstance {
   return unit?.type === 'Seraphim' && unit.isActive;
+}
+
+function isActivePatienceUnit(unit: BoardState['frontSlots'][number]): unit is SeraphimInstance | AngelInstance {
+  return !!unit && (unit.type === 'Angel' || (unit.type === 'Seraphim' && unit.isActive));
+}
+
+function collectCherubimRecastPassiveBonus(board: BoardState): CherubimRecastPassiveBonus {
+  let oblivionBonus = 0;
+  let pearlBonus = 0;
+  let seraphimRecastAmp = 0;
+
+  for (const slot of board.backSlots) {
+    if (!slot || slot.type !== 'Cherubim') continue;
+    const def = CardRegistry.get(slot.definitionId);
+    if (!def || def.type !== 'Cherubim') continue;
+
+    for (const effect of def.effects) {
+      switch (effect.type) {
+        case 'cherubim_recast_oblivion_bonus':
+          oblivionBonus += effect.value;
+          break;
+        case 'cherubim_pearl_per_recast_bonus':
+          pearlBonus += effect.value;
+          break;
+        case 'cherubim_seraphim_recast_amp':
+          seraphimRecastAmp += effect.value;
+          break;
+      }
+    }
+  }
+
+  return { oblivionBonus, pearlBonus, seraphimRecastAmp };
 }
 
 function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: TurnState, board: BoardState): number | null {
@@ -132,7 +171,7 @@ function computeNeutralityEternalOblivionBonus(definitionId: string, turn: TurnS
   }
 }
 
-function computePyroInfiniteOblivionBonus(definitionId: string, turn: TurnState, embersDrained = 0): number | null {
+function computePyroInfiniteOblivionBonus(definitionId: string, turn: TurnState, heatDrained = 0): number | null {
   const tiers = Math.max(0, turn.eternalStacks?.pyro ?? 0);
   const echoes = Math.max(0, turn.secondaryCounters?.pyro ?? 0);
   const balancedBonus = Math.abs(tiers - echoes) <= 2 ? 540 : 0;
@@ -145,27 +184,24 @@ function computePyroInfiniteOblivionBonus(definitionId: string, turn: TurnState,
     case 'inf-pyroclasm-engine':
       return 1050 + tiers * 440 + echoes * 340 + balancedBonus;
     case 'inf-riftborn-sovereign':
-      return 1300 + embersDrained * 20 + tiers * 700 + echoes * 240 + balancedBonus;
+      return 1300 + heatDrained * 20 + tiers * 700 + echoes * 240 + balancedBonus;
     default:
       return null;
   }
 }
 
 function computeLightInfiniteOblivionBonus(definitionId: string, turn: TurnState, board: BoardState): number | null {
-  const resonance = Math.max(0, turn.lightResonance ?? 0);
-  const noteCount = Math.min(4, new Set(turn.lightDistinctNotes ?? []).size);
-  const anchors = Math.min(3, turn.lightChorusAnchors ?? 0);
   const radiance = Math.max(0, turn.radiance ?? 0);
+  const halo = Math.max(0, turn.eternalStacks?.light ?? 0);
   const activeSeraphim = board.frontSlots.filter(unit => unit?.type === 'Seraphim' && unit.isActive).length;
-  const fullChoirBonus = noteCount >= 4 ? 900 : 0;
 
   switch (definitionId) {
     case 'inf-celestial-blackout':
-      return 1200 + resonance * 220 + noteCount * 480 + anchors * 260 + Math.min(900, radiance * 7) + fullChoirBonus;
+      return 1200 + radiance * 18 + halo * 200 + activeSeraphim * 220;
     case 'inf-lucent-cataclysm-archon':
-      return 1050 + resonance * 180 + noteCount * 430 + anchors * 180 + activeSeraphim * 140 + fullChoirBonus;
+      return 1050 + radiance * 14 + halo * 180 + activeSeraphim * 200;
     case 'inf-heliarch-eclipse-engine':
-      return 1100 + resonance * 170 + noteCount * 320 + anchors * 420 + activeSeraphim * 120 + Math.min(700, radiance * 5);
+      return 1100 + radiance * 15 + halo * 220 + activeSeraphim * 180;
     default:
       return null;
   }
@@ -174,21 +210,18 @@ function computeLightInfiniteOblivionBonus(definitionId: string, turn: TurnState
 function computeThornboundInfiniteOblivionBonus(definitionId: string, turn: TurnState): number | null {
   const scar = Math.min(40, Math.max(0, turn.thornScar ?? 0));
   const trail = Math.min(120, Math.max(0, turn.trail ?? 0));
-  const losses = Math.min(40, Math.max(0, turn.thornLossesThisTurn ?? 0));
-  const processions = Math.min(6, Math.max(0, turn.thornProcessions ?? 0));
-  const warPath = turn.thornWarPath;
-  const pathBonus = warPath === 'Aggression' ? 460 : warPath === 'Endurance' ? 520 : 180;
+  const briar = Math.min(20, Math.max(0, turn.secondaryCounters?.thorn ?? 0));
 
   switch (definitionId) {
     case 'inf-thornbound-last-procession':
-      return 1000 + scar * 130 + trail * 22 + losses * 80 + processions * 320 + pathBonus;
+      return 1200 + scar * 140 + trail * 24 + briar * 240;
     case 'inf-thorn-widow-engine':
-      return 900 + scar * 90 + trail * 18 + losses * 95 + processions * 280 + pathBonus;
+      return 1100 + scar * 110 + trail * 20 + briar * 260;
     case 'inf-gravebloom-singularity':
-      return 1050 + scar * 85 + trail * 20 + losses * 70 + processions * 420 + pathBonus;
+      return 1250 + scar * 100 + trail * 22 + briar * 300;
     case 'inf-thornbound-elegy-titan': {
-      const marchReadyBonus = trail >= 40 && scar >= 10 ? 700 : 0;
-      return 1300 + scar * 140 + trail * 24 + losses * 110 + processions * 500 + pathBonus + marchReadyBonus;
+      const marchReadyBonus = trail >= 40 && scar >= 10 ? 800 : 0;
+      return 1500 + scar * 160 + trail * 26 + briar * 360 + marchReadyBonus;
     }
     default:
       return null;
@@ -196,21 +229,18 @@ function computeThornboundInfiniteOblivionBonus(definitionId: string, turn: Turn
 }
 
 function computeMechanicalInfiniteOblivionBonus(definitionId: string, turn: TurnState): number | null {
-  const queueLength = Math.min(8, turn.mechanicalInstructionQueue?.length ?? 0);
-  const diversity = Math.min(6, new Set(turn.mechanicalInstructionDiversity ?? []).size);
-  const resolved = Math.min(16, turn.mechanicalResolvedInstructions ?? 0);
   const strain = Math.max(0, turn.strain ?? 0);
-  const kernelBonus = turn.mechanicalKernelLocked ? 420 : 0;
+  const reactorCores = Math.max(0, turn.eternalStacks?.mech ?? 0);
 
   switch (definitionId) {
     case 'inf-machina-eternal-loop':
-      return 1200 + queueLength * 140 + diversity * 320 + resolved * 110 + Math.min(900, strain * 55) + kernelBonus;
+      return 1200 + reactorCores * 220 + Math.min(900, strain * 55);
     case 'inf-brass-eidolon-prime':
-      return 980 + queueLength * 110 + diversity * 260 + resolved * 95 + Math.min(700, strain * 40) + kernelBonus;
+      return 980 + reactorCores * 190 + Math.min(700, strain * 40);
     case 'inf-mech-entropy-foundry':
-      return 1050 + queueLength * 130 + diversity * 300 + resolved * 105 + Math.min(750, strain * 45) + kernelBonus;
+      return 1050 + reactorCores * 210 + Math.min(750, strain * 45);
     case 'inf-mechanical-apotheosis-core':
-      return 1350 + queueLength * 150 + diversity * 360 + resolved * 130 + Math.min(1000, strain * 60) + kernelBonus;
+      return 1350 + reactorCores * 260 + Math.min(1000, strain * 60);
     default:
       return null;
   }
@@ -272,7 +302,8 @@ function runRecast(
   if (!def) return { turn, board, deck, oblivionBonus: 0 };
 
   const imprintAmp = entry.isNacreCoated ? 1.0 : 1.0 + 0.25 * entry.imprintStacks;
-  const finalPower = power * imprintAmp;
+  const recastPassives = collectCherubimRecastPassiveBonus(board);
+  const finalPower = power * imprintAmp * (def.type === 'Seraphim' ? 1 + recastPassives.seraphimRecastAmp : 1);
 
   // Snapshot pre-execute (chain removed).
 
@@ -292,7 +323,7 @@ function runRecast(
   );
 
   // Scale the oblivion burst portion by finalPower.
-  const scaledOblivion = result.oblivionBonus * finalPower;
+  const scaledOblivion = result.oblivionBonus * finalPower + recastPassives.oblivionBonus;
 
   // Record the recast event.
   entry.recastCount += 1;
@@ -303,7 +334,7 @@ function runRecast(
   let pearlDrop = 1;
   if (def.rarity === 'Eternal') pearlDrop = 2;
   else if (def.rarity === 'Infinite') pearlDrop = 3;
-  result.turn.pearls = (result.turn.pearls ?? 0) + pearlDrop;
+  result.turn.pearls = (result.turn.pearls ?? 0) + pearlDrop + recastPassives.pearlBonus;
 
   return {
     turn: result.turn,
@@ -385,13 +416,14 @@ export class CardEffectExecutor {
     const useNextCardMultiplier = options.useNextCardMultiplier ?? countAsPlay;
     const suppressForgeRecursion = options.suppressForgeRecursion ?? false;
     const skipLedger = options.skipLedger ?? false;
+    const sourceSetKey = getCardCategoryKey(def);
 
     let mutableDeck = { ...deck, hand: [...deck.hand] };
     let mutableTurn = { ...turn };
     let mutableBoard = cloneBoard(board);
     let oblivionBonus = 0;
     let pendingEffect: PendingEffect | null = null;
-    let embersDrained = 0;  // tracks embers before ember_spend:9999 for dynamic sentinels
+    let heatDrained = 0; // tracks Heat before pyro_heat_spend:9999 for dynamic sentinels
     let radianceDrained = 0; // tracks radiance before radiance_spend:9999 for dynamic sentinels
     let snowboundAlternatedThisPlay = false; // tracks if this card play caused a snowbound phase alternation
 
@@ -507,9 +539,7 @@ export class CardEffectExecutor {
           return effect.stack;
         case 'garden_wild_pollen_seed':
           return 'garden';
-        case 'light_anchor_gain':
-        case 'light_resonance_gain':
-          return 'light';
+
         case 'set_secondary_gain':
         case 'set_secondary_spend':
           return effect.kind;
@@ -854,7 +884,7 @@ export class CardEffectExecutor {
           if (neutralityInfiniteBonus !== null) {
             val = neutralityInfiniteBonus * multiplier;
           }
-          const pyroInfiniteBonus = computePyroInfiniteOblivionBonus(deckCard.definitionId, mutableTurn, embersDrained);
+          const pyroInfiniteBonus = computePyroInfiniteOblivionBonus(deckCard.definitionId, mutableTurn, heatDrained);
           if (pyroInfiniteBonus !== null) {
             val = pyroInfiniteBonus * multiplier;
           }
@@ -967,27 +997,6 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'black_glass_register_state': {
-          if (effect.key === 'grief_oaths') {
-            mutableTurn.blackGlassGriefOaths = Math.max(0, (mutableTurn.blackGlassGriefOaths ?? 0) + effect.value * multiplier);
-          } else if (effect.key === 'collapse_pending') {
-            mutableTurn.blackGlassCollapsePending = effect.value > 0;
-          } else if (effect.key === 'last_payoff') {
-            mutableTurn.blackGlassLastPayoff = effect.value * multiplier;
-          }
-          break;
-        }
-
-        case 'light_resonance_gain': {
-          const nextResonance = Math.min(6, (mutableTurn.lightResonance ?? 0) + effect.value * multiplier);
-          mutableTurn.lightResonance = nextResonance;
-          break;
-        }
-
-        case 'light_anchor_gain':
-          mutableTurn.lightChorusAnchors = Math.min(3, (mutableTurn.lightChorusAnchors ?? 0) + effect.value * multiplier);
-          break;
-
         case 'prismatic_light_gain': {
           const gain = effect.value * multiplier;
           mutableTurn.prismaticLight = (mutableTurn.prismaticLight ?? 0) + gain;
@@ -1026,35 +1035,6 @@ export class CardEffectExecutor {
           } else {
             if ((mutableTurn.prismaticNodeCharges ?? 0) < effect.value) return false;
             mutableTurn.prismaticNodeCharges = (mutableTurn.prismaticNodeCharges ?? 0) - effect.value;
-          }
-          break;
-        }
-
-        case 'channel_lock_gain': {
-          const topCards = TurnSystem.peekTop(mutableDeck, effect.look);
-          const prismaticCount = topCards.reduce((count, card) => {
-            const cardDef = CardRegistry.get(card.definitionId);
-            return cardDef?.element === 'Prismatic' ? count + 1 : count;
-          }, 0);
-          const gain = Math.min(effect.max, prismaticCount);
-          mutableTurn.prismaticChannelLocks = Math.min(effect.max, (mutableTurn.prismaticChannelLocks ?? 0) + gain);
-          break;
-        }
-
-        case 'memory_shard_gain': {
-          const max = effect.max ?? 3;
-          mutableTurn.prismaticMemoryShards = Math.min(max, (mutableTurn.prismaticMemoryShards ?? 0) + effect.value * multiplier);
-          break;
-        }
-
-        case 'refraction_depth_sync': {
-          const distinctChannels = new Set(mutableTurn.prismaticDistinctChannels ?? []).size;
-          if (effect.mode === 'set') {
-            mutableTurn.prismaticRefractionDepth = Math.max(0, effect.value ?? 0);
-          } else if (effect.mode === 'set_to_distinct') {
-            mutableTurn.prismaticRefractionDepth = distinctChannels;
-          } else {
-            mutableTurn.prismaticRefractionDepth = (mutableTurn.prismaticRefractionDepth ?? 0) + distinctChannels;
           }
           break;
         }
@@ -1435,7 +1415,11 @@ export class CardEffectExecutor {
           let nonVesselGain = 0;
 
           for (const unit of mutableBoard.frontSlots) {
-            if (!unit || unit.type !== 'Seraphim' || !unit.isActive) continue;
+            if (!isActivePatienceUnit(unit)) continue;
+            if (sourceSetKey) {
+              const unitDef = CardRegistry.get(unit.definitionId);
+              if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) continue;
+            }
             unit.patienceStacks = (unit.patienceStacks ?? 0) + perUnitGain;
             totalGain += perUnitGain;
             if (vesselId && unit.instanceId !== vesselId) {
@@ -1445,7 +1429,12 @@ export class CardEffectExecutor {
 
           if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
             const vessel = mutableBoard.frontSlots.find(
-              unit => unit?.type === 'Seraphim' && unit.isActive && unit.instanceId === vesselId,
+              (unit): unit is SeraphimInstance | AngelInstance => {
+                if (!isActivePatienceUnit(unit) || unit.instanceId !== vesselId) return false;
+                if (!sourceSetKey) return true;
+                const unitDef = CardRegistry.get(unit.definitionId);
+                return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+              },
             );
             if (vessel) {
               const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
@@ -1469,12 +1458,14 @@ export class CardEffectExecutor {
         case 'patience_double_all': {
           let consumedForDoubling = 0;
           for (const unit of mutableBoard.frontSlots) {
-            if (!unit) continue;
-            if (unit.type === 'Seraphim' && unit.isActive) {
-              const before = unit.patienceStacks ?? 0;
-              unit.patienceStacks = before * 2;
-              consumedForDoubling += before;
+            if (!isActivePatienceUnit(unit)) continue;
+            if (sourceSetKey) {
+              const unitDef = CardRegistry.get(unit.definitionId);
+              if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) continue;
             }
+            const before = unit.patienceStacks ?? 0;
+            unit.patienceStacks = before * 2;
+            consumedForDoubling += before;
           }
           if (def?.element === 'Neutrality' && consumedForDoubling > 0) {
             mutableTurn.neutralityPatienceConsumedThisTurn = (mutableTurn.neutralityPatienceConsumedThisTurn ?? 0) + consumedForDoubling;
@@ -1508,9 +1499,12 @@ export class CardEffectExecutor {
           if (spent <= 0) break;
 
           for (const unit of mutableBoard.frontSlots) {
-            if (unit?.type === 'Seraphim' && unit.isActive) {
-              unit.patienceStacks = (unit.patienceStacks ?? 0) * 2;
+            if (!isActivePatienceUnit(unit)) continue;
+            if (sourceSetKey) {
+              const unitDef = CardRegistry.get(unit.definitionId);
+              if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) continue;
             }
+            unit.patienceStacks = (unit.patienceStacks ?? 0) * 2;
           }
           oblivionBonus += spent * Math.max(0, effect.oblivionPerSigil);
 
@@ -1553,7 +1547,12 @@ export class CardEffectExecutor {
 
         case 'neutrality_designate_vessel': {
           const candidates = mutableBoard.frontSlots
-            .filter(isActiveSeraphim)
+            .filter((unit): unit is SeraphimInstance => {
+              if (!isActiveSeraphim(unit)) return false;
+              if (!sourceSetKey) return true;
+              const unitDef = CardRegistry.get(unit.definitionId);
+              return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+            })
             .sort((a, b) => (b.patienceStacks ?? 0) - (a.patienceStacks ?? 0));
           if (candidates.length > 0) {
             mutableTurn.neutralityVesselInstanceId = candidates[0].instanceId;
@@ -1577,11 +1576,21 @@ export class CardEffectExecutor {
           const vesselId = mutableTurn.neutralityVesselInstanceId;
           if (!vesselId) break;
           const vessel = mutableBoard.frontSlots.find(
-            unit => unit?.type === 'Seraphim' && unit.isActive && unit.instanceId === vesselId,
+            unit => {
+              if (!isActiveSeraphim(unit) || unit.instanceId !== vesselId) return false;
+              if (!sourceSetKey) return true;
+              const unitDef = CardRegistry.get(unit.definitionId);
+              return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+            },
           );
           if (!vessel) break;
           const others = mutableBoard.frontSlots.filter(
-            (unit): unit is SeraphimInstance => isActiveSeraphim(unit) && unit.instanceId !== vesselId,
+            (unit): unit is SeraphimInstance => {
+              if (!isActiveSeraphim(unit) || unit.instanceId === vesselId) return false;
+              if (!sourceSetKey) return true;
+              const unitDef = CardRegistry.get(unit.definitionId);
+              return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+            },
           );
           if (others.length === 0) break;
           const available = Math.max(0, vessel.patienceStacks ?? 0);
@@ -1694,16 +1703,6 @@ export class CardEffectExecutor {
           break;
 
         // �E�E�E��E�E�E��E�E�E��E�E�E� Ember effects (Pyroabyss) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
-        case 'ember_gain': {
-          // embers resource scrapped — no-op
-          break;
-        }
-
-        case 'ember_spend': {
-          // embers resource scrapped — always succeeds, no drain
-          break;
-        }
-
         // Base Pyroabyss core loop: Heat build, threshold, and burst.
         case 'pyro_heat_gain': {
           const current = Math.max(0, mutableTurn.pyroHeat ?? 0);
@@ -1714,6 +1713,7 @@ export class CardEffectExecutor {
         case 'pyro_heat_spend': {
           const current = Math.max(0, mutableTurn.pyroHeat ?? 0);
           if (effect.value >= 9999) {
+            heatDrained = current;
             mutableTurn.pyroHeat = 0;
           } else {
             if (current < effect.value) return false;
@@ -1840,16 +1840,6 @@ export class CardEffectExecutor {
           }
           break;
         }
-        // Heavenly Light — Halo Resonance: bonus oblivion per stored resonance
-        case 'light_halo_cascade_resound': {
-          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
-          const available = Math.max(0, counters.light ?? 0);
-          const consume = Math.min(available, effect.consume ?? available);
-          if (consume <= 0) break;
-          counters.light = available - consume;
-          oblivionBonus += consume * (effect.oblivionPerCascade ?? 0) * multiplier;
-          break;
-        }
         // Thornbound — Briar Spiral: spirals → +Trail; bonus oblivion per Trail
         case 'thorn_briar_spiral_bloom': {
           const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
@@ -1859,17 +1849,6 @@ export class CardEffectExecutor {
           counters.thorn = available - consume;
           mutableTurn.trail = (mutableTurn.trail ?? 0) + consume * effect.trailPerSpiral;
           oblivionBonus += (mutableTurn.trail ?? 0) * (effect.oblivionPerTrail ?? 0) * multiplier;
-          break;
-        }
-        // Prismatic — Spectrum Echo: oblivion = consumed × distinctChannelsThisTurn
-        case 'prism_spectrum_echo_refract': {
-          const counters = (mutableTurn.secondaryCounters ?? (mutableTurn.secondaryCounters = {})) as Record<string, number>;
-          const available = Math.max(0, counters.prism ?? 0);
-          const consume = Math.min(available, effect.consume ?? available);
-          if (consume <= 0) break;
-          counters.prism = available - consume;
-          const distinct = new Set(mutableTurn.prismaticDistinctChannels ?? []).size;
-          oblivionBonus += consume * distinct * effect.oblivionPerEchoPerChannel * multiplier;
           break;
         }
         // Snowbound Voltage — Polar Capacitor: phase-conditional split
@@ -2499,19 +2478,12 @@ export class CardEffectExecutor {
         return (turn.blackGlassBlackFlame ?? 0) >= condition.value;
       case 'black_glass_fracture_gte':
         return (turn.blackGlassFracture ?? 0) >= condition.value;
-      case 'black_glass_flame_delta_gte':
-        return Math.abs((turn.blackGlassWhiteFlame ?? 0) - (turn.blackGlassBlackFlame ?? 0)) >= condition.value;
-      case 'black_glass_flame_delta_lte':
-        return Math.abs((turn.blackGlassWhiteFlame ?? 0) - (turn.blackGlassBlackFlame ?? 0)) <= condition.value;
       case 'black_glass_flames_equal':
         return (turn.blackGlassWhiteFlame ?? 0) === (turn.blackGlassBlackFlame ?? 0);
       case 'light_resonance_gte':
         return (turn.lightResonance ?? 0) >= condition.value;
       case 'light_distinct_notes_gte':
         return new Set(turn.lightDistinctNotes ?? []).size >= condition.value;
-      case 'light_chorus_anchors_gte':
-        return (turn.lightChorusAnchors ?? 0) >= condition.value;
-      case 'ember_gte':         return turn.embers >= condition.value;
       case 'pyro_heat_gte':     return (turn.pyroHeat ?? 0) >= condition.value;
       case 'trail_gte':         return turn.trail >= condition.value;
       case 'scar_count_gte':    return (turn.thornScar ?? 0) >= condition.value;
@@ -2526,8 +2498,6 @@ export class CardEffectExecutor {
         return (turn.prismaticRefractionDepth ?? 0) >= condition.value;
       case 'prismatic_node_charges_gte':
         return (turn.prismaticNodeCharges ?? 0) >= condition.value;
-      case 'prismatic_memory_shards_gte':
-        return (turn.prismaticMemoryShards ?? 0) >= condition.value;
       case 'prismatic_distinct_channels_gte':
         return new Set(turn.prismaticDistinctChannels ?? []).size >= condition.value;
       case 'shards_gte':        return (turn.monochromaticShards ?? 0) >= condition.value;
@@ -2660,7 +2630,7 @@ export class CardEffectExecutor {
       if (effect.type === 'discard_choice' && handSize - 1 < effect.value) return false;
       if (effect.type === 'discard_draw' && handSize - 1 < effect.discard) return false;
       if (effect.type === 'radiance_spend' && effect.value < 9999 && turn.radiance < effect.value) return false;
-      if (effect.type === 'ember_spend' && effect.value < 9999 && turn.embers < effect.value) return false;
+      if (effect.type === 'pyro_heat_spend' && effect.value < 9999 && (turn.pyroHeat ?? 0) < effect.value) return false;
       if (effect.type === 'trail_spend' && effect.value < 9999 && turn.trail < effect.value) return false;
     }
     return true;

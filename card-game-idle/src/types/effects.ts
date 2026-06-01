@@ -20,14 +20,9 @@ export type ImmediateEffect =
   | { type: 'black_glass_flames_swap' }
   | { type: 'black_glass_fracture_collapse'; value: number }
   | { type: 'black_glass_eclipse_burst'; oblivionPerEclipse: number; balanceBonusPerEclipse?: number; fractureBonusPerEclipse?: number; consume?: number }
-  | { type: 'black_glass_register_state'; key: 'grief_oaths' | 'collapse_pending' | 'last_payoff'; value: number }
-  | { type: 'light_resonance_gain'; value: number }
-  | { type: 'light_anchor_gain'; value: number }
   | { type: 'score_flat'; value: number }
   | { type: 'radiance_gain'; value: number }
   | { type: 'radiance_spend'; value: number }
-  | { type: 'ember_gain'; value: number }
-  | { type: 'ember_spend'; value: number }
   | { type: 'pyro_heat_gain'; value: number }
   | { type: 'pyro_heat_spend'; value: number }
   | { type: 'pyro_heat_burst'; oblivionPerHeat: number; consume?: number }
@@ -50,9 +45,6 @@ export type ImmediateEffect =
   | { type: 'resonance_charge_gain'; value: number }
   | { type: 'resonance_charge_spend'; value: number }
   | { type: 'prismatic_charge_spend'; value: number }
-  | { type: 'channel_lock_gain'; look: number; max: number }
-  | { type: 'memory_shard_gain'; value: number; max?: number }
-  | { type: 'refraction_depth_sync'; mode: 'set' | 'set_to_distinct' | 'add_distinct'; value?: number }
   | { type: 'monochromatic_shards_gain'; value: number }
   | { type: 'monochromatic_shards_spend'; value: number }
   | { type: 'arctic_charge_gain'; value: number }
@@ -99,22 +91,6 @@ export type ImmediateEffect =
   | { type: 'strain_gain'; value: number }
   | { type: 'strain_vent'; value: number }
   | { type: 'overclock'; strain: number; then: CardEffect[] }
-  // Thornbound Plains overhaul effect types
-  | { type: 'trail_linked_gain'; value: number } // Gain Trail for each linked card or event
-  | { type: 'scar_echo'; value: number; max?: number } // Echoes a previous effect or value, e.g., for recursion
-  | { type: 'funeral_procession'; value: number; perCard?: boolean } // Special procession effect, e.g., for card chain or synergy
-  | { type: 'trail_burst'; value: number } // Burst Trail gain, e.g., for one-time effects
-  | { type: 'scar_trigger'; effect: CardEffect } // Triggers a scar effect (delayed or conditional)
-  | { type: 'trail_surge'; value: number } // Surge Trail gain, e.g., for combo turns
-  | { type: 'trail_decay'; value: number } // Lose Trail (decay mechanic)
-  | { type: 'trail_conversion'; to: 'oblivion' | 'draw'; ratio: number } // Convert Trail to another resource
-  | { type: 'scar_multiplier'; value: number } // Multiplies effect based on scars
-  | { type: 'scar_salvage'; value: number } // Salvage based on scars
-  | { type: 'scar_draw'; value: number } // Draw based on scars
-  | { type: 'scar_gain'; value: number } // Gain a scar token or effect
-  | { type: 'scar_consume'; value: number } // Consume scar tokens for effect
-  | { type: 'scar_amplify'; value: number } // Amplify effect based on scars
-  | { type: 'scar_reset' } // Reset scars
   | { type: 'patience_gain_all'; value: number }
   | { type: 'patience_double_all' }
   | { type: 'neutrality_equilibrium_sigil_gain'; value: number }
@@ -174,9 +150,7 @@ export type ImmediateEffect =
       gainInfernoPerPair?: number;
       gainChromaPerPair?: number;
     }
-  | { type: 'light_halo_cascade_resound'; oblivionPerCascade: number; consume?: number }
   | { type: 'thorn_briar_spiral_bloom'; trailPerSpiral: number; oblivionPerTrail: number; consume?: number }
-  | { type: 'prism_spectrum_echo_refract'; oblivionPerEchoPerChannel: number; consume?: number }
   | { type: 'snow_polar_capacitor_release'; voltageOblivionPerCapacitor: number; frostArcticChargePerCapacitor: number; consume?: number }
   | { type: 'absol_cascade_proof_amplify'; oblivionPerProofDepth: number; consume?: number }
   | { type: 'garden_wild_pollen_seed'; oblivionPerPollen: number; scoreMultPerBloom: number; consume?: number }
@@ -235,7 +209,7 @@ export type ImmediateEffect =
   // big oblivion+chain finale (the Eternal/Infinite tier signature).
   | { type: 'dfh_crown_cashout'; oblivionPerCrown: number; consume?: number }
   // ── Wished Upon A Star — Stellar Wish System (base-card mechanics) ─────────
-  // starlightCharges and dreamLattice live directly on TurnState (same as Iron Dominion).
+  // starlightCharges and dreamLattice live directly on TurnState.
   | { type: 'starlight_gain'; amount: number }
   | { type: 'starlight_spend'; amount: number }
   | { type: 'dream_lattice_gain'; amount: number }
@@ -274,18 +248,14 @@ export type EffectCondition =
   | { type: 'black_glass_white_flame_gte'; value: number }
   | { type: 'black_glass_black_flame_gte'; value: number }
   | { type: 'black_glass_fracture_gte'; value: number }
-  | { type: 'black_glass_flame_delta_gte'; value: number }
-  | { type: 'black_glass_flame_delta_lte'; value: number }
   | { type: 'black_glass_flames_equal' }
   | { type: 'light_resonance_gte'; value: number }
   | { type: 'light_distinct_notes_gte'; value: number }
-  | { type: 'light_chorus_anchors_gte'; value: number }
   | { type: 'cards_played_gte'; value: number }
   | { type: 'seraphim_active_gte'; value: number }
   | { type: 'cherubim_active_gte'; value: number }
   | { type: 'first_card_this_turn' }
   | { type: 'played_after_non_matching_element' }
-  | { type: 'ember_gte'; value: number }
   | { type: 'pyro_heat_gte'; value: number }
   | { type: 'trail_gte'; value: number }
   | { type: 'strain_gte'; value: number }
@@ -294,7 +264,6 @@ export type EffectCondition =
   | { type: 'resonance_charge_gte'; value: number }
   | { type: 'prismatic_refraction_depth_gte'; value: number }
   | { type: 'prismatic_node_charges_gte'; value: number }
-  | { type: 'prismatic_memory_shards_gte'; value: number }
   | { type: 'prismatic_distinct_channels_gte'; value: number }
   | { type: 'shards_gte'; value: number }
   | { type: 'arctic_charge_gte'; value: number }
@@ -309,23 +278,7 @@ export type EffectCondition =
   | { type: 'butterfly_spectrum_gte'; value: number }
   | { type: 'burn_phase_cards_gte'; value: number }
   | { type: 'grove_cards_gte'; value: number }
-  // Thornbound Plains overhaul effect conditions
-  | { type: 'trail_linked_gte'; value: number }
   | { type: 'scar_count_gte'; value: number }
-  | { type: 'funeral_procession_active' }
-  | { type: 'trail_burst_active' }
-  | { type: 'scar_triggered' }
-  | { type: 'trail_surge_active' }
-  | { type: 'trail_decay_active' }
-  | { type: 'trail_conversion_active' }
-  | { type: 'scar_chain_active' }
-  | { type: 'scar_multiplier_active' }
-  | { type: 'scar_salvage_active' }
-  | { type: 'scar_draw_active' }
-  | { type: 'scar_gain_active' }
-  | { type: 'scar_consume_active' }
-  | { type: 'scar_amplify_active' }
-  | { type: 'scar_reset_active' }
   | { type: 'equilibrium_sigils_gte'; value: number }
   | { type: 'eternal_stack_gte'; stack: EternalStackKind; value: number }
   | { type: 'set_secondary_gte'; kind: SetSecondaryKind; value: number }
@@ -347,7 +300,7 @@ export type CherubimPassiveEffect =
   | { type: 'cherubim_oblivion_per_card'; value: number }
   | { type: 'cherubim_ophanim_bonus'; value: number }
   | { type: 'cherubim_seraphim_amp'; value: number }
-  | { type: 'cherubim_ember_gain'; value: number }
+  | { type: 'cherubim_pyro_heat_gain'; value: number }
   | { type: 'cherubim_draw_per_card'; value: number }
   | { type: 'cherubim_resource_per_card'; resource: 'butterflySpectrum' | 'radiance' | 'trail' | 'strain'; value: number }
   | { type: 'cherubim_adjacent_seraphim_bonus'; value: number; bonusType: 'oblivion' | 'draw' }
@@ -363,22 +316,6 @@ export type CherubimPassiveEffect =
       cooldownDeltaCards?: number;
       multiplier?: number;
     }
-  // Thornbound Plains overhaul effect types
-  | { type: 'cherubim_funeral_procession'; value: number; perCard?: boolean }
-  | { type: 'cherubim_scar_echo'; value: number; max?: number }
-  | { type: 'cherubim_trail_linked_gain'; value: number }
-  | { type: 'cherubim_trail_burst'; value: number }
-  | { type: 'cherubim_scar_trigger'; effect: CardEffect }
-  | { type: 'cherubim_trail_surge'; value: number }
-  | { type: 'cherubim_trail_decay'; value: number }
-  | { type: 'cherubim_trail_conversion'; to: 'oblivion' | 'draw'; ratio: number }
-  | { type: 'cherubim_scar_multiplier'; value: number }
-  | { type: 'cherubim_scar_salvage'; value: number }
-  | { type: 'cherubim_scar_draw'; value: number }
-  | { type: 'cherubim_scar_gain'; value: number }
-  | { type: 'cherubim_scar_consume'; value: number }
-  | { type: 'cherubim_scar_amplify'; value: number }
-  | { type: 'cherubim_scar_reset' }
   // Abyssal Forge — recast-aware passives
   | { type: 'cherubim_recast_oblivion_bonus'; value: number }
   | { type: 'cherubim_charge_per_n_cards'; n: number }

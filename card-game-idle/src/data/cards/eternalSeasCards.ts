@@ -535,7 +535,7 @@ const baseAngels: AngelDefinition[] = [
     description: 'On summon: Gain 7 Undertow; Empower the next card you play. After 4 cards played: Release up to 5 Undertow (+145 Oblivion per Undertow; +1 Foam per Undertow spent). While on board: +34 Oblivion for each Seraphim on board while on board',
     rarity: 'Legendary',
     artKey: 'es_angel_aeveleth_remembered',
-    summonCost: ['es-ser-ossiveth-naur-ridgebody', 'es-ser-veleth-itself-echo'],
+    summonCost: ['es-ser-ossiveth-naur-ridgebody', 'es-ser-null-leviathan-sign'],
     onSummonEffects: [{ type: 'seas_undertow_gain', value: 7 }, { type: 'multiply_next' }],
     activatedAbility: {
       name: 'Primordial Revision',
@@ -693,7 +693,7 @@ const infinityCards: CardDefinition[] = [
     description: 'On summon: Gain 8 Undertow; Gain 4 Deepwake; Gain 3 Foam; Empower the next card you play. After 4 cards played: Surge up to 9999 Deepwake (+3 Undertow per Deepwake, then release all Undertow at +180 Oblivion per Undertow with +44 per Deepwake; +2 Foam per Deepwake). While on board: +26 power for each Seraphim on board while on board',
     rarity: 'Infinite',
     artKey: 'es_inf_seven_crowned_confluence',
-    summonCost: ['es-ser-ossiveth-naur-ridgebody', 'es-ser-veleth-itself-echo'],
+    summonCost: ['es-et-crown-of-seven-margins', 'es-ser-veleth-itself-echo'],
     onSummonEffects: [{ type: 'seas_undertow_gain', value: 8 }, { type: 'set_secondary_gain', kind: 'deepwake', value: 4 }, { type: 'seas_foam_gain', value: 3 }, { type: 'multiply_next' }],
     // Apex Infinite Angel: catastrophic all-in deepwake conversion.
     activatedAbility: {
