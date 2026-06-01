@@ -139,6 +139,8 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - Beginner-friendly. Universal Synergy Angel activates all Seraphim regardless of element. Salvage loop enabled by Ophanim like Seraph Recall.
 - **Patience thresholds by rarity**: Common/Rare 3–4, Epic 5, Eternal 6, Infinite 8+.
 - **Patience per card by Cherubim rarity**: Common +1, Rare +2, Epic +3, Eternal +4–5, Infinite +6–8.
+- **Live Neutrality-specific effect types** (Eternal/Infinite layer): `neutrality_equilibrium_sigil_gain`, `neutrality_equilibrium_starbound_cashout` (ascension Transcendent cards only — in `src/data/ascension/transcendentCards.ts`), `neutrality_equilibrium_tactical_spend`, `neutrality_patient_light_gain`, `neutrality_designate_vessel`, `neutrality_attack_preserve`.
+- **Dead/removed effect types (do NOT re-add)**: `neutrality_equilibrium_sigil_cap_bonus`, `neutrality_vessel_copy_gain`, `neutrality_vessel_redistribute`, `neutrality_mark_hand`, `neutrality_attack_restore`, `neutrality_linked_mode`.
 
 ### Heavenly Light — "Radiance"
 - **Cadence** tracks the current note sequence and rewards variety.
@@ -154,6 +156,7 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - **Ignite** converts Chroma Embers into burst Oblivion; it is the main Fire cashout action rather than a reset of the Inferno engine.
 - **Higher-rarity Fire attacks** also consume Chroma Embers for bonus scaling: Eternal Fire attacks gain `+4%` per Chroma Ember (max `+16%`), Infinite Fire attacks gain `+5%` per Chroma Ember (max `+25%`).
 - Pyroabyss should read as a two-layer engine: build Inferno first, seed Chroma second, then choose between ignite payoffs and Chroma-fueled higher-rarity attacks.
+- **Audit result (2026):** All Pyroabyss effects and TurnState fields are live. `pyroHeat`, `pyro_heat_gain/spend/burst`, `pyro_heat_gte`, `pyro_cinder_echo_ignite`, `pyro_transcendent_confluence` — all used by card data. Nothing to purge.
 
 ### Thornbound Plains — "Trail / Scar"
 - **Trail** is the base resource. Accumulated via card plays, spent on high-power effects and attack costs.
@@ -162,8 +165,12 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - Extra Cherubim plays per turn (`cherubim_extra_plays` bonusType) is a Thornbound Seraphim trait.
 
 ### Snowbound Voltage — "Frost / Voltage / Arctic Charge"
-- **Arctic Charge** is the core Snowbound resource.
-- Frost cards build Arctic Charge; Voltage cards cash it out into Oblivion output.
+- **Arctic Charge** is the core Snowbound resource. Tracked on `turn.arcticCharge`.
+- Frost cards build Arctic Charge via `arctic_charge_gain`; Voltage cards cash it out via `arctic_charge_discharge` (Charge × 8 Oblivion flat).
+- `applySnowboundPlayState` resolves the Frost/Voltage phase from card element and bumps `arcticCharge` by 2 (or 3 if phase shifted this play), then sets `turn.snowboundPhase`.
+- **Polar Capacitor** (`snow_polar_capacitor_release`) is the shared Eternal/Infinite ancillary: spends `secondaryCounters.snow` (Static Pulse, built via `set_secondary_gain kind:'snow'`) for per-capacitor Oblivion (Voltage phase) or per-capacitor Arctic Charge (Frost phase), with an optional `consume` limit.
+- Full fire gate (Infinite): `snowboundPhase === 'Voltage'` (setup-ready) AND `arcticCharge >= 12` (engines-ready) → 1.35× bonus / 0.70× penalty.
+- **Deprecated/removed (2025 audit):** `snowboundPotential`, `snowboundConduits`, `snowboundAlternations`, `snowboundPreviousPhase`, `snowboundAlternatedThisTurn`, `snowboundOnBoardEffects` TurnState fields. Effect types `snowbound_set_phase`, `snowbound_flip_phase`, `snowbound_reset_phase`, `snowbound_potential_gain/spend/floor`, `snowbound_alternations_gain`, `snowbound_conduits_gain/spend`, `snowbound_charge_from_potential`, `snowbound_potential_from_charge`, `snowbound_cashout_conduits`, `snowbound_alternate_phase`, `snowbound_potential_to_conduits`, `snowbound_conduits_to_arctic_charge`, `snowbound_conduits_double`, `arctic_charge_double`, `while_on_board`. Condition types `snowbound_phase_is`, `arctic_charge_gte`, `snowbound_potential_gte`, `snowbound_alternations_gte`, `snowbound_conduits_gte`, `snowbound_alternated_this_turn`, `snowbound_same_phase_as_last_turn`. The entire Potential/Conduits/Alternations subsystem was a replaced mechanic layer; no card data ever used any of these. `snowboundAlternatedThisPlay` local var and the `snowbound_alternated_this_turn` special-case block in the conditional handler were also removed. Save migration now deletes these 6 stale TurnState fields.
 
 ### Mechanical Dreams — "Strain / Reactor Core"
 - **Strain** is the core resource. Most Mechanical cards `strain_gain`/`strain_vent`; `spend_strain` is a real attack cost; `overclock` consumes Strain to unlock an inline effect block. Strain in the 6–12 band amplifies all Mechanical oblivion.
@@ -186,21 +193,26 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - **Deprecated/removed (Nov 2025 audit):** `blackGlassGriefOaths`, `blackGlassCollapsePending` TurnState fields; `black_glass_register_state` effect (all 3 keys); `black_glass_flame_delta_gte` / `black_glass_flame_delta_lte` conditions. Two cards (`btei-bgi-elegy-of-veth-serath`, `inf-bgi-midplace-apocalypse`) had `register_state` lines stripped from their effect arrays + descriptions.
 
 ### Glass Absolute — "Fragments & Formation"
-- Base loop is fragments-first: fill the board with Glass cards and cash tiered formation bonuses (3/5/7 fragments).
-- Eternal and Infinite cards share one ancillary overlay: Refraction Charge. Eternal lines build/spend charge for conversion windows, and Infinite lines use stronger charge thresholds with queue/floor/ledger riders.
+- **Core mechanic**: Board Formation — fill the board with Glass Absolute cards; `computeGlassProofMetrics` counts fragments and depth from board `prismaticDepth`/`spectrumTokens` values; `applyGlassAbsolutePlayState` pays tiered formation bonuses (3/5/7 fragments threshold).
+- **Ancillary 1 (Eternal + Infinite)**: Refraction Charge — `set_secondary kind:'absol'` (`secondaryCounters.absol`). Eternal cards build/spend charge for conversion windows; charge deepens proof depth so Eternal amplifies fragment-linked payouts.
+- **Ancillary 2 (Infinite tier)**: Wave/Snapshot/Ledger overlay — `glassWaveQueue`, `glassSnapshotFragments/Depth/Cascade/Axioms`, `glassWhiteLedger/Active`, `glassDepthFloor/Increased`, `glassSyntheticFragments`. Infinite cards accumulate wave queue and snapshot state for big cashout turns.
+- **Deprecated/removed (2025 audit):** `glassProofCascade` (adjacency links), `glassAxioms` array + `GlassAxiom` type, `glassArchiveSeals`, `glassAngleCharges`, `glassOriginPulseUsed`, `glassAxiomFocus`, `glassSyntheticCascade` TurnState fields. Effects `proof_gain`, `proof_spend`, `proof_gte` and `turn.proof` field removed (no cards ever used them). `renderGlassAbsoluteBadge` HUD badge removed (always returned null). `getGlassNeighbors` helper removed; `computeGlassProofMetrics` simplified to return `{ fragments, depth }` only. Wave attack handler for `ga-inf-chorus-unbroken-spectrum` simplified to `queue * (140 + depth * 12)`. `ga-et-lattice-archive-seraph` lost its `newProofs`-gated charge escalation and dead archive-seal attack block.
 
 ### Blazing Garden — "Burn / Ember Grove / Echo / Wild Pollen"
 - **Ember Grove** is persistent board state (survives across turns, unlike per-turn resources).
 - Base loop: maintain **Burn uptime**, branch Rose/Sunflower/Thistle lineages, then convert Grove seeds into Echo turns.
 - One-per-turn **echo** remains, with additional free-echo gain from specific card effects.
 - End-turn: char converts to Ember Grove. Seraphim have dedicated BlazeGarden instance initialization.
-- **Wild Pollen** is the higher-rarity ancillary mechanic: Eternal cards generate it, and Eternal/Infinite seed effects spend it for amplified Oblivion and score payout.
+- **Wild Pollen** is the higher-rarity ancillary mechanic (`set_secondary kind:'garden'`, `secondaryCounters.garden`): Eternal cards generate it, and Eternal/Infinite seed effects (`garden_wild_pollen_seed`) spend it for amplified Oblivion and score payout.
+- Infinite Blazing Garden full fire gate: `cardsPlayedThisTurn >= 4` or `burningGardenTransitGateCredit > 0` (setup-ready) and `countBurningGardenEngines >= 2 && emberGrove.length >= 1` (engines-ready) → 1.35× bonus / 0.70× penalty. A special Zenith credit path returns 1.35× unconditionally for one play when `burningGardenZenithNextInfinite` is set.
+- **Deprecated/removed (2025 audit):** `BlazingGardenEffect` types `effect_plus`, `sigil_threshold_echo_return`, `sigil_draw_on_gain`, `burn_cooldown_reduction_per_crown`, `char_to_memory_echo`, `memory_echo_buff`, `memory_echo_cost_reduction` — all had type definitions in `effects.ts`, executor case handlers, and `cardStatSummary.ts` formatter entries, but zero card data files ever used them. Removed from all three locations. No TurnState fields removed (all live).
 
 ### Eternal Seas — "Undertow / Foam / Deepwake"
 - **Undertow** is the base same-turn setup pool. Base cards build Undertow and cash it through `seas_undertow_release` for direct Oblivion.
 - **Foam** is the support layer. Base release lines often skim Foam, and the HUD action spends 5 Foam to draw 1 card.
-- **Deepwake** is the shared higher-rarity overlay (Eternal and Infinite). Deepwake surge effects (`seas_deepwake_surge`) amplify Undertow conversion and optional Foam return.
-- Legacy **Current/Polarity/Tide Echo** fields may still exist for compatibility, but they are no longer the primary Eternal Seas base loop.
+- **Deepwake** (`set_secondary kind:'deepwake'`, `secondaryCounters.deepwake`) is the shared higher-rarity overlay (Eternal and Infinite). Deepwake surge effects (`seas_deepwake_surge`) amplify Undertow conversion and optional Foam return.
+- Infinite Eternal Seas full fire gate: `undertow >= 10` (setup-ready) and `deepwake >= 3` (engines-ready) → 1.35× bonus / 0.70× penalty.
+- **Deprecated/removed (2025 audit):** `eternalSeasCurrent`, `eternalSeasPolarity`, `eternalSeasWhiteFlow`, `eternalSeasBlackFlow`, `eternalSeasMarginCharge` TurnState fields. The Polarity/Current HUD badge branch in `renderSeasBadge` removed. Full fire gate rebased from `current >= 9 && marginCharge >= 3` to `undertow >= 10 && deepwake >= 3`.
 
 ---
 

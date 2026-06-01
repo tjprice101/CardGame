@@ -6,8 +6,8 @@ import { useEternityBossCoopStore } from '@/state/eternityBossCoopStore';
 import { useStore } from '@/state/store';
 import { usePartyStore } from '@/state/partyStore';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
-import { uiTypography, DEFAULT_WARM_PALETTE, type UiPalette } from '@/ui/theme';
-import { DEFAULT_UI_THEME_ID, UI_THEME_BY_ID, resolveThemeId } from '@/data/profile/uiThemes';
+import { uiTypography, type UiPalette } from '@/ui/theme';
+import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
 
 const MODE_THEME = {
   general: {
@@ -58,8 +58,15 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   const loadFriends = useFriendsStore(s => s.load);
   const [busy, setBusy] = useState(false);
   const [sendingBattleTo, setSendingBattleTo] = useState<string | null>(null);
+  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
 
   useEffect(() => { if (!friendsLoaded) void loadFriends(); }, [friendsLoaded, loadFriends]);
+  useEffect(() => {
+    const themeId = profile.uiThemeId || DEFAULT_UI_THEME_ID;
+    if (!isThemeOscillating(themeId)) return;
+    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
+    return () => clearInterval(id);
+  }, [profile.uiThemeId]);
   const inviteables = useMemo(() => friends.filter(f => !members.some(m => m.userId === f.other.id)), [friends, members]);
   const mode = activityDraft?.type ?? 'general';
   const modeTheme = MODE_THEME[mode];
@@ -67,10 +74,13 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   const localMemberId = me ?? (members.length === 1 ? members[0]?.userId ?? null : null);
   const eternityDraft = activityDraft?.type === 'eternity_boss' ? activityDraft : null;
   const uiTheme = useMemo<UiPalette>(() => {
-    const resolvedId = resolveThemeId(profile.uiThemeId || DEFAULT_UI_THEME_ID, progress);
-    const base = UI_THEME_BY_ID[resolvedId]?.palette ?? DEFAULT_WARM_PALETTE;
-    return profile.customUiTheme ? { ...base, ...profile.customUiTheme } : { ...base };
-  }, [profile.uiThemeId, profile.customUiTheme, progress]);
+    return getEffectiveThemePalette(
+      profile.uiThemeId || DEFAULT_UI_THEME_ID,
+      profile.customUiTheme,
+      progress,
+      themeNowMs,
+    );
+  }, [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs]);
   const selectedBoss = eternityDraft ? BOSS_DEFINITIONS.find(boss => boss.id === eternityDraft.bossId) ?? null : null;
   const selectedDeckId = eternityDraft ? (eternityDraft.deckId ?? progress.savedDecks[0]?.id ?? '') : '';
   const selectedDeck = eternityDraft

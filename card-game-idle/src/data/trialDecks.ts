@@ -72,7 +72,7 @@ const neutralityTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'ser-neutral-balance',
-      hint: 'Balance Seraphim (Slot C). On play: +20 Oblivion; designate the highest-Patience Seraphim as your Vessel. Three Seraphim on board now — each one accumulates Patience independently.',
+      hint: 'Balance Seraphim (Slot C). On play: +20 Oblivion. Three Seraphim on board now — each one accumulates Patience independently.',
     },
     {
       cardDefinitionId: 'ophanim-neutral-null-seek',
@@ -88,7 +88,7 @@ const neutralityTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'ophanim-neutral-neutral-cycle',
-      hint: 'Neutral Cycle. Core mechanic: Patience stacking across multiple Seraphim and Vessel routing. Why it scales: every card played adds Patience, and each Patience adds +15 Oblivion on attack while Equilibrium also gains per-card pressure. Exact payoff: click Equilibrium Seraphim → Attack now for a large burst (~500+ Oblivion) and the 4+ Patience extra draws to continue the chain.',
+      hint: 'Neutral Cycle. Core mechanic: Patience stacking across multiple Seraphim. Why it scales: every card played adds Patience, and each Patience adds +15 Oblivion on attack while Equilibrium also gains per-card pressure. Exact payoff: click Equilibrium Seraphim → Attack now for a large burst and the 4+ Patience extra draws to continue the chain.',
     },
   ],
   guidedOpeningHand: [

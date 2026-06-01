@@ -103,6 +103,22 @@ function getRaidVisualTheme(raid: NullRaidDefinition | null | undefined): RaidVi
     };
   }
 
+  if (raid.associatedSet.toLowerCase() === 'heavenly light') {
+    return {
+      accent: '#e8d47c',
+      accentSoft: '#f4edcc',
+      chroma: '#7ab0f5',
+      panelBg: 'linear-gradient(148deg, rgba(10,10,24,0.97) 0%, rgba(5,5,15,0.98) 100%)',
+      cardBg: 'linear-gradient(148deg, rgba(16,14,34,0.9) 0%, rgba(6,5,20,0.94) 100%)',
+      stripe: 'linear-gradient(180deg, rgba(232,212,124,0.92) 0%, rgba(122,176,245,0.82) 100%)',
+      glow: 'rgba(200,178,108,0.34)',
+      badgeBg: 'rgba(232,212,124,0.14)',
+      lockedBg: 'rgba(255,90,90,0.17)',
+      buttonBg: 'linear-gradient(136deg, rgba(232,212,124,0.22) 0%, rgba(100,148,240,0.18) 100%)',
+      buttonBorder: 'rgba(232,212,124,0.54)',
+    };
+  }
+
   return getRaidVisualTheme(null);
 }
 
@@ -194,6 +210,7 @@ export default function AscensionHub({ onClose }: Props) {
     const elementToSet: Record<string, string> = {
       neutrality: 'Neutrality',
       fire: 'Pyroabyss',
+      light: 'Heavenly Light',
     };
     const mechanicOverviewBySet: Record<string, { title: string; body: string }> = {
       Neutrality: {
@@ -205,6 +222,11 @@ export default function AscensionHub({ onClose }: Props) {
         title: 'Inferno Confluence',
         body:
           'These cards build matched Heat and Chroma Ember pairs, then cash those pairs in through Confluence. The suite rewards balancing both pools, correcting lopsided states, and timing the angel ritual after the Seraph and Cherub are online.',
+      },
+      'Heavenly Light': {
+        title: 'Duality',
+        body:
+          'Every Transcendent in this suite triggers Duality: choose Discard 1, Draw 2, or cash out a massive Oblivion burst that scales from Resonance, Halo, and distinct cadence notes. The cards also inject above-rate Radiance and Halo to accelerate Light endgame lines.',
       },
     };
 
@@ -736,7 +758,7 @@ export default function AscensionHub({ onClose }: Props) {
                     const onCd = cdMs > 0;
                     const canEnter = !locked && !onCd && selectedDeckId;
                     return (
-                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
                         {locked && (
                           <button
                             disabled={!selectedDeckId}
@@ -754,22 +776,28 @@ export default function AscensionHub({ onClose }: Props) {
                             PROVE YOURSELF
                           </button>
                         )}
-                        <button
-                          disabled={!canEnter}
-                          onClick={handleEnterRaid}
-                          style={{
-                            alignSelf: 'flex-start', padding: '12px 32px', borderRadius: 10, cursor: canEnter ? 'pointer' : 'not-allowed',
-                            background: canEnter ? `linear-gradient(135deg, ${selectedRaidTheme.accent}55 0%, ${selectedRaidTheme.chroma}45 100%)` : 'rgba(40,40,40,0.4)',
-                            border: `1px solid ${canEnter ? selectedRaidTheme.buttonBorder : G.border}`,
-                            color: canEnter ? selectedRaidTheme.accentSoft : G.textFaint,
-                            fontSize: 13, letterSpacing: 3, fontFamily: G.cinzel,
-                            textTransform: 'uppercase', textShadow: canEnter ? `0 0 20px ${selectedRaidTheme.glow}` : 'none',
-                            transition: 'all 0.18s ease',
-                            boxShadow: canEnter ? `0 0 24px ${selectedRaidTheme.glow}` : 'none',
-                          }}
-                        >
-                          {locked ? getRaidProveYourselfLabel(selectedRaid) : onCd ? `On Cooldown — ${formatCooldown(cdMs)}` : 'ENTER RAID'}
-                        </button>
+                        {locked ? (
+                          <span style={{ fontSize: 11, color: '#ffb3b3', padding: '4px 10px', border: '1px solid rgba(255,80,80,0.36)', borderRadius: 5, background: selectedRaidTheme.lockedBg, letterSpacing: 1, textTransform: 'uppercase' }}>
+                            {getRaidProveYourselfLabel(selectedRaid)}
+                          </span>
+                        ) : (
+                          <button
+                            disabled={!canEnter}
+                            onClick={handleEnterRaid}
+                            style={{
+                              alignSelf: 'flex-start', padding: '12px 32px', borderRadius: 10, cursor: canEnter ? 'pointer' : 'not-allowed',
+                              background: canEnter ? `linear-gradient(135deg, ${selectedRaidTheme.accent}55 0%, ${selectedRaidTheme.chroma}45 100%)` : 'rgba(40,40,40,0.4)',
+                              border: `1px solid ${canEnter ? selectedRaidTheme.buttonBorder : G.border}`,
+                              color: canEnter ? selectedRaidTheme.accentSoft : G.textFaint,
+                              fontSize: 13, letterSpacing: 3, fontFamily: G.cinzel,
+                              textTransform: 'uppercase', textShadow: canEnter ? `0 0 20px ${selectedRaidTheme.glow}` : 'none',
+                              transition: 'all 0.18s ease',
+                              boxShadow: canEnter ? `0 0 24px ${selectedRaidTheme.glow}` : 'none',
+                            }}
+                          >
+                            {onCd ? `On Cooldown — ${formatCooldown(cdMs)}` : 'ENTER RAID'}
+                          </button>
+                        )}
                       </div>
                     );
                   })()}

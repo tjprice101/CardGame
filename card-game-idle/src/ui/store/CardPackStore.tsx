@@ -12,6 +12,7 @@ import HolofoilWorkshop from './HolofoilWorkshop';
 import CoreMechanicEngineModal from './CoreMechanicEngineModal';
 import { getSpotlightPackId, getSpotlightPackCost, SPOTLIGHT_DISCOUNT } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost, DAILY_DEAL_DISCOUNT } from '@/systems/progression/dailyDeal';
+import { formatCountdown, getWuasEventCountdown, WUAS_EVENT_ENDS_LABEL } from '@/ui/eventWishedUponAStar/eventTimer';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#b8bcc6', Rare: '#7cbcff', Epic: '#c58bff', Legendary: '#ffd38a', Eternal: '#ff9f9f', Infinite: '#f2f4ff',
@@ -246,7 +247,15 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
   const [activeTab, setActiveTab] = useState<'packs' | 'holofoils' | 'history'>('packs');
   const [focusPackId, setFocusPackId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<1 | 5 | 100>(1);
+  const [eventNowMs, setEventNowMs] = useState<number>(() => Date.now());
   const packRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    const id = window.setInterval(() => setEventNowMs(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const wuasCountdown = formatCountdown(getWuasEventCountdown(eventNowMs));
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -317,6 +326,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
       : pack.locked;
 
     const usesShards = (pack as typeof pack & { currencyType?: string }).currencyType === 'aberratedShards';
+    const isWuasEventPack = pack.id === 'pack-wished-upon-a-star';
     const currencyLabel = usesShards ? 'Aberrated Shards' : 'Oblivion';
 
     const tiers = usesShards
@@ -338,6 +348,11 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
         className={isLocked ? undefined : 'ui-tile-hover'}
         style={{
           ...styles.packCard,
+          ...(isWuasEventPack ? {
+            background: 'radial-gradient(circle at 10% 0%, rgba(141,230,255,0.22) 0%, rgba(141,230,255,0) 42%), radial-gradient(circle at 88% 110%, rgba(179,126,255,0.26) 0%, rgba(179,126,255,0) 50%), linear-gradient(180deg, rgba(7,12,34,0.98) 0%, rgba(10,8,30,0.98) 100%)',
+            border: '1px solid rgba(138,221,255,0.58)',
+            boxShadow: 'inset 0 1px 0 rgba(180, 236, 255, 0.12), 0 4px 18px rgba(73, 160, 230, 0.28)',
+          } : {}),
           ...(isLocked ? styles.packLocked : {}),
           ...(focusPackId === pack.id ? {
             outline: '2px solid #ffd86b',
@@ -353,7 +368,24 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
             background: elementColor, flexShrink: 0,
             boxShadow: `0 0 8px ${elementColor}`,
           }} />
-          <div style={styles.packName}>{displayName}</div>
+          <div style={{ ...styles.packName, ...(isWuasEventPack ? { color: '#8de6ff', textShadow: '0 0 20px rgba(141, 230, 255, 0.35)' } : {}) }}>
+            {displayName}
+          </div>
+          {isWuasEventPack && (
+            <div style={{
+              marginLeft: 8,
+              padding: '2px 8px',
+              borderRadius: 999,
+              border: '1px solid rgba(138,221,255,0.58)',
+              background: 'rgba(10, 18, 42, 0.78)',
+              color: '#d7b7ff',
+              fontSize: 9,
+              letterSpacing: 1.1,
+              fontWeight: 700,
+            }}>
+              EVENT
+            </div>
+          )}
           {isSpotlight && (
             <div style={{
               fontSize: 9,
@@ -377,6 +409,21 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
         )}
 
         <div style={styles.packDesc}>{pack.description}</div>
+
+        {isWuasEventPack && (
+          <div style={{
+            padding: '8px 10px',
+            borderRadius: 8,
+            border: '1px solid rgba(138,221,255,0.36)',
+            background: 'rgba(8, 14, 36, 0.72)',
+            fontSize: 11,
+            lineHeight: 1.45,
+            color: '#dbe8ff',
+          }}>
+            <div style={{ color: '#d7b7ff', letterSpacing: 0.8, marginBottom: 3 }}>Ends {WUAS_EVENT_ENDS_LABEL}</div>
+            <div style={{ color: '#8de6ff', fontFamily: uiTypography.display, letterSpacing: 1 }}>{wuasCountdown}</div>
+          </div>
+        )}
 
         <div style={styles.cardPreview}>
           {(['Common', 'Rare', 'Epic', 'Legendary'] as const).map(r => {
@@ -410,7 +457,15 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
                 <button
                   key={tier}
                   data-sfx="claim"
-                  style={{ ...styles.openBtn, ...(canAfford ? {} : styles.openBtnDisabled) }}
+                  style={{
+                    ...styles.openBtn,
+                    ...(isWuasEventPack ? {
+                      background: 'linear-gradient(180deg, #9cecff 0%, #7db7ff 48%, #9a92ff 100%)',
+                      border: '1px solid rgba(140, 198, 255, 0.8)',
+                      boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 12px rgba(109,162,255,0.45)',
+                    } : {}),
+                    ...(canAfford ? {} : styles.openBtnDisabled),
+                  }}
                   onClick={canAfford ? () => handleOpen(pack.id, tier) : undefined}
                 >
                   <span style={{ fontWeight: 'bold' }}>

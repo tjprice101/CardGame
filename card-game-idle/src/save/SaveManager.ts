@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 27;
+export const CURRENT_VERSION = 29;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -402,6 +402,33 @@ const migrations: Record<number, Migration> = {
       const p = data.progress as unknown as Record<string, unknown>;
       if (!p.nullRaidProveUnlocks || typeof p.nullRaidProveUnlocks !== 'object') {
         p.nullRaidProveUnlocks = {};
+      }
+    }
+    return data;
+  },
+  28: (data) => {
+    // v28 adds permanent reward UI theme unlock tracking.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      const prof = p.profile as Record<string, unknown> | undefined;
+      if (prof) {
+        if (!Array.isArray(prof.unlockedUiThemeIds)) {
+          prof.unlockedUiThemeIds = [];
+        } else {
+          prof.unlockedUiThemeIds = (prof.unlockedUiThemeIds as unknown[])
+            .filter((id): id is string => typeof id === 'string');
+        }
+      }
+    }
+    return data;
+  },
+  29: (data) => {
+    // v29 adds selected main menu background id on profile.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      const prof = p.profile as Record<string, unknown> | undefined;
+      if (prof && (typeof prof.mainMenuBackgroundId !== 'string' || !prof.mainMenuBackgroundId)) {
+        prof.mainMenuBackgroundId = 'main-menu-bg-default';
       }
     }
     return data;

@@ -373,7 +373,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
     return 'setup';
   }
 
-  if (hasSomeEffect(def, ['radiance_gain', 'radiance_spend', 'pyro_heat_gain', 'pyro_heat_spend', 'trail_gain', 'trail_spend', 'strain_gain', 'strain_vent', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain'])) {
+  if (hasSomeEffect(def, ['radiance_gain', 'radiance_spend', 'pyro_heat_gain', 'pyro_heat_spend', 'trail_gain', 'trail_spend', 'strain_gain', 'strain_vent', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain'])) {
     return 'resource';
   }
 
@@ -385,7 +385,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
 }
 
 function getCardRoleDetail(def: CardDefinition): string {
-  if (hasSomeEffect(def, ['radiance_gain', 'pyro_heat_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'proof_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
+  if (hasSomeEffect(def, ['radiance_gain', 'pyro_heat_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
     return 'It stocks the resources this engine spends to stay online.';
   }
 

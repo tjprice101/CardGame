@@ -40,7 +40,8 @@ const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/Battlegroun
 const CoopRaidInviteModal = lazy(() => import('@/ui/ascension/CoopRaidInviteModal'));
 const EternityBossCoopInviteModal = lazy(() => import('@/ui/eternitysWake/EternityBossCoopInviteModal'));
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
-import { DEFAULT_WARM_PALETTE } from '@/ui/theme';
+import { DEFAULT_WARM_PALETTE, warmTheme } from '@/ui/theme';
+import { applyEffectiveTheme, DEFAULT_UI_THEME_ID, isThemeOscillating } from '@/data/profile/uiThemes';
 import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress, selectTrialDeck } from '@/state/store';
 import { useFriendsStore } from '@/state/friendsStore';
 import TrialDeckHUD from '@/ui/hud/TrialDeckHUD';
@@ -70,6 +71,27 @@ import { usePartyStore } from '@/state/partyStore';
  * and any active boss fight).
  */
 type AppScene = 'splash' | 'title' | 'menu' | 'arena';
+
+function BootLoadingFallback({ label }: { label: string }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      inset: 0,
+      zIndex: 190,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: `linear-gradient(180deg, ${warmTheme.surfaceMuted} 0%, ${warmTheme.surface} 50%, ${warmTheme.surfaceStrong} 100%)`,
+      color: warmTheme.textSoft,
+      fontFamily: 'Georgia, serif',
+      letterSpacing: 1.2,
+      textTransform: 'uppercase',
+      fontSize: 11,
+    }}>
+      {label}
+    </div>
+  );
+}
 
 /**
  * Wrapper that applies CSS screen-shake classes in response to custom events
@@ -187,6 +209,7 @@ export default function App() {
   // first boot of each app session; subsequent navigation cycles only between
   // menu and arena.
   const [scene, setScene] = useState<AppScene>('splash');
+  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
@@ -195,6 +218,22 @@ export default function App() {
   const trialDeck = useStore(selectTrialDeck);
   const lastSavedAt = useStore(s => s.lastSavedAt);
   const setPresenceActivity = useFriendsStore(s => s.setPresenceActivity);
+
+  useEffect(() => {
+    const themeId = progress.profile.uiThemeId || DEFAULT_UI_THEME_ID;
+    if (!isThemeOscillating(themeId)) return;
+    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
+    return () => clearInterval(id);
+  }, [progress.profile.uiThemeId]);
+
+  useEffect(() => {
+    applyEffectiveTheme(
+      progress.profile.uiThemeId || DEFAULT_UI_THEME_ID,
+      progress.profile.customUiTheme ?? null,
+      progress,
+      themeNowMs,
+    );
+  }, [progress, themeNowMs]);
 
   useEffect(() => {
     if (bossFight.mode !== 'active') return;
@@ -690,8 +729,8 @@ export default function App() {
         position: 'relative',
         width: '100%',
         height: '100%',
-        background: DEFAULT_WARM_PALETTE.appBackground,
-        color: DEFAULT_WARM_PALETTE.text,
+        background: warmTheme.appBackground,
+        color: warmTheme.text,
         overflow: 'hidden',
       }}
     >
@@ -998,9 +1037,9 @@ export default function App() {
         transition: 'opacity 0.2s ease, transform 0.2s ease',
         padding: '6px 10px',
         borderRadius: 8,
-        border: `1px solid ${DEFAULT_WARM_PALETTE.border}`,
+        border: `1px solid ${warmTheme.border}`,
         background: 'rgba(12,12,16,0.62)',
-        color: '#d6ead6',
+        color: warmTheme.textSoft,
         fontFamily: 'Georgia, serif',
         fontSize: 10,
         letterSpacing: 0.8,
@@ -1011,12 +1050,12 @@ export default function App() {
       </React.Fragment>
       {/* Splash + title screens sit above everything else on first boot. */}
       {scene === 'splash' && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<BootLoadingFallback label="Loading Splash" />}>
           <SplashScreen onDone={() => setScene('title')} />
         </Suspense>
       )}
       {scene === 'title' && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<BootLoadingFallback label="Loading Title" />}>
           <TitleScreen onAdvance={() => setScene('menu')} />
         </Suspense>
       )}

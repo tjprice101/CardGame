@@ -1,8 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { warmTheme, uiTypography } from '@/ui/theme';
+import { uiTypography, type UiPalette } from '@/ui/theme';
 import { useStore, selectDeck, selectProfile, selectProgress, selectTurn } from '@/state/store';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { resolveTitleBadge } from '@/data/profile/titleBadges';
+import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
+import {
+  DEFAULT_MAIN_MENU_BACKGROUND_ID,
+  getDefaultMainMenuBackground,
+  loadMainMenuBackgroundEntries,
+  resolveMainMenuBackground,
+  type MainMenuBackgroundEntry,
+} from '@/data/profile/mainMenuBackgrounds';
+import { formatCountdown, getWuasEventCountdown, WUAS_EVENT_ENDS_LABEL } from '@/ui/eventWishedUponAStar/eventTimer';
 import { t } from '@/ui/preferences';
 
 interface MainMenuHubProps {
@@ -67,6 +76,7 @@ function TileButton(props: {
   meta?: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
+  theme: UiPalette;
   /** Tile color tone */
   tone?: 'primary' | 'cream' | 'cream-dim';
   /** Layout size preset */
@@ -81,6 +91,7 @@ function TileButton(props: {
   const isPrimary = props.tone === 'primary';
   const dim = props.tone === 'cream-dim';
   const ang = props.glassAngle ?? 128;
+  const theme = props.theme;
 
   // Each palette variant is a frosted glass pane.
   // Primary  — dense steel-blue glass (opaque hero / CTA)
@@ -89,39 +100,40 @@ function TileButton(props: {
   const palette = isPrimary
     ? {
         glass: [
-          `linear-gradient(${ang}deg, rgba(42,140,205,0.94) 0%, rgba(22,100,162,0.84) 48%, rgba(68,165,222,0.92) 100%)`,
-          'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.075) 20px 21px)',
-          'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.055) 32px 33px)',
+          `${theme.button}`,
+          `linear-gradient(${ang}deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 48%, rgba(255,255,255,0.09) 100%)`,
+          'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.06) 20px 21px)',
+          'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.045) 32px 33px)',
         ].join(', '),
-        specular: 'rgba(200,238,255,0.62)',
-        border: 'rgba(170,225,255,0.75)',
-        color: '#eef8ff',
-        captionColor: 'rgba(210,238,255,0.80)',
+        specular: 'rgba(255,255,255,0.52)',
+        border: theme.borderStrong,
+        color: theme.text,
+        captionColor: theme.textSoft,
         textShadow: '0 1px 10px rgba(0,0,0,0.45)',
       }
     : dim
       ? {
           glass: [
-            `linear-gradient(${ang}deg, rgba(155,205,245,0.55) 0%, rgba(118,178,232,0.40) 48%, rgba(190,225,252,0.52) 100%)`,
-            'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.065) 20px 21px)',
-            'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.048) 32px 33px)',
+            `linear-gradient(${ang}deg, ${theme.surfaceMuted} 0%, ${theme.surface} 48%, ${theme.surfaceStrong} 100%)`,
+            'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.05) 20px 21px)',
+            'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.04) 32px 33px)',
           ].join(', '),
-          specular: 'rgba(235,248,255,0.42)',
-          border: 'rgba(155,210,245,0.55)',
-          color: '#ddf0ff',
-          captionColor: 'rgba(195,228,252,0.75)',
+          specular: 'rgba(255,255,255,0.34)',
+          border: theme.border,
+          color: theme.text,
+          captionColor: theme.textMuted,
           textShadow: '0 1px 8px rgba(0,10,40,0.55)',
         }
       : {
           glass: [
-            `linear-gradient(${ang}deg, rgba(215,235,255,0.75) 0%, rgba(165,210,250,0.60) 48%, rgba(232,246,255,0.72) 100%)`,
-            'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.075) 20px 21px)',
-            'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.055) 32px 33px)',
+            `linear-gradient(${ang}deg, ${theme.surfaceStrong} 0%, ${theme.surface} 48%, ${theme.surfaceMuted} 100%)`,
+            'repeating-linear-gradient(62deg,  transparent 0px 20px, rgba(255,255,255,0.06) 20px 21px)',
+            'repeating-linear-gradient(-58deg, transparent 0px 32px, rgba(255,255,255,0.045) 32px 33px)',
           ].join(', '),
-          specular: 'rgba(255,255,255,0.52)',
-          border: 'rgba(185,225,255,0.68)',
-          color: '#1a2535',
-          captionColor: 'rgba(26,46,75,0.72)',
+          specular: 'rgba(255,255,255,0.42)',
+          border: theme.borderStrong,
+          color: theme.text,
+          captionColor: theme.textSoft,
           textShadow: '0 1px 4px rgba(220,240,255,0.35)',
         };
 
@@ -225,9 +237,9 @@ function TileButton(props: {
           fontSize: 11,
           letterSpacing: 0.6,
           backdropFilter: 'blur(4px)',
-          color: props.badge.tone === 'alert' ? '#fff' : props.badge.tone === 'gold' ? '#1a2535' : '#eef8ff',
-          background: props.badge.tone === 'alert' ? 'rgba(196,68,68,0.92)' : props.badge.tone === 'gold' ? 'rgba(210,178,100,0.92)' : 'rgba(36,128,192,0.92)',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.50)',
+          color: props.badge.tone === 'alert' ? '#ffffff' : props.badge.tone === 'gold' ? theme.accentDeep : theme.text,
+          background: props.badge.tone === 'alert' ? theme.danger : props.badge.tone === 'gold' ? theme.accentSoft : theme.accent,
+          boxShadow: theme.glow,
         }}>{props.badge.label}</div>
       )}
     </button>
@@ -235,7 +247,7 @@ function TileButton(props: {
 }
 
 /** Small icon-button used in the top-left utility strip. */
-function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: () => void; dot?: boolean }) {
+function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: () => void; dot?: boolean; theme: UiPalette }) {
   return (
     <button
       className="menu-tactile-btn"
@@ -245,10 +257,10 @@ function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: ()
         position: 'relative',
         width: 36, height: 36,
         borderRadius: 8,
-        border: `1px solid ${warmTheme.border}`,
-        background: 'rgba(10,18,36,0.60)',
+        border: `1px solid ${props.theme.border}`,
+        background: props.theme.surfaceStrong,
         fontSize: 16,
-        color: '#7dd4f8',
+        color: props.theme.accentSoft,
         cursor: 'pointer',
         backdropFilter: 'blur(4px)',
       }}
@@ -260,7 +272,7 @@ function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: ()
         <span style={{
           position: 'absolute', top: 4, right: 4,
           width: 7, height: 7, borderRadius: '50%',
-          background: '#e67c5c', boxShadow: '0 0 6px #e67c5c',
+          background: props.theme.danger, boxShadow: `0 0 6px ${props.theme.danger}`,
         }} />
       )}
     </button>
@@ -268,23 +280,23 @@ function IconStripButton(props: { glyph: string; ariaLabel: string; onClick?: ()
 }
 
 /** A resource counter pill in the top-right ribbon. */
-function ResourcePill(props: { glyph: string; label: string; value: string; tone?: 'gold' | 'crimson' | 'cool' }) {
+function ResourcePill(props: { glyph: string; label: string; value: string; tone?: 'gold' | 'crimson' | 'cool'; theme: UiPalette }) {
   const t = props.tone ?? 'gold';
   const colors = t === 'crimson'
-    ? { glyph: '#e89090', glow: 'rgba(196,90,90,0.4)' }
+    ? { glyph: props.theme.danger, glow: props.theme.danger }
     : t === 'cool'
-      ? { glyph: '#a8c8f0', glow: 'rgba(120,160,220,0.4)' }
-      : { glyph: '#e8c478', glow: 'rgba(214,162,94,0.4)' };
+      ? { glyph: props.theme.accentSoft, glow: props.theme.accentSoft }
+      : { glyph: props.theme.accent, glow: props.theme.accent };
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
       padding: '6px 12px 6px 8px',
       borderRadius: 999,
-      border: `1px solid ${warmTheme.border}`,
-      background: 'rgba(8,16,32,0.68)',
+      border: `1px solid ${props.theme.border}`,
+      background: props.theme.surface,
       backdropFilter: 'blur(4px)',
       fontFamily: uiTypography.body,
-      color: '#e8f2fc',
+      color: props.theme.text,
       letterSpacing: 0.6,
     }}>
       <span style={{
@@ -328,11 +340,54 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   );
 
   const [mounted, setMounted] = useState(false);
+  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
+  const [eventNowMs, setEventNowMs] = useState<number>(() => Date.now());
+  const [menuBackgroundChoices, setMenuBackgroundChoices] = useState<MainMenuBackgroundEntry[]>([getDefaultMainMenuBackground()]);
   useEffect(() => { const id = window.setTimeout(() => setMounted(true), 20); return () => window.clearTimeout(id); }, []);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setEventNowMs(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const themeId = profile.uiThemeId || DEFAULT_UI_THEME_ID;
+    if (!isThemeOscillating(themeId)) return;
+    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
+    return () => clearInterval(id);
+  }, [profile.uiThemeId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadMainMenuBackgroundEntries().then((entries) => {
+      if (cancelled) return;
+      setMenuBackgroundChoices(entries);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const uiTheme = useMemo(
+    () => getEffectiveThemePalette(
+      profile.uiThemeId || DEFAULT_UI_THEME_ID,
+      profile.customUiTheme,
+      progress,
+      themeNowMs,
+    ),
+    [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs],
+  );
+
+  const mainMenuBackground = useMemo(
+    () => resolveMainMenuBackground(
+      profile.mainMenuBackgroundId ?? DEFAULT_MAIN_MENU_BACKGROUND_ID,
+      menuBackgroundChoices,
+    ),
+    [profile.mainMenuBackgroundId, menuBackgroundChoices],
+  );
 
   const shards = Math.floor(progress.aberratedShards ?? 0);
   const oblivion = Math.floor(progress.oblivion ?? 0);
   const cards = ownedCardCopies;
+  const eventCountdown = formatCountdown(getWuasEventCountdown(eventNowMs));
 
   return (
     <div
@@ -347,7 +402,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         backgroundImage:
           'radial-gradient(120% 80% at 30% 40%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.78) 100%), '
           + 'linear-gradient(180deg, rgba(5,10,22,0.45) 0%, rgba(5,10,22,0) 22%, rgba(5,10,22,0) 70%, rgba(5,10,22,0.65) 100%), '
-          + `url(${import.meta.env.BASE_URL}assets/InfiniteCardsMenuArt.png)`,
+          + `url("${mainMenuBackground.imageUrl}")`,
         backgroundSize: 'cover, cover, cover',
         backgroundPosition: 'center, center, center',
       }}
@@ -360,23 +415,23 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       }}>
         {/* Left: utility icon strip */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <IconStripButton glyph="⚙" ariaLabel="Settings" onClick={props.onSettings} />
-          <IconStripButton glyph="🏆" ariaLabel="Achievements" onClick={props.onAchievements} dot />
-          <IconStripButton glyph="✦" ariaLabel="Card-born Tier" onClick={props.onMastery} />
-          <IconStripButton glyph="📜" ariaLabel="Quests" onClick={props.onQuests} />
-          <IconStripButton glyph="?" ariaLabel="Tutorial" onClick={props.onTutorial} />
+          <IconStripButton glyph="⚙" ariaLabel="Settings" onClick={props.onSettings} theme={uiTheme} />
+          <IconStripButton glyph="🏆" ariaLabel="Achievements" onClick={props.onAchievements} dot theme={uiTheme} />
+          <IconStripButton glyph="✦" ariaLabel="Card-born Tier" onClick={props.onMastery} theme={uiTheme} />
+          <IconStripButton glyph="📜" ariaLabel="Quests" onClick={props.onQuests} theme={uiTheme} />
+          <IconStripButton glyph="?" ariaLabel="Tutorial" onClick={props.onTutorial} theme={uiTheme} />
         </div>
         {/* Right: resource pills + clock */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             fontFamily: uiTypography.body, fontSize: 11, letterSpacing: 1.4,
-            color: 'rgba(210,232,252,0.78)', textTransform: 'uppercase', marginRight: 6,
+            color: uiTheme.textSoft, textTransform: 'uppercase', marginRight: 6,
           }}>
             Pantheon · Idle
           </div>
-          <ResourcePill glyph="◇" label="Cards" value={cards.toLocaleString()} tone="cool" />
-          <ResourcePill glyph="✦" label="Shards" value={shards.toLocaleString()} tone="crimson" />
-          <ResourcePill glyph="⬡" label="Oblivion" value={oblivion.toLocaleString()} tone="gold" />
+          <ResourcePill glyph="◇" label="Cards" value={cards.toLocaleString()} tone="cool" theme={uiTheme} />
+          <ResourcePill glyph="✦" label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} />
+          <ResourcePill glyph="⬡" label="Oblivion" value={oblivion.toLocaleString()} tone="gold" theme={uiTheme} />
         </div>
       </div>
 
@@ -395,8 +450,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             width: 96, height: 96,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             borderRadius: '50%',
-            border: '2px solid rgba(160,210,255,0.22)',
-            background: 'rgba(10,18,36,0.60)',
+            border: `2px solid ${uiTheme.borderStrong}`,
+            background: uiTheme.surface,
             overflow: 'hidden',
           }}>
             {avatar.imageUrl
@@ -407,7 +462,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
                   draggable={false}
                 />
               : <div style={{
-                  fontFamily: uiTypography.display, fontSize: 30, color: '#eef4fc', letterSpacing: 1,
+                  fontFamily: uiTypography.display, fontSize: 30, color: uiTheme.text, letterSpacing: 1,
                   textShadow: '0 2px 12px rgba(0,0,0,0.6)',
                 }} title={avatar.name}>
                   {avatar.glyph ?? '◈'}
@@ -416,7 +471,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{
-              fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1.4, color: '#eef4fc',
+              fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1.4, color: uiTheme.text,
               textShadow: '0 2px 12px rgba(0,0,0,0.7)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               {profile.name || 'Acolyte'}
@@ -424,14 +479,14 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             {titleBadge && (
               <div style={{
                 fontFamily: uiTypography.body, fontSize: 11, fontStyle: 'italic',
-                color: warmTheme.accentSoft, letterSpacing: 0.6, textShadow: '0 1px 6px rgba(0,0,0,0.6)',
+                color: uiTheme.accentSoft, letterSpacing: 0.6, textShadow: '0 1px 6px rgba(0,0,0,0.6)',
               }}>
                 {titleBadge.text}
               </div>
             )}
             <div style={{
               fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 1.4,
-              color: 'rgba(190,220,252,0.62)', textTransform: 'uppercase', marginTop: 2,
+              color: uiTheme.textMuted, textTransform: 'uppercase', marginTop: 2,
             }}>
               Active Deck · {deck.deckList.length} cards
             </div>
@@ -445,17 +500,17 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             textAlign: 'left',
             padding: '12px 16px',
             borderRadius: 4,
-            border: `1px solid ${warmTheme.border}`,
-            background: 'rgba(8,16,34,0.68)',
+            border: `1px solid ${uiTheme.border}`,
+            background: uiTheme.surfaceMuted,
             backdropFilter: 'blur(4px)',
-            color: 'rgba(220,240,255,0.88)',
+            color: uiTheme.textSoft,
             fontFamily: uiTypography.body,
             fontSize: 13,
             fontStyle: 'italic',
             letterSpacing: 0.4,
             lineHeight: 1.45,
             cursor: 'pointer',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.35)',
+            boxShadow: uiTheme.shadow,
           }}
           title="Open Player Information"
         >
@@ -478,15 +533,15 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             style={{
               position: 'relative',
               width: 260,
-              minHeight: 110,
-              padding: '12px 16px',
+              minHeight: 132,
+              padding: '12px 16px 14px',
               borderRadius: 6,
-              border: '1px solid rgba(184,200,255,0.55)',
-              background: 'linear-gradient(135deg, rgba(36,28,68,0.92), rgba(14,16,40,0.92))',
-              color: '#d6e4ff',
+              border: '1px solid rgba(138, 221, 255, 0.72)',
+              background: 'radial-gradient(circle at 12% 0%, rgba(141, 230, 255, 0.28) 0%, rgba(141, 230, 255, 0) 40%), radial-gradient(circle at 86% 110%, rgba(178, 126, 255, 0.3) 0%, rgba(178, 126, 255, 0) 50%), linear-gradient(140deg, rgba(8,14,36,0.95) 0%, rgba(14,10,42,0.95) 52%, rgba(6,10,30,0.98) 100%)',
+              color: '#eef4ff',
               fontFamily: uiTypography.body,
               textAlign: 'left',
-              boxShadow: '0 10px 32px rgba(80,110,200,0.35), 0 0 60px rgba(130,160,255,0.18) inset',
+              boxShadow: '0 14px 34px rgba(83, 176, 255, 0.25)',
               cursor: 'pointer',
               overflow: 'hidden',
             }}
@@ -494,19 +549,25 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             <div style={{
               position: 'absolute', top: 8, left: 10,
               padding: '2px 7px', borderRadius: 3,
-              background: '#c44444', color: '#fff',
+              background: 'rgba(255, 125, 185, 0.9)', color: '#fff',
               fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.4,
             }}>LIMITED-TIME</div>
             <div style={{ marginTop: 22, fontFamily: uiTypography.display, fontSize: 18, letterSpacing: 1.6, textTransform: 'uppercase' }}>
               Wished Upon A Star
             </div>
-            <div style={{ marginTop: 4, fontSize: 11, opacity: 0.78, letterSpacing: 0.6 }}>
+            <div style={{ marginTop: 4, fontSize: 11, opacity: 0.82, letterSpacing: 0.6, color: 'rgba(214, 224, 248, 0.95)' }}>
               Stellar Wish Event · Spend Aberrated Shards
+            </div>
+            <div style={{ marginTop: 8, fontSize: 10, letterSpacing: 1, color: '#d7b7ff', fontFamily: uiTypography.display }}>
+              Ends {WUAS_EVENT_ENDS_LABEL}
+            </div>
+            <div style={{ marginTop: 3, fontSize: 12, letterSpacing: 1.1, color: '#8de6ff', fontFamily: uiTypography.display }}>
+              {eventCountdown}
             </div>
             <div style={{
               position: 'absolute', bottom: 8, right: 12,
               fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.4,
-              color: '#f5d68a',
+              color: '#8de6ff',
             }}>NEW ▶</div>
           </button>
         )}
@@ -517,9 +578,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             width: 150, minHeight: 52,
             padding: '10px 14px',
             borderRadius: 4,
-            border: `1px solid ${warmTheme.border}`,
-            background: 'rgba(10,18,36,0.82)',
-            color: '#e8f2fc',
+            border: `1px solid ${uiTheme.border}`,
+            background: uiTheme.surfaceStrong,
+            color: uiTheme.text,
             fontFamily: uiTypography.display,
             fontSize: 14,
             letterSpacing: 1.4,
@@ -541,9 +602,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             width: 150, minHeight: 52,
             padding: '10px 14px',
             borderRadius: 4,
-            border: '1px solid rgba(120,140,170,0.42)',
-            background: 'rgba(10,18,36,0.55)',
-            color: 'rgba(210,220,236,0.72)',
+            border: `1px solid ${uiTheme.border}`,
+            background: uiTheme.surfaceMuted,
+            color: uiTheme.textMuted,
             fontFamily: uiTypography.display,
             fontSize: 12,
             letterSpacing: 1.4,
@@ -581,6 +642,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Hero — Begin Turn */}
         <div style={{ gridColumn: '1 / -1', filter: 'drop-shadow(0 6px 20px rgba(0,20,60,0.55))' }}>
           <TileButton
+            theme={uiTheme}
             label="Begin Turn"
             caption={canBeginTurn ? 'Step into the arena' : 'Build a deck before beginning your turn.'}
             tone="primary"
@@ -596,6 +658,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Row: Eternity's Wake | Infinitude */}
         <div style={{ gridColumn: 'span 3', transform: 'rotate(-0.9deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.50))' }}>
           <TileButton
+            theme={uiTheme}
             label={t('eternityWake') || "Eternity's Wake"}
             caption="Boss challenges · Earn Eternals"
             size="half"
@@ -606,6 +669,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         </div>
         <div style={{ gridColumn: 'span 3', transform: 'rotate(0.7deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.50))' }}>
           <TileButton
+            theme={uiTheme}
             label={t('infinitude') || 'Infinitude'}
             caption="Merge Eternals into Infinites"
             size="half"
@@ -618,6 +682,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Row: Battleground of the Card-born */}
         <div style={{ gridColumn: '1 / -1', transform: 'rotate(0.5deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.48))' }}>
           <TileButton
+            theme={uiTheme}
             label="Card-bound Co-op"
             caption="Global party · squad chat · activity invites"
             tone="primary"
@@ -631,6 +696,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Row: Battleground of the Card-born */}
         <div style={{ gridColumn: '1 / -1', transform: 'rotate(-0.4deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.50))' }}>
           <TileButton
+            theme={uiTheme}
             label="Battleground of the Card-born"
             caption="3-min Oblivion race · PvP or CPU"
             tone="cream"
@@ -644,6 +710,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Row: Ascension */}
         <div style={{ gridColumn: '1 / -1', transform: 'rotate(0.3deg)', filter: 'drop-shadow(0 5px 16px rgba(30,0,80,0.55))' }}>
           <TileButton
+            theme={uiTheme}
             label="Ascension"
             caption="Endgame · Null Raids · Transcendent Cards"
             tone="primary"
@@ -658,6 +725,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         <div style={{ gridColumn: 'span 6', display: 'grid', gridTemplateColumns: '1.4fr 1fr 1fr', gap: 10, background: 'transparent' }}>
           <div style={{ transform: 'rotate(0.5deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.52))' }}>
             <TileButton
+              theme={uiTheme}
               label={t('cardStore') || 'Store'}
               caption="Open card packs"
               tone="primary"
@@ -669,6 +737,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           </div>
           <div style={{ transform: 'rotate(-0.6deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.48))' }}>
             <TileButton
+              theme={uiTheme}
               label={noDecklist ? '+ Deck' : 'Edit Deck'}
               caption="Build & tune"
               tone="cream"
@@ -680,6 +749,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           </div>
           <div style={{ transform: 'rotate(0.8deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.46))' }}>
             <TileButton
+              theme={uiTheme}
               label="Viewer"
               caption="Inspect your deck"
               tone="cream-dim"
@@ -694,6 +764,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Row: Quests | Achievements | Mastery */}
         <div style={{ gridColumn: 'span 2', transform: 'rotate(-0.7deg)', filter: 'drop-shadow(0 5px 14px rgba(0,20,60,0.46))' }}>
           <TileButton
+            theme={uiTheme}
             label="Quests"
             caption="Daily & weekly goals"
             size="half"
@@ -704,6 +775,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         </div>
         <div style={{ gridColumn: 'span 2', transform: 'rotate(0.5deg)', filter: 'drop-shadow(0 5px 14px rgba(0,20,60,0.46))' }}>
           <TileButton
+            theme={uiTheme}
             label="Achievements"
             caption="Long-term rewards"
             size="half"
@@ -714,6 +786,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         </div>
         <div style={{ gridColumn: 'span 2', transform: 'rotate(-1.0deg)', filter: 'drop-shadow(0 5px 14px rgba(0,20,60,0.46))' }}>
           <TileButton
+            theme={uiTheme}
             label="Card-born Tier"
             caption="Card-born progression"
             size="half"
@@ -726,6 +799,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Bottom utility row */}
         <div style={{ gridColumn: 'span 2', transform: 'rotate(0.6deg)', filter: 'drop-shadow(0 4px 12px rgba(0,20,60,0.42))' }}>
           <TileButton
+            theme={uiTheme}
             label="Player Info"
             caption="Profile · Social · Save"
             tone="cream-dim"
@@ -737,6 +811,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         </div>
         <div style={{ gridColumn: 'span 2', transform: 'rotate(-0.5deg)', filter: 'drop-shadow(0 4px 12px rgba(0,20,60,0.42))' }}>
           <TileButton
+            theme={uiTheme}
             label="Settings"
             caption="Audio · controls"
             tone="cream-dim"
@@ -748,6 +823,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         </div>
         <div style={{ gridColumn: 'span 2', transform: 'rotate(0.8deg)', filter: 'drop-shadow(0 4px 12px rgba(0,20,60,0.42))' }}>
           <TileButton
+            theme={uiTheme}
             label="Tutorial"
             caption="How to play"
             tone="cream-dim"

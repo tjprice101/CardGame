@@ -37,7 +37,18 @@ interface PantheonNotifyBridge {
   show(payload: PantheonNotifyPayload): Promise<boolean>;
 }
 
+interface PantheonMainMenuBackgroundAsset {
+  id: string;
+  name: string;
+  url: string;
+}
+
+interface PantheonAssetsBridge {
+  listMainMenuBackgrounds(): Promise<PantheonMainMenuBackgroundAsset[]>;
+}
+
 interface Window {
   pantheonSave?: PantheonSaveBridge;
   pantheonNotify?: PantheonNotifyBridge;
+  pantheonAssets?: PantheonAssetsBridge;
 }

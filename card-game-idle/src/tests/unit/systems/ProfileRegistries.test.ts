@@ -21,11 +21,13 @@ import {
   UI_THEME_BY_ID,
   DEFAULT_UI_THEME_ID,
   isThemeUnlocked,
+  latchUnlockedUiThemes,
   resolveThemeId,
   applyEffectiveTheme,
 } from '@/data/profile/uiThemes';
 import { warmTheme, DEFAULT_WARM_PALETTE, resetUiPalette } from '@/ui/theme';
 import type { ProgressState } from '@/types/game';
+import { CardRegistry } from '@/cards/CardRegistry';
 
 function baseProgress(overrides: Partial<ProgressState> = {}): ProgressState {
   return {
@@ -47,6 +49,7 @@ function baseProgress(overrides: Partial<ProgressState> = {}): ProgressState {
       uiThemeId: DEFAULT_UI_THEME_ID,
       customUiTheme: null,
       unlockedAvatarIds: [],
+      unlockedUiThemeIds: [],
     },
     dailyLogin: { lastClaimedDayIndex: -1, streak: 0, totalClaims: 0 },
     socialStats: {
@@ -251,9 +254,32 @@ describe('ui theme registry', () => {
     resetUiPalette();
     applyEffectiveTheme(DEFAULT_UI_THEME_ID, { accent: '#abcdef' }, baseProgress());
     expect(warmTheme.accent.toLowerCase()).toBe('#abcdef');
-    // Other keys untouched.
-    expect(warmTheme.text).toBe(DEFAULT_WARM_PALETTE.text);
+    // Text remains populated after palette legibility normalization.
+    expect(typeof warmTheme.text).toBe('string');
+    expect(warmTheme.text.length).toBeGreaterThan(0);
     resetUiPalette();
     expect(warmTheme.accent).toBe(DEFAULT_WARM_PALETTE.accent);
+  });
+
+  it('keeps reward themes unlocked after requirements are no longer met once latched', () => {
+    const rewardTheme = UI_THEMES.find(
+      (t) => t.group === 'reward' && t.rewardKind === 'base-set' && t.setElement === 'Neutrality',
+    );
+    expect(rewardTheme).toBeTruthy();
+
+    const requiredBaseNeutralityIds = CardRegistry.getAll()
+      .filter((card) => card.element === 'Neutrality' && ['Common', 'Rare', 'Epic', 'Legendary'].includes(card.rarity))
+      .map((card) => card.definitionId);
+
+    const ownedCollection: Record<string, number> = {};
+    for (const id of requiredBaseNeutralityIds) ownedCollection[id] = 1;
+
+    const p = baseProgress({ collection: ownedCollection });
+    expect(isThemeUnlocked(rewardTheme!.id, p)).toBe(true);
+
+    latchUnlockedUiThemes(p);
+    p.collection = {};
+
+    expect(isThemeUnlocked(rewardTheme!.id, p)).toBe(true);
   });
 });

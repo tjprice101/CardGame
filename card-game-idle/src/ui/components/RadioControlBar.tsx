@@ -5,6 +5,33 @@
 
 import { useCallback } from 'react';
 import type { RadioTrackInfo } from '@/audio/MainMenuRadio';
+import { uiTypography, warmTheme } from '@/ui/theme';
+
+function toRgbTriplet(color: string): [number, number, number] | null {
+  const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i);
+  if (hex) {
+    const raw = hex[1];
+    const normalized = raw.length === 3
+      ? raw.split('').map((c) => c + c).join('')
+      : raw.slice(0, 6);
+    const r = Number.parseInt(normalized.slice(0, 2), 16);
+    const g = Number.parseInt(normalized.slice(2, 4), 16);
+    const b = Number.parseInt(normalized.slice(4, 6), 16);
+    return [r, g, b];
+  }
+  const rgb = color.trim().match(/^rgba?\(([^)]+)\)$/i);
+  if (!rgb) return null;
+  const parts = rgb[1].split(',').map((p) => Number.parseFloat(p.trim()));
+  if (parts.length < 3 || parts.slice(0, 3).some((n) => Number.isNaN(n))) return null;
+  return [parts[0], parts[1], parts[2]];
+}
+
+function withAlpha(color: string, alpha: number): string {
+  const triplet = toRgbTriplet(color);
+  if (!triplet) return color;
+  const [r, g, b] = triplet;
+  return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${Math.max(0, Math.min(1, alpha))})`;
+}
 
 interface Props {
   radioActive: boolean;
@@ -17,20 +44,6 @@ interface Props {
   placement?: 'menu' | 'arena';
 }
 
-// Main menu navy / ice-blue palette.
-const G = {
-  bg:        'rgba(4,9,20,0.82)',
-  bgHover:   'rgba(8,18,38,0.92)',
-  border:    'rgba(120,185,248,0.28)',
-  iceBlue:   '#a8c8f0',
-  text:      '#e8f2fc',
-  textDim:   'rgba(190,225,252,0.55)',
-  hint:      'rgba(245, 248, 252, 0.48)',
-  btnBg:     'rgba(30,55,100,0.55)',
-  btnHover:  'rgba(50,90,155,0.75)',
-  display:   '"Cinzel", "Cormorant Garamond", Georgia, serif',
-} as const;
-
 const BAR: React.CSSProperties = {
   position:       'fixed',
   bottom:         18,
@@ -40,11 +53,8 @@ const BAR: React.CSSProperties = {
   alignItems:     'center',
   gap:            10,
   padding:        '7px 14px 7px 12px',
-  background:     G.bg,
-  border:         `1px solid ${G.border}`,
   borderRadius:   12,
   backdropFilter: 'blur(14px)',
-  boxShadow:      '0 4px 24px rgba(0,0,0,0.55), 0 0 0 1px rgba(120,185,248,0.10) inset',
   transition:     'opacity 0.35s ease, transform 0.35s ease',
   userSelect:     'none',
 };
@@ -63,9 +73,6 @@ const BTN: React.CSSProperties = {
   width:          30,
   height:         30,
   borderRadius:   7,
-  border:         `1px solid ${G.border}`,
-  background:     G.btnBg,
-  color:          G.iceBlue,
   cursor:         'pointer',
   fontSize:       14,
   lineHeight:     1,
@@ -108,6 +115,21 @@ function IconRadio() {
 }
 
 export default function RadioControlBar({ radioActive, paused, currentTrack, onPausedChange, onPause, onResume, onSkip, placement = 'menu' }: Props) {
+  const G = {
+    panelTop: withAlpha(warmTheme.surfaceStrong, 0.92),
+    panelBottom: withAlpha(warmTheme.surfaceMuted, 0.9),
+    border: warmTheme.border,
+    borderStrong: warmTheme.borderStrong,
+    accent: warmTheme.accent,
+    accentSoft: warmTheme.accentSoft,
+    text: warmTheme.text,
+    hint: warmTheme.textFaint,
+    btnBg: withAlpha(warmTheme.surfaceStrong, 0.92),
+    btnHover: withAlpha(warmTheme.accent, 0.22),
+    display: uiTypography.display,
+    glow: warmTheme.glow,
+  } as const;
+
   const handlePauseResume = useCallback(() => {
     if (paused) {
       onResume();
@@ -124,6 +146,9 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
 
   const barStyle: React.CSSProperties = {
     ...(radioActive ? BAR : BAR_HIDDEN),
+    background: `linear-gradient(135deg, ${G.panelTop} 0%, ${G.panelBottom} 100%)`,
+    border: `1px solid ${G.border}`,
+    boxShadow: `${G.glow}, 0 4px 24px ${withAlpha(warmTheme.shadow, 0.75)}, inset 0 1px 0 ${withAlpha(G.accentSoft, 0.18)}`,
     ...(placement === 'arena'
       ? {
           right: 22,
@@ -134,8 +159,18 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
 
   return (
     <div style={barStyle} aria-hidden={!radioActive}>
+      <div style={{
+        position: 'absolute',
+        left: 10,
+        right: 10,
+        top: 0,
+        height: 2,
+        borderRadius: 999,
+        background: `linear-gradient(90deg, transparent 0%, ${withAlpha(G.accent, 0.75)} 45%, ${withAlpha(G.accentSoft, 0.85)} 60%, transparent 100%)`,
+        pointerEvents: 'none',
+      }} />
       {/* Radio glyph */}
-      <span style={{ color: G.iceBlue, opacity: 0.80, display: 'flex', alignItems: 'center' }}>
+      <span style={{ color: G.accentSoft, opacity: 0.85, display: 'flex', alignItems: 'center' }}>
         <IconRadio />
       </span>
 
@@ -168,7 +203,7 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
 
       {/* Pause / Resume */}
       <button
-        style={BTN}
+        style={{ ...BTN, border: `1px solid ${G.borderStrong}`, background: G.btnBg, color: G.accentSoft }}
         title={paused ? 'Resume' : 'Pause'}
         onClick={handlePauseResume}
         onMouseEnter={e => (e.currentTarget.style.background = G.btnHover)}
@@ -179,7 +214,7 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
 
       {/* Skip */}
       <button
-        style={BTN}
+        style={{ ...BTN, border: `1px solid ${G.borderStrong}`, background: G.btnBg, color: G.accentSoft }}
         title="Next track"
         onClick={handleSkip}
         onMouseEnter={e => (e.currentTarget.style.background = G.btnHover)}

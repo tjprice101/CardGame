@@ -312,9 +312,9 @@ function PatienceBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Vessel &amp; Linked Modes</div>
-        <ListItem label="Vessel">Eternal/Infinite cards can designate the highest-Patience Seraphim as a Vessel that copies, redistributes, or anchors Patience for the rest of the turn.</ListItem>
-        <ListItem label="Linked">Linked-mode effects spread Patience gains across all linked Seraphim and partially refund Patience after each linked attack.</ListItem>
+        <div style={sectionHeadingStyle}>Starter Deck Focus</div>
+        <ListItem label="Core Plan">The starter Neutrality lane teaches simple Patience sequencing: establish board, stack Patience through card plays, then attack at threshold breakpoints.</ListItem>
+        <ListItem label="Practical Tip">Open with board units first, then play your draw/search Ophanim so each play adds value while your Seraphim are active.</ListItem>
       </div>
     </>
   );

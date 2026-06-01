@@ -41,4 +41,22 @@ describe('card summary digest', () => {
     expect(preview).not.toContain('card-play Patience gain becomes 1 + Patient Light stacks');
     expect(preview).toContain('+1 Patient Light');
   });
+
+  it('adds dedicated mechanics section for stack/resource-heavy cards', () => {
+    const card = CardRegistry.get('btei-pyroabyss-hellrift-mandala');
+    expect(card).toBeTruthy();
+
+    const mechanics = getCardSummarySections(card!).find(section => section.title === 'Mechanics');
+    expect(mechanics).toBeTruthy();
+    expect(mechanics!.lines.join(' ')).toContain('Furnace Heat');
+  });
+
+  it('keeps awaken detail concise without duplicating the same effects list', () => {
+    const card = CardRegistry.getAll().find(entry => entry.type === 'Angel');
+    expect(card).toBeTruthy();
+
+    const awaken = getCardSummarySections(card!).find(section => section.title === 'Awaken');
+    expect(awaken).toBeTruthy();
+    expect(awaken!.lines.length).toBe(1);
+  });
 });

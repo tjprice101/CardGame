@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectSettings, selectProfile, selectProgress } from '@/state/store';
-import { DEFAULT_WARM_PALETTE, type UiPalette } from '@/ui/theme';
-import { DEFAULT_UI_THEME_ID, UI_THEME_BY_ID, resolveThemeId } from '@/data/profile/uiThemes';
+import { type UiPalette } from '@/ui/theme';
+import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
 import { FONT_SIZE_OPTIONS, LANGUAGE_OPTIONS, t } from '@/ui/preferences';
 import ControlsSection from '@/ui/settings/ControlsSection';
 import type { SettingsState } from '@/types/game';
@@ -19,12 +19,23 @@ export default function SettingsPanel({ onClose }: Props) {
   const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
   const updateSettings = useStore(s => s.updateSettings);
+  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
+
+  useEffect(() => {
+    const themeId = profile.uiThemeId || DEFAULT_UI_THEME_ID;
+    if (!isThemeOscillating(themeId)) return;
+    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
+    return () => clearInterval(id);
+  }, [profile.uiThemeId]);
 
   const theme = useMemo<UiPalette>(() => {
-    const resolvedId = resolveThemeId(profile.uiThemeId || DEFAULT_UI_THEME_ID, progress);
-    const base = UI_THEME_BY_ID[resolvedId]?.palette ?? DEFAULT_WARM_PALETTE;
-    return profile.customUiTheme ? { ...base, ...profile.customUiTheme } : { ...base };
-  }, [profile.uiThemeId, profile.customUiTheme, progress]);
+    return getEffectiveThemePalette(
+      profile.uiThemeId || DEFAULT_UI_THEME_ID,
+      profile.customUiTheme,
+      progress,
+      themeNowMs,
+    );
+  }, [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs]);
 
   const [draft, setDraft] = useState<Partial<SettingsState>>(() => ({ ...settings }));
   const patchDraft = (patch: Partial<SettingsState>) => setDraft(prev => ({ ...prev, ...patch }));

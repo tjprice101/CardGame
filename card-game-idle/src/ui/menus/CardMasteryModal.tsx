@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useStore, selectProgress, selectComputedStats } from '@/state/store';
-import { uiTypography } from '@/ui/theme';
+import { uiTypography, warmTheme } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { MASTERY_TIERS, computeGlobalResonanceScore, getMasteryClaimKey, listMasteryProgress } from '@/systems/progression/cardMastery';
 import type { MasteryView } from '@/systems/progression/cardMastery';
@@ -10,25 +10,27 @@ interface Props {
   onClose: () => void;
 }
 
-// ── Design palette ────────────────────────────────────────────────────────────
-const P = {
-  bg: 'linear-gradient(160deg, #040a15 0%, #060e1c 50%, #030810 100%)',
-  glow: 'radial-gradient(ellipse 70% 40% at 50% 0%, rgba(78,158,220,0.22) 0%, transparent 60%)',
-  panel: 'rgba(6,14,30,0.72)',
-  panelStrong: 'rgba(72,148,210,0.09)',
-  border: 'rgba(110,160,215,0.32)',
-  borderStrong: 'rgba(72,128,190,0.58)',
-  accent: '#72caf5',
-  accentDeep: '#1e5890',
-  accentGlow: 'rgba(88,180,235,0.45)',
-  gold: '#96daff',
-  text: '#f0f6ff',
-  textMuted: 'rgba(205,228,255,0.82)',
-  textFaint: 'rgba(165,205,245,0.58)',
-  success: '#7de88a',
-  successBg: 'rgba(90,175,100,0.14)',
-  shadow: '0 32px 64px rgba(0,0,0,0.75), 0 0 0 1px rgba(72,128,190,0.30)',
-};
+function getThemePalette() {
+  return {
+    bg: `linear-gradient(160deg, ${warmTheme.surfaceMuted} 0%, ${warmTheme.surface} 50%, ${warmTheme.surfaceStrong} 100%)`,
+    glow: `radial-gradient(ellipse 70% 40% at 50% 0%, ${withAlpha(warmTheme.accent, 0.2)} 0%, transparent 60%)`,
+    panel: warmTheme.surface,
+    panelStrong: warmTheme.surfaceStrong,
+    border: warmTheme.border,
+    borderStrong: warmTheme.borderStrong,
+    accent: warmTheme.accent,
+    accentSoft: warmTheme.accentSoft,
+    accentDeep: warmTheme.accentDeep,
+    accentGlowColor: withAlpha(warmTheme.accentSoft, 0.42),
+    gold: warmTheme.accentSoft,
+    text: warmTheme.text,
+    textMuted: warmTheme.textMuted,
+    textFaint: warmTheme.textFaint,
+    success: warmTheme.success,
+    successBg: warmTheme.surfaceStrong,
+    shadow: warmTheme.shadow,
+  };
+}
 
 // Tier color scale from bronze → legendary gold → divine silver
 const TIER_PALETTE: string[] = [
@@ -50,6 +52,7 @@ function tierColor(tier: number): string {
 
 // ── System info panel content ──────────────────────────────────────────────
 function SystemInfoPanel() {
+  const P = getThemePalette();
   return (
     <div style={{
       background: P.panelStrong,
@@ -154,8 +157,8 @@ function SystemInfoPanel() {
       <div style={{
         padding: '10px 14px',
         borderRadius: 10,
-        border: `1px solid ${P.accentGlow}`,
-        background: 'rgba(58,142,200,0.06)',
+        border: `1px solid ${withAlpha(P.accent, 0.35)}`,
+        background: withAlpha(P.accent, 0.08),
         color: P.textMuted,
         lineHeight: 1.6,
         fontFamily: uiTypography.body,
@@ -174,6 +177,7 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
   claimCardMastery: (definitionId: string, tier: number) => void;
   progress: ReturnType<typeof selectProgress>;
 }) {
+  const P = getThemePalette();
   const def = CardRegistry.get(m.definitionId);
   if (!def) return null;
   const copies = progress.collection[m.definitionId] ?? 0;
@@ -184,12 +188,12 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
 
   return (
     <div style={{
-      background: hasClaimable ? 'rgba(58,142,200,0.05)' : P.panel,
+      background: hasClaimable ? withAlpha(P.accent, 0.08) : P.panel,
       border: `1px solid ${hasClaimable ? P.borderStrong : P.border}`,
       borderRadius: 10,
       padding: '10px 14px',
       transition: 'border-color 0.2s, background 0.2s',
-      boxShadow: hasClaimable ? `0 0 16px rgba(58,142,200,0.12)` : 'none',
+      boxShadow: hasClaimable ? `0 0 16px ${withAlpha(P.accent, 0.18)}` : 'none',
     }}>
       {/* Top row: card name + stats */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
@@ -276,7 +280,7 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
                     ? `rgba(${hexToRgb(tc)},0.18)`
                     : 'rgba(255,255,255,0.03)',
                 color: claimed ? P.textFaint : reached ? tc : 'rgba(255,255,255,0.18)',
-                border: `1px solid ${claimed ? 'rgba(255,255,255,0.06)' : reached ? tc + '66' : 'rgba(255,255,255,0.08)'}`,
+                border: `1px solid ${claimed ? 'rgba(255,255,255,0.06)' : reached ? withAlpha(tc, 0.4) : 'rgba(255,255,255,0.08)'}`,
                 cursor: reached && !claimed ? 'pointer' : 'default',
                 opacity: claimed ? 0.5 : 1,
                 textAlign: 'center',
@@ -300,8 +304,36 @@ function hexToRgb(hex: string): string {
   return `${r},${g},${b}`;
 }
 
+function toRgbTriplet(color: unknown): [number, number, number] | null {
+  if (typeof color !== 'string') return null;
+  const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i);
+  if (hex) {
+    const raw = hex[1];
+    const normalized = raw.length === 3
+      ? raw.split('').map((c) => c + c).join('')
+      : raw.slice(0, 6);
+    const r = Number.parseInt(normalized.slice(0, 2), 16);
+    const g = Number.parseInt(normalized.slice(2, 4), 16);
+    const b = Number.parseInt(normalized.slice(4, 6), 16);
+    return [r, g, b];
+  }
+  const rgb = color.trim().match(/^rgba?\(([^)]+)\)$/i);
+  if (!rgb) return null;
+  const parts = rgb[1].split(',').map((p) => Number.parseFloat(p.trim()));
+  if (parts.length < 3 || parts.slice(0, 3).some((n) => Number.isNaN(n))) return null;
+  return [parts[0], parts[1], parts[2]];
+}
+
+function withAlpha(color: unknown, alpha: number): string {
+  const triplet = toRgbTriplet(color);
+  if (!triplet) return `rgba(255, 255, 255, ${Math.max(0, Math.min(1, alpha))})`;
+  const [r, g, b] = triplet;
+  return `rgba(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}, ${Math.max(0, Math.min(1, alpha))})`;
+}
+
 // ── Main component ─────────────────────────────────────────────────────────
 export default function CardMasteryModal({ onClose }: Props) {
+  const P = getThemePalette();
   const progress = useStore(selectProgress);
   const computedStats = useStore(selectComputedStats);
   const claimCardMastery = useStore(s => s.claimCardMastery);
@@ -331,6 +363,8 @@ export default function CardMasteryModal({ onClose }: Props) {
     if (filter === 'claimable') return masteryList.filter(m => m.unclaimedTiers.length > 0);
     return masteryList.filter(m => m.count > 0);
   }, [masteryList, filter, progress.cardMasteryClaims]);
+  const accentTriplet = toRgbTriplet(P.accent) ?? [114, 202, 245];
+  const accentSoftTriplet = toRgbTriplet(P.accentSoft) ?? [150, 218, 255];
 
   const totalMastered = masteryList.filter(m => m.reachedTier >= MASTERY_TIERS.length).length;
   const totalWithProgress = masteryList.length;
@@ -355,13 +389,13 @@ export default function CardMasteryModal({ onClose }: Props) {
       <div style={{
         height: 3, flexShrink: 0,
         background: `linear-gradient(90deg, transparent, ${P.accentDeep}, ${P.accent}, ${P.accentDeep}, transparent)`,
-        boxShadow: `0 0 24px ${P.accentGlow}`,
+        boxShadow: `0 0 24px ${P.accentGlowColor}`,
       }} />
 
       <div onClick={e => e.stopPropagation()} style={{
         display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden',
-        ['--ui-accent' as any]: '114, 202, 245',
-        ['--ui-accent-soft' as any]: '150, 218, 255',
+        ['--ui-accent' as any]: `${accentTriplet[0]}, ${accentTriplet[1]}, ${accentTriplet[2]}`,
+        ['--ui-accent-soft' as any]: `${accentSoftTriplet[0]}, ${accentSoftTriplet[1]}, ${accentSoftTriplet[2]}`,
       } as React.CSSProperties}>
 
         {/* ── Header ── */}
@@ -381,7 +415,7 @@ export default function CardMasteryModal({ onClose }: Props) {
             <div className="ui-title-glow" style={{
               fontSize: 32, fontWeight: 700, letterSpacing: 1.5,
               color: P.accent, fontFamily: uiTypography.display,
-              textShadow: `0 0 48px ${P.accentGlow}, 0 2px 8px rgba(0,0,0,0.8)`,
+              textShadow: `0 0 48px ${P.accentGlowColor}, 0 2px 8px rgba(0,0,0,0.8)`,
             }}>
               Card-born Tier
             </div>
@@ -408,7 +442,7 @@ export default function CardMasteryModal({ onClose }: Props) {
               onClick={() => setShowInfo(v => !v)}
               style={{
                 padding: '8px 16px', borderRadius: 8, cursor: 'pointer',
-                background: showInfo ? `rgba(58,142,200,0.16)` : 'rgba(255,255,255,0.04)',
+                background: showInfo ? withAlpha(P.accent, 0.16) : withAlpha(P.text, 0.04),
                 border: `1px solid ${showInfo ? P.borderStrong : P.border}`,
                 color: showInfo ? P.accent : P.textMuted,
                 fontFamily: uiTypography.display, fontSize: 12, letterSpacing: 0.5,
@@ -420,7 +454,7 @@ export default function CardMasteryModal({ onClose }: Props) {
               onClick={onClose}
               style={{
                 padding: '8px 18px', borderRadius: 8, cursor: 'pointer',
-                background: 'rgba(255,255,255,0.04)',
+                background: withAlpha(P.text, 0.04),
                 border: `1px solid ${P.border}`,
                 color: P.textMuted, fontFamily: uiTypography.display, fontSize: 12,
               }}
@@ -439,7 +473,7 @@ export default function CardMasteryModal({ onClose }: Props) {
               width: 380, flexShrink: 0,
               borderRight: `1px solid ${P.border}`,
               overflowY: 'auto', padding: '20px 20px',
-              background: 'rgba(0,0,0,0.15)',
+              background: withAlpha(P.text, 0.08),
             }}>
               <SystemInfoPanel />
             </div>
@@ -453,7 +487,7 @@ export default function CardMasteryModal({ onClose }: Props) {
               padding: '14px 24px',
               borderBottom: `1px solid ${P.border}`,
               display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
-              background: 'rgba(0,0,0,0.12)',
+              background: withAlpha(P.text, 0.06),
             }}>
               <div style={{ fontSize: 9, letterSpacing: 2, color: P.textFaint, textTransform: 'uppercase', marginRight: 4, fontFamily: uiTypography.display }}>
                 Filter
@@ -465,7 +499,7 @@ export default function CardMasteryModal({ onClose }: Props) {
                   style={{
                     padding: '6px 14px', borderRadius: 20, cursor: 'pointer',
                     fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 0.5,
-                    background: filter === f ? `rgba(58,142,200,0.18)` : 'rgba(255,255,255,0.04)',
+                    background: filter === f ? withAlpha(P.accent, 0.18) : withAlpha(P.text, 0.04),
                     color: filter === f ? P.accent : P.textMuted,
                     border: `1px solid ${filter === f ? P.borderStrong : P.border}`,
                     transition: 'all 0.15s',
@@ -487,10 +521,10 @@ export default function CardMasteryModal({ onClose }: Props) {
                   fontFamily: uiTypography.display, fontSize: 12, fontWeight: 700, letterSpacing: 0.5,
                   background: claimableSummary.tiersClaimable > 0
                     ? `linear-gradient(135deg, ${P.accentDeep}, ${P.accent})`
-                    : 'rgba(255,255,255,0.04)',
+                    : withAlpha(P.text, 0.04),
                   color: claimableSummary.tiersClaimable > 0 ? '#0c1e34' : P.textFaint,
                   border: `1px solid ${claimableSummary.tiersClaimable > 0 ? P.borderStrong : P.border}`,
-                  boxShadow: claimableSummary.tiersClaimable > 0 ? `0 4px 16px ${P.accentGlow}` : 'none',
+                  boxShadow: claimableSummary.tiersClaimable > 0 ? `0 4px 16px ${P.accentGlowColor}` : 'none',
                   transition: 'all 0.2s',
                 }}
                 title={claimableSummary.tiersClaimable > 0
@@ -557,23 +591,23 @@ function HeroStat({ label, value, accent, sub, pulse }: {
   return (
     <div style={{
       padding: '10px 16px', borderRadius: 10,
-      background: `rgba(${accent === P.gold ? '123,189,232' : accent === '#6ecf7c' ? '110,207,124' : '88,170,218'},0.08)`,
-      border: `1px solid ${accent}44`,
+      background: withAlpha(accent, 0.08),
+      border: `1px solid ${withAlpha(accent, 0.28)}`,
       textAlign: 'center',
       minWidth: 100,
-      boxShadow: pulse ? `0 0 20px ${accent}33` : 'none',
+      boxShadow: pulse ? `0 0 20px ${withAlpha(accent, 0.2)}` : 'none',
     }}>
       <div style={{
         fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase',
-        color: `${accent}aa`, fontFamily: uiTypography.display, marginBottom: 4,
+        color: withAlpha(accent, 0.66), fontFamily: uiTypography.display, marginBottom: 4,
       }}>{label}</div>
       <div style={{
         fontSize: 20, fontWeight: 700, color: accent,
         fontFamily: uiTypography.display, lineHeight: 1,
-        textShadow: `0 0 20px ${accent}66`,
+        textShadow: `0 0 20px ${withAlpha(accent, 0.4)}`,
       }}>
         {value}
-        {sub && <span style={{ fontSize: 11, fontWeight: 400, marginLeft: 3, color: `${accent}99` }}>{sub}</span>}
+        {sub && <span style={{ fontSize: 11, fontWeight: 400, marginLeft: 3, color: withAlpha(accent, 0.58) }}>{sub}</span>}
       </div>
     </div>
   );

@@ -21,5 +21,12 @@ const pantheonNotify = {
   },
 };
 
+const pantheonAssets = {
+  listMainMenuBackgrounds() {
+    return ipcRenderer.invoke('pantheon-assets:list-main-menu-backgrounds');
+  },
+};
+
 contextBridge.exposeInMainWorld('pantheonSave', pantheonSave);
 contextBridge.exposeInMainWorld('pantheonNotify', pantheonNotify);
+contextBridge.exposeInMainWorld('pantheonAssets', pantheonAssets);

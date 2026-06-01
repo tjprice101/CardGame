@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { RadioTrackInfo } from '@/audio/MainMenuRadio';
+import { uiTypography, warmTheme } from '@/ui/theme';
 
 export interface NowPlayingEvent {
   epoch: number;
@@ -20,18 +21,19 @@ interface Props {
 const HOLD_MS = 5200;
 const EXIT_MS = 400;
 
-// Matches the main menu hub's cool navy/ice-blue palette.
-const G = {
-  iceBlue:     '#a8c8f0',
-  iceBlueSoft: '#c8dff8',
-  text:        '#e8f2fc',
-  textDim:     'rgba(190,225,252,0.60)',
-  border:      'rgba(120,185,248,0.28)',
-  glow:        'rgba(100,165,240,0.22)',
-  display:     '"Cinzel", "Cormorant Garamond", Georgia, serif',
-} as const;
-
 export default function RadioNowPlaying({ nowPlaying }: Props) {
+  const G = {
+    iceBlue: warmTheme.accent,
+    iceBlueSoft: warmTheme.accentSoft,
+    text: warmTheme.text,
+    textDim: warmTheme.textMuted,
+    border: warmTheme.border,
+    glow: warmTheme.glow,
+    display: uiTypography.display,
+    panelA: warmTheme.surfaceStrong,
+    panelB: warmTheme.surfaceMuted,
+  } as const;
+
   const [phase, setPhase] = useState<'hidden' | 'enter' | 'hold' | 'exit'>('hidden');
   const [displayTrack, setDisplayTrack] = useState<RadioTrackInfo | null>(null);
   const holdTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,10 +80,10 @@ export default function RadioNowPlaying({ nowPlaying }: Props) {
     >
       <div style={{
         // Dark navy glass — matches MainMenuHub pill/vignette base
-        background: 'linear-gradient(135deg, rgba(12,22,44,0.97) 0%, rgba(5,10,22,0.98) 100%)',
+        background: `linear-gradient(135deg, ${G.panelA} 0%, ${G.panelB} 100%)`,
         border: `1px solid ${G.border}`,
         borderRadius: 10,
-        boxShadow: `0 8px 36px rgba(0,0,0,0.72), 0 0 0 1px rgba(100,165,248,0.06), inset 0 1px 0 rgba(140,200,255,0.10)`,
+        boxShadow: `${G.glow}, 0 8px 36px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.10)`,
         overflow: 'hidden',
         minWidth: 234,
         maxWidth: 310,
@@ -126,7 +128,8 @@ export default function RadioNowPlaying({ nowPlaying }: Props) {
             <div style={{
               flex: 1,
               height: 1,
-              background: `linear-gradient(90deg, rgba(120,185,248,0.28) 0%, transparent 100%)`,
+              background: `linear-gradient(90deg, ${G.iceBlueSoft} 0%, transparent 100%)`,
+              opacity: 0.38,
             }} />
           </div>
 

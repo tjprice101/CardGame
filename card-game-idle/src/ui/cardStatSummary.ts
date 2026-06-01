@@ -6,7 +6,6 @@ import type {
   SeraphimDefinition,
 } from '@/types/cards';
 import type { CardEffect, CardSubtypeFilter, CherubimPassiveEffect, EffectCondition } from '@/types/effects';
-import { getLateGameAttackIdentity } from '@/systems/cards/LateGameAttackIdentity';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { formatDisplayCardText } from '@/ui/preferences';
 
@@ -123,6 +122,13 @@ function formatEffectsInline(effects: CardEffect[]): string {
   const lines = formatEffectLines(effects);
   if (lines.length === 0) return 'none';
   return lines.join('; ');
+}
+
+function normalizeSummaryLine(line: string): string {
+  return formatDisplayCardText(line)
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function formatEffectLines(effects: CardEffect[]): string[] {
@@ -245,8 +251,6 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ Strain`;
     case 'strain_lte':
       return `you have ${condition.value} or less Strain`;
-    case 'prismatic_light_gte':
-      return `you have ${condition.value}+ Prismatic Light`;
     case 'resonance_charge_gte':
       return `you have ${condition.value}+ Resonance Charge`;
     case 'prismatic_refraction_depth_gte':
@@ -255,14 +259,6 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ Prism Charges`;
     case 'prismatic_distinct_channels_gte':
       return `you have played ${condition.value}+ distinct channels this turn`;
-    case 'shards_gte':
-      return `you have ${condition.value}+ Monochromatic Shards`;
-    case 'arctic_charge_gte':
-      return `you have ${condition.value}+ Arctic Charge`;
-    case 'proof_gte':
-      return `you have ${condition.value}+ Proof`;
-    case 'bloom_gte':
-      return `you have ${condition.value}+ Bloom`;
     case 'burn_phase_cards_gte':
       return `you have ${condition.value}+ Burn-phase cards`;
     case 'grove_cards_gte':
@@ -273,8 +269,6 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ ${setSecondaryName(condition.kind)}`;
     case 'light_resonance_gte':
       return `you have ${condition.value}+ Cadence`;
-    case 'black_glass_white_flame_gte':
-      return `you have ${condition.value}+ White Flame`;
     case 'black_glass_black_flame_gte':
       return `you have ${condition.value}+ Black Flame`;
     case 'black_glass_flames_equal':
@@ -316,7 +310,6 @@ function formatEffect(effect: CardEffect): string {
     case 'salvage_by_type': return `Salvage ${formatCount(effect.filter.length > 1 ? effect.filter.length : 1, 'card')} matching ${formatSubtypeList(effect.filter)}`;
     case 'salvage_any': return 'Salvage any 1 card';
     case 'radiance_double': return 'Double current Radiance';
-    case 'sacred_covenant': return 'Sacred Covenant';
     case 'prismatic_light_gain': return `Gain ${effect.value} Prismatic Light`;
     case 'prismatic_light_spend': return `Spend ${effect.value} Prismatic Light`;
     case 'resonance_charge_gain': return `Gain ${effect.value} Resonance Charge`;
@@ -326,8 +319,6 @@ function formatEffect(effect: CardEffect): string {
     case 'monochromatic_shards_spend': return `Spend ${effect.value} Monochromatic Shards`;
     case 'arctic_charge_gain': return `Gain ${effect.value} Arctic Charge`;
     case 'arctic_charge_discharge': return 'Discharge Arctic Charge';
-    case 'proof_gain': return `Gain ${effect.value} Proof`;
-    case 'proof_spend': return `Spend ${effect.value} Proof`;
     case 'bloom_gain': return `Gain ${effect.value} Bloom`;
     case 'bloom_harvest': return 'Harvest Bloom';
     case 'trail_gain': return `Gain ${effect.value} Trail`;
@@ -341,17 +332,11 @@ function formatEffect(effect: CardEffect): string {
     case 'patience_gain_all': return `All Seraphim on board gain +${effect.value} Patience`;
     case 'patience_double_all': return 'Double all Patience on the board';
     case 'neutrality_equilibrium_sigil_gain': return `Gain ${effect.value} Equilibrium Sigil${effect.value === 1 ? '' : 's'}`;
-    case 'neutrality_equilibrium_sigil_cap_bonus': return `Increase Equilibrium Sigil cap by +${effect.value} this turn`;
     case 'neutrality_equilibrium_starbound_cashout': return `Spend all Equilibrium Sigils: double all Patience and gain +${effect.oblivionPerSigil} Oblivion per Sigil spent`;
     case 'neutrality_equilibrium_tactical_spend': return `If you have ${effect.spend}+ Equilibrium Sigils, spend ${effect.spend} for either +${effect.burstOblivion} Oblivion burst or ${effect.restorePercent}% team Patience restore`;
     case 'neutrality_patient_light_gain': return `Grant ${effect.value} Patient Light stack${effect.value === 1 ? '' : 's'} (card-play Patience gain becomes 1 + Patient Light stacks)`;
     case 'neutrality_designate_vessel': return 'Designate the Seraphim with the highest Patience as your Vessel';
-    case 'neutrality_vessel_copy_gain': return `Your Vessel copies ${effect.percent}% of Patience gained by other Seraphim this turn`;
-    case 'neutrality_vessel_redistribute': return `Redistribute up to ${effect.value} Vessel Patience across your other Seraphim`;
-    case 'neutrality_mark_hand': return `Mark up to ${effect.count} other cards in hand; marked cards grant +${effect.patience} Patience to all Seraphim when played`;
     case 'neutrality_attack_preserve': return `Seraphim attacks preserve ${effect.percent}% of consumed Patience this turn`;
-    case 'neutrality_attack_restore': return `After each Seraphim attack this turn, restore ${effect.percent}% of consumed Patience to that attacker`;
-    case 'neutrality_linked_mode': return `Link Seraphim this turn: patience gains grant +${effect.gain} extra to all linked Seraphim and non-attacking linked Seraphim retain ${effect.retainPercent}% Patience after each linked attack`;
     case 'overclock':
       return `Overclock: gain ${effect.strain} Strain, then ${formatEffectsInline(effect.then.filter(Boolean))}`;
     case 'conditional':
@@ -387,6 +372,10 @@ function formatEffect(effect: CardEffect): string {
       if ((effect.empowerAtPairs ?? 0) > 0) extras.push(`empower next card at ${effect.empowerAtPairs}+ pair${effect.empowerAtPairs === 1 ? '' : 's'}`);
       const suffix = extras.length > 0 ? `; ${extras.join('; ')}` : '';
       return `Confluence ${scope} matched Heat and Chroma Ember pairs (+${formatExactValue(effect.oblivionPerPair)} Oblivion per pair${suffix})`;
+    }
+    case 'light_transcendent_duality_choice': {
+      const formula = `${effect.baseOblivion} + ${effect.resonanceScale}xResonance + ${effect.haloScale}xHalo + ${effect.distinctNoteScale}xDistinct Notes + ${effect.thresholdScale}xfloor((Resonance + Halo)/${effect.thresholdDivisor})`;
+      return `Duality: choose Discard 1, draw 2; or gain Oblivion (${formula})`;
     }
     case 'thorn_briar_spiral_bloom': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -429,7 +418,6 @@ function formatEffect(effect: CardEffect): string {
       if ((effect.empowerAtFormation ?? 0) > 0) parts.push(`empower your next card at Formation ${effect.empowerAtFormation}+`);
       return `Apex ${scope} ${eternalStackName('flutter')} (${parts.join(', ')})`;
     }
-    case 'butterfly_tune': return `Set Butterfly stance to ${effect.stance}`;
     case 'butterfly_release': {
       const scope = effect.spend >= 9999 ? 'all' : `up to ${effect.spend}`;
       return `Release ${scope} Spectrum (+${effect.oblivionPerSpectrum} Oblivion per Spectrum)`;
@@ -473,24 +461,10 @@ function formatEffect(effect: CardEffect): string {
       return parts.join('; ');
     }
     case 'set_garden_law': return `Set Garden Law to ${effect.law} if unset`;
-    case 'effect_plus': return `Increase linked effect value by ${effect.value}`;
-    case 'choose_lineage': return `Choose a lineage, then ${formatEffect(effect.effect)}`;
-    case 'burn_phase_seed_on_other_lineage_play': return `Burn-phase cards gain ${effect.value} Seed when you play a different lineage`;
     case 'echo_effect_double': return `Echo effects are doubled for ${formatCount(effect.duration, 'turn')}`;
     case 'sigil_on_burn_play': return `Gain ${effect.value} Sun Sigil when you play a Burn-phase card`;
-    case 'sigil_threshold_echo_return': return `At ${effect.threshold}+ Sigils, Burn-phase cards return as Echoes`;
-    case 'sigil_draw_on_gain': return `Draw ${formatCount(effect.value, 'card')} whenever you gain Sigils`;
-    case 'choose_burn_card': return `Choose a Burn-phase card, then ${formatEffect(effect.effect)}`;
-    case 'archive_crown_on_new_lineage': return `Archive ${effect.value} Crown on new lineage; at ${effect.threshold} trigger ${effect.trigger.replace(/_/g, ' ')}`;
-    case 'burn_attack_all': return 'Trigger all Burn-phase attacks';
-    case 'burn_cooldown_reduction_per_crown': return `Burn-phase cards gain cooldown reduction per Crown (+${effect.value} each)`;
-    case 'char_to_memory_echo': return `When matching cards char, copy into Grove as Memory Echo (${effect.value})`;
-    case 'memory_echo_buff': return `Memory Echoes gain: ${formatEffect(effect.effect)}`;
-    case 'memory_echo_cost_reduction': return `Memory Echo play cost is reduced by ${effect.value}`;
     case 'replay_last_burn_card': return 'Replay the last Burn-phase card played this turn';
     case 'ignite_units_burn': return `Ignite up to ${formatCount(effect.count, 'unit')} into Burn`;
-    case 'mini_final_chord_on_diff_lineages': return `If ignited units are different lineages: ${formatEffect(effect.effect)}`;
-    case 'echo_on_burn_play': return `Gain ${effect.value} Echo when you play a Burn-phase card`;
     case 'snapshot_burn_lineages': return 'Snapshot current Burn-phase lineages';
     case 'incandescent_chorus_on_new_lineage': return `On new lineage: ${formatEffect(effect.effect)}`;
     case 'burn_lineage_echo_and_cooldown': return `Burn cards of the lineage gain +${effect.echo} Echo and ${effect.cooldown} cooldown reduction`;
@@ -526,7 +500,6 @@ function formatEffect(effect: CardEffect): string {
       const target = effect.targetMode === 'last' ? 'the last card' : `the last ${formatCount(effect.count ?? 1, 'card')}`;
       return `Nacre-Recast ${target} at ${Math.round(effect.power * 100)}% power`;
     }
-    case 'forge_ouroboric_recast': return `Ouroboric Recast at ${Math.round(effect.power * 100)}% power`;
     case 'forge_temper': {
       const target = effect.targetMode === 'self' ? 'this card' : effect.targetMode === 'last_played' ? 'last played card' : 'all Seraphim on board';
       return `Temper ${target}: x${formatExactValue(effect.factor)} power`;
@@ -535,7 +508,6 @@ function formatEffect(effect: CardEffect): string {
       const target = effect.target === 'self' ? 'this card' : 'last played card';
       return `Anvil-Seal ${target} (+${effect.burstOblivion} Oblivion on its next play)`;
     }
-    case 'forge_nacre_coat': return `Nacre-Coat ${effect.targetMode === 'all_played' ? 'all played cards' : 'last played card'}`;
     case 'forge_imprint_gain': {
       const target = effect.targetMode === 'all_played'
         ? 'all played cards'
@@ -645,24 +617,10 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
       return `Buffs ${effect.targetUnitType === 'Any' ? 'Seraphim and Angel' : effect.targetUnitType} attacks: ${parts.join(', ') || 'none'}`;
     }
     case 'set_garden_law':
-    case 'effect_plus':
-    case 'choose_lineage':
-    case 'burn_phase_seed_on_other_lineage_play':
     case 'echo_effect_double':
     case 'sigil_on_burn_play':
-    case 'sigil_threshold_echo_return':
-    case 'sigil_draw_on_gain':
-    case 'choose_burn_card':
-    case 'archive_crown_on_new_lineage':
-    case 'burn_attack_all':
-    case 'burn_cooldown_reduction_per_crown':
-    case 'char_to_memory_echo':
-    case 'memory_echo_buff':
-    case 'memory_echo_cost_reduction':
     case 'replay_last_burn_card':
     case 'ignite_units_burn':
-    case 'mini_final_chord_on_diff_lineages':
-    case 'echo_on_burn_play':
     case 'snapshot_burn_lineages':
     case 'incandescent_chorus_on_new_lineage':
     case 'burn_lineage_echo_and_cooldown':
@@ -746,36 +704,249 @@ export function getCanonicalActivatedAbilityDescription(card: AngelDefinition): 
   return formatEffectsInline(card.activatedAbility.effects);
 }
 
-function pushEffectBlock(lines: string[], label: string, effects: CardEffect[]): void {
-  const formatted = formatEffectLines(effects);
-  if (formatted.length === 0) {
-    lines.push(`${label}: none`);
-    return;
-  }
-  lines.push(`${label}:`);
-  for (const line of formatted) {
-    lines.push(`- ${line}`);
-  }
-}
-
-function pushLateGameIdentity(
-  lines: string[],
-  definitionId: string,
-  rarity: CardDefinition['rarity'],
-  attackLabel: string,
-): void {
-  const identity = getLateGameAttackIdentity(definitionId, rarity, attackLabel);
-  if (!identity) return;
-  lines.push(`  Proc · +${Math.round(identity.bonusBaseMultiplier * 100)}% +${identity.bonusFlatOblivion} flat · draw ${identity.drawCards} · dominant +${identity.dominantResourceGain} · cd -${identity.cooldownReduction}`);
-}
-
 function pushSummarySection(sections: CardSummarySection[], title: string, lines: string[]): void {
+  const seen = new Set<string>();
   const filtered = lines
     .map(line => line.trim())
-    .filter(line => line.length > 0);
+    .filter((line) => {
+      if (line.length === 0) return false;
+      const key = normalizeSummaryLine(line);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
   if (filtered.length === 0) return;
   sections.push({ title, lines: filtered });
+}
+
+/** Collects all play/summon-time CardEffect arrays from a card definition for mechanic detection. */
+function collectAllCardEffects(card: CardDefinition): CardEffect[] {
+  if (card.type === 'Ophanim') return [...card.effects];
+  if (card.type === 'Cherubim') return [...(card as CherubimDefinition).onPlayEffects];
+  if (card.type === 'Seraphim') return [...(card as SeraphimDefinition).onPlayEffects];
+  const angel = card as AngelDefinition;
+  return [...angel.onSummonEffects, ...angel.activatedAbility.effects];
+}
+
+function flattenNestedEffects(effects: ReadonlyArray<CardEffect>): CardEffect[] {
+  const out: CardEffect[] = [];
+  const stack = [...effects.filter(Boolean)];
+
+  while (stack.length > 0) {
+    const effect = stack.pop();
+    if (!effect) continue;
+    out.push(effect);
+
+    if (effect.type === 'conditional') {
+      stack.push(...effect.then.filter(Boolean));
+      continue;
+    }
+
+    if (effect.type === 'gate_payoff') {
+      for (const gate of effect.gates) {
+        if (gate.payoff) stack.push(gate.payoff);
+      }
+      continue;
+    }
+
+    if ('effect' in effect && effect.effect && typeof effect.effect === 'object') {
+      stack.push(effect.effect as CardEffect);
+    }
+
+    const nestedEffects = (effect as { effects?: unknown }).effects;
+    if (Array.isArray(nestedEffects)) {
+      for (const entry of nestedEffects) {
+        if (!entry || typeof entry !== 'object') continue;
+        if ('type' in entry) {
+          stack.push(entry as CardEffect);
+          continue;
+        }
+        if ('effect' in entry && entry.effect && typeof entry.effect === 'object') {
+          stack.push(entry.effect as CardEffect);
+        }
+      }
+    }
+  }
+
+  return out;
+}
+
+function dedupeSections(sections: CardSummarySection[]): CardSummarySection[] {
+  const seen = new Set<string>();
+  const result: CardSummarySection[] = [];
+
+  for (const section of sections) {
+    const dedupedLines = section.lines.filter((line) => {
+      const key = normalizeSummaryLine(line);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    if (dedupedLines.length > 0) {
+      result.push({ ...section, lines: dedupedLines });
+    }
+  }
+
+  return result;
+}
+
+function collectMechanicNotes(card: CardDefinition): string[] {
+  const notes: string[] = [];
+  const seen = new Set<string>();
+  const pushNote = (note: string) => {
+    const key = normalizeSummaryLine(note);
+    if (seen.has(key)) return;
+    seen.add(key);
+    notes.push(note);
+  };
+
+  const allEffects = flattenNestedEffects(collectAllCardEffects(card));
+  const stackKinds = new Set<string>();
+  const secondaryKinds = new Set<string>();
+  const turnResources = new Set<string>();
+
+  const registerCondition = (condition: EffectCondition | undefined) => {
+    if (!condition) return;
+    if (condition.type === 'eternal_stack_gte') stackKinds.add(condition.stack);
+    if (condition.type === 'set_secondary_gte') secondaryKinds.add(condition.kind);
+    if (condition.type === 'pyro_heat_gte') turnResources.add('Heat');
+    if (condition.type === 'radiance_gte' || condition.type === 'light_resonance_gte') turnResources.add('Radiance');
+    if (condition.type === 'trail_gte') turnResources.add('Trail');
+    if (condition.type === 'strain_gte' || condition.type === 'strain_lte') turnResources.add('Strain');
+    if (condition.type === 'equilibrium_sigils_gte') turnResources.add('Equilibrium Sigils');
+    if (condition.type === 'resonance_charge_gte') turnResources.add('Resonance Charge');
+    if (condition.type === 'prismatic_node_charges_gte') turnResources.add('Prism Charges');
+    if (condition.type === 'black_glass_black_flame_gte' || condition.type === 'black_glass_flames_equal') turnResources.add('Twin Flames');
+    if (condition.type === 'black_glass_fracture_gte') turnResources.add('Fracture');
+    if (condition.type === 'starlight_gte') turnResources.add('Starlight Charges');
+    if (condition.type === 'dream_lattice_gte') turnResources.add('Dream Lattice');
+  };
+
+  for (const effect of allEffects) {
+    if (effect.type === 'eternal_stack_gain' || effect.type === 'eternal_stack_spend' || effect.type === 'eternal_stack_cashout') {
+      stackKinds.add(effect.stack);
+      continue;
+    }
+    if (effect.type === 'set_secondary_gain' || effect.type === 'set_secondary_spend') {
+      secondaryKinds.add(effect.kind);
+      continue;
+    }
+
+    if (effect.type === 'conditional') {
+      registerCondition(effect.condition);
+      continue;
+    }
+
+    if (effect.type === 'gate_payoff') {
+      for (const gate of effect.gates) {
+        registerCondition(gate.condition);
+      }
+      continue;
+    }
+
+    if (effect.type === 'pyro_heat_gain' || effect.type === 'pyro_heat_spend' || effect.type === 'pyro_heat_burst') turnResources.add('Heat');
+    if (effect.type === 'radiance_gain' || effect.type === 'radiance_spend' || effect.type === 'radiance_double') turnResources.add('Radiance');
+    if (effect.type === 'trail_gain' || effect.type === 'trail_spend') turnResources.add('Trail');
+    if (effect.type === 'strain_gain' || effect.type === 'strain_vent' || effect.type === 'overclock') turnResources.add('Strain');
+    if (effect.type === 'neutrality_equilibrium_sigil_gain' || effect.type === 'neutrality_equilibrium_starbound_cashout' || effect.type === 'neutrality_equilibrium_tactical_spend') {
+      turnResources.add('Equilibrium Sigils');
+    }
+    if (effect.type === 'neutrality_patient_light_gain' || effect.type === 'neutrality_designate_vessel' || effect.type === 'neutrality_attack_preserve') {
+      turnResources.add('Patient Light and Vessel');
+    }
+    if (effect.type === 'prismatic_charge_spend') turnResources.add('Prism Charges');
+    if (effect.type === 'resonance_charge_gain' || effect.type === 'resonance_charge_spend') turnResources.add('Resonance Charge');
+    if (effect.type === 'monochromatic_shards_gain' || effect.type === 'monochromatic_shards_spend') turnResources.add('Monochromatic Shards');
+    if (effect.type === 'black_glass_white_flame_gain' || effect.type === 'black_glass_black_flame_gain' || effect.type === 'black_glass_flames_swap') {
+      turnResources.add('Twin Flames');
+    }
+    if (effect.type === 'black_glass_fracture_gain' || effect.type === 'black_glass_fracture_collapse') turnResources.add('Fracture');
+    if (effect.type === 'seas_undertow_gain' || effect.type === 'seas_undertow_release') turnResources.add('Undertow');
+    if (effect.type === 'seas_foam_gain') turnResources.add('Foam');
+    if (effect.type === 'starlight_gain' || effect.type === 'wuas_nova_wish_burst') turnResources.add('Starlight Charges');
+    if (effect.type === 'dream_lattice_gain' || effect.type === 'wuas_nova_wish_burst' || effect.type === 'wuas_infinite_starbirth') {
+      turnResources.add('Dream Lattice');
+    }
+    if (effect.type === 'forge_reforge_charge_gain' || effect.type === 'forge_reforge_charge_cap_raise') turnResources.add('Reforge Charge');
+    if (effect.type === 'forge_pearl_drop' || effect.type === 'forge_pearl_cashout') turnResources.add('Pearls');
+    if (effect.type === 'forge_imprint_gain' || effect.type === 'forge_imprint_spend_burst' || effect.type === 'forge_imprint_spend_recast') {
+      turnResources.add('Imprint');
+    }
+    if (effect.type === 'dfh_eternal_veil_rite' || effect.type === 'dfh_veil_marks_amplify' || effect.type === 'dfh_veil_marks_transmute' || effect.type === 'dfh_veil_marks_cashout') {
+      turnResources.add('Veil Marks');
+    }
+  }
+
+  if (card.type === 'Angel') {
+    const angel = card as AngelDefinition;
+    for (const condition of angel.extraSummonConditions ?? []) {
+      registerCondition(condition as unknown as EffectCondition);
+      if (condition.type === 'eternal_stack_gte') stackKinds.add(condition.stack);
+      if (condition.type === 'set_secondary_gte') secondaryKinds.add(condition.kind);
+    }
+  }
+
+  if (card.type === 'Seraphim') {
+    const seraphim = card as SeraphimDefinition;
+    if (seraphim.patienceThreshold !== undefined) turnResources.add('Patience');
+    for (const attack of seraphim.attacks ? [seraphim.attacks.unsynergized, seraphim.attacks.synergized] : []) {
+      for (const cost of attack.costs ?? []) {
+        if (cost.type === 'spend_pyro_heat') turnResources.add('Heat');
+        if (cost.type === 'spend_radiance') turnResources.add('Radiance');
+        if (cost.type === 'spend_trail') turnResources.add('Trail');
+        if (cost.type === 'spend_strain') turnResources.add('Strain');
+      }
+    }
+  }
+
+  if (card.type === 'Angel') {
+    const angel = card as AngelDefinition;
+    for (const attack of angel.attacks ? [angel.attacks.primary, angel.attacks.exalted] : []) {
+      for (const cost of attack.costs ?? []) {
+        if (cost.type === 'spend_pyro_heat') turnResources.add('Heat');
+        if (cost.type === 'spend_radiance') turnResources.add('Radiance');
+        if (cost.type === 'spend_trail') turnResources.add('Trail');
+        if (cost.type === 'spend_strain') turnResources.add('Strain');
+      }
+    }
+  }
+
+  for (const stack of stackKinds) {
+    pushNote(`${eternalStackName(stack)}: primary stack resource used by this card's higher-rarity gain/spend/cashout loop.`);
+  }
+
+  for (const secondary of secondaryKinds) {
+    pushNote(`${setSecondaryName(secondary)}: auxiliary set resource consumed by this card's bespoke payoff pattern.`);
+  }
+
+  if (turnResources.has('Heat')) pushNote('Heat: Fire pressure resource used for scaling, costs, or burst conversion.');
+  if (turnResources.has('Radiance')) pushNote('Radiance: Light resource used for spend checks and burst formulas.');
+  if (turnResources.has('Trail')) pushNote('Trail: Thornbound tempo resource that fuels spend/cashout cards.');
+  if (turnResources.has('Strain')) pushNote('Strain: Mechanical overload resource; this card either builds, vents, or spends it.');
+  if (turnResources.has('Equilibrium Sigils')) pushNote('Equilibrium Sigils: Neutrality setup currency for tactical spend or full cashout turns.');
+  if (turnResources.has('Patient Light and Vessel')) pushNote('Patient Light / Vessel: Neutrality patience enhancer and focus target for attack conversion lines.');
+  if (turnResources.has('Patience')) pushNote('Patience: Seraphim combat stacks gained per card play and converted on attack.');
+  if (turnResources.has('Resonance Charge')) pushNote('Resonance Charge: Prismatic-Light accumulator used for conditional high-value conversions.');
+  if (turnResources.has('Prism Charges')) pushNote('Prism Charges: channel-switch charges spent by advanced Prismatic effects.');
+  if (turnResources.has('Monochromatic Shards')) pushNote('Monochromatic Shards: Black Glass setup currency that supports burst timing turns.');
+  if (turnResources.has('Twin Flames')) pushNote('Twin Flames: White/Black flame balance state that determines Black Glass payoff strength.');
+  if (turnResources.has('Fracture')) pushNote('Fracture: Black Glass instability track that amplifies Eclipse burst payoffs.');
+  if (turnResources.has('Undertow')) pushNote('Undertow: Eternal Seas pressure pool released for burst Oblivion turns.');
+  if (turnResources.has('Foam')) pushNote('Foam: Eternal Seas side resource generated by Undertow conversion loops.');
+  if (turnResources.has('Starlight Charges')) pushNote('Starlight Charges: Wished Upon A Star burst fuel for nova and starbirth effects.');
+  if (turnResources.has('Dream Lattice')) pushNote('Dream Lattice: Wished Upon A Star amplifier that scales Starlight payoffs.');
+  if (turnResources.has('Reforge Charge')) pushNote('Reforge Charge: Abyssal Forge pacing resource for recast-temper sequences.');
+  if (turnResources.has('Pearls')) pushNote('Pearls: Abyssal Forge spend resource used for direct Oblivion cashout.');
+  if (turnResources.has('Imprint')) pushNote('Imprint: Abyssal Forge stored value converted into burst or recast power.');
+  if (turnResources.has('Veil Marks')) pushNote('Veil Marks: Death-flamed Hell mark stack transmuted into large cashout spikes.');
+
+  if (card.prismaticDepth !== undefined) {
+    pushNote(`Prismatic Depth: ${card.prismaticDepth} (controls Glass Absolute refraction links and board-fragment scaling).`);
+  }
+
+  return notes;
 }
 
 function formatAttackSummary(
@@ -938,7 +1109,6 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     pushSummarySection(sections, 'On Summon', formatEffectLines(angel.onSummonEffects));
     pushSummarySection(sections, 'Awaken', [
       `${angel.activatedAbility.name}: ${getCanonicalActivatedAbilityDescription(angel)}`,
-      ...formatEffectLines(angel.activatedAbility.effects),
     ]);
     pushSummarySection(sections, 'On Board', [formatAngelBoardBonus(angel.baseStats)]);
     if (angel.attacks) {
@@ -954,7 +1124,18 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     sections.splice(1, 0, { title: 'Hooks', lines: hooks });
   }
 
-  return sections;
+  // Add a Duality section for Heavenly Light Transcendent cards so the choice mechanic
+  // is explained in plain terms separately from the per-effect formula lines.
+  if (collectAllCardEffects(card).some(e => e.type === 'light_transcendent_duality_choice')) {
+    pushSummarySection(sections, 'Duality', [
+      'When triggered, choose one: Discard 1 card and draw 2; ' +
+      'or gain Oblivion scaled by your current Radiance, Halo, Resonance, and distinct Light notes.',
+    ]);
+  }
+
+  pushSummarySection(sections, 'Mechanics', collectMechanicNotes(card));
+
+  return dedupeSections(sections);
 }
 
 export function getCardPreviewLines(card: CardDefinition, limit = 3): string[] {
@@ -1001,111 +1182,25 @@ export function getCardFullStatLines(card: CardDefinition): string[] {
   const lines: string[] = [
     `${card.name}`,
     `${card.type} | ${card.element} | ${card.rarity}`,
-    formatReadableRuleText(getCanonicalCardDescription(card)),
   ];
+
+  const sections = getCardSummarySections(card, { abilityTextMode: 'canonical' });
+  for (const section of sections) {
+    lines.push(`${section.title}:`);
+    for (const line of section.lines) {
+      lines.push(`- ${formatReadableRuleText(line)}`);
+    }
+  }
+
+  if (sections.length === 0) {
+    lines.push(formatReadableRuleText(getCanonicalCardDescription(card)));
+  }
 
   if (card.type === 'Ophanim') {
     if (card.prismaticDepth !== undefined) {
       lines.push(`Prismatic Depth: ${card.prismaticDepth}`);
     }
     return lines;
-  }
-
-  if (card.type === 'Cherubim') {
-    const cherubim = card as CherubimDefinition;
-    if (cherubim.prismaticDepth !== undefined) {
-      lines.push(`Prismatic Depth: ${cherubim.prismaticDepth}`);
-    }
-    if (cherubim.maxDurability !== undefined) {
-      lines.push(`Durability: ${cherubim.maxDurability}`);
-    }
-    if (cherubim.discardCondition) {
-      lines.push(`Discard Condition: ${formatDisplayCardText(cherubim.discardCondition.description)}`);
-    }
-    if (cherubim.effects.length > 0) {
-      lines.push('Passive Effects:');
-      for (const passive of cherubim.effects) {
-        lines.push(`- ${formatCherubimPassive(passive)}`);
-      }
-    } else {
-      lines.push('Passive Effects: none');
-    }
-    pushEffectBlock(lines, 'On Play', cherubim.onPlayEffects);
-  }
-
-  if (card.type === 'Seraphim') {
-    const seraphim = card as SeraphimDefinition;
-    const fireScalingText = seraphim.element === 'Fire'
-      ? ' · +2.5% attack per Heat (max +75%)'
-      : '';
-    const chromaAttackText = seraphim.element === 'Fire'
-      ? (seraphim.rarity === 'Eternal'
-        ? ' · +4% attack per Chroma Ember (max +16%)'
-        : seraphim.rarity === 'Infinite'
-          ? ' · +5% attack per Chroma Ember (max +25%)'
-          : '')
-      : '';
-    lines.push(`On Play: ${formatEffectsInline(seraphim.onPlayEffects)}`);
-    lines.push(`On Board: ${formatSeraphimPassive(seraphim.baseStats.bonusType, seraphim.baseStats.bonusValue)}`);
-    lines.push(`Synergy Requirement: ${seraphim.baseStats.synergyRequirement}`);
-    if (seraphim.prismaticDepth !== undefined) {
-      lines.push(`Prismatic Depth: ${seraphim.prismaticDepth}`);
-    }
-
-    if (seraphim.attacks) {
-      lines.push('Attacks:');
-      lines.push(`- Unsynergized · ${seraphim.attacks.unsynergized.name}`);
-      lines.push(`  Base ${seraphim.attacks.unsynergized.baseOblivion} · Cooldown ${seraphim.attacks.unsynergized.cooldownCards} cards · Cost ${formatCosts(seraphim.attacks.unsynergized.costs)}${fireScalingText}${chromaAttackText}`);
-      pushLateGameIdentity(lines, seraphim.definitionId, seraphim.rarity, seraphim.attacks.unsynergized.label);
-
-      lines.push(`- Synergized · ${seraphim.attacks.synergized.name}`);
-      lines.push(`  Base ${seraphim.attacks.synergized.baseOblivion} · Cooldown ${seraphim.attacks.synergized.cooldownCards} cards${fireScalingText}${chromaAttackText}`);
-      lines.push(`  Requires Angel ${seraphim.attacks.synergized.requiresAngelOnBoard ? 'yes' : 'no'} · Cost ${formatCosts(seraphim.attacks.synergized.costs)}`);
-      pushLateGameIdentity(lines, seraphim.definitionId, seraphim.rarity, seraphim.attacks.synergized.label);
-    } else {
-      lines.push('Attacks: none');
-    }
-  }
-
-  if (card.type === 'Angel') {
-    const angel = card as AngelDefinition;
-        const chromaAttackText = angel.element === 'Fire'
-          ? (angel.rarity === 'Eternal'
-            ? ' · +4% attack per Chroma Ember (max +16%)'
-            : angel.rarity === 'Infinite'
-              ? ' · +5% attack per Chroma Ember (max +25%)'
-              : '')
-          : '';
-    const fireScalingText = angel.element === 'Fire'
-      ? ' · +2.5% attack per Heat (max +75%)'
-      : '';
-    const summonCostText = angel.summonCost.length > 0
-      ? angel.summonCost.map(id => CardRegistry.get(id)?.name ?? id).join(', ')
-      : 'none';
-    if (angel.prismaticDepth !== undefined) {
-      lines.push(`Prismatic Depth: ${angel.prismaticDepth}`);
-    }
-    lines.push(`Summon Cost: ${summonCostText}`);
-    const displayableSummonConditions = getDisplayableSummonConditions(angel);
-    if (displayableSummonConditions.length > 0) {
-      lines.push(`Extra Summon Conditions: ${displayableSummonConditions.map(formatSummonCondition).join('; ')}`);
-    }
-    lines.push(`On Summon: ${formatEffectsInline(angel.onSummonEffects)}`);
-    lines.push(`Awaken (${angel.activatedAbility.cardsPlayedRequirement} cards) · ${angel.activatedAbility.name}: ${formatEffectsInline(angel.activatedAbility.effects)}`);
-    lines.push(`On Board: ${formatAngelBoardBonus(angel.baseStats)}`);
-
-    if (angel.attacks) {
-      lines.push('Attacks:');
-      lines.push(`- Primary · ${angel.attacks.primary.name}`);
-      lines.push(`  Base ${angel.attacks.primary.baseOblivion} · Cooldown ${angel.attacks.primary.cooldownCards} cards · Cost ${formatCosts(angel.attacks.primary.costs)}${fireScalingText}${chromaAttackText}`);
-      pushLateGameIdentity(lines, angel.definitionId, angel.rarity, angel.attacks.primary.label);
-
-      lines.push(`- Exalted · ${angel.attacks.exalted.name}`);
-      lines.push(`  Base ${angel.attacks.exalted.baseOblivion} · Cooldown ${angel.attacks.exalted.cooldownCards} cards · Cost ${formatCosts(angel.attacks.exalted.costs)}${fireScalingText}${chromaAttackText}`);
-      pushLateGameIdentity(lines, angel.definitionId, angel.rarity, angel.attacks.exalted.label);
-    } else {
-      lines.push('Attacks: none');
-    }
   }
 
   return lines;

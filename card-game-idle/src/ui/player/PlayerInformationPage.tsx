@@ -6,10 +6,24 @@
 
 import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
-import { warmTheme, uiTypography, resetUiPalette, applyUiPalette, type UiPalette } from '@/ui/theme';
+import { warmTheme, uiTypography, applyUiPalette, type UiPalette } from '@/ui/theme';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
-import { DEFAULT_UI_THEME_ID, UI_THEME_BY_ID, UI_THEMES, applyEffectiveTheme } from '@/data/profile/uiThemes';
+import {
+  applyEffectiveTheme,
+  DEFAULT_UI_THEME_ID,
+  UI_THEME_BY_ID,
+  UI_THEMES,
+  getThemePreviewPalette,
+  isThemeUnlocked,
+} from '@/data/profile/uiThemes';
+import {
+  DEFAULT_MAIN_MENU_BACKGROUND_ID,
+  getDefaultMainMenuBackground,
+  isMainMenuBackgroundUnlocked,
+  loadMainMenuBackgroundEntries,
+  type MainMenuBackgroundEntry,
+} from '@/data/profile/mainMenuBackgrounds';
 import TitlesModal from '@/ui/profile/TitlesModal';
 import ProfilePictureModal from '@/ui/profile/ProfilePictureModal';
 import SignatureCardPickerModal from '@/ui/profile/SignatureCardPickerModal';
@@ -44,10 +58,11 @@ interface Props {
   onImport?: (text: string) => boolean;
 }
 
-type TabId = 'profile' | 'social' | 'save';
+type TabId = 'profile' | 'menu-backgrounds' | 'social' | 'save';
 
 const TABS: { id: TabId; label: string; glyph: string; caption: string }[] = [
   { id: 'profile', label: 'Profile',     glyph: 'ID', caption: 'Identity, titles & themes' },
+  { id: 'menu-backgrounds', label: 'Main Menu Background Customizations', glyph: 'BG', caption: 'Swap splash background art' },
   { id: 'social',  label: 'Social',      glyph: 'SO', caption: 'Account, friends & boards' },
   { id: 'save',    label: 'Save & Data', glyph: 'SV', caption: 'Save, export, import, wipe' },
 ];
@@ -103,6 +118,7 @@ export default function PlayerInformationPage({
   const setPlayerName = useStore(s => s.setPlayerName);
   const setBio = useStore(s => s.setBio);
   const setUiThemeId = useStore(s => s.setUiThemeId);
+  const setMainMenuBackgroundId = useStore(s => s.setMainMenuBackgroundId);
   const setCustomUiThemeColor = useStore(s => s.setCustomUiThemeColor);
   const resetCustomUiTheme = useStore(s => s.resetCustomUiTheme);
   const setSignatureCard = useStore(s => s.setSignatureCard);
@@ -130,6 +146,10 @@ export default function PlayerInformationPage({
   const [themeBaseId, setThemeBaseId] = useState(profile.uiThemeId || DEFAULT_UI_THEME_ID);
   const [themeDraft, setThemeDraft] = useState<Record<string, string>>(profile.customUiTheme ?? {});
   const [themeSaved, setThemeSaved] = useState(false);
+  const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
+  const [mainMenuBackgrounds, setMainMenuBackgrounds] = useState<MainMenuBackgroundEntry[]>([getDefaultMainMenuBackground()]);
+  const [mainMenuBackgroundsLoading, setMainMenuBackgroundsLoading] = useState(false);
+  const [mainMenuBackgroundsError, setMainMenuBackgroundsError] = useState<string | null>(null);
   const [bioSaved, setBioSaved] = useState(false);
   const [titleSaved, setTitleSaved] = useState(false);
   const [, forceThemeRender] = useReducer((n: number) => n + 1, 0);
@@ -158,6 +178,31 @@ export default function PlayerInformationPage({
   }, [status]);
 
   useEffect(() => {
+    const id = setInterval(() => setThemeNowMs(Date.now()), 180);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setMainMenuBackgroundsLoading(true);
+    void loadMainMenuBackgroundEntries()
+      .then((entries) => {
+        if (cancelled) return;
+        setMainMenuBackgrounds(entries);
+        setMainMenuBackgroundsError(null);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMainMenuBackgrounds([getDefaultMainMenuBackground()]);
+        setMainMenuBackgroundsError('Could not read imported splash backgrounds.');
+      })
+      .finally(() => {
+        if (!cancelled) setMainMenuBackgroundsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
     setThemeBaseId(profile.uiThemeId || DEFAULT_UI_THEME_ID);
     setThemeDraft(profile.customUiTheme ?? {});
   }, [profile.uiThemeId, profile.customUiTheme]);
@@ -172,25 +217,30 @@ export default function PlayerInformationPage({
     setBioDraft(profile.bio ?? '');
   }, [profile.bio]);
 
-  // Apply the active theme when the profile screen opens; reset to default on close.
-  // This keeps theme changes scoped to this screen only.
+  // Restore the saved effective theme when this screen closes so preview edits
+  // do not leak into the rest of the app.
   useEffect(() => {
-    const progress = useStore.getState().progress;
-    applyEffectiveTheme(profile.uiThemeId, profile.customUiTheme as Record<string, string> | null, progress);
-    forceThemeRender();
-    return () => { resetUiPalette(); };
+    return () => {
+      applyEffectiveTheme(
+        profile.uiThemeId || DEFAULT_UI_THEME_ID,
+        profile.customUiTheme ?? null,
+        progress,
+      );
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Re-apply whenever the draft changes so preview is live while editing.
   useEffect(() => {
-    const base = UI_THEME_BY_ID[themeBaseId]?.palette;
+    const def = UI_THEME_BY_ID[themeBaseId];
+    const base = def ? getThemePreviewPalette(def, themeNowMs) : null;
     if (!base) return;
-    applyUiPalette({ ...base, ...themeDraft });
+    applyUiPalette(themeDraft ? { ...base, ...themeDraft } : { ...base });
     forceThemeRender();
-  }, [themeBaseId, themeDraft]);
+  }, [themeBaseId, themeDraft, themeNowMs]);
 
   function chooseThemeBase(themeId: string) {
+    if (!isThemeUnlocked(themeId, progress)) return;
     setThemeBaseId(themeId);
     // Selecting a base theme starts from a clean palette to avoid mixed styles.
     setThemeDraft({});
@@ -476,12 +526,23 @@ export default function PlayerInformationPage({
                 onSaveTheme={saveUiTheme}
                 onResetThemeDraft={resetUiThemeDraft}
                 themeSaved={themeSaved}
+                themeNowMs={themeNowMs}
                 onPickSignatureCard={setSigPickerSlot}
                 onClearSignatureCard={(slot) => setSignatureCard(slot, null)}
               />
             )}
             {activeTab === 'social' && (
               <SocialTab authed={authed} friends={friends} incoming={incoming} blocked={blocked} />
+            )}
+            {activeTab === 'menu-backgrounds' && (
+              <MainMenuBackgroundsTab
+                selectedBackgroundId={profile.mainMenuBackgroundId ?? DEFAULT_MAIN_MENU_BACKGROUND_ID}
+                backgrounds={mainMenuBackgrounds}
+                progress={progress}
+                loading={mainMenuBackgroundsLoading}
+                loadError={mainMenuBackgroundsError}
+                onSelectBackground={(id) => setMainMenuBackgroundId(id)}
+              />
             )}
             {activeTab === 'save' && (
               <SaveTab
@@ -586,6 +647,7 @@ function ProfileTab(props: {
   onSaveTheme: () => void;
   onResetThemeDraft: () => void;
   themeSaved: boolean;
+  themeNowMs: number;
   onPickSignatureCard: (slot: number) => void;
   onClearSignatureCard: (slot: number) => void;
 }) {
@@ -594,9 +656,30 @@ function ProfileTab(props: {
     totalCollection, distinctCards, totalBossClears, distinctBosses,
     unlockedTitlesCount, titlesTotal, dailyLogin,
     onOpenTitles, onChangePicture, themeBaseId,
-    onChooseTheme, onSaveTheme, onResetThemeDraft, themeSaved,
+    onChooseTheme, onSaveTheme, onResetThemeDraft, themeSaved, themeNowMs,
     onPickSignatureCard, onClearSignatureCard,
   } = props;
+
+  const [themeSubtab, setThemeSubtab] = useState<'core' | 'reward'>(() => {
+    const active = UI_THEME_BY_ID[themeBaseId];
+    return active?.group === 'reward' ? 'reward' : 'core';
+  });
+
+  useEffect(() => {
+    const active = UI_THEME_BY_ID[themeBaseId];
+    if (active?.group === 'reward') setThemeSubtab('reward');
+  }, [themeBaseId]);
+
+  const visibleThemes = useMemo(
+    () => UI_THEMES.filter((theme) => theme.group === themeSubtab),
+    [themeSubtab],
+  );
+
+  const rewardThemeTotals = useMemo(() => {
+    const rewardThemes = UI_THEMES.filter((theme) => theme.group === 'reward');
+    const unlocked = rewardThemes.filter((theme) => isThemeUnlocked(theme.id, progress)).length;
+    return { unlocked, total: rewardThemes.length };
+  }, [progress]);
 
   return (
     <div style={S.tabGrid}>
@@ -651,31 +734,55 @@ function ProfileTab(props: {
 
       {/* UI Theme */}
       <GlassCard title="UI Theme" wide>
+        <div style={S.themeSubtabRow}>
+          <button
+            onClick={() => setThemeSubtab('core')}
+            style={{
+              ...S.themeSubtabBtn,
+              ...(themeSubtab === 'core' ? S.themeSubtabBtnActive : null),
+            }}
+          >
+            Core
+          </button>
+          <button
+            onClick={() => setThemeSubtab('reward')}
+            style={{
+              ...S.themeSubtabBtn,
+              ...(themeSubtab === 'reward' ? S.themeSubtabBtnActive : null),
+            }}
+          >
+            Rewards {rewardThemeTotals.unlocked}/{rewardThemeTotals.total}
+          </button>
+        </div>
+
         <div style={S.themeGrid}>
-          {UI_THEMES.map(t => {
+          {visibleThemes.map(t => {
             const active = themeBaseId === t.id;
+            const unlocked = isThemeUnlocked(t.id, progress);
+            const preview = getThemePreviewPalette(t, themeNowMs);
             return (
               <button
                 key={t.id}
-                onClick={() => onChooseTheme(t.id)}
-                title={t.description}
+                onClick={() => unlocked && onChooseTheme(t.id)}
+                title={unlocked ? t.description : (t.unlockHint ?? t.description)}
+                disabled={!unlocked}
                 style={{
                   ...S.themeCard,
                   background: active ? warmTheme.surfaceStrong : warmTheme.surface,
                   border: active ? `2px solid ${warmTheme.accent}` : `1px solid ${warmTheme.border}`,
                   boxShadow: active ? warmTheme.glow : 'none',
-                  cursor: 'pointer',
-                  opacity: 1,
+                  cursor: unlocked ? 'pointer' : 'not-allowed',
+                  opacity: unlocked ? 1 : 0.52,
                 }}
               >
                 <div style={{ display: 'flex', gap: 5, marginBottom: 6 }}>
-                  <ThemeSwatch color={t.palette.accent} />
-                  <ThemeSwatch color={t.palette.accentSoft} />
-                  <ThemeSwatch color={t.palette.surfaceStrong} />
-                  <ThemeSwatch color={t.palette.text} />
+                  <ThemeSwatch color={preview.accent} />
+                  <ThemeSwatch color={preview.accentSoft} />
+                  <ThemeSwatch color={preview.surfaceStrong} />
+                  <ThemeSwatch color={preview.text} />
                 </div>
                 <div style={S.themeName}>{t.name}</div>
-                <div style={S.themeDesc}>{t.description}</div>
+                <div style={S.themeDesc}>{unlocked ? t.description : (t.unlockHint ?? t.description)}</div>
               </button>
             );
           })}
@@ -766,6 +873,83 @@ function ProfileTab(props: {
         </div>
         <div style={S.saveHint}>
           Showcase up to 5 cards on your profile - visible to friends.
+        </div>
+      </GlassCard>
+    </div>
+  );
+}
+
+function MainMenuBackgroundsTab(props: {
+  selectedBackgroundId: string;
+  backgrounds: MainMenuBackgroundEntry[];
+  progress: ReturnType<typeof selectProgress>;
+  loading: boolean;
+  loadError: string | null;
+  onSelectBackground: (id: string) => void;
+}) {
+  const { selectedBackgroundId, backgrounds, progress, loading, loadError, onSelectBackground } = props;
+
+  return (
+    <div style={S.tabGrid}>
+      <GlassCard title="Main Menu Background Customizations" wide>
+        <div style={S.saveHint}>
+          Choose which splash art appears behind the Main Menu hub. This is saved independently from UI theme colors.
+        </div>
+
+        {loading && <div style={S.saveHint}>Loading splash backgrounds…</div>}
+        {loadError && <div style={{ ...S.saveHint, color: G.danger }}>{loadError}</div>}
+
+        <div style={S.menuBgGrid}>
+          {backgrounds.map((bg) => {
+            const active = bg.id === selectedBackgroundId;
+            const unlocked = isMainMenuBackgroundUnlocked(bg, progress);
+            const stateLabel = active ? 'Equipped' : unlocked ? 'Unlocked' : 'Locked';
+            return (
+              <button
+                key={bg.id}
+                className="menu-tactile-btn"
+                disabled={!unlocked}
+                onClick={() => {
+                  if (!unlocked) return;
+                  onSelectBackground(bg.id);
+                }}
+                style={{
+                  ...S.menuBgCard,
+                  border: active ? `2px solid ${warmTheme.accent}` : `1px solid ${warmTheme.border}`,
+                  boxShadow: active ? warmTheme.glow : 'none',
+                  opacity: unlocked ? 1 : 0.62,
+                  cursor: unlocked ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <div
+                  style={{
+                    ...S.menuBgPreview,
+                    backgroundImage: `url("${bg.imageUrl}")`,
+                    filter: unlocked ? undefined : 'grayscale(0.82) brightness(0.58)',
+                  }}
+                />
+                <div style={S.menuBgMetaRow}>
+                  <div style={S.menuBgName}>{bg.name}</div>
+                  <div
+                    style={{
+                      ...S.menuBgState,
+                      color: active ? warmTheme.accentDeep : unlocked ? warmTheme.textSoft : warmTheme.textMuted,
+                      background: active ? warmTheme.accentSoft : unlocked ? warmTheme.surfaceStrong : warmTheme.surfaceMuted,
+                    }}
+                  >
+                    {stateLabel}
+                  </div>
+                </div>
+                <div style={S.themeDesc}>
+                  {!unlocked
+                    ? (bg.unlockHint ?? 'Unlock requirement not yet met.')
+                    : bg.source === 'workspace'
+                      ? 'Imported splash art'
+                      : 'Built-in default'}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </GlassCard>
     </div>
@@ -1462,6 +1646,30 @@ const S: Record<string, React.CSSProperties> = {
   },
 
   /* ── Theme grid ── */
+  themeSubtabRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  themeSubtabBtn: {
+    padding: '7px 12px',
+    borderRadius: 999,
+    border: '1px solid var(--profile-border)',
+    background: 'var(--profile-surface)',
+    color: 'var(--profile-text-muted)',
+    fontSize: 10,
+    letterSpacing: 1.4,
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    fontFamily: uiTypography.display,
+  },
+  themeSubtabBtnActive: {
+    border: '1px solid var(--profile-border-strong)',
+    background: 'var(--profile-accent-glass)',
+    color: 'var(--profile-text)',
+    boxShadow: 'var(--profile-glow)',
+  },
   themeGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
@@ -1514,6 +1722,55 @@ const S: Record<string, React.CSSProperties> = {
     gap: 10,
     justifyContent: 'flex-end',
     flexWrap: 'wrap',
+  },
+  menuBgGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 220px))',
+    justifyContent: 'start',
+    gap: 12,
+  },
+  menuBgCard: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    gap: 6,
+    borderRadius: 12,
+    background: 'var(--profile-surface)',
+    padding: 8,
+    cursor: 'pointer',
+    textAlign: 'left',
+  },
+  menuBgPreview: {
+    width: '100%',
+    aspectRatio: '16 / 9',
+    borderRadius: 6,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    border: '1px solid var(--profile-border)',
+    boxShadow: 'inset 0 -14px 26px rgba(0,0,0,0.4)',
+  },
+  menuBgMetaRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 6,
+  },
+  menuBgName: {
+    fontSize: 10,
+    fontWeight: 600,
+    letterSpacing: 0.8,
+    color: 'var(--profile-text)',
+    fontFamily: uiTypography.display,
+  },
+  menuBgState: {
+    fontSize: 9,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    borderRadius: 999,
+    padding: '3px 7px',
+    fontFamily: uiTypography.display,
+    border: '1px solid var(--profile-border)',
+    whiteSpace: 'nowrap',
   },
 
   /* ── Buttons ── */

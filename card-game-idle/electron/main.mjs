@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, Notification } from 'electron';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const isDev = !app.isPackaged;
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -38,6 +38,85 @@ function removeSaveFile() {
   }
 }
 
+function getWorkspaceRootPath() {
+  const appPath = app.getAppPath();
+  const parent = path.dirname(appPath);
+  if (path.basename(appPath).toLowerCase() === 'card-game-idle') {
+    return parent;
+  }
+  return appPath;
+}
+
+function isSupportedImage(name) {
+  return /\.(png|jpe?g|webp)$/i.test(name);
+}
+
+function getMenuBackgroundsDirPath() {
+  const appPath = app.getAppPath();
+  const devPath = path.join(appPath, 'public', 'assets', 'menu-backgrounds');
+  const prodPath = path.join(appPath, 'dist', 'assets', 'menu-backgrounds');
+  if (isDev) return devPath;
+  if (fs.existsSync(prodPath)) return prodPath;
+  return devPath;
+}
+
+function moveFileSafely(fromPath, toPath) {
+  try {
+    fs.renameSync(fromPath, toPath);
+  } catch {
+    fs.copyFileSync(fromPath, toPath);
+    fs.rmSync(fromPath, { force: true });
+  }
+}
+
+function migrateRootBackgrounds(targetDir) {
+  try {
+    fs.mkdirSync(targetDir, { recursive: true });
+    const root = getWorkspaceRootPath();
+    const entries = fs.readdirSync(root, { withFileTypes: true });
+    const files = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((name) => isSupportedImage(name));
+
+    for (const name of files) {
+      const fromPath = path.join(root, name);
+      const toPath = path.join(targetDir, name);
+      if (fromPath === toPath || fs.existsSync(toPath)) continue;
+      moveFileSafely(fromPath, toPath);
+    }
+  } catch {
+    // Non-fatal: users can still use built-in backgrounds.
+  }
+}
+
+function listMainMenuBackgrounds() {
+  try {
+    const dir = getMenuBackgroundsDirPath();
+    migrateRootBackgrounds(dir);
+
+    const entries = fs.existsSync(dir)
+      ? fs.readdirSync(dir, { withFileTypes: true })
+      : [];
+    const files = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .filter((name) => isSupportedImage(name))
+      .sort((a, b) => a.localeCompare(b));
+
+    return files.map((name) => {
+      const absolutePath = path.join(dir, name);
+      return {
+        id: `workspace:${name.toLowerCase()}`,
+        name,
+        url: pathToFileURL(absolutePath).href,
+      };
+    });
+  } catch {
+    return [];
+  }
+}
+
 ipcMain.on('pantheon-save:read', (event) => {
   event.returnValue = readSaveFile();
 });
@@ -48,6 +127,10 @@ ipcMain.on('pantheon-save:write', (event, payload) => {
 
 ipcMain.on('pantheon-save:remove', (event) => {
   event.returnValue = removeSaveFile();
+});
+
+ipcMain.handle('pantheon-assets:list-main-menu-backgrounds', () => {
+  return listMainMenuBackgrounds();
 });
 
 // ── Desktop notifications (Phase 6 social) ─────────────────────────────────

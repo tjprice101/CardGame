@@ -1193,7 +1193,6 @@ function isOphanimUtilityEffect(effect: CardEffect): boolean {
     case 'trail_gain':
     case 'strain_gain':
     case 'arctic_charge_gain':
-    case 'proof_gain':
     case 'prismatic_light_gain':
     case 'eternal_stack_gain':
     case 'bloom_gain':

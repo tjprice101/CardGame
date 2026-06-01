@@ -91,7 +91,6 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
     prismatic_light_gain: 'prismatic light growth',
     monochromatic_shards_gain: 'shard accumulation',
     arctic_charge_gain: 'arctic charge build',
-    proof_gain: 'proof stacking',
     bloom_gain: 'bloom growth',
     pyro_heat_gain: 'ember loading',
     radiance_gain: 'radiance loading',
@@ -371,8 +370,6 @@ function renderForgeBadge(
 
 function renderSeasBadge(
   rarity: string | undefined,
-  polarity?: 'White' | 'Black' | null,
-  current?: number,
   undertow?: number,
   foam?: number,
   deepwake?: number,
@@ -396,37 +393,19 @@ function renderSeasBadge(
     );
   }
 
-  if ((undertow ?? 0) > 0 || (foam ?? 0) > 0 || (deepwake ?? 0) > 0) {
-    return (
-      <div style={{
-        position: 'absolute', top: 7, left: 7, zIndex: 8,
-        padding: '2px 6px', borderRadius: 999,
-        border: '1px solid rgba(120,225,245,0.44)',
-        background: 'rgba(8, 36, 52, 0.88)',
-        color: 'rgba(220,250,255,0.97)',
-        fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
-        fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
-        boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
-      }}>
-        {`Und ${undertow ?? 0} · Fm ${foam ?? 0} · Dw ${deepwake ?? 0}`}
-      </div>
-    );
-  }
-
-  if (!polarity && (current ?? 0) <= 0) return null;
-  const isWhite = polarity !== 'Black';
+  if ((undertow ?? 0) <= 0 && (foam ?? 0) <= 0 && (deepwake ?? 0) <= 0) return null;
   return (
     <div style={{
       position: 'absolute', top: 7, left: 7, zIndex: 8,
       padding: '2px 6px', borderRadius: 999,
-      border: `1px solid ${isWhite ? 'rgba(100,200,220,0.38)' : 'rgba(30,80,130,0.52)'}`,
-      background: isWhite ? 'rgba(10, 55, 75, 0.82)' : 'rgba(5, 15, 45, 0.85)',
-      color: isWhite ? 'rgba(180,235,255,0.96)' : 'rgba(100,160,220,0.96)',
+      border: '1px solid rgba(120,225,245,0.44)',
+      background: 'rgba(8, 36, 52, 0.88)',
+      color: 'rgba(220,250,255,0.97)',
       fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
       fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
       boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
     }}>
-      {`${polarity ?? 'None'} · C${current ?? 0}`}
+      {`Und ${undertow ?? 0} · Fm ${foam ?? 0} · Dw ${deepwake ?? 0}`}
     </div>
   );
 }
@@ -554,24 +533,6 @@ function renderDeathFlamedHellBadge(pyreStacks?: number) {
       boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
     }}>
       {`Pyre ${pyreStacks}`}
-    </div>
-  );
-}
-
-function renderGlassAbsoluteBadge(proof?: number, depth?: number) {
-  if ((proof ?? 0) <= 0) return null;
-  return (
-    <div style={{
-      position: 'absolute', top: 7, left: 7, zIndex: 8,
-      padding: '2px 6px', borderRadius: 999,
-      border: '1px solid rgba(207,239,255,0.34)',
-      background: 'rgba(8, 18, 28, 0.84)',
-      color: 'rgba(200,240,255,0.94)',
-      fontSize: 9, lineHeight: 1, letterSpacing: 0.45,
-      fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
-      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
-    }}>
-      {`Pr${proof ?? 0}${(depth ?? 0) > 0 ? ` · D${depth}` : ''}`}
     </div>
   );
 }
@@ -1160,7 +1121,7 @@ export default function BoardDisplay() {
                 {renderPrismaticBadge(angelDef?.prismaticDepth, slot.spectrumTokens)}
                 {angelDef && isSnowboundCard(angelDef) && renderSnowboundBadge(turn.snowboundPhase, turn.arcticCharge)}
                 {angelDef?.element === 'AbyssalForge' && renderForgeBadge(turn.reforgeCharges, turn.reforgeChargeCap, turn.pearls, turn.recastLedger, slot.instanceId)}
-                {angelDef?.element === 'EternalSeas' && renderSeasBadge(angelDef?.rarity, turn.eternalSeasPolarity, turn.eternalSeasCurrent, turn.eternalSeasUndertow, turn.eternalSeasFoam, turn.secondaryCounters?.deepwake)}
+                {angelDef?.element === 'EternalSeas' && renderSeasBadge(angelDef?.rarity, turn.eternalSeasUndertow, turn.eternalSeasFoam, turn.secondaryCounters?.deepwake)}
                 {angelDef?.element === 'Dark' && renderBlackGlassBadge(turn.blackGlassWhiteFlame, turn.blackGlassBlackFlame, turn.blackGlassFracture)}
                 {angelDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyFormation, turn.butterflySpectrum, turn.butterflyFlutterLevel)}
                 {angelDef?.element === 'Light' && renderLightBadge(turn.radiance, turn.lightResonance)}
@@ -1168,7 +1129,6 @@ export default function BoardDisplay() {
                 {angelDef?.element === 'Mechanical' && angelDef && !isSnowboundCard(angelDef) && renderMechanicalBadge(turn.strain)}
                 {angelDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
                 {angelDef?.element === 'DeathFlamedHell' && renderDeathFlamedHellBadge(turn.eternalStacks?.pyre)}
-                {angelDef?.element === 'GlassAbsolute' && renderGlassAbsoluteBadge(turn.proof, turn.glassProofDepth)}
                 {angelDef?.element === 'Fire' && renderFireBadge(turn.eternalStacks?.pyro, turn.secondaryCounters?.pyro)}
                 <div style={getCardNameRibbonStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
@@ -1318,7 +1278,7 @@ export default function BoardDisplay() {
                 {renderPrismaticBadge(serDef?.prismaticDepth, slot.spectrumTokens)}
                 {serDef && isSnowboundCard(serDef) && renderSnowboundBadge(turn.snowboundPhase, turn.arcticCharge)}
                 {serDef?.element === 'AbyssalForge' && renderForgeBadge(turn.reforgeCharges, turn.reforgeChargeCap, turn.pearls, turn.recastLedger, slot.instanceId)}
-                {serDef?.element === 'EternalSeas' && renderSeasBadge(serDef?.rarity, turn.eternalSeasPolarity, turn.eternalSeasCurrent, turn.eternalSeasUndertow, turn.eternalSeasFoam, turn.secondaryCounters?.deepwake)}
+                {serDef?.element === 'EternalSeas' && renderSeasBadge(serDef?.rarity, turn.eternalSeasUndertow, turn.eternalSeasFoam, turn.secondaryCounters?.deepwake)}
                 {serDef?.element === 'Dark' && renderBlackGlassBadge(turn.blackGlassWhiteFlame, turn.blackGlassBlackFlame, turn.blackGlassFracture)}
                 {serDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyFormation, turn.butterflySpectrum, turn.butterflyFlutterLevel)}
                 {serDef?.element === 'Light' && renderLightBadge(turn.radiance, turn.lightResonance)}
@@ -1326,7 +1286,6 @@ export default function BoardDisplay() {
                 {serDef?.element === 'Mechanical' && serDef && !isSnowboundCard(serDef) && renderMechanicalBadge(turn.strain)}
                 {serDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
                 {serDef?.element === 'DeathFlamedHell' && renderDeathFlamedHellBadge(turn.eternalStacks?.pyre)}
-                {serDef?.element === 'GlassAbsolute' && renderGlassAbsoluteBadge(turn.proof, turn.glassProofDepth)}
                 {serDef?.element === 'Fire' && renderFireBadge(turn.eternalStacks?.pyro, turn.secondaryCounters?.pyro)}
                 <div style={getCardNameRibbonStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>

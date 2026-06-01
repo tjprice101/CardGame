@@ -39,7 +39,6 @@ export type ImmediateEffect =
   | { type: 'salvage_by_type'; filter: CardSubtypeFilter[] }
   | { type: 'salvage_any' }
   | { type: 'radiance_double' }
-  | { type: 'sacred_covenant' }
   | { type: 'prismatic_light_gain'; value: number }
   | { type: 'prismatic_light_spend'; value: number }
   | { type: 'resonance_charge_gain'; value: number }
@@ -49,30 +48,9 @@ export type ImmediateEffect =
   | { type: 'monochromatic_shards_spend'; value: number }
   | { type: 'arctic_charge_gain'; value: number }
   | { type: 'arctic_charge_discharge' }
-  | { type: 'snowbound_set_phase'; phase: 'Frost' | 'Voltage' }
-  | { type: 'snowbound_flip_phase' }
-  | { type: 'snowbound_reset_phase' }
-  | { type: 'snowbound_potential_gain'; value: number }
-  | { type: 'snowbound_potential_spend'; value: number }
-  | { type: 'snowbound_potential_floor'; value: number }
-  | { type: 'snowbound_alternations_gain'; value: number }
-  | { type: 'snowbound_conduits_gain'; value: number }
-  | { type: 'snowbound_conduits_spend'; value: number }
-  | { type: 'snowbound_charge_from_potential'; ratio?: number }
-  | { type: 'snowbound_potential_from_charge'; ratio?: number }
-  | { type: 'snowbound_cashout_conduits'; oblivionPerConduit: number }
-  | { type: 'snowbound_alternate_phase'; phases?: ('Frost' | 'Voltage')[] }
-  | { type: 'snowbound_potential_to_conduits' }
-  | { type: 'snowbound_conduits_to_arctic_charge' }
-  | { type: 'snowbound_conduits_double' }
-  | { type: 'arctic_charge_double' }
-  | { type: 'while_on_board'; trigger: EffectCondition; effects: CardEffect[] }
-  | { type: 'proof_gain'; value: number }
-  | { type: 'proof_spend'; value: number }
   | { type: 'bloom_gain'; value: number }
   | { type: 'bloom_harvest' }
   | { type: 'butterfly_spectrum_gain'; value: number }
-  | { type: 'butterfly_tune'; stance: 'Reflect' | 'Absorb' | 'Dual' }
   | { type: 'butterfly_release'; spend: number; oblivionPerSpectrum: number }
   | { type: 'seas_undertow_gain'; value: number }
   | { type: 'seas_foam_gain'; value: number }
@@ -94,7 +72,6 @@ export type ImmediateEffect =
   | { type: 'patience_gain_all'; value: number }
   | { type: 'patience_double_all' }
   | { type: 'neutrality_equilibrium_sigil_gain'; value: number }
-  | { type: 'neutrality_equilibrium_sigil_cap_bonus'; value: number }
   | {
       type: 'neutrality_equilibrium_starbound_cashout';
       oblivionPerSigil: number;
@@ -110,12 +87,7 @@ export type ImmediateEffect =
     }
   | { type: 'neutrality_patient_light_gain'; value: number }
   | { type: 'neutrality_designate_vessel' }
-  | { type: 'neutrality_vessel_copy_gain'; percent: number }
-  | { type: 'neutrality_vessel_redistribute'; value: number }
-  | { type: 'neutrality_mark_hand'; count: number; patience: number }
   | { type: 'neutrality_attack_preserve'; percent: number }
-  | { type: 'neutrality_attack_restore'; percent: number }
-  | { type: 'neutrality_linked_mode'; gain: number; retainPercent: number }
   // Eternal/Infinity per-set amplifier stacks. Each set has its own thematic
   // "stack" keyword that only Eternal and Infinite cards interact with.
   // pyro=Inferno Tier, light=Halo, thorn=Thorncrown, glass=Eclipse Mark,
@@ -150,6 +122,15 @@ export type ImmediateEffect =
       gainInfernoPerPair?: number;
       gainChromaPerPair?: number;
     }
+  | {
+      type: 'light_transcendent_duality_choice';
+      baseOblivion: number;
+      resonanceScale: number;
+      haloScale: number;
+      distinctNoteScale: number;
+      thresholdDivisor: number;
+      thresholdScale: number;
+    }
   | { type: 'thorn_briar_spiral_bloom'; trailPerSpiral: number; oblivionPerTrail: number; consume?: number }
   | { type: 'snow_polar_capacitor_release'; voltageOblivionPerCapacitor: number; frostArcticChargePerCapacitor: number; consume?: number }
   | { type: 'absol_cascade_proof_amplify'; oblivionPerProofDepth: number; consume?: number }
@@ -182,10 +163,8 @@ export type ImmediateEffect =
   | { type: 'forge_recast_last_n'; count: number; power: number }
   | { type: 'forge_recast_random'; power: number; count?: number }
   | { type: 'forge_nacre_recast'; targetMode: 'last' | 'lastN'; count?: number; power: number }
-  | { type: 'forge_ouroboric_recast'; power: number }
   | { type: 'forge_temper'; targetMode: 'self' | 'all_seraphim_on_board' | 'last_played'; factor: number }
   | { type: 'forge_anvil_seal'; target: 'self' | 'last_played'; burstOblivion: number }
-  | { type: 'forge_nacre_coat'; targetMode: 'all_played' | 'last_played' }
   | { type: 'forge_imprint_gain'; value: number; targetMode: 'last' | 'lastN' | 'all_played'; count?: number }
   | { type: 'forge_imprint_spend_burst'; spend: number; oblivionPerImprint: number }
   | {
@@ -245,12 +224,10 @@ export type SetSecondaryKind = EternalStackKind;
 
 export type EffectCondition =
   | { type: 'radiance_gte'; value: number }
-  | { type: 'black_glass_white_flame_gte'; value: number }
   | { type: 'black_glass_black_flame_gte'; value: number }
   | { type: 'black_glass_fracture_gte'; value: number }
   | { type: 'black_glass_flames_equal' }
   | { type: 'light_resonance_gte'; value: number }
-  | { type: 'light_distinct_notes_gte'; value: number }
   | { type: 'cards_played_gte'; value: number }
   | { type: 'seraphim_active_gte'; value: number }
   | { type: 'cherubim_active_gte'; value: number }
@@ -260,33 +237,15 @@ export type EffectCondition =
   | { type: 'trail_gte'; value: number }
   | { type: 'strain_gte'; value: number }
   | { type: 'strain_lte'; value: number }
-  | { type: 'prismatic_light_gte'; value: number }
   | { type: 'resonance_charge_gte'; value: number }
-  | { type: 'prismatic_refraction_depth_gte'; value: number }
-  | { type: 'prismatic_node_charges_gte'; value: number }
+  | { type: 'prismatic_refraction_depth_gte'; value: number }  | { type: 'prismatic_node_charges_gte'; value: number }
   | { type: 'prismatic_distinct_channels_gte'; value: number }
-  | { type: 'shards_gte'; value: number }
-  | { type: 'arctic_charge_gte'; value: number }
-  | { type: 'snowbound_phase_is'; phase: 'Frost' | 'Voltage' }
-  | { type: 'snowbound_potential_gte'; value: number }
-  | { type: 'snowbound_alternations_gte'; value: number }
-  | { type: 'snowbound_conduits_gte'; value: number }
-  | { type: 'snowbound_alternated_this_turn' }
-  | { type: 'snowbound_same_phase_as_last_turn' }
-  | { type: 'proof_gte'; value: number }
-  | { type: 'bloom_gte'; value: number }
-  | { type: 'butterfly_spectrum_gte'; value: number }
   | { type: 'burn_phase_cards_gte'; value: number }
   | { type: 'grove_cards_gte'; value: number }
   | { type: 'scar_count_gte'; value: number }
   | { type: 'equilibrium_sigils_gte'; value: number }
   | { type: 'eternal_stack_gte'; stack: EternalStackKind; value: number }
   | { type: 'set_secondary_gte'; kind: SetSecondaryKind; value: number }
-  | { type: 'forge_reforge_charges_gte'; value: number }
-  | { type: 'forge_pearls_gte'; value: number }
-  | { type: 'forge_recast_count_gte'; value: number }
-  | { type: 'forge_imprint_gte'; value: number }
-  | { type: 'forge_unrecorded_hue_active' }
   | { type: 'starlight_gte'; value: number }
   | { type: 'dream_lattice_gte'; value: number }
 
@@ -330,24 +289,10 @@ export type CoreCardEffect = BoardEffect | ImmediateEffect | ConditionalEffect;
 // Blazing Garden Eternal/Infinity custom effect types
 export type BlazingGardenEffect =
   | { type: 'set_garden_law'; law: 'Rose' | 'Sunflower' | 'Thistle' }
-  | { type: 'effect_plus'; value: number }
-  | { type: 'choose_lineage'; effect: CardEffect }
-  | { type: 'burn_phase_seed_on_other_lineage_play'; value: number }
   | { type: 'echo_effect_double'; duration: number }
   | { type: 'sigil_on_burn_play'; value: number }
-  | { type: 'sigil_threshold_echo_return'; threshold: number }
-  | { type: 'sigil_draw_on_gain'; value: number }
-  | { type: 'choose_burn_card'; effect: CardEffect }
-  | { type: 'archive_crown_on_new_lineage'; value: number; threshold: number; trigger: 'burn_attack_all' }
-  | { type: 'burn_attack_all' }
-  | { type: 'burn_cooldown_reduction_per_crown'; value: number }
-  | { type: 'char_to_memory_echo'; value: number }
-  | { type: 'memory_echo_buff'; effect: CardEffect }
-  | { type: 'memory_echo_cost_reduction'; value: number }
   | { type: 'replay_last_burn_card' }
   | { type: 'ignite_units_burn'; count: number }
-  | { type: 'mini_final_chord_on_diff_lineages'; effect: CardEffect }
-  | { type: 'echo_on_burn_play'; value: number }
   | { type: 'snapshot_burn_lineages' }
   | { type: 'incandescent_chorus_on_new_lineage'; effect: CardEffect }
   | { type: 'burn_lineage_echo_and_cooldown'; echo: number; cooldown: number }

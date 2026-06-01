@@ -131,6 +131,77 @@ const TX_ANGELS: CardDefinition[] = [
     },
     baseStats: { basePower: 0, bonusType: 'ophanim_bonus' as const, bonusValue: 0 },
   },
+  {
+    definitionId: 'tx-angel-light-astral-adjudicator',
+    type: 'Angel' as const,
+    element: 'Light',
+    rarity: 'Legendary' as const,
+    name: 'Astral Adjudicator Prime',
+    description:
+      'The apex Light Transcendent of the Twin Horizon Raid — triggers Duality twice, ' +
+      'channeling the full weight of Radiance, Halo, and Resonance into each verdict.',
+    artKey: 'tx_angel_light_astral_adjudicator',
+    summonCost: ['inf-lucent-cataclysm-archon', 'tx-sera-light-duality-crown'],
+    extraSummonConditions: [
+      { type: 'board_definition_gte' as const, definitionId: 'tx-cher-light-duality-vow', value: 1 },
+      { type: 'eternal_stack_gte' as const, stack: 'light', value: 10 },
+      { type: 'cherubim_active_gte' as const, value: 1 },
+    ],
+    onSummonEffects: [
+      { type: 'radiance_gain' as const, value: 96 },
+      { type: 'eternal_stack_gain' as const, stack: 'light', value: 7 },
+      {
+        type: 'light_transcendent_duality_choice' as const,
+        baseOblivion: 630,
+        resonanceScale: 116,
+        haloScale: 95,
+        distinctNoteScale: 47,
+        thresholdDivisor: 5,
+        thresholdScale: 131,
+      },
+    ],
+    activatedAbility: {
+      name: 'Zenith Appellation',
+      cardsPlayedRequirement: 4,
+      description: 'Gain 48 Radiance and 4 Halo, then trigger Duality.',
+      effects: [
+        { type: 'radiance_gain' as const, value: 48 },
+        { type: 'eternal_stack_gain' as const, stack: 'light', value: 4 },
+        {
+          type: 'light_transcendent_duality_choice' as const,
+          baseOblivion: 630,
+          resonanceScale: 116,
+          haloScale: 95,
+          distinctNoteScale: 47,
+          thresholdDivisor: 5,
+          thresholdScale: 131,
+        },
+      ],
+    },
+    attacks: {
+      primary: {
+        id: 'tx-angel-light-astral-adjudicator:primary',
+        label: 'Primary' as const,
+        name: 'Solar Verdict Prime',
+        description: '4860 base Oblivion · 5 cards cooldown',
+        baseOblivion: 4860,
+        cooldownCards: 5,
+        costs: [],
+        tags: ['angel', 'primary', 'light', 'transcendent'],
+      },
+      exalted: {
+        id: 'tx-angel-light-astral-adjudicator:exalted',
+        label: 'Exalted' as const,
+        name: 'Judgment of Twin Horizons',
+        description: '13940 base Oblivion · 8 cards cooldown',
+        baseOblivion: 13940,
+        cooldownCards: 8,
+        costs: [],
+        tags: ['angel', 'exalted', 'light', 'transcendent'],
+      },
+    },
+    baseStats: { basePower: 0, bonusType: 'ophanim_bonus' as const, bonusValue: 0 },
+  },
 ];
 
 const TX_SHOP_CARDS: CardDefinition[] = [
@@ -333,6 +404,115 @@ const TX_SHOP_CARDS: CardDefinition[] = [
       },
     ],
   },
+  {
+    definitionId: 'tx-sera-light-duality-crown',
+    type: 'Seraphim' as const,
+    element: 'Light',
+    rarity: 'Legendary' as const,
+    name: 'Duality Crown',
+    description:
+      'A precision Light Seraphim that enters the board with an immediate Duality verdict, ' +
+      'fueling Halo pressure while active attacks scale with your full Light engine state.',
+    artKey: 'tx_sera_light_duality_crown',
+    baseStats: { bonusType: 'oblivion_per_card' as const, bonusValue: 44, synergyRequirement: 'Light' },
+    patienceThreshold: 6,
+    onPlayEffects: [
+      { type: 'radiance_gain' as const, value: 72 },
+      { type: 'eternal_stack_gain' as const, stack: 'light', value: 5 },
+      {
+        type: 'light_transcendent_duality_choice' as const,
+        baseOblivion: 630,
+        resonanceScale: 116,
+        haloScale: 95,
+        distinctNoteScale: 47,
+        thresholdDivisor: 5,
+        thresholdScale: 131,
+      },
+    ],
+    attacks: {
+      unsynergized: {
+        id: 'tx-sera-light-duality-crown:unsynergized',
+        label: 'Unsynergized' as const,
+        name: 'Duality Crown Break',
+        description: '9360 base Oblivion · 5 cards cooldown',
+        baseOblivion: 9360,
+        cooldownCards: 5,
+        costs: [],
+        tags: ['seraphim', 'unsynergized', 'light', 'transcendent'],
+      },
+      synergized: {
+        id: 'tx-sera-light-duality-crown:synergized',
+        label: 'Synergized' as const,
+        name: 'Astral Dual Verdict',
+        description: '15620 base Oblivion · 8 cards cooldown · Requires Angel',
+        baseOblivion: 15620,
+        cooldownCards: 8,
+        costs: [],
+        requiresAngelOnBoard: true,
+        tags: ['seraphim', 'synergized', 'light', 'transcendent'],
+      },
+    },
+  },
+  {
+    definitionId: 'tx-cher-light-duality-vow',
+    type: 'Cherubim' as const,
+    element: 'Light',
+    rarity: 'Legendary' as const,
+    name: 'Duality Vow',
+    description:
+      'A Cherubim support that swears the Duality vow on entry — salvages for value, ' +
+      'seeds Radiance and Halo, then forces a judgment call between cardflow and burst Oblivion.',
+    artKey: 'tx_cher_light_duality_vow',
+    effects: [],
+    onPlayEffects: [
+      { type: 'radiance_gain' as const, value: 54 },
+      { type: 'eternal_stack_gain' as const, stack: 'light', value: 4 },
+      { type: 'salvage_any' as const },
+      {
+        type: 'light_transcendent_duality_choice' as const,
+        baseOblivion: 630,
+        resonanceScale: 116,
+        haloScale: 95,
+        distinctNoteScale: 47,
+        thresholdDivisor: 5,
+        thresholdScale: 131,
+      },
+    ],
+    maxDurability: 10,
+  },
+  {
+    definitionId: 'tx-oph-light-duality-wheel',
+    type: 'Ophanim' as const,
+    element: 'Light',
+    rarity: 'Legendary' as const,
+    name: 'Duality Wheel',
+    description:
+      'An Ophanim that spins the Duality wheel — draws, feeds Radiance and Halo into the engine, ' +
+      'then demands a verdict. Resonance-stable boards earn a bonus burst and card empowerment.',
+    artKey: 'tx_oph_light_duality_wheel',
+    effects: [
+      { type: 'draw' as const, value: 1 },
+      { type: 'radiance_gain' as const, value: 60 },
+      { type: 'eternal_stack_gain' as const, stack: 'light', value: 5 },
+      {
+        type: 'light_transcendent_duality_choice' as const,
+        baseOblivion: 630,
+        resonanceScale: 116,
+        haloScale: 95,
+        distinctNoteScale: 47,
+        thresholdDivisor: 5,
+        thresholdScale: 131,
+      },
+      {
+        type: 'conditional' as const,
+        condition: { type: 'light_resonance_gte' as const, value: 5 },
+        then: [
+          { type: 'oblivion_flat' as const, value: 2200 },
+          { type: 'multiply_next' as const },
+        ],
+      },
+    ],
+  },
 ];
 
 export const transcendentCardDefinitions: CardDefinition[] = [...TX_ANGELS, ...TX_SHOP_CARDS];
@@ -355,4 +535,7 @@ export const TRANSCENDENT_SHOP_COSTS: Readonly<Record<string, number>> = {
   'tx-sera-pyro-singularity': 6200,
   'tx-cher-pyro-vow': 5600,
   'tx-oph-pyro-hellstar': 5200,
+  'tx-sera-light-duality-crown': 6400,
+  'tx-cher-light-duality-vow': 5700,
+  'tx-oph-light-duality-wheel': 5400,
 };

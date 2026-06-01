@@ -122,6 +122,10 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'tx-sera-pyro-singularity': 'Abyssal Singularity Seraph.png',
   'tx-cher-pyro-vow': 'Cinder Vow Cherub.png',
   'tx-oph-pyro-hellstar': 'Hellstar Ophanim.png',
+  'tx-angel-light-astral-adjudicator': 'Astral Adjudicator Prime.png',
+  'tx-sera-light-duality-crown': 'Duality Crown Seraph.png',
+  'tx-cher-light-duality-vow': 'Duality Vow Cherub.png',
+  'tx-oph-light-duality-wheel': 'Duality Wheel Ophanim.png',
   'hr-light-radiant-surge': 'Ember Surge.png',
   'hr-light-radiant-echo': 'Ember Echo.png',
   'hr-light-luminous-cycle': 'Ember Cycle.png',
@@ -583,7 +587,7 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
 
   const holoLayers = [
     'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.05) 24%, rgba(255,255,255,0.42) 49%, rgba(255,255,255,0.08) 64%, rgba(255,255,255,0) 100%)',
-    'linear-gradient(108deg, rgba(255, 78, 156, 0.3) 0%, rgba(255, 174, 64, 0.28) 18%, rgba(250, 241, 112, 0.22) 34%, rgba(82, 226, 255, 0.28) 52%, rgba(114, 255, 187, 0.24) 70%, rgba(173, 130, 255, 0.3) 86%, rgba(255, 78, 156, 0.24) 100%)',
+    'linear-gradient(108deg, rgba(255, 78, 156, 0.44) 0%, rgba(255, 174, 64, 0.42) 18%, rgba(250, 241, 112, 0.36) 34%, rgba(82, 226, 255, 0.42) 52%, rgba(114, 255, 187, 0.38) 70%, rgba(173, 130, 255, 0.44) 86%, rgba(255, 78, 156, 0.38) 100%)',
     'linear-gradient(72deg, rgba(255,255,255,0) 12%, rgba(255,255,255,0.22) 34%, rgba(255,255,255,0.05) 46%, rgba(255,255,255,0.3) 58%, rgba(255,255,255,0) 76%)',
     'linear-gradient(155deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.26) 20%, rgba(255,255,255,0.03) 42%, rgba(255,255,255,0.18) 66%, rgba(255,255,255,0.05) 100%)',
     'linear-gradient(180deg, rgba(26, 18, 12, 0.1) 0%, rgba(26, 18, 12, 0.03) 55%, rgba(26, 18, 12, 0.08) 100%)',
@@ -771,25 +775,33 @@ export function getDenseCardFaceBackgroundStyle(
     : isEternal
       ? 'linear-gradient(135deg, rgba(184,78,124,0.26) 0%, rgba(124,34,94,0.18) 36%, rgba(18,10,28,0.24) 100%)'
       : finish === 'holo'
-        ? 'linear-gradient(110deg, rgba(255,255,255,0.12) 0%, rgba(255,210,110,0.10) 28%, rgba(90,230,255,0.08) 56%, rgba(173,130,255,0.10) 100%)'
+        ? 'linear-gradient(112deg, rgba(255, 84, 160, 0.34) 0%, rgba(255, 166, 78, 0.32) 16%, rgba(252, 238, 122, 0.28) 30%, rgba(84, 224, 255, 0.31) 46%, rgba(122, 255, 198, 0.28) 62%, rgba(184, 138, 255, 0.33) 80%, rgba(255, 102, 170, 0.3) 100%)'
         : null;
 
   const sparkleOverlay = isTranscendent
     ? 'radial-gradient(circle at 32% 26%, rgba(255,255,255,0.92) 0 1px, rgba(255, 224, 236, 0.6) 1px 2px, rgba(255,255,255,0) 2.2px)'
+    : finish === 'holo'
+      ? 'radial-gradient(ellipse at 18% 16%, rgba(255,255,255,0.38) 0%, rgba(255, 238, 208, 0.22) 20%, rgba(220, 245, 255, 0.14) 34%, rgba(255,255,255,0) 60%)'
+    : null;
+
+  const holoSheenOverlay = !isTranscendent && !isInfinite && !isEternal && finish === 'holo'
+    ? 'linear-gradient(156deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.28) 32%, rgba(255,255,255,0.07) 46%, rgba(255,255,255,0.24) 62%, rgba(255,255,255,0.03) 76%, rgba(255,255,255,0) 88%)'
     : null;
 
   const backgroundLayers = [
     ...(rarityFrameOverlay ? [rarityFrameOverlay] : []),
     ...(rarityToneOverlay ? [rarityToneOverlay] : []),
     ...(sparkleOverlay ? [sparkleOverlay] : []),
+    ...(holoSheenOverlay ? [holoSheenOverlay] : []),
     ...tintLayers,
     ...(imageLayers.length > 0 ? imageLayers : [theme.baseGradient]),
   ];
 
   const backgroundBlendMode = [
     ...(rarityFrameOverlay ? ['normal'] : []),
-    ...(rarityToneOverlay ? ['screen'] : []),
+    ...(rarityToneOverlay ? [finish === 'holo' && !isTranscendent && !isInfinite && !isEternal ? 'overlay' : 'screen'] : []),
     ...(sparkleOverlay ? ['screen'] : []),
+    ...(holoSheenOverlay ? ['soft-light'] : []),
     'overlay',
     ...(imageLayers.length > 0 ? imageLayers.map(() => 'normal') : ['normal']),
   ].join(', ');

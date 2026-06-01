@@ -259,11 +259,6 @@ function cloneBoard(board: BoardState): BoardState {
 function ensureEternalSeasState(turn: TurnState): void {
   if (turn.eternalSeasUndertow === undefined) turn.eternalSeasUndertow = 0;
   if (turn.eternalSeasFoam === undefined) turn.eternalSeasFoam = 0;
-  if (turn.eternalSeasCurrent === undefined) turn.eternalSeasCurrent = 0;
-  if (turn.eternalSeasPolarity === undefined) turn.eternalSeasPolarity = null;
-  if (turn.eternalSeasWhiteFlow === undefined) turn.eternalSeasWhiteFlow = 0;
-  if (turn.eternalSeasBlackFlow === undefined) turn.eternalSeasBlackFlow = 0;
-  if (turn.eternalSeasMarginCharge === undefined) turn.eternalSeasMarginCharge = 0;
 }
 
 // ─── Abyssal Forge: per-turn state shim + recast runner ─────────────────────
@@ -344,10 +339,6 @@ function runRecast(
   };
 }
 
-function getForgeImprintTotal(turn: TurnState): number {
-  return (turn.recastLedger ?? []).reduce((sum, entry) => sum + Math.max(0, entry.imprintStacks ?? 0), 0);
-}
-
 function applyForgeImprintGain(
   turn: TurnState,
   effect: { value: number; targetMode: 'last' | 'lastN' | 'all_played'; count?: number }
@@ -425,7 +416,6 @@ export class CardEffectExecutor {
     let pendingEffect: PendingEffect | null = null;
     let heatDrained = 0; // tracks Heat before pyro_heat_spend:9999 for dynamic sentinels
     let radianceDrained = 0; // tracks radiance before radiance_spend:9999 for dynamic sentinels
-    let snowboundAlternatedThisPlay = false; // tracks if this card play caused a snowbound phase alternation
 
     const multiplier = useNextCardMultiplier && mutableTurn.nextCardMultiplied ? 2 : 1;
     if (useNextCardMultiplier && mutableTurn.nextCardMultiplied) {
@@ -543,6 +533,8 @@ export class CardEffectExecutor {
         case 'set_secondary_gain':
         case 'set_secondary_spend':
           return effect.kind;
+        case 'light_transcendent_duality_choice':
+          return 'light';
         case 'seas_deepwake_surge':
           return 'deepwake';
         case 'snow_polar_capacitor_release':
@@ -651,64 +643,12 @@ export class CardEffectExecutor {
             mutableTurn.burningGardenLaw = effect.law;
           }
           break;
-        case 'effect_plus':
-          // chain removed — no-op
-          break;
-        case 'choose_lineage':
-          mutableTurn.burningGardenCodexLineage = mutableTurn.burningGardenLaw ?? 'Rose';
-          processEffect(effect.effect);
-          break;
-        case 'burn_phase_seed_on_other_lineage_play':
-          mutableTurn.burningGardenNextFinalChordScaleBonus =
-            (mutableTurn.burningGardenNextFinalChordScaleBonus ?? 0) + effect.value;
-          break;
         case 'echo_effect_double':
           mutableTurn.burningGardenNextFinalChordScaleBonus =
             (mutableTurn.burningGardenNextFinalChordScaleBonus ?? 0) + Math.max(1, effect.duration);
           break;
         case 'sigil_on_burn_play':
           mutableTurn.burningGardenSunSigils = (mutableTurn.burningGardenSunSigils ?? 0) + effect.value;
-          break;
-        case 'sigil_threshold_echo_return': {
-          const sigils = mutableTurn.burningGardenSunSigils ?? 0;
-          if (sigils >= effect.threshold) {
-            const batches = Math.floor(sigils / effect.threshold);
-            mutableTurn.burningGardenSunSigils = sigils - batches * effect.threshold;
-            mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + batches;
-          }
-          break;
-        }
-        case 'sigil_draw_on_gain':
-          mutableDeck = TurnSystem.drawCards(mutableDeck, effect.value);
-          break;
-        case 'choose_burn_card':
-          processEffect(effect.effect);
-          break;
-        case 'archive_crown_on_new_lineage': {
-          const nextCrowns = Math.min(12, (mutableTurn.burningGardenCrownStacks ?? 0) + effect.value);
-          mutableTurn.burningGardenCrownStacks = nextCrowns;
-          if (nextCrowns >= effect.threshold) {
-            processEffect({ type: 'burn_attack_all' });
-          }
-          break;
-        }
-        case 'burn_attack_all':
-          oblivionBonus += countBurnPhaseUnits() * 140;
-          break;
-        case 'burn_cooldown_reduction_per_crown':
-          // chain removed — no-op
-          break;
-        case 'char_to_memory_echo':
-          mutableTurn.burningGardenCodexCopiesRemaining = Math.max(
-            mutableTurn.burningGardenCodexCopiesRemaining ?? 0,
-            effect.value,
-          );
-          break;
-        case 'memory_echo_buff':
-          processEffect(effect.effect);
-          break;
-        case 'memory_echo_cost_reduction':
-          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.value;
           break;
         case 'replay_last_burn_card': {
           const lastId = mutableTurn.lastPlayedDefinitionId;
@@ -749,12 +689,6 @@ export class CardEffectExecutor {
           }
           break;
         }
-        case 'mini_final_chord_on_diff_lineages':
-          if (distinctLineages() >= 2) processEffect(effect.effect);
-          break;
-        case 'echo_on_burn_play':
-          mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.value;
-          break;
         case 'snapshot_burn_lineages':
           mutableTurn.burningGardenIncandescentSnapshot = [...new Set(mutableTurn.burningGardenLineagesPlayed ?? [])].slice(-3);
           break;
@@ -1073,165 +1007,6 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'snowbound_set_phase': {
-          const oldPhase = mutableTurn.snowboundPhase;
-          mutableTurn.snowboundPhase = effect.phase;
-          if (oldPhase !== null && oldPhase !== effect.phase) {
-            snowboundAlternatedThisPlay = true;
-          }
-          break;
-        }
-
-        case 'snowbound_flip_phase': {
-          const current = mutableTurn.snowboundPhase ?? null;
-          const newPhase = current === 'Frost' ? 'Voltage' : 'Frost';
-          mutableTurn.snowboundPhase = newPhase;
-          if (current !== null && current !== newPhase) {
-            snowboundAlternatedThisPlay = true;
-          }
-          break;
-        }
-
-        case 'snowbound_reset_phase': {
-          mutableTurn.snowboundPhase = null;
-          break;
-        }
-
-        case 'snowbound_potential_gain': {
-          mutableTurn.snowboundPotential = Math.min(20, (mutableTurn.snowboundPotential ?? 0) + effect.value * multiplier);
-          break;
-        }
-
-        case 'snowbound_potential_spend': {
-          const current = mutableTurn.snowboundPotential ?? 0;
-          if (current < effect.value) return false;
-          mutableTurn.snowboundPotential = current - effect.value;
-          break;
-        }
-
-        case 'snowbound_potential_floor': {
-          mutableTurn.snowboundPotential = Math.max(mutableTurn.snowboundPotential ?? 0, effect.value);
-          break;
-        }
-
-        case 'snowbound_alternations_gain': {
-          mutableTurn.snowboundAlternations = Math.min(12, (mutableTurn.snowboundAlternations ?? 0) + effect.value * multiplier);
-          break;
-        }
-
-        case 'snowbound_conduits_gain': {
-          mutableTurn.snowboundConduits = Math.min(3, (mutableTurn.snowboundConduits ?? 0) + effect.value * multiplier);
-          break;
-        }
-
-        case 'snowbound_conduits_spend': {
-          const current = mutableTurn.snowboundConduits ?? 0;
-          if (current < effect.value) return false;
-          mutableTurn.snowboundConduits = current - effect.value;
-          break;
-        }
-
-        case 'snowbound_charge_from_potential': {
-          const ratio = effect.ratio ?? 1;
-          const potential = Math.max(0, mutableTurn.snowboundPotential ?? 0);
-          if (potential > 0) {
-            const converted = Math.max(1, Math.ceil(potential * ratio));
-            mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + converted;
-            mutableTurn.snowboundPotential = 0;
-          }
-          break;
-        }
-
-        case 'snowbound_potential_from_charge': {
-          const ratio = effect.ratio ?? 1;
-          const charge = Math.max(0, mutableTurn.arcticCharge ?? 0);
-          if (charge > 0) {
-            const converted = Math.max(1, Math.floor(charge * ratio));
-            mutableTurn.snowboundPotential = Math.min(20, (mutableTurn.snowboundPotential ?? 0) + converted);
-            mutableTurn.arcticCharge = 0;
-          }
-          break;
-        }
-
-        case 'snowbound_cashout_conduits': {
-          const conduits = Math.max(0, mutableTurn.snowboundConduits ?? 0);
-          if (conduits > 0) {
-            oblivionBonus += conduits * effect.oblivionPerConduit * multiplier;
-            mutableTurn.snowboundConduits = 0;
-          }
-          break;
-        }
-
-        case 'snowbound_alternate_phase': {
-          const current = mutableTurn.snowboundPhase ?? null;
-          const phases = effect.phases ?? ['Frost', 'Voltage'];
-          const nextPhase = current === 'Frost' && phases.includes('Voltage')
-            ? 'Voltage'
-            : current === 'Voltage' && phases.includes('Frost')
-              ? 'Frost'
-              : phases[0] ?? 'Frost';
-          mutableTurn.snowboundPhase = nextPhase;
-          mutableTurn.snowboundAlternations = Math.min(12, (mutableTurn.snowboundAlternations ?? 0) + 1);
-          if (current !== null && current !== nextPhase) {
-            snowboundAlternatedThisPlay = true;
-          }
-          break;
-        }
-
-        case 'snowbound_potential_to_conduits': {
-          const potential = Math.max(0, mutableTurn.snowboundPotential ?? 0);
-          if (potential > 0) {
-            const conduits = Math.ceil(potential / 2); // 2 Potential = 1 Conduit
-            mutableTurn.snowboundConduits = Math.min(3, (mutableTurn.snowboundConduits ?? 0) + conduits);
-            mutableTurn.snowboundPotential = 0;
-          }
-          break;
-        }
-
-        case 'snowbound_conduits_to_arctic_charge': {
-          const conduits = Math.max(0, mutableTurn.snowboundConduits ?? 0);
-          if (conduits > 0) {
-            const charge = conduits * 2; // 1 Conduit = 2 Arctic Charge
-            mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + charge * multiplier;
-          }
-          break;
-        }
-
-        case 'snowbound_conduits_double': {
-          mutableTurn.snowboundConduits = Math.min(3, (mutableTurn.snowboundConduits ?? 0) * 2);
-          break;
-        }
-
-        case 'arctic_charge_double': {
-          mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) * 2;
-          break;
-        }
-
-        case 'while_on_board': {
-          // Store the while_on_board effect as a pending passive effect to be processed on future state changes
-          mutableTurn.snowboundOnBoardEffects = [
-            ...(mutableTurn.snowboundOnBoardEffects ?? []),
-            { trigger: effect.trigger, effects: effect.effects, sourceId: deckCard.instanceId }
-          ];
-          break;
-        }
-
-        case 'proof_gain': {
-          const gain = effect.value * multiplier;
-          mutableTurn.proof = (mutableTurn.proof ?? 0) + gain;
-          break;
-        }
-
-        case 'proof_spend': {
-          if (effect.value >= 9999) {
-            mutableTurn.proof = 0;
-          } else {
-            if ((mutableTurn.proof ?? 0) < effect.value) return false;
-            mutableTurn.proof = (mutableTurn.proof ?? 0) - effect.value;
-          }
-          break;
-        }
-
         case 'bloom_gain': {
           const gain = effect.value * multiplier;
           mutableTurn.bloom = (mutableTurn.bloom ?? 0) + gain;
@@ -1276,11 +1051,6 @@ export class CardEffectExecutor {
           } else {
             mutableTurn.butterflyFlutterLevel = next >= 8 ? 2 : next >= 4 ? 1 : 0;
           }
-          break;
-        }
-
-        case 'butterfly_tune': {
-          mutableTurn.butterflyStance = effect.stance;
           break;
         }
 
@@ -1482,17 +1252,6 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'neutrality_equilibrium_sigil_cap_bonus': {
-          mutableTurn.neutralityEquilibriumSigilCapBonus = Math.max(
-            0,
-            Math.max(0, mutableTurn.neutralityEquilibriumSigilCapBonus ?? 0) + Math.max(0, effect.value),
-          );
-          if ((mutableTurn.neutralityEquilibriumSigils ?? 0) > getNeutralityEquilibriumSigilCap()) {
-            mutableTurn.neutralityEquilibriumSigils = getNeutralityEquilibriumSigilCap();
-          }
-          break;
-        }
-
         case 'neutrality_equilibrium_starbound_cashout': {
           const available = Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0);
           const spent = spendNeutralityEquilibriumSigils(available);
@@ -1564,87 +1323,10 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'neutrality_vessel_copy_gain': {
-          mutableTurn.neutralityVesselCopyPercent = Math.max(
-            mutableTurn.neutralityVesselCopyPercent ?? 0,
-            Math.max(0, effect.percent),
-          );
-          break;
-        }
-
-        case 'neutrality_vessel_redistribute': {
-          const vesselId = mutableTurn.neutralityVesselInstanceId;
-          if (!vesselId) break;
-          const vessel = mutableBoard.frontSlots.find(
-            unit => {
-              if (!isActiveSeraphim(unit) || unit.instanceId !== vesselId) return false;
-              if (!sourceSetKey) return true;
-              const unitDef = CardRegistry.get(unit.definitionId);
-              return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
-            },
-          );
-          if (!vessel) break;
-          const others = mutableBoard.frontSlots.filter(
-            (unit): unit is SeraphimInstance => {
-              if (!isActiveSeraphim(unit) || unit.instanceId === vesselId) return false;
-              if (!sourceSetKey) return true;
-              const unitDef = CardRegistry.get(unit.definitionId);
-              return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
-            },
-          );
-          if (others.length === 0) break;
-          const available = Math.max(0, vessel.patienceStacks ?? 0);
-          const budget = Math.min(available, Math.max(0, effect.value));
-          if (budget <= 0) break;
-          const each = Math.floor(budget / others.length);
-          const remainder = budget - each * others.length;
-          if (each <= 0 && remainder <= 0) break;
-          vessel.patienceStacks = available - budget;
-          others.forEach((unit, index) => {
-            const bonus = each + (index < remainder ? 1 : 0);
-            unit.patienceStacks = (unit.patienceStacks ?? 0) + bonus;
-          });
-          break;
-        }
-
-        case 'neutrality_mark_hand': {
-          const markable = mutableDeck.hand
-            .filter(card => card.instanceId !== deckCard.instanceId)
-            .slice(0, Math.max(0, effect.count));
-          const existing = new Set(mutableTurn.neutralityMarkedCardIds ?? []);
-          markable.forEach(card => existing.add(card.instanceId));
-          mutableTurn.neutralityMarkedCardIds = [...existing];
-          mutableTurn.neutralityMarkedPatienceGain = Math.max(
-            mutableTurn.neutralityMarkedPatienceGain ?? 0,
-            Math.max(0, effect.patience),
-          );
-          break;
-        }
-
         case 'neutrality_attack_preserve': {
           mutableTurn.neutralityAttackPreservePercent = Math.max(
             mutableTurn.neutralityAttackPreservePercent ?? 0,
             Math.max(0, effect.percent),
-          );
-          break;
-        }
-
-        case 'neutrality_attack_restore': {
-          mutableTurn.neutralityAttackRestorePercent = Math.max(
-            mutableTurn.neutralityAttackRestorePercent ?? 0,
-            Math.max(0, effect.percent),
-          );
-          break;
-        }
-
-        case 'neutrality_linked_mode': {
-          mutableTurn.neutralityLinkedGainBonus = Math.max(
-            mutableTurn.neutralityLinkedGainBonus ?? 0,
-            Math.max(0, effect.gain),
-          );
-          mutableTurn.neutralityLinkedRetainPercent = Math.max(
-            mutableTurn.neutralityLinkedRetainPercent ?? 0,
-            Math.max(0, effect.retainPercent),
           );
           break;
         }
@@ -1837,6 +1519,20 @@ export class CardEffectExecutor {
           }
           if ((effect.empowerAtPairs ?? 0) > 0 && pairs >= (effect.empowerAtPairs ?? 0)) {
             mutableTurn.nextCardMultiplied = true;
+          }
+          break;
+        }
+        case 'light_transcendent_duality_choice': {
+          if (pendingEffect === null) {
+            pendingEffect = {
+              type: 'light_transcendent_duality_choice',
+              baseOblivion: effect.baseOblivion,
+              resonanceScale: effect.resonanceScale,
+              haloScale: effect.haloScale,
+              distinctNoteScale: effect.distinctNoteScale,
+              thresholdDivisor: effect.thresholdDivisor,
+              thresholdScale: effect.thresholdScale,
+            };
           }
           break;
         }
@@ -2034,18 +1730,6 @@ export class CardEffectExecutor {
           }
           break;
         }
-        case 'forge_ouroboric_recast': {
-          if (suppressForgeRecursion) break;
-          ensureForgeTurn(mutableTurn);
-          // Recast the entire ledger from oldest to newest at fractional power.
-          const ledger = mutableTurn.recastLedger ?? [];
-          for (const entry of ledger) {
-            const r = runRecast(entry, effect.power, mutableTurn, mutableBoard, mutableDeck);
-            mutableTurn = r.turn; mutableBoard = r.board; mutableDeck = r.deck;
-            oblivionBonus += r.oblivionBonus * multiplier;
-          }
-          break;
-        }
         case 'forge_temper': {
           ensureForgeTurn(mutableTurn);
           // Queue temper factor for a board source.
@@ -2058,17 +1742,6 @@ export class CardEffectExecutor {
           const entry = effect.target === 'last_played' ? ledger[ledger.length - 1] : ledger[ledger.length - 1];
           if (entry) entry.isAnvilSealed = true;
           oblivionBonus += effect.burstOblivion * multiplier;
-          break;
-        }
-        case 'forge_nacre_coat': {
-          ensureForgeTurn(mutableTurn);
-          const ledger = mutableTurn.recastLedger ?? [];
-          if (effect.targetMode === 'all_played') {
-            for (const e of ledger) e.isNacreCoated = true;
-          } else {
-            const last = ledger[ledger.length - 1];
-            if (last) last.isNacreCoated = true;
-          }
           break;
         }
         case 'forge_imprint_gain': {
@@ -2379,18 +2052,9 @@ export class CardEffectExecutor {
           }
           break;
 
-        case 'sacred_covenant':
-          // Light set mechanic ? kept for compat
-          break;
-
         case 'conditional': {
           let met = false;
-          // Special handling for snowbound_alternated_this_turn which depends on local play context
-          if (effect.condition.type === 'snowbound_alternated_this_turn') {
-            met = snowboundAlternatedThisPlay;
-          } else {
-            met = CardEffectExecutor.evaluateCondition(effect.condition, mutableTurn, mutableBoard);
-          }
+          met = CardEffectExecutor.evaluateCondition(effect.condition, mutableTurn, mutableBoard);
           if (met) {
             for (const subEffect of effect.then) {
               const ok = processEffect(subEffect);
@@ -2472,8 +2136,6 @@ export class CardEffectExecutor {
   ): boolean {
     switch (condition.type) {
       case 'radiance_gte':      return turn.radiance >= condition.value;
-      case 'black_glass_white_flame_gte':
-        return (turn.blackGlassWhiteFlame ?? 0) >= condition.value;
       case 'black_glass_black_flame_gte':
         return (turn.blackGlassBlackFlame ?? 0) >= condition.value;
       case 'black_glass_fracture_gte':
@@ -2482,8 +2144,6 @@ export class CardEffectExecutor {
         return (turn.blackGlassWhiteFlame ?? 0) === (turn.blackGlassBlackFlame ?? 0);
       case 'light_resonance_gte':
         return (turn.lightResonance ?? 0) >= condition.value;
-      case 'light_distinct_notes_gte':
-        return new Set(turn.lightDistinctNotes ?? []).size >= condition.value;
       case 'pyro_heat_gte':     return (turn.pyroHeat ?? 0) >= condition.value;
       case 'trail_gte':         return turn.trail >= condition.value;
       case 'scar_count_gte':    return (turn.thornScar ?? 0) >= condition.value;
@@ -2491,7 +2151,6 @@ export class CardEffectExecutor {
         return (turn.neutralityEquilibriumSigils ?? 0) >= condition.value;
       case 'strain_gte':        return turn.strain >= condition.value;
       case 'strain_lte':        return turn.strain <= condition.value;
-      case 'prismatic_light_gte': return (turn.prismaticLight ?? 0) >= condition.value;
       case 'resonance_charge_gte':
         return (turn.prismaticResonanceCharge ?? 0) >= condition.value;
       case 'prismatic_refraction_depth_gte':
@@ -2500,24 +2159,6 @@ export class CardEffectExecutor {
         return (turn.prismaticNodeCharges ?? 0) >= condition.value;
       case 'prismatic_distinct_channels_gte':
         return new Set(turn.prismaticDistinctChannels ?? []).size >= condition.value;
-      case 'shards_gte':        return (turn.monochromaticShards ?? 0) >= condition.value;
-      case 'arctic_charge_gte': return (turn.arcticCharge ?? 0) >= condition.value;
-      case 'snowbound_phase_is':
-        return (turn.snowboundPhase ?? null) === condition.phase;
-      case 'snowbound_potential_gte':
-        return (turn.snowboundPotential ?? 0) >= condition.value;
-      case 'snowbound_alternations_gte':
-        return (turn.snowboundAlternations ?? 0) >= condition.value;
-      case 'snowbound_conduits_gte':
-        return (turn.snowboundConduits ?? 0) >= condition.value;
-      case 'snowbound_alternated_this_turn':
-        return (turn.snowboundAlternatedThisTurn ?? false) === true;
-      case 'snowbound_same_phase_as_last_turn':
-        return turn.snowboundPhase === turn.snowboundPreviousPhase && turn.snowboundPhase !== null;
-      case 'proof_gte':         return (turn.proof ?? 0) >= condition.value;
-      case 'bloom_gte':         return (turn.bloom ?? 0) >= condition.value;
-      case 'butterfly_spectrum_gte':
-        return (turn.butterflySpectrum ?? 0) >= condition.value;
       case 'burn_phase_cards_gte': {
         const burnCount = [...board.frontSlots, ...board.backSlots].filter(unit => {
           if (!unit) return false;
@@ -2544,16 +2185,6 @@ export class CardEffectExecutor {
         const counters = (turn.secondaryCounters ?? {}) as Record<string, number>;
         return (counters[condition.kind] ?? 0) >= condition.value;
       }
-      case 'forge_reforge_charges_gte':
-        return (turn.reforgeCharges ?? 0) >= condition.value;
-      case 'forge_pearls_gte':
-        return (turn.pearls ?? 0) >= condition.value;
-      case 'forge_recast_count_gte':
-        return (turn.forgeRecastEventsThisTurn ?? 0) >= condition.value;
-      case 'forge_imprint_gte':
-        return getForgeImprintTotal(turn) >= condition.value;
-      case 'forge_unrecorded_hue_active':
-        return turn.unrecordedHueActive === true;
       case 'starlight_gte':
         return (turn.starlightCharges ?? 0) >= condition.value;
       case 'dream_lattice_gte':

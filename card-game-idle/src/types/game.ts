@@ -70,10 +70,18 @@ export type TurnPhase = 'idle' | 'mulligan' | 'playing';
 export type HeavenlyNote = 'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel';
 export type PrismaticChannel = 'amber' | 'azure' | 'crimson' | 'emerald' | 'violet' | 'white';
 export type SnowboundPhase = 'Frost' | 'Voltage';
-export type GlassAxiom = 'multiplier' | 'bridge' | 'cascade';
 
 export type PendingEffect =
   | { type: 'discard_choice'; count: number; sourceCard: string }
+  | {
+      type: 'light_transcendent_duality_choice';
+      baseOblivion: number;
+      resonanceScale: number;
+      haloScale: number;
+      distinctNoteScale: number;
+      thresholdDivisor: number;
+      thresholdScale: number;
+    }
   | {
       type: 'neutrality_equilibrium_tactical_choice';
       spend: number;
@@ -155,20 +163,8 @@ export interface TurnState {
   blackGlassLastPolarity?: 'white' | 'black' | 'both' | null;
   blackGlassLastPayoff?: number;
   snowboundPhase?: SnowboundPhase | null;
-  snowboundPotential?: number;
-  snowboundAlternations?: number;
-  snowboundConduits?: number;
-  snowboundPreviousPhase?: SnowboundPhase | null;
-  snowboundAlternatedThisTurn?: boolean;
-  snowboundOnBoardEffects?: Array<{ trigger: import('@/types/effects').EffectCondition; effects: import('@/types/effects').CardEffect[]; sourceId: string }>;
   glassProofFragments?: number;
   glassProofDepth?: number;
-  glassProofCascade?: number;
-  glassAxioms?: GlassAxiom[];
-  glassArchiveSeals?: number;
-  glassAngleCharges?: number;
-  glassOriginPulseUsed?: boolean;
-  glassAxiomFocus?: GlassAxiom | null;
   glassSnapshotFragments?: number;
   glassSnapshotDepth?: number;
   glassSnapshotCascade?: number;
@@ -179,7 +175,6 @@ export interface TurnState {
   glassWhiteLedger?: number;
   glassWhiteLedgerActive?: boolean;
   glassSyntheticFragments?: number;
-  glassSyntheticCascade?: number;
   burningGardenLaw?: 'Rose' | 'Sunflower' | 'Thistle' | null;
   burningGardenLineagesPlayed?: Array<'Rose' | 'Sunflower' | 'Thistle'>;
   burningGardenEchoesBloomed?: number;
@@ -203,7 +198,6 @@ export interface TurnState {
   prismaticLight?: number;
   monochromaticShards?: number;
   arcticCharge?: number;
-  proof?: number;
   bloom?: number;
   butterflySpectrum?: number;
   butterflyStance?: 'Reflect' | 'Absorb' | 'Dual' | null;
@@ -212,11 +206,6 @@ export interface TurnState {
   butterflyFormationTypesSeen?: Array<'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel'>;
   eternalSeasUndertow?: number;
   eternalSeasFoam?: number;
-  eternalSeasCurrent?: number;
-  eternalSeasPolarity?: 'White' | 'Black' | null;
-  eternalSeasWhiteFlow?: number;
-  eternalSeasBlackFlow?: number;
-  eternalSeasMarginCharge?: number;
   // ── Abyssal Forge — The Reforging ────────────────────────────────────────
   recastLedger?: RecastLedgerEntry[];
   reforgeCharges?: number;
@@ -417,6 +406,10 @@ export interface PlayerProfileState {
   signatureCardIds?: string[];
   /** Permanently latched avatar ids unlocked at least once. Save v23. */
   unlockedAvatarIds?: string[];
+  /** Permanently latched reward UI theme ids unlocked at least once. Save v28. */
+  unlockedUiThemeIds?: string[];
+  /** Selected main menu background id. Save v29. */
+  mainMenuBackgroundId?: string;
 }
 
 export interface DailyLoginState {

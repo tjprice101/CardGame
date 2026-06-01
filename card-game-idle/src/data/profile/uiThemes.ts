@@ -1,4 +1,5 @@
 import type { ProgressState } from '@/types/game';
+import { CardRegistry } from '@/cards/CardRegistry';
 import { DEFAULT_WARM_PALETTE, applyUiPalette, type UiPalette } from '@/ui/theme';
 
 /**
@@ -15,6 +16,15 @@ export interface UiThemeDefinition {
   name: string;
   description: string;
   palette: UiPalette;
+  group: 'core' | 'reward';
+  rewardKind?: 'base-set' | 'infinite-full' | 'eternal-full';
+  setElement?: string;
+  unlockHint?: string;
+  oscillation?: {
+    from: Partial<UiPalette>;
+    to: Partial<UiPalette>;
+    periodMs: number;
+  };
   /** True ⇒ available to the player. */
   isUnlocked: (progress: ProgressState) => boolean;
 }
@@ -210,16 +220,337 @@ const NEUTRALITY: UiPalette = makePalette({
   glow: '0 10px 28px rgba(154, 154, 178, 0.24)',
 });
 
-// ── Theme registry ─────────────────────────────────────────────────────────
-
 export const DEFAULT_UI_THEME_ID = 'theme-warm-default';
 
-export const UI_THEMES: UiThemeDefinition[] = [
+interface ThemeSetSpec {
+  element: string;
+  label: string;
+  slug: string;
+  palette: UiPalette;
+  baseIds: string[];
+  infiniteIds: string[];
+  eternalIds: string[];
+}
+
+const BASE_RARITIES = new Set(['Common', 'Rare', 'Epic', 'Legendary']);
+
+const SET_LABELS: Record<string, string> = {
+  Neutrality: 'Neutrality',
+  Fire: 'Pyroabyss',
+  Light: 'Heavenly Light',
+  Thornbound: 'Thornbound Plains',
+  Mechanical: 'Mechanical Dreams',
+  Prismatic: 'Prismatic Accord',
+  Snowbound: 'Snowbound Voltage',
+  Dark: 'Black Glass Inferno',
+  GlassAbsolute: 'Glass Absolute',
+  BlazingGarden: 'The Blazing Garden',
+  Butterfly: 'Age of the Butterfly',
+  EternalSeas: 'Eternal Seas',
+  AbyssalForge: 'Abyssal Forge',
+  DeathFlamedHell: 'Death-flamed Hell',
+  WishedUponAStar: 'Wished Upon A Star',
+};
+
+const ELEMENT_ORDER = [
+  'Neutrality',
+  'Fire',
+  'Light',
+  'Thornbound',
+  'Mechanical',
+  'Prismatic',
+  'Snowbound',
+  'Dark',
+  'GlassAbsolute',
+  'BlazingGarden',
+  'Butterfly',
+  'EternalSeas',
+  'AbyssalForge',
+  'DeathFlamedHell',
+  'WishedUponAStar',
+] as const;
+
+const ELEMENT_THEME_PALETTE: Record<string, UiPalette> = {
+  Neutrality: NEUTRALITY,
+  Fire: PYROABYSS,
+  Light: HEAVENLY_LIGHT,
+  Thornbound: THORNBOUND,
+  Mechanical: MECHANICAL,
+  Prismatic: PRISMATIC,
+  Snowbound: SNOWBOUND,
+  Dark: BLACK_GLASS_INFERNO,
+  GlassAbsolute: PRISMATIC,
+  BlazingGarden: ABYSSAL_FORGE,
+  Butterfly: PRISMATIC,
+  EternalSeas: SNOWBOUND,
+  AbyssalForge: ABYSSAL_FORGE,
+  DeathFlamedHell: DEATH_FLAMED_HELL,
+  WishedUponAStar: PRISMATIC,
+};
+
+type ParsedColor = { r: number; g: number; b: number; a: number };
+
+const BLENDABLE_THEME_KEYS: Array<keyof UiPalette> = [
+  'surface',
+  'surfaceStrong',
+  'surfaceMuted',
+  'border',
+  'borderStrong',
+  'text',
+  'textSoft',
+  'textMuted',
+  'textFaint',
+  'accent',
+  'accentSoft',
+  'accentDeep',
+  'success',
+  'danger',
+  'cherubim',
+];
+
+function clamp01(n: number): number {
+  return Math.max(0, Math.min(1, n));
+}
+
+function clamp255(n: number): number {
+  return Math.max(0, Math.min(255, Math.round(n)));
+}
+
+function parseColor(value: string): ParsedColor | null {
+  const hex = value.trim().match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+  if (hex) {
+    const raw = hex[1];
+    if (raw.length === 3) {
+      return {
+        r: parseInt(raw[0] + raw[0], 16),
+        g: parseInt(raw[1] + raw[1], 16),
+        b: parseInt(raw[2] + raw[2], 16),
+        a: 1,
+      };
+    }
+    return {
+      r: parseInt(raw.slice(0, 2), 16),
+      g: parseInt(raw.slice(2, 4), 16),
+      b: parseInt(raw.slice(4, 6), 16),
+      a: 1,
+    };
+  }
+
+  const rgb = value.trim().match(/^rgba?\(([^)]+)\)$/i);
+  if (!rgb) return null;
+  const parts = rgb[1].split(',').map((p) => Number(p.trim()));
+  if (parts.length < 3 || parts.some((n, i) => i < 3 && Number.isNaN(n))) return null;
+  return {
+    r: parts[0],
+    g: parts[1],
+    b: parts[2],
+    a: parts.length >= 4 && Number.isFinite(parts[3]) ? clamp01(parts[3]) : 1,
+  };
+}
+
+function toRgbaCss(c: ParsedColor): string {
+  const alpha = Math.round(clamp01(c.a) * 1000) / 1000;
+  return `rgba(${clamp255(c.r)}, ${clamp255(c.g)}, ${clamp255(c.b)}, ${alpha})`;
+}
+
+function mixColor(from: string, to: string, t: number): string {
+  const a = parseColor(from);
+  const b = parseColor(to);
+  if (!a || !b) return t < 0.5 ? from : to;
+  return toRgbaCss({
+    r: a.r + (b.r - a.r) * t,
+    g: a.g + (b.g - a.g) * t,
+    b: a.b + (b.b - a.b) * t,
+    a: a.a + (b.a - a.a) * t,
+  });
+}
+
+function tintColor(value: string, target: string, amount: number): string {
+  return mixColor(value, target, clamp01(amount));
+}
+
+function shadeColor(value: string, amount: number): string {
+  return mixColor(value, '#000000', clamp01(amount));
+}
+
+function buildRewardTierPalette(base: UiPalette, kind: 'base-set' | 'infinite-full' | 'eternal-full'): UiPalette {
+  const accentLift = kind === 'base-set' ? 0.08 : kind === 'infinite-full' ? 0.18 : 0.28;
+  const borderLift = kind === 'base-set' ? 0.06 : kind === 'infinite-full' ? 0.15 : 0.24;
+  const textLift = kind === 'base-set' ? 0.04 : kind === 'infinite-full' ? 0.08 : 0.12;
+  const deepShade = kind === 'base-set' ? 0.06 : kind === 'infinite-full' ? 0.12 : 0.18;
+
+  return {
+    ...base,
+    accent: tintColor(base.accent, '#ffffff', accentLift),
+    accentSoft: tintColor(base.accentSoft, '#ffffff', accentLift * 0.9),
+    border: tintColor(base.border, '#ffffff', borderLift),
+    borderStrong: tintColor(base.borderStrong, '#ffffff', borderLift * 1.08),
+    surfaceStrong: tintColor(base.surfaceStrong, '#ffffff', accentLift * 0.38),
+    text: tintColor(base.text, '#ffffff', textLift),
+    textSoft: tintColor(base.textSoft, '#ffffff', textLift * 0.86),
+    accentDeep: shadeColor(base.accentDeep, deepShade),
+  };
+}
+
+function makeThemeSetSlug(element: string): string {
+  return (SET_LABELS[element] ?? element)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+let themeSetSpecCache: ThemeSetSpec[] | null = null;
+
+function getThemeSetSpecs(): ThemeSetSpec[] {
+  if (themeSetSpecCache) return themeSetSpecCache;
+
+  const grouped = new Map<string, ThemeSetSpec>();
+  const cards = CardRegistry.getAll();
+
+  const resolveThemeElement = (definitionId: string, rawElement: string | undefined): string | undefined => {
+    // Snowbound cards currently use sv-* IDs; normalize them into the Snowbound
+    // reward-theme track so Snowbound Eternal/Infinite splash slots are generated.
+    if (definitionId.startsWith('sv-')) return 'Snowbound';
+    return rawElement;
+  };
+
+  for (const card of cards) {
+    const element = resolveThemeElement(card.definitionId, card.element);
+    if (!element) continue;
+
+    let spec = grouped.get(element);
+    if (!spec) {
+      const palette = ELEMENT_THEME_PALETTE[element] ?? DEFAULT_WARM_PALETTE;
+      spec = {
+        element,
+        label: SET_LABELS[element] ?? element,
+        slug: makeThemeSetSlug(element),
+        palette,
+        baseIds: [],
+        infiniteIds: [],
+        eternalIds: [],
+      };
+      grouped.set(element, spec);
+    }
+
+    if (BASE_RARITIES.has(card.rarity)) {
+      spec.baseIds.push(card.definitionId);
+    } else if (card.rarity === 'Infinite') {
+      spec.infiniteIds.push(card.definitionId);
+    } else if (card.rarity === 'Eternal') {
+      spec.eternalIds.push(card.definitionId);
+    }
+  }
+
+  const order = new Map(ELEMENT_ORDER.map((element, idx) => [element, idx]));
+  const sorted = [...grouped.values()]
+    .filter((spec) => spec.baseIds.length > 0)
+    .sort((a, b) => {
+      const oa = order.get(a.element) ?? Number.MAX_SAFE_INTEGER;
+      const ob = order.get(b.element) ?? Number.MAX_SAFE_INTEGER;
+      return oa - ob || a.label.localeCompare(b.label);
+    });
+
+  themeSetSpecCache = sorted;
+  return sorted;
+}
+
+function buildOscillation(from: UiPalette, kind: 'base-set' | 'infinite-full' | 'eternal-full') {
+  const toneTarget = kind === 'infinite-full'
+    ? '#68e8ff'
+    : kind === 'eternal-full'
+      ? '#ffd98d'
+      : '#ffffff';
+
+  const amount = kind === 'base-set' ? 0.22 : kind === 'infinite-full' ? 0.34 : 0.46;
+  const periodMs = kind === 'base-set' ? 5800 : kind === 'infinite-full' ? 5200 : 5600;
+
+  return {
+    from: {
+      accent: from.accent,
+      accentSoft: from.accentSoft,
+      border: from.border,
+      borderStrong: from.borderStrong,
+      surfaceStrong: from.surfaceStrong,
+    },
+    to: {
+      accent: tintColor(from.accent, toneTarget, amount),
+      accentSoft: tintColor(from.accentSoft, toneTarget, amount * 0.9),
+      border: tintColor(from.border, toneTarget, amount * 0.6),
+      borderStrong: tintColor(from.borderStrong, toneTarget, amount * 0.7),
+      surfaceStrong: tintColor(from.surfaceStrong, toneTarget, amount * 0.35),
+    },
+    periodMs,
+  };
+}
+
+function hasAll(ids: string[], owned: Record<string, number>): boolean {
+  if (ids.length === 0) return false;
+  for (const id of ids) {
+    if ((owned[id] ?? 0) < 1) return false;
+  }
+  return true;
+}
+
+function buildRewardThemes(): UiThemeDefinition[] {
+  const rewardThemes: UiThemeDefinition[] = [];
+  const specs = getThemeSetSpecs();
+
+  for (const spec of specs) {
+    const baseTierPalette = buildRewardTierPalette(spec.palette, 'base-set');
+    const infiniteTierPalette = buildRewardTierPalette(spec.palette, 'infinite-full');
+    const eternalTierPalette = buildRewardTierPalette(spec.palette, 'eternal-full');
+
+    rewardThemes.push({
+      id: `theme-reward-base-${spec.slug}`,
+      name: `${spec.label} Completion`,
+      description: `Reward theme for completing the ${spec.label} base set.`,
+      unlockHint: `Complete every base-rarity ${spec.label} card.`,
+      palette: baseTierPalette,
+      group: 'reward',
+      rewardKind: 'base-set',
+      setElement: spec.element,
+      oscillation: buildOscillation(baseTierPalette, 'base-set'),
+      isUnlocked: (progress) => hasAll(spec.baseIds, progress.collection),
+    });
+
+    rewardThemes.push({
+      id: `theme-reward-infinite-${spec.slug}`,
+      name: `${spec.label} Infinite Crown`,
+      description: `Reward theme for owning every Infinite card in ${spec.label}.`,
+      unlockHint: `Own every Infinite ${spec.label} card.`,
+      palette: infiniteTierPalette,
+      group: 'reward',
+      rewardKind: 'infinite-full',
+      setElement: spec.element,
+      oscillation: buildOscillation(infiniteTierPalette, 'infinite-full'),
+      isUnlocked: (progress) => hasAll(spec.infiniteIds, progress.infiniteCollection),
+    });
+
+    rewardThemes.push({
+      id: `theme-reward-eternal-${spec.slug}`,
+      name: `${spec.label} Eternal Crown`,
+      description: `Reward theme for owning every Eternal card in ${spec.label}.`,
+      unlockHint: `Own every Eternal ${spec.label} card.`,
+      palette: eternalTierPalette,
+      group: 'reward',
+      rewardKind: 'eternal-full',
+      setElement: spec.element,
+      oscillation: buildOscillation(eternalTierPalette, 'eternal-full'),
+      isUnlocked: (progress) => hasAll(spec.eternalIds, progress.collection),
+    });
+  }
+
+  return rewardThemes;
+}
+
+const CORE_UI_THEMES: UiThemeDefinition[] = [
   {
     id: DEFAULT_UI_THEME_ID,
     name: 'Warm Hearth',
     description: 'Soft amber and parchment tones with cozy contrast.',
     palette: WARM_DEFAULT,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -227,6 +558,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Moonstone Slate',
     description: 'Balanced slate blues with clean neutral contrast.',
     palette: NEUTRALITY,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -234,6 +566,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Cinder Velvet',
     description: 'Deep ember reds with warm highlights.',
     palette: PYROABYSS,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -241,6 +574,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Sunrise Ivory',
     description: 'Bright ivory and golden morning accents.',
     palette: HEAVENLY_LIGHT,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -248,6 +582,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Rosewood Noir',
     description: 'Burgundy dusk with polished copper accents.',
     palette: THORNBOUND,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -255,6 +590,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Brass Atelier',
     description: 'Brushed brass and workshop charcoal.',
     palette: MECHANICAL,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -262,6 +598,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Ocean Glass',
     description: 'Cool ocean blues with crisp luminous text.',
     palette: PRISMATIC,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -269,6 +606,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Arctic Mist',
     description: 'Icy cyan highlights over deep polar blues.',
     palette: SNOWBOUND,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -276,6 +614,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Obsidian Gilt',
     description: 'Dark obsidian with restrained gilded accents.',
     palette: BLACK_GLASS_INFERNO,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -283,6 +622,7 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Copper Forge',
     description: 'Molten copper energy over grounded dark basalt.',
     palette: ABYSSAL_FORGE,
+    group: 'core',
     isUnlocked: () => true,
   },
   {
@@ -290,16 +630,74 @@ export const UI_THEMES: UiThemeDefinition[] = [
     name: 'Soft Crimson',
     description: 'Muted crimson with parchment-light details.',
     palette: DEATH_FLAMED_HELL,
+    group: 'core',
     isUnlocked: () => true,
   },
 ];
 
+// ── Theme registry ─────────────────────────────────────────────────────────
+
+const REWARD_UI_THEMES: UiThemeDefinition[] = buildRewardThemes();
+
+export const UI_THEMES: UiThemeDefinition[] = [...CORE_UI_THEMES, ...REWARD_UI_THEMES];
+
 export const UI_THEME_BY_ID: Record<string, UiThemeDefinition> =
   Object.fromEntries(UI_THEMES.map((t) => [t.id, t]));
 
+function getPersistedThemeUnlockSet(progress: ProgressState): Set<string> {
+  const raw = progress.profile.unlockedUiThemeIds;
+  if (!Array.isArray(raw)) return new Set();
+  return new Set(raw.filter((id): id is string => typeof id === 'string'));
+}
+
+/** Latches reward-theme unlocks so they stay unlocked permanently once earned. */
+export function latchUnlockedUiThemes(progress: ProgressState): boolean {
+  const unlockSet = getPersistedThemeUnlockSet(progress);
+  const before = unlockSet.size;
+
+  for (const theme of UI_THEMES) {
+    if (theme.group !== 'reward') continue;
+    if (theme.isUnlocked(progress)) unlockSet.add(theme.id);
+  }
+
+  const sanitizedCount = Array.isArray(progress.profile.unlockedUiThemeIds)
+    ? progress.profile.unlockedUiThemeIds.filter((id): id is string => typeof id === 'string').length
+    : 0;
+  const changed = unlockSet.size !== before || sanitizedCount !== unlockSet.size;
+  if (changed) {
+    progress.profile.unlockedUiThemeIds = [...unlockSet];
+  }
+  return changed;
+}
+
+function resolveThemePaletteAtTime(theme: UiThemeDefinition, nowMs: number): UiPalette {
+  if (!theme.oscillation) return { ...theme.palette };
+
+  const t = 0.5 + 0.5 * Math.sin((nowMs / theme.oscillation.periodMs) * Math.PI * 2);
+  const palette = { ...theme.palette };
+  for (const key of BLENDABLE_THEME_KEYS) {
+    const from = theme.oscillation.from[key];
+    const to = theme.oscillation.to[key];
+    if (typeof from === 'string' && typeof to === 'string') {
+      palette[key] = mixColor(from, to, t);
+    }
+  }
+  return palette;
+}
+
+export function isThemeOscillating(themeId: string): boolean {
+  return !!UI_THEME_BY_ID[themeId]?.oscillation;
+}
+
+export function getThemePreviewPalette(theme: UiThemeDefinition, nowMs: number = Date.now()): UiPalette {
+  return resolveThemePaletteAtTime(theme, nowMs);
+}
+
 export function isThemeUnlocked(id: string, progress: ProgressState): boolean {
   const def = UI_THEME_BY_ID[id];
-  return !!def && def.isUnlocked(progress);
+  if (!def) return false;
+  const persisted = getPersistedThemeUnlockSet(progress).has(id);
+  return persisted || def.isUnlocked(progress);
 }
 
 export function resolveThemeId(id: string, progress: ProgressState): string {
@@ -314,11 +712,22 @@ export function applyEffectiveTheme(
   themeId: string,
   customTheme: Partial<UiPalette> | null,
   progress: ProgressState,
+  nowMs: number = Date.now(),
 ): void {
-  const resolvedId = resolveThemeId(themeId, progress);
-  const base = UI_THEME_BY_ID[resolvedId]?.palette ?? DEFAULT_WARM_PALETTE;
-  const effective: UiPalette = customTheme ? { ...base, ...customTheme } : { ...base };
+  const effective = getEffectiveThemePalette(themeId, customTheme, progress, nowMs);
   applyUiPalette(effective);
+}
+
+export function getEffectiveThemePalette(
+  themeId: string,
+  customTheme: Partial<UiPalette> | null,
+  progress: ProgressState,
+  nowMs: number = Date.now(),
+): UiPalette {
+  const resolvedId = resolveThemeId(themeId, progress);
+  const def = UI_THEME_BY_ID[resolvedId];
+  const base = def ? resolveThemePaletteAtTime(def, nowMs) : { ...DEFAULT_WARM_PALETTE };
+  return customTheme ? { ...base, ...customTheme } : { ...base };
 }
 
 /**

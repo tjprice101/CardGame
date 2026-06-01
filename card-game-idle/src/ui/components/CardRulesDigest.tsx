@@ -36,11 +36,13 @@ function CardRulesDigest({
   const sections = useMemo(() => {
     const all = getCardSummarySections(card, { abilityTextMode });
     // Preview: hide 'On Play'/'Play'/'Hooks' — 'Ability' already summarises them.
-    // Detail: keep all sections so authored card description and mechanical breakdown
-    // are both visible in stat menus.
-    const visible = variant === 'preview'
-      ? all.filter(s => s.title !== 'On Play' && s.title !== 'Play' && s.title !== 'Hooks')
-      : all;
+    // Detail: hide 'Rules' — the type-specific sections (On Play, Passive, Attacks, etc.)
+    // already break down the same canonical mechanics, making Rules redundant.
+    const previewVisible = all.filter(s => s.title !== 'On Play' && s.title !== 'Play' && s.title !== 'Hooks' && s.title !== 'Rules');
+    const detailBase = all.filter(s => s.title !== 'Rules');
+    const hasSpecificSections = detailBase.some(s => s.title !== 'Ability');
+    const detailVisible = hasSpecificSections ? detailBase.filter(s => s.title !== 'Ability') : detailBase;
+    const visible = variant === 'preview' ? previewVisible : detailVisible;
     const readable = visible.map(section => ({
       ...section,
       lines: section.lines.map(formatReadableRuleText),

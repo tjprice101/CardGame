@@ -67,6 +67,7 @@ import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/
 import { getDailyDealPackId, getDailyDealCost } from '@/systems/progression/dailyDeal';
 import { TITLE_BADGES, TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
 import { latchUnlockedAvatars } from '@/data/profile/avatars';
+import { latchUnlockedUiThemes } from '@/data/profile/uiThemes';
 import {
   BOSS_DEFINITIONS,
   BOSS_FIGHT_ROUND_SECONDS,
@@ -95,6 +96,7 @@ import {
 } from '@/data/trialDecks';
 import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
 import { getCardCategoryKey } from '@/data/elements';
+import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrounds';
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
@@ -179,17 +181,8 @@ const defaultTurn: TurnState = {
   blackGlassLastPolarity: null,
   blackGlassLastPayoff: 0,
   snowboundPhase: null,
-  snowboundPotential: 0,
-  snowboundAlternations: 0,
-  snowboundConduits: 0,
   glassProofFragments: 0,
   glassProofDepth: 0,
-  glassProofCascade: 0,
-  glassAxioms: [],
-  glassArchiveSeals: 0,
-  glassAngleCharges: 0,
-  glassOriginPulseUsed: false,
-  glassAxiomFocus: null,
   glassSnapshotFragments: 0,
   glassSnapshotDepth: 0,
   glassSnapshotCascade: 0,
@@ -200,7 +193,6 @@ const defaultTurn: TurnState = {
   glassWhiteLedger: 0,
   glassWhiteLedgerActive: false,
   glassSyntheticFragments: 0,
-  glassSyntheticCascade: 0,
   burningGardenLaw: null,
   burningGardenLineagesPlayed: [],
   burningGardenEchoesBloomed: 0,
@@ -231,11 +223,6 @@ const defaultTurn: TurnState = {
   butterflyFormationTypesSeen: [],
   eternalSeasUndertow: 0,
   eternalSeasFoam: 0,
-  eternalSeasCurrent: 0,
-  eternalSeasPolarity: null,
-  eternalSeasWhiteFlow: 0,
-  eternalSeasBlackFlow: 0,
-  eternalSeasMarginCharge: 0,
   recastLedger: [],
   reforgeCharges: 0,
   reforgeChargeCap: 6,
@@ -273,8 +260,10 @@ const defaultProgress: ProgressState = {
     titleId: null,
     uiThemeId: 'theme-warm-default',
     customUiTheme: null,
+    mainMenuBackgroundId: DEFAULT_MAIN_MENU_BACKGROUND_ID,
     signatureCardIds: [],
     unlockedAvatarIds: [],
+    unlockedUiThemeIds: [],
   },
   dailyLogin: {
     lastClaimedDayIndex: -1,
@@ -828,6 +817,7 @@ interface StoreActions {
   setAvatarId: (avatarId: string) => void;
   setTitleId: (titleId: string | null) => void;
   setUiThemeId: (themeId: string) => void;
+  setMainMenuBackgroundId: (backgroundId: string) => void;
   setCustomUiThemeColor: (key: string, value: string) => void;
   resetCustomUiTheme: () => void;
   /** Set a Signature Card slot (0-4). Pass null cardId to clear the slot. */
@@ -971,6 +961,8 @@ function latchUnlockedAchievements(progress: ProgressState): void {
 function recompute(state: Store): void {
   // Latch profile avatar unlocks permanently once their condition is met.
   latchUnlockedAvatars(state.progress);
+  // Latch reward UI theme unlocks permanently once their condition is met.
+  latchUnlockedUiThemes(state.progress);
   // Latch achievements so newly-added achievements unlock retroactively.
   latchUnlockedAchievements(state.progress);
   state.computedStats = ScoreSystem.compute(state.board);
@@ -1843,23 +1835,11 @@ function ensureBlackGlassTurnState(turn: TurnState): void {
 
 function ensureSnowboundTurnState(turn: TurnState): void {
   if (turn.snowboundPhase === undefined) turn.snowboundPhase = null;
-  if (turn.snowboundPotential === undefined) turn.snowboundPotential = 0;
-  if (turn.snowboundAlternations === undefined) turn.snowboundAlternations = 0;
-  if (turn.snowboundConduits === undefined) turn.snowboundConduits = 0;
-  if (turn.snowboundPreviousPhase === undefined) turn.snowboundPreviousPhase = null;
-  if (turn.snowboundAlternatedThisTurn === undefined) turn.snowboundAlternatedThisTurn = false;
-  if (turn.snowboundOnBoardEffects === undefined) turn.snowboundOnBoardEffects = [];
 }
 
 function ensureGlassAbsoluteTurnState(turn: TurnState): void {
   if (turn.glassProofFragments === undefined) turn.glassProofFragments = 0;
   if (turn.glassProofDepth === undefined) turn.glassProofDepth = 0;
-  if (turn.glassProofCascade === undefined) turn.glassProofCascade = 0;
-  if (turn.glassAxioms === undefined) turn.glassAxioms = [];
-  if (turn.glassArchiveSeals === undefined) turn.glassArchiveSeals = 0;
-  if (turn.glassAngleCharges === undefined) turn.glassAngleCharges = 0;
-  if (turn.glassOriginPulseUsed === undefined) turn.glassOriginPulseUsed = false;
-  if (turn.glassAxiomFocus === undefined) turn.glassAxiomFocus = null;
   if (turn.glassSnapshotFragments === undefined) turn.glassSnapshotFragments = 0;
   if (turn.glassSnapshotDepth === undefined) turn.glassSnapshotDepth = 0;
   if (turn.glassSnapshotCascade === undefined) turn.glassSnapshotCascade = 0;
@@ -1870,7 +1850,6 @@ function ensureGlassAbsoluteTurnState(turn: TurnState): void {
   if (turn.glassWhiteLedger === undefined) turn.glassWhiteLedger = 0;
   if (turn.glassWhiteLedgerActive === undefined) turn.glassWhiteLedgerActive = false;
   if (turn.glassSyntheticFragments === undefined) turn.glassSyntheticFragments = 0;
-  if (turn.glassSyntheticCascade === undefined) turn.glassSyntheticCascade = 0;
 }
 
 function ensureButterflyTurnState(turn: TurnState): void {
@@ -1959,11 +1938,6 @@ function applyButterflyBasePlayProgression(s: Store, def: CardDefinition): void 
 function ensureEternalSeasTurnState(turn: TurnState): void {
   if (turn.eternalSeasUndertow === undefined) turn.eternalSeasUndertow = 0;
   if (turn.eternalSeasFoam === undefined) turn.eternalSeasFoam = 0;
-  if (turn.eternalSeasCurrent === undefined) turn.eternalSeasCurrent = 0;
-  if (turn.eternalSeasPolarity === undefined) turn.eternalSeasPolarity = null;
-  if (turn.eternalSeasWhiteFlow === undefined) turn.eternalSeasWhiteFlow = 0;
-  if (turn.eternalSeasBlackFlow === undefined) turn.eternalSeasBlackFlow = 0;
-  if (turn.eternalSeasMarginCharge === undefined) turn.eternalSeasMarginCharge = 0;
 }
 
 export function ensureAbyssalForgeTurnState(turn: TurnState): void {
@@ -2085,7 +2059,6 @@ function captureTurnSnapshot(turn: TurnState): TurnState {
     lightDistinctNotes: [...(turn.lightDistinctNotes ?? [])],
     prismaticDistinctChannels: [...(turn.prismaticDistinctChannels ?? [])],
     prismaticRecentChannels: [...(turn.prismaticRecentChannels ?? [])],
-    glassAxioms: [...(turn.glassAxioms ?? [])],
     burningGardenLineagesPlayed: [...(turn.burningGardenLineagesPlayed ?? [])],
     burningGardenIncandescentSnapshot: [...(turn.burningGardenIncandescentSnapshot ?? [])],
   };
@@ -2119,28 +2092,7 @@ function getSnowboundCardPhase(
   return def.snowboundPhase ?? getSnowboundPhase(actionClass);
 }
 
-function getGlassNeighbors(key: string): string[] {
-  const [row, rawIndex] = key.split(':');
-  const index = Number(rawIndex);
-
-  if (row === 'front') {
-    const neighbors: string[] = [];
-    if (index > 0) neighbors.push(`front:${index - 1}`);
-    if (index < 4) neighbors.push(`front:${index + 1}`);
-    if (index > 0) neighbors.push(`back:${index - 1}`);
-    if (index < 4) neighbors.push(`back:${index}`);
-    return neighbors;
-  }
-
-  const neighbors: string[] = [];
-  if (index > 0) neighbors.push(`back:${index - 1}`);
-  if (index < 3) neighbors.push(`back:${index + 1}`);
-  neighbors.push(`front:${index}`);
-  if (index < 4) neighbors.push(`front:${index + 1}`);
-  return neighbors;
-}
-
-function computeGlassProofMetrics(board: BoardState): { fragments: number; proofs: number; depth: number } {
+function computeGlassProofMetrics(board: BoardState): { fragments: number; depth: number } {
   const nodes = new Map<string, { depth: number; tokens: number }>();
 
   board.frontSlots.forEach((slot, index) => {
@@ -2157,26 +2109,14 @@ function computeGlassProofMetrics(board: BoardState): { fragments: number; proof
     nodes.set(`back:${index}`, { depth: slot.prismaticDepth ?? 0, tokens: slot.spectrumTokens ?? 0 });
   });
 
-  let links = 0;
   let depth = 0;
-  const visitedEdges = new Set<string>();
 
-  for (const [key, node] of nodes.entries()) {
+  for (const [, node] of nodes.entries()) {
     depth = Math.max(depth, node.depth + node.tokens);
-    for (const neighborKey of getGlassNeighbors(key)) {
-      const neighbor = nodes.get(neighborKey);
-      if (!neighbor) continue;
-
-      const edgeKey = [key, neighborKey].sort().join('|');
-      if (visitedEdges.has(edgeKey)) continue;
-      visitedEdges.add(edgeKey);
-      links += 1;
-    }
   }
 
   return {
     fragments: nodes.size,
-    proofs: links,
     depth,
   };
 }
@@ -2414,8 +2354,8 @@ function getButterflyFullFireMultiplier(s: Store, def: CardDefinition): number {
 function getEternalSeasFullFireMultiplier(s: Store, def: CardDefinition): number {
   if (def.element !== 'EternalSeas' || def.rarity !== 'Infinite') return 1;
   ensureEternalSeasTurnState(s.turn);
-  const setupReady = (s.turn.eternalSeasCurrent ?? 0) >= 9;
-  const enginesReady = (s.turn.eternalSeasMarginCharge ?? 0) >= 3;
+  const setupReady = (s.turn.eternalSeasUndertow ?? 0) >= 10;
+  const enginesReady = (s.turn.secondaryCounters?.deepwake ?? 0) >= 3;
   return setupReady && enginesReady ? 1.35 : 0.70;
 }
 
@@ -2697,18 +2637,11 @@ function applySnowboundPlayState(
   const previousPhase = beforeTurn.snowboundPhase ?? null;
   const shifted = previousPhase !== null && previousPhase !== phase;
 
-  s.turn.snowboundAlternatedThisTurn = shifted;
-
-  if (shifted) {
-    s.turn.snowboundAlternations = Math.min(12, (s.turn.snowboundAlternations ?? 0) + 1);
-  }
-
   if (phase === 'Frost') {
     const phaseGain = shifted ? 3 : 2;
     s.turn.arcticCharge = (s.turn.arcticCharge ?? 0) + phaseGain;
   }
 
-  s.turn.snowboundPreviousPhase = s.turn.snowboundPhase;
   s.turn.snowboundPhase = phase;
   s.turn.lastPlayedElement = def.element;
 }
@@ -2723,12 +2656,9 @@ function applyGlassAbsolutePlayState(
   ensureGlassAbsoluteTurnState(s.turn);
 
   const metrics = computeGlassProofMetrics(s.board);
-  const previousProofs = beforeTurn.glassProofCascade ?? 0;
-  const newProofs = Math.max(0, metrics.proofs - previousProofs);
 
   s.turn.glassProofFragments = metrics.fragments;
   s.turn.glassProofDepth = metrics.depth;
-  s.turn.glassProofCascade = metrics.proofs;
 
   if (isBaseGlassAbsoluteCard(def)) {
     // Base Glass loop is fragments-only: no depth/cascade/axiom dependencies.
@@ -2744,12 +2674,6 @@ function applyGlassAbsolutePlayState(
     const counters = (s.turn.secondaryCounters ?? (s.turn.secondaryCounters = {})) as Record<string, number>;
     let refractionCharge = Math.max(0, counters.absol ?? 0);
 
-    // Lattice Archive passively escalates charge when fresh board links form.
-    if (def.definitionId === 'ga-et-lattice-archive-seraph' && newProofs > 0) {
-      refractionCharge = Math.min(12, refractionCharge + 1);
-      counters.absol = refractionCharge;
-    }
-
     // First White rewards cross-set bridge sequencing with direct charge and burst.
     if (def.definitionId === 'ga-et-first-white' && beforeTurn.lastPlayedElement && beforeTurn.lastPlayedElement !== 'GlassAbsolute') {
       refractionCharge = Math.min(12, refractionCharge + 2);
@@ -2757,26 +2681,11 @@ function applyGlassAbsolutePlayState(
       grantOblivion(s, 80 + (s.turn.glassProofFragments ?? 0) * 16);
     }
 
-    // Eternal Glass now maps one charge track into tiered axiom support.
-    const nextAxioms: Array<import('@/types/game').GlassAxiom> = [];
-    if (refractionCharge >= 2) nextAxioms.push('cascade');
-    if (refractionCharge >= 4) nextAxioms.push('bridge');
-    if (refractionCharge >= 6) nextAxioms.push('multiplier');
-    s.turn.glassAxioms = nextAxioms;
-
     // Charge deepens proof depth so Eternal directly amplifies fragment-linked payouts.
     s.turn.glassProofDepth = Math.max(
       s.turn.glassProofDepth ?? 0,
       Math.min(18, metrics.depth + Math.floor(refractionCharge / 2)),
     );
-
-    if (newProofs > 0) {
-      const fragments = s.turn.glassProofFragments ?? 0;
-      const formationTier = fragments >= 7 ? 3 : fragments >= 5 ? 2 : fragments >= 3 ? 1 : 0;
-      const proofBurst = newProofs * (24 + refractionCharge * 6);
-      const formationBurst = formationTier * (32 + refractionCharge * 8);
-      grantOblivion(s, proofBurst + formationBurst);
-    }
 
     s.turn.lastPlayedElement = def.element;
     return;
@@ -2804,15 +2713,13 @@ function applyGlassAbsolutePlayState(
   // Refracted Sovereign turns charge into temporary synthetic lattice weight.
   if (def.rarity === 'Infinite' && hasBackDefinition(s.board, 'ga-inf-refracted-sovereign')) {
     s.turn.glassSyntheticFragments = Math.min(5, 1 + Math.floor(refractionCharge / 3));
-    s.turn.glassSyntheticCascade = Math.min(3, Math.floor(refractionCharge / 5));
   } else {
     s.turn.glassSyntheticFragments = 0;
-    s.turn.glassSyntheticCascade = 0;
   }
 
   // Infinite Glass keeps a queue for delayed release turns.
   if (hasFrontDefinition(s.board, 'ga-inf-chorus-unbroken-spectrum')) {
-    const queueGain = 1 + (refractionCharge >= 8 ? 1 : 0) + (newProofs > 0 ? 1 : 0);
+    const queueGain = 1 + (refractionCharge >= 8 ? 1 : 0);
     s.turn.glassWaveQueue = Math.min(12, (s.turn.glassWaveQueue ?? 0) + queueGain);
   }
 
@@ -4814,19 +4721,10 @@ export const useStore = create<Store>()(
           }
         }
 
-        if (def.definitionId === 'ga-et-lattice-archive-seraph') {
-          const seals = s.turn.glassArchiveSeals ?? 0;
-          if (seals > 0) {
-            amount += seals * (165 + (s.turn.glassProofDepth ?? 0) * 6);
-            s.turn.glassArchiveSeals = 0;
-          }
-        }
-
         if (def.definitionId === 'ga-inf-chorus-unbroken-spectrum') {
           const queue = s.turn.glassWaveQueue ?? 0;
           if (queue > 0) {
-            const theoremSupport = (s.turn.glassAxioms ?? []).length;
-            amount += queue * (140 + (s.turn.glassProofDepth ?? 0) * 12 + (s.turn.glassProofCascade ?? 0) * 18 + theoremSupport * 24);
+            amount += queue * (140 + (s.turn.glassProofDepth ?? 0) * 12);
             s.turn.glassWaveQueue = Math.max(0, queue - 3);
             if (queue >= 5) {
               s.turn.nextCardMultiplied = true;
@@ -5599,6 +5497,34 @@ export const useStore = create<Store>()(
           const reshuffledCards = pending.allCards.filter(c => !keptIds.has(c.instanceId));
           s.deck.hand = keptCards;
           s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, ...reshuffledCards]);
+        } else if (pending.type === 'light_transcendent_duality_choice') {
+          const mode = selected[0];
+          if (mode !== 'draw' && mode !== 'oblivion') return;
+
+          if (mode === 'draw') {
+            const discardId = selected[1];
+            if (!discardId) return;
+            const cardToDiscard = s.deck.hand.find(card => card.instanceId === discardId);
+            if (!cardToDiscard) return;
+
+            recordLossEvent(s, [{ definitionId: cardToDiscard.definitionId }], 'discard');
+            s.deck = TurnSystem.discardFromHand(s.deck, [discardId]);
+            s.deck = TurnSystem.drawCards(s.deck, 2);
+          } else {
+            const resonance = Math.max(0, s.turn.lightResonance ?? 0);
+            const halo = Math.max(0, s.turn.eternalStacks?.light ?? 0);
+            const distinctNotes = new Set(s.turn.lightDistinctNotes ?? []).size;
+            const divisor = Math.max(1, pending.thresholdDivisor);
+            const thresholdBonus = Math.floor((resonance + halo) / divisor) * pending.thresholdScale;
+            const total = Math.floor(
+              pending.baseOblivion
+              + resonance * pending.resonanceScale
+              + halo * pending.haloScale
+              + distinctNotes * pending.distinctNoteScale
+              + thresholdBonus,
+            );
+            grantOblivion(s, Math.max(0, total));
+          }
         } else if (pending.type === 'neutrality_equilibrium_tactical_choice') {
           const choice = selected[0];
           if (choice !== 'burst' && choice !== 'restore') return;
@@ -6020,6 +5946,12 @@ export const useStore = create<Store>()(
 
     setUiThemeId: (themeId) => {
       set(s => { s.progress.profile.uiThemeId = themeId; });
+    },
+
+    setMainMenuBackgroundId: (backgroundId) => {
+      const clean = String(backgroundId ?? '').trim();
+      if (!clean) return;
+      set(s => { s.progress.profile.mainMenuBackgroundId = clean; });
     },
 
     setCustomUiThemeColor: (key, value) => {
@@ -6962,6 +6894,8 @@ export const useStore = create<Store>()(
             uiThemeId: 'theme-warm-default',
             customUiTheme: null,
             unlockedAvatarIds: [],
+            unlockedUiThemeIds: [],
+            mainMenuBackgroundId: DEFAULT_MAIN_MENU_BACKGROUND_ID,
           };
         } else {
           const prof = op['profile'] as Record<string, unknown>;
@@ -6971,10 +6905,19 @@ export const useStore = create<Store>()(
           if (prof['titleId'] === undefined) prof['titleId'] = null;
           if (typeof prof['uiThemeId'] !== 'string') prof['uiThemeId'] = 'theme-warm-default';
           if (prof['customUiTheme'] === undefined) prof['customUiTheme'] = null;
+          if (typeof prof['mainMenuBackgroundId'] !== 'string' || !prof['mainMenuBackgroundId']) {
+            prof['mainMenuBackgroundId'] = DEFAULT_MAIN_MENU_BACKGROUND_ID;
+          }
           if (!Array.isArray(prof['unlockedAvatarIds'])) {
             prof['unlockedAvatarIds'] = [];
           } else {
             prof['unlockedAvatarIds'] = (prof['unlockedAvatarIds'] as unknown[])
+              .filter((id): id is string => typeof id === 'string');
+          }
+          if (!Array.isArray(prof['unlockedUiThemeIds'])) {
+            prof['unlockedUiThemeIds'] = [];
+          } else {
+            prof['unlockedUiThemeIds'] = (prof['unlockedUiThemeIds'] as unknown[])
               .filter((id): id is string => typeof id === 'string');
           }
         }
@@ -7144,13 +7087,22 @@ export const useStore = create<Store>()(
         delete ot['blackGlassCollapsePending'];
         if (ot['blackGlassLastPayoff'] === undefined) ot['blackGlassLastPayoff'] = 0;
         if (ot['snowboundPhase'] === undefined) ot['snowboundPhase'] = null;
-        if (ot['snowboundPotential'] === undefined) ot['snowboundPotential'] = 0;
-        if (ot['snowboundAlternations'] === undefined) ot['snowboundAlternations'] = 0;
-        if (ot['snowboundConduits'] === undefined) ot['snowboundConduits'] = 0;
+        delete ot['snowboundPotential'];
+        delete ot['snowboundAlternations'];
+        delete ot['snowboundConduits'];
+        delete ot['snowboundPreviousPhase'];
+        delete ot['snowboundAlternatedThisTurn'];
+        delete ot['snowboundOnBoardEffects'];
         if (ot['glassProofFragments'] === undefined) ot['glassProofFragments'] = 0;
         if (ot['glassProofDepth'] === undefined) ot['glassProofDepth'] = 0;
-        if (ot['glassProofCascade'] === undefined) ot['glassProofCascade'] = 0;
-        if (ot['glassAxioms'] === undefined) ot['glassAxioms'] = [];
+        delete ot['glassProofCascade'];
+        delete ot['glassAxioms'];
+        delete ot['glassArchiveSeals'];
+        delete ot['glassAngleCharges'];
+        delete ot['glassOriginPulseUsed'];
+        delete ot['glassAxiomFocus'];
+        delete ot['glassSyntheticCascade'];
+        delete ot['proof'];
         if (ot['burningGardenLaw'] === undefined) ot['burningGardenLaw'] = null;
         if (ot['burningGardenLineagesPlayed'] === undefined) ot['burningGardenLineagesPlayed'] = [];
         if (ot['burningGardenEchoesBloomed'] === undefined) ot['burningGardenEchoesBloomed'] = 0;
@@ -7167,6 +7119,11 @@ export const useStore = create<Store>()(
         if (ot['burningGardenZenithNextInfinite'] === undefined) ot['burningGardenZenithNextInfinite'] = false;
         if (ot['burningGardenSkyLaw'] === undefined) ot['burningGardenSkyLaw'] = null;
         if (ot['lastPlayedElement'] === undefined) ot['lastPlayedElement'] = null;
+        delete ot['eternalSeasCurrent'];
+        delete ot['eternalSeasPolarity'];
+        delete ot['eternalSeasWhiteFlow'];
+        delete ot['eternalSeasBlackFlow'];
+        delete ot['eternalSeasMarginCharge'];
 
         // Migrate savedDecks
         loaded.deck.deckList = cloneDeckList(loaded.deck.deckList as DeckEntry[]);

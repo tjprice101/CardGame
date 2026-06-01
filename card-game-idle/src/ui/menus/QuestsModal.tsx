@@ -1,32 +1,95 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { uiTypography } from '@/ui/theme';
+import { uiTypography, warmTheme, type UiPalette } from '@/ui/theme';
 import {
   refreshQuestRotation,
   isQuestComplete,
   type QuestInstance,
 } from '@/systems/progression/quests';
 
-// ── Design palette — Warm Hearth (steel blue) ──────────────────────────────
-const P = {
-  bg: 'linear-gradient(158deg, #040a15 0%, #060e1c 50%, #030810 100%)',
-  glow: 'radial-gradient(ellipse 50% 40% at 50% 0%, rgba(78,158,220,0.22) 0%, transparent 55%)',
-  panel: 'rgba(6,14,30,0.72)',
-  border: 'rgba(110,160,215,0.32)',
-  borderStrong: 'rgba(72,128,190,0.56)',
-  borderWeekly: 'rgba(72,128,190,0.48)',
-  accentDaily: '#72caf5',
-  accentDailyDeep: '#1e5890',
-  accentWeekly: '#96daff',
-  accentWeeklyDeep: '#255fa8',
-  accentGold: '#72caf5',
-  accentGoldGlow: 'rgba(88,180,235,0.48)',
-  success: '#7de88a',
-  successBg: 'rgba(90,175,100,0.14)',
-  text: '#f0f6ff',
-  textMuted: 'rgba(205,228,255,0.82)',
-  textFaint: 'rgba(165,205,245,0.58)',
+type QuestVisualPalette = {
+  bg: string;
+  panel: string;
+  border: string;
+  text: string;
+  textMuted: string;
+  textFaint: string;
+  accentDaily: string;
+  accentDailyDeep: string;
+  accentWeekly: string;
+  accentWeeklyDeep: string;
+  accentGold: string;
+  accentGoldGlow: string;
+  success: string;
+  successBg: string;
+  glowLeft: string;
+  glowRight: string;
+  topShadow: string;
+  columnHeaderBg: string;
+  accentTriplet: string;
+  accentSoftTriplet: string;
 };
+
+function hexToRgbTriplet(hex: string): string | null {
+  const clean = hex.trim().replace('#', '');
+  if (clean.length === 3) {
+    const r = parseInt(clean[0] + clean[0], 16);
+    const g = parseInt(clean[1] + clean[1], 16);
+    const b = parseInt(clean[2] + clean[2], 16);
+    return `${r}, ${g}, ${b}`;
+  }
+  if (clean.length === 6 || clean.length === 8) {
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return `${r}, ${g}, ${b}`;
+  }
+  return null;
+}
+
+function rgbTripletFromColor(color: string, fallback = '58, 142, 200'): string {
+  const trimmed = color.trim();
+  if (trimmed.startsWith('#')) return hexToRgbTriplet(trimmed) ?? fallback;
+  const rgbMatch = trimmed.match(/rgba?\(([^)]+)\)/i);
+  if (!rgbMatch) return fallback;
+  const parts = rgbMatch[1].split(',').map(p => Number(p.trim()));
+  if (parts.length < 3 || parts.slice(0, 3).some(Number.isNaN)) return fallback;
+  return `${Math.round(parts[0])}, ${Math.round(parts[1])}, ${Math.round(parts[2])}`;
+}
+
+function withAlpha(color: string, alpha: number, fallback = '58, 142, 200'): string {
+  return `rgba(${rgbTripletFromColor(color, fallback)}, ${Math.max(0, Math.min(1, alpha))})`;
+}
+
+function buildQuestPalette(theme: UiPalette): QuestVisualPalette {
+  const accentDaily = theme.accent;
+  const accentWeekly = theme.accentSoft;
+  const accentDeep = theme.accentDeep;
+  const accentTriplet = rgbTripletFromColor(accentDaily, '58, 142, 200');
+  const accentSoftTriplet = rgbTripletFromColor(accentWeekly, '90, 171, 218');
+  return {
+    bg: theme.appBackground,
+    panel: withAlpha(theme.surfaceStrong, 0.72),
+    border: theme.border,
+    text: theme.text,
+    textMuted: theme.textMuted,
+    textFaint: theme.textFaint,
+    accentDaily,
+    accentDailyDeep: accentDeep,
+    accentWeekly,
+    accentWeeklyDeep: theme.borderStrong,
+    accentGold: theme.accent,
+    accentGoldGlow: withAlpha(theme.accent, 0.48),
+    success: theme.success,
+    successBg: withAlpha(theme.success, 0.14),
+    glowLeft: `radial-gradient(ellipse, ${withAlpha(accentWeekly, 0.28)} 0%, ${withAlpha(accentDaily, 0.12)} 42%, transparent 68%)`,
+    glowRight: `radial-gradient(ellipse, ${withAlpha(accentDaily, 0.2)} 0%, transparent 65%)`,
+    topShadow: withAlpha(accentDaily, 0.38),
+    columnHeaderBg: withAlpha(accentDeep, 0.22),
+    accentTriplet,
+    accentSoftTriplet,
+  };
+}
 
 // ── Countdown helpers ─────────────────────────────────────────────────────────
 function msUntilDailyReset(): number {
@@ -69,6 +132,7 @@ export default function QuestsModal({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const claimQuest = useStore(s => s.claimQuest);
   const { daily: dailyMs, weekly: weeklyMs } = useQuestCountdowns();
+  const C = buildQuestPalette(warmTheme);
 
   const view = useMemo(() => {
     const snapshot = {
@@ -96,65 +160,65 @@ export default function QuestsModal({ onClose }: Props) {
       className="ui-panel-intro"
       style={{
         position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'auto',
-        background: P.bg,
+        background: C.bg,
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
         fontFamily: uiTypography.body,
       }}
     >
       {/* Atmospheric washes — Warm Hearth */}
-      <div style={{ position: 'absolute', top: '-18%', left: '-8%', width: '65%', height: '80%', background: 'radial-gradient(ellipse, rgba(78,165,225,0.28) 0%, rgba(30,88,170,0.12) 42%, transparent 68%)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', top: '-15%', right: '-8%', width: '60%', height: '75%', background: 'radial-gradient(ellipse, rgba(22,65,200,0.20) 0%, transparent 65%)', filter: 'blur(90px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-18%', left: '-8%', width: '65%', height: '80%', background: C.glowLeft, filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-15%', right: '-8%', width: '60%', height: '75%', background: C.glowRight, filter: 'blur(90px)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 50% 44%, transparent 22%, rgba(0,0,0,0.68) 100%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px)', pointerEvents: 'none' }} />
 
       {/* Dual-tone top accent */}
       <div style={{
         height: 3, flexShrink: 0,
-        background: `linear-gradient(90deg, transparent, ${P.accentDailyDeep}, ${P.accentDaily}, ${P.accentWeekly}, ${P.accentWeeklyDeep}, transparent)`,
-        boxShadow: `0 0 24px rgba(58,142,200,0.38)`,
+        background: `linear-gradient(90deg, transparent, ${C.accentDailyDeep}, ${C.accentDaily}, ${C.accentWeekly}, ${C.accentWeeklyDeep}, transparent)`,
+        boxShadow: `0 0 24px ${C.topShadow}`,
       }} />
 
       <div onClick={e => e.stopPropagation()} style={{
         display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden',
-        ['--ui-accent' as any]: '58, 142, 200',
-        ['--ui-accent-soft' as any]: '90, 171, 218',
+        ['--ui-accent' as any]: C.accentTriplet,
+        ['--ui-accent-soft' as any]: C.accentSoftTriplet,
       } as React.CSSProperties}>
 
         {/* ── Header ── */}
         <div className="ui-shimmer-band" style={{
           position: 'relative',
           padding: '22px 32px 18px',
-          borderBottom: `1px solid ${P.border}`,
+          borderBottom: `1px solid ${C.border}`,
           display: 'flex', alignItems: 'center', gap: 24, flexShrink: 0,
         }}>
           <div style={{ flex: 1 }}>
             <div style={{
               fontSize: 10, letterSpacing: 3.5, textTransform: 'uppercase',
-              color: P.accentDailyDeep, fontFamily: uiTypography.display, marginBottom: 6,
+              color: C.accentDailyDeep, fontFamily: uiTypography.display, marginBottom: 6,
             }}>
               DAILY & WEEKLY OBJECTIVES
             </div>
             <div className="ui-title-glow" style={{
               fontSize: 32, fontWeight: 700, letterSpacing: 1.5,
-              color: P.accentDaily, fontFamily: uiTypography.display,
-              textShadow: `0 0 48px rgba(88,188,245,0.55), 0 2px 8px rgba(0,0,0,0.8)`,
+              color: C.accentDaily, fontFamily: uiTypography.display,
+              textShadow: `0 0 48px ${withAlpha(C.accentDaily, 0.55)}, 0 2px 8px rgba(0,0,0,0.8)`,
             }}>
               Quests
             </div>
-            <div style={{ fontSize: 13, color: P.textMuted, marginTop: 5, letterSpacing: 0.3, lineHeight: 1.4 }}>
+            <div style={{ fontSize: 13, color: C.textMuted, marginTop: 5, letterSpacing: 0.3, lineHeight: 1.4 }}>
               Complete daily objectives for quick rewards. Weekly quests offer larger Shard bounties for sustained play.
             </div>
           </div>
 
           {/* Hero stats — emblem pillars */}
-          <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 20, borderLeft: `1px solid ${P.border}`, flexShrink: 0 }}>
-            <QuestStat label="Daily Complete" value={`${dailyComplete}/${view.daily.length}`} accent={P.accentDaily} sub={useOblivionForDaily ? `${dailyOblivionLeft.toLocaleString()} Oblivion left` : `${dailyShardsLeft} shards left`} />
-            <div style={{ width: 1, height: 30, background: P.border, flexShrink: 0 }} />
-            <QuestStat label="Weekly Complete" value={`${weeklyComplete}/${view.weekly.length}`} accent={P.accentWeekly} sub={`${weeklyShardsLeft} shards left`} />
+          <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 20, borderLeft: `1px solid ${C.border}`, flexShrink: 0 }}>
+            <QuestStat label="Daily Complete" value={`${dailyComplete}/${view.daily.length}`} accent={C.accentDaily} sub={useOblivionForDaily ? `${dailyOblivionLeft.toLocaleString()} Oblivion left` : `${dailyShardsLeft} shards left`} />
+            <div style={{ width: 1, height: 30, background: C.border, flexShrink: 0 }} />
+            <QuestStat label="Weekly Complete" value={`${weeklyComplete}/${view.weekly.length}`} accent={C.accentWeekly} sub={`${weeklyShardsLeft} shards left`} />
             {(dailyOblivionLeft + dailyShardsLeft + weeklyShardsLeft) > 0 && (
               <>
-                <div style={{ width: 1, height: 30, background: P.border, flexShrink: 0 }} />
-                <QuestStat label="Weekly Shards" value={`+${weeklyShardsLeft.toLocaleString()}`} accent={P.accentGold} sub="shards" pulse />
+                <div style={{ width: 1, height: 30, background: C.border, flexShrink: 0 }} />
+                <QuestStat label="Weekly Shards" value={`+${weeklyShardsLeft.toLocaleString()}`} accent={C.accentGold} sub="shards" pulse />
               </>
             )}
           </div>
@@ -163,8 +227,8 @@ export default function QuestsModal({ onClose }: Props) {
             onClick={onClose}
             style={{
               width: 42, height: 42, borderRadius: '50%', cursor: 'pointer',
-              background: 'rgba(58,142,200,0.08)', border: `1px solid ${P.border}`,
-              color: P.textMuted, fontSize: 16, display: 'flex', alignItems: 'center',
+              background: withAlpha(C.accentDaily, 0.08), border: `1px solid ${C.border}`,
+              color: C.textMuted, fontSize: 16, display: 'flex', alignItems: 'center',
               justifyContent: 'center', flexShrink: 0, transition: 'all 0.18s ease', padding: 0,
             }}
           >
@@ -178,31 +242,31 @@ export default function QuestsModal({ onClose }: Props) {
           {/* ── Daily column ── */}
           <div style={{
             flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-            borderRight: `1px solid ${P.border}`,
+            borderRight: `1px solid ${C.border}`,
           }}>
             {/* Daily column header */}
             <div style={{
               padding: '16px 28px 12px',
-              borderBottom: `1px solid ${P.border}`,
+              borderBottom: `1px solid ${C.border}`,
               flexShrink: 0,
-              background: 'rgba(10,30,80,0.12)',
+              background: C.columnHeaderBg,
               backdropFilter: 'blur(6px)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                  background: 'rgba(58,142,200,0.16)',
-                  border: `1px solid rgba(58,142,200,0.38)`,
+                  background: withAlpha(C.accentDaily, 0.16),
+                  border: `1px solid ${withAlpha(C.accentDaily, 0.38)}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, color: P.accentDaily,
-                  textShadow: `0 0 16px rgba(58,142,200,0.60)`,
+                  fontSize: 18, color: C.accentDaily,
+                  textShadow: `0 0 16px ${withAlpha(C.accentDaily, 0.6)}`,
                 }}>☀</div>
                 <div style={{ flex: 1 }}>
                   <div style={{
-                    fontSize: 16, fontWeight: 700, color: P.accentDaily,
+                    fontSize: 16, fontWeight: 700, color: C.accentDaily,
                     fontFamily: uiTypography.display, letterSpacing: 0.8,
                   }}>Daily Quests</div>
-                  <div style={{ fontSize: 11, color: P.textMuted }}>
+                  <div style={{ fontSize: 11, color: C.textMuted }}>
                     Resets each day · {useOblivionForDaily ? `${dailyOblivionTotal.toLocaleString()} Oblivion total` : `${dailyShardsTotal} shards total`}
                   </div>
                 </div>
@@ -210,14 +274,14 @@ export default function QuestsModal({ onClose }: Props) {
                   <div style={{
                     padding: '4px 10px', borderRadius: 16,
                     background: dailyComplete === view.daily.length && view.daily.length > 0
-                      ? P.successBg : 'rgba(58,142,200,0.10)',
-                    border: `1px solid ${dailyComplete === view.daily.length && view.daily.length > 0 ? 'rgba(110,207,124,0.30)' : 'rgba(58,142,200,0.25)'}`,
+                      ? C.successBg : withAlpha(C.accentDaily, 0.1),
+                    border: `1px solid ${dailyComplete === view.daily.length && view.daily.length > 0 ? withAlpha(C.success, 0.3) : withAlpha(C.accentDaily, 0.25)}`,
                     fontSize: 11, fontWeight: 700,
-                    color: dailyComplete === view.daily.length && view.daily.length > 0 ? P.success : P.accentDaily,
+                    color: dailyComplete === view.daily.length && view.daily.length > 0 ? C.success : C.accentDaily,
                     fontFamily: uiTypography.display,
                   }}>
                     {dailyComplete}/{view.daily.length}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: P.textFaint, fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: C.textFaint, fontVariantNumeric: 'tabular-nums' }}>
                     ⏱ {formatCountdown(dailyMs)}
                   </div>
                 </div>
@@ -227,10 +291,10 @@ export default function QuestsModal({ onClose }: Props) {
             {/* Daily quest list */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
               {view.daily.length === 0 ? (
-                <EmptyState message="No daily quests available yet." />
+                <EmptyState message="No daily quests available yet." textFaint={C.textFaint} />
               ) : (
                 view.daily.map(q => (
-                  <QuestCard key={q.id} quest={q} accent={P.accentDaily} onClaim={() => claimQuest(q.id)} />
+                  <QuestCard key={q.id} quest={q} accent={C.accentDaily} palette={C} onClaim={() => claimQuest(q.id)} />
                 ))
               )}
             </div>
@@ -243,26 +307,26 @@ export default function QuestsModal({ onClose }: Props) {
             {/* Weekly column header */}
             <div style={{
               padding: '16px 28px 12px',
-              borderBottom: `1px solid ${P.border}`,
+              borderBottom: `1px solid ${C.border}`,
               flexShrink: 0,
-              background: 'rgba(10,30,80,0.12)',
+              background: C.columnHeaderBg,
               backdropFilter: 'blur(6px)',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                  background: 'rgba(90,170,220,0.16)',
-                  border: `1px solid rgba(90,170,220,0.38)`,
+                  background: withAlpha(C.accentWeekly, 0.16),
+                  border: `1px solid ${withAlpha(C.accentWeekly, 0.38)}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, color: P.accentWeekly,
-                  textShadow: `0 0 16px rgba(90,170,220,0.60)`,
+                  fontSize: 18, color: C.accentWeekly,
+                  textShadow: `0 0 16px ${withAlpha(C.accentWeekly, 0.6)}`,
                 }}>✦</div>
                 <div style={{ flex: 1 }}>
                   <div style={{
-                    fontSize: 16, fontWeight: 700, color: P.accentWeekly,
+                    fontSize: 16, fontWeight: 700, color: C.accentWeekly,
                     fontFamily: uiTypography.display, letterSpacing: 0.8,
                   }}>Weekly Quests</div>
-                  <div style={{ fontSize: 11, color: P.textMuted }}>
+                  <div style={{ fontSize: 11, color: C.textMuted }}>
                     Resets each Monday · {weeklyShardsTotal} shards total
                   </div>
                 </div>
@@ -270,15 +334,15 @@ export default function QuestsModal({ onClose }: Props) {
                   <div style={{
                     padding: '4px 10px', borderRadius: 16,
                     background: weeklyComplete === view.weekly.length && view.weekly.length > 0
-                      ? P.successBg : 'rgba(90,170,220,0.10)',
-                    border: `1px solid ${weeklyComplete === view.weekly.length && view.weekly.length > 0 ? 'rgba(110,207,124,0.30)' : 'rgba(90,170,220,0.25)'}`,
+                      ? C.successBg : withAlpha(C.accentWeekly, 0.1),
+                    border: `1px solid ${weeklyComplete === view.weekly.length && view.weekly.length > 0 ? withAlpha(C.success, 0.3) : withAlpha(C.accentWeekly, 0.25)}`,
                     fontSize: 11, fontWeight: 700,
-                    color: weeklyComplete === view.weekly.length && view.weekly.length > 0 ? P.success : P.accentWeekly,
+                    color: weeklyComplete === view.weekly.length && view.weekly.length > 0 ? C.success : C.accentWeekly,
                     fontFamily: uiTypography.display,
                   }}>
                     {weeklyComplete}/{view.weekly.length}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: P.textFaint, fontVariantNumeric: 'tabular-nums' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: C.textFaint, fontVariantNumeric: 'tabular-nums' }}>
                     ⏱ {formatCountdown(weeklyMs)}
                   </div>
                 </div>
@@ -288,10 +352,10 @@ export default function QuestsModal({ onClose }: Props) {
             {/* Weekly quest list */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 28px', display: 'flex', flexDirection: 'column', gap: 10 }}>
               {view.weekly.length === 0 ? (
-                <EmptyState message="No weekly quests available yet." />
+                <EmptyState message="No weekly quests available yet." textFaint={C.textFaint} />
               ) : (
                 view.weekly.map(q => (
-                  <QuestCard key={q.id} quest={q} accent={P.accentWeekly} onClaim={() => claimQuest(q.id)} />
+                  <QuestCard key={q.id} quest={q} accent={C.accentWeekly} palette={C} onClaim={() => claimQuest(q.id)} />
                 ))
               )}
             </div>
@@ -302,7 +366,7 @@ export default function QuestsModal({ onClose }: Props) {
       {/* Bottom accent */}
       <div style={{
         height: 2, flexShrink: 0,
-        background: `linear-gradient(90deg, transparent, ${P.border}, transparent)`,
+        background: `linear-gradient(90deg, transparent, ${C.border}, transparent)`,
       }} />
     </div>
   );
@@ -315,26 +379,26 @@ function QuestStat({ label, value, accent, sub, pulse }: {
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '6px 20px', gap: 4,
-      boxShadow: pulse ? `0 0 24px ${accent}33` : 'none',
+      boxShadow: pulse ? `0 0 24px ${withAlpha(accent, 0.2)}` : 'none',
     }}>
       <div style={{
         fontSize: 8, letterSpacing: 3, textTransform: 'uppercase',
-        color: `${accent}99`, fontWeight: 400, whiteSpace: 'nowrap',
+        color: withAlpha(accent, 0.6), fontWeight: 400, whiteSpace: 'nowrap',
       }}>{label}</div>
       <div style={{
         fontSize: 22, fontWeight: 600, letterSpacing: 0.5, color: accent,
         fontVariantNumeric: 'tabular-nums',
-        textShadow: `0 0 20px ${accent}55`,
+        textShadow: `0 0 20px ${withAlpha(accent, 0.36)}`,
       }}>{value}</div>
-      {sub && <div style={{ fontSize: 10, color: `${accent}77` }}>{sub}</div>}
+      {sub && <div style={{ fontSize: 10, color: withAlpha(accent, 0.46) }}>{sub}</div>}
     </div>
   );
 }
 
-function EmptyState({ message }: { message: string }) {
+function EmptyState({ message, textFaint }: { message: string; textFaint: string }) {
   return (
     <div style={{
-      padding: 40, textAlign: 'center', color: P.textFaint,
+      padding: 40, textAlign: 'center', color: textFaint,
       fontSize: 13, fontStyle: 'italic', fontFamily: uiTypography.body,
     }}>
       {message}
@@ -342,20 +406,25 @@ function EmptyState({ message }: { message: string }) {
   );
 }
 
-function QuestCard({ quest, accent, onClaim }: { quest: QuestInstance; accent: string; onClaim: () => void }) {
+function QuestCard({ quest, accent, palette, onClaim }: {
+  quest: QuestInstance;
+  accent: string;
+  palette: QuestVisualPalette;
+  onClaim: () => void;
+}) {
   const complete = isQuestComplete(quest);
   const pct = Math.min(100, Math.round((quest.progress / Math.max(1, quest.goal)) * 100));
 
   const statusBg = quest.claimed
-    ? 'rgba(255,255,255,0.02)'
+    ? withAlpha(palette.text, 0.02)
     : complete
-      ? `${accent}0a`
-      : P.panel;
+      ? withAlpha(accent, 0.08)
+      : palette.panel;
   const statusBorder = quest.claimed
-    ? 'rgba(110,207,124,0.20)'
+    ? withAlpha(palette.success, 0.2)
     : complete
-      ? `${accent}55`
-      : 'rgba(255,255,255,0.08)';
+      ? withAlpha(accent, 0.34)
+      : withAlpha(palette.text, 0.08);
 
   return (
     <div style={{
@@ -364,7 +433,7 @@ function QuestCard({ quest, accent, onClaim }: { quest: QuestInstance; accent: s
       borderRadius: 12,
       overflow: 'hidden',
       opacity: quest.claimed ? 0.65 : 1,
-      boxShadow: complete && !quest.claimed ? `0 2px 16px ${accent}22` : 'none',
+      boxShadow: complete && !quest.claimed ? `0 2px 16px ${withAlpha(accent, 0.16)}` : 'none',
       transition: 'all 0.2s',
     }}>
       {/* Left accent stripe */}
@@ -372,26 +441,26 @@ function QuestCard({ quest, accent, onClaim }: { quest: QuestInstance; accent: s
         <div style={{
           width: 3, flexShrink: 0, alignSelf: 'stretch',
           background: quest.claimed
-            ? P.success
+            ? palette.success
             : complete
               ? accent
-              : 'rgba(255,255,255,0.08)',
-          boxShadow: complete && !quest.claimed ? `0 0 12px ${accent}66` : 'none',
+              : withAlpha(palette.text, 0.08),
+          boxShadow: complete && !quest.claimed ? `0 0 12px ${withAlpha(accent, 0.4)}` : 'none',
         }} />
         <div style={{ flex: 1, padding: '14px 16px' }}>
           {/* Top row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
             <div style={{
-              fontSize: 13, fontWeight: 700, color: complete ? P.text : P.textMuted,
+              fontSize: 13, fontWeight: 700, color: complete ? palette.text : palette.textMuted,
               lineHeight: 1.4, flex: 1, paddingRight: 14,
               fontFamily: uiTypography.display,
             }}>
               {quest.text}
             </div>
             <div style={{
-              fontSize: 12, fontWeight: 700, color: P.accentDaily,
-              background: 'rgba(58,142,200,0.12)', padding: '3px 10px',
-              borderRadius: 8, border: `1px solid rgba(58,142,200,0.28)`,
+              fontSize: 12, fontWeight: 700, color: palette.accentGold,
+              background: withAlpha(palette.accentGold, 0.12), padding: '3px 10px',
+              borderRadius: 8, border: `1px solid ${withAlpha(palette.accentGold, 0.28)}`,
               flexShrink: 0, fontFamily: uiTypography.display,
             }}>
               {(quest.oblivionReward ?? 0) > 0
@@ -404,22 +473,22 @@ function QuestCard({ quest, accent, onClaim }: { quest: QuestInstance; accent: s
           <div style={{ marginBottom: 10 }}>
             <div style={{
               height: 4, borderRadius: 2,
-              background: 'rgba(255,255,255,0.06)',
+              background: withAlpha(palette.text, 0.06),
               overflow: 'hidden',
             }}>
               <div style={{
                 height: '100%', width: `${pct}%`,
                 background: complete
-                  ? `linear-gradient(90deg, ${accent}cc, ${accent})`
-                  : `linear-gradient(90deg, ${accent}88, ${accent}aa)`,
+                  ? `linear-gradient(90deg, ${withAlpha(accent, 0.8)}, ${accent})`
+                  : `linear-gradient(90deg, ${withAlpha(accent, 0.55)}, ${withAlpha(accent, 0.7)})`,
                 borderRadius: 2,
                 transition: 'width 0.5s ease',
-                boxShadow: complete ? `0 0 8px ${accent}88` : 'none',
+                boxShadow: complete ? `0 0 8px ${withAlpha(accent, 0.52)}` : 'none',
               }} />
             </div>
             <div style={{
               display: 'flex', justifyContent: 'space-between',
-              marginTop: 4, fontSize: 10, color: P.textFaint,
+              marginTop: 4, fontSize: 10, color: palette.textFaint,
             }}>
               <span>{quest.progress.toLocaleString()} / {quest.goal.toLocaleString()}</span>
               <span>{pct}%</span>
@@ -434,20 +503,20 @@ function QuestCard({ quest, accent, onClaim }: { quest: QuestInstance; accent: s
               data-sfx="claim"
               style={{
                 background: quest.claimed
-                  ? 'rgba(255,255,255,0.04)'
+                  ? withAlpha(palette.text, 0.04)
                   : complete
-                    ? `linear-gradient(135deg, ${P.accentGold}cc, ${P.accentGold})`
-                    : 'rgba(255,255,255,0.04)',
+                    ? `linear-gradient(135deg, ${withAlpha(palette.accentGold, 0.8)}, ${palette.accentGold})`
+                    : withAlpha(palette.text, 0.04),
                 color: quest.claimed
-                  ? P.textFaint
+                  ? palette.textFaint
                   : complete
-                  ? '#0c1e34'
-                    : P.textFaint,
-                border: `1px solid ${quest.claimed ? 'rgba(255,255,255,0.08)' : complete ? `${P.accentGold}88` : 'rgba(255,255,255,0.08)'}`,
+                  ? palette.accentDeep
+                    : palette.textFaint,
+                border: `1px solid ${quest.claimed ? withAlpha(palette.text, 0.08) : complete ? withAlpha(palette.accentGold, 0.52) : withAlpha(palette.text, 0.08)}`,
                 borderRadius: 8, padding: '6px 18px',
                 fontFamily: uiTypography.display, fontSize: 11, fontWeight: 700, letterSpacing: 0.5,
                 cursor: complete && !quest.claimed ? 'pointer' : 'default',
-                boxShadow: complete && !quest.claimed ? `0 4px 14px ${P.accentGoldGlow}` : 'none',
+                boxShadow: complete && !quest.claimed ? `0 4px 14px ${palette.accentGoldGlow}` : 'none',
                 transition: 'all 0.15s',
               }}
             >

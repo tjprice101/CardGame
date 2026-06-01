@@ -1,6 +1,32 @@
 import { useEffect, useState } from 'react';
-import { uiTypography } from '@/ui/theme';
+import { uiTypography, warmTheme } from '@/ui/theme';
 import { useStore, selectSettings } from '@/state/store';
+import {
+  DEFAULT_MAIN_MENU_BACKGROUND_ID,
+  getDefaultMainMenuBackground,
+  loadMainMenuBackgroundEntries,
+  resolveMainMenuBackground,
+} from '@/data/profile/mainMenuBackgrounds';
+
+function toRgbTriplet(color: string): [number, number, number] | null {
+  const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (hex) {
+    const raw = hex[1];
+    const full = raw.length === 3 ? raw.split('').map(ch => ch + ch).join('') : raw;
+    const value = parseInt(full, 16);
+    return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+  }
+  const rgb = color.match(/rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (rgb) return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+  return null;
+}
+
+function withAlpha(color: string, alpha: number): string {
+  const rgb = toRgbTriplet(color);
+  if (!rgb) return color;
+  const clamped = Math.max(0, Math.min(1, alpha));
+  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${clamped})`;
+}
 
 /**
  * Parallax title screen. Card art from across the game's sets is displayed in
@@ -118,9 +144,32 @@ function ShowcaseCard({ c, reduced }: { c: CardSpec; reduced: boolean }) {
 
 export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
   const settings = useStore(selectSettings);
+  const selectedMainMenuBackgroundId = useStore((s) => s.progress.profile.mainMenuBackgroundId);
   const reduced = !!settings.reducedMotion;
   const [fadeIn, setFadeIn] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [titleArtUrl, setTitleArtUrl] = useState<string>(() => getDefaultMainMenuBackground().imageUrl);
+  const topShade = withAlpha(warmTheme.surfaceMuted, 0.95);
+  const midShade = withAlpha(warmTheme.surface, 0.95);
+  const deepShade = withAlpha(warmTheme.surfaceStrong, 0.97);
+
+  useEffect(() => {
+    let cancelled = false;
+    void loadMainMenuBackgroundEntries()
+      .then((entries) => {
+        if (cancelled) return;
+        const selected = resolveMainMenuBackground(
+          selectedMainMenuBackgroundId ?? DEFAULT_MAIN_MENU_BACKGROUND_ID,
+          entries,
+        );
+        setTitleArtUrl(selected.imageUrl);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setTitleArtUrl(getDefaultMainMenuBackground().imageUrl);
+      });
+    return () => { cancelled = true; };
+  }, [selectedMainMenuBackgroundId]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setFadeIn(true), 20);
@@ -153,18 +202,17 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
         cursor: 'pointer',
         opacity: sceneOpacity,
         transition: reduced ? 'opacity 200ms ease' : 'opacity 650ms ease',
-        // Deep sky-navy — dark variant of the main menu art palette
-        background: 'linear-gradient(180deg, #071426 0%, #0d2240 38%, #101e3a 65%, #06101e 100%)',
+        backgroundImage: `linear-gradient(180deg, ${topShade} 0%, ${midShade} 38%, ${withAlpha(warmTheme.surface, 0.98)} 65%, ${deepShade} 100%), url("${titleArtUrl}")`,
+        backgroundSize: 'cover, cover',
+        backgroundPosition: 'center, center',
       }}
     >
       {/* ── Sky-art atmospheric light — matches the main menu luminosity ─── */}
       <div aria-hidden style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: [
-          // Bright sky bloom from upper-center (evokes the menu art's sky)
-          'radial-gradient(ellipse 90% 55% at 50% 20%, rgba(140,200,250,0.18) 0%, rgba(80,155,220,0.09) 45%, transparent 68%)',
-          // Deep ocean-blue depth at the bottom
-          'radial-gradient(ellipse 70% 38% at 50% 98%, rgba(20,55,110,0.30) 0%, transparent 60%)',
+          `radial-gradient(ellipse 90% 55% at 50% 20%, ${withAlpha(warmTheme.accentSoft, 0.2)} 0%, ${withAlpha(warmTheme.accent, 0.1)} 45%, transparent 68%)`,
+          `radial-gradient(ellipse 70% 38% at 50% 98%, ${withAlpha(warmTheme.accentDeep, 0.3)} 0%, transparent 60%)`,
         ].join(', '),
       }} />
 
@@ -172,15 +220,15 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
       <div aria-hidden style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
         background: [
-          'linear-gradient(90deg,  rgba(7,20,38,0.85) 0%, rgba(7,20,38,0) 20%)',
-          'linear-gradient(-90deg, rgba(7,20,38,0.85) 0%, rgba(7,20,38,0) 20%)',
+          `linear-gradient(90deg, ${withAlpha(warmTheme.surfaceStrong, 0.85)} 0%, ${withAlpha(warmTheme.surfaceStrong, 0)} 20%)`,
+          `linear-gradient(-90deg, ${withAlpha(warmTheme.surfaceStrong, 0.85)} 0%, ${withAlpha(warmTheme.surfaceStrong, 0)} 20%)`,
         ].join(', '),
       }} />
 
       {/* ── Bottom vignette ───────────────────────────────────────────────── */}
       <div aria-hidden style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'linear-gradient(180deg, rgba(7,20,38,0) 52%, rgba(7,20,38,0.90) 100%)',
+        background: `linear-gradient(180deg, ${withAlpha(warmTheme.surfaceStrong, 0)} 52%, ${withAlpha(warmTheme.surfaceStrong, 0.9)} 100%)`,
       }} />
 
       {/* ── Card showcase ─────────────────────────────────────────────────── */}
@@ -194,7 +242,7 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
       {/* ── Centre vignette — keeps title crisp against card imagery ──────── */}
       <div aria-hidden style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse 58% 70% at 50% 50%, rgba(7,20,38,0.75) 0%, rgba(7,20,38,0) 65%)',
+        background: `radial-gradient(ellipse 58% 70% at 50% 50%, ${withAlpha(warmTheme.surfaceStrong, 0.75)} 0%, ${withAlpha(warmTheme.surfaceStrong, 0)} 65%)`,
       }} />
 
       {/* ── Foreground: logotype + prompt ─────────────────────────────────── */}
@@ -215,7 +263,7 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
           fontFamily: uiTypography.body,
           fontSize: 9,
           letterSpacing: 5,
-          color: 'rgba(140,200,245,0.52)',
+          color: withAlpha(warmTheme.textMuted, 0.74),
           textTransform: 'uppercase',
           marginBottom: 18,
           userSelect: 'none',
@@ -228,10 +276,10 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
           fontFamily: uiTypography.display,
           fontSize: 'clamp(46px, 8vw, 108px)',
           letterSpacing: 10,
-          color: '#eef4fc',
+          color: warmTheme.text,
           textShadow: [
-            '0 0 56px rgba(100,180,240,0.60)',
-            '0 0 110px rgba(60,140,210,0.25)',
+            `0 0 56px ${withAlpha(warmTheme.accentSoft, 0.6)}`,
+            `0 0 110px ${withAlpha(warmTheme.accent, 0.25)}`,
             '0 6px 36px rgba(0,0,0,0.98)',
           ].join(', '),
           textTransform: 'uppercase',
@@ -246,8 +294,8 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
         <div aria-hidden style={{
           marginTop: 22, marginBottom: 20,
           width: 240, height: 1,
-          background: 'linear-gradient(90deg, transparent, rgba(90,170,220,0.72), transparent)',
-          boxShadow: '0 0 12px rgba(90,170,220,0.32)',
+          background: `linear-gradient(90deg, transparent, ${withAlpha(warmTheme.accent, 0.72)}, transparent)`,
+          boxShadow: `0 0 12px ${withAlpha(warmTheme.accentSoft, 0.32)}`,
         }} />
 
         {/* Tagline */}
@@ -255,7 +303,7 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
           fontFamily: uiTypography.body,
           fontSize: 'clamp(10px, 1.1vw, 13px)',
           letterSpacing: 5,
-          color: 'rgba(200,225,248,0.62)',
+          color: withAlpha(warmTheme.textSoft, 0.82),
           textTransform: 'uppercase',
           userSelect: 'none',
         }}>
@@ -266,18 +314,18 @@ export default function TitleScreen({ onAdvance }: { onAdvance: () => void }) {
         <div style={{
           marginTop: 60,
           padding: '13px 40px',
-          border: '1px solid rgba(90,170,220,0.55)',
+          border: `1px solid ${withAlpha(warmTheme.accent, 0.55)}`,
           borderRadius: 999,
-          background: 'rgba(7,20,38,0.62)',
+          background: withAlpha(warmTheme.surfaceStrong, 0.62),
           backdropFilter: 'blur(4px)',
           fontFamily: uiTypography.body,
           fontSize: 'clamp(11px, 1.1vw, 14px)',
           letterSpacing: 4,
-          color: '#deeefa',
+          color: warmTheme.text,
           textTransform: 'uppercase',
           userSelect: 'none',
           animation: reduced ? undefined : 'pulseGlowBlue 1.8s ease-in-out infinite',
-          boxShadow: '0 0 28px rgba(90,170,220,0.22)',
+          boxShadow: `0 0 28px ${withAlpha(warmTheme.accentSoft, 0.22)}`,
           pointerEvents: 'auto',
         }}>
           Press Any Key to Start

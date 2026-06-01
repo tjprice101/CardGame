@@ -86,6 +86,22 @@ const NULL_RAID_BOSSES: NullRaidBoss[] = [
     description:
       'A regal voidfire sovereign that extinguishes galaxies and reignites them as auroras.',
   },
+
+  // ── Halo of the Twin Horizon (1★, Heavenly Light) ──────────────────────
+  {
+    id: 'nr-light-auric-eclipse-herald',
+    name: 'Auric Eclipse Herald',
+    hp: 3_400_000,
+    description:
+      'A dawnbound herald that forges eclipses from hymn-fire and judges the weak between two suns.',
+  },
+  {
+    id: 'nr-light-zenith-duality-throne',
+    name: 'Zenith Duality Throne',
+    hp: 9_600_000,
+    description:
+      'The final heavenly throne where star-liturgy and divine fire converge into absolute judgment.',
+  },
 ];
 
 // ── Boss Map ────────────────────────────────────────────────────────────────
@@ -123,6 +139,19 @@ export const NULL_RAID_DEFINITIONS: NullRaidDefinition[] = [
     shardsPerEncounter: 24,
     cooldownMs: 5 * 60 * 1000,
     completionAngelId: 'tx-angel-pyro-first-ember',
+  },
+  {
+    id: 'raid-halo-of-the-twin-horizon',
+    name: 'Halo of the Twin Horizon',
+    stars: 1,
+    description:
+      'Heavenly Light and wish-born starlit doctrine fuse into a duality trial of mercy and annihilation.',
+    associatedSet: 'Heavenly Light',
+    encounterBossIds: ['nr-light-auric-eclipse-herald', 'nr-light-zenith-duality-throne'],
+    entropyPerEncounter: 95,
+    shardsPerEncounter: 25,
+    cooldownMs: 5 * 60 * 1000,
+    completionAngelId: 'tx-angel-light-astral-adjudicator',
   },
 ];
 

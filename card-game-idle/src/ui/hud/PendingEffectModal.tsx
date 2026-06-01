@@ -182,6 +182,103 @@ export default function PendingEffectModal() {
     );
   };
 
+  if (pending.type === 'light_transcendent_duality_choice') {
+    const selectedMode = selected[0] ?? null;
+    const selectedDiscardId = selected[1] ?? null;
+    const resonance = Math.max(0, turn.lightResonance ?? 0);
+    const halo = Math.max(0, turn.eternalStacks?.light ?? 0);
+    const distinctNotes = new Set(turn.lightDistinctNotes ?? []).size;
+    const thresholdBonus = Math.floor((resonance + halo) / Math.max(1, pending.thresholdDivisor)) * pending.thresholdScale;
+    const oblivionPreview = Math.floor(
+      pending.baseOblivion
+      + resonance * pending.resonanceScale
+      + halo * pending.haloScale
+      + distinctNotes * pending.distinctNoteScale
+      + thresholdBonus,
+    );
+
+    const canConfirm = selectedMode === 'oblivion' || (selectedMode === 'draw' && !!selectedDiscardId);
+
+    return (
+      <div className="anim-backdrop-fade" style={backdropStyle}>
+        <div className="anim-panel-slide-up" style={styles.panel}>
+          <div style={styles.title}>Duality - Choose One</div>
+          <div style={styles.subtitle}>
+            Choose between card flow or a massive Light-scaled Oblivion surge.
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(220px, 1fr))', gap: 10, marginBottom: 12 }}>
+            <button
+              className="menu-tactile-btn"
+              onClick={() => setSelected(['draw'])}
+              style={{
+                ...styles.secondaryBtn,
+                border: selectedMode === 'draw' ? '2px solid rgba(255,120,80,0.85)' : styles.secondaryBtn.border,
+                background: selectedMode === 'draw' ? 'rgba(255, 226, 188, 0.92)' : styles.secondaryBtn.background,
+                color: '#532912',
+                fontFamily: DISPLAY_FONT,
+                letterSpacing: 0.7,
+                fontSize: 12,
+              }}
+            >
+              Discard 1, Draw 2
+            </button>
+            <button
+              className="menu-tactile-btn"
+              onClick={() => setSelected(['oblivion'])}
+              style={{
+                ...styles.secondaryBtn,
+                border: selectedMode === 'oblivion' ? '2px solid rgba(255,120,80,0.85)' : styles.secondaryBtn.border,
+                background: selectedMode === 'oblivion' ? 'rgba(255, 226, 188, 0.92)' : styles.secondaryBtn.background,
+                color: '#532912',
+                fontFamily: DISPLAY_FONT,
+                letterSpacing: 0.7,
+                fontSize: 12,
+              }}
+            >
+              Gain +{oblivionPreview.toLocaleString()} Oblivion
+            </button>
+          </div>
+
+          {selectedMode === 'draw' && (
+            <>
+              <div style={{ ...styles.info, marginBottom: 8 }}>
+                Select exactly 1 card from your hand to discard.
+              </div>
+              <div style={styles.cardGrid}>
+                {deck.hand.map(card => {
+                  const isSelected = card.instanceId === selectedDiscardId;
+                  return (
+                    <div
+                      key={card.instanceId}
+                      onClick={() => setSelected(['draw', card.instanceId])}
+                      className="menu-card-pressable"
+                      style={buildCardStyle(card, isSelected ? styles.cardSelected : undefined)}
+                    >
+                      {renderCardFace(card, isSelected ? 'Selected for discard' : undefined, 'rgba(255, 100, 100, 0.95)')}
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+
+          <div style={styles.footer}>
+            <div style={styles.info}>
+              Formula: {pending.baseOblivion} + ({pending.resonanceScale} x Resonance) + ({pending.haloScale} x Halo) + ({pending.distinctNoteScale} x Distinct Notes) + ({pending.thresholdScale} x floor((Resonance + Halo)/{pending.thresholdDivisor}))
+            </div>
+            <button className="menu-tactile-btn"
+              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+              onClick={canConfirm ? confirm : undefined}
+            >
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (pending.type === 'neutrality_equilibrium_tactical_choice') {
     const selectedMode = selected[0] ?? null;
     const canConfirm = selectedMode === 'burst' || selectedMode === 'restore';

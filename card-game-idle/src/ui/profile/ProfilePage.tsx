@@ -3,7 +3,7 @@ import { useStore, selectProfile, selectProgress } from '@/state/store';
 import { warmTheme, uiTypography } from '@/ui/theme';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
-import { UI_THEMES, DEFAULT_UI_THEME_ID } from '@/data/profile/uiThemes';
+import { UI_THEMES, DEFAULT_UI_THEME_ID, isThemeUnlocked } from '@/data/profile/uiThemes';
 import TitlesModal from '@/ui/profile/TitlesModal';
 import ProfilePictureModal from '@/ui/profile/ProfilePictureModal';
 import SignatureCardPickerModal from '@/ui/profile/SignatureCardPickerModal';
@@ -250,7 +250,7 @@ export default function ProfilePage({ onClose }: Props) {
           marginBottom: 12,
         }}>
           {UI_THEMES.map(t => {
-            const unlocked = t.isUnlocked(progress);
+            const unlocked = isThemeUnlocked(t.id, progress);
             const active = profile.uiThemeId === t.id;
             return (
               <button
