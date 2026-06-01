@@ -47,6 +47,13 @@ export interface AvatarDefinition {
 const sumValues = (record: Record<string, number>): number =>
   Object.values(record).reduce((a, b) => a + b, 0);
 
+const ASSET_BASE_URL = import.meta.env.BASE_URL;
+const toBaseAssetUrl = (url: string | undefined): string | undefined => {
+  if (!url) return undefined;
+  if (!url.startsWith('/')) return url;
+  return `${ASSET_BASE_URL}${url.slice(1)}`;
+};
+
 // ── Unlock helpers ────────────────────────────────────────────────────────
 
 function _owns(id: string, p: ProgressState): boolean {
@@ -545,7 +552,10 @@ export const AVATARS: AvatarDefinition[] = [
     description: 'Accumulate 500 Aberrated Shards.',
     isUnlocked: (p) => p.aberratedShards >= 500,
   },
-];
+].map((avatar) => ({
+  ...avatar,
+  imageUrl: toBaseAssetUrl(avatar.imageUrl),
+}));
 
 export const AVATAR_BY_ID: Record<string, AvatarDefinition> =
   Object.fromEntries(AVATARS.map(a => [a.id, a]));
