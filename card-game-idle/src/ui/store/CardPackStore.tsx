@@ -6,6 +6,7 @@ import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getTrialDeckDefinition } from '@/data/trialDecks';
 import { warmTheme, uiTypography } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import PackOpeningModal from './PackOpeningModal';
 import CollectionViewer from './CollectionViewer';
 import HolofoilWorkshop from './HolofoilWorkshop';
@@ -236,6 +237,7 @@ const styles: Record<string, React.CSSProperties> = {
 interface Props { onClose: () => void; onStartTrial: (packId: string) => void }
 
 export default function CardPackStore({ onClose, onStartTrial }: Props) {
+  useThemeVersion();
   const oblivion = useStore(s => s.progress.oblivion);
   const shards = useStore(s => s.progress.aberratedShards);
   const collection = useStore(s => s.progress.collection);

@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
 import { useFriendsStore, selectFriendsList } from '@/state/friendsStore';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 
 const INVITE_TIMEOUT_MS = 60_000;
 
@@ -72,6 +73,7 @@ const BTN_DECLINE: React.CSSProperties = {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function BattlegroundInviteModal() {
+  useThemeVersion();
   const invite = useBattlegroundStore(s => s.incomingInvite);
   const acceptInvite = useBattlegroundStore(s => s.acceptInvite);
   const declineInvite = useBattlegroundStore(s => s.declineInvite);

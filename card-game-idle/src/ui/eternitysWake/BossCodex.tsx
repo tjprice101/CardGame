@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { useStore } from '@/state/store';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 
 interface Props { onClose: () => void }
 
@@ -25,6 +26,7 @@ function formatDate(ts?: number): string {
 }
 
 export default function BossCodex({ onClose }: Props) {
+  useThemeVersion();
   const clears = useStore(s => s.progress.bossClearCounts);
   const codex = useStore(s => s.progress.bossCodex ?? {});
   const [activeTab, setActiveTab] = useState<string>('All');

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings, selectBattleground, selectBossFight } from '@/state/store';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -223,6 +224,7 @@ function formatSeraphimSynergyLine(def: SeraphimDefinition): string {
 }
 
 export default function HandDisplay() {
+  useThemeVersion();
   const faceMetrics = getCardFaceMetrics('hand');
   const deck = useStore(selectDeck);
   const hand = deck.hand;

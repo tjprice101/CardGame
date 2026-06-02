@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useStore, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { getCardFaceBackgroundStyle } from '@/ui/cardBackgrounds';
 
 const styles: Record<string, React.CSSProperties> = {
@@ -39,6 +40,7 @@ const styles: Record<string, React.CSSProperties> = {
 type PileType = 'deck' | 'discard' | 'hand';
 
 export default function DeckStatus() {
+  useThemeVersion();
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
   const [openPile, setOpenPile] = useState<PileType | null>(null);

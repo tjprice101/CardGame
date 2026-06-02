@@ -4,10 +4,12 @@ import { useFriendsStore, selectFriendsList } from '@/state/friendsStore';
 import { useStore } from '@/state/store';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 
 const INVITE_TIMEOUT_MS = 60_000;
 
 export default function EternityBossCoopInviteModal() {
+  useThemeVersion();
   const invite = useEternityBossCoopStore(s => s.incomingInvite);
   const acceptInvite = useEternityBossCoopStore(s => s.acceptInvite);
   const declineInvite = useEternityBossCoopStore(s => s.declineInvite);

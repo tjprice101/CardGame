@@ -212,14 +212,73 @@ function normalizePaletteForLegibility(palette: UiPalette): UiPalette {
   };
 }
 
+// ─── Theme version subscription ───────────────────────────────────────────
+// React components that read `warmTheme.*` inline (instead of deriving from
+// `getEffectiveThemePalette` in a memo) won't re-render when the palette is
+// mutated by applyUiPalette. We expose a tiny external store so they can
+// subscribe with `useThemeVersion()` and re-render on theme changes.
+let themeVersion = 0;
+const themeListeners = new Set<() => void>();
+
+export function getThemeVersion(): number {
+  return themeVersion;
+}
+
+export function subscribeThemeVersion(fn: () => void): () => void {
+  themeListeners.add(fn);
+  return () => {
+    themeListeners.delete(fn);
+  };
+}
+
+function bumpThemeVersion(): void {
+  themeVersion++;
+  themeListeners.forEach(fn => {
+    try { fn(); } catch { /* listener errors are swallowed */ }
+  });
+}
+
 /** Overwrite warmTheme in-place with `palette`. */
 export function applyUiPalette(palette: UiPalette): void {
   Object.assign(warmTheme, normalizePaletteForLegibility(palette));
+  publishThemeCssVariables();
+  bumpThemeVersion();
 }
 
 /** Reset warmTheme to the default warm palette. */
 export function resetUiPalette(): void {
   Object.assign(warmTheme, DEFAULT_WARM_PALETTE);
+  publishThemeCssVariables();
+  bumpThemeVersion();
+}
+
+/**
+ * Mirror the live palette onto :root as CSS custom properties so any UI
+ * surface using `var(--profile-X)` (FriendsPanel, ChatWindow, AuthPanel,
+ * PlayerInformationPage globals, …) updates instantly on theme switch
+ * without needing a React re-render. Names map 1:1 from camelCase to
+ * --profile-kebab-case for keys that already follow that contract.
+ */
+function publishThemeCssVariables(): void {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  if (!root) return;
+  const setVar = (name: string, value: string) => {
+    root.style.setProperty(name, value);
+  };
+  setVar('--profile-text', warmTheme.text);
+  setVar('--profile-text-soft', warmTheme.textSoft);
+  setVar('--profile-text-muted', warmTheme.textMuted);
+  setVar('--profile-text-faint', warmTheme.textFaint);
+  setVar('--profile-accent', warmTheme.accent);
+  setVar('--profile-accent-soft', warmTheme.accentSoft);
+  setVar('--profile-accent-deep', warmTheme.accentDeep);
+  setVar('--profile-accent-glass', warmTheme.surfaceMuted);
+  setVar('--profile-border', warmTheme.border);
+  setVar('--profile-border-strong', warmTheme.borderStrong);
+  setVar('--profile-surface', warmTheme.surface);
+  setVar('--profile-surface-strong', warmTheme.surfaceStrong);
+  setVar('--profile-surface-muted', warmTheme.surfaceMuted);
 }
 
 export const uiTypography = {

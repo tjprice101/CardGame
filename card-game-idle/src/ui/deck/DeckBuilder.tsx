@@ -16,6 +16,7 @@ import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
 import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
@@ -26,9 +27,15 @@ import type { AngelDefinition, CardDefinition, CardFinish } from '@/types/cards'
 const EMPTY_CARD_LOCKS: Readonly<Record<string, number>> = Object.freeze({});
 
 const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
-const SECTION_COLORS: Record<string, string> = {
-  Angel: warmTheme.accentDeep, Seraphim: '#f0bd78', Cherubim: warmTheme.cherubim, Ophanim: '#7f629f',
-};
+// Built lazily per render so theme switches reflect immediately.
+function getSectionColors(): Record<string, string> {
+  return {
+    Angel: warmTheme.accentDeep,
+    Seraphim: '#f0bd78',
+    Cherubim: warmTheme.cherubim,
+    Ophanim: '#7f629f',
+  };
+}
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
@@ -328,6 +335,7 @@ const RARITY_COLORS_DB: Record<string, string> = {
 };
 
 export default function DeckBuilder({ onClose }: Props) {
+  useThemeVersion();
   const faceMetrics = getCardFaceMetrics('grid');
   const { initDeck, saveCurrentDeck, updateSavedDeck, loadSavedDeck, deleteSavedDeck } = useStore.getState();
   const currentDeck = useStore(selectDeck);
@@ -862,7 +870,7 @@ export default function DeckBuilder({ onClose }: Props) {
             style={styles.cardPool}
             renderItem={(row) => {
               if (row.kind === 'heading') {
-                const accent = SECTION_COLORS[row.sectionLabel] ?? '#58aada';
+                const accent = getSectionColors()[row.sectionLabel] ?? '#58aada';
                 const title = row.sectionLabel === 'Angel' ? 'Extra Deck (Angels)' : row.sectionLabel;
                 return (
                   <div style={{ padding: '0 20px' }}>

@@ -6,6 +6,7 @@
 // the .radio-toast-enter / .radio-toast-exit CSS classes.
 
 import { useEffect, useRef, useState } from 'react';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import type { RadioTrackInfo } from '@/audio/MainMenuRadio';
 import { uiTypography, warmTheme } from '@/ui/theme';
 
@@ -22,6 +23,7 @@ const HOLD_MS = 5200;
 const EXIT_MS = 400;
 
 export default function RadioNowPlaying({ nowPlaying }: Props) {
+  useThemeVersion();
   const G = {
     iceBlue: warmTheme.accent,
     iceBlueSoft: warmTheme.accentSoft,

@@ -11,6 +11,7 @@ import {
 } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import type { AngelDefinition, CardFinish } from '@/types/cards';
 
 const faceMetrics = getCardFaceMetrics('grid');
@@ -20,6 +21,7 @@ const HAND_RESERVED_WHEN_CLOSED = '348px';
 const HAND_RESERVED_WHEN_OPEN = 'min(414px, calc(100vw - 18px))';
 
 export default function AngelCompartment() {
+  useThemeVersion();
   const [open, setOpen] = useState(false);
   const [shakeKey, setShakeKey] = useState<string | null>(null);
   const board = useStore(selectBoard);

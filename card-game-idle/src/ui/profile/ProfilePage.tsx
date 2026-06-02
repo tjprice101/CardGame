@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProfile, selectProgress } from '@/state/store';
 import { warmTheme, uiTypography } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { TITLE_BADGES, resolveTitleBadge } from '@/data/profile/titleBadges';
 import { UI_THEMES, DEFAULT_UI_THEME_ID, isThemeUnlocked } from '@/data/profile/uiThemes';
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function ProfilePage({ onClose }: Props) {
+  useThemeVersion();
   const profile = useStore(selectProfile);
   const progress = useStore(selectProgress);
   const setPlayerName = useStore(s => s.setPlayerName);

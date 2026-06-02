@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useState, useMemo, lazy, Suspense } from 'react';
 import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import {
   useMessagesStore,
   selectOpenThreadId,
@@ -21,6 +22,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 const SendDeckPicker = lazy(() => import('@/ui/social/SendDeckPicker'));
 
 export default function ChatWindow() {
+  useThemeVersion();
   const openThreadId = useMessagesStore(selectOpenThreadId);
   const messages = useMessagesStore(selectOpenMessages);
   const errorMessage = useMessagesStore(selectMessagesError);

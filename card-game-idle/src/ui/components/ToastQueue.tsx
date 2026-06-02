@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useStore } from '@/state/store';
 import type { ToastEntry } from '@/types/game';
 import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 
 const EMPTY_TOASTS: ToastEntry[] = [];
 
@@ -10,6 +11,7 @@ const EMPTY_TOASTS: ToastEntry[] = [];
  * configured duration (default 3.5s). Mounted once at the App root.
  */
 export default function ToastQueue() {
+  useThemeVersion();
   const toasts = useStore(s => s.toasts ?? EMPTY_TOASTS);
   const dismissToast = useStore(s => s.dismissToast);
 

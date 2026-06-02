@@ -7,6 +7,7 @@
 
 import { useMemo, useState } from 'react';
 import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { useStore } from '@/state/store';
 import { useGiftsStore } from '@/state/giftsStore';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -27,6 +28,7 @@ interface CollectionEntry {
 }
 
 export default function SendGiftModal({ recipient, onClose }: Props) {
+  useThemeVersion();
   const collection = useStore(s => s.progress.collection);
   const holoCollection = useStore(s => s.progress.holoCollection);
   const sendGift = useGiftsStore(s => s.sendCardCopyGift);

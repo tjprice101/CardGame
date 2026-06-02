@@ -3,6 +3,7 @@ import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
@@ -576,6 +577,7 @@ function formatAttackSummary(attack: {
 }
 
 export default function BoardDisplay() {
+  useThemeVersion();
   const board = useStore(selectBoard);
   const bossFight     = useStore(selectBossFight);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);

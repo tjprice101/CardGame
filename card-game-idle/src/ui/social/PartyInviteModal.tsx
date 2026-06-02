@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { usePartyStore } from '@/state/partyStore';
 import { useFriendsStore, selectFriendsList } from '@/state/friendsStore';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 
 const INVITE_TIMEOUT_MS = 60_000;
 
 export default function PartyInviteModal() {
+  useThemeVersion();
   const invite = usePartyStore(s => s.incomingInvite);
   const acceptInvite = usePartyStore(s => s.acceptInvite);
   const declineInvite = usePartyStore(s => s.declineInvite);

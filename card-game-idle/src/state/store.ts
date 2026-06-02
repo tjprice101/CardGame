@@ -991,11 +991,25 @@ function cloneDeckList(deckList: Array<DeckEntry | { definitionId: string; copie
 }
 
 function cloneExtraDeck(extraDeck?: Array<ExtraDeckEntry | string>): ExtraDeckEntry[] {
-  return extraDeck
-    ? extraDeck.map(entry => typeof entry === 'string'
-      ? createExtraDeckEntry(entry)
-      : createExtraDeckEntry(entry.definitionId, normalizeFinish(entry.finish)))
-    : [];
+  if (!extraDeck) return [];
+  // Dedupe: cap 4 copies per definitionId and 10 total. Stable order,
+  // first-occurrence wins. Prevents ghost duplicates from corrupt saves or
+  // legacy data where the same (definitionId, finish) appears multiple times.
+  const MAX_PER_DEF = 4;
+  const MAX_TOTAL = 10;
+  const perDefCount: Record<string, number> = {};
+  const out: ExtraDeckEntry[] = [];
+  for (const raw of extraDeck) {
+    if (out.length >= MAX_TOTAL) break;
+    const definitionId = typeof raw === 'string' ? raw : raw.definitionId;
+    if (!definitionId) continue;
+    const finish = typeof raw === 'string' ? 'normal' : normalizeFinish(raw.finish);
+    const count = perDefCount[definitionId] ?? 0;
+    if (count >= MAX_PER_DEF) continue;
+    perDefCount[definitionId] = count + 1;
+    out.push(createExtraDeckEntry(definitionId, finish));
+  }
+  return out;
 }
 
 function cloneDeckCards(cards: Array<DeckCard | { instanceId: string; definitionId: string; finish?: CardFinish }>): DeckCard[] {
@@ -3362,15 +3376,15 @@ function collectAttackBuffs(
   let cooldownDeltaCards = 0;
   let multiplier = 1;
   const loweredTags = new Set(tags.map(tag => tag.toLowerCase()));
-  const targetDef = ScoreSystem.getDefinition(targetDefinitionId);
-  const targetSetKey = targetDef ? getCardCategoryKey(targetDef) : null;
+  // Cross-set: Cherubim attack buffs apply to Seraphim/Angels of any set so that
+  // Patience-bearing Cherubim (e.g. Neutrality) can boost mixed-set frontlines.
+  // Effect-level scope can still be narrowed via targetTags / targetDefinitionIds.
+  void targetDefinitionId;
 
   for (const back of board.backSlots) {
     if (!back || back.type !== 'Cherubim') continue;
     const def = ScoreSystem.getDefinition(back.definitionId);
     if (!def || def.type !== 'Cherubim') continue;
-    const sourceSetKey = getCardCategoryKey(def);
-    if (targetSetKey && targetSetKey !== sourceSetKey) continue;
     for (const effect of def.effects) {
       if (effect.type !== 'cherubim_attack_buff') continue;
       if (effect.targetUnitType !== 'Any' && effect.targetUnitType !== unitType) continue;
@@ -3551,8 +3565,7 @@ function payAttackCosts(
 
 function grantDominantAttackResource(s: Store, sourceDefinitionId: string, element: string | undefined, amount: number): void {
   if (amount <= 0) return;
-  const sourceDef = CardRegistry.get(sourceDefinitionId);
-  const sourceSetKey = sourceDef ? getCardCategoryKey(sourceDef) : null;
+  void sourceDefinitionId;
   switch (element) {
     case 'Light':
       s.turn.radiance += amount;
@@ -3561,14 +3574,10 @@ function grantDominantAttackResource(s: Store, sourceDefinitionId: string, eleme
       s.turn.strain += amount;
       break;
     case 'Neutrality': {
+      // Cross-set: Patience distributes to every active frontline unit regardless of set.
       const frontline = s.board.frontSlots.filter(
         (u): u is SeraphimInstance | AngelInstance =>
-          u !== null
-          && (u.type === 'Seraphim' || u.type === 'Angel')
-          && (!sourceSetKey || (() => {
-            const unitDef = CardRegistry.get(u.definitionId);
-            return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
-          })())
+          u !== null && (u.type === 'Seraphim' || u.type === 'Angel'),
       );
       if (frontline.length > 0) {
         const perUnit = Math.round(amount / frontline.length);
@@ -3687,15 +3696,11 @@ function computeCherubimAdjacentBonus(board: BoardState, bonusType: 'oblivion' |
     if (!card || card.type !== 'Cherubim') continue;
     const def = ScoreSystem.getDefinition(card.definitionId);
     if (!def || def.type !== 'Cherubim') continue;
-    const sourceSetKey = getCardCategoryKey(def);
+    // Cross-set: adjacent active Seraphim of any set count toward this bonus.
     const leftSlot = board.frontSlots[i];
     const rightSlot = board.frontSlots[i + 1];
     const adjacentActive = [leftSlot, rightSlot].filter(
-      s => {
-        if (!s || s.type !== 'Seraphim' || !(s as SeraphimInstance).isActive) return false;
-        const unitDef = ScoreSystem.getDefinition(s.definitionId);
-        return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
-      }
+      s => !!s && s.type === 'Seraphim' && (s as SeraphimInstance).isActive,
     ).length;
     if (adjacentActive === 0) continue;
     const burnMultiplier = isBurningGardenCard(def) ? computeBurningGardenBoardPower(card) : 1;
@@ -4019,21 +4024,16 @@ function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
 }
 
 function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: number): void {
-  const sourceDef = CardRegistry.get(sourceDefinitionId);
-  const sourceSetKey = sourceDef ? getCardCategoryKey(sourceDef) : null;
+  void sourceDefinitionId;
   const vesselId = s.turn.neutralityVesselInstanceId ?? null;
   const vesselCopyPercent = Math.max(0, s.turn.neutralityVesselCopyPercent ?? 0);
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
   const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
   let nonVesselGain = 0;
 
-  // Patience stays inside the source set; only matching-set frontline units receive it.
+  // Cross-set: Patience flows to every active frontline unit regardless of set.
   for (const unit of s.board.frontSlots) {
     if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
-    if (sourceSetKey) {
-      const unitDef = CardRegistry.get(unit.definitionId);
-      if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) continue;
-    }
     const gain = value + linkedBonus + equilibriumBonus;
     unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
     if (vesselId && unit.instanceId !== vesselId) {
@@ -4044,9 +4044,7 @@ function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: numbe
   if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
     const vessel = s.board.frontSlots.find(unit => {
       if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel') || unit.instanceId !== vesselId) return false;
-      if (!sourceSetKey) return true;
-      const unitDef = CardRegistry.get(unit.definitionId);
-      return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+      return true;
     });
     if (vessel) {
       const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
@@ -4113,7 +4111,6 @@ function applyCherubimPassiveEffects(s: Store): void {
     const cherubim = card as import('@/types/cards').CherubimInstance;
     const def = ScoreSystem.getDefinition(cherubim.definitionId) as import('@/types/cards').CherubimDefinition | null;
     if (!def || def.type !== 'Cherubim' || !def.effects) continue;
-    const sourceSetKey = getCardCategoryKey(def);
 
     for (const effect of def.effects) {
       switch (effect.type) {
@@ -4160,13 +4157,11 @@ function applyCherubimPassiveEffects(s: Store): void {
         }
 
         case 'cherubim_patience_per_card': {
-          // Give adjacent same-set Seraphim/Angels +value Patience per card played.
+          // Cross-set: adjacent Seraphim/Angels gain Patience regardless of set.
           const leftFront = s.board.frontSlots[i];
           const rightFront = s.board.frontSlots[i + 1];
           for (const frontUnit of [leftFront, rightFront]) {
             if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
-            const frontDef = CardRegistry.get(frontUnit.definitionId);
-            if (!frontDef || getCardCategoryKey(frontDef) !== sourceSetKey) continue;
             const gain = effect.value + linkedBonus + equilibriumBonus;
             frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
             if (vesselId && frontUnit.type === 'Seraphim' && frontUnit.instanceId !== vesselId) {

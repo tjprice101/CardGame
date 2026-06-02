@@ -3,6 +3,7 @@ import { useCoopRaidStore } from '@/state/coopRaidStore';
 import { useFriendsStore, selectFriendsList } from '@/state/friendsStore';
 import { useStore } from '@/state/store';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 
 const INVITE_TIMEOUT_MS = 60_000;
 
@@ -30,6 +31,7 @@ const PANEL: React.CSSProperties = {
 };
 
 export default function CoopRaidInviteModal() {
+  useThemeVersion();
   const invite = useCoopRaidStore(s => s.incomingInvite);
   const acceptInvite = useCoopRaidStore(s => s.acceptInvite);
   const declineInvite = useCoopRaidStore(s => s.declineInvite);

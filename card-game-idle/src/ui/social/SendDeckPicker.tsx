@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 import { useStore } from '@/state/store';
 import { useMessagesStore } from '@/state/messagesStore';
 import { makeSharedDeckPayload } from '@/social/sharedDeck';
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function SendDeckPicker({ onClose }: Props) {
+  useThemeVersion();
   const savedDecks = useStore(s => s.progress.savedDecks);
   const sendMessage = useMessagesStore(s => s.sendMessage);
   const [pickId, setPickId] = useState<string | null>(savedDecks[0]?.id ?? null);

@@ -6,6 +6,7 @@
 import { useCallback } from 'react';
 import type { RadioTrackInfo } from '@/audio/MainMenuRadio';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import { useThemeVersion } from '@/ui/useThemeVersion';
 
 function toRgbTriplet(color: string): [number, number, number] | null {
   const hex = color.trim().match(/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i);
@@ -115,6 +116,7 @@ function IconRadio() {
 }
 
 export default function RadioControlBar({ radioActive, paused, currentTrack, onPausedChange, onPause, onResume, onSkip, placement = 'menu' }: Props) {
+  useThemeVersion();
   const G = {
     panelTop: withAlpha(warmTheme.surfaceStrong, 0.92),
     panelBottom: withAlpha(warmTheme.surfaceMuted, 0.9),

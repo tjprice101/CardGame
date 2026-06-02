@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 29;
+export const CURRENT_VERSION = 30;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -429,6 +429,50 @@ const migrations: Record<number, Migration> = {
       const prof = p.profile as Record<string, unknown> | undefined;
       if (prof && (typeof prof.mainMenuBackgroundId !== 'string' || !prof.mainMenuBackgroundId)) {
         prof.mainMenuBackgroundId = 'main-menu-bg-default';
+      }
+    }
+    return data;
+  },
+  30: (data) => {
+    // v30 scrubs ghost duplicates from extra decks. Cap 4 copies per
+    // definitionId and 10 total per extra deck. Applies to the active deck
+    // and every saved deck. Stable first-occurrence order is preserved.
+    const MAX_PER_DEF = 4;
+    const MAX_TOTAL = 10;
+    function scrub(entries: unknown): Array<{ definitionId: string; finish: string }> {
+      if (!Array.isArray(entries)) return [];
+      const perDef: Record<string, number> = {};
+      const out: Array<{ definitionId: string; finish: string }> = [];
+      for (const raw of entries) {
+        if (out.length >= MAX_TOTAL) break;
+        let definitionId: string | undefined;
+        let finish: string = 'normal';
+        if (typeof raw === 'string') {
+          definitionId = raw;
+        } else if (raw && typeof raw === 'object') {
+          const r = raw as Record<string, unknown>;
+          if (typeof r.definitionId === 'string') definitionId = r.definitionId;
+          if (typeof r.finish === 'string') finish = r.finish;
+        }
+        if (!definitionId) continue;
+        const count = perDef[definitionId] ?? 0;
+        if (count >= MAX_PER_DEF) continue;
+        perDef[definitionId] = count + 1;
+        out.push({ definitionId, finish });
+      }
+      return out;
+    }
+    if (data.deck && Array.isArray((data.deck as { extraDeck?: unknown }).extraDeck)) {
+      (data.deck as { extraDeck: unknown }).extraDeck = scrub((data.deck as { extraDeck?: unknown }).extraDeck);
+    }
+    if (data.progress) {
+      const savedDecks = (data.progress as { savedDecks?: unknown }).savedDecks;
+      if (Array.isArray(savedDecks)) {
+        for (const d of savedDecks) {
+          if (d && typeof d === 'object' && Array.isArray((d as { extraDeck?: unknown }).extraDeck)) {
+            (d as { extraDeck: unknown }).extraDeck = scrub((d as { extraDeck?: unknown }).extraDeck);
+          }
+        }
       }
     }
     return data;
