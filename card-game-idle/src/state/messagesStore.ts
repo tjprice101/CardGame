@@ -179,15 +179,46 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
     const trimmed = body.trim();
     if (!trimmed) return;
     set({ sending: true, errorMessage: null });
-    const { error } = await sb.from('dm_messages').insert({
+
+    // Optimistic update: immediately show the message for the sender so the UI
+    // feels responsive even when realtime delivery is slow or unavailable.
+    const optimisticId = `optimistic-${Date.now()}-${Math.random()}`;
+    const optimistic: DmMessage = {
+      id: optimisticId,
+      threadId,
+      senderId: me,
+      body: trimmed,
+      attachmentJson: attachment ?? null,
+      createdAt: new Date().toISOString(),
+    };
+    set(s => ({ openMessages: [...s.openMessages, optimistic] }));
+
+    const { data: insertedRows, error } = await sb.from('dm_messages').insert({
       thread_id: threadId,
       sender_id: me,
       body: trimmed,
       attachment_json: attachment ?? null,
-    });
+    }).select('id, thread_id, sender_id, body, attachment_json, created_at');
+
     set({ sending: false });
-    if (error) set({ errorMessage: error.message });
-    else {
+
+    if (error) {
+      // Roll back the optimistic message on failure.
+      set(s => ({ openMessages: s.openMessages.filter(m => m.id !== optimisticId), errorMessage: error.message }));
+    } else {
+      // Replace the optimistic placeholder with the server-confirmed message (real ID).
+      const confirmed = insertedRows && (insertedRows as Parameters<typeof rowToMessage>[0][]).length > 0
+        ? rowToMessage((insertedRows as Parameters<typeof rowToMessage>[0][])[0])
+        : null;
+      if (confirmed) {
+        set(s => ({
+          openMessages: s.openMessages.map(m => m.id === optimisticId ? confirmed : m),
+        }));
+      } else {
+        // Fallback: remove optimistic and refetch latest messages so both sides stay in sync.
+        set(s => ({ openMessages: s.openMessages.filter(m => m.id !== optimisticId) }));
+        void refreshOpenThreadMessages(threadId);
+      }
       const game = useStore.getState();
       game.recordSocialProgress('message_sent');
       if (attachment !== undefined && attachment !== null) {
@@ -242,12 +273,68 @@ function subscribeOpenThread(threadId: string) {
         const row = payload.new as Parameters<typeof rowToMessage>[0];
         const msg = rowToMessage(row);
         const prev = useMessagesStore.getState().openMessages;
-        // Guard against duplicates if optimistic send is added later.
+        // Deduplicate: skip if already present by real ID, or replace any optimistic
+        // placeholder that has the same body+sender (optimistic IDs start with 'optimistic-').
         if (prev.some(m => m.id === msg.id)) return;
-        useMessagesStore.setState({ openMessages: [...prev, msg] });
+        const withoutOptimistic = prev.filter(
+          m => !(m.id.startsWith('optimistic-') && m.senderId === msg.senderId && m.body === msg.body),
+        );
+        useMessagesStore.setState({ openMessages: [...withoutOptimistic, msg] });
       },
     )
-    .subscribe();
+    .subscribe((status) => {
+      // Realtime may not be enabled for the table in all environments.
+      // Fall back to a lightweight poll so both parties still see new messages.
+      if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        startPollingFallback(threadId);
+      }
+    });
+}
+
+let pollingTimer: ReturnType<typeof setInterval> | null = null;
+
+function startPollingFallback(threadId: string) {
+  if (pollingTimer) return; // already polling
+  pollingTimer = setInterval(() => {
+    const current = useMessagesStore.getState().openThreadId;
+    if (current !== threadId) {
+      clearInterval(pollingTimer!);
+      pollingTimer = null;
+      return;
+    }
+    void refreshOpenThreadMessages(threadId);
+  }, 5000);
+}
+
+/** Fetch the last 100 messages for a thread and merge into state, deduplicating by ID. */
+async function refreshOpenThreadMessages(threadId: string) {
+  const sb = getSupabase();
+  if (!sb) return;
+  const { data, error } = await sb
+    .from('dm_messages')
+    .select('id, thread_id, sender_id, body, attachment_json, created_at')
+    .eq('thread_id', threadId)
+    .order('created_at', { ascending: true })
+    .limit(100);
+  if (error || !data) return;
+  const fetched = (data as Parameters<typeof rowToMessage>[0][]).map(rowToMessage);
+  const fetchedIds = new Set(fetched.map(m => m.id));
+  // Merge: keep existing optimistic placeholders that haven't been confirmed yet,
+  // then append any new real messages not already in state.
+  useMessagesStore.setState(s => {
+    if (s.openThreadId !== threadId) return s;
+    const optimistics = s.openMessages.filter(m => m.id.startsWith('optimistic-'));
+    const realMsgs = fetched;
+    // Drop optimistics that are now confirmed (same body+sender in fetched).
+    const pendingOptimistics = optimistics.filter(opt =>
+      !realMsgs.some(r => r.senderId === opt.senderId && r.body === opt.body),
+    );
+    // Ensure no duplicates among real messages.
+    const deduped = realMsgs.filter((m, i, arr) => arr.findIndex(x => x.id === m.id) === i);
+    return { openMessages: [...deduped, ...pendingOptimistics] };
+  });
+  // void the unused variable warning
+  void fetchedIds;
 }
 
 function teardownMessagesChannel() {
@@ -255,6 +342,10 @@ function teardownMessagesChannel() {
   if (messagesChannel && sb) {
     void sb.removeChannel(messagesChannel);
     messagesChannel = null;
+  }
+  if (pollingTimer) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
   }
 }
 

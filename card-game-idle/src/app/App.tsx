@@ -57,6 +57,7 @@ import { initAccountSync } from '@/social/accountSync';
 import { initStatsSync } from '@/social/statsSync';
 import { initCloudSaveSync } from '@/social/cloudSaveSync';
 import { initSocialNotifications } from '@/social/notificationsService';
+import { useSocialStore } from '@/state/socialStore';
 import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
 import { MainMenuRadio } from '@/audio/MainMenuRadio';
 import { MainTurnRadio } from '@/audio/MainTurnRadio';
@@ -218,6 +219,7 @@ export default function App() {
   const trialDeck = useStore(selectTrialDeck);
   const lastSavedAt = useStore(s => s.lastSavedAt);
   const setPresenceActivity = useFriendsStore(s => s.setPresenceActivity);
+  const socialAuthStatus = useSocialStore(s => s.status);
 
   useEffect(() => {
     const themeId = progress.profile.uiThemeId || DEFAULT_UI_THEME_ID;
@@ -616,6 +618,22 @@ export default function App() {
     }, 900);
     return () => window.clearTimeout(timer);
   }, []);
+
+  // Re-check daily login bonus when user signs in for the first time this session.
+  // The page may have been loaded while the player was unauthenticated (title screen),
+  // so the mount-time check above would miss the claimable window.
+  const prevSocialStatusRef = useRef<string>('idle');
+  useEffect(() => {
+    const prev = prevSocialStatusRef.current;
+    prevSocialStatusRef.current = socialAuthStatus;
+    // Only trigger when transitioning INTO authenticated state.
+    if (socialAuthStatus === 'authenticated' && prev !== 'authenticated') {
+      const progress = useStore.getState().progress;
+      if (evaluateDailyLogin(progress).claimable) {
+        setShowDailyReward(true);
+      }
+    }
+  }, [socialAuthStatus]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {

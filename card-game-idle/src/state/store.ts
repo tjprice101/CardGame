@@ -4884,13 +4884,23 @@ export const useStore = create<Store>()(
         const costs = attack.costs ?? [];
         if (!canPayAttackCosts(s, costs, { type: 'Angel', instanceId: unit.instanceId }, paymentSelection)) return;
         payAttackCosts(s, costs, paymentSelection);
+
+        // Neutrality Angels: consume all accumulated patienceStacks for a bonus.
+        // Rate: +2% of base Oblivion per stack (slightly higher than Seraphim since
+        // Angels have no patienceThreshold threshold draw and shorter cooldowns).
+        let neutralityAngelPatienceBonus = 0;
+        const capturedAngelPatience = def.element === 'Neutrality' ? (unit.patienceStacks ?? 0) : 0;
+        if (capturedAngelPatience > 0) {
+          neutralityAngelPatienceBonus = Math.round(attack.baseOblivion * capturedAngelPatience * 0.02);
+        }
+
         const chromaEmbers = def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')
           ? Math.max(0, s.turn.secondaryCounters?.pyro ?? 0)
           : 0;
         const chromaMultiplier = getPyroChromaAttackMultiplier(s, def);
 
         let amount = Math.round(
-          Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus)
+          Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + neutralityAngelPatienceBonus)
           * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit) * chromaMultiplier),
         );
 
@@ -4930,6 +4940,12 @@ export const useStore = create<Store>()(
         if (refreshed && refreshed.type === 'Angel') {
           const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
+          // Neutrality: consume patience stacks after the attack resolves.
+          if (def.element === 'Neutrality' && capturedAngelPatience > 0) {
+            refreshed.patienceStacks = 0;
+            // Record consumption for the turn tracker so UI chips can show the burn.
+            s.turn.neutralityPatienceConsumedThisTurn = (s.turn.neutralityPatienceConsumedThisTurn ?? 0) + capturedAngelPatience;
+          }
         }
 
         applyLateGameAttackIdentity(s, def.definitionId, def.rarity, attack.label, amount);

@@ -606,7 +606,7 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
       }
     }
     case 'cherubim_conditional_buff': return `If ${formatCondition(effect.condition)}, this Cherubim grants +${effect.value} bonus power`;
-    case 'cherubim_patience_per_card': return `Adjacent Seraphim gain +${effect.value} Patience per card played`;
+    case 'cherubim_patience_per_card': return `Adjacent Seraphim and Angels gain +${effect.value} Patience per card played`;
     case 'cherubim_global_oblivion_mult': return `All Oblivion gain +${Math.round(effect.value * 100)}%`;
     case 'cherubim_attack_buff': {
       const parts: string[] = [];
@@ -697,6 +697,9 @@ export function getCanonicalCardDescription(card: CardDefinition): string {
   }
   parts.push(`After ${formatCount(angel.activatedAbility.cardsPlayedRequirement, 'card')} played: ${getCanonicalActivatedAbilityDescription(angel)}`);
   parts.push(`While on board: ${formatAngelBoardBonus(angel.baseStats)}`);
+  if (angel.element === 'Neutrality') {
+    parts.push('Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)');
+  }
   return `${snowboundPrefix}${parts.join('. ')}`.trim();
 }
 
@@ -1111,6 +1114,12 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       `${angel.activatedAbility.name}: ${getCanonicalActivatedAbilityDescription(angel)}`,
     ]);
     pushSummarySection(sections, 'On Board', [formatAngelBoardBonus(angel.baseStats)]);
+    if (angel.element === 'Neutrality') {
+      pushSummarySection(sections, 'Patience', [
+        'Accumulates +1 Patience per card played (boosted by Patient Light stacks and adjacent Patience Cherubim)',
+        'On attack: each Patience stack grants +2% base Oblivion (stacks then reset)',
+      ]);
+    }
     if (angel.attacks) {
       const eternityChrono = angel.element === 'Fire' && angel.rarity === 'Eternal';
       pushSummarySection(sections, 'Attacks', [

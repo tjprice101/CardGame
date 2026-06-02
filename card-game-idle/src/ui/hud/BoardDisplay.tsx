@@ -2053,13 +2053,24 @@ export default function BoardDisplay() {
 
       {/* Active Neutrality turn mechanics chips */}
       {canPlay && (() => {
-        const chips: { label: string; title: string }[] = [];
+        const chips: { label: string; title: string; highlight?: boolean }[] = [];
         const eqSigils = Math.max(0, turn.neutralityEquilibriumSigils ?? 0);
         if (eqSigils > 0) {
           const gainBonus = Math.floor(eqSigils / 2);
           chips.push({
             label: `Sigils ${eqSigils} (+${gainBonus} Pat Gain)`,
             title: `Equilibrium Sigils: every 2 Sigils adds +1 to future Patience gains this turn.`,
+          });
+        }
+        // Patient Light: separate indicator — always shown when > 0 so the player
+        // can see exactly how many stacks are amplifying Patience gain each card play.
+        const patientLightStacks = Math.max(0, turn.neutralityPatientLightStacks ?? 0);
+        if (patientLightStacks > 0) {
+          const perCardGain = 1 + patientLightStacks;
+          chips.push({
+            label: `Patient Light ×${patientLightStacks}`,
+            title: `Patient Light: +${patientLightStacks} stack${patientLightStacks === 1 ? '' : 's'} — Seraphim now gain +${perCardGain} Patience per card played (base 1 + ${patientLightStacks}). Angels also accumulate Patience at this rate and spend it when they attack (+2% base Oblivion per stack consumed).`,
+            highlight: true,
           });
         }
         if (turn.neutralityVesselInstanceId) {
@@ -2099,16 +2110,24 @@ export default function BoardDisplay() {
               <div key={idx} title={chip.title} style={{
                 padding: '2px 8px',
                 borderRadius: 999,
-                border: '1px solid rgba(160,190,255,0.38)',
-                background: 'rgba(20, 24, 56, 0.82)',
-                color: 'rgba(190,215,255,0.94)',
+                border: chip.highlight
+                  ? '1px solid rgba(255,220,140,0.65)'
+                  : '1px solid rgba(160,190,255,0.38)',
+                background: chip.highlight
+                  ? 'rgba(56, 44, 14, 0.90)'
+                  : 'rgba(20, 24, 56, 0.82)',
+                color: chip.highlight
+                  ? 'rgba(255,225,130,0.98)'
+                  : 'rgba(190,215,255,0.94)',
                 fontSize: 8.5,
                 lineHeight: 1.4,
                 letterSpacing: 0.5,
                 fontFamily: DISPLAY_FONT,
                 fontWeight: 700,
                 pointerEvents: 'none',
-                boxShadow: '0 2px 6px rgba(0,0,0,0.24)',
+                boxShadow: chip.highlight
+                  ? '0 2px 8px rgba(200,160,40,0.30)'
+                  : '0 2px 6px rgba(0,0,0,0.24)',
               }}>
                 {chip.label}
               </div>
