@@ -161,13 +161,17 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
       if (rpcErr) throw rpcErr;
       const threadId = tid as string;
 
+      // Fetch the NEWEST 100 messages (descending + limit), then reverse client-side
+      // for chronological display order. Using ascending+limit returns the OLDEST 100,
+      // which silently clips every new message once a thread crosses 100 rows.
       const { data: msgs, error: msgErr } = await sb
         .from('dm_messages')
         .select('id, thread_id, sender_id, body, attachment_json, created_at')
         .eq('thread_id', threadId)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: false })
         .limit(100);
       if (msgErr) throw msgErr;
+      const orderedMsgs = ((msgs ?? []) as Parameters<typeof rowToMessage>[0][]).slice().reverse();
 
       // Make sure the new thread is in our threads map even if loadThreads hasn't run yet.
       const threads = { ...get().threads };
@@ -180,7 +184,7 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
       set({
         openThreadId: threadId,
         chatPanelOpen: true,
-        openMessages: ((msgs ?? []) as Parameters<typeof rowToMessage>[0][]).map(rowToMessage),
+        openMessages: orderedMsgs.map(rowToMessage),
         loading: false,
         threads,
         threadByOther: Object.freeze(byOther),
@@ -357,14 +361,16 @@ function startPollingFallback(threadId: string) {
 async function refreshOpenThreadMessages(threadId: string) {
   const sb = getSupabase();
   if (!sb) return;
+  // Newest 100 by descending order, then reverse for chronological display.
+  // (See openConversation for why ascending+limit is wrong.)
   const { data, error } = await sb
     .from('dm_messages')
     .select('id, thread_id, sender_id, body, attachment_json, created_at')
     .eq('thread_id', threadId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .limit(100);
   if (error || !data) return;
-  const fetched = (data as Parameters<typeof rowToMessage>[0][]).map(rowToMessage);
+  const fetched = (data as Parameters<typeof rowToMessage>[0][]).slice().reverse().map(rowToMessage);
   const fetchedIds = new Set(fetched.map(m => m.id));
   // Merge: keep existing optimistic placeholders that haven't been confirmed yet,
   // then append any new real messages not already in state.
