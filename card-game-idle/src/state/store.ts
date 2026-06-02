@@ -4777,7 +4777,6 @@ export const useStore = create<Store>()(
             unit.burningGardenPhase === 'Burn' && hasBurningGardenCardOnBoard(s, 'bg-et-vethkorath-seven-crown-proof')
               ? 1
               : 0;
-          const spikeReduction = usedSpike ? 1 : 0;
           let sentinelReduction = 0;
           const sentinelOnBoard = s.board.backSlots.some(back => back?.type === 'Cherubim' && back.definitionId === 'tx-cher-null-sentinel');
           if (sentinelOnBoard) {
@@ -4787,7 +4786,7 @@ export const useStore = create<Store>()(
               s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
             }
           }
-          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - crownCooldownReduction - spikeReduction - sentinelReduction);
+          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - crownCooldownReduction - sentinelReduction);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
           // Reset patience after consuming it.
           if (seraphimDef.patienceThreshold !== undefined) {
