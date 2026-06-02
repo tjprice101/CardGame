@@ -7243,25 +7243,20 @@ export const useStore = create<Store>()(
         }
         loaded.progress.favoriteCollection = cleanedFavorites;
 
-        // Migrate bossFight: add if missing from saved state
+        // Migrate bossFight: never resume in-progress/result states from persisted data.
+        // This prevents stale local/cloud snapshots from dropping the player back into
+        // an old Eternal Wake encounter when opening menus/profile or after rehydrate.
         if (!loaded.bossFight) {
           (loaded as unknown as Record<string, unknown>)['bossFight'] = { ...defaultBossFight };
-        } else if (
-          loaded.bossFight.mode === 'active'
-          && loaded.bossFight.kind === 'null_raid'
-          && !loaded.bossFight.savedGameState
-        ) {
-          // Corrupted raid snapshots can trap the player in an unfinishable active raid on load.
-          loaded.bossFight = { ...defaultBossFight };
-        } else if (
-          loaded.bossFight.mode === 'active'
-          && (typeof loaded.bossFight.fightTimeRemaining !== 'number'
-            || !Number.isFinite(loaded.bossFight.fightTimeRemaining)
-            || loaded.bossFight.fightTimeRemaining <= 0)
-        ) {
-          // Active boss fight loaded with a missing/invalid/expired timer: reset to idle so
-          // the player isn't trapped on an arena screen whose timer can never tick down.
-          loaded.bossFight = { ...defaultBossFight };
+        } else {
+          const loadedCooldowns =
+            loaded.bossFight.cooldowns && typeof loaded.bossFight.cooldowns === 'object'
+              ? { ...loaded.bossFight.cooldowns }
+              : { ...defaultBossFight.cooldowns };
+
+          if (loaded.bossFight.mode !== 'idle') {
+            loaded.bossFight = { ...defaultBossFight, cooldowns: loadedCooldowns };
+          }
         }
 
         // Migrate battleground: always reset to idle on load (never resume mid-match).

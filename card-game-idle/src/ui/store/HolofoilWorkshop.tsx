@@ -404,6 +404,7 @@ export default function HolofoilWorkshop() {
                 return (
                   <div key={def.definitionId} style={styles.cardTile}>
                     <div
+                      className="holofoil-menu-card"
                       style={{ ...styles.card, ...getDenseCardFaceBackgroundStyle(def, 'holo') }}
                       title={getCardPreviewLines(def, 4).join('\n')}
                     >
