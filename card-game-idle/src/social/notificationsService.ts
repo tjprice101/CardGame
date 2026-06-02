@@ -18,7 +18,7 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { getSupabase } from '@/net/supabaseClient';
 import { useSocialStore } from '@/state/socialStore';
-import { useMessagesStore } from '@/state/messagesStore';
+import { useMessagesStore, ingestIncomingDmRow } from '@/state/messagesStore';
 import { useFriendsStore } from '@/state/friendsStore';
 import { useGiftsStore } from '@/state/giftsStore';
 import { useStore } from '@/state/store';
@@ -159,6 +159,17 @@ interface EternityBossInviteRow {
   status: string;
 }
 
+function syncIncomingDm(row: DmRow): void {
+  ingestIncomingDmRow({
+    id: row.id,
+    thread_id: row.thread_id,
+    sender_id: row.sender_id,
+    body: row.body,
+    attachment_json: null,
+    created_at: row.created_at,
+  });
+}
+
 function connectChannels(): void {
   const sb = getSupabase();
   const me = useSocialStore.getState().user?.id;
@@ -171,10 +182,18 @@ function connectChannels(): void {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'dm_messages' },
         (payload) => {
-          if (!prefs.dms) return;
           const row = payload.new as DmRow;
-          // RLS already restricts to my threads, but skip my own sends.
+          // RLS already restricts to my threads, but skip my own sends — those
+          // are handled by the optimistic update + per-thread subscription in
+          // messagesStore.sendMessage.
           if (row.sender_id === me) return;
+
+          // Always-on state sync: keep messagesStore current even when the
+          // chat panel is closed or pointed at a different thread, so unread
+          // badges update and re-opening the conversation is instant.
+          syncIncomingDm(row);
+
+          if (!prefs.dms) return;
           // If the chat window is currently open on this thread AND focused,
           // skip the notification — the user is already reading it.
           const openThread = useMessagesStore.getState().openThreadId;
@@ -291,6 +310,11 @@ function connectChannels(): void {
   // before the user opens the panel.
   useGiftsStore.getState().connectRealtime();
   void useGiftsStore.getState().loadGifts();
+
+  // Defensive: refresh thread summaries on (re)connect so unread badges are
+  // correct even if accountSync hasn't run yet (e.g. cold-start where this
+  // service installs after auth already settled).
+  void useMessagesStore.getState().loadThreads();
 
   // Battleground invites: the battlegroundStore handles in-app toast;
   // we supplement with an OS notification when the window is unfocused.

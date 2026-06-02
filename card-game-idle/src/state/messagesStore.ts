@@ -260,8 +260,10 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
           openMessages: s.openMessages.map(m => m.id === optimisticId ? confirmed : m),
         }));
       } else {
-        // Fallback: remove optimistic and refetch latest messages so both sides stay in sync.
-        set(s => ({ openMessages: s.openMessages.filter(m => m.id !== optimisticId) }));
+        // Insert succeeded server-side but no row was returned (RLS-on-select
+        // edge case). Leave the optimistic visible and refresh from the server;
+        // refreshOpenThreadMessages will drop any optimistic whose body+sender
+        // matches a fetched real message, so duplicates can't survive.
         void refreshOpenThreadMessages(threadId);
       }
       const game = useStore.getState();
@@ -421,3 +423,52 @@ export function selectUnreadThreadCount(s: MessagesState): number {
   }
   return count;
 }
+
+/**
+ * Merge a single inbound DM row into the store. Called by the always-on
+ * global DM channel in notificationsService so the chat panel + thread list
+ * stay current even when the per-thread subscription isn't active (panel
+ * closed, viewing a different thread, or never opened this session).
+ *
+ * Safe to call for own-send rows too — the optimistic-dedup logic will
+ * collapse duplicates — but the caller normally filters those out.
+ */
+export function ingestIncomingDmRow(row: {
+  id: string;
+  thread_id: string;
+  sender_id: string;
+  body: string;
+  attachment_json: unknown | null;
+  created_at: string;
+}): void {
+  const msg = rowToMessage(row);
+  useMessagesStore.setState(s => {
+    // Bump lastMessageAt on the matching thread summary so unread badges
+    // recompute. Insert a stub thread row if we haven't loaded it yet.
+    let threads = s.threads;
+    const existing = threads[msg.threadId];
+    if (!existing || !existing.lastMessageAt || existing.lastMessageAt < msg.createdAt) {
+      threads = {
+        ...threads,
+        [msg.threadId]: existing
+          ? { ...existing, lastMessageAt: msg.createdAt }
+          : { id: msg.threadId, otherUserId: msg.senderId, lastMessageAt: msg.createdAt },
+      };
+    }
+
+    // If this thread is currently loaded, splice the message into openMessages
+    // unless the per-thread channel already received it (dedup by real id) or
+    // it matches an optimistic placeholder we should replace.
+    let openMessages = s.openMessages;
+    if (s.openThreadId === msg.threadId) {
+      if (!openMessages.some(m => m.id === msg.id)) {
+        const withoutOptimistic = openMessages.filter(
+          m => !(m.id.startsWith('optimistic-') && m.senderId === msg.senderId && m.body === msg.body),
+        );
+        openMessages = [...withoutOptimistic, msg];
+      }
+    }
+    return { threads, openMessages };
+  });
+}
+
