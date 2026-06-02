@@ -157,18 +157,27 @@ async function fetchOrCreateProfile(
     };
   }
 
-  // Insert a new row. Retry on friend_code unique collision (very rare with 8-char alphabet).
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const friendCode = generateFriendCode();
-    const normalizedLogin = normalizeLoginUsername(
+  // Insert a new row. The `profiles` table has multiple unique constraints
+  // (id PK, friend_code, login_username, auth_email); on 23505 we inspect the
+  // constraint name to decide whether to (a) refetch (PK race), (b) regenerate
+  // the friend code, or (c) append entropy to the login/email.
+  const baseLogin = (() => {
+    const normalized = normalizeLoginUsername(
       loginUsernameHint
       || fallbackDisplayName
       || `wanderer_${userId.slice(0, 6)}`,
     );
-    const loginUsername = isValidLoginUsername(normalizedLogin)
-      ? normalizedLogin
+    return isValidLoginUsername(normalized)
+      ? normalized
       : `wanderer_${userId.slice(0, 6).toLowerCase()}`;
-    const authEmail = (authEmailHint && authEmailHint.includes('@'))
+  })();
+  let loginSuffix = 0;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const friendCode = generateFriendCode();
+    const loginUsername = loginSuffix === 0
+      ? baseLogin
+      : `${baseLogin.slice(0, 24 - String(loginSuffix).length - 1)}_${loginSuffix}`;
+    const authEmail = (authEmailHint && authEmailHint.includes('@') && loginSuffix === 0)
       ? authEmailHint.toLowerCase()
       : makeSyntheticAuthEmail(loginUsername);
     const insertPayload = {
@@ -227,8 +236,47 @@ async function fetchOrCreateProfile(
         signatureCardIds: Array.isArray(inserted.signature_card_ids) ? inserted.signature_card_ids : [],
       };
     }
-    // Postgres unique violation = 23505. Retry only on that.
-    if (insErr && insErr.code !== '23505') throw insErr;
+    // Postgres unique violation = 23505. Inspect the constraint to decide
+    // whether to refetch, regenerate the friend code, or bump the login suffix.
+    if (insErr && insErr.code === '23505') {
+      const details = `${insErr.message ?? ''} ${(insErr as { details?: string }).details ?? ''}`.toLowerCase();
+      // PK / id collision => row already exists; re-fetch and return.
+      if (details.includes('profiles_pkey') || details.includes('(id)')) {
+        const refetch = await sb
+          .from('profiles')
+          .select(selectWithLogin)
+          .eq('id', userId)
+          .maybeSingle();
+        const row = refetch.data;
+        if (row) {
+          return {
+            id: row.id,
+            friendCode: row.friend_code,
+            loginUsername: typeof row.login_username === 'string' ? row.login_username : null,
+            displayName: row.display_name,
+            bio: typeof row.bio === 'string' ? row.bio : null,
+            avatarId: row.avatar_id,
+            titleId: row.title_id,
+            uiThemeId: row.ui_theme_id,
+            customUiTheme: row.custom_ui_theme && typeof row.custom_ui_theme === 'object'
+              ? row.custom_ui_theme as Record<string, string>
+              : null,
+            lastSeenAt: row.last_seen_at,
+            signatureCardIds: Array.isArray(row.signature_card_ids) ? row.signature_card_ids : [],
+          };
+        }
+        // Fall through to retry if refetch found nothing (shouldn't happen).
+        continue;
+      }
+      // login_username or auth_email collision => bump suffix and retry.
+      if (details.includes('login_username') || details.includes('auth_email')) {
+        loginSuffix = loginSuffix === 0 ? 2 : loginSuffix + 1;
+        continue;
+      }
+      // friend_code collision (or unknown) => just retry with a new code.
+      continue;
+    }
+    if (insErr) throw insErr;
   }
   throw new Error('Could not allocate a unique friend code; please retry.');
 }

@@ -24,6 +24,7 @@ import { useGiftsStore } from '@/state/giftsStore';
 import { useStore } from '@/state/store';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
 import { useCoopRaidStore } from '@/state/coopRaidStore';
+import { usePartyStore } from '@/state/partyStore';
 import { useEternityBossCoopStore } from '@/state/eternityBossCoopStore';
 
 const PREF_KEY = 'pantheon.social.notifications.v1';
@@ -333,6 +334,11 @@ function connectChannels(): void {
   // Co-op raid invites use the same always-on lifecycle as battleground invites.
   useCoopRaidStore.getState().connectRealtime();
   useEternityBossCoopStore.getState().connectRealtime();
+
+  // Card-bound party invites also need to be always-on so recipients are
+  // notified regardless of which screen they're on (previously only
+  // subscribed when the user opened the Card-bound Co-op panel).
+  void usePartyStore.getState().connectRealtime();
 }
 
 function disconnectChannels(): void {
@@ -362,6 +368,7 @@ function disconnectChannels(): void {
   useBattlegroundStore.getState().disconnectRealtime();
   useCoopRaidStore.getState().disconnectRealtime();
   useEternityBossCoopStore.getState().disconnectRealtime();
+  usePartyStore.getState().disconnectRealtime();
 }
 
 // ── Public init ─────────────────────────────────────────────────────────────
