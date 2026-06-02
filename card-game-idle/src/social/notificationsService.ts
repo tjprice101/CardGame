@@ -209,7 +209,9 @@ function connectChannels(): void {
           });
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`[notify:dm] channel status: ${status}`, err ?? '');
+      });
   }
 
   if (!giftChannel) {
@@ -233,7 +235,9 @@ function connectChannels(): void {
           });
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`[notify:gifts] channel status: ${status}`, err ?? '');
+      });
   }
 
   if (!friendChannel) {
@@ -259,7 +263,9 @@ function connectChannels(): void {
           });
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`[notify:friends] channel status: ${status}`, err ?? '');
+      });
   }
 
   if (!coopInviteChannel) {
@@ -281,7 +287,9 @@ function connectChannels(): void {
           });
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`[notify:coop] channel status: ${status}`, err ?? '');
+      });
   }
 
   if (!eternityBossInviteChannel) {
@@ -303,7 +311,9 @@ function connectChannels(): void {
           });
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`[notify:eternity-coop] channel status: ${status}`, err ?? '');
+      });
   }
 
   // Keep the gifts store realtime synced so the inbox badge is current even

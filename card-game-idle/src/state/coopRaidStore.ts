@@ -66,6 +66,17 @@ export const useCoopRaidStore = create<CoopRaidStoreState>((set, get) => ({
     const me = useSocialStore.getState().user?.id;
     if (!sb || !me) return null;
 
+    // Expire any prior pending invite for this (me, toUser, raidId) tuple so
+    // we don't trip the partial unique index (`status = 'pending'`) and end
+    // up unable to send/resend either direction.
+    await sb
+      .from('coop_raid_invites')
+      .update({ status: 'expired' })
+      .eq('from_user', me)
+      .eq('to_user', toUserId)
+      .eq('raid_id', raidId)
+      .eq('status', 'pending');
+
     const { data: sessionData, error: sessionError } = await sb
       .from('coop_raid_sessions')
       .insert({ host_id: me, guest_id: toUserId, raid_id: raidId, host_deck_id: hostDeckId, status: 'pending' })
@@ -74,6 +85,7 @@ export const useCoopRaidStore = create<CoopRaidStoreState>((set, get) => ({
 
     if (sessionError || !sessionData) {
       console.warn('[coop-raid] failed to create session:', sessionError?.message);
+      useStore.getState().enqueueToast(`Co-op raid invite failed: ${sessionError?.message ?? 'unknown error'}`, 'warning', 7000);
       return null;
     }
 
@@ -84,6 +96,7 @@ export const useCoopRaidStore = create<CoopRaidStoreState>((set, get) => ({
 
     if (inviteError) {
       console.warn('[coop-raid] failed to send invite:', inviteError.message);
+      useStore.getState().enqueueToast(`Co-op raid invite failed: ${inviteError.message}`, 'warning', 7000);
       return null;
     }
 
@@ -146,7 +159,9 @@ export const useCoopRaidStore = create<CoopRaidStoreState>((set, get) => ({
           set({ incomingInvite: row });
         },
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        console.log(`[coop-raid] invite channel status: ${status}`, err ?? '');
+      });
 
     sessionChannel = sb
       .channel(`coop-raid:sessions:${me}`)
