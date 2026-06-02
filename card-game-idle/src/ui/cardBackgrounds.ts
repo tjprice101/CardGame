@@ -585,13 +585,16 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     'linear-gradient(180deg, rgba(18, 0, 6, 0.08) 0%, rgba(18, 0, 6, 0.02) 52%, rgba(18, 0, 6, 0.12) 100%)',
   ];
 
+  // Canonical holofoil overlay: muted pastel iridescence (pink/orange/purple/blue) at
+  // overlay-blend, paired with a soft white sparkle and a diagonal sheen. Matches the
+  // Holofoil Workshop preview look so every holo card across the game reads identically.
   const holoLayers = [
-    'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.04) 24%, rgba(255,255,255,0.34) 49%, rgba(255,255,255,0.07) 64%, rgba(255,255,255,0) 100%)',
-    'linear-gradient(108deg, rgba(255, 78, 156, 0.4) 0%, rgba(240, 82, 118, 0.36) 16%, rgba(255, 158, 88, 0.24) 30%, rgba(122, 200, 255, 0.24) 46%, rgba(170, 122, 255, 0.4) 68%, rgba(126, 78, 224, 0.42) 84%, rgba(255, 88, 162, 0.36) 100%)',
-    'linear-gradient(72deg, rgba(255,255,255,0) 12%, rgba(255,255,255,0.16) 34%, rgba(255,255,255,0.04) 46%, rgba(255,255,255,0.22) 58%, rgba(255,255,255,0) 76%)',
-    'linear-gradient(155deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0.03) 42%, rgba(255,255,255,0.14) 66%, rgba(255,255,255,0.04) 100%)',
-    'linear-gradient(180deg, rgba(26, 18, 12, 0.1) 0%, rgba(26, 18, 12, 0.03) 55%, rgba(26, 18, 12, 0.08) 100%)',
+    'linear-gradient(112deg, rgba(255, 84, 160, 0.3) 0%, rgba(255, 140, 104, 0.22) 16%, rgba(206, 96, 255, 0.28) 38%, rgba(106, 72, 224, 0.26) 56%, rgba(168, 110, 255, 0.3) 78%, rgba(255, 102, 170, 0.28) 100%)',
+    'radial-gradient(ellipse at 18% 16%, rgba(255,255,255,0.3) 0%, rgba(255, 230, 210, 0.18) 20%, rgba(214, 230, 255, 0.1) 34%, rgba(255,255,255,0) 60%)',
+    'linear-gradient(156deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.22) 32%, rgba(255,255,255,0.06) 46%, rgba(255,255,255,0.18) 62%, rgba(255,255,255,0.03) 76%, rgba(255,255,255,0) 88%)',
   ];
+  const holoBlendModes = ['overlay', 'screen', 'soft-light'];
+  const isHoloOnly = finish === 'holo' && !isTranscendent && !isInfinite && !isEternal;
 
   const frameLayers = isTranscendent ? [transcendentFrameLayer] : isInfinite ? [infiniteFrameLayer] : isEternal ? [eternalFrameLayer] : [];
   const overlayCoreLayers = isTranscendent ? transcendentLayers : isInfinite ? infiniteLayers : isEternal ? eternalLayers : (finish === 'holo' ? holoLayers : []);
@@ -667,6 +670,9 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     ...overlayLayers.map((_, index) => {
       if (index < frameLayers.length) return 'normal';
       const coreIndex = index - frameLayers.length;
+      if (isHoloOnly) {
+        return holoBlendModes[coreIndex] ?? 'overlay';
+      }
       return coreIndex === 0 ? 'screen' : coreIndex === overlayCoreLayers.length - 1 ? 'multiply' : 'overlay';
     }),
     'screen',
