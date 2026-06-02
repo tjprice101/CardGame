@@ -94,9 +94,19 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
           { event: 'INSERT', schema: 'public', table: 'party_invites', filter: `to_user=eq.${me}` },
           (payload) => {
             const row = payload.new as PartyInviteRow;
+            console.log('[party] FILTERED invite event received:', row);
             if (row.status !== 'pending') return;
             set({ incomingInvite: row });
             useStore.getState().enqueueToast('New Card-bound party invite.', 'info', 6000);
+          },
+        )
+        // DIAGNOSTIC: catch ALL inserts on party_invites (unfiltered) to prove
+        // whether realtime is broadcasting at all. Remove after triage.
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'party_invites' },
+          (payload) => {
+            console.log('[party] UNFILTERED invite event:', payload.eventType, payload.new ?? payload.old);
           },
         )
         .subscribe((status, err) => {
