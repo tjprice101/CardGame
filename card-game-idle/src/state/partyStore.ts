@@ -99,7 +99,9 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
             useStore.getState().enqueueToast('New Card-bound party invite.', 'info', 6000);
           },
         )
-        .subscribe();
+        .subscribe((status, err) => {
+          console.log(`[party] invite channel status: ${status}`, err ?? '');
+        });
     }
 
     await get().refreshActiveParty();
@@ -214,12 +216,23 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
       return false;
     }
 
+    // Expire any prior pending invite for this (me, userId, partyId) tuple so
+    // we don't trip the partial unique index (`status = 'pending'`).
+    await sb
+      .from('party_invites')
+      .update({ status: 'expired' })
+      .eq('from_user', me)
+      .eq('to_user', userId)
+      .eq('party_id', partyId)
+      .eq('status', 'pending');
+
     const { error } = await sb
       .from('party_invites')
       .insert({ from_user: me, to_user: userId, party_id: partyId, status: 'pending' });
 
     if (error) {
-      useStore.getState().enqueueToast('Could not send party invite.', 'warning');
+      console.warn('[party] invite insert failed:', error.message);
+      useStore.getState().enqueueToast(`Could not send party invite: ${error.message}`, 'warning', 7000);
       return false;
     }
 

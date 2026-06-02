@@ -96,12 +96,25 @@ export const useEternityBossCoopStore = create<EternityBossCoopStoreState>((set,
       status: 'pending' as const,
     }));
 
+    // Expire any prior pending invites for this (me, target, boss) tuple so
+    // we don't trip a partial unique index on resend.
+    for (const t of uniqueTargets) {
+      await sb
+        .from('eternity_wake_coop_invites')
+        .update({ status: 'expired' })
+        .eq('from_user', me)
+        .eq('to_user', t.id)
+        .eq('boss_id', bossId)
+        .eq('status', 'pending');
+    }
+
     const { error: inviteError } = await sb
       .from('eternity_wake_coop_invites')
       .insert(inviteRows);
 
     if (inviteError) {
       console.warn('[eternity-coop] failed to send invites:', inviteError.message);
+      useStore.getState().enqueueToast(`Co-op boss invite failed: ${inviteError.message}`, 'warning', 7000);
       return null;
     }
 
@@ -209,7 +222,9 @@ export const useEternityBossCoopStore = create<EternityBossCoopStoreState>((set,
             });
           },
         )
-        .subscribe();
+        .subscribe((status, err) => {
+          console.log(`[eternity-coop] invite channel status: ${status}`, err ?? '');
+        });
     }
 
     if (!sessionChannel) {
