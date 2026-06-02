@@ -221,6 +221,7 @@ export default function App() {
   const lastSavedAt = useStore(s => s.lastSavedAt);
   const setPresenceActivity = useFriendsStore(s => s.setPresenceActivity);
   const socialAuthStatus = useSocialStore(s => s.status);
+  const socialUserId = useSocialStore(s => s.user?.id ?? null);
 
   useEffect(() => {
     const themeId = progress.profile.uiThemeId || DEFAULT_UI_THEME_ID;
@@ -624,9 +625,12 @@ export default function App() {
   // The page may have been loaded while the player was unauthenticated (title screen),
   // so the mount-time check above would miss the claimable window.
   const prevSocialStatusRef = useRef<string>('idle');
+  const prevSocialUserIdRef = useRef<string | null>(null);
   useEffect(() => {
     const prev = prevSocialStatusRef.current;
+    const prevUserId = prevSocialUserIdRef.current;
     prevSocialStatusRef.current = socialAuthStatus;
+    prevSocialUserIdRef.current = socialUserId;
     // Only trigger when transitioning INTO authenticated state.
     if (socialAuthStatus === 'authenticated' && prev !== 'authenticated') {
       const progress = useStore.getState().progress;
@@ -634,12 +638,16 @@ export default function App() {
         setShowDailyReward(true);
       }
     }
-    // Clean up the chat panel and subscription when the user signs out so no
-    // stale messages or realtime channels linger across account switches.
-    if (prev === 'authenticated' && socialAuthStatus !== 'authenticated') {
+    // Clean up the chat panel and subscription only on a real sign-out or
+    // account switch — i.e. when the previously-known user id is gone or
+    // changed. Gating on `status !== 'authenticated'` alone would also fire
+    // on spurious authenticated -> loading -> authenticated flickers (the
+    // same flicker cloudSaveSync guards against), wiping the active chat
+    // session and dropping inbound realtime messages mid-conversation.
+    if (prevUserId && prevUserId !== socialUserId) {
       useMessagesStore.getState().fullyClose();
     }
-  }, [socialAuthStatus]);
+  }, [socialAuthStatus, socialUserId]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {

@@ -218,7 +218,10 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
       .eq('to_user', me)
       .maybeSingle();
     if (reverse) {
-      if (reverse.status === 'accepted') return; // already friends
+      if (reverse.status === 'accepted') {
+        useStore.getState().enqueueToast(`Already friends with ${target.display_name}.`, 'info');
+        return;
+      }
       const { error: accErr } = await sb
         .from('friend_requests')
         .update({ status: 'accepted' })
@@ -226,6 +229,7 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
         .eq('to_user', me);
       if (accErr) throw accErr;
       useStore.getState().recordSocialProgress('friend_added');
+      useStore.getState().enqueueToast(`You and ${target.display_name} are now friends.`, 'success');
     } else {
       const { error: insErr } = await sb
         .from('friend_requests')
@@ -236,6 +240,7 @@ export const useFriendsStore = create<FriendsState>((set, get) => ({
         throw insErr;
       }
       useStore.getState().recordSocialProgress('friend_request_sent');
+      useStore.getState().enqueueToast(`Friend request sent to ${target.display_name}.`, 'success');
     }
     await get().load();
   },
