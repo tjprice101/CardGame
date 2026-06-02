@@ -589,7 +589,7 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   // overlay-blend, paired with a soft white sparkle and a diagonal sheen. Matches the
   // Holofoil Workshop preview look so every holo card across the game reads identically.
   const holoLayers = [
-    'linear-gradient(112deg, rgba(255, 84, 160, 0.3) 0%, rgba(255, 140, 104, 0.22) 16%, rgba(206, 96, 255, 0.28) 38%, rgba(106, 72, 224, 0.26) 56%, rgba(168, 110, 255, 0.3) 78%, rgba(255, 102, 170, 0.28) 100%)',
+    'linear-gradient(112deg, rgba(223, 94, 151, 0.3) 0%, rgba(232, 145, 118, 0.22) 16%, rgba(187, 105, 224, 0.28) 38%, rgba(102, 77, 191, 0.26) 56%, rgba(159, 116, 224, 0.3) 78%, rgba(226, 111, 162, 0.28) 100%)',
     'radial-gradient(ellipse at 18% 16%, rgba(255,255,255,0.3) 0%, rgba(255, 230, 210, 0.18) 20%, rgba(214, 230, 255, 0.1) 34%, rgba(255,255,255,0) 60%)',
     'linear-gradient(156deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.22) 32%, rgba(255,255,255,0.06) 46%, rgba(255,255,255,0.18) 62%, rgba(255,255,255,0.03) 76%, rgba(255,255,255,0) 88%)',
   ];
@@ -781,7 +781,7 @@ export function getDenseCardFaceBackgroundStyle(
     : isEternal
       ? 'linear-gradient(135deg, rgba(184,78,124,0.26) 0%, rgba(124,34,94,0.18) 36%, rgba(18,10,28,0.24) 100%)'
       : finish === 'holo'
-        ? 'linear-gradient(112deg, rgba(255, 84, 160, 0.3) 0%, rgba(255, 140, 104, 0.22) 16%, rgba(206, 96, 255, 0.28) 38%, rgba(106, 72, 224, 0.26) 56%, rgba(168, 110, 255, 0.3) 78%, rgba(255, 102, 170, 0.28) 100%)'
+        ? 'linear-gradient(112deg, rgba(223, 94, 151, 0.3) 0%, rgba(232, 145, 118, 0.22) 16%, rgba(187, 105, 224, 0.28) 38%, rgba(102, 77, 191, 0.26) 56%, rgba(159, 116, 224, 0.3) 78%, rgba(226, 111, 162, 0.28) 100%)'
         : null;
 
   const sparkleOverlay = isTranscendent
