@@ -42,7 +42,6 @@ export default function AuthPanel() {
   const socialProfile = useSocialStore(selectSocialProfile);
   const errorMessage = useSocialStore(selectSocialError);
 
-  const initialize = useSocialStore(s => s.initialize);
   const signIn = useSocialStore(s => s.signInWithEmail);
   const signUp = useSocialStore(s => s.signUpWithEmail);
   const signOut = useSocialStore(s => s.signOut);
@@ -59,9 +58,14 @@ export default function AuthPanel() {
   const [busy, setBusy] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (configured) void initialize();
-  }, [configured, initialize]);
+  // NOTE: do NOT call useSocialStore.initialize() here. Boot init is performed
+  // exactly once by initAccountSync() in src/social/accountSync.ts. Re-running
+  // initialize() on every Profile/AuthPanel mount causes an
+  // authenticated -> loading -> authenticated status flicker that (a) makes
+  // this panel briefly render the sign-in form and (b) triggers
+  // cloudSaveSync.reconcileOnLogin again, which would overwrite live in-memory
+  // game state (e.g. an active or just-finished boss fight) with the last
+  // autosaved cloud snapshot.
 
   // On sign-in: apply the server profile to the local game store (read path).
   // Only fires once per session (tracked by profile id) so local edits made

@@ -246,6 +246,14 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       set({ status: 'idle' });
       return;
     }
+    // Idempotency guards: avoid spurious authenticated -> loading -> authenticated
+    // status flickers when callers re-invoke initialize() (e.g. when a UI panel
+    // remounts). Such flickers cause downstream subscribers (cloudSaveSync,
+    // statsSync, accountSync) to re-fire login transitions and can overwrite
+    // live in-memory game state.
+    const current = get();
+    if (current.status === 'loading') return;
+    if (current.status === 'authenticated' && current.user) return;
     set({ status: 'loading', errorMessage: null });
     try {
       const { data } = await sb.auth.getSession();

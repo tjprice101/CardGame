@@ -32,6 +32,11 @@ let pendingUploadTimer: ReturnType<typeof setTimeout> | null = null;
 let reconciling = false;
 let lastUploadedSavedAt = 0;
 let activeUserId: string | null = null;
+// Tracks which user id we have already reconciled in this session. Prevents
+// a spurious authenticated -> loading -> authenticated status flicker from
+// re-running reconcileOnLogin and silently replacing live in-memory state
+// (e.g. an active or just-finished boss fight) with the autosaved cloud copy.
+let reconciledUserId: string | null = null;
 
 const UPLOAD_DEBOUNCE_MS = 5000;
 
@@ -105,6 +110,22 @@ async function reconcileOnLogin(userId: string): Promise<void> {
       }
       return;
     }
+    // Defense-in-depth: never blow away an active or unresolved combat session
+    // with a cloud snapshot. Bank the remote save's lastSavedAt floor for the
+    // upload watermark so we don't immediately re-upload a stale local copy on
+    // top of it, but keep the live in-memory state intact.
+    const liveState = useStore.getState();
+    const bossMode = liveState.bossFight?.mode;
+    const battlegroundMode = liveState.battleground?.mode;
+    const fightActive =
+      bossMode === 'active' || bossMode === 'victory' || bossMode === 'defeat'
+      || battlegroundMode === 'active';
+    if (fightActive) {
+      // eslint-disable-next-line no-console
+      console.warn('[cloudSaveSync] skipping reconcile loadState: active/unresolved fight in progress');
+      lastUploadedSavedAt = Math.max(remote.saved_at_ms, imported.state.lastSavedAt ?? 0);
+      return;
+    }
     applyAuthedSocialProfile(imported.state);
     useStore.getState().loadState(imported.state);
     useStore.setState({ saveTampered: imported.tampered });
@@ -174,14 +195,23 @@ export function initCloudSaveSync(): void {
     const wasAuthed = prev.status === 'authenticated' && !!prev.user?.id;
 
     if (authed && (!wasAuthed || prev.user?.id !== state.user?.id)) {
+      // Skip the reconcile when we've already reconciled this user in the
+      // current session. This blocks the spurious authenticated -> loading ->
+      // authenticated flicker from re-running a destructive loadState.
+      if (reconciledUserId === state.user!.id) {
+        activeUserId = state.user!.id;
+        return;
+      }
       activeUserId = state.user!.id;
       lastUploadedSavedAt = 0;
+      reconciledUserId = state.user!.id;
       void reconcileOnLogin(state.user!.id);
       return;
     }
 
     if (!authed && wasAuthed) {
       activeUserId = null;
+      reconciledUserId = null;
       lastUploadedSavedAt = 0;
       if (pendingUploadTimer) {
         clearTimeout(pendingUploadTimer);
@@ -199,9 +229,10 @@ export function initCloudSaveSync(): void {
   // Bootstrap path: if auth has already been restored before this service
   // subscribes, we still need an initial reconcile for this session.
   const current = useSocialStore.getState();
-  if (current.status === 'authenticated' && current.user?.id) {
+  if (current.status === 'authenticated' && current.user?.id && reconciledUserId !== current.user.id) {
     activeUserId = current.user.id;
     lastUploadedSavedAt = 0;
+    reconciledUserId = current.user.id;
     void reconcileOnLogin(current.user.id);
   }
 }
@@ -220,6 +251,7 @@ export function shutdownCloudSaveSync(): void {
     unsubscribeStore = null;
   }
   activeUserId = null;
+  reconciledUserId = null;
   lastUploadedSavedAt = 0;
   reconciling = false;
   installed = false;
