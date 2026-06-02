@@ -139,7 +139,6 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
         .from('dm_messages')
         .select('id, thread_id, sender_id, body, attachment_json, created_at')
         .eq('thread_id', threadId)
-        .is('deleted_at', null)
         .order('created_at', { ascending: true })
         .limit(100);
       if (msgErr) throw msgErr;
