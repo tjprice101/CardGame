@@ -4,9 +4,14 @@ import type { BossDefinition, BossCategory } from '@/types/bossFight';
 
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
-const FIRST_ETERNAL_BOSS_HP = 17_000;
-const FINAL_ETERNAL_BOSS_HP = 850_000;
-const BOSS_HP_CURVE_EXPONENT = 0.65;
+const FIRST_ETERNAL_BOSS_HP = 25_000;
+const FINAL_ETERNAL_BOSS_HP = 12_000_000;
+// Exponent > 1 makes the curve convex: early bosses ramp gently from the
+// FIRST anchor, but the back half of the roster ramps hard. With 82 bosses
+// in the roster, an exponent of 2.0 keeps onboarding fights approachable
+// (<100k HP through ~boss 30) while the final ~15 bosses spike from ~1M to
+// 12M, giving the endgame a real wall.
+const BOSS_HP_CURVE_EXPONENT = 2.0;
 const EVENT_BOSS_CATEGORY: BossCategory = '[EVENT] Wished Upon A Star';
 
 // Bump this when rotating to a new live event cycle.
