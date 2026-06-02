@@ -1186,6 +1186,10 @@ export class CardEffectExecutor {
 
           for (const unit of mutableBoard.frontSlots) {
             if (!isActivePatienceUnit(unit)) continue;
+            if (sourceSetKey) {
+              const unitDef = CardRegistry.get(unit.definitionId);
+              if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) continue;
+            }
             unit.patienceStacks = (unit.patienceStacks ?? 0) + perUnitGain;
             totalGain += perUnitGain;
             if (vesselId && unit.instanceId !== vesselId) {
@@ -1197,6 +1201,10 @@ export class CardEffectExecutor {
             const vessel = mutableBoard.frontSlots.find(
               (unit): unit is SeraphimInstance | AngelInstance => {
                 if (!isActivePatienceUnit(unit) || unit.instanceId !== vesselId) return false;
+                if (sourceSetKey) {
+                  const unitDef = CardRegistry.get(unit.definitionId);
+                  if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) return false;
+                }
                 return true;
               },
             );
@@ -1299,10 +1307,17 @@ export class CardEffectExecutor {
         }
 
         case 'neutrality_designate_vessel': {
-          // Cross-set: vessel can be any active Seraphim regardless of source set,
-          // so Patient Light cast by a Neutrality Cherubim can anchor on a Pyro/Light/etc. Seraphim.
+          // Same-set: vessel must be an active Seraphim sharing the source
+          // card's set so Patient Light's anchor stays within Neutrality.
           const candidates = mutableBoard.frontSlots
-            .filter((unit): unit is SeraphimInstance => isActiveSeraphim(unit))
+            .filter((unit): unit is SeraphimInstance => {
+              if (!isActiveSeraphim(unit)) return false;
+              if (sourceSetKey) {
+                const unitDef = CardRegistry.get(unit.definitionId);
+                if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) return false;
+              }
+              return true;
+            })
             .sort((a, b) => (b.patienceStacks ?? 0) - (a.patienceStacks ?? 0));
           if (candidates.length > 0) {
             mutableTurn.neutralityVesselInstanceId = candidates[0].instanceId;

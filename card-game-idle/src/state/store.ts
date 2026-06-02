@@ -3376,15 +3376,19 @@ function collectAttackBuffs(
   let cooldownDeltaCards = 0;
   let multiplier = 1;
   const loweredTags = new Set(tags.map(tag => tag.toLowerCase()));
-  // Cross-set: Cherubim attack buffs apply to Seraphim/Angels of any set so that
-  // Patience-bearing Cherubim (e.g. Neutrality) can boost mixed-set frontlines.
-  // Effect-level scope can still be narrowed via targetTags / targetDefinitionIds.
-  void targetDefinitionId;
+  // Same-set gate: Cherubim attack buffs only apply to Seraphim/Angels of the
+  // same set. Set-bound stacking mechanics (Patience, etc.) must not leak
+  // across sets. Effect-level scope can still narrow further via
+  // targetTags / targetDefinitionIds.
+  const targetDef = ScoreSystem.getDefinition(targetDefinitionId);
+  const targetSetKey = targetDef ? getCardCategoryKey(targetDef) : null;
 
   for (const back of board.backSlots) {
     if (!back || back.type !== 'Cherubim') continue;
     const def = ScoreSystem.getDefinition(back.definitionId);
     if (!def || def.type !== 'Cherubim') continue;
+    const sourceSetKey = getCardCategoryKey(def);
+    if (targetSetKey && sourceSetKey !== targetSetKey) continue;
     for (const effect of def.effects) {
       if (effect.type !== 'cherubim_attack_buff') continue;
       if (effect.targetUnitType !== 'Any' && effect.targetUnitType !== unitType) continue;
@@ -3565,7 +3569,8 @@ function payAttackCosts(
 
 function grantDominantAttackResource(s: Store, sourceDefinitionId: string, element: string | undefined, amount: number): void {
   if (amount <= 0) return;
-  void sourceDefinitionId;
+  const sourceDef = ScoreSystem.getDefinition(sourceDefinitionId);
+  const sourceSetKey = sourceDef ? getCardCategoryKey(sourceDef) : null;
   switch (element) {
     case 'Light':
       s.turn.radiance += amount;
@@ -3574,10 +3579,16 @@ function grantDominantAttackResource(s: Store, sourceDefinitionId: string, eleme
       s.turn.strain += amount;
       break;
     case 'Neutrality': {
-      // Cross-set: Patience distributes to every active frontline unit regardless of set.
+      // Same-set: Patience flows only to active frontline units that share the
+      // source card's set. Stacks on off-set Seraphim would be inert (their
+      // attacks lack the patienceThreshold consume hook), so we don't grant them.
       const frontline = s.board.frontSlots.filter(
-        (u): u is SeraphimInstance | AngelInstance =>
-          u !== null && (u.type === 'Seraphim' || u.type === 'Angel'),
+        (u): u is SeraphimInstance | AngelInstance => {
+          if (!u || (u.type !== 'Seraphim' && u.type !== 'Angel')) return false;
+          if (!sourceSetKey) return true;
+          const unitDef = ScoreSystem.getDefinition(u.definitionId);
+          return !!unitDef && getCardCategoryKey(unitDef) === sourceSetKey;
+        },
       );
       if (frontline.length > 0) {
         const perUnit = Math.round(amount / frontline.length);
@@ -3696,12 +3707,15 @@ function computeCherubimAdjacentBonus(board: BoardState, bonusType: 'oblivion' |
     if (!card || card.type !== 'Cherubim') continue;
     const def = ScoreSystem.getDefinition(card.definitionId);
     if (!def || def.type !== 'Cherubim') continue;
-    // Cross-set: adjacent active Seraphim of any set count toward this bonus.
+    // Same-set: only adjacent active Seraphim of the Cherubim's set count.
+    const sourceSetKey = getCardCategoryKey(def);
     const leftSlot = board.frontSlots[i];
     const rightSlot = board.frontSlots[i + 1];
-    const adjacentActive = [leftSlot, rightSlot].filter(
-      s => !!s && s.type === 'Seraphim' && (s as SeraphimInstance).isActive,
-    ).length;
+    const adjacentActive = [leftSlot, rightSlot].filter(s => {
+      if (!s || s.type !== 'Seraphim' || !(s as SeraphimInstance).isActive) return false;
+      const sDef = ScoreSystem.getDefinition(s.definitionId);
+      return !!sDef && getCardCategoryKey(sDef) === sourceSetKey;
+    }).length;
     if (adjacentActive === 0) continue;
     const burnMultiplier = isBurningGardenCard(def) ? computeBurningGardenBoardPower(card) : 1;
     for (const effect of (def as import('@/types/cards').CherubimDefinition).effects) {
@@ -4024,16 +4038,22 @@ function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
 }
 
 function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: number): void {
-  void sourceDefinitionId;
+  const sourceDef = ScoreSystem.getDefinition(sourceDefinitionId);
+  const sourceSetKey = sourceDef ? getCardCategoryKey(sourceDef) : null;
   const vesselId = s.turn.neutralityVesselInstanceId ?? null;
   const vesselCopyPercent = Math.max(0, s.turn.neutralityVesselCopyPercent ?? 0);
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
   const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
   let nonVesselGain = 0;
 
-  // Cross-set: Patience flows to every active frontline unit regardless of set.
+  // Same-set: Patience only flows to active frontline units sharing the source
+  // card's set so set-bound stacks never leak across sets.
   for (const unit of s.board.frontSlots) {
     if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
+    if (sourceSetKey) {
+      const unitDef = ScoreSystem.getDefinition(unit.definitionId);
+      if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) continue;
+    }
     const gain = value + linkedBonus + equilibriumBonus;
     unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
     if (vesselId && unit.instanceId !== vesselId) {
@@ -4044,6 +4064,10 @@ function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: numbe
   if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
     const vessel = s.board.frontSlots.find(unit => {
       if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel') || unit.instanceId !== vesselId) return false;
+      if (sourceSetKey) {
+        const unitDef = ScoreSystem.getDefinition(unit.definitionId);
+        if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) return false;
+      }
       return true;
     });
     if (vessel) {
@@ -4157,11 +4181,15 @@ function applyCherubimPassiveEffects(s: Store): void {
         }
 
         case 'cherubim_patience_per_card': {
-          // Cross-set: adjacent Seraphim/Angels gain Patience regardless of set.
+          // Same-set: only adjacent Seraphim/Angels sharing the Cherubim's set
+          // receive Patience. Off-set frontline neighbors are ignored.
+          const sourceSetKey = getCardCategoryKey(def);
           const leftFront = s.board.frontSlots[i];
           const rightFront = s.board.frontSlots[i + 1];
           for (const frontUnit of [leftFront, rightFront]) {
             if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
+            const frontDef = ScoreSystem.getDefinition(frontUnit.definitionId);
+            if (!frontDef || getCardCategoryKey(frontDef) !== sourceSetKey) continue;
             const gain = effect.value + linkedBonus + equilibriumBonus;
             frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
             if (vesselId && frontUnit.type === 'Seraphim' && frontUnit.instanceId !== vesselId) {
