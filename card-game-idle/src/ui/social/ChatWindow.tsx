@@ -9,6 +9,7 @@ import { useThemeVersion } from '@/ui/useThemeVersion';
 import {
   useMessagesStore,
   selectOpenThreadId,
+  selectChatPanelOpen,
   selectOpenMessages,
   selectMessagesError,
   selectMessagesSending,
@@ -24,6 +25,7 @@ const SendDeckPicker = lazy(() => import('@/ui/social/SendDeckPicker'));
 export default function ChatWindow() {
   useThemeVersion();
   const openThreadId = useMessagesStore(selectOpenThreadId);
+  const chatPanelOpen = useMessagesStore(selectChatPanelOpen);
   const messages = useMessagesStore(selectOpenMessages);
   const errorMessage = useMessagesStore(selectMessagesError);
   const sending = useMessagesStore(selectMessagesSending);
@@ -52,7 +54,7 @@ export default function ChatWindow() {
     markRead();
   }, [messages.length, markRead]);
 
-  if (!openThreadId) return null;
+  if (!openThreadId || !chatPanelOpen) return null;
 
   async function submit() {
     const body = draft;

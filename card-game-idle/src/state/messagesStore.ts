@@ -35,6 +35,11 @@ interface MessagesState {
   threadByOther: Readonly<Record<string, string>>;
 
   openThreadId: string | null;
+  // Controls whether the chat panel is visible. Separated from openThreadId so
+  // we can keep the realtime subscription and message cache alive while the
+  // panel is hidden — incoming messages are buffered and appear instantly on
+  // re-open without a full DB round-trip.
+  chatPanelOpen: boolean;
   openMessages: DmMessage[];
   loading: boolean;
   sending: boolean;
@@ -47,6 +52,8 @@ interface MessagesState {
   loadThreads: () => Promise<void>;
   openConversation: (otherUserId: string) => Promise<void>;
   closeConversation: () => void;
+  /** Full teardown for logout — clears all state and kills subscriptions. */
+  fullyClose: () => void;
   sendMessage: (body: string, attachment?: unknown) => Promise<void>;
   reportMessage: (messageId: string, targetUserId: string, reason: string) => Promise<void>;
   markCurrentRead: () => void;
@@ -95,6 +102,7 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
   threads: EMPTY_THREADS,
   threadByOther: EMPTY_BY_OTHER,
   openThreadId: null,
+  chatPanelOpen: false,
   openMessages: EMPTY_MESSAGES,
   loading: false,
   sending: false,
@@ -127,7 +135,25 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
     const sb = getSupabase();
     const me = useSocialStore.getState().user?.id;
     if (!sb || !me) return;
-    set({ loading: true, errorMessage: null, openMessages: EMPTY_MESSAGES });
+
+    // If the same thread is already loaded in memory (subscription live, messages
+    // cached), just show the panel and do a lightweight background refresh instead
+    // of a full teardown → fetch → subscribe cycle. This is the common case when
+    // the user closes and immediately reopens the chat with the same friend.
+    const knownThreadId = get().threadByOther[otherUserId];
+    if (knownThreadId && knownThreadId === get().openThreadId) {
+      set({ chatPanelOpen: true, errorMessage: null });
+      get().markCurrentRead();
+      // Refresh from DB in the background to catch messages that arrived while
+      // the panel was hidden (realtime/polling may have already handled this, but
+      // an explicit refresh guarantees consistency).
+      void refreshOpenThreadMessages(knownThreadId);
+      return;
+    }
+
+    // Different thread (or no thread loaded yet): full teardown + fetch.
+    teardownMessagesChannel();
+    set({ loading: true, errorMessage: null, openMessages: EMPTY_MESSAGES, chatPanelOpen: false });
     try {
       const { data: tid, error: rpcErr } = await sb.rpc('get_or_create_dm_thread', {
         other_user: otherUserId,
@@ -153,6 +179,7 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
 
       set({
         openThreadId: threadId,
+        chatPanelOpen: true,
         openMessages: ((msgs ?? []) as Parameters<typeof rowToMessage>[0][]).map(rowToMessage),
         loading: false,
         threads,
@@ -162,13 +189,31 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
       // Auto-mark read on open.
       get().markCurrentRead();
     } catch (err) {
-      set({ loading: false, errorMessage: messageOf(err) });
+      set({ loading: false, errorMessage: messageOf(err), chatPanelOpen: false });
     }
   },
 
   closeConversation() {
+    // Hide the panel but keep the subscription and message cache alive so that:
+    // 1. Incoming realtime messages are still received and stored while the
+    //    panel is closed (user sees them instantly on re-open).
+    // 2. The polling fallback continues ticking for the open thread.
+    // 3. Re-opening the same conversation skips the DB round-trip.
+    get().markCurrentRead();
+    set({ chatPanelOpen: false });
+  },
+
+  fullyClose() {
+    // Hard reset for logout / account switch. Tears everything down.
     teardownMessagesChannel();
-    set({ openThreadId: null, openMessages: EMPTY_MESSAGES });
+    set({
+      openThreadId: null,
+      chatPanelOpen: false,
+      openMessages: EMPTY_MESSAGES,
+      loading: false,
+      sending: false,
+      errorMessage: null,
+    });
   },
 
   async sendMessage(body, attachment) {
@@ -356,8 +401,9 @@ function messageOf(err: unknown): string {
 }
 
 // Stable selectors.
-export const selectOpenThreadId  = (s: MessagesState) => s.openThreadId;
-export const selectOpenMessages  = (s: MessagesState) => s.openMessages;
+export const selectOpenThreadId   = (s: MessagesState) => s.openThreadId;
+export const selectChatPanelOpen  = (s: MessagesState) => s.chatPanelOpen;
+export const selectOpenMessages   = (s: MessagesState) => s.openMessages;
 export const selectThreadsByOther = (s: MessagesState) => s.threadByOther;
 export const selectThreadsMap     = (s: MessagesState) => s.threads;
 export const selectMessagesError  = (s: MessagesState) => s.errorMessage;

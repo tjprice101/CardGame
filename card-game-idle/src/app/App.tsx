@@ -58,6 +58,7 @@ import { initStatsSync } from '@/social/statsSync';
 import { initCloudSaveSync } from '@/social/cloudSaveSync';
 import { initSocialNotifications } from '@/social/notificationsService';
 import { useSocialStore } from '@/state/socialStore';
+import { useMessagesStore } from '@/state/messagesStore';
 import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
 import { MainMenuRadio } from '@/audio/MainMenuRadio';
 import { MainTurnRadio } from '@/audio/MainTurnRadio';
@@ -632,6 +633,11 @@ export default function App() {
       if (evaluateDailyLogin(progress).claimable) {
         setShowDailyReward(true);
       }
+    }
+    // Clean up the chat panel and subscription when the user signs out so no
+    // stale messages or realtime channels linger across account switches.
+    if (prev === 'authenticated' && socialAuthStatus !== 'authenticated') {
+      useMessagesStore.getState().fullyClose();
     }
   }, [socialAuthStatus]);
 
