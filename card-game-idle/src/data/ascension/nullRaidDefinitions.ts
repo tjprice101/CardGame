@@ -50,24 +50,24 @@ export interface NullRaidDefinition {
 // ── Null Raid Bosses ────────────────────────────────────────────────────────
 // These bosses are exclusively used inside Null Raids and do not appear
 // in Eternity's Wake tabs. HP ranges (scaled for the post-2026-06 endgame
-// where the final eternal boss caps at 12M):
-//   1-star encounters: 9M – 30M
-//   2-star encounters: 18M – 360M
-//   3-star encounters: 36M – 7.5B
+// where the final eternal boss caps at 50M under the geometric curve):
+//   1-star encounters: 38M – 120M
+//   2-star encounters: 75M – 1.5B
+//   3-star encounters: 150M – 30B
 
 const NULL_RAID_BOSSES: NullRaidBoss[] = [
   // ── The Null Verdict of Stars (1★, Neutrality) ─────────────────────────
   {
     id: 'nr-neutrality-event-horizon-arbiter',
     name: 'Event Horizon Arbiter',
-    hp: 9_000_000,
+    hp: 38_000_000,
     description:
       'A cosmic neutrality judge that erases nebulae and timelines with a single breath.',
   },
   {
     id: 'nr-neutrality-verdant-null',
     name: 'Verdant Null, Last Wish Executioner',
-    hp: 25_500_000,
+    hp: 110_000_000,
     description:
       'The last wish-judge of the void court — it closes the universe like a final verdict.',
   },
@@ -76,14 +76,14 @@ const NULL_RAID_BOSSES: NullRaidBoss[] = [
   {
     id: 'nr-pyroabyss-ember-eventide-tyrant',
     name: 'Ember Eventide Tyrant',
-    hp: 9_750_000,
+    hp: 40_000_000,
     description:
       'An infernal war-beast of ash and stardust whose roars shatter spacetime.',
   },
   {
     id: 'nr-pyroabyss-pyraxis-nullstar-sovereign',
     name: 'Pyraxis Nullstar Sovereign',
-    hp: 27_000_000,
+    hp: 115_000_000,
     description:
       'A regal voidfire sovereign that extinguishes galaxies and reignites them as auroras.',
   },
@@ -92,14 +92,14 @@ const NULL_RAID_BOSSES: NullRaidBoss[] = [
   {
     id: 'nr-light-auric-eclipse-herald',
     name: 'Auric Eclipse Herald',
-    hp: 10_200_000,
+    hp: 42_000_000,
     description:
       'A dawnbound herald that forges eclipses from hymn-fire and judges the weak between two suns.',
   },
   {
     id: 'nr-light-zenith-duality-throne',
     name: 'Zenith Duality Throne',
-    hp: 28_800_000,
+    hp: 120_000_000,
     description:
       'The final heavenly throne where star-liturgy and divine fire converge into absolute judgment.',
   },
