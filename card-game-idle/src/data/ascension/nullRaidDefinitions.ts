@@ -49,25 +49,36 @@ export interface NullRaidDefinition {
 
 // ── Null Raid Bosses ────────────────────────────────────────────────────────
 // These bosses are exclusively used inside Null Raids and do not appear
-// in Eternity's Wake tabs. HP ranges (scaled for the post-2026-06 endgame
-// where the final eternal boss caps at 50M under the geometric curve):
-//   1-star encounters: 38M – 120M
-//   2-star encounters: 75M – 1.5B
-//   3-star encounters: 150M – 30B
+// in Eternity's Wake tabs. Their HP continues the endgame curve using a
+// linear ramp from the first to last encounter.
+const NULL_RAID_FIRST_BOSS_HP = 220_000_000;
+const NULL_RAID_FINAL_BOSS_HP = 1_120_000_000;
 
-const NULL_RAID_BOSSES: NullRaidBoss[] = [
+function roundNullRaidHp(value: number): number {
+  return Math.max(1, Math.round(value / 5_000_000) * 5_000_000);
+}
+
+function getLinearNullRaidBossHp(index: number, totalBosses: number): number {
+  if (totalBosses <= 1) return roundNullRaidHp(NULL_RAID_FIRST_BOSS_HP);
+  const clampedIndex = Math.max(0, Math.min(index, totalBosses - 1));
+  const progress = clampedIndex / (totalBosses - 1);
+  const hp = NULL_RAID_FIRST_BOSS_HP + (NULL_RAID_FINAL_BOSS_HP - NULL_RAID_FIRST_BOSS_HP) * progress;
+  return roundNullRaidHp(hp);
+}
+
+type NullRaidBossBlueprint = Omit<NullRaidBoss, 'hp'>;
+
+const NULL_RAID_BOSS_BLUEPRINTS: NullRaidBossBlueprint[] = [
   // ── The Null Verdict of Stars (1★, Neutrality) ─────────────────────────
   {
     id: 'nr-neutrality-event-horizon-arbiter',
     name: 'Event Horizon Arbiter',
-    hp: 38_000_000,
     description:
       'A cosmic neutrality judge that erases nebulae and timelines with a single breath.',
   },
   {
     id: 'nr-neutrality-verdant-null',
     name: 'Verdant Null, Last Wish Executioner',
-    hp: 110_000_000,
     description:
       'The last wish-judge of the void court — it closes the universe like a final verdict.',
   },
@@ -76,14 +87,12 @@ const NULL_RAID_BOSSES: NullRaidBoss[] = [
   {
     id: 'nr-pyroabyss-ember-eventide-tyrant',
     name: 'Ember Eventide Tyrant',
-    hp: 40_000_000,
     description:
       'An infernal war-beast of ash and stardust whose roars shatter spacetime.',
   },
   {
     id: 'nr-pyroabyss-pyraxis-nullstar-sovereign',
     name: 'Pyraxis Nullstar Sovereign',
-    hp: 115_000_000,
     description:
       'A regal voidfire sovereign that extinguishes galaxies and reignites them as auroras.',
   },
@@ -92,18 +101,21 @@ const NULL_RAID_BOSSES: NullRaidBoss[] = [
   {
     id: 'nr-light-auric-eclipse-herald',
     name: 'Auric Eclipse Herald',
-    hp: 42_000_000,
     description:
       'A dawnbound herald that forges eclipses from hymn-fire and judges the weak between two suns.',
   },
   {
     id: 'nr-light-zenith-duality-throne',
     name: 'Zenith Duality Throne',
-    hp: 120_000_000,
     description:
       'The final heavenly throne where star-liturgy and divine fire converge into absolute judgment.',
   },
 ];
+
+const NULL_RAID_BOSSES: NullRaidBoss[] = NULL_RAID_BOSS_BLUEPRINTS.map((boss, index, allBosses) => ({
+  ...boss,
+  hp: getLinearNullRaidBossHp(index, allBosses.length),
+}));
 
 // ── Boss Map ────────────────────────────────────────────────────────────────
 /** Fast lookup map from boss id to NullRaidBoss data. */

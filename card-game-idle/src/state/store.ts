@@ -3739,6 +3739,22 @@ function grantDominantAttackResource(s: Store, sourceDefinitionId: string, eleme
   }
 }
 
+function getHighTierAttackDamageMultiplier(
+  rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
+): number {
+  if (rarity === 'Infinite') return 0.62;
+  if (rarity === 'Eternal') return 0.76;
+  return 1;
+}
+
+function getHighTierAttackIdentityMultiplier(
+  rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
+): number {
+  if (rarity === 'Infinite') return 0.7;
+  if (rarity === 'Eternal') return 0.82;
+  return 1;
+}
+
 function reduceFrontlineAttackCooldowns(board: BoardState, amount: number): void {
   if (amount <= 0) return;
   for (const slot of board.frontSlots) {
@@ -3779,7 +3795,10 @@ function applyLateGameAttackIdentity(
   const allowedDraws = identity.drawCards >= 3 ? 1 : 0;
   const suppressedDraws = Math.max(0, identity.drawCards - allowedDraws);
 
-  let extraOblivion = Math.round(baseAttackAward * identity.bonusBaseMultiplier + identity.bonusFlatOblivion);
+  const identityScale = getHighTierAttackIdentityMultiplier(rarity);
+  let extraOblivion = Math.round(
+    (baseAttackAward * identity.bonusBaseMultiplier + identity.bonusFlatOblivion) * identityScale,
+  );
   if (suppressedDraws > 0) {
     extraOblivion += suppressedDraws * (isInfinite ? 220 : 110);
   }
@@ -3796,14 +3815,18 @@ function applyLateGameAttackIdentity(
     s.turn.nextCardMultiplied = true;
   }
 
-  const dominantResourceGain = identity.dominantResourceGain + suppressedDraws * (isInfinite ? 10 : 5);
+  const dominantResourceGain = Math.max(
+    0,
+    Math.round((identity.dominantResourceGain + suppressedDraws * (isInfinite ? 10 : 5)) * identityScale),
+  );
   if (dominantResourceGain > 0) {
     const attackingDef = ScoreSystem.getDefinition(definitionId);
     grantDominantAttackResource(s, attackingDef?.definitionId ?? '', attackingDef?.element, dominantResourceGain);
   }
 
-  if (identity.cooldownReduction > 0) {
-    reduceFrontlineAttackCooldowns(s.board, identity.cooldownReduction);
+  const cooldownReduction = Math.max(0, Math.round(identity.cooldownReduction * identityScale));
+  if (cooldownReduction > 0) {
+    reduceFrontlineAttackCooldowns(s.board, cooldownReduction);
   }
 }
 
@@ -4126,6 +4149,15 @@ function awardOblivionForCardPlay(
   const cherubimCondMult = Math.min(1.6, s.turn.cherubimConditionalMult ?? 1);
   if (cherubimCondMult > 1 && totalAward > 0) {
     totalAward = Math.round(totalAward * cherubimCondMult);
+  }
+
+  // Gentle high-tier gain tuning for card-play payouts.
+  if (sourceDef && totalAward > 0) {
+    if (sourceDef.rarity === 'Eternal') {
+      totalAward = Math.round(totalAward * 0.92);
+    } else if (sourceDef.rarity === 'Infinite') {
+      totalAward = Math.round(totalAward * 0.86);
+    }
   }
 
   if (totalAward > 0) {
@@ -4917,6 +4949,7 @@ export const useStore = create<Store>()(
         amount = Math.round(amount * consumePyroHeatAttackAmplifier(s, def));
         amount = Math.round(amount * getPyroFurnaceAttackMultiplier(s, def));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
+        amount = Math.round(amount * getHighTierAttackDamageMultiplier(def.rarity));
         grantOblivion(s, amount);
         // Card-break: synergized Seraphim attacks build +15 stagger.
         if (attackId === 'synergized') applyCardBreakStagger(s, 15);
@@ -5062,6 +5095,7 @@ export const useStore = create<Store>()(
         amount = Math.round(amount * consumePyroHeatAttackAmplifier(s, def));
         amount = Math.round(amount * getPyroFurnaceAttackMultiplier(s, def));
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
+        amount = Math.round(amount * getHighTierAttackDamageMultiplier(def.rarity));
         grantOblivion(s, amount);
         // Card-break: exalted Angel attacks build +25 stagger.
         if (attackId === 'exalted') applyCardBreakStagger(s, 25);
