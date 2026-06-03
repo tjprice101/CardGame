@@ -1,5 +1,6 @@
 import type { DeckCard, DeckEntry, DeckState } from '@/types/game';
 import type { CardFinish } from '@/types/cards';
+import { getActiveCoopRng } from '@/state/coopSyncStore';
 
 let deckInstanceCounter = 0;
 function nextDeckId(): string {
@@ -46,9 +47,10 @@ export class DeckSystem {
   }
 
   static shuffle(cards: DeckCard[]): DeckCard[] {
+    const rng = getActiveCoopRng();
     const out = [...cards];
     for (let i = out.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
+      const j = Math.floor(rng() * (i + 1));
       [out[i], out[j]] = [out[j], out[i]];
     }
     return out;

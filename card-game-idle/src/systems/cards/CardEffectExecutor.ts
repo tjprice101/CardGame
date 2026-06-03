@@ -3,6 +3,7 @@ import type { CardEffect } from '@/types/effects';
 import type { AngelDefinition, AngelInstance, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition, SeraphimInstance } from '@/types/cards';
 import { CardRegistry } from '../../cards/CardRegistry';
 import { getCardCategoryKey } from '@/data/elements';
+import { getActiveCoopRng } from '@/state/coopSyncStore';
 import { TurnSystem } from './TurnSystem';
 
 function countBoardDefinitionIds(board: BoardState): Record<string, number> {
@@ -1712,10 +1713,11 @@ export class CardEffectExecutor {
         case 'forge_recast_random': {
           if (suppressForgeRecursion) break;
           ensureForgeTurn(mutableTurn);
+          const rng = getActiveCoopRng();
           const ledger = mutableTurn.recastLedger ?? [];
           const count = effect.count ?? 1;
           for (let i = 0; i < count && ledger.length > 0; i++) {
-            const idx = Math.floor(Math.random() * ledger.length);
+            const idx = Math.floor(rng() * ledger.length);
             const entry = ledger[idx];
             const r = runRecast(entry, effect.power, mutableTurn, mutableBoard, mutableDeck);
             mutableTurn = r.turn; mutableBoard = r.board; mutableDeck = r.deck;
@@ -1776,9 +1778,10 @@ export class CardEffectExecutor {
           } else if (effect.targetMode === 'lastN') {
             targets = ledger.slice(-Math.max(1, effect.count ?? 1));
           } else {
+            const rng = getActiveCoopRng();
             const count = Math.max(1, effect.count ?? 1);
             for (let i = 0; i < count && ledger.length > 0; i++) {
-              targets.push(ledger[Math.floor(Math.random() * ledger.length)]);
+              targets.push(ledger[Math.floor(rng() * ledger.length)]);
             }
           }
 

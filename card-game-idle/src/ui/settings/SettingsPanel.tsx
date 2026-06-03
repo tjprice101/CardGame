@@ -257,6 +257,12 @@ export default function SettingsPanel({ onClose }: Props) {
                   palette={theme}
                 />
                 <CheckRow
+                  label="Experimental co-op netplay"
+                  checked={!!(draft.coopNetplayEnabled ?? settings.coopNetplayEnabled)}
+                  onChange={on => patchDraft({ coopNetplayEnabled: on })}
+                  palette={theme}
+                />
+                <CheckRow
                   label="Compact UI mode"
                   checked={!!(draft.compactMode ?? settings.compactMode)}
                   onChange={on => patchDraft({ compactMode: on })}

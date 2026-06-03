@@ -84,7 +84,7 @@ export default function PartyHub() {
 
         <div style={{ padding: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <div style={{ fontSize: 12, color: uiTheme.textSoft }}>Party {members.length}/4</div>
+            <div style={{ fontSize: 12, color: uiTheme.textSoft }}>Party {members.length}/5</div>
             <div style={{ fontSize: 11, color: uiTheme.textMuted }}>{host ? `Leader: ${host.displayName}` : 'No active party'}</div>
           </div>
 

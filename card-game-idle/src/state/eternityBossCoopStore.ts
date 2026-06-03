@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 import { getSupabase } from '@/net/supabaseClient';
+import { hashStringToSeed } from '@/net/coopRng';
+import { useCoopSyncStore } from '@/state/coopSyncStore';
 import { useSocialStore } from '@/state/socialStore';
 import { useStore } from '@/state/store';
 import type { BattlegroundOpponentProfile } from '@/types/battleground';
@@ -29,6 +31,8 @@ interface EternityBossSessionRow {
   participant_count: number;
   invited_user_ids: string[] | null;
   accepted_user_ids: string[] | null;
+  coop_end_turn_user_ids?: string[] | null;
+  coop_hand_empty_user_ids?: string[] | null;
 }
 
 interface EternityBossCoopStoreState {
@@ -124,6 +128,16 @@ export const useEternityBossCoopStore = create<EternityBossCoopStoreState>((set,
       localSessionRole: 'host',
       partySize: 1,
     });
+    await useCoopSyncStore.getState().attach({
+      id: sessionId,
+      mode: 'eternity_boss',
+      partyId: 'legacy-party',
+      hostUserId: me,
+      participantIds: [me, ...invitedUserIds],
+      rngSeed: hashStringToSeed(`eternity:${sessionId}:${bossId}`),
+      modePayload: { bossId, hostDeckId },
+      status: 'lobby',
+    });
     useStore.getState().recordSocialProgress('coop_boss_invite_sent', uniqueTargets.length);
 
     useStore.getState().enqueueToast(
@@ -168,6 +182,8 @@ export const useEternityBossCoopStore = create<EternityBossCoopStoreState>((set,
           status: 'active',
           accepted_user_ids: mergedAccepted,
           participant_count: partySize,
+          coop_end_turn_user_ids: [],
+          coop_hand_empty_user_ids: [],
           started_at: sessionData?.status === 'active' ? undefined : new Date().toISOString(),
         })
         .eq('id', invite.session_id);
@@ -180,6 +196,18 @@ export const useEternityBossCoopStore = create<EternityBossCoopStoreState>((set,
       localSessionRole: 'guest',
       partySize,
     });
+    if (invite.session_id) {
+      await useCoopSyncStore.getState().attach({
+        id: invite.session_id,
+        mode: 'eternity_boss',
+        partyId: 'legacy-party',
+        hostUserId: invite.from_user,
+        participantIds: [invite.from_user, me],
+        rngSeed: hashStringToSeed(`eternity:${invite.session_id}:${invite.boss_id}`),
+        modePayload: { bossId: invite.boss_id, guestDeckId },
+        status: 'active',
+      });
+    }
     useStore.getState().recordSocialProgress('coop_boss_invite_accepted');
 
     useStore.getState().startBossFight(invite.boss_id, guestDeckId, {
@@ -232,16 +260,37 @@ export const useEternityBossCoopStore = create<EternityBossCoopStoreState>((set,
         .channel(`eternity-coop:sessions:${me}`)
         .on(
           'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'eternity_wake_coop_sessions', filter: `host_id=eq.${me}` },
+          { event: 'UPDATE', schema: 'public', table: 'eternity_wake_coop_sessions' },
           (payload) => {
             const row = payload.new as EternityBossSessionRow;
-            if (!row?.id || get().activeSessionId !== row.id) return;
+            if (!row?.id) return;
+
+            const accepted = Array.isArray(row.accepted_user_ids)
+              ? row.accepted_user_ids.filter(Boolean)
+              : [];
+            const invited = Array.isArray(row.invited_user_ids)
+              ? row.invited_user_ids.filter(Boolean)
+              : [];
+            const isParticipant = row.host_id === me || accepted.includes(me) || invited.includes(me);
+            if (!isParticipant) return;
+            if (get().activeSessionId !== row.id) return;
 
             set({ partySize: Math.max(1, Math.min(3, row.participant_count ?? 1)) });
+
+            if (row.status === 'finished' || row.status === 'cancelled') {
+              const state = useStore.getState();
+              if (state.bossFight.mode === 'active' && state.bossFight.coopSessionId === row.id) {
+                state.forfeitBossFight();
+                state.enqueueToast('Co-op boss session ended.', 'warning', 5000);
+              }
+              void get().completeActiveSession();
+              return;
+            }
 
             if (row.status !== 'active' || !row.host_deck_id) return;
             const state = useStore.getState();
             if (state.bossFight.mode === 'active') return;
+            if (row.host_id !== me) return;
 
             state.startBossFight(row.boss_id, row.host_deck_id, {
               kind: 'normal',
@@ -272,6 +321,7 @@ export const useEternityBossCoopStore = create<EternityBossCoopStoreState>((set,
   },
 
   clearSession() {
+    void detachSyncIfMatches(get().activeSessionId);
     set({ activeSessionId: null, activeBossId: null, localSessionRole: null, partySize: 1 });
   },
 
@@ -284,9 +334,17 @@ export const useEternityBossCoopStore = create<EternityBossCoopStoreState>((set,
         .update({ status: 'finished', finished_at: new Date().toISOString() })
         .eq('id', sessionId);
     }
+    await detachSyncIfMatches(sessionId);
     set({ activeSessionId: null, activeBossId: null, localSessionRole: null, partySize: 1 });
   },
 }));
+
+async function detachSyncIfMatches(sessionId: string | null): Promise<void> {
+  if (!sessionId) return;
+  const sync = useCoopSyncStore.getState();
+  if (!sync.attached || sync.sessionId !== sessionId) return;
+  await sync.detach();
+}
 
 async function resolveDisplayName(userId: string): Promise<string> {
   const sb = getSupabase();

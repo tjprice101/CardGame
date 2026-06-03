@@ -177,11 +177,28 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
     const existing = await get().ensureParty();
     if (existing) return existing;
 
-    const { data: created, error } = await sb
+    let { data: created, error } = await sb
       .from('party_sessions')
-      .insert({ host_user: me, status: 'active', max_members: 4, participant_user_ids: [me] })
+      .insert({ host_user: me, status: 'active', max_members: 5, participant_user_ids: [me] })
       .select('id')
       .single();
+
+    // Backward-compat: if DB migrations are behind (max_members <= 4), retry using DB default.
+    if (error && /party_sessions_max_members_check|max_members|check constraint/i.test(error.message ?? '')) {
+      const fallback = await sb
+        .from('party_sessions')
+        .insert({ host_user: me, status: 'active', participant_user_ids: [me] })
+        .select('id')
+        .single();
+      created = fallback.data;
+      error = fallback.error;
+      if (!error && created) {
+        useStore
+          .getState()
+          .enqueueToast('Party created with legacy cap settings (run latest DB migrations for 5-player parties).', 'info', 7000);
+      }
+    }
+
     if (error || !created) {
       useStore.getState().enqueueToast('Failed to create party.', 'warning');
       return null;
@@ -216,8 +233,8 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
     }
 
     const members = get().members;
-    if (members.length >= 4) {
-      useStore.getState().enqueueToast('Party is full (4/4).', 'warning');
+    if (members.length >= 5) {
+      useStore.getState().enqueueToast('Party is full (5/5).', 'warning');
       return false;
     }
 
@@ -272,7 +289,7 @@ export const usePartyStore = create<PartyStoreState>((set, get) => ({
       .select('user_id')
       .eq('party_id', invite.party_id);
     const alreadyCount = (memberRows ?? []).length;
-    if (alreadyCount >= 4 && !(memberRows ?? []).some(r => r.user_id === me)) {
+    if (alreadyCount >= 5 && !(memberRows ?? []).some(r => r.user_id === me)) {
       useStore.getState().enqueueToast('Party is already full.', 'warning');
       await sb.from('party_invites').update({ status: 'expired' }).eq('id', invite.id);
       set({ incomingInvite: null });
