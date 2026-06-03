@@ -39,7 +39,7 @@ describe('card summary digest', () => {
 
     const preview = getCardPreviewLines(card!, 3).join(' ');
     expect(preview).not.toContain('card-play Patience gain becomes 1 + Patient Light stacks');
-    expect(preview).toContain('+1 Patient Light');
+    expect(preview).toContain('Grant 1 Patient Light');
   });
 
   it('adds dedicated mechanics section for stack/resource-heavy cards', () => {

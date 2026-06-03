@@ -29,6 +29,7 @@ import { SynergySystem } from '@/systems/cards/SynergySystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { getLateGameAttackIdentity } from '@/systems/cards/LateGameAttackIdentity';
+import { getEffectivePatientLightPerCardPatienceGain } from '@/systems/cards/neutralityPatientLight';
 import {
   type ActionClass,
   classifyCardActionClass,
@@ -4316,7 +4317,7 @@ function applyCherubimPassiveEffects(s: Store): void {
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
   const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
   const patientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0);
-  const patientLightGain = 1 + patientLightStacks;
+  const patientLightGain = getEffectivePatientLightPerCardPatienceGain(patientLightStacks);
   let nonVesselGain = 0;
 
   // Auto-accumulate +1 Patience for every Seraphim on board that has patienceThreshold set.
@@ -4954,9 +4955,9 @@ export const useStore = create<Store>()(
 
         if (def.definitionId === 'tx-sera-null-entropy') {
           const sigils = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
-          amount += sigils * 420;
+          amount += sigils * 300;
           if (sigils > 0) {
-            amount = Math.round(amount * (1 + Math.min(0.6, sigils * 0.03)));
+            amount = Math.round(amount * (1 + Math.min(0.4, sigils * 0.02)));
           }
         }
 
@@ -5002,7 +5003,7 @@ export const useStore = create<Store>()(
         grantOblivion(s, amount);
         // Card-break: synergized Seraphim attacks build +15 stagger.
         if (attackId === 'synergized') applyCardBreakStagger(s, 15);
-        if (def.definitionId === 'tx-sera-null-entropy' && capturedPatience >= 10) {
+        if (def.definitionId === 'tx-sera-null-entropy' && capturedPatience >= 14) {
           s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
         }
         if (chromaEmbers > 0 && def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
