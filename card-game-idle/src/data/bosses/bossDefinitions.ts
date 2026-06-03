@@ -4,20 +4,12 @@ import type { BossDefinition, BossCategory } from '@/types/bossFight';
 
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
-const FIRST_ETERNAL_BOSS_HP = 25_000;
-const FINAL_ETERNAL_BOSS_HP = 50_000_000;
-// Exponent 1.0 is pure geometric: every boss is the same fixed % harder than
-// the previous one (~10% per step with the current FIRST/FINAL spread across
-// 82 bosses). This avoids the prior convex curve's bunching issue where the
-// first ~10 Neutrality bosses all clustered near 25k HP and felt identical.
-// Now boss 0 = 25k, boss 9 ≈ 59k, boss 20 ≈ 168k, boss 40 ≈ 1.1M, boss 60 ≈
-// 7.6M, boss 70 ≈ 19.6M, boss 81 = 50M. Each consecutive fight is meaningfully
-// harder, and the endgame wall is much steeper in absolute terms.
-const BOSS_HP_CURVE_EXPONENT = 1.0;
+const FIRST_SET_FIRST_BOSS_HP = 300_000;
+const SET_FINAL_HP_MULTIPLIER = 3.0;
 const EVENT_BOSS_CATEGORY: BossCategory = '[EVENT] Wished Upon A Star';
 
 // Bump this when rotating to a new live event cycle.
-export const EVENT_BOSS_HP_CYCLE_ID = 'wuas-cycle-2026-05';
+export const EVENT_BOSS_HP_CYCLE_ID = 'wuas-cycle-2026-06-hp5x';
 const EVENT_BOSS_ANCHOR_PERCENTILE = 0.84;
 const EVENT_BOSS_ABOVE_NON_EVENT_FACTOR = 1.08;
 const EVENT_BOSS_BELOW_RAID_FACTOR = 0.9;
@@ -29,18 +21,51 @@ function roundBossHp(value: number): number {
   return Math.round(value / 500) * 500;
 }
 
-function getScaledBossHp(index: number, totalBosses: number): number {
-  if (index <= 0 || totalBosses <= 1) return FIRST_ETERNAL_BOSS_HP;
+function buildSetAnchoredBossHpCurve(bosses: BossBlueprint[]): number[] {
+  if (bosses.length === 0) return [];
 
-  const clampedIndex = Math.min(index, totalBosses - 1);
-  const progress = clampedIndex / (totalBosses - 1);
-  const easedProgress = Math.pow(progress, BOSS_HP_CURVE_EXPONENT);
-  const scaled = FIRST_ETERNAL_BOSS_HP * Math.pow(FINAL_ETERNAL_BOSS_HP / FIRST_ETERNAL_BOSS_HP, easedProgress);
-  return roundBossHp(Math.max(FIRST_ETERNAL_BOSS_HP, scaled));
+  const scaledHp: number[] = new Array(bosses.length);
+  let cursor = 0;
+  let previousSetFinalHp: number | null = null;
+
+  while (cursor < bosses.length) {
+    const currentCategory = bosses[cursor]?.category;
+    if (!currentCategory) break;
+
+    let setEnd = cursor;
+    while (setEnd + 1 < bosses.length && bosses[setEnd + 1]?.category === currentCategory) {
+      setEnd += 1;
+    }
+
+    const setSize = setEnd - cursor + 1;
+    const setFirstHp = previousSetFinalHp == null
+      ? FIRST_SET_FIRST_BOSS_HP
+      : roundBossHp(previousSetFinalHp * 0.5);
+    const setFinalHp = roundBossHp(setFirstHp * SET_FINAL_HP_MULTIPLIER);
+
+    for (let offset = 0; offset < setSize; offset += 1) {
+      const progress = setSize <= 1 ? 1 : offset / (setSize - 1);
+      const hp = setFirstHp + (setFinalHp - setFirstHp) * progress;
+      scaledHp[cursor + offset] = roundBossHp(hp);
+    }
+
+    previousSetFinalHp = setFinalHp;
+    cursor = setEnd + 1;
+  }
+
+  return scaledHp;
+}
+
+function getScaledBossHp(index: number, totalBosses: number): number {
+  if (totalBosses <= 0) return FIRST_SET_FIRST_BOSS_HP;
+  const clampedIndex = Math.max(0, Math.min(index, totalBosses - 1));
+  return BOSS_SCALED_HP_BY_INDEX[clampedIndex]
+    ?? BOSS_SCALED_HP_BY_INDEX[totalBosses - 1]
+    ?? FIRST_SET_FIRST_BOSS_HP;
 }
 
 function getPercentile(sortedValues: number[], percentile: number): number {
-  if (sortedValues.length === 0) return FIRST_ETERNAL_BOSS_HP;
+  if (sortedValues.length === 0) return FIRST_SET_FIRST_BOSS_HP;
   const clamped = Math.max(0, Math.min(1, percentile));
   const idx = Math.round((sortedValues.length - 1) * clamped);
   return sortedValues[Math.max(0, Math.min(sortedValues.length - 1, idx))] ?? sortedValues[sortedValues.length - 1];
@@ -191,14 +216,14 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(81, 'boss-wuas-draethos-unforgotten', 'Draethos, The Unforgotten', '[EVENT] Wished Upon A Star', 'wuas-et-draethos-unforgotten', 'An unstable god shifting between child and titan, trailing nightmare-crystal fangs and funeral-ash wings.', 'boss_wuas_draethos_unforgotten'),
 ];
 
-const BOSS_SCALED_HP_BY_INDEX = BOSS_BLUEPRINTS.map((_, index, bosses) => getScaledBossHp(index, bosses.length));
+const BOSS_SCALED_HP_BY_INDEX = buildSetAnchoredBossHpCurve(BOSS_BLUEPRINTS);
 
 const NON_EVENT_BOSS_HP = BOSS_BLUEPRINTS
   .map((boss, index) => (boss.category === EVENT_BOSS_CATEGORY ? null : BOSS_SCALED_HP_BY_INDEX[index]))
   .filter((hp): hp is number => hp !== null)
   .sort((a, b) => a - b);
 
-const NON_EVENT_BOSS_MAX_HP = NON_EVENT_BOSS_HP[NON_EVENT_BOSS_HP.length - 1] ?? FIRST_ETERNAL_BOSS_HP;
+const NON_EVENT_BOSS_MAX_HP = NON_EVENT_BOSS_HP[NON_EVENT_BOSS_HP.length - 1] ?? FIRST_SET_FIRST_BOSS_HP;
 const NON_EVENT_BOSS_ANCHOR_HP = getPercentile(NON_EVENT_BOSS_HP, EVENT_BOSS_ANCHOR_PERCENTILE);
 const NULL_RAID_MIN_HP = Math.min(...Array.from(NULL_RAID_BOSS_MAP.values()).map(boss => boss.hp));
 const EVENT_BOSS_HP_UPPER_BOUND = Number.isFinite(NULL_RAID_MIN_HP)

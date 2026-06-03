@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
+import { NULL_RAID_BOSS_MAP, NULL_RAID_DEFINITIONS } from '@/data/ascension/nullRaidDefinitions';
 import { defaultGameState, useStore } from '@/state/store';
 import type { SavedGameState } from '@/types/bossFight';
 import type { DeckEntry, DeckState } from '@/types/game';
@@ -37,12 +38,66 @@ describe('Boss fight rules', () => {
     expect(state.bossFight.fightTimeRemaining).toBe(BOSS_FIGHT_ROUND_SECONDS);
   });
 
-  it('uses a gentle exponential HP curve for the eternal bosses', () => {
+  it('uses set-anchored linear HP segments for eternal bosses', () => {
     const hpValues = BOSS_DEFINITIONS.map(boss => boss.hp);
-    expect(hpValues[0]).toBeGreaterThanOrEqual(10_000);
+    expect(hpValues[0]).toBeGreaterThanOrEqual(100_000);
     expect(hpValues[hpValues.length - 1]).toBeGreaterThanOrEqual(20_000_000);
-    for (let i = 1; i < hpValues.length; i++) {
-      expect(hpValues[i]).toBeGreaterThan(hpValues[i - 1]);
+
+    const nonEventBosses = BOSS_DEFINITIONS.filter(boss => boss.category !== '[EVENT] Wished Upon A Star');
+    let setStart = 0;
+    let previousSetFinalHp: number | null = null;
+
+    while (setStart < nonEventBosses.length) {
+      const setCategory = nonEventBosses[setStart]?.category;
+      let setEnd = setStart;
+      while (setEnd + 1 < nonEventBosses.length && nonEventBosses[setEnd + 1]?.category === setCategory) {
+        setEnd += 1;
+      }
+
+      const setHps = nonEventBosses.slice(setStart, setEnd + 1).map(boss => boss.hp);
+      expect(setHps[0]).toBeGreaterThan(0);
+      expect(setHps[setHps.length - 1]).toBeGreaterThan(setHps[0]);
+
+      if (previousSetFinalHp != null) {
+        expect(setHps[0]).toBeGreaterThanOrEqual(Math.floor(previousSetFinalHp * 0.45));
+        expect(setHps[0]).toBeLessThanOrEqual(Math.ceil(previousSetFinalHp * 0.55));
+      }
+
+      if (setHps.length >= 3) {
+        const deltas = setHps.slice(1).map((hp, i) => hp - setHps[i]);
+        const baseDelta = deltas[0] ?? 0;
+        for (const delta of deltas) {
+          expect(Math.abs(delta - baseDelta)).toBeLessThanOrEqual(25_000);
+        }
+      }
+
+      previousSetFinalHp = setHps[setHps.length - 1] ?? previousSetFinalHp;
+      setStart = setEnd + 1;
+    }
+  });
+
+  it('keeps null raid encounter HP linear and above non-event endgame bosses', () => {
+    const raidBossHps = NULL_RAID_DEFINITIONS
+      .flatMap(raid => raid.encounterBossIds)
+      .map(bossId => NULL_RAID_BOSS_MAP.get(bossId)?.hp ?? 0);
+
+    expect(raidBossHps.length).toBeGreaterThanOrEqual(2);
+
+    const nonEventMaxHp = Math.max(
+      ...BOSS_DEFINITIONS
+        .filter(boss => boss.category !== '[EVENT] Wished Upon A Star')
+        .map(boss => boss.hp),
+    );
+    expect(raidBossHps[0]).toBeGreaterThan(nonEventMaxHp);
+
+    for (let i = 1; i < raidBossHps.length; i++) {
+      expect(raidBossHps[i]).toBeGreaterThan(raidBossHps[i - 1] ?? 0);
+    }
+
+    const deltas = raidBossHps.slice(1).map((hp, i) => hp - raidBossHps[i]);
+    const baseDelta = deltas[0] ?? 0;
+    for (const delta of deltas) {
+      expect(Math.abs(delta - baseDelta)).toBeLessThanOrEqual(5_000_000);
     }
   });
 
