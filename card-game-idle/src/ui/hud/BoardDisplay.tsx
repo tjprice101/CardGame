@@ -25,10 +25,12 @@ import type { DeckCard } from '@/types/game';
 import { isDeathFlamedHellBaseDefinitionId } from '@/utils/cardFaces';
 import type {
   AngelDefinition,
+  AngelAttackSet,
   AngelInstance,
   CherubimInstance,
   CherubimDefinition,
   SeraphimDefinition,
+  SeraphimAttackSet,
   SeraphimInstance,
 } from '@/types/cards';
 
@@ -52,7 +54,7 @@ const ATTACK_MODAL_PANEL_BORDER = '1px solid rgba(138, 94, 58, 0.42)';
 const ATTACK_MODAL_PANEL_SHADOW = '0 26px 48px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.4)';
 
 function getSeraphimUiAttacks(def: SeraphimDefinition) {
-  if (def.attacks) return def.attacks;
+  if (def.attacks) return scaleSeraphimUiAttackSet(def.attacks, def.rarity);
 
   const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
   const bonusLabelByType: Record<string, string> = {
@@ -106,7 +108,7 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
   const baseOblivion = Math.max(90, Math.round(80 + def.baseStats.bonusValue * 2.2));
   const unsyncedCooldown = def.rarity === 'Legendary' || def.rarity === 'Eternal' || def.rarity === 'Infinite' ? 4 : 3;
 
-  return {
+  const attacks: SeraphimAttackSet = {
     unsynergized: {
       id: `${def.definitionId}:unsynergized`,
       label: 'Unsynergized',
@@ -129,10 +131,12 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
       tags: ['seraphim', 'synergized', def.element.toLowerCase()],
     },
   };
+
+  return scaleSeraphimUiAttackSet(attacks, def.rarity);
 }
 
 function getAngelUiAttacks(def: AngelDefinition) {
-  if (def.attacks) return def.attacks;
+  if (def.attacks) return scaleAngelUiAttackSet(def.attacks, def.rarity);
 
   const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
   const auraByBonusType: Record<string, string> = {
@@ -146,7 +150,7 @@ function getAngelUiAttacks(def: AngelDefinition) {
   const summonTax = Math.max(1, def.summonCost.length);
   const baseOblivion = Math.max(150, Math.round(140 + def.baseStats.bonusValue * 2 + summonTax * 28));
 
-  return {
+  const attacks: AngelAttackSet = {
     primary: {
       id: `${def.definitionId}:primary`,
       label: 'Primary',
@@ -166,6 +170,46 @@ function getAngelUiAttacks(def: AngelDefinition) {
       cooldownCards: summonTax + 5,
       costs: [],
       tags: ['angel', 'exalted', def.element.toLowerCase()],
+    },
+  };
+
+  return scaleAngelUiAttackSet(attacks, def.rarity);
+}
+
+function getHighTierUiAttackBaseScale(rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity']): number {
+  if (rarity === 'Infinite') return 0.45;
+  if (rarity === 'Eternal') return 0.5;
+  return 1;
+}
+
+function scaleSeraphimUiAttackSet(attacks: SeraphimAttackSet, rarity: SeraphimDefinition['rarity']): SeraphimAttackSet {
+  const scale = getHighTierUiAttackBaseScale(rarity);
+  if (scale === 1) return attacks;
+  return {
+    ...attacks,
+    unsynergized: {
+      ...attacks.unsynergized,
+      baseOblivion: Math.max(1, Math.round(attacks.unsynergized.baseOblivion * scale)),
+    },
+    synergized: {
+      ...attacks.synergized,
+      baseOblivion: Math.max(1, Math.round(attacks.synergized.baseOblivion * scale)),
+    },
+  };
+}
+
+function scaleAngelUiAttackSet(attacks: AngelAttackSet, rarity: AngelDefinition['rarity']): AngelAttackSet {
+  const scale = getHighTierUiAttackBaseScale(rarity);
+  if (scale === 1) return attacks;
+  return {
+    ...attacks,
+    primary: {
+      ...attacks.primary,
+      baseOblivion: Math.max(1, Math.round(attacks.primary.baseOblivion * scale)),
+    },
+    exalted: {
+      ...attacks.exalted,
+      baseOblivion: Math.max(1, Math.round(attacks.exalted.baseOblivion * scale)),
     },
   };
 }

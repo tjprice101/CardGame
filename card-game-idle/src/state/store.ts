@@ -1596,6 +1596,7 @@ function completeBossFight(s: Store, victory: boolean): void {
   const damageDealt = s.bossFight.damageDealtThisFight;
   const maxHp = s.bossFight.bossMaxHp;
   const coopPartySize = s.bossFight.coopPartySize ?? 1;
+  const coopSessionId = s.bossFight.coopSessionId;
   const coopRole = s.bossFight.coopRole;
   s.bossFight = {
     mode: victory ? 'victory' : 'defeat',
@@ -3483,11 +3484,59 @@ function buildDefaultAngelAttackSet(def: AngelDefinition): AngelAttackSet {
 }
 
 function getSeraphimAttackSet(def: SeraphimDefinition): SeraphimAttackSet {
-  return def.attacks ?? buildDefaultSeraphimAttackSet(def);
+  const attacks = def.attacks ?? buildDefaultSeraphimAttackSet(def);
+  return scaleHighTierSeraphimAttackSet(attacks, def.rarity);
 }
 
 function getAngelAttackSet(def: AngelDefinition): AngelAttackSet {
-  return def.attacks ?? buildDefaultAngelAttackSet(def);
+  const attacks = def.attacks ?? buildDefaultAngelAttackSet(def);
+  return scaleHighTierAngelAttackSet(attacks, def.rarity);
+}
+
+function getHighTierAttackBaseScale(
+  rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
+): number {
+  if (rarity === 'Infinite') return 0.45;
+  if (rarity === 'Eternal') return 0.5;
+  return 1;
+}
+
+function scaleHighTierSeraphimAttackSet(
+  attacks: SeraphimAttackSet,
+  rarity: SeraphimDefinition['rarity'],
+): SeraphimAttackSet {
+  const scale = getHighTierAttackBaseScale(rarity);
+  if (scale === 1) return attacks;
+  return {
+    ...attacks,
+    unsynergized: {
+      ...attacks.unsynergized,
+      baseOblivion: Math.max(1, Math.round(attacks.unsynergized.baseOblivion * scale)),
+    },
+    synergized: {
+      ...attacks.synergized,
+      baseOblivion: Math.max(1, Math.round(attacks.synergized.baseOblivion * scale)),
+    },
+  };
+}
+
+function scaleHighTierAngelAttackSet(
+  attacks: AngelAttackSet,
+  rarity: AngelDefinition['rarity'],
+): AngelAttackSet {
+  const scale = getHighTierAttackBaseScale(rarity);
+  if (scale === 1) return attacks;
+  return {
+    ...attacks,
+    primary: {
+      ...attacks.primary,
+      baseOblivion: Math.max(1, Math.round(attacks.primary.baseOblivion * scale)),
+    },
+    exalted: {
+      ...attacks.exalted,
+      baseOblivion: Math.max(1, Math.round(attacks.exalted.baseOblivion * scale)),
+    },
+  };
 }
 
 function hasAnyAngelOnBoard(board: BoardState): boolean {

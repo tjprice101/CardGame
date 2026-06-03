@@ -4,7 +4,7 @@ import type { BossDefinition, BossCategory } from '@/types/bossFight';
 
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
-const FIRST_SET_FIRST_BOSS_HP = 300_000;
+const FIRST_SET_FIRST_BOSS_HP = 50_000;
 const SET_FINAL_HP_MULTIPLIER = 3.0;
 const EVENT_BOSS_CATEGORY: BossCategory = '[EVENT] Wished Upon A Star';
 
