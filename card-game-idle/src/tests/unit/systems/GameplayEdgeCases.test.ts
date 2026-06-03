@@ -290,6 +290,199 @@ describe('Neutrality patience stacking', () => {
       expect(nextAlly.patienceStacks).toBe(1);
     }
   });
+
+  it('caps Patience at 150 and Patient Light at 15 by default', () => {
+    resetStore();
+
+    const seraphim: SeraphimInstance = {
+      instanceId: 'ser_cap_1',
+      definitionId: 'ser-neutral-equilibrium',
+      type: 'Seraphim',
+      element: 'Neutrality',
+      rarity: 'Rare',
+      level: 1,
+      isActive: true,
+      boardSlot: 0,
+      attackCooldowns: {},
+      patienceStacks: 999,
+    };
+
+    const angel: AngelInstance = {
+      instanceId: 'angel_cap_1',
+      definitionId: 'angel-neutral-beginning',
+      type: 'Angel',
+      element: 'Neutrality',
+      rarity: 'Common',
+      finish: 'normal',
+      level: 1,
+      cardsPlayedSinceSummon: 0,
+      activated: false,
+      attackCooldowns: {},
+      boardSlot: 1,
+      patienceStacks: 999,
+    };
+
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        frontSlots: [seraphim, angel, null, null, null],
+      },
+      turn: {
+        ...state.turn,
+        neutralityPatientLightStacks: 999,
+      },
+    }));
+
+    useStore.getState().refreshComputedStats();
+
+    const state = useStore.getState();
+    expect(state.turn.neutralityPatientLightStacks).toBe(15);
+    const frontSeraphim = state.board.frontSlots[0];
+    const frontAngel = state.board.frontSlots[1];
+    expect(frontSeraphim?.type).toBe('Seraphim');
+    expect(frontAngel?.type).toBe('Angel');
+    if (frontSeraphim?.type === 'Seraphim' && frontAngel?.type === 'Angel') {
+      expect(frontSeraphim.patienceStacks).toBe(150);
+      expect(frontAngel.patienceStacks).toBe(150);
+    }
+  });
+
+  it('uncaps Patience and Patient Light gains while a Neutrality Transcendent is in deck', () => {
+    resetStore();
+
+    const seraphim: SeraphimInstance = {
+      instanceId: 'ser_uncap_1',
+      definitionId: 'ser-neutral-equilibrium',
+      type: 'Seraphim',
+      element: 'Neutrality',
+      rarity: 'Rare',
+      level: 1,
+      isActive: true,
+      boardSlot: 0,
+      attackCooldowns: {},
+      patienceStacks: 999,
+    };
+
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        frontSlots: [seraphim, null, null, null, null],
+      },
+      deck: {
+        ...state.deck,
+        deckList: [{ definitionId: 'tx-sera-null-entropy', copies: 1, finish: 'normal' }],
+      },
+      turn: {
+        ...state.turn,
+        neutralityPatientLightStacks: 999,
+      },
+    }));
+
+    useStore.getState().refreshComputedStats();
+
+    const state = useStore.getState();
+    expect(state.turn.neutralityPatientLightStacks).toBe(999);
+    const frontSeraphim = state.board.frontSlots[0];
+    expect(frontSeraphim?.type).toBe('Seraphim');
+    if (frontSeraphim?.type === 'Seraphim') {
+      expect(frontSeraphim.patienceStacks).toBe(999);
+    }
+  });
+
+  it('enforces cap in CardEffectExecutor unless Neutrality Transcendent deck-passive is active', () => {
+    const noUncapResult = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'ophanim-neutral-null-seek' },
+      makePlayingTurn({ neutralityPatientLightStacks: 14 }),
+      {
+        frontSlots: [
+          {
+            instanceId: 'ser_exec_cap',
+            definitionId: 'ser-neutral-equilibrium',
+            type: 'Seraphim',
+            element: 'Neutrality',
+            rarity: 'Rare',
+            finish: 'normal',
+            level: 1,
+            isActive: true,
+            attackCooldowns: {},
+            boardSlot: 0,
+            patienceStacks: 149,
+          },
+          null,
+          null,
+          null,
+          null,
+        ],
+        backSlots: [null, null, null, null],
+        activeBoardEffects: [],
+      },
+      makeDeck('ophanim-neutral-null-seek'),
+      false,
+      {
+        effects: [
+          { type: 'neutrality_patient_light_gain', value: 10 },
+          { type: 'patience_gain_all', value: 10 },
+        ],
+        countAsPlay: false,
+      },
+    );
+
+    expect(noUncapResult.turn.neutralityPatientLightStacks).toBe(15);
+    const cappedUnit = noUncapResult.board.frontSlots[0];
+    expect(cappedUnit?.type).toBe('Seraphim');
+    if (cappedUnit?.type === 'Seraphim') {
+      expect(cappedUnit.patienceStacks).toBe(150);
+    }
+
+    const withUncapResult = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'ophanim-neutral-null-seek' },
+      makePlayingTurn({ neutralityPatientLightStacks: 14 }),
+      {
+        frontSlots: [
+          {
+            instanceId: 'ser_exec_uncap',
+            definitionId: 'ser-neutral-equilibrium',
+            type: 'Seraphim',
+            element: 'Neutrality',
+            rarity: 'Rare',
+            finish: 'normal',
+            level: 1,
+            isActive: true,
+            attackCooldowns: {},
+            boardSlot: 0,
+            patienceStacks: 149,
+          },
+          null,
+          null,
+          null,
+          null,
+        ],
+        backSlots: [null, null, null, null],
+        activeBoardEffects: [],
+      },
+      {
+        ...makeDeck('ophanim-neutral-null-seek'),
+        deckList: [{ definitionId: 'tx-sera-null-entropy', copies: 1, finish: 'normal' }],
+      },
+      false,
+      {
+        effects: [
+          { type: 'neutrality_patient_light_gain', value: 10 },
+          { type: 'patience_gain_all', value: 10 },
+        ],
+        countAsPlay: false,
+      },
+    );
+
+    expect(withUncapResult.turn.neutralityPatientLightStacks).toBe(24);
+    const uncappedUnit = withUncapResult.board.frontSlots[0];
+    expect(uncappedUnit?.type).toBe('Seraphim');
+    if (uncappedUnit?.type === 'Seraphim') {
+      expect(uncappedUnit.patienceStacks).toBe(159);
+    }
+  });
 });
 
 describe('Cross-set Eternity/Infinity mechanics', () => {

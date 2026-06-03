@@ -18,6 +18,7 @@ const TX_ANGELS: CardDefinition[] = [
     description:
       'On summon: gain 6 Equilibrium Sigils and all Seraphim gain +12 Patience. ' +
       'While on board: Equilibrium Sigil cap increases to 16. ' +
+      'While in your deck: all Patience and Patient Light gains are uncapped. ' +
       'After 4 cards played: spend all Sigils, double all Patience, and gain heavy Oblivion per Sigil spent.',
     artKey: 'tx_angel_starbound_null_archangel',
     summonCost: ['inf-null-apex', 'tx-sera-null-entropy'],
@@ -213,6 +214,7 @@ const TX_SHOP_CARDS: CardDefinition[] = [
     name: 'Null Entropy Seraph',
     description:
       'On play: all Seraphim gain +8 Patience and gain 3 Equilibrium Sigils. ' +
+      'While in your deck: all Patience and Patient Light gains are uncapped. ' +
       'While active: attacks scale heavily with your Sigils. ' +
       'On attack: consumes Patience, then restores a Sigil-scaled portion; if 10+ Patience was consumed, gain +1 Patient Light.',
     artKey: 'tx_sera_null_entropy',
@@ -254,6 +256,7 @@ const TX_SHOP_CARDS: CardDefinition[] = [
     name: 'Null Sentinel',
     description:
       'On play: gain 2 Equilibrium Sigils and salvage any 1 card. ' +
+      'While in your deck: all Patience and Patient Light gains are uncapped. ' +
       'Passive: Sigil-based Patience amplification remains online while this is on board. ' +
       'Automatically spends 4 Sigils whenever it triggers to reduce Seraphim cooldown pressure and grants +1 Patient Light each time.',
     artKey: 'tx_cher_null_sentinel',
@@ -272,6 +275,7 @@ const TX_SHOP_CARDS: CardDefinition[] = [
     name: 'Null Convergence',
     description:
       'Draw 2 cards, all Seraphim gain +10 Patience, and gain 4 Equilibrium Sigils. ' +
+      'While in your deck: all Patience and Patient Light gains are uncapped. ' +
       'If you control 3+ active Seraphim: gain extra Oblivion and +1 Sigil. ' +
       'Tactical mode: may spend 6 Sigils for either massive burst Oblivion or full-team Patience restore; gain +1 Patient Light.',
     artKey: 'tx_oph_null_convergence',

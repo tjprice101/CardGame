@@ -5,6 +5,11 @@ import { CardRegistry } from '../../cards/CardRegistry';
 import { getCardCategoryKey } from '@/data/elements';
 import { getActiveCoopRng } from '@/state/coopSyncStore';
 import { TurnSystem } from './TurnSystem';
+import {
+  clampPatienceStacks,
+  clampPatientLightStacks,
+  hasNeutralityUncappedGainsInDeck,
+} from '@/systems/cards/neutralityPatientLight';
 
 function countBoardDefinitionIds(board: BoardState): Record<string, number> {
   const counts: Record<string, number> = {};
@@ -2133,6 +2138,16 @@ export class CardEffectExecutor {
 
     if (countAsPlay && def.type === 'Ophanim') {
       mutableTurn.lastPlayedDefinitionId = deckCard.definitionId;
+    }
+
+    const hasUncappedNeutralityGains = hasNeutralityUncappedGainsInDeck(mutableDeck);
+    mutableTurn.neutralityPatientLightStacks = clampPatientLightStacks(
+      mutableTurn.neutralityPatientLightStacks ?? 0,
+      hasUncappedNeutralityGains,
+    );
+    for (const unit of mutableBoard.frontSlots) {
+      if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
+      unit.patienceStacks = clampPatienceStacks(unit.patienceStacks ?? 0, hasUncappedNeutralityGains);
     }
 
     return { deck: mutableDeck, turn: mutableTurn, board: mutableBoard, oblivionBonus, pendingEffect, canPlay: true };

@@ -28,7 +28,12 @@ import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { SynergySystem } from '@/systems/cards/SynergySystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
-import { getEffectivePatientLightPerCardPatienceGain } from '@/systems/cards/neutralityPatientLight';
+import {
+  clampPatienceStacks,
+  clampPatientLightStacks,
+  getEffectivePatientLightPerCardPatienceGain,
+  hasNeutralityUncappedGainsInDeck,
+} from '@/systems/cards/neutralityPatientLight';
 import {
   type ActionClass,
   classifyCardActionClass,
@@ -963,7 +968,21 @@ function latchUnlockedAchievements(progress: ProgressState): void {
   }
 }
 
+function clampNeutralityGainState(state: Pick<Store, 'board' | 'turn' | 'deck'>): void {
+  const isUncapped = hasNeutralityUncappedGainsInDeck(state.deck);
+  state.turn.neutralityPatientLightStacks = clampPatientLightStacks(
+    state.turn.neutralityPatientLightStacks ?? 0,
+    isUncapped,
+  );
+
+  for (const unit of state.board.frontSlots) {
+    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
+    unit.patienceStacks = clampPatienceStacks(unit.patienceStacks ?? 0, isUncapped);
+  }
+}
+
 function recompute(state: Store): void {
+  clampNeutralityGainState(state);
   // Latch profile avatar unlocks permanently once their condition is met.
   latchUnlockedAvatars(state.progress);
   // Latch reward UI theme unlocks permanently once their condition is met.
@@ -3736,6 +3755,7 @@ function grantDominantAttackResource(s: Store, sourceDefinitionId: string, eleme
       grantOblivion(s, amount);
       break;
   }
+    clampNeutralityGainState(s);
 }
 
 function getHighTierAttackDamageMultiplier(
@@ -4200,6 +4220,7 @@ function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: numbe
     }
   }
 
+  clampNeutralityGainState(s);
 }
 
 function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
@@ -4368,6 +4389,8 @@ function applyCherubimPassiveEffects(s: Store): void {
       }
     }
   }
+
+  clampNeutralityGainState(s);
 
   // ── Wished Upon A Star per-card passives ─────────────────────────────────
   // Seraphim on board: wuas-ser-solarvex-fragment and wuas-cher-wishwright-pulse
