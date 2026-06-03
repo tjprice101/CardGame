@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useStore, selectBossFight } from '@/state/store';
 import { useCoopRaidStore } from '@/state/coopRaidStore';
+import { useSocialStore } from '@/state/socialStore';
 import { NULL_RAID_DEFINITIONS, NULL_RAID_BOSS_MAP } from '@/data/ascension/nullRaidDefinitions';
 import { uiTypography } from '@/ui/theme';
 import { getNullRaidBossArtUrl } from '@/ui/ascension/nullRaidArt';
@@ -25,8 +26,10 @@ export default function NullRaidArena() {
   const activeCoopSessionId = useCoopRaidStore(s => s.activeSessionId);
   const activeCoopRaidId = useCoopRaidStore(s => s.activeRaidId);
   const broadcastProgress = useCoopRaidStore(s => s.broadcastProgress);
-  const opponentProfile = useCoopRaidStore(s => s.opponentProfile);
-  const opponentProgress = useCoopRaidStore(s => s.opponentProgress);
+  const participantIds = useCoopRaidStore(s => s.participantIds);
+  const participantProfiles = useCoopRaidStore(s => s.participantProfiles);
+  const participantProgressByUser = useCoopRaidStore(s => s.participantProgressByUser);
+  const me = useSocialStore(s => s.user?.id ?? null);
 
   if (bossFight.kind !== 'null_raid' || bossFight.mode !== 'active') return null;
 
@@ -261,24 +264,30 @@ export default function NullRaidArena() {
         </span>
       </div>
 
-      {activeCoopSessionId && opponentProfile && (
+      {activeCoopSessionId && participantIds.length > 0 && (
         <div style={{
           marginTop: 2,
           padding: '6px 10px',
           borderRadius: 8,
           border: `1px solid ${G.border}`,
           background: 'rgba(14,8,28,0.75)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 10,
+          display: 'grid',
+          gap: 6,
         }}>
-          <div style={{ fontSize: 10, color: G.textMuted }}>
-            Co-op Partner: <span style={{ color: G.text }}>{opponentProfile.displayName}</span>
-          </div>
-          <div style={{ fontSize: 10, color: G.electric, fontVariantNumeric: 'tabular-nums' }}>
-            E{(opponentProgress?.encounterIndex ?? 0) + 1} · DMG {(opponentProgress?.totalDamage ?? 0).toLocaleString()} · CLR {(opponentProgress?.completedEncounters ?? 0).toLocaleString()}
-          </div>
+          <div style={{ fontSize: 10, color: G.textMuted }}>Raid Participants</div>
+          {participantIds.map(userId => {
+            const profile = participantProfiles[userId];
+            const p = participantProgressByUser[userId];
+            const isLocal = userId === me;
+            return (
+              <div key={userId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                <div style={{ fontSize: 10, color: isLocal ? G.electric : G.text }}>{profile?.displayName ?? 'Participant'}</div>
+                <div style={{ fontSize: 10, color: G.electric, fontVariantNumeric: 'tabular-nums' }}>
+                  E{(p?.encounterIndex ?? 0) + 1} · DMG {(p?.totalDamage ?? 0).toLocaleString()} · CLR {(p?.completedEncounters ?? 0).toLocaleString()}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

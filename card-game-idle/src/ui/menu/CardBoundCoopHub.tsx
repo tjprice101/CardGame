@@ -3,9 +3,13 @@ import { useFriendsStore, selectFriendsList, selectFriendsLoaded } from '@/state
 import { useSocialStore } from '@/state/socialStore';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
 import { useEternityBossCoopStore } from '@/state/eternityBossCoopStore';
+import { useCoopRaidStore } from '@/state/coopRaidStore';
+import { useCoopSyncStore } from '@/state/coopSyncStore';
 import { useStore } from '@/state/store';
 import { usePartyStore } from '@/state/partyStore';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+import { NULL_RAID_DEFINITIONS } from '@/data/ascension/nullRaidDefinitions';
+import { hashStringToSeed } from '@/net/coopRng';
 import { uiTypography, type UiPalette } from '@/ui/theme';
 import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
 
@@ -49,10 +53,14 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   const setActivityDraft = usePartyStore(s => s.setActivityDraft);
   const me = useSocialStore(s => s.user?.id ?? null);
   const sendBattlegroundInvite = useBattlegroundStore(s => s.sendInvite);
+  const sendRaidInvites = useCoopRaidStore(s => s.sendInvites);
   const sendEternityInvites = useEternityBossCoopStore(s => s.sendInvites);
   const enqueueToast = useStore(s => s.enqueueToast);
+  const coopNetplayEnabled = useStore(s => !!s.settings.coopNetplayEnabled);
   const profile = useStore(s => s.progress.profile);
   const progress = useStore(s => s.progress);
+  const syncAttached = useCoopSyncStore(s => s.attached);
+  const lastPingMs = useCoopSyncStore(s => s.lastLoopbackPingMs);
   const friends = useFriendsStore(selectFriendsList);
   const friendsLoaded = useFriendsStore(selectFriendsLoaded);
   const loadFriends = useFriendsStore(s => s.load);
@@ -73,6 +81,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   const partyTargets = members.filter(m => m.userId !== me);
   const localMemberId = me ?? (members.length === 1 ? members[0]?.userId ?? null : null);
   const eternityDraft = activityDraft?.type === 'eternity_boss' ? activityDraft : null;
+  const nullRaidDraft = activityDraft?.type === 'null_raid' ? activityDraft : null;
   const uiTheme = useMemo<UiPalette>(() => {
     return getEffectiveThemePalette(
       profile.uiThemeId || DEFAULT_UI_THEME_ID,
@@ -82,16 +91,27 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
     );
   }, [profile.uiThemeId, profile.customUiTheme, progress, themeNowMs]);
   const selectedBoss = eternityDraft ? BOSS_DEFINITIONS.find(boss => boss.id === eternityDraft.bossId) ?? null : null;
+  const selectedRaid = nullRaidDraft ? NULL_RAID_DEFINITIONS.find(raid => raid.id === nullRaidDraft.raidId) ?? null : null;
   const selectedDeckId = eternityDraft ? (eternityDraft.deckId ?? progress.savedDecks[0]?.id ?? '') : '';
   const selectedDeck = eternityDraft
     ? progress.savedDecks.find(deck => deck.id === selectedDeckId) ?? null
     : null;
+  const selectedRaidDeckId = nullRaidDraft ? (nullRaidDraft.deckId ?? progress.savedDecks[0]?.id ?? '') : '';
+  const selectedRaidDeck = nullRaidDraft
+    ? progress.savedDecks.find(deck => deck.id === selectedRaidDeckId) ?? null
+    : null;
   const allPartyReady = members.length > 0 && members.every(member => member.ready);
   const coOpInviteTargets = partyTargets.slice(0, 2);
+  const raidInviteTargets = partyTargets.slice(0, 4);
 
   async function handleSetEternityDeck(deckId: string) {
     if (!eternityDraft) return;
     setActivityDraft({ ...eternityDraft, deckId });
+  }
+
+  async function handleSetNullRaidDeck(deckId: string) {
+    if (!nullRaidDraft) return;
+    setActivityDraft({ ...nullRaidDraft, deckId });
   }
 
   async function handleStartEternityCoop() {
@@ -132,6 +152,41 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
     enqueueToast(`Co-op fight launched for ${selectedBoss.name}.`, 'success');
   }
 
+  async function handleStartNullRaidCoop() {
+    if (!nullRaidDraft?.raidId) return;
+    if (!selectedRaidDeck) {
+      enqueueToast('Pick a deck first.', 'warning');
+      return;
+    }
+    if (members.length < 2) {
+      enqueueToast('Unable to start the requested activity if player count is less than two.', 'warning');
+      return;
+    }
+    if (partyTargets.length === 0) {
+      enqueueToast('Invite party members before starting co-op.', 'warning');
+      return;
+    }
+    if (partyTargets.length > 4) {
+      enqueueToast('Null raid co-op supports up to 5 total players right now.', 'warning');
+      return;
+    }
+    if (!allPartyReady) {
+      enqueueToast('Everyone in the party must be ready before starting.', 'warning');
+      return;
+    }
+
+    const sessionId = await sendRaidInvites(
+      raidInviteTargets.map(member => ({ id: member.userId, displayName: member.displayName, avatarId: member.avatarId, titleId: member.titleId })),
+      nullRaidDraft.raidId,
+      selectedRaidDeck.id,
+    );
+    if (!sessionId) {
+      enqueueToast('Could not start the co-op raid.', 'warning');
+      return;
+    }
+    enqueueToast(`Co-op null raid launched for ${selectedRaid?.name ?? nullRaidDraft.raidId}.`, 'success');
+  }
+
   async function handleChallengePartyMember(userId: string, displayName: string, avatarId: string, titleId: string | null) {
     if (sendingBattleTo) return;
     setSendingBattleTo(userId);
@@ -145,6 +200,37 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
     setSendingBattleTo(null);
   }
 
+  async function handleDebugPing() {
+    if (!coopNetplayEnabled) {
+      enqueueToast('Enable Experimental co-op netplay in Settings first.', 'info');
+      return;
+    }
+    if (!activePartyId || !me) {
+      enqueueToast('Create a party first.', 'warning');
+      return;
+    }
+
+    if (!useCoopSyncStore.getState().attached) {
+      await useCoopSyncStore.getState().attach({
+        id: `debug-${activePartyId}`,
+        mode: 'eternity_boss',
+        partyId: activePartyId,
+        hostUserId: me,
+        participantIds: members.map(m => m.userId),
+        rngSeed: hashStringToSeed(`${activePartyId}:${me}:debug`),
+        modePayload: { draft: activityDraft?.type ?? 'general' },
+        status: 'active',
+      });
+    }
+
+    const rtt = await useCoopSyncStore.getState().debugLoopbackPing('hub');
+    if (rtt === null) {
+      enqueueToast('Debug ping unavailable.', 'warning');
+      return;
+    }
+    enqueueToast(`Debug ping round-trip: ${rtt}ms.`, 'info');
+  }
+
   return (
     <div style={{ position: 'absolute', inset: 0, zIndex: 34, background: uiTheme.appBackground, color: uiTheme.text, overflow: 'hidden' }}>
       <div style={{ position: 'absolute', inset: 0, background: uiTheme.backdrop, pointerEvents: 'none' }} />
@@ -154,8 +240,16 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
             <div style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Social Home</div>
             <div style={{ fontSize: 26, fontFamily: uiTypography.display, letterSpacing: 1.8 }}>{modeTheme.title}</div>
             <div style={{ fontSize: 12, color: uiTheme.textMuted, marginTop: 4 }}>{modeTheme.subtitle}</div>
+            {coopNetplayEnabled && (
+              <div style={{ fontSize: 11, color: uiTheme.textMuted, marginTop: 6 }}>
+                Netplay scaffold: {syncAttached ? `attached${lastPingMs !== null ? ` · last ping ${lastPingMs}ms` : ''}` : 'detached'}
+              </div>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
+            {coopNetplayEnabled && (
+              <button className="menu-tactile-btn" onClick={() => void handleDebugPing()} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.surface, color: uiTheme.text, border: `1px solid ${uiTheme.borderStrong}` }}>Debug Ping</button>
+            )}
             <button className="menu-tactile-btn" onClick={() => void createParty()} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.button, color: uiTheme.accentDeep, border: `1px solid ${uiTheme.borderStrong}` }}>Create Party</button>
             <button className="menu-tactile-btn" onClick={() => setOverlayHidden(!overlayHidden)} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>{overlayHidden ? 'Show Overlay' : 'Hide Overlay'}</button>
             <button className="menu-tactile-btn" onClick={onClose} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>Close</button>
@@ -167,7 +261,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
             <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Party Controls</div>
             <div style={{ marginTop: 12, display: 'grid', gap: 10 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-                <div style={{ fontSize: 14 }}>Status: {activePartyId ? `Active (${members.length}/4)` : 'No active party'}</div>
+                <div style={{ fontSize: 14 }}>Status: {activePartyId ? `Active (${members.length}/5)` : 'No active party'}</div>
                 <button className="menu-tactile-btn" onClick={() => void leaveParty()} style={{ padding: '7px 12px', borderRadius: 8, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>Leave/Disband</button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -264,6 +358,61 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
                     }}
                   >
                     Start Co-op Fight
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {mode === 'null_raid' && nullRaidDraft && (
+              <div style={{ background: uiTheme.surfaceStrong, border: `1px solid ${uiTheme.border}`, borderRadius: 18, padding: 18 }}>
+                <div style={{ fontSize: 11, letterSpacing: 2.8, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Null Raid Setup</div>
+                <div style={{ marginTop: 10, fontSize: 13, fontFamily: uiTypography.display }}>{selectedRaid?.name ?? nullRaidDraft.raidId}</div>
+                <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
+                  <div style={{ fontSize: 12, color: uiTheme.textSoft }}>Choose a deck for the raid, then wait for everyone to ready up.</div>
+                  <div style={{ display: 'grid', gap: 6, maxHeight: 180, overflowY: 'auto' }}>
+                    {progress.savedDecks.map(deck => {
+                      const active = deck.id === selectedRaidDeckId;
+                      return (
+                        <button
+                          key={deck.id}
+                          className="menu-tactile-btn"
+                          onClick={() => void handleSetNullRaidDeck(deck.id)}
+                          style={{
+                            display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center',
+                            padding: '8px 10px', borderRadius: 10,
+                            border: `1px solid ${active ? uiTheme.borderStrong : uiTheme.border}`,
+                            background: active ? uiTheme.surface : uiTheme.surfaceMuted,
+                            color: uiTheme.text,
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                          }}
+                        >
+                          <span style={{ fontSize: 12 }}>{deck.name}</span>
+                          <span style={{ fontSize: 10, color: active ? uiTheme.accentSoft : uiTheme.textMuted }}>{active ? 'Selected' : 'Choose'}</span>
+                        </button>
+                      );
+                    })}
+                    {!progress.savedDecks.length && <div style={{ fontSize: 12, color: uiTheme.textMuted }}>No saved decks available.</div>}
+                  </div>
+                  <div style={{ fontSize: 12, color: uiTheme.textMuted }}>Ready status: {allPartyReady ? 'Everyone is ready' : 'Waiting for party members'}</div>
+                  {members.length < 2 && (
+                    <div style={{ fontSize: 11, color: 'rgba(255,160,140,0.88)', lineHeight: 1.4 }}>
+                      Unable to start the requested activity if player count is less than two.
+                    </div>
+                  )}
+                  <button
+                    className="menu-tactile-btn"
+                    onClick={() => void handleStartNullRaidCoop()}
+                    style={{
+                      padding: '10px 12px', borderRadius: 10,
+                      background: uiTheme.button,
+                      color: uiTheme.accentDeep,
+                      border: `1px solid ${uiTheme.borderStrong}`,
+                      opacity: selectedRaidDeck ? 1 : 0.55,
+                      cursor: selectedRaidDeck ? 'pointer' : 'not-allowed',
+                    }}
+                  >
+                    Start Co-op Null Raid
                   </button>
                 </div>
               </div>

@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 30;
+export const CURRENT_VERSION = 31;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -474,6 +474,14 @@ const migrations: Record<number, Migration> = {
           }
         }
       }
+    }
+    return data;
+  },
+  31: (data) => {
+    // v31 adds: coopNetplayEnabled (default false) feature flag.
+    if (data.settings) {
+      const s = data.settings as unknown as Record<string, unknown>;
+      if (typeof s.coopNetplayEnabled !== 'boolean') s.coopNetplayEnabled = false;
     }
     return data;
   },

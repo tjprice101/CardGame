@@ -36,6 +36,8 @@ import {
 } from '@/systems/cards/ActionClass';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { PackSystem } from '@/systems/cards/PackSystem';
+import { getActiveCoopRng, useCoopSyncStore } from '@/state/coopSyncStore';
+import { useSocialStore } from '@/state/socialStore';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { canConvertCardToHolo, getCardFinishKey, getHolofoilConversionCost } from '@/systems/progression/HolofoilSystem';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
@@ -311,6 +313,7 @@ const defaultSettings: SettingsState = {
   sfxVolume: 0.8,
   particlesEnabled: true,
   reducedMotion: false,
+  coopNetplayEnabled: false,
   language: 'en',
   fontSizePreset: 'standard',
   cardArtDisplay: 'both',
@@ -804,6 +807,8 @@ interface StoreActions {
   tickBossTimer: (deltaSeconds: number) => void;
   forfeitBossFight: () => void;
   dismissBossResult: () => void;
+  applyCoopBossDamage: (amount: number, sourceUserId?: string, seq?: number) => void;
+  markCoopParticipantDisconnected: (userId: string) => void;
   // ── Trial Deck ──────────────────────────────────────────────────────────────
   /** Begin a Trial Deck practice session for the given pack. Saves current game state; restores on exit. */
   startTrialDeck: (packId: string) => void;
@@ -1591,7 +1596,6 @@ function completeBossFight(s: Store, victory: boolean): void {
   const damageDealt = s.bossFight.damageDealtThisFight;
   const maxHp = s.bossFight.bossMaxHp;
   const coopPartySize = s.bossFight.coopPartySize ?? 1;
-  const coopSessionId = s.bossFight.coopSessionId;
   const coopRole = s.bossFight.coopRole;
   s.bossFight = {
     mode: victory ? 'victory' : 'defeat',
@@ -1635,7 +1639,8 @@ function grantOblivion(s: Store, amount: number): void {
   }
   s.turn.oblivionEarnedThisTurn += amount;
   if (s.bossFight.mode === 'active') {
-    s.bossFight.damageDealtThisFight += amount;
+    const isEternityCoopBoss = s.bossFight.kind === 'normal' && !!s.bossFight.coopSessionId;
+    const canEmitCoopDamage = isEternityCoopBoss && useCoopSyncStore.getState().attached;
     const fightSeconds = s.bossFight.kind === 'null_raid' ? NULL_RAID_ENCOUNTER_SECONDS : BOSS_FIGHT_ROUND_SECONDS;
     const elapsed = Math.max(0, fightSeconds - s.bossFight.fightTimeRemaining);
     if (elapsed < NULL_RAID_PROVE_YOURSELF_SECONDS) {
@@ -1645,8 +1650,25 @@ function grantOblivion(s: Store, amount: number): void {
         s.bossFight.nullRaidBestDamageFirstMinute = Math.max(best, s.bossFight.damageDealtFirstMinute ?? 0);
       }
     }
-    s.bossFight.bossCurrentHp = Math.max(0, s.bossFight.bossCurrentHp - amount);
-    eventBus.emit('boss:damaged', { delta: amount, remaining: s.bossFight.bossCurrentHp });
+    if (canEmitCoopDamage) {
+      const sourceUserId = useSocialStore.getState().user?.id;
+      if (sourceUserId) {
+        void useCoopSyncStore.getState().emit({
+          type: 'boss_damage',
+          payload: { amount, sourceUserId },
+        });
+      } else {
+        s.bossFight.damageDealtThisFight += amount;
+        s.bossFight.bossCurrentHp = Math.max(0, s.bossFight.bossCurrentHp - amount);
+        eventBus.emit('boss:damaged', { delta: amount, remaining: s.bossFight.bossCurrentHp });
+        checkBossDefeated(s);
+      }
+    } else {
+      s.bossFight.damageDealtThisFight += amount;
+      s.bossFight.bossCurrentHp = Math.max(0, s.bossFight.bossCurrentHp - amount);
+      eventBus.emit('boss:damaged', { delta: amount, remaining: s.bossFight.bossCurrentHp });
+      checkBossDefeated(s);
+    }
   } else {
     s.progress.oblivion += amount;
     s.progress.lifetimeOblivion = (s.progress.lifetimeOblivion ?? 0) + amount;
@@ -1673,6 +1695,117 @@ function applyCardBreakStagger(s: Store, staggerAmount: number): void {
     s.bossFight.bossCardBreakCount = (s.bossFight.bossCardBreakCount ?? 0) + 1;
     eventBus.emit('boss:cardbreak', { count: s.bossFight.bossCardBreakCount });
   }
+}
+
+function isActiveEternityCoopBossFight(state: Pick<Store, 'bossFight'>): boolean {
+  return state.bossFight.mode === 'active'
+    && state.bossFight.kind === 'normal'
+    && typeof state.bossFight.coopSessionId === 'string'
+    && state.bossFight.coopSessionId.length > 0;
+}
+
+function isLocalOutOfCardsForCoop(state: Pick<Store, 'deck'>): boolean {
+  return state.deck.hand.length === 0 && state.deck.drawPile.length === 0 && state.deck.discardPile.length === 0;
+}
+
+async function reportEternityCoopParticipantState(options: { markEnded?: boolean; markHandEmpty?: boolean; forceEvaluate?: boolean }): Promise<void> {
+  const state = useStore.getState();
+  if (!isActiveEternityCoopBossFight(state)) return;
+
+  const sessionId = state.bossFight.coopSessionId;
+  if (!sessionId) return;
+
+  const wantMarkEnded = !!options.markEnded;
+  const wantMarkHandEmpty = !!options.markHandEmpty;
+  if (!wantMarkEnded && !wantMarkHandEmpty && !options.forceEvaluate) return;
+
+  const me = useSocialStore.getState().user?.id;
+  const sb = getSupabase();
+  if (!sb || !me) return;
+
+  // Retry a few times to absorb concurrent writes where both peers mark end
+  // state at nearly the same moment and one write can temporarily overwrite.
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const { data: sessionRow } = await sb
+      .from('eternity_wake_coop_sessions')
+      .select('id, status, host_id, accepted_user_ids, coop_end_turn_user_ids, coop_hand_empty_user_ids, coop_disconnected_user_ids')
+      .eq('id', sessionId)
+      .maybeSingle();
+
+    if (!sessionRow || sessionRow.status !== 'active') return;
+
+    const participants = Array.from(new Set([
+      sessionRow.host_id as string,
+      ...((Array.isArray(sessionRow.accepted_user_ids) ? sessionRow.accepted_user_ids : []).filter(Boolean) as string[]),
+    ]));
+
+    const ended = new Set(((Array.isArray(sessionRow.coop_end_turn_user_ids) ? sessionRow.coop_end_turn_user_ids : []) as string[]).filter(Boolean));
+    const handEmpty = new Set(((Array.isArray(sessionRow.coop_hand_empty_user_ids) ? sessionRow.coop_hand_empty_user_ids : []) as string[]).filter(Boolean));
+    const disconnected = new Set(((Array.isArray((sessionRow as { coop_disconnected_user_ids?: unknown }).coop_disconnected_user_ids)
+      ? (sessionRow as { coop_disconnected_user_ids?: string[] }).coop_disconnected_user_ids
+      : []) as string[]).filter(Boolean));
+
+    const shouldMarkEnded = wantMarkEnded && !ended.has(me);
+    const shouldMarkHandEmpty = wantMarkHandEmpty && !handEmpty.has(me);
+    if (shouldMarkEnded) ended.add(me);
+    if (shouldMarkHandEmpty) handEmpty.add(me);
+
+    const everyoneDone = participants.length > 0 && participants.every(id => ended.has(id) || handEmpty.has(id) || disconnected.has(id));
+
+    const patch: Record<string, unknown> = {};
+    if (shouldMarkEnded) patch.coop_end_turn_user_ids = Array.from(ended);
+    if (shouldMarkHandEmpty) patch.coop_hand_empty_user_ids = Array.from(handEmpty);
+    if (everyoneDone) {
+      patch.status = 'finished';
+      patch.finished_at = new Date().toISOString();
+    }
+
+    if (Object.keys(patch).length > 0) {
+      await sb
+        .from('eternity_wake_coop_sessions')
+        .update(patch)
+        .eq('id', sessionId)
+        .eq('status', 'active');
+    }
+
+    if (everyoneDone) return;
+    if (!shouldMarkEnded && !shouldMarkHandEmpty) return;
+  }
+}
+
+async function markEternityCoopParticipantDisconnected(userId: string): Promise<void> {
+  const state = useStore.getState();
+  if (!isActiveEternityCoopBossFight(state)) return;
+  const sessionId = state.bossFight.coopSessionId;
+  if (!sessionId || !userId) return;
+
+  const sb = getSupabase();
+  if (!sb) return;
+
+  const { data: row } = await sb
+    .from('eternity_wake_coop_sessions')
+    .select('id, status, coop_disconnected_user_ids')
+    .eq('id', sessionId)
+    .maybeSingle();
+
+  if (!row || row.status !== 'active') return;
+
+  const disconnected = new Set(((Array.isArray((row as { coop_disconnected_user_ids?: unknown }).coop_disconnected_user_ids)
+    ? (row as { coop_disconnected_user_ids?: string[] }).coop_disconnected_user_ids
+    : []) as string[]).filter(Boolean));
+  if (disconnected.has(userId)) {
+    await reportEternityCoopParticipantState({ forceEvaluate: true });
+    return;
+  }
+
+  disconnected.add(userId);
+  await sb
+    .from('eternity_wake_coop_sessions')
+    .update({ coop_disconnected_user_ids: Array.from(disconnected) })
+    .eq('id', sessionId)
+    .eq('status', 'active');
+
+  await reportEternityCoopParticipantState({ forceEvaluate: true });
 }
 
 function checkBossDefeated(s: Store): void {
@@ -2919,11 +3052,13 @@ function applyBurningGardenPlayState(
 
 function endTurnInternal(s: Store): void {
   if (s.turn.phase !== 'playing') return;
-  // Boss fights are time-pressure encounters. Manually ending the turn during
-  // an active fight is treated as an immediate failure across all boss modes.
+  // Boss fights are time-pressure encounters. Outside of active Eternity co-op,
+  // manually ending a turn during a fight is an immediate failure.
   if (s.bossFight.mode === 'active') {
-    completeBossFight(s, false);
-    return;
+    if (!(s.bossFight.kind === 'normal' && s.bossFight.coopSessionId)) {
+      completeBossFight(s, false);
+      return;
+    }
   }
 
   if ((s.turn.glassWhiteLedgerActive ?? false) && (s.turn.glassWhiteLedger ?? 0) > 0) {
@@ -5603,6 +5738,14 @@ export const useStore = create<Store>()(
       set(s => {
         endTurnInternal(s);
       });
+
+      const state = get();
+      if (isActiveEternityCoopBossFight(state)) {
+        void reportEternityCoopParticipantState({
+          markEnded: true,
+          markHandEmpty: isLocalOutOfCardsForCoop(state),
+        });
+      }
     },
 
     endAndBeginAgain: () => {
@@ -5610,7 +5753,11 @@ export const useStore = create<Store>()(
         if (s.turn.phase !== 'playing') return;
         // Match End Turn behavior during boss encounters.
         if (s.bossFight.mode === 'active') {
-          completeBossFight(s, false);
+          if (s.bossFight.kind === 'normal' && s.bossFight.coopSessionId) {
+            endTurnInternal(s);
+          } else {
+            completeBossFight(s, false);
+          }
           return;
         }
 
@@ -5760,6 +5907,14 @@ export const useStore = create<Store>()(
         
         recompute(s);
       });
+
+      const state = get();
+      if (isActiveEternityCoopBossFight(state)) {
+        void reportEternityCoopParticipantState({
+          markEnded: true,
+          markHandEmpty: isLocalOutOfCardsForCoop(state),
+        });
+      }
     },
 
     // �E��E��E��E� Oblivion �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
@@ -5828,8 +5983,9 @@ export const useStore = create<Store>()(
       if (!hasLegendary && pityMisses >= 4) {
         const legendaryPool = pack.cardPool.filter(definitionId => CardRegistry.get(definitionId)?.rarity === 'Legendary');
         if (legendaryPool.length > 0 && drawn.length > 0) {
-          const replacement = legendaryPool[Math.floor(Math.random() * legendaryPool.length)];
-          const replaceIndex = Math.floor(Math.random() * drawn.length);
+          const rng = getActiveCoopRng();
+          const replacement = legendaryPool[Math.floor(rng() * legendaryPool.length)];
+          const replaceIndex = Math.floor(rng() * drawn.length);
           drawn[replaceIndex] = replacement;
           hasLegendary = true;
           boxPityTriggered = true;
@@ -5870,8 +6026,9 @@ export const useStore = create<Store>()(
       if (!hasLegendary) {
         const legendaryPool = pack.cardPool.filter(definitionId => CardRegistry.get(definitionId)?.rarity === 'Legendary');
         if (legendaryPool.length > 0 && drawn.length > 0) {
-          const replacement = legendaryPool[Math.floor(Math.random() * legendaryPool.length)];
-          const replaceIndex = Math.floor(Math.random() * drawn.length);
+          const rng = getActiveCoopRng();
+          const replacement = legendaryPool[Math.floor(rng() * legendaryPool.length)];
+          const replaceIndex = Math.floor(rng() * drawn.length);
           drawn[replaceIndex] = replacement;
         }
       }
@@ -6542,6 +6699,12 @@ export const useStore = create<Store>()(
         };
         recompute(s);
       });
+
+      const coopSessionId = options?.coopSessionId;
+      const sync = useCoopSyncStore.getState();
+      if (coopSessionId && sync.attached && sync.sessionId === coopSessionId) {
+        void sync.requestResync();
+      }
     },
 
     startWakeTrial: (bossId, savedDeckId, modifiers, rewardMult) => {
@@ -6701,6 +6864,11 @@ export const useStore = create<Store>()(
           completeBossFight(s, false);
         }
       });
+
+      const state = get();
+      if (isActiveEternityCoopBossFight(state) && isLocalOutOfCardsForCoop(state)) {
+        void reportEternityCoopParticipantState({ markHandEmpty: true });
+      }
     },
 
     forfeitBossFight: () => {
@@ -6730,6 +6898,56 @@ export const useStore = create<Store>()(
         s.bossFight.mode = 'idle';
         s.bossFight.activeBossId = null;
         s.bossFight.savedGameState = null;
+      });
+    },
+
+    applyCoopBossDamage: (amount) => {
+      set(s => {
+        if (amount <= 0) return;
+        if (!isActiveEternityCoopBossFight(s)) return;
+        s.bossFight.damageDealtThisFight += amount;
+        s.bossFight.bossCurrentHp = Math.max(0, s.bossFight.bossCurrentHp - amount);
+        eventBus.emit('boss:damaged', { delta: amount, remaining: s.bossFight.bossCurrentHp });
+        checkBossDefeated(s);
+      });
+    },
+
+    markCoopParticipantDisconnected: (userId) => {
+      if (!userId) return;
+
+      const me = useSocialStore.getState().user?.id;
+      const isRemote = !!me && userId !== me;
+
+      if (isRemote) {
+        const shortId = userId.slice(0, 8);
+        const state = get();
+        if (isActiveEternityCoopBossFight(state)) {
+          state.enqueueToast(`Co-op participant disconnected (${shortId}).`, 'warning', 7000);
+        } else if (state.bossFight.mode === 'active' && state.bossFight.kind === 'null_raid') {
+          state.enqueueToast(`Raid participant disconnected (${shortId}). Your run continues.`, 'warning', 7000);
+        }
+      }
+
+      void markEternityCoopParticipantDisconnected(userId);
+
+      set(s => {
+        if (s.battleground.mode === 'active' && s.battleground.kind === 'pvp') {
+          if (isRemote) {
+            s.toasts.push({
+              id: `bg-disconnect-${Date.now()}`,
+              message: 'Opponent disconnected. You win by forfeit.',
+              kind: 'success',
+              ts: Date.now(),
+              durationMs: 7000,
+            });
+          }
+          s.battleground.opponentHandEmpty = true;
+          s.battleground.opponentHandSize = 0;
+          if (s.battleground.myScore <= s.battleground.opponentScore) {
+            s.battleground.myScore = s.battleground.opponentScore + 1;
+          }
+          completeBattlegroundFight(s);
+        }
       });
     },
 
@@ -6973,6 +7191,7 @@ export const useStore = create<Store>()(
         if (typeof settings['sfxVolume'] !== 'number') settings['sfxVolume'] = defaultSettings.sfxVolume;
         if (typeof settings['particlesEnabled'] !== 'boolean') settings['particlesEnabled'] = defaultSettings.particlesEnabled;
         if (typeof settings['reducedMotion'] !== 'boolean') settings['reducedMotion'] = defaultSettings.reducedMotion;
+        if (typeof settings['coopNetplayEnabled'] !== 'boolean') settings['coopNetplayEnabled'] = defaultSettings.coopNetplayEnabled;
         if (settings['language'] === undefined) settings['language'] = defaultSettings.language;
         if (settings['fontSizePreset'] === undefined) settings['fontSizePreset'] = defaultSettings.fontSizePreset;
         if (settings['cardArtDisplay'] === undefined) settings['cardArtDisplay'] = defaultSettings.cardArtDisplay;

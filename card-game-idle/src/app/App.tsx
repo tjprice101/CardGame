@@ -158,6 +158,7 @@ const engine = new GameEngine();
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hasSeenSaveRef = useRef(false);
+  const wasCombatActiveRef = useRef(false);
   useEffect(() => { initAccountSync(); }, []);
   // Phase 5: install activity-event + leaderboard stats sync. Idempotent;
   // safely no-ops without Supabase or while signed out.
@@ -737,6 +738,36 @@ export default function App() {
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
   const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showBattleground || showAscension;
+
+  // When a combat session starts (including co-op launches), force-close
+  // open overlays so both clients transition into the arena immediately.
+  useEffect(() => {
+    const combatActive = bossFight.mode === 'active' || battleground.mode === 'active' || trialDeck.mode === 'active';
+    const justEnteredCombat = combatActive && !wasCombatActiveRef.current;
+    wasCombatActiveRef.current = combatActive;
+    if (!justEnteredCombat) return;
+
+    setShowDeckBuilder(false);
+    setShowCardStore(false);
+    setShowDeckViewer(false);
+    setShowSettings(false);
+    setShowTutorial(false);
+    setShowEternitysWake(false);
+    setShowBattleground(false);
+    setShowCardBoundCoop(false);
+    setShowInfinitude(false);
+    setShowEventWuas(false);
+    setShowPlayerInfo(false);
+    setShowDailyReward(false);
+    setShowQuests(false);
+    setShowAchievements(false);
+    setShowMastery(false);
+    setShowAscension(false);
+    setShowWakeTrials(false);
+    setShowEndlessGauntlet(false);
+    setShowTrialSummary(false);
+    usePartyStore.getState().closeHub();
+  }, [bossFight.mode, battleground.mode, trialDeck.mode]);
 
   // Auto-sync scene to gameplay state once the player has reached the menu.
   // Entering an active turn or boss fight moves us into the arena; finishing
