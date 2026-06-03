@@ -101,9 +101,9 @@ function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: Turn
 
   switch (definitionId) {
     case 'inf-genesis-throne':
-      return 900 + totalPatience * 100 + peakPatience * 210 + signatures * 180 + setupCount * 120;
+      return 800 + totalPatience * 80 + peakPatience * 160 + signatures * 140 + setupCount * 90;
     case 'inf-null-apex':
-      return 700 + peakPatience * 380 + brokenClasses * 550 + patienceUnits * 180 + lowDriftBonus;
+      return 620 + peakPatience * 300 + brokenClasses * 420 + patienceUnits * 140 + lowDriftBonus;
     case 'inf-entropic-crown':
       return 850 + patienceUnits * 500 + totalPatience * 65 + brokenClasses * 450;
     case 'inf-annihilation-field':
@@ -146,7 +146,7 @@ function computeNeutralityEternalOblivionBonus(definitionId: string, turn: TurnS
     case 'btei-axiom-of-oblivion':
       return 360 + peakPatience * 48 + setupCount * 32 + sourceCount * 36;
     case 'btei-eternal-vigil':
-      return 300 + peakPatience * 42 + patienceUnits * 36;
+      return 240 + peakPatience * 34 + patienceUnits * 28;
     case 'btei-colossus-advent':
       return 340 + totalPatience * 28 + peakPatience * 30 + signatures * 30;
     case 'btei-sovereign-domain':

@@ -334,7 +334,7 @@ function formatEffect(effect: CardEffect): string {
     case 'neutrality_equilibrium_sigil_gain': return `Gain ${effect.value} Equilibrium Sigil${effect.value === 1 ? '' : 's'}`;
     case 'neutrality_equilibrium_starbound_cashout': return `Spend all Equilibrium Sigils: double all Patience and gain +${effect.oblivionPerSigil} Oblivion per Sigil spent`;
     case 'neutrality_equilibrium_tactical_spend': return `If you have ${effect.spend}+ Equilibrium Sigils, spend ${effect.spend} for either +${effect.burstOblivion} Oblivion burst or ${effect.restorePercent}% team Patience restore`;
-    case 'neutrality_patient_light_gain': return `Grant ${effect.value} Patient Light stack${effect.value === 1 ? '' : 's'} (card-play Patience gain becomes 1 + Patient Light stacks)`;
+    case 'neutrality_patient_light_gain': return `Grant ${effect.value} Patient Light stack${effect.value === 1 ? '' : 's'} (boosts card-play Patience gain with diminishing returns at high stacks)`;
     case 'neutrality_designate_vessel': return 'Designate the Seraphim with the highest Patience as your Vessel';
     case 'neutrality_attack_preserve': return `Seraphim attacks preserve ${effect.percent}% of consumed Patience this turn`;
     case 'overclock':

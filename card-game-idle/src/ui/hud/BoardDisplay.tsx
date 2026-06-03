@@ -19,6 +19,7 @@ import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
 import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
+import { getEffectivePatientLightPerCardPatienceGain } from '@/systems/cards/neutralityPatientLight';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { ELEMENT_COLORS, ELEMENT_SET_NAMES, isSnowboundCard } from '@/data/elements';
 import type { DeckCard } from '@/types/game';
@@ -2110,10 +2111,10 @@ export default function BoardDisplay() {
         // can see exactly how many stacks are amplifying Patience gain each card play.
         const patientLightStacks = Math.max(0, turn.neutralityPatientLightStacks ?? 0);
         if (patientLightStacks > 0) {
-          const perCardGain = 1 + patientLightStacks;
+          const perCardGain = getEffectivePatientLightPerCardPatienceGain(patientLightStacks);
           chips.push({
             label: `Patient Light ×${patientLightStacks}`,
-            title: `Patient Light: +${patientLightStacks} stack${patientLightStacks === 1 ? '' : 's'} — Seraphim now gain +${perCardGain} Patience per card played (base 1 + ${patientLightStacks}). Angels also accumulate Patience at this rate and spend it when they attack (+2% base Oblivion per stack consumed).`,
+            title: `Patient Light: +${patientLightStacks} stack${patientLightStacks === 1 ? '' : 's'} — Seraphim now gain +${perCardGain} Patience per card played. Gains use diminishing returns after 4 stacks. Angels also accumulate Patience at this rate and spend it when they attack (+2% base Oblivion per stack consumed).`,
             highlight: true,
           });
         }
