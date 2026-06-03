@@ -177,42 +177,14 @@ function getAngelUiAttacks(def: AngelDefinition) {
   return scaleAngelUiAttackSet(attacks, def.rarity);
 }
 
-function getHighTierUiAttackBaseScale(rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity']): number {
-  if (rarity === 'Infinite') return 0.45;
-  if (rarity === 'Eternal') return 0.5;
-  return 1;
-}
-
 function scaleSeraphimUiAttackSet(attacks: SeraphimAttackSet, rarity: SeraphimDefinition['rarity']): SeraphimAttackSet {
-  const scale = getHighTierUiAttackBaseScale(rarity);
-  if (scale === 1) return attacks;
-  return {
-    ...attacks,
-    unsynergized: {
-      ...attacks.unsynergized,
-      baseOblivion: Math.max(1, Math.round(attacks.unsynergized.baseOblivion * scale)),
-    },
-    synergized: {
-      ...attacks.synergized,
-      baseOblivion: Math.max(1, Math.round(attacks.synergized.baseOblivion * scale)),
-    },
-  };
+  void rarity;
+  return attacks;
 }
 
 function scaleAngelUiAttackSet(attacks: AngelAttackSet, rarity: AngelDefinition['rarity']): AngelAttackSet {
-  const scale = getHighTierUiAttackBaseScale(rarity);
-  if (scale === 1) return attacks;
-  return {
-    ...attacks,
-    primary: {
-      ...attacks.primary,
-      baseOblivion: Math.max(1, Math.round(attacks.primary.baseOblivion * scale)),
-    },
-    exalted: {
-      ...attacks.exalted,
-      baseOblivion: Math.max(1, Math.round(attacks.exalted.baseOblivion * scale)),
-    },
-  };
+  void rarity;
+  return attacks;
 }
 
 function getAttackCostCount(

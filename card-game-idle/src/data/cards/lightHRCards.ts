@@ -9,7 +9,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Embersmite',
-    description: '+30 Oblivion; Gain 1 Radiance',
+    description: 'Gain 1 Radiance; +30 Oblivion',
     artKey: 'hr_light_divine_smite',
     effects: [
       { type: 'oblivion_flat', value: 30 },
@@ -21,7 +21,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Hallowed Flame',
-    description: 'Seraphim bonuses are amplified by +15; Gain 1 Radiance; If you have 5+ Radiance, Seraphim bonuses are amplified by +10',
+    description: 'Gain 1 Radiance; Seraphim bonuses are amplified by +15; If you have 5+ Radiance, Seraphim bonuses are amplified by +10',
     artKey: 'hr_light_holy_radiance',
     effects: [
       { type: 'seraphim_bonus_amplifier', value: 15 },
@@ -91,7 +91,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Seraphfire Wrath',
-    description: '+60 Oblivion; Gain 2 Radiance',
+    description: 'Gain 2 Radiance; +60 Oblivion',
     artKey: 'hr_light_angelic_wrath',
     effects: [
       { type: 'oblivion_flat', value: 60 },
@@ -149,7 +149,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Emberwing Grace',
-    description: 'Gain +60% total Oblivion this turn; Gain 1 Radiance',
+    description: 'Gain 1 Radiance; Gain +60% total Oblivion this turn',
     artKey: 'hr_light_celestial_grace',
     effects: [
       { type: 'score_multiplier', value: 60 },
@@ -161,7 +161,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Pyre Tithe',
-    description: '+100 Oblivion; Gain 1 Radiance',
+    description: 'Gain 1 Radiance; +100 Oblivion',
     artKey: 'hr_light_heavenly_tithe',
     effects: [
       { type: 'oblivion_flat', value: 100 },
@@ -225,7 +225,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Bond',
-    description: 'Seraphim bonuses are amplified by +15; Gain 0 Radiance',
+    description: 'Seraphim bonuses are amplified by +15',
     artKey: 'hr_light_seraphic_bond',
     effects: [
       { type: 'seraphim_bonus_amplifier', value: 15 },
@@ -287,7 +287,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Ashen Remembrance',
-    description: 'Shuffle discard into deck; Gain 4 Radiance',
+    description: 'Gain 4 Radiance; Shuffle discard into deck',
     artKey: 'hr_light_sacred_memory',
     effects: [
       { type: 'shuffle_discard' },
@@ -299,7 +299,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Cinder Echo',
-    description: 'Replay last Ophanim played this turn; Gain 1 Radiance',
+    description: 'Gain 1 Radiance; Replay last Ophanim played this turn',
     artKey: 'hr_light_radiant_echo',
     effects: [
       { type: 'copy_last_hr' },
@@ -322,7 +322,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Whiteflame Clarity',
-    description: 'Seraphim bonuses are amplified by +40; Gain 4 Radiance',
+    description: 'Gain 4 Radiance; Seraphim bonuses are amplified by +40',
     artKey: 'hr_light_divine_clarity',
     effects: [
       { type: 'seraphim_bonus_amplifier', value: 40 },
@@ -369,7 +369,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Silverthorn Chain',
-    description: 'Gain 0 Radiance',
+    description: 'none',
     artKey: 'hr_light_aureate_chain',
     effects: [
       { type: 'radiance_gain', value: 0 },  // executor: counts Ophanim cards in hand (hr-light-aureate-chain)
@@ -381,7 +381,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Ascendant Blaze',
-    description: 'Gain 0 Radiance',
+    description: 'none',
     artKey: 'hr_light_transcendent_surge',
     effects: [
       { type: 'radiance_gain', value: 0 },  // executor: cardsPlayedThisTurn (hr-light-transcendent-surge)

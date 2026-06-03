@@ -182,7 +182,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Thornward Seraphim',
-    description: 'On play: Gain 0 Radiance. While on board: +20 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: none. While on board: +20 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_light_warden',
     attacks: {
       unsynergized: {

@@ -94,7 +94,7 @@ export const lightAngels: AngelDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'Solarius Emberthorn Ascendant',
-    description: 'On summon: Seraphim bonuses are amplified by +30; Gain 12 Radiance. After 5 cards played: Double current Radiance; Gain +80% total Oblivion this turn; Empower the next card you play; +150 Oblivion. While on board: +24 Oblivion per card played while on board',
+    description: 'On summon: Gain 12 Radiance; Seraphim bonuses are amplified by +30. After 5 cards played: Double current Radiance; Gain +80% total Oblivion this turn; Empower the next card you play; +150 Oblivion. While on board: +24 Oblivion per card played while on board',
     artKey: 'angel_light_solarius',
     summonCost: ['angel-light-aurelion', 'ser-light-throne', 'ser-light-herald'],
     onSummonEffects: [

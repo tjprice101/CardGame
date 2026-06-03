@@ -7,7 +7,7 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinder Shroud',
-    description: 'On play: Gain 4 Heat; Draw 1 card. While on board: Gain 1 Ember per card played',
+    description: 'On play: Gain 4 Heat; Draw 1 card. While on board: Gain 1 Heat per card played',
     artKey: 'cherubim_fire_ember_shroud',
     maxDurability: 2,
     effects: [

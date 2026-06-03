@@ -5,7 +5,7 @@
  * Four tabs:
  *   Overview  – live board stats (earned this turn, active bonuses)
  *   Attacks   – Seraphim / Angel attack breakdown
- *   Bonuses   – Board bonuses, global mult, Cherubim passives
+ *   Bonuses   – Active bonus sources and Cherubim passives
  *   Tips      – Prioritised strategy tips
  */
 
@@ -277,7 +277,7 @@ function AngelAttackRow({ instance, def }: { instance: AngelInstance; def: Angel
           background: `${C.gold.fg}1a`, border: `1px solid ${C.gold.br}`,
           color: C.gold.fg, letterSpacing: 0.8, fontFamily: BF,
         }}>
-          Exalted ~3× Seraphim
+          Exalted finisher
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
@@ -315,7 +315,6 @@ function OverviewTab() {
   const filledFront = board.frontSlots.filter(Boolean).length;
   const filledBack  = board.backSlots.filter(Boolean).length;
   const totalFilled = filledFront + filledBack;
-  const fullBoard   = stats.fullBoardActive;
   const globalMult  = stats.globalOblivionMult;
 
   return (
@@ -326,7 +325,7 @@ function OverviewTab() {
         <StatPill label="Total Oblivion" value={oblivion} accent={C.gold.fg} glow />
         <StatPill label="Earned This Turn" value={turn.oblivionEarnedThisTurn ?? 0} accent={C.blue.fg} />
         <StatPill label="Per-Card Bonus" value={`+${formatNumber(stats.oblivionPerCardBonus)}`} accent={C.green.fg} />
-        <StatPill label={`Board ${totalFilled}/9`} value={fullBoard ? '+30% Active' : `${totalFilled}/9 Filled`} accent={fullBoard ? C.green.fg : 'rgba(244,244,248,0.42)'} glow={fullBoard} />
+        <StatPill label="Board Slots" value={`${totalFilled}/9 Filled`} accent={C.green.fg} />
       </div>
 
       {/* Quick board status */}
@@ -336,11 +335,11 @@ function OverviewTab() {
           {/* Board fill */}
           <div style={{
             padding: '14px', borderRadius: 14,
-            border: `1px solid ${fullBoard ? C.green.br : C.dim.br}`,
-            background: fullBoard ? C.green.bg : C.dim.bg,
+            border: `1px solid ${C.green.br}`,
+            background: C.green.bg,
           }}>
-            <div style={{ fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: fullBoard ? C.green.fg : 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 6 }}>
-              Full Board Bonus
+            <div style={{ fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: C.green.fg, fontFamily: DF, marginBottom: 6 }}>
+              Board Occupancy
             </div>
             {/* Mini slot grid */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 8 }}>
@@ -367,8 +366,8 @@ function OverviewTab() {
                 <div style={{ width: 22 }} />
               </div>
             </div>
-            <div style={{ fontSize: 13, color: fullBoard ? C.green.fg : 'rgba(244,244,248,0.45)', fontFamily: DF, fontWeight: 700 }}>
-              {fullBoard ? '✦ +30% to all Oblivion' : `${9 - totalFilled} slots to activate`}
+            <div style={{ fontSize: 13, color: C.green.fg, fontFamily: DF, fontWeight: 700 }}>
+              {`${totalFilled}/9 slots filled`}
             </div>
           </div>
 
@@ -405,8 +404,8 @@ function OverviewTab() {
           {[
             { icon: '🃏', label: 'Card Plays',         desc: 'Every card played generates Oblivion, amplified by Seraphim synergies.',     accent: C.gold   },
             { icon: '⛳',  label: 'Seraphim Attacks',  desc: 'Cooldown-gated attacks — Unsynergized always available, Synergized requires an Angel.',             accent: C.blue   },
-            { icon: '✦',  label: 'Angel Attacks',     desc: 'Exalted Angel attacks deal ~3× a comparable Seraphim hit.',                   accent: C.gold   },
-            { icon: '⊞',  label: 'Full Board Bonus',  desc: 'Fill all 9 board slots to activate a +30% multiplier on all Oblivion.',      accent: C.green  },
+            { icon: '✦',  label: 'Angel Attacks',     desc: 'Angel attacks provide high-impact burst windows, especially on Exalted cooldowns.',                   accent: C.gold   },
+            { icon: '⊞',  label: 'Board Occupancy',   desc: 'Track frontline and backline occupancy while building your turn engine.',      accent: C.green  },
             { icon: '◈',  label: 'Cherubim Passives', desc: 'Cherubim in the back row grant ongoing per-card or on-expire bonuses.',       accent: C.purple },
             { icon: '∞',  label: 'Set Mechanics',     desc: 'Each set has unique stacks, cascades, or cashouts that multiply payouts.',    accent: C.red    },
           ].map(({ icon, label, desc, accent }) => (
@@ -432,8 +431,8 @@ function OverviewTab() {
         }}>
           <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, color: C.red.fg, fontFamily: DF, marginBottom: 5 }}>Boss Fight Active</div>
           <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.62)', lineHeight: 1.55, fontFamily: BF }}>
-            Boss fights have a higher Oblivion threshold. Focus on maximising your attacks — filling the board
-            will be critical for clearing the damage check.
+            Boss fights have a higher Oblivion threshold. Focus on maximising attack sequencing and set-mechanic
+            cashouts to clear the damage check.
           </div>
         </div>
       )}
@@ -445,7 +444,6 @@ function OverviewTab() {
 
 function AttacksTab() {
   const board = useStore(selectBoard);
-  const stats = useStore(selectComputedStats);
 
   const frontUnits = board.frontSlots.filter(Boolean) as (SeraphimInstance | AngelInstance)[];
   const seraphims  = frontUnits.filter((u): u is SeraphimInstance => u.type === 'Seraphim');
@@ -521,9 +519,9 @@ function AttacksTab() {
           <SourceCard
             icon="◆"
             title="Exalted Attack"
-            subtitle="Angels deal exalted hits worth approximately 3× what a comparable Seraphim would hit for. Longer cooldown — save for large Oblivion bursts."
+            subtitle="Angels deal higher-burst exalted hits with longer cooldowns. Save exalted attacks for your strongest setup windows."
             accent={C.gold}
-            tags={['~3× seraphim power', 'longer cooldown', 'high burst']}
+            tags={['higher burst', 'longer cooldown', 'high impact']}
           />
 
           {angels.length > 0 ? (
@@ -551,18 +549,16 @@ function AttacksTab() {
         </div>
       </div>
 
-      {/* Full board reminder */}
       <div style={{
         padding: '14px 16px', borderRadius: 14,
-        border: `1px solid ${stats.fullBoardActive ? C.green.br : 'rgba(92,184,122,0.12)'}`,
-        background: stats.fullBoardActive ? C.green.bg : 'rgba(255,255,255,0.03)',
+        border: `1px solid ${C.blue.br}`,
+        background: C.blue.bg,
       }}>
-        <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, color: stats.fullBoardActive ? C.green.fg : 'rgba(244,244,248,0.35)', fontFamily: DF, marginBottom: 5 }}>
-          {stats.fullBoardActive ? '✦ Full Board Bonus Active — All Attacks +30%' : 'Full Board Bonus Not Active'}
+        <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, color: C.blue.fg, fontFamily: DF, marginBottom: 5 }}>
+          Attack Payout Note
         </div>
         <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.5)', lineHeight: 1.5, fontFamily: BF }}>
-          The +30% full-board multiplier applies inside <code style={{ color: C.green.fg }}>grantOblivion</code> — meaning it boosts
-          every attack's final payout, including Patience bonuses.
+          Attack payouts come from each attack's authored base value, live board buffs, and explicit set mechanics.
         </div>
       </div>
     </div>
@@ -576,8 +572,6 @@ function BonusesTab() {
   const board  = useStore(selectBoard);
 
   const cherubimCount  = board.backSlots.filter(Boolean).length;
-  const filledFront    = board.frontSlots.filter(Boolean).length;
-  const filledBack     = board.backSlots.filter(Boolean).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
@@ -585,14 +579,6 @@ function BonusesTab() {
       <div>
         <SectionTitle label="Board Bonuses" accent={C.green.fg} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <SourceCard
-            icon="⊞"
-            title="Full Board Bonus  (+30%)"
-            subtitle={`Fill all 5 front slots and all 4 back slots to activate a +30% multiplier that applies to every Oblivion payout — card plays, attacks, and cashouts. Currently ${filledFront} / 5 front, ${filledBack} / 4 back.`}
-            value={stats.fullBoardActive ? '+30%' : 'Inactive'}
-            accent={stats.fullBoardActive ? C.green : C.dim}
-            tags={['applies globally', 'all sources', '5+4 slots']}
-          />
           <SourceCard
             icon="◎"
             title={`Seraphim Synergy  (+${formatNumber(stats.oblivionPerCardBonus)} / card)`}
@@ -695,10 +681,6 @@ function TipsTab() {
   const stats = useStore(selectComputedStats);
   const board = useStore(selectBoard);
 
-  const filledFront   = board.frontSlots.filter(Boolean).length;
-  const filledBack    = board.backSlots.filter(Boolean).length;
-  const totalFilled   = filledFront + filledBack;
-  const fullBoard     = stats.fullBoardActive;
   const noSynergies   = stats.activeSynergies === 0;
   const perCardBonus  = stats.oblivionPerCardBonus;
 
@@ -706,7 +688,7 @@ function TipsTab() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
       {/* Priority alerts — contextual */}
-      {(!fullBoard || noSynergies) && (
+      {noSynergies && (
         <div style={{
           padding: '14px 16px', borderRadius: 14,
           border: `1px solid ${C.red.br}`, background: C.red.bg,
@@ -715,11 +697,6 @@ function TipsTab() {
             ⚠ Immediate Opportunities
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {!fullBoard && (
-              <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.72)', fontFamily: BF }}>
-                → <strong style={{ color: C.green.fg }}>Fill {9 - totalFilled} more slot{9 - totalFilled !== 1 ? 's' : ''}</strong> to activate the +30% Full Board Bonus — the single largest multiplier available this turn.
-              </div>
-            )}
             {noSynergies && (
               <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.72)', fontFamily: BF }}>
                 → <strong style={{ color: C.blue.fg }}>No Seraphim synergies active.</strong> Play Seraphim matching your deck's element, or place a Seraphim whose synergyRequirement matches your front-row Angel, to unlock per-card bonuses.
@@ -733,14 +710,14 @@ function TipsTab() {
 
       <TipCard
         rank={1}
-        title="Fill All 9 Board Slots First"
-        detail="The Full Board Bonus (+30%) is a global multiplier that compounds every other source. Prioritise getting 5 Seraphim/Angels on the front row and 4 Cherubim on the back row before optimising individual card choices."
+        title="Prioritise Synergy Activation"
+        detail="Prioritise getting active Seraphim/Angel pairings online early, then sequence cards to maximize cooldown-ready attack windows."
         accent={C.green.fg}
       />
       <TipCard
         rank={2}
         title="Save Exalted Angel Attacks for Maximum Burst"
-        detail="Exalted hits deal ~3× a comparable Seraphim's full hit. Don't waste Exalted on low-multiplier turns. Use them when Full Board Bonus is active and your Global Multiplier is highest."
+        detail="Exalted hits are your biggest single-attack bursts. Save them for turns where explicit set mechanics and per-card bonuses are already primed."
         accent={C.gold.fg}
       />
       <TipCard
@@ -758,7 +735,7 @@ function TipsTab() {
       <TipCard
         rank={5}
         title="Time Your Set Mechanic Cashouts"
-        detail="Set mechanics (Eternal Stacks, Chroma Embers, Refraction Charge, etc.) produce disproportionate Oblivion when cashed out at high counts. Hold off triggering cashout cards until your stack is large, then combine with Full Board Bonus for the biggest burst possible."
+        detail="Set mechanics (Eternal Stacks, Chroma Embers, Refraction Charge, etc.) produce disproportionate Oblivion when cashed out at high counts. Hold off triggering cashout cards until your stack is large for the biggest burst possible."
         accent={C.red.fg}
       />
       <TipCard

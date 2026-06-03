@@ -28,7 +28,6 @@ import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { SynergySystem } from '@/systems/cards/SynergySystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
-import { getLateGameAttackIdentity } from '@/systems/cards/LateGameAttackIdentity';
 import { getEffectivePatientLightPerCardPatienceGain } from '@/systems/cards/neutralityPatientLight';
 import {
   type ActionClass,
@@ -1634,10 +1633,6 @@ function grantOblivion(s: Store, amount: number): void {
   // Global Oblivion multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
   if (s.computedStats.globalOblivionMult > 0) {
     amount = Math.round(amount * (1 + s.computedStats.globalOblivionMult));
-  }
-  // Full-board bonus: +30% when all 9 board slots are filled.
-  if (s.computedStats.fullBoardActive) {
-    amount = Math.round(amount * 1.30);
   }
   s.turn.oblivionEarnedThisTurn += amount;
   if (s.bossFight.mode === 'active') {
@@ -3486,58 +3481,12 @@ function buildDefaultAngelAttackSet(def: AngelDefinition): AngelAttackSet {
 
 function getSeraphimAttackSet(def: SeraphimDefinition): SeraphimAttackSet {
   const attacks = def.attacks ?? buildDefaultSeraphimAttackSet(def);
-  return scaleHighTierSeraphimAttackSet(attacks, def.rarity);
+  return attacks;
 }
 
 function getAngelAttackSet(def: AngelDefinition): AngelAttackSet {
   const attacks = def.attacks ?? buildDefaultAngelAttackSet(def);
-  return scaleHighTierAngelAttackSet(attacks, def.rarity);
-}
-
-function getHighTierAttackBaseScale(
-  rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
-): number {
-  if (rarity === 'Infinite') return 0.45;
-  if (rarity === 'Eternal') return 0.5;
-  return 1;
-}
-
-function scaleHighTierSeraphimAttackSet(
-  attacks: SeraphimAttackSet,
-  rarity: SeraphimDefinition['rarity'],
-): SeraphimAttackSet {
-  const scale = getHighTierAttackBaseScale(rarity);
-  if (scale === 1) return attacks;
-  return {
-    ...attacks,
-    unsynergized: {
-      ...attacks.unsynergized,
-      baseOblivion: Math.max(1, Math.round(attacks.unsynergized.baseOblivion * scale)),
-    },
-    synergized: {
-      ...attacks.synergized,
-      baseOblivion: Math.max(1, Math.round(attacks.synergized.baseOblivion * scale)),
-    },
-  };
-}
-
-function scaleHighTierAngelAttackSet(
-  attacks: AngelAttackSet,
-  rarity: AngelDefinition['rarity'],
-): AngelAttackSet {
-  const scale = getHighTierAttackBaseScale(rarity);
-  if (scale === 1) return attacks;
-  return {
-    ...attacks,
-    primary: {
-      ...attacks.primary,
-      baseOblivion: Math.max(1, Math.round(attacks.primary.baseOblivion * scale)),
-    },
-    exalted: {
-      ...attacks.exalted,
-      baseOblivion: Math.max(1, Math.round(attacks.exalted.baseOblivion * scale)),
-    },
-  };
+  return attacks;
 }
 
 function hasAnyAngelOnBoard(board: BoardState): boolean {
@@ -3792,16 +3741,7 @@ function grantDominantAttackResource(s: Store, sourceDefinitionId: string, eleme
 function getHighTierAttackDamageMultiplier(
   rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
 ): number {
-  if (rarity === 'Infinite') return 0.62;
-  if (rarity === 'Eternal') return 0.76;
-  return 1;
-}
-
-function getHighTierAttackIdentityMultiplier(
-  rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
-): number {
-  if (rarity === 'Infinite') return 0.7;
-  if (rarity === 'Eternal') return 0.82;
+  void rarity;
   return 1;
 }
 
@@ -3838,46 +3778,11 @@ function applyLateGameAttackIdentity(
   attackLabel: string,
   baseAttackAward: number,
 ): void {
-  const identity = getLateGameAttackIdentity(definitionId, rarity, attackLabel);
-  if (!identity) return;
-
-  const isInfinite = rarity === 'Infinite';
-  const allowedDraws = identity.drawCards >= 3 ? 1 : 0;
-  const suppressedDraws = Math.max(0, identity.drawCards - allowedDraws);
-
-  const identityScale = getHighTierAttackIdentityMultiplier(rarity);
-  let extraOblivion = Math.round(
-    (baseAttackAward * identity.bonusBaseMultiplier + identity.bonusFlatOblivion) * identityScale,
-  );
-  if (suppressedDraws > 0) {
-    extraOblivion += suppressedDraws * (isInfinite ? 220 : 110);
-  }
-
-  if (extraOblivion > 0) {
-    grantOblivion(s, extraOblivion);
-  }
-
-  if (allowedDraws > 0) {
-    s.deck = TurnSystem.drawCards(s.deck, allowedDraws);
-  }
-
-  if (identity.grantNextCardMultiplier) {
-    s.turn.nextCardMultiplied = true;
-  }
-
-  const dominantResourceGain = Math.max(
-    0,
-    Math.round((identity.dominantResourceGain + suppressedDraws * (isInfinite ? 10 : 5)) * identityScale),
-  );
-  if (dominantResourceGain > 0) {
-    const attackingDef = ScoreSystem.getDefinition(definitionId);
-    grantDominantAttackResource(s, attackingDef?.definitionId ?? '', attackingDef?.element, dominantResourceGain);
-  }
-
-  const cooldownReduction = Math.max(0, Math.round(identity.cooldownReduction * identityScale));
-  if (cooldownReduction > 0) {
-    reduceFrontlineAttackCooldowns(s.board, cooldownReduction);
-  }
+  void s;
+  void definitionId;
+  void rarity;
+  void attackLabel;
+  void baseAttackAward;
 }
 
 // �E��E��E��E� Cherubim helpers �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�

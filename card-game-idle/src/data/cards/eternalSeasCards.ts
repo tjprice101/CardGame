@@ -322,7 +322,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'es-cher-neon-cell-cantor',
     name: 'Neon Cell Cantor',
-    description: 'On play: Gain 3 Undertow; Gain 1 Foam; Gain 5 Radiance. While on board: Gain 2 Radiance per card played',
+    description: 'On play: Gain 5 Radiance; Gain 3 Undertow; Gain 1 Foam. While on board: Gain 2 Radiance per card played',
     rarity: 'Rare',
     artKey: 'es_cher_neon_cell_cantor',
     effects: [{ type: 'cherubim_resource_per_card', resource: 'radiance', value: 2 }],
@@ -643,7 +643,7 @@ const eternalCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'es-et-veleth-abyss-sounding',
     name: 'Veleth Abyss Sounding',
-    description: 'Gain 6 Undertow; Gain 1 Deepwake; Surge up to 2 Deepwake (+1 Undertow per Deepwake, then release up to 5 Undertow at +132 Oblivion per Undertow with +24 per Deepwake; +1 Foam per Deepwake); Gain 1 Deepwake',
+    description: 'Gain 6 Undertow; Gain 1 Deepwake; Surge up to 2 Deepwake (+1 Undertow per Deepwake, then release up to 5 Undertow at +132 Oblivion per Undertow with +24 per Deepwake; +1 Foam per Deepwake)',
     rarity: 'Eternal',
     artKey: 'es_et_veleth_abyss_sounding',
     // Role: SPEND-THEN-RESEED DEEPWAKE ESCALATOR (Ophanim Eternal).

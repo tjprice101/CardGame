@@ -21,9 +21,8 @@ export class ScoreSystem {
     );
 
     const activeSynergies = activeSeraphims.length;
-    const fullBoardActive =
-      board.frontSlots.every(s => s !== null) &&
-      board.backSlots.every(s => s !== null);
+    // Full-board Oblivion multiplier was removed; keep field for compatibility.
+    const fullBoardActive = false;
 
     if (activeSynergies === 0) {
       return { activeSynergies: 0, oblivionPerCardBonus: 0, ophanimOblivionBonus: 0, cherubimExtraPlays: 0, globalOblivionMult, fullBoardActive };

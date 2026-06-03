@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { SynergySystem } from '@/systems/cards/SynergySystem';
+import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { defaultGameState, selectCanEmbraceInfinite, useStore } from '@/state/store';
 import type { CardEffect } from '@/types/effects';
-import type { AngelInstance, CherubimInstance, SeraphimInstance } from '@/types/cards';
+import type { AngelDefinition, AngelInstance, CardDefinition, CherubimDefinition, CherubimInstance, SeraphimDefinition, SeraphimInstance } from '@/types/cards';
 import type { BoardState, DeckCard, DeckEntry, DeckState, TurnState } from '@/types/game';
 
 const emptyBoard: BoardState = {
@@ -1345,5 +1346,290 @@ describe('Abyssal Forge Cherubim passives', () => {
     expect(buffedRecastResult.oblivionBonus - baselineRecastResult.oblivionBonus).toBeCloseTo(60, 5);
     expect(buffedRecastResult.turn.pearls - baselineRecastResult.turn.pearls).toBeCloseTo(0.5, 5);
     expect(buffedRecastResult.turn.forgeRecastEventsThisTurn).toBe(1);
+  });
+});
+
+describe('Hidden multiplier regression guards', () => {
+  function makeTestAngelDefinition(definitionId: string, rarity: AngelDefinition['rarity']): AngelDefinition {
+    return {
+      definitionId,
+      type: 'Angel',
+      element: 'Light',
+      rarity,
+      name: `Test ${definitionId}`,
+      description: 'Test-only attack definition',
+      artKey: definitionId,
+      summonCost: [],
+      onSummonEffects: [],
+      activatedAbility: {
+        name: 'No-op',
+        cardsPlayedRequirement: 99,
+        description: 'No-op',
+        effects: [],
+      },
+      attacks: {
+        primary: {
+          id: `${definitionId}:primary`,
+          label: 'Primary',
+          name: 'Primary',
+          description: '1000 base Oblivion · 3 cards cooldown',
+          baseOblivion: 1000,
+          cooldownCards: 3,
+          costs: [],
+          tags: ['angel', 'primary', 'test'],
+        },
+        exalted: {
+          id: `${definitionId}:exalted`,
+          label: 'Exalted',
+          name: 'Exalted',
+          description: '2000 base Oblivion · 5 cards cooldown',
+          baseOblivion: 2000,
+          cooldownCards: 5,
+          costs: [],
+          tags: ['angel', 'exalted', 'test'],
+        },
+      },
+      baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 0 },
+    };
+  }
+
+  const fillerSeraphimDef: SeraphimDefinition = {
+    definitionId: 'test-seraphim-filler',
+    type: 'Seraphim',
+    element: 'Light',
+    rarity: 'Common',
+    name: 'Filler Seraphim',
+    description: 'No-op filler',
+    artKey: 'test_seraphim_filler',
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 0, synergyRequirement: 'Light' },
+    onPlayEffects: [],
+  };
+
+  const fillerCherubimDef: CherubimDefinition = {
+    definitionId: 'test-cherubim-filler',
+    type: 'Cherubim',
+    element: 'Light',
+    rarity: 'Common',
+    name: 'Filler Cherubim',
+    description: 'No-op filler',
+    artKey: 'test_cherubim_filler',
+    effects: [],
+    onPlayEffects: [],
+  };
+
+  function makeTestAngelInstance(definitionId: string, rarity: AngelDefinition['rarity']): AngelInstance {
+    return {
+      instanceId: `${definitionId}:instance`,
+      definitionId,
+      type: 'Angel',
+      element: 'Light',
+      rarity,
+      finish: 'normal',
+      level: 1,
+      cardsPlayedSinceSummon: 0,
+      activated: false,
+      attackCooldowns: {},
+      boardSlot: 0,
+    };
+  }
+
+  function runPrimaryAttackWithDefinitions(
+    definitions: CardDefinition[],
+    board: BoardState,
+  ): { oblivionDelta: number; nextCardMultiplied: boolean; handSize: number } {
+    resetStore();
+
+    const originalGetDefinition = ScoreSystem.getDefinition;
+    const map = new Map(definitions.map(def => [def.definitionId, def]));
+    ScoreSystem.getDefinition = (id: string) => map.get(id);
+
+    try {
+      useStore.setState(state => ({
+        ...state,
+        board,
+        deck: {
+          ...state.deck,
+          hand: [],
+          drawPile: [],
+          discardPile: [],
+        },
+        turn: {
+          ...state.turn,
+          phase: 'playing',
+          pendingEffect: null,
+          nextCardMultiplied: false,
+        },
+        progress: {
+          ...state.progress,
+          oblivion: 0,
+        },
+      }));
+      useStore.getState().refreshComputedStats();
+
+      useStore.getState().activateAngelAttack(0, 'primary');
+
+      const state = useStore.getState();
+      return {
+        oblivionDelta: state.progress.oblivion,
+        nextCardMultiplied: state.turn.nextCardMultiplied,
+        handSize: state.deck.hand.length,
+      };
+    } finally {
+      ScoreSystem.getDefinition = originalGetDefinition;
+    }
+  }
+
+  it('does not apply additional hidden high-tier attack multipliers beyond explicit full-fire scaling', () => {
+    const rareDef = makeTestAngelDefinition('test-angel-rare', 'Rare');
+    const infiniteDef = makeTestAngelDefinition('test-angel-infinite', 'Infinite');
+    const sharedDefs: CardDefinition[] = [rareDef, infiniteDef, fillerSeraphimDef, fillerCherubimDef];
+
+    const sparseBoardForRare: BoardState = {
+      frontSlots: [makeTestAngelInstance(rareDef.definitionId, rareDef.rarity), null, null, null, null],
+      backSlots: [null, null, null, null],
+      activeBoardEffects: [],
+    };
+    const sparseBoardForInfinite: BoardState = {
+      frontSlots: [makeTestAngelInstance(infiniteDef.definitionId, infiniteDef.rarity), null, null, null, null],
+      backSlots: [null, null, null, null],
+      activeBoardEffects: [],
+    };
+
+    const rareResult = runPrimaryAttackWithDefinitions(sharedDefs, sparseBoardForRare);
+    const infiniteResult = runPrimaryAttackWithDefinitions(sharedDefs, sparseBoardForInfinite);
+
+    expect(rareResult.oblivionDelta).toBe(1000);
+    expect(infiniteResult.oblivionDelta).toBe(700);
+  });
+
+  it('does not grant a hidden full-board attack payout bonus', () => {
+    const rareDef = makeTestAngelDefinition('test-angel-fullboard', 'Rare');
+    const sharedDefs: CardDefinition[] = [rareDef, fillerSeraphimDef, fillerCherubimDef];
+
+    const sparseBoard: BoardState = {
+      frontSlots: [makeTestAngelInstance(rareDef.definitionId, rareDef.rarity), null, null, null, null],
+      backSlots: [null, null, null, null],
+      activeBoardEffects: [],
+    };
+
+    const fullBoard: BoardState = {
+      frontSlots: [
+        makeTestAngelInstance(rareDef.definitionId, rareDef.rarity),
+        {
+          instanceId: 'filler_ser_1',
+          definitionId: fillerSeraphimDef.definitionId,
+          type: 'Seraphim',
+          element: 'Light',
+          rarity: 'Common',
+          finish: 'normal',
+          level: 1,
+          isActive: false,
+          attackCooldowns: {},
+          boardSlot: 1,
+        },
+        {
+          instanceId: 'filler_ser_2',
+          definitionId: fillerSeraphimDef.definitionId,
+          type: 'Seraphim',
+          element: 'Light',
+          rarity: 'Common',
+          finish: 'normal',
+          level: 1,
+          isActive: false,
+          attackCooldowns: {},
+          boardSlot: 2,
+        },
+        {
+          instanceId: 'filler_ser_3',
+          definitionId: fillerSeraphimDef.definitionId,
+          type: 'Seraphim',
+          element: 'Light',
+          rarity: 'Common',
+          finish: 'normal',
+          level: 1,
+          isActive: false,
+          attackCooldowns: {},
+          boardSlot: 3,
+        },
+        {
+          instanceId: 'filler_ser_4',
+          definitionId: fillerSeraphimDef.definitionId,
+          type: 'Seraphim',
+          element: 'Light',
+          rarity: 'Common',
+          finish: 'normal',
+          level: 1,
+          isActive: false,
+          attackCooldowns: {},
+          boardSlot: 4,
+        },
+      ],
+      backSlots: [
+        {
+          instanceId: 'filler_cher_1',
+          definitionId: fillerCherubimDef.definitionId,
+          type: 'Cherubim',
+          element: 'Light',
+          rarity: 'Common',
+          finish: 'normal',
+          level: 1,
+          backSlot: 0,
+        },
+        {
+          instanceId: 'filler_cher_2',
+          definitionId: fillerCherubimDef.definitionId,
+          type: 'Cherubim',
+          element: 'Light',
+          rarity: 'Common',
+          finish: 'normal',
+          level: 1,
+          backSlot: 1,
+        },
+        {
+          instanceId: 'filler_cher_3',
+          definitionId: fillerCherubimDef.definitionId,
+          type: 'Cherubim',
+          element: 'Light',
+          rarity: 'Common',
+          finish: 'normal',
+          level: 1,
+          backSlot: 2,
+        },
+        {
+          instanceId: 'filler_cher_4',
+          definitionId: fillerCherubimDef.definitionId,
+          type: 'Cherubim',
+          element: 'Light',
+          rarity: 'Common',
+          finish: 'normal',
+          level: 1,
+          backSlot: 3,
+        },
+      ],
+      activeBoardEffects: [],
+    };
+
+    const sparseResult = runPrimaryAttackWithDefinitions(sharedDefs, sparseBoard);
+    const fullBoardResult = runPrimaryAttackWithDefinitions(sharedDefs, fullBoard);
+
+    expect(sparseResult.oblivionDelta).toBe(1000);
+    expect(fullBoardResult.oblivionDelta).toBe(1000);
+  });
+
+  it('keeps late-game identity side effects disabled even for mapped Eternal cards', () => {
+    const mappedEternalDef = makeTestAngelDefinition('btei-convergence-of-eternity', 'Eternal');
+    const sharedDefs: CardDefinition[] = [mappedEternalDef, fillerSeraphimDef, fillerCherubimDef];
+
+    const board: BoardState = {
+      frontSlots: [makeTestAngelInstance(mappedEternalDef.definitionId, mappedEternalDef.rarity), null, null, null, null],
+      backSlots: [null, null, null, null],
+      activeBoardEffects: [],
+    };
+
+    const result = runPrimaryAttackWithDefinitions(sharedDefs, board);
+
+    expect(result.oblivionDelta).toBe(1000);
+    expect(result.nextCardMultiplied).toBe(false);
+    expect(result.handSize).toBe(0);
   });
 });

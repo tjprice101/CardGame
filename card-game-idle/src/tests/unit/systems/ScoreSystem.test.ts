@@ -199,6 +199,22 @@ describe('ScoreSystem', () => {
     expect(stats.activeSynergies).toBe(2);
     expect(stats.oblivionPerCardBonus).toBe(14 + 8);
   });
+
+  it('keeps fullBoardActive disabled even on a completely filled board', () => {
+    const board = makeBoard({
+      frontSlots: [
+        makeAngel('angel-light-card-bonus', 0),
+        makeSeraphim('ser-light-oblivion', 1, 'Light', true),
+        makeSeraphim('ser-light-ophanim', 2, 'Light', true),
+        makeSeraphim('ser-light-cherubim', 3, 'Light', true),
+        makeSeraphim('ser-fire-ember', 4, 'Fire', true),
+      ],
+      backSlots: [makeCherubim(0), makeCherubim(1), makeCherubim(2), makeCherubim(3)],
+    });
+
+    const stats = ScoreSystem.compute(board);
+    expect(stats.fullBoardActive).toBe(false);
+  });
 });
 
 describe('SynergySystem', () => {

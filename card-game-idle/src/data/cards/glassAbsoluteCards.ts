@@ -352,7 +352,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-white-transit',
     name: 'White Transit',
-    description: 'Draw 4 cards; Gain 24 Radiance',
+    description: 'Gain 24 Radiance; Draw 4 cards',
     rarity: 'Legendary',
     artKey: 'ga_oph_white_transit',
     effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 24 }],
@@ -520,7 +520,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-inf-glass-absolute',
     name: 'Glass Absolute Seraph',
-    description: 'On play: Gain 4 Refraction Charges; If you have 8+ Refraction Charges, Spend 4 Refraction Charges; Empower the next card you play; Empower the next card you play; +600 Oblivion. While on board: +250 Oblivion per card played while active',
+    description: 'On play: Gain 4 Refraction Charges; If you have 8+ Refraction Charges, Spend 4 Refraction Charges; Empower the next card you play; +600 Oblivion. While on board: +250 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'ga_inf_glass_absolute',
     bonusType: 'oblivion_per_card',
@@ -634,7 +634,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-inf-color-after-white',
     name: 'Color After White',
-    description: 'Gain 5 Refraction Charges; Spend 2 Refraction Charges; Empower the next card you play; If you have 9+ Refraction Charges, Spend 5 Refraction Charges; Empower the next card you play; Empower the next card you play; +700 Oblivion',
+    description: 'Gain 5 Refraction Charges; Spend 2 Refraction Charges; Empower the next card you play; If you have 9+ Refraction Charges, Spend 5 Refraction Charges; Empower the next card you play; +700 Oblivion',
     rarity: 'Infinite',
     artKey: 'ga_inf_color_after_white',
     // Role: END-TURN LEDGER OVERDRIVE FINISHER.

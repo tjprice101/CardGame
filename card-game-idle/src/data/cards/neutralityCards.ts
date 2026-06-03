@@ -247,7 +247,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Surge',
-    description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion; Empower the next card you play; Empower the next card you play; Draw 1 card',
+    description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion; Empower the next card you play; Draw 1 card',
     artKey: 'seek_neutral_void_surge',
     effects: [
       { type: 'oblivion_flat', value: 25 },
