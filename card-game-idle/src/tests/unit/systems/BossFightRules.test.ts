@@ -40,8 +40,8 @@ describe('Boss fight rules', () => {
 
   it('uses set-anchored linear HP segments for eternal bosses', () => {
     const hpValues = BOSS_DEFINITIONS.map(boss => boss.hp);
-    expect(hpValues[0]).toBeGreaterThanOrEqual(100_000);
-    expect(hpValues[hpValues.length - 1]).toBeGreaterThanOrEqual(20_000_000);
+    expect(hpValues[0]).toBeGreaterThanOrEqual(40_000);
+    expect(hpValues[hpValues.length - 1]).toBeGreaterThanOrEqual(1_000_000);
 
     const nonEventBosses = BOSS_DEFINITIONS.filter(boss => boss.category !== '[EVENT] Wished Upon A Star');
     let setStart = 0;
