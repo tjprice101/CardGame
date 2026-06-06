@@ -26,14 +26,14 @@ describe('Neutrality tuned card profile', () => {
     expect(card?.type).toBe('Seraphim');
     const seraphim = card as SeraphimDefinition;
 
-    expect(seraphim.baseStats.bonusValue).toBe(35);
-    expect(seraphim.attacks?.unsynergized.baseOblivion).toBe(1980);
-    expect(seraphim.attacks?.synergized.baseOblivion).toBe(3320);
+    expect(seraphim.baseStats.bonusValue).toBe(0);
+    expect(seraphim.attacks?.unsynergized.baseOblivion).toBe(2550);
+    expect(seraphim.attacks?.synergized.baseOblivion).toBe(3400);
 
     const onPlay = seraphim.onPlayEffects;
     const patience = onPlay.find(effect => effect.type === 'patience_gain_all');
     const light = onPlay.find(effect => effect.type === 'neutrality_patient_light_gain');
-    expect(patience && 'value' in patience ? patience.value : null).toBe(3);
+    expect(patience && 'value' in patience ? patience.value : null).toBe(1);
     expect(light && 'value' in light ? light.value : null).toBe(1);
   });
 
@@ -58,9 +58,9 @@ describe('Neutrality tuned card profile', () => {
     const genesisGain = genesisSeraphim.onPlayEffects.find(effect => effect.type === 'neutrality_patient_light_gain');
     const annihilationGain = annihilationCherubim.onPlayEffects.find(effect => effect.type === 'neutrality_patient_light_gain');
 
-    expect(sovereigntyGain && 'value' in sovereigntyGain ? sovereigntyGain.value : null).toBe(3);
-    expect(ruptureGain && 'value' in ruptureGain ? ruptureGain.value : null).toBe(3);
-    expect(genesisGain && 'value' in genesisGain ? genesisGain.value : null).toBe(2);
-    expect(annihilationGain && 'value' in annihilationGain ? annihilationGain.value : null).toBe(2);
+    expect(sovereigntyGain && 'value' in sovereigntyGain ? sovereigntyGain.value : null).toBe(1);
+    expect(ruptureGain && 'value' in ruptureGain ? ruptureGain.value : null).toBe(1);
+    expect(genesisGain && 'value' in genesisGain ? genesisGain.value : null).toBeNull();
+    expect(annihilationGain && 'value' in annihilationGain ? annihilationGain.value : null).toBeNull();
   });
 });

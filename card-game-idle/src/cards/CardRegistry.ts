@@ -38,6 +38,7 @@ import { deathFlamedHellCards } from '../data/cards/deathFlamedHellCards';
 import { wishedUponAStarCards } from '../data/cards/wishedUponAStarCards';
 import { snowboundVoltageAngels, snowboundVoltageCherubimCards, snowboundVoltageOphanimCards, snowboundVoltageSeraphims } from '../data/cards/snowboundVoltageCards';
 import { infiniteCards } from '../data/cards/infiniteCards';
+import { NEUTRALITY_DOC_OVERRIDES } from '../data/cards/neutralityDocOverrides';
 import { transcendentCardDefinitions } from '../data/ascension/transcendentCards';
 import { getCardCategoryKey } from '../data/elements';
 import { MATERIALIZED_CARD_BALANCE } from '../data/cards/materializedCardBalance';
@@ -214,7 +215,10 @@ function isSummonCostSetAligned(def: AngelDefinition, summonCost: ReadonlyArray<
   });
 }
 
-function collectEffectTraitTokens(effects: ReadonlyArray<CardEffect> | undefined, into: Set<string>): void {
+function collectEffectTraitTokens(
+  effects: ReadonlyArray<CardEffect | CherubimPassiveEffect> | undefined,
+  into: Set<string>,
+): void {
   if (!effects || effects.length === 0) return;
 
   for (const effect of effects) {
@@ -736,7 +740,7 @@ function parseAttackCostsFromDescription(description: string): AttackCost[] {
   const match = description.match(/cost:\s*([^.]*)/i);
   if (!match || !match[1]) return [];
 
-  const clauses = match[1].split(',').map(part => part.trim()).filter(Boolean);
+  const clauses = match[1].split(/[;,]/).map(part => part.trim().replace(/\.$/, '')).filter(Boolean);
   const parsed: AttackCost[] = [];
 
   for (const clause of clauses) {
@@ -789,6 +793,342 @@ function parseAttackCostsFromDescription(description: string): AttackCost[] {
   }
 
   return Array.from(merged.entries()).map(([type, value]) => ({ type, value }));
+}
+
+function parseSubtypeFilterFromText(text: string): Array<'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel'> {
+  const out: Array<'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel'> = [];
+  const lowered = text.toLowerCase();
+  if (lowered.includes('seraphim')) out.push('Seraphim');
+  if (lowered.includes('cherubim')) out.push('Cherubim');
+  if (lowered.includes('ophanim')) out.push('Ophanim');
+  if (lowered.includes('angel')) out.push('Angel');
+  return out;
+}
+
+function parseDocEffectClauses(text: string): CardEffect[] {
+  const clauses = text
+    .split(/;\s+/)
+    .flatMap((part) => part.split(/\.\s+(?=[A-Z])/))
+    .map((clause) => clause.trim().replace(/\.$/, ''))
+    .filter(Boolean);
+
+  const effects: CardEffect[] = [];
+
+  for (const clause of clauses) {
+    const plusOblivion = clause.match(/^\+(\d+)\s+Oblivion/i);
+    if (plusOblivion) {
+      effects.push({ type: 'oblivion_flat', value: Number(plusOblivion[1]) });
+      continue;
+    }
+
+    const draw = clause.match(/^Draw\s+(\d+)\s+cards?/i);
+    if (draw) {
+      effects.push({ type: 'draw', value: Number(draw[1]) });
+      continue;
+    }
+
+    const discard = clause.match(/^(?:Choose and )?discard\s+(\d+)\s+cards?/i);
+    if (discard) {
+      effects.push({ type: 'discard_choice', value: Number(discard[1]) });
+      continue;
+    }
+
+    if (/^Shuffle discard into deck/i.test(clause)) {
+      effects.push({ type: 'shuffle_discard' });
+      continue;
+    }
+
+    if (/^Empower the next card you play/i.test(clause)) {
+      effects.push({ type: 'multiply_next' });
+      continue;
+    }
+
+    const patienceGain = clause.match(/^All Seraphim on board gain\s+\+(\d+)\s+(?:additional\s+)?Patience/i);
+    if (patienceGain) {
+      effects.push({ type: 'patience_gain_all', value: Number(patienceGain[1]) });
+      continue;
+    }
+
+    const patienceBump = clause.match(/^Increase all current Patience by\s+\+(\d+)/i);
+    if (patienceBump) {
+      effects.push({ type: 'patience_gain_all', value: Number(patienceBump[1]) });
+      continue;
+    }
+
+    if (/^Double all Patience on the board/i.test(clause)) {
+      effects.push({ type: 'patience_double_all' });
+      continue;
+    }
+
+    const patientLight = clause.match(/^Grant\s+(\d+)\s+Patient Light\s+stacks?/i);
+    if (patientLight) {
+      effects.push({ type: 'neutrality_patient_light_gain', value: Number(patientLight[1]) });
+      continue;
+    }
+
+    if (/Designate the Seraphim with the highest Patience as your Vessel/i.test(clause)) {
+      effects.push({ type: 'neutrality_designate_vessel' });
+      continue;
+    }
+
+    const preserve = clause.match(/Seraphim attacks preserve\s+(\d+(?:\.\d+)?)%\s+of consumed Patience/i);
+    if (preserve) {
+      effects.push({ type: 'neutrality_attack_preserve', percent: Number(preserve[1]) / 100 });
+      continue;
+    }
+
+    const search = clause.match(/^Search\s+you?r?\s+deck\s+for\s+(?:up to\s+)?\d+\s+(.+)$/i);
+    if (search) {
+      const filter = parseSubtypeFilterFromText(search[1]);
+      if (filter.length > 0) effects.push({ type: 'search_deck_by_type', filter });
+      continue;
+    }
+
+    const salvageByType = clause.match(/^Salvage\s+\d+\s+(.+?)\s+cards?/i);
+    if (salvageByType) {
+      const filter = parseSubtypeFilterFromText(salvageByType[1]);
+      if (filter.length > 0) {
+        effects.push({ type: 'salvage_by_type', filter });
+      } else if (/any/i.test(salvageByType[1])) {
+        effects.push({ type: 'salvage_any' });
+      }
+      continue;
+    }
+
+    if (/^Salvage any\s+\d+\s+card/i.test(clause)) {
+      effects.push({ type: 'salvage_any' });
+      continue;
+    }
+
+    const lookTopDrop = clause.match(/^Look at the top\s+(\d+)\s+cards?.*take\s+(\d+)\s+cards?.*put\s+(\d+)\s+cards?\s+on\s+the\s+bottom/i);
+    if (lookTopDrop) {
+      effects.push({ type: 'look_top_take_drop', look: Number(lookTopDrop[1]), take: Number(lookTopDrop[2]), drop: Number(lookTopDrop[3]) });
+      continue;
+    }
+
+    const lookTop = clause.match(/^Look at the top\s+(\d+)\s+cards?.*take\s+(\d+)\s+cards?/i);
+    if (lookTop) {
+      effects.push({ type: 'look_top_take', look: Number(lookTop[1]), take: Number(lookTop[2]) });
+      continue;
+    }
+
+    const prismaticGain = clause.match(/^Gain\s+(\d+)\s+Prismatic Light/i);
+    if (prismaticGain) {
+      effects.push({ type: 'prismatic_light_gain', value: Number(prismaticGain[1]) });
+      continue;
+    }
+
+    const conditionalCherub = clause.match(/^If you control\s+(\d+)\+\s+active\s+Cherubim,\s*\+(\d+)\s+(?:additional\s+)?Oblivion/i);
+    if (conditionalCherub) {
+      effects.push({
+        type: 'conditional',
+        condition: { type: 'cherubim_active_gte', value: Number(conditionalCherub[1]) },
+        then: [{ type: 'oblivion_flat', value: Number(conditionalCherub[2]) }],
+      });
+      continue;
+    }
+
+    const conditionalSeraphPatience = clause.match(/^If you control\s+(\d+)\+\s+active\s+Seraphim,\s*All Seraphim on board gain\s+\+(\d+)\s+(?:additional\s+)?Patience/i);
+    if (conditionalSeraphPatience) {
+      effects.push({
+        type: 'conditional',
+        condition: { type: 'seraphim_active_gte', value: Number(conditionalSeraphPatience[1]) },
+        then: [{ type: 'patience_gain_all', value: Number(conditionalSeraphPatience[2]) }],
+      });
+      continue;
+    }
+  }
+
+  return effects;
+}
+
+function parseDocTriggeredEffects(bullets: string[], triggerPrefix: string): CardEffect[] {
+  const triggerCore = triggerPrefix.toLowerCase().replace(':', '').trim();
+  const relevant = bullets
+    .map((bullet) => ({
+      raw: bullet,
+      normalized: bullet.toLowerCase().replace(/-/g, ' '),
+    }))
+    .filter((entry) => entry.normalized.startsWith(`${triggerCore}:`))
+    .map((entry) => entry.raw.replace(/^[^:]+:\s*/i, '').trim());
+  return parseDocEffectClauses(relevant.join('; '));
+}
+
+function parseDocAttackBuffsFromBullets(bullets: string[]): CherubimPassiveEffect[] {
+  const buffs: CherubimPassiveEffect[] = [];
+  for (const bullet of bullets) {
+    const match = bullet.match(/Buffs\s+(Seraphim and Angel|Seraphim|Angel)\s+attacks:\s+base\s+\+(\d+)/i);
+    if (!match) continue;
+    const targetText = match[1].toLowerCase();
+    const value = Number(match[2]);
+    if (targetText.includes('seraphim and angel')) {
+      buffs.push({ type: 'cherubim_attack_buff', targetUnitType: 'Seraphim', bonusBaseOblivion: value, cooldownDeltaCards: 0, multiplier: 1 });
+      buffs.push({ type: 'cherubim_attack_buff', targetUnitType: 'Angel', bonusBaseOblivion: value, cooldownDeltaCards: 0, multiplier: 1 });
+    } else if (targetText.includes('seraphim')) {
+      buffs.push({ type: 'cherubim_attack_buff', targetUnitType: 'Seraphim', bonusBaseOblivion: value, cooldownDeltaCards: 0, multiplier: 1 });
+    } else {
+      buffs.push({ type: 'cherubim_attack_buff', targetUnitType: 'Angel', bonusBaseOblivion: value, cooldownDeltaCards: 0, multiplier: 1 });
+    }
+  }
+  return buffs;
+}
+
+function applyDocBaseStatsOverride(def: CardDefinition, bullets: string[]): CardDefinition {
+  if (def.type !== 'Seraphim' && def.type !== 'Angel') return def;
+
+  const whileBullets = bullets
+    .filter((bullet) => bullet.toLowerCase().startsWith('while on board:'))
+    .map((bullet) => bullet.replace(/^While on board:\s*/i, '').trim());
+
+  const joined = whileBullets.join('; ');
+  let bonusType: SeraphimDefinition['baseStats']['bonusType'] | AngelDefinition['baseStats']['bonusType'] = (def as SeraphimDefinition | AngelDefinition).baseStats.bonusType;
+  let bonusValue = 0;
+
+  const perCard = joined.match(/\+(\d+)\s+Oblivion\s+per\s+card\s+played/i);
+  if (perCard) {
+    bonusType = 'oblivion_per_card';
+    bonusValue = Number(perCard[1]);
+  }
+
+  const ophanim = joined.match(/\+(\d+)\s+Oblivion\s+whenever\s+you\s+play\s+an\s+Ophanim/i);
+  if (ophanim) {
+    bonusType = 'ophanim_bonus';
+    bonusValue = Number(ophanim[1]);
+  }
+
+  const cherubExpire = joined.match(/\+(\d+)\s+Oblivion\s+when\s+a\s+Cherubim\s+expires/i);
+  if (cherubExpire && def.type === 'Seraphim') {
+    bonusType = 'cherubim_expire_bonus';
+    bonusValue = Number(cherubExpire[1]);
+  }
+
+  const cherubDurability = joined.match(/new\s+Cherubim\s+is\s+summoned.*\+(\d+)\s+cards?/i);
+  if (cherubDurability && def.type === 'Seraphim') {
+    bonusType = 'cherubim_extra_plays';
+    bonusValue = Number(cherubDurability[1]);
+  }
+
+  return {
+    ...(def as SeraphimDefinition | AngelDefinition),
+    baseStats: {
+      ...(def as SeraphimDefinition | AngelDefinition).baseStats,
+      bonusType,
+      bonusValue,
+    },
+  } as CardDefinition;
+}
+
+function isNeutralityCoreCard(definitionId: string): boolean {
+  return definitionId.startsWith('ser-neutral-')
+    || definitionId.startsWith('ophanim-neutral-')
+    || definitionId.startsWith('cherubim-neutral-')
+    || definitionId.startsWith('angel-neutral-');
+}
+
+function applyNeutralityDocOverride(def: CardDefinition): CardDefinition {
+  if (isNeutralityCoreCard(def.definitionId)) return def;
+
+  const override = NEUTRALITY_DOC_OVERRIDES[def.definitionId as keyof typeof NEUTRALITY_DOC_OVERRIDES];
+  if (!override) return def;
+
+  let next: CardDefinition = {
+    ...def,
+    description: override.bullets.join('; '),
+  };
+
+  if ((next.type === 'Seraphim' || next.type === 'Angel') && next.attacks && override.attacks.length > 0) {
+    const attackByLabel = new Map(override.attacks.map(attack => [attack.label.toLowerCase(), attack]));
+    if (next.type === 'Seraphim') {
+      const unsyn = attackByLabel.get('unsynergized') ?? override.attacks[0];
+      const syn = attackByLabel.get('synergized') ?? override.attacks[1] ?? override.attacks[0];
+      next = {
+        ...next,
+        attacks: {
+          unsynergized: {
+            ...next.attacks.unsynergized,
+            name: unsyn.name,
+            baseOblivion: unsyn.damage,
+            cooldownCards: unsyn.cooldown,
+            costs: /^none$/i.test(unsyn.cost) ? [] : parseAttackCostsFromDescription(`Cost: ${unsyn.cost}`),
+          },
+          synergized: {
+            ...next.attacks.synergized,
+            name: syn.name,
+            baseOblivion: syn.damage,
+            cooldownCards: syn.cooldown,
+            costs: /^none$/i.test(syn.cost) ? [] : parseAttackCostsFromDescription(`Cost: ${syn.cost}`),
+          },
+        },
+      };
+    } else {
+      const primary = attackByLabel.get('primary') ?? override.attacks[0];
+      const exalted = attackByLabel.get('exalted') ?? override.attacks[1] ?? override.attacks[0];
+      next = {
+        ...next,
+        attacks: {
+          primary: {
+            ...next.attacks.primary,
+            name: primary.name,
+            baseOblivion: primary.damage,
+            cooldownCards: primary.cooldown,
+            costs: /^none$/i.test(primary.cost) ? [] : parseAttackCostsFromDescription(`Cost: ${primary.cost}`),
+          },
+          exalted: {
+            ...next.attacks.exalted,
+            name: exalted.name,
+            baseOblivion: exalted.damage,
+            cooldownCards: exalted.cooldown,
+            costs: /^none$/i.test(exalted.cost) ? [] : parseAttackCostsFromDescription(`Cost: ${exalted.cost}`),
+          },
+        },
+      };
+    }
+  }
+
+  if (next.type === 'Seraphim') {
+    next = applyDocBaseStatsOverride({
+      ...(next as SeraphimDefinition),
+      onPlayEffects: parseDocTriggeredEffects(override.bullets, 'On play:'),
+    } as CardDefinition, override.bullets);
+  }
+
+  if (next.type === 'Ophanim') {
+    const nonPassiveBullets = override.bullets.filter((bullet) => !/^On attack:/i.test(bullet) && !/^While on board:/i.test(bullet));
+    next = {
+      ...(next as OphanimDefinition),
+      effects: parseDocEffectClauses(nonPassiveBullets.join('; ')),
+    } as CardDefinition;
+  }
+
+  if (next.type === 'Cherubim') {
+    const attackBuffs = parseDocAttackBuffsFromBullets(override.bullets);
+    next = {
+      ...(next as CherubimDefinition),
+      onPlayEffects: parseDocTriggeredEffects(override.bullets, 'On play:'),
+      effects: attackBuffs.length > 0 ? attackBuffs : (next as CherubimDefinition).effects,
+    } as CardDefinition;
+  }
+
+  if (next.type === 'Angel') {
+    const updated = applyDocBaseStatsOverride({
+      ...(next as AngelDefinition),
+      onSummonEffects: parseDocTriggeredEffects(override.bullets, 'On summon:'),
+    } as CardDefinition, override.bullets) as AngelDefinition;
+    next = updated;
+    if (updated.activatedAbility && override.abilityText) {
+      next = {
+        ...updated,
+        activatedAbility: {
+          ...updated.activatedAbility,
+          name: override.abilityName ?? updated.activatedAbility.name,
+          description: override.abilityText,
+          effects: parseDocEffectClauses(override.abilityText),
+        },
+      } as CardDefinition;
+    }
+  }
+
+  return next;
 }
 
 function resolveAttackCosts(
@@ -1256,7 +1596,7 @@ function injectOphanimUtility(def: OphanimDefinition): OphanimDefinition {
   };
 }
 
-const NEUTRALITY_REWORK_IDS = new Set<string>([
+const NEUTRALITY_NON_CORE_REWORK_IDS = new Set<string>([
   'inf-oblivion-absolute',
   'inf-void-cascade',
   'inf-genesis-throne',
@@ -1372,8 +1712,10 @@ const BUTTERFLY_BASE_OPHANIM_SOURCE_IDS = new Set<string>([
 
 function shouldKeepSourceDefinition(def: CardDefinition): boolean {
   const { definitionId } = def;
+  if (definitionId.startsWith('bg-')) return true;
+  if (definitionId.startsWith('bf-')) return true;
   const isHighTierAngel = def.type === 'Angel' && (def.rarity === 'Eternal' || def.rarity === 'Infinite');
-  if (NEUTRALITY_REWORK_IDS.has(definitionId)) {
+  if (isNeutralityCoreCard(definitionId) || NEUTRALITY_NON_CORE_REWORK_IDS.has(definitionId)) {
     if (isHighTierAngel) {
       // High-tier Angels must keep summon materials normalized even when effects stay source-authored.
     } else {
@@ -1386,6 +1728,9 @@ function shouldKeepSourceDefinition(def: CardDefinition): boolean {
   if (definitionId.startsWith('ophanim-fire-')) return true;
   if (definitionId.startsWith('cherubim-fire-')) return true;
   if (definitionId.startsWith('angel-fire-')) return true;
+  if (definitionId.startsWith('ser-light-')) return true;
+  if (definitionId.startsWith('hr-light-')) return true;
+  if (definitionId.startsWith('angel-light-')) return true;
   if (definitionId.startsWith('md-')) return true;
   // Infinite reward cards must execute the exact source-defined effects so UI text matches behavior.
   // High-rarity Angels are the one exception: they are normalized centrally so summon gates stay consistent.
@@ -1399,17 +1744,34 @@ function shouldKeepSourceDefinition(def: CardDefinition): boolean {
       return true;
     }
   }
-  if (definitionId.startsWith('btei-bgi-') && !isHighTierAngel) return true;
+  // Black Glass Inferno cards are authored source-first so the set can be tuned
+  // directly from its card files without materialized overrides reintroducing stale behavior.
+  if (definitionId.startsWith('bgi-')) return true;
+  if (definitionId.startsWith('btei-bgi-')) return true;
   if (definitionId.startsWith('btei-mech-') && !isHighTierAngel) return true;
-  if (definitionId.startsWith('inf-bgi-') && !isHighTierAngel) return true;
+  if (definitionId.startsWith('inf-bgi-')) return true;
   if (definitionId.startsWith('btei-pyroabyss-') && !isHighTierAngel) return true;
   if (definitionId.startsWith('btei-light-') && !isHighTierAngel) return true;
+  if (definitionId === 'btei-light-halo-dominion') return true;
   if (definitionId.startsWith('btei-thornbound-') && !isHighTierAngel) return true;
+  // Thornbound high-tier Angels are also authored end-to-end (custom summon shell + bloom timing).
+  if (definitionId === 'btei-thornbound-funeral-bramble') return true;
+  if (definitionId === 'inf-thornbound-elegy-titan') return true;
+  // Base Thornbound cards are authored reworks (Trail / Scar / in-set isolation) and must remain source-driven.
+  if (definitionId.startsWith('tbp-')) return true;
+  if (definitionId.startsWith('cherubim-thornbound-')) return true;
   if (definitionId.startsWith('dfh-')) return true;
   if (definitionId.startsWith('af-')) return true;
-  if (definitionId.startsWith('wuas-') && !isHighTierAngel) return true;
-  if (definitionId.startsWith('inf-wuas-') && !isHighTierAngel) return true;
-  if (definitionId.startsWith('es-') && !isHighTierAngel) return true;
+  // Prismatic Accord retune is source-authored across base, Eternal, and Infinite cards.
+  // Keep source definitions (including high-tier Angels) so authored effects and costs are not overwritten.
+  if (definitionId.startsWith('pa-')) return true;
+  if (definitionId.startsWith('cherubim-prismatic-')) return true;
+  if (definitionId.startsWith('btei-prismatic-')) return true;
+  if (definitionId.startsWith('inf-prismatic-')) return true;
+  if (definitionId.startsWith('ga-')) return true;
+  if (definitionId.startsWith('wuas-')) return true;
+  if (definitionId.startsWith('inf-wuas-')) return true;
+  if (definitionId.startsWith('es-')) return true;
   return false;
 }
 
@@ -1505,7 +1867,7 @@ function normalizeDefinition(def: CardDefinition): CardDefinition {
 
 function registerAll(defs: CardDefinition[]): void {
   for (const def of defs) {
-    const normalized = normalizeDefinition(def);
+    const normalized = applyNeutralityDocOverride(normalizeDefinition(def));
     registry.set(normalized.definitionId, normalized);
   }
 }

@@ -829,7 +829,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-fire-cinderwing:primary",
         "label": "Primary",
         "name": "Cinderwing Ordinance",
-        "description": "400 base Oblivion · 3 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "400 base Oblivion · 3 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 400,
         "cooldownCards": 3,
         "costs": [],
@@ -843,7 +843,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-fire-cinderwing:exalted",
         "label": "Exalted",
         "name": "Cinderwing Throne Decree",
-        "description": "760 base Oblivion · 5 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "760 base Oblivion · 5 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 760,
         "cooldownCards": 5,
         "costs": [],
@@ -863,7 +863,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-fire-obliteron:primary",
         "label": "Primary",
         "name": "Obliteron Ordinance",
-        "description": "970 base Oblivion · 5 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "970 base Oblivion · 5 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 970,
         "cooldownCards": 5,
         "costs": [],
@@ -877,7 +877,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-fire-obliteron:exalted",
         "label": "Exalted",
         "name": "Obliteron Throne Decree",
-        "description": "2230 base Oblivion · 7 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "2230 base Oblivion · 7 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 2230,
         "cooldownCards": 7,
         "costs": [],
@@ -897,7 +897,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-fire-pyroclast-wraith:primary",
         "label": "Primary",
         "name": "Pyroclast Wraith Ordinance",
-        "description": "470 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "470 base Oblivion · 4 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 470,
         "cooldownCards": 4,
         "costs": [],
@@ -911,7 +911,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-fire-pyroclast-wraith:exalted",
         "label": "Exalted",
         "name": "Pyroclast Wraith Throne Decree",
-        "description": "940 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "940 base Oblivion · 6 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 940,
         "cooldownCards": 6,
         "costs": [],
@@ -945,19 +945,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-light-aurelion:exalted",
         "label": "Exalted",
         "name": "Aurelion Thorncrowned Throne Decree",
-        "description": "1070 base Oblivion · 6 cards cooldown · Cost: spend 101 Radiance, spend 98 Strain",
-        "baseOblivion": 1070,
+        "description": "930 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 930,
         "cooldownCards": 6,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 101
-          },
-          {
-            "type": "spend_strain",
-            "value": 98
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -965,11 +956,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "angel",
-      "angel-light"
-    ]
+    "attackTags": []
   },
   "angel-light-seraphiel": {
     "type": "Angel",
@@ -992,19 +979,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-light-seraphiel:exalted",
         "label": "Exalted",
         "name": "Seraphiel Embermane Throne Decree",
-        "description": "741 base Oblivion · 5 cards cooldown · Cost: spend 4 Radiance, discard 1 card",
-        "baseOblivion": 741,
+        "description": "722 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 722,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 4
-          },
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -1012,11 +990,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "angel",
-      "angel-light"
-    ]
+    "attackTags": []
   },
   "angel-light-solarius": {
     "type": "Angel",
@@ -1039,19 +1013,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-light-solarius:exalted",
         "label": "Exalted",
         "name": "Solarius Emberthorn Throne Decree",
-        "description": "2697 base Oblivion · 7 cards cooldown · Cost: spend 103 Radiance, sacrifice 1 Seraphim",
-        "baseOblivion": 2697,
+        "description": "2345 base Oblivion · 7 cards cooldown",
+        "baseOblivion": 2345,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 103
-          },
-          {
-            "type": "sacrifice_seraphim",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -1059,11 +1024,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "angel",
-      "angel-light"
-    ]
+    "attackTags": []
   },
   "angel-neutral-beginning": {
     "type": "Angel",
@@ -1086,15 +1047,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-neutral-beginning:exalted",
         "label": "Exalted",
         "name": "The Beginning Throne Decree",
-        "description": "780 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 780,
+        "description": "760 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 760,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -1102,11 +1058,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "neutrality",
-      "angel",
-      "angel-neutral"
-    ]
+    "attackTags": []
   },
   "angel-neutral-equilibrium": {
     "type": "Angel",
@@ -1129,15 +1081,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-neutral-equilibrium:exalted",
         "label": "Exalted",
         "name": "Aegis of Throne Decree",
-        "description": "2105 base Oblivion · 7 cards cooldown · Cost: discard 2 cards",
+        "description": "2105 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2105,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -1145,11 +1092,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "neutrality",
-      "angel",
-      "angel-neutral"
-    ]
+    "attackTags": []
   },
   "angel-neutral-presence": {
     "type": "Angel",
@@ -1172,19 +1115,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "angel-neutral-presence:exalted",
         "label": "Exalted",
         "name": "Aegis of Throne Decree",
-        "description": "2150 base Oblivion · 7 cards cooldown · Cost: discard 2 cards, sacrifice 1 Seraphim",
+        "description": "2150 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2150,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          },
-          {
-            "type": "sacrifice_seraphim",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -1192,11 +1126,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "neutrality",
-      "angel",
-      "angel-neutral"
-    ]
+    "attackTags": []
   },
   "bf-angel-chrysalis-warden": {
     "type": "Angel",
@@ -1214,22 +1144,13 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-angel-chrysalis-warden:exalted",
         "label": "Exalted",
         "name": "Cathedral Unfurling",
-        "description": "854 base Oblivion · 6 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 854,
+        "description": "770 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 770,
         "cooldownCards": 6,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "costs": []
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-angel"
-    ]
+    "attackTags": []
   },
   "bf-angel-flutter-cartographer": {
     "type": "Angel",
@@ -1247,22 +1168,13 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-angel-flutter-cartographer:exalted",
         "label": "Exalted",
         "name": "Worldline Flutter",
-        "description": "1049 base Oblivion · 7 cards cooldown · Cost: discard 2 cards",
-        "baseOblivion": 1049,
+        "description": "940 base Oblivion · 7 cards cooldown",
+        "baseOblivion": 940,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          }
-        ]
+        "costs": []
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-angel"
-    ]
+    "attackTags": []
   },
   "bf-angel-generational-witness": {
     "type": "Angel",
@@ -1271,31 +1183,22 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-angel-generational-witness:primary",
         "label": "Primary",
         "name": "Marking Strike",
-        "description": "710 base Oblivion · 5 cards cooldown",
+        "description": "710 base Oblivion · 6 cards cooldown",
         "baseOblivion": 710,
-        "cooldownCards": 5,
+        "cooldownCards": 6,
         "costs": []
       },
       "exalted": {
         "id": "bf-angel-generational-witness:exalted",
         "label": "Exalted",
         "name": "Witnessed Cataclysm",
-        "description": "1385 base Oblivion · 8 cards cooldown · Cost: discard 2 cards",
-        "baseOblivion": 1385,
+        "description": "1248 base Oblivion · 8 cards cooldown",
+        "baseOblivion": 1248,
         "cooldownCards": 8,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          }
-        ]
+        "costs": []
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-angel"
-    ]
+    "attackTags": []
   },
   "bf-angel-meadow-navigator": {
     "type": "Angel",
@@ -1313,22 +1216,13 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-angel-meadow-navigator:exalted",
         "label": "Exalted",
         "name": "Guided Descent",
-        "description": "819 base Oblivion · 6 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 819,
+        "description": "744 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 744,
         "cooldownCards": 6,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "costs": []
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-angel"
-    ]
+    "attackTags": []
   },
   "bf-angel-obsidian-surveyor": {
     "type": "Angel",
@@ -1346,22 +1240,13 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-angel-obsidian-surveyor:exalted",
         "label": "Exalted",
         "name": "Absorbing Horizon",
-        "description": "1018 base Oblivion · 7 cards cooldown · Cost: discard 2 cards",
-        "baseOblivion": 1018,
+        "description": "918 base Oblivion · 7 cards cooldown",
+        "baseOblivion": 918,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          }
-        ]
+        "costs": []
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-angel"
-    ]
+    "attackTags": []
   },
   "bf-angel-wingpattern-archivist": {
     "type": "Angel",
@@ -1370,31 +1255,22 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-angel-wingpattern-archivist:primary",
         "label": "Primary",
         "name": "Catalog Slash",
-        "description": "690 base Oblivion · 5 cards cooldown",
+        "description": "690 base Oblivion · 6 cards cooldown",
         "baseOblivion": 690,
-        "cooldownCards": 5,
+        "cooldownCards": 6,
         "costs": []
       },
       "exalted": {
         "id": "bf-angel-wingpattern-archivist:exalted",
         "label": "Exalted",
         "name": "Generational Verdict",
-        "description": "1346 base Oblivion · 8 cards cooldown · Cost: discard 2 cards",
-        "baseOblivion": 1346,
+        "description": "1210 base Oblivion · 8 cards cooldown",
+        "baseOblivion": 1210,
         "cooldownCards": 8,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          }
-        ]
+        "costs": []
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-angel"
-    ]
+    "attackTags": []
   },
   "bf-cher-copper-bank-spark": {
     "type": "Cherubim",
@@ -1403,27 +1279,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_resource_per_card",
         "resource": "butterflySpectrum",
         "value": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bf-ser-unfurling-cantor",
-          "bf-ser-ferrathi-iron-hum",
-          "bf-ser-vethkai-clear-arc",
-          "bf-ser-pyrethkai-whiteflame",
-          "bf-ser-nullwing-stillness",
-          "bf-ser-volthari-stormscript",
-          "bf-ser-ossiveth-shadowspan",
-          "bf-ser-mireth-lenshost"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-cher"
-        ],
-        "bonusBaseOblivion": 26,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -1433,27 +1288,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_oblivion_per_card",
         "value": 8
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bf-ser-unfurling-cantor",
-          "bf-ser-ferrathi-iron-hum",
-          "bf-ser-vethkai-clear-arc",
-          "bf-ser-pyrethkai-whiteflame",
-          "bf-ser-nullwing-stillness",
-          "bf-ser-volthari-stormscript",
-          "bf-ser-ossiveth-shadowspan",
-          "bf-ser-mireth-lenshost"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-cher"
-        ],
-        "bonusBaseOblivion": 8,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -1463,51 +1297,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_draw_per_card",
         "value": 0.34
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "bf-ser-unfurling-cantor",
-          "bf-ser-ferrathi-iron-hum",
-          "bf-ser-vethkai-clear-arc",
-          "bf-ser-pyrethkai-whiteflame",
-          "bf-ser-nullwing-stillness",
-          "bf-ser-volthari-stormscript",
-          "bf-ser-ossiveth-shadowspan",
-          "bf-ser-mireth-lenshost",
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer",
-          "bf-angel-wingpattern-archivist"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-cher"
-        ],
-        "bonusBaseOblivion": 52,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer",
-          "bf-angel-wingpattern-archivist"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-cher",
-          "angel"
-        ],
-        "bonusBaseOblivion": 41,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -1518,32 +1307,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "draw",
         "value": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "bf-ser-unfurling-cantor",
-          "bf-ser-ferrathi-iron-hum",
-          "bf-ser-vethkai-clear-arc",
-          "bf-ser-pyrethkai-whiteflame",
-          "bf-ser-nullwing-stillness",
-          "bf-ser-volthari-stormscript",
-          "bf-ser-ossiveth-shadowspan",
-          "bf-ser-mireth-lenshost",
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer",
-          "bf-angel-wingpattern-archivist"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-cher"
-        ],
-        "bonusBaseOblivion": 24,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -1553,71 +1316,12 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_seraphim_amp",
         "value": 0.08
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bf-ser-unfurling-cantor",
-          "bf-ser-ferrathi-iron-hum",
-          "bf-ser-vethkai-clear-arc",
-          "bf-ser-pyrethkai-whiteflame",
-          "bf-ser-nullwing-stillness",
-          "bf-ser-volthari-stormscript",
-          "bf-ser-ossiveth-shadowspan",
-          "bf-ser-mireth-lenshost"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-cher"
-        ],
-        "bonusBaseOblivion": 54,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer",
-          "bf-angel-wingpattern-archivist"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-cher",
-          "angel"
-        ],
-        "bonusBaseOblivion": 42,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
   "bf-cher-prismedge-novice": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer",
-          "bf-angel-wingpattern-archivist"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-cher"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      }
-    ]
+    "effects": []
   },
   "bf-cher-stained-century-choir": {
     "type": "Cherubim",
@@ -1634,44 +1338,12 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_attack_buff",
         "targetUnitType": "Any",
-        "bonusBaseOblivion": 42,
-        "targetDefinitionIds": [
-          "bf-ser-unfurling-cantor",
-          "bf-ser-ferrathi-iron-hum",
-          "bf-ser-vethkai-clear-arc",
-          "bf-ser-pyrethkai-whiteflame",
-          "bf-ser-nullwing-stillness",
-          "bf-ser-volthari-stormscript",
-          "bf-ser-ossiveth-shadowspan",
-          "bf-ser-mireth-lenshost",
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer",
-          "bf-angel-wingpattern-archivist"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf",
-          "bf-cher"
-        ]
+        "bonusBaseOblivion": 42
       },
       {
         "type": "cherubim_attack_buff",
         "targetUnitType": "Angel",
-        "bonusBaseOblivion": 33,
-        "targetDefinitionIds": [
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer",
-          "bf-angel-wingpattern-archivist"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf",
-          "bf-cher"
-        ]
+        "bonusBaseOblivion": 33
       }
     ]
   },
@@ -1682,32 +1354,23 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-et-kethravoss-seven-layers:unsyn",
         "label": "Unsynergized",
         "name": "Layered Meridian",
-        "description": "1040 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "1040 base Oblivion · 6 cards cooldown",
         "baseOblivion": 1040,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "cooldownCards": 6,
+        "costs": []
       },
       "synergized": {
         "id": "bf-et-kethravoss-seven-layers:syn",
         "label": "Synergized",
         "name": "Seven-Layer Dominion",
-        "description": "1820 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 1820,
+        "description": "1810 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 1810,
         "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-et"
-    ]
+    "attackTags": []
   },
   "bf-et-mirrorglass-conclave": {
     "type": "Cherubim",
@@ -1715,43 +1378,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_seraphim_amp",
         "value": 0.14
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bf-et-pyrethkai-equilibrium",
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-et"
-        ],
-        "bonusBaseOblivion": 66,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bf-et-pyrethkai-equilibrium",
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf-et",
-          "angel"
-        ],
-        "bonusBaseOblivion": 51,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -1784,31 +1410,22 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-et-pyrethkai-equilibrium:primary",
         "label": "Primary",
         "name": "Equilibrium Arc",
-        "description": "940 base Oblivion · 5 cards cooldown",
+        "description": "940 base Oblivion · 6 cards cooldown",
         "baseOblivion": 940,
-        "cooldownCards": 5,
+        "cooldownCards": 6,
         "costs": []
       },
       "exalted": {
         "id": "bf-et-pyrethkai-equilibrium:exalted",
         "label": "Exalted",
         "name": "Whitefire Verdict",
-        "description": "1833 base Oblivion · 8 cards cooldown · Cost: discard 2 cards",
-        "baseOblivion": 1833,
+        "description": "1640 base Oblivion · 8 cards cooldown",
+        "baseOblivion": 1640,
         "cooldownCards": 8,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          }
-        ]
+        "costs": []
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-et"
-    ]
+    "attackTags": []
   },
   "bf-et-volthari-storm-lattice": {
     "type": "Ophanim",
@@ -1838,31 +1455,22 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-inf-generation-of-the-flutter:primary",
         "label": "Primary",
         "name": "Flutter Decree",
-        "description": "1980 base Oblivion · 5 cards cooldown",
+        "description": "1980 base Oblivion · 7 cards cooldown",
         "baseOblivion": 1980,
-        "cooldownCards": 5,
+        "cooldownCards": 7,
         "costs": []
       },
       "exalted": {
         "id": "bf-inf-generation-of-the-flutter:exalted",
         "label": "Exalted",
         "name": "Descent of Everything",
-        "description": "3861 base Oblivion · 8 cards cooldown · Cost: discard 2 cards",
-        "baseOblivion": 3861,
-        "cooldownCards": 8,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          }
-        ]
+        "description": "3440 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 3440,
+        "cooldownCards": 9,
+        "costs": []
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-inf"
-    ]
+    "attackTags": []
   },
   "bf-inf-mirrorface-voidface": {
     "type": "Cherubim",
@@ -1870,27 +1478,7 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_attack_buff",
         "targetUnitType": "Any",
-        "bonusBaseOblivion": 120,
-        "targetDefinitionIds": [
-          "bf-inf-velkoreth-the-unfolding",
-          "bf-ser-unfurling-cantor",
-          "bf-ser-ferrathi-iron-hum",
-          "bf-ser-vethkai-clear-arc",
-          "bf-ser-pyrethkai-whiteflame",
-          "bf-ser-nullwing-stillness",
-          "bf-ser-volthari-stormscript",
-          "bf-ser-ossiveth-shadowspan",
-          "bf-inf-generation-of-the-flutter",
-          "bf-angel-meadow-navigator",
-          "bf-angel-chrysalis-warden",
-          "bf-angel-obsidian-surveyor",
-          "bf-angel-flutter-cartographer"
-        ],
-        "targetTags": [
-          "butterfly",
-          "bf",
-          "bf-inf"
-        ]
+        "bonusBaseOblivion": 120
       },
       {
         "type": "cherubim_seraphim_amp",
@@ -1955,32 +1543,23 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-inf-velkoreth-the-unfolding:unsyn",
         "label": "Unsynergized",
         "name": "Foundational Wingbeat",
-        "description": "2080 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "2080 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2080,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "cooldownCards": 7,
+        "costs": []
       },
       "synergized": {
         "id": "bf-inf-velkoreth-the-unfolding:syn",
         "label": "Synergized",
         "name": "Worldshaping Wingbeat",
-        "description": "3640 base Oblivion · 8 cards cooldown · Requires Angel",
+        "description": "3640 base Oblivion · 9 cards cooldown · Requires Angel",
         "baseOblivion": 3640,
-        "cooldownCards": 8,
+        "cooldownCards": 9,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-inf"
-    ]
+    "attackTags": []
   },
   "bf-oph-copper-green-trail": {
     "type": "Ophanim",
@@ -2095,32 +1674,23 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-ser-ferrathi-iron-hum:unsyn",
         "label": "Unsynergized",
         "name": "Iron Resonance",
-        "description": "244 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "244 base Oblivion · 4 cards cooldown",
         "baseOblivion": 244,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "cooldownCards": 4,
+        "costs": []
       },
       "synergized": {
         "id": "bf-ser-ferrathi-iron-hum:syn",
         "label": "Synergized",
         "name": "Seven-Layer Resonance",
-        "description": "427 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 427,
-        "cooldownCards": 6,
+        "description": "420 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 420,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-ser"
-    ]
+    "attackTags": []
   },
   "bf-ser-mireth-lenshost": {
     "type": "Seraphim",
@@ -2129,32 +1699,23 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-ser-mireth-lenshost:unsyn",
         "label": "Unsynergized",
         "name": "Prismatic Congregation",
-        "description": "690 base Oblivion · 4 cards cooldown · Cost: discard 1 card",
+        "description": "690 base Oblivion · 6 cards cooldown",
         "baseOblivion": 690,
-        "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "cooldownCards": 6,
+        "costs": []
       },
       "synergized": {
         "id": "bf-ser-mireth-lenshost:syn",
         "label": "Synergized",
         "name": "Lensstorm Descent",
-        "description": "1208 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 1208,
-        "cooldownCards": 7,
+        "description": "1204 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 1204,
+        "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-ser"
-    ]
+    "attackTags": []
   },
   "bf-ser-nullwing-stillness": {
     "type": "Seraphim",
@@ -2163,32 +1724,23 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-ser-nullwing-stillness:unsyn",
         "label": "Unsynergized",
         "name": "Interstice Quietus",
-        "description": "456 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "456 base Oblivion · 5 cards cooldown",
         "baseOblivion": 456,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "costs": []
       },
       "synergized": {
         "id": "bf-ser-nullwing-stillness:syn",
         "label": "Synergized",
         "name": "Flutter Silence",
-        "description": "806 base Oblivion · 8 cards cooldown · Requires Angel",
+        "description": "806 base Oblivion · 7 cards cooldown · Requires Angel",
         "baseOblivion": 806,
-        "cooldownCards": 8,
+        "cooldownCards": 7,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-ser"
-    ]
+    "attackTags": []
   },
   "bf-ser-ossiveth-shadowspan": {
     "type": "Seraphim",
@@ -2197,15 +1749,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-ser-ossiveth-shadowspan:unsyn",
         "label": "Unsynergized",
         "name": "Geologic Wingbeat",
-        "description": "672 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "672 base Oblivion · 6 cards cooldown",
         "baseOblivion": 672,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "cooldownCards": 6,
+        "costs": []
       },
       "synergized": {
         "id": "bf-ser-ossiveth-shadowspan:syn",
@@ -2218,11 +1765,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-ser"
-    ]
+    "attackTags": []
   },
   "bf-ser-pyrethkai-whiteflame": {
     "type": "Seraphim",
@@ -2231,32 +1774,23 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-ser-pyrethkai-whiteflame:unsyn",
         "label": "Unsynergized",
         "name": "White Combustion",
-        "description": "322 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "322 base Oblivion · 4 cards cooldown",
         "baseOblivion": 322,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "cooldownCards": 4,
+        "costs": []
       },
       "synergized": {
         "id": "bf-ser-pyrethkai-whiteflame:syn",
         "label": "Synergized",
         "name": "Equilibrium Burn",
-        "description": "568 base Oblivion · 7 cards cooldown · Requires Angel",
+        "description": "568 base Oblivion · 6 cards cooldown · Requires Angel",
         "baseOblivion": 568,
-        "cooldownCards": 7,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-ser"
-    ]
+    "attackTags": []
   },
   "bf-ser-unfurling-cantor": {
     "type": "Seraphim",
@@ -2265,32 +1799,23 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-ser-unfurling-cantor:unsyn",
         "label": "Unsynergized",
         "name": "Cantor Slice",
-        "description": "236 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "236 base Oblivion · 4 cards cooldown",
         "baseOblivion": 236,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "cooldownCards": 4,
+        "costs": []
       },
       "synergized": {
         "id": "bf-ser-unfurling-cantor:syn",
         "label": "Synergized",
         "name": "Cantor Flutter",
-        "description": "413 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 413,
-        "cooldownCards": 6,
+        "description": "408 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 408,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-ser"
-    ]
+    "attackTags": []
   },
   "bf-ser-vethkai-clear-arc": {
     "type": "Seraphim",
@@ -2299,32 +1824,23 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-ser-vethkai-clear-arc:unsyn",
         "label": "Unsynergized",
         "name": "Prism Arc",
-        "description": "314 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "314 base Oblivion · 4 cards cooldown",
         "baseOblivion": 314,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "cooldownCards": 4,
+        "costs": []
       },
       "synergized": {
         "id": "bf-ser-vethkai-clear-arc:syn",
         "label": "Synergized",
         "name": "Prism Chorus Arc",
-        "description": "552 base Oblivion · 7 cards cooldown · Requires Angel",
+        "description": "552 base Oblivion · 6 cards cooldown · Requires Angel",
         "baseOblivion": 552,
-        "cooldownCards": 7,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-ser"
-    ]
+    "attackTags": []
   },
   "bf-ser-volthari-stormscript": {
     "type": "Seraphim",
@@ -2333,58 +1849,27 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bf-ser-volthari-stormscript:unsyn",
         "label": "Unsynergized",
         "name": "Stormline Etch",
-        "description": "470 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "470 base Oblivion · 5 cards cooldown",
         "baseOblivion": 470,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ]
+        "costs": []
       },
       "synergized": {
         "id": "bf-ser-volthari-stormscript:syn",
         "label": "Synergized",
         "name": "Lightning Flutter Glyph",
-        "description": "824 base Oblivion · 8 cards cooldown · Requires Angel",
+        "description": "824 base Oblivion · 7 cards cooldown · Requires Angel",
         "baseOblivion": 824,
-        "cooldownCards": 8,
+        "cooldownCards": 7,
         "costs": [],
         "requiresAngelOnBoard": true
       }
     },
-    "attackTags": [
-      "butterfly",
-      "bf",
-      "bf-ser"
-    ]
+    "attackTags": []
   },
   "bg-cher-auric-floret-keeper": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "bg-ser-serevathi-ember-spiral",
-          "bg-ser-aureveth-noon-petal",
-          "bg-ser-vethkorath-starspine",
-          "bg-ser-embergrove-cantor",
-          "bg-ser-final-chord-herald",
-          "bg-et-serevathi-proofflame",
-          "bg-et-aureveth-evernoon",
-          "bg-inf-final-chord-incandescent"
-        ],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher"
-        ],
-        "bonusBaseOblivion": 33,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      }
-    ]
+    "effects": []
   },
   "bg-cher-charred-choir-reclaimer": {
     "type": "Cherubim",
@@ -2393,40 +1878,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 40
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bg-ser-serevathi-ember-spiral",
-          "bg-ser-aureveth-noon-petal",
-          "bg-ser-vethkorath-starspine",
-          "bg-ser-embergrove-cantor",
-          "bg-ser-final-chord-herald",
-          "bg-et-serevathi-proofflame",
-          "bg-et-aureveth-evernoon",
-          "bg-inf-final-chord-incandescent"
-        ],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher",
-          "angel"
-        ],
-        "bonusBaseOblivion": 28,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -2437,40 +1888,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 32
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bg-ser-serevathi-ember-spiral",
-          "bg-ser-aureveth-noon-petal",
-          "bg-ser-vethkorath-starspine",
-          "bg-ser-embergrove-cantor",
-          "bg-ser-final-chord-herald",
-          "bg-et-serevathi-proofflame",
-          "bg-et-aureveth-evernoon",
-          "bg-inf-final-chord-incandescent"
-        ],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher"
-        ],
-        "bonusBaseOblivion": 34,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher",
-          "angel"
-        ],
-        "bonusBaseOblivion": 27,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -2481,31 +1898,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "draw",
         "value": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher"
-        ],
-        "bonusBaseOblivion": 46,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher",
-          "angel"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -2525,18 +1917,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 24
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher"
-        ],
-        "bonusBaseOblivion": 22,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -2546,27 +1926,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_seraphim_amp",
         "value": 0.08
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bg-ser-serevathi-ember-spiral",
-          "bg-ser-aureveth-noon-petal",
-          "bg-ser-vethkorath-starspine",
-          "bg-ser-embergrove-cantor",
-          "bg-ser-final-chord-herald",
-          "bg-et-serevathi-proofflame",
-          "bg-et-aureveth-evernoon",
-          "bg-inf-final-chord-incandescent"
-        ],
-        "targetTags": [
-          "blazinggarden",
-          "bg-cher"
-        ],
-        "bonusBaseOblivion": 42,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -2577,15 +1936,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-et-aureveth-evernoon:unsynergized",
         "label": "Unsynergized",
         "name": "Evernoon Route",
-        "description": "1200 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "1200 base Oblivion · 5 cards cooldown",
         "baseOblivion": 1200,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -2596,8 +1950,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-et-aureveth-evernoon:synergized",
         "label": "Synergized",
         "name": "Sunflower Verdict Route",
-        "description": "2100 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 2100,
+        "description": "2000 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 2000,
         "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -2608,11 +1962,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-et"
-    ]
+    "attackTags": []
   },
   "bg-et-embergrove-codex": {
     "type": "Cherubim",
@@ -2626,22 +1976,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "targetUnitType": "Any",
         "bonusBaseOblivion": 58,
         "cooldownDeltaCards": -1,
-        "multiplier": 1,
-        "targetDefinitionIds": [
-          "bg-et-serevathi-proofflame",
-          "bg-et-aureveth-evernoon",
-          "bg-ser-serevathi-ember-spiral",
-          "bg-ser-aureveth-noon-petal",
-          "bg-ser-vethkorath-starspine",
-          "bg-ser-embergrove-cantor",
-          "bg-ser-final-chord-herald",
-          "bg-inf-final-chord-incandescent"
-        ],
-        "targetTags": [
-          "blazinggarden",
-          "bg",
-          "bg-et"
-        ]
+        "multiplier": 1
       }
     ]
   },
@@ -2686,15 +2021,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-et-serevathi-proofflame:unsynergized",
         "label": "Unsynergized",
         "name": "Roseproof Spiral",
-        "description": "1100 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "1100 base Oblivion · 5 cards cooldown",
         "baseOblivion": 1100,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -2705,8 +2035,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-et-serevathi-proofflame:synergized",
         "label": "Synergized",
         "name": "Roseproof Chord",
-        "description": "1925 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 1925,
+        "description": "1850 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 1850,
         "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -2717,11 +2047,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-et"
-    ]
+    "attackTags": []
   },
   "bg-et-vethkorath-seven-crown-proof": {
     "type": "Cherubim",
@@ -2736,22 +2062,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "targetUnitType": "Any",
         "bonusBaseOblivion": 72,
         "cooldownDeltaCards": -1,
-        "multiplier": 1,
-        "targetDefinitionIds": [
-          "bg-et-serevathi-proofflame",
-          "bg-et-aureveth-evernoon",
-          "bg-ser-serevathi-ember-spiral",
-          "bg-ser-aureveth-noon-petal",
-          "bg-ser-vethkorath-starspine",
-          "bg-ser-embergrove-cantor",
-          "bg-ser-final-chord-herald",
-          "bg-inf-final-chord-incandescent"
-        ],
-        "targetTags": [
-          "blazinggarden",
-          "bg",
-          "bg-et"
-        ]
+        "multiplier": 1
       }
     ]
   },
@@ -2768,40 +2079,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "geometry_mode_next_turn_on_three_lineages"
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bg-inf-final-chord-incandescent",
-          "bg-inf-soleth-vair-worldflower",
-          "bg-ser-serevathi-ember-spiral",
-          "bg-ser-aureveth-noon-petal",
-          "bg-ser-vethkorath-starspine",
-          "bg-ser-embergrove-cantor",
-          "bg-ser-final-chord-herald",
-          "bg-et-serevathi-proofflame"
-        ],
-        "targetTags": [
-          "blazinggarden",
-          "bg-inf"
-        ],
-        "bonusBaseOblivion": 76,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "blazinggarden",
-          "bg-inf",
-          "angel"
-        ],
-        "bonusBaseOblivion": 59,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -2819,40 +2096,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "echo_persistence_bonus",
         "duration": 2
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "bg-inf-final-chord-incandescent",
-          "bg-inf-soleth-vair-worldflower",
-          "bg-ser-serevathi-ember-spiral",
-          "bg-ser-aureveth-noon-petal",
-          "bg-ser-vethkorath-starspine",
-          "bg-ser-embergrove-cantor",
-          "bg-ser-final-chord-herald",
-          "bg-et-serevathi-proofflame"
-        ],
-        "targetTags": [
-          "blazinggarden",
-          "bg-inf"
-        ],
-        "bonusBaseOblivion": 80,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "blazinggarden",
-          "bg-inf",
-          "angel"
-        ],
-        "bonusBaseOblivion": 62,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -2863,15 +2106,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-inf-final-chord-incandescent:unsynergized",
         "label": "Unsynergized",
         "name": "Incandescent Rift",
-        "description": "2200 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "2200 base Oblivion · 5 cards cooldown",
         "baseOblivion": 2200,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -2882,8 +2120,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-inf-final-chord-incandescent:synergized",
         "label": "Synergized",
         "name": "Final Chord Rift",
-        "description": "3850 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 3850,
+        "description": "3700 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 3700,
         "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -2894,11 +2132,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-inf"
-    ]
+    "attackTags": []
   },
   "bg-inf-noon-that-never-sets": {
     "type": "Ophanim",
@@ -2951,14 +2185,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "oblivionPerPollen": 30,
         "scoreMultPerBloom": 0.13,
         "consume": 1
-      },
-      {
-        "type": "prismatic_light_gain",
-        "value": 6
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -3007,14 +2233,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "oblivionPerPollen": 36,
         "scoreMultPerBloom": 0.07,
         "consume": 5
-      },
-      {
-        "type": "prismatic_light_gain",
-        "value": 6
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -3025,15 +2243,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-inf-soleth-vair-worldflower:unsynergized",
         "label": "Unsynergized",
         "name": "Rootfire Dominion",
-        "description": "2500 base Oblivion · 4 cards cooldown · Cost: discard 1 card",
+        "description": "2500 base Oblivion · 5 cards cooldown",
         "baseOblivion": 2500,
-        "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "cooldownCards": 5,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -3044,9 +2257,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-inf-soleth-vair-worldflower:synergized",
         "label": "Synergized",
         "name": "Worldflower Dominion",
-        "description": "4375 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 4375,
-        "cooldownCards": 7,
+        "description": "4100 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 4100,
+        "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -3056,11 +2269,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-inf"
-    ]
+    "attackTags": []
   },
   "bg-oph-chordbearing-migration": {
     "type": "Ophanim",
@@ -3167,15 +2376,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-ser-aureveth-noon-petal:unsynergized",
         "label": "Unsynergized",
         "name": "Sunfloret Vector",
-        "description": "300 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "300 base Oblivion · 4 cards cooldown",
         "baseOblivion": 300,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -3186,9 +2390,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-ser-aureveth-noon-petal:synergized",
         "label": "Synergized",
         "name": "Noon-That-Does-Not-End",
-        "description": "525 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 525,
-        "cooldownCards": 6,
+        "description": "508 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 508,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -3198,11 +2402,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-ser"
-    ]
+    "attackTags": []
   },
   "bg-ser-embergrove-cantor": {
     "type": "Seraphim",
@@ -3211,15 +2411,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-ser-embergrove-cantor:unsynergized",
         "label": "Unsynergized",
         "name": "Cinder Echo Rend",
-        "description": "516 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "516 base Oblivion · 5 cards cooldown",
         "baseOblivion": 516,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -3230,96 +2425,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bg-ser-embergrove-cantor:synergized",
         "label": "Synergized",
         "name": "Echo Chord Rend",
-        "description": "903 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 903,
-        "cooldownCards": 7,
-        "costs": [],
-        "requiresAngelOnBoard": true,
-        "tags": [
-          "seraphim",
-          "synergized",
-          "blazing-garden"
-        ]
-      }
-    },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-ser"
-    ]
-  },
-  "bg-ser-final-chord-herald": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "bg-ser-final-chord-herald:unsynergized",
-        "label": "Unsynergized",
-        "name": "Choirline Sundering",
-        "description": "620 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 620,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
-        "tags": [
-          "seraphim",
-          "unsynergized",
-          "blazing-garden"
-        ]
-      },
-      "synergized": {
-        "id": "bg-ser-final-chord-herald:synergized",
-        "label": "Synergized",
-        "name": "Final Chord Sundering",
-        "description": "1085 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 1085,
-        "cooldownCards": 8,
-        "costs": [],
-        "requiresAngelOnBoard": true,
-        "tags": [
-          "seraphim",
-          "synergized",
-          "blazing-garden"
-        ]
-      }
-    },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-ser"
-    ]
-  },
-  "bg-ser-serevathi-ember-spiral": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "bg-ser-serevathi-ember-spiral:unsynergized",
-        "label": "Unsynergized",
-        "name": "Petal Circuit Slash",
-        "description": "236 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 236,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
-        "tags": [
-          "seraphim",
-          "unsynergized",
-          "blazing-garden"
-        ]
-      },
-      "synergized": {
-        "id": "bg-ser-serevathi-ember-spiral:synergized",
-        "label": "Synergized",
-        "name": "Blazing Choir Slash",
-        "description": "413 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 413,
+        "description": "882 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 882,
         "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -3330,28 +2437,19 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-ser"
-    ]
+    "attackTags": []
   },
-  "bg-ser-vethkorath-starspine": {
+  "bg-ser-final-chord-herald": {
     "type": "Seraphim",
     "attacks": {
       "unsynergized": {
-        "id": "bg-ser-vethkorath-starspine:unsynergized",
+        "id": "bg-ser-final-chord-herald:unsynergized",
         "label": "Unsynergized",
-        "name": "Thistle Proof Cut",
-        "description": "418 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 418,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "name": "Choirline Sundering",
+        "description": "620 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 620,
+        "cooldownCards": 6,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -3359,11 +2457,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       },
       "synergized": {
-        "id": "bg-ser-vethkorath-starspine:synergized",
+        "id": "bg-ser-final-chord-herald:synergized",
         "label": "Synergized",
-        "name": "Proof Completed Cut",
-        "description": "732 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 732,
+        "name": "Final Chord Sundering",
+        "description": "1048 base Oblivion · 7 cards cooldown · Requires Angel",
+        "baseOblivion": 1048,
         "cooldownCards": 7,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -3374,11 +2472,77 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "blazinggarden",
-      "bg",
-      "bg-ser"
-    ]
+    "attackTags": []
+  },
+  "bg-ser-serevathi-ember-spiral": {
+    "type": "Seraphim",
+    "attacks": {
+      "unsynergized": {
+        "id": "bg-ser-serevathi-ember-spiral:unsynergized",
+        "label": "Unsynergized",
+        "name": "Petal Circuit Slash",
+        "description": "236 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 236,
+        "cooldownCards": 4,
+        "costs": [],
+        "tags": [
+          "seraphim",
+          "unsynergized",
+          "blazing-garden"
+        ]
+      },
+      "synergized": {
+        "id": "bg-ser-serevathi-ember-spiral:synergized",
+        "label": "Synergized",
+        "name": "Blazing Choir Slash",
+        "description": "404 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 404,
+        "cooldownCards": 5,
+        "costs": [],
+        "requiresAngelOnBoard": true,
+        "tags": [
+          "seraphim",
+          "synergized",
+          "blazing-garden"
+        ]
+      }
+    },
+    "attackTags": []
+  },
+  "bg-ser-vethkorath-starspine": {
+    "type": "Seraphim",
+    "attacks": {
+      "unsynergized": {
+        "id": "bg-ser-vethkorath-starspine:unsynergized",
+        "label": "Unsynergized",
+        "name": "Thistle Proof Cut",
+        "description": "418 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 418,
+        "cooldownCards": 5,
+        "costs": [],
+        "tags": [
+          "seraphim",
+          "unsynergized",
+          "blazing-garden"
+        ]
+      },
+      "synergized": {
+        "id": "bg-ser-vethkorath-starspine:synergized",
+        "label": "Synergized",
+        "name": "Proof Completed Cut",
+        "description": "704 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 704,
+        "cooldownCards": 6,
+        "costs": [],
+        "requiresAngelOnBoard": true,
+        "tags": [
+          "seraphim",
+          "synergized",
+          "blazing-garden"
+        ]
+      }
+    },
+    "attackTags": []
   },
   "bgi-angel-ashen-court-regent": {
     "type": "Angel",
@@ -3401,15 +2565,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-angel-ashen-court-regent:exalted",
         "label": "Exalted",
         "name": "Ashen Court Throne Decree",
-        "description": "2335 base Oblivion · 7 cards cooldown · Cost: discard 3 cards",
+        "description": "2335 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2335,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 3
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -3417,11 +2576,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-angel"
-    ]
+    "attackTags": []
   },
   "bgi-angel-cinderborn-matriarch": {
     "type": "Angel",
@@ -3444,15 +2599,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-angel-cinderborn-matriarch:exalted",
         "label": "Exalted",
         "name": "Cinderborn Matriarch Throne Decree",
-        "description": "2150 base Oblivion · 7 cards cooldown · Cost: discard 2 cards",
+        "description": "2150 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2150,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -3460,11 +2610,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-angel"
-    ]
+    "attackTags": []
   },
   "bgi-angel-morvakael-twice-scarred": {
     "type": "Angel",
@@ -3487,19 +2633,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-angel-morvakael-twice-scarred:exalted",
         "label": "Exalted",
         "name": "Morvakael the Throne Decree",
-        "description": "2160 base Oblivion · 7 cards cooldown · Cost: discard 2 cards, sacrifice 1 Seraphim",
+        "description": "2160 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2160,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          },
-          {
-            "type": "sacrifice_seraphim",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -3507,11 +2644,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-angel"
-    ]
+    "attackTags": []
   },
   "bgi-angel-sorveth-bifurcated-flame": {
     "type": "Angel",
@@ -3534,15 +2667,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-angel-sorveth-bifurcated-flame:exalted",
         "label": "Exalted",
         "name": "Sorveth, Bifurcated Throne Decree",
-        "description": "2450 base Oblivion · 7 cards cooldown · Cost: discard 3 cards",
+        "description": "2450 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2450,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 3
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -3550,11 +2678,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-angel"
-    ]
+    "attackTags": []
   },
   "bgi-angel-vaelthorax-undimmed": {
     "type": "Angel",
@@ -3577,19 +2701,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-angel-vaelthorax-undimmed:exalted",
         "label": "Exalted",
         "name": "Vaelthorax the Throne Decree",
-        "description": "2160 base Oblivion · 7 cards cooldown · Cost: discard 2 cards, sacrifice 1 Seraphim",
+        "description": "2160 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2160,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          },
-          {
-            "type": "sacrifice_seraphim",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -3597,11 +2712,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-angel"
-    ]
+    "attackTags": []
   },
   "bgi-cherubim-ashencourt-sigil": {
     "type": "Cherubim",
@@ -3610,32 +2721,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 12
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "bgi-ser-obsidian-choir",
-          "bgi-ser-ashen-helix",
-          "bgi-ser-rose-spine-drake",
-          "bgi-ser-chromatic-ashwarden",
-          "bgi-ser-mourning-crest",
-          "bgi-ser-void-mandible-archon",
-          "bgi-ser-cinder-vow-leviathan",
-          "bgi-ser-blackglass-cathedral",
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 12,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -3646,49 +2731,12 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 14
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 13,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
   "bgi-cherubim-cinderborn-oath": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 26,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      }
-    ]
+    "effects": []
   },
   "bgi-cherubim-glassrose-pyre": {
     "type": "Cherubim",
@@ -3697,32 +2745,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 8
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "bgi-ser-obsidian-choir",
-          "bgi-ser-ashen-helix",
-          "bgi-ser-rose-spine-drake",
-          "bgi-ser-chromatic-ashwarden",
-          "bgi-ser-mourning-crest",
-          "bgi-ser-void-mandible-archon",
-          "bgi-ser-cinder-vow-leviathan",
-          "bgi-ser-blackglass-cathedral",
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 6,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -3733,84 +2755,12 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 22
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "bgi-ser-obsidian-choir",
-          "bgi-ser-ashen-helix",
-          "bgi-ser-rose-spine-drake",
-          "bgi-ser-chromatic-ashwarden",
-          "bgi-ser-mourning-crest",
-          "bgi-ser-void-mandible-archon",
-          "bgi-ser-cinder-vow-leviathan",
-          "bgi-ser-blackglass-cathedral",
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 18,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim",
-          "angel"
-        ],
-        "bonusBaseOblivion": 14,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
   "bgi-cherubim-ruin-garden": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "bgi-ser-obsidian-choir",
-          "bgi-ser-ashen-helix",
-          "bgi-ser-rose-spine-drake",
-          "bgi-ser-chromatic-ashwarden",
-          "bgi-ser-mourning-crest",
-          "bgi-ser-void-mandible-archon",
-          "bgi-ser-cinder-vow-leviathan",
-          "bgi-ser-blackglass-cathedral",
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 33,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      }
-    ]
+    "effects": []
   },
   "bgi-cherubim-sorveths-ring": {
     "type": "Cherubim",
@@ -3819,46 +2769,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 16
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bgi-ser-obsidian-choir",
-          "bgi-ser-ashen-helix",
-          "bgi-ser-rose-spine-drake",
-          "bgi-ser-chromatic-ashwarden",
-          "bgi-ser-mourning-crest",
-          "bgi-ser-void-mandible-archon",
-          "bgi-ser-cinder-vow-leviathan",
-          "bgi-ser-blackglass-cathedral"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 17,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim",
-          "angel"
-        ],
-        "bonusBaseOblivion": 13,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -3869,46 +2779,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 20
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bgi-ser-obsidian-choir",
-          "bgi-ser-ashen-helix",
-          "bgi-ser-rose-spine-drake",
-          "bgi-ser-chromatic-ashwarden",
-          "bgi-ser-mourning-crest",
-          "bgi-ser-void-mandible-archon",
-          "bgi-ser-cinder-vow-leviathan",
-          "bgi-ser-blackglass-cathedral"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 21,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim",
-          "angel"
-        ],
-        "bonusBaseOblivion": 16,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -3919,27 +2789,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 16
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "bgi-ser-obsidian-choir",
-          "bgi-ser-ashen-helix",
-          "bgi-ser-rose-spine-drake",
-          "bgi-ser-chromatic-ashwarden",
-          "bgi-ser-mourning-crest",
-          "bgi-ser-void-mandible-archon",
-          "bgi-ser-cinder-vow-leviathan",
-          "bgi-ser-blackglass-cathedral"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 17,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -3950,43 +2799,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 18
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim"
-        ],
-        "bonusBaseOblivion": 16,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "bgi-angel-vaelthorax-undimmed",
-          "bgi-angel-morvakael-twice-scarred",
-          "bgi-angel-sorveth-bifurcated-flame",
-          "bgi-angel-cinderborn-matriarch",
-          "bgi-angel-ashen-court-regent"
-        ],
-        "targetTags": [
-          "dark",
-          "bgi-cherubim",
-          "angel"
-        ],
-        "bonusBaseOblivion": 12,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -4028,10 +2840,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "black_glass_black_flame_gain",
         "value": 2
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -4126,13 +2934,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "black_glass_black_flame_gain",
         "value": 2
-      },
-      {
-        "type": "multiply_next"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -4383,15 +3184,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-ashen-helix:unsynergized",
         "label": "Unsynergized",
         "name": "Ashen Helix Vector Break",
-        "description": "242 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 242,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "235 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 235,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4402,9 +3198,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-ashen-helix:synergized",
         "label": "Synergized",
         "name": "Ashen Helix Angelic Verdict",
-        "description": "452 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 452,
-        "cooldownCards": 6,
+        "description": "400 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 400,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -4414,11 +3210,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-blackglass-cathedral": {
     "type": "Seraphim",
@@ -4427,15 +3219,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-blackglass-cathedral:unsynergized",
         "label": "Unsynergized",
         "name": "Blackglass Cathedral Vector Break",
-        "description": "618 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 618,
+        "description": "600 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 600,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4446,9 +3233,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-blackglass-cathedral:synergized",
         "label": "Synergized",
         "name": "Blackglass Cathedral Angelic Verdict",
-        "description": "1155 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 1155,
-        "cooldownCards": 7,
+        "description": "1020 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 1020,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -4458,11 +3245,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-chromatic-ashwarden": {
     "type": "Seraphim",
@@ -4471,15 +3254,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-chromatic-ashwarden:unsynergized",
         "label": "Unsynergized",
         "name": "Chromatic Ashwarden Vector Break",
-        "description": "232 base Oblivion · 4 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 232,
+        "description": "225 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 225,
         "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4490,8 +3268,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-chromatic-ashwarden:synergized",
         "label": "Synergized",
         "name": "Chromatic Ashwarden Angelic Verdict",
-        "description": "433 base Oblivion · 5 cards cooldown · Requires Angel",
-        "baseOblivion": 433,
+        "description": "383 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 383,
         "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -4502,11 +3280,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-cinder-vow-leviathan": {
     "type": "Seraphim",
@@ -4515,15 +3289,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-cinder-vow-leviathan:unsynergized",
         "label": "Unsynergized",
         "name": "Cinder-Vow Leviathan Vector Break",
-        "description": "350 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 350,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "340 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 340,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4534,9 +3303,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-cinder-vow-leviathan:synergized",
         "label": "Synergized",
         "name": "Cinder-Vow Leviathan Angelic Verdict",
-        "description": "655 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 655,
-        "cooldownCards": 6,
+        "description": "578 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 578,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -4546,11 +3315,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-hatred-astralwyrm": {
     "type": "Seraphim",
@@ -4559,15 +3324,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-hatred-astralwyrm:unsynergized",
         "label": "Unsynergized",
         "name": "Hatred Astralwyrm Vector Break",
-        "description": "567 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 567,
+        "description": "550 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 550,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4578,9 +3338,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-hatred-astralwyrm:synergized",
         "label": "Synergized",
         "name": "Hatred Astralwyrm Angelic Verdict",
-        "description": "1059 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 1059,
-        "cooldownCards": 7,
+        "description": "935 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 935,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -4590,11 +3350,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-infernal-griefforge": {
     "type": "Seraphim",
@@ -4603,15 +3359,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-infernal-griefforge:unsynergized",
         "label": "Unsynergized",
         "name": "Infernal Griefforge Vector Break",
-        "description": "1112 base Oblivion · 4 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 1112,
-        "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "1080 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 1080,
+        "cooldownCards": 5,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4622,8 +3373,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-infernal-griefforge:synergized",
         "label": "Synergized",
         "name": "Infernal Griefforge Angelic Verdict",
-        "description": "2079 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 2079,
+        "description": "1880 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 1880,
         "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -4634,11 +3385,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-mourning-crest": {
     "type": "Seraphim",
@@ -4647,15 +3394,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-mourning-crest:unsynergized",
         "label": "Unsynergized",
         "name": "Mourning Crest Vector Break",
-        "description": "422 base Oblivion · 4 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 422,
+        "description": "410 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 410,
         "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4666,8 +3408,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-mourning-crest:synergized",
         "label": "Synergized",
         "name": "Mourning Crest Angelic Verdict",
-        "description": "792 base Oblivion · 5 cards cooldown · Requires Angel",
-        "baseOblivion": 792,
+        "description": "720 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 720,
         "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -4678,11 +3420,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-obsidian-choir": {
     "type": "Seraphim",
@@ -4691,15 +3429,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-obsidian-choir:unsynergized",
         "label": "Unsynergized",
         "name": "Obsidian Choir Vector Break",
-        "description": "242 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 242,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "235 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 235,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4710,9 +3443,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-obsidian-choir:synergized",
         "label": "Synergized",
         "name": "Obsidian Choir Angelic Verdict",
-        "description": "452 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 452,
-        "cooldownCards": 6,
+        "description": "400 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 400,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -4722,11 +3455,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-rose-spine-drake": {
     "type": "Seraphim",
@@ -4735,15 +3464,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-rose-spine-drake:unsynergized",
         "label": "Unsynergized",
         "name": "Rose-Spine Drake Vector Break",
-        "description": "211 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 211,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "205 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 205,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4754,9 +3478,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-rose-spine-drake:synergized",
         "label": "Synergized",
         "name": "Rose-Spine Drake Angelic Verdict",
-        "description": "395 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 395,
-        "cooldownCards": 6,
+        "description": "349 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 349,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -4766,11 +3490,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "bgi-ser-void-mandible-archon": {
     "type": "Seraphim",
@@ -4779,15 +3499,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-void-mandible-archon:unsynergized",
         "label": "Unsynergized",
         "name": "Void-Mandible Archon Vector Break",
-        "description": "381 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 381,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "370 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 370,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -4798,9 +3513,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "bgi-ser-void-mandible-archon:synergized",
         "label": "Synergized",
         "name": "Void-Mandible Archon Angelic Verdict",
-        "description": "713 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 713,
-        "cooldownCards": 6,
+        "description": "629 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 629,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -4810,11 +3525,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "dark",
-      "bgi",
-      "bgi-ser"
-    ]
+    "attackTags": []
   },
   "btei-architects-manifold": {
     "type": "Cherubim",
@@ -4829,29 +3540,12 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "patience_gain_all",
-        "value": 12
-      },
-      {
         "type": "neutrality_patient_light_gain",
         "value": 1
       },
       {
-        "type": "conditional",
-        "condition": {
-          "type": "cards_played_gte",
-          "value": 2
-        },
-        "then": [
-          {
-            "type": "neutrality_patient_light_gain",
-            "value": 2
-          },
-          {
-            "type": "oblivion_flat",
-            "value": 1000
-          }
-        ]
+        "type": "oblivion_flat",
+        "value": 1200
       }
     ]
   },
@@ -4959,8 +3653,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-elegy-of-veth-serath:primary",
         "label": "Primary",
         "name": "Elegy of Ordinance",
-        "description": "2130 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2130,
+        "description": "1747 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 1747,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -4973,8 +3667,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-elegy-of-veth-serath:exalted",
         "label": "Exalted",
         "name": "Elegy of Throne Decree",
-        "description": "5430 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5430,
+        "description": "4453 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 4453,
         "cooldownCards": 9,
         "costs": [],
         "tags": [
@@ -5119,8 +3813,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-throne-of-cinders:primary",
         "label": "Primary",
         "name": "Throne of Ordinance",
-        "description": "2090 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2090,
+        "description": "1714 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 1714,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -5133,8 +3827,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-bgi-throne-of-cinders:exalted",
         "label": "Exalted",
         "name": "Throne of Throne Decree",
-        "description": "5330 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5330,
+        "description": "4371 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 4371,
         "cooldownCards": 9,
         "costs": [],
         "tags": [
@@ -5188,9 +3882,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-colossus-advent:unsynergized",
         "label": "Unsynergized",
         "name": "Colossus Advent Vector Break",
-        "description": "2900 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2900,
-        "cooldownCards": 6,
+        "description": "2500 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 2500,
+        "cooldownCards": 5,
         "costs": [],
         "tags": [
           "seraphim",
@@ -5202,10 +3896,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-colossus-advent:synergized",
         "label": "Synergized",
         "name": "Colossus Advent Angelic Verdict",
-        "description": "4930 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 4930,
-        "cooldownCards": 7,
-        "costs": [],
+        "description": "3100 base Oblivion · 8 cards cooldown · Requires Angel · Cost: discard 1 card",
+        "baseOblivion": 3100,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ],
         "requiresAngelOnBoard": true,
         "tags": [
           "seraphim",
@@ -5223,9 +3922,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-convergence-of-eternity:primary",
         "label": "Primary",
         "name": "Convergence of Ordinance",
-        "description": "1930 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 1930,
-        "cooldownCards": 6,
+        "description": "2200 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 2200,
+        "cooldownCards": 5,
         "costs": [],
         "tags": [
           "angel",
@@ -5237,10 +3936,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-convergence-of-eternity:exalted",
         "label": "Exalted",
         "name": "Convergence of Throne Decree",
-        "description": "4920 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 4920,
+        "description": "5000 base Oblivion · 9 cards cooldown · Cost: discard 2 cards",
+        "baseOblivion": 5000,
         "cooldownCards": 9,
-        "costs": [],
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -5248,7 +3952,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "neutrality",
+      "btei",
+      "btei-convergence"
+    ]
   },
   "btei-eternal-vigil": {
     "type": "Seraphim",
@@ -5257,8 +3965,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-eternal-vigil:unsynergized",
         "label": "Unsynergized",
         "name": "Eternal Vigil Vector Break",
-        "description": "2275 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2275,
+        "description": "2550 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 2550,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -5271,10 +3979,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-eternal-vigil:synergized",
         "label": "Synergized",
         "name": "Eternal Vigil Angelic Verdict",
-        "description": "3868 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 3868,
+        "description": "3400 base Oblivion · 7 cards cooldown · Requires Angel · Cost: discard 1 card",
+        "baseOblivion": 3400,
         "cooldownCards": 7,
-        "costs": [],
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ],
         "requiresAngelOnBoard": true,
         "tags": [
           "seraphim",
@@ -5336,8 +4049,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-light-halo-dominion:primary",
         "label": "Primary",
         "name": "Halo Legion Ordinance",
-        "description": "2090 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2090,
+        "description": "1714 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 1714,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -5350,8 +4063,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-light-halo-dominion:exalted",
         "label": "Exalted",
         "name": "Halo Legion Throne Decree",
-        "description": "5330 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5330,
+        "description": "4371 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 4371,
         "cooldownCards": 9,
         "costs": [],
         "tags": [
@@ -5507,10 +4220,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-mech-reactor-paradigm:primary",
         "label": "Primary",
         "name": "Reactor Psalm Ordinance",
-        "description": "2130 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2130,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "2400 base Oblivion · 5 cards cooldown · Cost: discard 9 cards",
+        "baseOblivion": 2400,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 9
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -5521,10 +4239,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-mech-reactor-paradigm:exalted",
         "label": "Exalted",
         "name": "Reactor Psalm Throne Decree",
-        "description": "5430 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5430,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "4680 base Oblivion · 8 cards cooldown · Cost: discard 15 cards",
+        "baseOblivion": 4680,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 15
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -5532,7 +4255,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "mechanical",
+      "btei",
+      "btei-mech"
+    ]
   },
   "btei-mech-thaumic-primevector": {
     "type": "Ophanim",
@@ -5586,9 +4313,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-neutrality-axiom-maw:primary",
         "label": "Primary",
         "name": "Axiom Maw Ordinance",
-        "description": "2050 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2050,
-        "cooldownCards": 6,
+        "description": "2000 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 2000,
+        "cooldownCards": 4,
         "costs": [],
         "tags": [
           "angel",
@@ -5600,10 +4327,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-neutrality-axiom-maw:exalted",
         "label": "Exalted",
         "name": "Axiom Maw Throne Decree",
-        "description": "5230 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5230,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "2500 base Oblivion · 6 cards cooldown · Cost: discard 1 card",
+        "baseOblivion": 2500,
+        "cooldownCards": 6,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -5611,52 +4343,24 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "neutrality",
+      "btei",
+      "btei-neutrality"
+    ]
   },
   "btei-neutrality-paradox-crown": {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "oblivion_flat",
-        "value": 0
-      },
-      {
         "type": "neutrality_patient_light_gain",
-        "value": 3
+        "value": 1
       },
       {
         "type": "look_top_take_drop",
-        "look": 8,
+        "look": 4,
         "take": 2,
         "drop": 2
-      },
-      {
-        "type": "conditional",
-        "condition": {
-          "type": "first_card_this_turn"
-        },
-        "then": [
-          {
-            "type": "patience_gain_all",
-            "value": 6
-          },
-          {
-            "type": "multiply_next"
-          }
-        ]
-      },
-      {
-        "type": "conditional",
-        "condition": {
-          "type": "cards_played_gte",
-          "value": 1
-        },
-        "then": [
-          {
-            "type": "oblivion_flat",
-            "value": 700
-          }
-        ]
       }
     ]
   },
@@ -5669,50 +4373,14 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "neutrality_patient_light_gain",
-        "value": 2
+        "value": 1
       },
       {
-        "type": "conditional",
-        "condition": {
-          "type": "first_card_this_turn"
-        },
-        "then": [
-          {
-            "type": "neutrality_patient_light_gain",
-            "value": 3
-          },
-          {
-            "type": "multiply_next"
-          },
-          {
-            "type": "oblivion_flat",
-            "value": 1000
-          }
-        ]
+        "type": "salvage_any"
       },
       {
-        "type": "conditional",
-        "condition": {
-          "type": "cards_played_gte",
-          "value": 1
-        },
-        "then": [
-          {
-            "type": "patience_gain_all",
-            "value": 7
-          },
-          {
-            "type": "neutrality_patient_light_gain",
-            "value": 1
-          },
-          {
-            "type": "salvage_any"
-          },
-          {
-            "type": "oblivion_flat",
-            "value": 500
-          }
-        ]
+        "type": "oblivion_flat",
+        "value": 650
       }
     ]
   },
@@ -5723,8 +4391,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-neutrality-void-throne:unsynergized",
         "label": "Unsynergized",
         "name": "Equilibrium Rex Vector Break",
-        "description": "2440 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2440,
+        "description": "2460 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 2460,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -5737,9 +4405,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-neutrality-void-throne:synergized",
         "label": "Synergized",
         "name": "Equilibrium Rex Angelic Verdict",
-        "description": "4148 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 4148,
-        "cooldownCards": 7,
+        "description": "4500 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 4500,
+        "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -5769,18 +4437,19 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "patience_gain_all",
-        "value": 7
+        "value": 10
       },
       {
         "type": "neutrality_patient_light_gain",
-        "value": 3
-      },
-      {
-        "type": "multiply_next"
+        "value": 1
       },
       {
         "type": "oblivion_flat",
-        "value": 350
+        "value": 250
+      },
+      {
+        "type": "discard_choice",
+        "value": 1
       }
     ]
   },
@@ -5791,9 +4460,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-omniscient-fracture:primary",
         "label": "Primary",
         "name": "Omniscient Fracture Ordinance",
-        "description": "2070 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2070,
-        "cooldownCards": 6,
+        "description": "2600 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 2600,
+        "cooldownCards": 4,
         "costs": [],
         "tags": [
           "angel",
@@ -5805,10 +4474,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-omniscient-fracture:exalted",
         "label": "Exalted",
         "name": "Omniscient Fracture Throne Decree",
-        "description": "5280 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5280,
+        "description": "5450 base Oblivion · 9 cards cooldown · Cost: discard 2 cards",
+        "baseOblivion": 5450,
         "cooldownCards": 9,
-        "costs": [],
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -5816,7 +4490,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "neutrality",
+      "btei",
+      "btei-omniscient"
+    ]
   },
   "btei-prismatic-blindwars-reliquary": {
     "type": "Angel",
@@ -5825,9 +4503,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-prismatic-blindwars-reliquary:primary",
         "label": "Primary",
         "name": "Blind Wars Ordinance",
-        "description": "2100 base Oblivion · 5 cards cooldown",
-        "baseOblivion": 2100,
-        "cooldownCards": 5,
+        "description": "1722 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 1722,
+        "cooldownCards": 6,
         "costs": [],
         "tags": [
           "angel",
@@ -5839,19 +4517,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-prismatic-blindwars-reliquary:exalted",
         "label": "Exalted",
         "name": "Blind Wars Throne Decree",
-        "description": "5355 base Oblivion · 8 cards cooldown · Cost: discard 2 cards, sacrifice 1 Seraphim",
-        "baseOblivion": 5355,
-        "cooldownCards": 8,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          },
-          {
-            "type": "sacrifice_seraphim",
-            "value": 1
-          }
-        ],
+        "description": "4391 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 4391,
+        "cooldownCards": 9,
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -5859,11 +4528,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "btei",
-      "btei-prismatic"
-    ]
+    "attackTags": []
   },
   "btei-prismatic-fracture-archive": {
     "type": "Cherubim",
@@ -5945,15 +4610,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-prismatic-storm-memory:unsynergized",
         "label": "Unsynergized",
         "name": "Drift Canopy Vector Break",
-        "description": "2460 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "2460 base Oblivion · 6 cards cooldown",
         "baseOblivion": 2460,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "cooldownCards": 6,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -5964,15 +4624,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-prismatic-storm-memory:synergized",
         "label": "Synergized",
         "name": "Drift Canopy Angelic Verdict",
-        "description": "4305 base Oblivion · 8 cards cooldown · Requires Angel · Cost: discard 1 card",
-        "baseOblivion": 4305,
-        "cooldownCards": 8,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "4182 base Oblivion · 7 cards cooldown · Requires Angel",
+        "baseOblivion": 4182,
+        "cooldownCards": 7,
+        "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
           "seraphim",
@@ -5981,11 +4636,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "btei",
-      "btei-prismatic"
-    ]
+    "attackTags": []
   },
   "btei-prismatic-vorthum-edict": {
     "type": "Ophanim",
@@ -6075,9 +4726,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-pyroabyss-hellrift-mandala:primary",
         "label": "Primary",
         "name": "Riftbell Catastrophe Ordinance",
-        "description": "2020 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)",
-        "baseOblivion": 2020,
-        "cooldownCards": 6,
+        "description": "1490 base Oblivion · 5 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%) · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)",
+        "baseOblivion": 1490,
+        "cooldownCards": 5,
         "costs": [],
         "tags": [
           "angel",
@@ -6089,10 +4740,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-pyroabyss-hellrift-mandala:exalted",
         "label": "Exalted",
         "name": "Riftbell Catastrophe Throne Decree",
-        "description": "5150 base Oblivion · 9 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)",
-        "baseOblivion": 5150,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "2906 base Oblivion · 8 cards cooldown · Cost: discard 2 cards · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%) · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)",
+        "baseOblivion": 2906,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -6100,7 +4756,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "fire",
+      "btei",
+      "btei-pyroabyss"
+    ]
   },
   "btei-pyroabyss-infernal-archon": {
     "type": "Seraphim",
@@ -6109,7 +4769,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-pyroabyss-infernal-archon:unsynergized",
         "label": "Unsynergized",
         "name": "Infernal Suncore Vector Break",
-        "description": "2130 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)",
+        "description": "2130 base Oblivion · 6 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%) · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)",
         "baseOblivion": 2130,
         "cooldownCards": 6,
         "costs": [],
@@ -6123,7 +4783,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-pyroabyss-infernal-archon:synergized",
         "label": "Synergized",
         "name": "Infernal Suncore Angelic Verdict",
-        "description": "3621 base Oblivion · 7 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%) · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)",
+        "description": "3621 base Oblivion · 7 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%) · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)",
         "baseOblivion": 3621,
         "cooldownCards": 7,
         "costs": [],
@@ -6212,31 +4872,11 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "patience_gain_all",
-        "value": 4
-      },
-      {
         "type": "neutrality_patient_light_gain",
         "value": 2
       },
       {
         "type": "shuffle_discard"
-      },
-      {
-        "type": "conditional",
-        "condition": {
-          "type": "first_card_this_turn"
-        },
-        "then": [
-          {
-            "type": "patience_gain_all",
-            "value": 6
-          },
-          {
-            "type": "oblivion_flat",
-            "value": 400
-          }
-        ]
       }
     ]
   },
@@ -6319,8 +4959,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-thornbound-funeral-bramble:primary",
         "label": "Primary",
         "name": "Grave Hedge Ordinance",
-        "description": "2080 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2080,
+        "description": "1706 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 1706,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -6333,8 +4973,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "btei-thornbound-funeral-bramble:exalted",
         "label": "Exalted",
         "name": "Grave Hedge Throne Decree",
-        "description": "5305 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5305,
+        "description": "4350 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 4350,
         "cooldownCards": 9,
         "costs": [],
         "tags": [
@@ -6404,14 +5044,6 @@ export const MATERIALIZED_CARD_BALANCE = {
   "btei-voids-reaping": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "patience_gain_all",
-        "value": 6
-      },
-      {
-        "type": "neutrality_patient_light_gain",
-        "value": 1
-      },
       {
         "type": "salvage_any"
       }
@@ -6700,7 +5332,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "cherubim_ophanim_bonus",
-        "value": 26
+        "value": 30
       }
     ]
   },
@@ -6709,7 +5341,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "cherubim_oblivion_per_card",
-        "value": 10
+        "value": 12
       }
     ]
   },
@@ -6737,8 +5369,8 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_attack_buff",
         "targetUnitType": "Any",
-        "bonusBaseOblivion": 32,
-        "cooldownDeltaCards": 0
+        "bonusBaseOblivion": 34,
+        "cooldownDeltaCards": -1
       }
     ]
   },
@@ -6747,7 +5379,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "cherubim_pyro_heat_gain",
-        "value": 3
+        "value": 2
       }
     ]
   },
@@ -6756,7 +5388,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "cherubim_global_oblivion_mult",
-        "value": 0.08
+        "value": 0.1
       }
     ]
   },
@@ -6791,7 +5423,7 @@ export const MATERIALIZED_CARD_BALANCE = {
           "md-ser-ivory-null-operator",
           "md-ser-pyrecoil-ascetic",
           "md-ser-fate-sever-colossus",
-          "sv-ser-frostcoil"
+          "inf-brass-eidolon-prime"
         ],
         "targetTags": [
           "mechanical",
@@ -6822,12 +5454,11 @@ export const MATERIALIZED_CARD_BALANCE = {
           "md-ser-ivory-null-operator",
           "md-ser-pyrecoil-ascetic",
           "md-ser-fate-sever-colossus",
-          "sv-ser-frostcoil",
+          "inf-brass-eidolon-prime",
           "btei-mech-reactor-paradigm",
-          "sv-eternal-frost-charge",
-          "sv-eternal-aurora-battery",
-          "sv-eternal-glacier-signal",
-          "sv-eternal-white-static"
+          "md-angel-ori9-broken-sleep",
+          "md-angel-thaumiel-prime",
+          "inf-mechanical-apotheosis-core"
         ],
         "targetTags": [
           "mechanical",
@@ -6851,10 +5482,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "targetUnitType": "Angel",
         "targetDefinitionIds": [
           "btei-mech-reactor-paradigm",
-          "sv-eternal-frost-charge",
-          "sv-eternal-aurora-battery",
-          "sv-eternal-glacier-signal",
-          "sv-eternal-white-static"
+          "md-angel-ori9-broken-sleep",
+          "md-angel-thaumiel-prime",
+          "inf-mechanical-apotheosis-core"
         ],
         "targetTags": [
           "mechanical",
@@ -6869,10 +5499,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "targetUnitType": "Angel",
         "targetDefinitionIds": [
           "btei-mech-reactor-paradigm",
-          "sv-eternal-frost-charge",
-          "sv-eternal-aurora-battery",
-          "sv-eternal-glacier-signal",
-          "sv-eternal-white-static"
+          "md-angel-ori9-broken-sleep",
+          "md-angel-thaumiel-prime",
+          "inf-mechanical-apotheosis-core"
         ],
         "targetTags": [
           "mechanical",
@@ -6904,12 +5533,11 @@ export const MATERIALIZED_CARD_BALANCE = {
           "md-ser-ivory-null-operator",
           "md-ser-pyrecoil-ascetic",
           "md-ser-fate-sever-colossus",
-          "sv-ser-frostcoil",
+          "inf-brass-eidolon-prime",
           "btei-mech-reactor-paradigm",
-          "sv-eternal-frost-charge",
-          "sv-eternal-aurora-battery",
-          "sv-eternal-glacier-signal",
-          "sv-eternal-white-static"
+          "md-angel-ori9-broken-sleep",
+          "md-angel-thaumiel-prime",
+          "inf-mechanical-apotheosis-core"
         ],
         "targetTags": [
           "mechanical",
@@ -6935,12 +5563,11 @@ export const MATERIALIZED_CARD_BALANCE = {
           "md-ser-ivory-null-operator",
           "md-ser-pyrecoil-ascetic",
           "md-ser-fate-sever-colossus",
-          "sv-ser-frostcoil",
+          "inf-brass-eidolon-prime",
           "btei-mech-reactor-paradigm",
-          "sv-eternal-frost-charge",
-          "sv-eternal-aurora-battery",
-          "sv-eternal-glacier-signal",
-          "sv-eternal-white-static"
+          "md-angel-ori9-broken-sleep",
+          "md-angel-thaumiel-prime",
+          "inf-mechanical-apotheosis-core"
         ],
         "targetTags": [
           "mechanical",
@@ -6965,10 +5592,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "targetUnitType": "Angel",
         "targetDefinitionIds": [
           "btei-mech-reactor-paradigm",
-          "sv-eternal-frost-charge",
-          "sv-eternal-aurora-battery",
-          "sv-eternal-glacier-signal",
-          "sv-eternal-white-static"
+          "md-angel-ori9-broken-sleep",
+          "md-angel-thaumiel-prime",
+          "inf-mechanical-apotheosis-core"
         ],
         "targetTags": [
           "mechanical",
@@ -6983,10 +5609,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "targetUnitType": "Angel",
         "targetDefinitionIds": [
           "btei-mech-reactor-paradigm",
-          "sv-eternal-frost-charge",
-          "sv-eternal-aurora-battery",
-          "sv-eternal-glacier-signal",
-          "sv-eternal-white-static"
+          "md-angel-ori9-broken-sleep",
+          "md-angel-thaumiel-prime",
+          "inf-mechanical-apotheosis-core"
         ],
         "targetTags": [
           "mechanical",
@@ -7018,7 +5643,7 @@ export const MATERIALIZED_CARD_BALANCE = {
           "md-ser-ivory-null-operator",
           "md-ser-pyrecoil-ascetic",
           "md-ser-fate-sever-colossus",
-          "sv-ser-frostcoil"
+          "inf-brass-eidolon-prime"
         ],
         "targetTags": [
           "mechanical",
@@ -7036,27 +5661,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_patience_per_card",
         "value": 2
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "ser-neutral-null",
-          "ser-neutral-void",
-          "ser-neutral-balance",
-          "ser-neutral-equilibrium",
-          "ser-neutral-still",
-          "btei-eternal-vigil",
-          "btei-colossus-advent",
-          "btei-neutrality-void-throne"
-        ],
-        "targetTags": [
-          "neutrality",
-          "cherubim-neutral"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7066,27 +5670,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_patience_per_card",
         "value": 2
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "ser-neutral-null",
-          "ser-neutral-void",
-          "ser-neutral-balance",
-          "ser-neutral-equilibrium",
-          "ser-neutral-still",
-          "btei-eternal-vigil",
-          "btei-colossus-advent",
-          "btei-neutrality-void-throne"
-        ],
-        "targetTags": [
-          "neutrality",
-          "cherubim-neutral"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7096,27 +5679,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_patience_per_card",
         "value": 2
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "ser-neutral-null",
-          "ser-neutral-void",
-          "ser-neutral-balance",
-          "ser-neutral-equilibrium",
-          "ser-neutral-still",
-          "btei-eternal-vigil",
-          "btei-colossus-advent",
-          "btei-neutrality-void-throne"
-        ],
-        "targetTags": [
-          "neutrality",
-          "cherubim-neutral"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7126,27 +5688,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_patience_per_card",
         "value": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "ser-neutral-null",
-          "ser-neutral-void",
-          "ser-neutral-balance",
-          "ser-neutral-equilibrium",
-          "ser-neutral-still",
-          "btei-eternal-vigil",
-          "btei-colossus-advent",
-          "btei-neutrality-void-throne"
-        ],
-        "targetTags": [
-          "neutrality",
-          "cherubim-neutral"
-        ],
-        "bonusBaseOblivion": 31,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -7165,46 +5706,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_patience_per_card",
         "value": 3
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "ser-neutral-null",
-          "ser-neutral-void",
-          "ser-neutral-balance",
-          "ser-neutral-equilibrium",
-          "ser-neutral-still",
-          "btei-eternal-vigil",
-          "btei-colossus-advent",
-          "btei-neutrality-void-throne"
-        ],
-        "targetTags": [
-          "neutrality",
-          "cherubim-neutral"
-        ],
-        "bonusBaseOblivion": 46,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "angel-neutral-beginning",
-          "angel-neutral-presence",
-          "angel-neutral-equilibrium",
-          "btei-convergence-of-eternity",
-          "btei-omniscient-fracture"
-        ],
-        "targetTags": [
-          "neutrality",
-          "cherubim-neutral",
-          "angel"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7214,32 +5715,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_patience_per_card",
         "value": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "ser-neutral-null",
-          "ser-neutral-void",
-          "ser-neutral-balance",
-          "ser-neutral-equilibrium",
-          "ser-neutral-still",
-          "btei-eternal-vigil",
-          "btei-colossus-advent",
-          "btei-neutrality-void-throne",
-          "angel-neutral-beginning",
-          "angel-neutral-presence",
-          "angel-neutral-equilibrium",
-          "btei-convergence-of-eternity",
-          "btei-omniscient-fracture"
-        ],
-        "targetTags": [
-          "neutrality",
-          "cherubim-neutral"
-        ],
-        "bonusBaseOblivion": 24,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7250,41 +5725,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 22
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-prismatic-blindwars-reliquary",
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic"
-        ],
-        "bonusBaseOblivion": 20,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-prismatic-blindwars-reliquary",
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic",
-          "angel"
-        ],
-        "bonusBaseOblivion": 16,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -7294,49 +5734,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_draw_per_card",
         "value": 2
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "btei-prismatic-storm-memory",
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "inf-prismatic-choir-splinter",
-          "btei-prismatic-blindwars-reliquary",
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic"
-        ],
-        "bonusBaseOblivion": 42,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-prismatic-blindwars-reliquary",
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic",
-          "angel"
-        ],
-        "bonusBaseOblivion": 33,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7350,31 +5747,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           "value": 1
         },
         "value": 1.7
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "btei-prismatic-storm-memory",
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "inf-prismatic-choir-splinter",
-          "btei-prismatic-blindwars-reliquary",
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic"
-        ],
-        "bonusBaseOblivion": 38,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1.7
       }
     ]
   },
@@ -7385,27 +5757,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_resource_per_card",
         "resource": "radiance",
         "value": 3
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "btei-prismatic-storm-memory",
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic"
-        ],
-        "bonusBaseOblivion": 31,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -7416,49 +5767,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_resource_per_card",
         "resource": "radiance",
         "value": 4
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "btei-prismatic-storm-memory",
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "inf-prismatic-choir-splinter",
-          "btei-prismatic-blindwars-reliquary",
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic"
-        ],
-        "bonusBaseOblivion": 42,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-prismatic-blindwars-reliquary",
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic",
-          "angel"
-        ],
-        "bonusBaseOblivion": 33,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7469,55 +5777,12 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 10
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "btei-prismatic-storm-memory",
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic"
-        ],
-        "bonusBaseOblivion": 11,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
   "cherubim-prismatic-radiance-ward": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "btei-prismatic-storm-memory",
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      }
-    ]
+    "effects": []
   },
   "cherubim-prismatic-spectrum-veil": {
     "type": "Cherubim",
@@ -7526,27 +5791,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 12
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "btei-prismatic-storm-memory",
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "cherubim-prismatic"
-        ],
-        "bonusBaseOblivion": 13,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -7557,41 +5801,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_resource_per_card",
         "resource": "trail",
         "value": 3
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-thornbound-funeral-bramble",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound"
-        ],
-        "bonusBaseOblivion": 46,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-thornbound-funeral-bramble",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound",
-          "angel"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7602,41 +5811,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 18
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-thornbound-funeral-bramble",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound"
-        ],
-        "bonusBaseOblivion": 16,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-thornbound-funeral-bramble",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound",
-          "angel"
-        ],
-        "bonusBaseOblivion": 12,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -7650,27 +5824,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           "value": 1
         },
         "value": 1.7
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "btei-thornbound-cathedral-lancer",
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "inf-thorn-widow-engine"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1.945
       }
     ]
   },
@@ -7681,27 +5834,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 10
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "btei-thornbound-cathedral-lancer",
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "inf-thorn-widow-engine"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound"
-        ],
-        "bonusBaseOblivion": 11,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -7712,55 +5844,12 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_resource_per_card",
         "resource": "trail",
         "value": 2
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "btei-thornbound-cathedral-lancer",
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "inf-thorn-widow-engine"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound"
-        ],
-        "bonusBaseOblivion": 26,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
   "cherubim-thornbound-trail-accelerator": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "btei-thornbound-cathedral-lancer",
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "inf-thorn-widow-engine"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      }
-    ]
+    "effects": []
   },
   "cherubim-thornbound-vine-mantle": {
     "type": "Cherubim",
@@ -7769,31 +5858,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 12
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "btei-thornbound-cathedral-lancer",
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "inf-thorn-widow-engine",
-          "btei-thornbound-funeral-bramble",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound"
-        ],
-        "bonusBaseOblivion": 12,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -7803,854 +5867,8 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_draw_per_card",
         "value": 2
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-thornbound-funeral-bramble",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound"
-        ],
-        "bonusBaseOblivion": 46,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "btei-thornbound-funeral-bramble",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "cherubim-thornbound",
-          "angel"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
-  },
-  "dfh-ang-council-of-the-seven-choirs": {
-    "type": "Angel",
-    "attacks": {
-      "primary": {
-        "id": "dfh-ang-council-of-the-seven-choirs:primary",
-        "label": "Primary",
-        "name": "Council Edict",
-        "description": "820 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 820,
-        "cooldownCards": 6,
-        "costs": []
-      },
-      "exalted": {
-        "id": "dfh-ang-council-of-the-seven-choirs:exalted",
-        "label": "Exalted",
-        "name": "Seven-Choir Apex",
-        "description": "1438 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1438,
-        "cooldownCards": 8,
-        "costs": []
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ang-mournshade-the-wickless": {
-    "type": "Angel",
-    "attacks": {
-      "primary": {
-        "id": "dfh-ang-mournshade-the-wickless:primary",
-        "label": "Primary",
-        "name": "Wickless Cut",
-        "description": "720 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 720,
-        "cooldownCards": 6,
-        "costs": []
-      },
-      "exalted": {
-        "id": "dfh-ang-mournshade-the-wickless:exalted",
-        "label": "Exalted",
-        "name": "Mournshade Verdict",
-        "description": "1268 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1268,
-        "cooldownCards": 8,
-        "costs": []
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ang-pyrelung-the-breathless": {
-    "type": "Angel",
-    "attacks": {
-      "primary": {
-        "id": "dfh-ang-pyrelung-the-breathless:primary",
-        "label": "Primary",
-        "name": "Breathless Strike",
-        "description": "738 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 738,
-        "cooldownCards": 6,
-        "costs": []
-      },
-      "exalted": {
-        "id": "dfh-ang-pyrelung-the-breathless:exalted",
-        "label": "Exalted",
-        "name": "Pyrelung Verdict",
-        "description": "1298 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1298,
-        "cooldownCards": 8,
-        "costs": []
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ang-sablecrown-the-unnamed": {
-    "type": "Angel",
-    "attacks": {
-      "primary": {
-        "id": "dfh-ang-sablecrown-the-unnamed:primary",
-        "label": "Primary",
-        "name": "Sable Edict",
-        "description": "758 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 758,
-        "cooldownCards": 6,
-        "costs": []
-      },
-      "exalted": {
-        "id": "dfh-ang-sablecrown-the-unnamed:exalted",
-        "label": "Exalted",
-        "name": "Unnamed Verdict",
-        "description": "1330 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1330,
-        "cooldownCards": 8,
-        "costs": []
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ang-veil-iorn-the-faceless-bride": {
-    "type": "Angel",
-    "attacks": {
-      "primary": {
-        "id": "dfh-ang-veil-iorn-the-faceless-bride:primary",
-        "label": "Primary",
-        "name": "Faceless Cut",
-        "description": "780 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 780,
-        "cooldownCards": 6,
-        "costs": []
-      },
-      "exalted": {
-        "id": "dfh-ang-veil-iorn-the-faceless-bride:exalted",
-        "label": "Exalted",
-        "name": "Veil-iorn Verdict",
-        "description": "1372 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1372,
-        "cooldownCards": 8,
-        "costs": []
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-cher-cathedral-anchorite": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 44,
-        "cooldownDeltaCards": -1
-      }
-    ]
-  },
-  "dfh-cher-cinder-saint-othrak": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 60,
-        "cooldownDeltaCards": -1
-      }
-    ]
-  },
-  "dfh-cher-halo-cracked-novice": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 18
-      }
-    ]
-  },
-  "dfh-cher-marrow-pilgrim": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 20
-      }
-    ]
-  },
-  "dfh-cher-othraks-confessor": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 42
-      }
-    ]
-  },
-  "dfh-cher-penitent-of-ash": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 22
-      }
-    ]
-  },
-  "dfh-cher-reliquary-of-the-last-tongue": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 30
-      }
-    ]
-  },
-  "dfh-cher-severed-sanctity-hierophant": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 32
-      }
-    ]
-  },
-  "dfh-cher-stigmata-flame-confessor": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 28
-      }
-    ]
-  },
-  "dfh-cher-the-flayed-halo": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_global_oblivion_mult",
-        "value": 0.76
-      }
-    ]
-  },
-  "dfh-et-crimson-ember-rain": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "dfh_eternal_veil_rite",
-        "marks": 6,
-        "oblivionPerMark": 205
-      },
-      {
-        "type": "draw",
-        "value": 2
-      }
-    ]
-  },
-  "dfh-et-eternal-procession-of-the-veiled": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "dfh_eternal_veil_rite",
-        "marks": 8,
-        "oblivionPerMark": 190
-      },
-      {
-        "type": "dfh_veil_marks_amplify",
-        "factor": 1.5
-      }
-    ]
-  },
-  "dfh-et-othraks-eternal-communion": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 80,
-        "cooldownDeltaCards": -1
-      }
-    ]
-  },
-  "dfh-et-skull-ceiling-garrison": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-et-skull-ceiling-garrison:unsyn",
-        "label": "Unsynergized",
-        "name": "Garrison Strike",
-        "description": "1010 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 1010,
-        "cooldownCards": 6,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-et-skull-ceiling-garrison:syn",
-        "label": "Synergized",
-        "name": "Skull-ceiling Verdict",
-        "description": "1770 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 1770,
-        "cooldownCards": 8,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-inf-bridal-procession-living-world": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 12
-      },
-      {
-        "type": "dfh_eternal_veil_rite",
-        "marks": 4,
-        "oblivionPerMark": 230
-      },
-      {
-        "type": "dfh_veil_marks_transmute",
-        "source": "pyre",
-        "consume": 12,
-        "marksPerResource": 1.5
-      }
-    ]
-  },
-  "dfh-inf-death-flame-escaping-upward": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 10
-      },
-      {
-        "type": "dfh_eternal_veil_rite",
-        "marks": 5,
-        "oblivionPerMark": 220
-      },
-      {
-        "type": "dfh_veil_marks_transmute",
-        "source": "crowns",
-        "marksPerResource": 2
-      },
-      {
-        "type": "dfh_veil_marks_cashout",
-        "oblivionPerMark": 300,
-        "consume": 12
-      }
-    ]
-  },
-  "dfh-inf-final-communion-of-halos": {
-    "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "bonusBaseOblivion": 200
-      }
-    ]
-  },
-  "dfh-inf-vakhresh-marches-out": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-inf-vakhresh-marches-out:unsyn",
-        "label": "Unsynergized",
-        "name": "Vakhresh Marches",
-        "description": "2080 base Oblivion · 7 cards cooldown",
-        "baseOblivion": 2080,
-        "cooldownCards": 7,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-inf-vakhresh-marches-out:syn",
-        "label": "Synergized",
-        "name": "March of the Dead-flame",
-        "description": "3640 base Oblivion · 9 cards cooldown · Requires Angel",
-        "baseOblivion": 3640,
-        "cooldownCards": 9,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-oph-ash-petal-strewer": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 4
-      }
-    ]
-  },
-  "dfh-oph-bell-ringer-of-the-hollow": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 1
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 1
-      }
-    ]
-  },
-  "dfh-oph-bridegrooms-outrider": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 2
-      }
-    ]
-  },
-  "dfh-oph-choirhouse-conductor": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 6
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 2
-      }
-    ]
-  },
-  "dfh-oph-empty-aisle-walker": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 2
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 1
-      }
-    ]
-  },
-  "dfh-oph-faceless-bridesmaid-choir": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 5
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 1
-      }
-    ]
-  },
-  "dfh-oph-funeral-march-drummer": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 4
-      }
-    ]
-  },
-  "dfh-oph-hollow-throne-coronation": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 5
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 3
-      }
-    ]
-  },
-  "dfh-oph-hollowkings-vacant-page": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 4
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 2
-      }
-    ]
-  },
-  "dfh-oph-pale-bridegrooms-page": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 1
-      },
-      {
-        "type": "discard_draw",
-        "discard": 1,
-        "draw": 1
-      }
-    ]
-  },
-  "dfh-oph-procession-lantern-custodian": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 3
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 1
-      }
-    ]
-  },
-  "dfh-oph-pyrelungs-exhalation": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 6
-      }
-    ]
-  },
-  "dfh-oph-sablecrowns-letter-bearer": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 2
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 3
-      }
-    ]
-  },
-  "dfh-oph-veil-stitcher": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 3
-      },
-      {
-        "type": "discard_draw",
-        "discard": 1,
-        "draw": 2
-      }
-    ]
-  },
-  "dfh-oph-veiled-censer-bearer": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 3
-      }
-    ]
-  },
-  "dfh-oph-wedding-procession-living-world": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 10
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 4
-      }
-    ]
-  },
-  "dfh-oph-wedding-that-wasnt-cantor": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 5
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 4
-      }
-    ]
-  },
-  "dfh-oph-wickless-litany": {
-    "type": "Ophanim",
-    "effects": [
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyre",
-        "value": 1
-      },
-      {
-        "type": "set_secondary_gain",
-        "kind": "pyre",
-        "value": 2
-      }
-    ]
-  },
-  "dfh-ser-ash-marrow-reaver": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-ser-ash-marrow-reaver:unsyn",
-        "label": "Unsynergized",
-        "name": "Marrow Rend",
-        "description": "360 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 360,
-        "cooldownCards": 4,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-ser-ash-marrow-reaver:syn",
-        "label": "Synergized",
-        "name": "Ash-Marrow Verdict",
-        "description": "620 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 620,
-        "cooldownCards": 6,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ser-choirhouse-cantor": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-ser-choirhouse-cantor:unsyn",
-        "label": "Unsynergized",
-        "name": "Choir Note",
-        "description": "372 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 372,
-        "cooldownCards": 4,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-ser-choirhouse-cantor:syn",
-        "label": "Synergized",
-        "name": "Cantor Verdict",
-        "description": "636 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 636,
-        "cooldownCards": 6,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ser-khorr-vael-no-face": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-ser-khorr-vael-no-face:unsyn",
-        "label": "Unsynergized",
-        "name": "No-face Strike",
-        "description": "920 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 920,
-        "cooldownCards": 6,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-ser-khorr-vael-no-face:syn",
-        "label": "Synergized",
-        "name": "Faceless Verdict",
-        "description": "1572 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 1572,
-        "cooldownCards": 8,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ser-last-breath-standard-bearer": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-ser-last-breath-standard-bearer:unsyn",
-        "label": "Unsynergized",
-        "name": "Standard Strike",
-        "description": "240 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 240,
-        "cooldownCards": 4,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-ser-last-breath-standard-bearer:syn",
-        "label": "Synergized",
-        "name": "Last-breath Verdict",
-        "description": "418 base Oblivion · 5 cards cooldown · Requires Angel",
-        "baseOblivion": 418,
-        "cooldownCards": 5,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ser-lullaby-forgot-censer": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-ser-lullaby-forgot-censer:unsyn",
-        "label": "Unsynergized",
-        "name": "Lullaby Cut",
-        "description": "252 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 252,
-        "cooldownCards": 4,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-ser-lullaby-forgot-censer:syn",
-        "label": "Synergized",
-        "name": "Forgot Hymn",
-        "description": "432 base Oblivion · 5 cards cooldown · Requires Angel",
-        "baseOblivion": 432,
-        "cooldownCards": 5,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ser-pyrelungs-vassal": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-ser-pyrelungs-vassal:unsyn",
-        "label": "Unsynergized",
-        "name": "Vassal Lash",
-        "description": "384 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 384,
-        "cooldownCards": 4,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-ser-pyrelungs-vassal:syn",
-        "label": "Synergized",
-        "name": "Pyrelung Verdict",
-        "description": "652 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 652,
-        "cooldownCards": 6,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ser-sablecrown-herald": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-ser-sablecrown-herald:unsyn",
-        "label": "Unsynergized",
-        "name": "Sable Edict",
-        "description": "640 base Oblivion · 5 cards cooldown",
-        "baseOblivion": 640,
-        "cooldownCards": 5,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-ser-sablecrown-herald:syn",
-        "label": "Synergized",
-        "name": "Herald of the Crown",
-        "description": "1108 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 1108,
-        "cooldownCards": 7,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
-  },
-  "dfh-ser-soot-veiled-soldier": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "dfh-ser-soot-veiled-soldier:unsyn",
-        "label": "Unsynergized",
-        "name": "Soot Cut",
-        "description": "230 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 230,
-        "cooldownCards": 4,
-        "costs": []
-      },
-      "synergized": {
-        "id": "dfh-ser-soot-veiled-soldier:syn",
-        "label": "Synergized",
-        "name": "Veiled March",
-        "description": "404 base Oblivion · 5 cards cooldown · Requires Angel",
-        "baseOblivion": 404,
-        "cooldownCards": 5,
-        "costs": [],
-        "requiresAngelOnBoard": true
-      }
-    },
-    "attackTags": []
   },
   "es-angel-aeveleth-remembered": {
     "type": "Angel",
@@ -8909,22 +6127,31 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "es-et-crown-of-seven-margins:primary",
         "label": "Primary",
         "name": "Crownline Slash",
-        "description": "940 base Oblivion · 6 cards cooldown",
+        "description": "940 base Oblivion · 5 cards cooldown",
         "baseOblivion": 940,
-        "cooldownCards": 6,
+        "cooldownCards": 5,
         "costs": []
       },
       "exalted": {
         "id": "es-et-crown-of-seven-margins:exalted",
         "label": "Exalted",
         "name": "Sevenfold Verdict",
-        "description": "1638 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1638,
+        "description": "1833 base Oblivion · 8 cards cooldown · Cost: discard 2 cards",
+        "baseOblivion": 1833,
         "cooldownCards": 8,
-        "costs": []
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "eternalseas",
+      "es",
+      "es-et"
+    ]
   },
   "es-et-surevaan-anomaly-log": {
     "type": "Cherubim",
@@ -9025,22 +6252,31 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "es-inf-seven-crowned-confluence:primary",
         "label": "Primary",
         "name": "Crowned Torrent",
-        "description": "1970 base Oblivion · 7 cards cooldown",
+        "description": "1970 base Oblivion · 5 cards cooldown",
         "baseOblivion": 1970,
-        "cooldownCards": 7,
+        "cooldownCards": 5,
         "costs": []
       },
       "exalted": {
         "id": "es-inf-seven-crowned-confluence:exalted",
         "label": "Exalted",
         "name": "Confluence Collapse",
-        "description": "3420 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 3420,
-        "cooldownCards": 9,
-        "costs": []
+        "description": "3842 base Oblivion · 8 cards cooldown · Cost: discard 2 cards",
+        "baseOblivion": 3842,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "eternalseas",
+      "es",
+      "es-inf"
+    ]
   },
   "es-inf-veilmargin-cathedral": {
     "type": "Cherubim",
@@ -9426,22 +6662,7 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_attack_buff",
         "targetUnitType": "Seraphim",
-        "bonusBaseOblivion": 42,
-        "targetDefinitionIds": [
-          "ga-ser-prismwake",
-          "ga-ser-lattice-canticle",
-          "ga-ser-white-edge",
-          "ga-ser-glass-hymn",
-          "ga-ser-yrethborn",
-          "ga-et-lattice-archive-seraph",
-          "ga-et-center-everywhere",
-          "ga-inf-glass-absolute"
-        ],
-        "targetTags": [
-          "glassabsolute",
-          "ga",
-          "ga-cher"
-        ]
+        "bonusBaseOblivion": 42
       }
     ]
   },
@@ -9452,31 +6673,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 46
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher"
-        ],
-        "bonusBaseOblivion": 41,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher",
-          "angel"
-        ],
-        "bonusBaseOblivion": 32,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -9486,22 +6682,7 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_attack_buff",
         "targetUnitType": "Any",
-        "bonusBaseOblivion": 59,
-        "targetDefinitionIds": [
-          "ga-ser-prismwake",
-          "ga-ser-lattice-canticle",
-          "ga-ser-white-edge",
-          "ga-ser-glass-hymn",
-          "ga-ser-yrethborn",
-          "ga-et-lattice-archive-seraph",
-          "ga-et-center-everywhere",
-          "ga-inf-glass-absolute"
-        ],
-        "targetTags": [
-          "glassabsolute",
-          "ga",
-          "ga-cher"
-        ]
+        "bonusBaseOblivion": 59
       }
     ]
   },
@@ -9512,27 +6693,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 28
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "ga-ser-prismwake",
-          "ga-ser-lattice-canticle",
-          "ga-ser-white-edge",
-          "ga-ser-glass-hymn",
-          "ga-ser-yrethborn",
-          "ga-et-lattice-archive-seraph",
-          "ga-et-center-everywhere",
-          "ga-inf-glass-absolute"
-        ],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher"
-        ],
-        "bonusBaseOblivion": 26,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -9543,27 +6703,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 38
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "ga-ser-prismwake",
-          "ga-ser-lattice-canticle",
-          "ga-ser-white-edge",
-          "ga-ser-glass-hymn",
-          "ga-ser-yrethborn",
-          "ga-et-lattice-archive-seraph",
-          "ga-et-center-everywhere",
-          "ga-inf-glass-absolute"
-        ],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher"
-        ],
-        "bonusBaseOblivion": 34,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -9573,31 +6712,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "cherubim_seraphim_amp",
         "value": 0.09
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher"
-        ],
-        "bonusBaseOblivion": 46,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher",
-          "angel"
-        ],
-        "bonusBaseOblivion": 36,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -9608,40 +6722,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "draw",
         "value": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "ga-ser-prismwake",
-          "ga-ser-lattice-canticle",
-          "ga-ser-white-edge",
-          "ga-ser-glass-hymn",
-          "ga-ser-yrethborn",
-          "ga-et-lattice-archive-seraph",
-          "ga-et-center-everywhere",
-          "ga-inf-glass-absolute"
-        ],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher"
-        ],
-        "bonusBaseOblivion": 48,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher",
-          "angel"
-        ],
-        "bonusBaseOblivion": 37,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -9652,27 +6732,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 20
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "ga-ser-prismwake",
-          "ga-ser-lattice-canticle",
-          "ga-ser-white-edge",
-          "ga-ser-glass-hymn",
-          "ga-ser-yrethborn",
-          "ga-et-lattice-archive-seraph",
-          "ga-et-center-everywhere",
-          "ga-inf-glass-absolute"
-        ],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher"
-        ],
-        "bonusBaseOblivion": 17,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -9683,27 +6742,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_resource_per_card",
         "resource": "radiance",
         "value": 12
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "ga-ser-prismwake",
-          "ga-ser-lattice-canticle",
-          "ga-ser-white-edge",
-          "ga-ser-glass-hymn",
-          "ga-ser-yrethborn",
-          "ga-et-lattice-archive-seraph",
-          "ga-et-center-everywhere",
-          "ga-inf-glass-absolute"
-        ],
-        "targetTags": [
-          "glassabsolute",
-          "ga-cher"
-        ],
-        "bonusBaseOblivion": 42,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -10233,15 +7271,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-glass-hymn:unsynergized",
         "label": "Unsynergized",
         "name": "Glass Hymn Vector Break",
-        "description": "460 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "460 base Oblivion · 5 cards cooldown",
         "baseOblivion": 460,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -10252,9 +7285,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-glass-hymn:synergized",
         "label": "Synergized",
         "name": "Glass Hymn Angelic Verdict",
-        "description": "805 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 805,
-        "cooldownCards": 7,
+        "description": "782 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 782,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -10264,11 +7297,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "glassabsolute",
-      "ga",
-      "ga-ser"
-    ]
+    "attackTags": []
   },
   "ga-ser-lattice-canticle": {
     "type": "Seraphim",
@@ -10277,15 +7306,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-lattice-canticle:unsynergized",
         "label": "Unsynergized",
         "name": "Lattice Canticle Vector Break",
-        "description": "312 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "312 base Oblivion · 4 cards cooldown",
         "baseOblivion": 312,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -10296,9 +7320,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-lattice-canticle:synergized",
         "label": "Synergized",
         "name": "Lattice Canticle Angelic Verdict",
-        "description": "546 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 546,
-        "cooldownCards": 6,
+        "description": "530 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 530,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -10308,11 +7332,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "glassabsolute",
-      "ga",
-      "ga-ser"
-    ]
+    "attackTags": []
   },
   "ga-ser-prismwake": {
     "type": "Seraphim",
@@ -10321,15 +7341,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-prismwake:unsynergized",
         "label": "Unsynergized",
         "name": "Prismwake Vector Break",
-        "description": "240 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "240 base Oblivion · 4 cards cooldown",
         "baseOblivion": 240,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -10340,9 +7355,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-prismwake:synergized",
         "label": "Synergized",
         "name": "Prismwake Angelic Verdict",
-        "description": "420 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 420,
-        "cooldownCards": 6,
+        "description": "408 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 408,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -10352,11 +7367,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "glassabsolute",
-      "ga",
-      "ga-ser"
-    ]
+    "attackTags": []
   },
   "ga-ser-white-edge": {
     "type": "Seraphim",
@@ -10365,15 +7376,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-white-edge:unsynergized",
         "label": "Unsynergized",
         "name": "White Edge Vector Break",
-        "description": "366 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "366 base Oblivion · 5 cards cooldown",
         "baseOblivion": 366,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -10384,9 +7390,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-white-edge:synergized",
         "label": "Synergized",
         "name": "White Edge Angelic Verdict",
-        "description": "641 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 641,
-        "cooldownCards": 7,
+        "description": "612 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 612,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -10396,11 +7402,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "glassabsolute",
-      "ga",
-      "ga-ser"
-    ]
+    "attackTags": []
   },
   "ga-ser-yrethborn": {
     "type": "Seraphim",
@@ -10409,15 +7411,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-yrethborn:unsynergized",
         "label": "Unsynergized",
         "name": "Yrethborn Vector Break",
-        "description": "690 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "690 base Oblivion · 6 cards cooldown",
         "baseOblivion": 690,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "cooldownCards": 6,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -10428,9 +7425,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ga-ser-yrethborn:synergized",
         "label": "Synergized",
         "name": "Yrethborn Angelic Verdict",
-        "description": "1208 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 1208,
-        "cooldownCards": 8,
+        "description": "1166 base Oblivion · 7 cards cooldown · Requires Angel",
+        "baseOblivion": 1166,
+        "cooldownCards": 7,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -10440,11 +7437,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "glassabsolute",
-      "ga",
-      "ga-ser"
-    ]
+    "attackTags": []
   },
   "hr-light-angelic-vision": {
     "type": "Ophanim",
@@ -10513,10 +7506,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "oblivion_flat",
         "value": 0
-      },
-      {
-        "type": "draw",
-        "value": 2
       }
     ]
   },
@@ -10573,10 +7562,6 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "multiply_next"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -10621,10 +7606,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "oblivion_flat",
         "value": 0
-      },
-      {
-        "type": "draw",
-        "value": 2
       }
     ]
   },
@@ -10695,10 +7676,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "discard_choice",
         "value": 3
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -10721,10 +7698,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 40
           }
         ]
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -10768,14 +7741,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "score_multiplier",
         "value": 250
-      },
-      {
-        "type": "prismatic_light_gain",
-        "value": 6
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -10797,13 +7762,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "oblivion_flat",
         "value": 0
-      },
-      {
-        "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -10830,10 +7788,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "seraphim_bonus_amplifier",
         "value": 25
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -10859,13 +7813,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "score_multiplier",
         "value": 100
-      },
-      {
-        "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -10892,10 +7839,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "oblivion_flat",
         "value": 0
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -10925,7 +7868,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "cherubim_patience_per_card",
-        "value": 6
+        "value": 5
       }
     ]
   },
@@ -11114,8 +8057,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-midplace-apocalypse:primary",
         "label": "Primary",
         "name": "Midplace Apocalypse Ordinance",
-        "description": "4210 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4210,
+        "description": "3200 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 3200,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -11128,8 +8071,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-midplace-apocalypse:exalted",
         "label": "Exalted",
         "name": "Midplace Apocalypse Throne Decree",
-        "description": "11580 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 11580,
+        "description": "8801 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 8801,
         "cooldownCards": 9,
         "costs": [],
         "tags": [
@@ -11230,8 +8173,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-vaelmor-umbra-sovereign:primary",
         "label": "Primary",
         "name": "Vaelmor Umbra Ordinance",
-        "description": "4250 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4250,
+        "description": "3230 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 3230,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -11244,8 +8187,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-bgi-vaelmor-umbra-sovereign:exalted",
         "label": "Exalted",
         "name": "Vaelmor Umbra Throne Decree",
-        "description": "11690 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 11690,
+        "description": "8884 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 8884,
         "cooldownCards": 9,
         "costs": [],
         "tags": [
@@ -11365,7 +8308,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "cherubim_patience_per_card",
-        "value": 8
+        "value": 6
       }
     ]
   },
@@ -11376,8 +8319,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-eternity-rupture:primary",
         "label": "Primary",
         "name": "Eternity Rupture Ordinance",
-        "description": "4170 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4170,
+        "description": "5670 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 5670,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -11390,10 +8333,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-eternity-rupture:exalted",
         "label": "Exalted",
         "name": "Eternity Rupture Throne Decree",
-        "description": "11470 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 11470,
+        "description": "7120 base Oblivion · 9 cards cooldown · Cost: discard 2 cards",
+        "baseOblivion": 7120,
         "cooldownCards": 9,
-        "costs": [],
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -11401,7 +8349,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "neutrality",
+      "inf",
+      "inf-eternity"
+    ]
   },
   "inf-genesis-throne": {
     "type": "Seraphim",
@@ -11410,9 +8362,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-genesis-throne:unsynergized",
         "label": "Unsynergized",
         "name": "Genesis Throne Vector Break",
-        "description": "8640 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 8640,
-        "cooldownCards": 6,
+        "description": "7600 base Oblivion · 7 cards cooldown",
+        "baseOblivion": 7600,
+        "cooldownCards": 7,
         "costs": [],
         "tags": [
           "seraphim",
@@ -11424,9 +8376,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-genesis-throne:synergized",
         "label": "Synergized",
         "name": "Genesis Throne Angelic Verdict",
-        "description": "14688 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 14688,
-        "cooldownCards": 7,
+        "description": "12540 base Oblivion · 15 cards cooldown · Requires Angel",
+        "baseOblivion": 12540,
+        "cooldownCards": 15,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -11554,10 +8506,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-mechanical-apotheosis-core:primary",
         "label": "Primary",
         "name": "Mechanical Apotheosis Ordinance",
-        "description": "4090 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4090,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "3200 base Oblivion · 5 cards cooldown · Cost: discard 17 cards",
+        "baseOblivion": 3200,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 17
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -11568,10 +8525,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-mechanical-apotheosis-core:exalted",
         "label": "Exalted",
         "name": "Mechanical Apotheosis Throne Decree",
-        "description": "11250 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 11250,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "6240 base Oblivion · 8 cards cooldown · Cost: discard 27 cards",
+        "baseOblivion": 6240,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 27
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -11579,7 +8541,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "mechanical",
+      "inf",
+      "inf-mechanical"
+    ]
   },
   "inf-null-apex": {
     "type": "Seraphim",
@@ -11588,8 +8554,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-null-apex:unsynergized",
         "label": "Unsynergized",
         "name": "Null Apex Vector Break",
-        "description": "7560 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 7560,
+        "description": "6840 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 6840,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -11602,9 +8568,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-null-apex:synergized",
         "label": "Synergized",
         "name": "Null Apex Angelic Verdict",
-        "description": "16140 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 16140,
-        "cooldownCards": 7,
+        "description": "13800 base Oblivion · 12 cards cooldown · Requires Angel",
+        "baseOblivion": 13800,
+        "cooldownCards": 12,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -11621,15 +8587,15 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "oblivion_flat",
-        "value": 6000
+        "value": 8500
       },
       {
         "type": "patience_gain_all",
-        "value": 26
+        "value": 15
       },
       {
         "type": "neutrality_patient_light_gain",
-        "value": 4
+        "value": 2
       }
     ]
   },
@@ -11747,8 +8713,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-prismatic-judgement-array:primary",
         "label": "Primary",
         "name": "Prismatic Judgement Ordinance",
-        "description": "3910 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 3910,
+        "description": "2972 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 2972,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -11761,8 +8727,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-prismatic-judgement-array:exalted",
         "label": "Exalted",
         "name": "Prismatic Judgement Throne Decree",
-        "description": "10755 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 10755,
+        "description": "8174 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 8174,
         "cooldownCards": 9,
         "costs": [],
         "tags": [
@@ -11781,7 +8747,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-pyraxis-colossus:unsynergized",
         "label": "Unsynergized",
         "name": "Pyraxis Colossus Vector Break",
-        "description": "4525 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)",
+        "description": "4525 base Oblivion · 6 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)",
         "baseOblivion": 4525,
         "cooldownCards": 6,
         "costs": [],
@@ -11795,7 +8761,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-pyraxis-colossus:synergized",
         "label": "Synergized",
         "name": "Pyraxis Colossus Angelic Verdict",
-        "description": "7693 base Oblivion · 7 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)",
+        "description": "7693 base Oblivion · 7 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)",
         "baseOblivion": 7693,
         "cooldownCards": 7,
         "costs": [],
@@ -11826,9 +8792,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-riftborn-sovereign:primary",
         "label": "Primary",
         "name": "Riftborn Sovereign Ordinance",
-        "description": "3770 base Oblivion · 6 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)",
-        "baseOblivion": 3770,
-        "cooldownCards": 6,
+        "description": "1710 base Oblivion · 5 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)",
+        "baseOblivion": 1710,
+        "cooldownCards": 5,
         "costs": [],
         "tags": [
           "angel",
@@ -11840,10 +8806,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-riftborn-sovereign:exalted",
         "label": "Exalted",
         "name": "Riftborn Sovereign Throne Decree",
-        "description": "10370 base Oblivion · 9 cards cooldown · +2.5% attack per Inferno Tier (max +75%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)",
-        "baseOblivion": 10370,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3335 base Oblivion · 8 cards cooldown · Cost: discard 2 cards · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%) · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)",
+        "baseOblivion": 3335,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -11851,7 +8822,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "fire",
+      "inf",
+      "inf-riftborn"
+    ]
   },
   "inf-sovereign-void": {
     "type": "Angel",
@@ -11860,9 +8835,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-sovereign-void:primary",
         "label": "Primary",
         "name": "Sovereign Void Ordinance",
-        "description": "3970 base Oblivion · 6 cards cooldown",
+        "description": "3970 base Oblivion · 4 cards cooldown",
         "baseOblivion": 3970,
-        "cooldownCards": 6,
+        "cooldownCards": 4,
         "costs": [],
         "tags": [
           "angel",
@@ -11874,10 +8849,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-sovereign-void:exalted",
         "label": "Exalted",
         "name": "Sovereign Void Throne Decree",
-        "description": "10920 base Oblivion · 9 cards cooldown",
+        "description": "10920 base Oblivion · 8 cards cooldown · Cost: discard 2 cards",
         "baseOblivion": 10920,
-        "cooldownCards": 9,
-        "costs": [],
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -11885,7 +8865,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "neutrality",
+      "inf",
+      "inf-sovereign"
+    ]
   },
   "inf-sv-aurora-singularity": {
     "type": "Ophanim",
@@ -12134,8 +9118,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-thornbound-elegy-titan:primary",
         "label": "Primary",
         "name": "Thornbound Elegy Ordinance",
-        "description": "4010 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4010,
+        "description": "3048 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 3048,
         "cooldownCards": 6,
         "costs": [],
         "tags": [
@@ -12148,8 +9132,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-thornbound-elegy-titan:exalted",
         "label": "Exalted",
         "name": "Thornbound Elegy Throne Decree",
-        "description": "11030 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 11030,
+        "description": "8383 base Oblivion · 9 cards cooldown",
+        "baseOblivion": 8383,
         "cooldownCards": 9,
         "costs": [],
         "tags": [
@@ -12259,19 +9243,12 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "oblivion_flat",
-        "value": 0
-      },
-      {
         "type": "patience_gain_all",
-        "value": 13
+        "value": 25
       },
       {
         "type": "neutrality_patient_light_gain",
-        "value": 3
-      },
-      {
-        "type": "multiply_next"
+        "value": 1
       }
     ]
   },
@@ -12290,7 +9267,7 @@ export const MATERIALIZED_CARD_BALANCE = {
           "stack": "wuas",
           "value": 8
         },
-        "bonusBaseOblivion": 140
+        "bonusBaseOblivion": 150
       }
     ]
   },
@@ -12338,19 +9315,29 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "inf-wuas-wishwright-absolute:unsyn",
         "label": "Unsynergized",
         "name": "Absolute Strike",
-        "description": "980 base Oblivion · 5 cards cooldown",
-        "baseOblivion": 980,
-        "cooldownCards": 5,
-        "costs": []
+        "description": "1020 base Oblivion · 9 cards cooldown · Cost: discard 1 card",
+        "baseOblivion": 1020,
+        "cooldownCards": 9,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ]
       },
       "synergized": {
         "id": "inf-wuas-wishwright-absolute:syn",
         "label": "Synergized",
         "name": "Wishwright Zenith",
-        "description": "1724 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 1724,
-        "cooldownCards": 7,
-        "costs": [],
+        "description": "1760 base Oblivion · 15 cards cooldown · Requires Angel · Cost: discard 2 cards",
+        "baseOblivion": 1760,
+        "cooldownCards": 15,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ],
         "requiresAngelOnBoard": true
       }
     },
@@ -12874,13 +9861,13 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "pyro_cinder_echo_ignite",
-        "oblivionPerEchoSquared": 72,
-        "consume": 1
+        "type": "pyro_heat_burst",
+        "oblivionPerHeat": 44,
+        "consume": 4
       },
       {
         "type": "oblivion_flat",
-        "value": 105
+        "value": 80
       },
       {
         "type": "draw",
@@ -12893,12 +9880,11 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "oblivion_flat",
-        "value": 20
+        "value": 28
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
+        "type": "pyro_heat_gain",
+        "value": 1
       }
     ]
   },
@@ -12912,9 +9898,21 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
+        "type": "pyro_heat_gain",
+        "value": 1
+      },
+      {
+        "type": "conditional",
+        "condition": {
+          "type": "pyro_heat_gte",
+          "value": 8
+        },
+        "then": [
+          {
+            "type": "draw",
+            "value": 1
+          }
+        ]
       }
     ]
   },
@@ -12922,13 +9920,16 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
+        "type": "pyro_heat_gain",
         "value": 2
       },
       {
         "type": "draw",
         "value": 1
+      },
+      {
+        "type": "oblivion_flat",
+        "value": 8
       }
     ]
   },
@@ -12936,14 +9937,38 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "pyro_cinder_echo_ignite",
-        "oblivionPerEchoSquared": 72,
-        "consume": 1
+        "type": "oblivion_flat",
+        "value": 22
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
+        "type": "pyro_heat_gain",
         "value": 2
+      },
+      {
+        "type": "conditional",
+        "condition": {
+          "type": "cards_played_gte",
+          "value": 4
+        },
+        "then": [
+          {
+            "type": "oblivion_flat",
+            "value": 40
+          }
+        ]
+      },
+      {
+        "type": "conditional",
+        "condition": {
+          "type": "pyro_heat_gte",
+          "value": 9
+        },
+        "then": [
+          {
+            "type": "draw",
+            "value": 1
+          }
+        ]
       }
     ]
   },
@@ -12951,29 +9976,24 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
-      },
-      {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
+        "type": "pyro_heat_gain",
+        "value": 3
       },
       {
         "type": "conditional",
         "condition": {
-          "type": "eternal_stack_gte",
-          "stack": "pyro",
+          "type": "pyro_heat_gte",
           "value": 10
         },
         "then": [
           {
-            "type": "eternal_stack_gain",
-            "stack": "pyro",
-            "value": 2
+            "type": "pyro_heat_gain",
+            "value": 3
           }
         ]
+      },
+      {
+        "type": "multiply_next"
       }
     ]
   },
@@ -12982,24 +10002,22 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "oblivion_flat",
-        "value": 40
+        "value": 36
       },
       {
         "type": "conditional",
         "condition": {
-          "type": "eternal_stack_gte",
-          "stack": "pyro",
+          "type": "pyro_heat_gte",
           "value": 8
         },
         "then": [
           {
             "type": "oblivion_flat",
-            "value": 30
+            "value": 44
           },
           {
-            "type": "eternal_stack_gain",
-            "stack": "pyro",
-            "value": 2
+            "type": "draw",
+            "value": 1
           }
         ]
       }
@@ -13009,13 +10027,13 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "pyro_cinder_echo_ignite",
-        "oblivionPerEchoSquared": 72,
-        "consume": 1
+        "type": "pyro_heat_burst",
+        "oblivionPerHeat": 42,
+        "consume": 3
       },
       {
         "type": "oblivion_flat",
-        "value": 50
+        "value": 36
       }
     ]
   },
@@ -13024,7 +10042,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "oblivion_flat",
-        "value": 30
+        "value": 34
       },
       {
         "type": "conditional",
@@ -13034,14 +10052,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         },
         "then": [
           {
-            "type": "eternal_stack_gain",
-            "stack": "pyro",
-            "value": 2
-          },
-          {
-            "type": "eternal_stack_gain",
-            "stack": "pyro",
-            "value": 2
+            "type": "pyro_heat_gain",
+            "value": 4
           }
         ]
       }
@@ -13051,14 +10063,16 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "pyro_cinder_echo_ignite",
-        "oblivionPerEchoSquared": 72,
-        "consume": 1
+        "type": "pyro_heat_burst",
+        "oblivionPerHeat": 48,
+        "consume": 5
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
+        "type": "oblivion_flat",
+        "value": 110
+      },
+      {
+        "type": "multiply_next"
       }
     ]
   },
@@ -13072,9 +10086,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 1
+        "type": "pyro_heat_gain",
+        "value": 2
       }
     ]
   },
@@ -13082,9 +10095,21 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 3
+        "type": "pyro_heat_gain",
+        "value": 4
+      },
+      {
+        "type": "conditional",
+        "condition": {
+          "type": "pyro_heat_gte",
+          "value": 6
+        },
+        "then": [
+          {
+            "type": "draw",
+            "value": 1
+          }
+        ]
       }
     ]
   },
@@ -13092,13 +10117,13 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "pyro_cinder_echo_ignite",
-        "oblivionPerEchoSquared": 72,
-        "consume": 1
+        "type": "pyro_heat_burst",
+        "oblivionPerHeat": 40,
+        "consume": 4
       },
       {
         "type": "oblivion_flat",
-        "value": 90
+        "value": 65
       },
       {
         "type": "conditional",
@@ -13108,14 +10133,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         },
         "then": [
           {
-            "type": "eternal_stack_gain",
-            "stack": "pyro",
-            "value": 2
+            "type": "pyro_heat_gain",
+            "value": 3
           },
           {
-            "type": "eternal_stack_gain",
-            "stack": "pyro",
-            "value": 2
+            "type": "multiply_next"
           }
         ]
       }
@@ -13128,14 +10150,12 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "shuffle_discard"
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
+        "type": "draw",
+        "value": 1
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
+        "type": "pyro_heat_gain",
+        "value": 1
       }
     ]
   },
@@ -13143,19 +10163,30 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "pyro_cinder_echo_ignite",
-        "oblivionPerEchoSquared": 72,
-        "consume": 1
+        "type": "pyro_heat_burst",
+        "oblivionPerHeat": 62,
+        "consume": 3
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
+        "type": "oblivion_flat",
+        "value": 120
       },
       {
-        "type": "pyro_cinder_echo_ignite",
-        "oblivionPerEchoSquared": 72,
-        "consume": 1
+        "type": "conditional",
+        "condition": {
+          "type": "pyro_heat_gte",
+          "value": 8
+        },
+        "then": [
+          {
+            "type": "pyro_heat_burst",
+            "oblivionPerHeat": 78,
+            "consume": 4
+          },
+          {
+            "type": "multiply_next"
+          }
+        ]
       }
     ]
   },
@@ -13163,13 +10194,22 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "pyro_cinder_echo_ignite",
-        "oblivionPerEchoSquared": 72,
-        "consume": 1
+        "type": "pyro_heat_burst",
+        "oblivionPerHeat": 56,
+        "consume": 4
       },
       {
-        "type": "oblivion_flat",
-        "value": 25
+        "type": "conditional",
+        "condition": {
+          "type": "pyro_heat_gte",
+          "value": 12
+        },
+        "then": [
+          {
+            "type": "draw",
+            "value": 2
+          }
+        ]
       }
     ]
   },
@@ -13178,20 +10218,22 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "oblivion_flat",
-        "value": 25
+        "value": 18
       },
       {
         "type": "conditional",
         "condition": {
-          "type": "eternal_stack_gte",
-          "stack": "pyro",
+          "type": "pyro_heat_gte",
           "value": 6
         },
         "then": [
           {
-            "type": "eternal_stack_gain",
-            "stack": "pyro",
+            "type": "pyro_heat_gain",
             "value": 2
+          },
+          {
+            "type": "draw",
+            "value": 1
           }
         ]
       }
@@ -13201,13 +10243,10 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
-        "value": 2
+        "type": "shuffle_discard"
       },
       {
-        "type": "eternal_stack_gain",
-        "stack": "pyro",
+        "type": "pyro_heat_gain",
         "value": 3
       }
     ]
@@ -13225,14 +10264,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "multiply_next"
-      },
-      {
-        "type": "prismatic_light_gain",
-        "value": 4
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -13276,10 +10307,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "multiply_next"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -13385,14 +10412,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 3
           }
         ]
-      },
-      {
-        "type": "prismatic_light_gain",
-        "value": 3
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -13418,13 +10437,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       },
       {
         "type": "multiply_next"
-      },
-      {
-        "type": "multiply_next"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -13449,19 +10461,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-angel-aurelith-ninth-beam:exalted",
         "label": "Exalted",
         "name": "Aurelith Seer Throne Decree",
-        "description": "2220 base Oblivion · 7 cards cooldown · Cost: discard 2 cards, spend 3 Strain",
+        "description": "2220 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2220,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 2
-          },
-          {
-            "type": "spend_strain",
-            "value": 3
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -13469,11 +10472,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "pa",
-      "pa-angel"
-    ]
+    "attackTags": []
   },
   "pa-angel-vorthum-whitebeam-arbiter": {
     "type": "Angel",
@@ -13496,15 +10495,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-angel-vorthum-whitebeam-arbiter:exalted",
         "label": "Exalted",
         "name": "Vorthum Whitebeam Throne Decree",
-        "description": "2300 base Oblivion · 7 cards cooldown · Cost: discard 3 cards",
+        "description": "2300 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2300,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 3
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -13512,11 +10506,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "pa",
-      "pa-angel"
-    ]
+    "attackTags": []
   },
   "pa-cherubim-accord-witness-monolith": {
     "type": "Cherubim",
@@ -13525,55 +10515,12 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 8
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "btei-prismatic-storm-memory",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "pa-cherubim"
-        ],
-        "bonusBaseOblivion": 7,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
   "pa-cherubim-buried-prism-cache": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "btei-prismatic-storm-memory",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "pa-cherubim"
-        ],
-        "bonusBaseOblivion": 42,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      }
-    ]
+    "effects": []
   },
   "pa-cherubim-canopy-eclipse-knot": {
     "type": "Cherubim",
@@ -13582,27 +10529,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 14
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "btei-prismatic-storm-memory",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "pa-cherubim"
-        ],
-        "bonusBaseOblivion": 13,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -13613,41 +10539,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 10
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "btei-prismatic-blindwars-reliquary",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "pa-cherubim"
-        ],
-        "bonusBaseOblivion": 9,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "pa-angel-aurelith-ninth-beam",
-          "pa-angel-vorthum-whitebeam-arbiter",
-          "btei-prismatic-blindwars-reliquary",
-          "inf-prismatic-judgement-array"
-        ],
-        "targetTags": [
-          "prismatic",
-          "pa-cherubim",
-          "angel"
-        ],
-        "bonusBaseOblivion": 7,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -13658,27 +10549,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 10
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "btei-prismatic-storm-memory",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "pa-cherubim"
-        ],
-        "bonusBaseOblivion": 9,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -13689,27 +10559,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 8
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "pa-ser-skyglass-veltharion",
-          "pa-ser-plainshush-drossken",
-          "pa-ser-mirrorback-mirshan",
-          "pa-ser-stormmemory-veltharion",
-          "pa-ser-veilstep-drossken",
-          "pa-ser-goldvein-ancestor",
-          "btei-prismatic-storm-memory",
-          "inf-prismatic-choir-splinter"
-        ],
-        "targetTags": [
-          "prismatic",
-          "pa-cherubim"
-        ],
-        "bonusBaseOblivion": 8,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
       }
     ]
   },
@@ -13853,13 +10702,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 80
           }
         ]
-      },
-      {
-        "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -13886,14 +10728,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 140
           }
         ]
-      },
-      {
-        "type": "prismatic_light_gain",
-        "value": 6
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -13920,14 +10754,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 35
           }
         ]
-      },
-      {
-        "type": "prismatic_light_gain",
-        "value": 3
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -13957,13 +10783,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 110
           }
         ]
-      },
-      {
-        "type": "multiply_next"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -13990,13 +10809,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 60
           }
         ]
-      },
-      {
-        "type": "multiply_next"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -14007,15 +10819,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-goldvein-ancestor:unsynergized",
         "label": "Unsynergized",
         "name": "Goldvein Ancestor Vector Break",
-        "description": "907 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 907,
+        "description": "955 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 955,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14026,15 +10833,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-goldvein-ancestor:synergized",
         "label": "Synergized",
         "name": "Goldvein Ancestor Angelic Verdict",
-        "description": "1621 base Oblivion · 7 cards cooldown · Requires Angel · Cost: discard 1 card",
-        "baseOblivion": 1621,
-        "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "1624 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 1624,
+        "cooldownCards": 6,
+        "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
           "seraphim",
@@ -14043,11 +10845,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "pa",
-      "pa-ser"
-    ]
+    "attackTags": []
   },
   "pa-ser-mirrorback-mirshan": {
     "type": "Seraphim",
@@ -14056,15 +10854,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-mirrorback-mirshan:unsynergized",
         "label": "Unsynergized",
         "name": "Mirrorback Mirshan Vector Break",
-        "description": "333 base Oblivion · 4 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 333,
+        "description": "350 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 350,
         "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14087,11 +10880,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "pa",
-      "pa-ser"
-    ]
+    "attackTags": []
   },
   "pa-ser-plainshush-drossken": {
     "type": "Seraphim",
@@ -14100,15 +10889,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-plainshush-drossken:unsynergized",
         "label": "Unsynergized",
         "name": "Plainshush Drossken Vector Break",
-        "description": "223 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 223,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "235 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 235,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14119,9 +10903,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-plainshush-drossken:synergized",
         "label": "Synergized",
         "name": "Plainshush Drossken Angelic Verdict",
-        "description": "399 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 399,
-        "cooldownCards": 6,
+        "description": "400 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 400,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14131,11 +10915,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "pa",
-      "pa-ser"
-    ]
+    "attackTags": []
   },
   "pa-ser-skyglass-veltharion": {
     "type": "Seraphim",
@@ -14144,15 +10924,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-skyglass-veltharion:unsynergized",
         "label": "Unsynergized",
         "name": "Skyglass Veltharion Vector Break",
-        "description": "223 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 223,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "235 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 235,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14163,9 +10938,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-skyglass-veltharion:synergized",
         "label": "Synergized",
         "name": "Skyglass Veltharion Angelic Verdict",
-        "description": "399 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 399,
-        "cooldownCards": 6,
+        "description": "400 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 400,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14175,11 +10950,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "pa",
-      "pa-ser"
-    ]
+    "attackTags": []
   },
   "pa-ser-stormmemory-veltharion": {
     "type": "Seraphim",
@@ -14188,15 +10959,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-stormmemory-veltharion:unsynergized",
         "label": "Unsynergized",
         "name": "Stormmemory Veltharion Vector Break",
-        "description": "333 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 333,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "description": "350 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 350,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14207,9 +10973,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-stormmemory-veltharion:synergized",
         "label": "Synergized",
         "name": "Stormmemory Veltharion Angelic Verdict",
-        "description": "595 base Oblivion · 6 cards cooldown · Requires Angel",
+        "description": "595 base Oblivion · 5 cards cooldown · Requires Angel",
         "baseOblivion": 595,
-        "cooldownCards": 6,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14219,11 +10985,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "pa",
-      "pa-ser"
-    ]
+    "attackTags": []
   },
   "pa-ser-veilstep-drossken": {
     "type": "Seraphim",
@@ -14232,15 +10994,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-veilstep-drossken:unsynergized",
         "label": "Unsynergized",
         "name": "Veilstep Drossken Vector Break",
-        "description": "532 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 532,
+        "description": "560 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 560,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14251,9 +11008,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "pa-ser-veilstep-drossken:synergized",
         "label": "Synergized",
         "name": "Veilstep Drossken Angelic Verdict",
-        "description": "951 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 951,
-        "cooldownCards": 7,
+        "description": "952 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 952,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14263,11 +11020,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "prismatic",
-      "pa",
-      "pa-ser"
-    ]
+    "attackTags": []
   },
   "ser-fire-abyssal": {
     "type": "Seraphim",
@@ -14276,7 +11029,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-abyssal:unsynergized",
         "label": "Unsynergized",
         "name": "Abyssal Seraphim Vector Break",
-        "description": "225 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "225 base Oblivion · 4 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 225,
         "cooldownCards": 4,
         "costs": [],
@@ -14290,7 +11043,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-abyssal:synergized",
         "label": "Synergized",
         "name": "Abyssal Seraphim Angelic Verdict",
-        "description": "383 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "383 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 383,
         "cooldownCards": 5,
         "costs": [],
@@ -14311,7 +11064,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-cinder:unsynergized",
         "label": "Unsynergized",
         "name": "Cinder Seraphim Vector Break",
-        "description": "200 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "200 base Oblivion · 4 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 200,
         "cooldownCards": 4,
         "costs": [],
@@ -14325,7 +11078,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-cinder:synergized",
         "label": "Synergized",
         "name": "Cinder Seraphim Angelic Verdict",
-        "description": "340 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "340 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 340,
         "cooldownCards": 5,
         "costs": [],
@@ -14346,7 +11099,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-infernal:unsynergized",
         "label": "Unsynergized",
         "name": "Infernal Seraphim Vector Break",
-        "description": "325 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "325 base Oblivion · 4 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 325,
         "cooldownCards": 4,
         "costs": [],
@@ -14360,7 +11113,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-infernal:synergized",
         "label": "Synergized",
         "name": "Infernal Seraphim Angelic Verdict",
-        "description": "553 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "553 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 553,
         "cooldownCards": 5,
         "costs": [],
@@ -14381,7 +11134,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-pyre:unsynergized",
         "label": "Unsynergized",
         "name": "Pyre Seraphim Vector Break",
-        "description": "360 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "360 base Oblivion · 4 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 360,
         "cooldownCards": 4,
         "costs": [],
@@ -14395,7 +11148,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-pyre:synergized",
         "label": "Synergized",
         "name": "Pyre Seraphim Angelic Verdict",
-        "description": "612 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "612 base Oblivion · 5 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 612,
         "cooldownCards": 5,
         "costs": [],
@@ -14416,7 +11169,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-voidflame:unsynergized",
         "label": "Unsynergized",
         "name": "Void-Flame Seraphim Vector Break",
-        "description": "530 base Oblivion · 5 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "530 base Oblivion · 5 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 530,
         "cooldownCards": 5,
         "costs": [],
@@ -14430,7 +11183,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-fire-voidflame:synergized",
         "label": "Synergized",
         "name": "Void-Flame Seraphim Angelic Verdict",
-        "description": "901 base Oblivion · 6 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)",
+        "description": "901 base Oblivion · 6 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
         "baseOblivion": 901,
         "cooldownCards": 6,
         "costs": [],
@@ -14451,15 +11204,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-choir:unsynergized",
         "label": "Unsynergized",
         "name": "Emberchoir Seraphim Vector Break",
-        "description": "385 base Oblivion · 5 cards cooldown · Cost: spend 97 Radiance",
-        "baseOblivion": 385,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 97
-          }
-        ],
+        "description": "335 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 335,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14470,9 +11218,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-choir:synergized",
         "label": "Synergized",
         "name": "Emberchoir Seraphim Angelic Verdict",
-        "description": "586 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 586,
-        "cooldownCards": 6,
+        "description": "570 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 570,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14482,11 +11230,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "ser",
-      "ser-light"
-    ]
+    "attackTags": []
   },
   "ser-light-dawn": {
     "type": "Seraphim",
@@ -14495,15 +11239,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-dawn:unsynergized",
         "label": "Unsynergized",
         "name": "Dawnfire Seraphim Vector Break",
-        "description": "259 base Oblivion · 5 cards cooldown · Cost: spend 97 Radiance",
-        "baseOblivion": 259,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 97
-          }
-        ],
+        "description": "225 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 225,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14514,9 +11253,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-dawn:synergized",
         "label": "Synergized",
         "name": "Dawnfire Seraphim Angelic Verdict",
-        "description": "394 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 394,
-        "cooldownCards": 6,
+        "description": "383 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 383,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14526,11 +11265,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "ser",
-      "ser-light"
-    ]
+    "attackTags": []
   },
   "ser-light-herald": {
     "type": "Seraphim",
@@ -14539,15 +11274,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-herald:unsynergized",
         "label": "Unsynergized",
         "name": "Cinderherald Seraphim Vector Break",
-        "description": "656 base Oblivion · 5 cards cooldown · Cost: spend 97 Radiance",
-        "baseOblivion": 656,
+        "description": "570 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 570,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 97
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14558,9 +11288,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-herald:synergized",
         "label": "Synergized",
         "name": "Cinderherald Seraphim Angelic Verdict",
-        "description": "998 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 998,
-        "cooldownCards": 7,
+        "description": "969 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 969,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14570,11 +11300,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "ser",
-      "ser-light"
-    ]
+    "attackTags": []
   },
   "ser-light-throne": {
     "type": "Seraphim",
@@ -14583,15 +11309,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-throne:unsynergized",
         "label": "Unsynergized",
         "name": "Thorncrown Seraphim Vector Break",
-        "description": "402 base Oblivion · 5 cards cooldown · Cost: spend 97 Radiance",
-        "baseOblivion": 402,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 97
-          }
-        ],
+        "description": "350 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 350,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14602,9 +11323,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-throne:synergized",
         "label": "Synergized",
         "name": "Thorncrown Seraphim Angelic Verdict",
-        "description": "613 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 613,
-        "cooldownCards": 6,
+        "description": "595 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 595,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14614,11 +11335,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "ser",
-      "ser-light"
-    ]
+    "attackTags": []
   },
   "ser-light-vigil": {
     "type": "Seraphim",
@@ -14627,15 +11344,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-vigil:unsynergized",
         "label": "Unsynergized",
         "name": "Thornwatch Seraphim Vector Break",
-        "description": "259 base Oblivion · 5 cards cooldown · Cost: spend 97 Radiance",
-        "baseOblivion": 259,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 97
-          }
-        ],
+        "description": "225 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 225,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14646,9 +11358,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-vigil:synergized",
         "label": "Synergized",
         "name": "Thornwatch Seraphim Angelic Verdict",
-        "description": "394 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 394,
-        "cooldownCards": 6,
+        "description": "383 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 383,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14658,11 +11370,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "ser",
-      "ser-light"
-    ]
+    "attackTags": []
   },
   "ser-light-warden": {
     "type": "Seraphim",
@@ -14671,15 +11379,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-warden:unsynergized",
         "label": "Unsynergized",
         "name": "Thornward Seraphim Vector Break",
-        "description": "610 base Oblivion · 5 cards cooldown · Cost: spend 97 Radiance",
-        "baseOblivion": 610,
+        "description": "530 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 530,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_radiance",
-            "value": 97
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14690,9 +11393,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-light-warden:synergized",
         "label": "Synergized",
         "name": "Thornward Seraphim Angelic Verdict",
-        "description": "928 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 928,
-        "cooldownCards": 7,
+        "description": "901 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 901,
+        "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -14702,11 +11405,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "light",
-      "ser",
-      "ser-light"
-    ]
+    "attackTags": []
   },
   "ser-neutral-balance": {
     "type": "Seraphim",
@@ -14715,15 +11414,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-neutral-balance:unsynergized",
         "label": "Unsynergized",
         "name": "Balance Seraphim Vector Break",
-        "description": "390 base Oblivion · 4 cards cooldown · Cost: discard 1 card",
+        "description": "390 base Oblivion · 5 cards cooldown",
         "baseOblivion": 390,
-        "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "cooldownCards": 5,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14734,8 +11428,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-neutral-balance:synergized",
         "label": "Synergized",
         "name": "Balance Seraphim Angelic Verdict",
-        "description": "683 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 683,
+        "description": "663 base Oblivion · 7 cards cooldown · Requires Angel",
+        "baseOblivion": 663,
         "cooldownCards": 7,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -14746,11 +11440,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "neutrality",
-      "ser",
-      "ser-neutral"
-    ]
+    "attackTags": []
   },
   "ser-neutral-equilibrium": {
     "type": "Seraphim",
@@ -14759,15 +11449,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-neutral-equilibrium:unsynergized",
         "label": "Unsynergized",
         "name": "Equilibrium Seraphim Vector Break",
-        "description": "335 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "description": "335 base Oblivion · 5 cards cooldown",
         "baseOblivion": 335,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14778,96 +11463,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "ser-neutral-equilibrium:synergized",
         "label": "Synergized",
         "name": "Equilibrium Seraphim Angelic Verdict",
-        "description": "586 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 586,
-        "cooldownCards": 8,
-        "costs": [],
-        "requiresAngelOnBoard": true,
-        "tags": [
-          "seraphim",
-          "synergized",
-          "neutrality"
-        ]
-      }
-    },
-    "attackTags": [
-      "neutrality",
-      "ser",
-      "ser-neutral"
-    ]
-  },
-  "ser-neutral-null": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "ser-neutral-null:unsynergized",
-        "label": "Unsynergized",
-        "name": "Null Seraphim Vector Break",
-        "description": "225 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 225,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
-        "tags": [
-          "seraphim",
-          "unsynergized",
-          "neutrality"
-        ]
-      },
-      "synergized": {
-        "id": "ser-neutral-null:synergized",
-        "label": "Synergized",
-        "name": "Null Seraphim Angelic Verdict",
-        "description": "394 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 394,
-        "cooldownCards": 8,
-        "costs": [],
-        "requiresAngelOnBoard": true,
-        "tags": [
-          "seraphim",
-          "synergized",
-          "neutrality"
-        ]
-      }
-    },
-    "attackTags": [
-      "neutrality",
-      "ser",
-      "ser-neutral"
-    ]
-  },
-  "ser-neutral-still": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "ser-neutral-still:unsynergized",
-        "label": "Unsynergized",
-        "name": "Still Seraphim Vector Break",
-        "description": "560 base Oblivion · 4 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 560,
-        "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
-        "tags": [
-          "seraphim",
-          "unsynergized",
-          "neutrality"
-        ]
-      },
-      "synergized": {
-        "id": "ser-neutral-still:synergized",
-        "label": "Synergized",
-        "name": "Still Seraphim Angelic Verdict",
-        "description": "980 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 980,
+        "description": "570 base Oblivion · 7 cards cooldown · Requires Angel",
+        "baseOblivion": 570,
         "cooldownCards": 7,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -14878,28 +11475,19 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "neutrality",
-      "ser",
-      "ser-neutral"
-    ]
+    "attackTags": []
   },
-  "ser-neutral-void": {
+  "ser-neutral-null": {
     "type": "Seraphim",
     "attacks": {
       "unsynergized": {
-        "id": "ser-neutral-void:unsynergized",
+        "id": "ser-neutral-null:unsynergized",
         "label": "Unsynergized",
-        "name": "Void Seraphim Vector Break",
-        "description": "225 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "name": "Null Seraphim Vector Break",
+        "description": "225 base Oblivion · 5 cards cooldown",
         "baseOblivion": 225,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -14907,11 +11495,46 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       },
       "synergized": {
-        "id": "ser-neutral-void:synergized",
+        "id": "ser-neutral-null:synergized",
         "label": "Synergized",
-        "name": "Void Seraphim Angelic Verdict",
-        "description": "394 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 394,
+        "name": "Null Seraphim Angelic Verdict",
+        "description": "383 base Oblivion · 7 cards cooldown · Requires Angel",
+        "baseOblivion": 383,
+        "cooldownCards": 7,
+        "costs": [],
+        "requiresAngelOnBoard": true,
+        "tags": [
+          "seraphim",
+          "synergized",
+          "neutrality"
+        ]
+      }
+    },
+    "attackTags": []
+  },
+  "ser-neutral-still": {
+    "type": "Seraphim",
+    "attacks": {
+      "unsynergized": {
+        "id": "ser-neutral-still:unsynergized",
+        "label": "Unsynergized",
+        "name": "Still Seraphim Vector Break",
+        "description": "560 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 560,
+        "cooldownCards": 6,
+        "costs": [],
+        "tags": [
+          "seraphim",
+          "unsynergized",
+          "neutrality"
+        ]
+      },
+      "synergized": {
+        "id": "ser-neutral-still:synergized",
+        "label": "Synergized",
+        "name": "Still Seraphim Angelic Verdict",
+        "description": "952 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 952,
         "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -14922,11 +11545,42 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "neutrality",
-      "ser",
-      "ser-neutral"
-    ]
+    "attackTags": []
+  },
+  "ser-neutral-void": {
+    "type": "Seraphim",
+    "attacks": {
+      "unsynergized": {
+        "id": "ser-neutral-void:unsynergized",
+        "label": "Unsynergized",
+        "name": "Void Seraphim Vector Break",
+        "description": "225 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 225,
+        "cooldownCards": 5,
+        "costs": [],
+        "tags": [
+          "seraphim",
+          "unsynergized",
+          "neutrality"
+        ]
+      },
+      "synergized": {
+        "id": "ser-neutral-void:synergized",
+        "label": "Synergized",
+        "name": "Void Seraphim Angelic Verdict",
+        "description": "383 base Oblivion · 7 cards cooldown · Requires Angel",
+        "baseOblivion": 383,
+        "cooldownCards": 7,
+        "costs": [],
+        "requiresAngelOnBoard": true,
+        "tags": [
+          "seraphim",
+          "synergized",
+          "neutrality"
+        ]
+      }
+    },
+    "attackTags": []
   },
   "sv-angel-icebound-conductor": {
     "type": "Angel",
@@ -15286,10 +11940,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-aurora-battery:primary",
         "label": "Primary",
         "name": "Aurora Nexus Ordinance",
-        "description": "2305 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2305,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1560 base Oblivion · 5 cards cooldown · Cost: discard 3 cards",
+        "baseOblivion": 1560,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 3
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15302,10 +11961,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-aurora-battery:exalted",
         "label": "Exalted",
         "name": "Aurora Nexus Throne Decree",
-        "description": "5660 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5660,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3042 base Oblivion · 8 cards cooldown · Cost: discard 9 cards",
+        "baseOblivion": 3042,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 9
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15315,7 +11979,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-eternal"
+    ]
   },
   "sv-eternal-frost-charge": {
     "type": "Angel",
@@ -15324,10 +11992,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-frost-charge:primary",
         "label": "Primary",
         "name": "Frostborne Surge Ordinance",
-        "description": "2120 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2120,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1490 base Oblivion · 5 cards cooldown · Cost: discard 3 cards",
+        "baseOblivion": 1490,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 3
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15340,10 +12013,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-frost-charge:exalted",
         "label": "Exalted",
         "name": "Frostborne Surge Throne Decree",
-        "description": "5480 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5480,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "2906 base Oblivion · 8 cards cooldown · Cost: discard 8 cards",
+        "baseOblivion": 2906,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 8
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15353,7 +12031,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-eternal"
+    ]
   },
   "sv-eternal-glacier-signal": {
     "type": "Angel",
@@ -15362,10 +12044,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-glacier-signal:primary",
         "label": "Primary",
         "name": "Glacier Beacon Ordinance",
-        "description": "2460 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2460,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1620 base Oblivion · 5 cards cooldown · Cost: discard 4 cards",
+        "baseOblivion": 1620,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 4
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15378,10 +12065,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-glacier-signal:exalted",
         "label": "Exalted",
         "name": "Glacier Beacon Throne Decree",
-        "description": "5880 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5880,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3159 base Oblivion · 8 cards cooldown · Cost: discard 8 cards",
+        "baseOblivion": 3159,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 8
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15391,7 +12083,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-eternal"
+    ]
   },
   "sv-eternal-sleet-choir": {
     "type": "Angel",
@@ -15400,10 +12096,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-sleet-choir:primary",
         "label": "Primary",
         "name": "Blizzard Requiem Ordinance",
-        "description": "2520 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2520,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1680 base Oblivion · 5 cards cooldown · Cost: discard 4 cards",
+        "baseOblivion": 1680,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 4
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15416,10 +12117,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-sleet-choir:exalted",
         "label": "Exalted",
         "name": "Blizzard Requiem Throne Decree",
-        "description": "6040 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 6040,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3276 base Oblivion · 8 cards cooldown · Cost: discard 10 cards",
+        "baseOblivion": 3276,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 10
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15429,7 +12135,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-eternal"
+    ]
   },
   "sv-eternal-white-static": {
     "type": "Angel",
@@ -15438,10 +12148,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-white-static:primary",
         "label": "Primary",
         "name": "White Requiem Ordinance",
-        "description": "2388 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 2388,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1540 base Oblivion · 5 cards cooldown · Cost: discard 3 cards",
+        "baseOblivion": 1540,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 3
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15454,10 +12169,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-eternal-white-static:exalted",
         "label": "Exalted",
         "name": "White Requiem Throne Decree",
-        "description": "5940 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 5940,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3003 base Oblivion · 8 cards cooldown · Cost: discard 9 cards",
+        "baseOblivion": 3003,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 9
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15467,7 +12187,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-eternal"
+    ]
   },
   "sv-infinite-aurora-collapse": {
     "type": "Angel",
@@ -15476,10 +12200,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-aurora-collapse:primary",
         "label": "Primary",
         "name": "Aurora Collapse Ordinance",
-        "description": "5120 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 5120,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "2100 base Oblivion · 5 cards cooldown · Cost: discard 7 cards",
+        "baseOblivion": 2100,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 7
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15492,10 +12221,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-aurora-collapse:exalted",
         "label": "Exalted",
         "name": "Aurora Collapse Throne Decree",
-        "description": "14120 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 14120,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "4095 base Oblivion · 8 cards cooldown · Cost: discard 17 cards",
+        "baseOblivion": 4095,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 17
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15505,7 +12239,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-infinite"
+    ]
   },
   "sv-infinite-black-ice-throne": {
     "type": "Angel",
@@ -15514,10 +12252,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-black-ice-throne:primary",
         "label": "Primary",
         "name": "Black Ice Throne Ordinance",
-        "description": "4860 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4860,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1980 base Oblivion · 5 cards cooldown · Cost: discard 5 cards",
+        "baseOblivion": 1980,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 5
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15530,10 +12273,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-black-ice-throne:exalted",
         "label": "Exalted",
         "name": "Black Ice Throne Decree",
-        "description": "13540 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 13540,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3861 base Oblivion · 8 cards cooldown · Cost: discard 16 cards",
+        "baseOblivion": 3861,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 16
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15543,7 +12291,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-infinite"
+    ]
   },
   "sv-infinite-crystal-storm": {
     "type": "Angel",
@@ -15552,10 +12304,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-crystal-storm:primary",
         "label": "Primary",
         "name": "Crystal Storm Ordinance",
-        "description": "4680 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4680,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1860 base Oblivion · 5 cards cooldown · Cost: discard 4 cards",
+        "baseOblivion": 1860,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 4
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15568,10 +12325,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-crystal-storm:exalted",
         "label": "Exalted",
         "name": "Crystal Storm Throne Decree",
-        "description": "12980 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 12980,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3627 base Oblivion · 8 cards cooldown · Cost: discard 14 cards",
+        "baseOblivion": 3627,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 14
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15581,7 +12343,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-infinite"
+    ]
   },
   "sv-infinite-neon-snowfall": {
     "type": "Angel",
@@ -15590,10 +12356,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-neon-snowfall:primary",
         "label": "Primary",
         "name": "Neon Snowfall Ordinance",
-        "description": "4510 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4510,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1760 base Oblivion · 5 cards cooldown · Cost: discard 4 cards",
+        "baseOblivion": 1760,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 4
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15606,10 +12377,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-neon-snowfall:exalted",
         "label": "Exalted",
         "name": "Neon Snowfall Throne Decree",
-        "description": "12640 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 12640,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3432 base Oblivion · 8 cards cooldown · Cost: discard 13 cards",
+        "baseOblivion": 3432,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 13
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15619,7 +12395,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-infinite"
+    ]
   },
   "sv-infinite-polar-fission": {
     "type": "Angel",
@@ -15628,10 +12408,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-polar-fission:primary",
         "label": "Primary",
         "name": "Polar Fission Ordinance",
-        "description": "4220 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 4220,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "1680 base Oblivion · 5 cards cooldown · Cost: discard 3 cards",
+        "baseOblivion": 1680,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 3
+          }
+        ],
         "tags": [
           "angel",
           "primary",
@@ -15644,10 +12429,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "sv-infinite-polar-fission:exalted",
         "label": "Exalted",
         "name": "Polar Fission Throne Decree",
-        "description": "11980 base Oblivion · 9 cards cooldown",
-        "baseOblivion": 11980,
-        "cooldownCards": 9,
-        "costs": [],
+        "description": "3276 base Oblivion · 8 cards cooldown · Cost: discard 12 cards",
+        "baseOblivion": 3276,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 12
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -15657,7 +12447,11 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": []
+    "attackTags": [
+      "snowboundvoltage",
+      "sv",
+      "sv-infinite"
+    ]
   },
   "sv-oph-aurora-convergence": {
     "type": "Ophanim",
@@ -16138,19 +12932,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tbp-angel-irielle-bramble-gate:exalted",
         "label": "Exalted",
         "name": "Irielle Thorn Throne Decree",
-        "description": "2553 base Oblivion · 7 cards cooldown · Cost: spend 102 Trail, sacrifice 1 Seraphim",
-        "baseOblivion": 2553,
+        "description": "2220 base Oblivion · 7 cards cooldown",
+        "baseOblivion": 2220,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "spend_trail",
-            "value": 102
-          },
-          {
-            "type": "sacrifice_seraphim",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -16158,11 +12943,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "thornbound",
-      "tbp",
-      "tbp-angel"
-    ]
+    "attackTags": []
   },
   "tbp-angel-velmora-harrowed-crown": {
     "type": "Angel",
@@ -16185,19 +12966,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tbp-angel-velmora-harrowed-crown:exalted",
         "label": "Exalted",
         "name": "Velmora Crown Throne Decree",
-        "description": "2300 base Oblivion · 7 cards cooldown · Cost: spend 7 Trail, discard 1 card",
+        "description": "2300 base Oblivion · 7 cards cooldown",
         "baseOblivion": 2300,
         "cooldownCards": 7,
-        "costs": [
-          {
-            "type": "spend_trail",
-            "value": 7
-          },
-          {
-            "type": "discard_from_hand",
-            "value": 1
-          }
-        ],
+        "costs": [],
         "tags": [
           "angel",
           "exalted",
@@ -16205,11 +12977,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "thornbound",
-      "tbp",
-      "tbp-angel"
-    ]
+    "attackTags": []
   },
   "tbp-cherubim-cathedral-of-splinters": {
     "type": "Cherubim",
@@ -16227,45 +12995,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 14
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "btei-thornbound-cathedral-lancer",
-          "inf-thorn-widow-engine"
-        ],
-        "targetTags": [
-          "thornbound",
-          "tbp-cherubim"
-        ],
-        "bonusBaseOblivion": 15,
-        "cooldownDeltaCards": -1,
-        "multiplier": 1
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "btei-thornbound-funeral-bramble",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "tbp-cherubim",
-          "angel"
-        ],
-        "bonusBaseOblivion": 12,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -16276,22 +13005,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_attack_buff",
         "targetUnitType": "Seraphim",
         "bonusBaseOblivion": 42,
-        "cooldownDeltaCards": -1,
-        "targetDefinitionIds": [
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "btei-thornbound-cathedral-lancer",
-          "inf-thorn-widow-engine"
-        ],
-        "targetTags": [
-          "thornbound",
-          "tbp",
-          "tbp-cherubim"
-        ]
+        "cooldownDeltaCards": -1
       }
     ]
   },
@@ -16302,31 +13016,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 16
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "btei-thornbound-cathedral-lancer",
-          "inf-thorn-widow-engine",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "btei-thornbound-funeral-bramble",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "tbp-cherubim"
-        ],
-        "bonusBaseOblivion": 13,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -16337,27 +13026,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 10
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Seraphim",
-        "targetDefinitionIds": [
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "btei-thornbound-cathedral-lancer",
-          "inf-thorn-widow-engine"
-        ],
-        "targetTags": [
-          "thornbound",
-          "tbp-cherubim"
-        ],
-        "bonusBaseOblivion": 9,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -16368,31 +13036,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 11
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "targetDefinitionIds": [
-          "tbp-ser-thornplate-sentry",
-          "tbp-ser-bleak-march-duelist",
-          "tbp-ser-vinedusk-lancer",
-          "tbp-ser-white-briar-penitent",
-          "tbp-ser-scar-mantle-reclaimer",
-          "tbp-ser-crimson-mire-exarch",
-          "btei-thornbound-cathedral-lancer",
-          "inf-thorn-widow-engine",
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "btei-thornbound-funeral-bramble",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "tbp-cherubim"
-        ],
-        "bonusBaseOblivion": 11,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -16403,23 +13046,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "cherubim_adjacent_seraphim_bonus",
         "bonusType": "oblivion",
         "value": 9
-      },
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Angel",
-        "targetDefinitionIds": [
-          "tbp-angel-irielle-bramble-gate",
-          "tbp-angel-velmora-harrowed-crown",
-          "btei-thornbound-funeral-bramble",
-          "inf-thornbound-elegy-titan"
-        ],
-        "targetTags": [
-          "thornbound",
-          "tbp-cherubim"
-        ],
-        "bonusBaseOblivion": 8,
-        "cooldownDeltaCards": 0,
-        "multiplier": 1
       }
     ]
   },
@@ -16528,13 +13154,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 60
           }
         ]
-      },
-      {
-        "type": "shuffle_discard"
-      },
-      {
-        "type": "draw",
-        "value": 1
       }
     ]
   },
@@ -16625,15 +13244,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tbp-ser-bleak-march-duelist:unsynergized",
         "label": "Unsynergized",
         "name": "Bleak March Vector Break",
-        "description": "247 base Oblivion · 5 cards cooldown · Cost: spend 97 Trail",
-        "baseOblivion": 247,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_trail",
-            "value": 97
-          }
-        ],
+        "description": "215 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 215,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -16644,9 +13258,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tbp-ser-bleak-march-duelist:synergized",
         "label": "Synergized",
         "name": "Bleak March Angelic Verdict",
-        "description": "421 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 421,
-        "cooldownCards": 7,
+        "description": "366 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 366,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -16656,11 +13270,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "thornbound",
-      "tbp",
-      "tbp-ser"
-    ]
+    "attackTags": []
   },
   "tbp-ser-crimson-mire-exarch": {
     "type": "Seraphim",
@@ -16669,15 +13279,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tbp-ser-crimson-mire-exarch:unsynergized",
         "label": "Unsynergized",
         "name": "Crimson Mire Vector Break",
-        "description": "1075 base Oblivion · 5 cards cooldown · Cost: spend 97 Trail",
-        "baseOblivion": 1075,
+        "description": "935 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 935,
         "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_trail",
-            "value": 97
-          }
-        ],
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -16688,140 +13293,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tbp-ser-crimson-mire-exarch:synergized",
         "label": "Synergized",
         "name": "Crimson Mire Angelic Verdict",
-        "description": "1832 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 1832,
-        "cooldownCards": 8,
-        "costs": [],
-        "requiresAngelOnBoard": true,
-        "tags": [
-          "seraphim",
-          "synergized",
-          "thornbound"
-        ]
-      }
-    },
-    "attackTags": [
-      "thornbound",
-      "tbp",
-      "tbp-ser"
-    ]
-  },
-  "tbp-ser-scar-mantle-reclaimer": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "tbp-ser-scar-mantle-reclaimer:unsynergized",
-        "label": "Unsynergized",
-        "name": "Scar-Mantle Reclaimer Vector Break",
-        "description": "633 base Oblivion · 5 cards cooldown · Cost: spend 97 Trail",
-        "baseOblivion": 633,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_trail",
-            "value": 97
-          }
-        ],
-        "tags": [
-          "seraphim",
-          "unsynergized",
-          "thornbound"
-        ]
-      },
-      "synergized": {
-        "id": "tbp-ser-scar-mantle-reclaimer:synergized",
-        "label": "Synergized",
-        "name": "Scar-Mantle Reclaimer Angelic Verdict",
-        "description": "1079 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 1079,
-        "cooldownCards": 8,
-        "costs": [],
-        "requiresAngelOnBoard": true,
-        "tags": [
-          "seraphim",
-          "synergized",
-          "thornbound"
-        ]
-      }
-    },
-    "attackTags": [
-      "thornbound",
-      "tbp",
-      "tbp-ser"
-    ]
-  },
-  "tbp-ser-thornplate-sentry": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "tbp-ser-thornplate-sentry:unsynergized",
-        "label": "Unsynergized",
-        "name": "Thornplate Sentry Vector Break",
-        "description": "259 base Oblivion · 5 cards cooldown · Cost: spend 97 Trail",
-        "baseOblivion": 259,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_trail",
-            "value": 97
-          }
-        ],
-        "tags": [
-          "seraphim",
-          "unsynergized",
-          "thornbound"
-        ]
-      },
-      "synergized": {
-        "id": "tbp-ser-thornplate-sentry:synergized",
-        "label": "Synergized",
-        "name": "Thornplate Sentry Angelic Verdict",
-        "description": "441 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 441,
-        "cooldownCards": 7,
-        "costs": [],
-        "requiresAngelOnBoard": true,
-        "tags": [
-          "seraphim",
-          "synergized",
-          "thornbound"
-        ]
-      }
-    },
-    "attackTags": [
-      "thornbound",
-      "tbp",
-      "tbp-ser"
-    ]
-  },
-  "tbp-ser-vinedusk-lancer": {
-    "type": "Seraphim",
-    "attacks": {
-      "unsynergized": {
-        "id": "tbp-ser-vinedusk-lancer:unsynergized",
-        "label": "Unsynergized",
-        "name": "Vinedusk Lancer Vector Break",
-        "description": "402 base Oblivion · 4 cards cooldown · Cost: spend 97 Trail",
-        "baseOblivion": 402,
-        "cooldownCards": 4,
-        "costs": [
-          {
-            "type": "spend_trail",
-            "value": 97
-          }
-        ],
-        "tags": [
-          "seraphim",
-          "unsynergized",
-          "thornbound"
-        ]
-      },
-      "synergized": {
-        "id": "tbp-ser-vinedusk-lancer:synergized",
-        "label": "Synergized",
-        "name": "Vinedusk Lancer Angelic Verdict",
-        "description": "687 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 687,
+        "description": "1590 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 1590,
         "cooldownCards": 6,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -16832,11 +13305,112 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
-    "attackTags": [
-      "thornbound",
-      "tbp",
-      "tbp-ser"
-    ]
+    "attackTags": []
+  },
+  "tbp-ser-scar-mantle-reclaimer": {
+    "type": "Seraphim",
+    "attacks": {
+      "unsynergized": {
+        "id": "tbp-ser-scar-mantle-reclaimer:unsynergized",
+        "label": "Unsynergized",
+        "name": "Scar-Mantle Reclaimer Vector Break",
+        "description": "550 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 550,
+        "cooldownCards": 5,
+        "costs": [],
+        "tags": [
+          "seraphim",
+          "unsynergized",
+          "thornbound"
+        ]
+      },
+      "synergized": {
+        "id": "tbp-ser-scar-mantle-reclaimer:synergized",
+        "label": "Synergized",
+        "name": "Scar-Mantle Reclaimer Angelic Verdict",
+        "description": "935 base Oblivion · 6 cards cooldown · Requires Angel",
+        "baseOblivion": 935,
+        "cooldownCards": 6,
+        "costs": [],
+        "requiresAngelOnBoard": true,
+        "tags": [
+          "seraphim",
+          "synergized",
+          "thornbound"
+        ]
+      }
+    },
+    "attackTags": []
+  },
+  "tbp-ser-thornplate-sentry": {
+    "type": "Seraphim",
+    "attacks": {
+      "unsynergized": {
+        "id": "tbp-ser-thornplate-sentry:unsynergized",
+        "label": "Unsynergized",
+        "name": "Thornplate Sentry Vector Break",
+        "description": "225 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 225,
+        "cooldownCards": 4,
+        "costs": [],
+        "tags": [
+          "seraphim",
+          "unsynergized",
+          "thornbound"
+        ]
+      },
+      "synergized": {
+        "id": "tbp-ser-thornplate-sentry:synergized",
+        "label": "Synergized",
+        "name": "Thornplate Sentry Angelic Verdict",
+        "description": "383 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 383,
+        "cooldownCards": 5,
+        "costs": [],
+        "requiresAngelOnBoard": true,
+        "tags": [
+          "seraphim",
+          "synergized",
+          "thornbound"
+        ]
+      }
+    },
+    "attackTags": []
+  },
+  "tbp-ser-vinedusk-lancer": {
+    "type": "Seraphim",
+    "attacks": {
+      "unsynergized": {
+        "id": "tbp-ser-vinedusk-lancer:unsynergized",
+        "label": "Unsynergized",
+        "name": "Vinedusk Lancer Vector Break",
+        "description": "350 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 350,
+        "cooldownCards": 4,
+        "costs": [],
+        "tags": [
+          "seraphim",
+          "unsynergized",
+          "thornbound"
+        ]
+      },
+      "synergized": {
+        "id": "tbp-ser-vinedusk-lancer:synergized",
+        "label": "Synergized",
+        "name": "Vinedusk Lancer Angelic Verdict",
+        "description": "595 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 595,
+        "cooldownCards": 5,
+        "costs": [],
+        "requiresAngelOnBoard": true,
+        "tags": [
+          "seraphim",
+          "synergized",
+          "thornbound"
+        ]
+      }
+    },
+    "attackTags": []
   },
   "tbp-ser-white-briar-penitent": {
     "type": "Seraphim",
@@ -16845,15 +13419,10 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tbp-ser-white-briar-penitent:unsynergized",
         "label": "Unsynergized",
         "name": "White-Briar Penitent Vector Break",
-        "description": "402 base Oblivion · 5 cards cooldown · Cost: spend 97 Trail",
-        "baseOblivion": 402,
-        "cooldownCards": 5,
-        "costs": [
-          {
-            "type": "spend_trail",
-            "value": 97
-          }
-        ],
+        "description": "350 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 350,
+        "cooldownCards": 4,
+        "costs": [],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -16864,9 +13433,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tbp-ser-white-briar-penitent:synergized",
         "label": "Synergized",
         "name": "White-Briar Penitent Angelic Verdict",
-        "description": "687 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 687,
-        "cooldownCards": 7,
+        "description": "595 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 595,
+        "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -16876,10 +13445,51 @@ export const MATERIALIZED_CARD_BALANCE = {
         ]
       }
     },
+    "attackTags": []
+  },
+  "tx-angel-light-astral-adjudicator": {
+    "type": "Angel",
+    "attacks": {
+      "primary": {
+        "id": "tx-angel-light-astral-adjudicator:primary",
+        "label": "Primary",
+        "name": "Solar Verdict Prime",
+        "description": "4860 base Oblivion · 5 cards cooldown",
+        "baseOblivion": 4860,
+        "cooldownCards": 5,
+        "costs": [],
+        "tags": [
+          "angel",
+          "primary",
+          "light",
+          "transcendent"
+        ]
+      },
+      "exalted": {
+        "id": "tx-angel-light-astral-adjudicator:exalted",
+        "label": "Exalted",
+        "name": "Judgment of Twin Horizons",
+        "description": "18436 base Oblivion · 8 cards cooldown · Cost: spend 24 Radiance",
+        "baseOblivion": 18436,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "spend_radiance",
+            "value": 24
+          }
+        ],
+        "tags": [
+          "angel",
+          "exalted",
+          "light",
+          "transcendent"
+        ]
+      }
+    },
     "attackTags": [
-      "thornbound",
-      "tbp",
-      "tbp-ser"
+      "light",
+      "tx",
+      "tx-angel"
     ]
   },
   "tx-angel-pyro-first-ember": {
@@ -16889,8 +13499,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tx-angel-pyro-first-ember:primary",
         "label": "Primary",
         "name": "Crownflare Verdict",
-        "description": "4600 base Oblivion · 5 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
-        "baseOblivion": 4600,
+        "description": "1520 base Oblivion · 5 cards cooldown · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
+        "baseOblivion": 1520,
         "cooldownCards": 5,
         "costs": [],
         "tags": [
@@ -16904,10 +13514,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tx-angel-pyro-first-ember:exalted",
         "label": "Exalted",
         "name": "Abyssal Eventide Decree",
-        "description": "13685 base Oblivion · 8 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
-        "baseOblivion": 13685,
+        "description": "3020 base Oblivion · 8 cards cooldown · Cost: discard 2 cards · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
+        "baseOblivion": 3020,
         "cooldownCards": 8,
-        "costs": [],
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ],
         "tags": [
           "angel",
           "exalted",
@@ -16929,9 +13544,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tx-angel-starbound-null-archangel:primary",
         "label": "Primary",
         "name": "Starbound Decree",
-        "description": "4600 base Oblivion · 5 cards cooldown",
-        "baseOblivion": 4600,
-        "cooldownCards": 5,
+        "description": "8600 base Oblivion · 8 cards cooldown",
+        "baseOblivion": 8600,
+        "cooldownCards": 8,
         "costs": [],
         "tags": [
           "angel",
@@ -16944,9 +13559,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tx-angel-starbound-null-archangel:exalted",
         "label": "Exalted",
         "name": "Verdict of the Last Constellation",
-        "description": "12400 base Oblivion · 8 cards cooldown · Cost: discard 2 cards",
-        "baseOblivion": 12400,
-        "cooldownCards": 8,
+        "description": "20400 base Oblivion · 18 cards cooldown · Cost: discard 2 cards",
+        "baseOblivion": 20400,
+        "cooldownCards": 18,
         "costs": [
           {
             "type": "discard_from_hand",
@@ -16965,6 +13580,56 @@ export const MATERIALIZED_CARD_BALANCE = {
       "neutrality",
       "tx",
       "tx-angel"
+    ]
+  },
+  "tx-cher-light-duality-vow": {
+    "type": "Cherubim",
+    "effects": [
+      {
+        "type": "cherubim_attack_buff",
+        "targetUnitType": "Any",
+        "targetDefinitionIds": [
+          "tx-sera-light-duality-crown",
+          "ser-light-dawn",
+          "ser-light-vigil",
+          "ser-light-choir",
+          "ser-light-throne",
+          "ser-light-herald",
+          "ser-light-warden",
+          "btei-light-aureate-rapture",
+          "tx-angel-light-astral-adjudicator",
+          "angel-light-seraphiel",
+          "angel-light-aurelion",
+          "angel-light-solarius",
+          "btei-light-halo-dominion"
+        ],
+        "targetTags": [
+          "light",
+          "tx-cher"
+        ],
+        "bonusBaseOblivion": 52,
+        "cooldownDeltaCards": 0,
+        "multiplier": 1
+      },
+      {
+        "type": "cherubim_attack_buff",
+        "targetUnitType": "Angel",
+        "targetDefinitionIds": [
+          "tx-angel-light-astral-adjudicator",
+          "angel-light-seraphiel",
+          "angel-light-aurelion",
+          "angel-light-solarius",
+          "btei-light-halo-dominion"
+        ],
+        "targetTags": [
+          "light",
+          "tx-cher",
+          "angel"
+        ],
+        "bonusBaseOblivion": 41,
+        "cooldownDeltaCards": -1,
+        "multiplier": 1
+      }
     ]
   },
   "tx-cher-null-sentinel": {
@@ -17067,44 +13732,55 @@ export const MATERIALIZED_CARD_BALANCE = {
       }
     ]
   },
+  "tx-oph-light-duality-wheel": {
+    "type": "Ophanim",
+    "effects": [
+      {
+        "type": "draw",
+        "value": 1
+      },
+      {
+        "type": "radiance_gain",
+        "value": 60
+      },
+      {
+        "type": "eternal_stack_gain",
+        "stack": "light",
+        "value": 5
+      },
+      {
+        "type": "light_transcendent_duality_choice",
+        "baseOblivion": 630,
+        "resonanceScale": 116,
+        "haloScale": 95,
+        "distinctNoteScale": 47,
+        "thresholdDivisor": 5,
+        "thresholdScale": 131
+      },
+      {
+        "type": "conditional",
+        "condition": {
+          "type": "light_resonance_gte",
+          "value": 5
+        },
+        "then": [
+          {
+            "type": "oblivion_flat",
+            "value": 2200
+          },
+          {
+            "type": "multiply_next"
+          }
+        ]
+      }
+    ]
+  },
   "tx-oph-null-convergence": {
     "type": "Ophanim",
     "effects": [
       {
         "type": "draw",
         "value": 2
-      },
-      {
-        "type": "patience_gain_all",
-        "value": 10
-      },
-      {
-        "type": "neutrality_equilibrium_sigil_gain",
-        "value": 4
-      },
-      {
-        "type": "conditional",
-        "condition": {
-          "type": "seraphim_active_gte",
-          "value": 3
-        },
-        "then": [
-          {
-            "type": "oblivion_flat",
-            "value": 2800
-          },
-          {
-            "type": "neutrality_equilibrium_sigil_gain",
-            "value": 1
-          }
-        ]
-      },
-      {
-        "type": "neutrality_equilibrium_tactical_spend",
-        "spend": 6,
-        "burstOblivion": 7600,
-        "restorePercent": 100,
-        "patientLightGain": 1
       }
     ]
   },
@@ -17126,11 +13802,7 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "set_secondary_gain",
             "kind": "pyro",
-            "value": 3
-          },
-          {
-            "type": "oblivion_flat",
-            "value": 1800
+            "value": 2
           }
         ]
       },
@@ -17145,11 +13817,7 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "eternal_stack_gain",
             "stack": "pyro",
-            "value": 3
-          },
-          {
-            "type": "oblivion_flat",
-            "value": 1800
+            "value": 2
           }
         ]
       },
@@ -17158,7 +13826,68 @@ export const MATERIALIZED_CARD_BALANCE = {
         "consume": 2,
         "oblivionPerPair": 900,
         "empowerAtPairs": 2
+      },
+      {
+        "type": "conditional",
+        "condition": {
+          "type": "board_definition_gte",
+          "definitionId": "tx-cher-pyro-vow",
+          "value": 1
+        },
+        "then": [
+          {
+            "type": "set_secondary_gain",
+            "kind": "pyro",
+            "value": 1
+          }
+        ]
       }
+    ]
+  },
+  "tx-sera-light-duality-crown": {
+    "type": "Seraphim",
+    "attacks": {
+      "unsynergized": {
+        "id": "tx-sera-light-duality-crown:unsynergized",
+        "label": "Unsynergized",
+        "name": "Duality Crown Break",
+        "description": "9360 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
+        "baseOblivion": 9360,
+        "cooldownCards": 5,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ],
+        "tags": [
+          "seraphim",
+          "unsynergized",
+          "light",
+          "transcendent"
+        ]
+      },
+      "synergized": {
+        "id": "tx-sera-light-duality-crown:synergized",
+        "label": "Synergized",
+        "name": "Astral Dual Verdict",
+        "description": "16380 base Oblivion · 8 cards cooldown · Requires Angel",
+        "baseOblivion": 16380,
+        "cooldownCards": 8,
+        "costs": [],
+        "requiresAngelOnBoard": true,
+        "tags": [
+          "seraphim",
+          "synergized",
+          "light",
+          "transcendent"
+        ]
+      }
+    },
+    "attackTags": [
+      "light",
+      "tx",
+      "tx-sera"
     ]
   },
   "tx-sera-null-entropy": {
@@ -17168,9 +13897,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tx-sera-null-entropy:unsynergized",
         "label": "Unsynergized",
         "name": "Entropy Cleave",
-        "description": "7400 base Oblivion · 5 cards cooldown · Cost: discard 1 card",
-        "baseOblivion": 7400,
-        "cooldownCards": 5,
+        "description": "7900 base Oblivion · 7 cards cooldown · Cost: discard 1 card",
+        "baseOblivion": 7900,
+        "cooldownCards": 7,
         "costs": [
           {
             "type": "discard_from_hand",
@@ -17188,9 +13917,9 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tx-sera-null-entropy:synergized",
         "label": "Synergized",
         "name": "Absolute Entropy",
-        "description": "14600 base Oblivion · 8 cards cooldown · Requires Angel",
-        "baseOblivion": 14600,
-        "cooldownCards": 8,
+        "description": "20600 base Oblivion · 14 cards cooldown · Requires Angel",
+        "baseOblivion": 20600,
+        "cooldownCards": 14,
         "costs": [],
         "requiresAngelOnBoard": true,
         "tags": [
@@ -17214,10 +13943,15 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tx-sera-pyro-singularity:unsynergized",
         "label": "Unsynergized",
         "name": "Singularity Cleave",
-        "description": "9439 base Oblivion · 4 cards cooldown · +2.5% attack per Inferno Tier (max +75%)",
-        "baseOblivion": 9439,
+        "description": "3525 base Oblivion · 4 cards cooldown · Cost: spend 34 Heat · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
+        "baseOblivion": 3525,
         "cooldownCards": 4,
-        "costs": [],
+        "costs": [
+          {
+            "type": "spend_pyro_heat",
+            "value": 34
+          }
+        ],
         "tags": [
           "seraphim",
           "unsynergized",
@@ -17229,8 +13963,8 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "tx-sera-pyro-singularity:synergized",
         "label": "Synergized",
         "name": "Eventide Singularity",
-        "description": "15540 base Oblivion · 8 cards cooldown · Requires Angel · +2.5% attack per Inferno Tier (max +75%)",
-        "baseOblivion": 15540,
+        "description": "5215 base Oblivion · 8 cards cooldown · Requires Angel · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)",
+        "baseOblivion": 5215,
         "cooldownCards": 8,
         "costs": [],
         "requiresAngelOnBoard": true,
@@ -17255,19 +13989,29 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-ang-aethervex-triumphant:primary",
         "label": "Primary",
         "name": "Aether Strike",
-        "description": "800 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 800,
-        "cooldownCards": 6,
-        "costs": []
+        "description": "840 base Oblivion · 7 cards cooldown · Cost: discard 1 card",
+        "baseOblivion": 840,
+        "cooldownCards": 7,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ]
       },
       "exalted": {
         "id": "wuas-ang-aethervex-triumphant:exalted",
         "label": "Exalted",
         "name": "Wishwright Apex",
-        "description": "1408 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1408,
-        "cooldownCards": 8,
-        "costs": []
+        "description": "1450 base Oblivion · 13 cards cooldown · Cost: discard 2 cards",
+        "baseOblivion": 1450,
+        "cooldownCards": 13,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ]
       }
     },
     "attackTags": []
@@ -17279,19 +14023,24 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-ang-draethos-eclipse-lord:primary",
         "label": "Primary",
         "name": "Eclipse Strike",
-        "description": "760 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 760,
-        "cooldownCards": 6,
+        "description": "790 base Oblivion · 8 cards cooldown",
+        "baseOblivion": 790,
+        "cooldownCards": 8,
         "costs": []
       },
       "exalted": {
         "id": "wuas-ang-draethos-eclipse-lord:exalted",
         "label": "Exalted",
         "name": "Draethos Descent",
-        "description": "1338 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1338,
-        "cooldownCards": 8,
-        "costs": []
+        "description": "1360 base Oblivion · 13 cards cooldown · Cost: discard 1 card",
+        "baseOblivion": 1360,
+        "cooldownCards": 13,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ]
       }
     },
     "attackTags": []
@@ -17303,31 +14052,31 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-ang-starwarden-selenira:primary",
         "label": "Primary",
         "name": "Warden Strike",
-        "description": "740 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 740,
-        "cooldownCards": 6,
+        "description": "760 base Oblivion · 8 cards cooldown",
+        "baseOblivion": 760,
+        "cooldownCards": 8,
         "costs": []
       },
       "exalted": {
         "id": "wuas-ang-starwarden-selenira:exalted",
         "label": "Exalted",
         "name": "Selenira Verdict",
-        "description": "1300 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1300,
-        "cooldownCards": 8,
-        "costs": []
+        "description": "1310 base Oblivion · 12 cards cooldown · Cost: discard 1 card",
+        "baseOblivion": 1310,
+        "cooldownCards": 12,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ]
       }
     },
     "attackTags": []
   },
   "wuas-cher-dreamvault-keeper": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_draw_per_card",
-        "value": 0.3
-      }
-    ]
+    "effects": []
   },
   "wuas-cher-solarvex-ward": {
     "type": "Cherubim",
@@ -17337,42 +14086,19 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Cherubim",
     "effects": [
       {
-        "type": "cherubim_global_oblivion_mult",
-        "value": 0.85
-      },
-      {
         "type": "cherubim_attack_buff",
         "targetUnitType": "Any",
-        "condition": {
-          "type": "starlight_gte",
-          "value": 5
-        },
-        "bonusBaseOblivion": 55
+        "bonusBaseOblivion": 60
       }
     ]
   },
   "wuas-cher-voidbane-doctrine": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_attack_buff",
-        "targetUnitType": "Any",
-        "condition": {
-          "type": "cards_played_gte",
-          "value": 5
-        },
-        "bonusBaseOblivion": 78
-      }
-    ]
+    "effects": []
   },
   "wuas-cher-wishwright-pulse": {
     "type": "Cherubim",
-    "effects": [
-      {
-        "type": "cherubim_draw_per_card",
-        "value": 0.2
-      }
-    ]
+    "effects": []
   },
   "wuas-et-aethervex-wishwright": {
     "type": "Seraphim",
@@ -17381,19 +14107,24 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-et-aethervex-wishwright:unsyn",
         "label": "Unsynergized",
         "name": "Wishwright Strike",
-        "description": "680 base Oblivion · 5 cards cooldown",
-        "baseOblivion": 680,
-        "cooldownCards": 5,
+        "description": "700 base Oblivion · 7 cards cooldown",
+        "baseOblivion": 700,
+        "cooldownCards": 7,
         "costs": []
       },
       "synergized": {
         "id": "wuas-et-aethervex-wishwright:syn",
         "label": "Synergized",
         "name": "Galaxy-wing Decree",
-        "description": "1196 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 1196,
-        "cooldownCards": 7,
-        "costs": [],
+        "description": "1220 base Oblivion · 11 cards cooldown · Requires Angel · Cost: discard 1 card",
+        "baseOblivion": 1220,
+        "cooldownCards": 11,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ],
         "requiresAngelOnBoard": true
       }
     },
@@ -17406,19 +14137,29 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-et-draethos-unforgotten:primary",
         "label": "Primary",
         "name": "Draethos Strike",
-        "description": "860 base Oblivion · 6 cards cooldown",
-        "baseOblivion": 860,
-        "cooldownCards": 6,
-        "costs": []
+        "description": "900 base Oblivion · 8 cards cooldown · Cost: discard 1 card",
+        "baseOblivion": 900,
+        "cooldownCards": 8,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ]
       },
       "exalted": {
         "id": "wuas-et-draethos-unforgotten:exalted",
         "label": "Exalted",
         "name": "Unforgotten Apex",
-        "description": "1512 base Oblivion · 8 cards cooldown",
-        "baseOblivion": 1512,
-        "cooldownCards": 8,
-        "costs": []
+        "description": "1680 base Oblivion · 15 cards cooldown · Cost: discard 2 cards",
+        "baseOblivion": 1680,
+        "cooldownCards": 15,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 2
+          }
+        ]
       }
     },
     "attackTags": []
@@ -17433,6 +14174,11 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "dream_lattice_gain",
         "amount": 4
+      },
+      {
+        "type": "eternal_stack_gain",
+        "stack": "wuas",
+        "value": 8
       },
       {
         "type": "wuas_nova_wish_burst",
@@ -17464,12 +14210,21 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "starlight_gain",
-        "amount": 5
+        "type": "dream_lattice_gain",
+        "amount": 3
       },
       {
-        "type": "dream_lattice_gain",
-        "amount": 2
+        "type": "conditional",
+        "condition": {
+          "type": "starlight_gte",
+          "value": 4
+        },
+        "then": [
+          {
+            "type": "draw",
+            "value": 1
+          }
+        ]
       }
     ]
   },
@@ -17477,13 +14232,13 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "starlight_gain",
-        "amount": 1
+        "type": "look_top_take",
+        "look": 3,
+        "take": 1
       },
       {
-        "type": "look_top_take",
-        "look": 2,
-        "take": 1
+        "type": "dream_lattice_gain",
+        "amount": 1
       }
     ]
   },
@@ -17495,8 +14250,17 @@ export const MATERIALIZED_CARD_BALANCE = {
         "amount": 2
       },
       {
-        "type": "dream_lattice_gain",
-        "amount": 1
+        "type": "conditional",
+        "condition": {
+          "type": "cards_played_gte",
+          "value": 1
+        },
+        "then": [
+          {
+            "type": "dream_lattice_gain",
+            "amount": 2
+          }
+        ]
       }
     ]
   },
@@ -17505,7 +14269,7 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "starlight_gain",
-        "amount": 2
+        "amount": 1
       }
     ]
   },
@@ -17513,12 +14277,12 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "starlight_gain",
-        "amount": 3
-      },
-      {
         "type": "draw",
         "value": 1
+      },
+      {
+        "type": "starlight_gain",
+        "amount": 2
       }
     ]
   },
@@ -17526,16 +14290,12 @@ export const MATERIALIZED_CARD_BALANCE = {
     "type": "Ophanim",
     "effects": [
       {
-        "type": "starlight_gain",
-        "amount": 1
-      },
-      {
         "type": "dream_lattice_gain",
         "amount": 1
       },
       {
         "type": "oblivion_flat",
-        "value": 85
+        "value": 120
       }
     ]
   },
@@ -17546,19 +14306,24 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-ser-draethos-gravity:unsyn",
         "label": "Unsynergized",
         "name": "Gravity Pull",
-        "description": "408 base Oblivion · 5 cards cooldown",
-        "baseOblivion": 408,
-        "cooldownCards": 5,
+        "description": "430 base Oblivion · 4 cards cooldown",
+        "baseOblivion": 430,
+        "cooldownCards": 4,
         "costs": []
       },
       "synergized": {
         "id": "wuas-ser-draethos-gravity:syn",
         "label": "Synergized",
         "name": "Draethos Descent",
-        "description": "718 base Oblivion · 6 cards cooldown · Requires Angel",
-        "baseOblivion": 718,
-        "cooldownCards": 6,
-        "costs": [],
+        "description": "760 base Oblivion · 7 cards cooldown · Requires Angel · Cost: discard 1 card",
+        "baseOblivion": 760,
+        "cooldownCards": 7,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ],
         "requiresAngelOnBoard": true
       }
     },
@@ -17571,17 +14336,17 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-ser-lune-refrain:unsyn",
         "label": "Unsynergized",
         "name": "Lune Echo",
-        "description": "286 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 286,
-        "cooldownCards": 4,
+        "description": "300 base Oblivion · 3 cards cooldown",
+        "baseOblivion": 300,
+        "cooldownCards": 3,
         "costs": []
       },
       "synergized": {
         "id": "wuas-ser-lune-refrain:syn",
         "label": "Synergized",
         "name": "Choir Refrain",
-        "description": "502 base Oblivion · 5 cards cooldown · Requires Angel",
-        "baseOblivion": 502,
+        "description": "520 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 520,
         "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true
@@ -17596,19 +14361,24 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-ser-nullspire-monolith:unsyn",
         "label": "Unsynergized",
         "name": "Null Spire",
-        "description": "540 base Oblivion · 5 cards cooldown",
-        "baseOblivion": 540,
-        "cooldownCards": 5,
+        "description": "560 base Oblivion · 6 cards cooldown",
+        "baseOblivion": 560,
+        "cooldownCards": 6,
         "costs": []
       },
       "synergized": {
         "id": "wuas-ser-nullspire-monolith:syn",
         "label": "Synergized",
         "name": "Monolith Decree",
-        "description": "950 base Oblivion · 7 cards cooldown · Requires Angel",
-        "baseOblivion": 950,
-        "cooldownCards": 7,
-        "costs": [],
+        "description": "980 base Oblivion · 9 cards cooldown · Requires Angel · Cost: discard 1 card",
+        "baseOblivion": 980,
+        "cooldownCards": 9,
+        "costs": [
+          {
+            "type": "discard_from_hand",
+            "value": 1
+          }
+        ],
         "requiresAngelOnBoard": true
       }
     },
@@ -17621,17 +14391,17 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-ser-seleniras-vigil:unsyn",
         "label": "Unsynergized",
         "name": "Vigil Strike",
-        "description": "272 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 272,
-        "cooldownCards": 4,
+        "description": "280 base Oblivion · 3 cards cooldown",
+        "baseOblivion": 280,
+        "cooldownCards": 3,
         "costs": []
       },
       "synergized": {
         "id": "wuas-ser-seleniras-vigil:syn",
         "label": "Synergized",
         "name": "Selenira Watch",
-        "description": "470 base Oblivion · 5 cards cooldown · Requires Angel",
-        "baseOblivion": 470,
+        "description": "490 base Oblivion · 5 cards cooldown · Requires Angel",
+        "baseOblivion": 490,
         "cooldownCards": 5,
         "costs": [],
         "requiresAngelOnBoard": true
@@ -17646,18 +14416,18 @@ export const MATERIALIZED_CARD_BALANCE = {
         "id": "wuas-ser-solarvex-fragment:unsyn",
         "label": "Unsynergized",
         "name": "Star Flicker",
-        "description": "190 base Oblivion · 4 cards cooldown",
-        "baseOblivion": 190,
-        "cooldownCards": 4,
+        "description": "210 base Oblivion · 2 cards cooldown",
+        "baseOblivion": 210,
+        "cooldownCards": 2,
         "costs": []
       },
       "synergized": {
         "id": "wuas-ser-solarvex-fragment:syn",
         "label": "Synergized",
         "name": "Solarvex Pulse",
-        "description": "335 base Oblivion · 5 cards cooldown · Requires Angel",
-        "baseOblivion": 335,
-        "cooldownCards": 5,
+        "description": "360 base Oblivion · 4 cards cooldown · Requires Angel",
+        "baseOblivion": 360,
+        "cooldownCards": 4,
         "costs": [],
         "requiresAngelOnBoard": true
       }

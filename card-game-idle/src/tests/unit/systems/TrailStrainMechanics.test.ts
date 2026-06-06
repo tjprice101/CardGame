@@ -50,8 +50,8 @@ describe('Trail / Strain / Overclock mechanics', () => {
     );
 
     expect(result.canPlay).toBe(true);
-    expect(result.turn.strain).toBe(1);
-    expect(result.deck.hand).toHaveLength(2);
+    expect(result.turn.strain).toBe(5);
+    expect(result.deck.hand).toHaveLength(0);
   });
 
   it('trail_spend blocks card resolution when trail is insufficient', () => {

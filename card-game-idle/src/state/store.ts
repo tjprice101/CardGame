@@ -89,7 +89,7 @@ import {
   getNullRaidProveYourselfTargetDamage,
 } from '@/data/ascension/nullRaidDefinitions';
 import { eventBus } from '@/core/events/EventBus';
-import { isDeathFlamedHellBaseDefinitionId } from '@/utils/cardFaces';
+import { getSupabase } from '@/net/supabaseClient';
 import {
   getCardDissolveYield,
 } from '@/types/artifacts';
@@ -113,7 +113,6 @@ const ATTENUATION_CLASSES: AttenuationClass[] = ['setup', 'conversion', 'multipl
 const ATTENUATION_TIERS = [1, 0.75, 0.55, 0.4] as const;
 const NEUTRALITY_SETUP_FOR_FULL_FIRE = 3;
 const NEUTRALITY_ENGINES_FOR_FULL_FIRE = 3;
-const DFH_ETERNAL_VEIL_DEFAULT_OBLIVION_PER_MARK = 160;
 const COOP_BOSS_HP_SCALE_BY_PARTY_SIZE: Record<number, number> = {
   1: 1,
   2: 1.68,
@@ -154,6 +153,9 @@ const defaultTurn: TurnState = {
   nextCardMultiplied: false,
   mulliganSelected: [],
   pendingEffect: null,
+  lastResolvedSubtype: null,
+  strainVentedThisTurn: false,
+  cherubimSummonedThisTurn: 0,
   equilibriumDrift: 0,
   equilibriumStability: 0,
   neutralitySetupCount: 0,
@@ -221,15 +223,17 @@ const defaultTurn: TurnState = {
   prismaticLight: 0,
   monochromaticShards: 0,
   arcticCharge: 0,
-  proof: 0,
   bloom: 0,
   butterflySpectrum: 0,
   butterflyStance: null,
   butterflyFlutterLevel: 0,
   butterflyFormation: 0,
   butterflyFormationTypesSeen: [],
+  lastFiredSeraphimAttackMode: null,
+  lastFiredSeraphimAttackOblivion: 0,
   eternalSeasUndertow: 0,
   eternalSeasFoam: 0,
+  eternalSeasReleaseReactionUsedThisTurn: false,
   recastLedger: [],
   reforgeCharges: 0,
   reforgeChargeCap: 6,
@@ -237,6 +241,8 @@ const defaultTurn: TurnState = {
   unrecordedHueActive: false,
   forgeRecastEventsThisTurn: 0,
   forgePendingCherubimTemper: 0,
+  dfhAngelResonantCashoutUsed: false,
+  dfhVeilAttackBonusByDefinition: {},
   equippedArtifactIds: [],
 };
 
@@ -1100,7 +1106,7 @@ function createDeckState(deckList: DeckEntry[], extraDeck?: Array<ExtraDeckEntry
 }
 
 function buildPracticeDeckListFromPool(pool: CardDefinition[], targetCopies: number): DeckEntry[] {
-  const sorted = [...pool].sort((a, b) => a.id.localeCompare(b.id));
+  const sorted = [...pool].sort((a, b) => a.definitionId.localeCompare(b.definitionId));
   if (!sorted.length) return [];
 
   const counts = new Map<string, number>();
@@ -1108,7 +1114,7 @@ function buildPracticeDeckListFromPool(pool: CardDefinition[], targetCopies: num
 
   for (const def of sorted) {
     if (remaining <= 0) break;
-    counts.set(def.id, 1);
+    counts.set(def.definitionId, 1);
     remaining -= 1;
   }
 
@@ -1116,9 +1122,9 @@ function buildPracticeDeckListFromPool(pool: CardDefinition[], targetCopies: num
     let placed = false;
     for (const def of sorted) {
       if (remaining <= 0) break;
-      const current = counts.get(def.id) ?? 0;
+      const current = counts.get(def.definitionId) ?? 0;
       if (current >= 4) continue;
-      counts.set(def.id, current + 1);
+      counts.set(def.definitionId, current + 1);
       remaining -= 1;
       placed = true;
     }
@@ -1135,9 +1141,9 @@ function buildPracticeDeckListFromPool(pool: CardDefinition[], targetCopies: num
 function buildPracticeExtraDeckFromPool(pool: CardDefinition[]): ExtraDeckEntry[] {
   return pool
     .filter(def => def.type === 'Angel')
-    .sort((a, b) => a.id.localeCompare(b.id))
+    .sort((a, b) => a.definitionId.localeCompare(b.definitionId))
     .slice(0, 5)
-    .map(def => ({ definitionId: def.id, finish: 'normal' as const }));
+    .map(def => ({ definitionId: def.definitionId, finish: 'normal' as const }));
 }
 
 function buildNeutralityTutorialDeck(
@@ -1904,6 +1910,21 @@ function canEmbraceInfinite(state: Pick<GameState, 'deck' | 'turn'>): boolean {
     && state.deck.hand.length >= EMBRACE_INFINITE_MIN_HAND;
 }
 
+function applyNeutralityTimerPauseFromTurn(s: Store): void {
+  const seconds = Math.max(0, Math.floor(s.turn.neutralityPauseActiveTimersSeconds ?? 0));
+  if (seconds <= 0) return;
+
+  if (s.bossFight.mode === 'active') {
+    s.bossFight.fightTimeRemaining = Math.max(0, s.bossFight.fightTimeRemaining + seconds);
+  }
+
+  if (s.battleground.mode === 'active') {
+    s.battleground.timeRemaining = Math.max(0, s.battleground.timeRemaining + seconds);
+  }
+
+  s.turn.neutralityPauseActiveTimersSeconds = 0;
+}
+
 function effectCanDraw(effect: CardEffect): boolean {
   switch (effect.type) {
     case 'draw':
@@ -1913,6 +1934,7 @@ function effectCanDraw(effect: CardEffect): boolean {
     case 'look_top_take_type':
     case 'search_deck_by_type':
     case 'salvage_by_type':
+    case 'salvage_by_type_count':
     case 'salvage_any':
       return true;
     case 'conditional':
@@ -2021,6 +2043,8 @@ function ensureButterflyTurnState(turn: TurnState): void {
   if (turn.butterflyFlutterLevel === undefined) turn.butterflyFlutterLevel = 0;
   if (turn.butterflyFormation === undefined) turn.butterflyFormation = 0;
   if (turn.butterflyFormationTypesSeen === undefined) turn.butterflyFormationTypesSeen = [];
+  if (turn.lastFiredSeraphimAttackMode === undefined) turn.lastFiredSeraphimAttackMode = null;
+  if (turn.lastFiredSeraphimAttackOblivion === undefined) turn.lastFiredSeraphimAttackOblivion = 0;
 }
 
 type ButterflyFormationUnitType = 'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel';
@@ -2686,6 +2710,7 @@ function applyMechanicalPlayState(
   _actionClass: AttenuationClass,
 ): void {
   if (!isMechanicalDreamsCard(def)) return;
+  ensureMechanicalTurnState(s.turn);
   s.turn.lastPlayedElement = def.element;
 }
 
@@ -3338,6 +3363,18 @@ function incrementAngelProgress(board: BoardState): void {
     if (slot?.type === 'Angel' && !slot.activated) {
       slot.cardsPlayedSinceSummon += 1;
     }
+    if (slot?.type === 'Angel' && slot.flutterAttackBuff) {
+      slot.flutterAttackBuff.remainingCards -= 1;
+      if (slot.flutterAttackBuff.remainingCards <= 0) {
+        delete slot.flutterAttackBuff;
+      }
+    }
+    if (slot?.type === 'Seraphim' && slot.flutterAttackBuff) {
+      slot.flutterAttackBuff.remainingCards -= 1;
+      if (slot.flutterAttackBuff.remainingCards <= 0) {
+        delete slot.flutterAttackBuff;
+      }
+    }
     if (slot && (slot.type === 'Angel' || slot.type === 'Seraphim')) {
       const cooldowns = slot.attackCooldowns ?? {};
       for (const key of Object.keys(cooldowns)) {
@@ -3758,6 +3795,8 @@ function grantDominantAttackResource(s: Store, sourceDefinitionId: string, eleme
     clampNeutralityGainState(s);
 }
 
+void grantDominantAttackResource;
+
 function getHighTierAttackDamageMultiplier(
   rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
 ): number {
@@ -3776,6 +3815,8 @@ function reduceFrontlineAttackCooldowns(board: BoardState, amount: number): void
     slot.attackCooldowns = nextCooldowns;
   }
 }
+
+void reduceFrontlineAttackCooldowns;
 
 function enforceMinimumAttackCooldown(
   board: BoardState,
@@ -4295,6 +4336,12 @@ function applyCherubimPassiveEffects(s: Store): void {
             case 'strain':
               s.turn.strain += effect.value;
               break;
+            case 'prismaticLight':
+              s.turn.prismaticLight = Math.max(0, (s.turn.prismaticLight ?? 0) + effect.value);
+              break;
+            case 'arcticCharge':
+              s.turn.arcticCharge = Math.max(0, (s.turn.arcticCharge ?? 0) + effect.value);
+              break;
           }
           break;
         }
@@ -4392,17 +4439,33 @@ function applyCherubimPassiveEffects(s: Store): void {
 
   clampNeutralityGainState(s);
 
-  // ── Wished Upon A Star per-card passives ─────────────────────────────────
-  // Seraphim on board: wuas-ser-solarvex-fragment and wuas-cher-wishwright-pulse
-  // each give +1 Starlight per card played.
-  const WUAS_STARLIGHT_PER_CARD_IDS = new Set([
-    'wuas-ser-solarvex-fragment',
-    'wuas-cher-wishwright-pulse',
-  ]);
-  for (const unit of [...s.board.frontSlots, ...s.board.backSlots]) {
-    if (!unit) continue;
-    if (WUAS_STARLIGHT_PER_CARD_IDS.has(unit.definitionId)) {
+  // WUAS per-card passive handling is in applyCherubimPassiveEffects.
+
+  // WUAS bespoke Cherubim passives (set-identity triggers keyed by card ID).
+  // cardsPlayedThisTurn is incremented after this function, so use +1 for the resolving play index.
+  const resolvingPlayCount = (s.turn.cardsPlayedThisTurn ?? 0) + 1;
+  const allBoardUnits = [...s.board.frontSlots, ...s.board.backSlots];
+  const hasVoidbaneDoctrine = allBoardUnits.some(unit => unit?.definitionId === 'wuas-cher-voidbane-doctrine');
+
+  for (const unit of allBoardUnits) {
+    if (!unit || unit.type !== 'Cherubim') continue;
+
+    if (unit.definitionId === 'wuas-cher-dreamvault-keeper' && resolvingPlayCount % 3 === 0) {
+      applyCherubimDrawPerCard(s, 1);
+    }
+
+    if (unit.definitionId === 'wuas-cher-wishwright-pulse' && resolvingPlayCount % 2 === 0) {
       s.turn.starlightCharges = (s.turn.starlightCharges ?? 0) + 1;
+      grantOblivion(s, 35);
+    }
+  }
+
+  if (hasVoidbaneDoctrine && resolvingPlayCount === 5) {
+    const starlight = s.turn.starlightCharges ?? 0;
+    const dream = s.turn.dreamLattice ?? 0;
+    const burst = Math.round(starlight * (1 + dream * 0.3));
+    if (burst > 0) {
+      grantOblivion(s, burst);
     }
   }
 }
@@ -4483,6 +4546,7 @@ export const useStore = create<Store>()(
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
+            applyNeutralityTimerPauseFromTurn(s);
             if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
@@ -4573,6 +4637,7 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
+          applyNeutralityTimerPauseFromTurn(s);
           if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
           applyAllSetPlayStates(s, def, turnBefore, actionClass);
           applyButterflyBasePlayProgression(s, def);
@@ -4625,6 +4690,7 @@ export const useStore = create<Store>()(
             applyPrismaticDefaults(cherubimInst, def);
             initializeBurningGardenInstance(cherubimInst, def);
         s.board.backSlots[backSlotIndex] = cherubimInst;
+        s.turn.cherubimSummonedThisTurn = (s.turn.cherubimSummonedThisTurn ?? 0) + 1;
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
             refractSpectrumTokens(s.board, cherubimInst.instanceId, def);
             recompute(s);
@@ -4648,6 +4714,7 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
+        applyNeutralityTimerPauseFromTurn(s);
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
         applyAllSetPlayStates(s, def, turnBefore, actionClass);
         applyButterflyBasePlayProgression(s, def);
@@ -4700,6 +4767,8 @@ export const useStore = create<Store>()(
             if (cond.type === 'cherubim_active_gte' && s.board.backSlots.filter(sl => sl !== null).length < cond.value) return;
             if (cond.type === 'seraphim_on_board_gte' && s.board.frontSlots.filter(sl => sl?.type === 'Seraphim').length < cond.value) return;
             if (cond.type === 'board_definition_gte' && (boardDefinitionCount[cond.definitionId] ?? 0) < cond.value) return;
+            if (cond.type === 'prismatic_refraction_depth_gte' && (s.turn.prismaticRefractionDepth ?? 0) < cond.value) return;
+            if (cond.type === 'prismatic_distinct_channels_gte' && new Set(s.turn.prismaticDistinctChannels ?? []).size < cond.value) return;
             if (cond.type === 'equilibrium_sigils_gte' && (s.turn.neutralityEquilibriumSigils ?? 0) < cond.value) return;
             if (cond.type === 'eternal_stack_gte' && (s.turn.eternalStacks?.[cond.stack] ?? 0) < cond.value) return;
             if (cond.type === 'set_secondary_gte' && (s.turn.secondaryCounters?.[cond.kind] ?? 0) < cond.value) return;
@@ -4767,6 +4836,7 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
+          applyNeutralityTimerPauseFromTurn(s);
           applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
           applyButterflyBasePlayProgression(s, angelDef);
           awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
@@ -4809,6 +4879,7 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
+        applyNeutralityTimerPauseFromTurn(s);
         applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
 
         for (const frontSlot of s.board.frontSlots) {
@@ -4870,15 +4941,38 @@ export const useStore = create<Store>()(
           : 0;
         const chromaMultiplier = getPyroChromaAttackMultiplier(s, def);
         const forgeTemperBonus = Math.max(0, s.turn.forgeTemperQueue ?? 0);
+        const targetedNextAttackBonus = Math.max(0, s.turn.neutralityNextAttackOblivionByInstance?.[unit.instanceId] ?? 0);
+        const flutterAttackMultiplier = Math.max(0.1, unit.flutterAttackBuff?.multiplier ?? 1);
 
         let amount = Math.round(
-          Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + patienceOblivion)
-          * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit) * chromaMultiplier),
+          Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + patienceOblivion + targetedNextAttackBonus)
+          * Math.max(0.1, buffs.multiplier * flutterAttackMultiplier * getBurningGardenAttackMultiplier(unit) * chromaMultiplier),
         );
+        if (unit.flutterAttackBuff) {
+          delete unit.flutterAttackBuff;
+        }
+
+        if (targetedNextAttackBonus > 0 && s.turn.neutralityNextAttackOblivionByInstance) {
+          const next = { ...s.turn.neutralityNextAttackOblivionByInstance };
+          delete next[unit.instanceId];
+          s.turn.neutralityNextAttackOblivionByInstance = next;
+        }
 
         if (forgeTemperBonus > 0) {
           amount = Math.round(amount * (1 + forgeTemperBonus));
           s.turn.forgeTemperQueue = 0;
+        }
+
+        const dfhVeilAttackBonus = s.turn.dfhVeilAttackBonusByDefinition?.[def.definitionId];
+        const attackMode = attackId === 'synergized' ? 'synergized' : 'unsynergized';
+        const modeMatches = dfhVeilAttackBonus && (dfhVeilAttackBonus.mode === 'any' || dfhVeilAttackBonus.mode === attackMode);
+        if (modeMatches) {
+          const availableMarks = Math.max(0, s.turn.dfhVeilMarks ?? 0);
+          const consume = Math.min(availableMarks, Math.max(0, dfhVeilAttackBonus.consumeMax));
+          if (consume > 0) {
+            s.turn.dfhVeilMarks = availableMarks - consume;
+            amount += consume * Math.max(0, dfhVeilAttackBonus.perMark);
+          }
         }
 
         if (def.definitionId === 'tx-sera-null-entropy') {
@@ -4929,6 +5023,8 @@ export const useStore = create<Store>()(
         amount = Math.round(amount * getSetFullFireMultiplier(s, def));
         amount = Math.round(amount * getHighTierAttackDamageMultiplier(def.rarity));
         grantOblivion(s, amount);
+        s.turn.lastFiredSeraphimAttackMode = attackId === 'synergized' ? 'synergized' : 'unsynergized';
+        s.turn.lastFiredSeraphimAttackOblivion = amount;
         // Card-break: synergized Seraphim attacks build +15 stagger.
         if (attackId === 'synergized') applyCardBreakStagger(s, 15);
         if (def.definitionId === 'tx-sera-null-entropy' && capturedPatience >= 14) {
@@ -5044,11 +5140,17 @@ export const useStore = create<Store>()(
           ? Math.max(0, s.turn.secondaryCounters?.pyro ?? 0)
           : 0;
         const chromaMultiplier = getPyroChromaAttackMultiplier(s, def);
+        const flutterAttackMultiplier = unit.flutterAttackBuff?.mode === attackId
+          ? Math.max(0.1, unit.flutterAttackBuff.multiplier)
+          : 1;
 
         let amount = Math.round(
           Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + neutralityAngelPatienceBonus)
-          * Math.max(0.1, buffs.multiplier * getBurningGardenAttackMultiplier(unit) * chromaMultiplier),
+          * Math.max(0.1, buffs.multiplier * flutterAttackMultiplier * getBurningGardenAttackMultiplier(unit) * chromaMultiplier),
         );
+        if (unit.flutterAttackBuff?.mode === attackId) {
+          delete unit.flutterAttackBuff;
+        }
 
         if (def.definitionId === 'inf-prismatic-judgement-array') {
           const distinctChannels = Math.min(6, new Set(s.turn.prismaticDistinctChannels ?? []).size);
@@ -5199,6 +5301,7 @@ export const useStore = create<Store>()(
         const preservedDreamLattice = wardActive ? (s.turn.dreamLattice ?? 0) : 0;
         s.turn.turnNumber = (s.turn.turnNumber ?? 0) + 1;
         s.turn.emberGroveEchoUsedThisTurn = false;
+        s.turn.eternalSeasReleaseReactionUsedThisTurn = false;
         if (s.deck.drawPile.length < 5 && s.deck.discardPile.length > 0) {
           s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
           s.deck.discardPile = [];
@@ -5276,17 +5379,7 @@ export const useStore = create<Store>()(
           if (!card.definitionId.startsWith('dfh-ser-') && !card.definitionId.startsWith('dfh-cher-') && !card.definitionId.startsWith('dfh-oph-') && !card.definitionId.startsWith('dfh-ang-')) {
             return false;
           }
-          const wasBack = card.faceState === 'back';
-          card.faceState = wasBack ? 'front' : 'back';
-          if (wasBack && isDeathFlamedHellBaseDefinitionId(card.definitionId)) {
-            const marks = Math.max(0, s.turn.dfhVeilMarks ?? 0);
-            if (marks > 0) {
-              const perMark = Math.max(0, s.turn.dfhVeilOblivionPerMark ?? DFH_ETERNAL_VEIL_DEFAULT_OBLIVION_PER_MARK);
-              grantOblivion(s, marks * perMark);
-              s.turn.dfhVeilMarks = 0;
-              s.turn.dfhVeilOblivionPerMark = 0;
-            }
-          }
+          card.faceState = card.faceState === 'back' ? 'front' : 'back';
           return true;
         };
 
@@ -5423,6 +5516,7 @@ export const useStore = create<Store>()(
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
+            applyNeutralityTimerPauseFromTurn(s);
             if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
             applyButterflyBasePlayProgression(s, def);
@@ -5464,6 +5558,7 @@ export const useStore = create<Store>()(
               applyPrismaticDefaults(cherubimInst, cherubimDef);
               initializeBurningGardenInstance(cherubimInst, cherubimDef);
           s.board.backSlots[backSlotIndex] = cherubimInst;
+          s.turn.cherubimSummonedThisTurn = (s.turn.cherubimSummonedThisTurn ?? 0) + 1;
           s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
               refractSpectrumTokens(s.board, cherubimInst.instanceId, cherubimDef);
               recompute(s);
@@ -5485,6 +5580,7 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
+          applyNeutralityTimerPauseFromTurn(s);
           if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
           applyAllSetPlayStates(s, def, turnBefore, actionClass);
           applyButterflyBasePlayProgression(s, def);
@@ -5509,6 +5605,7 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
+        applyNeutralityTimerPauseFromTurn(s);
         applyAllSetPlayStates(s, def, turnBefore, actionClass);
         applyButterflyBasePlayProgression(s, def);
 
@@ -5556,6 +5653,23 @@ export const useStore = create<Store>()(
       set(s => {
         const pending = s.turn.pendingEffect;
         if (!pending) return;
+        let resolvedSubtype: CardSubtypeFilter | null = null;
+        let resolvedCardInstanceId: string | null = null;
+        let nextPending: import('@/types/game').PendingEffect | null = null;
+        let pendingTakenSubtypeCounts: Partial<Record<CardSubtypeFilter, number>> = {};
+        let pendingDiscardedSubtypeCounts: Partial<Record<CardSubtypeFilter, number>> = {};
+        let pendingLookDiscardedCount = 0;
+
+        const countSubtypeCards = (cards: Array<{ definitionId: string }>): Partial<Record<CardSubtypeFilter, number>> => {
+          const counts: Partial<Record<CardSubtypeFilter, number>> = {};
+          for (const card of cards) {
+            const subtype = CardRegistry.get(card.definitionId)?.type;
+            if (subtype === 'Seraphim' || subtype === 'Cherubim' || subtype === 'Ophanim' || subtype === 'Angel') {
+              counts[subtype] = (counts[subtype] ?? 0) + 1;
+            }
+          }
+          return counts;
+        };
 
         if (pending.type === 'discard_choice') {
           const handIds = new Set(s.deck.hand.map(card => card.instanceId));
@@ -5570,9 +5684,11 @@ export const useStore = create<Store>()(
             return;
           }
 
+          const discardedCards = s.deck.hand.filter(card => uniqueSelected.includes(card.instanceId));
+          pendingDiscardedSubtypeCounts = countSubtypeCards(discardedCards);
           recordLossEvent(
             s,
-            s.deck.hand.filter(card => uniqueSelected.includes(card.instanceId)).map(card => ({ definitionId: card.definitionId })),
+            discardedCards.map(card => ({ definitionId: card.definitionId })),
             'discard',
           );
           s.deck = TurnSystem.discardFromHand(s.deck, uniqueSelected);
@@ -5601,7 +5717,11 @@ export const useStore = create<Store>()(
           if (selected.length === 0) {
             s.deck.drawPile = [...s.deck.drawPile.slice(pending.cards.length), ...pending.cards];
           } else {
-            s.deck = TurnSystem.takeFromTop(s.deck, pending.cards.filter(c => selected.includes(c.instanceId)), pending.cards.filter(c => !selected.includes(c.instanceId)));
+            const takenCards = pending.cards.filter(c => selected.includes(c.instanceId));
+            pendingTakenSubtypeCounts = countSubtypeCards(takenCards);
+            resolvedSubtype = takenCards.length === 1 ? (CardRegistry.get(takenCards[0].definitionId)?.type ?? null) as CardSubtypeFilter | null : null;
+            resolvedCardInstanceId = takenCards.length === 1 ? takenCards[0].instanceId : null;
+            s.deck = TurnSystem.takeFromTop(s.deck, takenCards, pending.cards.filter(c => !selected.includes(c.instanceId)));
           }
         } else if (pending.type === 'look_top_take_drop') {
           const takeCount = Math.min(pending.take, pending.cards.length);
@@ -5619,6 +5739,11 @@ export const useStore = create<Store>()(
           const toTake = pending.cards.filter(c => takeIds.has(c.instanceId));
           const toDrop = pending.cards.filter(c => dropIds.has(c.instanceId));
           const toDiscard = pending.cards.filter(c => !takeIds.has(c.instanceId) && !dropIds.has(c.instanceId));
+          pendingTakenSubtypeCounts = countSubtypeCards(toTake);
+          pendingDiscardedSubtypeCounts = countSubtypeCards(toDiscard);
+          pendingLookDiscardedCount = toDiscard.length;
+          resolvedSubtype = toTake.length === 1 ? (CardRegistry.get(toTake[0].definitionId)?.type ?? null) as CardSubtypeFilter | null : null;
+          resolvedCardInstanceId = toTake.length === 1 ? toTake[0].instanceId : null;
 
           s.deck.drawPile = s.deck.drawPile.slice(pending.cards.length);
           s.deck.hand.push(...toTake);
@@ -5635,7 +5760,11 @@ export const useStore = create<Store>()(
             if (selected.length !== requiredSelections) return;
             if (uniqueSelections.size !== selected.length) return;
             if (selected.some(id => !pendingCardIds.has(id))) return;
-            s.deck = TurnSystem.takeFromTop(s.deck, pending.cards.filter(c => selected.includes(c.instanceId)), pending.cards.filter(c => !selected.includes(c.instanceId)));
+            const takenCards = pending.cards.filter(c => selected.includes(c.instanceId));
+            pendingTakenSubtypeCounts = countSubtypeCards(takenCards);
+            resolvedSubtype = takenCards.length === 1 ? (CardRegistry.get(takenCards[0].definitionId)?.type ?? null) as CardSubtypeFilter | null : null;
+            resolvedCardInstanceId = takenCards.length === 1 ? takenCards[0].instanceId : null;
+            s.deck = TurnSystem.takeFromTop(s.deck, takenCards, pending.cards.filter(c => !selected.includes(c.instanceId)));
           }
         } else if (pending.type === 'search_deck') {
           const requiredSelections = Math.min(pending.take, pending.cards.length);
@@ -5649,7 +5778,11 @@ export const useStore = create<Store>()(
           }
 
           s.deck.drawPile = s.deck.drawPile.filter(c => !selected.includes(c.instanceId));
-          s.deck.hand.push(...pending.cards.filter(c => selected.includes(c.instanceId)));
+          const foundCards = pending.cards.filter(c => selected.includes(c.instanceId));
+          pendingTakenSubtypeCounts = countSubtypeCards(foundCards);
+          resolvedSubtype = foundCards.length === 1 ? (CardRegistry.get(foundCards[0].definitionId)?.type ?? null) as CardSubtypeFilter | null : null;
+          resolvedCardInstanceId = foundCards.length === 1 ? foundCards[0].instanceId : null;
+          s.deck.hand.push(...foundCards);
           s.deck.drawPile = DeckSystem.shuffle(s.deck.drawPile);
         } else if (pending.type === 'salvage') {
           const requiredSelections = Math.min(pending.count, pending.cards.length);
@@ -5674,8 +5807,12 @@ export const useStore = create<Store>()(
               return;
             }
           }
+          const salvagedCards = pending.cards.filter(c => selected.includes(c.instanceId));
+          pendingTakenSubtypeCounts = countSubtypeCards(salvagedCards);
+          resolvedSubtype = salvagedCards.length === 1 ? (CardRegistry.get(salvagedCards[0].definitionId)?.type ?? null) as CardSubtypeFilter | null : null;
+          resolvedCardInstanceId = salvagedCards.length === 1 ? salvagedCards[0].instanceId : null;
           s.deck.discardPile = s.deck.discardPile.filter(c => !selected.includes(c.instanceId));
-          s.deck.hand.push(...pending.cards.filter(c => selected.includes(c.instanceId)));
+          s.deck.hand.push(...salvagedCards);
         } else if (pending.type === 'embrace_infinite') {
           const keptIds = new Set(selected.slice(0, pending.keep));
           const keptCards = pending.cards.filter(c => keptIds.has(c.instanceId));
@@ -5738,11 +5875,81 @@ export const useStore = create<Store>()(
           if (pending.patientLightGain > 0) {
             s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + pending.patientLightGain;
           }
+        } else if (pending.type === 'neutrality_echo_pulse_choose') {
+          const activeSeraphim = s.board.frontSlots.filter(
+            (unit): unit is SeraphimInstance => unit?.type === 'Seraphim' && unit.isActive,
+          );
+          const selectedId = selected[0] ?? null;
+          if (activeSeraphim.length > 0) {
+            const target = activeSeraphim.find((unit) => unit.instanceId === selectedId);
+            if (!target) return;
+            const uncapped = hasNeutralityUncappedGainsInDeck(s.deck);
+            target.patienceStacks = clampPatienceStacks((target.patienceStacks ?? 0) + 5, uncapped);
+          }
+
+          s.deck = TurnSystem.drawCards(s.deck, 1);
+          const hasTwentyPatience = s.board.frontSlots.some((unit) => {
+            if (!unit) return false;
+            if (unit.type !== 'Seraphim' && unit.type !== 'Angel') return false;
+            return (unit.patienceStacks ?? 0) >= 20;
+          });
+          if (hasTwentyPatience) {
+            s.deck = TurnSystem.drawCards(s.deck, 1);
+          }
+        } else if (pending.type === 'neutrality_void_amp_choose_seraphim') {
+          const activeSeraphim = s.board.frontSlots.filter(
+            (unit): unit is SeraphimInstance => unit?.type === 'Seraphim' && unit.isActive,
+          );
+          const selectedId = selected[0] ?? null;
+          if (activeSeraphim.length > 0) {
+            const target = activeSeraphim.find((unit) => unit.instanceId === selectedId);
+            if (!target) return;
+            const uncapped = hasNeutralityUncappedGainsInDeck(s.deck);
+            target.patienceStacks = clampPatienceStacks((target.patienceStacks ?? 0) + 5, uncapped);
+            if (s.turn.lastResolvedSubtype === 'Ophanim') {
+              const current = s.turn.neutralityNextAttackOblivionByInstance ?? {};
+              s.turn.neutralityNextAttackOblivionByInstance = {
+                ...current,
+                [target.instanceId]: Math.max(0, (current[target.instanceId] ?? 0) + pending.bonusOblivionIfOphanim),
+              };
+            }
+          }
+        }
+
+          s.turn.lastPendingTakenSubtypeCounts = pendingTakenSubtypeCounts;
+          s.turn.lastPendingDiscardedSubtypeCounts = pendingDiscardedSubtypeCounts;
+          s.turn.lastPendingLookDiscardedCount = pendingLookDiscardedCount;
+        s.turn.lastResolvedSubtype = resolvedSubtype;
+  s.turn.lastResolvedCardInstanceId = resolvedCardInstanceId;
+
+        if ('resolutionEffects' in pending && pending.resolutionEffects && pending.resolutionEffects.length > 0 && pending.sourceDefinitionId) {
+          const result = CardEffectExecutor.execute(
+            {
+              instanceId: pending.sourceInstanceId ?? pending.sourceDefinitionId,
+              definitionId: pending.sourceDefinitionId,
+            },
+            s.turn,
+            s.board,
+            s.deck,
+            false,
+            {
+              effects: pending.resolutionEffects,
+              countAsPlay: false,
+              removeFromHand: false,
+              useNextCardMultiplier: false,
+            },
+          );
+          if (!result.canPlay) return;
+          s.turn = result.turn;
+          s.board = result.board;
+          s.deck = result.deck;
+          applyNeutralityTimerPauseFromTurn(s);
+          nextPending = result.pendingEffect;
         }
 
         s.deck = normalizeDeckInstanceIds(s.deck);
 
-        s.turn.pendingEffect = null;
+        s.turn.pendingEffect = nextPending;
       });
     },
 
@@ -6945,6 +7152,7 @@ export const useStore = create<Store>()(
       set(s => {
         if (s.battleground.mode === 'active' && s.battleground.kind === 'pvp') {
           if (isRemote) {
+            s.toasts ??= [];
             s.toasts.push({
               id: `bg-disconnect-${Date.now()}`,
               message: 'Opponent disconnected. You win by forfeit.',

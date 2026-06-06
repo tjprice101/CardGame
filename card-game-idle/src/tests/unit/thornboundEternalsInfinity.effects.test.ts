@@ -85,6 +85,6 @@ describe('Thornbound Eternity and Infinity Briar Spiral wiring', () => {
 
     expect(hasEffectTypeRecursive(finisher, 'thorn_briar_spiral_bloom')).toBe(true);
     expect(hasEffectTypeRecursive(finisher, 'set_secondary_spend')).toBe(true);
-    expect(hasEffectTypeRecursive(finisher, 'eternal_stack_cashout')).toBe(true);
+    expect(hasEffectTypeRecursive(finisher, 'eternal_stack_cashout')).toBe(false);
   });
 });

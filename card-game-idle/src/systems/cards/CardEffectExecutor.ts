@@ -555,6 +555,43 @@ export class CardEffectExecutor {
       }
     };
 
+    const applyEternalSeasReleaseReactions = (): void => {
+      if (mutableTurn.eternalSeasReleaseReactionUsedThisTurn) return;
+
+      let usedOncePerTurn = false;
+      for (const back of mutableBoard.backSlots) {
+        if (!back || back.type !== 'Cherubim') continue;
+        const def = CardRegistry.get(back.definitionId);
+        if (!def || def.type !== 'Cherubim') continue;
+
+        for (const effect of def.effects) {
+          if (effect.type !== 'cherubim_seas_release_reaction') continue;
+          if (effect.condition && !CardEffectExecutor.evaluateCondition(effect.condition, mutableTurn, mutableBoard)) continue;
+
+          if ((effect.oblivionGain ?? 0) > 0) {
+            oblivionBonus += Math.round(effect.oblivionGain ?? 0);
+          }
+          if ((effect.undertowGain ?? 0) > 0) {
+            mutableTurn.eternalSeasUndertow = Math.max(0, (mutableTurn.eternalSeasUndertow ?? 0) + Math.round(effect.undertowGain ?? 0));
+          }
+          if ((effect.foamGain ?? 0) > 0) {
+            mutableTurn.eternalSeasFoam = Math.max(0, (mutableTurn.eternalSeasFoam ?? 0) + Math.round(effect.foamGain ?? 0));
+          }
+          if ((effect.draw ?? 0) > 0) {
+            for (let i = 0; i < Math.round(effect.draw ?? 0); i++) {
+              const ok = processEffect({ type: 'draw', value: 1 });
+              if (!ok) return;
+            }
+          }
+          if (effect.oncePerTurn) usedOncePerTurn = true;
+        }
+      }
+
+      if (usedOncePerTurn) {
+        mutableTurn.eternalSeasReleaseReactionUsedThisTurn = true;
+      }
+    };
+
     function applyRadianceGain(base: number): void {
       const adjusted = throneActive ? Math.ceil(base * 1.5) : base;
       mutableTurn.radiance += adjusted;
@@ -1109,6 +1146,19 @@ export class CardEffectExecutor {
           if ((effect.foamPerSpent ?? 0) > 0) {
             mutableTurn.eternalSeasFoam = Math.max(0, (mutableTurn.eternalSeasFoam ?? 0) + spend * (effect.foamPerSpent ?? 0) * multiplier);
           }
+          applyEternalSeasReleaseReactions();
+          break;
+        }
+
+        case 'seas_foam_spend': {
+          ensureEternalSeasState(mutableTurn);
+          const foam = Math.max(0, mutableTurn.eternalSeasFoam ?? 0);
+          if (effect.value >= 9999) {
+            mutableTurn.eternalSeasFoam = 0;
+          } else {
+            if (foam < effect.value) return false;
+            mutableTurn.eternalSeasFoam = foam - effect.value;
+          }
           break;
         }
 
@@ -1140,6 +1190,7 @@ export class CardEffectExecutor {
           if ((effect.foamPerDeepwake ?? 0) > 0) {
             mutableTurn.eternalSeasFoam = Math.max(0, (mutableTurn.eternalSeasFoam ?? 0) + consume * (effect.foamPerDeepwake ?? 0) * multiplier);
           }
+          applyEternalSeasReleaseReactions();
           break;
         }
 
@@ -1816,15 +1867,7 @@ export class CardEffectExecutor {
           break;
         }
 
-        // ───── Death-flamed Hell — Eternal Veil Rite + Cinder Crown finale ─
-        case 'dfh_eternal_veil_rite': {
-          mutableTurn.dfhVeilMarks = (mutableTurn.dfhVeilMarks ?? 0) + effect.marks * multiplier;
-          mutableTurn.dfhVeilOblivionPerMark = Math.max(
-            mutableTurn.dfhVeilOblivionPerMark ?? 0,
-            effect.oblivionPerMark,
-          );
-          break;
-        }
+        // ───── Death-flamed Hell — Veil Marks + Cinder Crown finale ─────────
 
         case 'dfh_veil_marks_amplify': {
           const current = Math.max(0, mutableTurn.dfhVeilMarks ?? 0);
@@ -1860,6 +1903,35 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           mutableTurn.dfhVeilMarks = available - consume;
+          oblivionBonus += consume * effect.oblivionPerMark * multiplier;
+          break;
+        }
+
+        case 'dfh_veil_marks_attack_bonus': {
+          const key = effect.targetDefinitionId ?? def.definitionId;
+          const existing = mutableTurn.dfhVeilAttackBonusByDefinition ?? {};
+          mutableTurn.dfhVeilAttackBonusByDefinition = {
+            ...existing,
+            [key]: {
+              perMark: Math.max(0, effect.perMark),
+              consumeMax: Math.max(0, effect.consumeMax),
+              mode: effect.mode ?? 'synergized',
+            },
+          };
+          break;
+        }
+
+        case 'dfh_angel_resonant_cashout': {
+          if (mutableTurn.dfhAngelResonantCashoutUsed) break;
+          const hasDfhAngelOnBoard = mutableBoard.frontSlots.some(
+            slot => slot?.type === 'Angel' && slot.element === 'DeathFlamedHell',
+          );
+          if (!hasDfhAngelOnBoard) break;
+          const available = Math.max(0, mutableTurn.dfhVeilMarks ?? 0);
+          const consume = Math.min(available, effect.consume ?? available);
+          if (consume <= 0) break;
+          mutableTurn.dfhVeilMarks = available - consume;
+          mutableTurn.dfhAngelResonantCashoutUsed = true;
           oblivionBonus += consume * effect.oblivionPerMark * multiplier;
           break;
         }
@@ -1904,6 +1976,14 @@ export class CardEffectExecutor {
           const dream = mutableTurn.dreamLattice ?? 0;
           const dreamMult = effect.dreamMultiplier ?? 0.4;
           oblivionBonus += starlight * (1 + dream * dreamMult) * multiplier;
+          if (starlight >= 5) {
+            const starlaceActive = mutableBoard.backSlots.some(
+              (slot) => slot?.type === 'Cherubim' && slot.definitionId === 'wuas-cher-starlace-binding',
+            );
+            if (starlaceActive) {
+              mutableTurn.dreamLattice = (mutableTurn.dreamLattice ?? 0) + 1;
+            }
+          }
           if (effect.consumeStarlight) mutableTurn.starlightCharges = 0;
           break;
         }
@@ -2014,7 +2094,13 @@ export class CardEffectExecutor {
           if (pendingEffect === null) {
             const peeked = TurnSystem.peekTop(mutableDeck, effect.look);
             if (peeked.length > 0) {
-              pendingEffect = { type: 'look_top_take_type', cards: peeked, filter: effect.filter, take: 1 };
+              const sameSetPeeked = sourceSetKey
+                ? peeked.filter(card => {
+                    const d = CardRegistry.get(card.definitionId);
+                    return !!d && getCardCategoryKey(d) === sourceSetKey;
+                  })
+                : peeked;
+              pendingEffect = { type: 'look_top_take_type', cards: sameSetPeeked, filter: effect.filter, take: 1 };
             }
           }
           break;
@@ -2024,6 +2110,7 @@ export class CardEffectExecutor {
             const matching = mutableDeck.drawPile.filter(card => {
               const d = CardRegistry.get(card.definitionId);
               if (!d) return false;
+              if (sourceSetKey && getCardCategoryKey(d) !== sourceSetKey) return false;
               return effect.filter.some(f =>
                 f === 'Seraphim' ? d.type === 'Seraphim'
                 : f === 'Cherubim'  ? d.type === 'Cherubim'
@@ -2043,6 +2130,7 @@ export class CardEffectExecutor {
             const matching = mutableDeck.discardPile.filter(card => {
               const d = CardRegistry.get(card.definitionId);
               if (!d) return false;
+              if (sourceSetKey && getCardCategoryKey(d) !== sourceSetKey) return false;
               return effect.filter.some(f =>
                 f === 'Seraphim' ? d.type === 'Seraphim'
                 : f === 'Cherubim'  ? d.type === 'Cherubim'
@@ -2170,6 +2258,10 @@ export class CardEffectExecutor {
         return (turn.lightResonance ?? 0) >= condition.value;
       case 'pyro_heat_gte':     return (turn.pyroHeat ?? 0) >= condition.value;
       case 'trail_gte':         return turn.trail >= condition.value;
+      case 'eternal_seas_undertow_gte': return (turn.eternalSeasUndertow ?? 0) >= condition.value;
+      case 'eternal_seas_foam_gte':     return (turn.eternalSeasFoam ?? 0) >= condition.value;
+      case 'eternal_seas_tide_balance':  return Math.abs((turn.eternalSeasUndertow ?? 0) - (turn.eternalSeasFoam ?? 0)) <= condition.value;
+      case 'eternal_seas_tide_imbalance_gte': return Math.abs((turn.eternalSeasUndertow ?? 0) - (turn.eternalSeasFoam ?? 0)) >= condition.value;
       case 'scar_count_gte':    return (turn.thornScar ?? 0) >= condition.value;
       case 'equilibrium_sigils_gte':
         return (turn.neutralityEquilibriumSigils ?? 0) >= condition.value;
@@ -2209,6 +2301,8 @@ export class CardEffectExecutor {
         const counters = (turn.secondaryCounters ?? {}) as Record<string, number>;
         return (counters[condition.kind] ?? 0) >= condition.value;
       }
+      case 'dfh_veil_marks_gte':
+        return (turn.dfhVeilMarks ?? 0) >= condition.value;
       case 'starlight_gte':
         return (turn.starlightCharges ?? 0) >= condition.value;
       case 'dream_lattice_gte':
@@ -2287,6 +2381,7 @@ export class CardEffectExecutor {
       if (effect.type === 'radiance_spend' && effect.value < 9999 && turn.radiance < effect.value) return false;
       if (effect.type === 'pyro_heat_spend' && effect.value < 9999 && (turn.pyroHeat ?? 0) < effect.value) return false;
       if (effect.type === 'trail_spend' && effect.value < 9999 && turn.trail < effect.value) return false;
+      if (effect.type === 'seas_foam_spend' && effect.value < 9999 && (turn.eternalSeasFoam ?? 0) < effect.value) return false;
     }
     return true;
   }

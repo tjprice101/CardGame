@@ -110,7 +110,6 @@ function snapshotSignature(turn: TurnState): string {
     abyssalReforge: turn.reforgeCharges ?? 0,
     abyssalLedger: turn.recastLedger?.length ?? 0,
     dfhMarks: turn.dfhVeilMarks ?? 0,
-    dfhPerMark: turn.dfhVeilOblivionPerMark ?? 0,
     wuasStarlight: turn.starlightCharges ?? 0,
     wuasDream: turn.dreamLattice ?? 0,
     wuasCrowns: turn.eternalStacks?.wuas ?? 0,
@@ -202,7 +201,7 @@ const UI_TURN_MUTATORS: Record<EngineKey, (turn: TurnState) => TurnState> = {
       isNacreCoated: false,
     }],
   }),
-  deathFlamedHell: turn => ({ ...turn, dfhVeilMarks: 8, dfhVeilOblivionPerMark: 200, eternalStacks: { ...(turn.eternalStacks ?? {}), pyre: 3 }, secondaryCounters: { ...(turn.secondaryCounters ?? {}), pyre: 2 } }),
+  deathFlamedHell: turn => ({ ...turn, dfhVeilMarks: 8, eternalStacks: { ...(turn.eternalStacks ?? {}), pyre: 3 }, secondaryCounters: { ...(turn.secondaryCounters ?? {}), pyre: 2 } }),
   wishedUponAStar: turn => ({ ...turn, starlightCharges: 9, dreamLattice: 4, eternalStacks: { ...(turn.eternalStacks ?? {}), wuas: 5 } }),
 };
 

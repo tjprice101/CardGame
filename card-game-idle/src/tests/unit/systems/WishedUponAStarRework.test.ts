@@ -201,8 +201,8 @@ describe('Wished Upon A Star rework wiring', () => {
     const throne = runEffects('inf-wuas-stellarborn-throne', afterBank, board, banked.deck);
     const afterThrone = throne.turn;
 
-    expect(bankedCrowns).toBe(15);
-    expect(afterThrone.eternalStacks.wuas).toBe(33);
+    expect(bankedCrowns).toBe(12);
+    expect(afterThrone.eternalStacks.wuas).toBe(30);
     expect(afterThrone.starlightCharges).toBe(14);
     expect(afterThrone.dreamLattice).toBe(11);
     expect(throne.deck.hand.length).toBeGreaterThanOrEqual(4);
@@ -219,9 +219,9 @@ describe('Wished Upon A Star rework wiring', () => {
     const buffed = runEffects('wuas-et-selenira-voidbane', choir.turn, board, choir.deck);
 
     expect(choirCrownsBeforeDetonation).toBe(21);
-    expect((buffed.turn.eternalStacks.wuas ?? 0)).toBe(3);
+    expect((buffed.turn.eternalStacks.wuas ?? 0)).toBe(11);
     expect(buffed.oblivionBonus).toBeGreaterThan(baseline.oblivionBonus);
-    expect(buffed.oblivionBonus - baseline.oblivionBonus).toBeGreaterThanOrEqual(500);
+    expect(buffed.oblivionBonus - baseline.oblivionBonus).toBeGreaterThanOrEqual(200);
   });
 
   it('wishwright absolute materially amplifies draethos hybrid cashout lane', () => {

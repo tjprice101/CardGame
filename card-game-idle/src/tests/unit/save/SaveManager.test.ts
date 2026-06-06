@@ -135,7 +135,7 @@ describe('SaveManager integrity', () => {
       expect(prog.dailyLogin).toBeDefined();
       const profile = prog.profile as { name: string; avatarId: string; titleId: string | null };
       expect(profile.name).toBe('Wanderer');
-      expect(profile.avatarId).toBe('avatar-acolyte');
+      expect(profile.avatarId).toBe('pic-classic-acolyte');
       expect(profile.titleId).toBeNull();
       const dl = prog.dailyLogin as { lastClaimedDayIndex: number; streak: number; totalClaims: number };
       expect(dl.lastClaimedDayIndex).toBe(-1);

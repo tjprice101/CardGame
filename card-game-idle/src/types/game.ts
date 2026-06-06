@@ -1,5 +1,5 @@
 import type { AngelInstance, CardFinish, CherubimInstance, SeraphimInstance } from './cards';
-import type { ActiveBoardEffect, CardSubtypeFilter } from './effects';
+import type { ActiveBoardEffect, CardEffect, CardSubtypeFilter } from './effects';
 import type { BossFightState } from './bossFight';
 import type { BattlegroundState } from './battleground';
 
@@ -72,7 +72,14 @@ export type PrismaticChannel = 'amber' | 'azure' | 'crimson' | 'emerald' | 'viol
 export type SnowboundPhase = 'Frost' | 'Voltage';
 
 export type PendingEffect =
-  | { type: 'discard_choice'; count: number; sourceCard: string }
+  | {
+      type: 'discard_choice';
+      count: number;
+      sourceCard: string;
+      sourceDefinitionId?: string;
+      sourceInstanceId?: string;
+      resolutionEffects?: CardEffect[];
+    }
   | {
       type: 'light_transcendent_duality_choice';
       baseOblivion: number;
@@ -89,11 +96,22 @@ export type PendingEffect =
       restorePercent: number;
       patientLightGain: number;
     }
-  | { type: 'look_top_take'; cards: DeckCard[]; take: number }
-  | { type: 'look_top_take_drop'; cards: DeckCard[]; take: number; drop: number }
-  | { type: 'look_top_take_type'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number }
-  | { type: 'search_deck'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number }
-  | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number }
+  | {
+      type: 'neutrality_echo_pulse_choose';
+      sourceDefinitionId: string;
+      sourceInstanceId: string;
+    }
+  | {
+      type: 'neutrality_void_amp_choose_seraphim';
+      sourceDefinitionId: string;
+      sourceInstanceId: string;
+      bonusOblivionIfOphanim: number;
+    }
+  | { type: 'look_top_take'; cards: DeckCard[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
+  | { type: 'look_top_take_drop'; cards: DeckCard[]; take: number; drop: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
+  | { type: 'look_top_take_type'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
+  | { type: 'search_deck'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
+  | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'embrace_infinite'; cards: DeckCard[]; allCards: DeckCard[]; keep: number };
 
 /** One play recorded in the per-turn Recast Ledger. */
@@ -121,6 +139,14 @@ export interface TurnState {
   nextCardMultiplied: boolean;
   mulliganSelected: string[];
   pendingEffect: PendingEffect | null;
+  lastResolvedSubtype?: CardSubtypeFilter | null;
+  lastResolvedCardInstanceId?: string | null;
+  lastDrawnDefinitionIds?: string[];
+  lastPendingTakenSubtypeCounts?: Partial<Record<CardSubtypeFilter, number>>;
+  lastPendingDiscardedSubtypeCounts?: Partial<Record<CardSubtypeFilter, number>>;
+  lastPendingLookDiscardedCount?: number;
+  strainVentedThisTurn?: boolean;
+  cherubimSummonedThisTurn?: number;
   equilibriumDrift?: number;
   equilibriumStability?: number;
   neutralitySetupCount?: number;
@@ -139,10 +165,13 @@ export interface TurnState {
   neutralityEquilibriumSigilCapBonus?: number;
   neutralityEquilibriumSentinelTempoUsed?: boolean;
   neutralityTriggeredEffects?: string[];
+  lastShuffleSubtypeCounts?: Partial<Record<CardSubtypeFilter, number>>;
   neutralityVesselInstanceId?: string | null;
   neutralityVesselCopyPercent?: number;
   neutralityMarkedCardIds?: string[];
   neutralityMarkedPatienceGain?: number;
+  neutralityNextAttackOblivionByInstance?: Record<string, number>;
+  neutralityPauseActiveTimersSeconds?: number;
   neutralityAttackPreservePercent?: number;
   neutralityAttackRestorePercent?: number;
   neutralityLinkedGainBonus?: number;
@@ -204,8 +233,11 @@ export interface TurnState {
   butterflyFlutterLevel?: number;
   butterflyFormation?: number;
   butterflyFormationTypesSeen?: Array<'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel'>;
+  lastFiredSeraphimAttackMode?: 'unsynergized' | 'synergized' | null;
+  lastFiredSeraphimAttackOblivion?: number;
   eternalSeasUndertow?: number;
   eternalSeasFoam?: number;
+  eternalSeasReleaseReactionUsedThisTurn?: boolean;
   // ── Abyssal Forge — The Reforging ────────────────────────────────────────
   recastLedger?: RecastLedgerEntry[];
   reforgeCharges?: number;
@@ -217,7 +249,12 @@ export interface TurnState {
   forgePendingCherubimTemper?: number; // queued factor from a Cherubim passive; applied to next Seraphim played
   // Death-flamed Hell Eternal/Infinite overlay.
   dfhVeilMarks?: number;
-  dfhVeilOblivionPerMark?: number;
+  dfhAngelResonantCashoutUsed?: boolean;
+  dfhVeilAttackBonusByDefinition?: Partial<Record<string, {
+    perMark: number;
+    consumeMax: number;
+    mode: 'synergized' | 'unsynergized' | 'any';
+  }>>;
   // Eternal/Infinity per-set amplifier stacks. Keyed by EternalStackKind.
   eternalStacks?: Partial<Record<import('./effects').EternalStackKind, number>>;
   // Per-set secondary keyword counters (gain/spend/cashout). One per set.
