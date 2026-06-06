@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 31;
+export const CURRENT_VERSION = 32;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -482,6 +482,18 @@ const migrations: Record<number, Migration> = {
     if (data.settings) {
       const s = data.settings as unknown as Record<string, unknown>;
       if (typeof s.coopNetplayEnabled !== 'boolean') s.coopNetplayEnabled = false;
+    }
+    return data;
+  },
+  32: (data) => {
+    // v32 retires legacy DFH Veil Rite carryover state and adds DFH attack-bonus runtime fields.
+    if (data.turn) {
+      const t = data.turn as unknown as Record<string, unknown>;
+      delete t.dfhVeilOblivionPerMark;
+      if (typeof t.dfhAngelResonantCashoutUsed !== 'boolean') t.dfhAngelResonantCashoutUsed = false;
+      if (!t.dfhVeilAttackBonusByDefinition || typeof t.dfhVeilAttackBonusByDefinition !== 'object') {
+        t.dfhVeilAttackBonusByDefinition = {};
+      }
     }
     return data;
   },

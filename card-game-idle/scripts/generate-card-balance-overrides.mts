@@ -18,7 +18,14 @@ type BalanceEntry =
 const defs = CardRegistry.getAll();
 const balance: Record<string, BalanceEntry> = {};
 
+function shouldMaterialize(definitionId: string): boolean {
+  // DFH cards are source-keep in CardRegistry and should not be mirrored here.
+  return !definitionId.startsWith('dfh-');
+}
+
 for (const def of defs) {
+  if (!shouldMaterialize(def.definitionId)) continue;
+
   switch (def.type) {
     case 'Seraphim': {
       balance[def.definitionId] = {

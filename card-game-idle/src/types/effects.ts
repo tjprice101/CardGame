@@ -54,6 +54,7 @@ export type ImmediateEffect =
   | { type: 'butterfly_release'; spend: number; oblivionPerSpectrum: number }
   | { type: 'seas_undertow_gain'; value: number }
   | { type: 'seas_foam_gain'; value: number }
+  | { type: 'seas_foam_spend'; value: number }
   | { type: 'seas_undertow_release'; spend: number; oblivionPerUndertow: number; foamPerSpent?: number }
   | {
       type: 'seas_deepwake_surge';
@@ -177,12 +178,18 @@ export type ImmediateEffect =
     }
   | { type: 'forge_unrecorded_ignite' }
   | { type: 'forge_crown_cashout'; oblivionPerCrown: number }
-  // ── Death-flamed Hell — Veil Rite + Pyre Ascendancy ───────────────────────
-  // Eternal and Infinite cards grant Veil Marks and tune reveal-time payout for base cards.
-  | { type: 'dfh_eternal_veil_rite'; marks: number; oblivionPerMark: number }
+  // ── Death-flamed Hell — Veil Marks + Pyre Ascendancy ──────────────────────
   | { type: 'dfh_veil_marks_amplify'; factor: number }
   | { type: 'dfh_veil_marks_transmute'; source: 'pyre' | 'crowns'; consume?: number; marksPerResource: number }
   | { type: 'dfh_veil_marks_cashout'; oblivionPerMark: number; consume?: number }
+  | {
+      type: 'dfh_veil_marks_attack_bonus';
+      perMark: number;
+      consumeMax: number;
+      mode?: 'synergized' | 'unsynergized' | 'any';
+      targetDefinitionId?: string;
+    }
+  | { type: 'dfh_angel_resonant_cashout'; oblivionPerMark: number; consume?: number }
   // Pyre Embers live on eternalStacks['pyre']; Cinder Crowns live on
   // secondaryCounters['pyre']. dfh_crown_cashout consumes Crowns for a
   // big oblivion+chain finale (the Eternal/Infinite tier signature).
@@ -235,6 +242,10 @@ export type EffectCondition =
   | { type: 'played_after_non_matching_element' }
   | { type: 'pyro_heat_gte'; value: number }
   | { type: 'trail_gte'; value: number }
+  | { type: 'eternal_seas_undertow_gte'; value: number }
+  | { type: 'eternal_seas_foam_gte'; value: number }
+  | { type: 'eternal_seas_tide_balance'; value: number }
+  | { type: 'eternal_seas_tide_imbalance_gte'; value: number }
   | { type: 'strain_gte'; value: number }
   | { type: 'strain_lte'; value: number }
   | { type: 'resonance_charge_gte'; value: number }
@@ -246,6 +257,7 @@ export type EffectCondition =
   | { type: 'equilibrium_sigils_gte'; value: number }
   | { type: 'eternal_stack_gte'; stack: EternalStackKind; value: number }
   | { type: 'set_secondary_gte'; kind: SetSecondaryKind; value: number }
+  | { type: 'dfh_veil_marks_gte'; value: number }
   | { type: 'starlight_gte'; value: number }
   | { type: 'dream_lattice_gte'; value: number }
 
@@ -263,6 +275,15 @@ export type CherubimPassiveEffect =
   | { type: 'cherubim_draw_per_card'; value: number }
   | { type: 'cherubim_resource_per_card'; resource: 'butterflySpectrum' | 'radiance' | 'trail' | 'strain'; value: number }
   | { type: 'cherubim_adjacent_seraphim_bonus'; value: number; bonusType: 'oblivion' | 'draw' }
+  | {
+      type: 'cherubim_seas_release_reaction';
+      oblivionGain?: number;
+      undertowGain?: number;
+      foamGain?: number;
+      draw?: number;
+      oncePerTurn?: boolean;
+      condition?: EffectCondition;
+    }
   | { type: 'cherubim_conditional_buff'; condition: EffectCondition; value: number }
   | { type: 'cherubim_patience_per_card'; value: number }
   | {

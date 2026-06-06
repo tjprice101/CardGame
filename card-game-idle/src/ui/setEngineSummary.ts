@@ -946,24 +946,23 @@ function buildEngineSnapshot(
       const embers = turn.eternalStacks?.pyre ?? 0;
       const crowns = turn.secondaryCounters?.pyre ?? 0;
       const veilMarks = turn.dfhVeilMarks ?? 0;
-      const veilRate = turn.dfhVeilOblivionPerMark ?? 0;
       return {
         key,
         label: meta.label,
         accent: meta.accent,
         compact: `Pyre Embers ${embers} | Cinder Crowns ${crowns} | Veil Marks ${veilMarks}`,
-        detail: 'Flip base cards, bank Embers and Crowns, then let Eternal Veil Marks supercharge the next reveal.',
-        tagline: 'Death-flamed Hell: base cards flip between veil and reveal while Eternal cards lace the reveal with Veil Marks.',
-        summary: 'Death-flamed Hell base cards run the flip loop, while Eternal and Infinite cards now share one overlay mechanic: Veil Marks that are consumed on your next base reveal for a single burst conversion.',
+        detail: 'Bank Embers and Crowns, then route Veil Marks into immediate cashouts or attack-linked spend turns.',
+        tagline: 'Death-flamed Hell: base pressure through Pyre and Crowns, capped by Veil Mark conversions.',
+        summary: 'Death-flamed Hell plays through two base resources (Pyre Embers and Cinder Crowns), then layers Veil Marks from higher-rarity cards into direct cashouts and attack-bonus burst windows.',
         metrics: [
           createMetric('Pyre Embers', embers, 'Primary fuel built by base Death-flamed Hell plays. Use it to keep the procession moving.'),
           createMetric('Cinder Crowns', crowns, 'Reveal-side pressure built by ritual setbacks and ritual payoffs. Spend it when the turn is ready to burst.'),
-          createMetric('Veil Marks', veilMarks, veilRate > 0 ? `Eternal/Infinite overlay for reveal turns. Current reveal payout is ${veilRate} Oblivion per mark.` : 'Earned by Eternal and Infinite cards, then consumed automatically on your next base reveal.'),
+          createMetric('Veil Marks', veilMarks, 'Eternal/Infinite overlay. Spend marks through DFH cashout effects or mark-fueled attack riders.'),
         ],
         nextSteps: [
           createStep('Flip a base card', embers >= 1, embers >= 1 ? 'A base card is ready to reveal.' : 'Play a base Death-flamed Hell card, then flip it from the hand.'),
           createStep('Bank Embers', embers >= 5, embers >= 5 ? 'The pyre has enough pressure to matter.' : 'Keep building Pyre Embers before you reveal the line.'),
-          createStep('Prime Veil Rite overlay', veilMarks >= 6, veilMarks >= 6 ? 'Veil Marks are loaded for a high-value reveal.' : 'Play an Eternal or Infinite Death-flamed Hell card to charge Veil Marks.'),
+          createStep('Prime Veil Marks', veilMarks >= 6, veilMarks >= 6 ? 'Veil Marks are loaded for a high-value spend turn.' : 'Play an Eternal or Infinite Death-flamed Hell card to charge Veil Marks.'),
         ],
       };
     }

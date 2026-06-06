@@ -243,6 +243,14 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ Heat`;
     case 'trail_gte':
       return `you have ${condition.value}+ Trail`;
+    case 'eternal_seas_undertow_gte':
+      return `you have ${condition.value}+ Undertow`;
+    case 'eternal_seas_foam_gte':
+      return `you have ${condition.value}+ Foam`;
+    case 'eternal_seas_tide_balance':
+      return `Undertow and Foam differ by ${condition.value} or less`;
+    case 'eternal_seas_tide_imbalance_gte':
+      return `Undertow and Foam differ by ${condition.value} or more`;
     case 'scar_count_gte':
       return `you have ${condition.value}+ Scar`;
     case 'equilibrium_sigils_gte':
@@ -267,6 +275,8 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ ${eternalStackName(condition.stack)}`;
     case 'set_secondary_gte':
       return `you have ${condition.value}+ ${setSecondaryName(condition.kind)}`;
+    case 'dfh_veil_marks_gte':
+      return `you have ${condition.value}+ Veil Marks`;
     case 'light_resonance_gte':
       return `you have ${condition.value}+ Cadence`;
     case 'black_glass_black_flame_gte':
@@ -424,6 +434,7 @@ function formatEffect(effect: CardEffect): string {
     }
     case 'seas_undertow_gain': return `Gain ${effect.value} Undertow`;
     case 'seas_foam_gain': return `Gain ${effect.value} Foam`;
+    case 'seas_foam_spend': return `Spend ${effect.value} Foam`;
     case 'seas_undertow_release': {
       const scope = effect.spend >= 9999 ? 'all' : `up to ${effect.spend}`;
       const foamText = (effect.foamPerSpent ?? 0) > 0 ? `; +${effect.foamPerSpent} Foam per Undertow spent` : '';
@@ -534,9 +545,6 @@ function formatEffect(effect: CardEffect): string {
     case 'forge_crown_cashout': {
       return `Cash out all Forge Crowns (+${effect.oblivionPerCrown} Oblivion per Crown)`;
     }
-    case 'dfh_eternal_veil_rite': {
-      return `Gain ${formatCount(effect.marks, 'Veil Mark')}; your next base reveal cashes all Veil Marks (+${effect.oblivionPerMark} Oblivion per mark)`;
-    }
     case 'dfh_veil_marks_amplify': {
       return `Amplify current Veil Marks by x${formatExactValue(effect.factor)}`;
     }
@@ -548,6 +556,15 @@ function formatEffect(effect: CardEffect): string {
     case 'dfh_veil_marks_cashout': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
       return `Cash out ${scope} Veil Marks (+${effect.oblivionPerMark} Oblivion per mark)`;
+    }
+    case 'dfh_veil_marks_attack_bonus': {
+      const mode = effect.mode ?? 'synergized';
+      const attackLabel = mode === 'any' ? 'any attack' : `${mode} attack`;
+      return `${attackLabel} consumes up to ${effect.consumeMax} Veil Marks (+${effect.perMark} Oblivion per mark consumed)`;
+    }
+    case 'dfh_angel_resonant_cashout': {
+      const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
+      return `If a DFH Angel is on board, cash out ${scope} Veil Marks (+${effect.oblivionPerMark} Oblivion per mark)`;
     }
     case 'dfh_crown_cashout': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -817,6 +834,12 @@ function collectMechanicNotes(card: CardDefinition): string[] {
     if (condition.type === 'pyro_heat_gte') turnResources.add('Heat');
     if (condition.type === 'radiance_gte' || condition.type === 'light_resonance_gte') turnResources.add('Radiance');
     if (condition.type === 'trail_gte') turnResources.add('Trail');
+    if (condition.type === 'eternal_seas_undertow_gte') turnResources.add('Undertow');
+    if (condition.type === 'eternal_seas_foam_gte') turnResources.add('Foam');
+    if (condition.type === 'eternal_seas_tide_balance' || condition.type === 'eternal_seas_tide_imbalance_gte') {
+      turnResources.add('Undertow');
+      turnResources.add('Foam');
+    }
     if (condition.type === 'strain_gte' || condition.type === 'strain_lte') turnResources.add('Strain');
     if (condition.type === 'equilibrium_sigils_gte') turnResources.add('Equilibrium Sigils');
     if (condition.type === 'resonance_charge_gte') turnResources.add('Resonance Charge');
@@ -867,7 +890,7 @@ function collectMechanicNotes(card: CardDefinition): string[] {
     }
     if (effect.type === 'black_glass_fracture_gain' || effect.type === 'black_glass_fracture_collapse') turnResources.add('Fracture');
     if (effect.type === 'seas_undertow_gain' || effect.type === 'seas_undertow_release') turnResources.add('Undertow');
-    if (effect.type === 'seas_foam_gain') turnResources.add('Foam');
+    if (effect.type === 'seas_foam_gain' || effect.type === 'seas_foam_spend') turnResources.add('Foam');
     if (effect.type === 'starlight_gain' || effect.type === 'wuas_nova_wish_burst') turnResources.add('Starlight Charges');
     if (effect.type === 'dream_lattice_gain' || effect.type === 'wuas_nova_wish_burst' || effect.type === 'wuas_infinite_starbirth') {
       turnResources.add('Dream Lattice');
@@ -877,7 +900,13 @@ function collectMechanicNotes(card: CardDefinition): string[] {
     if (effect.type === 'forge_imprint_gain' || effect.type === 'forge_imprint_spend_burst' || effect.type === 'forge_imprint_spend_recast') {
       turnResources.add('Imprint');
     }
-    if (effect.type === 'dfh_eternal_veil_rite' || effect.type === 'dfh_veil_marks_amplify' || effect.type === 'dfh_veil_marks_transmute' || effect.type === 'dfh_veil_marks_cashout') {
+    if (
+      effect.type === 'dfh_veil_marks_amplify'
+      || effect.type === 'dfh_veil_marks_transmute'
+      || effect.type === 'dfh_veil_marks_cashout'
+      || effect.type === 'dfh_veil_marks_attack_bonus'
+      || effect.type === 'dfh_angel_resonant_cashout'
+    ) {
       turnResources.add('Veil Marks');
     }
   }
