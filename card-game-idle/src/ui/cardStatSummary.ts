@@ -21,7 +21,7 @@ export interface CardSummaryOptions {
 }
 
 function formatExactValue(value: number): string {
-  if (Number.isInteger(value)) return `${value}.0`;
+  if (Number.isInteger(value)) return `${value}`;
 
   const rounded = value.toFixed(2);
   return rounded.endsWith('0') ? rounded.slice(0, -1) : rounded;
@@ -324,6 +324,7 @@ function formatEffect(effect: CardEffect): string {
     case 'prismatic_light_spend': return `Spend ${effect.value} Prismatic Light`;
     case 'resonance_charge_gain': return `Gain ${effect.value} Resonance Charge`;
     case 'resonance_charge_spend': return `Spend ${effect.value} Resonance Charge`;
+    case 'prismatic_charge_gain': return `Gain ${effect.value} Prism Charge${effect.value === 1 ? '' : 's'}`;
     case 'prismatic_charge_spend': return `Spend ${effect.value} Prism Charge${effect.value === 1 ? '' : 's'}`;
     case 'monochromatic_shards_gain': return `Gain ${effect.value} Monochromatic Shards`;
     case 'monochromatic_shards_spend': return `Spend ${effect.value} Monochromatic Shards`;
@@ -401,7 +402,7 @@ function formatEffect(effect: CardEffect): string {
     }
     case 'garden_wild_pollen_seed': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
-      return `Seed ${scope} ${setSecondaryName('garden')} (+${formatExactValue(effect.oblivionPerPollen)} Oblivion per pollen, +${formatExactValue(effect.scoreMultPerBloom)}% score per Bloom)`;
+      return `Seed ${scope} ${setSecondaryName('garden')} (+${formatExactValue(effect.oblivionPerPollen)} Oblivion per pollen, +${Math.round(effect.scoreMultPerBloom * 100)}% score per Bloom)`;
     }
     case 'flutter_wing_pulse_amplify': {
       const scope = effect.consume !== undefined ? `up to ${effect.consume}` : 'all';
@@ -413,7 +414,7 @@ function formatEffect(effect: CardEffect): string {
       if ((effect.spectrumPerResonance ?? 0) > 0) parts.push(`+${formatExactValue(effect.spectrumPerResonance ?? 0)} Spectrum per resonance`);
       if ((effect.oblivionPerResonance ?? 0) > 0) parts.push(`+${formatExactValue(effect.oblivionPerResonance ?? 0)} Oblivion per resonance`);
       if ((effect.oblivionPerFormation ?? 0) > 0) parts.push(`+${formatExactValue(effect.oblivionPerFormation ?? 0)} Oblivion per Formation`);
-      if ((effect.drawPerResonance ?? 0) > 0) parts.push(`+${formatExactValue(effect.drawPerResonance ?? 0)} draw per resonance`);
+      if ((effect.drawPerResonance ?? 0) > 0) { const drv = effect.drawPerResonance ?? 0; parts.push(Number.isInteger(drv) ? `+${drv} draw per resonance` : `+1 draw every ${Math.round(1 / drv)} resonances`); }
       if (effect.empowerNext) parts.push('empower your next card');
       return `Harmonize ${scope} ${eternalStackName('flutter')} (${parts.join(', ')})`;
     }
@@ -424,7 +425,7 @@ function formatEffect(effect: CardEffect): string {
         `+${formatExactValue(effect.oblivionPerSpectrum)} Oblivion per current Spectrum`,
         `+${formatExactValue(effect.oblivionPerFormation)} Oblivion per Formation`,
       ];
-      if ((effect.drawPerFormation ?? 0) > 0) parts.push(`+${formatExactValue(effect.drawPerFormation ?? 0)} draw per Formation`);
+      if ((effect.drawPerFormation ?? 0) > 0) { const dfv = effect.drawPerFormation ?? 0; parts.push(Number.isInteger(dfv) ? `+${dfv} draw per Formation` : `+1 draw every ${Math.round(1 / dfv)} Formations`); }
       if ((effect.empowerAtFormation ?? 0) > 0) parts.push(`empower your next card at Formation ${effect.empowerAtFormation}+`);
       return `Apex ${scope} ${eternalStackName('flutter')} (${parts.join(', ')})`;
     }
@@ -582,7 +583,7 @@ function formatEffect(effect: CardEffect): string {
     }
     case 'wuas_infinite_starbirth': {
       const parts: string[] = [`Ob = Seraphim × Starlight × ${effect.oblivionPerSeraphimPerStarlight}`];
-      if ((effect.drawPerDream ?? 0) > 0) parts.push(`draw ${effect.drawPerDream} per Dream Lattice`);
+      if ((effect.drawPerDream ?? 0) > 0) { const dpd = effect.drawPerDream ?? 0; parts.push(Number.isInteger(dpd) ? `+${dpd} draw per Dream Lattice` : `+1 draw per ${Math.round(1 / dpd)} Dream Lattice`); }
       return `Infinite Starbirth (${parts.join('; ')})`;
     }
     default:
@@ -601,9 +602,9 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
   switch (effect.type) {
     case 'cherubim_oblivion_per_card': return `+${effect.value} Oblivion per card played`;
     case 'cherubim_ophanim_bonus': return `Ophanim plays gain +${effect.value} Oblivion`;
-    case 'cherubim_seraphim_amp': return `Seraphim bonuses are amplified by +${effect.value}`;
+    case 'cherubim_seraphim_amp': return `Seraphim bonuses are amplified by +${Math.round(effect.value * 100)}%`;
     case 'cherubim_pyro_heat_gain': return `Gain ${effect.value} Heat per card played`;
-    case 'cherubim_draw_per_card': return `Draw ${formatCount(effect.value, 'card')} per card played`;
+    case 'cherubim_draw_per_card': { const cdv = effect.value; return Number.isInteger(cdv) ? `+${cdv} draw per card played` : `+1 draw every ${Math.round(1 / cdv)} cards played`; }
     case 'cherubim_resource_per_card': {
       const resourceLabel =
         effect.resource === 'butterflySpectrum' ? 'Spectrum'
@@ -664,7 +665,7 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
     // Abyssal Forge — recast-aware passives
     case 'cherubim_charge_per_n_cards': return `Gain 1 Reforge Charge every ${effect.n} cards you play`;
     case 'cherubim_temper_on_next_seraphim': return `Auto-Temper the next Seraphim you play (+${Math.round(effect.factor * 100)}%)`;
-    case 'cherubim_pearl_per_recast_bonus': return `+${effect.value} extra Pearl per recast event`;
+    case 'cherubim_pearl_per_recast_bonus': { const prv = effect.value; return Number.isInteger(prv) ? `+${prv} extra Pearl per recast event` : `+1 extra Pearl every ${Math.round(1 / prv)} recast events`; }
     case 'cherubim_recast_oblivion_bonus': return `+${effect.value} Oblivion per recast event`;
     case 'cherubim_seraphim_recast_amp': return `Seraphim recasts fire at +${Math.round(effect.value * 100)}% power`;
     case 'cherubim_seas_release_reaction': {

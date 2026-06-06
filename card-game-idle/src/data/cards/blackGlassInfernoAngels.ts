@@ -7,12 +7,13 @@ export const blackGlassInfernoAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Vaelthorax the Undimmed',
-    description: 'On summon: Draw 2 cards; +180 Oblivion. After 4 cards played: Draw 2 cards; +240 Oblivion. While on board: +20 Oblivion per card played while on board',
+    description: 'On summon: Draw 2 cards; Salvage any 1 card; +180 Oblivion. After 4 cards played: Draw 2 cards; +240 Oblivion. While on board: +20 Oblivion per card played while on board',
     artKey: 'bgi_angel_vaelthorax_undimmed',
     summonCost: ['bgi-ser-blackglass-cathedral', 'bgi-ser-ashen-helix'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
       { type: 'draw', value: 2 },
+      { type: 'salvage_any' },
       { type: 'oblivion_flat', value: 180 }],
     activatedAbility: {
       name: 'Name of Cinders',
@@ -62,10 +63,11 @@ export const blackGlassInfernoAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Open Wound Doctrine',
       cardsPlayedRequirement: 4,
-      description: '+220 Oblivion; Draw 2 cards',
+      description: '+220 Oblivion; Draw 2 cards; Gain 2 White Flame',
       effects: [
         { type: 'oblivion_flat', value: 220 },
-        { type: 'draw', value: 2 }],
+        { type: 'draw', value: 2 },
+        { type: 'black_glass_white_flame_gain', value: 2 }],
     },
     attacks: {
       primary: {
@@ -143,12 +145,13 @@ export const blackGlassInfernoAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Cinderborn Matriarch',
-    description: 'On summon: Draw 2 cards; +160 Oblivion. After 4 cards played: Search your deck for 1 matching Cherubim or Ophanim; Draw 1 card. While on board: +18 Oblivion per card played while on board',
+    description: 'On summon: Draw 2 cards; Gain 3 Black Flame; +160 Oblivion. After 4 cards played: Search your deck for 1 matching Cherubim or Ophanim; Draw 1 card. While on board: +18 Oblivion per card played while on board',
     artKey: 'bgi_angel_cinderborn_matriarch',
     summonCost: ['bgi-ser-mourning-crest', 'bgi-ser-void-mandible-archon'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
     onSummonEffects: [
       { type: 'draw', value: 2 },
+      { type: 'black_glass_black_flame_gain', value: 3 },
       { type: 'oblivion_flat', value: 160 }],
     activatedAbility: {
       name: 'Pactfire Rally',

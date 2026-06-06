@@ -2378,8 +2378,8 @@ function getPyroFurnaceAttackMultiplier(s: Store, def: CardDefinition): number {
   if (def.element !== 'Fire') return 1;
   ensurePyroTurnState(s.turn);
   const heat = Math.max(0, s.turn.pyroHeat ?? 0);
-  // Fire attacks gain +2.5% per Heat, capped at +75%.
-  return 1 + Math.min(0.75, heat * 0.025);
+  // Fire attacks gain +3% per Heat, capped at +75%.
+  return 1 + Math.min(0.75, heat * 0.03);
 }
 
 function consumePyroHeatAttackAmplifier(s: Store, def: CardDefinition): number {

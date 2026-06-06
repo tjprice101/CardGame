@@ -176,7 +176,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-soot-veiled-soldier',
     name: 'Soot-veiled Soldier',
-    description: 'On play: Gain 3 Pyre Embers; if this is your first Seraphim on board, gain 1 Cinder Crown. While on board: +12 Oblivion per DFH card played while active',
+    description: 'On play: Gain 3 Pyre Embers; If you control 1+ active Seraphim, Gain 1 Cinder Crown. While on board: +12 Oblivion per card played while active',
     rarity: 'Common',
     artKey: 'dfh_ser_soot_veiled_soldier',
     bonusType: 'oblivion_per_card',
@@ -196,7 +196,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-last-breath-standard-bearer',
     name: 'Last-breath Standard Bearer',
-    description: 'On play: Gain 1 Pyre Ember; Gain 1 Cinder Crown. While on board: +22 Oblivion per DFH card played while active',
+    description: 'On play: Gain 1 Pyre Ember; Gain 1 Cinder Crown. While on board: +22 Oblivion per card played while active',
     rarity: 'Common',
     artKey: 'dfh_ser_last_breath_standard_bearer',
     bonusType: 'oblivion_per_card',
@@ -209,7 +209,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-lullaby-forgot-censer',
     name: 'Lullaby-Forgot Censer',
-    description: 'On play: Gain 2 Pyre Embers; Discard 1 card, then draw 1 card. While on board: +16 Oblivion per DFH card played while active',
+    description: 'On play: Gain 2 Pyre Embers; Discard 1 card, then draw 1 card. While on board: +16 Oblivion per card played while active',
     rarity: 'Common',
     artKey: 'dfh_ser_lullaby_forgot_censer',
     bonusType: 'oblivion_per_card',
@@ -224,12 +224,12 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-ash-marrow-reaver',
     name: 'Ash-marrow Reaver',
-    description: 'On play: Gain 2 Pyre Embers; Gain 1 Cinder Crown. While on board: +18 Oblivion per DFH card played while active',
+    description: 'On play: Gain 2 Pyre Embers; Discard 1 card, then draw 1 card. While on board: +18 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'dfh_ser_ash_marrow_reaver',
     bonusType: 'oblivion_per_card',
     bonusValue: 18,
-    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'set_secondary_gain', kind: 'pyre', value: 1 }],
+    onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'discard_draw', discard: 1, draw: 1 }],
     unsynergizedName: 'Marrow Rend', synergizedName: 'Ash-Marrow Verdict',
     unsynergizedBase: 420, synergizedBase: 760,
     unsynergizedCooldown: 4, synergizedCooldown: 8,
@@ -237,7 +237,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-choirhouse-cantor',
     name: 'Choirhouse Cantor',
-    description: 'On play: Gain 4 Pyre Embers. While on board: +34 Oblivion per DFH card played while active',
+    description: 'On play: Gain 4 Pyre Embers. While on board: +34 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'dfh_ser_choirhouse_cantor',
     bonusType: 'oblivion_per_card',
@@ -250,7 +250,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-pyrelungs-vassal',
     name: "Pyrelung's Vassal",
-    description: 'On play: Gain 2 Pyre Embers; Gain 2 Cinder Crowns. While on board: +20 Oblivion per DFH card played while active',
+    description: 'On play: Gain 2 Pyre Embers; Gain 2 Cinder Crowns. While on board: +20 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'dfh_ser_pyrelungs_vassal',
     bonusType: 'oblivion_per_card',
@@ -263,7 +263,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-sablecrown-herald',
     name: 'Sablecrown Herald',
-    description: 'On play: Gain 5 Pyre Embers; Gain 2 Cinder Crowns. While on board: +24 Oblivion per DFH card played while active',
+    description: 'On play: Gain 5 Pyre Embers; Gain 2 Cinder Crowns. While on board: +24 Oblivion per card played while active',
     rarity: 'Epic',
     artKey: 'dfh_ser_sablecrown_herald',
     bonusType: 'oblivion_per_card',
@@ -276,7 +276,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-ser-khorr-vael-no-face',
     name: 'Khorr-vael, The No-face',
-    description: 'On play: Gain 5 Pyre Embers; Gain 3 Cinder Crowns. While on board: +90 Oblivion per DFH card played while active',
+    description: 'On play: Gain 5 Pyre Embers; Gain 3 Cinder Crowns. While on board: +90 Oblivion per card played while active',
     rarity: 'Legendary',
     artKey: 'dfh_ser_khorr_vael_no_face',
     bonusType: 'oblivion_per_card',
@@ -292,7 +292,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-halo-cracked-novice',
     name: 'Halo-cracked Novice',
-    description: 'On play: Gain 1 Pyre Ember. While on board: Buffs Seraphim and Angel attacks: base +18; first DFH Ophanim each turn gains +1 Pyre Ember.',
+    description: 'On play: Gain 1 Pyre Ember; If you have played 1+ cards this turn, Gain 1 Pyre Ember. While on board: Buffs Seraphim and Angel attacks: base +18',
     rarity: 'Common',
     artKey: 'dfh_cher_halo_cracked_novice',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 18 }],
@@ -308,7 +308,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-marrow-pilgrim',
     name: 'Marrow-Pilgrim',
-    description: 'On play: Gain 1 Pyre Ember; Gain 1 Cinder Crown. While on board: Buffs Seraphim and Angel attacks: base +20. If you discard this turn, gain 1 Cinder Crown.',
+    description: 'On play: Gain 1 Pyre Ember; Gain 1 Cinder Crown; If you have played 1+ cards this turn, Gain 1 Cinder Crown. While on board: Buffs Seraphim and Angel attacks: base +20',
     rarity: 'Common',
     artKey: 'dfh_cher_marrow_pilgrim',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 20 }],
@@ -334,7 +334,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-stigmata-flame-confessor',
     name: 'Stigmata-flame Confessor',
-    description: 'On play: Gain 2 Pyre Embers; Gain 1 Cinder Crown. While on board: Buffs Seraphim and Angel attacks: base +28. If you gained Veil Marks this turn, gain 1 Pyre Ember.',
+    description: 'On play: Gain 2 Pyre Embers; Gain 1 Cinder Crown; If you have 1+ Veil Marks, Gain 1 Pyre Ember. While on board: Buffs Seraphim and Angel attacks: base +28',
     rarity: 'Rare',
     artKey: 'dfh_cher_stigmata_flame_confessor',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 28 }],
@@ -351,12 +351,13 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-reliquary-of-the-last-tongue',
     name: 'Reliquary of the Last Tongue',
-    description: 'On play: Gain 5 Pyre Embers. While on board: Buffs Seraphim and Angel attacks: base +30. If you control 2+ DFH Ophanim, gain 1 Cinder Crown.',
+    description: 'On play: Gain 4 Pyre Embers; Discard 1 card, then draw 1 card; If you have played 2+ cards this turn, Gain 1 Cinder Crown. While on board: Buffs Seraphim and Angel attacks: base +30',
     rarity: 'Rare',
     artKey: 'dfh_cher_reliquary_of_the_last_tongue',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 30 }],
     onPlayEffects: [
-      { type: 'eternal_stack_gain', stack: 'pyre', value: 5 },
+      { type: 'eternal_stack_gain', stack: 'pyre', value: 4 },
+      { type: 'discard_draw', discard: 1, draw: 1 },
       {
         type: 'conditional',
         condition: { type: 'cards_played_gte', value: 2 },
@@ -367,7 +368,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-severed-sanctity-hierophant',
     name: 'Severed-sanctity Hierophant',
-    description: 'On play: Gain 2 Pyre Embers; Gain 2 Cinder Crowns. While on board: Buffs Seraphim and Angel attacks: base +32. Crown cashouts draw 1 card.',
+    description: 'On play: Gain 2 Pyre Embers; Gain 2 Cinder Crowns; Draw 1 card. While on board: Buffs Seraphim and Angel attacks: base +32',
     rarity: 'Rare',
     artKey: 'dfh_cher_severed_sanctity_hierophant',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 32 }],
@@ -380,7 +381,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-cathedral-anchorite',
     name: 'Cathedral Anchorite',
-    description: 'On play: Gain 3 Pyre Embers; Gain 1 Cinder Crown. While on board: Buffs Seraphim and Angel attacks: base +44. If you have 4+ Crowns, cooldown -1.',
+    description: 'On play: Gain 3 Pyre Embers; Gain 1 Cinder Crown. While on board: Buffs Seraphim and Angel attacks: base +44, cooldown -1, when you have 4+ Cinder Crowns',
     rarity: 'Epic',
     artKey: 'dfh_cher_cathedral_anchorite',
     effects: [
@@ -397,7 +398,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-othraks-confessor',
     name: "Othrak's Confessor",
-    description: 'On play: Gain 4 Pyre Embers; Gain 2 Cinder Crowns. While on board: Buffs Seraphim and Angel attacks: base +42. Spend 2 Crowns to gain 3 Embers.',
+    description: 'On play: Gain 4 Pyre Embers; Gain 2 Cinder Crowns; Spend 2 Cinder Crowns; Gain 3 Pyre Embers. While on board: Buffs Seraphim and Angel attacks: base +42',
     rarity: 'Epic',
     artKey: 'dfh_cher_othraks_confessor',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 42 }],
@@ -411,7 +412,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-cher-cinder-saint-othrak',
     name: 'Cinder-saint, Othrak',
-    description: 'On play: Gain 4 Pyre Embers; Gain 2 Cinder Crowns. While on board: Buffs Seraphim and Angel attacks: base +60, cooldown -1. On Angel summon, gain 2 Crowns.',
+    description: 'On play: Gain 4 Pyre Embers; Gain 2 Cinder Crowns. While on board: Buffs Seraphim and Angel attacks: base +60, cooldown -1',
     rarity: 'Legendary',
     artKey: 'dfh_cher_cinder_saint_othrak',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 60, cooldownDeltaCards: -1 }],
@@ -433,7 +434,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-ash-petal-strewer',
     name: 'Ash-petal Strewer',
-    description: 'Gain 3 Pyre Embers. If you control another DFH Ophanim, gain 1 Cinder Crown.',
+    description: 'Gain 3 Pyre Embers; If you have played 1+ cards this turn, Gain 1 Cinder Crown',
     rarity: 'Common',
     artKey: 'dfh_oph_ash_petal_strewer',
     effects: [
@@ -448,7 +449,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-bell-ringer-of-the-hollow',
     name: 'Bell-ringer of the Hollow',
-    description: 'Gain 1 Pyre Ember; Gain 1 Cinder Crown. If you have 3+ Embers, draw 1 then discard 1.',
+    description: 'Gain 1 Pyre Ember; Gain 1 Cinder Crown; If you have 3+ Pyre Embers, Discard 1 card, then draw 1 card',
     rarity: 'Common',
     artKey: 'dfh_oph_bell_ringer_of_the_hollow',
     effects: [
@@ -464,7 +465,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-bridegrooms-outrider',
     name: "Bridegroom's Outrider",
-    description: 'Gain 2 Pyre Embers. Salvage 1 DFH Ophanim from discard.',
+    description: 'Gain 2 Pyre Embers; Salvage 1 card matching Ophanim',
     rarity: 'Common',
     artKey: 'dfh_oph_bridegrooms_outrider',
     effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'salvage_by_type', filter: ['Ophanim'] }],
@@ -472,7 +473,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-empty-aisle-walker',
     name: 'Empty-aisle Walker',
-    description: 'Gain 2 Pyre Embers; Gain 1 Cinder Crown. Look at top 2, keep 1, discard 1.',
+    description: 'Gain 2 Pyre Embers; Gain 1 Cinder Crown; Look at the top 2 cards, take 1 card, put 1 card on the bottom, and discard the rest',
     rarity: 'Common',
     artKey: 'dfh_oph_empty_aisle_walker',
     effects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'set_secondary_gain', kind: 'pyre', value: 1 }, { type: 'look_top_take_drop', look: 2, take: 1, drop: 1 }],
@@ -488,11 +489,12 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-veiled-censer-bearer',
     name: 'Veiled Censer-bearer',
-    description: 'Gain 3 Pyre Embers. If your hand is stocked, gain 1 Cinder Crown.',
+    description: 'Gain 2 Pyre Embers; Draw 1 card; If you have played 1+ cards this turn, Gain 1 Cinder Crown',
     rarity: 'Common',
     artKey: 'dfh_oph_veiled_censer_bearer',
     effects: [
-      { type: 'eternal_stack_gain', stack: 'pyre', value: 3 },
+      { type: 'eternal_stack_gain', stack: 'pyre', value: 2 },
+      { type: 'draw', value: 1 },
       {
         type: 'conditional',
         condition: { type: 'cards_played_gte', value: 1 },
@@ -503,12 +505,13 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-wickless-litany',
     name: 'Wickless Litany',
-    description: 'Gain 1 Pyre Ember; Gain 2 Cinder Crowns. If you have 4+ Crowns, gain 2 Pyre Embers.',
+    description: 'Gain 1 Pyre Ember; Gain 2 Cinder Crowns; Salvage 1 card matching Seraphim; If you have 4+ Cinder Crowns, Gain 2 Pyre Embers',
     rarity: 'Common',
     artKey: 'dfh_oph_wickless_litany',
     effects: [
       { type: 'eternal_stack_gain', stack: 'pyre', value: 1 },
       { type: 'set_secondary_gain', kind: 'pyre', value: 2 },
+      { type: 'salvage_by_type', filter: ['Seraphim'] },
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'pyre', value: 4 },
@@ -519,7 +522,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-faceless-bridesmaid-choir',
     name: 'Faceless Bridesmaid Choir',
-    description: 'Gain 4 Pyre Embers; Gain 1 Cinder Crown. If a DFH Cherubim is on board, gain +1 Crown.',
+    description: 'Gain 4 Pyre Embers; Gain 1 Cinder Crown; If you control 1+ active Cherubim, Gain 1 Cinder Crown',
     rarity: 'Rare',
     artKey: 'dfh_oph_faceless_bridesmaid_choir',
     effects: [
@@ -535,7 +538,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-funeral-march-drummer',
     name: 'Funeral-march Drummer',
-    description: 'Gain 3 Pyre Embers. If you played another card this turn, gain 2 more Embers.',
+    description: 'Gain 3 Pyre Embers; If you have played 1+ cards this turn, Gain 2 Pyre Embers',
     rarity: 'Rare',
     artKey: 'dfh_oph_funeral_march_drummer',
     effects: [
@@ -550,7 +553,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-hollowkings-vacant-page',
     name: "Hollowking's Vacant Page",
-    description: 'Gain 3 Pyre Embers; Gain 2 Cinder Crowns. If you control a DFH Seraphim, draw 1.',
+    description: 'Gain 3 Pyre Embers; Gain 2 Cinder Crowns; If you control 1+ active Seraphim, Draw 1 card',
     rarity: 'Rare',
     artKey: 'dfh_oph_hollowkings_vacant_page',
     effects: [
@@ -566,7 +569,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-procession-lantern-custodian',
     name: 'Procession-lantern Custodian',
-    description: 'Gain 2 Pyre Embers; Gain 1 Cinder Crown. If you have 2+ Crowns, salvage 1 DFH Cherubim.',
+    description: 'Gain 2 Pyre Embers; Gain 1 Cinder Crown; If you have 2+ Cinder Crowns, Salvage 1 card matching Cherubim',
     rarity: 'Rare',
     artKey: 'dfh_oph_procession_lantern_custodian',
     effects: [
@@ -582,7 +585,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-sablecrowns-letter-bearer',
     name: "Sablecrown's Letter-bearer",
-    description: 'Gain 1 Pyre Ember; Gain 3 Cinder Crowns. Spend 1 Crown to draw 1 card.',
+    description: 'Gain 1 Pyre Ember; Gain 3 Cinder Crowns; Spend 1 Cinder Crown; Draw 1 card',
     rarity: 'Rare',
     artKey: 'dfh_oph_sablecrowns_letter_bearer',
     effects: [
@@ -595,7 +598,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-veil-stitcher',
     name: 'Veil-stitcher',
-    description: 'Gain 2 Pyre Embers; Discard 1 card, then draw 2 cards. If a DFH Angel is on board, gain 1 Crown.',
+    description: 'Gain 2 Pyre Embers; Discard 1 card, then draw 2 cards; If you control 1+ active Seraphim, Gain 1 Cinder Crown',
     rarity: 'Rare',
     artKey: 'dfh_oph_veil_stitcher',
     effects: [
@@ -611,12 +614,13 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-choirhouse-conductor',
     name: 'Choirhouse Conductor',
-    description: 'Gain 5 Pyre Embers; Gain 1 Cinder Crown. If you have 5+ Crowns, gain 2 Pyre Embers.',
+    description: 'Gain 4 Pyre Embers; Gain 1 Cinder Crown; Draw 1 card; If you have 5+ Cinder Crowns, Gain 2 Pyre Embers',
     rarity: 'Epic',
     artKey: 'dfh_oph_choirhouse_conductor',
     effects: [
-      { type: 'eternal_stack_gain', stack: 'pyre', value: 5 },
+      { type: 'eternal_stack_gain', stack: 'pyre', value: 4 },
       { type: 'set_secondary_gain', kind: 'pyre', value: 1 },
+      { type: 'draw', value: 1 },
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'pyre', value: 5 },
@@ -627,7 +631,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-hollow-throne-coronation',
     name: 'Hollow-throne Coronation',
-    description: 'Gain 4 Pyre Embers; Gain 2 Cinder Crowns. Spend up to 2 Crowns: gain 2 Embers per Crown spent.',
+    description: 'Gain 4 Pyre Embers; Gain 2 Cinder Crowns; Spend 2 Cinder Crowns',
     rarity: 'Epic',
     artKey: 'dfh_oph_hollow_throne_coronation',
     effects: [
@@ -640,11 +644,12 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-pyrelungs-exhalation',
     name: "Pyrelung's Exhalation",
-    description: 'Gain 6 Pyre Embers. If you have 8+ Embers after this resolves, gain 1 Crown.',
+    description: 'Gain 5 Pyre Embers; Discard 1 card, then draw 1 card; If you have 8+ Pyre Embers, Gain 1 Cinder Crown',
     rarity: 'Epic',
     artKey: 'dfh_oph_pyrelungs_exhalation',
     effects: [
-      { type: 'eternal_stack_gain', stack: 'pyre', value: 6 },
+      { type: 'eternal_stack_gain', stack: 'pyre', value: 5 },
+      { type: 'discard_draw', discard: 1, draw: 1 },
       {
         type: 'conditional',
         condition: { type: 'eternal_stack_gte', stack: 'pyre', value: 8 },
@@ -655,7 +660,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-wedding-that-wasnt-cantor',
     name: "Wedding-that-wasn't Cantor",
-    description: 'Gain 4 Pyre Embers; Gain 3 Cinder Crowns. If you control a DFH Cherubim and Seraphim, gain +1 Crown.',
+    description: 'Gain 4 Pyre Embers; Gain 3 Cinder Crowns; If you control 1+ active Seraphim, Gain 1 Cinder Crown',
     rarity: 'Epic',
     artKey: 'dfh_oph_wedding_that_wasnt_cantor',
     effects: [
@@ -671,7 +676,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-oph-wedding-procession-living-world',
     name: 'The Wedding Procession Into the Living World',
-    description: 'Gain 8 Pyre Embers; Gain 3 Cinder Crowns. If you have 10+ Embers, cash out up to 3 Crowns (+110 per crown).',
+    description: 'Gain 8 Pyre Embers; Gain 3 Cinder Crowns; If you have 10+ Pyre Embers, Cash out up to 3 Cinder Crowns (+110 Oblivion per crown)',
     rarity: 'Legendary',
     artKey: 'dfh_oph_wedding_procession_living_world',
     effects: [
@@ -690,7 +695,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'dfh-ang-mournshade-the-wickless',
     name: 'Mournshade, The Wickless',
-    description: 'On summon: Gain 4 Pyre Embers; Gain 2 Cinder Crowns. After 2 cards played: Gain 2 Pyre Embers and draw 1 card. While on board: +0.09 Oblivion per card played while on board',
+    description: 'On summon: Gain 4 Pyre Embers; Gain 2 Cinder Crowns. After 2 cards played: Gain 3 Pyre Embers; If you have played 1+ cards this turn, Gain 1 Cinder Crown. While on board: +9 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_mournshade_the_wickless',
     summonCost: ['dfh-ser-soot-veiled-soldier', 'dfh-ser-ash-marrow-reaver'],
@@ -698,9 +703,10 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Wickless Pulse',
       cardsPlayedRequirement: 2,
-      description: 'Gain 3 Pyre Embers; if you discarded this turn, gain 1 Cinder Crown',
+      description: 'Gain 3 Pyre Embers; Discard 1 card, then draw 1 card; If you have played 1+ cards this turn, Gain 1 Cinder Crown',
       effects: [
         { type: 'eternal_stack_gain', stack: 'pyre', value: 3 },
+        { type: 'discard_draw', discard: 1, draw: 1 },
         {
           type: 'conditional',
           condition: { type: 'cards_played_gte', value: 1 },
@@ -714,12 +720,12 @@ const baseAngels: AngelDefinition[] = [
     primaryCosts: [{ type: 'discard_from_hand', value: 1 }],
     exaltedCosts: [{ type: 'discard_from_hand', value: 2 }],
     primaryScaling: 1.35, exaltedScaling: 1.53,
-    baseStats: { basePower: 92, bonusType: 'oblivion_per_card', bonusValue: 0.09 },
+    baseStats: { basePower: 92, bonusType: 'oblivion_per_card', bonusValue: 9 },
   }),
   buildAngel({
     definitionId: 'dfh-ang-pyrelung-the-breathless',
     name: 'Pyrelung, The Breathless',
-    description: 'On summon: Gain 5 Pyre Embers; Gain 3 Cinder Crowns. After 3 cards played: Gain 4 Pyre Embers and 1 Cinder Crown. While on board: +62 Oblivion per card played while on board',
+    description: 'On summon: Gain 5 Pyre Embers; Gain 3 Cinder Crowns. After 3 cards played: Gain 4 Pyre Embers; If you have 8+ Pyre Embers, Gain 1 Cinder Crown. While on board: +62 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_pyrelung_the_breathless',
     summonCost: ['dfh-ser-pyrelungs-vassal', 'dfh-ser-choirhouse-cantor'],
@@ -727,7 +733,7 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Breathless Exhale',
       cardsPlayedRequirement: 3,
-      description: 'Gain 4 Pyre Embers; if you have 8+ Pyre Embers, gain 1 Cinder Crown',
+      description: 'Gain 4 Pyre Embers; If you have 8+ Pyre Embers, Gain 1 Cinder Crown',
       effects: [
         { type: 'eternal_stack_gain', stack: 'pyre', value: 4 },
         {
@@ -748,7 +754,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'dfh-ang-sablecrown-the-unnamed',
     name: 'Sablecrown, The Unnamed',
-    description: 'On summon: Gain 6 Pyre Embers; Gain 5 Cinder Crowns. After 3 cards played: Cash out up to 8 Cinder Crowns (+130 Oblivion per crown). While on board: +0.11 Oblivion per card played while on board',
+    description: 'On summon: Gain 6 Pyre Embers; Gain 5 Cinder Crowns. After 3 cards played: Cash out up to 8 Cinder Crowns (+130 Oblivion per crown). While on board: +11 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_sablecrown_the_unnamed',
     summonCost: ['dfh-ser-sablecrown-herald', 'dfh-ser-ash-marrow-reaver'],
@@ -756,8 +762,11 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Unnamed Coronation',
       cardsPlayedRequirement: 3,
-      description: 'Cash out up to 8 Cinder Crowns (+130 Oblivion per crown)',
-      effects: [{ type: 'dfh_crown_cashout', oblivionPerCrown: 130, consume: 8 }],
+      description: 'Transmute up to 6 Cinder Crowns into Veil Marks; Cash out up to 8 Cinder Crowns (+130 Oblivion per crown)',
+      effects: [
+        { type: 'dfh_veil_marks_transmute', source: 'crowns', consume: 6, marksPerResource: 1 },
+        { type: 'dfh_crown_cashout', oblivionPerCrown: 130, consume: 8 },
+      ],
     },
     primaryName: 'Sable Edict', exaltedName: 'Unnamed Verdict',
     primaryBase: 940, exaltedBase: 1580,
@@ -765,12 +774,12 @@ const baseAngels: AngelDefinition[] = [
     primaryCosts: [{ type: 'discard_from_hand', value: 1 }],
     exaltedCosts: [{ type: 'discard_from_hand', value: 2 }],
     primaryScaling: 1.37, exaltedScaling: 1.55,
-    baseStats: { basePower: 104, bonusType: 'oblivion_per_card', bonusValue: 0.11 },
+    baseStats: { basePower: 104, bonusType: 'oblivion_per_card', bonusValue: 11 },
   }),
   buildAngel({
     definitionId: 'dfh-ang-veil-iorn-the-faceless-bride',
     name: 'Veil-iorn, The Faceless Bride',
-    description: 'On summon: Gain 6 Pyre Embers; Gain 4 Cinder Crowns. After 4 cards played: gain 5 Pyre Embers and 2 Cinder Crowns. While on board: +72 Oblivion per card played while on board',
+    description: 'On summon: Gain 6 Pyre Embers; Gain 4 Cinder Crowns. After 4 cards played: Gain 5 Pyre Embers; Gain 2 Cinder Crowns. While on board: +72 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_veil_iorn_the_faceless_bride',
     summonCost: ['dfh-ser-khorr-vael-no-face', 'dfh-ser-sablecrown-herald'],
@@ -798,7 +807,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'dfh-ang-council-of-the-seven-choirs',
     name: 'Council of the Seven Choirs',
-    description: 'On summon: Gain 8 Pyre Embers; Gain 6 Cinder Crowns. After 4 cards played: Cash out up to 12 Cinder Crowns (+170 Oblivion per crown). While on board: +0.14 Oblivion per card played while on board',
+    description: 'On summon: Gain 8 Pyre Embers; Gain 6 Cinder Crowns. After 4 cards played: Cash out up to 12 Cinder Crowns (+170 Oblivion per crown). While on board: +14 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_council_of_the_seven_choirs',
     summonCost: ['dfh-ser-khorr-vael-no-face', 'dfh-ser-pyrelungs-vassal'],
@@ -815,7 +824,7 @@ const baseAngels: AngelDefinition[] = [
     primaryCosts: [{ type: 'discard_from_hand', value: 1 }],
     exaltedCosts: [{ type: 'discard_from_hand', value: 2 }],
     primaryScaling: 1.40, exaltedScaling: 1.58,
-    baseStats: { basePower: 124, bonusType: 'oblivion_per_card', bonusValue: 0.14 },
+    baseStats: { basePower: 124, bonusType: 'oblivion_per_card', bonusValue: 14 },
   })];
 
 // Eternal (4)
@@ -823,11 +832,11 @@ const eternalCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-et-skull-ceiling-garrison',
     name: 'Skull-ceiling Garrison',
-    description: 'On play: Gain 6 Pyre Embers and transmute up to 6 Embers into Veil Marks. While on board: +0.13 Oblivion per card played while active. Synergized attack consumes Veil Marks for bonus damage.',
+    description: 'On play: Gain 6 Pyre Embers; Transmute up to 6 Pyre Embers into Veil Marks (1 marks each); synergized attack consumes up to 8 Veil Marks (+95 Oblivion per mark consumed). While on board: +13 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'dfh_et_skull_ceiling_garrison',
     bonusType: 'oblivion_per_card',
-    bonusValue: 0.13,
+    bonusValue: 13,
     onPlayEffects: [
       { type: 'eternal_stack_gain', stack: 'pyre', value: 6 },
       { type: 'dfh_veil_marks_transmute', source: 'pyre', consume: 6, marksPerResource: 1 },
@@ -842,7 +851,7 @@ const eternalCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-et-othraks-eternal-communion',
     name: "Othrak's Eternal Communion",
-    description: 'On play: Gain 7 Cinder Crowns and transmute up to 7 Crowns into Veil Marks. While on board: Buffs Seraphim and Angel attacks: base +80, cooldown -1. If a DFH Angel is on board, cash out Veil Marks once each turn.',
+    description: 'On play: Gain 7 Cinder Crowns; Transmute up to 7 Cinder Crowns into Veil Marks (1 marks each); If a DFH Angel is on board, cash out up to 5 Veil Marks (+180 Oblivion per mark). While on board: Buffs Seraphim and Angel attacks: base +80, cooldown -1',
     rarity: 'Eternal',
     artKey: 'dfh_et_othraks_eternal_communion',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 80, cooldownDeltaCards: -1 }],
@@ -855,12 +864,12 @@ const eternalCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-et-crimson-ember-rain',
     name: 'Crimson Cinder-Rain',
-    description: 'Gain 4 Cinder Crowns, transmute into Veil Marks, then draw 1. If crowns are high enough, cash out Veil Marks immediately.',
+    description: 'Gain 4 Cinder Crowns; Transmute up to 4 Cinder Crowns into Veil Marks (2 marks each); If you have 4+ Cinder Crowns, Cash out up to 6 Veil Marks (+205 Oblivion per mark); Draw 1 card',
     rarity: 'Eternal',
     artKey: 'dfh_et_crimson_ember_rain',
     effects: [
       { type: 'set_secondary_gain', kind: 'pyre', value: 4 },
-      { type: 'dfh_veil_marks_transmute', source: 'crowns', consume: 4, marksPerResource: 1.5 },
+      { type: 'dfh_veil_marks_transmute', source: 'crowns', consume: 4, marksPerResource: 2 },
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'pyre', value: 4 },
@@ -872,7 +881,7 @@ const eternalCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-et-eternal-procession-of-the-veiled',
     name: 'The Eternal Procession of the Veiled',
-    description: 'Gain 8 Pyre Embers, transmute into Veil Marks, amplify by x1.5, and cash out a small bundle if marks are high enough.',
+    description: 'Gain 8 Pyre Embers; Transmute up to 8 Pyre Embers into Veil Marks (1 marks each); Amplify current Veil Marks by x1.5; If you have 12+ Veil Marks, Cash out up to 4 Veil Marks (+220 Oblivion per mark)',
     rarity: 'Eternal',
     artKey: 'dfh_et_eternal_procession_of_the_veiled',
     effects: [
@@ -892,11 +901,11 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'dfh-inf-vakhresh-marches-out',
     name: 'Vakhresh Marches Out',
-    description: 'On play: Gain 14 Pyre Embers, transmute into Veil Marks, cash out up to 8 Veil Marks, and gain 6 Pyre Embers. While on board: +0.3 Oblivion per card played while active',
+    description: 'On play: Gain 14 Pyre Embers; Transmute up to 14 Pyre Embers into Veil Marks (1 marks each); Cash out up to 8 Veil Marks (+260 Oblivion per mark); Gain 6 Pyre Embers; synergized attack consumes up to 10 Veil Marks (+120 Oblivion per mark consumed). While on board: +30 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'dfh_inf_vakhresh_marches_out',
     bonusType: 'oblivion_per_card',
-    bonusValue: 0.30,
+    bonusValue: 30,
     onPlayEffects: [
       { type: 'eternal_stack_gain', stack: 'pyre', value: 14 },
       { type: 'dfh_veil_marks_transmute', source: 'pyre', consume: 14, marksPerResource: 1 },
@@ -913,7 +922,7 @@ const infinityCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'dfh-inf-final-communion-of-halos',
     name: 'The Final Communion of Halos',
-    description: 'On play: Gain 10 Cinder Crowns, transmute to Veil Marks, then amplify by x2.0. While on board: Buffs Seraphim and Angel attacks: base +200 and enables larger angel-resonant Veil cashout.',
+    description: 'On play: Gain 10 Cinder Crowns; Transmute up to 10 Cinder Crowns into Veil Marks (1 marks each); Amplify current Veil Marks by x2; If a DFH Angel is on board, cash out up to 8 Veil Marks (+235 Oblivion per mark). While on board: Buffs Seraphim and Angel attacks: base +200',
     rarity: 'Infinite',
     artKey: 'dfh_inf_final_communion_of_halos',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 200 }],
@@ -927,13 +936,13 @@ const infinityCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-inf-bridal-procession-living-world',
     name: 'The Bridal Procession Reaches the Living World',
-    description: 'Gain 10 Pyre Embers and 4 Cinder Crowns, transmute up to 10 Embers into Veil Marks, then cash out if marks are high enough.',
+    description: 'Gain 10 Pyre Embers; Gain 4 Cinder Crowns; Transmute up to 10 Pyre Embers into Veil Marks (2 marks each); If you have 10+ Veil Marks, Cash out up to 10 Veil Marks (+230 Oblivion per mark)',
     rarity: 'Infinite',
     artKey: 'dfh_inf_bridal_procession_living_world',
     effects: [
       { type: 'eternal_stack_gain', stack: 'pyre', value: 10 },
       { type: 'set_secondary_gain', kind: 'pyre', value: 4 },
-      { type: 'dfh_veil_marks_transmute', source: 'pyre', consume: 10, marksPerResource: 1.5 },
+      { type: 'dfh_veil_marks_transmute', source: 'pyre', consume: 10, marksPerResource: 2 },
       {
         type: 'conditional',
         condition: { type: 'dfh_veil_marks_gte', value: 10 },
@@ -944,7 +953,7 @@ const infinityCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'dfh-inf-death-flame-escaping-upward',
     name: 'The Death-flame Escaping Upward',
-    description: 'Gain 10 Cinder Crowns and 5 Pyre Embers, transmute all Cinder Crowns into Veil Marks (2.0 each), then cash out up to 12 Veil Marks (+300 per mark).',
+    description: 'Gain 10 Cinder Crowns; Gain 5 Pyre Embers; Transmute all Cinder Crowns into Veil Marks (2 marks each); Cash out up to 12 Veil Marks (+300 Oblivion per mark)',
     rarity: 'Infinite',
     artKey: 'dfh_inf_death_flame_escaping_upward',
     effects: [

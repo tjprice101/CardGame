@@ -7,7 +7,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Dawnfire Seraphim',
-    description: 'On play: Gain 1 Radiance. While on board: +15 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 1 Radiance; +20 Oblivion. While on board: +15 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_light_dawn',
     attacks: {
       unsynergized: {
@@ -34,7 +34,8 @@ export const lightSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 15, synergyRequirement: 'Light' },
     onPlayEffects: [
-      { type: 'radiance_gain', value: 1 }],
+      { type: 'radiance_gain', value: 1 },
+      { type: 'oblivion_flat', value: 20 }],
   },
   {
     definitionId: 'ser-light-vigil',
@@ -77,7 +78,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Emberchoir Seraphim',
-    description: 'On play: Gain 3 Radiance. While on board: +12 Oblivion per card played while active',
+    description: 'On play: Gain 3 Radiance; +25 Oblivion. While on board: +12 Oblivion per card played while active',
     artKey: 'ser_light_choir',
     attacks: {
       unsynergized: {
@@ -104,7 +105,8 @@ export const lightSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 12, synergyRequirement: 'Light' },
     onPlayEffects: [
-      { type: 'radiance_gain', value: 3 }],
+      { type: 'radiance_gain', value: 3 },
+      { type: 'oblivion_flat', value: 25 }],
   },
   {
     definitionId: 'ser-light-throne',
@@ -112,7 +114,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Thorncrown Seraphim',
-    description: 'On play: Gain 2 Radiance. While on board: +8 Oblivion per card played while active',
+    description: 'On play: Gain 2 Radiance; Empower the next card you play. While on board: +8 Oblivion per card played while active',
     artKey: 'ser_light_throne',
     attacks: {
       unsynergized: {
@@ -139,7 +141,8 @@ export const lightSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 8, synergyRequirement: 'Light' },
     onPlayEffects: [
-      { type: 'radiance_gain', value: 2 }],
+      { type: 'radiance_gain', value: 2 },
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'ser-light-herald',
@@ -147,7 +150,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Cinderherald Seraphim',
-    description: 'On play: Gain 2 Radiance. While on board: +25 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 2 Radiance; +30 Oblivion. While on board: +25 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_light_herald',
     attacks: {
       unsynergized: {
@@ -174,7 +177,8 @@ export const lightSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 25, synergyRequirement: 'Light' },
     onPlayEffects: [
-      { type: 'radiance_gain', value: 2 }],
+      { type: 'radiance_gain', value: 2 },
+      { type: 'oblivion_flat', value: 30 }],
   },
   {
     definitionId: 'ser-light-warden',
@@ -182,7 +186,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Thornward Seraphim',
-    description: 'On play: none. While on board: +20 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: If you have played 1+ cards this turn, Gain 2 Radiance. While on board: +20 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_light_warden',
     attacks: {
       unsynergized: {
@@ -209,6 +213,6 @@ export const lightSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 20, synergyRequirement: 'Light' },
     onPlayEffects: [
-      { type: 'radiance_gain', value: 0 },  // executor: ceil(hand size / 2) at time of play (ser-light-warden sentinel)
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 1 }, then: [{ type: 'radiance_gain', value: 2 }] },
     ],
   }];

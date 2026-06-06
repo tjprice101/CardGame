@@ -216,7 +216,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'wuas-ser-solarvex-fragment',
     name: 'Solarvex Fragment',
-    description: 'On play: Gain 2 Starlight Charges. While on board: Resource generation +1 while active.',
+    description: 'On play: Gain 2 Starlight Charges. While on board: Resource generation +1 while active',
     rarity: 'Common',
     artKey: 'wuas_ser_solarvex_fragment',
     bonusType: 'resource_generation',
@@ -231,7 +231,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'wuas-ser-seleniras-vigil',
     name: "Selenira's Vigil",
-    description: 'On play: Gain 2 Dream Lattice stacks. If you have 4+ Starlight Charges, draw 1 card. While on board: +42 Oblivion per card played while active.',
+    description: 'On play: Gain 2 Dream Lattice stacks; If you have 4+ Starlight Charges, Draw 1 card. While on board: +42 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'wuas_ser_seleniras_vigil',
     bonusType: 'oblivion_per_card',
@@ -253,7 +253,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'wuas-ser-lune-refrain',
     name: 'Lune Refrain',
-    description: 'On play: Look at the top 3 cards, take 1 card, and put the rest on the bottom. Gain 1 Dream Lattice stack. While on board: +92 Oblivion per card played while active.',
+    description: 'On play: Look at the top 3 cards, take 1 card, and put the rest on the bottom; Gain 1 Dream Lattice stack. While on board: +92 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'wuas_ser_lune_refrain',
     bonusType: 'oblivion_per_card',
@@ -268,7 +268,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'wuas-ser-draethos-gravity',
     name: 'Draethos Gravity',
-    description: 'On play: Gain 3 Starlight Charges and 1 Dream Lattice stack. While on board: +60 Oblivion per card played while active.',
+    description: 'On play: Gain 3 Starlight Charges; Gain 1 Dream Lattice stack. While on board: +60 Oblivion per card played while active',
     rarity: 'Epic',
     artKey: 'wuas_ser_draethos_gravity',
     bonusType: 'oblivion_per_card',
@@ -284,7 +284,7 @@ const baseSeraphim: SeraphimDefinition[] = [
   buildSeraphim({
     definitionId: 'wuas-ser-nullspire-monolith',
     name: 'Nullspire Monolith',
-    description: 'On play: Gain 4 Starlight Charges and 2 Dream Lattice stacks. While on board: Your board\'s power is amplified by x1.35 while active.',
+    description: 'On play: Gain 4 Starlight Charges; Gain 2 Dream Lattice stacks. While on board: Your board\'s power is amplified by x1.35 while active',
     rarity: 'Legendary',
     artKey: 'wuas_ser_nullspire_monolith',
     bonusType: 'power_amplifier',
@@ -306,7 +306,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'wuas-cher-wishwright-pulse',
     name: "Wishwright's Pulse",
-    description: 'On play: Draw 1 card. While on board: Every 2 cards played, gain 1 Starlight Charge and +35 Oblivion.',
+    description: 'On play: Draw 1 card',
     rarity: 'Common',
     artKey: 'wuas_cher_wishwright_pulse',
     effects: [],
@@ -315,7 +315,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'wuas-cher-dreamvault-keeper',
     name: 'Dreamvault Keeper',
-    description: 'On play: Gain 1 Starlight Charge and 1 Dream Lattice stack. While on board: Every 3 cards played, draw 1 card.',
+    description: 'On play: Gain 1 Starlight Charge; Gain 1 Dream Lattice stack',
     rarity: 'Rare',
     artKey: 'wuas_cher_dreamvault_keeper',
     effects: [],
@@ -324,7 +324,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'wuas-cher-solarvex-ward',
     name: 'Solarvex Ward',
-    description: 'On play: Gain 2 Dream Lattice stacks. While on board: preserve Dream Lattice between turns.',
+    description: 'On play: Gain 2 Dream Lattice stacks',
     rarity: 'Rare',
     artKey: 'wuas_cher_solarvex_ward',
     effects: [],
@@ -333,7 +333,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'wuas-cher-starlace-binding',
     name: 'Starlace Binding',
-    description: 'On play: Gain 2 Starlight Charges. While on board: Wished Upon a Star Seraphim and Angel attacks gain +60 base damage.',
+    description: 'On play: Gain 2 Starlight Charges. While on board: Buffs Seraphim and Angel attacks: base +60',
     rarity: 'Epic',
     artKey: 'wuas_cher_starlace_binding',
     maxDurability: 9,
@@ -348,7 +348,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'wuas-cher-voidbane-doctrine',
     name: 'Voidbane Doctrine',
-    description: 'On play: Gain 3 Starlight Charges and 1 Dream Lattice stack. While on board: the first time each turn you play your 5th card, trigger Nova Wish Burst (Dream coefficient 0.30).',
+    description: 'On play: Gain 3 Starlight Charges; Gain 1 Dream Lattice stack',
     rarity: 'Legendary',
     artKey: 'wuas_cher_voidbane_doctrine',
     effects: [],
@@ -366,7 +366,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-skyrift-mote',
     name: 'Skyrift Mote',
-    description: 'Gain 1 Starlight Charge.',
+    description: 'Gain 1 Starlight Charge',
     rarity: 'Common',
     artKey: 'wuas_oph_skyrift_mote',
     effects: [{ type: 'starlight_gain', amount: 1 }],
@@ -374,7 +374,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-dream-shard',
     name: 'Dream Shard',
-    description: 'Look at the top 3 cards, take 1 card, and put the rest on the bottom. Gain 1 Dream Lattice stack.',
+    description: 'Look at the top 3 cards, take 1 card, and put the rest on the bottom; Gain 1 Dream Lattice stack',
     rarity: 'Common',
     artKey: 'wuas_oph_dream_shard',
     effects: [{ type: 'look_top_take', look: 3, take: 1 }, { type: 'dream_lattice_gain', amount: 1 }],
@@ -382,7 +382,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-stargazer-token',
     name: 'Stargazer Token',
-    description: 'Draw 1 card. Gain 2 Starlight Charges.',
+    description: 'Draw 1 card; Gain 2 Starlight Charges',
     rarity: 'Common',
     artKey: 'wuas_oph_stargazer_token',
     effects: [{ type: 'draw', value: 1 }, { type: 'starlight_gain', amount: 2 }],
@@ -390,7 +390,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-luna-glitch',
     name: 'Luna Glitch',
-    description: 'Gain 2 Starlight Charges. If another card was played this turn, gain 2 Dream Lattice stacks.',
+    description: 'Gain 2 Starlight Charges; If you have played 1+ cards this turn, Gain 2 Dream Lattice stacks',
     rarity: 'Rare',
     artKey: 'wuas_oph_luna_glitch',
     effects: [
@@ -405,7 +405,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-wishfire-surge',
     name: 'Wishfire Surge',
-    description: 'Gain 1 Dream Lattice stack. Gain +120 Oblivion.',
+    description: 'Gain 1 Dream Lattice stack; +120 Oblivion',
     rarity: 'Rare',
     artKey: 'wuas_oph_wishfire_surge',
     effects: [
@@ -415,7 +415,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-celestine-cascade',
     name: 'Celestine Cascade',
-    description: 'Gain 3 Dream Lattice stacks. If you have 4+ Starlight Charges, draw 1 card.',
+    description: 'Gain 3 Dream Lattice stacks; If you have 4+ Starlight Charges, Draw 1 card',
     rarity: 'Epic',
     artKey: 'wuas_oph_celestine_cascade',
     effects: [
@@ -430,7 +430,7 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'wuas-oph-aeolian-nova',
     name: 'Aeolian Nova',
-    description: 'Gain 4 Starlight Charges. Nova Wish Burst (Oblivion = Starlight x (1 + Dream x 0.40)).',
+    description: 'Gain 4 Starlight Charges; Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.4))',
     rarity: 'Legendary',
     artKey: 'wuas_oph_aeolian_nova',
     effects: [
@@ -444,7 +444,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'wuas-ang-starwarden-selenira',
     name: 'Starwarden Selenira',
-    description: 'On summon: Gain 4 Starlight Charges, gain 2 Dream Lattice stacks, draw 1 card. After 2 cards played: gain 2 Dream Lattice stacks, then draw 1 card. While on board: +66 Oblivion per card played while on board.',
+    description: 'On summon: Gain 4 Starlight Charges; Gain 2 Dream Lattice stacks; Draw 1 card. After 2 cards played: Gain 2 Dream Lattice stacks; Draw 1 card; Release up to 3 Constellation Locks. While on board: +66 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'wuas_ang_starwarden_selenira',
     summonCost: ['wuas-ser-solarvex-fragment', 'wuas-ser-seleniras-vigil'],
@@ -456,10 +456,11 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Star Ward',
       cardsPlayedRequirement: 2,
-      description: 'Gain 2 Dream Lattice stacks; Draw 1 card.',
+      description: 'Gain 2 Dream Lattice stacks; Draw 1 card; Release up to 3 Constellation Locks',
       effects: [
         { type: 'dream_lattice_gain', amount: 2 },
         { type: 'draw', value: 1 },
+        { type: 'wuas_constellation_lock_release', consume: 3 },
       ],
     },
     primaryName: 'Warden Strike', exaltedName: 'Selenira Verdict',
@@ -474,20 +475,22 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'wuas-ang-draethos-eclipse-lord',
     name: 'Draethos, Eclipse Lord',
-    description: 'On summon: Gain 5 Starlight Charges and 3 Dream Lattice stacks. After 3 cards played: Nova Wish Burst (coefficient 0.70), then gain 3 Starlight Charges. While on board: +62 Oblivion per card played while on board.',
+    description: 'On summon: Gain 5 Starlight Charges; Gain 3 Dream Lattice stacks; Draw 1 card. After 3 cards played: Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.7)); Gain 3 Starlight Charges. While on board: +62 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'wuas_ang_draethos_eclipse_lord',
     summonCost: ['wuas-ser-draethos-gravity', 'wuas-ser-lune-refrain'],
     onSummonEffects: [
       { type: 'starlight_gain', amount: 5 },
-      { type: 'dream_lattice_gain', amount: 3 }],
+      { type: 'dream_lattice_gain', amount: 3 },
+      { type: 'draw', value: 1 }],
     activatedAbility: {
       name: 'Eclipse Decree',
       cardsPlayedRequirement: 3,
-      description: 'Nova Wish Burst (Dream coefficient 0.70); gain 3 Starlight Charges.',
+      description: 'Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.7)); Gain 3 Starlight Charges; Trigger Infinite Starbirth',
       effects: [
         { type: 'wuas_nova_wish_burst', consumeStarlight: false, dreamMultiplier: 0.7 },
-        { type: 'starlight_gain', amount: 3 }],
+        { type: 'starlight_gain', amount: 3 },
+        { type: 'wuas_infinite_starbirth' }],
     },
     primaryName: 'Eclipse Strike', exaltedName: 'Draethos Descent',
     primaryDescription: '790 base Oblivion 8 cards cooldown',
@@ -501,7 +504,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'wuas-ang-aethervex-triumphant',
     name: 'Aethervex, Triumphant',
-    description: 'On summon: Gain 6 Starlight Charges, gain 3 Dream Lattice stacks, draw 1 card. After 3 cards played: gain 4 Starlight Charges and 2 Dream Lattice stacks. While on board: +68 Oblivion per card played while on board.',
+    description: 'On summon: Gain 6 Starlight Charges; Gain 3 Dream Lattice stacks; Draw 1 card. After 3 cards played: Gain 4 Starlight Charges; Gain 2 Dream Lattice stacks; If you have 6+ Dream Lattice, Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.6)). While on board: +68 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'wuas_ang_aethervex_triumphant',
     summonCost: ['wuas-ser-nullspire-monolith', 'wuas-cher-solarvex-ward'],
@@ -512,7 +515,7 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Triumphant Wish',
       cardsPlayedRequirement: 3,
-      description: 'Gain 4 Starlight Charges; gain 2 Dream Lattice stacks; if Dream Lattice is 6+, trigger Nova Wish Burst (coefficient 0.60).',
+      description: 'Gain 4 Starlight Charges; Gain 2 Dream Lattice stacks; If you have 6+ Dream Lattice, Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.6))',
       effects: [
         { type: 'starlight_gain', amount: 4 },
         { type: 'dream_lattice_gain', amount: 2 },
@@ -621,7 +624,7 @@ const infiniteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'inf-wuas-stellarborn-throne',
     name: 'Stellarborn Throne',
-    description: 'Gain 8 Starlight Charges, 6 Dream Lattice stacks, and 12 Star Crowns. Infinite Starbirth (Seraphim x Starlight x 140; draw 0.50 per Dream Lattice). If you have 8+ Dream Lattice, gain 6 Star Crowns.',
+    description: 'Gain 8 Starlight Charges; Gain 6 Dream Lattice stacks; Gain 12 Star Crowns; Infinite Starbirth (Ob = Seraphim × Starlight × 140; +1 draw per 2 Dream Lattice); If you have 8+ Dream Lattice, Gain 6 Star Crowns',
     rarity: 'Infinite',
     artKey: 'inf_wuas_stellarborn_throne',
     effects: [
@@ -638,7 +641,7 @@ const infiniteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'inf-wuas-lune-choir-ascension',
     name: 'Lune Choir Ascension',
-    description: 'On play: Gain 6 Starlight Charges, 6 Dream Lattice stacks, and 6 Star Crowns. While on board: draw 0.25 cards per card played and buff WUAS Seraphim/Angel attacks by +150 base when you have 8+ Star Crowns.',
+    description: 'On play: Gain 6 Starlight Charges; Gain 6 Dream Lattice stacks; Gain 6 Star Crowns. While on board: +1 draw every 4 cards played; Buffs Seraphim and Angel attacks: base +150, when you have 8+ Star Crowns',
     rarity: 'Infinite',
     artKey: 'inf_wuas_lune_choir_ascension',
     effects: [
@@ -658,7 +661,7 @@ const infiniteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'inf-wuas-wishwright-absolute',
     name: 'Wishwright Absolute',
-    description: 'On play: Gain 10 Starlight Charges, 8 Dream Lattice stacks, and 16 Star Crowns. Nova Wish Burst (Dream coefficient 1.80). Cash out up to 24 Star Crowns (+280 Oblivion per Crown). Infinite Starbirth (Seraphim x Starlight x 190; draw 0.35 per Dream Lattice). While on board: +52 Oblivion per card played while active.',
+    description: 'On play: Gain 10 Starlight Charges; Gain 8 Dream Lattice stacks; Gain 16 Star Crowns; Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 1.8)); Cash out up to 24 Star Crowns (+280 Oblivion per Crown); Infinite Starbirth (Ob = Seraphim × Starlight × 190; +1 draw per 3 Dream Lattice). While on board: +52 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'inf_wuas_wishwright_absolute',
     bonusType: 'oblivion_per_card',
