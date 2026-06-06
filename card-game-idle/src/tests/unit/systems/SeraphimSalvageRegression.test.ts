@@ -20,7 +20,7 @@ describe('Seraphim salvage regression', () => {
         hand: [{ instanceId: 'play_1', definitionId: 'ser-fire-abyssal', finish: 'normal' }],
         drawPile: [],
         discardPile: [
-          { instanceId: 'discard_1', definitionId: 'ophanim-neutral-void-surge', finish: 'normal' },
+          { instanceId: 'discard_1', definitionId: 'ophanim-fire-cinder-draw', finish: 'normal' },
         ],
       },
       board: {

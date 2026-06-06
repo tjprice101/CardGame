@@ -260,7 +260,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Still Pulse',
-    description: 'All Seraphim on board gain +3 Patience; If you control 3+ active Seraphim, All Seraphim on board gain +3 Patience; Gain 3 Prismatic Light; Draw 1 card',
+    description: 'All Seraphim on board gain +3 Patience; If you control 3+ active Seraphim, All Seraphim on board gain +3 Patience; Draw 1 card',
     artKey: 'seek_neutral_still_pulse',
     effects: [
       { type: 'patience_gain_all', value: 3 },
@@ -272,7 +272,7 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Oblivion Pulse',
-    description: 'All Seraphim on board gain +2 Patience; +20 Oblivion; Empower the next card you play; Gain 4 Prismatic Light; Draw 1 card',
+    description: 'All Seraphim on board gain +2 Patience; +20 Oblivion; Empower the next card you play; Draw 1 card',
     artKey: 'seek_neutral_chain_pulse',
     effects: [
       { type: 'patience_gain_all', value: 2 },
