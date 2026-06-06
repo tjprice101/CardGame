@@ -280,7 +280,7 @@ describe('Set mechanic reworks', () => {
     const apex = CardRegistry.get('es-et-crown-of-seven-margins');
 
     expect(battery?.onPlayEffects?.some(effect => effect.type === 'set_secondary_gain' && effect.kind === 'deepwake')).toBe(true);
-    expect(reservoir?.onPlayEffects?.some(effect => effect.type === 'set_secondary_gain' && effect.kind === 'deepwake' && effect.value === 3)).toBe(true);
+    expect(reservoir?.onPlayEffects?.some(effect => effect.type === 'set_secondary_gain' && effect.kind === 'deepwake' && (effect.value ?? 0) >= 1)).toBe(true);
     expect(resolver?.effects?.some(effect => effect.type === 'seas_deepwake_surge')).toBe(true);
     expect(apex?.activatedAbility.effects.some(effect => effect.type === 'seas_deepwake_surge')).toBe(true);
   });

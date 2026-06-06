@@ -667,6 +667,15 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
     case 'cherubim_pearl_per_recast_bonus': return `+${effect.value} extra Pearl per recast event`;
     case 'cherubim_recast_oblivion_bonus': return `+${effect.value} Oblivion per recast event`;
     case 'cherubim_seraphim_recast_amp': return `Seraphim recasts fire at +${Math.round(effect.value * 100)}% power`;
+    case 'cherubim_seas_release_reaction': {
+      const gainParts: string[] = [];
+      if ((effect.oblivionGain ?? 0) > 0) gainParts.push(`+${effect.oblivionGain} Oblivion`);
+      if ((effect.undertowGain ?? 0) > 0) gainParts.push(`+${effect.undertowGain} Undertow`);
+      if ((effect.foamGain ?? 0) > 0) gainParts.push(`+${effect.foamGain} Foam`);
+      if ((effect.draw ?? 0) > 0) gainParts.push(`draw ${formatCount(effect.draw!, 'card')}`);
+      const trigger = effect.oncePerTurn ? 'The first time each turn you release Undertow' : 'Whenever you release Undertow';
+      return `${trigger}, ${gainParts.join(' and ')}`;
+    }
     default:
       return (effect as { type: string }).type;
   }
