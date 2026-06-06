@@ -295,7 +295,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'bf-cher-mireth-flutterlings',
     name: 'Mireth Flutterlings',
-    description: 'On play: Gain 2 Flutter Spectrum; Draw 1 card. While on board: Each adjacent active Seraphim adds 1 extra card whenever you play a card; Buffs Seraphim and Angel attacks: base +24, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 2 Flutter Spectrum; Draw 1 card. While on board: Each adjacent active Seraphim adds 1 extra card whenever you play a card',
     rarity: 'Common',
     artKey: 'bf_cher_mireth_flutterlings',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'draw', value: 1 }],
@@ -304,7 +304,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'bf-cher-copper-bank-spark',
     name: 'Copper Bank Spark',
-    description: 'On play: Gain 2 Flutter Spectrum. While on board: Gain 1 Spectrum per card played; Buffs Seraphim attacks: base +26, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 2 Flutter Spectrum. While on board: Gain 1 Spectrum per card played',
     rarity: 'Common',
     artKey: 'bf_cher_copper_bank_spark',
     effects: [{ type: 'cherubim_resource_per_card', resource: 'butterflySpectrum', value: 1 }],
@@ -313,7 +313,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'bf-cher-prismedge-novice',
     name: 'Prismedge Novice',
-    description: 'On play: Gain 3 Flutter Spectrum; Look at the top 4 cards, take 1 card, and put the rest on the bottom. While on board: Buffs Angel attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 3 Flutter Spectrum; Look at the top 4 cards, take 1 card, and put the rest on the bottom',
     rarity: 'Rare',
     artKey: 'bf_cher_prismedge_novice',
     effects: [],
@@ -322,7 +322,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'bf-cher-echo-shed-lamina',
     name: 'Echo Shed Lamina',
-    description: 'On play: Gain 3 Flutter Spectrum; +120 Oblivion. While on board: +8 Oblivion per card played; Buffs Seraphim attacks: base +8, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 3 Flutter Spectrum; +120 Oblivion. While on board: +8 Oblivion per card played',
     rarity: 'Rare',
     artKey: 'bf_cher_echo_shed_lamina',
     effects: [{ type: 'cherubim_oblivion_per_card', value: 8 }],
@@ -331,7 +331,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'bf-cher-nullwake-attendant',
     name: 'Nullwake Attendant',
-    description: 'On play: Gain 4 Flutter Spectrum; Vent 2 Strain. While on board: Seraphim bonuses are amplified by +0.08; Buffs Seraphim attacks: base +54, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +42, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 4 Flutter Spectrum; Vent 2 Strain. While on board: Seraphim bonuses are amplified by +8%',
     rarity: 'Epic',
     artKey: 'bf_cher_nullwake_attendant',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.08 }],
@@ -359,7 +359,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'bf-cher-flutter-vigil-sexton',
     name: 'Flutter Vigil Sexton',
-    description: 'On play: Gain 5 Flutter Spectrum; Release up to 2 Spectrum (+85 Oblivion per Spectrum). While on board: Draw 0.34 cards per card played; Buffs Seraphim and Angel attacks: base +52, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +41, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 5 Flutter Spectrum; Release up to 2 Spectrum (+85 Oblivion per Spectrum). While on board: +1 draw every 3 cards played',
     rarity: 'Legendary',
     artKey: 'bf_cher_flutter_vigil_sexton',
     effects: [{ type: 'cherubim_draw_per_card', value: 0.34 }],
@@ -602,7 +602,7 @@ const eternalCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bf-et-mirrorglass-conclave',
     name: 'Mirrorglass Conclave',
-    description: 'On play: Gain 5 Flutter Spectrum; Draw 2 cards; Gain 2 Wing Resonances; Harmonize up to 1 Wing Resonances (+120.0 Oblivion per resonance, +30.0 Oblivion per Formation, +1.0 draw per resonance). While on board: Seraphim bonuses are amplified by +0.14; Buffs Angel attacks: base +66, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +51, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 5 Flutter Spectrum; Draw 2 cards; Gain 2 Wing Resonances; Harmonize up to 1 Wing Resonances (+120 Oblivion per resonance, +30 Oblivion per Formation, +1 draw per resonance). While on board: Seraphim bonuses are amplified by +14%',
     rarity: 'Eternal',
     artKey: 'bf_et_mirrorglass_conclave',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.14 }],
@@ -616,7 +616,7 @@ const eternalCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bf-et-nullwing-interstice',
     name: 'Nullwing Interstice',
-    description: 'Gain 2 Wing Resonances; Harmonize up to 2 Wing Resonances (+2.0 Spectrum per resonance, +135.0 Oblivion per resonance, +45.0 Oblivion per Formation); Release up to 3 Spectrum (+130 Oblivion per Spectrum)',
+    description: 'Gain 2 Wing Resonances; Harmonize up to 2 Wing Resonances (+2 Spectrum per resonance, +135 Oblivion per resonance, +45 Oblivion per Formation); Release up to 3 Spectrum (+130 Oblivion per Spectrum)',
     rarity: 'Eternal',
     artKey: 'bf_et_nullwing_interstice',
     effects: [
@@ -628,7 +628,7 @@ const eternalCards: CardDefinition[] = [
   buildAngel({
     definitionId: 'bf-et-pyrethkai-equilibrium',
     name: 'Pyrethkai Equilibrium',
-    description: 'On summon: Gain 6 Flutter Spectrum; Gain 3 Wing Resonances. After 3 cards played: Apex all Wing Resonances (+175.0 Oblivion per resonance, +30.0 Oblivion per current Spectrum, +95.0 Oblivion per Formation, +0.5 draw per Formation, empower your next card at Formation 3+). While on board: +52 Oblivion for each Seraphim on board while on board',
+    description: 'On summon: Gain 6 Flutter Spectrum; Gain 3 Wing Resonances. After 3 cards played: Apex all Wing Resonances (+175 Oblivion per resonance, +30 Oblivion per current Spectrum, +95 Oblivion per Formation, +1 draw every 2 Formations, empower your next card at Formation 3+). While on board: +52 Oblivion for each Seraphim on board while on board',
     rarity: 'Eternal',
     artKey: 'bf_et_pyrethkai_equilibrium',
     summonCost: ['bf-ser-pyrethkai-whiteflame', 'bf-ser-vethkai-clear-arc'],
@@ -639,7 +639,7 @@ const eternalCards: CardDefinition[] = [
     activatedAbility: {
       name: 'White Burn Equilibrium',
       cardsPlayedRequirement: 3,
-      description: 'Apex all Wing Resonances (+175.0 Oblivion per resonance, +30.0 Oblivion per current Spectrum, +95.0 Oblivion per Formation, +0.5 draw per Formation, empower your next card at Formation 3+)',
+      description: 'Apex all Wing Resonances (+175 Oblivion per resonance, +30 Oblivion per current Spectrum, +95 Oblivion per Formation, +1 draw every 2 Formations, empower your next card at Formation 3+)',
       effects: [{ type: 'flutter_resonance_apex', oblivionPerResonance: 175, oblivionPerSpectrum: 30, oblivionPerFormation: 95, drawPerFormation: 0.5, empowerAtFormation: 3 }],
     },
     primaryName: 'Equilibrium Arc',
@@ -655,7 +655,7 @@ const eternalCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bf-et-volthari-storm-lattice',
     name: 'Volthari Storm Lattice',
-    description: 'Gain 1 Wing Resonance; Harmonize up to 2 Wing Resonances (+3.0 Spectrum per resonance, +0.5 draw per resonance, empower your next card); Draw 1 card',
+    description: 'Gain 1 Wing Resonance; Harmonize up to 2 Wing Resonances (+3 Spectrum per resonance, +1 draw every 2 resonances, empower your next card); Draw 1 card',
     rarity: 'Eternal',
     artKey: 'bf_et_volthari_storm_lattice',
     effects: [
@@ -669,7 +669,7 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'bf-inf-velkoreth-the-unfolding',
     name: 'Velkoreth, The Unfolding',
-    description: 'On play: Gain 9 Flutter Spectrum; Gain 5 Wing Resonances; Harmonize up to 2 Wing Resonances (+2.0 Spectrum per resonance, +190.0 Oblivion per resonance, +70.0 Oblivion per Formation, +0.5 draw per resonance, empower your next card); Release up to 4 Spectrum (+185 Oblivion per Spectrum). While on board: +88 Oblivion per card played while active',
+    description: 'On play: Gain 9 Flutter Spectrum; Gain 5 Wing Resonances; Harmonize up to 2 Wing Resonances (+2 Spectrum per resonance, +190 Oblivion per resonance, +70 Oblivion per Formation, +1 draw every 2 resonances, empower your next card); Release up to 4 Spectrum (+185 Oblivion per Spectrum). While on board: +88 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'bf_inf_velkoreth_the_unfolding',
     bonusType: 'oblivion_per_card',
@@ -690,7 +690,7 @@ const infinityCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bf-inf-open-foundational-chrysalis',
     name: 'Open Foundational Chrysalis',
-    description: 'Gain 4 Wing Resonances; Harmonize up to 1 Wing Resonances (+4.0 Spectrum per resonance, +55.0 Oblivion per Formation, +1.0 draw per resonance); Look at the top 6 cards, take 2 cards, and put the rest on the bottom',
+    description: 'Gain 4 Wing Resonances; Harmonize up to 1 Wing Resonances (+4 Spectrum per resonance, +55 Oblivion per Formation, +1 draw per resonance); Look at the top 6 cards, take 2 cards, and put the rest on the bottom',
     rarity: 'Infinite',
     artKey: 'bf_inf_open_foundational_chrysalis',
     effects: [
@@ -702,7 +702,7 @@ const infinityCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bf-inf-mirrorface-voidface',
     name: 'Mirrorface, Voidface',
-    description: 'On play: Gain 6 Flutter Spectrum; Gain 3 Wing Resonances; Harmonize up to 2 Wing Resonances (+170.0 Oblivion per resonance, +1.0 draw per resonance, empower your next card). While on board: Buffs Seraphim and Angel attacks: base +120; Seraphim bonuses are amplified by +0.2',
+    description: 'On play: Gain 6 Flutter Spectrum; Gain 3 Wing Resonances; Harmonize up to 2 Wing Resonances (+170 Oblivion per resonance, +1 draw per resonance, empower your next card). While on board: Buffs Seraphim and Angel attacks: base +120; Seraphim bonuses are amplified by +20%',
     rarity: 'Infinite',
     artKey: 'bf_inf_mirrorface_voidface',
     effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 120 }, { type: 'cherubim_seraphim_amp', value: 0.2 }],
@@ -715,7 +715,7 @@ const infinityCards: CardDefinition[] = [
   buildAngel({
     definitionId: 'bf-inf-generation-of-the-flutter',
     name: 'Generation of the Flutter',
-    description: 'On summon: Gain 8 Flutter Spectrum; Empower the next card you play; Gain 4 Wing Resonances. After 4 cards played: Apex up to 4 Wing Resonances (+220.0 Oblivion per resonance, +40.0 Oblivion per current Spectrum, +120.0 Oblivion per Formation, +1.0 draw per Formation, empower your next card at Formation 2+); Release up to 6 Spectrum (+200 Oblivion per Spectrum). While on board: +26 power for each Seraphim on board while on board',
+    description: 'On summon: Gain 8 Flutter Spectrum; Empower the next card you play; Gain 4 Wing Resonances. After 4 cards played: Apex up to 4 Wing Resonances (+220 Oblivion per resonance, +40 Oblivion per current Spectrum, +120 Oblivion per Formation, +1 draw per Formation, empower your next card at Formation 2+); Release up to 6 Spectrum (+200 Oblivion per Spectrum). While on board: +26 power for each Seraphim on board while on board',
     rarity: 'Infinite',
     artKey: 'bf_inf_generation_of_the_flutter',
     summonCost: ['bf-ser-ossiveth-shadowspan', 'bf-ser-mireth-lenshost'],
@@ -723,7 +723,7 @@ const infinityCards: CardDefinition[] = [
     activatedAbility: {
       name: 'Descent Trigger',
       cardsPlayedRequirement: 4,
-      description: 'Apex up to 4 Wing Resonances (+220.0 Oblivion per resonance, +40.0 Oblivion per current Spectrum, +120.0 Oblivion per Formation, +1.0 draw per Formation, empower your next card at Formation 2+); Release up to 6 Spectrum (+200 Oblivion per Spectrum)',
+      description: 'Apex up to 4 Wing Resonances (+220 Oblivion per resonance, +40 Oblivion per current Spectrum, +120 Oblivion per Formation, +1 draw per Formation, empower your next card at Formation 2+); Release up to 6 Spectrum (+200 Oblivion per Spectrum)',
       effects: [
         { type: 'flutter_resonance_apex', consume: 4, oblivionPerResonance: 220, oblivionPerSpectrum: 40, oblivionPerFormation: 120, drawPerFormation: 1, empowerAtFormation: 2 },
         { type: 'butterfly_release', spend: 6, oblivionPerSpectrum: 200 },
@@ -742,7 +742,7 @@ const infinityCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'bf-inf-the-endless-wing-age',
     name: 'The Endless Wing Age',
-    description: 'Gain 2 Wing Resonances; Apex up to 2 Wing Resonances (+170.0 Oblivion per resonance, +36.0 Oblivion per current Spectrum, +90.0 Oblivion per Formation, +0.5 draw per Formation, empower your next card at Formation 4+); Release up to 5 Spectrum (+190 Oblivion per Spectrum); Draw 1 card',
+    description: 'Gain 2 Wing Resonances; Apex up to 2 Wing Resonances (+170 Oblivion per resonance, +36 Oblivion per current Spectrum, +90 Oblivion per Formation, +1 draw every 2 Formations, empower your next card at Formation 4+); Release up to 5 Spectrum (+190 Oblivion per Spectrum); Draw 1 card',
     rarity: 'Infinite',
     artKey: 'bf_inf_the_endless_wing_age',
     effects: [

@@ -78,6 +78,6 @@ describe('Infinity and Thornbound Eternal text consistency', () => {
         return issues;
       });
 
-    expect(mismatches).toEqual(['es-inf-seven-crowned-confluence:awaken', 'inf-sovereign-void:awaken', 'inf-eternity-rupture:awaken']);
+    expect(mismatches).toEqual(['inf-sovereign-void:awaken', 'inf-eternity-rupture:awaken']);
   });
 });

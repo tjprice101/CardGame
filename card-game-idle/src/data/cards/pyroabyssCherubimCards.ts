@@ -101,7 +101,7 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Abyss Amplifier',
-    description: 'On play: Gain 3 Heat; Burst up to 2 Heat (+40.0 Oblivion per Heat); +60 Oblivion; Draw 1 card. While on board: Ophanim plays gain +30 Oblivion',
+    description: 'On play: Gain 3 Heat; Burst up to 2 Heat (+40 Oblivion per Heat); +60 Oblivion; Draw 1 card. While on board: Ophanim plays gain +30 Oblivion',
     artKey: 'cherubim_fire_abyss_amp',
     maxDurability: 4,
     effects: [

@@ -1006,6 +1006,12 @@ export class CardEffectExecutor {
           break;
         }
 
+        case 'prismatic_charge_gain': {
+          const gain = effect.value * multiplier;
+          mutableTurn.prismaticNodeCharges = (mutableTurn.prismaticNodeCharges ?? 0) + gain;
+          break;
+        }
+
         case 'prismatic_charge_spend': {
           if (effect.value >= 9999) {
             mutableTurn.prismaticNodeCharges = 0;

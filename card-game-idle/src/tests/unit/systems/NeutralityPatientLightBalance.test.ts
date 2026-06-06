@@ -33,7 +33,7 @@ describe('Neutrality tuned card profile', () => {
     const onPlay = seraphim.onPlayEffects;
     const patience = onPlay.find(effect => effect.type === 'patience_gain_all');
     const light = onPlay.find(effect => effect.type === 'neutrality_patient_light_gain');
-    expect(patience && 'value' in patience ? patience.value : null).toBe(1);
+    expect(patience && 'value' in patience ? patience.value : null).toBe(3);
     expect(light && 'value' in light ? light.value : null).toBe(1);
   });
 
@@ -58,7 +58,7 @@ describe('Neutrality tuned card profile', () => {
     const genesisGain = genesisSeraphim.onPlayEffects.find(effect => effect.type === 'neutrality_patient_light_gain');
     const annihilationGain = annihilationCherubim.onPlayEffects.find(effect => effect.type === 'neutrality_patient_light_gain');
 
-    expect(sovereigntyGain && 'value' in sovereigntyGain ? sovereigntyGain.value : null).toBe(1);
+    expect(sovereigntyGain && 'value' in sovereigntyGain ? sovereigntyGain.value : null).toBe(3);
     expect(ruptureGain && 'value' in ruptureGain ? ruptureGain.value : null).toBe(1);
     expect(genesisGain && 'value' in genesisGain ? genesisGain.value : null).toBeNull();
     expect(annihilationGain && 'value' in annihilationGain ? annihilationGain.value : null).toBeNull();

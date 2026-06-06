@@ -731,8 +731,8 @@ describe('Heavenly Light balance', () => {
       makeDeck('hr-light-grand-illumination'),
     );
 
-    expect(result.turn.radiance).toBe(8);
-    expect(result.oblivionBonus).toBe(64);
+    expect(result.turn.radiance).toBe(14);
+    expect(result.oblivionBonus).toBe(112);
   });
 
   it('uses the reduced Light Radiance-to-Oblivion conversion and multiplier values', () => {

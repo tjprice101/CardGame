@@ -314,7 +314,7 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'af-cher-nacre-touched-initiate',
     name: 'Nacre-touched Initiate',
-    description: 'On play: Recast the last card at 50% power. While on board: +0.5 extra Pearl per recast event; Buffs Seraphim and Angel attacks: base +30',
+    description: 'On play: Recast the last card at 50% power. While on board: +1 extra Pearl every 2 recast events; Buffs Seraphim and Angel attacks: base +30',
     rarity: 'Rare',
     artKey: 'af_cher_nacre_touched_initiate',
     effects: [{ type: 'cherubim_pearl_per_recast_bonus', value: 0.5 }, { type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 30 }],
@@ -559,12 +559,13 @@ const eternalCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-et-forge-beneath',
     name: 'The Forge-beneath',
-    description: 'On play: Imprint all played cards (+2 Imprint); Spend 3 Imprints: recast the last card at 100% power, +5% power per Imprint spent. While on board: +28 Oblivion per card played while active',
+    description: 'On play: Draw 1 card; Imprint all played cards (+2 Imprint); Spend 3 Imprints: recast the last card at 100% power, +5% power per Imprint spent. While on board: +28 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'af_et_forge_beneath',
     bonusType: 'oblivion_per_card',
     bonusValue: 28,
     onPlayEffects: [
+      { type: 'draw', value: 1 },
       { type: 'forge_imprint_gain', targetMode: 'all_played', value: 2 },
       { type: 'forge_imprint_spend_recast', spend: 3, targetMode: 'last', power: 1.0, bonusPowerPerImprint: 0.05 },
     ],
@@ -576,12 +577,13 @@ const eternalCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-et-ouroglas-dreaming',
     name: 'Ouroglas Dreaming',
-    description: 'On play: Imprint all played cards (+1 Imprint); Imprint the last 2 played cards (+2 Imprint); Spend 4 Imprints: recast the last 2 cards at 90% power, +8% power per Imprint spent. While on board: +95 Oblivion per card played while active',
+    description: 'On play: Gain 1 Reforge Charge; Imprint all played cards (+1 Imprint); Imprint the last 2 played cards (+2 Imprint); Spend 4 Imprints: recast the last 2 cards at 90% power, +8% power per Imprint spent. While on board: +95 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'af_et_ouroglas_dreaming',
     bonusType: 'oblivion_per_card',
     bonusValue: 95,
     onPlayEffects: [
+      { type: 'forge_reforge_charge_gain', value: 1 },
       { type: 'forge_imprint_gain', targetMode: 'all_played', value: 1 },
       { type: 'forge_imprint_gain', targetMode: 'lastN', count: 2, value: 2 },
       { type: 'forge_imprint_spend_recast', spend: 4, targetMode: 'lastN', count: 2, power: 0.9, bonusPowerPerImprint: 0.08 },
@@ -594,12 +596,13 @@ const eternalCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-et-quenched-drift',
     name: 'The Quenched Drift',
-    description: 'On play: Imprint the last 3 played cards (+2 Imprint); Spend 5 Imprints (+260 Oblivion per Imprint). While on board: +30 Oblivion per card played while active',
+    description: 'On play: Drop 2 Pearls; Imprint the last 3 played cards (+2 Imprint); Spend 5 Imprints (+260 Oblivion per Imprint). While on board: +30 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'af_et_quenched_drift',
     bonusType: 'oblivion_per_card',
     bonusValue: 30,
     onPlayEffects: [
+      { type: 'forge_pearl_drop', value: 2 },
       { type: 'forge_imprint_gain', targetMode: 'lastN', count: 3, value: 2 },
       { type: 'forge_imprint_spend_burst', spend: 5, oblivionPerImprint: 260 },
     ],
@@ -611,12 +614,13 @@ const eternalCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-et-nacre-touched-procession',
     name: 'The Nacre-touched Procession',
-    description: 'On play: Imprint all played cards (+2 Imprint); Spend 3 Imprints: recast 2 random played cards at 80% power, +10% power per Imprint spent. While on board: +105 Oblivion per card played while active',
+    description: 'On play: Salvage any 1 card; Imprint all played cards (+2 Imprint); Spend 3 Imprints: recast 2 random played cards at 80% power, +10% power per Imprint spent. While on board: +105 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'af_et_nacre_touched_procession',
     bonusType: 'oblivion_per_card',
     bonusValue: 105,
     onPlayEffects: [
+      { type: 'salvage_any' },
       { type: 'forge_imprint_gain', targetMode: 'all_played', value: 2 },
       { type: 'forge_imprint_spend_recast', spend: 3, targetMode: 'random', count: 2, power: 0.8, bonusPowerPerImprint: 0.1 },
     ],
@@ -649,12 +653,13 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-ouroglas-uncoiled',
     name: 'Ouroglas Uncoiled',
-    description: 'On play: Imprint all played cards (+2 Imprint); Spend 5 Imprints: recast 4 random played cards at 90% power, +10% power per Imprint spent. While on board: +180 Oblivion per card played while active',
+    description: 'On play: Gain 2 Reforge Charges; Imprint all played cards (+2 Imprint); Spend 5 Imprints: recast 4 random played cards at 90% power, +10% power per Imprint spent. While on board: +180 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_ouroglas_uncoiled',
     bonusType: 'oblivion_per_card',
     bonusValue: 180,
     onPlayEffects: [
+      { type: 'forge_reforge_charge_gain', value: 2 },
       { type: 'forge_imprint_gain', targetMode: 'all_played', value: 2 },
       { type: 'forge_imprint_spend_recast', spend: 5, targetMode: 'random', count: 4, power: 0.9, bonusPowerPerImprint: 0.1 },
     ],
@@ -666,12 +671,13 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-abyssal-forge-itself',
     name: 'The Abyssal Forge Itself',
-    description: 'On play: Imprint all played cards (+4 Imprint); Spend 4 Imprints: recast the last 5 cards at 110% power, +12% power per Imprint spent; Spend 8 Imprints (+420 Oblivion per Imprint). While on board: +40 Oblivion per card played while active',
+    description: 'On play: Salvage any 1 card; Imprint all played cards (+4 Imprint); Spend 4 Imprints: recast the last 5 cards at 110% power, +12% power per Imprint spent; Spend 8 Imprints (+420 Oblivion per Imprint). While on board: +40 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_abyssal_forge_itself',
     bonusType: 'oblivion_per_card',
     bonusValue: 40,
     onPlayEffects: [
+      { type: 'salvage_any' },
       { type: 'forge_imprint_gain', targetMode: 'all_played', value: 4 },
       { type: 'forge_imprint_spend_recast', spend: 4, targetMode: 'lastN', count: 5, power: 1.1, bonusPowerPerImprint: 0.12 },
       { type: 'forge_imprint_spend_burst', spend: 8, oblivionPerImprint: 420 },
@@ -684,12 +690,13 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-unrecorded-hue',
     name: 'The Unrecorded Hue',
-    description: 'On play: Imprint the last 6 played cards (+2 Imprint); Spend 6 Imprints: recast the last 6 cards at 85% power, +18% power per Imprint spent. While on board: +45 Oblivion per card played while active',
+    description: 'On play: Draw 1 card; Imprint the last 6 played cards (+2 Imprint); Spend 6 Imprints: recast the last 6 cards at 85% power, +18% power per Imprint spent. While on board: +45 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_unrecorded_hue',
     bonusType: 'oblivion_per_card',
     bonusValue: 45,
     onPlayEffects: [
+      { type: 'draw', value: 1 },
       { type: 'forge_imprint_gain', targetMode: 'lastN', count: 6, value: 2 },
       { type: 'forge_imprint_spend_recast', spend: 6, targetMode: 'lastN', count: 6, power: 0.85, bonusPowerPerImprint: 0.18 },
     ],
@@ -719,12 +726,13 @@ const infinityCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'af-inf-reforging-world',
     name: 'The Reforging of the World',
-    description: 'On play: Imprint all played cards (+5 Imprint); Spend 10 Imprints: recast 6 random played cards at 120% power, +15% power per Imprint spent; Spend 12 Imprints (+500 Oblivion per Imprint). While on board: +50 Oblivion per card played while active',
+    description: 'On play: Drop 3 Pearls; Imprint all played cards (+5 Imprint); Spend 10 Imprints: recast 6 random played cards at 120% power, +15% power per Imprint spent; Spend 12 Imprints (+500 Oblivion per Imprint). While on board: +50 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'af_inf_reforging_world',
     bonusType: 'oblivion_per_card',
     bonusValue: 50,
     onPlayEffects: [
+      { type: 'forge_pearl_drop', value: 3 },
       { type: 'forge_imprint_gain', targetMode: 'all_played', value: 5 },
       { type: 'forge_imprint_spend_recast', spend: 10, targetMode: 'random', count: 6, power: 1.2, bonusPowerPerImprint: 0.15 },
       { type: 'forge_imprint_spend_burst', spend: 12, oblivionPerImprint: 500 },

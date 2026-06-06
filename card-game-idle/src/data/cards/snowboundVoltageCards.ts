@@ -543,7 +543,7 @@ const SNOWBOUND_ANGEL_SPECS: SnowboundAngelSpec[] = [
   {
     definitionId: 'sv-angel-whiteout-judicator',
     name: 'Whiteout Judicator',
-    description: 'Voltage. On summon: +120 Oblivion; Gain 11 Arctic Charge. After 4 cards played: Gain 4 Arctic Charge; +100 Oblivion; Discharge Arctic Charge. While on board: +0.06 Oblivion per card played while on board',
+    description: 'Voltage. On summon: +120 Oblivion; Gain 11 Arctic Charge. After 4 cards played: Gain 4 Arctic Charge; +100 Oblivion; Discharge Arctic Charge. While on board: +6 Oblivion per card played while on board',
     rarity: 'Rare',
     phase: 'Voltage',
     artKey: 'sv_angel_whiteout_judicator',
@@ -566,7 +566,7 @@ const SNOWBOUND_ANGEL_SPECS: SnowboundAngelSpec[] = [
     exaltedBase: 922,
     exaltedCooldown: 6,
     exaltedScaling: 1.28,
-    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 0.06 },
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 6 },
   },
   {
     definitionId: 'sv-angel-icebound-conductor',
@@ -653,13 +653,13 @@ const SNOWBOUND_ANGEL_SPECS: SnowboundAngelSpec[] = [
   {
     definitionId: 'sv-angel-polarity-throne',
     name: 'Polarity Throne',
-    description: 'Voltage. On summon: Gain 19 Arctic Charge. After 6 cards played: Gain 8 Arctic Charge; +240 Oblivion; Empower the next card you play; Discharge Arctic Charge. While on board: +0.08 Oblivion per card played while on board',
+    description: 'Voltage. On summon: Gain 19 Arctic Charge. After 6 cards played: Gain 8 Arctic Charge; +240 Oblivion; Empower the next card you play; Discharge Arctic Charge. While on board: +8 Oblivion per card played while on board',
     rarity: 'Legendary',
     phase: 'Voltage',
     artKey: 'sv_angel_polarity_throne',
     summonCost: ['sv-angel-voltage-patriarch', 'sv-ser-icegrid', 'sv-ser-snow-lattice'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'arctic_charge_gain', value: 19 }],
+    onSummonEffects: [{ type: 'radiance_gain', value: 3 }, { type: 'arctic_charge_gain', value: 19 }],
     activatedAbility: {
       name: 'Throne of Poles',
       cardsPlayedRequirement: 6,
@@ -676,7 +676,7 @@ const SNOWBOUND_ANGEL_SPECS: SnowboundAngelSpec[] = [
     exaltedBase: 2596,
     exaltedCooldown: 7,
     exaltedScaling: 1.46,
-    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 0.08 },
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 8 },
   }];
 
 export const snowboundVoltageSeraphims = SNOWBOUND_SERAPHIM_SPECS.map(buildSeraphim);

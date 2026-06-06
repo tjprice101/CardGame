@@ -222,11 +222,11 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-mirrorbody-archivist',
     name: 'Mirrorbody Archivist',
-    description: 'On play: Draw 1 card. While on board: Adjacent active Seraphim gain +28 Oblivion per card played; Buffs Seraphim and Angel attacks: base +26, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 1 Refraction Charge; Draw 1 card. While on board: Adjacent active Seraphim gain +28 Oblivion per card played',
     rarity: 'Common',
     artKey: 'ga_cher_mirrorbody_archivist',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 28 }],
-    onPlayEffects: [{ type: 'draw', value: 1 }],
+    onPlayEffects: [{ type: 'set_secondary_gain', kind: 'absol', value: 1 }, { type: 'draw', value: 1 }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-facet-gate-ward',
@@ -240,47 +240,47 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-prismatic-reliquary',
     name: 'Prismatic Reliquary',
-    description: 'On play: +160 Oblivion. While on board: Adjacent active Seraphim gain +38 Oblivion per card played; Buffs Seraphim attacks: base +34, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 2 Refraction Charges; +160 Oblivion. While on board: Adjacent active Seraphim gain +38 Oblivion per card played',
     rarity: 'Rare',
     artKey: 'ga_cher_prismatic_reliquary',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 38 }],
-    onPlayEffects: [{ type: 'oblivion_flat', value: 160 }],
+    onPlayEffects: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }, { type: 'oblivion_flat', value: 160 }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-shard-choir-keeper',
     name: 'Shard Choir Keeper',
-    description: 'On play: Shuffle discard into deck. While on board: Each adjacent active Seraphim adds 1 extra card whenever you play a card; Buffs Seraphim and Angel attacks: base +48, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +37, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 2 Refraction Charges; Shuffle discard into deck. While on board: Each adjacent active Seraphim adds 1 extra card whenever you play a card',
     rarity: 'Epic',
     artKey: 'ga_cher_shard_choir_keeper',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'draw', value: 1 }],
-    onPlayEffects: [{ type: 'shuffle_discard' }],
+    onPlayEffects: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }, { type: 'shuffle_discard' }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-refraction-bastion',
     name: 'Refraction Bastion',
-    description: 'On play: +260 Oblivion. While on board: Seraphim bonuses are amplified by +0.09; Buffs Angel attacks: base +46, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 2 Refraction Charges; +260 Oblivion. While on board: Seraphim bonuses are amplified by +9%',
     rarity: 'Epic',
     artKey: 'ga_cher_refraction_bastion',
     effects: [{ type: 'cherubim_seraphim_amp', value: 0.09 }],
-    onPlayEffects: [{ type: 'oblivion_flat', value: 260 }],
+    onPlayEffects: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }, { type: 'oblivion_flat', value: 260 }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-glass-mantle-custodian',
     name: 'Glass Mantle Custodian',
-    description: 'On play: Salvage any 1 card. While on board: Adjacent active Seraphim gain +46 Oblivion per card played; Buffs Angel attacks: base +41, cooldown +0, multiplier x1.00; Buffs Angel attacks: base +32, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 3 Refraction Charges; Salvage any 1 card. While on board: Adjacent active Seraphim gain +46 Oblivion per card played',
     rarity: 'Legendary',
     artKey: 'ga_cher_glass_mantle_custodian',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 46 }],
-    onPlayEffects: [{ type: 'salvage_any' }],
+    onPlayEffects: [{ type: 'set_secondary_gain', kind: 'absol', value: 3 }, { type: 'salvage_any' }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-splitlight-cantor',
     name: 'Splitlight Cantor',
-    description: 'On play: Gain 22 Radiance. While on board: Gain 12 Radiance per card played; Buffs Seraphim attacks: base +42, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 2 Refraction Charges; Gain 22 Radiance. While on board: Gain 12 Radiance per card played',
     rarity: 'Rare',
     artKey: 'ga_cher_splitlight_cantor',
     effects: [{ type: 'cherubim_resource_per_card', resource: 'radiance', value: 12 }],
-    onPlayEffects: [{ type: 'radiance_gain', value: 22 }],
+    onPlayEffects: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }, { type: 'radiance_gain', value: 22 }],
   }),
   buildCherubim({
     definitionId: 'ga-cher-light-archive',
@@ -294,11 +294,11 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-shardward-savant',
     name: 'Shardward Savant',
-    description: 'On play: +220 Oblivion. While on board: Adjacent active Seraphim gain +20 Oblivion per card played; Buffs Seraphim and Angel attacks: base +17, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 1 Refraction Charge; +220 Oblivion. While on board: Adjacent active Seraphim gain +20 Oblivion per card played',
     rarity: 'Common',
     artKey: 'ga_cher_shardward_savant',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 20 }],
-    onPlayEffects: [{ type: 'oblivion_flat', value: 220 }],
+    onPlayEffects: [{ type: 'set_secondary_gain', kind: 'absol', value: 1 }, { type: 'oblivion_flat', value: 220 }],
   }),
 
   buildOphanim({
@@ -352,10 +352,10 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-white-transit',
     name: 'White Transit',
-    description: 'Gain 24 Radiance; Draw 4 cards',
+    description: 'Gain 2 Refraction Charges; Gain 24 Radiance; Draw 4 cards',
     rarity: 'Legendary',
     artKey: 'ga_oph_white_transit',
-    effects: [{ type: 'draw', value: 4 }, { type: 'radiance_gain', value: 24 }],
+    effects: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }, { type: 'draw', value: 4 }, { type: 'radiance_gain', value: 24 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-prism-veil-drift',
@@ -376,10 +376,10 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-spectral-afterimage',
     name: 'Spectral Afterimage',
-    description: 'Replay last Ophanim played this turn; Draw 1 card',
+    description: 'Gain 2 Refraction Charges; Replay last Ophanim played this turn; Draw 1 card',
     rarity: 'Legendary',
     artKey: 'ga_oph_spectral_afterimage',
-    effects: [{ type: 'copy_last_hr' }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }, { type: 'copy_last_hr' }, { type: 'draw', value: 1 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-clear-beyond',
@@ -393,7 +393,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-et-lattice-archive-seraph',
     name: 'Lattice Archive Seraph',
-    description: 'On play: Gain 3 Refraction Charges; If you have 5+ Refraction Charges, Empower the next card you play. While on board: +84 Oblivion per card played while active',
+    description: 'On play: Gain 3 Refraction Charges; Salvage any 1 card; If you have 5+ Refraction Charges, Empower the next card you play. While on board: +84 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'ga_et_lattice_archive_seraph',
     bonusType: 'oblivion_per_card',
@@ -401,6 +401,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     // Role: PRIMARY REFRACTION BATTERY.
     onPlayEffects: [
       { type: 'set_secondary_gain', kind: 'absol', value: 3 },
+      { type: 'salvage_any' },
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'absol', value: 5 },
@@ -611,7 +612,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-inf-shattered-without-shattering',
     name: 'Shattered Without Shattering',
-    description: 'On play: Gain 4 Refraction Charges; If you have 7+ Refraction Charges, Spend 3 Refraction Charges; Empower the next card you play; +360 Oblivion; If you have 11+ Refraction Charges, Spend 4 Refraction Charges; Draw 2 cards. While on board: Seraphim bonuses are amplified by +0.24; Adjacent active Seraphim gain +86 Oblivion per card played; Buffs Angel attacks: base +180, cooldown -1, multiplier x1.00; Buffs Seraphim attacks: base +120, cooldown -1, when you have 7+ Refraction Charges',
+    description: 'On play: Gain 4 Refraction Charges; If you have 7+ Refraction Charges, Spend 3 Refraction Charges; Empower the next card you play; +360 Oblivion; If you have 11+ Refraction Charges, Spend 4 Refraction Charges; Draw 2 cards. While on board: Seraphim bonuses are amplified by +24%; Adjacent active Seraphim gain +86 Oblivion per card played; Buffs Angel attacks: base +180, cooldown -1, multiplier x1.00; Buffs Seraphim attacks: base +120, cooldown -1, when you have 7+ Refraction Charges',
     rarity: 'Infinite',
     artKey: 'ga_inf_shattered_without_shattering',
     effects: [

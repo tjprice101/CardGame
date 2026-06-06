@@ -43,6 +43,7 @@ export type ImmediateEffect =
   | { type: 'prismatic_light_spend'; value: number }
   | { type: 'resonance_charge_gain'; value: number }
   | { type: 'resonance_charge_spend'; value: number }
+  | { type: 'prismatic_charge_gain'; value: number }
   | { type: 'prismatic_charge_spend'; value: number }
   | { type: 'monochromatic_shards_gain'; value: number }
   | { type: 'monochromatic_shards_spend'; value: number }

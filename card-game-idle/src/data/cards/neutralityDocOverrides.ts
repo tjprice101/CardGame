@@ -34,10 +34,12 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "btei-colossus-advent": {
     "bullets": [
-      "On play: Your Seraphim with the most Patience gains +5 additional Patience",
+      "On play: Designate the Seraphim with the most Patience as your Vessel",
+      "On play: All Seraphim on board gain +8 Patience",
       "On play: Grant 1 Patient Light stack",
-      "On play: +400 Oblivion",
-      "While on board: +220 Oblivion per card played while active"
+      "On play: Empower the next card you play",
+      "On play: +300 Oblivion",
+      "While on board: +200 Oblivion per card played while active"
     ],
     "attacks": [
       {
@@ -83,8 +85,9 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "btei-eternal-vigil": {
     "bullets": [
-      "On play: All Seraphim on board gain +1 additional Patience",
+      "On play: All Seraphim on board gain +3 Patience",
       "On play: Grant 1 Patient Light stack",
+      "On play: Shuffle discard into deck",
       "While on board: +2500 Oblivion each time an Angel is summoned."
     ],
     "attacks": [
@@ -106,7 +109,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "btei-neutrality-axiom-maw": {
     "bullets": [
-      "On summon: All Seraphim on board gain +5 Patience",
+      "On summon: All Seraphim on board gain +10 Patience",
       "On summon: Grant 1 Patient Light stack",
       "On summon: +1400 Oblivion",
       "While on board: +125 Oblivion per card played while on board"
@@ -128,7 +131,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
       }
     ],
     "abilityName": "Axiom Devour",
-    "abilityText": "Grant 2 Patient Light stacks; All Seraphim on board gain +3 Patience; +1500 Oblivion"
+    "abilityText": "Grant 2 Patient Light stacks; Double all Patience on the board; All Seraphim on board gain +3 Patience; Empower the next card you play; +1500 Oblivion"
   },
   "btei-neutrality-paradox-crown": {
     "bullets": [
@@ -148,11 +151,11 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "btei-neutrality-void-throne": {
     "bullets": [
-      "On play: All Seraphim on board gain +X Patience where X is your current amount of Patient Light.",
+      "On play: Double all Patience on the board",
       "On play: Grant 2 Patient Light stacks",
-      "On attack: Choose up to 1 card in your discard pile, add it to hand.",
-      "On play: +350 Oblivion",
-      "While on board: +200 Oblivion whenever you play an Ophanim."
+      "On play: Salvage any 1 card",
+      "On play: +300 Oblivion",
+      "While on board: +180 Oblivion whenever you play an Ophanim while active"
     ],
     "attacks": [
       {
@@ -177,7 +180,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
       "Shuffle discard into deck",
       "+200 Oblivion",
       "While on board: Increase all other Cherubim durability by +5.",
-      "While on board: All Oblivion gain from Seraphim or Angel attacks increased by +2.5%"
+      "While on board: All Oblivion gain from Seraphim or Angel attacks increased by +3%"
     ],
     "attacks": []
   },
@@ -192,9 +195,9 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "btei-omniscient-fracture": {
     "bullets": [
-      "On summon: Choose up to 2 Null Edicts in your discard pile, add them to hand.",
-      "On summon: Grant 1 Patient Light Stack",
-      "On summon: +800 Oblivion",
+      "On summon: All Seraphim on board gain +8 Patience",
+      "On summon: Grant 3 Patient Light stacks",
+      "On summon: +600 Oblivion",
       "On attack: All Seraphim on board gain +4 Patience",
       "While on board: +200 Oblivion per card played while on board"
     ],
@@ -215,7 +218,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
       }
     ],
     "abilityName": "Parallax Collapse",
-    "abilityText": "Grant 1 Patient Light stack; All Seraphim on board gain +12 Patience; +1000 Oblivion"
+    "abilityText": "Grant 1 Patient Light stack; All Seraphim on board gain +12 Patience; Seraphim attacks preserve 30% of consumed Patience this turn; +1000 Oblivion"
   },
   "btei-sovereign-domain": {
     "bullets": [
@@ -317,7 +320,8 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
     "bullets": [
       "On summon: All Seraphim on board gain +16 Patience",
       "On summon: Grant 2 Patient Light stacks",
-      "+2500 Oblivion",
+      "On summon: Shuffle discard into deck",
+      "+1800 Oblivion",
       "While on board: +750 Oblivion per card played while on board"
     ],
     "attacks": [
@@ -397,7 +401,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "inf-sovereign-void": {
     "bullets": [
-      "On summon: All Seraphim on board gain +12 Patience",
+      "On summon: All Seraphim on board gain +20 Patience",
       "On summon: +2800 Oblivion",
       "While on board: +420 Oblivion per card played while on board"
     ],
@@ -418,7 +422,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
       }
     ],
     "abilityName": "Null Dominion",
-    "abilityText": "Grant 1 Patient Light stacks; All Seraphim on board gain +5 Patience; +3000 Oblivion;"
+    "abilityText": "Grant 3 Patient Light stacks; Double all Patience on the board; All Seraphim on board gain +10 Patience; +3000 Oblivion"
   },
   "inf-void-cascade": {
     "bullets": [
@@ -437,13 +441,17 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "ophanim-neutral-cherubim-recall": {
     "bullets": [
-      "Salvage 2 Cherubim cards from your discard pile, then discard 1 card."
+      "Salvage 2 Cherubim cards from your discard pile",
+      "All Seraphim on board gain +2 Patience",
+      "Discard 1 card"
     ],
     "attacks": []
   },
   "ophanim-neutral-deep-seek": {
     "bullets": [
-      "Search your deck for 1 Seraphim card or Cherubim card"
+      "Search your deck for 1 Seraphim card or Cherubim card",
+      "All Seraphim on board gain +3 Patience",
+      "Discard 1 card"
     ],
     "attacks": []
   },
@@ -488,13 +496,16 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "ophanim-neutral-seraph-hunt": {
     "bullets": [
-      "Search your deck for 1 Seraphim card"
+      "Search your deck for 1 Seraphim card",
+      "All Seraphim on board gain +4 Patience"
     ],
     "attacks": []
   },
   "ophanim-neutral-seraph-recall": {
     "bullets": [
-      "Salvage 1 Seraphim card"
+      "Salvage 1 Seraphim card",
+      "All Seraphim on board gain +2 Patience",
+      "Discard 1 card of your choice"
     ],
     "attacks": []
   },
@@ -508,7 +519,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   "ophanim-neutral-void-surge": {
     "bullets": [
       "+50 Oblivion",
-      "If you control 1+ active Cherubim, +25 additional Oblivion",
+      "If you control 1+ active Cherubim, +25 additional Oblivion and all Seraphim on board gain +2 Patience",
       "Draw 1 card"
     ],
     "attacks": []
@@ -562,7 +573,8 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   "ser-neutral-null": {
     "bullets": [
       "On play: +30 Oblivion",
-      "On attack: All other Seraphim currently on board gain +2 additional Patience",
+      "On play: All other Seraphim currently on board gain +3 Patience",
+      "On play: Empower the next card you play",
       "While on board: +10 Oblivion per card played while active",
       "On attack: If Patience for this card is ≥ 4, draw 1 card."
     ],

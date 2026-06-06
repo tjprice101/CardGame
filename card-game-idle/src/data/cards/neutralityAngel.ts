@@ -51,7 +51,7 @@ export const neutralityAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Legendary',
     name: 'Aegis of Presence',
-    description: 'On summon: All Seraphim on board gain +10 Patience; +120 Oblivion. After 4 cards played: Double all Patience on the board; Seraphim attacks preserve 0.3% of consumed Patience this turn; Salvage any 1 card. While on board: +35 Oblivion whenever you play an Ophanim while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +10 Patience; +120 Oblivion. After 4 cards played: Double all Patience on the board; Seraphim attacks preserve 30% of consumed Patience this turn; Salvage any 1 card. While on board: +35 Oblivion whenever you play an Ophanim while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
     artKey: 'angel_neutral_presence',
     summonCost: ['angel-neutral-beginning', 'ser-neutral-equilibrium'],
     onSummonEffects: [
@@ -60,10 +60,10 @@ export const neutralityAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Presence Absolute',
       cardsPlayedRequirement: 4,
-      description: 'Double all Patience on the board; Seraphim attacks preserve 0.3% of consumed Patience this turn; Salvage any 1 card',
+      description: 'Double all Patience on the board; Seraphim attacks preserve 30% of consumed Patience this turn; Salvage any 1 card',
       effects: [
         { type: 'patience_double_all' },
-        { type: 'neutrality_attack_preserve', percent: 0.30 },
+        { type: 'neutrality_attack_preserve', percent: 30 },
         { type: 'salvage_any' }],
     },
     attacks: {
@@ -96,7 +96,7 @@ export const neutralityAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Legendary',
     name: 'Aegis of Equilibrium',
-    description: 'On summon: All Seraphim on board gain +8 Patience; Seraphim bonuses are amplified by +2; Shuffle discard into deck. After 5 cards played: Double all Patience on the board; Seraphim attacks preserve 0.4% of consumed Patience this turn; Empower the next card you play; +250 Oblivion. While on board: +65 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +8 Patience; Seraphim bonuses are amplified by +2; Shuffle discard into deck. After 5 cards played: Double all Patience on the board; Seraphim attacks preserve 40% of consumed Patience this turn; Empower the next card you play; +250 Oblivion. While on board: +65 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
     artKey: 'angel_neutral_equilibrium',
     summonCost: ['angel-neutral-presence', 'ser-neutral-still'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
@@ -107,10 +107,10 @@ export const neutralityAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Final Measure',
       cardsPlayedRequirement: 5,
-      description: 'Double all Patience on the board; Seraphim attacks preserve 0.4% of consumed Patience this turn; Empower the next card you play; +250 Oblivion',
+      description: 'Double all Patience on the board; Seraphim attacks preserve 40% of consumed Patience this turn; Empower the next card you play; +250 Oblivion',
       effects: [
         { type: 'patience_double_all' },
-        { type: 'neutrality_attack_preserve', percent: 0.40 },
+        { type: 'neutrality_attack_preserve', percent: 40 },
         { type: 'multiply_next' },
         { type: 'oblivion_flat', value: 250 }],
     },

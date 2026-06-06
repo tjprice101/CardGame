@@ -9,11 +9,12 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Embersmite',
-    description: 'Gain 1 Radiance; +30 Oblivion',
+    description: 'Gain 1 Radiance; +30 Oblivion; Empower the next card you play',
     artKey: 'hr_light_divine_smite',
     effects: [
       { type: 'oblivion_flat', value: 30 },
-      { type: 'radiance_gain', value: 1 }],
+      { type: 'radiance_gain', value: 1 },
+      { type: 'multiply_next' }],
   },
   {
     definitionId: 'hr-light-holy-radiance',
@@ -38,7 +39,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Thornfire Fury',
-    description: 'Spend 3 Radiance; Seraphim bonuses are amplified by +25; Draw 1 card',
+    description: 'Spend 3 Radiance; Seraphim bonuses are amplified by +25',
     artKey: 'hr_light_sacred_fury',
     effects: [
       { type: 'radiance_spend', value: 3 },
@@ -50,15 +51,17 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Cinderstrike',
-    description: '+40 Oblivion; If you control 1+ active Seraphim, +40 Oblivion; Draw 1 card',
+    description: 'Gain 1 Radiance; +40 Oblivion; If you control 1+ active Seraphim, +40 Oblivion; Salvage any 1 card',
     artKey: 'hr_light_luminous_strike',
     effects: [
+      { type: 'radiance_gain', value: 1 },
       { type: 'oblivion_flat', value: 40 },
       {
         type: 'conditional',
         condition: { type: 'seraphim_active_gte', value: 1 },
         then: [{ type: 'oblivion_flat', value: 40 }],
-      }],
+      },
+      { type: 'salvage_any' }],
   },
   {
     definitionId: 'hr-light-radiant-surge',
@@ -66,7 +69,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Cinder Surge',
-    description: '+0 Oblivion; Shuffle discard into deck; Draw 1 card',
+    description: '+0 Oblivion',
     artKey: 'hr_light_radiant_surge',
     effects: [
       { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: min(radiance * 8, 80)
@@ -78,7 +81,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberforged',
-    description: 'Spend 9999 Radiance; +0 Oblivion; Draw 1 card',
+    description: 'Spend 9999 Radiance; +0 Oblivion',
     artKey: 'hr_light_sunforged',
     effects: [
       { type: 'radiance_spend', value: 9999 },
@@ -103,7 +106,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Mantle',
-    description: 'Empower the next card you play; Draw 1 card',
+    description: 'Empower the next card you play',
     artKey: 'hr_light_exalted_mantle',
     effects: [
       { type: 'multiply_next' }],
@@ -173,7 +176,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Hallowed Pyre',
-    description: 'Spend 3 Radiance; Gain +100% total Oblivion this turn; Shuffle discard into deck; Draw 1 card',
+    description: 'Spend 3 Radiance; Gain +100% total Oblivion this turn',
     artKey: 'hr_light_sanctified_offering',
     effects: [
       { type: 'radiance_spend', value: 3 },
@@ -185,7 +188,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'Emberthorn Dividend',
-    description: 'Spend 9999 Radiance; +0 Oblivion; Draw 2 cards',
+    description: 'Spend 9999 Radiance; +0 Oblivion',
     artKey: 'hr_light_celestial_dividend',
     effects: [
       { type: 'radiance_spend', value: 9999 },
@@ -198,7 +201,7 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'Silverthorn Spire',
-    description: 'Spend 6 Radiance; Gain +250% total Oblivion this turn; Gain 6 Prismatic Light; Draw 1 card',
+    description: 'Spend 6 Radiance; Gain +250% total Oblivion this turn',
     artKey: 'hr_light_pillar_of_heaven',
     effects: [
       { type: 'radiance_spend', value: 6 },
@@ -225,10 +228,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Bond',
-    description: 'Seraphim bonuses are amplified by +15',
+    description: 'Seraphim bonuses are amplified by +15; Salvage any 1 card',
     artKey: 'hr_light_seraphic_bond',
     effects: [
       { type: 'seraphim_bonus_amplifier', value: 15 },
+      { type: 'salvage_any' },
       { type: 'radiance_gain', value: 0 },  // executor: activeSynergies * 1 (hr-light-seraphic-bond)
     ],
   },
@@ -264,9 +268,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Thornhalo Vision',
-    description: 'Draw 3 cards; Choose and discard 1 card',
+    description: 'Gain 1 Radiance; Draw 3 cards; Choose and discard 1 card',
     artKey: 'hr_light_angelic_vision',
     effects: [
+      { type: 'radiance_gain', value: 1 },
       { type: 'draw', value: 3 },
       { type: 'discard_choice', value: 1 }],
   },
@@ -311,9 +316,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Cinder Cycle',
-    description: 'Choose and discard 3 cards; Draw 1 card',
+    description: 'Gain 2 Radiance; Choose and discard 3 cards',
     artKey: 'hr_light_luminous_cycle',
     effects: [
+      { type: 'radiance_gain', value: 2 },
       { type: 'discard_choice', value: 3 }],
   },
   {
@@ -355,9 +361,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Thorngate Passage',
-    description: 'Discard 2 cards, then draw 3 cards',
+    description: 'Gain 1 Radiance; Discard 2 cards, then draw 3 cards',
     artKey: 'hr_light_gleaming_passage',
     effects: [
+      { type: 'radiance_gain', value: 1 },
       { type: 'discard_draw', discard: 2, draw: 3 }],
   },
 
@@ -405,9 +412,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'The Emberthorn Revelation',
-    description: 'Double current Radiance; +0 Oblivion; Draw 2 cards',
+    description: 'Gain 2 Radiance; Double current Radiance; +0 Oblivion',
     artKey: 'hr_light_grand_illumination',
     effects: [
+      { type: 'radiance_gain', value: 2 },
       { type: 'radiance_double' },
       { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: mutableTurn.radiance * 8 (after doubling)
     ],
