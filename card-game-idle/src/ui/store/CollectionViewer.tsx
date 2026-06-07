@@ -18,7 +18,7 @@ import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
 import VirtualizedList from '@/ui/components/VirtualizedList';
-import { getEverCollectionCount, getEverHoloCount } from '@/systems/progression/ownershipHistory';
+import { getEverCollectionCount, getEverHoloCount, getEverInfiniteCount } from '@/systems/progression/ownershipHistory';
 import CollectionCardDetail from './CollectionCardDetail';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -107,8 +107,17 @@ export default function CollectionViewer({ onClose }: Props) {
 
   const allCards = useMemo(() => registryCards.flatMap(card => {
     const variants: CollectionVariantEntry[] = [];
-    const everTotalOwned = getEverCollectionCount(progress, card.definitionId);
-    const everHoloOwned = Math.min(everTotalOwned, getEverHoloCount(progress, card.definitionId));
+    const everCollectionOwned = getEverCollectionCount(progress, card.definitionId);
+    const everInfiniteOwned = card.rarity === 'Infinite'
+      ? getEverInfiniteCount(progress, card.definitionId)
+      : 0;
+    const everTotalOwned = Math.max(everCollectionOwned, everInfiniteOwned);
+    // Legacy saves may only track Infinite ownership in infiniteCollection.
+    const baseHoloOwned = getEverHoloCount(progress, card.definitionId);
+    const everHoloOwned = Math.min(
+      everTotalOwned,
+      card.rarity === 'Infinite' ? Math.max(baseHoloOwned, everInfiniteOwned) : baseHoloOwned,
+    );
     const everNormalOwned = isHoloOnlyCard(card) ? 0 : Math.max(0, everTotalOwned - everHoloOwned);
     if (!isHoloOnlyCard(card)) {
       variants.push({
