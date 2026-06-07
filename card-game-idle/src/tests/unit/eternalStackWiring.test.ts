@@ -41,7 +41,7 @@ describe('Eternal stack wiring', () => {
     const card = ALL.find(c => c.definitionId === 'btei-pyroabyss-cinder-cataclysm')!;
     expect(card).toBeTruthy();
     const fakeDeckCard = { instanceId: 't', definitionId: card.definitionId, finish: 'normal' as const };
-    const fakeTurn: any = { trail: 0, cardsPlayedThisTurn: 0, nextCardMultiplied: false };
+    const fakeTurn: any = { trail: 0, cardsPlayedThisTurn: 0 };
     const fakeBoard: any = { frontSlots: [], backSlots: [], activeBoardEffects: [] };
     const fakeDeck: any = { deckList: [], extraDeck: [], drawPile: [], hand: [], discardPile: [] };
     const effects = (card as any).onPlayEffects ?? (card as any).effects;
@@ -53,7 +53,7 @@ describe('Eternal stack wiring', () => {
     const card = ALL.find(c => c.definitionId === 'btei-pyroabyss-hellrift-mandala')!;
     expect(card).toBeTruthy();
     const fakeDeckCard = { instanceId: 't', definitionId: card.definitionId, finish: 'normal' as const };
-    const fakeTurn: any = { trail: 0, cardsPlayedThisTurn: 0, nextCardMultiplied: false, eternalStacks: { pyro: 5 } };
+    const fakeTurn: any = { trail: 0, cardsPlayedThisTurn: 0, eternalStacks: { pyro: 5 } };
     const fakeBoard: any = { frontSlots: [], backSlots: [], activeBoardEffects: [] };
     const fakeDeck: any = { deckList: [], extraDeck: [], drawPile: [], hand: [], discardPile: [] };
     const cashout: CardEffect = { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 400, chainPerStack: 0.20 } as any;
@@ -68,9 +68,9 @@ describe('Eternal stack wiring', () => {
     const fakeDeck: any = { deckList: [], extraDeck: [], drawPile: [], hand: [], discardPile: [] };
     const cond: EffectCondition = { type: 'eternal_stack_gte', stack: 'light', value: 3 };
     const effect: CardEffect = { type: 'conditional', condition: cond, then: [{ type: 'oblivion_flat', value: 999 }] } as any;
-    const turnBelow: any = { trail: 0, cardsPlayedThisTurn: 0, nextCardMultiplied: false, eternalStacks: { light: 2 } };
+    const turnBelow: any = { trail: 0, cardsPlayedThisTurn: 0, eternalStacks: { light: 2 } };
     const below = CardEffectExecutor.execute(fakeDeckCard, turnBelow, fakeBoard, fakeDeck, false, { effects: [effect] });
-    const turnAt: any = { trail: 0, cardsPlayedThisTurn: 0, nextCardMultiplied: false, eternalStacks: { light: 3 } };
+    const turnAt: any = { trail: 0, cardsPlayedThisTurn: 0, eternalStacks: { light: 3 } };
     const at = CardEffectExecutor.execute(fakeDeckCard, turnAt, fakeBoard, fakeDeck, false, { effects: [effect] });
     expect((below as any).oblivionBonus).toBe(0);
     expect((at as any).oblivionBonus).toBe(999);
@@ -92,7 +92,7 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     const fakeDeckCard = { instanceId: 't', definitionId: 'btei-pyroabyss-hellrift-mandala', finish: 'normal' as const };
     const fakeBoard: any = { frontSlots: [], backSlots: [], activeBoardEffects: [] };
     const fakeDeck: any = { deckList: [], extraDeck: [], drawPile: [], hand: [], discardPile: [] };
-    const fakeTurn: any = { trail: 0, cardsPlayedThisTurn: 0, nextCardMultiplied: false };
+    const fakeTurn: any = { trail: 0, cardsPlayedThisTurn: 0 };
     const gain: CardEffect = { type: 'set_secondary_gain', kind: 'pyro', value: 4 } as any;
     const ignite: CardEffect = { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 25 } as any;
     const r = CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: [gain, ignite] });
@@ -114,7 +114,6 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     const fakeTurn: any = {
       trail: 0,
       cardsPlayedThisTurn: 0,
-      nextCardMultiplied: false,
       eternalStacks: { pyro: 5 },
       secondaryCounters: { pyro: 4 },
     };
@@ -123,14 +122,12 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
       consume: 3,
       oblivionPerPair: 1000,
       drawAtPairs: 3,
-      empowerAtPairs: 3,
     } as any;
 
     const result = CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: [confluence] });
     expect((result as any).oblivionBonus).toBe(3000);
     expect((result as any).turn.eternalStacks.pyro).toBe(2);
     expect((result as any).turn.secondaryCounters.pyro).toBe(1);
-    expect((result as any).turn.nextCardMultiplied).toBe(true);
     expect((result as any).deck.hand).toHaveLength(1);
   });
 
@@ -185,8 +182,8 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     const fakeDeck: any = { deckList: [], extraDeck: [], drawPile: [], hand: [], discardPile: [] };
     const cond: EffectCondition = { type: 'set_secondary_gte', kind: 'light', value: 3 };
     const effect: CardEffect = { type: 'conditional', condition: cond, then: [{ type: 'oblivion_flat', value: 777 }] } as any;
-    const turnAt: any = { trail: 0, cardsPlayedThisTurn: 0, nextCardMultiplied: false, secondaryCounters: { light: 3 } };
-    const turnBelow: any = { trail: 0, cardsPlayedThisTurn: 0, nextCardMultiplied: false, secondaryCounters: { light: 2 } };
+    const turnAt: any = { trail: 0, cardsPlayedThisTurn: 0, secondaryCounters: { light: 3 } };
+    const turnBelow: any = { trail: 0, cardsPlayedThisTurn: 0, secondaryCounters: { light: 2 } };
     const at = CardEffectExecutor.execute(fakeDeckCard, turnAt, fakeBoard, fakeDeck, false, { effects: [effect] });
     const below = CardEffectExecutor.execute(fakeDeckCard, turnBelow, fakeBoard, fakeDeck, false, { effects: [effect] });
     expect((at as any).oblivionBonus).toBe(777);
@@ -202,7 +199,7 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     const fakeDeckCard = { instanceId: 't', definitionId: 'btei-pyroabyss-hellrift-mandala', finish: 'normal' as const };
     const fakeBoard: any = { frontSlots: [], backSlots: [], activeBoardEffects: [] };
     const fakeDeck: any = { deckList: [], extraDeck: [], drawPile: [], hand: [], discardPile: [] };
-    const fakeTurn: any = { trail: 0, cardsPlayedThisTurn: 0, nextCardMultiplied: false };
+    const fakeTurn: any = { trail: 0, cardsPlayedThisTurn: 0 };
     const r = CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: summary });
     // Verifies the effects don't crash the executor (gain runs; ignite no-op with 0; resound no-op with 0).
     expect(r).toBeTruthy();

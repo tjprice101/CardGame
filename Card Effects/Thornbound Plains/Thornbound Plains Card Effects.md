@@ -22,7 +22,6 @@
 
 ### Griefbound Standard (Ophanim card)
 * Gain 1 Trail
-* Empower the next card you play
 
 ### Harrow Psalm (Ophanim card)
 * Spend 2 Trail
@@ -73,7 +72,7 @@
 * While on board: Buffs Seraphim attacks: base +42, cooldown -1
 
 ### Growth Shell (Cherubim card)
-* On play: Empower the next card you play
+* On play: 
 * Gain 4 Trail
 * While on board: If you control 1+ active Cherubim, this Cherubim grants +1.7 bonus power
 * Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.95
@@ -86,14 +85,13 @@
 ### Pale Vine Reliquary (Cherubim card)
 * On play: Salvage any 1 card
 * Gain 4 Trail
-* Empower the next card you play
 * While on board: Adjacent active Seraphim gain +16 Oblivion per card played
 * Buffs Seraphim and Angel attacks: base +13, cooldown +0, multiplier x1.00
 
 ### Path Keeper (Cherubim card)
 * On play: Look at the top 4 cards, take 1 card, and put the rest on the bottom
 * Gain 2 Trail
-* If you have 3+ Scar, Empower the next card you play
+* If you have 3+ Scar, 
 * While on board: Gain 2 Trail per card played
 * Buffs Seraphim attacks: base +26, cooldown +0, multiplier x1.00
 
@@ -219,9 +217,8 @@
 * Draw 1 card
 * After 4 cards played: Spend 3 Trail
 * +200 Oblivion
-* Empower the next card you play
 * While on board: +8 Oblivion for each Seraphim on board while on board
-* **[March Through Ruin]** Spend 3 Trail; +200 Oblivion; Empower the next card you play
+* **[March Through Ruin]** Spend 3 Trail; +200 Oblivion
 * **Attack (Primary): Irielle Thorn Ordinance**
   * Damage: 965 Oblivion
   * Cooldown: 5 cards
@@ -257,7 +254,6 @@
 * Salvage any 1 card
 * If you have 60+ Trail, Spend 25 Trail
 * +1400 Oblivion
-* Empower the next card you play
 
 ### Gallowcrown Matron (Ophanim card)
 * Gain 50 Trail
@@ -266,7 +262,6 @@
 * If you have 5+ Briar Spirals, Spend 3 Briar Spirals
 * Gain 2 Briar Spirals
 * Gain 20 Trail
-* Empower the next card you play
 
 ### Ragged Banner Host (Cherubim card)
 * On play: Gain 30 Trail
@@ -285,9 +280,7 @@
 * If you have 4+ Briar Spirals, Spend 2 Briar Spirals
 * +1600 Oblivion
 * Bloom up to 1 Briar Spirals (+25 Trail per spiral)
-* Empower the next card you play
 * If you have 70+ Trail, Spend 30 Trail
-* Empower the next card you play
 * +1000 Oblivion
 * While on board: Each new Cherubim summoned while active gains +1 durability
 * **Attack (Unsynergized): Cathedral Lance Vector Break**
@@ -310,10 +303,10 @@
 * Salvage any 1 card
 * Gain 6 Trail
 * +1800 Oblivion
-* If you have 80+ Trail, Empower the next card you play
+* If you have 80+ Trail, 
 * +1500 Oblivion
 * While on board: +205 Oblivion per card played while on board
-* **[Dirge Corridor]** Spend 50 Trail; Bloom all Briar Spirals (+30 Trail per spiral); Salvage any 1 card; Gain 6 Trail; +1800 Oblivion; If you have 80+ Trail, Empower the next card you play; +1500 Oblivion
+* **[Dirge Corridor]** Spend 50 Trail; Bloom all Briar Spirals (+30 Trail per spiral); Salvage any 1 card; Gain 6 Trail; +1800 Oblivion; If you have 80+ Trail, +1500 Oblivion
 * **Attack (Primary): Grave Hedge Ordinance**
   * Damage: 2080 Oblivion
   * Cooldown: 5 cards
@@ -336,7 +329,6 @@
 * +2600 Oblivion
 * If you have 5+ Briar Spirals, Spend 3 Briar Spirals
 * Bloom up to 3 Briar Spirals (+72 Trail per spiral)
-* Empower the next card you play
 * If you have 150+ Trail, Spend 70 Trail
 * +3800 Oblivion
 * Draw 1 card
@@ -349,7 +341,6 @@
 * Gain 3 Briar Spirals
 * Draw 1 card
 * +1800 Oblivion
-* Empower the next card you play
 * While on board: Adjacent active Seraphim gain +280 Oblivion per card played
 
 ### Thorn Widow Engine (Seraphim card)
@@ -360,12 +351,10 @@
 * +2600 Oblivion
 * If you have 4+ Briar Spirals, Spend 2 Briar Spirals
 * Bloom up to 2 Briar Spirals (+78 Trail per spiral)
-* Empower the next card you play
 * Gain +150% total Oblivion this turn
 * If you have 110+ Trail, Spend 44 Trail
 * Gain 24 Trail
 * +2800 Oblivion
-* Empower the next card you play
 * While on board: Each new Cherubim summoned while active gains +2 durability
 * **Attack (Unsynergized): Thorn Widow Vector Break**
   * Damage: 4405 Oblivion
@@ -390,11 +379,11 @@
 * Salvage any 1 card
 * Gain 16 Trail
 * +3600 Oblivion
-* If you have 120+ Trail, Empower the next card you play
+* If you have 120+ Trail, 
 * +3200 Oblivion
 * Draw 2 cards
 * While on board: +520 Oblivion per card played while on board
-* **[Funeral Surge]** Spend 90 Trail; If you have 8+ Briar Spirals, Spend 4 Briar Spirals; +4200 Oblivion; Bloom all Briar Spirals (+56 Trail per spiral); Spend all Briar Spirals; Salvage any 1 card; Gain 16 Trail; +3600 Oblivion; If you have 120+ Trail, Empower the next card you play; +3200 Oblivion; Draw 2 cards
+* **[Funeral Surge]** Spend 90 Trail; If you have 8+ Briar Spirals, Spend 4 Briar Spirals; +4200 Oblivion; Bloom all Briar Spirals (+56 Trail per spiral); Spend all Briar Spirals; Salvage any 1 card; Gain 16 Trail; +3600 Oblivion; If you have 120+ Trail, +3200 Oblivion; Draw 2 cards
 * **Attack (Primary): Thornbound Elegy Ordinance**
   * Damage: 4010 Oblivion
   * Cooldown: 5 cards

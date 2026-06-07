@@ -37,7 +37,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
       "On play: Designate the Seraphim with the most Patience as your Vessel",
       "On play: All Seraphim on board gain +8 Patience",
       "On play: Grant 1 Patient Light stack",
-      "On play: Empower the next card you play",
+      
       "On play: +300 Oblivion",
       "While on board: +200 Oblivion per card played while active"
     ],
@@ -131,7 +131,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
       }
     ],
     "abilityName": "Axiom Devour",
-    "abilityText": "Grant 2 Patient Light stacks; Double all Patience on the board; All Seraphim on board gain +3 Patience; Empower the next card you play; +1500 Oblivion"
+    "abilityText": "Grant 2 Patient Light stacks; Double all Patience on the board; All Seraphim on board gain +3 Patience; +1500 Oblivion"
   },
   "btei-neutrality-paradox-crown": {
     "bullets": [
@@ -574,7 +574,7 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
     "bullets": [
       "On play: +30 Oblivion",
       "On play: All other Seraphim currently on board gain +3 Patience",
-      "On play: Empower the next card you play",
+      
       "While on board: +10 Oblivion per card played while active",
       "On attack: If Patience for this card is ≥ 4, draw 1 card."
     ],

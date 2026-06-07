@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 32;
+export const CURRENT_VERSION = 33;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -494,6 +494,14 @@ const migrations: Record<number, Migration> = {
       if (!t.dfhVeilAttackBonusByDefinition || typeof t.dfhVeilAttackBonusByDefinition !== 'object') {
         t.dfhVeilAttackBonusByDefinition = {};
       }
+    }
+    return data;
+  },
+  33: (data) => {
+    // v33 purges the multiply_next / nextCardMultiplied engine primitive.
+    if (data.turn) {
+      const t = data.turn as unknown as Record<string, unknown>;
+      delete t.nextCardMultiplied;
     }
     return data;
   },

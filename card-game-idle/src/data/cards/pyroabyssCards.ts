@@ -157,7 +157,7 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void-Flame Seraphim',
-    description: 'On play: +80 Oblivion; Gain 5 Heat; Empower the next card you play; If you have 10+ Heat, Draw 1 card. While on board: +20 Oblivion per card played while active',
+    description: 'On play: +80 Oblivion; Gain 5 Heat; If you have 10+ Heat, Draw 1 card. While on board: +20 Oblivion per card played while active',
     artKey: 'ser_fire_voidflame',
     attacks: {
       unsynergized: {
@@ -186,7 +186,6 @@ export const pyroabyssSeraphims: SeraphimDefinition[] = [
     onPlayEffects: [
       { type: 'oblivion_flat', value: 80 },
       { type: 'pyro_heat_gain', value: 5 },
-      { type: 'multiply_next' },
       { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 10 }, then: [{ type: 'draw', value: 1 }] }],
   }];
 
@@ -325,12 +324,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyroclast',
-    description: 'Burst up to 4 Heat (+40 Oblivion per Heat); +65 Oblivion; If you control 3+ active Seraphim, Gain 3 Heat; Empower the next card you play',
+    description: 'Burst up to 4 Heat (+40 Oblivion per Heat); +65 Oblivion; If you control 3+ active Seraphim, Gain 3 Heat',
     artKey: 'seek_fire_pyroclast',
     effects: [
       { type: 'pyro_heat_burst', oblivionPerHeat: 40, consume: 4 },
       { type: 'oblivion_flat', value: 65 },
-      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'pyro_heat_gain', value: 3 }, { type: 'multiply_next' }] }],
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'pyro_heat_gain', value: 3 }] }],
   },
   {
     definitionId: 'ophanim-fire-ember-threshold',
@@ -378,12 +377,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Cinder Chain',
-    description: 'Gain 3 Heat; If you have 10+ Heat, Gain 3 Heat; Empower the next card you play',
+    description: 'Gain 3 Heat; If you have 10+ Heat, Gain 3 Heat',
     artKey: 'seek_fire_ember_chain',
     effects: [
       { type: 'pyro_heat_gain', value: 3 },
-      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 10 }, then: [{ type: 'pyro_heat_gain', value: 3 }] },
-      { type: 'multiply_next' }],
+      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 10 }, then: [{ type: 'pyro_heat_gain', value: 3 }] }],
   },
   // Epics
   {
@@ -404,12 +402,11 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Inferno',
-    description: 'Burst up to 5 Heat (+48 Oblivion per Heat); +110 Oblivion; Empower the next card you play',
+    description: 'Burst up to 5 Heat (+48 Oblivion per Heat); +110 Oblivion',
     artKey: 'seek_fire_inferno',
     effects: [
       { type: 'pyro_heat_burst', oblivionPerHeat: 48, consume: 5 },
-      { type: 'oblivion_flat', value: 110 },
-      { type: 'multiply_next' }],
+      { type: 'oblivion_flat', value: 110 }],
   },
   // Legendary
   {
@@ -418,10 +415,10 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Legendary',
     name: 'Void Apocalypse',
-    description: 'Burst up to 3 Heat (+62 Oblivion per Heat); +120 Oblivion; If you have 8+ Heat, Burst up to 4 Heat (+78 Oblivion per Heat); Empower the next card you play',
+    description: 'Burst up to 3 Heat (+62 Oblivion per Heat); +120 Oblivion; If you have 8+ Heat, Burst up to 4 Heat (+78 Oblivion per Heat)',
     artKey: 'seek_fire_void_apocalypse',
     effects: [
       { type: 'pyro_heat_burst', oblivionPerHeat: 62, consume: 3 },
       { type: 'oblivion_flat', value: 120 },
-      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 8 }, then: [{ type: 'pyro_heat_burst', oblivionPerHeat: 78, consume: 4 }, { type: 'multiply_next' }] }],
+      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 8 }, then: [{ type: 'pyro_heat_burst', oblivionPerHeat: 78, consume: 4 }] }],
   }];

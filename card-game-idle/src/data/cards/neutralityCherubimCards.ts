@@ -109,7 +109,6 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
       { type: 'cherubim_patience_per_card', value: 3 }],
     onPlayEffects: [
       { type: 'oblivion_flat', value: 140 },
-      { type: 'multiply_next' },
       { type: 'salvage_any' }],
   }];
 

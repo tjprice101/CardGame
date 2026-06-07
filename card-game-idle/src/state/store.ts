@@ -150,7 +150,6 @@ const defaultTurn: TurnState = {
   lastPlayedDefinitionId: null,
   turnNumber: 0,
   emberGroveEchoUsedThisTurn: false,
-  nextCardMultiplied: false,
   mulliganSelected: [],
   pendingEffect: null,
   lastResolvedSubtype: null,
@@ -609,7 +608,6 @@ function applyBurningGardenFinalChord(s: Store, def: CardDefinition, chromaticSo
   s.turn.burningGardenNextFinalChordScaleBonus = 0;
   if (def.type === 'Seraphim') {
     grantOblivion(s, 150 * scale);
-    s.turn.nextCardMultiplied = true;
     if ((s.turn.burningGardenGeometryMode ?? false)) {
     }
     return;
@@ -2066,12 +2064,10 @@ function applyButterflyBreakpointReward(s: Store, breakpoint: 4 | 8 | 12): void 
   }
 
   if (breakpoint === 8) {
-    s.turn.nextCardMultiplied = true;
-    if (upgraded) s.deck = TurnSystem.drawCards(s.deck, 1);
+    s.deck = TurnSystem.drawCards(s.deck, upgraded ? 2 : 1);
     return;
   }
 
-  s.turn.nextCardMultiplied = true;
   s.deck = TurnSystem.drawCards(s.deck, upgraded ? 2 : 1);
   s.turn.butterflySpectrum = 0;
   s.turn.butterflyFlutterLevel = 0;
@@ -3073,7 +3069,6 @@ function applyBurningGardenPlayState(
     const condGrove = (s.board.emberGrove?.length ?? 0) >= 1;
 
     if (condEngines) grantOblivion(s, 300);
-    if (condGrove) s.turn.nextCardMultiplied = true;
     if (condCards && condEngines && condGrove) {
       s.turn.burningGardenZenithNextInfinite = true;
     }
@@ -4705,7 +4700,6 @@ export const useStore = create<Store>()(
             effects: cherubimDef.onPlayEffects,
             countAsPlay: false,
             removeFromHand: false,
-            useNextCardMultiplier: false,
           },
         );
         if (!result.canPlay) return;
@@ -4828,7 +4822,7 @@ export const useStore = create<Store>()(
           s.board,
           s.deck,
           false,
-          { countAsPlay: false, removeFromHand: false, useNextCardMultiplier: false }
+          { countAsPlay: false, removeFromHand: false }
         );
         if (result.canPlay) {
           const turnBefore = captureTurnSnapshot(s.turn);
@@ -4868,7 +4862,6 @@ export const useStore = create<Store>()(
             effects: angelDef.activatedAbility.effects,
             countAsPlay: false,
             removeFromHand: false,
-            useNextCardMultiplier: false,
           }
         );
         if (!result.canPlay) return;
@@ -4988,9 +4981,6 @@ export const useStore = create<Store>()(
           if (queue > 0) {
             amount += queue * (140 + (s.turn.glassProofDepth ?? 0) * 12);
             s.turn.glassWaveQueue = Math.max(0, queue - 3);
-            if (queue >= 5) {
-              s.turn.nextCardMultiplied = true;
-            }
           }
         }
 
@@ -5573,7 +5563,6 @@ export const useStore = create<Store>()(
               effects: cherubimDef.onPlayEffects,
               countAsPlay: false,
               removeFromHand: false,
-              useNextCardMultiplier: false,
             },
           );
           if (!result.canPlay) return;
@@ -5936,7 +5925,6 @@ export const useStore = create<Store>()(
               effects: pending.resolutionEffects,
               countAsPlay: false,
               removeFromHand: false,
-              useNextCardMultiplier: false,
             },
           );
           if (!result.canPlay) return;

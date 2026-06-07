@@ -7,7 +7,7 @@ export const thornboundAngels: AngelDefinition[] = [
     element: 'Thornbound',
     rarity: 'Legendary',
     name: 'Irielle Thorn Saint of the Last Road',
-    description: 'On summon: Gain 2 Trail; Draw 1 card. After 4 cards played: Spend 3 Trail; +200 Oblivion; Empower the next card you play. While on board: +8 Oblivion for each Seraphim on board while on board',
+    description: 'On summon: Gain 2 Trail; Draw 1 card. After 4 cards played: Spend 3 Trail; +200 Oblivion. While on board: +8 Oblivion for each Seraphim on board while on board',
     artKey: 'tbp_angel_irielle_bramble_gate',
     summonCost: ['tbp-ser-thornplate-sentry', 'tbp-ser-vinedusk-lancer'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
@@ -17,11 +17,10 @@ export const thornboundAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'March Through Ruin',
       cardsPlayedRequirement: 4,
-      description: 'Spend 3 Trail; +200 Oblivion; Empower the next card you play',
+      description: 'Spend 3 Trail; +200 Oblivion',
       effects: [
         { type: 'trail_spend', value: 3 },
-        { type: 'oblivion_flat', value: 200 },
-        { type: 'multiply_next' }],
+        { type: 'oblivion_flat', value: 200 }],
     },
     attacks: {
       primary: {

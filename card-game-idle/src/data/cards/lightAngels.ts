@@ -7,7 +7,7 @@ export const lightAngels: AngelDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Seraphiel Embermane',
-    description: 'On summon: Gain 8 Radiance. After 3 cards played: Double current Radiance; Empower the next card you play. While on board: +20 Oblivion whenever you play an Ophanim while on board',
+    description: 'On summon: Gain 8 Radiance. After 3 cards played: Double current Radiance. While on board: +20 Oblivion whenever you play an Ophanim while on board',
     artKey: 'angel_light_seraphiel',
     summonCost: ['ser-light-dawn', 'ser-light-vigil'],
     onSummonEffects: [
@@ -15,10 +15,9 @@ export const lightAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Canticle of First Flame',
       cardsPlayedRequirement: 3,
-      description: 'Double current Radiance; Empower the next card you play',
+      description: 'Double current Radiance',
       effects: [
-        { type: 'radiance_double' },
-        { type: 'multiply_next' }],
+        { type: 'radiance_double' }],
     },
     attacks: {
       primary: {
@@ -94,7 +93,7 @@ export const lightAngels: AngelDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'Solarius Emberthorn Ascendant',
-    description: 'On summon: Gain 12 Radiance; Seraphim bonuses are amplified by +30. After 5 cards played: Double current Radiance; Gain +80% total Oblivion this turn; Empower the next card you play; +150 Oblivion. While on board: +24 Oblivion per card played while on board',
+    description: 'On summon: Gain 12 Radiance; Seraphim bonuses are amplified by +30. After 5 cards played: Double current Radiance; Gain +80% total Oblivion this turn; +150 Oblivion. While on board: +24 Oblivion per card played while on board',
     artKey: 'angel_light_solarius',
     summonCost: ['angel-light-aurelion', 'ser-light-throne', 'ser-light-herald'],
     onSummonEffects: [
@@ -103,11 +102,10 @@ export const lightAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Emberthorn Apotheosis',
       cardsPlayedRequirement: 5,
-      description: 'Double current Radiance; Gain +80% total Oblivion this turn; Empower the next card you play; +150 Oblivion',
+      description: 'Double current Radiance; Gain +80% total Oblivion this turn; +150 Oblivion',
       effects: [
         { type: 'radiance_double' },
         { type: 'score_multiplier', value: 80 },
-        { type: 'multiply_next' },
         { type: 'oblivion_flat', value: 150 }],
     },
     attacks: {

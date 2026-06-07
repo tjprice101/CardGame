@@ -5,12 +5,12 @@ import type { BossDefinition, BossCategory } from '@/types/bossFight';
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
 // Re-anchored for the post-hidden-multiplier combat baseline.
-const FIRST_SET_FIRST_BOSS_HP = 45_000;
+const FIRST_SET_FIRST_BOSS_HP = 168_750;
 const SET_FINAL_HP_MULTIPLIER = 2.7;
 const EVENT_BOSS_CATEGORY: BossCategory = '[EVENT] Wished Upon A Star';
 
 // Bump this when rotating to a new live event cycle.
-export const EVENT_BOSS_HP_CYCLE_ID = 'wuas-cycle-2026-06-reanchor-v2';
+export const EVENT_BOSS_HP_CYCLE_ID = 'wuas-cycle-2026-06-reanchor-v4';
 const EVENT_BOSS_ANCHOR_PERCENTILE = 0.84;
 const EVENT_BOSS_ABOVE_NON_EVENT_FACTOR = 1.08;
 const EVENT_BOSS_BELOW_RAID_FACTOR = 0.9;

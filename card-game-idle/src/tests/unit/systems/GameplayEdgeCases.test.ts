@@ -1647,7 +1647,7 @@ describe('Hidden multiplier regression guards', () => {
   function runPrimaryAttackWithDefinitions(
     definitions: CardDefinition[],
     board: BoardState,
-  ): { oblivionDelta: number; nextCardMultiplied: boolean; handSize: number } {
+  ): { oblivionDelta: number; handSize: number } {
     resetStore();
 
     const originalGetDefinition = ScoreSystem.getDefinition;
@@ -1668,7 +1668,6 @@ describe('Hidden multiplier regression guards', () => {
           ...state.turn,
           phase: 'playing',
           pendingEffect: null,
-          nextCardMultiplied: false,
         },
         progress: {
           ...state.progress,
@@ -1682,7 +1681,6 @@ describe('Hidden multiplier regression guards', () => {
       const state = useStore.getState();
       return {
         oblivionDelta: state.progress.oblivion,
-        nextCardMultiplied: state.turn.nextCardMultiplied,
         handSize: state.deck.hand.length,
       };
     } finally {
@@ -1840,7 +1838,6 @@ describe('Hidden multiplier regression guards', () => {
     const result = runPrimaryAttackWithDefinitions(sharedDefs, board);
 
     expect(result.oblivionDelta).toBe(1000);
-    expect(result.nextCardMultiplied).toBe(false);
     expect(result.handSize).toBe(0);
   });
 });

@@ -112,7 +112,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = ([
     element: 'Dark',
     rarity: 'Common',
     name: 'Rose-Spine Drake',
-    description: 'On play: +35 Oblivion; Gain 2 Monochromatic Shards; Gain 2 Black Flame. While on board: +10 Oblivion per card played while active',
+    description: 'On play: Draw 1 card; +35 Oblivion; Gain 2 Monochromatic Shards; Gain 2 Black Flame. While on board: +10 Oblivion per card played while active',
     artKey: 'bgi_ser_rose_spine_drake',
     attacks: {
       unsynergized: {
@@ -172,7 +172,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = ([
       },
     },
     baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 1, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'multiply_next' }, { type: 'oblivion_flat', value: 45 }, { type: 'monochromatic_shards_gain', value: 3 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 45 }, { type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ser-mourning-crest',
@@ -214,7 +214,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = ([
     element: 'Dark',
     rarity: 'Rare',
     name: 'Void-Mandible Archon',
-    description: 'On play: Empower the next card you play; Gain 3 Monochromatic Shards; Gain 2 Black Flame. While on board: +30 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 3 Monochromatic Shards; Gain 2 Black Flame. While on board: +30 Oblivion whenever you play an Ophanim while active',
     artKey: 'bgi_ser_void_mandible_archon',
     attacks: {
       unsynergized: {
@@ -240,7 +240,7 @@ export const blackGlassInfernoSeraphims: SeraphimDefinition[] = ([
       },
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 30, synergyRequirement: 'Dark' },
-    onPlayEffects: [{ type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 3 }],
+    onPlayEffects: [{ type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ser-cinder-vow-leviathan',
@@ -448,9 +448,9 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Common',
     name: 'Bladewind Keening',
-    description: '+35 Oblivion; Empower the next card you play; Gain 2 Black Flame',
+    description: '+35 Oblivion; Gain 2 Black Flame',
     artKey: 'bgi_seek_bladewind_keening',
-    effects: [{ type: 'oblivion_flat', value: 35 }, { type: 'multiply_next' }],
+    effects: [{ type: 'oblivion_flat', value: 35 }],
   },
   {
     definitionId: 'bgi-ophanim-scorchglass-route',
@@ -531,9 +531,9 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Epic',
     name: 'Copper Hate Psalm',
-    description: '+160 Oblivion; Empower the next card you play; Gain 2 Black Flame',
+    description: '+160 Oblivion; Gain 2 Black Flame',
     artKey: 'bgi_seek_copper_hate_psalm',
-    effects: [{ type: 'oblivion_flat', value: 160 }, { type: 'multiply_next' }],
+    effects: [{ type: 'oblivion_flat', value: 160 }],
   },
   {
     definitionId: 'bgi-ophanim-blue-mourning-rift',
@@ -571,9 +571,9 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Legendary',
     name: "Sorveth's Eleventh Second",
-    description: 'Draw 4 cards; Empower the next card you play; Gain 8 Monochromatic Shards; Gain 2 Black Flame',
+    description: 'Draw 4 cards; Gain 8 Monochromatic Shards; Gain 2 Black Flame',
     artKey: 'bgi_seek_sorveths_eleventh_second',
-    effects: [{ type: 'draw', value: 4 }, { type: 'multiply_next' }, { type: 'monochromatic_shards_gain', value: 8 }],
+    effects: [{ type: 'draw', value: 4 }, { type: 'monochromatic_shards_gain', value: 8 }],
   },
   {
     definitionId: 'bgi-ophanim-shadows-of-the-inferno',
@@ -669,11 +669,11 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = ([
     element: 'Dark',
     rarity: 'Epic',
     name: "Sorveth's Ring",
-      description: 'On play: Empower the next card you play; Draw 3 cards; +90 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +16 Oblivion per card played',
+      description: 'On play: Draw 3 cards; +90 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +16 Oblivion per card played',
     artKey: 'bgi_cherubim_sorveths_ring',
     maxDurability: 4,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 16 }],
-      onPlayEffects: [{ type: 'multiply_next' }, { type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 90 }],
+      onPlayEffects: [{ type: 'draw', value: 3 }, { type: 'oblivion_flat', value: 90 }],
   },
   {
     definitionId: 'bgi-cherubim-veth-serath-midplace',
@@ -730,10 +730,10 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = ([
     element: 'Dark',
     rarity: 'Common',
     name: 'Rose Shroud',
-    description: 'On play: Empower the next card you play; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +2 Oblivion per card played; Buffs Angel attacks: base +2, cooldown +0, multiplier x1.00',
+    description: 'On play: Gain 2 White Flame. While on board: Adjacent active Seraphim gain +2 Oblivion per card played; Buffs Angel attacks: base +2, cooldown +0, multiplier x1.00',
     artKey: 'bgi_cherubim_rose_shroud',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 2 }],
-    onPlayEffects: [{ type: 'multiply_next' }],
+    onPlayEffects: [],
   },
   {
     definitionId: 'cherubim-dark-void-veil',

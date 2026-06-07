@@ -32,7 +32,6 @@
 
 ### Velmargin Lensfall (Ophanim card)
 * Gain 5 Flutter Spectrum
-* Empower the next card you play
 
 ### Copper Bank Spark (Cherubim card)
 * On play: Gain 2 Flutter Spectrum
@@ -377,7 +376,6 @@
 * Summon materials: Velkoreth, The Unfolding, Kethravoss of the Seven Layers, Ossiveth Shadowspan
 * Extra summon materials: special condition; 2+ Seraphim on board
 * On summon: Gain 8 Flutter Spectrum
-* Empower the next card you play
 * Gain 4 Wing Resonances
 * After 4 cards played: Apex up to 4 Wing Resonances (+220.0 Oblivion per resonance, +40.0 Oblivion per current Spectrum, +120.0 Oblivion per Formation, +1.0 draw per Formation, empower your next card at Formation 2+)
 * Release up to 6 Spectrum (+200 Oblivion per Spectrum)

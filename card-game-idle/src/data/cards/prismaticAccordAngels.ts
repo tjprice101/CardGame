@@ -58,7 +58,7 @@ export const prismaticAccordAngels: AngelDefinition[] = [
     element: 'Prismatic',
     rarity: 'Legendary',
     name: 'Vorthum Whitebeam Arbiter',
-    description: 'On summon: Draw 2 cards; +170 Oblivion; If you have 1+ Prism Charges, Spend 1 Prism Charge; +100 Oblivion. After 5 cards played: Empower the next card you play; Salvage any 1 card; If you have 2+ Prism Charges, Spend 2 Prism Charges; +150 Oblivion. While on board: +16 Oblivion per card played while on board',
+    description: 'On summon: Draw 2 cards; +170 Oblivion; If you have 1+ Prism Charges, Spend 1 Prism Charge; +100 Oblivion. After 5 cards played: Salvage any 1 card; If you have 2+ Prism Charges, Spend 2 Prism Charges; +150 Oblivion. While on board: +16 Oblivion per card played while on board',
     artKey: 'pa_angel_vorthum_whitebeam_arbiter',
     summonCost: ['pa-ser-goldvein-ancestor', 'pa-ser-veilstep-drossken', 'pa-ser-plainshush-drossken'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
@@ -69,9 +69,8 @@ export const prismaticAccordAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Spectrum Without End',
       cardsPlayedRequirement: 5,
-      description: 'Empower the next card you play; Salvage any 1 card; If you have 2+ Prism Charges, Spend 2 Prism Charges; +150 Oblivion',
+      description: 'Salvage any 1 card; If you have 2+ Prism Charges, Spend 2 Prism Charges; +150 Oblivion',
       effects: [
-        { type: 'multiply_next' },
         { type: 'salvage_any' },
         { type: 'conditional', condition: { type: 'prismatic_node_charges_gte', value: 2 }, then: [{ type: 'prismatic_charge_spend', value: 2 }, { type: 'oblivion_flat', value: 150 }] }],
     },

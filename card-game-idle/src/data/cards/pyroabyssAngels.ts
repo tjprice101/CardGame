@@ -52,7 +52,7 @@ export const pyroabyssAngels: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyroclast Wraith',
-    description: 'On summon: Gain 5 Heat; +110 Oblivion; If you have 10+ Heat, Draw 1 card. After 4 cards played: Burst up to 4 Heat (+52 Oblivion per Heat); +100 Oblivion; Empower the next card you play. While on board: +38 Oblivion per card played while on board',
+    description: 'On summon: Gain 5 Heat; +110 Oblivion; If you have 10+ Heat, Draw 1 card. After 4 cards played: Burst up to 4 Heat (+52 Oblivion per Heat); +100 Oblivion. While on board: +38 Oblivion per card played while on board',
     artKey: 'angel_fire_pyroclast_wraith',
     summonCost: ['angel-fire-cinderwing', 'ser-fire-infernal'],
     extraSummonConditions: [
@@ -64,11 +64,10 @@ export const pyroabyssAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Magma Ascension',
       cardsPlayedRequirement: 4,
-      description: 'Burst up to 4 Heat (+52 Oblivion per Heat); +100 Oblivion; Empower the next card you play',
+      description: 'Burst up to 4 Heat (+52 Oblivion per Heat); +100 Oblivion',
       effects: [
         { type: 'pyro_heat_burst', oblivionPerHeat: 52, consume: 4 },
-        { type: 'oblivion_flat', value: 100 },
-        { type: 'multiply_next' }],
+        { type: 'oblivion_flat', value: 100 }],
     },
     attacks: {
       primary: {
@@ -100,7 +99,7 @@ export const pyroabyssAngels: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Legendary',
     name: 'Obliteron',
-    description: 'On summon: Gain 7 Heat; +140 Oblivion; Empower the next card you play. After 5 cards played: Burst up to 5 Heat (+60 Oblivion per Heat); +240 Oblivion; Draw 2 cards. While on board: +46 Oblivion per card played while on board',
+    description: 'On summon: Gain 7 Heat; +140 Oblivion. After 5 cards played: Burst up to 5 Heat (+60 Oblivion per Heat); +240 Oblivion; Draw 2 cards. While on board: +46 Oblivion per card played while on board',
     artKey: 'angel_fire_obliteron',
     summonCost: ['angel-fire-pyroclast-wraith', 'ser-fire-voidflame'],
     extraSummonConditions: [
@@ -108,8 +107,7 @@ export const pyroabyssAngels: AngelDefinition[] = [
       { type: 'pyro_heat_gte', value: 18 }],
     onSummonEffects: [
       { type: 'pyro_heat_gain', value: 7 },
-      { type: 'oblivion_flat', value: 140 },
-      { type: 'multiply_next' }],
+      { type: 'oblivion_flat', value: 140 }],
     activatedAbility: {
       name: 'Cataclysm Engine',
       cardsPlayedRequirement: 5,

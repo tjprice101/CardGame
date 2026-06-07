@@ -87,7 +87,7 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
     oblivion_flat: 'immediate Oblivion injection',
     chain_gain: 'draw tempo conversion',
     chain_multiplier_set: 'oblivion scaling setup',
-    multiply_next: 'next-card amplification',
+    multiply_next: '',
     salvage_any: 'discard reclamation',
     look_top_take: 'topdeck sculpting',
     look_top_take_drop: 'selection routing',
@@ -1038,7 +1038,6 @@ export default function BoardDisplay() {
                 effects: angelDef?.activatedAbility.effects,
                 countAsPlay: false,
                 removeFromHand: false,
-                useNextCardMultiplier: false,
               },
             ).canPlay;
             const isReady = hasAwakenRequirement && canPayAwakenCost;

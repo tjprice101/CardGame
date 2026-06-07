@@ -28,7 +28,7 @@
 
 ## Abyssal Singularity Seraph
 * On play: gain 4 Inferno Tiers and 4 Chroma Embers, then Confluence up to 3 matched pairs for an immediate burst
-* If 3 pairs are spent, empower the next card you play
+* If 3 pairs are spent, 
 * This is the suite's precision compressor: it turns a balanced state into instant pressure
 
 ## Abyssal Veil
@@ -50,14 +50,13 @@
 * Gain 4 Chroma Embers
 * +2600 Oblivion
 * Ignite up to 5 Chroma Embers (+122.0 Oblivion × echoes²)
-* If you have 7+ Chroma Embers, Empower the next card you play
+* If you have 7+ Chroma Embers, 
 * +2200 Oblivion
 * Draw 1 card
 
 ## Cinder Chain
 * Gain 3 Heat
 * If you have 10+ Heat, Gain 3 Heat
-* Empower the next card you play
 
 ## Cinder Draw
 * Gain 2 Heat
@@ -121,7 +120,7 @@
 * Draw 1, then correct whichever side of your Pyro state is lagging
 * If Inferno Tiers are high, forge extra Chroma Embers
 * if Chroma Embers are high, raise Inferno Tiers
-* Then Confluence up to 2 matched pairs for a tactical burst and empower the next card if both pairs land
+* Then Confluence up to 2 matched pairs for a tactical burst
 
 ## Infernal Seraphim
 * On play: +22 Oblivion
@@ -132,12 +131,10 @@
 ## Infernal Suncore
 * On play: Gain 2 Furnace Heat
 * Gain 2 Chroma Embers
-* Empower the next card you play
 * If you have 4+ Furnace Heat, Spend 4 Furnace Heat
 * Gain 4 Chroma Embers
 * Ignite up to 2 Chroma Embers (+74.0 Oblivion × echoes²)
 * +1200 Oblivion
-* Empower the next card you play
 * While on board: +35 Oblivion per card played while active
 
 ## Infernal Surge
@@ -153,12 +150,10 @@
 ## Inferno
 * Burst up to 5 Heat (+48.0 Oblivion per Heat)
 * +110 Oblivion
-* Empower the next card you play
 
 ## Obliteron
 * On summon: Gain 7 Heat
 * +140 Oblivion
-* Empower the next card you play
 * After 5 cards played: Burst up to 5 Heat (+60.0 Oblivion per Heat)
 * +240 Oblivion
 * Draw 2 cards
@@ -174,7 +169,6 @@
 * If you have played 4+ cards this turn, Gain 2 Chroma Embers
 * Ignite up to 2 Chroma Embers (+70.0 Oblivion × echoes²)
 * +1500 Oblivion
-* Empower the next card you play
 
 ## Pyraxis Colossus
 * On play: Gain 5 Furnace Heat
@@ -182,7 +176,6 @@
 * If you have 7+ Furnace Heat, Spend 7 Furnace Heat
 * Gain 4 Chroma Embers
 * +2200 Oblivion
-* Empower the next card you play
 * If you have 4+ Chroma Embers, Ignite up to 3 Chroma Embers (+108.0 Oblivion × echoes²)
 * +1200 Oblivion
 * While on board: +760 Oblivion per card played while active
@@ -222,7 +215,6 @@
 * Burst up to 4 Heat (+40.0 Oblivion per Heat)
 * +65 Oblivion
 * If you control 3+ active Seraphim, Gain 3 Heat
-* Empower the next card you play
 
 ## Pyroclast Wraith
 * On summon: Gain 5 Heat
@@ -230,9 +222,8 @@
 * If you have 10+ Heat, Draw 1 card
 * After 4 cards played: Burst up to 4 Heat (+52.0 Oblivion per Heat)
 * +100 Oblivion
-* Empower the next card you play
 * While on board: +38 Oblivion per card played while on board
-* **[Magma Ascension]** Burst up to 4 Heat (+52.0 Oblivion per Heat); +100 Oblivion; Empower the next card you play
+* **[Magma Ascension]** Burst up to 4 Heat (+52.0 Oblivion per Heat); +100 Oblivion
 
 ## Riftbell Catastrophe
 * On summon: Gain 4 Furnace Heat
@@ -243,9 +234,8 @@
 * If you have 6+ Chroma Embers, Ignite up to 4 Chroma Embers (+82.0 Oblivion × echoes²)
 * Spend 2 Chroma Embers
 * Search your deck for 1 matching Ophanim or Cherubim
-* Empower the next card you play
 * While on board: +175 Oblivion per card played while on board
-* **[Rift Verdict]** If you have 5+ Furnace Heat, Spend 5 Furnace Heat; +2600 Oblivion; If you have 6+ Chroma Embers, Ignite up to 4 Chroma Embers (+82.0 Oblivion × echoes²); Spend 2 Chroma Embers; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play
+* **[Rift Verdict]** If you have 5+ Furnace Heat, Spend 5 Furnace Heat; +2600 Oblivion; If you have 6+ Chroma Embers, Ignite up to 4 Chroma Embers (+82.0 Oblivion × echoes²); Spend 2 Chroma Embers; Search your deck for 1 matching Ophanim or Cherubim
 
 ## Riftborn Sovereign
 * On summon: Gain 7 Furnace Heat
@@ -257,9 +247,8 @@
 * Spend all Chroma Embers
 * +1600 Oblivion
 * Search your deck for 1 matching Ophanim or Cherubim
-* Empower the next card you play
 * While on board: +400 Oblivion per card played while on board
-* **[Rift Conflagration]** If you have 9+ Furnace Heat, Cash out up to 9 Furnace Heat (+1000 Oblivion per stack); +4800 Oblivion; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118.0 Oblivion × echoes²); Spend all Chroma Embers; +1600 Oblivion; Search your deck for 1 matching Ophanim or Cherubim; Empower the next card you play
+* **[Rift Conflagration]** If you have 9+ Furnace Heat, Cash out up to 9 Furnace Heat (+1000 Oblivion per stack); +4800 Oblivion; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118.0 Oblivion × echoes²); Spend all Chroma Embers; +1600 Oblivion; Search your deck for 1 matching Ophanim or Cherubim
 
 ## Smoldering Cycle
 * Shuffle discard into deck
@@ -276,12 +265,10 @@
 * Burst up to 3 Heat (+62.0 Oblivion per Heat)
 * +120 Oblivion
 * If you have 8+ Heat, Burst up to 4 Heat (+78.0 Oblivion per Heat)
-* Empower the next card you play
 
 ## Void Cinder Shell
 * On play: +90 Oblivion
 * Gain 4 Heat
-* Empower the next card you play
 * While on board: All Oblivion gain +10%
 
 ## Void Combustion
@@ -300,7 +287,6 @@
 ## Void-Flame Seraphim
 * On play: +80 Oblivion
 * Gain 5 Heat
-* Empower the next card you play
 * If you have 10+ Heat, Draw 1 card
 * While on board: +20 Oblivion per card played while active
 

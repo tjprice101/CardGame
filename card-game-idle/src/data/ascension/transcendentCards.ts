@@ -104,7 +104,6 @@ const TX_ANGELS: CardDefinition[] = [
           type: 'pyro_transcendent_confluence' as const,
           consume: 5,
           oblivionPerPair: 1550,
-          empowerAtPairs: 4,
         },
       ],
     },
@@ -308,7 +307,7 @@ const TX_SHOP_CARDS: CardDefinition[] = [
     name: 'Abyssal Singularity Seraph',
     description:
       'On play: gain 4 Inferno Tiers and 4 Chroma Embers, then Confluence up to 3 matched pairs for an immediate burst. ' +
-      'If 3 pairs are spent, empower the next card you play. ' +
+      'If 3 pairs are spent you play. ' +
       'This is the suite\'s precision compressor: it turns a balanced state into instant pressure.',
     artKey: 'tx_sera_pyro_singularity',
     baseStats: { bonusType: 'oblivion_per_card' as const, bonusValue: 38, synergyRequirement: 'Fire' },
@@ -320,7 +319,6 @@ const TX_SHOP_CARDS: CardDefinition[] = [
         type: 'pyro_transcendent_confluence' as const,
         consume: 3,
         oblivionPerPair: 980,
-        empowerAtPairs: 3,
       },
     ],
     attacks: {
@@ -380,7 +378,7 @@ const TX_SHOP_CARDS: CardDefinition[] = [
     description:
       'Draw 1, then correct whichever side of your Pyro state is lagging. ' +
       'If Inferno Tiers are high, forge extra Chroma Embers; if Chroma Embers are high, raise Inferno Tiers. ' +
-      'Then Confluence up to 2 matched pairs for a tactical burst and empower the next card if both pairs land.',
+      'Then Confluence up to 2 matched pairs for a tactical burst and gain Strain if both pairs land.',
     artKey: 'tx_oph_pyro_hellstar',
     effects: [
       { type: 'draw' as const, value: 1 },
@@ -404,7 +402,6 @@ const TX_SHOP_CARDS: CardDefinition[] = [
         type: 'pyro_transcendent_confluence' as const,
         consume: 2,
         oblivionPerPair: 900,
-        empowerAtPairs: 2,
       },
     ],
   },
@@ -512,8 +509,7 @@ const TX_SHOP_CARDS: CardDefinition[] = [
         condition: { type: 'light_resonance_gte' as const, value: 5 },
         then: [
           { type: 'oblivion_flat' as const, value: 2200 },
-          { type: 'multiply_next' as const },
-        ],
+          ],
       },
     ],
   },

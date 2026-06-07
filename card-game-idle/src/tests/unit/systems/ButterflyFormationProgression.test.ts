@@ -99,7 +99,6 @@ describe('Butterfly formation progression', () => {
       ...state,
       turn: {
         ...state.turn,
-        nextCardMultiplied: false,
       },
     }));
     useStore.getState().playCard('hand_2');
