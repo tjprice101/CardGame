@@ -3323,18 +3323,7 @@ function countBoardDefinitionIds(board: BoardState): Record<string, number> {
   return counts;
 }
 
-function countExtraDeckCopies(extraDeck: ExtraDeckEntry[], definitionId: string, finish?: CardFinish): number {
-  return extraDeck.filter(entry => entry.definitionId === definitionId && (finish === undefined || entry.finish === finish)).length;
-}
-
-function countAngelsOnBoard(board: BoardState, definitionId: string, finish?: CardFinish): number {
-  return board.frontSlots.filter(
-    slot => slot?.type === 'Angel' && slot.definitionId === definitionId && (finish === undefined || slot.finish === finish)
-  ).length;
-}
-
 function getAvailableAngelEntry(
-  board: BoardState,
   extraDeck: ExtraDeckEntry[],
   definitionId: string,
   preferredFinish?: CardFinish,
@@ -3350,9 +3339,10 @@ function getAvailableAngelEntry(
     }
   }
 
+  // extraDeck is kept in sync: entries are spliced out when summoned and pushed
+  // back when returned. So any remaining entry IS available to deploy.
   for (const finish of orderedFinishes) {
-    const copiesOnBoard = countAngelsOnBoard(board, definitionId, finish);
-    if (copiesOnBoard < countExtraDeckCopies(extraDeck, definitionId, finish)) {
+    if (extraDeck.some(e => e.definitionId === definitionId && e.finish === finish)) {
       return createExtraDeckEntry(definitionId, finish);
     }
   }
@@ -4750,7 +4740,7 @@ export const useStore = create<Store>()(
     summonAngel: (definitionId, finish) => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
-        const summonedEntry = getAvailableAngelEntry(s.board, s.deck.extraDeck, definitionId, finish);
+        const summonedEntry = getAvailableAngelEntry(s.deck.extraDeck, definitionId, finish);
         if (!summonedEntry) return;
         // Remove this specific entry from extraDeck so the compartment panel
         // reflects the true available count immediately after summoning.
