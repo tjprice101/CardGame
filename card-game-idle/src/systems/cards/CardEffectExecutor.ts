@@ -92,8 +92,6 @@ function collectCherubimRecastPassiveBonus(board: BoardState): CherubimRecastPas
 
 function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: TurnState, board: BoardState): number | null {
   const signatures = Math.min(5, turn.neutralityEngineSignatures?.length ?? 0);
-  const stability = Math.max(0, turn.equilibriumStability ?? 0);
-  const brokenClasses = Math.min(5, turn.attenuationBrokenClasses?.length ?? 0);
   const sourceCount = Math.min(4, turn.crossSetConversionDistinctSources?.length ?? 0);
   const setupCount = Math.min(8, turn.neutralitySetupCount ?? 0);
   const drift = Math.abs(turn.equilibriumDrift ?? 0);
@@ -112,9 +110,9 @@ function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: Turn
     case 'inf-genesis-throne':
       return 800 + totalPatience * 80 + peakPatience * 160 + signatures * 140 + setupCount * 90;
     case 'inf-null-apex':
-      return 620 + peakPatience * 300 + brokenClasses * 420 + patienceUnits * 140 + lowDriftBonus;
+      return 620 + peakPatience * 300 + patienceUnits * 140 + lowDriftBonus;
     case 'inf-entropic-crown':
-      return 850 + patienceUnits * 500 + totalPatience * 65 + brokenClasses * 450;
+      return 850 + patienceUnits * 500 + totalPatience * 65;
     case 'inf-annihilation-field':
       return 950 + sourceCount * 620 + peakPatience * 260 + widePatienceBonus;
     case 'inf-oblivion-absolute':
@@ -122,7 +120,7 @@ function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: Turn
     case 'inf-void-cascade':
       return 800 + patienceUnits * 600 + sourceCount * 550 + peakPatience * 180 + widePatienceBonus;
     case 'inf-sovereign-void':
-      return 1200 + totalPatience * 90 + peakPatience * 220 + brokenClasses * 420 + stability * 120;
+      return 1200 + totalPatience * 90 + peakPatience * 220;
     case 'inf-eternity-rupture':
       return 1100 + patienceUnits * 420 + sourceCount * 650 + peakPatience * 250 + widePatienceBonus;
     default:

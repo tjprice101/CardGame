@@ -448,7 +448,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Entropic Crown',
-      description: 'On play: Gain Oblivion scaled by Patience-bearing units, total Patience, and broken attenuation classes. While on board: Adjacent Seraphim and Angels gain +6 Patience per card played',
+      description: 'On play: Gain Oblivion scaled by Patience-bearing units and total Patience. While on board: Adjacent Seraphim and Angels gain +6 Patience per card played',
     artKey: 'inf_entropic_crown',
       effects: [{ type: 'cherubim_patience_per_card', value: 6 }],
       onPlayEffects: [{ type: 'oblivion_flat', value: 2600 }, { type: 'patience_gain_all', value: 6 }, { type: 'neutrality_patient_light_gain', value: 1 }],
@@ -542,7 +542,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: All Seraphim on board gain +20 Patience; Gain Oblivion scaled by total Patience, peak Patience, broken attenuation classes, and Equilibrium Stability. After 4 cards played: Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +10 Patience; Gain Oblivion scaled by total Patience, peak Patience, broken attenuation classes, and Equilibrium Stability. While on board: +420 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +20 Patience; Gain Oblivion scaled by total Patience and peak Patience. After 4 cards played: Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +10 Patience; Gain Oblivion scaled by total Patience and peak Patience. While on board: +420 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
     artKey: 'inf_sovereign_void',
     summonCost: [],
     extraSummonConditions: [
@@ -552,7 +552,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Null Dominion',
       cardsPlayedRequirement: 4,
-      description: 'Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +10 Patience; Gain Oblivion scaled by total Patience, peak Patience, broken attenuation classes, and Equilibrium Stability',
+      description: 'Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +10 Patience; Gain Oblivion scaled by total Patience and peak Patience',
       effects: [
         { type: 'neutrality_patient_light_gain', value: 3 },
         { type: 'patience_double_all' },
