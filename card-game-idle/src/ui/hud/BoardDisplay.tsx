@@ -613,6 +613,7 @@ export default function BoardDisplay() {
     activateSeraphimAttack,
     activateAngelAttack,
     toggleCardFace,
+    returnAngelToExtraDeck,
   } = useStore.getState();
 
   const hand = deck.hand;
@@ -637,6 +638,7 @@ export default function BoardDisplay() {
   const [selectedSacrificeAngelIds, setSelectedSacrificeAngelIds] = useState<string[]>([]);
   const [pendingAngelAttack, setPendingAngelAttack] = useState<PendingAngelAttack | null>(null);
   const [pendingSeraphimAttack, setPendingSeraphimAttack] = useState<PendingSeraphimAttack | null>(null);
+  const [confirmReturnAngelSlot, setConfirmReturnAngelSlot] = useState<number | null>(null);
 
   useEffect(() => {
     const prev = prevSlotsRef.current;
@@ -1069,18 +1071,27 @@ export default function BoardDisplay() {
                 ].filter(Boolean).join(' ')}
                 onContextMenu={(event) => {
                   event.preventDefault();
-                  if (canPlay && isReady) activateAngel(slotIndex);
+                  if (canPlay && isReady && !slot.activated) {
+                    activateAngel(slotIndex);
+                  } else if (canPlay) {
+                    // Ability spent or not ready — offer to return to extra deck.
+                    setConfirmReturnAngelSlot(prev => prev === slotIndex ? null : slotIndex);
+                  }
                 }}
                 onClick={() => {
+                  if (confirmReturnAngelSlot === slotIndex) {
+                    setConfirmReturnAngelSlot(null);
+                    return;
+                  }
                   if (canPlay) setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
                 }}
                 onMouseEnter={() => setHoveredFrontSlot(slotIndex)}
                 onMouseLeave={() => setHoveredFrontSlot(current => (current === slotIndex ? null : current))}
                 title={slot.activated
-                  ? `${angelDef?.name ?? 'Angel'} - awakened ability already used`
+                  ? `${angelDef?.name ?? 'Angel'} - ability used · right-click to return to extra deck`
                   : isReady
                     ? `${angelDef?.name ?? 'Angel'} - right-click to activate ${angelDef?.activatedAbility.name ?? 'its awakened ability'}`
-                    : `${angelDef?.name ?? 'Angel'} - awaken after ${awakenRequirement} cards played`}
+                    : `${angelDef?.name ?? 'Angel'} - awaken after ${awakenRequirement} cards · right-click to return to extra deck`}
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
@@ -1098,12 +1109,37 @@ export default function BoardDisplay() {
                   justifyContent: 'flex-start',
                   padding: 0,
                   fontFamily: BODY_FONT,
-                  cursor: canPlay && isReady ? 'context-menu' : 'default',
+                  cursor: canPlay && isReady && !slot.activated ? 'context-menu' : 'default',
                   pointerEvents: 'auto',
                   overflow: 'hidden',
                   position: 'relative',
                 }}
               >
+                {/* Inline return-to-extra-deck confirm overlay */}
+                {confirmReturnAngelSlot === slotIndex && (
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 20,
+                    background: 'rgba(5,3,12,0.92)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 6, padding: 8, borderRadius: 14,
+                  }}>
+                    <div style={{ fontSize: 9, color: 'rgba(220,180,255,0.9)', letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' }}>
+                      Return to extra deck?
+                    </div>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); returnAngelToExtraDeck(slotIndex); setConfirmReturnAngelSlot(null); setAttackPanelSlot(prev => prev === slotIndex ? null : prev); }}
+                        style={{ fontSize: 9, padding: '3px 10px', borderRadius: 6, border: '1px solid rgba(140,220,140,0.6)', background: 'rgba(20,50,20,0.8)', color: '#8de68d', cursor: 'pointer', fontFamily: BODY_FONT, letterSpacing: 1 }}
+                      >Yes</button>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setConfirmReturnAngelSlot(null); }}
+                        style={{ fontSize: 9, padding: '3px 10px', borderRadius: 6, border: '1px solid rgba(220,100,100,0.5)', background: 'rgba(50,10,10,0.8)', color: '#e68d8d', cursor: 'pointer', fontFamily: BODY_FONT, letterSpacing: 1 }}
+                      >No</button>
+                    </div>
+                  </div>
+                )}
                 {angelDef && isDeathFlamedHellBaseDefinitionId(angelDef.definitionId) && (
                   <button
                     type="button"

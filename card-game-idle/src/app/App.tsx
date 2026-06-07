@@ -22,6 +22,7 @@ const AscensionHub = lazy(() => import('@/ui/ascension/AscensionHub'));
 const NullRaidArena = lazy(() => import('@/ui/ascension/NullRaidArena'));
 const NullRaidResults = lazy(() => import('@/ui/ascension/NullRaidResults'));
 const CardMasteryModal = lazy(() => import('@/ui/menus/CardMasteryModal'));
+const FractureModal = lazy(() => import('@/ui/menus/FractureModal'));
 const WakeTrialsModal = lazy(() => import('@/ui/menus/WakeTrialsModal'));
 const EndlessGauntletModal = lazy(() => import('@/ui/menus/EndlessGauntletModal'));
 const ChatWindow = lazy(() => import('@/ui/social/ChatWindow'));
@@ -184,6 +185,7 @@ export default function App() {
   const [showQuests, setShowQuests] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showMastery, setShowMastery] = useState(false);
+  const [showFracture, setShowFracture] = useState(false);
   const [showAscension, setShowAscension] = useState(false);
   const [showWakeTrials, setShowWakeTrials] = useState(false);
   const [showEndlessGauntlet, setShowEndlessGauntlet] = useState(false);
@@ -869,6 +871,7 @@ export default function App() {
             onQuests={() => setShowQuests(true)}
             onAchievements={() => setShowAchievements(true)}
             onMastery={() => setShowMastery(true)}
+            onFracture={() => setShowFracture(true)}
             onSettings={() => setShowSettings(true)}
             onAscension={() => setShowAscension(true)}
             onBeginTurn={() => {
@@ -1042,6 +1045,11 @@ export default function App() {
       {showMastery && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><CardMasteryModal onClose={() => setShowMastery(false)} /></Suspense>
+        </div>
+      )}
+      {showFracture && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
+          <Suspense fallback={null}><FractureModal onClose={() => setShowFracture(false)} /></Suspense>
         </div>
       )}
       {showWakeTrials && (

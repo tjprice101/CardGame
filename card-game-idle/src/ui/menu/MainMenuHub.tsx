@@ -26,6 +26,7 @@ interface MainMenuHubProps {
   onQuests: () => void;
   onAchievements: () => void;
   onMastery: () => void;
+  onFracture: () => void;
   onSettings: () => void;
   /** Opens the Wished Upon A Star event landing page. */
   onEventWishedUponAStar?: () => void;
@@ -573,7 +574,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         )}
         <button
           className="menu-tactile-btn"
-          onClick={props.onPlayerInfo}
+          onClick={props.onFracture}
           style={{
             width: 150, minHeight: 52,
             padding: '10px 14px',
@@ -590,33 +591,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             backdropFilter: 'blur(4px)',
           }}
         >
-          <div>Friends</div>
-          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.7, textTransform: 'none' }}>Open Player Info</div>
-        </button>
-        <button
-          className="menu-tactile-btn"
-          disabled
-          onClick={undefined}
-          aria-disabled="true"
-          style={{
-            width: 150, minHeight: 52,
-            padding: '10px 14px',
-            borderRadius: 4,
-            border: `1px solid ${uiTheme.border}`,
-            background: uiTheme.surfaceMuted,
-            color: uiTheme.textMuted,
-            fontFamily: uiTypography.display,
-            fontSize: 12,
-            letterSpacing: 1.4,
-            textAlign: 'left',
-            textTransform: 'uppercase',
-            cursor: 'not-allowed',
-            backdropFilter: 'blur(4px)',
-            opacity: 0.7,
-          }}
-        >
-          <div>Artifacts! Coming Soon</div>
-          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.7, textTransform: 'none' }}>Unavailable in this build</div>
+          <div>Fracture</div>
+          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.7, textTransform: 'none' }}>Card-Born fast-track</div>
         </button>
       </div>
 

@@ -296,6 +296,7 @@ const defaultProgress: ProgressState = {
   gauntletBest: { bestDepth: 0, bestShards: 0, runs: 0 },
   ownedArtifacts: {},
   cardbaneLight: 0,
+  fractureShards: 0,
   cardLocks: {},
   entropicEnergyBalance: 0,
   entropyBalance: 0,
@@ -763,6 +764,8 @@ interface StoreActions {
   placeCherubim: (backSlotIndex: 0 | 1 | 2 | 3, instanceId?: string) => void;
   removeCherubim: (backSlotIndex: 0 | 1 | 2 | 3) => void;
   summonAngel: (definitionId: string, finish?: CardFinish) => void;
+  /** Return a summoned angel from the board back to the extra deck. */
+  returnAngelToExtraDeck: (slot: 0 | 1 | 2 | 3 | 4) => void;
   activateAngel: (slot: 0 | 1 | 2 | 3 | 4) => void;
   activateSeraphimAttack: (
     slot: 0 | 1 | 2 | 3 | 4,
@@ -893,6 +896,10 @@ interface StoreActions {
   setCompactMode: (enabled: boolean) => void;
   /** Toggle keyword highlighting inside card rules text. */
   setHighlightRulesText: (enabled: boolean) => void;
+  /** Fracture one duplicate copy of a card into Fracture Shards (rarity-scaled). Returns shards gained or 0 if not fracturable. */
+  fractureCard: (definitionId: string) => number;
+  /** Spend Fracture Shards as Card-light for a chosen card (1:1 into cardPlayCounts). Returns shards actually spent. */
+  spendFractureShards: (targetDefinitionId: string, amount: number) => number;
   /** Dissolve one copy of a card into universal Card-bane Light. Returns false if player doesn't own a copy. */
   dissolveCard: (definitionId: string) => boolean;
   /** Dissolve every unlocked copy of every card in the collection. Returns total copies dissolved. */
@@ -3925,7 +3932,8 @@ function awardOblivionForCardPlay(
   let totalAward = 0;
 
   if (sourceDef && cardOblivionBonus > 0) {
-    totalAward += cardOblivionBonus;
+    // +15% burst boost on all card-play oblivion (attacks are unaffected).
+    totalAward += Math.round(cardOblivionBonus * 1.15);
   }
 
   // Seraphim ophanim_bonus remains active in attack-centric pacing.
@@ -4744,6 +4752,12 @@ export const useStore = create<Store>()(
         if (s.turn.phase !== 'playing') return;
         const summonedEntry = getAvailableAngelEntry(s.board, s.deck.extraDeck, definitionId, finish);
         if (!summonedEntry) return;
+        // Remove this specific entry from extraDeck so the compartment panel
+        // reflects the true available count immediately after summoning.
+        const deckIdx = s.deck.extraDeck.findIndex(
+          e => e.definitionId === definitionId && e.finish === summonedEntry.finish,
+        );
+        if (deckIdx !== -1) s.deck.extraDeck.splice(deckIdx, 1);
         const def = ScoreSystem.getDefinition(definitionId);
         if (!def || def.type !== 'Angel') return;
         const angelDef = def as AngelDefinition;
@@ -4842,6 +4856,18 @@ export const useStore = create<Store>()(
       });
     },
 
+    returnAngelToExtraDeck: (slot) => {
+      set(s => {
+        const angel = s.board.frontSlots[slot];
+        if (!angel || angel.type !== 'Angel') return;
+        // Clear the slot and push the entry back so it reappears in the compartment.
+        (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[slot] = null;
+        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
+        s.deck.extraDeck.push({ definitionId: angel.definitionId, finish: angel.finish });
+        recompute(s);
+      });
+    },
+
     activateAngel: (slot) => {
       set(s => {
         if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null) return;
@@ -4925,10 +4951,10 @@ export const useStore = create<Store>()(
         if (def.definitionId === 'inf-prismatic-choir-splinter') {
         }
 
-        // Patience mechanic: consume stacks for bonus Oblivion (+1.5% of base attack per stack)
+        // Patience mechanic: consume stacks for bonus Oblivion (+1.05% of base attack per stack)
         const seraphimDef = def as import('@/types/cards').SeraphimDefinition;
         const capturedPatience = seraphimDef.patienceThreshold !== undefined ? (unit.patienceStacks ?? 0) : 0;
-        const patienceOblivion = Math.round(attack.baseOblivion * capturedPatience * 0.015);
+        const patienceOblivion = Math.round(attack.baseOblivion * capturedPatience * 0.0105);
         const chromaEmbers = def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')
           ? Math.max(0, s.turn.secondaryCounters?.pyro ?? 0)
           : 0;
@@ -5118,12 +5144,11 @@ export const useStore = create<Store>()(
         payAttackCosts(s, costs, paymentSelection);
 
         // Neutrality Angels: consume all accumulated patienceStacks for a bonus.
-        // Rate: +2% of base Oblivion per stack (slightly higher than Seraphim since
-        // Angels have no patienceThreshold threshold draw and shorter cooldowns).
+        // Rate: +1.4% of base Oblivion per stack (nerfed from 2%; preserve logic mirrors Seraphim).
         let neutralityAngelPatienceBonus = 0;
         const capturedAngelPatience = def.element === 'Neutrality' ? (unit.patienceStacks ?? 0) : 0;
         if (capturedAngelPatience > 0) {
-          neutralityAngelPatienceBonus = Math.round(attack.baseOblivion * capturedAngelPatience * 0.02);
+          neutralityAngelPatienceBonus = Math.round(attack.baseOblivion * capturedAngelPatience * 0.014);
         }
 
         const chromaEmbers = def.element === 'Fire' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')
@@ -5179,11 +5204,13 @@ export const useStore = create<Store>()(
         if (refreshed && refreshed.type === 'Angel') {
           const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
-          // Neutrality: consume patience stacks after the attack resolves.
+          // Neutrality: consume patience stacks after the attack resolves, respecting Preserve.
           if (def.element === 'Neutrality' && capturedAngelPatience > 0) {
-            refreshed.patienceStacks = 0;
-            // Record consumption for the turn tracker so UI chips can show the burn.
-            s.turn.neutralityPatienceConsumedThisTurn = (s.turn.neutralityPatienceConsumedThisTurn ?? 0) + capturedAngelPatience;
+            const preservePercent = Math.max(0, s.turn.neutralityAttackPreservePercent ?? 0);
+            const preserved = Math.floor(capturedAngelPatience * (preservePercent / 100));
+            refreshed.patienceStacks = preserved;
+            // Record only the consumed portion for the turn tracker.
+            s.turn.neutralityPatienceConsumedThisTurn = (s.turn.neutralityPatienceConsumedThisTurn ?? 0) + (capturedAngelPatience - preserved);
           }
         }
 
@@ -6616,6 +6643,48 @@ export const useStore = create<Store>()(
       set(state => {
         state.settings.highlightRulesText = enabled;
       });
+    },
+
+    fractureCard: (definitionId) => {
+      const state = get();
+      const totalOwned = state.progress.collection[definitionId] ?? 0;
+      const starterLocked = STARTER_COLLECTION[definitionId] ?? 0;
+      const userLocked = state.progress.cardLocks?.[definitionId] ?? 0;
+      const lockedCopies = starterLocked + userLocked;
+      // Need at least one copy above locked floor to fracture.
+      if (totalOwned <= lockedCopies) return 0;
+      const definition = CardRegistry.get(definitionId);
+      if (!definition) return 0;
+      const FRACTURE_SHARD_YIELD: Record<string, number> = {
+        Common: 1, Rare: 3, Epic: 7, Legendary: 12, Eternal: 22, Infinite: 35,
+      };
+      const shards = FRACTURE_SHARD_YIELD[definition.rarity] ?? 1;
+      set(s => {
+        const current = s.progress.collection[definitionId] ?? 0;
+        if (current <= lockedCopies) return;
+        if (current === 1) {
+          delete s.progress.collection[definitionId];
+        } else {
+          s.progress.collection[definitionId] = current - 1;
+        }
+        s.progress.fractureShards = (s.progress.fractureShards ?? 0) + shards;
+      });
+      return shards;
+    },
+
+    spendFractureShards: (targetDefinitionId, amount) => {
+      if (amount <= 0) return 0;
+      const state = get();
+      const available = state.progress.fractureShards ?? 0;
+      const toSpend = Math.min(amount, available);
+      if (toSpend <= 0) return 0;
+      set(s => {
+        s.progress.fractureShards = (s.progress.fractureShards ?? 0) - toSpend;
+        s.progress.cardPlayCounts = s.progress.cardPlayCounts ?? {};
+        s.progress.cardPlayCounts[targetDefinitionId] =
+          (s.progress.cardPlayCounts[targetDefinitionId] ?? 0) + toSpend;
+      });
+      return toSpend;
     },
 
     dissolveCard: (definitionId) => {

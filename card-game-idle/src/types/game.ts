@@ -371,6 +371,8 @@ export interface ProgressState {
   ownedArtifacts?: Record<string, number>;
   /** Universal Card-bane Light currency earned by dissolving cards. Save v18. */
   cardbaneLight?: number;
+  /** Fracture Shards earned by fracturing duplicate card copies. Spent 1:1 as Card-light into cardPlayCounts. Save v34. */
+  fractureShards?: number;
   /**
    * Per-card user-applied dissolution locks. definitionId → number of
    * additional copies the player has locked beyond starter copies. Combined

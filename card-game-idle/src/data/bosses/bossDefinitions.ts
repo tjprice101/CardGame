@@ -5,7 +5,7 @@ import type { BossDefinition, BossCategory } from '@/types/bossFight';
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
 // Re-anchored for the post-hidden-multiplier combat baseline.
-const FIRST_SET_FIRST_BOSS_HP = 168_750;
+const FIRST_SET_FIRST_BOSS_HP = 84_375;
 const SET_FINAL_HP_MULTIPLIER = 2.7;
 const EVENT_BOSS_CATEGORY: BossCategory = '[EVENT] Wished Upon A Star';
 

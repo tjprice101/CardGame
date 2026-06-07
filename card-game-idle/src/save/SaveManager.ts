@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 33;
+export const CURRENT_VERSION = 34;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -502,6 +502,13 @@ const migrations: Record<number, Migration> = {
     if (data.turn) {
       const t = data.turn as unknown as Record<string, unknown>;
       delete t.nextCardMultiplied;
+    }
+    return data;
+  },
+  34: (data) => {
+    // v34 adds fractureShards currency (Fracture mechanic feeds Card-Born Tiers).
+    if (data.progress && data.progress.fractureShards == null) {
+      data.progress.fractureShards = 0;
     }
     return data;
   },
