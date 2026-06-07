@@ -118,8 +118,35 @@ function formatCosts(costs: ReadonlyArray<AttackCost> | undefined): string {
   return costs.map(formatAttackCost).join(', ');
 }
 
-function formatEffectsInline(effects: CardEffect[]): string {
-  const lines = formatEffectLines(effects);
+const INFINITE_RUNTIME_OBLIVION_TEXT: Record<string, string> = {
+  'inf-oblivion-absolute': 'Gain Oblivion scaled by total Patience, peak Patience, and Equilibrium Stability',
+  'inf-void-cascade': 'Gain Oblivion scaled by Patience-bearing units, cross-set conversion sources, and peak Patience',
+  'inf-genesis-throne': 'Gain Oblivion scaled by total Patience, peak Patience, engine signatures, and setup count',
+  'inf-null-apex': 'Gain Oblivion scaled by peak Patience, broken attenuation classes, and low-drift Equilibrium control',
+  'inf-entropic-crown': 'Gain Oblivion scaled by Patience-bearing units, total Patience, and broken attenuation classes',
+  'inf-annihilation-field': 'Gain Oblivion scaled by cross-set conversion sources and peak Patience',
+  'inf-sovereign-void': 'Gain Oblivion scaled by total Patience, peak Patience, broken attenuation classes, and Equilibrium Stability',
+  'inf-eternity-rupture': 'Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience',
+  'inf-ash-kings-apocalypse': 'Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance',
+  'inf-pyraxis-colossus': 'Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance',
+  'inf-pyroclasm-engine': 'Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance',
+  'inf-riftborn-sovereign': 'Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat spent this play',
+  'inf-celestial-blackout': 'Gain Oblivion scaled by Radiance, Halo, and active Seraphim',
+  'inf-lucent-cataclysm-archon': 'Gain Oblivion scaled by Radiance, Halo, and active Seraphim',
+  'inf-heliarch-eclipse-engine': 'Gain Oblivion scaled by Radiance, Halo, and active Seraphim',
+  'inf-thornbound-last-procession': 'Gain Oblivion scaled by Scar, Trail, and Briar Spirals',
+  'inf-thorn-widow-engine': 'Gain Oblivion scaled by Scar, Trail, and Briar Spirals',
+  'inf-gravebloom-singularity': 'Gain Oblivion scaled by Scar, Trail, and Briar Spirals',
+  'inf-thornbound-elegy-titan': 'Gain Oblivion scaled by Scar, Trail, Briar Spirals, and March readiness',
+  'inf-machina-eternal-loop': 'Gain Oblivion scaled by Reactor Cores and Strain',
+  'inf-brass-eidolon-prime': 'Gain Oblivion scaled by Reactor Cores and Strain',
+  'inf-mech-entropy-foundry': 'Gain Oblivion scaled by Reactor Cores and Strain',
+  'inf-mechanical-apotheosis-core': 'Gain Oblivion scaled by Reactor Cores and Strain',
+  'inf-prismatic-axiom-rain': 'Gain Oblivion scaled by distinct channels, Prism Charges, and high Refraction Depth',
+};
+
+function formatEffectsInline(effects: CardEffect[], definitionId?: string): string {
+  const lines = formatEffectLines(effects, definitionId);
   if (lines.length === 0) return 'none';
   return lines.join('; ');
 }
@@ -131,7 +158,7 @@ function normalizeSummaryLine(line: string): string {
     .trim();
 }
 
-function formatEffectLines(effects: CardEffect[]): string[] {
+function formatEffectLines(effects: CardEffect[], definitionId?: string): string[] {
   if (effects.length === 0) return [];
 
   let radianceGainTotal = 0;
@@ -144,7 +171,7 @@ function formatEffectLines(effects: CardEffect[]): string[] {
       continue;
     }
 
-    const line = formatEffect(effect).trim();
+    const line = formatEffect(effect, definitionId).trim();
     if (!line || seen.has(line)) continue;
     seen.add(line);
     lines.push(line);
@@ -294,10 +321,14 @@ function formatCondition(condition: EffectCondition): string {
   }
 }
 
-function formatEffect(effect: CardEffect): string {
+function formatEffect(effect: CardEffect, definitionId?: string): string {
   if (!effect || typeof effect !== 'object' || !("type" in effect)) return 'Unknown effect';
   switch (effect.type) {
-    case 'oblivion_flat': return `+${effect.value} Oblivion`;
+    case 'oblivion_flat': {
+      const runtimeScaled = definitionId ? INFINITE_RUNTIME_OBLIVION_TEXT[definitionId] : undefined;
+      if (runtimeScaled) return runtimeScaled;
+      return `+${effect.value} Oblivion`;
+    }
     case 'score_flat': return `+${effect.value}% total Oblivion this turn`;
     case 'radiance_gain': return `Gain ${effect.value} Radiance`;
     case 'radiance_spend': return `Spend ${effect.value} Radiance`;
@@ -348,9 +379,9 @@ function formatEffect(effect: CardEffect): string {
     case 'neutrality_designate_vessel': return 'Designate the Seraphim with the highest Patience as your Vessel';
     case 'neutrality_attack_preserve': return `Seraphim attacks preserve ${effect.percent}% of consumed Patience this turn`;
     case 'overclock':
-      return `Overclock: gain ${effect.strain} Strain, then ${formatEffectsInline(effect.then.filter(Boolean))}`;
+      return `Overclock: gain ${effect.strain} Strain, then ${formatEffectsInline(effect.then.filter(Boolean), definitionId)}`;
     case 'conditional':
-      return `If ${formatCondition(effect.condition)}, ${formatEffectsInline(effect.then.filter(Boolean))}`;
+      return `If ${formatCondition(effect.condition)}, ${formatEffectsInline(effect.then.filter(Boolean), definitionId)}`;
     case 'eternal_stack_gain':
       return `Gain ${formatEternalStack(effect.stack, effect.value)}`;
     case 'eternal_stack_spend':
@@ -474,25 +505,25 @@ function formatEffect(effect: CardEffect): string {
     case 'replay_last_burn_card': return 'Replay the last Burn-phase card played this turn';
     case 'ignite_units_burn': return `Ignite up to ${formatCount(effect.count, 'unit')} into Burn`;
     case 'snapshot_burn_lineages': return 'Snapshot current Burn-phase lineages';
-    case 'incandescent_chorus_on_new_lineage': return `On new lineage: ${formatEffect(effect.effect)}`;
+    case 'incandescent_chorus_on_new_lineage': return `On new lineage: ${formatEffect(effect.effect, definitionId)}`;
     case 'burn_lineage_echo_and_cooldown': return `Burn cards of the lineage gain +${effect.echo} Echo and ${effect.cooldown} cooldown reduction`;
-    case 'final_chord_bloom_if_all_lineages': return `If all lineages are present (${effect.trigger.replace(/_/g, ' ')}): ${formatEffect(effect.effect)}`;
+    case 'final_chord_bloom_if_all_lineages': return `If all lineages are present (${effect.trigger.replace(/_/g, ' ')}): ${formatEffect(effect.effect, definitionId)}`;
     case 'bloom_all_lineages': return `Bloom all lineages at ${Math.round(effect.multiplier * 100)}% effect`;
     case 'seed_grove_with_worldflower': return `Seed Grove with ${effect.per_burn} Worldflower token per Burn card`;
     case 'worldflower_echo_on_char': return `Worldflower tokens become Echoes on char for ${formatCount(effect.duration, 'turn')}`;
     case 'worldflower_bonus_on_three': return `If 3 Worldflowers are played this turn, all Burn effects gain +${effect.bonus}`;
-    case 'choose_burn_cards': return `Choose up to ${formatCount(effect.count, 'Burn card')}, then ${formatEffect(effect.effect)}`;
+    case 'choose_burn_cards': return `Choose up to ${formatCount(effect.count, 'Burn card')}, then ${formatEffect(effect.effect, definitionId)}`;
     case 'char_revive_echo_double': return `On char, revive as Echo with doubled effects for ${formatCount(effect.duration, 'turn')}`;
     case 'echo_persistence_bonus': return `Echoes persist for ${formatCount(effect.duration, 'turn')}`;
-    case 'geometry_mode_on_new_lineage': return `On new lineage, Geometry Mode applies: ${formatEffect(effect.effect)}`;
+    case 'geometry_mode_on_new_lineage': return `On new lineage, Geometry Mode applies: ${formatEffect(effect.effect, definitionId)}`;
     case 'burn_all_effects_plus': return `All Burn-phase effects gain +${effect.value}${effect.cooldown ? ` and cooldown reduction ${effect.cooldown}` : ''}`;
     case 'geometry_mode_next_turn_on_three_lineages': return 'If 3 lineages are played, Geometry Mode applies next turn';
-    case 'gate_payoff': return `For each fulfilled gate: ${effect.gates.map(g => `if ${formatCondition(g.condition)} then ${formatEffect(g.payoff)}`).join('; ')}`;
-    case 'zenith_on_all_gates': return `If all gates are fulfilled, apply Zenith for ${formatCount(effect.duration, 'turn')}: ${formatEffect(effect.effect)}`;
+    case 'gate_payoff': return `For each fulfilled gate: ${effect.gates.map(g => `if ${formatCondition(g.condition)} then ${formatEffect(g.payoff, definitionId)}`).join('; ')}`;
+    case 'zenith_on_all_gates': return `If all gates are fulfilled, apply Zenith for ${formatCount(effect.duration, 'turn')}: ${formatEffect(effect.effect, definitionId)}`;
     case 'gain_echo': return `Gain ${effect.value} Echo`;
     case 'burn_attack': return `Trigger ${effect.value} Burn-phase attack`;
     case 'salvage_burn_from_discard': return 'Salvage a Burn-phase card from discard';
-    case 'copy_garden_law_to_sky_law': return `Copy Garden Law to Sky Law (${effect.effects.map(e => `${e.law}: ${formatEffect(e.effect)}`).join('; ')})`;
+    case 'copy_garden_law_to_sky_law': return `Copy Garden Law to Sky Law (${effect.effects.map(e => `${e.law}: ${formatEffect(e.effect, definitionId)}`).join('; ')})`;
     case 'burn_return_to_hand_as_echo': return `Burn cards return to hand as Echoes for ${formatCount(effect.duration, 'turn')}`;
     case 'burn_cooldown_reduction': return `Burn cards gain ${effect.value} cooldown reduction for ${formatCount(effect.duration, 'turn')}`;
     case 'forge_reforge_charge_gain': return `Gain ${formatCount(effect.value, 'Reforge Charge')}`;
@@ -682,14 +713,14 @@ export function getCanonicalCardDescription(card: CardDefinition): string {
   const snowboundPrefix = card.snowboundPhase ? `${card.snowboundPhase}. ` : '';
 
   if (card.type === 'Ophanim') {
-    return `${snowboundPrefix}${formatEffectsInline(card.effects)}`.trim();
+    return `${snowboundPrefix}${formatEffectsInline(card.effects, card.definitionId)}`.trim();
   }
 
   if (card.type === 'Cherubim') {
     const cherubim = card as CherubimDefinition;
     const parts: string[] = [];
     if (cherubim.onPlayEffects.length > 0) {
-      parts.push(`On play: ${formatEffectsInline(cherubim.onPlayEffects)}`);
+      parts.push(`On play: ${formatEffectsInline(cherubim.onPlayEffects, card.definitionId)}`);
     }
     if (cherubim.effects.length > 0) {
       parts.push(`While on board: ${cherubim.effects.map(formatCherubimPassive).join('; ')}`);
@@ -701,7 +732,7 @@ export function getCanonicalCardDescription(card: CardDefinition): string {
     const seraphim = card as SeraphimDefinition;
     const parts: string[] = [];
     if (seraphim.onPlayEffects.length > 0) {
-      parts.push(`On play: ${formatEffectsInline(seraphim.onPlayEffects)}`);
+      parts.push(`On play: ${formatEffectsInline(seraphim.onPlayEffects, card.definitionId)}`);
     }
     parts.push(`While on board: ${formatSeraphimPassive(seraphim.baseStats.bonusType, seraphim.baseStats.bonusValue)}`);
     if (seraphim.patienceThreshold !== undefined) {
@@ -716,7 +747,7 @@ export function getCanonicalCardDescription(card: CardDefinition): string {
   const angel = card as AngelDefinition;
   const parts: string[] = [];
   if (angel.onSummonEffects.length > 0) {
-    parts.push(`On summon: ${formatEffectsInline(angel.onSummonEffects)}`);
+    parts.push(`On summon: ${formatEffectsInline(angel.onSummonEffects, card.definitionId)}`);
   }
   parts.push(`After ${formatCount(angel.activatedAbility.cardsPlayedRequirement, 'card')} played: ${getCanonicalActivatedAbilityDescription(angel)}`);
   parts.push(`While on board: ${formatAngelBoardBonus(angel.baseStats)}`);
@@ -727,7 +758,7 @@ export function getCanonicalCardDescription(card: CardDefinition): string {
 }
 
 export function getCanonicalActivatedAbilityDescription(card: AngelDefinition): string {
-  return formatEffectsInline(card.activatedAbility.effects);
+  return formatEffectsInline(card.activatedAbility.effects, card.definitionId);
 }
 
 function pushSummarySection(sections: CardSummarySection[], title: string, lines: string[]): void {

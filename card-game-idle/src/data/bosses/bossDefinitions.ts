@@ -1,4 +1,5 @@
 import { NULL_RAID_BOSS_MAP } from '@/data/ascension/nullRaidDefinitions';
+import { CardRegistry } from '@/cards/CardRegistry';
 import type { ProgressState } from '@/types/game';
 import type { BossDefinition, BossCategory } from '@/types/bossFight';
 
@@ -295,3 +296,39 @@ export const BOSS_DEFINITIONS: BossDefinition[] = BOSS_BLUEPRINTS.map((boss, ind
     ? EVENT_BOSS_COMPUTED_HP
     : BOSS_SCALED_HP_BY_INDEX[index] ?? getScaledBossHp(index, bosses.length),
 }));
+
+function getBossProgressionWeight(boss: BossDefinition): number {
+  const reward = CardRegistry.get(boss.rewardCardId);
+  if (reward?.type === 'Angel') return 1;
+  return 0;
+}
+
+/**
+ * Progression order within a category for unlock gating and Eternity's Wake display.
+ * Rule: non-Angel rewards are always listed before Angel rewards to prevent
+ * summoning-gate cards from unlocking prematurely.
+ */
+export function getBossProgressionOrder(category: BossCategory): BossDefinition[] {
+  const bosses = BOSS_DEFINITIONS.filter(b => b.category === category);
+  if (bosses.length <= 1) return bosses;
+
+  const sourceIndex = new Map(BOSS_DEFINITIONS.map((b, idx) => [b.id, idx] as const));
+  return [...bosses].sort((left, right) => {
+    const weightDelta = getBossProgressionWeight(left) - getBossProgressionWeight(right);
+    if (weightDelta !== 0) return weightDelta;
+    return (sourceIndex.get(left.id) ?? 0) - (sourceIndex.get(right.id) ?? 0);
+  });
+}
+
+/** Returns true when a boss is available to challenge in progression mode. */
+export function isBossUnlocked(progress: ProgressState, bossId: string): boolean {
+  const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
+  if (!boss) return false;
+
+  const ordered = getBossProgressionOrder(boss.category);
+  const idx = ordered.findIndex(entry => entry.id === bossId);
+  if (idx <= 0) return true;
+
+  const previousBoss = ordered[idx - 1];
+  return (progress.bossClearCounts[previousBoss.id] ?? 0) > 0;
+}

@@ -25,7 +25,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Oblivion Absolute',
-    description: '+8500 Oblivion; All Seraphim on board gain +15 Patience; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)',
+    description: 'Gain Oblivion scaled by total Patience, peak Patience, and Equilibrium Stability; All Seraphim on board gain +15 Patience; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)',
     artKey: 'inf_oblivion_absolute',
     effects: [
       { type: 'oblivion_flat', value: 6000 },
@@ -51,7 +51,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: "Ash Kings' Apocalypse",
-    description: 'Gain 6 Furnace Heat; Gain 10 Chroma Embers; If you have 6+ Furnace Heat, Spend 6 Furnace Heat; Gain 4 Chroma Embers; +2600 Oblivion; Ignite up to 5 Chroma Embers (+122 Oblivion × echoes²); If you have 7+ Chroma Embers, none; +2200 Oblivion; Draw 1 card',
+    description: 'Gain 6 Furnace Heat; Gain 10 Chroma Embers; If you have 6+ Furnace Heat, Spend 6 Furnace Heat; Gain 4 Chroma Embers; Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance; Ignite up to 5 Chroma Embers (+122 Oblivion × echoes²); If you have 7+ Chroma Embers, none; Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance; Draw 1 card',
     artKey: 'inf_ash_kings_apocalypse',
     // Role: catastrophic seeder. Front-loads an oversized Chroma pool, ignites
     // only part of it, and leaves reserve embers for subsequent finishers.
@@ -70,7 +70,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Prismatic',
     rarity: 'Infinite',
     name: 'Prismatic Axiom Rain',
-    description: 'Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 6 Resonance Charge; If you have played 4+ distinct channels this turn, Gain 2 Resonance Charge; If you have 6+ Resonance Charge, Spend 6 Resonance Charge; +3600 Oblivion; If Refraction Depth is 5+, +2200 Oblivion; Draw 2 cards',
+    description: 'Look at the top 10 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 6 Resonance Charge; If you have played 4+ distinct channels this turn, Gain 2 Resonance Charge; If you have 6+ Resonance Charge, Spend 6 Resonance Charge; Gain Oblivion scaled by distinct channels, Prism Charges, and high Refraction Depth; If Refraction Depth is 5+, Gain Oblivion scaled by distinct channels, Prism Charges, and high Refraction Depth; Draw 2 cards',
     artKey: 'inf_prismatic_axiom_rain',
     effects: [
       { type: 'look_top_take_drop', look: 10, take: 3, drop: 2 },
@@ -94,7 +94,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Last Procession',
-    description: 'Gain 112 Trail; Gain 9 Briar Spirals; Salvage any 1 card; Gain +230% total Oblivion this turn; If you have 6+ Briar Spirals, Spend 3 Briar Spirals; Gain 3 Briar Spirals; Gain 40 Trail; +2600 Oblivion; If you have 5+ Briar Spirals, Spend 3 Briar Spirals; Bloom up to 3 Briar Spirals (+72 Trail per spiral); If you have 150+ Trail, Spend 70 Trail; +3800 Oblivion; Draw 1 card',
+    description: 'Gain 112 Trail; Gain 9 Briar Spirals; Salvage any 1 card; Gain +230% total Oblivion this turn; If you have 6+ Briar Spirals, Spend 3 Briar Spirals; Gain 3 Briar Spirals; Gain 40 Trail; Gain Oblivion scaled by Scar, Trail, and Briar Spirals; If you have 5+ Briar Spirals, Spend 3 Briar Spirals; Bloom up to 3 Briar Spirals (+72 Trail per spiral); If you have 150+ Trail, Spend 70 Trail; Gain Oblivion scaled by Scar, Trail, and Briar Spirals; Draw 1 card',
     artKey: 'inf_thornbound_last_procession',
     // Role: SPIRAL REFINERY. Stacks and refines Briar Spirals, then performs
     // a controlled high-yield bloom instead of an all-in cashout.
@@ -113,7 +113,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Celestial Blackout',
-    description: 'Gain 240 Radiance; Gain 8 Halo; If you have 10+ Halo, Spend 10 Halo; +5600 Oblivion; Double current Radiance; If you have 6+ Cadence, +4500 Oblivion; Look at the top 9 cards and take 1 matching Seraphim or Angel; +3600 Oblivion',
+    description: 'Gain 240 Radiance; Gain 8 Halo; If you have 10+ Halo, Spend 10 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Double current Radiance; If you have 6+ Cadence, Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Look at the top 9 cards and take 1 matching Seraphim or Angel; Gain Oblivion scaled by Radiance, Halo, and active Seraphim',
     artKey: 'inf_celestial_blackout',
     // Role: UBER opener-finisher. Frontloads Halo, then converts it into a massive
     // threshold burst while also fixing your next line with deep unit selection.
@@ -133,7 +133,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Machina Eternal Loop',
-    description: 'Gain 14 Strain; Gain 8 Reactor Cores; +3200 Oblivion; If you have 10+ Reactor Cores, Spend 10 Reactor Cores; +5200 Oblivion; Gain 6 Strain',
+    description: 'Gain 14 Strain; Gain 8 Reactor Cores; Gain Oblivion scaled by Reactor Cores and Strain; If you have 10+ Reactor Cores, Spend 10 Reactor Cores; Gain Oblivion scaled by Reactor Cores and Strain; Gain 6 Strain',
     artKey: 'inf_machina_eternal_loop',
     // Role: INFINITE CORE DETONATOR. Frontloads a large Core bank, then spends
     // a high threshold in one burst to force a decisive mid-turn spike.
@@ -154,7 +154,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Genesis Throne',
-    description: 'On play: +2500 Oblivion. While on board: +730 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion',
+    description: 'On play: Gain Oblivion scaled by total Patience, peak Patience, engine signatures, and setup count. While on board: +730 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion',
 
     artKey: 'inf_genesis_throne',
     attacks: {
@@ -232,7 +232,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyraxis Colossus',
-    description: 'On play: Gain 5 Furnace Heat; Gain 3 Chroma Embers; If you have 7+ Furnace Heat, Spend 7 Furnace Heat; Gain 4 Chroma Embers; +2200 Oblivion; If you have 4+ Chroma Embers, Ignite up to 3 Chroma Embers (+108 Oblivion × echoes²); +1200 Oblivion. While on board: +760 Oblivion per card played while active',
+    description: 'On play: Gain 5 Furnace Heat; Gain 3 Chroma Embers; If you have 7+ Furnace Heat, Spend 7 Furnace Heat; Gain 4 Chroma Embers; Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance; If you have 4+ Chroma Embers, Ignite up to 3 Chroma Embers (+108 Oblivion × echoes²); Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance. While on board: +760 Oblivion per card played while active',
     artKey: 'inf_pyraxis_colossus',
     attacks: {
       unsynergized: {
@@ -320,7 +320,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thorn Widow Engine',
-    description: 'On play: Gain 84 Trail; Gain 6 Briar Spirals; If you have 5+ Briar Spirals, Spend 3 Briar Spirals; Gain 4 Briar Spirals; +2600 Oblivion; If you have 4+ Briar Spirals, Spend 2 Briar Spirals; Bloom up to 2 Briar Spirals (+78 Trail per spiral); Gain +150% total Oblivion this turn; If you have 110+ Trail, Spend 44 Trail; Gain 24 Trail; +2800 Oblivion. While on board: Each new Cherubim summoned while active gains +2 durability',
+    description: 'On play: Gain 84 Trail; Gain 6 Briar Spirals; If you have 5+ Briar Spirals, Spend 3 Briar Spirals; Gain 4 Briar Spirals; Gain Oblivion scaled by Scar, Trail, and Briar Spirals; If you have 4+ Briar Spirals, Spend 2 Briar Spirals; Bloom up to 2 Briar Spirals (+78 Trail per spiral); Gain +150% total Oblivion this turn; If you have 110+ Trail, Spend 44 Trail; Gain 24 Trail; Gain Oblivion scaled by Scar, Trail, and Briar Spirals. While on board: Each new Cherubim summoned while active gains +2 durability',
     artKey: 'inf_thorn_widow_engine',
     attacks: {
       unsynergized: {
@@ -362,7 +362,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Lucent Cataclysm Archon',
-    description: 'On play: Gain 192 Radiance; Gain 6 Halo; If you have 9+ Halo, Spend 9 Halo; +5200 Oblivion; If you have 6+ Cadence, Double current Radiance; +2600 Oblivion; Search your deck for 1 matching Ophanim or Angel. While on board: +760 Oblivion per card played while active',
+    description: 'On play: Gain 192 Radiance; Gain 6 Halo; If you have 9+ Halo, Spend 9 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; If you have 6+ Cadence, Double current Radiance; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Search your deck for 1 matching Ophanim or Angel. While on board: +760 Oblivion per card played while active',
     artKey: 'inf_lucent_cataclysm_archon',
     attacks: {
       unsynergized: {
@@ -404,7 +404,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Brass Eidolon Prime',
-    description: 'On play: Gain 12 Strain; Gain 4 Reactor Cores; If you have 7+ Reactor Cores, Spend 7 Reactor Cores; +3600 Oblivion; Gain 3 Reactor Cores; +2100 Oblivion. While on board: +1200 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 12 Strain; Gain 4 Reactor Cores; If you have 7+ Reactor Cores, Spend 7 Reactor Cores; Gain Oblivion scaled by Reactor Cores and Strain; Gain 3 Reactor Cores; Gain Oblivion scaled by Reactor Cores and Strain. While on board: +1200 Oblivion whenever you play an Ophanim while active',
     artKey: 'inf_brass_eidolon_prime',
     attacks: {
       unsynergized: {
@@ -448,7 +448,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Entropic Crown',
-      description: 'On play: +3000 Oblivion. While on board: Adjacent Seraphim and Angels gain +6 Patience per card played',
+      description: 'On play: Gain Oblivion scaled by Patience-bearing units, total Patience, and broken attenuation classes. While on board: Adjacent Seraphim and Angels gain +6 Patience per card played',
     artKey: 'inf_entropic_crown',
       effects: [{ type: 'cherubim_patience_per_card', value: 6 }],
       onPlayEffects: [{ type: 'oblivion_flat', value: 2600 }, { type: 'patience_gain_all', value: 6 }, { type: 'neutrality_patient_light_gain', value: 1 }],
@@ -470,7 +470,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Pyroclasm Engine',
-      description: 'On play: Gain 4 Furnace Heat; Gain 8 Chroma Embers; Salvage any 1 card; If you have 5+ Furnace Heat, Gain 3 Chroma Embers; Draw 1 card; +1700 Oblivion; If you have 9+ Chroma Embers, Spend 3 Chroma Embers; +1800 Oblivion. While on board: Adjacent active Seraphim gain +235 Oblivion per card played',
+      description: 'On play: Gain 4 Furnace Heat; Gain 8 Chroma Embers; Salvage any 1 card; If you have 5+ Furnace Heat, Gain 3 Chroma Embers; Draw 1 card; Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance; If you have 9+ Chroma Embers, Spend 3 Chroma Embers; Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat-Ember balance. While on board: Adjacent active Seraphim gain +235 Oblivion per card played',
     artKey: 'inf_pyroclasm_engine',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 235 }],
     // Role: reserve accumulator. Builds the largest non-angel Chroma pool and
@@ -499,7 +499,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Gravebloom Singularity',
-      description: 'On play: Gain 96 Trail; Gain 9 Briar Spirals; Salvage any 1 card; If you have 120+ Trail, Spend 40 Trail; Gain 3 Briar Spirals; Draw 1 card; +1800 Oblivion. While on board: Adjacent active Seraphim gain +280 Oblivion per card played',
+      description: 'On play: Gain 96 Trail; Gain 9 Briar Spirals; Salvage any 1 card; If you have 120+ Trail, Spend 40 Trail; Gain 3 Briar Spirals; Draw 1 card; Gain Oblivion scaled by Scar, Trail, and Briar Spirals. While on board: Adjacent active Seraphim gain +280 Oblivion per card played',
     artKey: 'inf_gravebloom_singularity',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 280 }],
         // Role: BACK-ROW SPIRAL FORGE. Mints a massive Spiral reserve and reinvests
@@ -512,7 +512,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Heliarch Eclipse Engine',
-      description: 'On play: Gain 112 Radiance; Gain 7 Halo; Double current Radiance; If you have 7+ Cadence, +3600 Oblivion; If you have 12+ Halo, Spend 6 Halo; +3400 Oblivion; Salvage 1 card matching Seraphim; +2400 Oblivion. While on board: Adjacent active Seraphim gain +320 Oblivion per card played',
+      description: 'On play: Gain 112 Radiance; Gain 7 Halo; Double current Radiance; If you have 7+ Cadence, Gain Oblivion scaled by Radiance, Halo, and active Seraphim; If you have 12+ Halo, Spend 6 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Salvage 1 card matching Seraphim; Gain Oblivion scaled by Radiance, Halo, and active Seraphim. While on board: Adjacent active Seraphim gain +320 Oblivion per card played',
     artKey: 'inf_heliarch_eclipse_engine',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 320 }],
       // Role: Back-row Halo forge. Mints a large Halo reserve, amplifies Radiance,
@@ -525,7 +525,7 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Mech Entropy Foundry',
-      description: 'On play: Gain 14 Strain; Gain 6 Reactor Cores; Vent 9999 Strain; If you have 8+ Reactor Cores, Cash out all Reactor Cores (+820 Oblivion per stack); +2800 Oblivion. While on board: Adjacent active Seraphim gain +260 Oblivion per card played',
+      description: 'On play: Gain 14 Strain; Gain 6 Reactor Cores; Vent 9999 Strain; If you have 8+ Reactor Cores, Cash out all Reactor Cores (+820 Oblivion per stack); Gain Oblivion scaled by Reactor Cores and Strain. While on board: Adjacent active Seraphim gain +260 Oblivion per card played',
     artKey: 'inf_mech_entropy_foundry',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 260 }],
       // Role: BACK-ROW CORE CONDENSER. Pushes strain-to-zero for tempo reset,
@@ -542,7 +542,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: All Seraphim on board gain +20 Patience; +2800 Oblivion. After 4 cards played: Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +10 Patience; +3000 Oblivion. While on board: +420 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +20 Patience; Gain Oblivion scaled by total Patience, peak Patience, broken attenuation classes, and Equilibrium Stability. After 4 cards played: Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +10 Patience; Gain Oblivion scaled by total Patience, peak Patience, broken attenuation classes, and Equilibrium Stability. While on board: +420 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
     artKey: 'inf_sovereign_void',
     summonCost: [],
     extraSummonConditions: [
@@ -552,7 +552,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Null Dominion',
       cardsPlayedRequirement: 4,
-      description: 'Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +10 Patience; +3000 Oblivion',
+      description: 'Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +10 Patience; Gain Oblivion scaled by total Patience, peak Patience, broken attenuation classes, and Equilibrium Stability',
       effects: [
         { type: 'neutrality_patient_light_gain', value: 3 },
         { type: 'patience_double_all' },
@@ -589,7 +589,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Eternity Rupture',
-    description: 'On summon: All Seraphim on board gain +16 Patience; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Shuffle discard into deck. After 5 cards played: Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +8 Patience; +3500 Oblivion. While on board: +750 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +16 Patience; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Shuffle discard into deck. After 5 cards played: Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +8 Patience; Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience. While on board: +750 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
     artKey: 'inf_eternity_rupture',
     summonCost: [],
     extraSummonConditions: [
@@ -603,7 +603,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Rupture Convergence',
       cardsPlayedRequirement: 5,
-      description: 'Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +8 Patience; +3500 Oblivion',
+      description: 'Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +8 Patience; Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience',
       effects: [
         { type: 'neutrality_patient_light_gain', value: 3 },
         { type: 'patience_gain_all', value: 8 },
@@ -639,7 +639,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Fire',
     rarity: 'Infinite',
     name: 'Riftborn Sovereign',
-    description: 'On summon: Gain 7 Furnace Heat; Gain 5 Chroma Embers; +1800 Oblivion. After 5 cards played: If you have 9+ Furnace Heat, Cash out up to 9 Furnace Heat (+1000 Oblivion per stack); +4800 Oblivion; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118 Oblivion × echoes²); Spend all Chroma Embers; +1600 Oblivion; Search your deck for 1 matching Ophanim or Cherubim. While on board: +400 Oblivion per card played while on board',
+    description: 'On summon: Gain 7 Furnace Heat; Gain 5 Chroma Embers; Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat spent this play. After 5 cards played: If you have 9+ Furnace Heat, Cash out up to 9 Furnace Heat (+1000 Oblivion per stack); Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat spent this play; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118 Oblivion × echoes²); Spend all Chroma Embers; Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat spent this play; Search your deck for 1 matching Ophanim or Cherubim. While on board: +400 Oblivion per card played while on board',
     artKey: 'inf_riftborn_sovereign',
     summonCost: [],
     extraSummonConditions: [
@@ -651,7 +651,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Rift Conflagration',
       cardsPlayedRequirement: 5,
-      description: 'If you have 9+ Furnace Heat, Cash out up to 9 Furnace Heat (+1000 Oblivion per stack); +4800 Oblivion; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118 Oblivion × echoes²); Spend all Chroma Embers; +1600 Oblivion; Search your deck for 1 matching Ophanim or Cherubim',
+      description: 'If you have 9+ Furnace Heat, Cash out up to 9 Furnace Heat (+1000 Oblivion per stack); Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat spent this play; If you have 8+ Chroma Embers, Ignite up to 8 Chroma Embers (+118 Oblivion × echoes²); Spend all Chroma Embers; Gain Oblivion scaled by Furnace Heat tiers, Chroma Embers, and Heat spent this play; Search your deck for 1 matching Ophanim or Cherubim',
       effects: [
         { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'pyro', value: 9 }, then: [{ type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 1000, consume: 9 }, { type: 'oblivion_flat', value: 4800 }] },
         { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'pyro', value: 8 }, then: [{ type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 118, consume: 8 }] },
@@ -747,7 +747,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Thornbound',
     rarity: 'Infinite',
     name: 'Thornbound Elegy Titan',
-    description: 'On summon: Gain 124 Trail; Gain 12 Briar Spirals; Gain +130% total Oblivion this turn. After 5 cards played: Spend 90 Trail; If you have 8+ Briar Spirals, Spend 4 Briar Spirals; +4200 Oblivion; Bloom all Briar Spirals (+56 Trail per spiral); Spend all Briar Spirals; Salvage any 1 card; Gain 16 Trail; +3600 Oblivion; If you have 120+ Trail, +3200 Oblivion; Draw 2 cards. While on board: +520 Oblivion per card played while on board',
+    description: 'On summon: Gain 124 Trail; Gain 12 Briar Spirals; Gain +130% total Oblivion this turn. After 5 cards played: Spend 90 Trail; If you have 8+ Briar Spirals, Spend 4 Briar Spirals; Gain Oblivion scaled by Scar, Trail, Briar Spirals, and March readiness; Bloom all Briar Spirals (+56 Trail per spiral); Spend all Briar Spirals; Salvage any 1 card; Gain 16 Trail; Gain Oblivion scaled by Scar, Trail, Briar Spirals, and March readiness; If you have 120+ Trail, Gain Oblivion scaled by Scar, Trail, Briar Spirals, and March readiness; Draw 2 cards. While on board: +520 Oblivion per card played while on board',
     artKey: 'inf_thornbound_elegy_titan',
     summonCost: [],
     extraSummonConditions: [
@@ -759,7 +759,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Funeral Surge',
       cardsPlayedRequirement: 5,
-      description: 'Spend 90 Trail; If you have 8+ Briar Spirals, Spend 4 Briar Spirals; +4200 Oblivion; Bloom all Briar Spirals (+56 Trail per spiral); Spend all Briar Spirals; Salvage any 1 card; Gain 16 Trail; +3600 Oblivion; If you have 120+ Trail, +3200 Oblivion; Draw 2 cards',
+      description: 'Spend 90 Trail; If you have 8+ Briar Spirals, Spend 4 Briar Spirals; Gain Oblivion scaled by Scar, Trail, Briar Spirals, and March readiness; Bloom all Briar Spirals (+56 Trail per spiral); Spend all Briar Spirals; Salvage any 1 card; Gain 16 Trail; Gain Oblivion scaled by Scar, Trail, Briar Spirals, and March readiness; If you have 120+ Trail, Gain Oblivion scaled by Scar, Trail, Briar Spirals, and March readiness; Draw 2 cards',
       // Role: CATASTROPHIC FINISHER. Performs the largest all-in conversion:
       // spiral spend checkpoint, full bloom, spiral collapse, then final cashout.
       effects: [
@@ -802,7 +802,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Mechanical Apotheosis Core',
-    description: 'On summon: Gain 18 Strain; Gain 6 Reactor Cores; +2400 Oblivion. After 4 cards played: Vent 9999 Strain; If you have 10+ Reactor Cores, Spend 10 Reactor Cores; +6500 Oblivion; Cash out all Reactor Cores (+900 Oblivion per stack); Gain 12 Strain. While on board: +560 Oblivion per card played while on board',
+    description: 'On summon: Gain 18 Strain; Gain 6 Reactor Cores; Gain Oblivion scaled by Reactor Cores and Strain. After 4 cards played: Vent 9999 Strain; If you have 10+ Reactor Cores, Spend 10 Reactor Cores; Gain Oblivion scaled by Reactor Cores and Strain; Cash out all Reactor Cores (+900 Oblivion per stack); Gain 12 Strain. While on board: +560 Oblivion per card played while on board',
     artKey: 'inf_mechanical_apotheosis_core',
     summonCost: [],
     extraSummonConditions: [
@@ -815,7 +815,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Core Singularity',
       cardsPlayedRequirement: 4,
-      description: 'Vent 9999 Strain; If you have 10+ Reactor Cores, Spend 10 Reactor Cores; +6500 Oblivion; Cash out all Reactor Cores (+900 Oblivion per stack); Gain 12 Strain',
+      description: 'Vent 9999 Strain; If you have 10+ Reactor Cores, Spend 10 Reactor Cores; Gain Oblivion scaled by Reactor Cores and Strain; Cash out all Reactor Cores (+900 Oblivion per stack); Gain 12 Strain',
       // Role: APEX CORE JUDGMENT. First detonates a fixed 10-Core checkpoint,
       // then cashes all remaining cores for a two-stage Infinite finisher.
       effects: [

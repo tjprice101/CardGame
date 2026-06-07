@@ -374,7 +374,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bg-et-vethkorath-seven-crown-proof',
     name: 'Vethkorath Seven-Crown Proof',
-    description: 'On play: Gain 5 Wild Pollen; Draw 1 card. While on board: Each adjacent active Seraphim adds 1 extra card whenever you play a card; Buffs Seraphim and Angel attacks: base +72, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 5 Wild Pollen; Draw 1 card. While on board: Each adjacent active Seraphim adds 1 extra card whenever you play a card; Buffs Seraphim and Angel attacks: base +72, cooldown -1',
     rarity: 'Eternal',
     artKey: 'bg_et_vethkorath_seven_crown',
     // Role: BACK-ROW RESERVOIR (Cherubim Eternal).
@@ -386,7 +386,7 @@ export const blazingGardenCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'bg-et-embergrove-codex',
     name: 'Embergrove Codex',
-    description: 'On play: Gain 1 Wild Pollen; Seed up to 1 Wild Pollen (+26 Oblivion per pollen, +2% score per Bloom); Replay the last Burn-phase card played this turn. While on board: Seraphim bonuses are amplified by +18%; Buffs Seraphim and Angel attacks: base +58, cooldown -1, multiplier x1.00',
+    description: 'On play: Gain 1 Wild Pollen; Seed up to 1 Wild Pollen (+26 Oblivion per pollen, +2% score per Bloom); Replay the last Burn-phase card played this turn. While on board: Seraphim bonuses are amplified by +18%; Buffs Seraphim and Angel attacks: base +58, cooldown -1',
     rarity: 'Eternal',
     artKey: 'bg_et_embergrove_codex',
     // Role: DRIP CONVERTER + REPLAY ENGINE (Cherubim Eternal).

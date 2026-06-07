@@ -79,6 +79,7 @@ import {
   BOSS_DEFINITIONS,
   BOSS_FIGHT_ROUND_SECONDS,
   ensureEventBossHpSnapshot,
+  isBossUnlocked,
   isEventBossCategory,
 } from '@/data/bosses/bossDefinitions';
 import {
@@ -802,7 +803,7 @@ interface StoreActions {
   openCase: (packId: string) => string[] | null;
   convertCardToHolo: (definitionId: string) => boolean;
   toggleFavoriteCard: (definitionId: string, finish: CardFinish) => void;
-  combineForInfinite: (recipe: import('@/data/cards/infiniteCards').InfiniteRecipe) => boolean;
+  combineForInfinite: (recipe: import('@/data/cards/infiniteCards').InfiniteRecipe) => true | string;
   updateSettings: (patch: Partial<SettingsState>) => void;
   loadState: (state: GameState) => void;
   resetToDefault: () => void;
@@ -897,7 +898,7 @@ interface StoreActions {
   /** Toggle keyword highlighting inside card rules text. */
   setHighlightRulesText: (enabled: boolean) => void;
   /** Fracture one duplicate copy of a card into Fracture Shards (rarity-scaled). Returns shards gained or 0 if not fracturable. */
-  fractureCard: (definitionId: string) => number;
+  fractureCard: (definitionId: string, count?: number) => number;
   /** Spend Fracture Shards as Card-light for a chosen card (1:1 into cardPlayCounts). Returns shards actually spent. */
   spendFractureShards: (targetDefinitionId: string, amount: number) => number;
   /** Dissolve one copy of a card into universal Card-bane Light. Returns false if player doesn't own a copy. */
@@ -1385,7 +1386,17 @@ function completeBossFight(s: Store, victory: boolean): void {
       const nextMaxHp = Math.round(nextBossBaseHp * (1 + gauntletDepth * 0.1));
       // Reset board + turn but keep deck (shuffled fresh for next opponent).
       const savedDeckSnapshot = s.bossFight.savedGameState; // preserve baseline
-      s.deck = { ...s.deck, hand: [], drawPile: DeckSystem.shuffle([...s.deck.hand, ...s.deck.drawPile, ...s.deck.discardPile]), discardPile: [] };
+      const snapshotDeck = savedDeckSnapshot?.deck;
+      const snapshotPool = snapshotDeck
+        ? [...snapshotDeck.hand, ...snapshotDeck.drawPile, ...snapshotDeck.discardPile]
+        : [...s.deck.hand, ...s.deck.drawPile, ...s.deck.discardPile];
+      s.deck = {
+        ...s.deck,
+        hand: [],
+        drawPile: DeckSystem.shuffle(snapshotPool),
+        discardPile: [],
+        extraDeck: snapshotDeck ? [...snapshotDeck.extraDeck] : [...s.deck.extraDeck],
+      };
       s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
       s.turn = { ...defaultTurn, phase: 'idle' };
       s.bossFight = {
@@ -6314,8 +6325,36 @@ export const useStore = create<Store>()(
       // Verify the player owns enough copies of each ingredient
       for (const ingredient of recipe.ingredients) {
         const owned = state.progress.collection[ingredient.definitionId] ?? 0;
-        if (owned < ingredient.count) return false;
+        if (owned < ingredient.count) return `Missing copies for ${ingredient.definitionId}`;
       }
+
+      // Block crafting if it would break any saved deck's ownership requirements.
+      const simulatedCollection: Record<string, number> = { ...state.progress.collection };
+      for (const ingredient of recipe.ingredients) {
+        simulatedCollection[ingredient.definitionId] = (simulatedCollection[ingredient.definitionId] ?? 0) - ingredient.count;
+      }
+
+      for (const savedDeck of state.progress.savedDecks) {
+        const requiredByDefinition: Record<string, number> = {};
+        for (const entry of savedDeck.deckList) {
+          requiredByDefinition[entry.definitionId] = (requiredByDefinition[entry.definitionId] ?? 0) + entry.copies;
+        }
+        for (const extra of savedDeck.extraDeck) {
+          requiredByDefinition[extra.definitionId] = (requiredByDefinition[extra.definitionId] ?? 0) + 1;
+        }
+
+        for (const ingredient of recipe.ingredients) {
+          const required = requiredByDefinition[ingredient.definitionId] ?? 0;
+          if (required <= 0) continue;
+          const remaining = simulatedCollection[ingredient.definitionId] ?? 0;
+          if (remaining < required) {
+            const def = CardRegistry.get(ingredient.definitionId);
+            const cardName = def?.name ?? ingredient.definitionId;
+            return `This craft would break your \"${savedDeck.name}\" deck - ${cardName} would drop to ${remaining} owned (needs ${required}).`;
+          }
+        }
+      }
+
       set(s => {
         // Consume ingredient copies
         for (const ingredient of recipe.ingredients) {
@@ -6635,7 +6674,7 @@ export const useStore = create<Store>()(
       });
     },
 
-    fractureCard: (definitionId) => {
+    fractureCard: (definitionId, count = 1) => {
       const state = get();
       const totalOwned = state.progress.collection[definitionId] ?? 0;
       const starterLocked = STARTER_COLLECTION[definitionId] ?? 0;
@@ -6646,6 +6685,10 @@ export const useStore = create<Store>()(
       if (totalOwned <= fractureFloor) return 0;
       const definition = CardRegistry.get(definitionId);
       if (!definition) return 0;
+      const safeCount = Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 1;
+      const maxFracturable = Math.max(0, totalOwned - fractureFloor);
+      const fractures = Math.min(safeCount, maxFracturable);
+      if (fractures <= 0) return 0;
       const FRACTURE_SHARD_YIELD: Record<string, number> = {
         Common: 1, Rare: 3, Epic: 7, Legendary: 12, Eternal: 22, Infinite: 35,
       };
@@ -6653,14 +6696,18 @@ export const useStore = create<Store>()(
       set(s => {
         const current = s.progress.collection[definitionId] ?? 0;
         if (current <= fractureFloor) return;
-        if (current === 1) {
+        const currentFracturable = Math.max(0, current - fractureFloor);
+        const applyFractures = Math.min(fractures, currentFracturable);
+        if (applyFractures <= 0) return;
+        const nextOwned = current - applyFractures;
+        if (nextOwned <= 0) {
           delete s.progress.collection[definitionId];
         } else {
-          s.progress.collection[definitionId] = current - 1;
+          s.progress.collection[definitionId] = nextOwned;
         }
-        s.progress.fractureShards = (s.progress.fractureShards ?? 0) + shards;
+        s.progress.fractureShards = (s.progress.fractureShards ?? 0) + (shards * applyFractures);
       });
-      return shards;
+      return shards * fractures;
     },
 
     spendFractureShards: (targetDefinitionId, amount) => {
@@ -6905,6 +6952,7 @@ export const useStore = create<Store>()(
         // Gauntlet & trial runs ignore cooldown.
         const kind = options?.kind ?? 'normal';
         if (kind === 'normal' && cooldown && cooldown > now) return;
+        if (kind !== 'gauntlet' && !isBossUnlocked(s.progress, bossId)) return;
         const savedDeck = s.progress.savedDecks.find(d => d.id === savedDeckId);
         if (!savedDeck) return;
 

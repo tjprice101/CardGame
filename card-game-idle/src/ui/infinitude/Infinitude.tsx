@@ -59,6 +59,7 @@ export default function Infinitude({ onClose }: Props) {
     orderedRecipes[0]?.recipe.resultId ?? null,
   );
   const [justCombined, setJustCombined] = useState<string | null>(null);
+  const [combineError, setCombineError] = useState<string | null>(null);
   const [listFilter, setListFilter] = useState<'all' | 'event'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -87,10 +88,13 @@ export default function Infinitude({ onClose }: Props) {
 
   function handleCombine() {
     if (!selectedRecipe) return;
-    const ok = combineForInfinite(selectedRecipe);
-    if (ok) {
+    const result = combineForInfinite(selectedRecipe);
+    if (result === true) {
+      setCombineError(null);
       setJustCombined(selectedRecipe.resultId);
       setTimeout(() => setJustCombined(null), 2200);
+    } else {
+      setCombineError(result);
     }
   }
 
@@ -221,6 +225,9 @@ export default function Infinitude({ onClose }: Props) {
           {selectedRecipe && resultDef ? (
             <main style={styles.detail}>
               <div style={styles.detailInner}>
+                {combineError && (
+                  <div style={styles.errorBanner}>{combineError}</div>
+                )}
 
                 {/* Hero: card face + intro */}
                 <div style={styles.detailHero}>
@@ -752,6 +759,15 @@ const styles: Record<string, React.CSSProperties> = {
   divider: {
     height: 1,
     background: 'linear-gradient(90deg, transparent 0%, rgba(184,200,255,0.16) 50%, transparent 100%)',
+  },
+  errorBanner: {
+    borderRadius: 10,
+    border: '1px solid rgba(255,130,130,0.45)',
+    background: 'rgba(120,26,34,0.55)',
+    color: 'rgba(255,218,218,0.95)',
+    fontSize: 12,
+    letterSpacing: 0.3,
+    padding: '10px 12px',
   },
 
   // Ingredients

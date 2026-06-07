@@ -59,7 +59,7 @@ describe('Eternal stack wiring', () => {
     const cashout: CardEffect = { type: 'eternal_stack_cashout', stack: 'pyro', oblivionPerStack: 400, chainPerStack: 0.20 } as any;
     const result = CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: [cashout] });
     expect((result as any).turn.eternalStacks.pyro).toBe(0);
-    expect((result as any).oblivionBonus).toBe(2000);
+    expect((result as any).oblivionBonus).toBe(2200);
   });
 
   it('eternal_stack_gte gates conditional payoffs correctly', () => {
@@ -96,8 +96,8 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     const gain: CardEffect = { type: 'set_secondary_gain', kind: 'pyro', value: 4 } as any;
     const ignite: CardEffect = { type: 'pyro_cinder_echo_ignite', oblivionPerEchoSquared: 25 } as any;
     const r = CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: [gain, ignite] });
-    // 4 echoes consumed → quadratic: 4² × 25 = 400
-    expect((r as any).oblivionBonus).toBe(400);
+    // 4 echoes consumed → quadratic: 4² × 25 = 400, then mechanic buff (+10%) => 440
+    expect((r as any).oblivionBonus).toBe(440);
     expect((r as any).turn.secondaryCounters.pyro).toBe(0);
   });
 
@@ -125,7 +125,7 @@ describe('Per-set secondary keyword wiring (bespoke per-set families)', () => {
     } as any;
 
     const result = CardEffectExecutor.execute(fakeDeckCard, fakeTurn, fakeBoard, fakeDeck, false, { effects: [confluence] });
-    expect((result as any).oblivionBonus).toBe(3000);
+  expect((result as any).oblivionBonus).toBe(3300);
     expect((result as any).turn.eternalStacks.pyro).toBe(2);
     expect((result as any).turn.secondaryCounters.pyro).toBe(1);
     expect((result as any).deck.hand).toHaveLength(1);

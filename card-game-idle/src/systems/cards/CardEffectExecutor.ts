@@ -205,11 +205,11 @@ function computeLightInfiniteOblivionBonus(definitionId: string, turn: TurnState
 
   switch (definitionId) {
     case 'inf-celestial-blackout':
-      return 1200 + radiance * 18 + halo * 200 + activeSeraphim * 220;
+      return 1450 + radiance * 21 + halo * 240 + activeSeraphim * 260;
     case 'inf-lucent-cataclysm-archon':
-      return 1050 + radiance * 14 + halo * 180 + activeSeraphim * 200;
+      return 1300 + radiance * 18 + halo * 215 + activeSeraphim * 235;
     case 'inf-heliarch-eclipse-engine':
-      return 1100 + radiance * 15 + halo * 220 + activeSeraphim * 180;
+      return 1380 + radiance * 19 + halo * 255 + activeSeraphim * 220;
     default:
       return null;
   }
@@ -222,14 +222,14 @@ function computeThornboundInfiniteOblivionBonus(definitionId: string, turn: Turn
 
   switch (definitionId) {
     case 'inf-thornbound-last-procession':
-      return 1200 + scar * 140 + trail * 24 + briar * 240;
+      return 1500 + scar * 170 + trail * 30 + briar * 300;
     case 'inf-thorn-widow-engine':
-      return 1100 + scar * 110 + trail * 20 + briar * 260;
+      return 1350 + scar * 145 + trail * 28 + briar * 310;
     case 'inf-gravebloom-singularity':
-      return 1250 + scar * 100 + trail * 22 + briar * 300;
+      return 1550 + scar * 140 + trail * 30 + briar * 340;
     case 'inf-thornbound-elegy-titan': {
-      const marchReadyBonus = trail >= 40 && scar >= 10 ? 800 : 0;
-      return 1500 + scar * 160 + trail * 26 + briar * 360 + marchReadyBonus;
+      const marchReadyBonus = trail >= 40 && scar >= 10 ? 1100 : 0;
+      return 1850 + scar * 195 + trail * 34 + briar * 390 + marchReadyBonus;
     }
     default:
       return null;
@@ -239,16 +239,17 @@ function computeThornboundInfiniteOblivionBonus(definitionId: string, turn: Turn
 function computeMechanicalInfiniteOblivionBonus(definitionId: string, turn: TurnState): number | null {
   const strain = Math.max(0, turn.strain ?? 0);
   const reactorCores = Math.max(0, turn.eternalStacks?.mech ?? 0);
+  const strainBandBonus = strain >= 18 ? 1400 : strain >= 12 ? 900 : strain >= 8 ? 500 : 0;
 
   switch (definitionId) {
     case 'inf-machina-eternal-loop':
-      return 1200 + reactorCores * 220 + Math.min(900, strain * 55);
+      return 1700 + reactorCores * 360 + Math.min(1800, strain * 95) + strainBandBonus;
     case 'inf-brass-eidolon-prime':
-      return 980 + reactorCores * 190 + Math.min(700, strain * 40);
+      return 1500 + reactorCores * 320 + Math.min(1500, strain * 80) + Math.floor(strainBandBonus * 0.8);
     case 'inf-mech-entropy-foundry':
-      return 1050 + reactorCores * 210 + Math.min(750, strain * 45);
+      return 1600 + reactorCores * 340 + Math.min(1600, strain * 85) + Math.floor(strainBandBonus * 0.9);
     case 'inf-mechanical-apotheosis-core':
-      return 1350 + reactorCores * 260 + Math.min(1000, strain * 60);
+      return 2100 + reactorCores * 400 + Math.min(2000, strain * 105) + Math.floor(strainBandBonus * 1.1);
     default:
       return null;
   }

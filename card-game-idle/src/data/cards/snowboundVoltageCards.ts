@@ -366,7 +366,7 @@ const SNOWBOUND_CHERUBIM_SPECS: SnowboundCherubimSpec[] = [
   {
     definitionId: 'sv-cher-overcurrent-accord',
     name: 'The Overcurrent Accord',
-    description: 'Voltage. On play: Gain 1 Radiance; +80 Oblivion; Discharge Arctic Charge. While on board: Buffs Angel attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'Voltage. On play: Gain 1 Radiance; +80 Oblivion; Discharge Arctic Charge. While on board: Buffs Angel attacks: base +36',
     rarity: 'Rare',
     phase: 'Voltage',
     artKey: 'sv_cher_overcurrent_accord',
@@ -377,7 +377,7 @@ const SNOWBOUND_CHERUBIM_SPECS: SnowboundCherubimSpec[] = [
   {
     definitionId: 'sv-cher-station-nullpoint',
     name: 'Station Nullpoint',
-    description: 'Frost. On play: Gain 4 Strain; Gain 10 Arctic Charge. While on board: Buffs Angel attacks: base +16, cooldown -1, multiplier x1.00',
+    description: 'Frost. On play: Gain 4 Strain; Gain 10 Arctic Charge. While on board: Buffs Angel attacks: base +16, cooldown -1',
     rarity: 'Epic',
     phase: 'Frost',
     artKey: 'sv_cher_station_nullpoint',

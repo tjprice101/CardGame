@@ -53,6 +53,7 @@ const styles: Record<string, React.CSSProperties> = {
     bottom: 16,
     left: 0,
     right: 'var(--angel-drawer-hand-offset, 348px)',
+    zIndex: 70,
 
     display: 'flex',
     flexDirection: 'column',

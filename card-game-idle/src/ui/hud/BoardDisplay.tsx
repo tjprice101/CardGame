@@ -889,6 +889,7 @@ export default function BoardDisplay() {
       left: 0,
       right: playfieldRightInset,
       top: bossFight.mode === 'active' ? 'clamp(160px, 16vh, 215px)' : 'clamp(146px, 15.5vh, 218px)',
+      bottom: 'clamp(220px, 24vh, 300px)',
       marginInline: 'auto',
       pointerEvents: 'none',
       zIndex: 60,
@@ -896,6 +897,8 @@ export default function BoardDisplay() {
       flexDirection: 'column',
       alignItems: 'center',
       gap: 0,
+      overflowY: 'auto',
+      overflowX: 'visible',
       width: 'max-content',
     }}>
       {/* Immediate hover tooltip for board cards */}

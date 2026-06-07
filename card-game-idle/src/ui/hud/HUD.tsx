@@ -7,10 +7,6 @@ import { uiTypography } from '@/ui/theme';
 import ScoreDisplay from './ScoreDisplay';
 import AngelStatPanel from './AngelStatPanel';
 import HandDisplay from './HandDisplay';
-import RadianceDisplay from './RadianceDisplay';
-import TrailDisplay from './TrailDisplay';
-import StrainDisplay from './StrainDisplay';
-import FoamDisplay from './FoamDisplay';
 import DeckStatus from './DeckStatus';
 import SetEngineDisplay from './SetEngineDisplay';
 import TurnControls from './TurnControls';
@@ -142,43 +138,6 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
 }
 
 /**
- * Cosmetic vertical chrome rail framing the left-edge resource orbs
- * (Radiance / Ember / Trail / Strain). Behind the orbs themselves — they
- * remain absolutely-positioned individually. Gives the four free-floating
- * orbs a unified column identity instead of looking scattered.
- */
-function LeftRailFrame() {
-  return (
-    <div
-      aria-hidden="true"
-      style={{
-        position: 'absolute',
-        left: 12, top: 'clamp(232px, 30vh, 340px)', bottom: 'clamp(210px, 26vh, 280px)',
-        width: 72,
-        background: 'linear-gradient(180deg, rgba(5,5,7,0.4) 0%, rgba(5,5,7,0.62) 50%, rgba(5,5,7,0.4) 100%)',
-        border: '1px solid rgba(244,244,248,0.08)',
-        borderRadius: 18,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(244,244,248,0.05)',
-        backdropFilter: 'blur(6px)',
-        pointerEvents: 'none',
-        zIndex: 2,
-      }}
-    >
-      {/* Top accent cap */}
-      <div style={{
-        position: 'absolute', top: -1, left: '12%', right: '12%', height: 1,
-        background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.5), transparent)',
-      }} />
-      {/* Bottom accent cap */}
-      <div style={{
-        position: 'absolute', bottom: -1, left: '12%', right: '12%', height: 1,
-        background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.5), transparent)',
-      }} />
-    </div>
-  );
-}
-
-/**
  * Right-side control rail — 260 px glass panel that hosts the three main
  * HUD controls: deck-status pills at the top (padded past the 52 px bar),
  * the scrollable set-engine reference in the middle, and the turn-control
@@ -250,18 +209,11 @@ export default function HUD() {
 
   return (
     <>
-      {/* Cosmetic left-rail chrome frame behind resource orbs */}
-      <LeftRailFrame />
-
       {/* Core play surfaces */}
       <BoardDisplay />
       {/* ScoreDisplay overlaps the battleground pill — the BG bar already shows both scores */}
       {!inBattleground && <ScoreDisplay />}
       <AngelStatPanel />
-      <RadianceDisplay />
-      <FoamDisplay />
-      <TrailDisplay />
-      <StrainDisplay />
 
       {/* Top status bar — set · turn · phase */}
       <TopStatusBar onOpenOblivionScreen={() => setShowOblivionScreen(true)} />

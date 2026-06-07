@@ -549,7 +549,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-inf-refracted-sovereign',
     name: 'Refracted Sovereign',
-    description: 'On play: Gain 3 Refraction Charges; If you have 6+ Refraction Charges, Spend 2 Refraction Charges; +260 Oblivion; If you have 9+ Refraction Charges, Draw 1 card. While on board: Adjacent active Seraphim gain +88 Oblivion per card played; Buffs Seraphim attacks: base +130, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +180, cooldown -1, when you have 8+ Refraction Charges',
+    description: 'On play: Gain 3 Refraction Charges; If you have 6+ Refraction Charges, Spend 2 Refraction Charges; +260 Oblivion; If you have 9+ Refraction Charges, Draw 1 card. While on board: Adjacent active Seraphim gain +88 Oblivion per card played; Buffs Seraphim attacks: base +130, cooldown -1; Buffs Angel attacks: base +180, cooldown -1, when you have 8+ Refraction Charges',
     rarity: 'Infinite',
     artKey: 'ga_inf_refracted_sovereign',
     effects: [
@@ -610,7 +610,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-inf-shattered-without-shattering',
     name: 'Shattered Without Shattering',
-    description: 'On play: Gain 4 Refraction Charges; If you have 7+ Refraction Charges, Spend 3 Refraction Charges; +360 Oblivion; If you have 11+ Refraction Charges, Spend 4 Refraction Charges; Draw 2 cards. While on board: Seraphim bonuses are amplified by +24%; Adjacent active Seraphim gain +86 Oblivion per card played; Buffs Angel attacks: base +180, cooldown -1, multiplier x1.00; Buffs Seraphim attacks: base +120, cooldown -1, when you have 7+ Refraction Charges',
+    description: 'On play: Gain 4 Refraction Charges; If you have 7+ Refraction Charges, Spend 3 Refraction Charges; +360 Oblivion; If you have 11+ Refraction Charges, Spend 4 Refraction Charges; Draw 2 cards. While on board: Seraphim bonuses are amplified by +24%; Adjacent active Seraphim gain +86 Oblivion per card played; Buffs Angel attacks: base +180, cooldown -1; Buffs Seraphim attacks: base +120, cooldown -1, when you have 7+ Refraction Charges',
     rarity: 'Infinite',
     artKey: 'ga_inf_shattered_without_shattering',
     effects: [

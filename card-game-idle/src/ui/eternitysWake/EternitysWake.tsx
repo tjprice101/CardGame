@@ -1,7 +1,13 @@
 import { useState, lazy, Suspense } from 'react';
 import { useStore, selectBossFight, selectProgress } from '@/state/store';
 import { useSocialStore, selectSocialStatus } from '@/state/socialStore';
-import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS, getBossDisplayHp } from '@/data/bosses/bossDefinitions';
+import {
+  BOSS_DEFINITIONS,
+  BOSS_FIGHT_ROUND_SECONDS,
+  getBossDisplayHp,
+  getBossProgressionOrder,
+  isBossUnlocked,
+} from '@/data/bosses/bossDefinitions';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
@@ -191,7 +197,11 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
 
   const hasSavedDecks = progress.savedDecks.length > 0;
   const bossTabs: BossCategory[] = Array.from(new Set(STORE_BOSS_TAB_ORDER));
-  const visibleBosses = BOSS_DEFINITIONS.filter(boss => boss.category === activeBossTab);
+  const visibleBosses = getBossProgressionOrder(activeBossTab);
+  const previousBossNameById = new Map<string, string | null>();
+  visibleBosses.forEach((boss, index) => {
+    previousBossNameById.set(boss.id, index > 0 ? visibleBosses[index - 1].name : null);
+  });
   // Difficulty stars: 5-quintile rank within the active category by HP.
   const sortedByHp = [...visibleBosses].sort((a, b) => a.hp - b.hp);
   const difficultyByBossId = new Map<string, number>();
@@ -315,12 +325,14 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
         {visibleBosses.map(boss => {
           const cooldown = getCooldownRemaining(boss.id);
           const onCooldown = cooldown > 0;
+          const lockedByProgress = !isBossUnlocked(progress, boss.id);
           const bossDifficultyStars = difficultyByBossId.get(boss.id) ?? 1;
           const rewardDef = CardRegistry.get(boss.rewardCardId);
           const bossArtUrl = getBossArtUrl(boss.keyArt);
           const rewardCardArtUrl = rewardDef ? getCardBackgroundUrl(rewardDef) : null;
           const displayBossArtUrl = bossArtUrl ?? rewardCardArtUrl;
           const isSelected = selectedBossId === boss.id;
+          const previousBossName = previousBossNameById.get(boss.id);
           const rewardDisplayName = boss.category === 'Black Glass Inferno' ? boss.name : rewardDef?.name ?? '';
           const rewardPreviewText = rewardDef
             ? getCardPreviewLines(rewardDef, rewardDef.type === 'Angel' ? 3 : 2).join(' ')
@@ -330,11 +342,11 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           const baseMasteryPerCard = getBossBaseMasteryPerCard(bossIdx, BOSS_DEFINITIONS.length);
 
           return (
-            <div key={boss.id} className={onCooldown ? undefined : 'ui-tile-hover'} style={{
+            <div key={boss.id} className={onCooldown || lockedByProgress ? undefined : 'ui-tile-hover'} style={{
               width: 460, background: 'rgba(10,4,16,0.95)',
               border: `1px solid ${onCooldown ? 'rgba(255,107,107,0.2)' : 'rgba(255,107,107,0.5)'}`,
               borderRadius: 12, padding: '20px', display: 'flex', flexDirection: 'column', gap: 12,
-              opacity: onCooldown ? 0.65 : 1,
+              opacity: onCooldown || lockedByProgress ? 0.65 : 1,
             }}>
               {displayBossArtUrl && (
                 <div style={{
@@ -540,7 +552,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                 </div>
               )}
 
-              {hasSavedDecks && (
+              {hasSavedDecks && !lockedByProgress && (
                 <>
                   {!isSelected ? (
                     <button
@@ -606,7 +618,11 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
               )}
 
               {/* Cooldown or deck selector */}
-              {onCooldown ? (
+              {lockedByProgress ? (
+                <div style={{ textAlign: 'center', color: 'rgba(255,180,140,0.85)', fontSize: 12 }}>
+                  Locked: Clear {previousBossName ?? 'the previous boss'} to unlock this challenge.
+                </div>
+              ) : onCooldown ? (
                 <div style={{ textAlign: 'center', color: 'rgba(255,107,107,0.6)', fontSize: 12 }}>
                   Cooldown: {Math.floor(cooldown / 60)}:{String(cooldown % 60).padStart(2, '0')}
                 </div>
