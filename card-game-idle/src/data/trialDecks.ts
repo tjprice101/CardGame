@@ -724,7 +724,7 @@ const snowboundTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'sv-oph-first-static',
-      hint: 'The First Static (Voltage). +3 Strain, empower the next card, then discharge. It is a spender, not a builder.',
+      hint: 'The First Static (Voltage). +3 Strain, then discharge. It is a spender, not a builder.',
     },
     {
       cardDefinitionId: 'sv-oph-sleetline-highway',

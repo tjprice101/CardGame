@@ -838,11 +838,6 @@ function parseDocEffectClauses(text: string): CardEffect[] {
       continue;
     }
 
-    if (/^Empower the next card you play/i.test(clause)) {
-      effects.push({ type: 'multiply_next' });
-      continue;
-    }
-
     const patienceGain = clause.match(/^All Seraphim on board gain\s+\+(\d+)\s+(?:additional\s+)?Patience/i);
     if (patienceGain) {
       effects.push({ type: 'patience_gain_all', value: Number(patienceGain[1]) });
@@ -1581,7 +1576,6 @@ function injectOphanimUtility(def: OphanimDefinition): OphanimDefinition {
       extraEffects.push({ type: 'draw', value: 1 });
       break;
     case 3:
-      extraEffects.push({ type: 'multiply_next' });
       extraEffects.push({ type: 'draw', value: weight >= 5 ? 2 : 1 });
       break;
     default:

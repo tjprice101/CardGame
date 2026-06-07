@@ -9,12 +9,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Embersmite',
-    description: 'Gain 1 Radiance; +30 Oblivion; Empower the next card you play',
+    description: 'Gain 1 Radiance; +30 Oblivion',
     artKey: 'hr_light_divine_smite',
     effects: [
       { type: 'oblivion_flat', value: 30 },
-      { type: 'radiance_gain', value: 1 },
-      { type: 'multiply_next' }],
+      { type: 'radiance_gain', value: 1 }],
   },
   {
     definitionId: 'hr-light-holy-radiance',
@@ -106,10 +105,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Mantle',
-    description: 'Empower the next card you play',
+    description: 'none',
     artKey: 'hr_light_exalted_mantle',
     effects: [
-      { type: 'multiply_next' }],
+      ],
   },
   {
     definitionId: 'hr-light-aureate-blessing',
@@ -216,11 +215,10 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Flashfire Judgement',
-    description: 'Gain 3 Radiance; Empower the next card you play',
+    description: 'Gain 3 Radiance',
     artKey: 'hr_light_hastened_judgment',
     effects: [
-      { type: 'radiance_gain', value: 3 },
-      { type: 'multiply_next' }],
+      { type: 'radiance_gain', value: 3 }],
   },
   {
     definitionId: 'hr-light-seraphic-bond',

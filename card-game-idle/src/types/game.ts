@@ -136,7 +136,6 @@ export interface TurnState {
   lastPlayedDefinitionId: string | null;
   turnNumber?: number;
   emberGroveEchoUsedThisTurn?: boolean;
-  nextCardMultiplied: boolean;
   mulliganSelected: string[];
   pendingEffect: PendingEffect | null;
   lastResolvedSubtype?: CardSubtypeFilter | null;

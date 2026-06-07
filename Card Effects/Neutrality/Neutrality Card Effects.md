@@ -6,12 +6,11 @@
 * Shuffle discard into deck
 * After 5 cards played: Double all Patience on the board
 * Seraphim attacks preserve 0.4% of consumed Patience this turn
-* Empower the next card you play
 * +250 Oblivion
 * While on board: +65 Oblivion per card played while on board
 * Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim)
 * on attack, each stack → +2% base Oblivion (stacks then reset)
-* **[Final Measure]** Double all Patience on the board; Seraphim attacks preserve 0.4% of consumed Patience this turn; Empower the next card you play; +250 Oblivion
+* **[Final Measure]** Double all Patience on the board; Seraphim attacks preserve 0.4% of consumed Patience this turn; +250 Oblivion
 
 ## Aegis of Presence
 * On summon: All Seraphim on board gain +10 Patience
@@ -42,12 +41,11 @@
 * +400 Oblivion
 * After 4 cards played: Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)
 * All Seraphim on board gain +3 Patience
-* Empower the next card you play
 * +1400 Oblivion
 * While on board: +190 Oblivion per card played while on board
 * Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim)
 * on attack, each stack → +2% base Oblivion (stacks then reset)
-* **[Axiom Devour]** Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +3 Patience; Empower the next card you play; +1400 Oblivion
+* **[Axiom Devour]** Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +3 Patience; +1400 Oblivion
 
 ## Axiom of Oblivion
 * All Seraphim on board gain +12 Patience
@@ -75,7 +73,6 @@
 ## Colossus Advent
 * On play: All Seraphim on board gain +10 Patience
 * Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks)
-* Empower the next card you play
 * +350 Oblivion
 * While on board: +200 Oblivion per card played while active
 * Patience: +1 stack per card played
@@ -88,11 +85,10 @@
 * After 5 cards played: Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks)
 * All Seraphim on board gain +4 Patience
 * Salvage any 1 card
-* Empower the next card you play
 * While on board: +130 Oblivion per card played while on board
 * Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim)
 * on attack, each stack → +2% base Oblivion (stacks then reset)
-* **[Infinite Merge]** Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +4 Patience; Salvage any 1 card; Empower the next card you play
+* **[Infinite Merge]** Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +4 Patience; Salvage any 1 card
 
 ## Deep Seek
 * Search your deck for 1 matching Seraphim or Cherubim
@@ -100,7 +96,6 @@
 
 ## Echo Pulse
 * All Seraphim on board gain +5 Patience
-* Empower the next card you play
 * Draw 1 card
 
 ## Entropic Crown
@@ -146,11 +141,10 @@
 * After 5 cards played: Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)
 * All Seraphim on board gain +8 Patience
 * +2600 Oblivion
-* Empower the next card you play
 * While on board: +500 Oblivion per card played while on board
 * Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim)
 * on attack, each stack → +2% base Oblivion (stacks then reset)
-* **[Rupture Convergence]** Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +8 Patience; +2600 Oblivion; Empower the next card you play
+* **[Rupture Convergence]** Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +8 Patience; +2600 Oblivion
 
 ## Genesis Throne
 * On play: +2400 Oblivion
@@ -189,7 +183,6 @@
 ## Null Edict
 * All Seraphim on board gain +7 Patience
 * Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)
-* Empower the next card you play
 * +350 Oblivion
 
 ## Null Entropy Seraph
@@ -236,7 +229,6 @@
 ## Oblivion Pulse
 * All Seraphim on board gain +2 Patience
 * +20 Oblivion
-* Empower the next card you play
 * Gain 4 Prismatic Light
 * Draw 1 card
 
@@ -246,26 +238,23 @@
 * +600 Oblivion
 * After 6 cards played: Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks)
 * All Seraphim on board gain +12 Patience
-* Empower the next card you play
 * +600 Oblivion
 * While on board: +200 Oblivion per card played while on board
 * Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim)
 * on attack, each stack → +2% base Oblivion (stacks then reset)
-* **[Parallax Collapse]** Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +12 Patience; Empower the next card you play; +600 Oblivion
+* **[Parallax Collapse]** Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +12 Patience; +600 Oblivion
 
 ## Paradox Throne
 * +0 Oblivion
 * Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)
 * Look at the top 8 cards, take 2 cards, put 2 cards on the bottom, and discard the rest
 * If this is the first card you played this turn, All Seraphim on board gain +6 Patience
-* Empower the next card you play
 * If you have played 1+ cards this turn, +700 Oblivion
 
 ## Prime Judge of Silence
 * All Seraphim on board gain +2 Patience
 * Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks)
 * If this is the first card you played this turn, Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)
-* Empower the next card you play
 * +1000 Oblivion
 * If you have played 1+ cards this turn, All Seraphim on board gain +7 Patience
 * Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks)
@@ -291,11 +280,10 @@
 * After 4 cards played: Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)
 * All Seraphim on board gain +10 Patience
 * +2800 Oblivion
-* Empower the next card you play
 * While on board: +420 Oblivion per card played while on board
 * Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim)
 * on attack, each stack → +2% base Oblivion (stacks then reset)
-* **[Null Dominion]** Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +10 Patience; +2800 Oblivion; Empower the next card you play
+* **[Null Dominion]** Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +10 Patience; +2800 Oblivion
 
 ## Starbound Null Archangel
 * On summon: gain 6 Equilibrium Sigils and all Seraphim gain +12 Patience
@@ -344,7 +332,6 @@
 
 ## Void Amplifier
 * On play: +140 Oblivion
-* Empower the next card you play
 * Salvage any 1 card
 * While on board: Buffs Seraphim attacks: base +46, cooldown +0, multiplier x1.00
 * Buffs Angel attacks: base +36, cooldown +0, multiplier x1.00
@@ -353,7 +340,6 @@
 * +0 Oblivion
 * All Seraphim on board gain +13 Patience
 * Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)
-* Empower the next card you play
 
 ## Void Exchequer
 * On play: All Seraphim on board gain +2 Patience
@@ -378,7 +364,6 @@
 ## Void Surge
 * +25 Oblivion
 * If you control 1+ active Cherubim, +15 Oblivion
-* Empower the next card you play
 * Draw 1 card
 
 ## Void's Reaping

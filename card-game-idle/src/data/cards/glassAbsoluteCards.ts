@@ -149,12 +149,12 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-ser-lattice-canticle',
     name: 'Lattice Canticle Seraph',
-    description: 'On play: Draw 1 card; Empower the next card you play. While on board: +18 Oblivion per card played while active',
+    description: 'On play: Draw 1 card. While on board: +18 Oblivion per card played while active',
     rarity: 'Rare',
     artKey: 'ga_ser_lattice_canticle',
     bonusType: 'oblivion_per_card',
     bonusValue: 18,
-    onPlayEffects: [{ type: 'draw', value: 1 }, { type: 'multiply_next' }],
+    onPlayEffects: [{ type: 'draw', value: 1 }],
     unsynergizedName: 'Lattice Canticle Vector Break',
     synergizedName: 'Lattice Canticle Angelic Verdict',
     unsynergizedDescription: '312 base Oblivion · 5 cards cooldown · Cost: discard 1 card',
@@ -276,7 +276,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-cher-splitlight-cantor',
     name: 'Splitlight Cantor',
-    description: 'On play: Gain 2 Refraction Charges; Gain 22 Radiance. While on board: Gain 12 Radiance per card played',
+    description: 'On play: Gain 22 Radiance; Gain 2 Refraction Charges. While on board: Gain 12 Radiance per card played',
     rarity: 'Rare',
     artKey: 'ga_cher_splitlight_cantor',
     effects: [{ type: 'cherubim_resource_per_card', resource: 'radiance', value: 12 }],
@@ -336,10 +336,10 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-lumen-cascade',
     name: 'Lumen Cascade',
-    description: 'Draw 3 cards; Empower the next card you play',
+    description: 'Draw 3 cards',
     rarity: 'Epic',
     artKey: 'ga_oph_lumen_cascade',
-    effects: [{ type: 'draw', value: 3 }, { type: 'multiply_next' }],
+    effects: [{ type: 'draw', value: 3 }],
   }),
   buildOphanim({
     definitionId: 'ga-oph-crystal-echo-archive',
@@ -352,7 +352,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-white-transit',
     name: 'White Transit',
-    description: 'Gain 2 Refraction Charges; Gain 24 Radiance; Draw 4 cards',
+    description: 'Gain 24 Radiance; Gain 2 Refraction Charges; Draw 4 cards',
     rarity: 'Legendary',
     artKey: 'ga_oph_white_transit',
     effects: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }, { type: 'draw', value: 4 }, { type: 'radiance_gain', value: 24 }],
@@ -393,7 +393,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildSeraphim({
     definitionId: 'ga-et-lattice-archive-seraph',
     name: 'Lattice Archive Seraph',
-    description: 'On play: Gain 3 Refraction Charges; Salvage any 1 card; If you have 5+ Refraction Charges, Empower the next card you play. While on board: +84 Oblivion per card played while active',
+    description: 'On play: Gain 3 Refraction Charges; Salvage any 1 card; If you have 5+ Refraction Charges, none. While on board: +84 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'ga_et_lattice_archive_seraph',
     bonusType: 'oblivion_per_card',
@@ -405,7 +405,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'absol', value: 5 },
-        then: [{ type: 'multiply_next' }],
+        then: [],
       }],
     unsynergizedName: 'Lattice Archive Vector Break',
     synergizedName: 'Lattice Archive Angelic Verdict',
@@ -419,7 +419,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-et-angled-infinity',
     name: 'Angled Infinity',
-    description: 'On play: Gain 1 Refraction Charge; If this is the first card you played this turn, Gain 2 Refraction Charges; Spend 2 Refraction Charges; +180 Oblivion; If you have 4+ Refraction Charges, Spend 2 Refraction Charges; Empower the next card you play. While on board: Adjacent active Seraphim gain +44 Oblivion per card played; Buffs Seraphim attacks: base +80, cooldown -1, when you have 4+ Refraction Charges',
+    description: 'On play: Gain 1 Refraction Charge; If this is the first card you played this turn, Gain 2 Refraction Charges; Spend 2 Refraction Charges; +180 Oblivion; If you have 4+ Refraction Charges, Spend 2 Refraction Charges. While on board: Adjacent active Seraphim gain +44 Oblivion per card played; Buffs Seraphim attacks: base +80, cooldown -1, when you have 4+ Refraction Charges',
     rarity: 'Eternal',
     artKey: 'ga_et_angled_infinity',
     effects: [
@@ -446,13 +446,13 @@ export const glassAbsoluteCards: CardDefinition[] = [
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'absol', value: 4 },
-        then: [{ type: 'set_secondary_spend', kind: 'absol', value: 2 }, { type: 'multiply_next' }],
+        then: [{ type: 'set_secondary_spend', kind: 'absol', value: 2 }],
       }],
   }),
   buildOphanim({
     definitionId: 'ga-et-first-white',
     name: 'First White',
-    description: 'Gain 2 Refraction Charges; If you have played 1+ cards this turn, Draw 1 card; If played after non matching element, Gain 2 Refraction Charges; +80 Oblivion; If you have 6+ Refraction Charges, Spend 3 Refraction Charges; Empower the next card you play',
+    description: 'Gain 2 Refraction Charges; If you have played 1+ cards this turn, Draw 1 card; If played after non matching element, Gain 2 Refraction Charges; +80 Oblivion; If you have 6+ Refraction Charges, Spend 3 Refraction Charges',
     rarity: 'Eternal',
     artKey: 'ga_et_first_white',
     // Role: CROSS-SET BRIDGE SEQUENCER.
@@ -474,13 +474,13 @@ export const glassAbsoluteCards: CardDefinition[] = [
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'absol', value: 6 },
-        then: [{ type: 'set_secondary_spend', kind: 'absol', value: 3 }, { type: 'multiply_next' }],
+        then: [{ type: 'set_secondary_spend', kind: 'absol', value: 3 }],
       }],
   }),
   buildSeraphim({
     definitionId: 'ga-et-center-everywhere',
     name: 'The Center That Is Everywhere',
-    description: 'On play: Gain 2 Refraction Charges; If you have 7+ Refraction Charges, Spend 4 Refraction Charges; Empower the next card you play; +420 Oblivion. While on board: +140 Oblivion per card played while active',
+    description: 'On play: Gain 2 Refraction Charges; If you have 7+ Refraction Charges, Spend 4 Refraction Charges; +420 Oblivion. While on board: +140 Oblivion per card played while active',
     rarity: 'Eternal',
     artKey: 'ga_et_center_everywhere',
     bonusType: 'oblivion_per_card',
@@ -491,7 +491,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'absol', value: 7 },
-        then: [{ type: 'set_secondary_spend', kind: 'absol', value: 4 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 420 }],
+        then: [{ type: 'set_secondary_spend', kind: 'absol', value: 4 }, { type: 'oblivion_flat', value: 420 }],
       }],
     unsynergizedName: 'Center Everywhere Vector Break',
     synergizedName: 'Center Everywhere Angelic Verdict',
@@ -505,7 +505,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-et-perfect-refraction',
     name: 'Perfect Refraction',
-    description: 'On play: Gain 2 Refraction Charges; If you have 4+ Refraction Charges, Draw 1 card; If you have 6+ Refraction Charges, Spend 1 Refraction Charge; Empower the next card you play. While on board: All Oblivion gain +42%',
+    description: 'On play: Gain 2 Refraction Charges; If you have 4+ Refraction Charges, Draw 1 card; If you have 6+ Refraction Charges, Spend 1 Refraction Charge. While on board: All Oblivion gain +42%',
     rarity: 'Eternal',
     artKey: 'ga_et_perfect_refraction',
     maxDurability: 8,
@@ -515,13 +515,13 @@ export const glassAbsoluteCards: CardDefinition[] = [
     onPlayEffects: [
       { type: 'set_secondary_gain', kind: 'absol', value: 2 },
       { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 4 }, then: [{ type: 'draw', value: 1 }] },
-      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 6 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 1 }, { type: 'multiply_next' }] }],
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 6 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 1 }] }],
   }),
 
   buildSeraphim({
     definitionId: 'ga-inf-glass-absolute',
     name: 'Glass Absolute Seraph',
-    description: 'On play: Gain 4 Refraction Charges; If you have 8+ Refraction Charges, Spend 4 Refraction Charges; Empower the next card you play; +600 Oblivion. While on board: +250 Oblivion per card played while active',
+    description: 'On play: Gain 4 Refraction Charges; If you have 8+ Refraction Charges, Spend 4 Refraction Charges; +600 Oblivion. While on board: +250 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'ga_inf_glass_absolute',
     bonusType: 'oblivion_per_card',
@@ -534,8 +534,6 @@ export const glassAbsoluteCards: CardDefinition[] = [
         condition: { type: 'set_secondary_gte', kind: 'absol', value: 8 },
         then: [
           { type: 'set_secondary_spend', kind: 'absol', value: 4 },
-          { type: 'multiply_next' },
-          { type: 'multiply_next' },
           { type: 'oblivion_flat', value: 600 },
         ],
       }],
@@ -551,7 +549,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-inf-refracted-sovereign',
     name: 'Refracted Sovereign',
-    description: 'On play: Gain 3 Refraction Charges; If you have 6+ Refraction Charges, Spend 2 Refraction Charges; +260 Oblivion; If you have 9+ Refraction Charges, Draw 1 card; Empower the next card you play. While on board: Adjacent active Seraphim gain +88 Oblivion per card played; Buffs Seraphim attacks: base +130, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +180, cooldown -1, when you have 8+ Refraction Charges',
+    description: 'On play: Gain 3 Refraction Charges; If you have 6+ Refraction Charges, Spend 2 Refraction Charges; +260 Oblivion; If you have 9+ Refraction Charges, Draw 1 card. While on board: Adjacent active Seraphim gain +88 Oblivion per card played; Buffs Seraphim attacks: base +130, cooldown -1, multiplier x1.00; Buffs Angel attacks: base +180, cooldown -1, when you have 8+ Refraction Charges',
     rarity: 'Infinite',
     artKey: 'ga_inf_refracted_sovereign',
     effects: [
@@ -568,12 +566,12 @@ export const glassAbsoluteCards: CardDefinition[] = [
     onPlayEffects: [
       { type: 'set_secondary_gain', kind: 'absol', value: 3 },
       { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 6 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 2 }, { type: 'oblivion_flat', value: 260 }] },
-      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 9 }, then: [{ type: 'draw', value: 1 }, { type: 'multiply_next' }] }],
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 9 }, then: [{ type: 'draw', value: 1 }] }],
   }),
   buildOphanim({
     definitionId: 'ga-inf-yreth-prism-at-center',
     name: 'Yreth, Prism at Center',
-    description: 'Gain 3 Refraction Charges; If this is the first card you played this turn, Gain 2 Refraction Charges; If played after non matching element, Gain 2 Refraction Charges; +160 Oblivion; If you have 10+ Refraction Charges, Spend 5 Refraction Charges; Draw 1 card; Empower the next card you play',
+    description: 'Gain 3 Refraction Charges; If this is the first card you played this turn, Gain 2 Refraction Charges; If played after non matching element, Gain 2 Refraction Charges; +160 Oblivion; If you have 10+ Refraction Charges, Spend 5 Refraction Charges; Draw 1 card',
     rarity: 'Infinite',
     artKey: 'ga_inf_yreth_prism_at_center',
     // Role: CHARGE FLOOR ESCALATOR AND CROSS-SET BRIDGE.
@@ -585,12 +583,12 @@ export const glassAbsoluteCards: CardDefinition[] = [
         condition: { type: 'played_after_non_matching_element' },
         then: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }, { type: 'oblivion_flat', value: 160 }],
       },
-      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 10 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 5 }, { type: 'draw', value: 1 }, { type: 'multiply_next' }] }],
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 10 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 5 }, { type: 'draw', value: 1 }] }],
   }),
   buildSeraphim({
     definitionId: 'ga-inf-chorus-unbroken-spectrum',
     name: 'Chorus of the Unbroken Spectrum',
-    description: 'On play: Gain 2 Refraction Charges; If you have played 2+ cards this turn, Gain 3 Refraction Charges; Draw 1 card; If you have 10+ Refraction Charges, Spend 5 Refraction Charges; Empower the next card you play; +520 Oblivion. While on board: +170 Oblivion per card played while active',
+    description: 'On play: Gain 2 Refraction Charges; If you have played 2+ cards this turn, Gain 3 Refraction Charges; Draw 1 card; If you have 10+ Refraction Charges, Spend 5 Refraction Charges; +520 Oblivion. While on board: +170 Oblivion per card played while active',
     rarity: 'Infinite',
     artKey: 'ga_inf_chorus_unbroken_spectrum',
     bonusType: 'oblivion_per_card',
@@ -599,7 +597,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
     onPlayEffects: [
       { type: 'set_secondary_gain', kind: 'absol', value: 2 },
       { type: 'conditional', condition: { type: 'cards_played_gte', value: 2 }, then: [{ type: 'set_secondary_gain', kind: 'absol', value: 3 }, { type: 'draw', value: 1 }] },
-      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 10 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 5 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 520 }] }],
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 10 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 5 }, { type: 'oblivion_flat', value: 520 }] }],
     unsynergizedName: 'Unbroken Spectrum Vector Break',
     synergizedName: 'Unbroken Spectrum Angelic Verdict',
     unsynergizedDescription: '2860 base Oblivion · 7 cards cooldown',
@@ -612,7 +610,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildCherubim({
     definitionId: 'ga-inf-shattered-without-shattering',
     name: 'Shattered Without Shattering',
-    description: 'On play: Gain 4 Refraction Charges; If you have 7+ Refraction Charges, Spend 3 Refraction Charges; Empower the next card you play; +360 Oblivion; If you have 11+ Refraction Charges, Spend 4 Refraction Charges; Draw 2 cards. While on board: Seraphim bonuses are amplified by +24%; Adjacent active Seraphim gain +86 Oblivion per card played; Buffs Angel attacks: base +180, cooldown -1, multiplier x1.00; Buffs Seraphim attacks: base +120, cooldown -1, when you have 7+ Refraction Charges',
+    description: 'On play: Gain 4 Refraction Charges; If you have 7+ Refraction Charges, Spend 3 Refraction Charges; +360 Oblivion; If you have 11+ Refraction Charges, Spend 4 Refraction Charges; Draw 2 cards. While on board: Seraphim bonuses are amplified by +24%; Adjacent active Seraphim gain +86 Oblivion per card played; Buffs Angel attacks: base +180, cooldown -1, multiplier x1.00; Buffs Seraphim attacks: base +120, cooldown -1, when you have 7+ Refraction Charges',
     rarity: 'Infinite',
     artKey: 'ga_inf_shattered_without_shattering',
     effects: [
@@ -629,27 +627,24 @@ export const glassAbsoluteCards: CardDefinition[] = [
     // Role: AGGRESSIVE MID-TURN HYBRID AMPLIFIER.
     onPlayEffects: [
       { type: 'set_secondary_gain', kind: 'absol', value: 4 },
-      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 7 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 3 }, { type: 'multiply_next' }, { type: 'oblivion_flat', value: 360 }] },
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 7 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 3 }, { type: 'oblivion_flat', value: 360 }] },
       { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 11 }, then: [{ type: 'set_secondary_spend', kind: 'absol', value: 4 }, { type: 'draw', value: 2 }] }],
   }),
   buildOphanim({
     definitionId: 'ga-inf-color-after-white',
     name: 'Color After White',
-    description: 'Gain 5 Refraction Charges; Spend 2 Refraction Charges; Empower the next card you play; If you have 9+ Refraction Charges, Spend 5 Refraction Charges; Empower the next card you play; +700 Oblivion',
+    description: 'Gain 5 Refraction Charges; Spend 2 Refraction Charges; If you have 9+ Refraction Charges, Spend 5 Refraction Charges; +700 Oblivion',
     rarity: 'Infinite',
     artKey: 'ga_inf_color_after_white',
     // Role: END-TURN LEDGER OVERDRIVE FINISHER.
     effects: [
       { type: 'set_secondary_gain', kind: 'absol', value: 5 },
       { type: 'set_secondary_spend', kind: 'absol', value: 2 },
-      { type: 'multiply_next' },
       {
         type: 'conditional',
         condition: { type: 'set_secondary_gte', kind: 'absol', value: 9 },
         then: [
           { type: 'set_secondary_spend', kind: 'absol', value: 5 },
-          { type: 'multiply_next' },
-          { type: 'multiply_next' },
           { type: 'oblivion_flat', value: 700 },
         ],
       }],

@@ -79,7 +79,7 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Void Amplifier',
-    description: 'On play: +140 Oblivion; Empower the next card you play; Salvage any 1 card. While on board: Adjacent Seraphim and Angels gain +3 Patience per card played',
+    description: 'On play: +140 Oblivion; Salvage any 1 card. While on board: Adjacent Seraphim and Angels gain +3 Patience per card played',
     artKey: 'cherubim_neutral_void_amp',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 12 }],
     onPlayEffects: [{ type: 'oblivion_flat', value: 200 }, { type: 'draw', value: 2 }],

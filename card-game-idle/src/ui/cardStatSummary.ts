@@ -312,7 +312,6 @@ function formatEffect(effect: CardEffect): string {
     case 'discard_draw': return `Discard ${formatCount(effect.discard, 'card')}, then draw ${formatCount(effect.draw, 'card')}`;
     case 'shuffle_discard': return 'Shuffle discard into deck';
     case 'copy_last_hr': return 'Replay last Ophanim played this turn';
-    case 'multiply_next': return 'Empower the next card you play';
     case 'look_top_take': return `Look at the top ${formatCount(effect.look, 'card')}, take ${formatCount(effect.take, 'card')}, and put the rest on the bottom`;
     case 'look_top_take_drop': return `Look at the top ${formatCount(effect.look, 'card')}, take ${formatCount(effect.take, 'card')}, put ${formatCount(effect.drop, 'card')} on the bottom, and discard the rest`;
     case 'look_top_take_type': return `Look at the top ${formatCount(effect.look, 'card')} and take 1 matching ${formatSubtypeList(effect.filter)}`;
@@ -380,7 +379,6 @@ function formatEffect(effect: CardEffect): string {
       if ((effect.gainInfernoPerPair ?? 0) > 0) extras.push(`+${effect.gainInfernoPerPair} Heat per pair`);
       if ((effect.gainChromaPerPair ?? 0) > 0) extras.push(`+${effect.gainChromaPerPair} Chroma Ember per pair`);
       if ((effect.drawAtPairs ?? 0) > 0) extras.push(`draw 1 per ${effect.drawAtPairs} pair${effect.drawAtPairs === 1 ? '' : 's'}`);
-      if ((effect.empowerAtPairs ?? 0) > 0) extras.push(`empower next card at ${effect.empowerAtPairs}+ pair${effect.empowerAtPairs === 1 ? '' : 's'}`);
       const suffix = extras.length > 0 ? `; ${extras.join('; ')}` : '';
       return `Confluence ${scope} matched Heat and Chroma Ember pairs (+${formatExactValue(effect.oblivionPerPair)} Oblivion per pair${suffix})`;
     }
@@ -415,7 +413,6 @@ function formatEffect(effect: CardEffect): string {
       if ((effect.oblivionPerResonance ?? 0) > 0) parts.push(`+${formatExactValue(effect.oblivionPerResonance ?? 0)} Oblivion per resonance`);
       if ((effect.oblivionPerFormation ?? 0) > 0) parts.push(`+${formatExactValue(effect.oblivionPerFormation ?? 0)} Oblivion per Formation`);
       if ((effect.drawPerResonance ?? 0) > 0) { const drv = effect.drawPerResonance ?? 0; parts.push(Number.isInteger(drv) ? `+${drv} draw per resonance` : `+1 draw every ${Math.round(1 / drv)} resonances`); }
-      if (effect.empowerNext) parts.push('empower your next card');
       return `Harmonize ${scope} ${eternalStackName('flutter')} (${parts.join(', ')})`;
     }
     case 'flutter_resonance_apex': {
@@ -426,7 +423,6 @@ function formatEffect(effect: CardEffect): string {
         `+${formatExactValue(effect.oblivionPerFormation)} Oblivion per Formation`,
       ];
       if ((effect.drawPerFormation ?? 0) > 0) { const dfv = effect.drawPerFormation ?? 0; parts.push(Number.isInteger(dfv) ? `+${dfv} draw per Formation` : `+1 draw every ${Math.round(1 / dfv)} Formations`); }
-      if ((effect.empowerAtFormation ?? 0) > 0) parts.push(`empower your next card at Formation ${effect.empowerAtFormation}+`);
       return `Apex ${scope} ${eternalStackName('flutter')} (${parts.join(', ')})`;
     }
     case 'butterfly_release': {
@@ -629,8 +625,8 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
     case 'cherubim_attack_buff': {
       const parts: string[] = [];
       if (effect.bonusBaseOblivion !== undefined) parts.push(`base +${effect.bonusBaseOblivion}`);
-      if (effect.cooldownDeltaCards !== undefined) parts.push(`cooldown ${effect.cooldownDeltaCards >= 0 ? '+' : ''}${effect.cooldownDeltaCards}`);
-      if (effect.multiplier !== undefined) parts.push(`multiplier x${effect.multiplier.toFixed(2)}`);
+      if (effect.cooldownDeltaCards !== undefined && effect.cooldownDeltaCards !== 0) parts.push(`cooldown ${effect.cooldownDeltaCards >= 0 ? '+' : ''}${effect.cooldownDeltaCards}`);
+      if (effect.multiplier !== undefined && effect.multiplier !== 1) parts.push(`multiplier x${effect.multiplier.toFixed(2)}`);
       if (effect.condition) parts.push(`when ${formatCondition(effect.condition)}`);
       return `Buffs ${effect.targetUnitType === 'Any' ? 'Seraphim and Angel' : effect.targetUnitType} attacks: ${parts.join(', ') || 'none'}`;
     }

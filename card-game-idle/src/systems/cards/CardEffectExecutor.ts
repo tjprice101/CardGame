@@ -37,7 +37,6 @@ interface ExecuteOptions {
   effects?: CardEffect[];
   countAsPlay?: boolean;
   removeFromHand?: boolean;
-  useNextCardMultiplier?: boolean;
   /** When true, nested forge_recast_* / nacre / ouroboric / unrecorded hue auto-recasts are skipped. */
   suppressForgeRecursion?: boolean;
   /** When true, do not append this play to the recast ledger. */
@@ -317,7 +316,6 @@ function runRecast(
     {
       countAsPlay: false,
       removeFromHand: false,
-      useNextCardMultiplier: false,
       suppressForgeRecursion: true,
       skipLedger: true,
     }
@@ -410,7 +408,6 @@ export class CardEffectExecutor {
     );
     const countAsPlay = options.countAsPlay ?? true;
     const removeFromHand = options.removeFromHand ?? (deckCard.instanceId !== 'echo' && !isSeraphim);
-    const useNextCardMultiplier = options.useNextCardMultiplier ?? countAsPlay;
     const suppressForgeRecursion = options.suppressForgeRecursion ?? false;
     const skipLedger = options.skipLedger ?? false;
     const sourceSetKey = getCardCategoryKey(def);
@@ -423,10 +420,7 @@ export class CardEffectExecutor {
     let heatDrained = 0; // tracks Heat before pyro_heat_spend:9999 for dynamic sentinels
     let radianceDrained = 0; // tracks radiance before radiance_spend:9999 for dynamic sentinels
 
-    const multiplier = useNextCardMultiplier && mutableTurn.nextCardMultiplied ? 2 : 1;
-    if (useNextCardMultiplier && mutableTurn.nextCardMultiplied) {
-      mutableTurn.nextCardMultiplied = false;
-    }
+    const multiplier = 1;
 
     const activeSynergies = board.frontSlots.filter(
       s => s?.type === 'Seraphim' && s.isActive
@@ -702,7 +696,7 @@ export class CardEffectExecutor {
               mutableBoard,
               mutableDeck,
               false,
-              { countAsPlay: false, removeFromHand: false, useNextCardMultiplier: false },
+              { countAsPlay: false, removeFromHand: false },
             );
             if (replayResult.canPlay) {
               mutableDeck = replayResult.deck;
@@ -1092,7 +1086,6 @@ export class CardEffectExecutor {
           }
           if (next >= 12) {
             mutableTurn.butterflyStance = 'Dual';
-            mutableTurn.nextCardMultiplied = true;
             mutableDeck = TurnSystem.drawCards(mutableDeck, 1);
             next = 0;
             mutableTurn.butterflySpectrum = 0;
@@ -1586,9 +1579,6 @@ export class CardEffectExecutor {
               mutableDeck = TurnSystem.drawCards(mutableDeck, draws);
             }
           }
-          if ((effect.empowerAtPairs ?? 0) > 0 && pairs >= (effect.empowerAtPairs ?? 0)) {
-            mutableTurn.nextCardMultiplied = true;
-          }
           break;
         }
         case 'light_transcendent_duality_choice': {
@@ -1691,9 +1681,6 @@ export class CardEffectExecutor {
             if (!ok) break;
           }
 
-          if (effect.empowerNext) {
-            mutableTurn.nextCardMultiplied = true;
-          }
           break;
         }
         case 'flutter_resonance_apex': {
@@ -1717,9 +1704,6 @@ export class CardEffectExecutor {
             if (!ok) break;
           }
 
-          if ((effect.empowerAtFormation ?? 0) > 0 && formation >= (effect.empowerAtFormation ?? 0)) {
-            mutableTurn.nextCardMultiplied = true;
-          }
           break;
         }
 
@@ -2073,10 +2057,6 @@ export class CardEffectExecutor {
           }
           break;
         }
-
-        case 'multiply_next':
-          mutableTurn.nextCardMultiplied = true;
-          break;
 
         case 'look_top_take':
           if (pendingEffect === null) {

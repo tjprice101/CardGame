@@ -377,7 +377,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
     return 'resource';
   }
 
-  if (hasSomeEffect(def, ['multiply_next', 'score_flat', 'score_multiplier', 'oblivion_flat', 'power_flat', 'power_percent', 'butterfly_release', 'seas_undertow_release'])) {
+  if (hasSomeEffect(def, ['score_flat', 'score_multiplier', 'oblivion_flat', 'power_flat', 'power_percent', 'butterfly_release', 'seas_undertow_release'])) {
     return 'payoff';
   }
 
@@ -387,10 +387,6 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
 function getCardRoleDetail(def: CardDefinition): string {
   if (hasSomeEffect(def, ['radiance_gain', 'pyro_heat_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
     return 'It stocks the resources this engine spends to stay online.';
-  }
-
-  if (hasSomeEffect(def, ['multiply_next'])) {
-    return 'It sharpens timing so the next payoff window lands cleanly.';
   }
 
   if (def.type === 'Cherubim' || hasSomeEffect(def, ['cherubim_adjacent_seraphim_bonus', 'cherubim_seraphim_amp', 'cherubim_attack_buff', 'power_flat', 'power_percent'])) {

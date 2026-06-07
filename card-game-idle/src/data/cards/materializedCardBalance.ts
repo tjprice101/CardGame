@@ -1440,7 +1440,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "consume": 2,
         "spectrumPerResonance": 3,
         "drawPerResonance": 0.5,
-        "empowerNext": true
       },
       {
         "type": "draw",
@@ -1522,8 +1521,7 @@ export const MATERIALIZED_CARD_BALANCE = {
         "oblivionPerResonance": 170,
         "oblivionPerSpectrum": 36,
         "oblivionPerFormation": 90,
-        "drawPerFormation": 0.5,
-        "empowerAtFormation": 4
+        "drawPerFormation": 0.5
       },
       {
         "type": "butterfly_release",
@@ -1661,9 +1659,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "butterfly_spectrum_gain",
         "value": 5
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -2835,9 +2830,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 35
       },
       {
-        "type": "multiply_next"
-      },
-      {
         "type": "black_glass_black_flame_gain",
         "value": 2
       }
@@ -2927,9 +2919,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "oblivion_flat",
         "value": 160
-      },
-      {
-        "type": "multiply_next"
       },
       {
         "type": "black_glass_black_flame_gain",
@@ -3118,9 +3107,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "draw",
         "value": 4
-      },
-      {
-        "type": "multiply_next"
       },
       {
         "type": "monochromatic_shards_gain",
@@ -3588,9 +3574,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "oblivionPerEclipse": 220,
             "balanceBonusPerEclipse": 25,
             "fractureBonusPerEclipse": 22
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -3714,9 +3697,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "oblivionPerEclipse": 320,
             "balanceBonusPerEclipse": 70,
             "fractureBonusPerEclipse": 10
-          },
-          {
-            "type": "multiply_next"
           },
           {
             "type": "oblivion_flat",
@@ -4126,9 +4106,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "oblivion_flat",
             "value": 4200
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       },
@@ -4203,9 +4180,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "eternal_stack_gain",
         "stack": "mech",
         "value": 2
-      },
-      {
-        "type": "multiply_next"
       },
       {
         "type": "oblivion_flat",
@@ -4299,9 +4273,7 @@ export const MATERIALIZED_CARD_BALANCE = {
           "value": 4
         },
         "then": [
-          {
-            "type": "multiply_next"
-          }
+          
         ]
       }
     ]
@@ -4595,9 +4567,6 @@ export const MATERIALIZED_CARD_BALANCE = {
                 "value": 1200
               }
             ]
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -4851,9 +4820,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "oblivion_flat",
             "value": 1500
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -4909,9 +4875,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "oblivion_flat",
             "value": 1400
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -5023,9 +4986,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "trail_gain",
             "value": 20
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -6851,9 +6811,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "type": "set_secondary_spend",
             "kind": "absol",
             "value": 3
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -6952,9 +6909,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 2
       },
       {
-        "type": "multiply_next"
-      },
-      {
         "type": "conditional",
         "condition": {
           "type": "set_secondary_gte",
@@ -6966,12 +6920,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "type": "set_secondary_spend",
             "kind": "absol",
             "value": 5
-          },
-          {
-            "type": "multiply_next"
-          },
-          {
-            "type": "multiply_next"
           },
           {
             "type": "oblivion_flat",
@@ -7130,9 +7078,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "draw",
             "value": 1
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -7189,9 +7134,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "draw",
         "value": 3
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -7560,9 +7502,7 @@ export const MATERIALIZED_CARD_BALANCE = {
   "hr-light-exalted-mantle": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "multiply_next"
-      }
+      
     ]
   },
   "hr-light-gilded-mandate": {
@@ -7615,9 +7555,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "radiance_gain",
         "value": 3
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -7922,9 +7859,7 @@ export const MATERIALIZED_CARD_BALANCE = {
           "value": 7
         },
         "then": [
-          {
-            "type": "multiply_next"
-          }
+          
         ]
       },
       {
@@ -7993,9 +7928,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "oblivion_flat",
             "value": 3000
-          },
-          {
-            "type": "multiply_next"
           },
           {
             "type": "oblivion_flat",
@@ -8143,9 +8075,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "type": "salvage_any"
       },
       {
-        "type": "multiply_next"
-      },
-      {
         "type": "conditional",
         "condition": {
           "type": "black_glass_fracture_gte",
@@ -8263,9 +8192,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "oblivion_flat",
             "value": 5600
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       },
@@ -8477,9 +8403,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "oblivion_flat",
             "value": 5200
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       },
@@ -8887,9 +8810,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 38
       },
       {
-        "type": "multiply_next"
-      },
-      {
         "type": "oblivion_flat",
         "value": 3600
       },
@@ -9042,9 +8962,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "arctic_charge_gain",
         "value": 32
-      },
-      {
-        "type": "multiply_next"
       },
       {
         "type": "oblivion_flat",
@@ -9210,9 +9127,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "trailPerSpiral": 72,
             "oblivionPerTrail": 24,
             "consume": 3
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       },
@@ -9608,9 +9522,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 3
       },
       {
-        "type": "multiply_next"
-      },
-      {
         "type": "oblivion_flat",
         "value": 150
       }
@@ -9991,9 +9902,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 3
           }
         ]
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -10070,9 +9978,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "oblivion_flat",
         "value": 110
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -10135,9 +10040,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "pyro_heat_gain",
             "value": 3
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -10182,9 +10084,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "type": "pyro_heat_burst",
             "oblivionPerHeat": 78,
             "consume": 4
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -10261,9 +10160,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "oblivion_flat",
         "value": 20
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -10304,9 +10200,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "patience_gain_all",
         "value": 5
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -10434,9 +10327,6 @@ export const MATERIALIZED_CARD_BALANCE = {
             "value": 15
           }
         ]
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -10763,9 +10653,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "seraphim_bonus_amplifier",
         "value": 25
-      },
-      {
-        "type": "multiply_next"
       },
       {
         "type": "conditional",
@@ -12501,9 +12388,6 @@ export const MATERIALIZED_CARD_BALANCE = {
         "value": 3
       },
       {
-        "type": "multiply_next"
-      },
-      {
         "type": "arctic_charge_gain",
         "value": 3
       },
@@ -13125,9 +13009,6 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "trail_gain",
         "value": 1
-      },
-      {
-        "type": "multiply_next"
       }
     ]
   },
@@ -13767,9 +13648,6 @@ export const MATERIALIZED_CARD_BALANCE = {
           {
             "type": "oblivion_flat",
             "value": 2200
-          },
-          {
-            "type": "multiply_next"
           }
         ]
       }
@@ -13824,8 +13702,7 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "pyro_transcendent_confluence",
         "consume": 2,
-        "oblivionPerPair": 900,
-        "empowerAtPairs": 2
+        "oblivionPerPair": 900
       },
       {
         "type": "conditional",

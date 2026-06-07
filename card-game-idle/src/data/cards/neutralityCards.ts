@@ -9,7 +9,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Seraphim',
-    description: 'On play: +16 Oblivion; All Seraphim on board gain +3 Patience. While on board: +6 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
+    description: 'On play: +14 Oblivion; All Seraphim on board gain +3 Patience. While on board: +6 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
     artKey: 'ser_neutral_null',
     attacks: {
       unsynergized: {
@@ -39,8 +39,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     patienceThresholdDraw: 1,
     onPlayEffects: [
       { type: 'oblivion_flat', value: 14 },
-      { type: 'patience_gain_all', value: 3 },
-      { type: 'multiply_next' }],
+      { type: 'patience_gain_all', value: 3 }],
   },
   {
     definitionId: 'ser-neutral-void',
@@ -48,7 +47,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Seraphim',
-    description: 'On play: +24 Oblivion. While on board: +12 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
+    description: 'On play: +20 Oblivion; If you control 1+ active Cherubim, All Seraphim on board gain +4 Patience. While on board: +12 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
     artKey: 'ser_neutral_void',
     attacks: {
       unsynergized: {
@@ -250,12 +249,11 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Surge',
-    description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion and all Seraphim on board gain +2 Patience; Empower the next card you play',
+    description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion; All Seraphim on board gain +2 Patience',
     artKey: 'seek_neutral_void_surge',
     effects: [
       { type: 'oblivion_flat', value: 25 },
-      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'oblivion_flat', value: 15 }, { type: 'patience_gain_all', value: 2 }] },
-      { type: 'multiply_next' }],
+      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'oblivion_flat', value: 15 }, { type: 'patience_gain_all', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-neutral-still-pulse',
@@ -275,12 +273,11 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Oblivion Pulse',
-    description: 'All Seraphim on board gain +2 Patience; +20 Oblivion; Empower the next card you play',
+    description: 'All Seraphim on board gain +2 Patience; +20 Oblivion',
     artKey: 'seek_neutral_chain_pulse',
     effects: [
       { type: 'patience_gain_all', value: 2 },
-      { type: 'oblivion_flat', value: 20 },
-      { type: 'multiply_next' }],
+      { type: 'oblivion_flat', value: 20 }],
   },
   {
     definitionId: 'ophanim-neutral-cherubim-recall',
@@ -330,11 +327,10 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Echo Pulse',
-    description: 'All Seraphim on board gain +5 Patience; Empower the next card you play',
+    description: 'All Seraphim on board gain +5 Patience',
     artKey: 'seek_neutral_echo_pulse',
     effects: [
-      { type: 'patience_gain_all', value: 5 },
-      { type: 'multiply_next' }],
+      { type: 'patience_gain_all', value: 5 }],
   },
   {
     definitionId: 'ophanim-neutral-seraph-hunt',

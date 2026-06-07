@@ -31,7 +31,6 @@ export type ImmediateEffect =
   | { type: 'discard_draw'; discard: number; draw: number }
   | { type: 'shuffle_discard' }
   | { type: 'copy_last_hr' }
-  | { type: 'multiply_next' }
   | { type: 'look_top_take'; look: number; take: number }
   | { type: 'look_top_take_drop'; look: number; take: number; drop: number }
   | { type: 'look_top_take_type'; look: number; filter: CardSubtypeFilter[] }
@@ -119,7 +118,6 @@ export type ImmediateEffect =
       type: 'pyro_transcendent_confluence';
       oblivionPerPair: number;
       consume?: number;
-      empowerAtPairs?: number;
       drawAtPairs?: number;
       gainInfernoPerPair?: number;
       gainChromaPerPair?: number;
@@ -145,7 +143,6 @@ export type ImmediateEffect =
       oblivionPerResonance?: number;
       drawPerResonance?: number;
       oblivionPerFormation?: number;
-      empowerNext?: boolean;
     }
   | {
       type: 'flutter_resonance_apex';
@@ -154,7 +151,6 @@ export type ImmediateEffect =
       oblivionPerSpectrum: number;
       oblivionPerFormation: number;
       drawPerFormation?: number;
-      empowerAtFormation?: number;
     }
   // ── Abyssal Forge — The Reforging ────────────────────────────────────────
   | { type: 'forge_reforge_charge_gain'; value: number }

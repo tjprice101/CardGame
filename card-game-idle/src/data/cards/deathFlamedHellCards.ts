@@ -695,7 +695,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'dfh-ang-mournshade-the-wickless',
     name: 'Mournshade, The Wickless',
-    description: 'On summon: Gain 4 Pyre Embers; Gain 2 Cinder Crowns. After 2 cards played: Gain 3 Pyre Embers; If you have played 1+ cards this turn, Gain 1 Cinder Crown. While on board: +9 Oblivion per card played while on board',
+    description: 'On summon: Gain 4 Pyre Embers; Gain 2 Cinder Crowns. After 2 cards played: Gain 3 Pyre Embers; Discard 1 card, then draw 1 card; If you have played 1+ cards this turn, Gain 1 Cinder Crown. While on board: +9 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_mournshade_the_wickless',
     summonCost: ['dfh-ser-soot-veiled-soldier', 'dfh-ser-ash-marrow-reaver'],
@@ -754,7 +754,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'dfh-ang-sablecrown-the-unnamed',
     name: 'Sablecrown, The Unnamed',
-    description: 'On summon: Gain 6 Pyre Embers; Gain 5 Cinder Crowns. After 3 cards played: Cash out up to 8 Cinder Crowns (+130 Oblivion per crown). While on board: +11 Oblivion per card played while on board',
+    description: 'On summon: Gain 6 Pyre Embers; Gain 5 Cinder Crowns. After 3 cards played: Transmute up to 6 Cinder Crowns into Veil Marks (1 marks each); Cash out up to 8 Cinder Crowns (+130 Oblivion per crown). While on board: +11 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'dfh_ang_sablecrown_the_unnamed',
     summonCost: ['dfh-ser-sablecrown-herald', 'dfh-ser-ash-marrow-reaver'],
@@ -762,7 +762,7 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Unnamed Coronation',
       cardsPlayedRequirement: 3,
-      description: 'Transmute up to 6 Cinder Crowns into Veil Marks; Cash out up to 8 Cinder Crowns (+130 Oblivion per crown)',
+      description: 'Transmute up to 6 Cinder Crowns into Veil Marks (1 marks each); Cash out up to 8 Cinder Crowns (+130 Oblivion per crown)',
       effects: [
         { type: 'dfh_veil_marks_transmute', source: 'crowns', consume: 6, marksPerResource: 1 },
         { type: 'dfh_crown_cashout', oblivionPerCrown: 130, consume: 8 },

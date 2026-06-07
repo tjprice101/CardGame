@@ -444,7 +444,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'wuas-ang-starwarden-selenira',
     name: 'Starwarden Selenira',
-    description: 'On summon: Gain 4 Starlight Charges; Gain 2 Dream Lattice stacks; Draw 1 card. After 2 cards played: Gain 2 Dream Lattice stacks; Draw 1 card; Release up to 3 Constellation Locks. While on board: +66 Oblivion per card played while on board',
+    description: 'On summon: Gain 4 Starlight Charges; Gain 2 Dream Lattice stacks; Draw 1 card. After 2 cards played: Gain 2 Dream Lattice stacks; Draw 1 card; Cash out up to 3 Star Crowns (+undefined Oblivion per Crown). While on board: +66 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'wuas_ang_starwarden_selenira',
     summonCost: ['wuas-ser-solarvex-fragment', 'wuas-ser-seleniras-vigil'],
@@ -456,7 +456,7 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Star Ward',
       cardsPlayedRequirement: 2,
-      description: 'Gain 2 Dream Lattice stacks; Draw 1 card; Release up to 3 Constellation Locks',
+      description: 'Gain 2 Dream Lattice stacks; Draw 1 card; Cash out up to 3 Star Crowns (+undefined Oblivion per Crown)',
       effects: [
         { type: 'dream_lattice_gain', amount: 2 },
         { type: 'draw', value: 1 },
@@ -475,7 +475,7 @@ const baseAngels: AngelDefinition[] = [
   buildAngel({
     definitionId: 'wuas-ang-draethos-eclipse-lord',
     name: 'Draethos, Eclipse Lord',
-    description: 'On summon: Gain 5 Starlight Charges; Gain 3 Dream Lattice stacks; Draw 1 card. After 3 cards played: Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.7)); Gain 3 Starlight Charges. While on board: +62 Oblivion per card played while on board',
+    description: 'On summon: Gain 5 Starlight Charges; Gain 3 Dream Lattice stacks; Draw 1 card. After 3 cards played: Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.7)); Gain 3 Starlight Charges; Infinite Starbirth (Ob = Seraphim × Starlight × undefined). While on board: +62 Oblivion per card played while on board',
     rarity: 'Legendary',
     artKey: 'wuas_ang_draethos_eclipse_lord',
     summonCost: ['wuas-ser-draethos-gravity', 'wuas-ser-lune-refrain'],
@@ -486,7 +486,7 @@ const baseAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Eclipse Decree',
       cardsPlayedRequirement: 3,
-      description: 'Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.7)); Gain 3 Starlight Charges; Trigger Infinite Starbirth',
+      description: 'Nova Wish Burst (Oblivion = Starlight × (1 + Dream × 0.7)); Gain 3 Starlight Charges; Infinite Starbirth (Ob = Seraphim × Starlight × undefined)',
       effects: [
         { type: 'wuas_nova_wish_burst', consumeStarlight: false, dreamMultiplier: 0.7 },
         { type: 'starlight_gain', amount: 3 },

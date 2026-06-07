@@ -504,7 +504,6 @@ describe('Set mechanic reworks', () => {
 
     const state = useStore.getState();
     expect(state.progress.oblivion - before).toBeGreaterThan(5000);
-    expect(state.turn.nextCardMultiplied).toBe(true);
   });
 
   it('lets Thorn Widow Engine convert Briar Spiral depth into a dynamic Infinite spike', () => {
@@ -645,7 +644,6 @@ describe('Set mechanic reworks', () => {
     const state = useStore.getState();
     expect(state.turn.snowboundAlternatedThisTurn).toBeUndefined();
     expect(state.turn.arcticCharge).toBe(0);
-    expect(state.turn.nextCardMultiplied).toBe(true);
     expect(state.turn.snowboundPhase).toBe('Voltage');
   });
 
@@ -753,7 +751,7 @@ describe('Set mechanic reworks', () => {
 
     expect(battery?.type).toBe('Seraphim');
     expect(hasEffectTypeRecursive(battery?.onPlayEffects, 'set_secondary_gain')).toBe(true);
-    expect(hasEffectTypeRecursive(battery?.onPlayEffects, 'multiply_next')).toBe(true);
+    expect(hasEffectTypeRecursive(battery?.onPlayEffects, 'multiply_next')).toBe(false);
     expect(hasEffectTypeRecursive(battery?.onPlayEffects, 'oblivion_flat')).toBe(false);
 
     expect(tempo?.type).toBe('Cherubim');
@@ -797,7 +795,7 @@ describe('Set mechanic reworks', () => {
     expect(colorAfterWhite?.type).toBe('Ophanim');
 
     expect(apexSeraph?.onPlayEffects?.some(effect => effect.type === 'set_secondary_gain' && effect.kind === 'absol' && effect.value === 4)).toBe(true);
-    expect(apexSeraph?.onPlayEffects?.some(effect => effect.type === 'conditional' && hasEffectTypeRecursive(effect.then, 'multiply_next') && hasEffectTypeRecursive(effect.then, 'oblivion_flat'))).toBe(true);
+    expect(apexSeraph?.onPlayEffects?.some(effect => effect.type === 'conditional' && hasEffectTypeRecursive(effect.then, 'oblivion_flat'))).toBe(true);
     expect(sovereign?.onPlayEffects?.some(effect => effect.type === 'conditional' && effect.condition.type === 'set_secondary_gte' && effect.condition.value === 9)).toBe(true);
     expect(yreth?.effects?.some(effect => effect.type === 'conditional' && effect.condition.type === 'first_card_this_turn')).toBe(true);
     expect(yreth?.effects?.some(effect => effect.type === 'conditional' && effect.condition.type === 'played_after_non_matching_element')).toBe(true);
@@ -817,12 +815,12 @@ describe('Set mechanic reworks', () => {
     );
 
     const roleSignatures = [
-      `apex:${hasEffectTypeRecursive(apexSeraph?.onPlayEffects, 'multiply_next')}:${hasEffectTypeRecursive(apexSeraph?.onPlayEffects, 'oblivion_flat')}`,
+      `apex:${hasEffectTypeRecursive(apexSeraph?.onPlayEffects, 'set_secondary_gain')}:${hasEffectTypeRecursive(apexSeraph?.onPlayEffects, 'oblivion_flat')}`,
       `sovereign:${hasEffectTypeRecursive(sovereign?.onPlayEffects, 'draw')}:${hasEffectTypeRecursive(sovereign?.onPlayEffects, 'oblivion_flat')}`,
       `yreth:${hasEffectTypeRecursive(yreth?.effects, 'first_card_this_turn')}:${hasEffectTypeRecursive(yreth?.effects, 'played_after_non_matching_element')}`,
       `chorus:${chorus?.onPlayEffects?.some(effect => effect.type === 'conditional' && effect.condition.type === 'cards_played_gte')}:${hasEffectTypeRecursive(chorus?.onPlayEffects, 'draw')}`,
       `shattered:${hasEffectTypeRecursive(shattered?.onPlayEffects, 'draw')}:${hasEffectTypeRecursive(shattered?.effects, 'cherubim_seraphim_amp')}`,
-      `color:${hasEffectTypeRecursive(colorAfterWhite?.effects, 'multiply_next')}:${hasEffectTypeRecursive(colorAfterWhite?.effects, 'oblivion_flat')}`,
+      `color:${hasEffectTypeRecursive(colorAfterWhite?.effects, 'set_secondary_gain')}:${hasEffectTypeRecursive(colorAfterWhite?.effects, 'oblivion_flat')}`,
     ];
     expect(new Set(roleSignatures).size).toBe(6);
   });
@@ -1434,7 +1432,6 @@ describe('Set mechanic reworks', () => {
     const state = useStore.getState();
 
     expect(state.turn.eternalStacks?.flutter ?? 0).toBe(0);
-    expect(state.turn.nextCardMultiplied).toBe(true);
     expect(state.progress.oblivion).toBeGreaterThan(900);
   });
 });

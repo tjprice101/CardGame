@@ -53,13 +53,12 @@ export const blackGlassInfernoAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Morvakael the Twice-Scarred',
-    description: 'On summon: Draw 2 cards; Empower the next card you play. After 4 cards played: +220 Oblivion; Draw 2 cards. While on board: +19 Oblivion per card played while on board',
+    description: 'On summon: Draw 2 cards. After 4 cards played: +220 Oblivion; Draw 2 cards; Gain 2 White Flame. While on board: +19 Oblivion per card played while on board',
     artKey: 'bgi_angel_morvakael_twice_scarred',
     summonCost: ['bgi-ser-hatred-astralwyrm', 'bgi-ser-cinder-vow-leviathan'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
     onSummonEffects: [
-      { type: 'draw', value: 2 },
-      { type: 'multiply_next' }],
+      { type: 'draw', value: 2 }],
     activatedAbility: {
       name: 'Open Wound Doctrine',
       cardsPlayedRequirement: 4,
@@ -99,7 +98,7 @@ export const blackGlassInfernoAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Sorveth, Bifurcated Flame',
-    description: 'On summon: Draw 3 cards; Look at the top 5 cards, take 2 cards, and put the rest on the bottom. After 5 cards played: Empower the next card you play; Draw 3 cards; +260 Oblivion. While on board: +12 Oblivion for each Seraphim on board while on board',
+    description: 'On summon: Draw 3 cards; Look at the top 5 cards, take 2 cards, and put the rest on the bottom. After 5 cards played: Draw 3 cards; +260 Oblivion. While on board: +12 Oblivion for each Seraphim on board while on board',
     artKey: 'bgi_angel_sorveth_bifurcated_flame',
     summonCost: ['bgi-ser-obsidian-choir', 'bgi-ser-chromatic-ashwarden', 'bgi-ser-rose-spine-drake'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
@@ -109,9 +108,8 @@ export const blackGlassInfernoAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Eleven Seconds',
       cardsPlayedRequirement: 5,
-      description: 'Empower the next card you play; Draw 3 cards; +260 Oblivion',
+      description: 'Draw 3 cards; +260 Oblivion',
       effects: [
-        { type: 'multiply_next' },
         { type: 'draw', value: 3 },
         { type: 'oblivion_flat', value: 260 }],
     },
@@ -191,7 +189,7 @@ export const blackGlassInfernoAngels: AngelDefinition[] = [
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Ashen Court Regent',
-    description: 'On summon: Draw 3 cards; +200 Oblivion. After 5 cards played: Draw 2 cards; Empower the next card you play. While on board: +22 Oblivion per card played while on board',
+    description: 'On summon: Draw 3 cards; +200 Oblivion. After 5 cards played: Draw 2 cards. While on board: +22 Oblivion per card played while on board',
     artKey: 'bgi_angel_ashen_court_regent',
     summonCost: ['bgi-ser-infernal-griefforge', 'bgi-ser-blackglass-cathedral', 'bgi-ser-mourning-crest'],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 3 }],
@@ -201,10 +199,9 @@ export const blackGlassInfernoAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Court of Cinders',
       cardsPlayedRequirement: 5,
-      description: 'Draw 2 cards; Empower the next card you play',
+      description: 'Draw 2 cards',
       effects: [
-        { type: 'draw', value: 2 },
-        { type: 'multiply_next' }],
+        { type: 'draw', value: 2 }],
     },
     attacks: {
       primary: {

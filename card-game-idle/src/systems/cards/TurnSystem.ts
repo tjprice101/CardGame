@@ -18,7 +18,6 @@ export class TurnSystem {
         radiance: 0,
         cardsPlayedThisTurn: 0,
         lastPlayedDefinitionId: null,
-        nextCardMultiplied: false,
         mulliganSelected: [],
         pendingEffect: null,
       },

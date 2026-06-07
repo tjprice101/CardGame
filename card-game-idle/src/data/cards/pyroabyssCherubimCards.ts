@@ -69,15 +69,14 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Void Cinder Shell',
-    description: 'On play: +90 Oblivion; Gain 4 Heat; Empower the next card you play. While on board: All Oblivion gain +10%',
+    description: 'On play: +90 Oblivion; Gain 4 Heat. While on board: All Oblivion gain +10%',
     artKey: 'cherubim_fire_void_cinder_shell',
     maxDurability: 7,
     effects: [
       { type: 'cherubim_global_oblivion_mult', value: 0.1 }],
     onPlayEffects: [
       { type: 'oblivion_flat', value: 90 },
-      { type: 'pyro_heat_gain', value: 4 },
-      { type: 'multiply_next' }],
+      { type: 'pyro_heat_gain', value: 4 }],
   },
   {
     definitionId: 'cherubim-fire-flame-fortify',

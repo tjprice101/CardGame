@@ -19,7 +19,6 @@
 
 ### Lumen Cascade (Ophanim card)
 * Draw 3 cards
-* Empower the next card you play
 
 ### Prism Veil Drift (Ophanim card)
 * Draw 2 cards
@@ -101,7 +100,6 @@
 
 ### Lattice Canticle Seraph (Seraphim card)
 * On play: Draw 1 card
-* Empower the next card you play
 * While on board: +18 Oblivion per card played while active
 * **Attack (Unsynergized): Lattice Canticle Vector Break**
   * Damage: 312 Oblivion
@@ -156,7 +154,6 @@
 * If played after non matching element, Gain 2 Refraction Charges
 * +80 Oblivion
 * If you have 6+ Refraction Charges, Spend 3 Refraction Charges
-* Empower the next card you play
 
 ### Angled Infinity (Cherubim card)
 * On play: Gain 1 Refraction Charge
@@ -164,7 +161,6 @@
 * Spend 2 Refraction Charges
 * +180 Oblivion
 * If you have 4+ Refraction Charges, Spend 2 Refraction Charges
-* Empower the next card you play
 * While on board: Adjacent active Seraphim gain +44 Oblivion per card played
 * Buffs Seraphim attacks: base +80, cooldown -1, when you have 4+ Refraction Charges
 
@@ -172,12 +168,11 @@
 * On play: Gain 2 Refraction Charges
 * If you have 4+ Refraction Charges, Draw 1 card
 * If you have 6+ Refraction Charges, Spend 1 Refraction Charge
-* Empower the next card you play
 * While on board: All Oblivion gain +42%
 
 ### Lattice Archive Seraph (Seraphim card)
 * On play: Gain 3 Refraction Charges
-* If you have 5+ Refraction Charges, Empower the next card you play
+* If you have 5+ Refraction Charges, 
 * While on board: +84 Oblivion per card played while active
 * **Attack (Unsynergized): Lattice Archive Vector Break**
   * Damage: 1360 Oblivion
@@ -191,7 +186,6 @@
 ### The Center That Is Everywhere (Seraphim card)
 * On play: Gain 2 Refraction Charges
 * If you have 7+ Refraction Charges, Spend 4 Refraction Charges
-* Empower the next card you play
 * +420 Oblivion
 * While on board: +140 Oblivion per card played while active
 * **Attack (Unsynergized): Center Everywhere Vector Break**
@@ -208,9 +202,7 @@
 ### Color After White (Ophanim card)
 * Gain 5 Refraction Charges
 * Spend 2 Refraction Charges
-* Empower the next card you play
 * If you have 9+ Refraction Charges, Spend 5 Refraction Charges
-* Empower the next card you play
 * +700 Oblivion
 
 ### Yreth, Prism at Center (Ophanim card)
@@ -220,14 +212,12 @@
 * +160 Oblivion
 * If you have 10+ Refraction Charges, Spend 5 Refraction Charges
 * Draw 1 card
-* Empower the next card you play
 
 ### Refracted Sovereign (Cherubim card)
 * On play: Gain 3 Refraction Charges
 * If you have 6+ Refraction Charges, Spend 2 Refraction Charges
 * +260 Oblivion
 * If you have 9+ Refraction Charges, Draw 1 card
-* Empower the next card you play
 * While on board: Adjacent active Seraphim gain +88 Oblivion per card played
 * Buffs Seraphim attacks: base +130, cooldown -1, multiplier x1.00
 * Buffs Angel attacks: base +180, cooldown -1, when you have 8+ Refraction Charges
@@ -235,7 +225,6 @@
 ### Shattered Without Shattering (Cherubim card)
 * On play: Gain 4 Refraction Charges
 * If you have 7+ Refraction Charges, Spend 3 Refraction Charges
-* Empower the next card you play
 * +360 Oblivion
 * If you have 11+ Refraction Charges, Spend 4 Refraction Charges
 * Draw 2 cards
@@ -249,7 +238,6 @@
 * If you have played 2+ cards this turn, Gain 3 Refraction Charges
 * Draw 1 card
 * If you have 10+ Refraction Charges, Spend 5 Refraction Charges
-* Empower the next card you play
 * +520 Oblivion
 * While on board: +170 Oblivion per card played while active
 * **Attack (Unsynergized): Unbroken Spectrum Vector Break**
@@ -264,7 +252,6 @@
 ### Glass Absolute Seraph (Seraphim card)
 * On play: Gain 4 Refraction Charges
 * If you have 8+ Refraction Charges, Spend 4 Refraction Charges
-* Empower the next card you play
 * +600 Oblivion
 * While on board: +250 Oblivion per card played while active
 * **Attack (Unsynergized): Glass Absolute Vector Break**

@@ -126,6 +126,12 @@ const styles: Record<string, React.CSSProperties> = {
     letterSpacing: 0.4,
   },
   confirmDisabled: { opacity: 0.3, cursor: 'not-allowed' },
+  confirmBtnEnabled: {
+    background: 'linear-gradient(180deg, rgba(80,190,100,0.97) 0%, rgba(50,155,70,0.95) 100%)',
+    color: '#0d2a11',
+    border: '1px solid rgba(45,130,60,0.7)',
+    boxShadow: '0 6px 18px rgba(40,140,60,0.35)',
+  },
 };
 
 export default function PendingEffectModal() {
@@ -173,8 +179,8 @@ export default function PendingEffectModal() {
             {def ? highlightRulesText(getCardPreviewText(def, 2), { lightBg: true }) : ''}
           </div>
           {footerLabel && (
-            <div style={{ fontSize: 7, color: footerColor ?? cardFacePalette.textMuted, marginTop: 4, textAlign: 'center', fontFamily: BODY_FONT }}>
-              {footerLabel}
+            <div style={{ fontSize: 11, fontWeight: 700, color: footerColor ?? cardFacePalette.textMuted, marginTop: 4, textAlign: 'center', fontFamily: BODY_FONT }}>
+              ✓ {footerLabel}
             </div>
           )}
         </div>
@@ -268,7 +274,7 @@ export default function PendingEffectModal() {
               Formula: {pending.baseOblivion} + ({pending.resonanceScale} x Resonance) + ({pending.haloScale} x Halo) + ({pending.distinctNoteScale} x Distinct Notes) + ({pending.thresholdScale} x floor((Resonance + Halo)/{pending.thresholdDivisor}))
             </div>
             <button className="menu-tactile-btn"
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+              style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
               onClick={canConfirm ? confirm : undefined}
             >
               Confirm
@@ -325,7 +331,7 @@ export default function PendingEffectModal() {
           <div style={styles.footer}>
             <div style={styles.info}>Both modes grant +{pending.patientLightGain} Patient Light.</div>
             <button className="menu-tactile-btn"
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+              style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
               onClick={canConfirm ? confirm : undefined}
             >
               Confirm
@@ -387,7 +393,7 @@ export default function PendingEffectModal() {
             </div>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <button className="menu-tactile-btn"
-                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
                 onClick={canConfirm ? confirm : undefined}
               >
                 Confirm
@@ -440,7 +446,7 @@ export default function PendingEffectModal() {
                 Fail to Find
               </button>
               <button className="menu-tactile-btn"
-                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
                 onClick={canConfirm ? confirm : undefined}
               >
                 Confirm
@@ -493,7 +499,7 @@ export default function PendingEffectModal() {
                 Fail to Find
               </button>
               <button className="menu-tactile-btn"
-                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
                 onClick={canConfirm ? confirm : undefined}
               >
                 Confirm
@@ -580,7 +586,7 @@ export default function PendingEffectModal() {
           <div style={styles.footer}>
             <div style={styles.info}>{info}</div>
             <button className="menu-tactile-btn"
-              style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+              style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
               onClick={canConfirm ? handleConfirm : undefined}
             >
               Confirm
@@ -631,7 +637,7 @@ export default function PendingEffectModal() {
                 Fail to Find
               </button>
               <button className="menu-tactile-btn"
-                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
                 onClick={canConfirm ? confirm : undefined}
               >
                 Confirm
@@ -682,7 +688,7 @@ export default function PendingEffectModal() {
                 Fail to Find
               </button>
               <button className="menu-tactile-btn"
-                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
                 onClick={canConfirm ? confirm : undefined}
               >
                 Confirm
@@ -765,7 +771,7 @@ export default function PendingEffectModal() {
                 Fail to Find
               </button>
               <button className="menu-tactile-btn"
-                style={{ ...styles.confirmBtn, ...(!canConfirm ? styles.confirmDisabled : {}) }}
+                style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
                 onClick={canConfirm ? confirm : undefined}
               >
                 Confirm
