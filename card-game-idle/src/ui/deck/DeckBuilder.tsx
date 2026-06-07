@@ -228,6 +228,22 @@ const styles: Record<string, React.CSSProperties> = {
     borderColor: 'rgba(184, 90, 79, 0.4)', color: '#e07060',
     background: 'rgba(184, 90, 79, 0.08)',
   },
+  sectionToggleBtn: {
+    width: 20,
+    height: 20,
+    borderRadius: 5,
+    border: '1px solid rgba(72,128,190,0.32)',
+    background: 'rgba(78,155,220,0.10)',
+    color: 'rgba(205,228,255,0.72)',
+    fontSize: 10,
+    lineHeight: 1,
+    padding: 0,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
   sidebarActionRow: {
     display: 'flex', gap: 6, flexWrap: 'wrap',
   },
@@ -363,6 +379,12 @@ export default function DeckBuilder({ onClose }: Props) {
   const [newDeckName, setNewDeckName] = useState('');
   const [notesOpen, setNotesOpen] = useState(false);
   const [notesDraft, setNotesDraft] = useState('');
+  const [collapsedSidebarSections, setCollapsedSidebarSections] = useState({
+    savedDecks: false,
+    save: false,
+    extraDeck: false,
+    mainDeck: false,
+  });
 
   // Card hover tooltip (1.5s delay)
   const [cardTooltip, setCardTooltip] = useState<{ card: CardDefinition; x: number; y: number } | null>(null);
@@ -629,6 +651,10 @@ export default function DeckBuilder({ onClose }: Props) {
   function handleClearDeck() {
     setDeckList([]);
     setExtraDeckList([]);
+  }
+
+  function toggleSidebarSection(section: 'savedDecks' | 'save' | 'extraDeck' | 'mainDeck') {
+    setCollapsedSidebarSections(prev => ({ ...prev, [section]: !prev[section] }));
   }
 
   // Auto-fill the main deck with the highest-rarity owned cards. Respects the
@@ -899,11 +925,21 @@ export default function DeckBuilder({ onClose }: Props) {
         <div style={styles.sidebar}>
           {/* Saved decks */}
           <div style={styles.sidebarSection}>
-            <div style={styles.sidebarSectionTitle}>
-              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
-              Saved Decks
+            <div style={{ ...styles.sidebarSectionTitle, justifyContent: 'space-between', marginBottom: collapsedSidebarSections.savedDecks ? 0 : 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
+                Saved Decks
+              </div>
+              <button
+                className="menu-tactile-btn"
+                style={styles.sectionToggleBtn}
+                onClick={() => toggleSidebarSection('savedDecks')}
+                title={collapsedSidebarSections.savedDecks ? 'Expand Saved Decks' : 'Collapse Saved Decks'}
+              >
+                {collapsedSidebarSections.savedDecks ? '▸' : '▾'}
+              </button>
             </div>
-            {savedDecks.map(sd => (
+            {!collapsedSidebarSections.savedDecks && savedDecks.map(sd => (
               <div key={sd.id} style={{
                 ...styles.savedDeckRow,
                 ...(sd.id === activeDeckId ? { borderLeftColor: '#58aada', background: 'rgba(58,142,200,0.09)' } : {}),
@@ -924,7 +960,7 @@ export default function DeckBuilder({ onClose }: Props) {
                 )}
               </div>
             ))}
-            {savedDecks.length === 1 && (
+            {!collapsedSidebarSections.savedDecks && savedDecks.length === 1 && (
               <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.55)', marginTop: 6, fontStyle: 'italic' }}>
                 Build a deck below and save it to create a custom deck.
               </div>
@@ -933,11 +969,21 @@ export default function DeckBuilder({ onClose }: Props) {
 
           {/* Save controls */}
           <div style={styles.sidebarSection}>
-            <div style={styles.sidebarSectionTitle}>
-              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
-              Save
+            <div style={{ ...styles.sidebarSectionTitle, justifyContent: 'space-between', marginBottom: collapsedSidebarSections.save ? 0 : 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
+                Save
+              </div>
+              <button
+                className="menu-tactile-btn"
+                style={styles.sectionToggleBtn}
+                onClick={() => toggleSidebarSection('save')}
+                title={collapsedSidebarSections.save ? 'Expand Save Controls' : 'Collapse Save Controls'}
+              >
+                {collapsedSidebarSections.save ? '▸' : '▾'}
+              </button>
             </div>
-            {!isEditingStarter && activeDeckId && (
+            {!collapsedSidebarSections.save && !isEditingStarter && activeDeckId && (
               <button className="menu-tactile-btn"
                 style={{ ...styles.miniBtn, marginBottom: 6, opacity: validation.valid ? 1 : 0.35, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
                 onClick={handleUpdateCurrent}
@@ -945,7 +991,8 @@ export default function DeckBuilder({ onClose }: Props) {
                 Update "{activeDeck?.name}"
               </button>
             )}
-            <div style={{ ...styles.sidebarActionRow, marginBottom: 6 }}>
+            {!collapsedSidebarSections.save && (
+              <div style={{ ...styles.sidebarActionRow, marginBottom: 6 }}>
               <button className="menu-tactile-btn"
                 style={{
                   ...styles.miniBtn,
@@ -972,8 +1019,9 @@ export default function DeckBuilder({ onClose }: Props) {
               >
                 Remove All Cards
               </button>
-            </div>
-            {saveMode ? (
+              </div>
+            )}
+            {!collapsedSidebarSections.save && (saveMode ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <input
                   style={styles.nameInput}
@@ -998,19 +1046,29 @@ export default function DeckBuilder({ onClose }: Props) {
               >
                 Save as New Deck
               </button>
-            )}
+            ))}
           </div>
 
           {/* Extra deck list */}
           <div style={{ ...styles.sidebarSection, flexShrink: 0 }}>
-            <div style={styles.sidebarSectionTitle}>
-              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
-              Extra Deck ({extraDeckList.length} / 10)
+            <div style={{ ...styles.sidebarSectionTitle, justifyContent: 'space-between', marginBottom: collapsedSidebarSections.extraDeck ? 0 : 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
+                Extra Deck ({extraDeckList.length} / 10)
+              </div>
+              <button
+                className="menu-tactile-btn"
+                style={styles.sectionToggleBtn}
+                onClick={() => toggleSidebarSection('extraDeck')}
+                title={collapsedSidebarSections.extraDeck ? 'Expand Extra Deck' : 'Collapse Extra Deck'}
+              >
+                {collapsedSidebarSections.extraDeck ? '▸' : '▾'}
+              </button>
             </div>
-            {extraDeckList.length === 0 && (
+            {!collapsedSidebarSections.extraDeck && extraDeckList.length === 0 && (
               <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.50)', fontStyle: 'italic' }}>No angels selected</div>
             )}
-            {extraDeckEntries.map(entry => {
+            {!collapsedSidebarSections.extraDeck && extraDeckEntries.map(entry => {
               const def = CardRegistry.get(entry.definitionId);
               const cap = Math.min(4, collection[entry.definitionId] ?? 0);
               const owned = def ? getOwnedCopiesForFinish(def, entry.finish, collection, holoCollection) : 0;
@@ -1034,12 +1092,22 @@ export default function DeckBuilder({ onClose }: Props) {
 
           {/* Main deck list */}
           <div style={styles.deckList}>
-            <div style={{ ...styles.sidebarSectionTitle, marginBottom: 8 }}>
-              <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
-              Main Deck ({totalCards} / 50)
+            <div style={{ ...styles.sidebarSectionTitle, justifyContent: 'space-between', marginBottom: collapsedSidebarSections.mainDeck ? 0 : 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
+                Main Deck ({totalCards} / 50)
+              </div>
+              <button
+                className="menu-tactile-btn"
+                style={styles.sectionToggleBtn}
+                onClick={() => toggleSidebarSection('mainDeck')}
+                title={collapsedSidebarSections.mainDeck ? 'Expand Main Deck' : 'Collapse Main Deck'}
+              >
+                {collapsedSidebarSections.mainDeck ? '▸' : '▾'}
+              </button>
             </div>
             {/* Stats summary */}
-            {deckList.length > 0 && (
+            {!collapsedSidebarSections.mainDeck && deckList.length > 0 && (
               <div style={{
                 marginBottom: 10,
                 padding: '8px 10px',
@@ -1086,12 +1154,12 @@ export default function DeckBuilder({ onClose }: Props) {
                 )}
               </div>
             )}
-            {deckList.length === 0 && (
+            {!collapsedSidebarSections.mainDeck && deckList.length === 0 && (
               <div style={{ fontSize: 12, color: 'rgba(232, 215, 191, 0.6)', textAlign: 'center', marginTop: 16 }}>
                 Click cards to add them
               </div>
             )}
-            {deckList.map(entry => {
+            {!collapsedSidebarSections.mainDeck && deckList.map(entry => {
               const def = CardRegistry.get(entry.definitionId);
               const cap = Math.min(4, collection[entry.definitionId] ?? 0);
               const owned = def ? getOwnedCopiesForFinish(def, entry.finish, collection, holoCollection) : 0;

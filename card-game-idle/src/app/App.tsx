@@ -739,7 +739,8 @@ export default function App() {
 
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showBattleground || showAscension;
+  const bossResultVisible = bossFight.kind !== 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat');
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showBattleground || showAscension || bossResultVisible;
 
   // When a combat session starts (including co-op launches), force-close
   // open overlays so both clients transition into the arena immediately.
@@ -972,8 +973,8 @@ export default function App() {
       )}
 
       {/* Boss result modal (victory / defeat) — only for non-null-raid fights */}
-      {bossFight.kind !== 'null_raid' && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 40, pointerEvents: 'none' }}>
+      {bossResultVisible && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 80, pointerEvents: 'none' }}>
           <div style={{ pointerEvents: 'auto' }}>
             <Suspense fallback={null}><BossResultModal /></Suspense>
           </div>
