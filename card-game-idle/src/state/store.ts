@@ -1617,12 +1617,14 @@ function completeBossFight(s: Store, victory: boolean): void {
       // the base amount (higher-tier bosses give more), then mode-specific
       // caps keep rewards bounded (normal 20, trial 35).
       const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
-      const masteryPerCard = getBossFightMasteryPerCard(
+      const baseMasteryPerCard = getBossFightMasteryPerCard(
         bossIdx,
         BOSS_DEFINITIONS.length,
         kind === 'trial' ? trialMult : 1,
         kind === 'trial' ? MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET : MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
       );
+      const normalFightCount = kind === 'normal' ? Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1)) : 1;
+      const masteryPerCard = baseMasteryPerCard * normalFightCount;
       const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, masteryPerCard);
       rewardSummary = {
         shardsEarned: s.progress.aberratedShards - priorShards,

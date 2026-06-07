@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS, getBossProgressionOrder } from '@/data/bosses/bossDefinitions';
 import { NULL_RAID_BOSS_MAP, NULL_RAID_DEFINITIONS } from '@/data/ascension/nullRaidDefinitions';
+import { getBossFightMasteryPerCard, MAX_MASTERY_PROGRESS_PER_CARD_BOSS } from '@/systems/progression/cardMastery';
 import { defaultGameState, useStore } from '@/state/store';
 import type { SavedGameState } from '@/types/bossFight';
 import type { DeckEntry, DeckState } from '@/types/game';
@@ -204,6 +205,51 @@ describe('Boss fight rules', () => {
     const state = useStore.getState();
     expect(state.bossFight.mode).toBe('victory');
     expect(state.progress.collection[rewardCardId]).toBe(7);
+  });
+
+  it('multiplies card-light rewards by selected fight count', () => {
+    const bossId = 'boss-hollow-king';
+    const bossIndex = Math.max(0, BOSS_DEFINITIONS.findIndex(entry => entry.id === bossId));
+    const baseMasteryPerCard = getBossFightMasteryPerCard(
+      bossIndex,
+      BOSS_DEFINITIONS.length,
+      1,
+      MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
+    );
+
+    const savedGameState = makeSavedGameState();
+    const activeDeck: DeckState = {
+      deckList: [{ definitionId: 'ser-neutral-null', finish: 'normal', copies: 1 }],
+      extraDeck: [],
+      drawPile: [],
+      hand: [{ instanceId: 'play_1', definitionId: 'ser-neutral-null', finish: 'normal' }],
+      discardPile: [],
+    };
+
+    useStore.setState(state => ({
+      ...state,
+      board: { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] },
+      deck: activeDeck,
+      turn: { ...state.turn, phase: 'playing', pendingEffect: null },
+      bossFight: {
+        mode: 'active',
+        activeBossId: bossId,
+        bossCurrentHp: 1,
+        bossMaxHp: 45_000,
+        damageDealtThisFight: 0,
+        fightTimeRemaining: BOSS_FIGHT_ROUND_SECONDS,
+        cooldowns: {},
+        savedGameState,
+        fightCount: 3,
+      },
+    }));
+    useStore.getState().refreshComputedStats();
+
+    useStore.getState().playCard('play_1');
+
+    const state = useStore.getState();
+    expect(state.bossFight.mode).toBe('victory');
+    expect(state.bossFight.rewardSummary?.masteryPerCard).toBe(baseMasteryPerCard * 3);
   });
 
   it('starts boss fights from the saved custom deck snapshot', () => {

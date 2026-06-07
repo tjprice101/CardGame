@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { getCanonicalCardDescription, getCardPreviewLines, getCardSummarySections } from '@/ui/cardStatSummary';
+import {
+  getCanonicalActivatedAbilityDescription,
+  getCanonicalCardDescription,
+  getCardPreviewLines,
+  getCardSummarySections,
+} from '@/ui/cardStatSummary';
 import type { CardType } from '@/types/cards';
 
 describe('card summary digest', () => {
@@ -58,5 +63,28 @@ describe('card summary digest', () => {
     const awaken = getCardSummarySections(card!).find(section => section.title === 'Awaken');
     expect(awaken).toBeTruthy();
     expect(awaken!.lines.length).toBe(1);
+  });
+
+  it('keeps Eternal/Infinite Angel summon and awaken text canonical across digest sections', () => {
+    const target = CardRegistry.getAll().find(
+      entry => entry.type === 'Angel' && (entry.rarity === 'Eternal' || entry.rarity === 'Infinite'),
+    );
+    expect(target).toBeTruthy();
+
+    const summary = getCardSummarySections(target!);
+    const canonical = getCardSummarySections(target!, { abilityTextMode: 'canonical' });
+
+    const ability = summary.find(section => section.title === 'Ability');
+    const canonicalAbility = canonical.find(section => section.title === 'Ability');
+    expect(ability?.lines[0]).toBe(canonicalAbility?.lines[0]);
+    expect(ability?.lines[0]).toBe(getCanonicalCardDescription(target!));
+
+    const awaken = summary.find(section => section.title === 'Awaken');
+    expect(awaken).toBeTruthy();
+    expect(awaken!.lines[0]).toContain(getCanonicalActivatedAbilityDescription(target as any));
+
+    const summon = summary.find(section => section.title === 'Summon');
+    expect(summon).toBeTruthy();
+    expect(summon!.lines.length).toBeGreaterThan(0);
   });
 });

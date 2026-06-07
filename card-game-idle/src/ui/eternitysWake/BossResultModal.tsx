@@ -76,6 +76,7 @@ export default function BossResultModal() {
   const kind = bossFight.kind ?? 'normal';
   const gauntletDepth = bossFight.gauntletDepth ?? 0;
   const trialMult = bossFight.trialRewardMult ?? 1;
+  const normalFightCount = kind === 'normal' ? Math.max(1, Math.min(3, bossFight.fightCount ?? 1)) : 1;
 
   // Compute mastery-per-card using the same capped helpers as the store.
   let masteryPerCard: number | null = null;
@@ -84,12 +85,13 @@ export default function BossResultModal() {
   } else if (isVictory && boss) {
     const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
     const trialFight = kind === 'trial';
-    masteryPerCard = getBossFightMasteryPerCard(
+    const baseMasteryPerCard = getBossFightMasteryPerCard(
       bossIdx,
       BOSS_DEFINITIONS.length,
       trialFight ? trialMult : 1,
       trialFight ? MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET : MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
     );
+    masteryPerCard = baseMasteryPerCard * normalFightCount;
   }
   const rewardDef = isVictory && boss ? CardRegistry.get(boss.rewardCardId) : undefined;
   const rewardPreviewText = rewardDef
