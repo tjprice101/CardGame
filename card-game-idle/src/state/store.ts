@@ -593,7 +593,7 @@ function charBurningGardenBoardCard(
     const distinct = new Set((s.board.emberGrove ?? []).map(seed => seed.lineage ?? getBurningGardenLineage(seed.definitionId))).size;
     const gain = Math.max(1, distinct);
     s.turn.burningGardenWorldflowerGrowth = (s.turn.burningGardenWorldflowerGrowth ?? 0) + gain;
-    grantOblivion(s, 60 * gain);
+    grantOblivion(s, Math.round(66 * gain));
   }
 
   if (location.kind === 'front') {
@@ -608,7 +608,7 @@ function applyBurningGardenFinalChord(s: Store, def: CardDefinition, chromaticSo
   const scale = Math.max(1, chromaticSourceCount - 2 + bonusScale);
   s.turn.burningGardenNextFinalChordScaleBonus = 0;
   if (def.type === 'Seraphim') {
-    grantOblivion(s, 150 * scale);
+    grantOblivion(s, Math.round(165 * scale));
     if ((s.turn.burningGardenGeometryMode ?? false)) {
     }
     return;
@@ -2793,7 +2793,7 @@ function applyBlackGlassPlayState(
     s.turn.blackGlassFracture = Math.min(18, (s.turn.blackGlassFracture ?? 0) + 1);
     s.turn.blackGlassWhiteFlame = Math.min(30, (s.turn.blackGlassWhiteFlame ?? 0) + 1);
     s.turn.blackGlassBlackFlame = Math.min(30, (s.turn.blackGlassBlackFlame ?? 0) + 1);
-    grantOblivion(s, 35);
+    grantOblivion(s, 39);
   }
 
   const white = s.turn.blackGlassWhiteFlame ?? 0;
@@ -2802,7 +2802,7 @@ function applyBlackGlassPlayState(
 
   if (Math.min(white, black) >= 1 && gap <= 1) {
     s.turn.blackGlassFracture = Math.min(18, (s.turn.blackGlassFracture ?? 0) + 1);
-    grantOblivion(s, 12);
+    grantOblivion(s, 13);
   }
 
   if (currentPolarity === 'white' || currentPolarity === 'black') {
@@ -2856,7 +2856,7 @@ function applyGlassAbsolutePlayState(
     const fragments = s.turn.glassProofFragments ?? 0;
     const fragmentPayout = 24 + Math.min(8, fragments) * 18;
     const formationTierBonus = fragments >= 7 ? 120 : fragments >= 5 ? 70 : fragments >= 3 ? 30 : 0;
-    grantOblivion(s, fragmentPayout + formationTierBonus);
+    grantOblivion(s, Math.round((fragmentPayout + formationTierBonus) * 1.10));
     s.turn.lastPlayedElement = def.element;
     return;
   }
@@ -2869,7 +2869,7 @@ function applyGlassAbsolutePlayState(
     if (def.definitionId === 'ga-et-first-white' && beforeTurn.lastPlayedElement && beforeTurn.lastPlayedElement !== 'GlassAbsolute') {
       refractionCharge = Math.min(12, refractionCharge + 2);
       counters.absol = refractionCharge;
-      grantOblivion(s, 80 + (s.turn.glassProofFragments ?? 0) * 16);
+      grantOblivion(s, Math.round((80 + (s.turn.glassProofFragments ?? 0) * 16) * 1.10));
     }
 
     // Charge deepens proof depth so Eternal directly amplifies fragment-linked payouts.
@@ -2923,7 +2923,7 @@ function applyGlassAbsolutePlayState(
   }
   if (def.definitionId === 'ga-inf-color-after-white') {
     const fragments = (s.turn.glassProofFragments ?? 0) + (s.turn.glassSyntheticFragments ?? 0);
-    const ledgerSeed = 220 + refractionCharge * 34 + fragments * 26;
+    const ledgerSeed = Math.round((220 + refractionCharge * 34 + fragments * 26) * 1.10);
     s.turn.glassWhiteLedger = Math.max(s.turn.glassWhiteLedger ?? 0, ledgerSeed);
     s.turn.glassWhiteLedgerActive = true;
   }
@@ -2933,7 +2933,7 @@ function applyGlassAbsolutePlayState(
   const formationTier = fragments >= 7 ? 3 : fragments >= 5 ? 2 : fragments >= 3 ? 1 : 0;
   const baselineBurst = 120 + fragments * 26 + refractionCharge * 30;
   const formationBurst = formationTier * (90 + refractionCharge * 16);
-  grantOblivion(s, baselineBurst + formationBurst);
+  grantOblivion(s, Math.round((baselineBurst + formationBurst) * 1.10));
 
   s.turn.lastPlayedElement = def.element;
 }
@@ -3034,7 +3034,7 @@ function applyBurningGardenPlayState(
     if (candidates.length >= 2) {
       const distinct = new Set(candidates.map(card => getBurningGardenLineage(card.definitionId))).size;
       if (distinct >= 2) {
-        grantOblivion(s, 240);
+        grantOblivion(s, 264);
         s.turn.burningGardenTransitGateCredit = 1;
       }
     }
@@ -3075,7 +3075,7 @@ function applyBurningGardenPlayState(
     const condEngines = countBurningGardenEngines(s.board) >= 2;
     const condGrove = (s.board.emberGrove?.length ?? 0) >= 1;
 
-    if (condEngines) grantOblivion(s, 300);
+    if (condEngines) grantOblivion(s, 330);
     if (condCards && condEngines && condGrove) {
       s.turn.burningGardenZenithNextInfinite = true;
     }
@@ -4449,7 +4449,7 @@ function applyCherubimPassiveEffects(s: Store): void {
 
     if (unit.definitionId === 'wuas-cher-wishwright-pulse' && resolvingPlayCount % 2 === 0) {
       s.turn.starlightCharges = (s.turn.starlightCharges ?? 0) + 1;
-      grantOblivion(s, 35);
+      grantOblivion(s, 39);
     }
   }
 
@@ -4458,7 +4458,7 @@ function applyCherubimPassiveEffects(s: Store): void {
     const dream = s.turn.dreamLattice ?? 0;
     const burst = Math.round(starlight * (1 + dream * 0.3));
     if (burst > 0) {
-      grantOblivion(s, burst);
+      grantOblivion(s, Math.round(burst * 1.10));
     }
   }
 }

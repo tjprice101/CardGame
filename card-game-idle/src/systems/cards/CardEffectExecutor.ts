@@ -2,6 +2,9 @@ import type { BoardState, DeckState, PendingEffect, TurnState } from '@/types/ga
 import type { CardEffect } from '@/types/effects';
 import type { AngelDefinition, AngelInstance, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition, SeraphimInstance } from '@/types/cards';
 import { CardRegistry } from '../../cards/CardRegistry';
+
+/** +10% buff applied to all non-Neutrality set mechanic core oblivion bursts. */
+const MECHANIC_OBLIVION_BUFF = 1.10;
 import { getCardCategoryKey } from '@/data/elements';
 import { getActiveCoopRng } from '@/state/coopSyncStore';
 import { TurnSystem } from './TurnSystem';
@@ -563,7 +566,7 @@ export class CardEffectExecutor {
           if (effect.condition && !CardEffectExecutor.evaluateCondition(effect.condition, mutableTurn, mutableBoard)) continue;
 
           if ((effect.oblivionGain ?? 0) > 0) {
-            oblivionBonus += Math.round(effect.oblivionGain ?? 0);
+            oblivionBonus += Math.round((effect.oblivionGain ?? 0) * MECHANIC_OBLIVION_BUFF);
           }
           if ((effect.undertowGain ?? 0) > 0) {
             mutableTurn.eternalSeasUndertow = Math.max(0, (mutableTurn.eternalSeasUndertow ?? 0) + Math.round(effect.undertowGain ?? 0));
@@ -744,7 +747,7 @@ export class CardEffectExecutor {
         case 'bloom_all_lineages': {
           const lineageCount = Math.max(1, distinctLineages());
           const lawBonus = 1 + Math.max(0, mutableTurn.burningGardenNextFinalChordScaleBonus ?? 0) * 0.35;
-          oblivionBonus += Math.round(220 * effect.multiplier * lineageCount * lawBonus);
+          oblivionBonus += Math.round(220 * MECHANIC_OBLIVION_BUFF * effect.multiplier * lineageCount * lawBonus);
           break;
         }
         case 'seed_grove_with_worldflower': {
@@ -816,7 +819,7 @@ export class CardEffectExecutor {
           mutableTurn.burningGardenArrayFreeEchoes = (mutableTurn.burningGardenArrayFreeEchoes ?? 0) + effect.value;
           break;
         case 'burn_attack':
-          oblivionBonus += effect.value * 160;
+          oblivionBonus += Math.round(effect.value * 160 * MECHANIC_OBLIVION_BUFF);
           break;
         case 'salvage_burn_from_discard': {
           if (pendingEffect === null) {
@@ -857,19 +860,19 @@ export class CardEffectExecutor {
           }
           const pyroInfiniteBonus = computePyroInfiniteOblivionBonus(deckCard.definitionId, mutableTurn, heatDrained);
           if (pyroInfiniteBonus !== null) {
-            val = pyroInfiniteBonus * multiplier;
+            val = Math.round(pyroInfiniteBonus * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           const lightInfiniteBonus = computeLightInfiniteOblivionBonus(deckCard.definitionId, mutableTurn, mutableBoard);
           if (lightInfiniteBonus !== null) {
-            val = lightInfiniteBonus * multiplier;
+            val = Math.round(lightInfiniteBonus * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           const thornboundInfiniteBonus = computeThornboundInfiniteOblivionBonus(deckCard.definitionId, mutableTurn);
           if (thornboundInfiniteBonus !== null) {
-            val = thornboundInfiniteBonus * multiplier;
+            val = Math.round(thornboundInfiniteBonus * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           const mechanicalInfiniteBonus = computeMechanicalInfiniteOblivionBonus(deckCard.definitionId, mutableTurn);
           if (mechanicalInfiniteBonus !== null) {
-            val = mechanicalInfiniteBonus * multiplier;
+            val = Math.round(mechanicalInfiniteBonus * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           // Oblivion Pulse — +10 per card played this turn (including this one)
           if (deckCard.definitionId === 'ophanim-neutral-chain-pulse') {
@@ -883,21 +886,21 @@ export class CardEffectExecutor {
           // (pyro_heat_* / conditional / draw / oblivion_flat) in source definitions.
           // Sunforged ? +25 Oblivion per Radiance drained
           if (deckCard.definitionId === 'hr-light-sunforged') {
-            val = radianceDrained * 25 * multiplier;
+            val = Math.round(radianceDrained * 25 * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           // Celestial Dividend ? +18 Oblivion per Radiance drained
           if (deckCard.definitionId === 'hr-light-celestial-dividend') {
-            val = radianceDrained * 18 * multiplier;
+            val = Math.round(radianceDrained * 18 * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           // Grand Illumination ? +8 Oblivion per Radiance (after doubling)
           if (deckCard.definitionId === 'hr-light-grand-illumination') {
-            val = mutableTurn.radiance * 8 * multiplier;
+            val = Math.round(mutableTurn.radiance * 8 * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           if (deckCard.definitionId === 'inf-prismatic-axiom-rain') {
             const distinct = Math.min(6, new Set(mutableTurn.prismaticDistinctChannels ?? []).size);
             const nodes = Math.max(0, mutableTurn.prismaticNodeCharges ?? 0);
             const depthBonus = (mutableTurn.prismaticRefractionDepth ?? 0) >= 6 ? 120 : 0;
-            val = (distinct * 18 + nodes * 42 + depthBonus) * multiplier;
+            val = Math.round((distinct * 18 + nodes * 42 + depthBonus) * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           if (def?.element === 'Neutrality' && val > 0) {
             mutableTurn.neutralityTriggeredEffects = [
@@ -960,7 +963,7 @@ export class CardEffectExecutor {
             burst += consume * fracture * (effect.fractureBonusPerEclipse ?? 0);
           }
 
-          oblivionBonus += burst * multiplier;
+          oblivionBonus += Math.round(burst * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
 
@@ -1015,14 +1018,14 @@ export class CardEffectExecutor {
         case 'monochromatic_shards_gain': {
           const gain = effect.value * multiplier;
           mutableTurn.monochromaticShards = (mutableTurn.monochromaticShards ?? 0) + gain;
-          oblivionBonus += gain * 2;
+          oblivionBonus += Math.round(gain * 2 * MECHANIC_OBLIVION_BUFF);
           break;
         }
 
         case 'monochromatic_shards_spend': {
           if (effect.value >= 9999) {
             const shards = mutableTurn.monochromaticShards ?? 0;
-            oblivionBonus += shards * 6;
+            oblivionBonus += Math.round(shards * 6 * MECHANIC_OBLIVION_BUFF);
             mutableTurn.monochromaticShards = 0;
           } else {
             if ((mutableTurn.monochromaticShards ?? 0) < effect.value) return false;
@@ -1040,7 +1043,7 @@ export class CardEffectExecutor {
         case 'arctic_charge_discharge': {
           const charge = mutableTurn.arcticCharge ?? 0;
           if (charge > 0) {
-            oblivionBonus += charge * 8 * multiplier;
+            oblivionBonus += Math.round(charge * 8 * MECHANIC_OBLIVION_BUFF) * multiplier;
             mutableTurn.arcticCharge = 0;
           }
           break;
@@ -1104,11 +1107,11 @@ export class CardEffectExecutor {
               ? 1
               : 0;
 
-          let releaseOblivion = spend * effect.oblivionPerSpectrum * multiplier;
+          let releaseOblivion = Math.round(spend * effect.oblivionPerSpectrum * MECHANIC_OBLIVION_BUFF) * multiplier;
           const stance = mutableTurn.butterflyStance ?? 'Reflect';
 
           if (stance === 'Absorb' || stance === 'Dual') {
-            releaseOblivion += spend * 15 * multiplier;
+            releaseOblivion += Math.round(spend * 15 * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           if (stance === 'Reflect' || stance === 'Dual') {
             mutableDeck = TurnSystem.drawCards(mutableDeck, Math.max(1, Math.floor(spend / 3)));
@@ -1137,7 +1140,7 @@ export class CardEffectExecutor {
           if (spend <= 0) break;
 
           mutableTurn.eternalSeasUndertow = Math.max(0, undertow - spend);
-          oblivionBonus += spend * effect.oblivionPerUndertow * multiplier;
+          oblivionBonus += Math.round(spend * effect.oblivionPerUndertow * MECHANIC_OBLIVION_BUFF) * multiplier;
           if ((effect.foamPerSpent ?? 0) > 0) {
             mutableTurn.eternalSeasFoam = Math.max(0, (mutableTurn.eternalSeasFoam ?? 0) + spend * (effect.foamPerSpent ?? 0) * multiplier);
           }
@@ -1179,7 +1182,7 @@ export class CardEffectExecutor {
           if (releaseSpend > 0) {
             mutableTurn.eternalSeasUndertow = Math.max(0, undertowPool - releaseSpend);
             const perUndertow = effect.oblivionPerUndertow + consume * effect.oblivionPerDeepwakeBonus;
-            oblivionBonus += releaseSpend * perUndertow * multiplier;
+            oblivionBonus += Math.round(releaseSpend * perUndertow * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
 
           if ((effect.foamPerDeepwake ?? 0) > 0) {
@@ -1467,7 +1470,7 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           mutableTurn.pyroHeat = available - consume;
-          oblivionBonus += consume * effect.oblivionPerHeat * multiplier;
+          oblivionBonus += Math.round(consume * effect.oblivionPerHeat * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
 
@@ -1501,7 +1504,7 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           stacks[effect.stack] = Math.max(0, available - consume);
-          oblivionBonus += consume * effect.oblivionPerStack * multiplier;
+          oblivionBonus += Math.round(consume * effect.oblivionPerStack * MECHANIC_OBLIVION_BUFF) * multiplier;
           if ((effect.drawPerStack ?? 0) > 0) {
             const extraDraw = Math.floor(consume * (effect.drawPerStack ?? 0));
             for (let i = 0; i < extraDraw; i++) {
@@ -1544,7 +1547,7 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           counters.pyro = available - consume;
-          oblivionBonus += consume * consume * effect.oblivionPerEchoSquared * multiplier;
+          oblivionBonus += Math.round(consume * consume * effect.oblivionPerEchoSquared * MECHANIC_OBLIVION_BUFF) * multiplier;
           // Ignition restokes Furnace Heat to keep the core loop active.
           mutableTurn.pyroHeat = Math.max(0, mutableTurn.pyroHeat ?? 0) + consume;
           break;
@@ -1559,7 +1562,7 @@ export class CardEffectExecutor {
 
           stacks.pyro = inferno - pairs;
           counters.pyro = chroma - pairs;
-          oblivionBonus += pairs * effect.oblivionPerPair * multiplier;
+          oblivionBonus += Math.round(pairs * effect.oblivionPerPair * MECHANIC_OBLIVION_BUFF) * multiplier;
 
           if ((effect.gainInfernoPerPair ?? 0) > 0) {
             mutableTurn.pyroHeat = Math.max(0, mutableTurn.pyroHeat ?? 0) + pairs * (effect.gainInfernoPerPair ?? 0);
@@ -1599,7 +1602,7 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           counters.thorn = available - consume;
           mutableTurn.trail = (mutableTurn.trail ?? 0) + consume * effect.trailPerSpiral;
-          oblivionBonus += (mutableTurn.trail ?? 0) * (effect.oblivionPerTrail ?? 0) * multiplier;
+          oblivionBonus += Math.round((mutableTurn.trail ?? 0) * (effect.oblivionPerTrail ?? 0) * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
         // Snowbound Voltage — Polar Capacitor: phase-conditional split
@@ -1611,7 +1614,7 @@ export class CardEffectExecutor {
           counters.snow = available - consume;
           const phase = mutableTurn.snowboundPhase ?? 'Frost';
           if (phase === 'Voltage') {
-            oblivionBonus += consume * effect.voltageOblivionPerCapacitor * multiplier;
+            oblivionBonus += Math.round(consume * effect.voltageOblivionPerCapacitor * MECHANIC_OBLIVION_BUFF) * multiplier;
           } else {
             const chargeGain = Math.floor(consume * effect.frostArcticChargePerCapacitor);
             mutableTurn.arcticCharge = (mutableTurn.arcticCharge ?? 0) + chargeGain;
@@ -1626,7 +1629,7 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           counters.absol = available - consume;
-          oblivionBonus += consume * (effect.oblivionPerProofDepth ?? 0) * multiplier;
+          oblivionBonus += Math.round(consume * (effect.oblivionPerProofDepth ?? 0) * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
         // Burning Garden — Wild Pollen: +Oblivion per pollen; score mult per Bloom
@@ -1636,7 +1639,7 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           counters.garden = available - consume;
-          oblivionBonus += consume * effect.oblivionPerPollen * multiplier;
+          oblivionBonus += Math.round(consume * effect.oblivionPerPollen * MECHANIC_OBLIVION_BUFF) * multiplier;
           const blooms = Math.max(0, mutableTurn.bloom ?? 0);
           if (effect.scoreMultPerBloom > 0 && blooms > 0) {
             mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: blooms * effect.scoreMultPerBloom });
@@ -1669,7 +1672,7 @@ export class CardEffectExecutor {
           const formation = Math.max(0, mutableTurn.butterflyFormation ?? 0);
           const resonanceOblivion = consume * (effect.oblivionPerResonance ?? 0);
           const formationOblivion = formation * (effect.oblivionPerFormation ?? 0);
-          oblivionBonus += (resonanceOblivion + formationOblivion) * multiplier;
+          oblivionBonus += Math.round((resonanceOblivion + formationOblivion) * MECHANIC_OBLIVION_BUFF) * multiplier;
 
           const extraDraw = Math.floor(consume * (effect.drawPerResonance ?? 0));
           for (let i = 0; i < extraDraw; i++) {
@@ -1688,11 +1691,11 @@ export class CardEffectExecutor {
 
           const spectrum = Math.max(0, mutableTurn.butterflySpectrum ?? 0);
           const formation = Math.max(0, mutableTurn.butterflyFormation ?? 0);
-          oblivionBonus += (
+          oblivionBonus += Math.round((
             consume * effect.oblivionPerResonance
             + spectrum * effect.oblivionPerSpectrum
             + formation * effect.oblivionPerFormation
-          ) * multiplier;
+          ) * MECHANIC_OBLIVION_BUFF) * multiplier;
 
           const extraDraw = Math.floor(formation * (effect.drawPerFormation ?? 0));
           for (let i = 0; i < extraDraw; i++) {
@@ -1725,7 +1728,7 @@ export class CardEffectExecutor {
           const have = mutableTurn.pearls ?? 0;
           const spend = Math.min(have, effect.spend);
           mutableTurn.pearls = have - spend;
-          oblivionBonus += spend * effect.oblivionPerPearl * multiplier;
+          oblivionBonus += Math.round(spend * effect.oblivionPerPearl * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
         case 'forge_recast_last': {
@@ -1791,7 +1794,7 @@ export class CardEffectExecutor {
           const ledger = mutableTurn.recastLedger ?? [];
           const entry = effect.target === 'last_played' ? ledger[ledger.length - 1] : ledger[ledger.length - 1];
           if (entry) entry.isAnvilSealed = true;
-          oblivionBonus += effect.burstOblivion * multiplier;
+          oblivionBonus += Math.round(effect.burstOblivion * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
         case 'forge_imprint_gain': {
@@ -1803,7 +1806,7 @@ export class CardEffectExecutor {
           ensureForgeTurn(mutableTurn);
           const spent = spendForgeImprint(mutableTurn, effect.spend);
           if (spent > 0) {
-            oblivionBonus += spent * effect.oblivionPerImprint * multiplier;
+            oblivionBonus += Math.round(spent * effect.oblivionPerImprint * MECHANIC_OBLIVION_BUFF) * multiplier;
           }
           break;
         }
@@ -1849,7 +1852,7 @@ export class CardEffectExecutor {
           ensureForgeTurn(mutableTurn);
           const stacks = (mutableTurn.eternalStacks ?? {}) as Record<string, number>;
           const crowns = stacks.forge ?? 0;
-          oblivionBonus += crowns * effect.oblivionPerCrown * multiplier;
+          oblivionBonus += Math.round(crowns * effect.oblivionPerCrown * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
 
@@ -1889,7 +1892,7 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           mutableTurn.dfhVeilMarks = available - consume;
-          oblivionBonus += consume * effect.oblivionPerMark * multiplier;
+          oblivionBonus += Math.round(consume * effect.oblivionPerMark * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
 
@@ -1918,7 +1921,7 @@ export class CardEffectExecutor {
           if (consume <= 0) break;
           mutableTurn.dfhVeilMarks = available - consume;
           mutableTurn.dfhAngelResonantCashoutUsed = true;
-          oblivionBonus += consume * effect.oblivionPerMark * multiplier;
+          oblivionBonus += Math.round(consume * effect.oblivionPerMark * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
 
@@ -1928,7 +1931,7 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           counters.pyre = available - consume;
-          oblivionBonus += consume * effect.oblivionPerCrown * multiplier;
+          oblivionBonus += Math.round(consume * effect.oblivionPerCrown * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
 
@@ -1961,7 +1964,7 @@ export class CardEffectExecutor {
           const starlight = mutableTurn.starlightCharges ?? 0;
           const dream = mutableTurn.dreamLattice ?? 0;
           const dreamMult = effect.dreamMultiplier ?? 0.4;
-          oblivionBonus += starlight * (1 + dream * dreamMult) * multiplier;
+          oblivionBonus += Math.round(starlight * (1 + dream * dreamMult) * MECHANIC_OBLIVION_BUFF) * multiplier;
           if (starlight >= 5) {
             const starlaceActive = mutableBoard.backSlots.some(
               (slot) => slot?.type === 'Cherubim' && slot.definitionId === 'wuas-cher-starlace-binding',
@@ -1980,14 +1983,14 @@ export class CardEffectExecutor {
           const consume = Math.min(available, effect.consume ?? available);
           if (consume <= 0) break;
           stacks.wuas = available - consume;
-          oblivionBonus += consume * effect.oblivionPerStack * multiplier;
+          oblivionBonus += Math.round(consume * effect.oblivionPerStack * MECHANIC_OBLIVION_BUFF) * multiplier;
           break;
         }
 
         case 'wuas_infinite_starbirth': {
           const seraphimCount = mutableBoard.frontSlots.filter(s => s?.type === 'Seraphim').length;
           const starlight = mutableTurn.starlightCharges ?? 0;
-          oblivionBonus += seraphimCount * starlight * effect.oblivionPerSeraphimPerStarlight * multiplier;
+          oblivionBonus += Math.round(seraphimCount * starlight * effect.oblivionPerSeraphimPerStarlight * MECHANIC_OBLIVION_BUFF) * multiplier;
           if ((effect.drawPerDream ?? 0) > 0) {
             const dream = mutableTurn.dreamLattice ?? 0;
             const draws = Math.floor(dream * (effect.drawPerDream ?? 0));
