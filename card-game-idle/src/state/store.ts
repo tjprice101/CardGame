@@ -3156,86 +3156,23 @@ function endTurnInternal(s: Store): void {
     s.turn.glassWhiteLedgerActive = false;
   }
 
-  // Burning Garden cards persist on board unless they char.
+  // End turn hard-resets the board: every unit leaves play.
   for (let i = 0; i < s.board.frontSlots.length; i++) {
     const slot = s.board.frontSlots[i];
-    if (slot && isBurningGardenCard(CardRegistry.get(slot.definitionId))) {
-      if (slot.burningGardenPhase === 'Burn') {
-        slot.burnTurnsRemaining = Math.max(0, (slot.burnTurnsRemaining ?? 2) - 1);
-        if ((slot.burnTurnsRemaining ?? 0) <= 0) {
-          charBurningGardenBoardCard(s, { kind: 'front', index: i as 0 | 1 | 2 | 3 | 4 }, slot);
-        }
-      }
-      continue;
-    }
-    if (slot?.type === 'Seraphim') {
+    if (slot) {
       recordLossEvent(s, [{ definitionId: slot.definitionId }], 'board');
       s.deck.discardPile.push(toDeckCard(slot));
     }
     (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[i] = null;
   }
+
   // Back-row cleanup at turn end.
-  // Durable Cherubim always discard; non-durable Cherubim use discard conditions.
   for (let i = 0; i < s.board.backSlots.length; i++) {
     const card = s.board.backSlots[i];
     if (!card) continue;
-
-    if (isBurningGardenCard(CardRegistry.get(card.definitionId))) {
-      if (card.burningGardenPhase === 'Burn') {
-        card.burnTurnsRemaining = Math.max(0, (card.burnTurnsRemaining ?? 2) - 1);
-        if ((card.burnTurnsRemaining ?? 0) <= 0) {
-          charBurningGardenBoardCard(s, { kind: 'back', index: i as 0 | 1 | 2 | 3 }, card);
-        }
-      }
-      continue;
-    }
-
-    if (card.type === 'Cherubim' && card.durability !== undefined) {
-      recordLossEvent(s, [{ definitionId: card.definitionId }], 'board');
-      s.deck.discardPile.push(toDeckCard(card));
-      s.board.backSlots[i] = null;
-    } else if (card.type === 'Cherubim') {
-      const def = ScoreSystem.getDefinition(card.definitionId);
-      if (def && def.type === 'Cherubim' && (def as import('@/types/cards').CherubimDefinition).discardCondition) {
-        const condition = (def as import('@/types/cards').CherubimDefinition).discardCondition!;
-        let shouldDiscard = false;
-        
-        switch (condition.type) {
-          case 'hand_size_lte':
-            shouldDiscard = s.deck.hand.length <= condition.value;
-            break;
-          case 'chain_lte':
-            shouldDiscard = false; // chain removed
-            break;
-          case 'oblivion_lte':
-            shouldDiscard = s.progress.oblivion <= condition.value;
-            break;
-          case 'radiance_lte':
-            shouldDiscard = s.turn.radiance <= condition.value;
-            break;
-          case 'cards_played_gte':
-            shouldDiscard = s.turn.cardsPlayedThisTurn >= condition.value;
-            break;
-          case 'seraphim_count_lte':
-            shouldDiscard = s.board.frontSlots.filter(sl => sl?.type === 'Seraphim').length <= condition.value;
-            break;
-          case 'trail_lte':
-            shouldDiscard = s.turn.trail <= condition.value;
-            break;
-          case 'strain_gte':
-            shouldDiscard = s.turn.strain >= condition.value;
-            break;
-        }
-        
-        if (shouldDiscard) {
-          recordLossEvent(s, [{ definitionId: card.definitionId }], 'expire');
-          s.deck.discardPile.push(toDeckCard(card));
-          s.board.backSlots[i] = null;
-          applyCherubimExpireBonuses(s, 1);
-          eventBus.emit('cherubim:expired', { backSlot: i as 0 | 1 | 2 | 3, definitionId: card.definitionId });
-        }
-      }
-    }
+    recordLossEvent(s, [{ definitionId: card.definitionId }], 'board');
+    s.deck.discardPile.push(toDeckCard(card));
+    s.board.backSlots[i] = null;
   }
   recordLossEvent(s, s.deck.hand.map(card => ({ definitionId: card.definitionId })), 'discard');
   for (const card of s.deck.hand) s.deck.discardPile.push(card);
@@ -6038,19 +5975,10 @@ export const useStore = create<Store>()(
           s.turn.glassWhiteLedgerActive = false;
         }
 
-        // Burning Garden cards persist on board unless they char.
+        // End turn hard-resets the board: every unit leaves play.
         for (let i = 0; i < s.board.frontSlots.length; i++) {
           const slot = s.board.frontSlots[i];
-          if (slot && isBurningGardenCard(CardRegistry.get(slot.definitionId))) {
-            if (slot.burningGardenPhase === 'Burn') {
-              slot.burnTurnsRemaining = Math.max(0, (slot.burnTurnsRemaining ?? 2) - 1);
-              if ((slot.burnTurnsRemaining ?? 0) <= 0) {
-                charBurningGardenBoardCard(s, { kind: 'front', index: i as 0 | 1 | 2 | 3 | 4 }, slot);
-              }
-            }
-            continue;
-          }
-          if (slot?.type === 'Seraphim') {
+          if (slot) {
             recordLossEvent(s, [{ definitionId: slot.definitionId }], 'board');
             s.deck.discardPile.push(toDeckCard(slot));
           }
@@ -6062,62 +5990,9 @@ export const useStore = create<Store>()(
           const card = s.board.backSlots[i];
           if (!card) continue;
 
-          if (isBurningGardenCard(CardRegistry.get(card.definitionId))) {
-            if (card.burningGardenPhase === 'Burn') {
-              card.burnTurnsRemaining = Math.max(0, (card.burnTurnsRemaining ?? 2) - 1);
-              if ((card.burnTurnsRemaining ?? 0) <= 0) {
-                charBurningGardenBoardCard(s, { kind: 'back', index: i as 0 | 1 | 2 | 3 }, card);
-              }
-            }
-            continue;
-          }
-
-          if (card.type === 'Cherubim' && card.durability !== undefined) {
-            recordLossEvent(s, [{ definitionId: card.definitionId }], 'board');
-            s.deck.discardPile.push(toDeckCard(card));
-            s.board.backSlots[i] = null;
-          } else if (card.type === 'Cherubim') {
-            const def = ScoreSystem.getDefinition(card.definitionId);
-            if (def && def.type === 'Cherubim' && (def as import('@/types/cards').CherubimDefinition).discardCondition) {
-              const condition = (def as import('@/types/cards').CherubimDefinition).discardCondition!;
-              let shouldDiscard = false;
-              
-              switch (condition.type) {
-                case 'hand_size_lte':
-                  shouldDiscard = s.deck.hand.length <= condition.value;
-                  break;
-                case 'chain_lte':
-                  shouldDiscard = false;
-                  break;
-                case 'oblivion_lte':
-                  shouldDiscard = s.progress.oblivion <= condition.value;
-                  break;
-                case 'radiance_lte':
-                  shouldDiscard = s.turn.radiance <= condition.value;
-                  break;
-                case 'cards_played_gte':
-                  shouldDiscard = s.turn.cardsPlayedThisTurn >= condition.value;
-                  break;
-                case 'seraphim_count_lte':
-                  shouldDiscard = s.board.frontSlots.filter(sl => sl?.type === 'Seraphim').length <= condition.value;
-                  break;
-                case 'trail_lte':
-                  shouldDiscard = s.turn.trail <= condition.value;
-                  break;
-                case 'strain_gte':
-                  shouldDiscard = s.turn.strain >= condition.value;
-                  break;
-              }
-              
-              if (shouldDiscard) {
-                recordLossEvent(s, [{ definitionId: card.definitionId }], 'expire');
-                s.deck.discardPile.push(toDeckCard(card));
-                s.board.backSlots[i] = null;
-                applyCherubimExpireBonuses(s, 1);
-                eventBus.emit('cherubim:expired', { backSlot: i as 0 | 1 | 2 | 3, definitionId: card.definitionId });
-              }
-            }
-          }
+          recordLossEvent(s, [{ definitionId: card.definitionId }], 'board');
+          s.deck.discardPile.push(toDeckCard(card));
+          s.board.backSlots[i] = null;
         }
 
         recordLossEvent(s, s.deck.hand.map(card => ({ definitionId: card.definitionId })), 'discard');

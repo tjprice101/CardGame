@@ -43,12 +43,12 @@ const FRACTURE_SHARD_YIELD: Record<CardRarity, number> = {
 };
 
 const RARITY_COLOR: Record<CardRarity, string> = {
-  Common: '#adb5bd',
+  Common: '#d7e1eb',
   Rare: '#74b8ff',
   Epic: '#cf9fff',
   Legendary: '#ffd700',
   Eternal: '#ffb347',
-  Infinite: '#f9e4ff',
+  Infinite: '#ffeaff',
 };
 
 const FRACTURE_PRESETS = [1, 5, 10, 15] as const;
@@ -154,20 +154,20 @@ export default function FractureModal({ onClose }: Props) {
   }
 
   const P = {
-    bg: warmTheme.surface,
-    panel: warmTheme.surfaceStrong,
-    border: warmTheme.border,
-    borderStrong: warmTheme.borderStrong,
-    accent: warmTheme.accent,
-    text: warmTheme.text,
-    textMuted: warmTheme.textMuted,
-    textFaint: warmTheme.textFaint,
+    bg: '#0d1726',
+    panel: '#203247',
+    border: '#5b7690',
+    borderStrong: '#86a6c5',
+    accent: '#9ed8ff',
+    text: '#f3f8ff',
+    textMuted: '#d3e2f2',
+    textFaint: '#a7bdd3',
   };
 
   return (
     <div style={{
       position: 'absolute', inset: 0, zIndex: 35,
-      background: `linear-gradient(160deg, ${warmTheme.surfaceMuted} 0%, ${P.bg} 50%, ${warmTheme.surfaceStrong} 100%)`,
+      background: 'linear-gradient(160deg, #0a1320 0%, #101c2d 50%, #15243a 100%)',
       display: 'flex', flexDirection: 'column', fontFamily: uiTypography.body,
       color: P.text,
     }}>
@@ -176,7 +176,7 @@ export default function FractureModal({ onClose }: Props) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '18px 28px 14px',
         borderBottom: `1px solid ${P.border}`,
-        background: withAlpha(P.panel, 0.85),
+        background: withAlpha(P.panel, 0.96),
         backdropFilter: 'blur(8px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
@@ -259,7 +259,7 @@ export default function FractureModal({ onClose }: Props) {
       {/* How it works panel */}
       {showHowItWorks && (
         <div style={{
-          padding: '14px 28px', background: withAlpha(P.panel, 0.7),
+          padding: '14px 28px', background: withAlpha(P.panel, 0.9),
           borderBottom: `1px solid ${P.border}`,
           fontSize: 12, color: P.textMuted, lineHeight: 1.7,
         }}>
@@ -294,7 +294,7 @@ export default function FractureModal({ onClose }: Props) {
             <div style={{ fontSize: 11, color: P.textMuted, letterSpacing: 0.6 }}>
               {menuMode === 'fracture' ? 'Available to Fracture' : 'All Owned Cards'}
             </div>
-            <div style={{ marginLeft: 'auto', fontSize: 10, color: P.textFaint }}>{activeRows.length} cards</div>
+            <div style={{ marginLeft: 'auto', fontSize: 10, color: P.textMuted }}>{activeRows.length} cards</div>
           </div>
 
           {/* Virtualized list */}
@@ -314,7 +314,7 @@ export default function FractureModal({ onClose }: Props) {
                     style={{
                       padding: '8px 14px',
                       borderBottom: `1px solid ${P.border}`,
-                      background: isSelected ? withAlpha(P.accent, 0.12) : 'transparent',
+                      background: isSelected ? 'linear-gradient(90deg, rgba(46, 84, 116, 0.82) 0%, rgba(29, 52, 74, 0.76) 100%)' : 'transparent',
                       cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: 10,
                     }}
@@ -340,7 +340,7 @@ export default function FractureModal({ onClose }: Props) {
                             {row.fracturable > 0 ? `✦ ${row.fracturable} fracturable` : '✦ none'}
                           </span>
                         )}
-                        <span style={{ fontSize: 9, color: P.textFaint }}>◈ {row.cardLight} CL</span>
+                        <span style={{ fontSize: 9, color: P.textMuted }}>◈ {row.cardLight} CL</span>
                       </div>
                     </div>
                   </div>
@@ -353,7 +353,7 @@ export default function FractureModal({ onClose }: Props) {
         {/* Right: detail panel */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 24, gap: 20, overflowY: 'auto' }}>
           {!selectedRow || !selectedDef ? (
-            <div style={{ margin: 'auto', color: P.textFaint, fontSize: 13, textAlign: 'center' }}>
+            <div style={{ margin: 'auto', color: P.textMuted, fontSize: 13, textAlign: 'center' }}>
               {menuMode === 'fracture'
                 ? 'No cards are currently available to fracture'
                 : 'Select a card to spend shards'}
@@ -487,17 +487,17 @@ export default function FractureModal({ onClose }: Props) {
                           ? withAlpha('#ffd700', 0.18)
                           : reached
                             ? withAlpha(P.accent, 0.12)
-                            : withAlpha(P.textFaint, 0.08),
+                            : withAlpha('#172a40', 0.88),
                         border: claimed
                           ? '1px solid rgba(255,215,0,0.5)'
                           : reached
                             ? `1px solid ${withAlpha(P.accent, 0.4)}`
-                            : `1px solid ${withAlpha(P.textFaint, 0.2)}`,
+                            : `1px solid ${withAlpha(P.borderStrong, 0.5)}`,
                         fontSize: 10, textAlign: 'center',
-                        color: claimed ? '#ffd700' : reached ? P.accent : P.textFaint,
+                        color: claimed ? '#ffd700' : reached ? P.accent : P.textMuted,
                       }}>
                         <div style={{ fontFamily: uiTypography.display }}>{t.label}</div>
-                        <div style={{ opacity: 0.7 }}>{t.threshold.toLocaleString()} CL</div>
+                        <div style={{ opacity: 0.92 }}>{t.threshold.toLocaleString()} CL</div>
                       </div>
                     );
                   })}
@@ -518,7 +518,7 @@ export default function FractureModal({ onClose }: Props) {
                   <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: P.textMuted }}>
                     Spend Fracture Shards as Card-light
                   </div>
-                  <div style={{ fontSize: 11, color: P.textFaint }}>
+                  <div style={{ fontSize: 11, color: P.textMuted }}>
                     Pool: <span style={{ color: P.accent }}>✦ {fractureShards.toLocaleString()} shards</span>
                   </div>
 
