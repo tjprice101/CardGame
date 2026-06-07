@@ -6651,8 +6651,9 @@ export const useStore = create<Store>()(
       const starterLocked = STARTER_COLLECTION[definitionId] ?? 0;
       const userLocked = state.progress.cardLocks?.[definitionId] ?? 0;
       const lockedCopies = starterLocked + userLocked;
-      // Need at least one copy above locked floor to fracture.
-      if (totalOwned <= lockedCopies) return 0;
+      // Must own MORE than 4 copies to fracture (floor is max of locked + 4).
+      const fractureFloor = Math.max(lockedCopies, 4);
+      if (totalOwned <= fractureFloor) return 0;
       const definition = CardRegistry.get(definitionId);
       if (!definition) return 0;
       const FRACTURE_SHARD_YIELD: Record<string, number> = {
@@ -6661,7 +6662,7 @@ export const useStore = create<Store>()(
       const shards = FRACTURE_SHARD_YIELD[definition.rarity] ?? 1;
       set(s => {
         const current = s.progress.collection[definitionId] ?? 0;
-        if (current <= lockedCopies) return;
+        if (current <= fractureFloor) return;
         if (current === 1) {
           delete s.progress.collection[definitionId];
         } else {

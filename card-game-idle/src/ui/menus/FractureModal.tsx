@@ -73,7 +73,9 @@ export default function FractureModal({ onClose }: Props) {
       const starterLocked = STARTER_COLLECTION[id] ?? 0;
       const userLocked = progress.cardLocks?.[id] ?? 0;
       const lockedCopies = starterLocked + userLocked;
-      const fracturable = Math.max(0, (owned ?? 0) - lockedCopies);
+      // Must own MORE than 4 to fracture; floor is max(lockedCopies, 4).
+      const fractureFloor = Math.max(lockedCopies, 4);
+      const fracturable = Math.max(0, (owned ?? 0) - fractureFloor);
       const cardLight = progress.cardPlayCounts?.[id] ?? 0;
       const shardYield = FRACTURE_SHARD_YIELD[rarity] ?? 1;
 
