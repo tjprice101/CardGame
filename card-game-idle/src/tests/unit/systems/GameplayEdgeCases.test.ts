@@ -746,7 +746,7 @@ describe('Heavenly Light balance', () => {
     );
 
     expect(result.turn.radiance).toBe(14);
-    expect(result.oblivionBonus).toBe(112);
+    expect(result.oblivionBonus).toBe(123);
   });
 
   it('uses the reduced Light Radiance-to-Oblivion conversion and multiplier values', () => {
@@ -758,7 +758,7 @@ describe('Heavenly Light balance', () => {
     );
 
     expect(sunforgedResult.turn.radiance).toBe(0);
-    expect(sunforgedResult.oblivionBonus).toBe(150);
+    expect(sunforgedResult.oblivionBonus).toBe(165);
 
     const spireResult = CardEffectExecutor.execute(
       { instanceId: 'play_2', definitionId: 'hr-light-pillar-of-heaven' },
@@ -951,179 +951,26 @@ describe('Angel attack cost selection', () => {
     resetStore();
   });
 
-  it('does not fire a costed angel attack without explicit payment selection', () => {
-    const costedAngel = CardRegistry.getAll().find(def => (
-      def.type === 'Angel'
-      && (def.attacks?.exalted.costs ?? []).some(cost => cost.type === 'discard_from_hand')
-    ));
-    if (!costedAngel || costedAngel.type !== 'Angel') {
-      throw new Error('No Angel with exalted discard cost found');
-    }
-
-    const angel: AngelInstance = {
-      instanceId: 'angel_board_1',
-      definitionId: costedAngel.definitionId,
-      type: 'Angel',
-      element: costedAngel.element,
-      rarity: costedAngel.rarity,
-      finish: 'normal',
-      level: 1,
-      cardsPlayedSinceSummon: 0,
-      activated: true,
-      attackCooldowns: {},
-      boardSlot: 0,
-    };
-
-    useStore.setState(state => ({
-      ...state,
-      board: {
-        ...state.board,
-        frontSlots: [angel, null, null, null, null],
-      },
-      deck: {
-        ...state.deck,
-        hand: [
-          { instanceId: 'hand_keep_1', definitionId: 'ophanim-neutral-null-seek', finish: 'normal' },
-          { instanceId: 'hand_pay_1', definitionId: 'ophanim-neutral-void-surge', finish: 'normal' },
-        ],
-        discardPile: [],
-      },
-      turn: {
-        ...state.turn,
-        phase: 'playing',
-      },
-      progress: {
-        ...state.progress,
-        oblivion: 100,
-      },
-    }));
-
-    useStore.getState().activateAngelAttack(0, 'exalted');
-
-    const state = useStore.getState();
-    expect(state.deck.hand).toHaveLength(2);
-    expect(state.deck.discardPile).toHaveLength(0);
-    expect(state.progress.oblivion).toBe(100);
-  });
-
-  it('consumes the specifically selected discard card for angel attack costs', () => {
-    const costedAngel = CardRegistry.getAll().find(def => (
-      def.type === 'Angel'
-      && (def.attacks?.exalted.costs ?? []).some(cost => cost.type === 'discard_from_hand')
-    ));
-    if (!costedAngel || costedAngel.type !== 'Angel') {
-      throw new Error('No Angel with exalted discard cost found');
-    }
-
-    const angel: AngelInstance = {
-      instanceId: 'angel_board_2',
-      definitionId: costedAngel.definitionId,
-      type: 'Angel',
-      element: costedAngel.element,
-      rarity: costedAngel.rarity,
-      finish: 'normal',
-      level: 1,
-      cardsPlayedSinceSummon: 0,
-      activated: false,
-      attackCooldowns: {},
-      boardSlot: 0,
-    };
-
-    useStore.setState(state => ({
-      ...state,
-      board: {
-        ...state.board,
-        frontSlots: [angel, null, null, null, null],
-      },
-      deck: {
-        ...state.deck,
-        hand: [
-          { instanceId: 'hand_keep_2', definitionId: 'ophanim-neutral-null-seek', finish: 'normal' },
-          { instanceId: 'hand_pay_2', definitionId: 'ophanim-neutral-void-surge', finish: 'normal' },
-        ],
-        discardPile: [],
-      },
-      turn: {
-        ...state.turn,
-        phase: 'playing',
-      },
-      progress: {
-        ...state.progress,
-        oblivion: 100,
-      },
-    }));
-
-    useStore.getState().activateAngelAttack(0, 'exalted', {
-      discardInstanceIds: ['hand_pay_2'],
-      sacrificeSeraphimInstanceIds: [],
-      sacrificeAngelInstanceIds: [],
+  it('removes discard and sacrifice taxes from Seraphim and Angel attacks', () => {
+    const allAttacks = CardRegistry.getAll().flatMap((def) => {
+      if (def.type === 'Seraphim' && def.attacks) {
+        return [def.attacks.unsynergized, def.attacks.synergized];
+      }
+      if (def.type === 'Angel' && def.attacks) {
+        return [def.attacks.primary, def.attacks.exalted];
+      }
+      return [];
     });
 
-    const state = useStore.getState();
-    const handIds = state.deck.hand.map(card => card.instanceId);
-    const discardIds = state.deck.discardPile.map(card => card.instanceId);
-    expect(handIds).toContain('hand_keep_2');
-    expect(discardIds.includes('hand_pay_2') || handIds.includes('hand_pay_2')).toBe(true);
-    expect(state.progress.oblivion).toBeGreaterThanOrEqual(100);
-  });
+    const hasCardTax = allAttacks.some(attack =>
+      (attack.costs ?? []).some(cost => (
+        cost.type === 'discard_from_hand'
+        || cost.type === 'sacrifice_seraphim'
+        || cost.type === 'sacrifice_angel'
+      )),
+    );
 
-  it('requires explicit discard selection for Seraphim attacks that cost a discard', () => {
-    const discardCostSeraphim = CardRegistry.getAll().find(def => (
-      def.type === 'Seraphim'
-      && (def.attacks?.unsynergized.costs ?? []).some(cost => cost.type === 'discard_from_hand')
-    ));
-    if (!discardCostSeraphim || discardCostSeraphim.type !== 'Seraphim') {
-      throw new Error('No Seraphim with unsynergized discard cost found');
-    }
-
-    const seraphim: SeraphimInstance = {
-      instanceId: 'ser_discard_cost_1',
-      definitionId: discardCostSeraphim.definitionId,
-      type: 'Seraphim',
-      element: discardCostSeraphim.element,
-      rarity: discardCostSeraphim.rarity,
-      finish: 'normal',
-      level: 1,
-      isActive: true,
-      attackCooldowns: {},
-      boardSlot: 0,
-    };
-
-    useStore.setState(state => ({
-      ...state,
-      board: {
-        ...state.board,
-        frontSlots: [seraphim, null, null, null, null],
-      },
-      deck: {
-        ...state.deck,
-        hand: [{ instanceId: 'ser_discard_pick_1', definitionId: 'seek-neutral-measured-seek' }],
-      },
-      turn: {
-        ...state.turn,
-        phase: 'playing',
-        pyroHeat: 10,
-        radiance: 10,
-        trail: 10,
-        strain: 10,
-      },
-      progress: {
-        ...state.progress,
-        oblivion: 0,
-      },
-    }));
-
-    useStore.getState().activateSeraphimAttack(0, 'unsynergized');
-    const withoutPayment = useStore.getState();
-    expect(withoutPayment.progress.oblivion).toBe(0);
-
-    useStore.getState().activateSeraphimAttack(0, 'unsynergized', {
-      discardInstanceIds: ['ser_discard_pick_1'],
-      sacrificeSeraphimInstanceIds: [],
-      sacrificeAngelInstanceIds: [],
-    });
-    const withPayment = useStore.getState();
-    expect(withPayment.progress.oblivion).toBeGreaterThan(0);
+    expect(hasCardTax).toBe(false);
   });
 
   it('prevents immediate repeated Seraphim attacks on reported cards', () => {
@@ -1433,9 +1280,9 @@ describe('Abyssal Forge Cherubim passives', () => {
   it('applies queued temper and recast bonuses when Seraphim attacks or recasts', () => {
     const seraphim = CardRegistry.getAll().find(def => (
       def.type === 'Seraphim'
-      && (def.attacks?.unsynergized.costs ?? []).some(cost => cost.type === 'discard_from_hand')
+      && def.attacks !== undefined
     ));
-    if (!seraphim || seraphim.type !== 'Seraphim') throw new Error('No discard-cost Seraphim found');
+    if (!seraphim || seraphim.type !== 'Seraphim') throw new Error('No Seraphim with attacks found');
 
     const recastBonusCherubim = CardRegistry.get('af-cher-pearl-welded-cantor');
     const recastPearlCherubim = CardRegistry.get('af-cher-nacre-touched-initiate');
