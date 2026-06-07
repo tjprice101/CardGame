@@ -243,6 +243,7 @@ export default function HandDisplay() {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [attackPanelOpen, setAttackPanelOpen] = useState(false);
   const [idleShowcaseCards, setIdleShowcaseCards] = useState<IdleShowcaseCard[]>([]);
   const [idleSwapState, setIdleSwapState] = useState<{ slot: number; phase: 'out' | 'in' } | null>(null);
   // Hand <-> Extra Deck view toggle. Driven by the configurable keybind in
@@ -264,6 +265,25 @@ export default function HandDisplay() {
     return () => window.removeEventListener('hr-toggle-extra-deck', onToggle);
   }, []);
   useEffect(() => { setHandView('hand'); }, [turn.phase]);
+
+  useEffect(() => {
+    function onAttackPanelOpen(event: Event) {
+      const customEvent = event as CustomEvent<boolean>;
+      setAttackPanelOpen(Boolean(customEvent.detail));
+    }
+
+    window.addEventListener('hr-attack-panel-open', onAttackPanelOpen as EventListener);
+    return () => window.removeEventListener('hr-attack-panel-open', onAttackPanelOpen as EventListener);
+  }, []);
+
+  useEffect(() => {
+    if (!attackPanelOpen) return;
+    setHoveredId(null);
+  }, [attackPanelOpen]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--hand-strip-height', '220px');
+  }, []);
 
   // Preload card art as soon as the hand changes so images are cached before
   // the user hovers or plays a card, eliminating the lazy-load stutter.
@@ -612,6 +632,7 @@ export default function HandDisplay() {
       <div
         style={{
           ...styles.handWrapper,
+          ['--hand-strip-height' as const]: '220px',
           right: handRightInset,
           opacity: showActiveHand ? 1 : 0,
           pointerEvents: showActiveHand ? 'none' : 'none',
@@ -704,7 +725,7 @@ export default function HandDisplay() {
                 ...(!isPlayable ? { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.5)' } : {}),
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
                 ...(artOnlyMode ? { boxShadow: '0 0 0 2px rgba(255,255,255,0.65), 0 4px 16px rgba(0,0,0,0.5)' } : {}),
-                ...(isHovered && !selected && !isAnimatingOut && isPlayable && !isDragging ? {
+                ...(isHovered && !attackPanelOpen && !selected && !isAnimatingOut && isPlayable && !isDragging ? {
                   transform: 'translateY(-16px) scale(1.025)',
                   boxShadow: artOnlyMode
                     ? '0 0 0 2px rgba(255,255,255,0.9), 0 12px 32px rgba(0,0,0,0.65)'

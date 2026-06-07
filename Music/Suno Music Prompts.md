@@ -397,18 +397,18 @@ Outro/Loop: clean ending or seamless loop tail depending on track use.
 ### STYLE
 
 ```
-folk epic orchestral progressive metal, 152 BPM, opening menu hero anthem, immediate confidence and disciplined courage, brighter than boss themes but still hard-edged, marching snare and double-kick hybrid groove, palm-muted guitars with uplifting ascending chord motion, violin carries a noble high-register hook, Irish flute answers with quick rising phrases, wordless choir in broad anthemic layers from first chorus onward, warm expansive synth bed, radio-friendly structure with clear hook repetition, designed for menu replay without fatigue, instrumental-first, optional sparse choir texture only
+folk epic orchestral progressive metal, 152 BPM, opening menu hero anthem, immediate confidence and disciplined courage, brighter than boss themes but still hard-edged, piano and violin as primary melodic leads from bar one, expressive grand piano arpeggios and octave melody anchors, violin carries a noble high-register hook with lyrical phrasing, palm-muted guitars pushed to supporting rhythm layer only, marching snare and controlled double-kick hybrid groove, Irish flute answers with quick rising phrases between piano motifs, wordless choir in broad anthemic layers from first chorus onward, warm expansive synth bed, radio-friendly structure with clear hook repetition, designed for menu replay without fatigue, instrumental-first, optional sparse choir texture only
 ```
 
 ### LYRICS
 
 ```
 [Instrumental arrangement cues only - no lyric syllables]
-Intro: establish melodic metal guitar motif and rhythmic drive.
-Build/Verse: develop the motif with orchestral support while guitars remain foregrounded.
-Lift/Chorus: increase determination and courage with stronger riffs, wider harmony, and tighter drums.
-Bridge: brief contrast without losing forward momentum.
-Final Lift: highest-intensity melodic metal statement with a clear recurring hook.
+Intro: establish piano and violin motif with confident rhythmic drive.
+Build/Verse: develop the motif with orchestral support while piano and violin remain foregrounded.
+Lift/Chorus: increase determination and courage with fuller harmony, stronger rhythm guitars in support, and tighter drums.
+Bridge: brief contrast led by piano, then reintroduce violin hook without losing momentum.
+Final Lift: highest-intensity piano-violin melodic statement with a clear recurring hook.
 Outro/Loop: clean ending or seamless loop tail depending on track use.
 ```
 
@@ -419,18 +419,18 @@ Outro/Loop: clean ending or seamless loop tail depending on track use.
 ### STYLE
 
 ```
-folk epic orchestral progressive metal, 150 BPM, resilient opening menu track, determined optimism under pressure, acoustic arpeggio and palm-muted riff dual backbone, steady snare march with supportive kick drive, violin sings a memorable four-bar theme that returns every chorus, flute countermelody in higher register, male choir low sustained bed and female choir anthem line on chorus, subtle brass support, wide warm synth, strong replay value, emotionally uplifting but still battle-ready, instrumental-first, optional sparse choir texture only
+folk epic orchestral progressive metal, 150 BPM, resilient opening menu track, determined optimism under pressure, piano and violin melodic dual backbone, expressive piano arpeggios plus right-hand singable hook, violin sings a memorable four-bar theme that returns every chorus, acoustic guitar and palm-muted riff moved to secondary support, steady snare march with supportive kick drive, flute countermelody in higher register, male choir low sustained bed and female choir anthem line on chorus, subtle brass support, wide warm synth, strong replay value, emotionally uplifting but still battle-ready, instrumental-first, optional sparse choir texture only
 ```
 
 ### LYRICS
 
 ```
 [Instrumental arrangement cues only - no lyric syllables]
-Intro: establish melodic metal guitar motif and rhythmic drive.
-Build/Verse: develop the motif with orchestral support while guitars remain foregrounded.
-Lift/Chorus: increase determination and courage with stronger riffs, wider harmony, and tighter drums.
-Bridge: brief contrast without losing forward momentum.
-Final Lift: highest-intensity melodic metal statement with a clear recurring hook.
+Intro: establish piano-led motif with violin answer phrases and rhythmic drive.
+Build/Verse: develop the motif with orchestral support while piano and violin remain foregrounded.
+Lift/Chorus: increase determination and courage with expanded harmony, supporting guitar lift, and tighter drums.
+Bridge: brief contrast using softer piano texture before full violin return.
+Final Lift: highest-intensity piano-violin melodic statement with a clear recurring hook.
 Outro/Loop: clean ending or seamless loop tail depending on track use.
 ```
 
@@ -441,18 +441,18 @@ Outro/Loop: clean ending or seamless loop tail depending on track use.
 ### STYLE
 
 ```
-folk epic orchestral progressive metal, 165 BPM, battle-radio engine track for long turn cycles, relentless precision and tactical courage, tight palm-muted riff as core ostinato, nonstop double-kick at controlled mix level, violin and flute share a short repeatable hook every 16 bars, wordless choir used rhythmically on downbeats and sustained in chorus, synth pulse follows kick for momentum, no long breakdowns, consistent intensity for gameplay focus, loop-ready ending with harmonic continuity, instrumental-first, optional sparse choir texture only
+folk epic orchestral progressive metal, 165 BPM, battle-radio engine track for long turn cycles, relentless precision and tactical courage, piano ostinato and violin hook as core repeating identity, tight palm-muted riff reduced to support layer under keys and strings, nonstop double-kick at controlled mix level, piano states short repeatable motif every 16 bars with violin answering variation, wordless choir used rhythmically on downbeats and sustained in chorus, synth pulse follows kick for momentum, no long breakdowns, consistent intensity for gameplay focus, loop-ready ending with harmonic continuity, instrumental-first, optional sparse choir texture only
 ```
 
 ### LYRICS
 
 ```
 [Instrumental arrangement cues only - no lyric syllables]
-Intro: establish melodic metal guitar motif and rhythmic drive.
-Build/Verse: develop the motif with orchestral support while guitars remain foregrounded.
-Lift/Chorus: increase determination and courage with stronger riffs, wider harmony, and tighter drums.
-Bridge: brief contrast without losing forward momentum.
-Final Lift: highest-intensity melodic metal statement with a clear recurring hook.
+Intro: establish short piano motif and violin response with immediate rhythmic drive.
+Build/Verse: develop the motif with orchestral support while piano and violin stay foregrounded.
+Lift/Chorus: increase determination and courage with denser rhythm section and supportive guitar weight.
+Bridge: brief contrast led by piano pattern variation without losing forward momentum.
+Final Lift: highest-intensity piano-violin melodic statement with a clear recurring hook.
 Outro/Loop: clean ending or seamless loop tail depending on track use.
 ```
 
@@ -463,17 +463,17 @@ Outro/Loop: clean ending or seamless loop tail depending on track use.
 ### STYLE
 
 ```
-folk epic orchestral progressive metal, 165 BPM, high-stamina battle theme with heroic fire, unstoppable upward drive, palm-muted guitar wall with synchronized orchestral string accents every two bars, hard-snare plus double-kick propulsion, violin carries repeated rising motif that symbolizes determination, flute doubles motif in later sections, choirs stacked in thick rhythmic pulses on choruses, one brief bridge with reduced texture then immediate full-power return, designed for repeat listening during turn-based combat, no vocals with words, instrumental-first, optional sparse choir texture only
+folk epic orchestral progressive metal, 165 BPM, high-stamina battle theme with heroic fire, unstoppable upward drive, piano and violin front-and-center as melodic engine, driving piano chord ostinato with bright melodic top line, violin carries repeated rising motif that symbolizes determination, palm-muted guitar wall moved behind piano/violin for harmonic punch only, hard-snare plus double-kick propulsion, flute doubles motif in later sections, choirs stacked in thick rhythmic pulses on choruses, one brief bridge with reduced texture then immediate full-power return, designed for repeat listening during turn-based combat, no vocals with words, instrumental-first, optional sparse choir texture only
 ```
 
 ### LYRICS
 
 ```
 [Instrumental arrangement cues only - no lyric syllables]
-Intro: establish melodic metal guitar motif and rhythmic drive.
-Build/Verse: develop the motif with orchestral support while guitars remain foregrounded.
-Lift/Chorus: increase determination and courage with stronger riffs, wider harmony, and tighter drums.
-Bridge: brief contrast without losing forward momentum.
-Final Lift: highest-intensity melodic metal statement with a clear recurring hook.
+Intro: establish piano and violin hook with immediate battle momentum.
+Build/Verse: develop the motif with orchestral support while piano and violin remain foregrounded.
+Lift/Chorus: increase determination and courage with thicker rhythm section and supporting guitar reinforcement.
+Bridge: brief contrast with reduced texture, spotlighting piano before full return.
+Final Lift: highest-intensity piano-violin melodic statement with a clear recurring hook.
 Outro/Loop: clean ending or seamless loop tail depending on track use.
 ```

@@ -107,12 +107,18 @@ export default function FractureModal({ onClose }: Props) {
       });
     }
 
-    result.sort((a, b) => b.fracturable - a.fracturable || a.name.localeCompare(b.name));
     return result;
   }, [progress]);
 
-  const fractureRows = useMemo(() => rows.filter(r => r.fracturable > 0), [rows]);
-  const shardRows = rows;
+  const fractureRows = useMemo(
+    () => [...rows].filter(r => r.fracturable > 0)
+      .sort((a, b) => b.fracturable - a.fracturable || a.name.localeCompare(b.name)),
+    [rows],
+  );
+  const shardRows = useMemo(
+    () => [...rows].sort((a, b) => a.currentTier - b.currentTier || a.cardLight - b.cardLight || a.name.localeCompare(b.name)),
+    [rows],
+  );
   const activeRows = menuMode === 'fracture' ? fractureRows : shardRows;
 
   useEffect(() => {

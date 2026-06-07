@@ -712,6 +712,11 @@ export default function BoardDisplay() {
 
   const selectedFront = attackPanelSlot !== null ? board.frontSlots[attackPanelSlot] : null;
   const selectedDef = selectedFront ? CardRegistry.get(selectedFront.definitionId) : null;
+  const isAttackPanelOpen =
+    canPlay &&
+    !!selectedFront &&
+    !!selectedDef &&
+    (selectedFront.type === 'Seraphim' || selectedFront.type === 'Angel');
 
   const getBoardFocusPalette = (element: string | undefined) => {
     if (element === 'Neutrality') {
@@ -862,6 +867,10 @@ export default function BoardDisplay() {
     setPendingAngelAttack(null);
     setPendingSeraphimAttack(null);
   }, [attackPanelSlot, selectedFront?.instanceId, selectedDef?.definitionId]);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('hr-attack-panel-open', { detail: isAttackPanelOpen }));
+  }, [isAttackPanelOpen]);
 
   const playfieldRightInset = 'var(--angel-drawer-hand-offset, 348px)';
 
@@ -1460,17 +1469,17 @@ export default function BoardDisplay() {
         })}
       </div>
 
-      {canPlay && selectedFront && selectedDef && (selectedFront.type === 'Seraphim' || selectedFront.type === 'Angel') && (
+      {isAttackPanelOpen && (
         <div
           style={{
             position: 'fixed',
             left: 0,
             right: 0,
-            bottom: 'clamp(88px, 12vh, 150px)',
+            bottom: 'calc(var(--hand-strip-height, 220px) + 16px)',
             marginInline: 'auto',
             pointerEvents: 'auto',
             width: 'min(960px, 96vw)',
-            maxHeight: 'min(62vh, 560px)',
+            maxHeight: 'min(50vh, 460px)',
             overflowY: 'auto',
             border: ATTACK_MODAL_PANEL_BORDER,
             borderRadius: 16,
@@ -1479,6 +1488,7 @@ export default function BoardDisplay() {
             padding: '10px 12px',
             fontFamily: BODY_FONT,
             zIndex: 140,
+            isolation: 'isolate',
           }}
         >
           <div style={{ fontSize: 14, color: '#4f2813', letterSpacing: 0.35, marginBottom: 7, fontFamily: DISPLAY_FONT, fontWeight: 700 }}>
