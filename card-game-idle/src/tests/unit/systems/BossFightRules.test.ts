@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
+import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS, getBossProgressionOrder } from '@/data/bosses/bossDefinitions';
 import { NULL_RAID_BOSS_MAP, NULL_RAID_DEFINITIONS } from '@/data/ascension/nullRaidDefinitions';
 import { defaultGameState, useStore } from '@/state/store';
 import type { SavedGameState } from '@/types/bossFight';
@@ -58,18 +58,16 @@ describe('Boss fight rules', () => {
     expect(hpValues[0]).toBeGreaterThanOrEqual(40_000);
     expect(hpValues[hpValues.length - 1]).toBeGreaterThanOrEqual(1_000_000);
 
-    const nonEventBosses = BOSS_DEFINITIONS.filter(boss => boss.category !== '[EVENT] Wished Upon A Star');
-    let setStart = 0;
+    const categoryOrder = Array.from(new Set(
+      BOSS_DEFINITIONS
+        .filter(boss => boss.category !== '[EVENT] Wished Upon A Star')
+        .map(boss => boss.category),
+    ));
+
     let previousSetFinalHp: number | null = null;
 
-    while (setStart < nonEventBosses.length) {
-      const setCategory = nonEventBosses[setStart]?.category;
-      let setEnd = setStart;
-      while (setEnd + 1 < nonEventBosses.length && nonEventBosses[setEnd + 1]?.category === setCategory) {
-        setEnd += 1;
-      }
-
-      const setHps = nonEventBosses.slice(setStart, setEnd + 1).map(boss => boss.hp);
+    for (const setCategory of categoryOrder) {
+      const setHps = getBossProgressionOrder(setCategory).map(boss => boss.hp);
       expect(setHps[0]).toBeGreaterThan(0);
       expect(setHps[setHps.length - 1]).toBeGreaterThan(setHps[0]);
 
@@ -87,7 +85,6 @@ describe('Boss fight rules', () => {
       }
 
       previousSetFinalHp = setHps[setHps.length - 1] ?? previousSetFinalHp;
-      setStart = setEnd + 1;
     }
   });
 

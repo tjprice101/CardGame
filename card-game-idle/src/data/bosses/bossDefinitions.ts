@@ -23,6 +23,12 @@ function roundBossHp(value: number): number {
   return Math.round(value / 500) * 500;
 }
 
+function getBossProgressionWeightFromRewardCardId(rewardCardId: string): number {
+  const reward = CardRegistry.get(rewardCardId);
+  if (reward?.type === 'Angel') return 1;
+  return 0;
+}
+
 function buildSetAnchoredBossHpCurve(bosses: BossBlueprint[]): number[] {
   if (bosses.length === 0) return [];
 
@@ -45,10 +51,21 @@ function buildSetAnchoredBossHpCurve(bosses: BossBlueprint[]): number[] {
       : roundBossHp(previousSetFinalHp * 0.5);
     const setFinalHp = roundBossHp(setFirstHp * SET_FINAL_HP_MULTIPLIER);
 
-    for (let offset = 0; offset < setSize; offset += 1) {
-      const progress = setSize <= 1 ? 1 : offset / (setSize - 1);
+    const orderedSetIndices = Array.from({ length: setSize }, (_, offset) => cursor + offset)
+      .sort((leftIndex, rightIndex) => {
+        const left = bosses[leftIndex];
+        const right = bosses[rightIndex];
+        const weightDelta = getBossProgressionWeightFromRewardCardId(left?.rewardCardId ?? '')
+          - getBossProgressionWeightFromRewardCardId(right?.rewardCardId ?? '');
+        if (weightDelta !== 0) return weightDelta;
+        return leftIndex - rightIndex;
+      });
+
+    for (let rank = 0; rank < setSize; rank += 1) {
+      const progress = setSize <= 1 ? 1 : rank / (setSize - 1);
       const hp = setFirstHp + (setFinalHp - setFirstHp) * progress;
-      scaledHp[cursor + offset] = roundBossHp(hp);
+      const targetIndex = orderedSetIndices[rank] ?? (cursor + rank);
+      scaledHp[targetIndex] = roundBossHp(hp);
     }
 
     previousSetFinalHp = setFinalHp;
@@ -298,9 +315,7 @@ export const BOSS_DEFINITIONS: BossDefinition[] = BOSS_BLUEPRINTS.map((boss, ind
 }));
 
 function getBossProgressionWeight(boss: BossDefinition): number {
-  const reward = CardRegistry.get(boss.rewardCardId);
-  if (reward?.type === 'Angel') return 1;
-  return 0;
+  return getBossProgressionWeightFromRewardCardId(boss.rewardCardId);
 }
 
 /**
