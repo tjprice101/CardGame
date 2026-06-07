@@ -4,7 +4,7 @@ import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ELEMENT_SET_NAMES, ELEMENT_COLORS, getCardCategoryKey } from '@/data/elements';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
-import { getCardFinishKey, getCardFinishLabel, getOwnedCopiesForFinish, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
+import { getCardFinishKey, getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
@@ -18,6 +18,7 @@ import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { warmTheme } from '@/ui/theme';
 import VirtualizedList from '@/ui/components/VirtualizedList';
+import { getEverCollectionCount, getEverHoloCount } from '@/systems/progression/ownershipHistory';
 import CollectionCardDetail from './CollectionCardDetail';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -35,6 +36,10 @@ const STORE_COLLECTION_SET_ORDER = STORE_PACK_ORDER.map(packId => {
   const pack = PACK_BY_ID.get(packId);
   return pack?.id === 'pack-snowbound-voltage' ? 'SnowboundVoltage' : (pack?.element ?? 'Neutrality');
 });
+
+function isFeaturedCollectionTranscendent(card: ReturnType<typeof CardRegistry.getAll>[number]): boolean {
+  return card.definitionId.startsWith('tx-') && (card.element === 'Neutrality' || card.element === 'Fire');
+}
 
 interface Props { onClose: () => void }
 
@@ -62,8 +67,7 @@ interface CollectionVirtualRow {
 export default function CollectionViewer({ onClose }: Props) {
   const [selectedCard, setSelectedCard] = useState<SelectedCard | null>(null);
   const faceMetrics = getCardFaceMetrics('grid');
-  const collection = useStore(s => s.progress.collection);
-  const holoCollection = useStore(s => s.progress.holoCollection);
+  const progress = useStore(s => s.progress);
   const favoriteCollection = useStore(s => s.progress.favoriteCollection);
   const recentlyAcquired = useStore(s => s.progress.recentlyAcquired);
   const lastCollectionViewedAt = useStore(s => s.progress.lastCollectionViewedAt ?? 0);
@@ -103,18 +107,21 @@ export default function CollectionViewer({ onClose }: Props) {
 
   const allCards = useMemo(() => registryCards.flatMap(card => {
     const variants: CollectionVariantEntry[] = [];
+    const everTotalOwned = getEverCollectionCount(progress, card.definitionId);
+    const everHoloOwned = Math.min(everTotalOwned, getEverHoloCount(progress, card.definitionId));
+    const everNormalOwned = isHoloOnlyCard(card) ? 0 : Math.max(0, everTotalOwned - everHoloOwned);
     if (!isHoloOnlyCard(card)) {
       variants.push({
         key: getCardFinishKey(card.definitionId, 'normal'),
         finish: 'normal',
-        owned: getOwnedCopiesForFinish(card, 'normal', collection, holoCollection),
+        owned: everNormalOwned,
         card,
       });
     }
     variants.push({
       key: getCardFinishKey(card.definitionId, 'holo'),
       finish: 'holo',
-      owned: getOwnedCopiesForFinish(card, 'holo', collection, holoCollection),
+      owned: everHoloOwned,
       card,
     });
     return variants;
@@ -146,7 +153,7 @@ export default function CollectionViewer({ onClose }: Props) {
     }
     if (a.card.name !== b.card.name) return a.card.name.localeCompare(b.card.name);
     return a.finish.localeCompare(b.finish);
-  }), [categoryOrderRank, collection, holoCollection, recentlyAcquired, registryCards, sortMode]);
+  }), [categoryOrderRank, progress, recentlyAcquired, registryCards, sortMode]);
 
   const elements = useMemo(() => {
     const availableCategories = new Set(allCards.map(card => getCardCategoryKey(card.card)));
@@ -171,7 +178,11 @@ export default function CollectionViewer({ onClose }: Props) {
   }), [activeElement, allCards, lowerSearch, ownedFilter, rarityFilter]);
 
   const standardFiltered = useMemo(
-    () => filtered.filter(entry => entry.card.rarity !== 'Infinite'),
+    () => filtered.filter(entry => entry.card.rarity !== 'Infinite' && !isFeaturedCollectionTranscendent(entry.card)),
+    [filtered],
+  );
+  const featuredTranscendentFiltered = useMemo(
+    () => filtered.filter(entry => isFeaturedCollectionTranscendent(entry.card)),
     [filtered],
   );
   const infiniteSections = useMemo(() => INFINITE_TYPE_ORDER
@@ -222,8 +233,18 @@ export default function CollectionViewer({ onClose }: Props) {
       });
     }
 
+    if (featuredTranscendentFiltered.length > 0) {
+      rows.push({
+        key: 'transcendent-heading',
+        kind: 'heading',
+        height: (standardFiltered.length > 0 || infiniteSections.length > 0) ? 46 : 28,
+        label: 'Transcendent Cards',
+      });
+      pushCardRows(featuredTranscendentFiltered, 'transcendent');
+    }
+
     return rows;
-  }, [gridColumns, infiniteSections, standardFiltered]);
+  }, [featuredTranscendentFiltered, gridColumns, infiniteSections, standardFiltered]);
 
   const renderCardEntry = (entry: CollectionVariantEntry) => {
     const { card, finish, owned } = entry;
@@ -231,13 +252,24 @@ export default function CollectionViewer({ onClose }: Props) {
     const acquiredAt = recentlyAcquired?.[card.definitionId] ?? 0;
     const isNew = owned > 0 && acquiredAt > lastViewedSnapshotRef.current;
     const isLockedStandardHolo = owned <= 0 && finish === 'holo' && card.rarity !== 'Infinite' && card.rarity !== 'Eternal';
+    const isFeaturedTranscendent = isFeaturedCollectionTranscendent(card);
     const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
     const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
-    const cardSurfaceStyle = owned > 0
+    let cardSurfaceStyle = owned > 0
       ? getDenseCardFaceBackgroundStyle(card, finish)
       : (isLockedStandardHolo
         ? getLockedHoloCardBackStyle(card)
         : getCardBackBackgroundStyle(card, { dimmed: false }));
+
+    if (isFeaturedTranscendent) {
+      const baseImage = typeof cardSurfaceStyle.backgroundImage === 'string' ? cardSurfaceStyle.backgroundImage : '';
+      const baseBlend = typeof cardSurfaceStyle.backgroundBlendMode === 'string' ? cardSurfaceStyle.backgroundBlendMode : '';
+      cardSurfaceStyle = {
+        ...cardSurfaceStyle,
+        backgroundImage: `linear-gradient(132deg, rgba(95, 10, 6, 0.56) 0%, rgba(158, 26, 12, 0.42) 26%, rgba(214, 152, 44, 0.44) 62%, rgba(120, 24, 8, 0.52) 100%)${baseImage ? `, ${baseImage}` : ''}`,
+        backgroundBlendMode: `screen${baseBlend ? `, ${baseBlend}` : ''}`,
+      };
+    }
 
     return (
       <div
@@ -248,7 +280,7 @@ export default function CollectionViewer({ onClose }: Props) {
           ...cardSurfaceStyle,
           backgroundColor: warmTheme.surfaceStrong,
           border: owned > 0
-            ? `1px solid ${rarityColor}55`
+            ? (isFeaturedTranscendent ? '1px solid rgba(224, 174, 72, 0.86)' : `1px solid ${rarityColor}55`)
             : `1px solid ${warmTheme.border}`,
           borderRadius: 12,
           height: 204,
@@ -270,7 +302,7 @@ export default function CollectionViewer({ onClose }: Props) {
           (e.currentTarget as HTMLElement).style.boxShadow = 'none';
           (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
         }}
-        title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not owned'}
+        title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not discovered'}
       >
         {isNew && (
           <div style={{
@@ -369,7 +401,7 @@ export default function CollectionViewer({ onClose }: Props) {
             gap: 8,
           }}>
             <span style={{ color: cardFacePalette.textMuted, textTransform: 'uppercase' }}>{card.rarity}</span>
-            <span>{owned > 0 ? `×${owned} owned` : 'Not owned'}</span>
+            <span>{owned > 0 ? `×${owned} discovered` : 'Not discovered'}</span>
           </div>
         </div>
       </div>
@@ -408,7 +440,7 @@ export default function CollectionViewer({ onClose }: Props) {
             Collection
           </div>
           <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.72)', marginTop: 3 }}>
-            {totalOwned} / {totalCards} unique cards collected
+            {totalOwned} / {totalCards} unique cards discovered
             {isFilteringActive && (
               <span style={{ marginLeft: 10, color: '#58aada' }}>
                 · Showing {visibleOwned} / {visibleTotal}

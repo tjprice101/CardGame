@@ -86,6 +86,8 @@ export interface BossFightState {
   bossWeaknessActive?: boolean;
   /** Co-op party size for Eternity's Wake fights (1..3 total players). */
   coopPartySize?: number;
+  /** Solo multi-fight choice for Eternity's Wake (1..3). */
+  fightCount?: number;
   /** Optional co-op session id when the fight was launched via an invite. */
   coopSessionId?: string;
   /** Whether local player is host or guest in a co-op boss session. */

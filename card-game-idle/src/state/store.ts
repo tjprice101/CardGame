@@ -58,6 +58,7 @@ import {
   getAchievementOblivionReward,
   isAchievementUnlocked,
 } from '@/systems/progression/achievements';
+import { ensureOwnershipHistory, getEverCollectionCount, getEverHoloCount, seedEverOwned, syncCardOwnershipHistory } from '@/systems/progression/ownershipHistory';
 import {
   MASTERY_TIERS,
   applyMasteryReward,
@@ -74,7 +75,7 @@ import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/
 import { getDailyDealPackId, getDailyDealCost } from '@/systems/progression/dailyDeal';
 import { TITLE_BADGES, TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
 import { latchUnlockedAvatars } from '@/data/profile/avatars';
-import { latchUnlockedUiThemes } from '@/data/profile/uiThemes';
+import { getRewardThemeSeed, latchUnlockedUiThemes } from '@/data/profile/uiThemes';
 import {
   BOSS_DEFINITIONS,
   BOSS_FIGHT_ROUND_SECONDS,
@@ -118,6 +119,11 @@ const COOP_BOSS_HP_SCALE_BY_PARTY_SIZE: Record<number, number> = {
   1: 1,
   2: 1.68,
   3: 2.28,
+};
+const BOSS_FIGHT_HP_SCALE_BY_COUNT: Record<number, number> = {
+  1: 1,
+  2: 2.5,
+  3: 3.5,
 };
 
 // �E��E��E��E� Defaults �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
@@ -253,6 +259,9 @@ const defaultProgress: ProgressState = {
   collection: { ...STARTER_COLLECTION },
   holoCollection: {},
   infiniteCollection: {},
+  everCollection: { ...STARTER_COLLECTION },
+  everHoloCollection: {},
+  everInfiniteCollection: {},
   favoriteCollection: {},
   bossClearCounts: {},
   pityCounters: {},
@@ -348,6 +357,7 @@ const defaultBossFight: BossFightState = {
   gauntletShardsBanked: 0,
   gauntletHpCarryFrac: 1,
   coopPartySize: 1,
+  fightCount: 1,
   damageDealtThisFight: 0,
   fightTimeRemaining: 0,
   cooldowns: {},
@@ -812,6 +822,7 @@ interface StoreActions {
     modifiers?: TrialModifier[];
     trialRewardMult?: number;
     coopPartySize?: number;
+    fightCount?: number;
     coopSessionId?: string;
     coopRole?: 'host' | 'guest';
   }) => void;
@@ -860,8 +871,11 @@ interface StoreActions {
     avatarId: string;
     titleId: string | null;
     uiThemeId: string | null;
+    mainMenuBackgroundId: string | null;
     customUiTheme: Record<string, string> | null;
     signatureCardIds: string[];
+    unlockedAvatarIds: string[];
+    unlockedUiThemeIds: string[];
   }) => void;
   // Ascension mode
   /** Add Entropic Energy currency to the player's balance. */
@@ -1258,6 +1272,11 @@ function addCollectionCard(progress: ProgressState, definitionId: string, finish
     progress.holoCollection[definitionId] = Math.min(nextHoloCopies, progress.collection[definitionId]);
   }
 
+  if (definition?.rarity === 'Infinite') {
+    progress.infiniteCollection[definitionId] = (progress.infiniteCollection[definitionId] ?? 0) + 1;
+  }
+  syncCardOwnershipHistory(progress, definitionId);
+
   // Mark as recently acquired (drives NEW badge in CollectionViewer).
   if (!progress.recentlyAcquired) progress.recentlyAcquired = {};
   progress.recentlyAcquired[definitionId] = Date.now();
@@ -1276,13 +1295,16 @@ function recordPackOpen(progress: ProgressState, packId: string, tier: 'pack' | 
   }
 }
 
-function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEFINITIONS)[number]): void {
+function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEFINITIONS)[number], rewardCopies = 1): void {
   const priorClears = progress.bossClearCounts[boss.id] ?? 0;
   progress.bossClearCounts[boss.id] = priorClears + 1;
   const base = priorClears === 0 ? boss.firstClearShards : boss.repeatClearShards;
   const mult = getBossRewardMultiplier(boss.id);
   progress.aberratedShards += Math.round(base * mult);
-  addCollectionCard(progress, boss.rewardCardId, 'holo');
+  const copies = Math.max(1, Math.min(3, Math.floor(rewardCopies)));
+  for (let i = 0; i < copies; i += 1) {
+    addCollectionCard(progress, boss.rewardCardId, 'holo');
+  }
   // Quest hooks
   emitQuestProgressToProgress(progress, { kind: 'win_boss', amount: 1 });
 }
@@ -1415,6 +1437,7 @@ function completeBossFight(s: Store, victory: boolean): void {
         gauntletDepth: gauntletDepth + 1,
         gauntletShardsBanked: newBanked,
         gauntletHpCarryFrac: hpFrac,
+        fightCount: 1,
         rewardSummary: null,
       };
       // Count this clear toward quests.
@@ -1472,6 +1495,7 @@ function completeBossFight(s: Store, victory: boolean): void {
           nullRaidAccumulatedShards: accShards,
           nullRaidBestDamageFirstMinute: raidBestDamageFirstMinute,
           nullRaidProvingOnly: provingOnly,
+          fightCount: 1,
           rewardSummary: null,
         };
         if (!provingOnly) {
@@ -1531,6 +1555,7 @@ function completeBossFight(s: Store, victory: boolean): void {
       nullRaidAccumulatedShards: accShards,
       nullRaidBestDamageFirstMinute: raidBestDamageFirstMinute,
       nullRaidProvingOnly: provingOnly,
+      fightCount: 1,
       rewardSummary: {
         entropicEnergyEarned: accEntropy,
         shardsEarned: accShards,
@@ -1559,7 +1584,8 @@ function completeBossFight(s: Store, victory: boolean): void {
     const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
     if (boss) {
       const priorShards = s.progress.aberratedShards;
-      awardBossVictoryRewards(s.progress, boss);
+      const rewardCopies = kind === 'normal' ? Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1)) : 1;
+      awardBossVictoryRewards(s.progress, boss, rewardCopies);
       // Boss Codex personal-best tracking (save v13+).
       if (!s.progress.bossCodex) s.progress.bossCodex = {};
       const entry = s.progress.bossCodex[boss.id] ?? {};
@@ -1637,6 +1663,7 @@ function completeBossFight(s: Store, victory: boolean): void {
   const damageDealt = s.bossFight.damageDealtThisFight;
   const maxHp = s.bossFight.bossMaxHp;
   const coopPartySize = s.bossFight.coopPartySize ?? 1;
+  const fightCount = Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1));
   const coopSessionId = s.bossFight.coopSessionId;
   const coopRole = s.bossFight.coopRole;
   s.bossFight = {
@@ -1656,6 +1683,7 @@ function completeBossFight(s: Store, victory: boolean): void {
     gauntletShardsBanked,
     gauntletHpCarryFrac: 1,
     coopPartySize,
+    fightCount,
     coopSessionId,
     coopRole,
     rewardSummary,
@@ -6368,6 +6396,7 @@ export const useStore = create<Store>()(
         s.progress.infiniteCollection[recipe.resultId] = (s.progress.infiniteCollection[recipe.resultId] ?? 0) + 1;
         // Also add to main collection so it shows in deck builder / collection viewer
         s.progress.collection[recipe.resultId] = (s.progress.collection[recipe.resultId] ?? 0) + 1;
+        syncCardOwnershipHistory(s.progress, recipe.resultId);
       });
       return true;
     },
@@ -6478,8 +6507,11 @@ export const useStore = create<Store>()(
         p.avatarId = remote.avatarId;
         p.titleId = remote.titleId;
         if (remote.uiThemeId) p.uiThemeId = remote.uiThemeId;
+        if (remote.mainMenuBackgroundId) p.mainMenuBackgroundId = remote.mainMenuBackgroundId;
         p.customUiTheme = remote.customUiTheme;
         p.signatureCardIds = remote.signatureCardIds;
+        p.unlockedAvatarIds = (remote.unlockedAvatarIds ?? []).filter(Boolean);
+        p.unlockedUiThemeIds = (remote.unlockedUiThemeIds ?? []).filter(Boolean);
       });
     },
 
@@ -6966,6 +6998,8 @@ export const useStore = create<Store>()(
 
         const modifiers = options?.modifiers ?? [];
         const coopPartySize = Math.max(1, Math.min(3, options?.coopPartySize ?? 1));
+        const requestedFightCount = Math.max(1, Math.min(3, Math.floor(options?.fightCount ?? 1)));
+        const fightCount = kind === 'normal' ? requestedFightCount : 1;
 
         // Apply boss HP. Event bosses snapshot once per cycle and stay fixed.
         let maxHp = isEventBossCategory(boss.category)
@@ -6975,6 +7009,7 @@ export const useStore = create<Store>()(
           maxHp = Math.round(maxHp * 1.25);
         }
         maxHp = Math.round(maxHp * (COOP_BOSS_HP_SCALE_BY_PARTY_SIZE[coopPartySize] ?? 1));
+        maxHp = Math.round(maxHp * (BOSS_FIGHT_HP_SCALE_BY_COUNT[fightCount] ?? 1));
 
         // Time pressure
         let roundSeconds = BOSS_FIGHT_ROUND_SECONDS;
@@ -7008,6 +7043,7 @@ export const useStore = create<Store>()(
           gauntletHpCarryFrac: 1,
           bossWeaknessActive: false,
           coopPartySize,
+          fightCount,
           coopSessionId: options?.coopSessionId,
           coopRole: options?.coopRole,
           rewardSummary: null,
@@ -7078,6 +7114,7 @@ export const useStore = create<Store>()(
           nullRaidAccumulatedShards: 0,
           nullRaidBestDamageFirstMinute: 0,
           nullRaidProvingOnly: true,
+          fightCount: 1,
           rewardSummary: null,
         };
         recompute(s);
@@ -7142,6 +7179,7 @@ export const useStore = create<Store>()(
           nullRaidAccumulatedShards: 0,
           nullRaidBestDamageFirstMinute: 0,
           nullRaidProvingOnly: false,
+          fightCount: 1,
           rewardSummary: null,
         };
         recompute(s);
@@ -7807,8 +7845,8 @@ export const useStore = create<Store>()(
           const definition = CardRegistry.get(definitionId);
           if (!definition) continue;
 
-          const totalOwned = loaded.progress.collection[definitionId] ?? 0;
-          const holoOwned = Math.min(loaded.progress.holoCollection[definitionId] ?? 0, totalOwned);
+          const totalOwned = getEverCollectionCount(loaded.progress, definitionId);
+          const holoOwned = Math.min(getEverHoloCount(loaded.progress, definitionId), totalOwned);
           const normalOwned = Math.max(0, totalOwned - holoOwned);
           const ownedForFinish = finishPart === 'holo' ? holoOwned : normalOwned;
           if (ownedForFinish <= 0) continue;
@@ -7816,6 +7854,15 @@ export const useStore = create<Store>()(
           cleanedFavorites[favoriteKey] = true;
         }
         loaded.progress.favoriteCollection = cleanedFavorites;
+
+        for (const themeId of loaded.progress.profile.unlockedUiThemeIds ?? []) {
+          const seed = getRewardThemeSeed(themeId);
+          if (!seed) continue;
+          for (const definitionId of seed.ids) {
+            seedEverOwned(loaded.progress, definitionId, seed.source);
+          }
+        }
+        ensureOwnershipHistory(loaded.progress);
 
         // Migrate bossFight: never resume in-progress/result states from persisted data.
         // This prevents stale local/cloud snapshots from dropping the player back into

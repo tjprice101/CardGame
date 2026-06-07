@@ -943,7 +943,7 @@ describe('Set mechanic reworks', () => {
     expect(state.turn.secondaryCounters?.pyro ?? 0).toBe(0);
   });
 
-  it('lets Oblivion Absolute cash Neutrality stability, signatures, and breaks', () => {
+  it('lets Oblivion Absolute cash Patience-driven Neutrality scaling', () => {
     seedPlayingState(['inf-oblivion-absolute']);
 
     useStore.setState(state => ({
@@ -984,7 +984,6 @@ describe('Set mechanic reworks', () => {
       },
       turn: {
         ...state.turn,
-        equilibriumStability: 4,
         attenuationBrokenClasses: ['setup', 'conversion'],
         neutralitySetupCount: 3,
         neutralityEngineSignatures: ['Seraphim:setup', 'Ophanim:conversion', 'Cherubim:multiplier'],

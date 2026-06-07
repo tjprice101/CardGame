@@ -23,9 +23,12 @@ export interface SocialProfile {
   avatarId: string;
   titleId: string | null;
   uiThemeId: string | null;
+  mainMenuBackgroundId: string | null;
   customUiTheme: Record<string, string> | null;
   lastSeenAt: string | null;
   signatureCardIds: string[];
+  unlockedAvatarIds: string[];
+  unlockedUiThemeIds: string[];
 }
 
 export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'error' | 'confirmation_pending';
@@ -52,8 +55,11 @@ interface SocialState {
     avatarId: string;
     titleId: string | null;
     uiThemeId: string | null;
+    mainMenuBackgroundId: string | null;
     customUiTheme: Record<string, string> | null;
     signatureCardIds: string[];
+    unlockedAvatarIds: string[];
+    unlockedUiThemeIds: string[];
   }) => Promise<void>;
 }
 
@@ -120,7 +126,7 @@ async function fetchOrCreateProfile(
   const sb = getSupabase();
   if (!sb) return null;
 
-  const selectWithLogin = 'id, friend_code, login_username, display_name, bio, avatar_id, title_id, ui_theme_id, custom_ui_theme, last_seen_at, signature_card_ids, auth_email';
+  const selectWithLogin = 'id, friend_code, login_username, display_name, bio, avatar_id, title_id, ui_theme_id, main_menu_background_id, custom_ui_theme, last_seen_at, signature_card_ids, unlocked_avatar_ids, unlocked_ui_theme_ids, auth_email';
   const selectLegacy = 'id, friend_code, display_name, avatar_id, title_id, ui_theme_id, last_seen_at';
 
   let { data: existing, error: selErr } = await sb
@@ -149,11 +155,14 @@ async function fetchOrCreateProfile(
       avatarId: existing.avatar_id,
       titleId: existing.title_id,
       uiThemeId: existing.ui_theme_id,
+      mainMenuBackgroundId: typeof existing.main_menu_background_id === 'string' ? existing.main_menu_background_id : null,
       customUiTheme: existing.custom_ui_theme && typeof existing.custom_ui_theme === 'object'
         ? existing.custom_ui_theme as Record<string, string>
         : null,
       lastSeenAt: existing.last_seen_at,
       signatureCardIds: Array.isArray(existing.signature_card_ids) ? existing.signature_card_ids : [],
+      unlockedAvatarIds: Array.isArray(existing.unlocked_avatar_ids) ? existing.unlocked_avatar_ids : [],
+      unlockedUiThemeIds: Array.isArray(existing.unlocked_ui_theme_ids) ? existing.unlocked_ui_theme_ids : [],
     };
   }
 
@@ -189,8 +198,11 @@ async function fetchOrCreateProfile(
         avatar_id: 'pic-classic-acolyte',
         title_id: null,
         ui_theme_id: null,
+        main_menu_background_id: 'main-menu-bg-default',
         custom_ui_theme: null,
         signature_card_ids: [],
+        unlocked_avatar_ids: [],
+        unlocked_ui_theme_ids: [],
       };
 
     let { data: inserted, error: insErr } = await sb
@@ -203,8 +215,11 @@ async function fetchOrCreateProfile(
       const {
         login_username: _dropLogin,
         auth_email: _dropEmail,
+        main_menu_background_id: _dropMenuBackground,
         custom_ui_theme: _dropCustom,
         signature_card_ids: _dropSigs,
+        unlocked_avatar_ids: _dropUnlockedAvatars,
+        unlocked_ui_theme_ids: _dropUnlockedUiThemes,
         ...legacyPayload
       } = insertPayload;
       const legacyInsert = await sb
@@ -216,8 +231,11 @@ async function fetchOrCreateProfile(
       insErr = legacyInsert.error;
       void _dropLogin;
       void _dropEmail;
+      void _dropMenuBackground;
       void _dropCustom;
       void _dropSigs;
+      void _dropUnlockedAvatars;
+      void _dropUnlockedUiThemes;
     }
     if (!insErr && inserted) {
       return {
@@ -229,11 +247,14 @@ async function fetchOrCreateProfile(
         avatarId: inserted.avatar_id,
         titleId: inserted.title_id,
         uiThemeId: inserted.ui_theme_id,
+        mainMenuBackgroundId: typeof inserted.main_menu_background_id === 'string' ? inserted.main_menu_background_id : null,
         customUiTheme: inserted.custom_ui_theme && typeof inserted.custom_ui_theme === 'object'
           ? inserted.custom_ui_theme as Record<string, string>
           : null,
         lastSeenAt: inserted.last_seen_at,
         signatureCardIds: Array.isArray(inserted.signature_card_ids) ? inserted.signature_card_ids : [],
+        unlockedAvatarIds: Array.isArray(inserted.unlocked_avatar_ids) ? inserted.unlocked_avatar_ids : [],
+        unlockedUiThemeIds: Array.isArray(inserted.unlocked_ui_theme_ids) ? inserted.unlocked_ui_theme_ids : [],
       };
     }
     // Postgres unique violation = 23505. Inspect the constraint to decide
@@ -258,11 +279,14 @@ async function fetchOrCreateProfile(
             avatarId: row.avatar_id,
             titleId: row.title_id,
             uiThemeId: row.ui_theme_id,
+            mainMenuBackgroundId: typeof row.main_menu_background_id === 'string' ? row.main_menu_background_id : null,
             customUiTheme: row.custom_ui_theme && typeof row.custom_ui_theme === 'object'
               ? row.custom_ui_theme as Record<string, string>
               : null,
             lastSeenAt: row.last_seen_at,
             signatureCardIds: Array.isArray(row.signature_card_ids) ? row.signature_card_ids : [],
+            unlockedAvatarIds: Array.isArray(row.unlocked_avatar_ids) ? row.unlocked_avatar_ids : [],
+            unlockedUiThemeIds: Array.isArray(row.unlocked_ui_theme_ids) ? row.unlocked_ui_theme_ids : [],
           };
         }
         // Fall through to retry if refetch found nothing (shouldn't happen).
@@ -451,29 +475,41 @@ export const useSocialStore = create<SocialState>((set, get) => ({
       avatar_id: snapshot.avatarId,
       title_id: snapshot.titleId,
       ui_theme_id: snapshot.uiThemeId,
+      main_menu_background_id: snapshot.mainMenuBackgroundId,
       custom_ui_theme: snapshot.customUiTheme,
       signature_card_ids: snapshot.signatureCardIds,
+      unlocked_avatar_ids: snapshot.unlockedAvatarIds,
+      unlocked_ui_theme_ids: snapshot.unlockedUiThemeIds,
       last_seen_at: new Date().toISOString(),
     };
     // Skip if nothing changed (avoid burning rate limit).
     const sigsSame =
       profile.signatureCardIds.length === snapshot.signatureCardIds.length &&
       profile.signatureCardIds.every((id, i) => id === snapshot.signatureCardIds[i]);
+    const unlockedAvatarsSame =
+      profile.unlockedAvatarIds.length === snapshot.unlockedAvatarIds.length &&
+      profile.unlockedAvatarIds.every((id, i) => id === snapshot.unlockedAvatarIds[i]);
+    const unlockedThemesSame =
+      profile.unlockedUiThemeIds.length === snapshot.unlockedUiThemeIds.length &&
+      profile.unlockedUiThemeIds.every((id, i) => id === snapshot.unlockedUiThemeIds[i]);
     if (
       profile.displayName === snapshot.displayName &&
       (profile.bio ?? '') === snapshot.bio &&
       profile.avatarId === snapshot.avatarId &&
       profile.titleId === snapshot.titleId &&
       profile.uiThemeId === snapshot.uiThemeId &&
+      profile.mainMenuBackgroundId === snapshot.mainMenuBackgroundId &&
       JSON.stringify(profile.customUiTheme ?? null) === JSON.stringify(snapshot.customUiTheme ?? null) &&
-      sigsSame
+      sigsSame &&
+      unlockedAvatarsSame &&
+      unlockedThemesSame
     ) {
       return;
     }
     const payloads: Array<Record<string, unknown>> = [
       next,
-      omitKeys(next, ['custom_ui_theme', 'signature_card_ids']),
-      omitKeys(next, ['custom_ui_theme', 'signature_card_ids', 'bio']),
+      omitKeys(next, ['custom_ui_theme', 'signature_card_ids', 'unlocked_avatar_ids', 'unlocked_ui_theme_ids', 'main_menu_background_id']),
+      omitKeys(next, ['custom_ui_theme', 'signature_card_ids', 'unlocked_avatar_ids', 'unlocked_ui_theme_ids', 'main_menu_background_id', 'bio']),
     ];
     let writeError: unknown = null;
     let wrote = false;
@@ -499,9 +535,12 @@ export const useSocialStore = create<SocialState>((set, get) => ({
         displayName: snapshot.displayName,
         bio: snapshot.bio,
         signatureCardIds: snapshot.signatureCardIds,
+        unlockedAvatarIds: snapshot.unlockedAvatarIds,
+        unlockedUiThemeIds: snapshot.unlockedUiThemeIds,
         avatarId: snapshot.avatarId,
         titleId: snapshot.titleId,
         uiThemeId: snapshot.uiThemeId,
+        mainMenuBackgroundId: snapshot.mainMenuBackgroundId,
         customUiTheme: snapshot.customUiTheme,
         lastSeenAt: next.last_seen_at,
       },

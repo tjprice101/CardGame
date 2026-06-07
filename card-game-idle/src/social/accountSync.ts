@@ -29,8 +29,11 @@ async function runProfileSync(): Promise<void> {
     avatarId: profile.avatarId,
     titleId: profile.titleId,
     uiThemeId: profile.uiThemeId ?? null,
+    mainMenuBackgroundId: profile.mainMenuBackgroundId ?? null,
     customUiTheme: profile.customUiTheme ?? null,
     signatureCardIds: profile.signatureCardIds ?? [],
+    unlockedAvatarIds: profile.unlockedAvatarIds ?? [],
+    unlockedUiThemeIds: profile.unlockedUiThemeIds ?? [],
   });
 }
 
@@ -57,8 +60,11 @@ export function initAccountSync(): void {
           avatarId: state.profile.avatarId,
           titleId: state.profile.titleId,
           uiThemeId: state.profile.uiThemeId,
+          mainMenuBackgroundId: state.profile.mainMenuBackgroundId,
           customUiTheme: state.profile.customUiTheme,
           signatureCardIds: state.profile.signatureCardIds,
+          unlockedAvatarIds: state.profile.unlockedAvatarIds,
+          unlockedUiThemeIds: state.profile.unlockedUiThemeIds,
         });
       }
       void useMessagesStore.getState().loadThreads();
@@ -94,8 +100,11 @@ export function initAccountSync(): void {
         avatarId: current.profile.avatarId,
         titleId: current.profile.titleId,
         uiThemeId: current.profile.uiThemeId,
+        mainMenuBackgroundId: current.profile.mainMenuBackgroundId,
         customUiTheme: current.profile.customUiTheme,
         signatureCardIds: current.profile.signatureCardIds,
+        unlockedAvatarIds: current.profile.unlockedAvatarIds,
+        unlockedUiThemeIds: current.profile.unlockedUiThemeIds,
       });
     }
     void useMessagesStore.getState().loadThreads();

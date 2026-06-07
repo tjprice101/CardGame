@@ -80,8 +80,11 @@ export default function AuthPanel() {
       avatarId: socialProfile.avatarId,
       titleId: socialProfile.titleId,
       uiThemeId: socialProfile.uiThemeId,
+      mainMenuBackgroundId: socialProfile.mainMenuBackgroundId,
       customUiTheme: socialProfile.customUiTheme,
       signatureCardIds: socialProfile.signatureCardIds,
+      unlockedAvatarIds: socialProfile.unlockedAvatarIds,
+      unlockedUiThemeIds: socialProfile.unlockedUiThemeIds,
     });
   }, [status, socialProfile, applyRemoteProfile]);
 

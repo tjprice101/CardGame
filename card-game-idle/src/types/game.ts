@@ -334,6 +334,12 @@ export interface ProgressState {
   collection: Record<string, number>;         // definitionId ↁEtotal copy count owned
   holoCollection: Record<string, number>;      // definitionId ↁEholo copy count owned
   infiniteCollection: Record<string, number>;  // definitionId ↁEInfinite card count owned
+  /** Lifetime max copies ever owned (does not decrease when cards are spent/gifted). */
+  everCollection?: Record<string, number>;
+  /** Lifetime max holo copies ever owned (does not decrease when cards are spent/gifted). */
+  everHoloCollection?: Record<string, number>;
+  /** Lifetime max Infinite copies ever owned (does not decrease when cards are spent/gifted). */
+  everInfiniteCollection?: Record<string, number>;
   favoriteCollection: Record<string, boolean>; // `${definitionId}::${finish}` ↁEfavorited
   bossClearCounts: Record<string, number>;
   savedDecks: SavedDeck[];

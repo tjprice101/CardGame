@@ -3,6 +3,12 @@ import type { BossCategory } from '@/types/bossFight';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { infiniteCards } from '@/data/cards/infiniteCards';
 import { CardRegistry } from '@/cards/CardRegistry';
+import {
+  getEverCollectionCount,
+  getEverHoloTotal,
+  getEverInfiniteCount,
+  getEverInfiniteTotal,
+} from '@/systems/progression/ownershipHistory';
 
 /**
  * Title-badge registry. Unlock status is derived from ProgressState rather
@@ -25,9 +31,6 @@ export interface TitleBadgeDefinition {
   /** Bucket used by the profile UI for grouping. */
   group: TitleBadgeGroup;
 }
-
-const sumValues = (record: Record<string, number>): number =>
-  Object.values(record).reduce((a, b) => a + b, 0);
 
 const totalBossClears = (counts: Record<string, number>): number =>
   Object.values(counts).reduce((a, b) => a + b, 0);
@@ -325,56 +328,56 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     id: 'title-first-holo',
     text: 'Refracted',
     description: 'Own your first holographic card.',
-    isUnlocked: (p) => sumValues(p.holoCollection) >= 1,
+    isUnlocked: (p) => getEverHoloTotal(p) >= 1,
     group: 'milestone',
   },
   {
     id: 'title-holo-pilgrim',
     text: 'Prismatic Pilgrim',
     description: 'Own 10 holographic cards.',
-    isUnlocked: (p) => sumValues(p.holoCollection) >= 10,
+    isUnlocked: (p) => getEverHoloTotal(p) >= 10,
     group: 'milestone',
   },
   {
     id: 'title-holo-devotee',
     text: 'Devotee of the Sheen',
     description: 'Own 50 holographic cards.',
-    isUnlocked: (p) => sumValues(p.holoCollection) >= 50,
+    isUnlocked: (p) => getEverHoloTotal(p) >= 50,
     group: 'milestone',
   },
   {
     id: 'title-holo-saint',
     text: 'Saint of Refracted Light',
     description: 'Own 100 holographic cards.',
-    isUnlocked: (p) => sumValues(p.holoCollection) >= 100,
+    isUnlocked: (p) => getEverHoloTotal(p) >= 100,
     group: 'milestone',
   },
   {
     id: 'title-first-infinite',
     text: 'Touched by Infinity',
     description: 'Own your first Infinite-finish card.',
-    isUnlocked: (p) => sumValues(p.infiniteCollection) >= 1,
+    isUnlocked: (p) => getEverInfiniteTotal(p) >= 1,
     group: 'milestone',
   },
   {
     id: 'title-infinitude',
     text: 'Bearer of Infinitude',
     description: 'Own any 5 Infinite-finish cards.',
-    isUnlocked: (p) => sumValues(p.infiniteCollection) >= 5,
+    isUnlocked: (p) => getEverInfiniteTotal(p) >= 5,
     group: 'milestone',
   },
   {
     id: 'title-infinite-sovereign',
     text: 'Sovereign of Infinity',
     description: 'Own any 10 Infinite-finish cards.',
-    isUnlocked: (p) => sumValues(p.infiniteCollection) >= 10,
+    isUnlocked: (p) => getEverInfiniteTotal(p) >= 10,
     group: 'milestone',
   },
   {
     id: 'title-infinite-pantheon',
     text: 'The Infinite Pantheon',
     description: 'Own any 20 Infinite-finish cards.',
-    isUnlocked: (p) => sumValues(p.infiniteCollection) >= 20,
+    isUnlocked: (p) => getEverInfiniteTotal(p) >= 20,
     group: 'milestone',
   },
   // ── Shards ───────────────────────────────────────────────────────────────
@@ -782,7 +785,7 @@ function buildInfiniteCardTitles(): TitleBadgeDefinition[] {
       id: infiniteCardTitleId(card.definitionId),
       text: ov?.text ?? `Wielder of ${card.name}`,
       description: ov?.description ?? `Forge the Infinite card "${card.name}".`,
-      isUnlocked: (p) => (p.infiniteCollection[card.definitionId] ?? 0) >= 1,
+      isUnlocked: (p) => getEverInfiniteCount(p, card.definitionId) >= 1,
       group: 'infinite' as const,
     };
   });
@@ -842,7 +845,7 @@ function buildSetCompletionTitles(): TitleBadgeDefinition[] {
       const ids = getSetCardIds().get(spec.category) ?? [];
       if (ids.length === 0) return false;
       for (const id of ids) {
-        if ((p.collection[id] ?? 0) < 1) return false;
+        if (getEverCollectionCount(p, id) < 1) return false;
       }
       return true;
     },

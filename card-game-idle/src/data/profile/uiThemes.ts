@@ -1,6 +1,7 @@
 import type { ProgressState } from '@/types/game';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { DEFAULT_WARM_PALETTE, applyUiPalette, type UiPalette } from '@/ui/theme';
+import { hasAllEverOwned } from '@/systems/progression/ownershipHistory';
 
 /**
  * UI theme registry. Each theme provides a full UiPalette and an unlock
@@ -231,6 +232,11 @@ interface ThemeSetSpec {
   infiniteIds: string[];
   eternalIds: string[];
 }
+
+export type RewardThemeSeed = {
+  source: 'collection' | 'infinite';
+  ids: string[];
+};
 
 const BASE_RARITIES = new Set(['Common', 'Rare', 'Epic', 'Legendary']);
 
@@ -484,14 +490,6 @@ function buildOscillation(from: UiPalette, kind: 'base-set' | 'infinite-full' | 
   };
 }
 
-function hasAll(ids: string[], owned: Record<string, number>): boolean {
-  if (ids.length === 0) return false;
-  for (const id of ids) {
-    if ((owned[id] ?? 0) < 1) return false;
-  }
-  return true;
-}
-
 function buildRewardThemes(): UiThemeDefinition[] {
   const rewardThemes: UiThemeDefinition[] = [];
   const specs = getThemeSetSpecs();
@@ -511,7 +509,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       rewardKind: 'base-set',
       setElement: spec.element,
       oscillation: buildOscillation(baseTierPalette, 'base-set'),
-      isUnlocked: (progress) => hasAll(spec.baseIds, progress.collection),
+      isUnlocked: (progress) => hasAllEverOwned(progress, spec.baseIds, 'collection'),
     });
 
     rewardThemes.push({
@@ -524,7 +522,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       rewardKind: 'infinite-full',
       setElement: spec.element,
       oscillation: buildOscillation(infiniteTierPalette, 'infinite-full'),
-      isUnlocked: (progress) => hasAll(spec.infiniteIds, progress.infiniteCollection),
+      isUnlocked: (progress) => hasAllEverOwned(progress, spec.infiniteIds, 'infinite'),
     });
 
     rewardThemes.push({
@@ -537,7 +535,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       rewardKind: 'eternal-full',
       setElement: spec.element,
       oscillation: buildOscillation(eternalTierPalette, 'eternal-full'),
-      isUnlocked: (progress) => hasAll(spec.eternalIds, progress.collection),
+      isUnlocked: (progress) => hasAllEverOwned(progress, spec.eternalIds, 'collection'),
     });
   }
 
@@ -668,6 +666,21 @@ export function latchUnlockedUiThemes(progress: ProgressState): boolean {
     progress.profile.unlockedUiThemeIds = [...unlockSet];
   }
   return changed;
+}
+
+export function getRewardThemeSeed(themeId: string): RewardThemeSeed | null {
+  const rewardTheme = REWARD_UI_THEMES.find(theme => theme.id === themeId);
+  if (!rewardTheme || !rewardTheme.setElement || !rewardTheme.rewardKind) return null;
+  const spec = getThemeSetSpecs().find(entry => entry.element === rewardTheme.setElement);
+  if (!spec) return null;
+
+  if (rewardTheme.rewardKind === 'infinite-full') {
+    return { source: 'infinite', ids: [...spec.infiniteIds] };
+  }
+  if (rewardTheme.rewardKind === 'eternal-full') {
+    return { source: 'collection', ids: [...spec.eternalIds] };
+  }
+  return { source: 'collection', ids: [...spec.baseIds] };
 }
 
 function resolveThemePaletteAtTime(theme: UiThemeDefinition, nowMs: number): UiPalette {

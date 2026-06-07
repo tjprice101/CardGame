@@ -25,7 +25,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Infinite',
     name: 'Oblivion Absolute',
-    description: 'Gain Oblivion scaled by total Patience, peak Patience, and Equilibrium Stability; All Seraphim on board gain +15 Patience; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)',
+    description: 'Gain Oblivion scaled by total Patience and peak Patience; All Seraphim on board gain +15 Patience; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)',
     artKey: 'inf_oblivion_absolute',
     effects: [
       { type: 'oblivion_flat', value: 6000 },

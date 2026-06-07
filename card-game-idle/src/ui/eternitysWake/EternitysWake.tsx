@@ -166,6 +166,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
   const enqueueToast = useStore(s => s.enqueueToast);
   const [selectedBossId, setSelectedBossId] = useState<string | null>(null);
   const [challengeMode, setChallengeMode] = useState<'solo' | 'coop' | null>(null);
+  const [selectedFightCounts, setSelectedFightCounts] = useState<Record<string, 1 | 2 | 3>>({});
   const [activeBossTab, setActiveBossTab] = useState<BossCategory>('Neutrality');
   const [showCodex, setShowCodex] = useState(false);
   const [showFriendsBoard, setShowFriendsBoard] = useState(false);
@@ -178,8 +179,12 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
     return Math.max(0, Math.ceil((cd - now) / 1000));
   }
 
-  function handleChallenge(bossId: string, deckId: string) {
-    startBossFight(bossId, deckId);
+  function getSelectedFightCount(bossId: string): 1 | 2 | 3 {
+    return selectedFightCounts[bossId] ?? 1;
+  }
+
+  function handleChallenge(bossId: string, deckId: string, fightCount: 1 | 2 | 3) {
+    startBossFight(bossId, deckId, { fightCount });
     onClose();
   }
 
@@ -340,6 +345,9 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           const rewardFaceMetrics = getCardFaceMetrics('grid');
           const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(entry => entry.id === boss.id));
           const baseMasteryPerCard = getBossBaseMasteryPerCard(bossIdx, BOSS_DEFINITIONS.length);
+          const selectedFightCount = getSelectedFightCount(boss.id);
+          const hpScale = selectedFightCount === 1 ? 1 : selectedFightCount === 2 ? 2.5 : 3.5;
+          const scaledPreviewHp = Math.round(getBossDisplayHp(progress, boss) * hpScale);
 
           return (
             <div key={boss.id} className={onCooldown || lockedByProgress ? undefined : 'ui-tile-hover'} style={{
@@ -421,6 +429,12 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                 <div style={bossStatTileStyle}>
                   <span style={bossStatLabelStyle}>Time Limit</span>
                   <span style={bossStatValueStyle}>{Math.floor(BOSS_FIGHT_ROUND_SECONDS / 60)} min</span>
+                </div>
+                <div style={bossStatTileStyle}>
+                  <span style={bossStatLabelStyle}>Selected Run</span>
+                  <span style={bossStatValueStyle}>
+                    x{selectedFightCount} fight {selectedFightCount === 1 ? '· Default HP' : `· ${scaledPreviewHp.toLocaleString()} HP`}
+                  </span>
                 </div>
               </div>
 
@@ -628,6 +642,36 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                 </div>
               ) : isSelected && challengeMode === 'solo' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ fontSize: 11, color: 'rgba(255,200,200,0.6)' }}>Fight Count:</div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {[1, 2, 3].map((count) => {
+                        const countTyped = count as 1 | 2 | 3;
+                        const active = selectedFightCount === countTyped;
+                        const countHpScale = countTyped === 1 ? 1 : countTyped === 2 ? 2.5 : 3.5;
+                        const countPreviewHp = Math.round(getBossDisplayHp(progress, boss) * countHpScale);
+                        return (
+                          <button
+                            key={countTyped}
+                            onClick={() => setSelectedFightCounts(prev => ({ ...prev, [boss.id]: countTyped }))}
+                            style={{
+                              padding: '6px 10px',
+                              borderRadius: 8,
+                              border: `1px solid ${active ? 'rgba(255,180,140,0.72)' : 'rgba(255,107,107,0.35)'}`,
+                              background: active ? 'rgba(255,180,140,0.22)' : 'rgba(255,107,107,0.12)',
+                              color: active ? '#ffd8aa' : '#ffb9b9',
+                              cursor: 'pointer',
+                              fontFamily: 'Georgia, serif',
+                              fontSize: 11,
+                              letterSpacing: 0.4,
+                            }}
+                          >
+                            Fight x{countTyped} ({countPreviewHp.toLocaleString()} HP, x{countTyped} card reward)
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                   <div style={{ fontSize: 11, color: 'rgba(255,200,200,0.6)' }}>Select a deck:</div>
                   {!hasSavedDecks ? (
                     <div style={{ fontSize: 11, color: 'rgba(255,107,107,0.5)' }}>No saved decks found.</div>
@@ -659,7 +703,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 134 }}>
                               <button
-                                onClick={() => handleChallenge(boss.id, deck.id)}
+                                onClick={() => handleChallenge(boss.id, deck.id, selectedFightCount)}
                                 style={{
                                   background: 'rgba(255,107,107,0.18)',
                                   border: '1px solid rgba(255,107,107,0.45)',

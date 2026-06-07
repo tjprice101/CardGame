@@ -10,6 +10,7 @@ import { getSupabase } from '@/net/supabaseClient';
 import { useSocialStore } from '@/state/socialStore';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { syncCardOwnershipHistory } from '@/systems/progression/ownershipHistory';
 import type { CardFinish } from '@/types/cards';
 import type { RealtimeChannel } from '@supabase/supabase-js';
 
@@ -103,6 +104,9 @@ function creditCollection(definitionId: string, finish: CardFinish, count: numbe
   useStore.setState(s => {
     const cur = s.progress.collection[definitionId] ?? 0;
     s.progress.collection[definitionId] = cur + count;
+    if (CardRegistry.get(definitionId)?.rarity === 'Infinite') {
+      s.progress.infiniteCollection[definitionId] = (s.progress.infiniteCollection[definitionId] ?? 0) + count;
+    }
     if (finish === 'holo') {
       const curHolo = s.progress.holoCollection[definitionId] ?? 0;
       s.progress.holoCollection[definitionId] = Math.min(
@@ -110,6 +114,7 @@ function creditCollection(definitionId: string, finish: CardFinish, count: numbe
         curHolo + count,
       );
     }
+    syncCardOwnershipHistory(s.progress, definitionId);
     if (!s.progress.recentlyAcquired) s.progress.recentlyAcquired = {};
     s.progress.recentlyAcquired[definitionId] = Date.now();
   });
@@ -124,6 +129,7 @@ function creditCollection(definitionId: string, finish: CardFinish, count: numbe
  */
 function tryDebitCollection(definitionId: string, finish: CardFinish, count: number): boolean {
   const state = useStore.getState();
+  const definition = CardRegistry.get(definitionId);
   const owned = state.progress.collection[definitionId] ?? 0;
   if (owned < count) return false;
   // For holo, also require enough holo copies.
@@ -133,6 +139,9 @@ function tryDebitCollection(definitionId: string, finish: CardFinish, count: num
   }
   useStore.setState(s => {
     s.progress.collection[definitionId] = (s.progress.collection[definitionId] ?? 0) - count;
+    if (definition?.rarity === 'Infinite') {
+      s.progress.infiniteCollection[definitionId] = Math.max(0, (s.progress.infiniteCollection[definitionId] ?? 0) - count);
+    }
     if (finish === 'holo') {
       s.progress.holoCollection[definitionId] =
         (s.progress.holoCollection[definitionId] ?? 0) - count;

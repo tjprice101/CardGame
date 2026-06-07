@@ -119,7 +119,7 @@ function formatCosts(costs: ReadonlyArray<AttackCost> | undefined): string {
 }
 
 const INFINITE_RUNTIME_OBLIVION_TEXT: Record<string, string> = {
-  'inf-oblivion-absolute': 'Gain Oblivion scaled by total Patience, peak Patience, and Equilibrium Stability',
+  'inf-oblivion-absolute': 'Gain Oblivion scaled by total Patience and peak Patience',
   'inf-void-cascade': 'Gain Oblivion scaled by Patience-bearing units, cross-set conversion sources, and peak Patience',
   'inf-genesis-throne': 'Gain Oblivion scaled by total Patience, peak Patience, engine signatures, and setup count',
   'inf-null-apex': 'Gain Oblivion scaled by peak Patience, broken attenuation classes, and low-drift Equilibrium control',

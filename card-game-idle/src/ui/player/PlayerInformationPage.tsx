@@ -289,8 +289,11 @@ export default function PlayerInformationPage({
     avatarId: string;
     titleId: string | null;
     uiThemeId: string | null;
+    mainMenuBackgroundId: string | null;
     customUiTheme: Record<string, string> | null;
     signatureCardIds: string[];
+    unlockedAvatarIds: string[];
+    unlockedUiThemeIds: string[];
   }>) {
     if (status !== 'authenticated') return;
     const p = useStore.getState().progress.profile;
@@ -300,8 +303,11 @@ export default function PlayerInformationPage({
       avatarId: overrides?.avatarId ?? p.avatarId,
       titleId: overrides?.titleId ?? p.titleId,
       uiThemeId: overrides?.uiThemeId ?? (p.uiThemeId ?? null),
+      mainMenuBackgroundId: overrides?.mainMenuBackgroundId ?? (p.mainMenuBackgroundId ?? null),
       customUiTheme: overrides?.customUiTheme ?? (p.customUiTheme ?? null),
       signatureCardIds: overrides?.signatureCardIds ?? (p.signatureCardIds ?? []),
+      unlockedAvatarIds: overrides?.unlockedAvatarIds ?? (p.unlockedAvatarIds ?? []),
+      unlockedUiThemeIds: overrides?.unlockedUiThemeIds ?? (p.unlockedUiThemeIds ?? []),
     });
   }
 

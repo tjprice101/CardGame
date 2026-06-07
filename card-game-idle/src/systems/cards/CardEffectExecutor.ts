@@ -42,6 +42,8 @@ interface ExecuteOptions {
   removeFromHand?: boolean;
   /** When true, nested forge_recast_* / nacre / ouroboric / unrecorded hue auto-recasts are skipped. */
   suppressForgeRecursion?: boolean;
+  /** When true, nested copy_last_hr replay effects are skipped to prevent self-referential loops. */
+  suppressOphanimReplay?: boolean;
   /** When true, do not append this play to the recast ledger. */
   skipLedger?: boolean;
 }
@@ -116,7 +118,7 @@ function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: Turn
     case 'inf-annihilation-field':
       return 950 + sourceCount * 620 + peakPatience * 260 + widePatienceBonus;
     case 'inf-oblivion-absolute':
-      return 1000 + totalPatience * 120 + peakPatience * 240 + stability * 140;
+      return 1000 + totalPatience * 120 + peakPatience * 240;
     case 'inf-void-cascade':
       return 800 + patienceUnits * 600 + sourceCount * 550 + peakPatience * 180 + widePatienceBonus;
     case 'inf-sovereign-void':
@@ -413,6 +415,7 @@ export class CardEffectExecutor {
     const countAsPlay = options.countAsPlay ?? true;
     const removeFromHand = options.removeFromHand ?? (deckCard.instanceId !== 'echo' && !isSeraphim);
     const suppressForgeRecursion = options.suppressForgeRecursion ?? false;
+    const suppressOphanimReplay = options.suppressOphanimReplay ?? false;
     const skipLedger = options.skipLedger ?? false;
     const sourceSetKey = getCardCategoryKey(def);
 
@@ -2036,13 +2039,18 @@ export class CardEffectExecutor {
           break;
 
         case 'copy_last_hr': {
+          if (suppressOphanimReplay) break;
           const lastId = mutableTurn.lastPlayedDefinitionId;
           if (lastId) {
             const lastDef = CardRegistry.get(lastId);
             if (lastDef?.type === 'Ophanim') {
               const echoResult = CardEffectExecutor.execute(
                 { instanceId: 'echo', definitionId: lastId, finish: 'normal' },
-                mutableTurn, mutableBoard, mutableDeck
+                mutableTurn,
+                mutableBoard,
+                mutableDeck,
+                false,
+                { suppressOphanimReplay: true },
               );
               if (echoResult.canPlay) {
                 mutableDeck = echoResult.deck;

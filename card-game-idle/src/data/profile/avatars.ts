@@ -1,5 +1,6 @@
-import type { ProgressState } from '@/types/game';
+﻿import type { ProgressState } from '@/types/game';
 import { eternalCards } from '@/data/cards/eternalCards';
+import { CardRegistry } from '@/cards/CardRegistry';
 import {
   infiniteOphanimCards,
   infiniteSeraphimCards,
@@ -23,6 +24,15 @@ import {
   DEATH_FLAMED_HELL_PACK_POOL,
   WISHED_UPON_A_STAR_PACK_POOL,
 } from '@/data/packs/packDefinitions';
+import {
+  getEverCollectionCount,
+  getEverCollectionTotal,
+  getEverDistinctCollectionCount,
+  getEverDistinctHoloCount,
+  getEverHoloTotal,
+  getEverInfiniteCount,
+  getEverInfiniteTotal,
+} from '@/systems/progression/ownershipHistory';
 
 /**
  * Avatar registry. Each entry is gated by a requirement function that reads
@@ -44,9 +54,6 @@ export interface AvatarDefinition {
   isUnlocked: (progress: ProgressState) => boolean;
 }
 
-const sumValues = (record: Record<string, number>): number =>
-  Object.values(record).reduce((a, b) => a + b, 0);
-
 const ASSET_BASE_URL = import.meta.env.BASE_URL;
 const toBaseAssetUrl = (url: string | undefined): string | undefined => {
   if (!url) return undefined;
@@ -57,7 +64,7 @@ const toBaseAssetUrl = (url: string | undefined): string | undefined => {
 // ── Unlock helpers ────────────────────────────────────────────────────────
 
 function _owns(id: string, p: ProgressState): boolean {
-  return (p.collection[id] ?? 0) > 0 || (p.infiniteCollection[id] ?? 0) > 0;
+  return getEverCollectionCount(p, id) > 0 || getEverInfiniteCount(p, id) > 0;
 }
 
 function _mastery(basePool: string[], eternalIds: string[]): (p: ProgressState) => boolean {
@@ -66,12 +73,12 @@ function _mastery(basePool: string[], eternalIds: string[]): (p: ProgressState) 
 }
 
 function _sigilByIds(ids: readonly string[]): (p: ProgressState) => boolean {
-  return (p) => ids.some(id => (p.infiniteCollection[id] ?? 0) > 0);
+  return (p) => ids.some(id => getEverInfiniteCount(p, id) > 0);
 }
 
 function _sigilByPrefix(prefix: string): (p: ProgressState) => boolean {
-  return (p) => Object.entries(p.infiniteCollection).some(
-    ([id, cnt]) => cnt > 0 && id.startsWith(prefix),
+  return (p) => CardRegistry.getAll().some(card =>
+    card.definitionId.startsWith(prefix) && getEverInfiniteCount(p, card.definitionId) > 0,
   );
 }
 
@@ -134,70 +141,70 @@ export const AVATARS: AvatarDefinition[] = [
     name: 'Cardweaver',
     glyph: '🂠',
     description: 'Play 100 cards.',
-    isUnlocked: (p) => p.totalCardsPlayed >= 100,
+    isUnlocked: (p: ProgressState) => p.totalCardsPlayed >= 100,
   },
   {
     id: 'avatar-stacker',
     name: 'Stacker',
     glyph: '♾',
     description: 'Play 1,000 cards.',
-    isUnlocked: (p) => p.totalCardsPlayed >= 1_000,
+    isUnlocked: (p: ProgressState) => p.totalCardsPlayed >= 1_000,
   },
   {
     id: 'avatar-oblivion-touched',
     name: 'Oblivion-Touched',
     glyph: '◉',
     description: 'Earn 10,000 Oblivion in a single turn.',
-    isUnlocked: (p) => (p.bestSingleTurnOblivion ?? 0) >= 10_000,
+    isUnlocked: (p: ProgressState) => (p.bestSingleTurnOblivion ?? 0) >= 10_000,
   },
   {
     id: 'avatar-eternal',
     name: 'Eternal',
     glyph: '☉',
     description: 'Earn 1,000,000 Oblivion.',
-    isUnlocked: (p) => (p.lifetimeOblivion ?? p.oblivion) >= 1_000_000,
+    isUnlocked: (p: ProgressState) => (p.lifetimeOblivion ?? p.oblivion) >= 1_000_000,
   },
   {
     id: 'avatar-boss-slayer',
     name: 'Boss Slayer',
     glyph: '⚔',
     description: 'Defeat any 5 distinct bosses.',
-    isUnlocked: (p) => Object.keys(p.bossClearCounts).length >= 5,
+    isUnlocked: (p: ProgressState) => Object.keys(p.bossClearCounts).length >= 5,
   },
   {
     id: 'avatar-eternal-conqueror',
     name: 'Eternal Conqueror',
     glyph: '♛',
     description: "Defeat 25 distinct bosses across Eternity's Wake.",
-    isUnlocked: (p) => Object.keys(p.bossClearCounts).length >= 25,
+    isUnlocked: (p: ProgressState) => Object.keys(p.bossClearCounts).length >= 25,
   },
   {
     id: 'avatar-collector',
     name: 'Collector',
     glyph: '✦',
     description: 'Own 250 cards across your collection.',
-    isUnlocked: (p) => sumValues(p.collection) >= 250,
+    isUnlocked: (p: ProgressState) => getEverCollectionTotal(p) >= 250,
   },
   {
     id: 'avatar-holo-curator',
     name: 'Holo Curator',
     glyph: '✶',
     description: 'Own 25 holographic cards.',
-    isUnlocked: (p) => sumValues(p.holoCollection) >= 25,
+    isUnlocked: (p: ProgressState) => getEverHoloTotal(p) >= 25,
   },
   {
     id: 'avatar-infinite',
     name: 'Infinite',
     glyph: '∞',
     description: 'Own any Infinite-finish card.',
-    isUnlocked: (p) => sumValues(p.infiniteCollection) >= 1,
+    isUnlocked: (p: ProgressState) => getEverInfiniteTotal(p) >= 1,
   },
   {
     id: 'avatar-shardlord',
     name: 'Shardlord',
     glyph: '◆',
     description: 'Accumulate 1,000 Aberrated Shards.',
-    isUnlocked: (p) => p.aberratedShards >= 1_000,
+    isUnlocked: (p: ProgressState) => p.aberratedShards >= 1_000,
   },
 
   // ── Set Sigils (unlock by owning 1 Infinity card from the set) ───────────
@@ -427,7 +434,9 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '🌊',
     imageUrl: '/assets/profile-pictures/master-eternal-seas.png',
     description: 'Collect every card in the Eternal Seas set.',
-    isUnlocked: _mastery(ETERNAL_SEAS_PACK_POOL, []),
+      isUnlocked: (p: ProgressState) => CardRegistry.getAll().some(card =>
+        card.definitionId.startsWith('btei-') && getEverCollectionCount(p, card.definitionId) > 0,
+      ),
   },
   {
     id: 'pic-master-abyssal-forge',
@@ -435,7 +444,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '⚒',
     imageUrl: '/assets/profile-pictures/master-abyssal-forge.png',
     description: 'Collect every card in the Abyssal Forge set.',
-    isUnlocked: _mastery(ABYSSAL_FORGE_PACK_POOL, []),
+      isUnlocked: (p: ProgressState) => getEverDistinctCollectionCount(p) >= 50,
   },
   {
     id: 'pic-master-death-flamed-hell',
@@ -443,7 +452,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '💀',
     imageUrl: '/assets/profile-pictures/master-death-flamed-hell.png',
     description: 'Collect every card in the Death-Flamed Hell set.',
-    isUnlocked: _mastery(DEATH_FLAMED_HELL_PACK_POOL, []),
+      isUnlocked: (p: ProgressState) => getEverDistinctHoloCount(p) >= 20,
   },
   {
     id: 'pic-master-wished-upon-a-star',
@@ -451,7 +460,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '⭐',
     imageUrl: '/assets/profile-pictures/master-wished-upon-a-star.png',
     description: 'Collect every card in the Wished Upon A Star set.',
-    isUnlocked: _mastery(WISHED_UPON_A_STAR_PACK_POOL, []),
+      isUnlocked: (p: ProgressState) => getEverInfiniteTotal(p) > 0,
   },
   {
     id: 'pic-master-infinitude',
@@ -459,7 +468,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '∞',
     imageUrl: '/assets/profile-pictures/master-infinitude.png',
     description: 'Forge every card available through the Infinitude recipe system.',
-    isUnlocked: (p) => INF_ALL_CORE.every(id => (p.infiniteCollection[id] ?? 0) > 0),
+    isUnlocked: (p: ProgressState) => INF_ALL_CORE.every(id => getEverInfiniteCount(p, id) > 0),
   },
 
   // ── Classic Achievement Avatars ──────────────────────────────────────────
@@ -478,7 +487,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '🃏',
     imageUrl: '/assets/profile-pictures/classic-cardweaver.png',
     description: 'Play 5,000 cards.',
-    isUnlocked: (p) => p.totalCardsPlayed >= 5_000,
+    isUnlocked: (p: ProgressState) => p.totalCardsPlayed >= 5_000,
   },
   {
     id: 'pic-classic-stacker',
@@ -486,7 +495,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '⛓',
     imageUrl: '/assets/profile-pictures/classic-stacker.png',
     description: 'Play 25,000 cards.',
-    isUnlocked: (p) => p.totalCardsPlayed >= 25_000,
+    isUnlocked: (p: ProgressState) => p.totalCardsPlayed >= 25_000,
   },
   {
     id: 'pic-classic-oblivion-touched',
@@ -494,7 +503,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '∞',
     imageUrl: '/assets/profile-pictures/classic-oblivion-touched.png',
     description: 'Earn 10,000 Oblivion in a single turn.',
-    isUnlocked: (p) => (p.bestSingleTurnOblivion ?? 0) >= 10_000,
+    isUnlocked: (p: ProgressState) => (p.bestSingleTurnOblivion ?? 0) >= 10_000,
   },
   {
     id: 'pic-classic-eternal',
@@ -502,7 +511,9 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '✨',
     imageUrl: '/assets/profile-pictures/classic-eternal.png',
     description: 'Obtain any Eternal card.',
-    isUnlocked: (p) => Object.keys(p.collection).some(id => id.startsWith('btei-')),
+    isUnlocked: (p: ProgressState) => CardRegistry.getAll().some(card =>
+      card.definitionId.startsWith('btei-') && getEverCollectionCount(p, card.definitionId) > 0,
+    ),
   },
   {
     id: 'pic-classic-boss-slayer',
@@ -510,7 +521,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '⚔',
     imageUrl: '/assets/profile-pictures/classic-boss-slayer.png',
     description: "Defeat your first boss in Eternity's Wake.",
-    isUnlocked: (p) => Object.keys(p.bossClearCounts).length >= 1,
+    isUnlocked: (p: ProgressState) => Object.keys(p.bossClearCounts).length >= 1,
   },
   {
     id: 'pic-classic-eternal-conqueror',
@@ -518,7 +529,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '👑',
     imageUrl: '/assets/profile-pictures/classic-eternal-conqueror.png',
     description: "Defeat 8 distinct bosses in Eternity's Wake.",
-    isUnlocked: (p) => Object.keys(p.bossClearCounts).length >= 8,
+    isUnlocked: (p: ProgressState) => Object.keys(p.bossClearCounts).length >= 8,
   },
   {
     id: 'pic-classic-collector',
@@ -526,7 +537,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '🗂',
     imageUrl: '/assets/profile-pictures/classic-collector.png',
     description: 'Own 50 distinct card types.',
-    isUnlocked: (p) => Object.keys(p.collection).length >= 50,
+    isUnlocked: (p: ProgressState) => getEverDistinctCollectionCount(p) >= 50,
   },
   {
     id: 'pic-classic-holo-curator',
@@ -534,7 +545,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '💿',
     imageUrl: '/assets/profile-pictures/classic-holo-curator.png',
     description: 'Own 20 distinct holographic cards.',
-    isUnlocked: (p) => Object.keys(p.holoCollection).length >= 20,
+    isUnlocked: (p: ProgressState) => getEverDistinctHoloCount(p) >= 20,
   },
   {
     id: 'pic-classic-infinite',
@@ -542,7 +553,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '∞',
     imageUrl: '/assets/profile-pictures/classic-infinite.png',
     description: 'Forge your first Infinite card.',
-    isUnlocked: (p) => Object.values(p.infiniteCollection).some(v => v > 0),
+    isUnlocked: (p: ProgressState) => getEverInfiniteTotal(p) > 0,
   },
   {
     id: 'pic-classic-shardlord',
@@ -550,7 +561,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '💎',
     imageUrl: '/assets/profile-pictures/classic-shardlord.png',
     description: 'Accumulate 500 Aberrated Shards.',
-    isUnlocked: (p) => p.aberratedShards >= 500,
+    isUnlocked: (p: ProgressState) => p.aberratedShards >= 500,
   },
 ].map((avatar) => ({
   ...avatar,
@@ -603,3 +614,4 @@ export function resolveAvatar(id: string | null | undefined, progress: ProgressS
   if (id && isAvatarUnlocked(id, progress)) return AVATAR_BY_ID[id];
   return AVATAR_BY_ID[DEFAULT_AVATAR_ID];
 }
+

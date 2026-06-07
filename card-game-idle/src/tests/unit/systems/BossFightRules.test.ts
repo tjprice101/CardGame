@@ -38,6 +38,21 @@ describe('Boss fight rules', () => {
     expect(state.bossFight.fightTimeRemaining).toBe(BOSS_FIGHT_ROUND_SECONDS);
   });
 
+  it('scales Eternity boss HP by selected fight count', () => {
+    const boss = BOSS_DEFINITIONS.find(entry => entry.id === 'boss-hollow-king');
+    expect(boss).toBeDefined();
+
+    useStore.getState().startBossFight('boss-hollow-king', 'starter-neutrality', { fightCount: 2 });
+    expect(useStore.getState().bossFight.bossMaxHp).toBe(Math.round((boss?.hp ?? 0) * 2.5));
+    expect(useStore.getState().bossFight.fightTimeRemaining).toBe(BOSS_FIGHT_ROUND_SECONDS);
+
+    resetStore();
+
+    useStore.getState().startBossFight('boss-hollow-king', 'starter-neutrality', { fightCount: 3 });
+    expect(useStore.getState().bossFight.bossMaxHp).toBe(Math.round((boss?.hp ?? 0) * 3.5));
+    expect(useStore.getState().bossFight.fightTimeRemaining).toBe(BOSS_FIGHT_ROUND_SECONDS);
+  });
+
   it('uses set-anchored linear HP segments for eternal bosses', () => {
     const hpValues = BOSS_DEFINITIONS.map(boss => boss.hp);
     expect(hpValues[0]).toBeGreaterThanOrEqual(40_000);
@@ -151,6 +166,47 @@ describe('Boss fight rules', () => {
     const state = useStore.getState();
     expect(state.bossFight.mode).toBe('victory');
     expect(state.progress.collection[rewardCardId]).toBe(5);
+  });
+
+  it('grants multiple reward card copies for multi-fight clears', () => {
+    const rewardCardId = 'btei-convergence-of-eternity';
+    const savedGameState = makeSavedGameState(rewardCardId, 4);
+    const activeDeck: DeckState = {
+      deckList: [],
+      extraDeck: [],
+      drawPile: [],
+      hand: [{ instanceId: 'play_1', definitionId: 'ser-neutral-null', finish: 'normal' }],
+      discardPile: [],
+    };
+
+    useStore.setState(state => ({
+      ...state,
+      board: { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] },
+      deck: activeDeck,
+      turn: { ...state.turn, phase: 'playing', pendingEffect: null },
+      progress: {
+        ...state.progress,
+        collection: { ...state.progress.collection, [rewardCardId]: 4 },
+      },
+      bossFight: {
+        mode: 'active',
+        activeBossId: 'boss-eternal-seraph',
+        bossCurrentHp: 1,
+        bossMaxHp: 45000,
+        damageDealtThisFight: 0,
+        fightTimeRemaining: BOSS_FIGHT_ROUND_SECONDS,
+        cooldowns: {},
+        savedGameState,
+        fightCount: 3,
+      },
+    }));
+    useStore.getState().refreshComputedStats();
+
+    useStore.getState().playCard('play_1');
+
+    const state = useStore.getState();
+    expect(state.bossFight.mode).toBe('victory');
+    expect(state.progress.collection[rewardCardId]).toBe(7);
   });
 
   it('starts boss fights from the saved custom deck snapshot', () => {

@@ -74,6 +74,20 @@ describe('CardEffectExecutor empty deck handling', () => {
     expect(result.canPlay).toBe(true);
     expect(result.pendingEffect).toBeNull();
   });
+
+  it('prevents recursive loops when Cinder Echo replays Cinder Echo', () => {
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'hr-light-radiant-echo' },
+      makePlayingTurn({ lastPlayedDefinitionId: 'hr-light-radiant-echo' }),
+      emptyBoard,
+      makeDeck('hr-light-radiant-echo')
+    );
+
+    expect(result.canPlay).toBe(true);
+    expect(result.turn.radiance).toBe(2);
+    expect(result.turn.cardsPlayedThisTurn).toBe(2);
+    expect(result.turn.lastPlayedDefinitionId).toBe('hr-light-radiant-echo');
+  });
 });
 
 describe('CardEffectExecutor look-top menu routing', () => {

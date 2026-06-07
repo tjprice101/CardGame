@@ -37,6 +37,9 @@ function baseProgress(overrides: Partial<ProgressState> = {}): ProgressState {
     collection: {},
     holoCollection: {},
     infiniteCollection: {},
+    everCollection: {},
+    everHoloCollection: {},
+    everInfiniteCollection: {},
     favoriteCollection: {},
     bossClearCounts: {},
     pityCounters: {},
@@ -117,6 +120,21 @@ describe('avatar registry', () => {
     expect(isAvatarUnlocked('avatar-oblivion-touched', p)).toBe(true);
     expect(resolveAvatar('pic-classic-oblivion-touched', p).id).toBe('pic-classic-oblivion-touched');
   });
+
+  it('unlocks ownership avatars from ever-owned history even if current copies are gone', () => {
+    const p = baseProgress({
+      collection: {},
+      everCollection: { sample: 300 },
+      holoCollection: {},
+      everHoloCollection: { sample: 30 },
+      infiniteCollection: {},
+      everInfiniteCollection: { sample: 1 },
+    });
+
+    expect(isAvatarUnlocked('avatar-collector', p)).toBe(true);
+    expect(isAvatarUnlocked('avatar-holo-curator', p)).toBe(true);
+    expect(isAvatarUnlocked('avatar-infinite', p)).toBe(true);
+  });
 });
 
 describe('title badge registry', () => {
@@ -184,6 +202,19 @@ describe('title badge registry', () => {
     expect(isTitleUnlocked('title-transcendent-pantheon', p)).toBe(true);
     expect(isTitleUnlocked('title-entropic-ascendant', p)).toBe(true);
     expect(isTitleUnlocked('title-battleground-overlord', p)).toBe(true);
+  });
+
+  it('unlocks Infinite card titles from ever-owned Infinite history', () => {
+    const infTitle = TITLE_BADGES.find(t => t.group === 'infinite');
+    expect(infTitle).toBeTruthy();
+    const cardId = infTitle!.id.replace(/^title-infinite-/, '');
+
+    const p = baseProgress({
+      infiniteCollection: {},
+      everInfiniteCollection: { [cardId]: 1 },
+    });
+
+    expect(isTitleUnlocked(infTitle!.id, p)).toBe(true);
   });
 });
 
@@ -279,6 +310,27 @@ describe('ui theme registry', () => {
 
     latchUnlockedUiThemes(p);
     p.collection = {};
+
+    expect(isThemeUnlocked(rewardTheme!.id, p)).toBe(true);
+  });
+
+  it('unlocks reward themes from ever-owned set completion without requiring current ownership', () => {
+    const rewardTheme = UI_THEMES.find(
+      (t) => t.group === 'reward' && t.rewardKind === 'base-set' && t.setElement === 'Neutrality',
+    );
+    expect(rewardTheme).toBeTruthy();
+
+    const requiredBaseNeutralityIds = CardRegistry.getAll()
+      .filter((card) => card.element === 'Neutrality' && ['Common', 'Rare', 'Epic', 'Legendary'].includes(card.rarity))
+      .map((card) => card.definitionId);
+
+    const everOwnedCollection: Record<string, number> = {};
+    for (const id of requiredBaseNeutralityIds) everOwnedCollection[id] = 1;
+
+    const p = baseProgress({
+      collection: {},
+      everCollection: everOwnedCollection,
+    });
 
     expect(isThemeUnlocked(rewardTheme!.id, p)).toBe(true);
   });

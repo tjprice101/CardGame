@@ -19,9 +19,16 @@ function applyAuthedSocialProfile(state: GameState): void {
   state.progress.profile.avatarId = socialProfile.avatarId;
   state.progress.profile.titleId = socialProfile.titleId;
   state.progress.profile.uiThemeId = socialProfile.uiThemeId ?? state.progress.profile.uiThemeId;
+  state.progress.profile.mainMenuBackgroundId = socialProfile.mainMenuBackgroundId ?? state.progress.profile.mainMenuBackgroundId;
   state.progress.profile.customUiTheme = socialProfile.customUiTheme;
   state.progress.profile.signatureCardIds = Array.isArray(socialProfile.signatureCardIds)
     ? socialProfile.signatureCardIds.slice(0, 5)
+    : [];
+  state.progress.profile.unlockedAvatarIds = Array.isArray(socialProfile.unlockedAvatarIds)
+    ? socialProfile.unlockedAvatarIds.filter(Boolean)
+    : [];
+  state.progress.profile.unlockedUiThemeIds = Array.isArray(socialProfile.unlockedUiThemeIds)
+    ? socialProfile.unlockedUiThemeIds.filter(Boolean)
     : [];
 }
 
