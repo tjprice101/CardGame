@@ -1402,6 +1402,398 @@ function tuneAngelAttackSet(def: AngelDefinition, attacks: AngelAttackSet): Ange
   };
 }
 
+type ProgressionTier = 'base' | 'eternal' | 'infinite' | 'transcendent';
+
+type DpsCategory =
+  | 'base-seraphim'
+  | 'base-angel'
+  | 'eternal-seraphim'
+  | 'eternal-angel'
+  | 'infinite-seraphim'
+  | 'infinite-angel'
+  | 'transcendent-seraphim'
+  | 'transcendent-angel';
+
+const DPS_CATEGORY_ORDER: DpsCategory[] = [
+  'base-seraphim',
+  'base-angel',
+  'eternal-seraphim',
+  'eternal-angel',
+  'infinite-seraphim',
+  'infinite-angel',
+  'transcendent-seraphim',
+  'transcendent-angel',
+];
+
+function progressionTierFor(def: CardDefinition & { type: 'Seraphim' | 'Angel' }): ProgressionTier {
+  if (def.definitionId.startsWith('tx-')) return 'transcendent';
+  if (def.rarity === 'Infinite') return 'infinite';
+  if (def.rarity === 'Eternal') return 'eternal';
+  return 'base';
+}
+
+function cooldownBand(
+  tier: ProgressionTier,
+  unitType: 'Seraphim' | 'Angel',
+  mode: 'primary' | 'secondary',
+): { min: number; max: number } {
+  if (unitType === 'Seraphim') {
+    if (mode === 'primary') {
+      switch (tier) {
+        case 'base': return { min: 5, max: 9 };
+        case 'eternal': return { min: 12, max: 18 };
+        case 'infinite': return { min: 18, max: 24 };
+        case 'transcendent': return { min: 24, max: 30 };
+      }
+    }
+    switch (tier) {
+      case 'base': return { min: 9, max: 13 };
+      case 'eternal': return { min: 17, max: 24 };
+      case 'infinite': return { min: 24, max: 30 };
+      case 'transcendent': return { min: 28, max: 30 };
+    }
+  }
+
+  if (mode === 'primary') {
+    switch (tier) {
+      case 'base': return { min: 7, max: 12 };
+      case 'eternal': return { min: 15, max: 22 };
+      case 'infinite': return { min: 22, max: 28 };
+      case 'transcendent': return { min: 26, max: 30 };
+    }
+  }
+
+  switch (tier) {
+    case 'base': return { min: 12, max: 17 };
+    case 'eternal': return { min: 22, max: 28 };
+    case 'infinite': return { min: 27, max: 30 };
+    case 'transcendent': return { min: 29, max: 30 };
+  }
+}
+
+function deterministicCooldown(seed: string, min: number, max: number): number {
+  const lo = Math.max(1, Math.min(min, max));
+  const hi = Math.max(lo, max);
+  const span = hi - lo + 1;
+  return lo + (hashString(seed) % span);
+}
+
+function stripCardTaxCosts(costs: ReadonlyArray<AttackCost> | undefined): AttackCost[] {
+  return (costs ?? []).filter(cost => (
+    cost.type !== 'discard_from_hand'
+    && cost.type !== 'sacrifice_seraphim'
+    && cost.type !== 'sacrifice_angel'
+  ));
+}
+
+function targetSeraphimDps(tier: ProgressionTier, mode: 'primary' | 'secondary'): number {
+  const baseByTier: Record<ProgressionTier, number> = {
+    base: 95,
+    eternal: 170,
+    infinite: 260,
+    transcendent: 360,
+  };
+  const base = baseByTier[tier];
+  return mode === 'primary' ? base : Math.round(base * 1.25);
+}
+
+function targetAngelDps(tier: ProgressionTier, mode: 'primary' | 'exalted'): number {
+  const baseByTier: Record<ProgressionTier, number> = {
+    base: 118,
+    eternal: 205,
+    infinite: 305,
+    transcendent: 420,
+  };
+  const base = baseByTier[tier];
+  return mode === 'primary' ? base : Math.round(base * 1.28);
+}
+
+function cherubimDurabilityFor(def: CherubimDefinition): number {
+  switch (def.rarity) {
+    case 'Common': return 4;
+    case 'Rare': return 5;
+    case 'Epic': return 7;
+    case 'Legendary': return 8;
+    case 'Eternal': return 10;
+    case 'Infinite': return 15 + (hashString(`${def.definitionId}:durability`) % 6);
+  }
+}
+
+function applyNeutralityInfiniteIdentityTweaks(def: CardDefinition): CardDefinition {
+  if (def.type === 'Cherubim' && def.element === 'Neutrality' && def.rarity === 'Infinite') {
+    if (def.definitionId === 'inf-entropic-crown') {
+      const tuned: CherubimDefinition = {
+        ...def,
+        effects: [{ type: 'cherubim_patience_per_card', value: 8 }],
+        onPlayEffects: [
+          { type: 'oblivion_flat', value: 3200 },
+          { type: 'patience_gain_all', value: 8 },
+          { type: 'patience_double_all' },
+          { type: 'neutrality_patient_light_gain', value: 2 },
+        ],
+      };
+      return tuned;
+    }
+
+    if (def.definitionId === 'inf-annihilation-field') {
+      const tuned: CherubimDefinition = {
+        ...def,
+        effects: [{ type: 'cherubim_patience_per_card', value: 4 }],
+        onPlayEffects: [
+          { type: 'patience_gain_all', value: 14 },
+          { type: 'neutrality_patient_light_gain', value: 3 },
+          { type: 'shuffle_discard' },
+          { type: 'oblivion_flat', value: 1800 },
+        ],
+      };
+      return tuned;
+    }
+  }
+
+  if (def.type === 'Angel' && def.element === 'Neutrality' && def.rarity === 'Infinite') {
+    if (def.definitionId === 'inf-sovereign-void') {
+      const tuned: AngelDefinition = {
+        ...def,
+        baseStats: { ...def.baseStats, bonusType: 'oblivion_per_seraphim', bonusValue: 950 },
+        activatedAbility: {
+          ...def.activatedAbility,
+          name: 'Null Dominion Prime',
+          cardsPlayedRequirement: 4,
+          effects: [
+            { type: 'neutrality_patient_light_gain', value: 4 },
+            { type: 'patience_double_all' },
+            { type: 'patience_gain_all', value: 14 },
+            { type: 'draw', value: 2 },
+            { type: 'oblivion_flat', value: 3600 },
+          ],
+        },
+      };
+      return tuned;
+    }
+
+    if (def.definitionId === 'inf-eternity-rupture') {
+      const tuned: AngelDefinition = {
+        ...def,
+        baseStats: { ...def.baseStats, bonusType: 'ophanim_bonus', bonusValue: 1450 },
+        activatedAbility: {
+          ...def.activatedAbility,
+          name: 'Rupture Singularity',
+          cardsPlayedRequirement: 6,
+          effects: [
+            { type: 'neutrality_patient_light_gain', value: 2 },
+            { type: 'patience_gain_all', value: 18 },
+            { type: 'shuffle_discard' },
+            { type: 'salvage_any' },
+            { type: 'oblivion_flat', value: 5200 },
+          ],
+        },
+      };
+      return tuned;
+    }
+  }
+
+  return def;
+}
+
+function applyGlobalBalancePolicies(def: CardDefinition): CardDefinition {
+  const withIdentity = applyNeutralityInfiniteIdentityTweaks(def);
+
+  if (withIdentity.type === 'Seraphim' && withIdentity.attacks) {
+    const tier = progressionTierFor(withIdentity);
+    const unsynBand = cooldownBand(tier, 'Seraphim', 'primary');
+    const synBand = cooldownBand(tier, 'Seraphim', 'secondary');
+    const unsynCooldown = deterministicCooldown(`${withIdentity.definitionId}:unsyn-cd`, unsynBand.min, unsynBand.max);
+    const synCooldown = Math.max(
+      unsynCooldown + 2,
+      deterministicCooldown(`${withIdentity.definitionId}:syn-cd`, synBand.min, synBand.max),
+    );
+
+    const unsynBase = Math.max(
+      withIdentity.attacks.unsynergized.baseOblivion,
+      Math.round(unsynCooldown * targetSeraphimDps(tier, 'primary')),
+    );
+    const synBase = Math.max(
+      withIdentity.attacks.synergized.baseOblivion,
+      Math.round(synCooldown * targetSeraphimDps(tier, 'secondary')),
+      Math.round(unsynBase * 1.38),
+    );
+
+    return {
+      ...withIdentity,
+      attacks: {
+        unsynergized: {
+          ...withIdentity.attacks.unsynergized,
+          baseOblivion: unsynBase,
+          cooldownCards: Math.min(30, unsynCooldown),
+          costs: stripCardTaxCosts(withIdentity.attacks.unsynergized.costs),
+        },
+        synergized: {
+          ...withIdentity.attacks.synergized,
+          baseOblivion: synBase,
+          cooldownCards: Math.min(30, synCooldown),
+          costs: stripCardTaxCosts(withIdentity.attacks.synergized.costs),
+        },
+      },
+    };
+  }
+
+  if (withIdentity.type === 'Angel' && withIdentity.attacks) {
+    const tier = progressionTierFor(withIdentity);
+    const primaryBand = cooldownBand(tier, 'Angel', 'primary');
+    const exaltedBand = cooldownBand(tier, 'Angel', 'secondary');
+    const primaryCooldown = deterministicCooldown(`${withIdentity.definitionId}:primary-cd`, primaryBand.min, primaryBand.max);
+    const exaltedCooldown = Math.max(
+      primaryCooldown + 3,
+      deterministicCooldown(`${withIdentity.definitionId}:exalted-cd`, exaltedBand.min, exaltedBand.max),
+    );
+
+    const primaryBase = Math.max(
+      withIdentity.attacks.primary.baseOblivion,
+      Math.round(primaryCooldown * targetAngelDps(tier, 'primary')),
+    );
+    const exaltedBase = Math.max(
+      withIdentity.attacks.exalted.baseOblivion,
+      Math.round(exaltedCooldown * targetAngelDps(tier, 'exalted')),
+      Math.round(primaryBase * 1.6),
+    );
+
+    return {
+      ...withIdentity,
+      attacks: {
+        primary: {
+          ...withIdentity.attacks.primary,
+          baseOblivion: primaryBase,
+          cooldownCards: Math.min(30, primaryCooldown),
+          costs: stripCardTaxCosts(withIdentity.attacks.primary.costs),
+        },
+        exalted: {
+          ...withIdentity.attacks.exalted,
+          baseOblivion: exaltedBase,
+          cooldownCards: Math.min(30, exaltedCooldown),
+          costs: stripCardTaxCosts(withIdentity.attacks.exalted.costs),
+        },
+      },
+    };
+  }
+
+  if (withIdentity.type === 'Cherubim') {
+    return {
+      ...withIdentity,
+      maxDurability: cherubimDurabilityFor(withIdentity),
+      discardCondition: undefined,
+    };
+  }
+
+  return withIdentity;
+}
+
+function dpsCategoryForDefinition(def: CardDefinition): DpsCategory | null {
+  if (def.type !== 'Seraphim' && def.type !== 'Angel') return null;
+  const tier = progressionTierFor(def);
+  if (def.type === 'Seraphim') {
+    switch (tier) {
+      case 'base': return 'base-seraphim';
+      case 'eternal': return 'eternal-seraphim';
+      case 'infinite': return 'infinite-seraphim';
+      case 'transcendent': return 'transcendent-seraphim';
+    }
+  }
+
+  switch (tier) {
+    case 'base': return 'base-angel';
+    case 'eternal': return 'eternal-angel';
+    case 'infinite': return 'infinite-angel';
+    case 'transcendent': return 'transcendent-angel';
+  }
+}
+
+function maxAttackDps(def: CardDefinition): number {
+  if (def.type === 'Seraphim' && def.attacks) {
+    const unsyn = def.attacks.unsynergized.baseOblivion / Math.max(1, def.attacks.unsynergized.cooldownCards);
+    const syn = def.attacks.synergized.baseOblivion / Math.max(1, def.attacks.synergized.cooldownCards);
+    return Math.max(unsyn, syn);
+  }
+  if (def.type === 'Angel' && def.attacks) {
+    const primary = def.attacks.primary.baseOblivion / Math.max(1, def.attacks.primary.cooldownCards);
+    const exalted = def.attacks.exalted.baseOblivion / Math.max(1, def.attacks.exalted.cooldownCards);
+    return Math.max(primary, exalted);
+  }
+  return 0;
+}
+
+function scaleAttackPower(def: CardDefinition, factor: number): CardDefinition {
+  if (!Number.isFinite(factor) || factor <= 1) return def;
+  if (def.type === 'Seraphim' && def.attacks) {
+    return {
+      ...def,
+      attacks: {
+        unsynergized: {
+          ...def.attacks.unsynergized,
+          baseOblivion: Math.max(def.attacks.unsynergized.baseOblivion, Math.ceil(def.attacks.unsynergized.baseOblivion * factor)),
+          costs: stripCardTaxCosts(def.attacks.unsynergized.costs),
+        },
+        synergized: {
+          ...def.attacks.synergized,
+          baseOblivion: Math.max(def.attacks.synergized.baseOblivion, Math.ceil(def.attacks.synergized.baseOblivion * factor)),
+          costs: stripCardTaxCosts(def.attacks.synergized.costs),
+        },
+      },
+    };
+  }
+
+  if (def.type === 'Angel' && def.attacks) {
+    return {
+      ...def,
+      attacks: {
+        primary: {
+          ...def.attacks.primary,
+          baseOblivion: Math.max(def.attacks.primary.baseOblivion, Math.ceil(def.attacks.primary.baseOblivion * factor)),
+          costs: stripCardTaxCosts(def.attacks.primary.costs),
+        },
+        exalted: {
+          ...def.attacks.exalted,
+          baseOblivion: Math.max(def.attacks.exalted.baseOblivion, Math.ceil(def.attacks.exalted.baseOblivion * factor)),
+          costs: stripCardTaxCosts(def.attacks.exalted.costs),
+        },
+      },
+    };
+  }
+
+  return def;
+}
+
+function enforceGlobalDpsLadder(defs: CardDefinition[]): CardDefinition[] {
+  const maxByCategory = new Map<DpsCategory, number>();
+  for (const category of DPS_CATEGORY_ORDER) {
+    maxByCategory.set(category, 0);
+  }
+
+  for (const def of defs) {
+    const category = dpsCategoryForDefinition(def);
+    if (!category) continue;
+    maxByCategory.set(category, Math.max(maxByCategory.get(category) ?? 0, maxAttackDps(def)));
+  }
+
+  const minByCategory = new Map<DpsCategory, number>();
+  let previous = 0;
+  for (const category of DPS_CATEGORY_ORDER) {
+    const current = maxByCategory.get(category) ?? 0;
+    if (current <= 0) continue;
+    const required = previous > 0 ? Math.max(current, previous * 1.03) : current;
+    minByCategory.set(category, required);
+    previous = required;
+  }
+
+  return defs.map((def) => {
+    const category = dpsCategoryForDefinition(def);
+    if (!category) return def;
+    const minDps = minByCategory.get(category) ?? 0;
+    const currentDps = maxAttackDps(def);
+    if (minDps <= 0 || currentDps <= 0 || currentDps >= minDps) return def;
+    return scaleAttackPower(def, minDps / currentDps);
+  });
+}
+
 function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffect[] {
   // Cards whose identity IS the global oblivion multiplier don't receive synthetic attack buffs.
   if (def.effects.some(e => e.type === 'cherubim_global_oblivion_mult')) {
@@ -1860,9 +2252,11 @@ function normalizeDefinition(def: CardDefinition): CardDefinition {
 }
 
 function registerAll(defs: CardDefinition[]): void {
-  for (const def of defs) {
-    const normalized = applyNeutralityDocOverride(normalizeDefinition(def));
-    registry.set(normalized.definitionId, normalized);
+  const firstPass = defs.map(def => applyGlobalBalancePolicies(applyNeutralityDocOverride(normalizeDefinition(def))));
+  const finalDefs = enforceGlobalDpsLadder(firstPass);
+
+  for (const def of finalDefs) {
+    registry.set(def.definitionId, def);
   }
 }
 

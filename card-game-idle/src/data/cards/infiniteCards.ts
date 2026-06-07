@@ -2081,3 +2081,30 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'wuas-et-selenira-voidbane', count: 1 }],
   }];
 
+function capRecipeIngredients(ingredients: InfiniteIngredient[]): InfiniteIngredient[] {
+  const expanded: string[] = [];
+  for (const ingredient of ingredients) {
+    const count = Math.max(0, Math.floor(ingredient.count));
+    for (let i = 0; i < count; i += 1) {
+      expanded.push(ingredient.definitionId);
+    }
+  }
+
+  const cappedCopies = expanded.slice(0, 3);
+  const counts = new Map<string, number>();
+  const orderedIds: string[] = [];
+  for (const definitionId of cappedCopies) {
+    if (!counts.has(definitionId)) orderedIds.push(definitionId);
+    counts.set(definitionId, (counts.get(definitionId) ?? 0) + 1);
+  }
+
+  return orderedIds.slice(0, 3).map(definitionId => ({
+    definitionId,
+    count: counts.get(definitionId) ?? 1,
+  }));
+}
+
+for (const recipe of INFINITE_RECIPES) {
+  recipe.ingredients = capRecipeIngredients(recipe.ingredients);
+}
+
