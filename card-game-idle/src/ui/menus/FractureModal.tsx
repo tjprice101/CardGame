@@ -253,6 +253,7 @@ export default function FractureModal({ onClose }: Props) {
               items={rows}
               getItemKey={(row) => row.id}
               getItemHeight={() => 52}
+              style={{ flex: 1, height: '100%' }}
               renderItem={(row) => {
                 const isSelected = row.id === selectedId;
                 const rarityColor = RARITY_COLOR[row.rarity] ?? P.text;
