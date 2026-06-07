@@ -215,7 +215,7 @@ export const eternalAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Eternal',
     name: 'Omniscient Fracture',
-    description: 'On summon: All Seraphim on board gain +8 Patience; Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); +600 Oblivion. After 6 cards played: Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +12 Patience; Seraphim attacks preserve 0.3% of consumed Patience this turn; +1000 Oblivion. While on board: +200 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +8 Patience; Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); +600 Oblivion. After 6 cards played: Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +12 Patience; Seraphim attacks preserve 30% of consumed Patience this turn; +1000 Oblivion. While on board: +200 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
     artKey: 'btei_omniscient_fracture',
     summonCost: [],
     extraSummonConditions: [
@@ -227,7 +227,7 @@ export const eternalAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Parallax Collapse',
       cardsPlayedRequirement: 6,
-      description: 'Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +12 Patience; Seraphim attacks preserve 0.3% of consumed Patience this turn; +1000 Oblivion',
+      description: 'Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +12 Patience; Seraphim attacks preserve 30% of consumed Patience this turn; +1000 Oblivion',
       effects: [
         { type: 'neutrality_patient_light_gain', value: 1 },
         { type: 'patience_gain_all', value: 12 },

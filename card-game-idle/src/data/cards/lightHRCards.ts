@@ -68,10 +68,17 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Cinder Surge',
-    description: '+0 Oblivion',
+    description: '+50 Oblivion; If you have played 4+ cards this turn, +80 Oblivion; Shuffle discard into deck; Draw 1 card',
     artKey: 'hr_light_radiant_surge',
     effects: [
-      { type: 'oblivion_flat', value: 0 },  // dynamic sentinel: min(radiance * 8, 80)
+      { type: 'oblivion_flat', value: 50 },
+      {
+        type: 'conditional',
+        condition: { type: 'cards_played_gte', value: 4 },
+        then: [{ type: 'oblivion_flat', value: 80 }],
+      },
+      { type: 'shuffle_discard' },
+      { type: 'draw', value: 1 },
     ],
   },
   {
@@ -105,10 +112,17 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Mantle',
-    description: 'none',
+    description: 'Draw 2 cards; Choose and discard 1 card; If you have 5+ Radiance, Draw 1 card',
     artKey: 'hr_light_exalted_mantle',
     effects: [
-      ],
+      { type: 'draw', value: 2 },
+      { type: 'discard_choice', value: 1 },
+      {
+        type: 'conditional',
+        condition: { type: 'radiance_gte', value: 5 },
+        then: [{ type: 'draw', value: 1 }],
+      },
+    ],
   },
   {
     definitionId: 'hr-light-aureate-blessing',

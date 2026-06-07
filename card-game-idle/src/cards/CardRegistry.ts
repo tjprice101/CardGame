@@ -868,7 +868,7 @@ function parseDocEffectClauses(text: string): CardEffect[] {
 
     const preserve = clause.match(/Seraphim attacks preserve\s+(\d+(?:\.\d+)?)%\s+of consumed Patience/i);
     if (preserve) {
-      effects.push({ type: 'neutrality_attack_preserve', percent: Number(preserve[1]) / 100 });
+      effects.push({ type: 'neutrality_attack_preserve', percent: Number(preserve[1]) });
       continue;
     }
 

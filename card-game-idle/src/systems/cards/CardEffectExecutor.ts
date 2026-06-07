@@ -881,10 +881,6 @@ export class CardEffectExecutor {
           }
           // Pyroabyss base cards now resolve exclusively from authored typed effects
           // (pyro_heat_* / conditional / draw / oblivion_flat) in source definitions.
-          // Radiant Surge ? +8 Oblivion per Radiance (max 80)
-          if (deckCard.definitionId === 'hr-light-radiant-surge') {
-            val = Math.min(mutableTurn.radiance * 8, 80) * multiplier;
-          }
           // Sunforged ? +25 Oblivion per Radiance drained
           if (deckCard.definitionId === 'hr-light-sunforged') {
             val = radianceDrained * 25 * multiplier;
