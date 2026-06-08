@@ -433,6 +433,38 @@ describe('Angel mechanics', () => {
     expect(state.deck.extraDeck.filter(entry => entry.definitionId === 'angel-neutral-beginning')).toHaveLength(2);
   });
 
+  it('does not crash keep-hand mulligan when draw/discard contains malformed entries', () => {
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [],
+        hand: [
+          { instanceId: 'n1', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n2', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n3', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n4', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n5', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+        ],
+        // Simulate legacy/corrupt save stubs that previously could crash sanitization.
+        drawPile: [null as unknown as DeckCard],
+        discardPile: [null as unknown as DeckCard],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'mulligan',
+        mulliganSelected: [],
+      },
+    }));
+
+    expect(() => useStore.getState().confirmMulligan()).not.toThrow();
+
+    const state = useStore.getState();
+    expect(state.turn.phase).toBe('playing');
+    expect(state.deck.hand.length).toBeGreaterThan(0);
+  });
+
   it('enforces board-specific and sigil summon conditions for transcendents', () => {
     useStore.setState(state => ({
       ...state,
