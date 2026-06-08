@@ -91,12 +91,7 @@ const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
   boss_prismatic_drift_leviathan: { folder: 'prismatic-accord', file: 'Drift Canopy Leviathan.png' },
   boss_prismatic_blindwars_reliquary: { folder: 'prismatic-accord', file: 'Reliquary of Blind Wars.png' },
   boss_prismatic_whitebeam_concordat: { folder: 'prismatic-accord', file: 'Whitebeam Concordat.png' },
-  // Black Glass Inferno
-  boss_inferno_vaelthorax_grief: { folder: 'black-glass-inferno', file: 'Vaelthorax Grieffire.png' },
-  boss_inferno_morvakael_answer: { folder: 'black-glass-inferno', file: 'Morvakael the Twice-Scarred.png' },
-  boss_inferno_sorveth_flame: { folder: 'black-glass-inferno', file: 'Sorveth Bifurcated Flame.png' },
-  boss_inferno_cinderborn_court: { folder: 'black-glass-inferno', file: 'Cinderborn Matriarch.png' },
-  boss_inferno_ashen_sovereign: { folder: 'black-glass-inferno', file: 'Ashen Court Regent.png' },
+  // Black Glass Inferno — no separate boss art; header falls back to reward card art.
   // Wished Upon A Star
   boss_wuas_aethervex_wishwright: { folder: 'wished-upon-a-star', file: 'Aethervex, the Wishwright.png' },
   boss_wuas_selenira_voidbane: { folder: 'wished-upon-a-star', file: 'Selenira Voidbane.png' },
@@ -348,18 +343,8 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           const selectedFightCount = getSelectedFightCount(boss.id);
           const hpScale = selectedFightCount === 1 ? 1 : selectedFightCount === 2 ? 2.5 : 3.5;
           const scaledPreviewHp = Math.round(getBossDisplayHp(progress, boss) * hpScale);
-          // Reward card face: replace the art URL layer with the boss art so the
-          // small card preview and the large boss header show the same image.
-          const rewardFaceBaseStyle = rewardDef ? getDenseCardFaceBackgroundStyle(rewardDef, 'normal') : {};
-          const rewardFaceStyle = displayBossArtUrl && typeof rewardFaceBaseStyle.backgroundImage === 'string'
-            ? {
-                ...rewardFaceBaseStyle,
-                backgroundImage: rewardFaceBaseStyle.backgroundImage.replace(
-                  /url\("[^"]*"\)/g,
-                  `url("${displayBossArtUrl}")`,
-                ),
-              }
-            : rewardFaceBaseStyle;
+          // Card preview always uses the reward card's own art — consistent with what the player earns.
+          const rewardFaceStyle = rewardDef ? getDenseCardFaceBackgroundStyle(rewardDef, 'normal') : {};
 
           return (
             <div key={boss.id} className={onCooldown || lockedByProgress ? undefined : 'ui-tile-hover'} style={{
