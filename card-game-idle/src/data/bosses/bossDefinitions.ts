@@ -187,7 +187,7 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   createBoss(46, 'boss-inferno-morvakael-answer', 'Morvakael Thrice-Scarred', 'Black Glass Inferno', 'btei-bgi-blackglass-catastrophe', 'A draconic sovereign whose scars are treaties written in chromatic ruin and sorrow.', 'boss_inferno_morvakael_answer'),
   createBoss(47, 'boss-inferno-sorveth-flame', 'Sorveth, Twin-Scaled Herald', 'Black Glass Inferno', 'btei-bgi-inferborn-prophecy', 'A dual-scaled messenger holding both truth and lie in perfect equilibrium within one breath.', 'boss_inferno_sorveth_flame'),
   createBoss(48, 'boss-inferno-cinderborn-court', 'Cinderborn Matriarch Court', 'Black Glass Inferno', 'btei-bgi-velplane-ossuary', 'A council of infernal queens crowned in inverted black-glass roses and void promises.', 'boss_inferno_cinderborn_court'),
-  createBoss(49, 'boss-inferno-ashen-sovereign', 'Ashen Court Regent', 'Black Glass Inferno', 'btei-bgi-rosecrown-annihilator', 'The monarch of all ash and sorrow, ruling the blackglass kingdoms from a throne of grief-fire.', 'boss_inferno_ashen_sovereign'),
+  createBoss(49, 'boss-inferno-ashen-sovereign', 'The Ashen Sovereign', 'Black Glass Inferno', 'btei-bgi-rosecrown-annihilator', 'The monarch of all ash and sorrow, ruling the blackglass kingdoms from a throne of grief-fire.', 'boss_inferno_ashen_sovereign'),
 
   // Glass Absolute (5)
   createBoss(50, 'boss-glass-lattice-archive', 'Lattice Archive Seraph', 'Glass Absolute', 'ga-et-lattice-archive-seraph', 'A vault-seraph forged from recursive panes that catalog every beam crossing Vyrel.', 'boss_glass_lattice_archive'),
