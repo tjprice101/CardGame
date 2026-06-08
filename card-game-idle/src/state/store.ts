@@ -541,26 +541,6 @@ function computeBurningGardenBoardPower(card: { burningGardenPhase?: string; chr
   return 1.3 + counterBonus + (card.isEcho ? 0.1 : 0);
 }
 
-function pushEmberGroveEntry(
-  s: Store,
-  card: BurningGardenBoardCard,
-  definitionId: string,
-): void {
-  const emberGrove = s.board.emberGrove ?? (s.board.emberGrove = []);
-  const sourceId = `${definitionId}:${card.instanceId}:${s.turn.turnNumber ?? 0}:${emberGrove.length}`;
-  const chromaticSources = [...new Set([...(card.chromaticSources ?? []), sourceId])];
-  const lineage = getBurningGardenLineage(definitionId);
-  emberGrove.push({
-    definitionId,
-    finish: card.finish,
-    sourceId,
-    chromaticSources,
-    charredAtTurn: s.turn.turnNumber ?? 0,
-    lineage,
-    memoryPower: Math.max(1, chromaticSources.length),
-  });
-}
-
 function pushEmberGroveDeckSeed(s: Store, card: { definitionId: string; finish: CardFinish; instanceId: string }): void {
   const def = CardRegistry.get(card.definitionId);
   if (!isBurningGardenCard(def)) return;
@@ -578,42 +558,7 @@ function pushEmberGroveDeckSeed(s: Store, card: { definitionId: string; finish: 
   });
 }
 
-function charBurningGardenBoardCard(
-  s: Store,
-  location: { kind: 'front'; index: 0 | 1 | 2 | 3 | 4 } | { kind: 'back'; index: 0 | 1 | 2 | 3 },
-  card: BurningGardenBoardCard,
-): void {
-  pushEmberGroveEntry(s, card, card.definitionId);
-
-  const lineage = getBurningGardenLineage(card.definitionId);
-  if ((s.turn.burningGardenCodexCopiesRemaining ?? 0) > 0 && (s.turn.burningGardenCodexLineage ?? null) === lineage) {
-    const emberGrove = s.board.emberGrove ?? (s.board.emberGrove = []);
-    const latest = emberGrove[emberGrove.length - 1];
-    if (latest) {
-      emberGrove.push({
-        ...latest,
-        sourceId: `${latest.sourceId}:codex:${s.turn.burningGardenCodexCopiesRemaining}`,
-        memoryPower: Math.max(1, (latest.memoryPower ?? latest.chromaticSources.length) * 2),
-        chromaticSources: [...latest.chromaticSources],
-      });
-      s.turn.burningGardenCodexCopiesRemaining = Math.max(0, (s.turn.burningGardenCodexCopiesRemaining ?? 0) - 1);
-    }
-  }
-
-  if (hasBurningGardenCardOnBoard(s, 'bg-inf-soleth-vair-worldflower')) {
-    const distinct = new Set((s.board.emberGrove ?? []).map(seed => seed.lineage ?? getBurningGardenLineage(seed.definitionId))).size;
-    const gain = Math.max(1, distinct);
-    s.turn.burningGardenWorldflowerGrowth = (s.turn.burningGardenWorldflowerGrowth ?? 0) + gain;
-    grantOblivion(s, Math.round(66 * gain));
-  }
-
-  if (location.kind === 'front') {
-    s.board.frontSlots[location.index] = null;
-  } else {
-    s.board.backSlots[location.index] = null;
-  }
-}
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function applyBurningGardenFinalChord(s: Store, def: CardDefinition, chromaticSourceCount: number): void {
   const bonusScale = Math.max(0, s.turn.burningGardenNextFinalChordScaleBonus ?? 0);
   const scale = Math.max(1, chromaticSourceCount - 2 + bonusScale);
@@ -4362,10 +4307,10 @@ function applyCherubimPassiveEffects(s: Store): void {
               s.turn.strain += effect.value;
               break;
             case 'prismaticLight':
-              s.turn.prismaticLight = Math.max(0, (s.turn.prismaticLight ?? 0) + effect.value);
+              s.turn.prismaticLight = Math.max(0, (s.turn.prismaticLight ?? 0) + (effect as { value: number }).value);
               break;
             case 'arcticCharge':
-              s.turn.arcticCharge = Math.max(0, (s.turn.arcticCharge ?? 0) + effect.value);
+              s.turn.arcticCharge = Math.max(0, (s.turn.arcticCharge ?? 0) + (effect as { value: number }).value);
               break;
           }
           break;
@@ -4795,10 +4740,11 @@ export const useStore = create<Store>()(
         if (angelDef.extraSummonConditions) {
           for (const cond of angelDef.extraSummonConditions) {
             if (cond.type === 'cherubim_active_gte' && s.board.backSlots.filter(sl => sl !== null).length < cond.value) return;
+            if (cond.type === 'seraphim_active_gte' && s.board.frontSlots.filter(sl => sl?.type === 'Seraphim' && sl.isActive).length < cond.value) return;
             if (cond.type === 'seraphim_on_board_gte' && s.board.frontSlots.filter(sl => sl?.type === 'Seraphim').length < cond.value) return;
             if (cond.type === 'board_definition_gte' && (boardDefinitionCount[cond.definitionId] ?? 0) < cond.value) return;
-            if (cond.type === 'prismatic_refraction_depth_gte' && (s.turn.prismaticRefractionDepth ?? 0) < cond.value) return;
-            if (cond.type === 'prismatic_distinct_channels_gte' && new Set(s.turn.prismaticDistinctChannels ?? []).size < cond.value) return;
+            if ((cond as { type: string; value?: number }).type === 'prismatic_refraction_depth_gte' && (s.turn.prismaticRefractionDepth ?? 0) < ((cond as { value: number }).value)) return;
+            if ((cond as { type: string; value?: number }).type === 'prismatic_distinct_channels_gte' && new Set(s.turn.prismaticDistinctChannels ?? []).size < ((cond as { value: number }).value)) return;
             if (cond.type === 'equilibrium_sigils_gte' && (s.turn.neutralityEquilibriumSigils ?? 0) < cond.value) return;
             if (cond.type === 'eternal_stack_gte' && (s.turn.eternalStacks?.[cond.stack] ?? 0) < cond.value) return;
             if (cond.type === 'set_secondary_gte' && (s.turn.secondaryCounters?.[cond.kind] ?? 0) < cond.value) return;

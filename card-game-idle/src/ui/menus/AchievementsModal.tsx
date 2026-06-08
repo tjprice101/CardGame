@@ -446,7 +446,7 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
       }}>
         <span>+{a.shardReward} ◈</span>
         {a.oblivionReward > 0 && (
-          <span style={{ fontSize: 11, color: withAlpha(P.accentSoft, 0.9), fontFamily: uiTypography.body }}>+{a.oblivionReward.toLocaleString()} Oblivion</span>
+          <span style={{ fontSize: 11, color: withAlpha(P.accentGold, 0.9), fontFamily: uiTypography.body }}>+{a.oblivionReward.toLocaleString()} Oblivion</span>
         )}
       </div>
 

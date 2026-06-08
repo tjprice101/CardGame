@@ -510,7 +510,7 @@ function QuestCard({ quest, accent, palette, onClaim }: {
                 color: quest.claimed
                   ? palette.textFaint
                   : complete
-                  ? palette.accentDeep
+                  ? palette.accentDailyDeep
                     : palette.textFaint,
                 border: `1px solid ${quest.claimed ? withAlpha(palette.text, 0.08) : complete ? withAlpha(palette.accentGold, 0.52) : withAlpha(palette.text, 0.08)}`,
                 borderRadius: 8, padding: '6px 18px',

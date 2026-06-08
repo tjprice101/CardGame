@@ -1899,7 +1899,7 @@ export class CardEffectExecutor {
         }
 
         case 'dfh_veil_marks_attack_bonus': {
-          const key = effect.targetDefinitionId ?? def.definitionId;
+          const key = effect.targetDefinitionId ?? def?.definitionId ?? deckCard.definitionId;
           const existing = mutableTurn.dfhVeilAttackBonusByDefinition ?? {};
           mutableTurn.dfhVeilAttackBonusByDefinition = {
             ...existing,

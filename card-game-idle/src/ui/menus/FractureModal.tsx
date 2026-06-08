@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { uiTypography, warmTheme } from '@/ui/theme';
+import { uiTypography } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { MASTERY_TIERS, getMasteryClaimKey } from '@/systems/progression/cardMastery';
 import { getDenseCardFaceBackgroundStyle } from '@/ui/cardBackgrounds';
