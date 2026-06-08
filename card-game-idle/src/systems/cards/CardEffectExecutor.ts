@@ -2367,7 +2367,10 @@ export class CardEffectExecutor {
     }
 
     const effects = (def as OphanimDefinition).effects;
-    const discardableHandSize = deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel').length;
+    // Angels are enforced to never exist in the main-deck hand, so handSize
+    // equals the non-Angel discardable count. Using 'deck' directly was a
+    // dangling reference that caused a black-screen crash when phase → playing.
+    const discardableHandSize = handSize;
     for (const effect of effects) {
       if (effect.type === 'discard_choice' && discardableHandSize - 1 < effect.value) return false;
       if (effect.type === 'discard_draw' && discardableHandSize - 1 < effect.discard) return false;
