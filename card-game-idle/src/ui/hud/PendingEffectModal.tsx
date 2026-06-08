@@ -191,6 +191,8 @@ export default function PendingEffectModal() {
   if (pending.type === 'light_transcendent_duality_choice') {
     const selectedMode = selected[0] ?? null;
     const selectedDiscardId = selected[1] ?? null;
+    const discardableHand = deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel');
+    const selectedDiscardIsValid = !!selectedDiscardId && discardableHand.some(card => card.instanceId === selectedDiscardId);
     const resonance = Math.max(0, turn.lightResonance ?? 0);
     const halo = Math.max(0, turn.eternalStacks?.light ?? 0);
     const distinctNotes = new Set(turn.lightDistinctNotes ?? []).size;
@@ -203,7 +205,7 @@ export default function PendingEffectModal() {
       + thresholdBonus,
     );
 
-    const canConfirm = selectedMode === 'oblivion' || (selectedMode === 'draw' && !!selectedDiscardId);
+    const canConfirm = selectedMode === 'oblivion' || (selectedMode === 'draw' && selectedDiscardIsValid);
 
     return (
       <div className="anim-backdrop-fade" style={backdropStyle}>
@@ -249,10 +251,10 @@ export default function PendingEffectModal() {
           {selectedMode === 'draw' && (
             <>
               <div style={{ ...styles.info, marginBottom: 8 }}>
-                Select exactly 1 card from your hand to discard.
+                Select exactly 1 non-Angel card from your hand to discard.
               </div>
               <div style={styles.cardGrid}>
-                {deck.hand.map(card => {
+                {discardableHand.map(card => {
                   const isSelected = card.instanceId === selectedDiscardId;
                   return (
                     <div
@@ -346,6 +348,7 @@ export default function PendingEffectModal() {
     const maxDiscard = pending.count;
     const isLuminousCycle = pending.sourceCard.includes(':draw_plus:');
     const isGleamingPassage = pending.sourceCard.includes(':draw:');
+    const discardableHand = deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel');
 
     const toggleCard = (id: string) => {
       setSelected(prev =>
@@ -357,14 +360,14 @@ export default function PendingEffectModal() {
 
     let subtitle = isLuminousCycle
       ? `Select up to ${maxDiscard} card${maxDiscard > 1 ? 's' : ''} to discard.`
-      : `Select ${Math.min(maxDiscard, deck.hand.length)} card${Math.min(maxDiscard, deck.hand.length) !== 1 ? 's' : ''} to discard.`;
+      : `Select ${Math.min(maxDiscard, discardableHand.length)} card${Math.min(maxDiscard, discardableHand.length) !== 1 ? 's' : ''} to discard.`;
     if (isLuminousCycle) subtitle += ` You will then draw ${selected.length + 1} card${selected.length + 1 !== 1 ? 's' : ''}.`;
     else if (isGleamingPassage) {
       const drawCount = parseInt(pending.sourceCard.split(':draw:')[1]);
       subtitle += ` You will then draw ${drawCount} cards.`;
     }
 
-    const effectiveMax = Math.min(maxDiscard, deck.hand.length);
+    const effectiveMax = Math.min(maxDiscard, discardableHand.length);
     const canConfirm = isLuminousCycle || selected.length >= effectiveMax;
 
     return (
@@ -373,7 +376,7 @@ export default function PendingEffectModal() {
           <div style={styles.title}>Choose Cards to Discard</div>
           <div style={styles.subtitle}>{subtitle}</div>
           <div style={styles.cardGrid}>
-            {deck.hand.map(c => {
+            {discardableHand.map(c => {
               const isSel = selected.includes(c.instanceId);
               return (
                 <div

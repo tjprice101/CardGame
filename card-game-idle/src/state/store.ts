@@ -3600,7 +3600,11 @@ function canPayAttackCosts(
   if (requiredDiscardCount > 0) {
     if (selectedDiscardIds.length !== requiredDiscardCount) return false;
     if (new Set(selectedDiscardIds).size !== selectedDiscardIds.length) return false;
-    const handIds = new Set(s.deck.hand.map(card => card.instanceId));
+    const handIds = new Set(
+      s.deck.hand
+        .filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel')
+        .map(card => card.instanceId),
+    );
     if (!selectedDiscardIds.every(id => handIds.has(id))) return false;
   }
 
@@ -3629,7 +3633,7 @@ function canPayAttackCosts(
   for (const cost of costs) {
     switch (cost.type) {
       case 'discard_from_hand':
-        if (s.deck.hand.length < cost.value) return false;
+        if (s.deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel').length < cost.value) return false;
         break;
       case 'sacrifice_seraphim': {
         const available = s.board.frontSlots.filter(slot => slot?.type === 'Seraphim' && slot.instanceId !== actor.instanceId).length;
@@ -3671,8 +3675,14 @@ function payAttackCosts(
     switch (cost.type) {
       case 'discard_from_hand': {
         const idsForCost = discardIdQueue.splice(0, cost.value);
-        const discarded = s.deck.hand.filter(card => idsForCost.includes(card.instanceId));
-        s.deck.hand = s.deck.hand.filter(card => !idsForCost.includes(card.instanceId));
+        const discardableIds = new Set(
+          s.deck.hand
+            .filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel')
+            .map(card => card.instanceId),
+        );
+        const validIdsForCost = idsForCost.filter(id => discardableIds.has(id));
+        const discarded = s.deck.hand.filter(card => validIdsForCost.includes(card.instanceId));
+        s.deck.hand = s.deck.hand.filter(card => !validIdsForCost.includes(card.instanceId));
         if (discarded.length > 0) {
           for (const card of discarded) pushEmberGroveDeckSeed(s, card);
           recordLossEvent(s, discarded, 'discard');
@@ -5656,11 +5666,12 @@ export const useStore = create<Store>()(
         };
 
         if (pending.type === 'discard_choice') {
-          const handIds = new Set(s.deck.hand.map(card => card.instanceId));
+          const discardableHand = s.deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel');
+          const handIds = new Set(discardableHand.map(card => card.instanceId));
           const uniqueSelected = Array.from(new Set(selected));
           if (!uniqueSelected.every(id => handIds.has(id))) return;
 
-          const maxDiscard = Math.min(pending.count, s.deck.hand.length);
+          const maxDiscard = Math.min(pending.count, discardableHand.length);
           const isVariableDiscard = pending.sourceCard.includes(':draw_plus:');
           if (isVariableDiscard) {
             if (uniqueSelected.length > maxDiscard) return;
@@ -5812,6 +5823,7 @@ export const useStore = create<Store>()(
             if (!discardId) return;
             const cardToDiscard = s.deck.hand.find(card => card.instanceId === discardId);
             if (!cardToDiscard) return;
+            if (CardRegistry.get(cardToDiscard.definitionId)?.type === 'Angel') return;
 
             recordLossEvent(s, [{ definitionId: cardToDiscard.definitionId }], 'discard');
             s.deck = TurnSystem.discardFromHand(s.deck, [discardId]);
