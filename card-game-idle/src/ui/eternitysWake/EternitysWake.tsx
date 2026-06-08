@@ -338,7 +338,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           const displayBossArtUrl = bossArtUrl ?? rewardCardArtUrl;
           const isSelected = selectedBossId === boss.id;
           const previousBossName = previousBossNameById.get(boss.id);
-          const rewardDisplayName = boss.category === 'Black Glass Inferno' ? boss.name : rewardDef?.name ?? '';
+          const rewardDisplayName = rewardDef?.name ?? '';
           const rewardPreviewText = rewardDef
             ? getCardPreviewLines(rewardDef, rewardDef.type === 'Angel' ? 3 : 2).join(' ')
             : '';
