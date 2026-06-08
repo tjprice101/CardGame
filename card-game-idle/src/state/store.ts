@@ -3359,12 +3359,20 @@ function incrementAngelProgress(board: BoardState): void {
 function enforceAngelExtraDeckInvariant(deck: DeckState, options: { refillHand?: boolean } = {}): void {
   // Angels belong exclusively to extraDeck. If they leak into main-deck zones,
   // move them out immediately and optionally refill vacated hand slots.
-  const isAngelCard = (card: DeckCard): boolean => CardRegistry.get(card.definitionId)?.type === 'Angel';
+  const isAngelCard = (card: DeckCard | null | undefined): boolean => {
+    if (!card || typeof card.definitionId !== 'string' || card.definitionId.length === 0) return false;
+    return CardRegistry.get(card.definitionId)?.type === 'Angel';
+  };
   let movedFromHand = 0;
 
   const stripZone = (zone: DeckCard[]): DeckCard[] => {
     const kept: DeckCard[] = [];
-    for (const card of zone) {
+    for (const rawCard of zone as Array<DeckCard | null | undefined>) {
+      if (!rawCard || typeof rawCard.definitionId !== 'string' || rawCard.definitionId.length === 0) {
+        // Legacy/corrupt saves may contain null stubs; drop them defensively.
+        continue;
+      }
+      const card = rawCard;
       if (isAngelCard(card)) {
         deck.extraDeck.push(createExtraDeckEntry(card.definitionId, card.finish));
       } else {
