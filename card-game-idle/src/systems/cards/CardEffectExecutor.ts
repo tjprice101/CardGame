@@ -2367,9 +2367,10 @@ export class CardEffectExecutor {
     }
 
     const effects = (def as OphanimDefinition).effects;
+    const discardableHandSize = deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel').length;
     for (const effect of effects) {
-      if (effect.type === 'discard_choice' && handSize - 1 < effect.value) return false;
-      if (effect.type === 'discard_draw' && handSize - 1 < effect.discard) return false;
+      if (effect.type === 'discard_choice' && discardableHandSize - 1 < effect.value) return false;
+      if (effect.type === 'discard_draw' && discardableHandSize - 1 < effect.discard) return false;
       if (effect.type === 'radiance_spend' && effect.value < 9999 && turn.radiance < effect.value) return false;
       if (effect.type === 'pyro_heat_spend' && effect.value < 9999 && (turn.pyroHeat ?? 0) < effect.value) return false;
       if (effect.type === 'trail_spend' && effect.value < 9999 && turn.trail < effect.value) return false;

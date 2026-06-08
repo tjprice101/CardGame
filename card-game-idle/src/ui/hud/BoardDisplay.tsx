@@ -617,6 +617,10 @@ export default function BoardDisplay() {
   } = useStore.getState();
 
   const hand = deck.hand;
+  const discardableHand = useMemo(
+    () => hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel'),
+    [hand],
+  );
 
   // Memoize hand-type checks to avoid O(n) CardRegistry scans on every render
   const { hasSeraphimInHand, hasCherubimInHand } = useMemo(() => ({
@@ -1735,7 +1739,7 @@ export default function BoardDisplay() {
                         overflowY: 'auto',
                         paddingRight: 4,
                       }}>
-                        {hand.map(card => {
+                        {discardableHand.map(card => {
                           const def = CardRegistry.get(card.definitionId);
                           const selected = selectedDiscardIds.includes(card.instanceId);
                           return (
@@ -2003,7 +2007,7 @@ export default function BoardDisplay() {
                         overflowY: 'auto',
                         paddingRight: 4,
                       }}>
-                        {hand.map(card => {
+                        {discardableHand.map(card => {
                           const def = CardRegistry.get(card.definitionId);
                           const selected = selectedDiscardIds.includes(card.instanceId);
                           return (

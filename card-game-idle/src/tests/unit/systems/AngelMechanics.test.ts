@@ -216,6 +216,91 @@ describe('Angel mechanics', () => {
     expect(state.turn.radiance).toBe(8);
   });
 
+  it('does not allow Angel cards to satisfy discard-choice pending effects', () => {
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [],
+        drawPile: [],
+        hand: [
+          { instanceId: 'ang_hand', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'oph_hand', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+        ],
+        discardPile: [],
+      },
+      turn: {
+        ...makePlayingTurn(),
+        pendingEffect: {
+          type: 'discard_choice',
+          count: 1,
+          sourceCard: 'unit-test',
+        },
+      },
+    }));
+
+    useStore.getState().resolvePending(['ang_hand']);
+
+    let state = useStore.getState();
+    expect(state.turn.pendingEffect?.type).toBe('discard_choice');
+    expect(state.deck.hand.some(card => card.instanceId === 'ang_hand')).toBe(true);
+    expect(state.deck.discardPile.length).toBe(0);
+
+    useStore.getState().resolvePending(['oph_hand']);
+
+    state = useStore.getState();
+    expect(state.turn.pendingEffect).toBeNull();
+    expect(state.deck.hand.some(card => card.instanceId === 'ang_hand')).toBe(true);
+    expect(state.deck.discardPile.some(card => card.instanceId === 'oph_hand')).toBe(true);
+  });
+
+  it('does not allow Duality draw mode to discard an Angel card', () => {
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [],
+        drawPile: [
+          { instanceId: 'draw_a', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'draw_b', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+        ],
+        hand: [
+          { instanceId: 'ang_hand', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'oph_hand', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+        ],
+        discardPile: [],
+      },
+      turn: {
+        ...makePlayingTurn(),
+        pendingEffect: {
+          type: 'light_transcendent_duality_choice',
+          baseOblivion: 1000,
+          resonanceScale: 10,
+          haloScale: 10,
+          distinctNoteScale: 10,
+          thresholdDivisor: 2,
+          thresholdScale: 10,
+        },
+      },
+    }));
+
+    useStore.getState().resolvePending(['draw', 'ang_hand']);
+
+    let state = useStore.getState();
+    expect(state.turn.pendingEffect?.type).toBe('light_transcendent_duality_choice');
+    expect(state.deck.hand.some(card => card.instanceId === 'ang_hand')).toBe(true);
+    expect(state.deck.discardPile.length).toBe(0);
+
+    useStore.getState().resolvePending(['draw', 'oph_hand']);
+
+    state = useStore.getState();
+    expect(state.turn.pendingEffect).toBeNull();
+    expect(state.deck.hand.some(card => card.instanceId === 'ang_hand')).toBe(true);
+    expect(state.deck.discardPile.some(card => card.instanceId === 'oph_hand')).toBe(true);
+  });
+
   it('enforces board-specific and sigil summon conditions for transcendents', () => {
     useStore.setState(state => ({
       ...state,
