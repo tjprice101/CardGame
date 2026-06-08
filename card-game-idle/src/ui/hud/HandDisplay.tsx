@@ -632,7 +632,7 @@ export default function HandDisplay() {
       <div
         style={{
           ...styles.handWrapper,
-          ['--hand-strip-height' as const]: '220px',
+          ['--hand-strip-height' as string]: '220px',
           right: handRightInset,
           opacity: showActiveHand ? 1 : 0,
           pointerEvents: showActiveHand ? 'none' : 'none',

@@ -76,6 +76,7 @@ export interface AngelAttackSet {
 
 export type SummonCondition =
   | { type: 'cherubim_active_gte'; value: number }
+  | { type: 'seraphim_active_gte'; value: number }
   | { type: 'seraphim_on_board_gte'; value: number }
   | { type: 'board_definition_gte'; definitionId: string; value: number }
   | { type: 'equilibrium_sigils_gte'; value: number }
@@ -123,6 +124,7 @@ export interface AngelInstance {
   attackCooldowns: Record<string, number>;
   boardSlot: 0 | 1 | 2 | 3 | 4 | null;
   patienceStacks?: number;
+  flutterAttackBuff?: { multiplier: number; remainingCards: number; mode?: string };
 }
 
 export interface SeraphimStats {
@@ -169,6 +171,7 @@ export interface SeraphimInstance {
   attackCooldowns: Record<string, number>;
   boardSlot: 0 | 1 | 2 | 3 | 4 | null;
   patienceStacks?: number;
+  flutterAttackBuff?: { multiplier: number; remainingCards: number; mode?: string };
 }
 
 export interface CherubimDiscardCondition {

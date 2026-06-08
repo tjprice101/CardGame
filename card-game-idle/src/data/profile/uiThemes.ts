@@ -448,12 +448,12 @@ function getThemeSetSpecs(): ThemeSetSpec[] {
     }
   }
 
-  const order = new Map(ELEMENT_ORDER.map((element, idx) => [element, idx]));
+  const order = new Map<string, number>(ELEMENT_ORDER.map((element, idx) => [element, idx]));
   const sorted = [...grouped.values()]
     .filter((spec) => spec.baseIds.length > 0)
     .sort((a, b) => {
-      const oa = order.get(a.element) ?? Number.MAX_SAFE_INTEGER;
-      const ob = order.get(b.element) ?? Number.MAX_SAFE_INTEGER;
+      const oa = order.get(a.element as string) ?? Number.MAX_SAFE_INTEGER;
+      const ob = order.get(b.element as string) ?? Number.MAX_SAFE_INTEGER;
       return oa - ob || a.label.localeCompare(b.label);
     });
 

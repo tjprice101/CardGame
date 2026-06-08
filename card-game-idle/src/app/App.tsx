@@ -41,7 +41,7 @@ const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/Battlegroun
 const CoopRaidInviteModal = lazy(() => import('@/ui/ascension/CoopRaidInviteModal'));
 const EternityBossCoopInviteModal = lazy(() => import('@/ui/eternitysWake/EternityBossCoopInviteModal'));
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
-import { DEFAULT_WARM_PALETTE, warmTheme } from '@/ui/theme';
+import { warmTheme } from '@/ui/theme';
 import { applyEffectiveTheme, DEFAULT_UI_THEME_ID, isThemeOscillating } from '@/data/profile/uiThemes';
 import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress, selectTrialDeck } from '@/state/store';
 import { useFriendsStore } from '@/state/friendsStore';

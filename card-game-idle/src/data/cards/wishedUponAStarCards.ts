@@ -460,7 +460,7 @@ const baseAngels: AngelDefinition[] = [
       effects: [
         { type: 'dream_lattice_gain', amount: 2 },
         { type: 'draw', value: 1 },
-        { type: 'wuas_constellation_lock_release', consume: 3 },
+        { type: 'wuas_constellation_lock_release', oblivionPerStack: 280, consume: 3 },
       ],
     },
     primaryName: 'Warden Strike', exaltedName: 'Selenira Verdict',
@@ -490,7 +490,7 @@ const baseAngels: AngelDefinition[] = [
       effects: [
         { type: 'wuas_nova_wish_burst', consumeStarlight: false, dreamMultiplier: 0.7 },
         { type: 'starlight_gain', amount: 3 },
-        { type: 'wuas_infinite_starbirth' }],
+        { type: 'wuas_infinite_starbirth', oblivionPerSeraphimPerStarlight: 45 }],
     },
     primaryName: 'Eclipse Strike', exaltedName: 'Draethos Descent',
     primaryDescription: '790 base Oblivion 8 cards cooldown',

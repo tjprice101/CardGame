@@ -679,7 +679,7 @@ function BonusesTab() {
 
 function TipsTab() {
   const stats = useStore(selectComputedStats);
-  const board = useStore(selectBoard);
+  useStore(selectBoard);
 
   const noSynergies   = stats.activeSynergies === 0;
   const perCardBonus  = stats.oblivionPerCardBonus;
