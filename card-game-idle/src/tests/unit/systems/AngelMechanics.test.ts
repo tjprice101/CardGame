@@ -301,6 +301,138 @@ describe('Angel mechanics', () => {
     expect(state.deck.discardPile.some(card => card.instanceId === 'oph_hand')).toBe(true);
   });
 
+  it('replaces hand Angels with non-Angel cards when a turn begins', () => {
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [],
+        hand: [],
+        drawPile: [
+          { instanceId: 'a1', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'n1', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n2', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n3', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n4', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n5', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+        ],
+        discardPile: [],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'idle',
+      },
+    }));
+
+    useStore.getState().beginTurn();
+
+    const state = useStore.getState();
+    expect(state.turn.phase).toBe('mulligan');
+    expect(state.deck.hand).toHaveLength(5);
+    expect(state.deck.hand.some(card => CardRegistry.get(card.definitionId)?.type === 'Angel')).toBe(false);
+    expect(state.deck.extraDeck.some(entry => entry.definitionId === 'angel-neutral-beginning')).toBe(true);
+  });
+
+  it('replaces hand Angels with non-Angel cards when confirming mulligan', () => {
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [],
+        hand: [
+          { instanceId: 'a1', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'n1', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n2', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n3', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n4', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+        ],
+        drawPile: [
+          { instanceId: 'n5', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+        ],
+        discardPile: [],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'mulligan',
+        mulliganSelected: [],
+      },
+    }));
+
+    useStore.getState().confirmMulligan();
+
+    const state = useStore.getState();
+    expect(state.turn.phase).toBe('playing');
+    expect(state.deck.hand).toHaveLength(5);
+    expect(state.deck.hand.some(card => CardRegistry.get(card.definitionId)?.type === 'Angel')).toBe(false);
+    expect(state.deck.extraDeck.some(entry => entry.definitionId === 'angel-neutral-beginning')).toBe(true);
+  });
+
+  it('does not loop when turn start can only draw Angels', () => {
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [],
+        hand: [],
+        drawPile: [
+          { instanceId: 'a1', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'a2', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'a3', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'a4', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'a5', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+        ],
+        discardPile: [],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'idle',
+      },
+    }));
+
+    useStore.getState().beginTurn();
+
+    const state = useStore.getState();
+    expect(state.turn.phase).toBe('mulligan');
+    expect(state.deck.hand.some(card => CardRegistry.get(card.definitionId)?.type === 'Angel')).toBe(false);
+    expect(state.deck.extraDeck.length).toBeGreaterThan(0);
+  });
+
+  it('moves Angels out of draw and discard piles at turn start', () => {
+    useStore.setState(state => ({
+      ...state,
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [],
+        hand: [],
+        drawPile: [
+          { instanceId: 'a1', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+          { instanceId: 'n1', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n2', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n3', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+          { instanceId: 'n4', definitionId: 'seek-neutral-null-seek', finish: 'normal' },
+        ],
+        discardPile: [
+          { instanceId: 'a2', definitionId: 'angel-neutral-beginning', finish: 'normal' },
+        ],
+      },
+      turn: {
+        ...state.turn,
+        phase: 'idle',
+      },
+    }));
+
+    useStore.getState().beginTurn();
+
+    const state = useStore.getState();
+    expect(state.deck.drawPile.some(card => CardRegistry.get(card.definitionId)?.type === 'Angel')).toBe(false);
+    expect(state.deck.discardPile.some(card => CardRegistry.get(card.definitionId)?.type === 'Angel')).toBe(false);
+    expect(state.deck.extraDeck.filter(entry => entry.definitionId === 'angel-neutral-beginning')).toHaveLength(2);
+  });
+
   it('enforces board-specific and sigil summon conditions for transcendents', () => {
     useStore.setState(state => ({
       ...state,

@@ -3356,6 +3356,42 @@ function incrementAngelProgress(board: BoardState): void {
   }
 }
 
+function enforceAngelExtraDeckInvariant(deck: DeckState, options: { refillHand?: boolean } = {}): void {
+  // Angels belong exclusively to extraDeck. If they leak into main-deck zones,
+  // move them out immediately and optionally refill vacated hand slots.
+  const isAngelCard = (card: DeckCard): boolean => CardRegistry.get(card.definitionId)?.type === 'Angel';
+  let movedFromHand = 0;
+
+  const stripZone = (zone: DeckCard[]): DeckCard[] => {
+    const kept: DeckCard[] = [];
+    for (const card of zone) {
+      if (isAngelCard(card)) {
+        deck.extraDeck.push(createExtraDeckEntry(card.definitionId, card.finish));
+      } else {
+        kept.push(card);
+      }
+    }
+    return kept;
+  };
+
+  const originalHandCount = deck.hand.length;
+  deck.hand = stripZone(deck.hand);
+  movedFromHand = originalHandCount - deck.hand.length;
+  deck.drawPile = stripZone(deck.drawPile);
+  deck.discardPile = stripZone(deck.discardPile);
+
+  if (!options.refillHand || movedFromHand <= 0) return;
+
+  const refillCount = movedFromHand;
+  if (deck.drawPile.length < refillCount && deck.discardPile.length > 0) {
+    deck.drawPile = DeckSystem.reshuffleDiscard(deck.drawPile, deck.discardPile);
+    deck.discardPile = [];
+  }
+  const { drawn, remaining } = DeckSystem.draw(deck.drawPile, refillCount);
+  deck.drawPile = remaining;
+  for (const card of drawn) deck.hand.push(card);
+}
+
 function canResolveActivatedEffects(
   effects: CardEffect[],
   turn: TurnState,
@@ -5297,6 +5333,7 @@ export const useStore = create<Store>()(
         s.turn.turnNumber = (s.turn.turnNumber ?? 0) + 1;
         s.turn.emberGroveEchoUsedThisTurn = false;
         s.turn.eternalSeasReleaseReactionUsedThisTurn = false;
+        enforceAngelExtraDeckInvariant(s.deck);
         if (s.deck.drawPile.length < 5 && s.deck.discardPile.length > 0) {
           s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
           s.deck.discardPile = [];
@@ -5304,6 +5341,7 @@ export const useStore = create<Store>()(
         const { drawn, remaining } = DeckSystem.draw(s.deck.drawPile, 5);
         s.deck.drawPile = remaining;
         for (const card of drawn) s.deck.hand.push(card);
+        enforceAngelExtraDeckInvariant(s.deck, { refillHand: true });
 
         // ── Guided Trial Deck: first turn gets a fixed opening hand ──────────
         const isGuidedTrial = s.trialDeck.mode === 'active' && s.trialDeck.trialMode === 'guided';
@@ -5393,9 +5431,12 @@ export const useStore = create<Store>()(
       set(s => {
         if (s.turn.phase !== 'mulligan') return;
         const selected = [...s.turn.mulliganSelected];
+        enforceAngelExtraDeckInvariant(s.deck, { refillHand: true });
         s.turn.mulliganSelected = [];
         s.turn.phase = 'playing';
-        if (selected.length === 0) return;
+        if (selected.length === 0) {
+          return;
+        }
         const toDiscard = s.deck.hand.filter(c => selected.includes(c.instanceId));
         for (const card of toDiscard) s.deck.discardPile.push(card);
         s.deck.hand = s.deck.hand.filter(c => !selected.includes(c.instanceId));
@@ -5406,6 +5447,7 @@ export const useStore = create<Store>()(
         const { drawn, remaining } = DeckSystem.draw(s.deck.drawPile, toDiscard.length);
         s.deck.drawPile = remaining;
         for (const card of drawn) s.deck.hand.push(card);
+        enforceAngelExtraDeckInvariant(s.deck, { refillHand: true });
       });
     },
 
