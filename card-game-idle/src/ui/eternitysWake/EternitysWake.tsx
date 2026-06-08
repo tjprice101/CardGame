@@ -348,6 +348,18 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           const selectedFightCount = getSelectedFightCount(boss.id);
           const hpScale = selectedFightCount === 1 ? 1 : selectedFightCount === 2 ? 2.5 : 3.5;
           const scaledPreviewHp = Math.round(getBossDisplayHp(progress, boss) * hpScale);
+          // Reward card face: replace the art URL layer with the boss art so the
+          // small card preview and the large boss header show the same image.
+          const rewardFaceBaseStyle = rewardDef ? getDenseCardFaceBackgroundStyle(rewardDef, 'normal') : {};
+          const rewardFaceStyle = displayBossArtUrl && typeof rewardFaceBaseStyle.backgroundImage === 'string'
+            ? {
+                ...rewardFaceBaseStyle,
+                backgroundImage: rewardFaceBaseStyle.backgroundImage.replace(
+                  /url\("[^"]*"\)/g,
+                  `url("${displayBossArtUrl}")`,
+                ),
+              }
+            : rewardFaceBaseStyle;
 
           return (
             <div key={boss.id} className={onCooldown || lockedByProgress ? undefined : 'ui-tile-hover'} style={{
@@ -469,7 +481,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                           style={{
                             width: REWARD_FACE_WIDTH,
                             height: REWARD_FACE_HEIGHT,
-                            ...getDenseCardFaceBackgroundStyle(rewardDef, 'normal'),
+                            ...rewardFaceStyle,
                             borderRadius: 10,
                             border: '1px solid rgba(255,107,107,0.3)',
                             position: 'relative',
