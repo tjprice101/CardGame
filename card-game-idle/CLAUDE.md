@@ -315,8 +315,8 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - Do not show strategic tips or advice anywhere in the UI.
 
 ### HUD Elements
-- **Oblivion display**: centered top, 36px, gold with glow. Shows chain multiplier during a turn.
-- **Stat panel**: top-left, shows active synergies, Oblivion earned this turn, chain multiplier, active Cherubim count.
+- **Oblivion display**: centered top, 36px, gold with glow. Shows sequence multiplier during a turn.
+- **Stat panel**: top-left, shows active synergies, Oblivion earned this turn, sequence multiplier, active Cherubim count.
 - **Set Engine Display**: `src/ui/hud/SetEngineDisplay.tsx` — surfaces the live set-engine readout. Data comes from `src/ui/setEngineSummary.ts` (`buildEngineSnapshot`, `ENGINE_ROLE_TEXT`, `SET_ENGINE_GUIDES`).
 - **Turn controls**: bottom-right, large buttons.
 - **Deck status pills**: bottom-right, showing Deck / Discard / Hand counts.
@@ -380,7 +380,7 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - **Search / Salvage / Look effects** produce `PendingEffect` variants (`search_deck`, `salvage`, `look_top_take_drop`, `look_top_take_type`) that require a **UI picker**. Resolved via store actions analogous to `discard_choice`. Always propagate `result.pendingEffect` in all card-play paths.
 - **Extra deck init**: `STARTER_EXTRA_DECK` from `StarterDeck.ts` populates the player's extra deck on game start.
 - **No `cardSubtype` field** exists on any card definition.
-- **Chain multiplier timing**: For Ophanim cards, capture `prePlayChain = s.turn.chainMultiplier` before calling the executor, then pass it as `chainOverride` to `awardOblivionForCardPlay`. The executor increments the chain before returning.
+- **Sequence multiplier timing**: For Ophanim cards, capture `prePlayChain = s.turn.chainMultiplier` before calling the executor, then pass it as `chainOverride` to `awardOblivionForCardPlay`. The executor increments the sequence before returning.
 - **`CherubimPassiveEffect`** is a separate union type from `CardEffect` and `ImmediateEffect`. Cherubim `effects` field is `CherubimPassiveEffect[]`, not `ImmediateEffect[]`.
 - **`tickCherubimDurability`** must be called after awarding Oblivion in all card-play paths.
 - **Attack cooldown floor**: Both Seraphim and Angel attack activations enforce a post-fire cooldown floor of 1 card minimum (before and after late-game identity reductions).

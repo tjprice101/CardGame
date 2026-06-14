@@ -338,7 +338,7 @@
   - [Chorus Breaker]: Gain 5 Arctic Charge; gain +90 Oblivion; discharge Arctic Charge.
 - Attack (Primary): Overcurrent Chorus Ordinance - damage 540 / discard 1 / cooldown 4 (`round(540/100) - 1 = 5 - 1 = 4`)
 - Attack (Exalted): Overcurrent Chorus Throne Decree - damage 960 / discard 3 / cooldown 7 (`round(960/100) - 3 = 10 - 3 = 7`)
-- Synergy note: Early angel pivot that rewards Static Sleet Seraphim and First Static chain bursts.
+- Synergy note: Early angel pivot that rewards Static Sleet Seraphim and First Static sequence bursts.
 - [changed: effects | damage | cooldown | element]
 
 ### Polarity Throne

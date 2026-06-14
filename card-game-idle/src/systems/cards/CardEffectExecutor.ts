@@ -2357,6 +2357,23 @@ export class CardEffectExecutor {
           }
         }
       }
+
+      // Summoning must end with at least one free front slot. If summon materials
+      // are consumed they can free slots; otherwise an already-full front row blocks summon.
+      const frontHasEmptySlot = board.frontSlots.some(slot => slot === null);
+      if (!frontHasEmptySlot) {
+        if (angelDef.summonCost.length === 0) return false;
+        const usedSlots = new Set<number>();
+        for (const reqId of angelDef.summonCost) {
+          const slotIdx = board.frontSlots.findIndex(
+            (slot, idx) => slot?.definitionId === reqId && !usedSlots.has(idx),
+          );
+          if (slotIdx === -1) return false;
+          usedSlots.add(slotIdx);
+        }
+        if (usedSlots.size === 0) return false;
+      }
+
       return true;
     }
 

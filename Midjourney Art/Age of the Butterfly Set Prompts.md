@@ -150,7 +150,7 @@ lens current, glass-wing ophanim lens body, trading card illustration, transpare
 `definitionId: bf-oph-copper-green-trail`
 
 ```text
-copper-green trail, ophanim with oxidized metallic flare, trading card illustration, swift arc turn leaving fused mineral bead chain and green electric sparks, rich teal copper palette with black-glass shadows, dynamic but symmetrical card readability --ar 2:3 --niji 6 --stylize 900
+copper-green trail, ophanim with oxidized metallic flare, trading card illustration, swift arc turn leaving fused mineral bead sequence and green electric sparks, rich teal copper palette with black-glass shadows, dynamic but symmetrical card readability --ar 2:3 --niji 6 --stylize 900
 ```
 
 ### Crystal Ornament Route | Ophanim | Rare

@@ -174,7 +174,7 @@
   - While on board: +20 Oblivion per card played while active
 - Attack (Unsynergized): Verdant Lure -> damage 620 / discard 0 / cooldown 6 (round(620/100) - 0 = 6)
 - Attack (Synergized): Anglerfish Verdict -> damage 1080 / discard 0 / cooldown 11 (round(1080/100) - 0 = 11)
-- Synergy note: Reliable charge starter for Anvilborn Sovereign and mid-chain recast anchor for Forge Wheel Sigil.
+- Synergy note: Reliable charge starter for Anvilborn Sovereign and mid-sequence recast anchor for Forge Wheel Sigil.
 - [changed: effects | cooldown]
 
 ### Coalfin Pilgrim Shark (Seraphim card)

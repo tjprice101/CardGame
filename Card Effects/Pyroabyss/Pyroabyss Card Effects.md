@@ -54,7 +54,7 @@
 * +2200 Oblivion
 * Draw 1 card
 
-## Cinder Chain
+## Cinder Sequence
 * Gain 3 Heat
 * If you have 10+ Heat, Gain 3 Heat
 

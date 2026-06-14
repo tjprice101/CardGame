@@ -176,10 +176,10 @@
 * +45 Oblivion
 * If you have played 3+ cards this turn, Gain 2 Radiance
 * If you control 1+ active Seraphim, Draw 1 card
-* Synergy: Mid-chain bridge between Thornfire Covenant and finisher cards
+* Synergy: Mid-sequence bridge between Thornfire Covenant and finisher cards
 * [changed: effects | element]
 
-### Silverthorn Chain (Ophanim card)
+### Silverthorn Sequence (Ophanim card)
 * Rarity tier: Base
 * Element/Typing: Light (Heavenly Light)
 * If you played a Seraphim this turn, Draw 2 cards
@@ -293,7 +293,7 @@
 * While on board: +16 Oblivion whenever you play the first Ophanim each turn while active
 * Attack (Unsynergized): Dawnfire Seraphim Vector Break -> damage 540 / discard 1 / cooldown 4 (round(540/100) - 1 = 4)
 * Attack (Synergized): Dawnfire Seraphim Angelic Verdict -> damage 880 / discard 0 / cooldown 9 (round(880/100) - 0 = 9)
-* Synergy: Opens Silverthorn Chain empowerment lines and first-play bonuses
+* Synergy: Opens Silverthorn Sequence empowerment lines and first-play bonuses
 * [changed: effects | damage | cooldown | element]
 
 ### Emberchoir Seraphim (Seraphim card)

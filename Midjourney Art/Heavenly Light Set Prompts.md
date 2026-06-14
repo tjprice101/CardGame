@@ -288,11 +288,11 @@ whiteflame clarity, four-card revelation burst, heavenly light trading card illu
 
 ---
 
-### Silverthorn Chain | Seeker | Rare
-`definitionId: hr-light-aureate-chain`
+### Silverthorn Sequence | Seeker | Rare
+`definitionId: hr-light-aureate-sequence`
 
 ```
-silverthorn chain, law-linked weapon arc, heavenly light trading card illustration, wide mid-swing composition, humanoid chain-wielder in silver thorn armor rotating a blazing chain of molten silver links and thorn barbs with four seeker-card forms attached along the arc, sparks flashing from every link junction, hair and armor lit by the energy running through the weapon, divine chain arena background with giant thorn anchor points embedded in pillars and a web of overhead law-chains crossing the ceiling, ember red, furnace yellow, and molten silver spark palette, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure and weapon fill 80% of frame --ar 2:3 --niji 6 --stylize 900
+silverthorn sequence, law-linked weapon arc, heavenly light trading card illustration, wide mid-swing composition, humanoid sequence-wielder in silver thorn armor rotating a blazing sequence of molten silver links and thorn barbs with four seeker-card forms attached along the arc, sparks flashing from every link junction, hair and armor lit by the energy running through the weapon, divine sequence arena background with giant thorn anchor points embedded in pillars and a web of overhead law-chains crossing the ceiling, ember red, furnace yellow, and molten silver spark palette, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure and weapon fill 80% of frame --ar 2:3 --niji 6 --stylize 900
 ```
 
 ---

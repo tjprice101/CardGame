@@ -123,7 +123,7 @@
   * On play: Salvage 1 Base Prismatic Ophanim.
   * While on board: Adjacent active Seraphim gain +8 Oblivion whenever you play a Cherubim.
   * Buffs Seraphim attacks: base +7, cooldown +0, multiplier x1.00.
-* Synergy note: Pairs with Mirrorfield Locus to chain Ophanim recovery and Seraphim pressure.
+* Synergy note: Pairs with Mirrorfield Locus to sequence Ophanim recovery and Seraphim pressure.
 * [changed: effects]
 
 ### Buried Prism Cache (Cherubim card)
@@ -370,7 +370,7 @@
   * damage 965 / discard 0 / cooldown 10 (round(965/100) - 0 = 10)
 * Attack (Exalted): Aurelith Seer Throne Decree
   * damage 2220 / discard 2 / cooldown 15 (round(2220/100) - 2 = 20, clamped to 15)
-* Synergy note: Base-tier salvage chain with Buried Scale Memory and Tide Mirror Convergence.
+* Synergy note: Base-tier salvage sequence with Buried Scale Memory and Tide Mirror Convergence.
 * [changed: effects | cooldown]
 
 ### Vorthum Whitebeam Arbiter (Angel card)
