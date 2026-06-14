@@ -254,7 +254,7 @@ function AttacksBody() {
         <div style={bodyTextStyle}>
           Seraphim and Angels gain attack opportunities as you play cards. Their <Tag>cooldownCards</Tag> field
           is the number of cards that must be played between firings &mdash; there is always a minimum of 1
-          card between consecutive shots. Each attack pays out a chunk of Oblivion, scaled by chain and any
+          card between consecutive shots. Each attack pays out a chunk of Oblivion, scaled by card effects and any
           adjacent buffs.
         </div>
       </div>

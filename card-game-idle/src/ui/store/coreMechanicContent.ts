@@ -49,7 +49,7 @@ const PLAYSTYLE_MAP: Record<EngineKey, CoreMechanicPlaystyle[]> = {
       name: 'Patience Ramp',
       pattern: 'Open with Seraphim + draw Ophanim loops, then delay attacks until 4-8 stacks are banked.',
       pilotTips: 'Do not fire early unless lethal or hand-starved. Every extra card played is hidden damage.',
-      winCondition: 'One or two high-stack Seraphim attacks with threshold draws to chain into the next burst.',
+      winCondition: 'One or two high-stack Seraphim attacks with threshold draws to bridge into the next burst.',
     },
     {
       name: 'Vessel Routing',
@@ -153,7 +153,7 @@ const PLAYSTYLE_MAP: Record<EngineKey, CoreMechanicPlaystyle[]> = {
     },
     {
       name: 'Detonation Endgame',
-      pattern: 'Chain checkpoint spends into a final all-Eclipse detonation finisher.',
+      pattern: 'Checkpoint spends into a final all-Eclipse detonation finisher.',
       pilotTips: 'Sequence smaller spends before the apex burst so no Eclipse value is stranded.',
       winCondition: 'High-value finisher turn where Infinity cards convert the remaining Eclipse bank.',
     },
@@ -247,13 +247,13 @@ const PLAYSTYLE_MAP: Record<EngineKey, CoreMechanicPlaystyle[]> = {
       name: 'Three-Lineage Bloom',
       pattern: 'Establish rose, sunflower, and thistle before major bloom payoffs.',
       pilotTips: 'Two-lineage turns are setup, not finishers.',
-      winCondition: 'Final chord bloom that resolves all lineages in one chain.',
+      winCondition: 'Final chord bloom that resolves all lineages in one sequence.',
     },
     {
       name: 'Grove Echo Loop',
       pattern: 'Play Eternal generators first, then spend banked Wild Pollen through seeded payoffs while Echo pulls rebuild pressure.',
       pilotTips: 'Do not seed early on a low bank; wait until your Eternal pollen line is online and Burn uptime is stable.',
-      winCondition: 'A single turn that chains Eternal pollen generation into one or more high-value seed conversions.',
+      winCondition: 'A single turn that links Eternal pollen generation into one or more high-value seed conversions.',
     },
   ],
   butterfly: [
@@ -319,7 +319,7 @@ const PLAYSTYLE_MAP: Record<EngineKey, CoreMechanicPlaystyle[]> = {
       name: 'Imprint Finish Window',
       pattern: 'Sequence base recast pressure first, then convert Imprint into targeted recasts or direct burst to close the turn.',
       pilotTips: 'Imprint finishers are strongest after setup, not as recovery tools from an unstable board.',
-      winCondition: 'Closing chain where base forge setup and Imprint spend effects peak together.',
+      winCondition: 'Closing sequence where base forge setup and Imprint spend effects peak together.',
     },
   ],
   deathFlamedHell: [
@@ -368,7 +368,7 @@ const ADVANCED_LINES_MAP: Record<EngineKey, CoreMechanicAdvancedLine[]> = {
   neutrality: [
     {
       name: 'Double-Threshold Window',
-      sequence: 'Set two Seraphim just below threshold, then fire one draw-heavy Ophanim chain to cross both before attacks.',
+      sequence: 'Set two Seraphim just below threshold, then fire one draw-heavy Ophanim sequence to cross both before attacks.',
       whyItWorks: 'You convert one setup burst into two threshold draw payouts and keep hand velocity high.',
     },
     {
@@ -507,7 +507,7 @@ const ADVANCED_LINES_MAP: Record<EngineKey, CoreMechanicAdvancedLine[]> = {
       whyItWorks: 'Completing Formation early gives cleaner payoff windows and stronger cycle planning.',
     },
     {
-      name: 'Major-Then-Descent Chain',
+      name: 'Major-Then-Descent Sequence',
       sequence: 'Push to 8 first, spend a major-tier release, then close the same line at 12 for Descent reset.',
       whyItWorks: 'This compresses both breakpoint rewards into one high-density conversion window.',
     },

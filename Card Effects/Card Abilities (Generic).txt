@@ -1,0 +1,105 @@
+Card Abilities (Generic)
+
+Ophanim Abilities (50)
+1. Tithe of Dust: On play, gain 3 Oblivion. Discard 1 card.
+2. Hollow Offering: On play, discard your hand. Gain Oblivion equal to discarded cards + 2.
+3. Quiet Subsidy: On play, your next card this turn costs 1 less resource.
+4. Selfless Rupture: On play, destroy 1 allied front-slot unit. Gain Oblivion equal to its level + 2.
+5. Mercy Ledger: On play, if hand size is 3 or less, gain 2 Oblivion and draw 2 cards.
+6. Ashen Revelation: On play, draw 2 cards. If you control no Seraphim, draw 3 instead.
+7. Seventh Seal: On play, look at top 5 cards of your deck. Keep 2, send the rest to bottom.
+8. Cascading Descent: On play, draw 1 for each allied Cherubim.
+9. Whisper Archive: On play, search your deck for an Ophanim, reveal it, and add it to hand.
+10. Echo Chamber: On play, repeat the previous Ophanim effect used this turn (cannot copy Echo Chamber).
+11. Mandate Ward: On play, choose an allied Seraphim. It cannot be targeted until your next turn.
+12. Severance Rite: On play, discard 1 card; destroy an enemy front-slot unit with equal or lower level.
+13. Weight of Sins: On play, target unit loses all temporary buffs until end of turn.
+14. Celestial Embargo: On play, enemy cannot play Ophanim next turn.
+15. Binding Light: On play, if you control 2+ Seraphim, disable an enemy front-slot unit next turn.
+16. Call to the Meek: On play, replace an allied Seraphim with an Angel from your Extra Deck; that Angel gains +1 bonus power this turn.
+17. Ascension Protocol: On play, if you control an Angel, refresh 1 of its actions.
+18. Wings of Expenditure: On play, sacrifice an allied Angel; draw 3 and gain 2 Oblivion.
+19. Unnamed Host: On play, if you control no Seraphim, summon a temporary 2-power Angel token.
+20. Intercessory Rite: On play, return an Angel from discard to your Extra Deck; reduce its next summon requirement by 1.
+21. Oblivion Debt: On play, enemy gains 3 Oblivion now, then loses 5 at the start of their next turn.
+22. Blinding Choir: On play, enemy draws 3; if their hand exceeds 7, they discard to 5.
+23. Torn Firmament: On play, both players discard 1 random card; then you draw 1.
+24. Dead Reckoning: On play, reveal enemy hand; choose 1 card, it cannot be played next turn.
+25. Last Rite: On play, if deck has 1 card left, draw it and gain 5 Oblivion.
+26. Spiral Tax: On play, enemy pays +1 resource for their next card.
+27. Suture Loop: On play, return this card to deck bottom and draw 1.
+28. Fading Mirror: On play, this card's effects trigger again at end of turn.
+29. Grave Appointment: On play, choose a card in discard; it costs 1 less when next played.
+30. Open Palm: On play, draw 1 and gain +6 Oblivion.
+31. Closed Fist: On play, discard 1 and gain +16 Oblivion.
+32. Split Verdict: On play, choose one: draw 2; or gain 4 Oblivion.
+33. Sacrament of Numbers: On play, gain +5 Oblivion for each different card type you control.
+34. Empty Chapel: On play, if you control no back-slot units, summon a 1-durability Cherubim token.
+35. Pilgrim Search: On play, look at top 3 cards. You may place 1 directly into discard, then draw 1.
+36. Red Letter: On play, your next attack this turn gains +20 base Oblivion.
+37. Pale Letter: On play, your next card this turn draws 1 extra card.
+38. Dust Covenant: On play, your cards cannot be discarded by enemy effects until your next turn.
+39. Stolen Dawn: On play, skip your draw next turn; draw 3 now.
+40. Rescript: On play, choose an allied card; reset one of its per-turn limits.
+41. Ash Lottery: On play, reveal top card; if Ophanim draw it, otherwise gain +10 Oblivion.
+42. Sanctified Recall: On play, put 2 cards from discard on top of deck in any order.
+43. Narrow Path: On play, if hand size is exactly 2, gain +30 Oblivion.
+44. Broad Path: On play, if hand size is 6 or more, draw 1 and gain +8 Oblivion.
+45. Consecrated Delay: On play, set enemy front-slot cooldowns +1.
+46. Soft Collapse: On play, remove 1 enemy temporary shield or ward effect.
+47. Borrowed Breath: On play, if this is your third Ophanim this turn, draw 2.
+48. Minor Apocalypse: On play, both players lose 2 random cards from hand, then each draw 1.
+49. Seal of Passage: On play, your next summoned unit this turn enters with +1 durability.
+50. Final Catalog: On play, if discard has 12+ cards, gain 6 Oblivion and draw 1.
+
+Cherubim Abilities (50)
+1. Shrine of Embers: Passive: at turn start, gain 1 Oblivion.
+2. Grinding Wheel: Passive: whenever you discard a card, gain 1 Oblivion.
+3. Tithe Engine: Passive: once each turn, you may discard 1 card to gain 2 Oblivion.
+4. Wellspring of Ruin: Passive: whenever any front-slot unit is destroyed, gain 1 Oblivion.
+5. Hollow Sanctum: Passive: if you control no Seraphim at turn start, gain +2 additional Oblivion.
+6. Archive of the Lost: Passive: whenever you play an Ophanim, look at top card and keep it or send to bottom.
+7. Watcher's Lectern: Passive: at end of turn, if you played no Ophanim, draw 1.
+8. Choir of Echoes: Passive: whenever a single effect draws 2+, draw 1 extra (once per turn).
+9. Undying Record: Passive: once per game, when deck is empty, shuffle discard into deck.
+10. Lantern of Vigil: Passive: your maximum hand size is +2.
+11. Bulwark of Devotion: Passive: Seraphim you play cost 1 less resource.
+12. Resonant Throne: Passive: at turn start, your highest-level Seraphim gains +1 bonus power this turn.
+13. Pyre of Ascension: Passive: when an allied Seraphim is destroyed, you may immediately summon an Angel from your Extra Deck.
+14. Eternal Formation: Passive: allied Seraphim cannot be moved by enemy effects.
+15. Mending Choir: Passive: at turn start, heal or restore 1 durability to your weakest allied unit.
+16. Angelic Conscription: Passive: Angels in your Extra Deck require 1 less summon material.
+17. Lower Heaven: Passive: Angels you control also count as Seraphim for your effects.
+18. Martyr's Ground: Passive: when an allied Angel is destroyed, draw 1.
+19. Chorus of the Meek: Passive: if you control 2+ Angels, they each gain +1 bonus power each turn.
+20. Forgotten Intercessor: Passive: once per turn, swap an Angel on board with one in your Extra Deck.
+21. Veil of Static: Passive: enemy pays +1 resource for Ophanim cards.
+22. Oppressive Silence: Passive: both players can play only 1 Ophanim per turn.
+23. Blind Eye: Passive: enemy cannot reveal or inspect your hand.
+24. Crumbling Mandate: Passive: at enemy turn start, disable a random enemy Cherubim this turn.
+25. Obsidian Covenant: Passive: players cannot gain Oblivion from card effects.
+26. Pilgrim Bell: Passive: your first card each turn gains +5 Oblivion.
+27. Gilded Census: Passive: whenever you play your third card in a turn, draw 1.
+28. Pale Census: Passive: whenever you end turn with 2 or fewer cards, draw 1.
+29. Narrow Gate: Passive: if exactly one back slot is occupied, that Cherubim triggers +1 value.
+30. Open Gate: Passive: if both back slots are occupied, your first passive trigger each turn repeats.
+31. Dust Altar: Passive: once per turn, sacrifice 1 card from hand to draw 2.
+32. Quiet Novitiate: Passive: your first discard each turn is prevented.
+33. Ledger Warden: Passive: whenever you gain Oblivion, gain +2 more Oblivion (up to +10 per turn).
+34. Burden Warden: Passive: enemy loses 3 Oblivion whenever they draw 2+ cards in one effect.
+35. Foster Chapel: Passive: units summoned this turn enter with +1 durability.
+36. Hollow Bell: Passive: when a unit leaves your board, gain +8 Oblivion.
+37. Grave Tutor: Passive: at end of turn, if you discarded 2+ cards, return 1 random discarded card to hand.
+38. Last Candle: Passive: when you would draw from empty deck, gain 3 Oblivion instead.
+39. First Candle: Passive: at battle start, draw 1.
+40. Ordinance Clerk: Passive: once per turn, reduce next attack cooldown increase by 1.
+41. Mausoleum Scribe: Passive: every fourth card played, draw 1.
+42. Refuge Choir: Passive: while you control no Angels, your Seraphim gain +1 bonus power.
+43. Throne Choir: Passive: while you control an Angel, your Ophanim gain +10 Oblivion on play.
+44. Ash Interdict: Passive: enemy cannot reduce their card costs below 1.
+45. Relic Broker: Passive: once per turn, banish a card from discard to gain 2 Oblivion.
+46. Lantern Broker: Passive: once per turn, banish a card from hand to draw 2.
+47. Iron Hymn: Passive: your first front-slot unit destroyed each turn returns with 1 durability at end of turn.
+48. Velvet Hymn: Passive: your first card each turn cannot be countered or canceled.
+49. Quiet Tribunal: Passive: if enemy plays 3+ cards in a turn, they discard 1 at end of turn.
+50. Final Sanctuary: Passive: when this Cherubim leaves play, draw 2 and gain +12 Oblivion.

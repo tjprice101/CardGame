@@ -543,7 +543,7 @@ function AttacksTab() {
               border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)',
               fontSize: 12, color: 'rgba(244,244,248,0.3)', fontFamily: BF, fontStyle: 'italic',
             }}>
-              No Angels on the board — summon an Angel (from hand, if unlocked) to see live attack data.
+              No Angels on the board — summon an Angel from your Extra Deck (if unlocked) to see live attack data.
             </div>
           )}
         </div>

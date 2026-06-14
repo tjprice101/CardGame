@@ -8,7 +8,7 @@ This file governs how to approach all work on this project. It covers game desig
 
 A **turn-based card game**. Each turn the player draws a hand, plays cards to earn **Oblivion** (the primary currency), then ends the turn. The game loop is: play cards → earn Oblivion → spend Oblivion on card packs → open packs to expand collection → build a better deck → repeat.
 
-There is **no idle tick loop**. Oblivion is earned exclusively by playing cards. A **chain multiplier** grows as more cards are played in a single turn, rewarding long chains. Seraphim and Angels on the board also fire **attacks** periodically as cards are played, dealing additional Oblivion.
+There is **no idle tick loop**. Oblivion is earned exclusively by playing cards. Seraphim and Angels on the board also fire **attacks** periodically as cards are played, dealing additional Oblivion.
 
 ---
 
@@ -72,7 +72,7 @@ Rarity is **feel-based**, not rule-based. No strict effect-type restrictions per
 - Angels can be **summoned at any point during your turn** when summon conditions are met — no card draw required.
 - **Summon cost:** Each Angel lists specific Seraphim that must be on the board. When summoned, those Seraphim are sent to the discard pile. Seraphim recovered via salvage can be replayed and used again.
 - Multiple Angels can be active simultaneously (no hard cap beyond available front slots).
-- Angel summon does **not** count as playing a card — it does not decrement Cherubim durability or advance the chain.
+- Angel summon does **not** count as playing a card — it does not decrement Cherubim durability.
 - Angels have `onSummonEffects`, an optional `activatedAbility` (fires after N cards played), and `primary`/`exalted` attack modes.
 
 ---
@@ -83,25 +83,17 @@ Seraphim and Angels have attack stats that fire periodically as cards are played
 
 - **Seraphim attacks**: `unsynergized` and `synergized` modes. Synergized requires an Angel on board (or matching element Angel). `cooldownCards` sets how many cards must be played between attacks.
 - **Angel attacks**: `primary` and `exalted` modes. Exalted typically has a cost (discard N cards) and higher output.
-- Attack stats: `baseOblivion`, `cooldownCards`, `chainScaling`, `costs`, optional `requiresAngelOnBoard`.
+- Attack stats: `baseOblivion`, `cooldownCards`, `costs`, optional `requiresAngelOnBoard`.
 - **Attack cooldown floor**: always at least 1 card after firing to prevent immediate re-fire loops.
 - Seraphim unsynergized attacks always have an element-appropriate resource cost injected by `CardRegistry` (discard for Neutrality/Dark, resource spend for others).
 - Discard-cost attacks require explicit `paymentSelection` — the store does not auto-pick.
 
 ---
 
-## Oblivion & Chain Multiplier
+## Oblivion
 
 - **Oblivion** is the primary currency. Earned by playing cards and from Seraphim/Angel attacks. Spent in the Card Pack Store.
-- **Chain multiplier** = `1.0 + cardsPlayedThisTurn × 0.1`. Each card played earns more Oblivion than the last.
-- Base Oblivion per card = `5 × chainMultiplier + Seraphim bonuses + Cherubim adjacency bonuses + card-specific bonuses`.
-- Some Seraphim have `chain_bonus`: adds to chain growth rate while on board.
-- Chain resets to 1.0 at turn end.
-
-### Chain Terminology Rule
-- `chain floor` is deprecated and must not be introduced in new cards, effects, descriptions, UI copy, scripts, or tests.
-- Use `chain gain` language instead (for example: `Gain +1.6 chain`).
-- Use `chain_gain` effect entries for additive chain effects.
+- Base Oblivion per card scales from card text, board bonuses, and attack windows.
 
 ---
 
@@ -134,7 +126,7 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 ### Neutrality — "Patience / Stasis"
 - **Patience** is the core mechanic. Seraphim with `patienceThreshold` defined auto-accumulate +1 Patience per card played. Cherubim give additional Patience per card to adjacent front slots via the `cherubim_patience_per_card` passive.
 - **On attack**: each accumulated Patience stack is consumed for +15 Oblivion. If total stacks ≥ `patienceThreshold`, also draws `patienceThresholdDraw` cards.
-- Ophanim: draw/deck manipulation, chain gain setup. Key effects: `patience_gain_all` (instant Patience burst for all Seraphim), `patience_double_all` (double all Patience).
+- Ophanim: draw/deck manipulation and Patience setup. Key effects: `patience_gain_all` (instant Patience burst for all Seraphim), `patience_double_all` (double all Patience).
 - Angels: mass Patience injection on summon; `patience_double_all` in activated abilities.
 - Beginner-friendly. Universal Synergy Angel activates all Seraphim regardless of element. Salvage loop enabled by Ophanim like Seraph Recall.
 - **Patience thresholds by rarity**: Common/Rare 3–4, Epic 5, Eternal 6, Infinite 8+.
@@ -188,7 +180,7 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - **Core (base loop):** every base Seraphim/Cherubim/Ophanim seeds **Monochromatic Shards** (gated by `shards_gte`, spent via `monochromatic_shards_spend`) and **Twin Flames** — `black_glass_white_flame_gain` / `black_glass_black_flame_gain`. Both flames cap at 30; tracked on TurnState as `blackGlassWhiteFlame`/`blackGlassBlackFlame`, with `blackGlassLastPolarity` updated by `applyBlackGlassPlayState`. Conditions: `black_glass_white_flame_gte`, `black_glass_black_flame_gte`, `black_glass_flames_equal`.
 - **Ancillary 1 (Eternal/Infinite): Fracture.** Built when flames are balanced via `black_glass_fracture_gain` (`blackGlassFracture`, caps 18). Gated by `black_glass_fracture_gte`; collapsed for payoff via `black_glass_fracture_collapse`. Scales Eclipse bursts (`fractureBonusPerEclipse`). Setup-ready = fracture ≥ 2; engines-ready = `min(white,black) ≥ 6 && |white-black| ≤ 2` (see `getDarkFullFireMultiplier`).
 - **Ancillary 2 (Eternal/Infinite): Eclipse.** Uses `eternal_stack_gain`/`eternal_stack_consume` with `stack: 'glass'`, cashed via `black_glass_eclipse_burst` (per-Eclipse Oblivion plus `balanceBonusPerEclipse` × `max(0, 3 - |W-B|)` and `fractureBonusPerEclipse` × Fracture). `black_glass_flames_swap` (1 Infinite card) inverts White/Black for control plays.
-- Dark element; uses `cherubim_adjacent_seraphim_bonus` passives (Oblivion/chain to adjacent Seraphim attacks).
+- Dark element; uses `cherubim_adjacent_seraphim_bonus` passives (Oblivion to adjacent Seraphim attacks).
 - `blackGlassLastPayoff` is HUD-only (auto-written by store on burst, displayed in `setEngineSummary`).
 - **Deprecated/removed (Nov 2025 audit):** `blackGlassGriefOaths`, `blackGlassCollapsePending` TurnState fields; `black_glass_register_state` effect (all 3 keys); `black_glass_flame_delta_gte` / `black_glass_flame_delta_lte` conditions. Two cards (`btei-bgi-elegy-of-veth-serath`, `inf-bgi-midplace-apocalypse`) had `register_state` lines stripped from their effect arrays + descriptions.
 
@@ -234,7 +226,7 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - Valid `baseStats.bonusType` values:
   - `oblivion_per_card` — flat Oblivion per card played while active
   - `ophanim_bonus` — Oblivion whenever an Ophanim is played while active
-  - `chain_bonus` — adds to chain multiplier growth per card
+  - `oblivion_per_card` / `ophanim_bonus` / `cherubim_extra_plays` / `seeker_bonus`
   - `cherubim_extra_plays` — extra Cherubim card plays per turn
   - `seeker_bonus` — (legacy alias, functionally `ophanim_bonus`)
 - **Patience fields** (Neutrality Seraphim only):
@@ -245,8 +237,8 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - Placed to the **back row** (up to 4 slots, staggered). `backSlots[i]` is adjacent to `frontSlots[i]` and `frontSlots[i+1]`.
 - Have `maxDurability` (decrements by 1 per card played, including Cherubim placement). At 0 they expire to discard.
 - **Three effect layers:**
-  - `effects: CherubimPassiveEffect[]` — passive effects on adjacent front slots while active. Key types: `cherubim_adjacent_seraphim_bonus` (Oblivion/chain boost to adjacent Seraphim attacks — used by non-Neutrality sets), `cherubim_patience_per_card` (Neutrality: adds Patience per card), `cherubim_resource_per_card`, `cherubim_draw_per_card`.
-  - `onPlayEffects?: ImmediateEffect[]` — fires immediately when the card is played (draw, Oblivion, chain gain, salvage, etc.). Runs through `CardEffectExecutor`.
+  - `effects: CherubimPassiveEffect[]` — passive effects on adjacent front slots while active. Key types: `cherubim_adjacent_seraphim_bonus` (Oblivion boost to adjacent Seraphim attacks — used by non-Neutrality sets), `cherubim_patience_per_card` (Neutrality: adds Patience per card), `cherubim_resource_per_card`, `cherubim_draw_per_card`.
+  - `onPlayEffects?: ImmediateEffect[]` — fires immediately when the card is played (draw, Oblivion, salvage, etc.). Runs through `CardEffectExecutor`.
   - `enthalpy?: CherubimRitualEffect[]` — **Enthalpic Ritual**: fires when placed. Handled by `fireCherubimRitual` in the store.
   - `entropy?: CherubimRitualEffect[]` — **Entropic Ritual**: fires when durability reaches 0. Same handler.
 - **Ritual-specific effect types** (only valid in enthalpy/entropy):
