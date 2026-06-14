@@ -4719,12 +4719,6 @@ export const useStore = create<Store>()(
         if (s.turn.phase !== 'playing') return;
         const summonedEntry = getAvailableAngelEntry(s.deck.extraDeck, definitionId, finish);
         if (!summonedEntry) return;
-        // Remove this specific entry from extraDeck so the compartment panel
-        // reflects the true available count immediately after summoning.
-        const deckIdx = s.deck.extraDeck.findIndex(
-          e => e.definitionId === definitionId && e.finish === summonedEntry.finish,
-        );
-        if (deckIdx !== -1) s.deck.extraDeck.splice(deckIdx, 1);
         const def = ScoreSystem.getDefinition(definitionId);
         if (!def || def.type !== 'Angel') return;
         const angelDef = def as AngelDefinition;
@@ -4776,6 +4770,13 @@ export const useStore = create<Store>()(
         const emptySlotIdx = s.board.frontSlots.findIndex(sl => sl === null);
         if (emptySlotIdx === -1) return;
         const slot = emptySlotIdx as 0 | 1 | 2 | 3 | 4;
+
+        // Consume this copy only after all requirements pass.
+        const deckIdx = s.deck.extraDeck.findIndex(
+          e => e.definitionId === definitionId && e.finish === summonedEntry.finish,
+        );
+        if (deckIdx === -1) return;
+        s.deck.extraDeck.splice(deckIdx, 1);
 
         const angelInst: AngelInstance = {
           instanceId: `ang_${++angelInstanceCounter}`,

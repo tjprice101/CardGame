@@ -2330,6 +2330,10 @@ export class CardEffectExecutor {
             const activeCherubim = board.backSlots.filter(s => s !== null).length;
             if (activeCherubim < cond.value) return false;
           }
+          if (cond.type === 'seraphim_active_gte') {
+            const activeSeraphim = board.frontSlots.filter(s => s?.type === 'Seraphim' && s.isActive).length;
+            if (activeSeraphim < cond.value) return false;
+          }
           if (cond.type === 'seraphim_on_board_gte') {
             const activeSeraphim = board.frontSlots.filter(s => s?.type === 'Seraphim').length;
             if (activeSeraphim < cond.value) return false;

@@ -336,8 +336,7 @@ function summarizePrimarySummonResourceGate(def: AngelDefinition): SummonConditi
       return { type: 'set_secondary_gte', kind: 'prism', value: (isInfinite ? 8 : 6) + bump };
     case 'Dark':
       return { type: 'eternal_stack_gte', stack: 'glass', value: (isInfinite ? 7 : 5) + bump };
-    case 'Mechanical':
-      // Snowbound Voltage cards use element 'Mechanical'; route to snow stack gate.
+    case 'Snowbound':
       return { type: 'eternal_stack_gte', stack: 'snow', value: (isInfinite ? 8 : 6) + bump };
     default:
       return { type: 'seraphim_active_gte', value: (isInfinite ? 4 : 3) + (bump % 2) };
