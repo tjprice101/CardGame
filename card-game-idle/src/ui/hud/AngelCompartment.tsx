@@ -121,7 +121,9 @@ export default function AngelCompartment() {
             const onBoardCopies = board.frontSlots.filter(
               sl => sl?.type === 'Angel' && sl.definitionId === definitionId && sl.finish === finish
             ).length;
-            const availableCopies = totalCopies - onBoardCopies;
+            // extraDeck already tracks unsummoned copies; subtracting on-board copies double-counts
+            // and can incorrectly block valid duplicate summons.
+            const availableCopies = totalCopies;
             const playable = availableCopies > 0 && isPlaying &&
               CardEffectExecutor.checkPlayable(angelDef, 0, turn, board);
 
