@@ -741,7 +741,7 @@ function TipsTab() {
       <TipCard
         rank={6}
         title="Cycle Cherubim for Expire Bonuses"
-        detail="Cherubim with cherubim_expire_bonus detonate on death, granting Oblivion bursts. Some decks intentionally let Cherubim expire to chain detonations — play cards that reduce durability slowly unless you are in the middle of a burst window."
+        detail="Cherubim with cherubim_expire_bonus detonate on death, granting Oblivion bursts. Some decks intentionally let Cherubim expire in sequence detonations — play cards that reduce durability slowly unless you are in the middle of a burst window."
         accent={C.gold.fg}
       />
       <TipCard

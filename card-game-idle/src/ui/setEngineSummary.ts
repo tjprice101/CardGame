@@ -357,7 +357,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
   if (def.type === 'Seraphim') {
     if (def.baseStats.bonusType === 'ophanim_bonus' || hasTextSnippet(def, ['ophanim'])) return 'amplifier';
     if (def.baseStats.bonusType === 'pyro_heat_per_card' || def.baseStats.bonusType === 'resource_generation') return 'resource';
-    if (hasTextSnippet(def, ['chain'])) return 'setup';
+    if (hasTextSnippet(def, ['sequence'])) return 'setup';
     if (def.baseStats.bonusType === 'power_amplifier' || def.baseStats.bonusType === 'score_per_second') return 'amplifier';
     return 'payoff';
   }
@@ -934,7 +934,7 @@ function buildEngineSnapshot(
           createStep('Prime Imprint', imprint >= 3, imprint >= 3 ? 'Imprint is online for an Eternal spend effect.' : 'Use Eternal Abyssal cards to imprint played cards before spending.'),
           createStep('Bank Forge Crowns', forges >= 2, forges >= 2 ? 'Crowns are ready for cashout.' : 'Build Forge Crowns before firing Infinite cashout lines.'),
           createStep('Stock Charges', charges >= 1, charges >= 1 ? 'Recasts are available.' : 'Build Reforge Charges to enable recasts.'),
-          createStep('Trigger recasts', events >= 1, events >= 1 ? 'Recast sequence is live.' : 'Spend charges to start the recast chain.'),
+          createStep('Trigger recasts', events >= 1, events >= 1 ? 'Recast sequence is live.' : 'Spend charges to start the recast sequence.'),
         ],
       };
     }

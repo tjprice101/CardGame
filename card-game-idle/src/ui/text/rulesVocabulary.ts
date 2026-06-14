@@ -63,7 +63,6 @@ const VOCAB: Record<Exclude<HighlightCategory, 'element' | 'number'>, string[]> 
     'Materials',
   ],
   mechanic: [
-    'Chain',
     'Cooldown',
     'Synergy',
     'Patience',
