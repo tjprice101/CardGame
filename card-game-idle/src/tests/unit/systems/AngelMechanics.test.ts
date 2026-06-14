@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { defaultGameState, useStore } from '@/state/store';
 import type { AngelInstance, CherubimInstance, SeraphimInstance } from '@/types/cards';
 import type { DeckCard, TurnState } from '@/types/game';
@@ -165,6 +166,114 @@ describe('Angel mechanics', () => {
     expect(state.board.frontSlots.some(slot => slot?.instanceId === 'ang_seed')).toBe(false);
     expect(mainDeckZoneIds.filter(id => id === 'ser-neutral-equilibrium')).toHaveLength(1);
     expect(mainDeckZoneIds.includes('angel-neutral-beginning')).toBe(false);
+  });
+
+  it('allows inf-sovereign-void summon when costs and board conditions are met (without active-state gating)', () => {
+    const angelDef = CardRegistry.get('inf-sovereign-void');
+    if (!angelDef || angelDef.type !== 'Angel') {
+      throw new Error('Missing inf-sovereign-void definition');
+    }
+
+    const [m1, m2, m3] = angelDef.summonCost;
+    if (!m1 || !m2 || !m3) {
+      throw new Error('Expected three summon materials for inf-sovereign-void');
+    }
+
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        frontSlots: [
+          makeSeraphim('mat_1', m1, 0),
+          makeSeraphim('mat_2', m2, 1),
+          makeSeraphim('mat_3', m3, 2),
+          makeSeraphim('filler_1', 'btei-eternal-vigil', 3),
+          makeSeraphim('filler_2', 'btei-colossus-advent', 4),
+        ],
+        backSlots: [
+          makeCherubim('support_inf', 'inf-entropic-crown', 0),
+          null,
+          null,
+          null,
+        ],
+      },
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [{ definitionId: 'inf-sovereign-void', finish: 'normal' }],
+        drawPile: [],
+        hand: [],
+        discardPile: [],
+      },
+      turn: makePlayingTurn(),
+      progress: {
+        ...state.progress,
+        oblivion: 0,
+      },
+    }));
+    useStore.getState().refreshComputedStats();
+
+    const preState = useStore.getState();
+    expect(CardEffectExecutor.checkPlayable(angelDef, 0, preState.turn, preState.board)).toBe(true);
+
+    useStore.getState().summonAngel('inf-sovereign-void');
+
+    const state = useStore.getState();
+    expect(state.board.frontSlots.some(slot => slot?.type === 'Angel' && slot.definitionId === 'inf-sovereign-void')).toBe(true);
+  });
+
+  it('allows inf-eternity-rupture summon when exact generated materials are present', () => {
+    const angelDef = CardRegistry.get('inf-eternity-rupture');
+    if (!angelDef || angelDef.type !== 'Angel') {
+      throw new Error('Missing inf-eternity-rupture definition');
+    }
+
+    const materials = angelDef.summonCost;
+    if (materials.length < 4) {
+      throw new Error('Expected four summon materials for inf-eternity-rupture');
+    }
+
+    useStore.setState(state => ({
+      ...state,
+      board: {
+        ...state.board,
+        frontSlots: [
+          makeSeraphim('m1', materials[0], 0),
+          makeSeraphim('m2', materials[1], 1),
+          makeSeraphim('m3', materials[2], 2),
+          makeSeraphim('m4', materials[3], 3),
+          makeSeraphim('m5', 'btei-colossus-advent', 4),
+        ],
+        backSlots: [
+          makeCherubim('c1', 'inf-annihilation-field', 0),
+          makeCherubim('c2', 'inf-entropic-crown', 1),
+          null,
+          null,
+        ],
+      },
+      deck: {
+        ...state.deck,
+        deckList: [],
+        extraDeck: [{ definitionId: 'inf-eternity-rupture', finish: 'normal' }],
+        drawPile: [],
+        hand: [],
+        discardPile: [],
+      },
+      turn: makePlayingTurn(),
+      progress: {
+        ...state.progress,
+        oblivion: 0,
+      },
+    }));
+    useStore.getState().refreshComputedStats();
+
+    const preState = useStore.getState();
+    expect(CardEffectExecutor.checkPlayable(angelDef, 0, preState.turn, preState.board)).toBe(true);
+
+    useStore.getState().summonAngel('inf-eternity-rupture');
+
+    const state = useStore.getState();
+    expect(state.board.frontSlots.some(slot => slot?.type === 'Angel' && slot.definitionId === 'inf-eternity-rupture')).toBe(true);
   });
 
   it('charges awakened angel abilities from cards played and activates them once ready', () => {

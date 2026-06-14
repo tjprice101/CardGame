@@ -323,7 +323,7 @@ function summarizePrimarySummonResourceGate(def: AngelDefinition): SummonConditi
   // resource for the element.
   switch (def.element) {
     case 'Neutrality':
-      return { type: 'seraphim_active_gte', value: (isInfinite ? 4 : 3) + (bump % 2) };
+      return { type: 'seraphim_on_board_gte', value: (isInfinite ? 4 : 3) + (bump % 2) };
     case 'Fire':
       return { type: 'pyro_heat_gte', value: (isInfinite ? 9 : 7) + bump };
     case 'Light':
@@ -339,7 +339,7 @@ function summarizePrimarySummonResourceGate(def: AngelDefinition): SummonConditi
     case 'Snowbound':
       return { type: 'eternal_stack_gte', stack: 'snow', value: (isInfinite ? 8 : 6) + bump };
     default:
-      return { type: 'seraphim_active_gte', value: (isInfinite ? 4 : 3) + (bump % 2) };
+      return { type: 'seraphim_on_board_gte', value: (isInfinite ? 4 : 3) + (bump % 2) };
   }
 }
 

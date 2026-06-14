@@ -1,105 +1,198 @@
-Card Abilities (Generic)
+# Generic Card Abilities
 
-Ophanim Abilities (50)
-1. Tithe of Dust: On-play: gain 3 Oblivion and discard 1 card.
-2. Hollow Offering: On-play: discard your hand, then gain Oblivion equal to discarded cards +2.
-3. Quiet Subsidy: On-play: your next card costs 1 less resource.
-4. Selfless Rupture: On-play: remove 1 allied front-slot unit and gain Oblivion equal to its level +2.
-5. Mercy Ledger: On-play: if hand size is 3 or less, gain 2 Oblivion and draw 2.
-6. Ashen Revelation: On-play: draw 2. If no Seraphim are on board, draw 1 more.
-7. Seventh Seal: On-play: look at the top 5 cards, keep 2, place the rest on bottom.
-8. Cascading Descent: On-play: draw 1 for each allied Cherubim on board.
-9. Whisper Archive: On-play: search deck for an Ophanim and add it to hand.
-10. Echo Chamber: On-play: repeat the previous Ophanim effect used this turn (cannot copy Echo Chamber).
-11. Mandate Ward: On-play: choose an allied Seraphim; it gains ward for your next card play.
-12. Severance Rite: On-play: discard 1 card, then remove 1 allied front-slot unit and draw 2.
-13. Weight of Sins: On-play: choose 1 allied unit; clear its temporary buffs and gain 6 Oblivion.
-14. Celestial Embargo: On-play: you cannot play another Ophanim this turn; draw 2.
-15. Binding Light: On-play: if you control 2+ Seraphim, your next attack gains +25 base Oblivion.
-16. Call to the Meek: On-play: replace an allied Seraphim with an Angel from your Extra Deck; that Angel gains +1 bonus power.
-17. Ascension Protocol: On-play: if you control an Angel, refresh 1 of its actions.
-18. Wings of Expenditure: On-play: sacrifice an allied Angel; draw 3 and gain 2 Oblivion.
-19. Unnamed Host: On-play: if no Seraphim are on board, summon a temporary 2-power Angel token.
-20. Intercessory Rite: On-play: return an Angel from discard to your Extra Deck and reduce its next summon requirement by 1.
-21. Oblivion Tithe: On-play: gain 5 Oblivion, then discard 2 cards.
-22. Blinding Choir: On-play: draw 3, then if hand size exceeds 7, discard down to 7.
-23. Torn Firmament: On-play: discard 1 random card, then draw 2.
-24. Dead Reckoning: On-play: reveal top 3 cards of your deck; banish 1, add 1 to hand, discard 1.
-25. Last Rite: On-play: if deck has 1 card left, draw it and gain 5 Oblivion.
-26. Spiral Tax: On-play: your next card gains +15 base Oblivion and costs +1 resource.
-27. Suture Loop: On-play: place this card on bottom of deck and draw 1.
-28. Fading Mirror: On-play: repeat this card's first effect at 50% value.
-29. Grave Appointment: On-play: choose a card in discard; it costs 1 less when next played.
-30. Open Palm: On-play: draw 1 and gain +6 Oblivion.
-31. Closed Fist: On-play: discard 1 and gain +16 Oblivion.
-32. Split Verdict: On-play: choose one: draw 2, or gain 4 Oblivion.
-33. Sacrament of Numbers: On-play: gain +5 Oblivion for each different allied card type on board.
-34. Empty Chapel: On-play: if no back-slot units are on board, summon a 1-durability Cherubim token.
-35. Pilgrim Search: On-play: look at top 3 cards, place 1 in discard, draw 1.
-36. Red Letter: On-play: your next attack gains +20 base Oblivion.
-37. Pale Letter: On-play: your next card draw effect draws 1 extra card.
-38. Dust Covenant: On-play: your next discard effect is prevented.
-39. Stolen Dawn: On-play: skip your next draw action and draw 3 now.
-40. Rescript: On-play: choose an allied card; reset one per-turn limit on it.
-41. Ash Lottery: On-play: reveal top card; if Ophanim draw it, otherwise gain +10 Oblivion.
-42. Sanctified Recall: On-play: put 2 cards from discard on top of deck in any order.
-43. Narrow Path: On-play: if hand size is exactly 2, gain +30 Oblivion.
-44. Broad Path: On-play: if hand size is 6 or more, draw 1 and gain +8 Oblivion.
-45. Consecrated Delay: On-play: add +1 cooldown step to your next attack, then gain +25 Oblivion.
-46. Soft Collapse: On-play: remove 1 allied temporary shield or ward effect and draw 2.
-47. Borrowed Breath: On-play: if this is your third Ophanim this turn, draw 2.
-48. Minor Apocalypse: On-play: discard 2 random cards from hand, then draw 2.
-49. Seal of Passage: On-play: your next summoned unit enters with +1 durability.
-50. Final Catalog: On-play: if discard has 12+ cards, gain 6 Oblivion and draw 1.
+*A collection of universal card effects that can be applied to any deck, using standardized game terminology.*
 
-Cherubim Abilities (50)
-1. Shrine Fuse: On-summon: gain 1 Oblivion. On-board: whenever you discard a card, gain 1 Oblivion.
-2. Grinding Choir: On-summon: draw 1. On-board: whenever you discard, gain +1 card draw progress.
-3. Tithe Engine: On-summon: discard 1, gain 2 Oblivion. On-board: once per card play, gain 1 Oblivion when hand size is 3 or less.
-4. Wellspring Frame: On-summon: gain 2 Oblivion. On-board: whenever a front-slot unit leaves play, gain 1 Oblivion.
-5. Hollow Sanctum: On-summon: if no Seraphim are on board, gain 3 Oblivion. On-board: while no Seraphim are on board, Ophanim gain +4 Oblivion.
-6. Archive Warden: On-summon: look at top 2 cards, keep 1. On-board: whenever you play an Ophanim, scry 1.
-7. Lectern Core: On-summon: draw 1. On-board: if a card play had no draw effect, gain 1 Oblivion.
-8. Echo Choir: On-summon: draw 1. On-board: when a single effect draws 2+, draw 1 extra.
-9. Undying Record: On-summon: shuffle up to 3 discard cards into deck. On-board: when deck is empty, gain 3 Oblivion instead of drawing.
-10. Lantern Vault: On-summon: draw 1. On-board: hand size cap is +2.
-11. Bulwark Sigil: On-summon: reduce next Seraphim cost by 1. On-board: Seraphim you play cost 1 less resource.
-12. Resonant Throne: On-summon: choose a Seraphim, it gains +1 bonus power. On-board: highest-level Seraphim gains +1 bonus power.
-13. Pyre Ascent: On-summon: gain 1 Oblivion for each Seraphim on board. On-board: when a Seraphim leaves play, next Angel summon requirement is reduced by 1.
-14. Eternal Formation: On-summon: grant allied Seraphim stabilization. On-board: allied Seraphim cannot be repositioned by your own effects.
-15. Mending Choir: On-summon: restore 1 durability to an allied unit. On-board: when you play a Cherubim, restore 1 durability to another allied Cherubim.
-16. Angelic Conscription: On-summon: reduce next Angel summon requirement by 1. On-board: Angels in Extra Deck require 1 less summon material.
-17. Lower Heaven: On-summon: choose an Angel, it counts as Seraphim this sequence. On-board: Angels count as Seraphim for your effects.
-18. Martyr Ground: On-summon: draw 1. On-board: when an allied Angel leaves play, draw 1.
-19. Chorus Meek: On-summon: if 2+ Angels are controlled, they gain +1 bonus power. On-board: Angels keep +1 bonus power while this remains.
-20. Intercessor Gate: On-summon: swap 1 Angel from board with one in Extra Deck. On-board: once per sequence, Angel swap is free.
-21. Static Veil: On-summon: your next Ophanim costs +1 resource and gains +20 Oblivion. On-board: Ophanim cost +1 and gain +8 Oblivion.
-22. Oppressive Seal: On-summon: lock Ophanim count to 1 for current sequence. On-board: only 1 Ophanim can be played each sequence.
-23. Blind Archive: On-summon: draw 1, then discard 1. On-board: your first deck search each sequence finds +1 additional valid card before choosing.
-24. Crumbling Mandate: On-summon: disable 1 allied Cherubim to gain 3 Oblivion. On-board: when a Cherubim is disabled, gain 2 Oblivion.
-25. Obsidian Covenant: On-summon: gain 4 Oblivion. On-board: direct card-effect Oblivion gains are reduced by 1 (minimum 0).
-26. Pilgrim Bell: On-summon: gain 2 Oblivion. On-board: your first card each sequence gains +5 Oblivion.
-27. Gilded Census: On-summon: draw 1. On-board: every third card played draws 1.
-28. Pale Census: On-summon: if hand size is 2 or less, draw 1. On-board: while hand size is 2 or less, cards gain +3 Oblivion.
-29. Narrow Gate: On-summon: if exactly one back slot is occupied, gain 4 Oblivion. On-board: lone Cherubim trigger value +1.
-30. Open Gate: On-summon: if both back slots are occupied, draw 1. On-board: first Cherubim trigger each sequence repeats.
-31. Dust Altar: On-summon: sacrifice 1 card from hand to draw 2. On-board: discard effects draw +1 once each sequence.
-32. Quiet Novitiate: On-summon: prevent your next discard. On-board: first discard each sequence is prevented.
-33. Ledger Warden: On-summon: gain 2 Oblivion. On-board: whenever you gain Oblivion, gain +2 more (cap +10 per sequence).
-34. Burden Warden: On-summon: lose 2 cards from hand, gain 8 Oblivion. On-board: whenever you draw 2+ from one effect, lose 2 Oblivion then draw 1.
-35. Foster Chapel: On-summon: next summoned unit gains +1 durability. On-board: summoned units enter with +1 durability.
-36. Hollow Bell: On-summon: gain 3 Oblivion. On-board: whenever an allied unit leaves play, gain +8 Oblivion.
-37. Grave Tutor: On-summon: return 1 discard card to hand. On-board: after discarding 2 cards in a sequence, return 1 random discard card to hand.
-38. Last Candle: On-summon: if deck is empty, gain 3 Oblivion. On-board: empty-deck draws convert to 3 Oblivion.
-39. First Candle: On-summon: draw 1. On-board: your first played card each sequence draws 1.
-40. Ordinance Clerk: On-summon: next attack cooldown increase is reduced by 1. On-board: first attack each sequence gets -1 cooldown increase.
-41. Mausoleum Scribe: On-summon: gain 1 Oblivion. On-board: every fourth card played draws 1.
-42. Refuge Choir: On-summon: if no Angels are controlled, Seraphim gain +1 bonus power. On-board: while no Angels are controlled, Seraphim keep +1 bonus power.
-43. Throne Choir: On-summon: if an Angel is controlled, gain 6 Oblivion. On-board: while an Angel is controlled, Ophanim gain +10 Oblivion on-play.
-44. Ash Interdict: On-summon: set minimum card cost to 1 for this sequence. On-board: cost reductions cannot move below 1.
-45. Relic Broker: On-summon: banish 1 discard card to gain 2 Oblivion. On-board: once per sequence, banish a discard card to gain 2 Oblivion.
-46. Lantern Broker: On-summon: banish 1 hand card to draw 2. On-board: first hand-banish each sequence draws +1.
-47. Iron Hymn: On-summon: mark 1 front-slot unit. On-board: first marked unit destroyed returns with 1 durability.
-48. Velvet Hymn: On-summon: your next card played gains +8 Oblivion. On-board: first card played each sequence gains +5 Oblivion.
-49. Quiet Tribunal: On-summon: if 3+ cards are played this sequence, discard 1 then draw 1. On-board: after the third card play each sequence, apply discard 1 then draw 1.
-50. Final Sanctuary: On-summon: draw 2. On-board: when this Cherubim leaves play, gain +12 Oblivion.
+---
+
+## Ophanim Abilities (Universal Spells)
+
+### Draw & Card Selection
+1. **Archive Delve** — Draw 2 cards
+2. **Deep Search** — Look at the top 4 cards, take 1 card, and put the rest on the bottom
+3. **Careful Study** — Look at the top 3 cards, take 1 card, discard 1 card, and put the rest on the bottom
+4. **Cascading Vision** — Draw 1 card for each active Cherubim on board (max 2)
+5. **Seraphic Revelation** — If you control 1+ active Seraphim, Draw 2 cards
+6. **Empty Draw** — If no Seraphim are on board, Draw 3 cards
+7. **Measured Wisdom** — If hand size is 3 or less, Draw 2 cards
+8. **Abundant Wisdom** — If hand size is 6 or more, Draw 1 card and +40 Oblivion
+
+### Deck Manipulation
+9. **Cycle Rite** — Choose and discard 1 card, Draw 2 cards
+10. **Deep Cycle** — Choose and discard 2 cards, Draw 3 cards
+11. **Deck Renewal** — Shuffle discard into deck, Draw 1 card
+12. **Grave Return** — Shuffle discard into deck
+13. **Precision Recall** — Salvage any 1 Ophanim
+14. **Resource Recall** — Salvage any 1 Cherubim
+15. **Champion Recall** — Salvage any 1 Seraphim
+16. **Curated Salvage** — Look at the top 3 cards in discard, Salvage 1 of them
+
+### Tutors & Search
+17. **Ophanim Search** — Search your deck for 1 matching Ophanim
+18. **Cherubim Search** — Search your deck for 1 matching Cherubim  
+19. **Seraphim Search** — Search your deck for 1 matching Seraphim
+20. **Flexible Tutor** — Search your deck for 1 card matching Ophanim or Cherubim
+21. **Champion Tutor** — Search your deck for 1 card matching Seraphim or Angel
+22. **Conditional Tutor** — If you have played 2+ cards this turn, Search your deck for any 1 card
+
+### Direct Oblivion (Small)
+23. **Minor Strike** — +40 Oblivion
+24. **Modest Strike** — +60 Oblivion
+25. **Solid Strike** — +80 Oblivion
+26. **Trade Offering** — Choose and discard 1 card, +100 Oblivion
+27. **Heavy Trade** — Choose and discard 2 cards, +160 Oblivion
+
+### Direct Oblivion (Medium)
+28. **Standard Barrage** — +100 Oblivion
+29. **Strong Barrage** — +140 Oblivion
+30. **Heavy Barrage** — +180 Oblivion
+31. **Empowered Barrage** — If you control 1+ active Seraphim, +200 Oblivion
+32. **Chain Barrage** — If you have played 3+ cards this turn, +220 Oblivion
+
+### Direct Oblivion (Large)
+33. **Major Assault** — +240 Oblivion
+34. **Critical Assault** — +300 Oblivion
+35. **Apocalyptic Strike** — +400 Oblivion
+36. **Finisher** — +500 Oblivion, Choose and discard 1 card
+
+### Conditional Oblivion Boosts
+37. **Early Surge** — If this is the first card you played this turn, +150 Oblivion
+38. **Late Surge** — If you have played 4+ cards this turn, +180 Oblivion
+39. **Board Presence** — +20 Oblivion for each active Seraphim on board
+40. **Support Presence** — +30 Oblivion for each active Cherubim on board
+41. **Combined Arms** — +40 Oblivion for each different active unit type on board (Seraphim, Cherubim, Angel)
+42. **Empty Field** — If no Seraphim are on board, +200 Oblivion
+43. **Full Board** — If both front slots and at least 1 back slot are occupied, +160 Oblivion
+
+### Hybrid Effects
+44. **Measured Assault** — +90 Oblivion, Draw 1 card
+45. **Careful Assault** — +70 Oblivion, Look at the top 2 cards and take 1 card
+46. **Cycling Assault** — +80 Oblivion, Choose and discard 1 card, Draw 1 card
+47. **Salvaging Strike** — +120 Oblivion, Salvage any 1 Ophanim
+48. **Searching Strike** — +100 Oblivion, Search your deck for 1 matching Ophanim
+49. **Renewal Strike** — +110 Oblivion, Shuffle discard into deck
+50. **Sustained Assault** — +140 Oblivion, If you have played 2+ cards this turn, Draw 1 card
+
+---
+
+## Seraphim Abilities (Front-Line Units)
+
+### On-Play Effects
+1. **Aggressive Summon** — On play: +80 Oblivion, Draw 1 card
+2. **Tactical Summon** — On play: +60 Oblivion, Look at the top 2 cards and take 1 card
+3. **Cycling Summon** — On play: Choose and discard 1 card, Draw 2 cards
+4. **Salvage Summon** — On play: +50 Oblivion, Salvage any 1 Ophanim
+5. **Search Summon** — On play: Search your deck for 1 matching Ophanim
+6. **Renewal Summon** — On play: +70 Oblivion, Shuffle discard into deck
+7. **Empowering Summon** — On play: Seraphim bonuses are amplified by +15
+8. **Support Summon** — On play: Adjacent active Cherubim gain +1 durability
+
+### While Active - Card Play Bonuses
+9. **Steady Presence** — While active: +15 Oblivion per card played
+10. **Strong Presence** — While active: +25 Oblivion per card played
+11. **Dominant Presence** — While active: +40 Oblivion per card played
+12. **Spell Focus** — While active: +20 Oblivion whenever you play an Ophanim while active
+13. **Support Focus** — While active: +15 Oblivion whenever you summon a Cherubim while active
+14. **Draw Engine** — While active: Whenever you play an Ophanim, Draw 1 card (once per turn)
+
+### While Active - Amplifiers
+15. **Spell Amplifier** — While active: Ophanim Oblivion effects are increased by +10%
+16. **Support Amplifier** — While active: Cherubim on-summon Oblivion effects are increased by +20
+17. **Adjacent Synergy** — While active: Adjacent active Seraphim gain +20 Oblivion per card played
+18. **Board Synergy** — While active: All active Seraphim gain +10 Oblivion per card played
+
+### While Active - Resource Effects
+19. **Draw Support** — While active: Your first card each turn draws 1 extra card
+20. **Search Support** — While active: Once per turn, Search effects find +1 additional valid option before choosing
+21. **Salvage Support** — While active: Once per turn, Salvage effects can retrieve 1 additional card
+22. **Discard Mitigation** — While active: Your first discard each turn is prevented
+
+### Triggered Abilities
+23. **Chain Trigger** — While active: After you play your 3rd card each turn, +100 Oblivion
+24. **Spell Trigger** — While active: After you play your 2nd Ophanim each turn, Draw 1 card
+25. **Unit Trigger** — While active: When another unit leaves play, +40 Oblivion
+
+---
+
+## Cherubim Abilities (Back-Line Support)
+
+### On-Summon - Immediate Value
+1. **Draw Construct** — On summon: Draw 2 cards
+2. **Oblivion Construct** — On summon: +80 Oblivion
+3. **Hybrid Construct** — On summon: +50 Oblivion, Draw 1 card
+4. **Salvage Construct** — On summon: Salvage any 1 card
+5. **Search Construct** — On summon: Search your deck for 1 matching Ophanim or Cherubim
+6. **Scry Construct** — On summon: Look at the top 3 cards, take 1 card, and put the rest on the bottom
+7. **Renewal Construct** — On summon: Shuffle discard into deck, +40 Oblivion
+
+### On-Summon - Board Support
+8. **Durability Frame** — On summon: Target Seraphim gains +1 durability
+9. **Mass Durability** — On summon: All active Seraphim gain +1 durability
+10. **Amplification Frame** — On summon: Seraphim bonuses are amplified by +10
+11. **Empowerment Frame** — On summon: Target Seraphim gains +30 Oblivion on its next attack
+
+### While on Board - Per Card Played
+12. **Modest Engine** — While on board: +8 Oblivion per card played while on board
+13. **Standard Engine** — While on board: +15 Oblivion per card played while on board
+14. **Strong Engine** — While on board: +22 Oblivion per card played while on board
+15. **Powerful Engine** — While on board: +30 Oblivion per card played while on board
+
+### While on Board - Spell Synergy
+16. **Spell Battery** — While on board: +20 Oblivion whenever you play an Ophanim while active
+17. **Spell Draw** — While on board: Whenever you play an Ophanim, Draw 1 card (once per turn)
+18. **Spell Scry** — While on board: Whenever you play an Ophanim, Look at top 1 card (keep or bottom)
+19. **Spell Amplifier** — While on board: Ophanim Oblivion effects are increased by +15
+
+### While on Board - Draw Support
+20. **First Card Draw** — While on board: Your first card each turn draws 1 additional card
+21. **Third Card Draw** — While on board: Every third card played draws 1 card
+22. **Discard Draw** — While on board: Whenever you discard a card, Draw 1 card (once per turn)
+23. **Enhanced Draw** — While on board: When a single effect draws 2+, draw 1 extra card (once per turn)
+
+### While on Board - Resource Generation
+24. **Oblivion Generator** — While on board: Gain +10 Oblivion whenever you gain Oblivion from a card effect (max +30 per turn)
+25. **Unit Departure** — While on board: Whenever a unit leaves play, +30 Oblivion
+26. **Seraphim Departure** — While on board: Whenever a Seraphim leaves play, Draw 1 card
+27. **Cherubim Synergy** — While on board: When you summon a Cherubim, restore 1 durability to another Cherubim
+
+### While on Board - Adjacent Support
+28. **Adjacent Boost** — While on board: Adjacent active Seraphim gain +15 Oblivion per card played
+29. **Adjacent Draw** — While on board: When an adjacent Seraphim attacks, Draw 1 card
+30. **Adjacent Durability** — While on board: Adjacent units gain +1 durability when summoned
+
+### While on Board - Conditional Triggers
+31. **Chain Trigger** — While on board: After you play your 3rd card each turn, +60 Oblivion and Draw 1 card
+32. **Empty Hand Trigger** — While on board: If hand size is 2 or less at start of turn, Draw 1 card
+33. **Full Board Trigger** — While on board: If all slots are occupied, +40 Oblivion per card played
+34. **Lone Cherubim** — While on board: If this is the only active Cherubim, effects are doubled
+
+### After X Cards Played
+35. **Quick Trigger** — After 2 cards played: Draw 1 card
+36. **Standard Trigger** — After 3 cards played: +80 Oblivion, Draw 1 card
+37. **Extended Trigger** — After 4 cards played: +120 Oblivion, Salvage any 1 card
+38. **Deep Trigger** — After 5 cards played: Draw 2 cards, +100 Oblivion
+
+### Utility & Special
+39. **Deck Safety** — While on board: When deck is empty, gain +60 Oblivion instead of drawing
+40. **Hand Expansion** — While on board: Hand size capacity is increased by +2
+41. **Cost Reduction** — While on board: Ophanim cost 1 less resource (minimum 1)
+42. **Seraphim Cost Reduction** — While on board: Seraphim cost 1 less resource (minimum 1)
+43. **Search Enhancement** — While on board: Your first deck search each turn finds +1 additional valid card before choosing
+44. **Salvage Enhancement** — While on board: Salvage effects can retrieve 1 additional card (once per turn)
+45. **Discard Protection** — While on board: Your first discard each turn is prevented
+46. **Discard Value** — While on board: Whenever you discard a card, +15 Oblivion (once per turn)
+47. **Universal Amplifier** — While on board: All Oblivion gains from card effects are increased by +10%
+48. **Attack Support** — While on board: Seraphim attacks gain +50 base Oblivion
+49. **Cooldown Support** — While on board: First attack each turn has cooldown increase reduced by 1
+50. **Departure Value** — On departure: When this Cherubim leaves play, Draw 2 cards and +80 Oblivion
+
+---
+
+## Design Notes
+
+These abilities are intentionally generic and avoid set-specific mechanics (Heat, Radiance, Patience, Strain, etc.) to ensure they can be adapted to any deck archetype. When implementing these in actual cards:
+
+- Adjust Oblivion values based on card rarity and cost
+- Consider durability values for Seraphim and Cherubim
+- Add set-specific flavor and mechanics as appropriate
+- Balance trigger conditions with power level
+- Ensure effects synergize with the intended deck strategy
