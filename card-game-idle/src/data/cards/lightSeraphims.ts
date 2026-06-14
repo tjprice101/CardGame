@@ -114,7 +114,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Thorncrown Seraphim',
-    description: 'On play: Gain 2 Radiance. While on board: +8 Oblivion per card played while active',
+    description: 'On play: Gain 3 Radiance; +80 Oblivion. While on board: +10 Oblivion per card played while active',
     artKey: 'ser_light_throne',
     attacks: {
       unsynergized: {
@@ -139,9 +139,10 @@ export const lightSeraphims: SeraphimDefinition[] = [
         tags: ['seraphim', 'synergized', 'light'],
       },
     },
-    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 8, synergyRequirement: 'Light' },
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 10, synergyRequirement: 'Light' },
     onPlayEffects: [
-      { type: 'radiance_gain', value: 2 }],
+      { type: 'radiance_gain', value: 3 },
+      { type: 'oblivion_flat', value: 80 }],
   },
   {
     definitionId: 'ser-light-herald',

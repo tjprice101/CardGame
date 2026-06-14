@@ -386,9 +386,9 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Common',
     name: 'Cinder Litany',
-    description: 'Draw 1 card; +25 Oblivion; Gain 2 Black Flame',
+    description: 'Shuffle discard into deck; Draw 2 cards; Gain 2 Black Flame',
     artKey: 'bgi_seek_cinder_litany',
-    effects: [{ type: 'draw', value: 1 }, { type: 'oblivion_flat', value: 25 }],
+    effects: [{ type: 'shuffle_discard' }, { type: 'draw', value: 2 }],
   },
   {
     definitionId: 'bgi-ophanim-veilplane-shard',
@@ -396,9 +396,12 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Common',
     name: 'Veilplane Shard',
-    description: 'Look at the top 4 cards, take 1 card, and put the rest on the bottom; Gain 2 Black Flame',
+    description: 'Look at the top 3 cards, take 1 card, and put the rest on the bottom; If hand size is 3 or less, Draw 1 additional card; Gain 2 Black Flame',
     artKey: 'bgi_seek_veilplane_shard',
-    effects: [{ type: 'look_top_take', look: 4, take: 1 }],
+    effects: [
+      { type: 'look_top_take', look: 3, take: 1 },
+      { type: 'conditional', condition: { type: 'hand_size_lte', value: 3 }, then: [{ type: 'draw', value: 1 }] }
+    ],
   },
   {
     definitionId: 'bgi-ophanim-rose-echo',
@@ -416,21 +419,26 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Common',
     name: 'Ashen Memory',
-    description: '+50 Oblivion; If this is the first card you played this turn, Draw 1 card; Gain 2 Black Flame',
+    description: 'If this is the first card you played this turn, +150 Oblivion; Otherwise, Draw 2 cards; Gain 2 Black Flame',
     artKey: 'bgi_seek_ashen_memory',
     effects: [
-      { type: 'oblivion_flat', value: 50 },
-      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'draw', value: 1 }] }],
+      { type: 'conditional', condition: { type: 'first_card_this_turn' }, 
+        then: [{ type: 'oblivion_flat', value: 150 }],
+        else: [{ type: 'draw', value: 2 }] }
+    ],
   },
   {
     definitionId: 'bgi-ophanim-sable-descent',
     type: 'Ophanim',
     element: 'Dark',
-    rarity: 'Common',
+    rarity: 'Rare',
     name: 'Sable Descent',
-    description: 'Draw 1 card; Gain 2 Black Flame',
+    description: 'Look at the top 3 cards, take 1 card, and put the rest on the bottom; If you control 2+ active Seraphim, +80 Oblivion; Gain 2 Black Flame',
     artKey: 'bgi_seek_sable_descent',
-    effects: [{ type: 'draw', value: 1 }],
+    effects: [
+      { type: 'look_top_take', look: 3, take: 1 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 80 }] }
+    ],
   },
   {
     definitionId: 'bgi-ophanim-chromatic-sorrow',
@@ -448,9 +456,9 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Common',
     name: 'Bladewind Keening',
-    description: '+35 Oblivion; Gain 2 Black Flame',
+    description: 'Choose and discard 1 card, +100 Oblivion; Gain 2 Black Flame',
     artKey: 'bgi_seek_bladewind_keening',
-    effects: [{ type: 'oblivion_flat', value: 35 }],
+    effects: [{ type: 'discard_choice', value: 1 }, { type: 'oblivion_flat', value: 100 }],
   },
   {
     definitionId: 'bgi-ophanim-scorchglass-route',
@@ -468,9 +476,9 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Rare',
     name: 'Lament Siphon',
-    description: 'Salvage any 1 card; +70 Oblivion; Gain 5 Monochromatic Shards; Gain 2 Black Flame',
+    description: 'Salvage any 2 cards; +60 Oblivion; Gain 5 Monochromatic Shards; Gain 2 Black Flame',
     artKey: 'bgi_seek_lament_siphon',
-    effects: [{ type: 'salvage_any' }, { type: 'oblivion_flat', value: 70 }, { type: 'monochromatic_shards_gain', value: 5 }],
+    effects: [{ type: 'salvage_any', count: 2 }, { type: 'oblivion_flat', value: 60 }, { type: 'monochromatic_shards_gain', value: 5 }],
   },
   {
     definitionId: 'bgi-ophanim-covenant-split',
@@ -505,16 +513,7 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
       { type: 'draw', value: 2 },
       { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 80 }] }],
   },
-  {
-    definitionId: 'bgi-ophanim-grief-lattice',
-    type: 'Ophanim',
-    element: 'Dark',
-    rarity: 'Rare',
-    name: 'Grief Lattice',
-    description: 'Draw 1 card; Gain 2 Black Flame',
-    artKey: 'bgi_seek_grief_lattice',
-    effects: [{ type: 'draw', value: 1 }],
-  },
+
   {
     definitionId: 'bgi-ophanim-violet-dirge',
     type: 'Ophanim',
@@ -531,9 +530,13 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Epic',
     name: 'Copper Hate Psalm',
-    description: '+160 Oblivion; Gain 2 Black Flame',
+    description: '+140 Oblivion; Look at the top 3 cards and take 1 card; If you control 1+ active Seraphim, +240 Oblivion; Gain 2 Black Flame',
     artKey: 'bgi_seek_copper_hate_psalm',
-    effects: [{ type: 'oblivion_flat', value: 160 }],
+    effects: [
+      { type: 'oblivion_flat', value: 140 },
+      { type: 'look_top_take', look: 3, take: 1 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'oblivion_flat', value: 240 }] }
+    ],
   },
   {
     definitionId: 'bgi-ophanim-blue-mourning-rift',
@@ -551,9 +554,9 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Epic',
     name: 'White-Black Supernova',
-    description: 'Draw 3 cards; Gain 2 Black Flame',
+    description: 'Discard 3 cards, then draw 5 cards; +30 Oblivion for each Ophanim discarded; +40 Oblivion for each Seraphim discarded; Gain 2 Black Flame',
     artKey: 'bgi_seek_whiteblack_supernova',
-    effects: [{ type: 'draw', value: 3 }],
+    effects: [{ type: 'discard_draw', discard: 3, draw: 5 }, { type: 'monochromatic_shards_gain', value: 3 }],
   },
   {
     definitionId: 'bgi-ophanim-dracovyr-warcry',
@@ -581,13 +584,15 @@ export const blackGlassInfernoOphanims: OphanimDefinition[] = ([
     element: 'Dark',
     rarity: 'Legendary',
     name: 'Shadows of the Inferno',
-    description: 'Draw 3 cards; +220 Oblivion; Gain 6 Monochromatic Shards; If you have played 3+ cards this turn, +220 Oblivion; Gain 2 Black Flame',
+    description: 'Draw 2 cards; +180 Oblivion; Gain 6 Monochromatic Shards; If you have played 3+ cards this turn, +260 Oblivion; If you control 2+ active Seraphim, Draw 2 additional cards; Gain 2 Black Flame',
     artKey: 'bgi_seek_shadows_of_the_inferno',
     effects: [
-      { type: 'draw', value: 3 },
-      { type: 'oblivion_flat', value: 220 },
+      { type: 'draw', value: 2 },
+      { type: 'oblivion_flat', value: 180 },
       { type: 'monochromatic_shards_gain', value: 6 },
-      { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 220 }] }],
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 260 }] },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'draw', value: 2 }] }
+    ],
   }] as OphanimDefinition[]).map((card) => withBlackFlameOphanim(card));
 
 export const blackGlassInfernoCherubim: CherubimDefinition[] = ([
@@ -645,10 +650,13 @@ export const blackGlassInfernoCherubim: CherubimDefinition[] = ([
     element: 'Dark',
     rarity: 'Rare',
     name: 'Chromatic Crater',
-      description: 'On play: Draw 2 cards; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +14 Oblivion per card played',
+      description: 'On play: Draw 2 cards; Gain 2 White Flame. While on board: Whenever you discard a card, +18 Oblivion; Adjacent active Seraphim gain +10 Oblivion per card played',
     artKey: 'bgi_cherubim_chromatic_crater',
     maxDurability: 3,
-      effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 14 }],
+      effects: [
+        { type: 'cherubim_on_discard', value: 18 },
+        { type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 10 }
+      ],
       onPlayEffects: [{ type: 'draw', value: 2 }],
   },
   {
@@ -730,10 +738,10 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = ([
     element: 'Dark',
     rarity: 'Common',
     name: 'Rose Shroud',
-    description: 'On play: Gain 2 White Flame. While on board: Adjacent active Seraphim gain +2 Oblivion per card played; Buffs Angel attacks: base +2',
+    description: 'On play: +30 Oblivion; Gain 2 White Flame. While on board: Adjacent active Seraphim gain +8 Oblivion per card played; Buffs Angel attacks: base +5',
     artKey: 'bgi_cherubim_rose_shroud',
-    effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 2 }],
-    onPlayEffects: [],
+    effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 8 }],
+    onPlayEffects: [{ type: 'oblivion_flat', value: 30 }],
   },
   {
     definitionId: 'cherubim-dark-void-veil',
@@ -774,9 +782,12 @@ export const blackGlassInfernoCherubimCards: CherubimDefinition[] = ([
     element: 'Dark',
     rarity: 'Epic',
     name: 'Grieffire Ascent',
-    description: 'On play: Draw 2 cards; Gain 2 White Flame. While on board: +2 draw per card played; Buffs Seraphim and Angel attacks: base +48; Buffs Angel attacks: base +37',
+    description: 'On play: Draw 2 cards; Gain 2 White Flame. While on board: Whenever you summon a Cherubim, restore 1 durability to another Cherubim; +1 draw per 3 cards played; Buffs Seraphim and Angel attacks: base +48; Buffs Angel attacks: base +37',
     artKey: 'bgi_cherubim_grieffire_ascent',
-    effects: [{ type: 'cherubim_draw_per_card', value: 2 }],
+    effects: [
+      { type: 'cherubim_on_summon_restore', value: 1 },
+      { type: 'cherubim_draw_per_nth_card', nth: 3, draw: 1 }
+    ],
     onPlayEffects: [{ type: 'draw', value: 2 }],
   },
   {

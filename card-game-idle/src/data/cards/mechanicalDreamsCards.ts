@@ -213,9 +213,13 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Common',
     name: 'Gearwake Courier',
-    description: 'Gain 2 Strain; Gain 1 Strain',
+    description: 'Gain 3 Strain; +60 Oblivion; If you have 0 active Seraphim, Draw 2 cards',
     artKey: 'md_seek_gearwake_courier',
-    effects: [{ type: 'strain_gain', value: 2 }, { type: 'strain_gain', value: 1 }, { type: 'strain_gain', value: 2 }],
+    effects: [
+      { type: 'strain_gain', value: 3 },
+      { type: 'oblivion_flat', value: 60 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 0 }, then: [{ type: 'draw', value: 2 }] }
+    ],
   },
   {
     definitionId: 'md-ophanim-brass-mind-litany',
@@ -223,9 +227,13 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Common',
     name: 'Brass-Mind Litany',
-    description: 'Gain 2 Strain; Gain 1 Strain; Draw 1 card',
+    description: 'Gain 2 Strain; Look at the top 2 cards, take 1 card, and put the rest on the bottom; If you control 1+ active Cherubim, +80 Oblivion',
     artKey: 'md_seek_brass_mind_litany',
-    effects: [{ type: 'strain_gain', value: 2 }, { type: 'strain_gain', value: 1 }, { type: 'strain_gain', value: 2 }, { type: 'draw', value: 1 }],
+    effects: [
+      { type: 'strain_gain', value: 2 },
+      { type: 'look_top_take', look: 2, take: 1 },
+      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'oblivion_flat', value: 80 }] }
+    ],
   },
   {
     definitionId: 'md-ophanim-servo-divination',
@@ -233,9 +241,13 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Common',
     name: 'Servo Divination',
-    description: 'Look at the top 3 cards, take 1 card, and put the rest on the bottom; Gain 1 Strain; Gain 2 Strain',
+    description: 'Gain 3 Strain; Salvage any 1 card; Shuffle discard into deck',
     artKey: 'md_seek_servo_divination',
-    effects: [{ type: 'look_top_take', look: 3, take: 1 }, { type: 'strain_gain', value: 1 }, { type: 'strain_gain', value: 2 }],
+    effects: [
+      { type: 'strain_gain', value: 3 },
+      { type: 'salvage_any' },
+      { type: 'shuffle_discard' }
+    ],
   },
   {
     definitionId: 'md-ophanim-clockforge-chant',
@@ -243,9 +255,13 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Common',
     name: 'Clockforge Chant',
-    description: 'Gain 1 Strain; Shuffle discard into deck; Gain 2 Strain',
+    description: 'Gain 2 Strain; Discard 1 card, Draw 2 cards; If you control 1+ active Cherubim, +80 Oblivion',
     artKey: 'md_seek_clockforge_chant',
-    effects: [{ type: 'strain_gain', value: 1 }, { type: 'shuffle_discard' }, { type: 'strain_gain', value: 2 }],
+    effects: [
+      { type: 'strain_gain', value: 2 },
+      { type: 'discard_draw', discard: 1, draw: 2 },
+      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'oblivion_flat', value: 80 }] }
+    ],
   },
   {
     definitionId: 'md-ophanim-flareline-primer',
@@ -308,9 +324,14 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Legendary',
     name: 'Sunspindle Override',
-    description: 'Gain 2 Strain; Gain 4 Strain',
+    description: 'Gain 6 Strain; +140 Oblivion; If you have 6+ Strain, Draw 1 card; If you have 10+ Strain, Draw 2 additional cards',
     artKey: 'md_seek_sunspindle_override',
-    effects: [{ type: 'strain_gain', value: 2 }, { type: 'strain_gain', value: 4 }],
+    effects: [
+      { type: 'strain_gain', value: 6 },
+      { type: 'oblivion_flat', value: 140 },
+      { type: 'conditional', condition: { type: 'strain_gte', value: 6 }, then: [{ type: 'draw', value: 1 }] },
+      { type: 'conditional', condition: { type: 'strain_gte', value: 10 }, then: [{ type: 'draw', value: 2 }] }
+    ],
   }];
 
 export const mechanicalDreamsCherubim: CherubimDefinition[] = [

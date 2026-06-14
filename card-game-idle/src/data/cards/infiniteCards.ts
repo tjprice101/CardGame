@@ -1251,18 +1251,18 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Throne',
-    description: 'On summon: Gain 14 Radiance; Gain 3 Strain; Gain 28 Arctic Charge; +1020 Oblivion; Gain 3 Polar Capacitors. After 6 cards played: Gain 8 Radiance; Gain 2 Strain; Gain 10 Arctic Charge; +1080 Oblivion; Release up to 2 Polar Capacitors (Voltage: +520 Oblivion per capacitor · Frost: +6 Arctic Charge per capacitor). While on board: +880 Oblivion per card played while on board',
+    description: 'On summon: Gain 16 Radiance; Gain 4 Strain; Gain 32 Arctic Charge; +1150 Oblivion; Gain 4 Polar Capacitors; Draw 1 card. After 6 cards played: Gain 10 Radiance; Gain 3 Strain; Gain 14 Arctic Charge; +1200 Oblivion; Release up to 3 Polar Capacitors (Voltage: +540 Oblivion per capacitor · Frost: +8 Arctic Charge per capacitor). While on board: +920 Oblivion per card played while on board',
     artKey: 'sv_infinite_black_ice_throne',
     summonCost: ['sv-eternal-white-static', 'sv-cher-station-nullpoint'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
-    onSummonEffects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 14 }, { type: 'arctic_charge_gain', value: 28 }, { type: 'oblivion_flat', value: 1020 }, { type: 'set_secondary_gain', kind: 'snow', value: 3 }],
+    onSummonEffects: [{ type: 'strain_gain', value: 4 }, { type: 'radiance_gain', value: 16 }, { type: 'arctic_charge_gain', value: 32 }, { type: 'oblivion_flat', value: 1150 }, { type: 'set_secondary_gain', kind: 'snow', value: 4 }, { type: 'draw', value: 1 }],
     activatedAbility: {
       name: 'Throne Freeze',
       cardsPlayedRequirement: 6,
-      description: 'Gain 8 Radiance; Gain 2 Strain; Gain 10 Arctic Charge; +1080 Oblivion; Release up to 2 Polar Capacitors (Voltage: +520 Oblivion per capacitor · Frost: +6 Arctic Charge per capacitor)',
+      description: 'Gain 10 Radiance; Gain 3 Strain; Gain 14 Arctic Charge; +1200 Oblivion; Release up to 3 Polar Capacitors (Voltage: +540 Oblivion per capacitor · Frost: +8 Arctic Charge per capacitor)',
       // Role: FLOOR-LOCKED AMPLIFIER. Seeds pulses and Arctic Charge, then
       // leaves the discharge for other Snowbound finishers.
-      effects: [{ type: 'strain_gain', value: 2 }, { type: 'radiance_gain', value: 8 }, { type: 'arctic_charge_gain', value: 10 }, { type: 'oblivion_flat', value: 1080 }, { type: 'snow_polar_capacitor_release', voltageOblivionPerCapacitor: 520, frostArcticChargePerCapacitor: 6, consume: 2 }],
+      effects: [{ type: 'strain_gain', value: 3 }, { type: 'radiance_gain', value: 10 }, { type: 'arctic_charge_gain', value: 14 }, { type: 'oblivion_flat', value: 1200 }, { type: 'snow_polar_capacitor_release', voltageOblivionPerCapacitor: 540, frostArcticChargePerCapacitor: 8, consume: 3 }],
     },
     attacks: {
       primary: {
@@ -1286,7 +1286,7 @@ export const blackGlassInfernoInfiniteAngels: AngelDefinition[] = [
         tags: ['angel', 'exalted', 'mechanical', 'snowbound', 'voltage'],
       },
     },
-    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 880 },
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 920 },
   },
   {
     definitionId: 'sv-infinite-aurora-collapse',
@@ -1357,17 +1357,19 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Neon Deluge',
-    description: 'Gain 10 Radiance; Gain 2 Strain; Look at the top 9 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 19 Arctic Charge; +2800 Oblivion; Gain 15 Arctic Charge; Gain 2 Polar Capacitors; Release up to 2 Polar Capacitors (Voltage: +470 Oblivion per capacitor · Frost: +8 Arctic Charge per capacitor)',
+    description: 'Gain 10 Radiance; Gain 2 Strain; Look at the top 9 cards, take 3 cards, put 2 cards on the bottom, and discard the rest; Gain 19 Arctic Charge; Choose and discard 1 card; Draw 2 cards; +2900 Oblivion; Gain 15 Arctic Charge; Gain 2 Polar Capacitors; Release up to 2 Polar Capacitors (Voltage: +490 Oblivion per capacitor · Frost: +9 Arctic Charge per capacitor)',
     artKey: 'inf_sv_neon_deluge',
     effects: [
       { type: 'strain_gain', value: 2 },
       { type: 'radiance_gain', value: 10 },
       { type: 'look_top_take_drop', look: 9, take: 3, drop: 2 },
       { type: 'arctic_charge_gain', value: 19 },
-      { type: 'oblivion_flat', value: 2800 },
+      { type: 'discard_choice', value: 1 },
+      { type: 'draw', value: 2 },
+      { type: 'oblivion_flat', value: 2900 },
       { type: 'arctic_charge_gain', value: 15 },
       { type: 'set_secondary_gain', kind: 'snow', value: 2 },
-      { type: 'snow_polar_capacitor_release', voltageOblivionPerCapacitor: 470, frostArcticChargePerCapacitor: 8, consume: 2 }],
+      { type: 'snow_polar_capacitor_release', voltageOblivionPerCapacitor: 490, frostArcticChargePerCapacitor: 9, consume: 2 }],
   },
   {
     definitionId: 'inf-sv-crystal-maelstrom',
@@ -1375,7 +1377,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Crystal Maelstrom',
-    description: 'Gain 12 Radiance; Gain 3 Strain; Gain 28 Arctic Charge; +3300 Oblivion; Gain 18 Arctic Charge; Gain 3 Polar Capacitors; Release all Polar Capacitors (Voltage: +500 Oblivion per capacitor · Frost: +11 Arctic Charge per capacitor)',
+    description: 'Gain 12 Radiance; Gain 3 Strain; Gain 28 Arctic Charge; Salvage any 1 card; +3300 Oblivion; If you have played 3+ cards this turn, +800 Oblivion; Gain 18 Arctic Charge; Gain 3 Polar Capacitors; Release all Polar Capacitors (Voltage: +500 Oblivion per capacitor · Frost: +11 Arctic Charge per capacitor)',
     artKey: 'inf_sv_crystal_maelstrom',
     // Role: MID-COEFFICIENT FINISHER. Seeds 3, discharges all banked pulses at
     // a modest frost coefficient.
@@ -1383,7 +1385,9 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'strain_gain', value: 3 },
       { type: 'radiance_gain', value: 12 },
       { type: 'arctic_charge_gain', value: 28 },
+      { type: 'salvage_any' },
       { type: 'oblivion_flat', value: 3300 },
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 800 }] },
       { type: 'arctic_charge_gain', value: 18 },
       { type: 'set_secondary_gain', kind: 'snow', value: 3 },
       { type: 'snow_polar_capacitor_release', voltageOblivionPerCapacitor: 500, frostArcticChargePerCapacitor: 11 }],
@@ -1394,7 +1398,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Dominion',
-    description: 'Gain 14 Radiance; Gain 3 Strain; Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Gain 24 Arctic Charge; +3100 Oblivion; Gain 18 Arctic Charge; Gain 4 Polar Capacitors; Release up to 4 Polar Capacitors (Voltage: +480 Oblivion per capacitor · Frost: +9 Arctic Charge per capacitor)',
+    description: 'Gain 14 Radiance; Gain 3 Strain; Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Gain 24 Arctic Charge; +3100 Oblivion; If you have 3+ active Cherubim, Draw 2 cards; Gain 18 Arctic Charge; Gain 4 Polar Capacitors; Release up to 4 Polar Capacitors (Voltage: +480 Oblivion per capacitor · Frost: +9 Arctic Charge per capacitor)',
     artKey: 'inf_sv_black_ice_dominion',
     // Role: BIG CAPACITOR BATTERY + SCOUT. +4 Polar Capacitors; no discharge -
     // the deck-thinning variant of the back-row reservoir.
@@ -1404,6 +1408,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
       { type: 'look_top_take_drop', look: 12, take: 4, drop: 1 },
       { type: 'arctic_charge_gain', value: 24 },
       { type: 'oblivion_flat', value: 3100 },
+      { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 3 }, then: [{ type: 'draw', value: 2 }] },
       { type: 'arctic_charge_gain', value: 18 },
       { type: 'set_secondary_gain', kind: 'snow', value: 4 },
       { type: 'snow_polar_capacitor_release', voltageOblivionPerCapacitor: 480, frostArcticChargePerCapacitor: 9, consume: 4 }],

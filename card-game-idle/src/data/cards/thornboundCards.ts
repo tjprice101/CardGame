@@ -45,7 +45,7 @@ export const thornboundSeraphims: SeraphimDefinition[] = [
     element: 'Thornbound',
     rarity: 'Common',
     name: 'Bleak March Duelist',
-    description: 'On play: Gain 2 Trail. While on board: +12 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 3 Trail; +70 Oblivion; If you have 3+ Scar, +70 Oblivion. While on board: +14 Oblivion whenever you play an Ophanim while active',
     artKey: 'tbp_ser_bleak_march_duelist',
     attacks: {
       unsynergized: {
@@ -70,8 +70,11 @@ export const thornboundSeraphims: SeraphimDefinition[] = [
         tags: ['seraphim', 'synergized', 'thornbound'],
       },
     },
-    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 12, synergyRequirement: 'Thornbound' },
-    onPlayEffects: [{ type: 'trail_gain', value: 2 }],
+    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 14, synergyRequirement: 'Thornbound' },
+    onPlayEffects: [
+      { type: 'trail_gain', value: 3 },
+      { type: 'oblivion_flat', value: 70 },
+      { type: 'conditional', condition: { type: 'scar_count_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 70 }] }],
   },
   {
     definitionId: 'tbp-ser-vinedusk-lancer',

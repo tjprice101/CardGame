@@ -7,192 +7,594 @@
 ## Ophanim Abilities (Universal Spells)
 
 ### Draw & Card Selection
-1. **Archive Delve** — Draw 2 cards
-2. **Deep Search** — Look at the top 4 cards, take 1 card, and put the rest on the bottom
-3. **Careful Study** — Look at the top 3 cards, take 1 card, discard 1 card, and put the rest on the bottom
-4. **Cascading Vision** — Draw 1 card for each active Cherubim on board (max 2)
-5. **Seraphic Revelation** — If you control 1+ active Seraphim, Draw 2 cards
-6. **Empty Draw** — If no Seraphim are on board, Draw 3 cards
-7. **Measured Wisdom** — If hand size is 3 or less, Draw 2 cards
-8. **Abundant Wisdom** — If hand size is 6 or more, Draw 1 card and +40 Oblivion
+1. Draw 2 cards
+2. Draw 3 cards
+3. Draw 4 cards
+4. Look at the top 3 cards, take 1 card, and put the rest on the bottom
+5. Look at the top 4 cards, take 1 card, and put the rest on the bottom
+6. Look at the top 5 cards, take 2 cards, and put the rest on the bottom
+7. Look at the top 3 cards, take 1 card, discard 1 card, and put the rest on the bottom
+8. Look at the top 4 cards, take 2 cards, discard 1 card, and put the rest on the bottom
+9. Draw 1 card for each active Cherubim on board (max 2)
+10. Draw 1 card for each active Seraphim on board (max 2)
+11. If you control 1+ active Seraphim, Draw 2 cards
+12. If you control 1+ active Seraphim, Draw 3 cards
+13. If no Seraphim are on board, Draw 3 cards
+14. If hand size is 3 or less, Draw 2 cards
+15. If hand size is 3 or less, Draw 3 cards
+16. If hand size is 6 or more, Draw 1 card and +40 Oblivion
+17. If hand size is 6 or more, Draw 2 cards
 
 ### Deck Manipulation
-9. **Cycle Rite** — Choose and discard 1 card, Draw 2 cards
-10. **Deep Cycle** — Choose and discard 2 cards, Draw 3 cards
-11. **Deck Renewal** — Shuffle discard into deck, Draw 1 card
-12. **Grave Return** — Shuffle discard into deck
-13. **Precision Recall** — Salvage any 1 Ophanim
-14. **Resource Recall** — Salvage any 1 Cherubim
-15. **Champion Recall** — Salvage any 1 Seraphim
-16. **Curated Salvage** — Look at the top 3 cards in discard, Salvage 1 of them
+18. Choose and discard 1 card, Draw 2 cards
+19. Choose and discard 2 cards, Draw 3 cards
+20. Choose and discard 3 cards, Draw 4 cards
+21. Shuffle discard into deck
+22. Shuffle discard into deck, Draw 1 card
+23. Shuffle discard into deck, Draw 2 cards
+24. Salvage any 1 card
+25. Salvage any 1 Ophanim
+26. Salvage any 1 Cherubim
+27. Salvage any 1 Seraphim
+28. Salvage up to 2 cards of different types
+29. Look at the top 3 cards in discard, Salvage 1 of them
+30. Look at the top 5 cards in discard, Salvage up to 2 of them
 
 ### Tutors & Search
-17. **Ophanim Search** — Search your deck for 1 matching Ophanim
-18. **Cherubim Search** — Search your deck for 1 matching Cherubim  
-19. **Seraphim Search** — Search your deck for 1 matching Seraphim
-20. **Flexible Tutor** — Search your deck for 1 card matching Ophanim or Cherubim
-21. **Champion Tutor** — Search your deck for 1 card matching Seraphim or Angel
-22. **Conditional Tutor** — If you have played 2+ cards this turn, Search your deck for any 1 card
+31. Search your deck for 1 matching Ophanim
+32. Search your deck for 1 matching Cherubim  
+33. Search your deck for 1 matching Seraphim
+34. Search your deck for 1 card matching Ophanim or Cherubim
+35. Search your deck for 1 card matching Seraphim or Angel
+36. If you have played 2+ cards already, Search your deck for any 1 card
 
 ### Direct Oblivion (Small)
-23. **Minor Strike** — +40 Oblivion
-24. **Modest Strike** — +60 Oblivion
-25. **Solid Strike** — +80 Oblivion
-26. **Trade Offering** — Choose and discard 1 card, +100 Oblivion
-27. **Heavy Trade** — Choose and discard 2 cards, +160 Oblivion
+37. +40 Oblivion
+38. +60 Oblivion
+39. +80 Oblivion
+40. +100 Oblivion
+41. Choose and discard 1 card, +100 Oblivion
+42. Choose and discard 1 card, +140 Oblivion
+43. Choose and discard 2 cards, +160 Oblivion
+44. Choose and discard 2 cards, +200 Oblivion
 
 ### Direct Oblivion (Medium)
-28. **Standard Barrage** — +100 Oblivion
-29. **Strong Barrage** — +140 Oblivion
-30. **Heavy Barrage** — +180 Oblivion
-31. **Empowered Barrage** — If you control 1+ active Seraphim, +200 Oblivion
-32. **Chain Barrage** — If you have played 3+ cards this turn, +220 Oblivion
+45. +120 Oblivion
+46. +140 Oblivion
+47. +160 Oblivion
+48. +180 Oblivion
+49. +200 Oblivion
+50. If you control 1+ active Seraphim, +200 Oblivion
+51. If you control 1+ active Seraphim, +240 Oblivion
+52. If you have played 3+ cards already, +220 Oblivion
+53. If you have played 4+ cards already, +240 Oblivion
 
 ### Direct Oblivion (Large)
-33. **Major Assault** — +240 Oblivion
-34. **Critical Assault** — +300 Oblivion
-35. **Apocalyptic Strike** — +400 Oblivion
-36. **Finisher** — +500 Oblivion, Choose and discard 1 card
+54. +240 Oblivion
+55. +280 Oblivion
+56. +300 Oblivion
+57. +350 Oblivion
+58. +400 Oblivion
+59. +500 Oblivion
+60. +500 Oblivion, Choose and discard 1 card
 
 ### Conditional Oblivion Boosts
-37. **Early Surge** — If this is the first card you played this turn, +150 Oblivion
-38. **Late Surge** — If you have played 4+ cards this turn, +180 Oblivion
-39. **Board Presence** — +20 Oblivion for each active Seraphim on board
-40. **Support Presence** — +30 Oblivion for each active Cherubim on board
-41. **Combined Arms** — +40 Oblivion for each different active unit type on board (Seraphim, Cherubim, Angel)
-42. **Empty Field** — If no Seraphim are on board, +200 Oblivion
-43. **Full Board** — If both front slots and at least 1 back slot are occupied, +160 Oblivion
+61. If this is the first card you played, +150 Oblivion
+62. If this is the first card you played, +200 Oblivion
+63. If you have played 4+ cards already, +180 Oblivion
+64. If you have played 5+ cards already, +220 Oblivion
+65. +20 Oblivion for each active Seraphim on board
+66. +30 Oblivion for each active Seraphim on board
+67. +30 Oblivion for each active Cherubim on board
+68. +40 Oblivion for each active Cherubim on board
+69. +40 Oblivion for each different active unit type on board (Seraphim, Cherubim, Angel)
+70. If no Seraphim are on board, +200 Oblivion
+71. If no Seraphim are on board, +250 Oblivion
+72. If both front slots and at least 1 back slot are occupied, +160 Oblivion
+73. If all slots are occupied, +200 Oblivion
 
-### Hybrid Effects
-44. **Measured Assault** — +90 Oblivion, Draw 1 card
-45. **Careful Assault** — +70 Oblivion, Look at the top 2 cards and take 1 card
-46. **Cycling Assault** — +80 Oblivion, Choose and discard 1 card, Draw 1 card
-47. **Salvaging Strike** — +120 Oblivion, Salvage any 1 Ophanim
-48. **Searching Strike** — +100 Oblivion, Search your deck for 1 matching Ophanim
-49. **Renewal Strike** — +110 Oblivion, Shuffle discard into deck
-50. **Sustained Assault** — +140 Oblivion, If you have played 2+ cards this turn, Draw 1 card
+### Hybrid Effects (Oblivion + Utility)
+74. +90 Oblivion, Draw 1 card
+75. +120 Oblivion, Draw 1 card
+76. +140 Oblivion, Draw 2 cards
+77. +70 Oblivion, Look at the top 2 cards and take 1 card
+78. +100 Oblivion, Look at the top 3 cards and take 1 card
+79. +80 Oblivion, Choose and discard 1 card, Draw 1 card
+80. +110 Oblivion, Choose and discard 1 card, Draw 2 cards
+81. +120 Oblivion, Salvage any 1 Ophanim
+82. +150 Oblivion, Salvage any 1 card
+83. +100 Oblivion, Search your deck for 1 matching Ophanim
+84. +140 Oblivion, Search your deck for 1 matching Cherubim
+85. +110 Oblivion, Shuffle discard into deck
+86. +140 Oblivion, Shuffle discard into deck
+87. +140 Oblivion, If you have played 2+ cards already, Draw 1 card
+88. +180 Oblivion, If you control 1+ active Seraphim, Draw 1 card
+
+### Advanced & Complex Effects
+89. Look at the top 3 cards, Choose one: Draw all 3 and +0 Oblivion, or Discard all 3 and +280 Oblivion
+90. Look at the top 5 cards, Choose one: Draw all 5 and +0 Oblivion, or Discard all 5 and +400 Oblivion
+91. Swap the contents of your hand and your discard pile, then +40 Oblivion for each card now in hand
+92. Choose any number of cards in hand to exile. After you play 5 more cards, Salvage all exiled cards and gain +80 Oblivion for each
+93. This card costs 1 more resource each time you play it this battle. +200 Oblivion, Draw 2 cards
+94. Remove 1 active Cherubim. If you do, gain +120 Oblivion, Draw 3 cards, and that Cherubim returns after you play 4 more cards with +2 durability
+95. +20 Oblivion. For each card played before this one, +30 additional Oblivion and Draw 1 card (max +120 Oblivion, 4 cards drawn)
+96. +40 Oblivion. For each card played before this one, +40 additional Oblivion (max +200 Oblivion)
+97. Reveal top 5 cards. Gain +50 Oblivion for each Seraphim revealed, Draw 1 card for each Ophanim revealed, Gain +1 durability on a Cherubim for each Cherubim revealed. Put all revealed cards back in any order
+98. Look at your discard. Play up to 1 Ophanim from discard with cost reduced by 2 (minimum 0), then shuffle discard into deck
+99. If hand size is 4 or more, +180 Oblivion. If hand size is 3 or less, Draw 3 cards. If hand size is exactly 4, do both
+100. Discard your entire hand, then Draw cards equal to the number discarded +2. Gain +25 Oblivion for each card type among discarded cards (Ophanim/Cherubim/Seraphim)
+
+### Heavenly-Bond Effects (Board-State Responsive)
+101. Count active units. If 0 units: Draw 4 cards. If 1 unit: +150 Oblivion and Draw 2 cards. If 2+ units: +250 Oblivion. If 4+ units: Salvage any 2 cards
+102. For each Seraphim on board: +80 Oblivion and Draw 1 card. For each Cherubim on board: +40 Oblivion and Salvage 1 Ophanim. If both types present: All effects doubled
+103. If only Seraphim on board: +300 Oblivion. If only Cherubim on board: Draw 4 cards. If both types: +180 Oblivion and Draw 2 cards. If neither: Shuffle discard into deck and Draw 3 cards
+104. Check adjacent slots to each other. For each empty pair: Draw 2 cards. For each occupied pair: +120 Oblivion. For each mixed pair (one empty, one occupied): Salvage 1 card
+105. If all front slots occupied and no back slots: +350 Oblivion. If all back slots occupied and no front slots: Draw 5 cards. If both zones have at least 1 unit: Search deck for any 1 card and +100 Oblivion
+106. Count total durability across all Cherubim. +20 Oblivion per total durability. If total durability is 8+: Draw 2 cards. If total durability is 12+: All unit bonuses amplified by +30
+107. If you control exactly 1 Seraphim: That Seraphim's next attack deals +500 Oblivion. If you control exactly 1 Cherubim: Draw 3 cards and Salvage 2 Ophanim. If you control exactly 1 of each: Do both
+108. For each different unit slot configuration (front-left, front-right, back-left, back-right): If occupied, +70 Oblivion and Look at top 1 card. If all 4 occupied: Instead gain +400 Oblivion and Draw 3 cards
+109. Discard this card instead of playing it: If 2+ Cherubim on board when discarded, Draw 4 cards and +200 Oblivion. If 2+ Seraphim on board when discarded, +500 Oblivion and all Seraphim's next attacks deal +200 Oblivion
+110. Choose target Cherubim on board. Gain +50 Oblivion per durability it has. Draw 1 card per card you've played while it's been active. If it's in an adjacent slot to another unit: Triple all bonuses from this effect
+
+### Wildcard & Experimental (20 New Abilities)
+111. Spell-chain architect - When played: This and the next 2 Ophanim you play form a chain. When chain completes: Replay all 3 effects simultaneously at 150% power
+112. Probability storm - Randomly select 3 effects from other Ophanim in this list. Apply one at random at 200% power
+113. Zone shifter - Rearrange all cards in all zones (hand, deck, discard, exile). While zones are scrambled: All cards cost -1 and effects are enhanced by +50%
+114. Create a "spell echo" that lingers for 4 cards played. Each card played triggers a 30% power copy of this spell's effects
+115. Split reality fork - Choose two different Ophanim effects from this list. Apply both at 75% power. If effects synergize: Apply both at 125% power
+116. Null-cost miracle - This costs 0 resources but you must exile 2 cards from hand. Effect: +500 Oblivion and summon <card_name> from deck
+117. Butterfly effect - Tiny spell with cascading consequences. +20 Oblivion. Then: +40 Oblivion. Then: +80 Oblivion. Then: Draw 3 cards. Each trigger happens 1 card later
+118. Reverse-cast - Look at bottom 5 cards of deck instead of top. Draw from bottom. Salvage from bottom of discard. Everything is inverted. +200 Oblivion
+119. Mana battery - This doesn't resolve immediately. Instead: Store this spell. You may release stored spells at any time to trigger them all at once
+120. Wildcard morph - This becomes a copy of a random card type: 40% chance Cherubim (summon it), 40% chance Seraphim (summon it), 20% chance another Ophanim (play it)
+121. Combo enabler - Mark the next 3 cards you play as "combo cards". When all 3 are played: +800 Oblivion, Draw 5, and gain 5 <resource_name>
+122. Paradox loop - This card infinitely loops its effect at decreasing power. 1st: +300 Oblivion. 2nd: +150 Oblivion. 3rd: +75 Oblivion. Continues until power < 10
+123. Hand size manipulation - Double your maximum hand size for 6 cards played. While doubled: All draw effects draw +2 additional cards
+124. Deck forge - Create a custom <card_name> with effects you choose from this list (pick 2 effects). Add 2 copies to your deck
+125. Selective amplifier - Choose one card type (Ophanim/Cherubim/Seraphim/Angel). That type gains +100% effects for the next 5 cards played
+126. Reality splice - Merge discard pile with deck. Shuffle combined pile. Draw 5 cards. +300 Oblivion
+127. Contingency spell - Set a condition: "When X happens, trigger Y". Example: "When hand reaches 0, Draw 7 cards" or "When Seraphim attacks, +400 Oblivion"
+128. Overclock - Next 3 cards you play cost -2 resources (minimum 0) and have doubled effects, but you must discard 1 card after each
+129. Spell slot gambit - Exile this card face-down as a trap. When opponent (or you) meet trigger condition: This activates from exile with +200% power
+130. Prismatic convergence - Gain bonus based on card types played so far: 1 type = +100 Oblivion. 2 types = Draw 3. 3 types = Salvage 2. All 4 types = All bonuses tripled
 
 ---
 
 ## Seraphim Abilities (Front-Line Units)
 
-### On-Play Effects
-1. **Aggressive Summon** — On play: +80 Oblivion, Draw 1 card
-2. **Tactical Summon** — On play: +60 Oblivion, Look at the top 2 cards and take 1 card
-3. **Cycling Summon** — On play: Choose and discard 1 card, Draw 2 cards
-4. **Salvage Summon** — On play: +50 Oblivion, Salvage any 1 Ophanim
-5. **Search Summon** — On play: Search your deck for 1 matching Ophanim
-6. **Renewal Summon** — On play: +70 Oblivion, Shuffle discard into deck
-7. **Empowering Summon** — On play: Seraphim bonuses are amplified by +15
-8. **Support Summon** — On play: Adjacent active Cherubim gain +1 durability
+*Note: All Seraphim have attack capabilities and attack cooldowns. They persist until forced to depart through specific card effects*
 
-### While Active - Card Play Bonuses
-9. **Steady Presence** — While active: +15 Oblivion per card played
-10. **Strong Presence** — While active: +25 Oblivion per card played
-11. **Dominant Presence** — While active: +40 Oblivion per card played
-12. **Spell Focus** — While active: +20 Oblivion whenever you play an Ophanim while active
-13. **Support Focus** — While active: +15 Oblivion whenever you summon a Cherubim while active
-14. **Draw Engine** — While active: Whenever you play an Ophanim, Draw 1 card (once per turn)
+### Attack-Linked Effects
+1. On play: This Seraphim's first attack deals damage equal to cards in hand × 50 Oblivion
+2. While active: Each attack permanently increases this Seraphim's base attack by +20 Oblivion
+3. On play: This Seraphim attacks immediately, then attacks occur at double cooldown rate
+4. While active: When this attacks, randomly draw or discard 1 card. If you drew: next attack is free. If you discarded: next attack deals triple damage
+5. On play: Set attack cooldown to 0. Each attack increases cooldown by +2 instead of +1
+6. While active: Store half of this Seraphim's attack Oblivion in a reserve. On departure: Deal stored reserve as bonus Oblivion
+7. While active: This Seraphim doesn't attack. Instead: Every time cooldown would trigger an attack, Draw 3 cards and +150 Oblivion
+8. On play: Copy target Seraphim's current attack stats, cooldown, and base Oblivion
+9. While active: Attacks alternate between: (1st) +300 Oblivion, (2nd) Draw 3 cards, (3rd) Salvage any 2 cards, then repeat
+10. While active: When this would attack, instead: Reduce another Seraphim's attack cooldown to 0 and double that Seraphim's next attack damage
 
-### While Active - Amplifiers
-15. **Spell Amplifier** — While active: Ophanim Oblivion effects are increased by +10%
-16. **Support Amplifier** — While active: Cherubim on-summon Oblivion effects are increased by +20
-17. **Adjacent Synergy** — While active: Adjacent active Seraphim gain +20 Oblivion per card played
-18. **Board Synergy** — While active: All active Seraphim gain +10 Oblivion per card played
+### Power-Scaling Effects  
+11. On play: This starts with power equal to cards in discard (max 8). Each attack consumes 2 power but deals +200% damage. At 0 power: This departs
+12. While active: You may sacrifice this Seraphim to fuel Ophanim. When you play an Ophanim: You may force this to depart after its next attack, that Ophanim gains +150 Oblivion
+13. On play: Attack counter starts at 1. Each time a Cherubim is summoned while this is active, this gains +2 to attack counter. Attack damage scales with counter
+14. While active: After 8 cards played without attacking, transform: Halve base attack Oblivion, move to back-line slot as a Cherubim with 4 durability
+15. On play: Inverted scaling - Attacks deal damage equal to (total_cards_played_since_summoned) × 80 Oblivion. Earlier attacks weak, later attacks devastating
+16. While active: Gain +1 power stack when you play an Ophanim, lose 2 power stacks when you play a Cherubim. At 6+ stacks: Attacks deal triple damage. At 0 stacks: This departs
+17. On play: Persistent mode - This never departs from normal effects. Instead: After 10 attacks, this ascends (departs but grants +1000 Oblivion)
 
-### While Active - Resource Effects
-19. **Draw Support** — While active: Your first card each turn draws 1 extra card
-20. **Search Support** — While active: Once per turn, Search effects find +1 additional valid option before choosing
-21. **Salvage Support** — While active: Once per turn, Salvage effects can retrieve 1 additional card
-22. **Discard Mitigation** — While active: Your first discard each turn is prevented
+### Slot-Position Manipulation
+18. On play: Swap this Seraphim with any other unit (front ↔ back, left ↔ right). Swapped Cherubim gains +2 durability. Swapped Seraphim/Angel: Next attack deals +300 Oblivion
+19. While active: After every 4 cards played, this rotates position clockwise. Gain bonus based on new position: Front-Left = +80 Oblivion/card, Front-Right = Draw 1/3 cards, Back slots = become Cherubim temporarily with 3 durability
+20. On play: This occupies all empty slots as illusory copies. Each copy attacks separately. When any copy would depart, remove one copy instead. At 0 copies: This departs
+21. While active: When you play <card_name>, this swaps position with target unit and you may trigger both units' on-play effects again
+22. On play: Remove this from board. Each Ophanim played adds +1 phantom stack. At 5 stacks: Resummon this with attacks dealing +300 base Oblivion
 
-### Triggered Abilities
-23. **Chain Trigger** — While active: After you play your 3rd card each turn, +100 Oblivion
-24. **Spell Trigger** — While active: After you play your 2nd Ophanim each turn, Draw 1 card
-25. **Unit Trigger** — While active: When another unit leaves play, +40 Oblivion
+### Conditional & Reactive
+23. While active: Attacks only trigger when hand size is exactly 4. When they trigger: +500 Oblivion and draw/discard to maintain hand size at 4
+24. On play: This doesn't attack normally. When you Salvage a card: This attacks immediately with bonus damage equal to Salvaged card's rarity × 100
+25. While active: Each attack checks board state: If 0 other units = +600 Oblivion. If 1-2 other units = Draw 3 cards. If 3-4 other units = Salvage 2 cards
+26. On play: This enters dormant (doesn't attack). Each Ophanim played charges it (+1 stack). At 6 stacks: Unleash all stacks as one massive attack, then this departs
+27. While active: Attacks are delayed by 3 cards. When delayed attack triggers: It includes bonus effects from all cards played during delay
+28. On play: Challenge mode - You choose: (A) Attacks deal +300% damage but each attack discards 2 cards, or (B) Attacks draw 3 cards but deal -50% damage
+
+### Chain & Sequence Reactive
+29. While active: When you play cards in sequence (Ophanim → Cherubim → Seraphim): This attacks immediately with +250 base Oblivion
+30. On play: Track last 3 card types played. Attack bonus equals: All same type = +400 Oblivion, All different = Draw 4 cards, Two same = +200 Oblivion
+31. While active: Every 3rd card played triggers this to attack. Every 5th card played doubles next attack. Every 7th card = permanent +50 base Oblivion
+32. On play: This gains a charge each time you play an Ophanim. When you play a non-Ophanim: Consume all charges for an attack dealing charges² × 60 Oblivion
+
+### Multi-Attack & Split Damage
+33. While active: Attacks hit twice - First hit: 70% damage + Draw 1 card. Second hit: 30% damage + Salvage 1 Ophanim
+34. On play: This attacks in a burst of 3 rapid attacks at 40% power each, then enters 6-card cooldown
+35. While active: You may split each attack into thirds and distribute to: Oblivion damage, Card draw (×50 cards), Cherubim durability restoration (×20 durability to target Cherubim)
+36. On play: Each attack creates an echo. Echoes attack 2 cards later at 50% power. Echoes create echoes
+
+### Resource Conversion
+37. While active: You may convert this Seraphim's attacks into <resource_name>. Each attack generates 3 <resource_name> instead of Oblivion
+38. On play: This channels attacks into deck building. Each attack: Add a copy of <card_name> to your deck (max 3 copies)
+39. While active: Attacks don't deal Oblivion. Instead: Each attack reduces all card costs by 1 (minimum 0) for the next 3 cards played
+40. On play: Redirect attack output. Each attack: +0 Oblivion, but summon a 2-durability Cherubim token with "+20 Oblivion per card" passive
+
+### Time & Memory Manipulation
+41. While active: "Rewind" - On attack: Undo the last card played (return to hand, reverse its effects). Then replay it for free with doubled effects
+42. On play: This "records" the next 5 cards you play. On each attack: Replay one recorded card's effects at 75% power
+43. While active: Each attack creates a savepoint. You may consume a savepoint to: Shuffle hand into deck, draw same number of cards +2
+44. On play: Temporal shift - This Seraphim exists in both past and future. Gains phantom attacks that trigger retroactively, adding Oblivion to previous attack totals
+
+### Self-Modification & Evolution
+45. On play: Start with base attack. After 2 attacks: Gain "Draw 1 per attack". After 4 attacks: Gain "Salvage 1 per attack". After 6 attacks: Gain "+300 base Oblivion"
+46. While active: This shapeshifts each attack. 1st form: Normal. 2nd form: +50% damage. 3rd form: +100% damage. 4th form: +200% damage, then this departs in blazing glory
+47. On play: Consume any number of cards from hand. This gains permanent +120 Oblivion per card consumed. After 6 attacks: This departs
+48. While active: Each attack mutates this based on hand size: 0-2 cards = piercing (+200% damage). 3-5 cards = balanced (+100 Oblivion per card played). 6+ cards = support (Draw 3, Salvage 1)
+
+### Triggered Summons & Departures
+49. On play: When this departs, immediately summon a copy of <card_name> from your deck
+50. While active: Each attack summons a Seraphim token. Token inherits 30% of this unit's stats. Tokens depart after 1 attack
+51. On departure: This doesn't go to discard. Instead: Transform into an Ophanim. Add that Ophanim to hand
+52. While active: After 5 attacks: This departs but triggers "On-Play" effects of all Cherubim on board again
+
+### Copy & Mirror Mechanics
+53. On play: This becomes a mirror of target Seraphim. Copy all stats, effects, and attack patterns. Both attack simultaneously
+54. While active: This has no inherent attack. Instead: Copy the most recent attack made by any other Seraphim at 80% power
+55. On play: Link to target unit. When linked unit attacks, this attacks. When linked unit triggers effects, this copies them. When linked unit departs, this gains +300 base Oblivion
+
+### Unique Conditional Triggers
+56. While active: During each attack, reveal top 3 cards. Attack deals +150 Oblivion per Seraphim revealed, Draw 1 per Ophanim revealed, restore +1 durability to random Cherubim per Cherubim revealed
+57. On play: This only attacks when you have exactly 0 cards in hand. When it attacks: +800 Oblivion and draw 5 cards
+58. While active: Attacks triggered by specific <resource_name> thresholds. At 5+ <resource_name>: Attack and consume all. At 10+: Attack deals double. At 15+: Attack three times
+59. On play: This gains a keyword randomly each attack: "Piercing" (+100% damage), "Swift" (immediate recharge), "Mystic" (Draw 3), "Persistent" (attacks twice)
+
+### Stack & Charge Mechanics
+60. On play: Build power over time. Gain +1 charge per card played (max 10). Each attack consumes all charges: Deal charges × 70 Oblivion. At max charges: This departs after attacking
+61. While active: Overflow stacks - Each card played adds +1 stack. At 8 stacks: Attack and reset to 0. Stack count determines: 8 = +200 Oblivion, 9 = +300, 10+ = +500 and Draw 3
+62. On play: Battery system - Attacks charge this unit. At 3 charges: May discharge for +600 Oblivion or keep charging. At 6 charges: Mandatory discharge for +1500 Oblivion
+63. While active: This builds "pressure" equal to total Oblivion gained from cards while active ÷ 100. Each attack releases pressure for bonus damage equal to pressure × 50
+
+### Deck & Discard Interaction
+64. While active: Each attack exiles top card of deck. You may spend exiled cards: 2 exiled = Draw 3 cards. 4 exiled = +400 Oblivion. 6 exiled = This persists for 6 more cards (immune to departure effects)
+65. On play: Bind to discard pile. Attack power equals number of cards in discard × 25. Attacks shuffle 2 random discard cards back into deck
+66. While active: Each attack mills 3 cards (top of deck to discard). For each Ophanim milled: +120 Oblivion. Each Seraphim milled: This gains +100 base attack. Each Cherubim milled: Draw 2
+
+### Adjacent & Board Synergy
+67. While active: Forms a link with adjacent units. When any linked unit triggers an effect: This gains +1 resonance. At 5 resonance: Attack automatically
+68. On play: Aura effect - All Cherubim in adjacent slots gain "When this unit would depart from durability loss, prevent it and set to 1 durability instead" (once per unit)
+69. While active: Attacks spread across all units. Each attack: All Seraphim gain +30 base Oblivion permanently, all Cherubim gain +1 durability
+
+### Risk & Gamble Effects
+70. On play: Gambit - On each attack, flip a coin (50/50): Success = +600 Oblivion and Draw 2. Failure = This departs after next attack
+71. While active: Russian roulette attacks - Each attack has a 1-in-6 chance to: Deal 10× damage and depart immediately
+72. On play: High stakes - This starts strong but fades. 1st attack: +500 Oblivion. 2nd: +400. 3rd: +300. Continues decreasing until 0, then departs
+
+### Unique & Experimental
+73. On play: Paradox form - This exists in a superposition. Track it as both "Active" and "Departed". Gain benefits from both states until you observe it (choose one state)
+74. While active: Fractal recursion - Each attack creates a weaker copy of this Seraphim at 50% power. Copies depart after 1 attack. Copies can create copies at 25% power
+75. On play: This doesn't occupy a slot. It exists in "the void". You may sacrifice any unit to: This attacks immediately, then absorbs that unit's effects for 3 cards
+
+### Creative & Innovative (20 New Abilities)
+76. While active: Quantum entanglement - Link to a card in your deck. When you draw the linked card: This attacks immediately. When this attacks: Draw the linked card if it's in deck
+77. On play: Establish a "heartbeat" rhythm. Every even-numbered card: +80 Oblivion. Every odd-numbered card: This attacks
+78. While active: Life force system - You may sacrifice life force for effects: 1 life = Search deck for any card. 2 life = Draw 5 cards. 3 life = +800 Oblivion. At 0 life: This departs. Start with 5 life
+79. On play: This phases between dimensions. Odd attacks: Deal Oblivion damage. Even attacks: Summon <card_name> from deck/discard
+80. While active: Combo counter - Track longest chain of cards without repeating types. Attack power = chain_length² × 40 Oblivion
+81. On play: Manifestation - Each Ophanim played creates a "ghost" attack at 60% power that triggers 2 cards later
+82. While active: Consumption aura - When any card is played: This absorbs 20% of that card's Oblivion effect and stores it. Attacks release all stored Oblivion
+83. On play: Duality stance - You choose each attack's mode: "Aggressive" (+500 Oblivion, attack cooldown +2) or "Defensive" (Draw 3, reduce attack cooldown by 1)
+84. While active: Prophecy - Before each attack, predict the next card type you'll play. Correct = Attack deals triple damage. Wrong = Attack is delayed by 3 cards
+85. On play: Singularity - This grows stronger as board empties. Base attack × (4 - current_unit_count). At 0 other units: Attacks deal 10× damage
+86. While active: Tether system - Create a tether to target Cherubim. When tethered Cherubim would lose durability from cards played: This takes the loss instead and attacks
+87. On play: Momentum build - This gains speed stacks equal to cards played. Speed affects attack: 0-3 stacks = slow (+0%). 4-7 = normal (+100%). 8+ = rapid (+300% and double attacks)
+88. While active: Ritual casting - Designate a 3-card sequence. When you play that exact sequence: This performs a mega-attack (+1000 Oblivion, Draw 5, Salvage 3)
+89. On play: Harmonic resonance - This vibrates with the number 3. Attacks only on multiples of 3 cards played, but each attack gains +150 base Oblivion permanently
+90. While active: Symbiotic bond - Each attack feeds adjacent Cherubim. Adjacent Cherubim gain +30 Oblivion per card permanently. When they depart: This gains their accumulated Oblivion per card
+91. On play: Siege mode - This doesn't attack for 8 cards. After 8 cards: Unleash accumulated attack power + (cards_played × 80) Oblivion
+92. While active: Constellation pattern - Track position of last 5 cards (hand/deck/discard). Form patterns: All same zone = +400 Oblivion. Perfect distribution = Draw 5 cards
+93. On play: Soul binding - When you Salvage cards while this is active: This gains phantom copies of salvaged cards. Each attack: Trigger one phantom card's effects
+94. While active: Inverse scaling - This deals damage equal to (your_max_hand_size - current_hand_size) × 100. Attacks encourage emptying hand
+95. On play: Seasonal cycle - This rotates through seasons each attack. Spring: Restore 1 durability to target Cherubim. Summer: +300 Oblivion. Fall: Draw 2. Winter: Salvage 1. Full cycle bonus: +500 Oblivion
+
+---
+
+## Angel Abilities (Elite Extra Deck Units)
+
+*Note: Angels are summoned from Extra Deck through special requirements. They persist until forced to depart through specific card effects*
+
+### Summon Condition Rewards
+1. On summon: Gain bonus based on how you summoned this. If using 2 materials: +300 Oblivion. If using 3 materials: Draw 4 cards. If using 4+ materials: Both effects and attacks deal +200% damage
+2. On summon: For each different card type used as material: +200 Oblivion and this gains one effect from each material
+3. While active: This retains "memory" of sacrificed materials. Can spend memory: 1 memory = +150 Oblivion. 2 memory = Draw 2 cards. 3 memory = Salvage materials back
+
+### Dominance & Control
+4. While active: All Cherubim cannot depart from durability loss (set to minimum 1 durability instead). When this departs: All protected Cherubim gain +2 durability
+5. On summon: Establish dominion - All Seraphim on board become this Angel's vassals. Vassal attacks contribute 50% damage to this Angel's attacks
+6. While active: Command aura - You may force any unit to attack immediately, even if on cooldown. Forced attacks gain +200 base Oblivion
+
+### Multi-Layer Effects
+7. On summon: This exists on three planes simultaneously. Plane 1: Normal attacks. Plane 2: Each card played = +100 Oblivion. Plane 3: Immune to forced departure effects
+8. While active: Dual consciousness - This acts as both Seraphim and Cherubim. Gains benefits from cards that check for either type
+9. On summon: Trinity form - This occupies 3 conceptual slots. Attacks three times per trigger at 50% power each
+
+### Transformation & Ascension  
+10. While active: Ascension levels - Starts at level 1. Every 5 cards: Level up. Level 2: +50 Oblivion/card. Level 3: Draw 1/2 cards. Level 4: Attacks deal +500. Level 5: All previous effects doubled
+11. On summon: This enters as an egg (dormant, 5 charges). Loses 1 charge per card. After 10 cards: Hatches into true form with +1000 Oblivion mega-attack and permanent +60 Oblivion per card
+12. While active: Metamorphosis - Every 6 cards played: Transform into stronger form. Form 1: Base. Form 2: +200% attacks. Form 3: +400% attacks and draw 2/card. Form 4: +800% attacks, persists for 10 more cards
+
+### Board Warping
+13. On summon: Reshape the battlefield - Swap all units' positions randomly. Each Cherubim swapped gains +1 durability and you gain +100 Oblivion per unit swapped
+14. While active: Gravity well - All summoned units are pulled adjacent to this Angel. Adjacent units grant this Angel +40 Oblivion per card played per adjacent unit
+15. On summon: Create 2 rift zones (designate 2 slots). Cards played "through" rifts (summoning into those slots) cost -2 resources and have effects doubled
+
+### Legendary Attacks
+16. While active: Attacks charge ultimate ability. At 3 attacks: May unleash "Judgment" - Deal (total_Oblivion_this_game ÷ 10) as bonus Oblivion
+17. On summon: This attacks with <legendary_attack_name>. First attack: +500 Oblivion. Second attack: +1000 Oblivion. Third attack: +2000 Oblivion and this ascends (removed from game, gain permanent +100 Oblivion per card)
+18. While active: Cataclysm mode - Each attack empties one zone of the board (sacrifice all units in front/back). Gain +300 Oblivion per sacrificed unit
+
+### Unique Resource Systems
+19. On summon: Generate <unique_resource> equal to materials used. While active: Spend <unique_resource>: 1 = Draw 1. 3 = +300 Oblivion. 5 = Summon another Angel. 10 = Win condition trigger
+20. While active: Faith system - Gain +1 faith per card played. Faith persists across this Angel's lifetimes. Next time you summon this Angel: It enters with accumulated faith as bonus stats
+21. On summon: Blessing aura - All cards played while this is active gain "When you play this: Gain +1 <divine_resource>". Use divine resource for mega-effects
+
+### Time Manipulation
+22. While active: Rewrite history - Once per 10 cards: Reset the entire board state to 5 cards ago, but keep all Oblivion gained
+23. On summon: Future sight - Look at top 10 cards. Rearrange in any order. This Angel attacks based on card types in top 5: attacks trigger when you draw those cards
+24. While active: Time dilation - Every 3rd card played counts as 2 cards for all effects. Every 5th card played lets you replay any card from discard
+
+### Cosmic & Abstract
+25. On summon: Designate a "win condition" - Example: "Play 20 cards" or "Gain 5000 Oblivion" or "Summon 5 units". When met: This triggers apotheosis (+3000 Oblivion, Draw 10, game-ending effect)
+26. While active: Probability manipulation - Before playing each card, declare a prediction. Correct predictions charge this Angel. At 5 charges: Reality break (+1500 Oblivion and duplicate last 5 cards played)
+27. On summon: Abstract form - This Angel doesn't have traditional stats. Instead: It embodies concepts. Each card played defines its power that turn. Ophanim = +200 Oblivion. Cherubim = Draw 2. Seraphim = This attacks
+
+### Sacrifice & Offering
+28. While active: Divine hunger - You may sacrifice any card from hand as an offering. Each offering: This gains +1 wing counter. At 6 wings: This achieves perfection (permanent triple all effects)
+29. On summon: Blood price - Set your hand size limit to 5. While active: Draw effects are twice as powerful, but you gain +250 Oblivion each time you're forced to discard
+30. While active: Martyrdom - You may force this Angel to depart at any time. On forced departure: +2000 Oblivion and summon all materials used to summon this from discard as 3-durability Cherubim
+
+### Deck Architecture
+31. On summon: Exile your entire deck. While active: +150 Oblivion per exiled card per card played. On departure: Return all exiled cards and shuffle
+32. While active: Your deck and discard share the same space. You may draw from either. This Angel grows stronger with confusion: +50 Oblivion per card in shared zone
+33. On summon: Create a "sacred pile" (new zone). While active: May send cards to sacred pile instead of discard. Cards in sacred pile: Can be played from there at -2 cost
+
+### Endgame & Infinite Scaling
+34. While active: Eternal accumulation - This permanently gains +10 base Oblivion per card played. This persists even if Angel departs and is resummoned
+35. On summon: Omega protocol - Each time this attacks: Increase all future base Oblivion gains by +5%. Effect stacks multiplicatively
+36. While active: Singularity approach - Track total Oblivion gained. When total exceeds 10,000: This Angel transcends (remove from game, all future cards deal +100% Oblivion permanently)
+
+### Triggered Miracle Events
+37. While active: Divine intervention - When you would lose all units: Prevent it. Instead: All Cherubim return to 3 durability, all Seraphim/Angels persist for 5 more cards
+38. On summon: Sacred covenant - Choose up to 3 cards. Those cards become "blessed" permanently. When played: They cost -1 and trigger this Angel to attack
+39. While active: Miracle triggers - Random chance each card played (20%): Miracle occurs. Miracles: +500 Oblivion, Draw 5 cards, Summon <card_name>, Restore 3 durability to all Cherubim
+
+### Hybrid Mechanics
+40. While active: This Angel acts as all card types simultaneously for effect purposes. Counts as Seraphim, Cherubim, Angel, and Ophanim in hand/board/discard
+41. On summon: Chimeric form - This has 3 modes you cycle through each attack. Attack Mode: +400 Oblivion. Support Mode: +60 Oblivion per card. Mystic Mode: Draw 3 cards per attack
+
+### Chain Reaction & Cascade
+42. While active: Cascade - When you play <card_name>, create a chain: Play <card_name> → Trigger random effect → Repeat 3 times
+43. On summon: Domino effect - Each card played has 30% chance to trigger previous card's effects again at 80% power. Chains can chain
+
+### Reality Bending
+44. While active: Paradox engine - You may play cards in reverse order from deck (bottom card). Cards played this way have reversed effects (Draw becomes discard, Oblivion becomes cost reduction, etc.)
+45. On summon: Create an alternate timeline. While active: All effects happen twice - once in this timeline, once in alternate. On departure: Collapse timelines (gain all alternate benefits at once)
+
+### Ultra Creative & Wild (10 New Abilities)
+46. While active: Schrodinger state - This Angel exists in quantum superposition. You may choose its state each attack: "Offensive" (+800 Oblivion) or "Supportive" (Draw 4, Salvage 2)
+47. On summon: Establish a "divine law". Example: "All Ophanim cost 0" or "Draw effects draw +3" or "Attacks deal +500%". Law remains while active
+48. While active: Entropy reversal - Time flows backward for this Angel. Effects trigger in reverse order. Each attack: Restore 1 durability to random Cherubim, then deal Oblivion
+49. On summon: Soul fragmentation - Split this Angel into 4 fragment tokens (Seraphim with 100 base attack each). When all 4 fragments attack: They merge into true Angel form with +2000 Oblivion mega-attack
+50. While active: Omniscience - You play with all cards revealed (hand, deck, discard). Perfect information grants: +100 Oblivion per card played, may draw from any zone
+51. On summon: Void rift - Create a 5th slot type "The Void". Cherubim in void gain immunity to durability loss but can't use passive effects. May swap any Cherubim with void unit
+52. While active: Kaleidoscope - Board state randomizes every 5 cards played. Embrace chaos: +150 Oblivion per randomization, draw 2 cards
+53. On summon: This Angel doesn't attack. Instead: It judges. After 15 cards played: Tally total power. If total > 3000 Oblivion: Ascend (depart but grant +5000 Oblivion)
+54. While active: Recursive inscription - Each card played is "inscribed". You may spend 3 inscriptions to copy and play any inscribed card
+55. On summon: Primordial essence - This converts all <resource_name> into raw power. Each <resource_name> becomes +100 Oblivion permanently. This Angel becomes the only source of <resource_name>
 
 ---
 
 ## Cherubim Abilities (Back-Line Support)
 
-### On-Summon - Immediate Value
-1. **Draw Construct** — On summon: Draw 2 cards
-2. **Oblivion Construct** — On summon: +80 Oblivion
-3. **Hybrid Construct** — On summon: +50 Oblivion, Draw 1 card
-4. **Salvage Construct** — On summon: Salvage any 1 card
-5. **Search Construct** — On summon: Search your deck for 1 matching Ophanim or Cherubim
-6. **Scry Construct** — On summon: Look at the top 3 cards, take 1 card, and put the rest on the bottom
-7. **Renewal Construct** — On summon: Shuffle discard into deck, +40 Oblivion
+*Note: All Cherubim have durability (loses 1 durability per card played, discarded at 0)*
 
-### On-Summon - Board Support
-8. **Durability Frame** — On summon: Target Seraphim gains +1 durability
-9. **Mass Durability** — On summon: All active Seraphim gain +1 durability
-10. **Amplification Frame** — On summon: Seraphim bonuses are amplified by +10
-11. **Empowerment Frame** — On summon: Target Seraphim gains +30 Oblivion on its next attack
+### On-Summon Effects (Immediate Value)
+1. On summon: Draw 2 cards
+2. On summon: Draw 1 card, +40 Oblivion
+3. On summon: +80 Oblivion
+4. On summon: +120 Oblivion
+5. On summon: Salvage any 1 card
+6. On summon: Salvage any 1 Ophanim
+7. On summon: Salvage any 1 Cherubim
+8. On summon: Search your deck for 1 matching Ophanim
+9. On summon: Search your deck for 1 matching Cherubim
+10. On summon: Search your deck for 1 matching Ophanim or Cherubim
+11. On summon: Look at the top 3 cards, take 1 card, and put the rest on the bottom
+12. On summon: Look at the top 5 cards, take 2 cards, and put the rest on the bottom
+13. On summon: Shuffle discard into deck
+14. On summon: Shuffle discard into deck, Draw 1 card
+15. On summon: Shuffle discard into deck, +60 Oblivion
 
-### While on Board - Per Card Played
-12. **Modest Engine** — While on board: +8 Oblivion per card played while on board
-13. **Standard Engine** — While on board: +15 Oblivion per card played while on board
-14. **Strong Engine** — While on board: +22 Oblivion per card played while on board
-15. **Powerful Engine** — While on board: +30 Oblivion per card played while on board
+### On-Summon Effects (Board Interaction)
+16. On summon: Target Seraphim's next attack deals +300 Oblivion
+17. On summon: All active Seraphim's next attacks deal +200 Oblivion
+18. On summon: Adjacent Cherubim gain +1 durability
+19. On summon: Seraphim bonuses are amplified by +10
+20. On summon: Seraphim bonuses are amplified by +15
+21. On summon: Target Seraphim gains +50 Oblivion on its next attack
+22. On summon: All active Seraphim gain +30 Oblivion on their next attack
+23. On summon: Restore 1 durability to target Cherubim
+24. On summon: Restore 1 durability to all active Cherubim
 
-### While on Board - Spell Synergy
-16. **Spell Battery** — While on board: +20 Oblivion whenever you play an Ophanim while active
-17. **Spell Draw** — While on board: Whenever you play an Ophanim, Draw 1 card (once per turn)
-18. **Spell Scry** — While on board: Whenever you play an Ophanim, Look at top 1 card (keep or bottom)
-19. **Spell Amplifier** — While on board: Ophanim Oblivion effects are increased by +15
+### Passive (While on Board) - Oblivion Generation
+25. While on board: +8 Oblivion per card played
+26. While on board: +12 Oblivion per card played
+27. While on board: +15 Oblivion per card played
+28. While on board: +20 Oblivion per card played
+29. While on board: +25 Oblivion per card played
+30. While on board: +30 Oblivion per card played
+31. While on board: +18 Oblivion whenever you play an Ophanim
+32. While on board: +25 Oblivion whenever you play an Ophanim
+33. While on board: +15 Oblivion whenever you summon a Cherubim
+34. While on board: Whenever you gain Oblivion from a card effect, gain +10 additional Oblivion (max +40 per card)
 
-### While on Board - Draw Support
-20. **First Card Draw** — While on board: Your first card each turn draws 1 additional card
-21. **Third Card Draw** — While on board: Every third card played draws 1 card
-22. **Discard Draw** — While on board: Whenever you discard a card, Draw 1 card (once per turn)
-23. **Enhanced Draw** — While on board: When a single effect draws 2+, draw 1 extra card (once per turn)
+### Passive (While on Board) - Amplifiers & Modifiers
+35. While on board: Ophanim Oblivion effects are increased by +10%
+36. While on board: Ophanim Oblivion effects are increased by +15%
+37. While on board: Ophanim Oblivion effects are increased by +20
+38. While on board: All Oblivion gains from card effects are increased by +10%
+39. While on board: All Oblivion gains from card effects are increased by +15%
+40. While on board: Ophanim draw effects draw +1 additional card
+41. While on board: When a single effect draws 2+, draw 1 extra card
+42. While on board: Seraphim attacks gain +40 base Oblivion
+43. While on board: Seraphim attacks gain +60 base Oblivion
+44. While on board: Seraphim attacks gain +80 base Oblivion
 
-### While on Board - Resource Generation
-24. **Oblivion Generator** — While on board: Gain +10 Oblivion whenever you gain Oblivion from a card effect (max +30 per turn)
-25. **Unit Departure** — While on board: Whenever a unit leaves play, +30 Oblivion
-26. **Seraphim Departure** — While on board: Whenever a Seraphim leaves play, Draw 1 card
-27. **Cherubim Synergy** — While on board: When you summon a Cherubim, restore 1 durability to another Cherubim
+### Passive (While on Board) - Cost Reduction & Resource
+45. While on board: Ophanim cost 1 less resource (minimum 1)
+46. While on board: Seraphim cost 1 less resource (minimum 1)
+47. While on board: Cherubim cost 1 less resource (minimum 1)
+48. While on board: All cards cost 1 less resource (minimum 1)
+49. While on board: Hand size capacity is increased by +2
+50. While on board: Hand size capacity is increased by +3
 
-### While on Board - Adjacent Support
-28. **Adjacent Boost** — While on board: Adjacent active Seraphim gain +15 Oblivion per card played
-29. **Adjacent Draw** — While on board: When an adjacent Seraphim attacks, Draw 1 card
-30. **Adjacent Durability** — While on board: Adjacent units gain +1 durability when summoned
+### Passive (While on Board) - Triggered Effects
+51. While on board: Whenever you play an Ophanim, Look at top 1 card (keep or bottom)
+52. While on board: Whenever you discard a card, +15 Oblivion
+53. While on board: Whenever you discard a card, Draw 1 card
+54. While on board: Whenever a unit leaves play, +30 Oblivion
+55. While on board: Whenever a Seraphim leaves play, +50 Oblivion
+56. While on board: Whenever a Seraphim leaves play, Draw 1 card
+57. While on board: Whenever a Cherubim leaves play, Draw 1 card
+58. While on board: When you summon a Cherubim, restore 1 durability to another Cherubim
+59. While on board: Every 3rd card played draws 1 card
+60. While on board: Every 3rd Ophanim played draws 1 card and +40 Oblivion
 
-### While on Board - Conditional Triggers
-31. **Chain Trigger** — While on board: After you play your 3rd card each turn, +60 Oblivion and Draw 1 card
-32. **Empty Hand Trigger** — While on board: If hand size is 2 or less at start of turn, Draw 1 card
-33. **Full Board Trigger** — While on board: If all slots are occupied, +40 Oblivion per card played
-34. **Lone Cherubim** — While on board: If this is the only active Cherubim, effects are doubled
+### Passive (While on Board) - Adjacent Synergies
+61. While on board: Adjacent active Seraphim gain +12 Oblivion per card played
+62. While on board: Adjacent active Seraphim gain +18 Oblivion per card played
+63. While on board: Adjacent active Seraphim gain +25 Oblivion per card played
+64. While on board: When an adjacent Seraphim attacks, Draw 1 card
+65. While on board: When an adjacent Seraphim attacks, +80 Oblivion
+66. While on board: Adjacent Cherubim gain +1 durability when summoned
 
-### After X Cards Played
-35. **Quick Trigger** — After 2 cards played: Draw 1 card
-36. **Standard Trigger** — After 3 cards played: +80 Oblivion, Draw 1 card
-37. **Extended Trigger** — After 4 cards played: +120 Oblivion, Salvage any 1 card
-38. **Deep Trigger** — After 5 cards played: Draw 2 cards, +100 Oblivion
+### Passive (While on Board) - Conditional Effects
+67. While on board: If hand size is 3 or less, +20 Oblivion per card played
+68. While on board: If hand size is 5 or more, Draw 1 card per 3 cards played
+69. While on board: If all slots are occupied, +30 Oblivion per card played
+70. While on board: If this is the only active Cherubim, all effects are doubled
+71. While on board: If no Seraphim are on board, Ophanim gain +30 Oblivion
+72. While on board: If 2+ Seraphim are on board, +25 Oblivion per card played
+73. While on board: When deck is empty, gain +60 Oblivion instead of drawing
 
-### Utility & Special
-39. **Deck Safety** — While on board: When deck is empty, gain +60 Oblivion instead of drawing
-40. **Hand Expansion** — While on board: Hand size capacity is increased by +2
-41. **Cost Reduction** — While on board: Ophanim cost 1 less resource (minimum 1)
-42. **Seraphim Cost Reduction** — While on board: Seraphim cost 1 less resource (minimum 1)
-43. **Search Enhancement** — While on board: Your first deck search each turn finds +1 additional valid card before choosing
-44. **Salvage Enhancement** — While on board: Salvage effects can retrieve 1 additional card (once per turn)
-45. **Discard Protection** — While on board: Your first discard each turn is prevented
-46. **Discard Value** — While on board: Whenever you discard a card, +15 Oblivion (once per turn)
-47. **Universal Amplifier** — While on board: All Oblivion gains from card effects are increased by +10%
-48. **Attack Support** — While on board: Seraphim attacks gain +50 base Oblivion
-49. **Cooldown Support** — While on board: First attack each turn has cooldown increase reduced by 1
-50. **Departure Value** — On departure: When this Cherubim leaves play, Draw 2 cards and +80 Oblivion
+### Passive (While on Board) - Utility
+74. While on board: Deck search effects find +1 additional valid card before choosing
+75. While on board: Salvage effects can retrieve 1 additional card
+76. While on board: Prevents the first discard effect
+77. While on board: Seraphim attacks have cooldown increase reduced by 1
+78. While on board: Draw effects can exceed hand size limit (max +2 over)
+
+### Advanced Effects - Complex Triggers
+79. While on board: Whenever you play a card with the same type as the previous card, +25 Oblivion and Draw 1 card
+80. While on board: Every 3rd consecutive Ophanim played: +120 Oblivion and this gains +1 durability
+81. While on board: After playing 3 different card types in a row, Draw 2 cards and +100 Oblivion
+
+### Advanced Effects - Trade-offs
+82. On summon: +60 Oblivion. While on board: Ophanim Oblivion gains are reduced by 20, but Draw effects draw +2 additional cards
+83. On summon: Draw 3 cards, Lose 1 durability. While on board: Every 3 cards played, may lose 1 durability to Salvage any 1 card and gain +70 Oblivion
+84. On summon: +100 Oblivion, Draw 2 cards, Set durability to 2. Loses 1 durability after every 2 cards played
+85. While on board: Ophanim cost +1 resource but gain +50 Oblivion
+
+### Advanced Effects - Milestone/Escalating
+86. After 2 cards played: +60 Oblivion | After 4 cards: Draw 2 cards | After 6 cards: Seraphim bonuses amplified by +20
+87. After 3 cards played: +80 Oblivion and Draw 1 card
+88. After 4 cards played: +120 Oblivion and Salvage any 1 card
+89. After 5 cards played: Draw 2 cards and +100 Oblivion
+
+### Advanced Effects - Zone Manipulation
+90. On summon: Look at top 5 cards, exile up to 2, put rest on bottom. While on board: Every 3 cards played, may add 1 exiled card to hand
+91. On summon: Look at top 3 cards, rearrange in any order. While on board: When you draw a card you arranged, +80 Oblivion and Draw 1 additional card
+92. On summon: Note number of different card types in discard. While on board: +15 Oblivion per card played per noted card type
+93. On summon: Choose: Hand size ≤3 mode OR ≥5 mode. While on board: In chosen mode, +50 Oblivion per card. Outside mode, Draw 1 when entering that state
+
+### On-Departure Effects
+94. On departure: Draw 2 cards
+95. On departure: Draw 2 cards and +80 Oblivion
+96. On departure: Draw 3 cards and +120 Oblivion
+97. On departure: Shuffle discard into deck and Draw 2 cards
+98. On departure: Salvage any 1 card
+99. On departure: +200 Oblivion
+100. On departure: Return this to your hand with durability restored
+
+### Heavenly-Bond Effects (Board-State Responsive)
+101. On summon: Check board composition. If only front-line units: +120 Oblivion and this gains +2 durability. If only back-line units: Draw 3 cards. If mixed: All active Cherubim gain +1 durability
+102. While on board: Passive shifts based on adjacent slots. If both adjacent slots empty: +40 Oblivion per card. If one adjacent occupied: Draw 1 card per 2 cards played. If both occupied: Adjacent units gain +20 Oblivion per card played
+103. On summon: For each Seraphim on board, Salvage 1 Ophanim. For each Cherubim on board (excluding this), restore 1 durability to that Cherubim and Draw 1 card. If both types present: +150 Oblivion
+104. While on board: Count total units. 1 unit: +35 Oblivion per card. 2 units: Draw 1 card per 2 cards played. 3 units: Ophanim gain +40 Oblivion. 4 units: All effects active simultaneously
+105. On summon: This durability equals total durability of all other Cherubim. While on board: When any unit leaves play, this gains +1 durability and you gain +50 Oblivion
+106. While on board: When a Seraphim is summoned, Draw 2 cards and this loses 1 durability. When a Cherubim is summoned, this gains +2 durability and +60 Oblivion. On departure: Effects reverse for each event that occurred
+107. On summon: Choose target slot (occupied or empty). While on board: If that slot becomes occupied and was empty, +200 Oblivion. If it becomes empty and was occupied, Draw 3 cards. If it changes state: Salvage any 1 card
+108. While on board: Mirror adjacent Seraphim effects at 50% value. Copy adjacent Cherubim passive effects. If adjacent to both a Seraphim and Cherubim: Effects aren't reduced
+109. On summon: Snapshot current board state. While on board: For each unit that remains from snapshot, +15 Oblivion per card. For each new unit since snapshot, Draw 1 card per 3 cards played. For each departed unit: Salvage 1 card matching its type
+110. On departure: Count how many different unit configurations you had while this was active. Draw 1 card per configuration. If 3+ configurations: +250 Oblivion. If 5+ configurations: Salvage any 2 cards and this returns to hand
+
+### Innovative Constructs (20 New Abilities)
+111. On summon: Create a "Workshop" - While on board: Every 3 cards played, forge a component. At 3 components: Assemble them into a construct (Summon <card_name> at +2 durability)
+112. While on board: Interference field - All Seraphim attacks are delayed by 1 card. When delayed attacks trigger: They deal +150% damage and you Draw 1 card
+113. On summon: Phase-shift protocol - This alternates between material and ethereal each card played. Material: +25 Oblivion per card. Ethereal: Doesn't lose durability
+114. While on board: Evolution matrix - This permanently gains new abilities based on cards played. 5th card: Gain "Draw 1 per 2 cards". 10th card: Gain "+40 Oblivion per card". 15th card: Gain "Attacks trigger twice"
+115. On summon: Establish a network. While on board: Each time you summon a Cherubim, create a network node. Nodes grant: 1 node = +20 Oblivion/card. 2 nodes = Draw 1/3 cards. 3 nodes = All network effects doubled
+116. While on board: Chrono-anchor - Lock one moment in time (snapshot current hand/board/discard). You may "rewind" once to restore that snapshot (costs 2 durability from this)
+117. On summon: Become a "spell siphon". While on board: Ophanim played cost +1 resource. This stores the +1 cost. When this departs: Gain +200 Oblivion per stored cost
+118. While on board: Adaptive intelligence - Track the most-played card type. That type gains: +50 Oblivion for Ophanim, +1 durability for Cherubim, +30 base attack for Seraphim
+119. On summon: Durability = number of cards in hand. While on board: Hand size changes adjust durability. Gain durability when you draw. Lose durability when you discard
+120. While on board: Probability engine - Before each Seraphim attacks: Predict outcome (high/medium/low). Correct prediction: That attack deals +200% damage
+121. On summon: Summon a bonded pair of mini-Cherubim (1 durability each). While both pairs exist: This gains +60 Oblivion per card. When one departs: Draw 3 cards. When both depart: This gains +3 durability
+122. While on board: Ritual circle - Every 4th card played is "ritualized". After 3 ritualized cards: Perform ritual (summon <card_name>, +500 Oblivion, Draw 5 cards, restore 2 durability to all Cherubim)
+123. On summon: Starforge mode - This doesn't provide passive Oblivion. Instead: Accumulates "star energy" (+50 per card played). May discharge at any time: Star energy converts to one-time massive Oblivion burst
+124. While on board: Recursive loop - Each card played has 25% chance to trigger this: "Create a copy of this Cherubim at 1 durability with effects at 40% power"
+125. On summon: Become a "card battery". While on board: You may "charge" this by discarding cards. Each charged card: This gains +1 durability and +15 Oblivion per card permanently
+126. While on board: Dimensional anchor - Choose one slot. That slot becomes "locked" - Cherubim in that slot don't lose durability from cards played. Seraphim/Angels in that slot have attacks deal +100% damage
+127. On summon: Symbiotic hive - This is actually 3 mini-constructs sharing durability pool. Each construct provides different effect. As durability depletes, lose constructs (lose effects)
+128. While on board: Flux capacitor - Randomly fluctuates between 3 states each card played: State A = +50 Oblivion/card. State B = Draw 1/2 cards. State C = Adjacent units gain +40 Oblivion/card
+129. On summon: Create an "echo chamber". While on board: Effects of other Cherubim are recorded. When this departs: Play all recorded effects simultaneously
+130. While on board: Transcendence meter - Build transcendence by playing cards (+10 per card). At 100: This transforms into an Angel (move to Angel slot, gain Angel abilities, gain +100 base attack per durability remaining when transformed)
 
 ---
 
 ## Design Notes
 
-These abilities are intentionally generic and avoid set-specific mechanics (Heat, Radiance, Patience, Strain, etc.) to ensure they can be adapted to any deck archetype. When implementing these in actual cards:
+This is an **ability bank** for modular card design, not individual card specifications. Effects are intentionally generic and avoid set-specific mechanics (Heat, Radiance, Patience, Strain, etc.) to ensure they can be adapted to any deck archetype.
 
-- Adjust Oblivion values based on card rarity and cost
-- Consider durability values for Seraphim and Cherubim
-- Add set-specific flavor and mechanics as appropriate
+**Total Effects:** 130 Ophanim abilities + 95 Seraphim abilities + 55 Angel abilities + 130 Cherubim abilities = 410 generic effects
+
+### Core Mechanics
+- **Ophanim**: One-time spell effects (play and resolve)
+- **Seraphim**: Front-line units with attack capabilities and attack cooldowns. Persist until forced to depart through specific card effects
+- **Angel**: Elite Extra Deck units with powerful effects, summoned through special requirements. Persist until forced to depart
+- **Cherubim**: Back-line support units with durability (loses 1 per card played). ONLY Cherubim have durability
+- **Heavenly-Bond**: Special category of effects that dynamically respond to board state, creating adaptive gameplay moments
+
+### Implementation Guidelines
+- Mix and match effects to create unique cards
+- Adjust Oblivion values based on card rarity, cost, and overall power budget
+- Scale Cherubim durability values appropriately (typically 3-6 for common/rare, higher for legendary)
+- Add set-specific mechanics and flavor on top of these base templates
 - Balance trigger conditions with power level
-- Ensure effects synergize with the intended deck strategy
+- Combine multiple effects for higher-rarity cards
+
+### Effect Categories Explained
+- **On-summon/On-play**: Immediate one-time effects when card enters play
+- **While on board/While active**: Continuous effects while unit remains in play
+- **After X cards played**: Milestone triggers (durability naturally limits how many can occur)
+- **On departure**: Effects when unit leaves play (0 durability or removed)
+- **Conditional**: Effects that vary based on game state (hand size, board state, etc.)
+- **Adjacent**: Effects that interact with units in neighboring slots
+- **Heavenly-Bond**: Dynamic effects that check and respond to specific board configurations, creating branching effects based on unit composition, positioning, and state changes
+
+### Using This Bank
+1. Choose a card type (Ophanim/Seraphim/Angel/Cherubim)
+2. Select 1-4 effects from relevant categories (more effects for higher rarity cards)
+3. Adjust values for your set's power level
+4. Add set-specific mechanics and resource systems (replace <resource_name> placeholders)
+5. Reference specific cards by replacing <card_name> placeholders with actual card names
+6. Add thematic flavor and card name
+7. For Angels, ensure summoning requirements match the power level of selected abilities
