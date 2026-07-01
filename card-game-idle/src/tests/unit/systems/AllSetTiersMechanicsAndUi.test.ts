@@ -81,7 +81,6 @@ function snapshotSignature(turn: TurnState): string {
     neutralitySetupCount: turn.neutralitySetupCount ?? 0,
     attenuationClassUses: turn.attenuationClassUses ?? {},
     radiance: turn.radiance ?? 0,
-    lightResonance: turn.lightResonance ?? 0,
     trail: turn.trail ?? 0,
     scar: turn.scar ?? 0,
     thornCounter: turn.secondaryCounters?.thorn ?? 0,
@@ -175,8 +174,6 @@ const UI_TURN_MUTATORS: Record<EngineKey, (turn: TurnState) => TurnState> = {
   light: turn => ({
     ...turn,
     radiance: 9,
-    lightResonance: 2,
-    lightDistinctNotes: ['Seraphim', 'Cherubim'],
   }),
   thornbound: turn => ({ ...turn, trail: 5, scar: 2, secondaryCounters: { ...(turn.secondaryCounters ?? {}), thorn: 2 } }),
   mechanical: turn => ({ ...turn, strain: 6, eternalStacks: { ...(turn.eternalStacks ?? {}), mech: 4 } }),

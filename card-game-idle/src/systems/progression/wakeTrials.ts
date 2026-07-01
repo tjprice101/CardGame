@@ -5,13 +5,12 @@ import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 /**
  * Wake Trials — modifier-stacked boss fights. Each trial is a daily-seeded
  * selection from the modifier pool. Modifiers are applied at fight start
- * (chain start, time pressure, HP scaling) or behave passively via the
+ * (time pressure, HP scaling) or behave passively via the
  * presence of `BossFightState.modifiers` (e.g. forbidden elements cost
  * extra discards on play — see store handling).
  */
 
 export type ModifierKind =
-  | 'chain_start_low'      // Start the fight with chain multiplier x0.5 baseline
   | 'time_pressure'        // Round timer reduced by 30s
   | 'boss_hp_boost'        // Boss HP +25%
   | 'forbidden_element'    // Cards of the given element earn 50% less Oblivion
@@ -29,7 +28,6 @@ export interface TrialModifier {
 }
 
 const MODIFIER_POOL: Array<Omit<TrialModifier, 'payload'> & { payloadOptions?: string[] }> = [
-  { kind: 'chain_start_low', text: 'Cold Open — start at x0.5 chain', rewardMult: 1.3 },
   { kind: 'time_pressure',   text: 'Time Pressure — round timer −30s', rewardMult: 1.25 },
   { kind: 'boss_hp_boost',   text: 'Hardened Soul — boss HP +25%', rewardMult: 1.4 },
   { kind: 'durability_drain', text: 'Brittle Vows — Cherubim durability halved', rewardMult: 1.2 },

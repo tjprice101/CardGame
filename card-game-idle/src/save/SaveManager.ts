@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 34;
+export const CURRENT_VERSION = 37;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -510,6 +510,28 @@ const migrations: Record<number, Migration> = {
     if (data.progress && data.progress.fractureShards == null) {
       data.progress.fractureShards = 0;
     }
+    return data;
+  },
+  35: (data) => {
+    // v35 purges the Heavenly Light Cadence mechanic (Phase 0 gut).
+    if (data.turn) {
+      const t = data.turn as unknown as Record<string, unknown>;
+      delete t.lightCadenceNotes;
+      delete t.lightDistinctNotes;
+      delete t.lightResonance;
+    }
+    return data;
+  },
+  36: (data) => {
+    // v36 purges the Chain mechanic (Phase 0 gut).
+    if (data.turn) {
+      const t = data.turn as unknown as Record<string, unknown>;
+      delete t.neutralityChainGainedThisTurn;
+    }
+    return data;
+  },
+  37: (data) => {
+    // v37 adds seraphimPlayedThisTurn; it's optional so no-op migration.
     return data;
   },
 };

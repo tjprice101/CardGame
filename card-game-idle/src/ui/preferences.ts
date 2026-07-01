@@ -275,25 +275,19 @@ export function t(key: TranslationKey, vars?: Record<string, string | number>): 
 export function getDisplayCardTypeLabel(type: string): string {
   if (type === 'Ophanim') return 'Ophanim';
   if (type === 'Cherubim') return 'Cherubim';
-  if (type === 'Ophanim') return 'Ophanim';
-  if (type === 'Cherubim') return 'Cherubim';
   return type;
 }
 
 export function isDisplayOphanimType(type: string): boolean {
-  return type === 'Ophanim' || type === 'Ophanim';
+  return type === 'Ophanim';
 }
 
 export function isDisplayCherubimType(type: string): boolean {
-  return type === 'Cherubim' || type === 'Cherubim';
+  return type === 'Cherubim';
 }
 
 export function formatDisplayCardText(text: string): string {
-  return sanitizeDisplayText(text)
-    .replace(/\bOphanim\b/g, 'Ophanim')
-    .replace(/\bophanim\b/g, 'ophanim')
-    .replace(/\bCherubim\b/g, 'Cherubim')
-    .replace(/\bcherubim\b/g, 'cherubim');
+  return sanitizeDisplayText(text);
 }
 
 function hexToRgb(hex: string): string {

@@ -60,7 +60,7 @@ function getSeraphimUiAttacks(def: SeraphimDefinition) {
   const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
   const bonusLabelByType: Record<string, string> = {
     oblivion_per_card: 'steady per-card pressure',
-    chain_bonus: 'accelerated chain growth',
+
     ophanim_bonus: 'Ophanim-linked burst conversion',
     cherubim_extra_plays: 'expanded Cherubim sequencing',
     cherubim_expire_bonus: 'Cherubim expiry detonations',
@@ -142,7 +142,7 @@ function getAngelUiAttacks(def: AngelDefinition) {
   const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
   const auraByBonusType: Record<string, string> = {
     oblivion_per_card: 'steady field pressure',
-    chain_bonus: 'momentum acceleration',
+
     ophanim_bonus: 'Ophanim-linked burst pressure',
     power_per_seraphim: 'seraphim-linked scaling',
     oblivion_per_seraphim: 'formation-linked conversion',
@@ -465,8 +465,8 @@ function renderButterflyBadge(formation?: number, spectrum?: number, flutterLeve
   );
 }
 
-function renderLightBadge(radiance?: number, resonance?: number) {
-  if ((radiance ?? 0) <= 0 && (resonance ?? 0) <= 0) return null;
+function renderLightBadge(radiance?: number) {
+  if ((radiance ?? 0) <= 0) return null;
   return (
     <div style={{
       position: 'absolute', top: 7, left: 7, zIndex: 8,
@@ -478,7 +478,7 @@ function renderLightBadge(radiance?: number, resonance?: number) {
       fontFamily: DISPLAY_FONT, fontWeight: 700, pointerEvents: 'none',
       boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
     }}>
-      {`R${radiance ?? 0}${(resonance ?? 0) > 0 ? ` · Cad${resonance}` : ''}`}
+      {`R${radiance ?? 0}`}
     </div>
   );
 }
@@ -1194,7 +1194,7 @@ export default function BoardDisplay() {
                 {angelDef?.element === 'EternalSeas' && renderSeasBadge(angelDef?.rarity, turn.eternalSeasUndertow, turn.eternalSeasFoam, turn.secondaryCounters?.deepwake)}
                 {angelDef?.element === 'Dark' && renderBlackGlassBadge(turn.blackGlassWhiteFlame, turn.blackGlassBlackFlame, turn.blackGlassFracture)}
                 {angelDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyFormation, turn.butterflySpectrum, turn.butterflyFlutterLevel)}
-                {angelDef?.element === 'Light' && renderLightBadge(turn.radiance, turn.lightResonance)}
+                {angelDef?.element === 'Light' && renderLightBadge(turn.radiance)}
                 {angelDef?.element === 'Thornbound' && renderThornboundBadge(turn.trail, turn.thornScar)}
                 {angelDef?.element === 'Mechanical' && angelDef && !isSnowboundCard(angelDef) && renderMechanicalBadge(turn.strain)}
                 {angelDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}
@@ -1351,7 +1351,7 @@ export default function BoardDisplay() {
                 {serDef?.element === 'EternalSeas' && renderSeasBadge(serDef?.rarity, turn.eternalSeasUndertow, turn.eternalSeasFoam, turn.secondaryCounters?.deepwake)}
                 {serDef?.element === 'Dark' && renderBlackGlassBadge(turn.blackGlassWhiteFlame, turn.blackGlassBlackFlame, turn.blackGlassFracture)}
                 {serDef?.element === 'Butterfly' && renderButterflyBadge(turn.butterflyFormation, turn.butterflySpectrum, turn.butterflyFlutterLevel)}
-                {serDef?.element === 'Light' && renderLightBadge(turn.radiance, turn.lightResonance)}
+                {serDef?.element === 'Light' && renderLightBadge(turn.radiance)}
                 {serDef?.element === 'Thornbound' && renderThornboundBadge(turn.trail, turn.thornScar)}
                 {serDef?.element === 'Mechanical' && serDef && !isSnowboundCard(serDef) && renderMechanicalBadge(turn.strain)}
                 {serDef?.element === 'WishedUponAStar' && renderWuasBadge(turn.starlightCharges, turn.dreamLattice)}

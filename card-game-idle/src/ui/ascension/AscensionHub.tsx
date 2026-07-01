@@ -226,7 +226,7 @@ export default function AscensionHub({ onClose }: Props) {
       'Heavenly Light': {
         title: 'Duality',
         body:
-          'Every Transcendent in this suite triggers Duality: choose Discard 1, Draw 2, or cash out a massive Oblivion burst that scales from Resonance, Halo, and distinct cadence notes. The cards also inject above-rate Radiance and Halo to accelerate Light endgame lines.',
+          'Every Transcendent in this suite triggers Duality: choose Discard 1, Draw 2, or cash out a massive Oblivion burst that scales from Radiance and Halo. The cards also inject above-rate Radiance and Halo to accelerate Light endgame lines.',
       },
     };
 

@@ -423,17 +423,8 @@ export class CardEffectExecutor {
     let oblivionBonus = 0;
     let pendingEffect: PendingEffect | null = null;
     let heatDrained = 0; // tracks Heat before pyro_heat_spend:9999 for dynamic sentinels
-    let radianceDrained = 0; // tracks radiance before radiance_spend:9999 for dynamic sentinels
 
     const multiplier = 1;
-
-    const activeSynergies = board.frontSlots.filter(
-      s => s?.type === 'Seraphim' && s.isActive
-    ).length;
-
-    const throneActive = board.frontSlots.some(
-      s => s?.type === 'Seraphim' && s.isActive && s.definitionId === 'ser-light-throne'
-    );
 
     const isHighRarityMechanicCard = (cardDef: CardDefinition | undefined): boolean => Boolean(cardDef && (
       cardDef.rarity === 'Eternal'
@@ -592,8 +583,7 @@ export class CardEffectExecutor {
     };
 
     function applyRadianceGain(base: number): void {
-      const adjusted = throneActive ? Math.ceil(base * 1.5) : base;
-      mutableTurn.radiance += adjusted;
+      mutableTurn.radiance += base;
     }
 
     function getNeutralityEquilibriumSigilCap(): number {
@@ -886,18 +876,7 @@ export class CardEffectExecutor {
           }
           // Pyroabyss base cards now resolve exclusively from authored typed effects
           // (pyro_heat_* / conditional / draw / oblivion_flat) in source definitions.
-          // Sunforged ? +25 Oblivion per Radiance drained
-          if (deckCard.definitionId === 'hr-light-sunforged') {
-            val = Math.round(radianceDrained * 25 * MECHANIC_OBLIVION_BUFF) * multiplier;
-          }
-          // Celestial Dividend ? +18 Oblivion per Radiance drained
-          if (deckCard.definitionId === 'hr-light-celestial-dividend') {
-            val = Math.round(radianceDrained * 18 * MECHANIC_OBLIVION_BUFF) * multiplier;
-          }
-          // Grand Illumination ? +8 Oblivion per Radiance (after doubling)
-          if (deckCard.definitionId === 'hr-light-grand-illumination') {
-            val = Math.round(mutableTurn.radiance * 8 * MECHANIC_OBLIVION_BUFF) * multiplier;
-          }
+          // Light sentinel cards (sunforged, celestial-dividend, grand-illumination) removed — Phase 1 rework.
           if (deckCard.definitionId === 'inf-prismatic-axiom-rain') {
             const distinct = Math.min(6, new Set(mutableTurn.prismaticDistinctChannels ?? []).size);
             const nodes = Math.max(0, mutableTurn.prismaticNodeCharges ?? 0);
@@ -1414,32 +1393,14 @@ export class CardEffectExecutor {
 
         // �E�E�E��E�E�E��E�E�E��E�E�E� Radiance effects (Light) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'radiance_gain': {
-          let gain = effect.value;
-          if (deckCard.definitionId === 'hr-light-seraphic-bond') gain = activeSynergies;
-          else if (deckCard.definitionId === 'hr-light-aureate-chain') {
-            gain = deck.hand.filter(c => {
-              const d = CardRegistry.get(c.definitionId);
-              return d?.type === 'Ophanim';
-            }).length;
-          }
-          else if (deckCard.definitionId === 'hr-light-transcendent-surge') {
-            gain = mutableTurn.cardsPlayedThisTurn;
-          }
-          else if (deckCard.definitionId === 'ser-light-warden') {
-            gain = Math.ceil(deck.hand.length / 2);
-          }
+          const gain = effect.value;
           applyRadianceGain(gain * multiplier);
           break;
         }
 
         case 'radiance_spend': {
-          if (effect.value >= 9999) {
-            radianceDrained = mutableTurn.radiance;
-            mutableTurn.radiance = 0;
-          } else {
-            if (mutableTurn.radiance < effect.value) return false;
-            mutableTurn.radiance -= effect.value;
-          }
+          if (mutableTurn.radiance < effect.value) return false;
+          mutableTurn.radiance -= effect.value;
           break;
         }
 
@@ -1587,9 +1548,8 @@ export class CardEffectExecutor {
             pendingEffect = {
               type: 'light_transcendent_duality_choice',
               baseOblivion: effect.baseOblivion,
-              resonanceScale: effect.resonanceScale,
+              radianceScale: effect.radianceScale,
               haloScale: effect.haloScale,
-              distinctNoteScale: effect.distinctNoteScale,
               thresholdDivisor: effect.thresholdDivisor,
               thresholdScale: effect.thresholdScale,
             };
@@ -2003,22 +1963,14 @@ export class CardEffectExecutor {
 
         // ───── Draw / deck manipulation �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
         case 'draw': {
-          let count = effect.value;
-          if (deckCard.definitionId === 'hr-light-divine-clarity') count = 4;
-
+          const count = effect.value;
           mutableDeck = TurnSystem.drawCards(mutableDeck, count);
-          if (deckCard.definitionId === 'hr-light-divine-clarity') {
-            applyRadianceGain(count * multiplier);
-          }
           break;
         }
 
         case 'discard_choice':
           if (pendingEffect === null) {
-            const src = deckCard.definitionId === 'hr-light-luminous-cycle'
-              ? `${deckCard.instanceId}:draw_plus:1`
-              : deckCard.instanceId;
-            pendingEffect = { type: 'discard_choice', count: effect.value, sourceCard: src };
+            pendingEffect = { type: 'discard_choice', count: effect.value, sourceCard: deckCard.instanceId };
           }
           break;
 
@@ -2092,7 +2044,7 @@ export class CardEffectExecutor {
                     return !!d && getCardCategoryKey(d) === sourceSetKey;
                   })
                 : peeked;
-              pendingEffect = { type: 'look_top_take_type', cards: sameSetPeeked, filter: effect.filter, take: 1 };
+              pendingEffect = { type: 'look_top_take_type', cards: sameSetPeeked, filter: effect.filter, take: effect.take ?? 1 };
             }
           }
           break;
@@ -2168,13 +2120,7 @@ export class CardEffectExecutor {
       }
     }
 
-    // Vigil Seraphim: +1 Radiance per Ophanim card played while on board
-    const vigilActive = board.frontSlots.some(
-      s => s?.type === 'Seraphim' && s.isActive && s.definitionId === 'ser-light-vigil'
-    );
-    if (vigilActive && def.type === 'Ophanim') {
-      applyRadianceGain(1);
-    }
+    // Vigil Seraphim sentinel removed — Phase 1 rework; Thornwatch Seraphim now uses ophanim_bonus passive.
 
     // Remove played card from hand (for non-Seraphim, non-virtual cards)
     if (removeFromHand) {
@@ -2240,14 +2186,15 @@ export class CardEffectExecutor {
   ): boolean {
     switch (condition.type) {
       case 'radiance_gte':      return turn.radiance >= condition.value;
+      case 'radiance_lte':      return turn.radiance <= condition.value;
+      case 'seraphim_played_this_turn':     return (turn.seraphimPlayedThisTurn ?? 0) > 0;
+      case 'seraphim_not_played_this_turn': return (turn.seraphimPlayedThisTurn ?? 0) === 0;
       case 'black_glass_black_flame_gte':
         return (turn.blackGlassBlackFlame ?? 0) >= condition.value;
       case 'black_glass_fracture_gte':
         return (turn.blackGlassFracture ?? 0) >= condition.value;
       case 'black_glass_flames_equal':
         return (turn.blackGlassWhiteFlame ?? 0) === (turn.blackGlassBlackFlame ?? 0);
-      case 'light_resonance_gte':
-        return (turn.lightResonance ?? 0) >= condition.value;
       case 'pyro_heat_gte':     return (turn.pyroHeat ?? 0) >= condition.value;
       case 'trail_gte':         return turn.trail >= condition.value;
       case 'eternal_seas_undertow_gte': return (turn.eternalSeasUndertow ?? 0) >= condition.value;
@@ -2395,7 +2342,7 @@ export class CardEffectExecutor {
     for (const effect of effects) {
       if (effect.type === 'discard_choice' && discardableHandSize - 1 < effect.value) return false;
       if (effect.type === 'discard_draw' && discardableHandSize - 1 < effect.discard) return false;
-      if (effect.type === 'radiance_spend' && effect.value < 9999 && turn.radiance < effect.value) return false;
+      if (effect.type === 'radiance_spend' && turn.radiance < effect.value) return false;
       if (effect.type === 'pyro_heat_spend' && effect.value < 9999 && (turn.pyroHeat ?? 0) < effect.value) return false;
       if (effect.type === 'trail_spend' && effect.value < 9999 && turn.trail < effect.value) return false;
       if (effect.type === 'seas_foam_spend' && effect.value < 9999 && (turn.eternalSeasFoam ?? 0) < effect.value) return false;

@@ -67,7 +67,6 @@ export interface DeckState {
 // ── Turn ──────────────────────────────────────────────────────────────────────
 
 export type TurnPhase = 'idle' | 'mulligan' | 'playing';
-export type HeavenlyNote = 'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel';
 export type PrismaticChannel = 'amber' | 'azure' | 'crimson' | 'emerald' | 'violet' | 'white';
 export type SnowboundPhase = 'Frost' | 'Voltage';
 
@@ -83,9 +82,8 @@ export type PendingEffect =
   | {
       type: 'light_transcendent_duality_choice';
       baseOblivion: number;
-      resonanceScale: number;
+      radianceScale: number;
       haloScale: number;
-      distinctNoteScale: number;
       thresholdDivisor: number;
       thresholdScale: number;
     }
@@ -146,6 +144,7 @@ export interface TurnState {
   lastPendingLookDiscardedCount?: number;
   strainVentedThisTurn?: boolean;
   cherubimSummonedThisTurn?: number;
+  seraphimPlayedThisTurn?: number;
   equilibriumDrift?: number;
   equilibriumStability?: number;
   neutralitySetupCount?: number;
@@ -156,7 +155,7 @@ export interface TurnState {
   neutralityEngineSignatures?: string[];
   neutralityPatienceChargedThisTurn?: number;
   neutralityPatienceConsumedThisTurn?: number;
-  neutralityChainGainedThisTurn?: number;
+
   neutralityPatientLightStacks?: number;
   neutralityEquilibriumSigils?: number;
   neutralityEquilibriumSigilsGainedThisTurn?: number;
@@ -175,9 +174,6 @@ export interface TurnState {
   neutralityAttackRestorePercent?: number;
   neutralityLinkedGainBonus?: number;
   neutralityLinkedRetainPercent?: number;
-  lightCadenceNotes?: HeavenlyNote[];
-  lightDistinctNotes?: HeavenlyNote[];
-  lightResonance?: number;
   thornScar?: number;
   prismaticCurrentChannel?: PrismaticChannel | null;
   prismaticDistinctChannels?: PrismaticChannel[];

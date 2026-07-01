@@ -348,7 +348,7 @@ const thornboundTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'tbp-ophanim-red-veil-waystone',
-      hint: 'Red Veil Waystone. +3 Trail, draw 1, +1.45× chain multiplier this turn. Trail: 14, with a damage amp banked for the attack.',
+      hint: 'Red Veil Waystone. +3 Trail, draw 1, strong damage amp banked for the attack. Trail: 14.',
     },
     {
       cardDefinitionId: 'tbp-ophanim-briar-tithe',
@@ -364,7 +364,7 @@ const thornboundTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'tbp-ser-thornplate-sentry',
-      hint: '(Drawn) Thornplate Sentry (Seraphim). Core mechanic: Trail banking via Cherubim bursts and net-positive Ophanim conversion. Why it scales: repeated Trail injections outpace spends, and chain bonus amplifies the final hit. Exact payoff: click Thornplate Sentry → Unsynergized attack (spend 25 Trail) for the Trial finisher.',
+      hint: '(Drawn) Thornplate Sentry (Seraphim). Core mechanic: Trail banking via Cherubim bursts and net-positive Ophanim conversion. Why it scales: repeated Trail injections outpace spends, and the accumulated Trail amplifies the final hit. Exact payoff: click Thornplate Sentry → Unsynergized attack (spend 25 Trail) for the Trial finisher.',
     },
   ],
   guidedOpeningHand: [

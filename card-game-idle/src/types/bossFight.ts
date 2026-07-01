@@ -30,7 +30,6 @@ export type BossFightCoopRole = 'host' | 'guest';
 
 export interface TrialModifierRef {
   kind:
-    | 'chain_start_low'
     | 'time_pressure'
     | 'boss_hp_boost'
     | 'forbidden_element'

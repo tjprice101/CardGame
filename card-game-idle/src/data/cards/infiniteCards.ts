@@ -113,7 +113,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Celestial Blackout',
-    description: 'Gain 240 Radiance; Gain 8 Halo; If you have 10+ Halo, Spend 10 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Double current Radiance; If you have 6+ Cadence, Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Look at the top 9 cards and take 1 matching Seraphim or Angel; Gain Oblivion scaled by Radiance, Halo, and active Seraphim',
+    description: 'Gain 240 Radiance; Gain 8 Halo; If you have 10+ Halo, Spend 10 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Double current Radiance; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Look at the top 9 cards and take 1 matching Seraphim or Angel',
     artKey: 'inf_celestial_blackout',
     // Role: UBER opener-finisher. Frontloads Halo, then converts it into a massive
     // threshold burst while also fixing your next line with deep unit selection.
@@ -123,7 +123,7 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 10 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 10 }, { type: 'oblivion_flat', value: 5600 }] },
       { type: 'radiance_double' },
       { type: 'radiance_gain', value: 120 },
-      { type: 'conditional', condition: { type: 'light_resonance_gte', value: 6 }, then: [{ type: 'oblivion_flat', value: 4500 }] },
+      { type: 'oblivion_flat', value: 4500 },
       { type: 'look_top_take_type', look: 9, filter: ['Seraphim', 'Angel'] },
       { type: 'oblivion_flat', value: 3600 }],
   },
@@ -362,7 +362,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Lucent Cataclysm Archon',
-    description: 'On play: Gain 192 Radiance; Gain 6 Halo; If you have 9+ Halo, Spend 9 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; If you have 6+ Cadence, Double current Radiance; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Search your deck for 1 matching Ophanim or Angel. While on board: +760 Oblivion per card played while active',
+    description: 'On play: Gain 192 Radiance; Gain 6 Halo; If you have 9+ Halo, Spend 9 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Double current Radiance; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Search your deck for 1 matching Ophanim or Angel. While on board: +760 Oblivion per card played while active',
     artKey: 'inf_lucent_cataclysm_archon',
     attacks: {
       unsynergized: {
@@ -389,13 +389,14 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 760, synergyRequirement: 'Light' },
     // Role: Halo execution bridge. Spends a high Halo threshold into burst,
-    // then converts Cadence into a second Radiance spike and tutor.
+    // then adds a second Radiance spike and tutor.
     onPlayEffects: [
       { type: 'radiance_gain', value: 96 },
       { type: 'eternal_stack_gain', stack: 'light', value: 6 },
       { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 9 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 9 }, { type: 'oblivion_flat', value: 5200 }] },
       { type: 'radiance_gain', value: 96 },
-      { type: 'conditional', condition: { type: 'light_resonance_gte', value: 6 }, then: [{ type: 'radiance_double' }, { type: 'oblivion_flat', value: 2600 }] },
+      { type: 'radiance_double' },
+      { type: 'oblivion_flat', value: 2600 },
       { type: 'search_deck_by_type', filter: ['Ophanim', 'Angel'] }],
   },
   {
@@ -512,12 +513,12 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
     element: 'Light',
     rarity: 'Infinite',
     name: 'Heliarch Eclipse Engine',
-      description: 'On play: Gain 112 Radiance; Gain 7 Halo; Double current Radiance; If you have 7+ Cadence, Gain Oblivion scaled by Radiance, Halo, and active Seraphim; If you have 12+ Halo, Spend 6 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Salvage 1 card matching Seraphim; Gain Oblivion scaled by Radiance, Halo, and active Seraphim. While on board: Adjacent active Seraphim gain +320 Oblivion per card played',
+      description: 'On play: Gain 112 Radiance; Gain 7 Halo; Double current Radiance; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; If you have 12+ Halo, Spend 6 Halo; Gain Oblivion scaled by Radiance, Halo, and active Seraphim; Salvage 1 card matching Seraphim. While on board: Adjacent active Seraphim gain +320 Oblivion per card played',
     artKey: 'inf_heliarch_eclipse_engine',
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 320 }],
       // Role: Back-row Halo forge. Mints a large Halo reserve, amplifies Radiance,
       // and converts excess Halo into a selective support burst.
-      onPlayEffects: [{ type: 'radiance_gain', value: 112 }, { type: 'eternal_stack_gain', stack: 'light', value: 7 }, { type: 'radiance_double' }, { type: 'conditional', condition: { type: 'light_resonance_gte', value: 7 }, then: [{ type: 'oblivion_flat', value: 3600 }] }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 12 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 6 }, { type: 'oblivion_flat', value: 3400 }, { type: 'salvage_by_type', filter: ['Seraphim'] }] }, { type: 'oblivion_flat', value: 2400 }],
+      onPlayEffects: [{ type: 'radiance_gain', value: 112 }, { type: 'eternal_stack_gain', stack: 'light', value: 7 }, { type: 'radiance_double' }, { type: 'oblivion_flat', value: 3600 }, { type: 'conditional', condition: { type: 'eternal_stack_gte', stack: 'light', value: 12 }, then: [{ type: 'eternal_stack_spend', stack: 'light', value: 6 }, { type: 'oblivion_flat', value: 3400 }, { type: 'salvage_by_type', filter: ['Seraphim'] }] }, { type: 'oblivion_flat', value: 2400 }],
   },
   {
     definitionId: 'inf-mech-entropy-foundry',
@@ -1398,7 +1399,7 @@ export const snowboundVoltageInfiniteOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Infinite',
     name: 'Black Ice Dominion',
-    description: 'Gain 14 Radiance; Gain 3 Strain; Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Gain 24 Arctic Charge; +3100 Oblivion; If you have 3+ active Cherubim, Draw 2 cards; Gain 18 Arctic Charge; Gain 4 Polar Capacitors; Release up to 4 Polar Capacitors (Voltage: +480 Oblivion per capacitor · Frost: +9 Arctic Charge per capacitor)',
+    description: 'Gain 14 Radiance; Gain 3 Strain; Look at the top 12 cards, take 4 cards, put 1 card on the bottom, and discard the rest; Gain 24 Arctic Charge; +3100 Oblivion; If you control 3+ active Cherubim, Draw 2 cards; Gain 18 Arctic Charge; Gain 4 Polar Capacitors; Release up to 4 Polar Capacitors (Voltage: +480 Oblivion per capacitor · Frost: +9 Arctic Charge per capacitor)',
     artKey: 'inf_sv_black_ice_dominion',
     // Role: BIG CAPACITOR BATTERY + SCOUT. +4 Polar Capacitors; no discharge -
     // the deck-thinning variant of the back-row reservoir.

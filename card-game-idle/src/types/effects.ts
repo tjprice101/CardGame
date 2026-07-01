@@ -33,7 +33,7 @@ export type ImmediateEffect =
   | { type: 'copy_last_hr' }
   | { type: 'look_top_take'; look: number; take: number }
   | { type: 'look_top_take_drop'; look: number; take: number; drop: number }
-  | { type: 'look_top_take_type'; look: number; filter: CardSubtypeFilter[] }
+  | { type: 'look_top_take_type'; look: number; filter: CardSubtypeFilter[]; take?: number }
   | { type: 'search_deck_by_type'; filter: CardSubtypeFilter[] }
   | { type: 'salvage_by_type'; filter: CardSubtypeFilter[] }
   | { type: 'salvage_by_type_count'; filter: CardSubtypeFilter[]; count: number }
@@ -126,9 +126,8 @@ export type ImmediateEffect =
   | {
       type: 'light_transcendent_duality_choice';
       baseOblivion: number;
-      resonanceScale: number;
+      radianceScale: number;
       haloScale: number;
-      distinctNoteScale: number;
       thresholdDivisor: number;
       thresholdScale: number;
     }
@@ -229,10 +228,12 @@ export type SetSecondaryKind = EternalStackKind;
 
 export type EffectCondition =
   | { type: 'radiance_gte'; value: number }
+  | { type: 'radiance_lte'; value: number }
+  | { type: 'seraphim_played_this_turn' }
+  | { type: 'seraphim_not_played_this_turn' }
   | { type: 'black_glass_black_flame_gte'; value: number }
   | { type: 'black_glass_fracture_gte'; value: number }
   | { type: 'black_glass_flames_equal' }
-  | { type: 'light_resonance_gte'; value: number }
   | { type: 'cards_played_gte'; value: number }
   | { type: 'seraphim_active_gte'; value: number }
   | { type: 'cherubim_active_gte'; value: number }
@@ -273,6 +274,7 @@ export type CherubimPassiveEffect =
   | { type: 'cherubim_draw_per_card'; value: number }
   | { type: 'cherubim_resource_per_card'; resource: 'butterflySpectrum' | 'radiance' | 'trail' | 'strain' | 'prismaticLight' | 'arcticCharge'; value: number }
   | { type: 'cherubim_adjacent_seraphim_bonus'; value: number; bonusType: 'oblivion' | 'draw' }
+  | { type: 'cherubim_on_discard'; value: number }
   | {
       type: 'cherubim_seas_release_reaction';
       oblivionGain?: number;

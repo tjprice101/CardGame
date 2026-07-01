@@ -213,7 +213,7 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Common',
     name: 'Gearwake Courier',
-    description: 'Gain 3 Strain; +60 Oblivion; If you have 0 active Seraphim, Draw 2 cards',
+    description: 'Gain 3 Strain; +60 Oblivion; If you control 0+ active Seraphim, Draw 2 cards',
     artKey: 'md_seek_gearwake_courier',
     effects: [
       { type: 'strain_gain', value: 3 },
@@ -255,7 +255,7 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Common',
     name: 'Clockforge Chant',
-    description: 'Gain 2 Strain; Discard 1 card, Draw 2 cards; If you control 1+ active Cherubim, +80 Oblivion',
+    description: 'Gain 2 Strain; Discard 1 card, then draw 2 cards; If you control 1+ active Cherubim, +80 Oblivion',
     artKey: 'md_seek_clockforge_chant',
     effects: [
       { type: 'strain_gain', value: 2 },
@@ -324,7 +324,7 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Legendary',
     name: 'Sunspindle Override',
-    description: 'Gain 6 Strain; +140 Oblivion; If you have 6+ Strain, Draw 1 card; If you have 10+ Strain, Draw 2 additional cards',
+    description: 'Gain 6 Strain; +140 Oblivion; If you have 6+ Strain, Draw 1 card; If you have 10+ Strain, Draw 2 cards',
     artKey: 'md_seek_sunspindle_override',
     effects: [
       { type: 'strain_gain', value: 6 },

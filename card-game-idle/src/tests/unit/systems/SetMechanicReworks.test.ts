@@ -106,25 +106,24 @@ describe('Set mechanic reworks', () => {
     resetStore();
   });
 
-  it('keeps base Heavenly Light from generating choir resonance without a higher-rarity enabler', () => {
+  it('keeps base Heavenly Light plays working after the Cadence purge (Phase 0)', () => {
     seedPlayingState(['ser-light-dawn', 'hr-light-divine-smite']);
 
     useStore.getState().playCard('hand_0');
     useStore.getState().playCard('hand_1');
 
     const state = useStore.getState();
-    expect(state.turn.lightResonance ?? 0).toBe(0);
-    expect(new Set(state.turn.lightDistinctNotes ?? []).size).toBeGreaterThanOrEqual(2);
+    expect(state.turn.radiance).toBeGreaterThanOrEqual(0);
+    expect(state.turn.cardsPlayedThisTurn).toBeGreaterThanOrEqual(2);
   });
 
-  it('lets Aurora Throne frontload Light Halo and resonance', () => {
+  it('lets Aurora Throne frontload Light Halo', () => {
     seedPlayingState(['btei-light-sunbreak-canon']);
 
     useStore.getState().playCard('hand_0');
 
     const state = useStore.getState();
     expect(state.turn.eternalStacks?.light ?? 0).toBeGreaterThanOrEqual(3);
-    expect(state.turn.lightResonance).toBeGreaterThanOrEqual(1);
     expect(state.turn.pendingEffect).not.toBeNull();
   });
 
@@ -135,8 +134,6 @@ describe('Set mechanic reworks', () => {
       ...state,
       turn: {
         ...state.turn,
-        lightResonance: 4,
-        lightDistinctNotes: ['Ophanim', 'Seraphim', 'Cherubim', 'Angel'],
         radiance: 18,
         eternalStacks: { ...(state.turn.eternalStacks ?? {}), light: 12 },
         cardsPlayedThisTurn: 3,
@@ -158,8 +155,6 @@ describe('Set mechanic reworks', () => {
       ...state,
       turn: {
         ...state.turn,
-        lightResonance: 3,
-        lightDistinctNotes: ['Ophanim', 'Seraphim', 'Cherubim'],
         eternalStacks: { ...(state.turn.eternalStacks ?? {}), light: 7 },
       },
     }));
@@ -202,8 +197,6 @@ describe('Set mechanic reworks', () => {
     useStore.getState().playCard('hand_2');
 
     const state = useStore.getState();
-    expect(state.turn.lightResonance).toBeGreaterThanOrEqual(3);
-    expect(new Set(state.turn.lightDistinctNotes ?? []).size).toBeGreaterThanOrEqual(3);
     expect(state.turn.eternalStacks?.light ?? 0).toBeGreaterThanOrEqual(6);
     expect(state.turn.radiance).toBeGreaterThan(150);
     expect(state.progress.oblivion - before).toBeGreaterThan(3500);
@@ -510,7 +503,8 @@ describe('Set mechanic reworks', () => {
     seedPlayingState(['inf-thorn-widow-engine']);
 
     const widow = CardRegistry.get('inf-thorn-widow-engine');
-    expect(widow?.attacks?.unsynergized.costs?.[0]?.type).toBe('spend_trail');
+    // Phase 0: all attacks are free — costs array is always empty.
+    expect(widow?.attacks?.unsynergized.costs ?? []).toHaveLength(0);
 
     useStore.setState(state => ({
       ...state,

@@ -193,15 +193,13 @@ export default function PendingEffectModal() {
     const selectedDiscardId = selected[1] ?? null;
     const discardableHand = deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel');
     const selectedDiscardIsValid = !!selectedDiscardId && discardableHand.some(card => card.instanceId === selectedDiscardId);
-    const resonance = Math.max(0, turn.lightResonance ?? 0);
+    const radiance = Math.max(0, turn.radiance ?? 0);
     const halo = Math.max(0, turn.eternalStacks?.light ?? 0);
-    const distinctNotes = new Set(turn.lightDistinctNotes ?? []).size;
-    const thresholdBonus = Math.floor((resonance + halo) / Math.max(1, pending.thresholdDivisor)) * pending.thresholdScale;
+    const thresholdBonus = Math.floor((radiance + halo) / Math.max(1, pending.thresholdDivisor)) * pending.thresholdScale;
     const oblivionPreview = Math.floor(
       pending.baseOblivion
-      + resonance * pending.resonanceScale
+      + radiance * pending.radianceScale
       + halo * pending.haloScale
-      + distinctNotes * pending.distinctNoteScale
       + thresholdBonus,
     );
 
@@ -273,7 +271,7 @@ export default function PendingEffectModal() {
 
           <div style={styles.footer}>
             <div style={styles.info}>
-              Formula: {pending.baseOblivion} + ({pending.resonanceScale} x Resonance) + ({pending.haloScale} x Halo) + ({pending.distinctNoteScale} x Distinct Notes) + ({pending.thresholdScale} x floor((Resonance + Halo)/{pending.thresholdDivisor}))
+              Formula: {pending.baseOblivion} + ({pending.radianceScale} x Radiance) + ({pending.haloScale} x Halo) + ({pending.thresholdScale} x floor((Radiance + Halo)/{pending.thresholdDivisor}))
             </div>
             <button className="menu-tactile-btn"
               style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}

@@ -33,7 +33,6 @@ export type CoopEvent = CoopEventBase & (
         handCount: number;
         deckCount: number;
         oblivion: number;
-        chain: number;
       };
     }
   | {

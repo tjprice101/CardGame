@@ -386,9 +386,8 @@ describe('Angel mechanics', () => {
         pendingEffect: {
           type: 'light_transcendent_duality_choice',
           baseOblivion: 1000,
-          resonanceScale: 10,
+          radianceScale: 10,
           haloScale: 10,
-          distinctNoteScale: 10,
           thresholdDivisor: 2,
           thresholdScale: 10,
         },

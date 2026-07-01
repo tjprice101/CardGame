@@ -119,12 +119,12 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     finisher: 'Resolves all Patience at once for a single burst turn.',
   },
   light: {
-    setup: 'Adds note variety and Cadence so Light lines scale naturally.',
-    support: 'Maintains note continuity and resonance pacing between setup and payoff.',
-    resource: 'Builds Radiance and note depth for stronger release windows.',
-    payoff: 'Converts Cadence and Radiance into concentrated Oblivion bursts.',
-    amplifier: 'Pushes Halo and Cadence scaling once anchors are online.',
-    finisher: 'Discharges stacked resonance after a complete Cadence spread.',
+    setup: 'Adds Radiance so Light lines scale naturally.',
+    support: 'Maintains Radiance and Halo pacing between setup and payoff.',
+    resource: 'Builds Radiance and Halo depth for stronger release windows.',
+    payoff: 'Converts Radiance and Halo into concentrated Oblivion bursts.',
+    amplifier: 'Pushes Radiance and Halo scaling once anchors are online.',
+    finisher: 'Discharges stacked Radiance and Halo on a prepared burst turn.',
   },
   thornbound: {
     setup: 'Builds Trail quickly so Scar conversion starts early.',
@@ -548,30 +548,27 @@ function buildEngineSnapshot(
       };
     }
     case 'light': {
-      const notes = turn.lightDistinctNotes ?? [];
-      const cadence = notes.length;
-      const resonance = turn.lightResonance ?? 0;
+      const radiance = turn.radiance ?? 0;
+      const halo = turn.eternalStacks?.light ?? 0;
       return {
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: `Notes ${cadence} | Cadence ${resonance} | Halo ${(turn.eternalStacks?.light ?? 0)}`,
-        detail: `Notes ${formatPreview(notes)} | Echoes ${(turn.lightCadenceNotes ?? []).length}`,
-        tagline: 'Build Cadence cleanly, then convert stocked Halo and Radiance into a focused burst.',
-        summary: 'Alternate card types to build note variety and Cadence. Eternity and Infinity Light cards add Halo as a direct stock-and-spend layer for burst turns. If your deck includes Infinite cards, meeting Cadence 3 + 3 distinct notes amplifies them to x1.35. Open the Guide for full details.',
+        compact: `Radiance ${radiance} | Halo ${halo}`,
+        detail: `Radiance drives the base engine; Halo is your stock-and-spend layer.`,
+        tagline: 'Build Radiance cleanly, then convert stocked Halo into a focused burst.',
+        summary: 'Play Light cards to build Radiance. Eternity and Infinity Light cards add Halo as a direct stock-and-spend layer for burst turns.',
         metrics: [
-          createMetric('Hymn Notes', cadence, 'Distinct Hymn Note types played this turn.'),
-          createMetric('Cadence', resonance, 'Builds attack power. Drops on repeated notes.'),
-          createMetric('Halo', turn.eternalStacks?.light ?? 0, 'Stocked by Eternity/Infinity Light cards and spent by Halo threshold/cashout effects.'),
-          createMetric('Echoes', (turn.lightCadenceNotes ?? []).length, 'Total note triggers in the rolling cadence window.'),
+          createMetric('Radiance', radiance, 'Fuel for Light lines. Grows from Light plays.'),
+          createMetric('Halo', halo, 'Stocked by Eternity/Infinity Light cards and spent by Halo threshold/cashout effects.'),
         ],
         nextSteps: [
-          createStep('Add new notes', cadence >= 3, cadence >= 3
-            ? 'Note variety is healthy. Start aiming for the payoff side of the choir.'
-            : 'Play distinct Light notes first so note variety grows before the payoff turn.'),
-          createStep('Build Cadence', resonance >= 3, resonance >= 3
-            ? 'Cadence is stocked. Shift into Seraphim or Angel payoff pieces.'
-            : 'Keep sequencing Light setup until Cadence is worth cashing.'),
+          createStep('Build Radiance', radiance >= 30, radiance >= 30
+            ? 'Radiance is stocked. Shift into Seraphim or Angel payoff pieces.'
+            : 'Keep playing Light setup until Radiance is worth cashing.'),
+          createStep('Stock Halo', halo >= 6, halo >= 6
+            ? 'Halo threshold reached. Line up your Eternity/Infinity Light cashout.'
+            : 'Play Eternity/Infinity Light cards to bank Halo for a burst turn.'),
         ],
       };
     }
@@ -1039,15 +1036,11 @@ const RAW_SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   light: {
     engineKey: 'light',
     title: 'User Guide to: Heavenly Light',
-    intro: 'Heavenly Light runs on two core pieces and one advanced layer: Cadence and Radiance are the base engine, while Halo is the Eternity/Infinity stock-and-spend layer.',
+    intro: 'Heavenly Light runs on two pieces: Radiance is the base fuel, and Halo is the Eternity/Infinity stock-and-spend layer.',
     sections: [
       {
         heading: 'Card Types',
         body: 'Every Heavenly Light card has a job. Seraphim build and cash in power, Cherubim protect the sequence, Ophanim generate or spend Radiance, and Angels create bigger payoff turns.',
-      },
-      {
-        heading: 'Cadence',
-        body: 'Cadence is your choir meter. Playing a different note type adds 1 Cadence, and Multiplier-class cards add 2. Repeating the same note normally drops Cadence and resets the sequence, so keep the line varied if you want your Seraphim attacks to stay strong.',
       },
       {
         heading: 'Radiance',
@@ -1055,11 +1048,7 @@ const RAW_SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
       },
       {
         heading: 'Halo (Eternity/Infinity Layer)',
-        body: 'Halo is not required for the base Light loop, but Eternity and Infinity Light cards convert it into major burst. Build Halo on setup turns, then spend or cash it out only when your Cadence and Radiance state is already strong.',
-      },
-      {
-        heading: 'Infinite Card Amplification',
-        body: 'Infinite Light cards are not the core loop. They simply reward you for already building a good one. If Cadence is 3 or higher and you have played at least 3 different note types, Infinite Light cards get their boosted multiplier. If either condition is lower, they stay reduced.',
+        body: 'Halo is not required for the base Light loop, but Eternity and Infinity Light cards convert it into major burst. Build Halo on setup turns, then spend or cash it out only when your Radiance state is already strong.',
       },
     ],
   },

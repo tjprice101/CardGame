@@ -722,34 +722,19 @@ describe('Custom deck activation', () => {
 });
 
 describe('Heavenly Light balance', () => {
-  it('does not let Halo amplify Radiance doubling and uses the reduced Revelation payout', () => {
-    const throne: SeraphimInstance = {
-      instanceId: 'ser_throne_1',
-      definitionId: 'ser-light-throne',
-      type: 'Seraphim',
-      element: 'Light',
-      rarity: 'Rare',
-      level: 1,
-      isActive: true,
-      boardSlot: 0,
-    };
-
+  it('Revelation doubles Radiance and does not produce Oblivion directly', () => {
     const result = CardEffectExecutor.execute(
       { instanceId: 'play_1', definitionId: 'hr-light-grand-illumination' },
       makePlayingTurn({ radiance: 4 }),
-      {
-        frontSlots: [throne, null, null, null, null],
-        backSlots: [null, null, null, null],
-        activeBoardEffects: [],
-      },
+      emptyBoard,
       makeDeck('hr-light-grand-illumination'),
     );
 
-    expect(result.turn.radiance).toBe(14);
-    expect(result.oblivionBonus).toBe(123);
+    expect(result.turn.radiance).toBe(8);
+    expect(result.oblivionBonus).toBe(0);
   });
 
-  it('uses the reduced Light Radiance-to-Oblivion conversion and multiplier values', () => {
+  it('Emberforged spends exactly 4 Radiance and grants 140 Oblivion', () => {
     const sunforgedResult = CardEffectExecutor.execute(
       { instanceId: 'play_1', definitionId: 'hr-light-sunforged' },
       makePlayingTurn({ radiance: 6 }),
@@ -757,8 +742,8 @@ describe('Heavenly Light balance', () => {
       makeDeck('hr-light-sunforged'),
     );
 
-    expect(sunforgedResult.turn.radiance).toBe(0);
-    expect(sunforgedResult.oblivionBonus).toBe(165);
+    expect(sunforgedResult.turn.radiance).toBe(2);
+    expect(sunforgedResult.oblivionBonus).toBe(140);
 
     const spireResult = CardEffectExecutor.execute(
       { instanceId: 'play_2', definitionId: 'hr-light-pillar-of-heaven' },
@@ -768,7 +753,7 @@ describe('Heavenly Light balance', () => {
     );
 
     expect(spireResult.turn.radiance).toBe(0);
-    expect(spireResult.board.activeBoardEffects).toContainEqual({ type: 'score_multiplier', value: 250 });
+    expect(spireResult.board.activeBoardEffects).toContainEqual({ type: 'score_multiplier', value: 220 });
   });
 });
 
@@ -1569,7 +1554,8 @@ describe('Hidden multiplier regression guards', () => {
     const infiniteResult = runPrimaryAttackWithDefinitions(sharedDefs, sparseBoardForInfinite);
 
     expect(rareResult.oblivionDelta).toBe(1000);
-    expect(infiniteResult.oblivionDelta).toBe(700);
+    // Phase 0 Cadence purge: Infinite Light no longer has a full-fire penalty/bonus.
+    expect(infiniteResult.oblivionDelta).toBe(1000);
   });
 
   it('does not grant a hidden full-board attack payout bonus', () => {

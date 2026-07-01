@@ -16,7 +16,7 @@ export type ArtifactEffectType =
   | 'pyro_infinite_payout_bonus'      // added to Pyro Infinite payout multiplier
 
   // Heavenly Light
-  | 'resonance_gain_bonus'             // +N Cadence per Light card played (Heavenly Light set)
+  | 'resonance_gain_bonus'             // (Legacy Cadence artifact; runtime handler retired in Phase 0 gut)
 
   // Thornbound
   | 'trail_gain_bonus'                // +N Trail per Thornbound card played

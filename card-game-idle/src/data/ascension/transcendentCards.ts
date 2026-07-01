@@ -153,9 +153,8 @@ const TX_ANGELS: CardDefinition[] = [
       {
         type: 'light_transcendent_duality_choice' as const,
         baseOblivion: 630,
-        resonanceScale: 116,
+                radianceScale: 12,
         haloScale: 95,
-        distinctNoteScale: 47,
         thresholdDivisor: 5,
         thresholdScale: 131,
       },
@@ -170,9 +169,8 @@ const TX_ANGELS: CardDefinition[] = [
         {
           type: 'light_transcendent_duality_choice' as const,
           baseOblivion: 630,
-          resonanceScale: 116,
+                    radianceScale: 12,
           haloScale: 95,
-          distinctNoteScale: 47,
           thresholdDivisor: 5,
           thresholdScale: 131,
         },
@@ -423,9 +421,8 @@ const TX_SHOP_CARDS: CardDefinition[] = [
       {
         type: 'light_transcendent_duality_choice' as const,
         baseOblivion: 630,
-        resonanceScale: 116,
+                radianceScale: 12,
         haloScale: 95,
-        distinctNoteScale: 47,
         thresholdDivisor: 5,
         thresholdScale: 131,
       },
@@ -472,9 +469,8 @@ const TX_SHOP_CARDS: CardDefinition[] = [
       {
         type: 'light_transcendent_duality_choice' as const,
         baseOblivion: 630,
-        resonanceScale: 116,
+                radianceScale: 12,
         haloScale: 95,
-        distinctNoteScale: 47,
         thresholdDivisor: 5,
         thresholdScale: 131,
       },
@@ -498,19 +494,12 @@ const TX_SHOP_CARDS: CardDefinition[] = [
       {
         type: 'light_transcendent_duality_choice' as const,
         baseOblivion: 630,
-        resonanceScale: 116,
+                radianceScale: 12,
         haloScale: 95,
-        distinctNoteScale: 47,
         thresholdDivisor: 5,
         thresholdScale: 131,
       },
-      {
-        type: 'conditional' as const,
-        condition: { type: 'light_resonance_gte' as const, value: 5 },
-        then: [
-          { type: 'oblivion_flat' as const, value: 2200 },
-          ],
-      },
+      { type: 'oblivion_flat' as const, value: 2200 },
     ],
   },
 ];

@@ -603,7 +603,7 @@ function buildSeraphimAttacks(def: SeraphimDefinition): SeraphimAttackSet {
       unsynCooldown = Math.max(1, unsynCooldown - 1);
       synCooldown = Math.max(2, synCooldown - 1);
       break;
-    case 2: // Chain scaler
+    case 2: // Burst scaler
       unsynScaling += 0.08;
       synScaling += 0.12;
       break;
@@ -1144,24 +1144,16 @@ function isStackingResourceCost(type: AttackCost['type']): boolean {
     || type === 'spend_strain';
 }
 
-function tuneResourceCostAttackPressure<T extends { baseOblivion: number; costs?: AttackCost[] }>(attack: T): T {
+function tuneResourceCostAttackPressure<T extends { baseOblivion: number; cooldownCards: number; costs?: AttackCost[] }>(attack: T): T {
   const costs = attack.costs ?? [];
-  const hasDiscardCost = costs.some(cost => cost.type === 'discard_from_hand');
   const hasStackingResourceCost = costs.some(cost => isStackingResourceCost(cost.type));
 
-  // Only scale attacks that have no discard tax and instead spend stacking resources.
-  if (hasDiscardCost || !hasStackingResourceCost) return attack;
-
-  const boostedCosts = costs.map(cost => (
-    isStackingResourceCost(cost.type)
-      ? { ...cost, value: cost.value + 8 }
-      : cost
-  ));
+  // Phase 0: all attacks are free. Compensate resource-cost attacks with +2 cooldown.
+  if (!hasStackingResourceCost) return attack;
 
   return {
     ...attack,
-    baseOblivion: Math.round(attack.baseOblivion * 1.15),
-    costs: boostedCosts,
+    cooldownCards: attack.cooldownCards + 2,
   };
 }
 
@@ -1244,7 +1236,7 @@ function buildAngelAttackDescription(
   const primaryTemplates = [
     `${attackName} carves a commanding ${motif.toLowerCase()} line to keep your offense stable and threatening.`,
     `${attackName} delivers a measured ${motif.toLowerCase()} decree that maintains momentum without overcommitting.`,
-    `${attackName} is your reliable ${motif.toLowerCase()} strike, ideal for pacing chain growth into a finisher.`,
+    `${attackName} is your reliable ${motif.toLowerCase()} strike, ideal for building toward a finisher.`,
   ];
   const exaltedTemplates = [
     `${attackName} spends sacred reserves to collapse the field under a ${motif.toLowerCase()} judgment.`,
@@ -1478,12 +1470,9 @@ function deterministicCooldown(seed: string, min: number, max: number): number {
   return lo + (hashString(seed) % span);
 }
 
-function stripCardTaxCosts(costs: ReadonlyArray<AttackCost> | undefined): AttackCost[] {
-  return (costs ?? []).filter(cost => (
-    cost.type !== 'discard_from_hand'
-    && cost.type !== 'sacrifice_seraphim'
-    && cost.type !== 'sacrifice_angel'
-  ));
+function stripCardTaxCosts(_costs: ReadonlyArray<AttackCost> | undefined): AttackCost[] {
+  // Phase 0: all attacks are free — strip every cost type.
+  return [];
 }
 
 function targetSeraphimDps(tier: ProgressionTier, mode: 'primary' | 'secondary'): number {

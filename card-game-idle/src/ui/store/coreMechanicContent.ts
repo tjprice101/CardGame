@@ -66,16 +66,16 @@ const PLAYSTYLE_MAP: Record<EngineKey, CoreMechanicPlaystyle[]> = {
   ],
   light: [
     {
-      name: 'Cadence Build',
-      pattern: 'Play different Light note types first so Cadence climbs before you spend Radiance or Halo.',
-      pilotTips: 'Do not lock into one note type too early; variety is what raises the meter.',
-      winCondition: 'A clean Cadence line that powers your Seraphim turns.',
+      name: 'Radiance Build',
+      pattern: 'Stack Radiance from Light plays before spending on Halo cashouts.',
+      pilotTips: 'Keep tempo Light plays going so Radiance climbs steadily; do not spend early on weak lines.',
+      winCondition: 'A high-Radiance base state that powers your Seraphim payoff turns.',
     },
     {
       name: 'Radiance and Halo Cashout',
-      pattern: 'Spend Radiance and Halo only when Cadence is already stable.',
-      pilotTips: 'If sequence quality is weak, keep building instead of spending your Halo threshold early.',
-      winCondition: 'One prepared burst turn where Cadence, Radiance, and Halo convert together.',
+      pattern: 'Spend Radiance and Halo only when Radiance and Halo are already stocked.',
+      pilotTips: 'If Radiance or Halo is weak, keep building instead of firing your threshold cards early.',
+      winCondition: 'One prepared burst turn where Radiance and Halo convert together.',
     },
   ],
   thornbound: [
@@ -381,7 +381,7 @@ const ADVANCED_LINES_MAP: Record<EngineKey, CoreMechanicAdvancedLine[]> = {
     {
       name: 'Anchor-Protected Repeat',
       sequence: 'Spend an anchor on a deliberate repeated note during your highest payoff turn.',
-      whyItWorks: 'You preserve Cadence while still taking the strongest immediate line.',
+      whyItWorks: 'You preserve Radiance while still taking the strongest immediate line.',
     },
     {
       name: 'Halo Threshold Snap',
@@ -573,8 +573,8 @@ const COMMON_MISTAKES_MAP: Record<EngineKey, CoreMechanicMistake[]> = {
     { mistake: 'Ignoring vessel routing', consequence: 'Overcapped stacks on one unit while others underperform.', correction: 'Use designate/copy/redistribute effects to balance board payoff timing.' },
   ],
   light: [
-    { mistake: 'Repeating notes too early', consequence: 'Cadence collapses before payoff.', correction: 'Build with varied notes first or wait until an Anchor is active.' },
-    { mistake: 'Spending Halo too soon', consequence: 'Eternity/Infinity Light cards convert below expected value.', correction: 'Build Cadence and Radiance first, then spend Halo on a protected burst turn.' },
+    { mistake: 'Firing Light Ophanim on weak turns', consequence: 'Radiance drains without a payoff line ready.', correction: 'Hold Light Ophanim until Seraphim/Angel attacks are online.' },
+    { mistake: 'Spending Halo too soon', consequence: 'Eternity/Infinity Light cards convert below expected value.', correction: 'Build Radiance first, then spend Halo on a protected burst turn.' },
   ],
   thornbound: [
     { mistake: 'Converting too early', consequence: 'You run out of Trail and cannot continue your setup sequence.', correction: 'Build Trail first, then convert in short bursts.' },

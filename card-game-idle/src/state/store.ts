@@ -172,7 +172,6 @@ const defaultTurn: TurnState = {
   neutralityEngineSignatures: [],
   neutralityPatienceChargedThisTurn: 0,
   neutralityPatienceConsumedThisTurn: 0,
-  neutralityChainGainedThisTurn: 0,
   neutralityPatientLightStacks: 0,
   neutralityEquilibriumSigils: 0,
   neutralityEquilibriumSigilsGainedThisTurn: 0,
@@ -180,9 +179,6 @@ const defaultTurn: TurnState = {
   neutralityEquilibriumSigilCapBonus: 0,
   neutralityEquilibriumSentinelTempoUsed: false,
   neutralityTriggeredEffects: [],
-  lightCadenceNotes: [],
-  lightDistinctNotes: [],
-  lightResonance: 0,
   thornScar: 0,
   prismaticCurrentChannel: null,
   prismaticDistinctChannels: [],
@@ -1962,7 +1958,6 @@ function ensureNeutralityTurnState(turn: TurnState): void {
   if (turn.neutralityEngineSignatures === undefined) turn.neutralityEngineSignatures = [];
   if (turn.neutralityPatienceChargedThisTurn === undefined) turn.neutralityPatienceChargedThisTurn = 0;
   if (turn.neutralityPatienceConsumedThisTurn === undefined) turn.neutralityPatienceConsumedThisTurn = 0;
-  if (turn.neutralityChainGainedThisTurn === undefined) turn.neutralityChainGainedThisTurn = 0;
   if (turn.neutralityPatientLightStacks === undefined) turn.neutralityPatientLightStacks = 0;
   if (turn.neutralityEquilibriumSigils === undefined) turn.neutralityEquilibriumSigils = 0;
   if (turn.neutralityEquilibriumSigilsGainedThisTurn === undefined) turn.neutralityEquilibriumSigilsGainedThisTurn = 0;
@@ -1978,10 +1973,8 @@ function ensurePyroTurnState(turn: TurnState): void {
   if (turn.lastPlayedElement === undefined) turn.lastPlayedElement = null;
 }
 
-function ensureLightTurnState(turn: TurnState): void {
-  if (turn.lightCadenceNotes === undefined) turn.lightCadenceNotes = [];
-  if (turn.lightDistinctNotes === undefined) turn.lightDistinctNotes = [];
-  if (turn.lightResonance === undefined) turn.lightResonance = 0;
+function ensureLightTurnState(_turn: TurnState): void {
+  // Cadence purged in Phase 0: no Light turn fields to guard.
 }
 
 function ensureThornboundTurnState(turn: TurnState): void {
@@ -2231,17 +2224,11 @@ function captureTurnSnapshot(turn: TurnState): TurnState {
     attenuationBrokenClasses: [...(turn.attenuationBrokenClasses ?? [])],
     crossSetConversionDistinctSources: [...(turn.crossSetConversionDistinctSources ?? [])],
     neutralityEngineSignatures: [...(turn.neutralityEngineSignatures ?? [])],
-    lightCadenceNotes: [...(turn.lightCadenceNotes ?? [])],
-    lightDistinctNotes: [...(turn.lightDistinctNotes ?? [])],
     prismaticDistinctChannels: [...(turn.prismaticDistinctChannels ?? [])],
     prismaticRecentChannels: [...(turn.prismaticRecentChannels ?? [])],
     burningGardenLineagesPlayed: [...(turn.burningGardenLineagesPlayed ?? [])],
     burningGardenIncandescentSnapshot: [...(turn.burningGardenIncandescentSnapshot ?? [])],
   };
-}
-
-function getHeavenlyNote(def: CardDefinition): import('@/types/game').HeavenlyNote {
-  return def.type;
 }
 
 function getPrismaticChannel(def: CardDefinition): import('@/types/game').PrismaticChannel {
@@ -2408,14 +2395,9 @@ function countBurningGardenEngines(board: BoardState): number {
   return engines;
 }
 
-function getLightFullFireMultiplier(s: Store, def: CardDefinition): number {
-  if (def.element !== 'Light' || def.rarity !== 'Infinite') return 1;
-  ensureLightTurnState(s.turn);
-  const resonance = s.turn.lightResonance ?? 0;
-  const noteCount = new Set(s.turn.lightDistinctNotes ?? []).size;
-  const setupReady = resonance >= 3;
-  const enginesReady = noteCount >= 3;
-  return setupReady && enginesReady ? 1.35 : 0.70;
+function getLightFullFireMultiplier(_s: Store, _def: CardDefinition): number {
+  // Cadence purged in Phase 0: Light full-fire gating removed.
+  return 1;
 }
 
 function getThornboundFullFireMultiplier(s: Store, def: CardDefinition): number {
@@ -2648,33 +2630,12 @@ function applyPyroPlayState(
 function applyLightPlayState(
   s: Store,
   def: CardDefinition,
-  beforeTurn: TurnState,
-  actionClass: AttenuationClass,
+  _beforeTurn: TurnState,
+  _actionClass: AttenuationClass,
 ): void {
   if (def.element !== 'Light') return;
 
   ensureLightTurnState(s.turn);
-
-  const advancedLightAccess = canUseAdvancedSetMechanics(s.board, def, 'light');
-
-  const note = getHeavenlyNote(def);
-  const previousNotes = beforeTurn.lightCadenceNotes ?? [];
-  const previousNote = previousNotes.length > 0 ? previousNotes[previousNotes.length - 1] : undefined;
-  const repeatedNote = previousNote === note;
-
-  if (repeatedNote) {
-    s.turn.lightCadenceNotes = [note];
-    s.turn.lightDistinctNotes = [note];
-    if (advancedLightAccess) {
-      s.turn.lightResonance = Math.max(0, (s.turn.lightResonance ?? 0) - 1);
-    }
-  } else {
-    s.turn.lightCadenceNotes = [...(s.turn.lightCadenceNotes ?? []), note].slice(-6);
-    s.turn.lightDistinctNotes = appendDistinct(s.turn.lightDistinctNotes, note, 4);
-    if (advancedLightAccess) {
-      s.turn.lightResonance = Math.min(6, (s.turn.lightResonance ?? 0) + 1 + (actionClass === 'multiplier' ? 1 : 0));
-    }
-  }
 
   s.turn.lastPlayedElement = def.element;
 }
@@ -3843,7 +3804,7 @@ function computeCherubimPassiveOblivionBonus(board: BoardState, isOphanimPlay: b
 
 // �E��E��E��E� Cherubim helpers �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
 
-function computeCherubimAdjacentBonus(board: BoardState, bonusType: 'oblivion' | 'draw' | 'chain'): number {
+function computeCherubimAdjacentBonus(board: BoardState, bonusType: 'oblivion' | 'draw'): number {
   let bonus = 0;
   for (let i = 0; i < 4; i++) {
     const card = board.backSlots[i];
@@ -3930,16 +3891,8 @@ function awardOblivionForCardPlay(
 
   if (sourceDef?.element === 'Light' && totalAward > 0) {
     ensureLightTurnState(s.turn);
-    const resonance = s.turn.lightResonance ?? 0;
-    const noteCount = new Set(s.turn.lightDistinctNotes ?? []).size;
-    const resonanceMultiplier = 1 + Math.min(0.5, resonance * 0.08);
-    const cadenceMultiplier = 1 + Math.min(0.28, noteCount * 0.07);
     const radianceMultiplier = 1 + Math.min(0.35, s.turn.radiance * 0.015);
-    const fullFireMultiplier = getLightFullFireMultiplier(s, sourceDef);
-    totalAward = Math.round(totalAward * resonanceMultiplier * cadenceMultiplier * radianceMultiplier * fullFireMultiplier);
-    if (sourceDef.rarity === 'Infinite') {
-      totalAward += noteCount * 34 + resonance * 10;
-    }
+    totalAward = Math.round(totalAward * radianceMultiplier);
   }
 
   if (sourceDef?.element === 'Thornbound' && totalAward > 0) {
@@ -4526,6 +4479,7 @@ export const useStore = create<Store>()(
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
         resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
         incrementAngelProgress(s.board);
+        s.turn.seraphimPlayedThisTurn = (s.turn.seraphimPlayedThisTurn ?? 0) + 1;
         const newInst = s.board.frontSlots[slot];
         if (newInst?.type === 'Seraphim' && newInst.isActive) {
           eventBus.emit('seraphim:synergy-gained', { slot, instanceId: deckCard.instanceId });
@@ -5826,16 +5780,14 @@ export const useStore = create<Store>()(
             s.deck = TurnSystem.discardFromHand(s.deck, [discardId]);
             s.deck = TurnSystem.drawCards(s.deck, 2);
           } else {
-            const resonance = Math.max(0, s.turn.lightResonance ?? 0);
+            const radiance = Math.max(0, s.turn.radiance ?? 0);
             const halo = Math.max(0, s.turn.eternalStacks?.light ?? 0);
-            const distinctNotes = new Set(s.turn.lightDistinctNotes ?? []).size;
             const divisor = Math.max(1, pending.thresholdDivisor);
-            const thresholdBonus = Math.floor((resonance + halo) / divisor) * pending.thresholdScale;
+            const thresholdBonus = Math.floor((radiance + halo) / divisor) * pending.thresholdScale;
             const total = Math.floor(
               pending.baseOblivion
-              + resonance * pending.resonanceScale
+              + radiance * pending.radianceScale
               + halo * pending.haloScale
-              + distinctNotes * pending.distinctNoteScale
               + thresholdBonus,
             );
             grantOblivion(s, Math.max(0, total));
@@ -6907,9 +6859,7 @@ export const useStore = create<Store>()(
         s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
 
-      // Chain start low modifier — no longer relevant (chain removed).
-        if (modifiers.some(m => m.kind === 'chain_start_low')) {
-        }
+      // Chain start low modifier removed (chain mechanic purged in Phase 0).
 
         s.bossFight = {
           mode: 'active',
@@ -7497,7 +7447,6 @@ export const useStore = create<Store>()(
         if (ot['neutralityEngineSignatures'] === undefined) ot['neutralityEngineSignatures'] = [];
         if (ot['neutralityPatienceChargedThisTurn'] === undefined) ot['neutralityPatienceChargedThisTurn'] = 0;
         if (ot['neutralityPatienceConsumedThisTurn'] === undefined) ot['neutralityPatienceConsumedThisTurn'] = 0;
-        if (ot['neutralityChainGainedThisTurn'] === undefined) ot['neutralityChainGainedThisTurn'] = 0;
         if (ot['neutralityPatientLightStacks'] === undefined) ot['neutralityPatientLightStacks'] = 0;
         if (ot['neutralityEquilibriumSigils'] === undefined) ot['neutralityEquilibriumSigils'] = 0;
         if (ot['neutralityEquilibriumSigilsGainedThisTurn'] === undefined) ot['neutralityEquilibriumSigilsGainedThisTurn'] = 0;
@@ -7526,9 +7475,9 @@ export const useStore = create<Store>()(
         delete ot['pyroRuinWindows'];
         delete ot['pyroFervor'];
         delete ot['pyroRupture'];
-        if (ot['lightCadenceNotes'] === undefined) ot['lightCadenceNotes'] = [];
-        if (ot['lightDistinctNotes'] === undefined) ot['lightDistinctNotes'] = [];
-        if (ot['lightResonance'] === undefined) ot['lightResonance'] = 0;
+        delete ot['lightCadenceNotes'];
+        delete ot['lightDistinctNotes'];
+        delete ot['lightResonance'];
         if (ot['thornScar'] === undefined) ot['thornScar'] = 0;
         if (ot['mechanicalInstructionQueue'] === undefined) ot['mechanicalInstructionQueue'] = [];
         if (ot['mechanicalResolvedInstructions'] === undefined) ot['mechanicalResolvedInstructions'] = 0;

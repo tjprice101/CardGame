@@ -316,7 +316,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-triune-prism-flow',
     name: 'Triune Prism Flow',
-    description: 'Look at the top 5 cards, take 2 cards, and put the rest on the bottom; Gain 1 Refraction Charge per card bottomed',
+    description: 'Look at the top 5 cards, take 2 cards, and put the rest on the bottom; Gain 3 Refraction Charges',
     rarity: 'Common',
     artKey: 'ga_oph_triune_prism_flow',
     effects: [
@@ -327,7 +327,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-glassroad-oracle',
     name: 'Glassroad Oracle',
-    description: 'Salvage any 1 card; Draw 1 card; Gain Refraction Charges equal to the salvaged card cost',
+    description: 'Salvage any 1 card; Draw 1 card; Gain 2 Refraction Charges',
     rarity: 'Rare',
     artKey: 'ga_oph_glassroad_oracle',
     effects: [
@@ -339,7 +339,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-radiant-splinter-map',
     name: 'Radiant Splinter Map',
-    description: 'Look at the top 6 cards, take 2 cards, put 1 card on the bottom, and discard the rest; Gain 1 Refraction Charge per card discarded',
+    description: 'Look at the top 6 cards, take 2 cards, put 1 card on the bottom, and discard the rest; Gain 3 Refraction Charges',
     rarity: 'Rare',
     artKey: 'ga_oph_radiant_splinter_map',
     effects: [
@@ -350,7 +350,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-lumen-cascade',
     name: 'Lumen Cascade',
-    description: 'Discard 2 cards, Draw 4 cards; For each Seraphim discarded, gain 2 Refraction Charges; For each Ophanim discarded, +80 Oblivion',
+    description: 'Discard 2 cards, then draw 4 cards; Gain 2 Refraction Charges',
     rarity: 'Epic',
     artKey: 'ga_oph_lumen_cascade',
     effects: [
@@ -377,7 +377,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-prism-veil-drift',
     name: 'Prism Veil Drift',
-    description: 'Draw 2 cards; Look at the top 4 cards, take 1 card, and put the rest on the bottom; Gain 1 Refraction Charge per card bottomed; If you have 4+ Refraction Charges, +120 Oblivion',
+    description: 'Draw 2 cards; Look at the top 4 cards, take 1 card, and put the rest on the bottom; Gain 3 Refraction Charges; If you have 4+ Refraction Charges, +120 Oblivion',
     rarity: 'Rare',
     artKey: 'ga_oph_prism_veil_drift',
     effects: [
@@ -390,7 +390,7 @@ export const glassAbsoluteCards: CardDefinition[] = [
   buildOphanim({
     definitionId: 'ga-oph-lattice-horizon',
     name: 'Lattice Horizon',
-    description: 'Look at the top 5 cards, take 2 cards, and put the rest on the bottom; For each card taken, gain 1 Refraction Charge; If you have 6+ Refraction Charges, +120 Oblivion',
+    description: 'Look at the top 5 cards, take 2 cards, and put the rest on the bottom; Gain 2 Refraction Charges; If you have 6+ Refraction Charges, +120 Oblivion',
     rarity: 'Epic',
     artKey: 'ga_oph_lattice_horizon',
     effects: [

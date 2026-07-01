@@ -192,7 +192,7 @@ function TurnFlowBody() {
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Cadence Tips</div>
+        <div style={sectionHeadingStyle}>Timing Tips</div>
         <ListItem label="Cheap First">Cycle low-cost Ophanim early to reduce attack cooldowns.</ListItem>
         <ListItem label="Set Up">Drop Seraphim and Cherubim before your big payoff plays so passives are already online.</ListItem>
         <ListItem label="Sequence">Cooldowns tick in cards played, not seconds. Fire each attack at peak resource windows.</ListItem>
@@ -323,7 +323,7 @@ function PatienceBody() {
 function SetsBody() {
   const sets: Array<[string, string, string]> = [
     ['Neutrality', 'Patience / Stasis', 'Stockpile Patience on Seraphim, cash it out on attack. The friendly starter engine.'],
-    ['Heavenly Light', 'Cadence, Radiance & Halo', 'Build note variety and Anchors for Cadence, then spend stocked Halo on your biggest Light burst turns.'],
+    ['Heavenly Light', 'Radiance & Halo', 'Build Radiance, then spend stocked Halo on your biggest Light burst turns.'],
     ['Pyroabyss', 'Heat Roles and Burst Windows', 'Base cards now split into stoke, threshold, tutor, and burst roles. Build Heat first, then cash in one burst window; add Chroma overlays only on higher-rarity turns.'],
     ['Thornbound Plains', 'Trail, Scar & Briar Spiral', 'Build Trail, convert to Scar manually in the HUD, then use Eternal Briar Spirals to amplify your payoff turn.'],
     ['Snowbound Voltage', 'Frost, Voltage & Polar Capacitors', 'Frost cards build Arctic Charge and Voltage cards cash it out; Eternity/Infinite cards add Polar Capacitor bank-and-release lines.'],

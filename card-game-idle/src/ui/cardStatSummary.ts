@@ -304,8 +304,6 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ ${setSecondaryName(condition.kind)}`;
     case 'dfh_veil_marks_gte':
       return `you have ${condition.value}+ Veil Marks`;
-    case 'light_resonance_gte':
-      return `you have ${condition.value}+ Cadence`;
     case 'black_glass_black_flame_gte':
       return `you have ${condition.value}+ Black Flame`;
     case 'black_glass_flames_equal':
@@ -316,6 +314,12 @@ function formatCondition(condition: EffectCondition): string {
       return `you have ${condition.value}+ Starlight Charges`;
     case 'dream_lattice_gte':
       return `you have ${condition.value}+ Dream Lattice`;
+    case 'radiance_lte':
+      return `you have ${condition.value} or fewer Radiance`;
+    case 'seraphim_played_this_turn':
+      return 'you played a Seraphim this turn';
+    case 'seraphim_not_played_this_turn':
+      return 'you did not play a Seraphim this turn';
     default:
       return `${(condition as { type: string; value?: number }).type.replace(/_/g, ' ')} ${'value' in (condition as { value?: number }) ? (condition as { value?: number }).value ?? '' : ''}`.trim();
   }
@@ -414,7 +418,7 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
       return `Confluence ${scope} matched Heat and Chroma Ember pairs (+${formatExactValue(effect.oblivionPerPair)} Oblivion per pair${suffix})`;
     }
     case 'light_transcendent_duality_choice': {
-      const formula = `${effect.baseOblivion} + ${effect.resonanceScale}xResonance + ${effect.haloScale}xHalo + ${effect.distinctNoteScale}xDistinct Notes + ${effect.thresholdScale}xfloor((Resonance + Halo)/${effect.thresholdDivisor})`;
+      const formula = `${effect.baseOblivion} + ${effect.radianceScale}xRadiance + ${effect.haloScale}xHalo + ${effect.thresholdScale}xfloor((Radiance + Halo)/${effect.thresholdDivisor})`;
       return `Duality: choose Discard 1, draw 2; or gain Oblivion (${formula})`;
     }
     case 'thorn_briar_spiral_bloom': {
@@ -650,6 +654,7 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
           return `Adjacent active Seraphim ${effect.bonusType} +${effect.value}`;
       }
     }
+    case 'cherubim_on_discard': return `Whenever you discard a card, +${effect.value} Oblivion`;
     case 'cherubim_conditional_buff': return `If ${formatCondition(effect.condition)}, this Cherubim grants +${effect.value} bonus power`;
     case 'cherubim_patience_per_card': return `Adjacent Seraphim and Angels gain +${effect.value} Patience per card played`;
     case 'cherubim_global_oblivion_mult': return `All Oblivion gain +${Math.round(effect.value * 100)}%`;
@@ -869,7 +874,7 @@ function collectMechanicNotes(card: CardDefinition): string[] {
     if (condition.type === 'eternal_stack_gte') stackKinds.add(condition.stack);
     if (condition.type === 'set_secondary_gte') secondaryKinds.add(condition.kind);
     if (condition.type === 'pyro_heat_gte') turnResources.add('Heat');
-    if (condition.type === 'radiance_gte' || condition.type === 'light_resonance_gte') turnResources.add('Radiance');
+    if (condition.type === 'radiance_gte') turnResources.add('Radiance');
     if (condition.type === 'trail_gte') turnResources.add('Trail');
     if (condition.type === 'eternal_seas_undertow_gte') turnResources.add('Undertow');
     if (condition.type === 'eternal_seas_foam_gte') turnResources.add('Foam');
