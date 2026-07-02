@@ -2722,11 +2722,8 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-cherubim-chromatic-crater": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_adjacent_seraphim_bonus",
-        "bonusType": "oblivion",
-        "value": 14
-      }
+      { "type": "cherubim_on_discard", "value": 18 },
+      { "type": "cherubim_adjacent_seraphim_bonus", "bonusType": "oblivion", "value": 14 }
     ]
   },
   "bgi-cherubim-cinderborn-oath": {
@@ -2746,11 +2743,7 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-cherubim-morvakaels-answer": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_adjacent_seraphim_bonus",
-        "bonusType": "oblivion",
-        "value": 22
-      }
+      { "type": "cherubim_on_discard", "value": 45 }
     ]
   },
   "bgi-cherubim-ruin-garden": {
@@ -2760,21 +2753,13 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-cherubim-sorveths-ring": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_adjacent_seraphim_bonus",
-        "bonusType": "oblivion",
-        "value": 16
-      }
+      { "type": "cherubim_resource_per_card", "resource": "monochromaticShards", "value": 1 }
     ]
   },
   "bgi-cherubim-vaelthorax-grieffire": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_adjacent_seraphim_bonus",
-        "bonusType": "oblivion",
-        "value": 20
-      }
+      { "type": "cherubim_conditional_buff", "condition": { "type": "cherubim_active_gte", "value": 2 }, "value": 3 }
     ]
   },
   "bgi-cherubim-veilplane-fissure": {
@@ -2790,49 +2775,22 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-cherubim-veth-serath-midplace": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_adjacent_seraphim_bonus",
-        "bonusType": "oblivion",
-        "value": 18
-      }
+      { "type": "cherubim_attack_buff", "targetUnitType": "Seraphim", "targetTags": ["dark"], "condition": { "type": "seraphim_active_gte", "value": 2 }, "bonusBaseOblivion": 80 }
     ]
   },
   "bgi-ophanim-ashen-memory": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "oblivion_flat",
-        "value": 50
-      },
-      {
-        "type": "conditional",
-        "condition": {
-          "type": "first_card_this_turn"
-        },
-        "then": [
-          {
-            "type": "draw",
-            "value": 1
-          }
-        ]
-      },
-      {
-        "type": "black_glass_black_flame_gain",
-        "value": 2
-      }
+      { "type": "conditional", "condition": { "type": "first_card_this_turn" }, "then": [{ "type": "oblivion_flat", "value": 150 }], "else": [{ "type": "draw", "value": 2 }] },
+      { "type": "black_glass_black_flame_gain", "value": 2 }
     ]
   },
   "bgi-ophanim-bladewind-keening": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "oblivion_flat",
-        "value": 35
-      },
-      {
-        "type": "black_glass_black_flame_gain",
-        "value": 2
-      }
+      { "type": "discard_choice", "value": 1 },
+      { "type": "oblivion_flat", "value": 100 },
+      { "type": "black_glass_black_flame_gain", "value": 2 }
     ]
   },
   "bgi-ophanim-blue-mourning-rift": {
@@ -2873,18 +2831,9 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-ophanim-cinder-litany": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "draw",
-        "value": 1
-      },
-      {
-        "type": "oblivion_flat",
-        "value": 25
-      },
-      {
-        "type": "black_glass_black_flame_gain",
-        "value": 2
-      }
+      { "type": "shuffle_discard" },
+      { "type": "draw", "value": 2 },
+      { "type": "black_glass_black_flame_gain", "value": 2 }
     ]
   },
   "bgi-ophanim-cindered-oath": {
@@ -2916,14 +2865,10 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-ophanim-copper-hate-psalm": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "oblivion_flat",
-        "value": 160
-      },
-      {
-        "type": "black_glass_black_flame_gain",
-        "value": 2
-      }
+      { "type": "oblivion_flat", "value": 140 },
+      { "type": "look_top_take", "look": 3, "take": 1 },
+      { "type": "conditional", "condition": { "type": "seraphim_active_gte", "value": 1 }, "then": [{ "type": "oblivion_flat", "value": 240 }] },
+      { "type": "black_glass_black_flame_gain", "value": 2 }
     ]
   },
   "bgi-ophanim-covenant-split": {
@@ -3036,14 +2981,9 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-ophanim-sable-descent": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "draw",
-        "value": 1
-      },
-      {
-        "type": "black_glass_black_flame_gain",
-        "value": 2
-      }
+      { "type": "look_top_take", "look": 3, "take": 1 },
+      { "type": "conditional", "condition": { "type": "seraphim_active_gte", "value": 2 }, "then": [{ "type": "oblivion_flat", "value": 80 }] },
+      { "type": "black_glass_black_flame_gain", "value": 2 }
     ]
   },
   "bgi-ophanim-scorchglass-route": {
@@ -3070,35 +3010,12 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-ophanim-shadows-of-the-inferno": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "draw",
-        "value": 3
-      },
-      {
-        "type": "oblivion_flat",
-        "value": 220
-      },
-      {
-        "type": "monochromatic_shards_gain",
-        "value": 6
-      },
-      {
-        "type": "conditional",
-        "condition": {
-          "type": "cards_played_gte",
-          "value": 3
-        },
-        "then": [
-          {
-            "type": "oblivion_flat",
-            "value": 220
-          }
-        ]
-      },
-      {
-        "type": "black_glass_black_flame_gain",
-        "value": 2
-      }
+      { "type": "draw", "value": 3 },
+      { "type": "oblivion_flat", "value": 220 },
+      { "type": "monochromatic_shards_gain", "value": 6 },
+      { "type": "conditional", "condition": { "type": "cards_played_gte", "value": 3 }, "then": [{ "type": "oblivion_flat", "value": 220 }] },
+      { "type": "conditional", "condition": { "type": "seraphim_active_gte", "value": 2 }, "then": [{ "type": "draw", "value": 2 }] },
+      { "type": "black_glass_black_flame_gain", "value": 2 }
     ]
   },
   "bgi-ophanim-sorveths-eleventh-second": {
@@ -3121,15 +3038,9 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-ophanim-veilplane-shard": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "look_top_take",
-        "look": 4,
-        "take": 1
-      },
-      {
-        "type": "black_glass_black_flame_gain",
-        "value": 2
-      }
+      { "type": "look_top_take", "look": 3, "take": 1 },
+      { "type": "conditional", "condition": { "type": "hand_size_lte", "value": 3 }, "then": [{ "type": "draw", "value": 1 }] },
+      { "type": "black_glass_black_flame_gain", "value": 2 }
     ]
   },
   "bgi-ophanim-violet-dirge": {
@@ -3153,14 +3064,9 @@ export const MATERIALIZED_CARD_BALANCE = {
   "bgi-ophanim-whiteblack-supernova": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "draw",
-        "value": 3
-      },
-      {
-        "type": "black_glass_black_flame_gain",
-        "value": 2
-      }
+      { "type": "discard_draw", "discard": 3, "draw": 5 },
+      { "type": "monochromatic_shards_gain", "value": 3 },
+      { "type": "black_glass_black_flame_gain", "value": 2 }
     ]
   },
   "bgi-ser-ashen-helix": {
@@ -5713,21 +5619,13 @@ export const MATERIALIZED_CARD_BALANCE = {
   "cherubim-prismatic-light-echo": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_resource_per_card",
-        "resource": "radiance",
-        "value": 3
-      }
+      { "type": "cherubim_resource_per_card", "resource": "prismaticLight", "value": 3 }
     ]
   },
   "cherubim-prismatic-luminous-ascent": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_resource_per_card",
-        "resource": "radiance",
-        "value": 4
-      }
+      { "type": "cherubim_resource_per_card", "resource": "prismaticLight", "value": 4 }
     ]
   },
   "cherubim-prismatic-null-prism": {
@@ -6011,8 +5909,12 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "cherubim_resource_per_card",
-        "resource": "radiance",
-        "value": 2
+        "resource": "undertow",
+        "value": 1
+      },
+      {
+        "type": "cherubim_draw_per_card",
+        "value": 0.34
       }
     ]
   },
@@ -6700,8 +6602,8 @@ export const MATERIALIZED_CARD_BALANCE = {
     "effects": [
       {
         "type": "cherubim_resource_per_card",
-        "resource": "radiance",
-        "value": 12
+        "resource": "absol",
+        "value": 2
       }
     ]
   },
@@ -7196,14 +7098,9 @@ export const MATERIALIZED_CARD_BALANCE = {
   "ga-oph-white-transit": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "draw",
-        "value": 4
-      },
-      {
-        "type": "radiance_gain",
-        "value": 24
-      }
+      { "type": "set_secondary_gain", "kind": "absol", "value": 2 },
+      { "type": "draw", "value": 4 },
+      { "type": "oblivion_flat", "value": 240 }
     ]
   },
   "ga-ser-glass-hymn": {
@@ -9367,7 +9264,15 @@ export const MATERIALIZED_CARD_BALANCE = {
   },
   "md-cherubim-rust-halo-chamber": {
     "type": "Cherubim",
-    "effects": []
+    "effects": [
+      {
+        "type": "cherubim_attack_buff",
+        "targetUnitType": "Seraphim",
+        "targetTags": ["mechanical"],
+        "condition": { "type": "strain_gte", "value": 8 },
+        "bonusBaseOblivion": 80
+      }
+    ]
   },
   "md-cherubim-white-iron-chorus": {
     "type": "Cherubim",
@@ -9392,34 +9297,17 @@ export const MATERIALIZED_CARD_BALANCE = {
   "md-ophanim-brass-mind-litany": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "strain_gain",
-        "value": 2
-      },
-      {
-        "type": "strain_gain",
-        "value": 1
-      },
-      {
-        "type": "strain_gain",
-        "value": 2
-      }
+      { "type": "strain_gain", "value": 2 },
+      { "type": "look_top_take", "look": 2, "take": 1 },
+      { "type": "conditional", "condition": { "type": "cherubim_active_gte", "value": 1 }, "then": [{ "type": "oblivion_flat", "value": 80 }] }
     ]
   },
   "md-ophanim-clockforge-chant": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "strain_gain",
-        "value": 1
-      },
-      {
-        "type": "shuffle_discard"
-      },
-      {
-        "type": "strain_gain",
-        "value": 2
-      }
+      { "type": "strain_gain", "value": 2 },
+      { "type": "discard_draw", "discard": 1, "draw": 2 },
+      { "type": "conditional", "condition": { "type": "cherubim_active_gte", "value": 1 }, "then": [{ "type": "oblivion_flat", "value": 80 }] }
     ]
   },
   "md-ophanim-coil-edge-recursion": {
@@ -9500,62 +9388,34 @@ export const MATERIALIZED_CARD_BALANCE = {
   "md-ophanim-gearwake-courier": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "strain_gain",
-        "value": 2
-      },
-      {
-        "type": "strain_gain",
-        "value": 1
-      },
-      {
-        "type": "strain_gain",
-        "value": 2
-      }
+      { "type": "strain_gain", "value": 3 },
+      { "type": "oblivion_flat", "value": 60 },
+      { "type": "conditional", "condition": { "type": "seraphim_active_gte", "value": 1 }, "then": [{ "type": "draw", "value": 2 }] }
     ]
   },
   "md-ophanim-predestination-break": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "strain_gain",
-        "value": 3
-      },
-      {
-        "type": "oblivion_flat",
-        "value": 150
-      }
+      { "type": "strain_gain", "value": 4 },
+      { "type": "oblivion_flat", "value": 150 },
+      { "type": "conditional", "condition": { "type": "strain_gte", "value": 8 }, "then": [{ "type": "oblivion_flat", "value": 160 }, { "type": "draw", "value": 1 }] }
     ]
   },
   "md-ophanim-servo-divination": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "look_top_take",
-        "look": 3,
-        "take": 1
-      },
-      {
-        "type": "strain_gain",
-        "value": 1
-      },
-      {
-        "type": "strain_gain",
-        "value": 2
-      }
+      { "type": "strain_gain", "value": 3 },
+      { "type": "salvage_any" },
+      { "type": "shuffle_discard" }
     ]
   },
   "md-ophanim-sunspindle-override": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "strain_gain",
-        "value": 2
-      },
-      {
-        "type": "strain_gain",
-        "value": 4
-      }
+      { "type": "strain_gain", "value": 6 },
+      { "type": "oblivion_flat", "value": 140 },
+      { "type": "conditional", "condition": { "type": "strain_gte", "value": 6 }, "then": [{ "type": "draw", "value": 1 }] },
+      { "type": "conditional", "condition": { "type": "strain_gte", "value": 10 }, "then": [{ "type": "draw", "value": 2 }] }
     ]
   },
   "md-ser-cogbound-aegis": {
@@ -10410,7 +10270,15 @@ export const MATERIALIZED_CARD_BALANCE = {
   },
   "pa-cherubim-buried-prism-cache": {
     "type": "Cherubim",
-    "effects": []
+    "effects": [
+      {
+        "type": "cherubim_attack_buff",
+        "targetUnitType": "Seraphim",
+        "targetTags": ["prismatic"],
+        "condition": { "type": "prismatic_node_charges_gte", "value": 2 },
+        "bonusBaseOblivion": 80
+      }
+    ]
   },
   "pa-cherubim-canopy-eclipse-knot": {
     "type": "Cherubim",
@@ -10425,11 +10293,7 @@ export const MATERIALIZED_CARD_BALANCE = {
   "pa-cherubim-century-blind-scar": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_adjacent_seraphim_bonus",
-        "bonusType": "oblivion",
-        "value": 10
-      }
+      { "type": "cherubim_resource_per_card", "resource": "prismaticLight", "value": 2 }
     ]
   },
   "pa-cherubim-fracture-veil": {
@@ -10560,39 +10424,16 @@ export const MATERIALIZED_CARD_BALANCE = {
   "pa-ophanim-frozen-color-omen": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "look_top_take_type",
-        "look": 4,
-        "filter": [
-          "Ophanim"
-        ]
-      }
+      { "type": "look_top_take_type", "look": 4, "filter": ["Ophanim"] },
+      { "type": "prismatic_charge_gain", "value": 1 }
     ]
   },
   "pa-ophanim-lightveil-ambush": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "oblivion_flat",
-        "value": 45
-      },
-      {
-        "type": "conditional",
-        "condition": {
-          "type": "prismatic_node_charges_gte",
-          "value": 2
-        },
-        "then": [
-          {
-            "type": "prismatic_charge_spend",
-            "value": 2
-          },
-          {
-            "type": "oblivion_flat",
-            "value": 80
-          }
-        ]
-      }
+      { "type": "oblivion_flat", "value": 45 },
+      { "type": "resonance_charge_gain", "value": 1 },
+      { "type": "conditional", "condition": { "type": "prismatic_node_charges_gte", "value": 2 }, "then": [{ "type": "prismatic_charge_spend", "value": 2 }, { "type": "oblivion_flat", "value": 80 }] }
     ]
   },
   "pa-ophanim-nine-day-beam": {
@@ -10624,27 +10465,9 @@ export const MATERIALIZED_CARD_BALANCE = {
   "pa-ophanim-prismwake-glint": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "oblivion_flat",
-        "value": 20
-      },
-      {
-        "type": "conditional",
-        "condition": {
-          "type": "prismatic_node_charges_gte",
-          "value": 1
-        },
-        "then": [
-          {
-            "type": "prismatic_charge_spend",
-            "value": 1
-          },
-          {
-            "type": "oblivion_flat",
-            "value": 35
-          }
-        ]
-      }
+      { "type": "oblivion_flat", "value": 20 },
+      { "type": "draw", "value": 1 },
+      { "type": "conditional", "condition": { "type": "prismatic_node_charges_gte", "value": 1 }, "then": [{ "type": "prismatic_charge_spend", "value": 1 }, { "type": "oblivion_flat", "value": 35 }] }
     ]
   },
   "pa-ophanim-spectrum-lattice": {
@@ -11751,11 +11574,7 @@ export const MATERIALIZED_CARD_BALANCE = {
   "sv-cher-cryoscale-engine": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_resource_per_card",
-        "resource": "strain",
-        "value": 3
-      }
+      { "type": "cherubim_resource_per_card", "resource": "arcticCharge", "value": 3 }
     ]
   },
   "sv-cher-first-whiteout": {
@@ -11796,11 +11615,7 @@ export const MATERIALIZED_CARD_BALANCE = {
   "sv-cher-polar-sanctum": {
     "type": "Cherubim",
     "effects": [
-      {
-        "type": "cherubim_resource_per_card",
-        "resource": "strain",
-        "value": 2
-      }
+      { "type": "cherubim_resource_per_card", "resource": "arcticCharge", "value": 2 }
     ]
   },
   "sv-cher-station-nullpoint": {
@@ -12343,94 +12158,40 @@ export const MATERIALIZED_CARD_BALANCE = {
   "sv-oph-aurora-convergence": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "radiance_gain",
-        "value": 2
-      },
-      {
-        "type": "arctic_charge_gain",
-        "value": 4
-      },
-      {
-        "type": "oblivion_flat",
-        "value": 80
-      },
-      {
-        "type": "arctic_charge_discharge"
-      }
+      { "type": "draw", "value": 1 },
+      { "type": "arctic_charge_gain", "value": 8 },
+      { "type": "oblivion_flat", "value": 80 },
+      { "type": "arctic_charge_discharge" }
     ]
   },
   "sv-oph-drifting-relay": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "radiance_gain",
-        "value": 4
-      },
-      {
-        "type": "draw",
-        "value": 1
-      },
-      {
-        "type": "arctic_charge_gain",
-        "value": 4
-      },
-      {
-        "type": "arctic_charge_discharge"
-      }
+      { "type": "arctic_charge_gain", "value": 12 },
+      { "type": "draw", "value": 1 },
+      { "type": "arctic_charge_discharge" }
     ]
   },
   "sv-oph-first-static": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "strain_gain",
-        "value": 3
-      },
-      {
-        "type": "arctic_charge_gain",
-        "value": 3
-      },
-      {
-        "type": "arctic_charge_discharge"
-      }
+      { "type": "arctic_charge_gain", "value": 9 },
+      { "type": "arctic_charge_discharge" }
     ]
   },
   "sv-oph-frostwalker-neis": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "draw",
-        "value": 3
-      },
-      {
-        "type": "strain_gain",
-        "value": 3
-      },
-      {
-        "type": "arctic_charge_gain",
-        "value": 8
-      }
+      { "type": "draw", "value": 3 },
+      { "type": "arctic_charge_gain", "value": 14 }
     ]
   },
   "sv-oph-glacier-abyss": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "strain_gain",
-        "value": 2
-      },
-      {
-        "type": "arctic_charge_gain",
-        "value": 3
-      },
-      {
-        "type": "oblivion_flat",
-        "value": 60
-      },
-      {
-        "type": "arctic_charge_discharge"
-      }
+      { "type": "arctic_charge_gain", "value": 7 },
+      { "type": "oblivion_flat", "value": 60 },
+      { "type": "arctic_charge_discharge" }
     ]
   },
   "sv-oph-signal-collapse": {
@@ -12452,35 +12213,15 @@ export const MATERIALIZED_CARD_BALANCE = {
   "sv-oph-sleetline-highway": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "strain_gain",
-        "value": 2
-      },
-      {
-        "type": "draw",
-        "value": 1
-      },
-      {
-        "type": "arctic_charge_gain",
-        "value": 6
-      }
+      { "type": "draw", "value": 1 },
+      { "type": "arctic_charge_gain", "value": 10 }
     ]
   },
   "sv-oph-static-archive": {
     "type": "Ophanim",
     "effects": [
-      {
-        "type": "radiance_gain",
-        "value": 2
-      },
-      {
-        "type": "draw",
-        "value": 1
-      },
-      {
-        "type": "arctic_charge_gain",
-        "value": 6
-      }
+      { "type": "look_top_take", "look": 3, "take": 1 },
+      { "type": "arctic_charge_gain", "value": 10 }
     ]
   },
   "sv-ser-arctic-vector": {

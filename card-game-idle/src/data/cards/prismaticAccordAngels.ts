@@ -1,4 +1,4 @@
-import type { AngelDefinition } from '@/types/cards';
+﻿import type { AngelDefinition } from '@/types/cards';
 
 export const prismaticAccordAngels: AngelDefinition[] = [
   {
@@ -29,8 +29,8 @@ export const prismaticAccordAngels: AngelDefinition[] = [
         id: 'pa-angel-aurelith-ninth-beam:primary',
         label: 'Primary',
         name: 'Aurelith Seer Ordinance',
-        description: '382 base Oblivion · 4 cards cooldown',
-        baseOblivion: 965,
+        description: '965 base Oblivion · 5 cards cooldown',
+        baseOblivion: 1177,
         cooldownCards: 5,
         costs: [],
         tags: ['angel', 'primary', 'prismatic'],
@@ -39,8 +39,8 @@ export const prismaticAccordAngels: AngelDefinition[] = [
         id: 'pa-angel-aurelith-ninth-beam:exalted',
         label: 'Exalted',
         name: 'Aurelith Seer Throne Decree',
-        description: '746 base Oblivion · 7 cards cooldown · Cost: discard 2 cards, spend 3 Strain',
-        baseOblivion: 2220,
+        description: '2220 base Oblivion · 7 cards cooldown',
+        baseOblivion: 2708,
         cooldownCards: 7,
         costs: [],
         tags: ['angel', 'exalted', 'prismatic'],
@@ -79,8 +79,8 @@ export const prismaticAccordAngels: AngelDefinition[] = [
         id: 'pa-angel-vorthum-whitebeam-arbiter:primary',
         label: 'Primary',
         name: 'Vorthum Whitebeam Ordinance',
-        description: '382 base Oblivion · 5 cards cooldown',
-        baseOblivion: 1000,
+        description: '1000 base Oblivion · 5 cards cooldown',
+        baseOblivion: 1220,
         cooldownCards: 5,
         costs: [],
         tags: ['angel', 'primary', 'prismatic'],
@@ -89,8 +89,8 @@ export const prismaticAccordAngels: AngelDefinition[] = [
         id: 'pa-angel-vorthum-whitebeam-arbiter:exalted',
         label: 'Exalted',
         name: 'Vorthum Whitebeam Throne Decree',
-        description: '908 base Oblivion · 8 cards cooldown · Cost: discard 2 cards, discard 1 card',
-        baseOblivion: 2300,
+        description: '2300 base Oblivion · 7 cards cooldown',
+        baseOblivion: 2806,
         cooldownCards: 7,
         costs: [],
         tags: ['angel', 'exalted', 'prismatic'],

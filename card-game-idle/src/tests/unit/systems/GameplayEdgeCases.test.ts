@@ -747,13 +747,14 @@ describe('Heavenly Light balance', () => {
 
     const spireResult = CardEffectExecutor.execute(
       { instanceId: 'play_2', definitionId: 'hr-light-pillar-of-heaven' },
-      makePlayingTurn({ radiance: 6 }),
+      makePlayingTurn({ radiance: 6, oblivionEarnedThisTurn: 500 }),
       emptyBoard,
       makeDeck('hr-light-pillar-of-heaven'),
     );
 
     expect(spireResult.turn.radiance).toBe(0);
-    expect(spireResult.board.activeBoardEffects).toContainEqual({ type: 'score_multiplier', value: 220 });
+    // score_multiplier now yields 500 * 220 / 100 = 1100 flat Oblivion bonus
+    expect(spireResult.oblivionBonus).toBe(1100);
   });
 });
 

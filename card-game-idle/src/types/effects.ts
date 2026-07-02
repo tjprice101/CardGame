@@ -1,12 +1,8 @@
 export type BoardEffectType =
-  | 'power_flat'
-  | 'power_percent'
   | 'score_multiplier'
   | 'seraphim_bonus_amplifier';
 
 export type BoardEffect =
-  | { type: 'power_flat'; value: number }
-  | { type: 'power_percent'; value: number }
   | { type: 'score_multiplier'; value: number }
   | { type: 'seraphim_bonus_amplifier'; value: number };
 

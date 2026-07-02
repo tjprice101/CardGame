@@ -1,4 +1,4 @@
-import type { AngelDefinition } from '@/types/cards';
+﻿import type { AngelDefinition } from '@/types/cards';
 
 export const mechanicalDreamsAngels: AngelDefinition[] = [
   {
@@ -7,7 +7,7 @@ export const mechanicalDreamsAngels: AngelDefinition[] = [
     element: 'Mechanical',
     rarity: 'Legendary',
     name: 'ORI-9 Archon of Broken Sleep',
-    description: 'On summon: Gain 1 Strain; Draw 1 card. After 4 cards played: Gain 2 Strain; +220 Oblivion; Vent 1 Strain. While on board: +9 Oblivion for each Seraphim on board while on board',
+    description: 'On summon: Gain 1 Strain; Draw 1 card. After 4 cards played: Gain 3 Strain; +160 Oblivion; If you have 6+ Strain, +160 Oblivion; Draw 1 card. While on board: +9 Oblivion for each Seraphim on board while on board',
     artKey: 'md_angel_ori9_broken_sleep',
     summonCost: ['md-ser-dreamforge-lancer', 'md-ser-ivory-null-operator'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
@@ -17,19 +17,21 @@ export const mechanicalDreamsAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Fatebreak Chime Drive',
       cardsPlayedRequirement: 4,
-      description: 'Gain 2 Strain; +220 Oblivion; Vent 1 Strain',
+      description: 'Gain 3 Strain; +160 Oblivion; If you have 6+ Strain, +160 Oblivion; Draw 1 card',
       effects: [
-        { type: 'strain_gain', value: 2 },
-        { type: 'oblivion_flat', value: 220 },
-        { type: 'strain_vent', value: 1 }],
+        { type: 'strain_gain', value: 3 },
+        { type: 'oblivion_flat', value: 160 },
+        { type: 'conditional', condition: { type: 'strain_gte', value: 6 }, then: [{ type: 'oblivion_flat', value: 160 }] },
+        { type: 'draw', value: 1 },
+      ],
     },
     attacks: {
       primary: {
         id: 'md-angel-ori9-broken-sleep:primary',
         label: 'Primary',
         name: 'ORI-9 Archon Ordinance',
-        description: '970 base Oblivion · 5 cards cooldown',
-        baseOblivion: 970,
+        description: '1145 base Oblivion · 5 cards cooldown',
+        baseOblivion: 1145,
         cooldownCards: 5,
         costs: [],
         tags: ['angel', 'primary', 'mechanical'],
@@ -38,8 +40,8 @@ export const mechanicalDreamsAngels: AngelDefinition[] = [
         id: 'md-angel-ori9-broken-sleep:exalted',
         label: 'Exalted',
         name: 'ORI-9 Archon Throne Decree',
-        description: '2230 base Oblivion · 7 cards cooldown',
-        baseOblivion: 2230,
+        description: '2631 base Oblivion · 7 cards cooldown',
+        baseOblivion: 2631,
         cooldownCards: 7,
         costs: [],
         tags: ['angel', 'exalted', 'mechanical'],
@@ -77,8 +79,8 @@ export const mechanicalDreamsAngels: AngelDefinition[] = [
         id: 'md-angel-thaumiel-prime:primary',
         label: 'Primary',
         name: 'THAUMIEL Prime Ordinance',
-        description: '1005 base Oblivion · 5 cards cooldown',
-        baseOblivion: 1005,
+        description: '1186 base Oblivion · 5 cards cooldown',
+        baseOblivion: 1186,
         cooldownCards: 5,
         costs: [],
         tags: ['angel', 'primary', 'mechanical'],
@@ -87,8 +89,8 @@ export const mechanicalDreamsAngels: AngelDefinition[] = [
         id: 'md-angel-thaumiel-prime:exalted',
         label: 'Exalted',
         name: 'THAUMIEL Prime Throne Decree',
-        description: '2310 base Oblivion · 7 cards cooldown',
-        baseOblivion: 2310,
+        description: '2726 base Oblivion · 7 cards cooldown',
+        baseOblivion: 2726,
         cooldownCards: 7,
         costs: [],
         tags: ['angel', 'exalted', 'mechanical'],

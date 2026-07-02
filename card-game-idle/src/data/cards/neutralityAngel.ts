@@ -96,7 +96,7 @@ export const neutralityAngels: AngelDefinition[] = [
     element: 'Neutrality',
     rarity: 'Legendary',
     name: 'Aegis of Equilibrium',
-    description: 'On summon: All Seraphim on board gain +8 Patience; Seraphim bonuses are amplified by +2; Shuffle discard into deck. After 5 cards played: Double all Patience on the board; Seraphim attacks preserve 40% of consumed Patience this turn; +250 Oblivion. While on board: +65 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +8 Patience; Each active Seraphim\'s payout +2 Oblivion this turn; Shuffle discard into deck. After 5 cards played: Double all Patience on the board; Seraphim attacks preserve 40% of consumed Patience this turn; +250 Oblivion. While on board: +65 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
     artKey: 'angel_neutral_equilibrium',
     summonCost: ['angel-neutral-presence', 'ser-neutral-still'],
     extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],

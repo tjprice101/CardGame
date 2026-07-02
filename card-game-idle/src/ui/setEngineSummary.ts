@@ -377,7 +377,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
     return 'resource';
   }
 
-  if (hasSomeEffect(def, ['score_flat', 'score_multiplier', 'oblivion_flat', 'power_flat', 'power_percent', 'butterfly_release', 'seas_undertow_release'])) {
+  if (hasSomeEffect(def, ['score_flat', 'score_multiplier', 'oblivion_flat', 'butterfly_release', 'seas_undertow_release'])) {
     return 'payoff';
   }
 
@@ -389,7 +389,7 @@ function getCardRoleDetail(def: CardDefinition): string {
     return 'It stocks the resources this engine spends to stay online.';
   }
 
-  if (def.type === 'Cherubim' || hasSomeEffect(def, ['cherubim_adjacent_seraphim_bonus', 'cherubim_seraphim_amp', 'cherubim_attack_buff', 'power_flat', 'power_percent'])) {
+  if (def.type === 'Cherubim' || hasSomeEffect(def, ['cherubim_adjacent_seraphim_bonus', 'cherubim_seraphim_amp', 'cherubim_attack_buff'])) {
     return 'It strengthens the board once your setup pieces are already in place.';
   }
 

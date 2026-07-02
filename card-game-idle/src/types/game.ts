@@ -134,6 +134,9 @@ export interface TurnState {
   lastPlayedDefinitionId: string | null;
   turnNumber?: number;
   emberGroveEchoUsedThisTurn?: boolean;
+  // Flat additive added to each active Seraphim's per-play Oblivion payout for the rest of this turn.
+  // Accumulates each time a card resolves a `seraphim_bonus_amplifier` effect.
+  seraphimBonusAmp?: number;
   mulliganSelected: string[];
   pendingEffect: PendingEffect | null;
   lastResolvedSubtype?: CardSubtypeFilter | null;

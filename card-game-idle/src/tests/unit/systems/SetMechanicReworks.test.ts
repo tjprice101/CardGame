@@ -174,8 +174,8 @@ describe('Set mechanic reworks', () => {
     const sanctum = CardRegistry.get('btei-light-aureate-rapture');
     expect(sanctum?.baseStats?.bonusType).toBe('oblivion_per_card');
     expect(sanctum?.baseStats?.bonusValue).toBe(170);
-    expect(sanctum?.attacks?.unsynergized.baseOblivion).toBe(2770);
-    expect(sanctum?.attacks?.synergized.baseOblivion).toBe(4709);
+    expect(sanctum?.attacks?.unsynergized.baseOblivion).toBe(3393);
+    expect(sanctum?.attacks?.synergized.baseOblivion).toBe(5768);
 
     const blackout = CardRegistry.get('inf-celestial-blackout');
     expect(blackout?.effects?.some(effect => effect.type === 'chain_multiplier_set')).toBeDefined();

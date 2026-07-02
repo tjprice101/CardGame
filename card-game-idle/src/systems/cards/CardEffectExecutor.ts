@@ -1040,7 +1040,7 @@ export class CardEffectExecutor {
           const bloom = mutableTurn.bloom ?? 0;
           if (bloom > 0) {
             const bonus = Math.min(bloom * 0.015, 0.5);
-            mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: 1 + bonus });
+            oblivionBonus = Math.round(oblivionBonus * (1 + bonus));
             mutableTurn.bloom = 0;
           }
           break;
@@ -1378,17 +1378,13 @@ export class CardEffectExecutor {
           oblivionBonus += effect.value * multiplier;
           break;
 
-        case 'power_flat':
-          mutableBoard.activeBoardEffects.push({ type: 'power_flat', value: effect.value * multiplier });
-          break;
-        case 'power_percent':
-          mutableBoard.activeBoardEffects.push({ type: 'power_percent', value: effect.value * multiplier });
-          break;
         case 'score_multiplier':
-          mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: effect.value * multiplier });
+          // Add N% of this turn's accumulated Oblivion as a flat bonus on this play.
+          oblivionBonus += Math.round(mutableTurn.oblivionEarnedThisTurn * effect.value * multiplier / 100);
           break;
         case 'seraphim_bonus_amplifier':
-          mutableBoard.activeBoardEffects.push({ type: 'seraphim_bonus_amplifier', value: effect.value * multiplier });
+          // Flat additive: adds N to each active Seraphim's per-play Oblivion payout for the rest of this turn.
+          mutableTurn.seraphimBonusAmp = (mutableTurn.seraphimBonusAmp ?? 0) + effect.value * multiplier;
           break;
 
         // �E�E�E��E�E�E��E�E�E��E�E�E� Radiance effects (Light) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
@@ -1604,7 +1600,7 @@ export class CardEffectExecutor {
           oblivionBonus += Math.round(consume * effect.oblivionPerPollen * MECHANIC_OBLIVION_BUFF) * multiplier;
           const blooms = Math.max(0, mutableTurn.bloom ?? 0);
           if (effect.scoreMultPerBloom > 0 && blooms > 0) {
-            mutableBoard.activeBoardEffects.push({ type: 'score_multiplier', value: blooms * effect.scoreMultPerBloom });
+            oblivionBonus = Math.round(oblivionBonus * (1 + blooms * effect.scoreMultPerBloom));
           }
           break;
         }

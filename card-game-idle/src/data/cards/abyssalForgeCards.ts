@@ -1,4 +1,4 @@
-import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
+﻿import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
 
 // Abyssal Forge - The Reforging.
 // Set #15. Comes after Eternal Seas.
@@ -180,7 +180,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 1 }, { type: 'draw', value: 1 }],
     unsynergizedName: 'Lamp Strike',
     synergizedName: 'Choir Strike',
-    unsynergizedBase: 230, synergizedBase: 404,
+    unsynergizedBase: 336, synergizedBase: 489,
     unsynergizedCooldown: 4, synergizedCooldown: 5,
   }),
   buildSeraphim({
@@ -194,7 +194,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 1 }, { type: 'forge_recast_random', power: 0.25, count: 1 }],
     unsynergizedName: 'Slag Bite',
     synergizedName: 'Slag Rend',
-    unsynergizedBase: 242, synergizedBase: 416,
+    unsynergizedBase: 355, synergizedBase: 503,
     unsynergizedCooldown: 4, synergizedCooldown: 5,
   }),
   buildSeraphim({
@@ -208,7 +208,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 2 }, { type: 'forge_temper', targetMode: 'self', factor: 0.5 }],
     unsynergizedName: 'Saffron Coil',
     synergizedName: 'Tempered Coil',
-    unsynergizedBase: 360, synergizedBase: 620,
+    unsynergizedBase: 528, synergizedBase: 750,
     unsynergizedCooldown: 4, synergizedCooldown: 6,
   }),
   buildSeraphim({
@@ -222,7 +222,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 1 }, { type: 'forge_pearl_drop', value: 1 }, { type: 'forge_recast_last', power: 0.5 }],
     unsynergizedName: 'Pilgrim Bite',
     synergizedName: 'Coalfin Rend',
-    unsynergizedBase: 372, synergizedBase: 636,
+    unsynergizedBase: 544, synergizedBase: 770,
     unsynergizedCooldown: 4, synergizedCooldown: 6,
   }),
   buildSeraphim({
@@ -236,7 +236,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 2 }, { type: 'forge_recast_last', power: 0.75 }, { type: 'forge_pearl_drop', value: 1 }],
     unsynergizedName: 'Verdant Lure',
     synergizedName: 'Anglerfish Verdict',
-    unsynergizedBase: 620, synergizedBase: 1080,
+    unsynergizedBase: 908, synergizedBase: 1307,
     unsynergizedCooldown: 5, synergizedCooldown: 7,
   }),
   buildSeraphim({
@@ -250,7 +250,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 2 }, { type: 'forge_recast_last_n', count: 3, power: 0.5 }],
     unsynergizedName: 'Kraken Lash',
     synergizedName: 'Vermilion Verdict',
-    unsynergizedBase: 640, synergizedBase: 1108,
+    unsynergizedBase: 937, synergizedBase: 1341,
     unsynergizedCooldown: 5, synergizedCooldown: 7,
   }),
   buildSeraphim({
@@ -264,7 +264,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 3 }, { type: 'forge_pearl_drop', value: 2 }, { type: 'forge_recast_last_n', count: 2, power: 0.75 }, { type: 'draw', value: 1 }],
     unsynergizedName: 'Opal Glide',
     synergizedName: 'Opal Manta Verdict',
-    unsynergizedBase: 880, synergizedBase: 1500,
+    unsynergizedBase: 1289, synergizedBase: 1815,
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   }),
   buildSeraphim({
@@ -278,7 +278,7 @@ const baseSeraphim: SeraphimDefinition[] = [
     onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 3 }, { type: 'forge_anvil_seal', target: 'self', burstOblivion: 1400 }],
     unsynergizedName: 'Sapphire Exhale',
     synergizedName: 'Cobalt-Flame Verdict',
-    unsynergizedBase: 920, synergizedBase: 1572,
+    unsynergizedBase: 1347, synergizedBase: 1902,
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   })];
 
@@ -443,7 +443,7 @@ const baseAngels: AngelDefinition[] = [
     },
     primaryName: 'Covenant Strike',
     exaltedName: 'Heralded Verdict',
-    primaryBase: 418, exaltedBase: 738,
+    primaryBase: 506, exaltedBase: 893,
     primaryCooldown: 4, exaltedCooldown: 6,
     primaryScaling: 1.24, exaltedScaling: 1.42,
     baseStats: { basePower: 58, bonusType: 'oblivion_per_card', bonusValue: 40 },
@@ -464,7 +464,7 @@ const baseAngels: AngelDefinition[] = [
     },
     primaryName: 'Pearl Strike',
     exaltedName: 'Sovereign Verdict',
-    primaryBase: 430, exaltedBase: 758,
+    primaryBase: 520, exaltedBase: 917,
     primaryCooldown: 4, exaltedCooldown: 6,
     primaryScaling: 1.24, exaltedScaling: 1.43,
     baseStats: { basePower: 62, bonusType: 'oblivion_per_card', bonusValue: 44 },
@@ -485,7 +485,7 @@ const baseAngels: AngelDefinition[] = [
     },
     primaryName: 'Sapphire Cut',
     exaltedName: 'Cobalt-Flame Edict',
-    primaryBase: 520, exaltedBase: 912,
+    primaryBase: 629, exaltedBase: 1104,
     primaryCooldown: 5, exaltedCooldown: 7,
     primaryScaling: 1.29, exaltedScaling: 1.46,
     baseStats: { basePower: 74, bonusType: 'oblivion_per_card', bonusValue: 50 },
@@ -506,7 +506,7 @@ const baseAngels: AngelDefinition[] = [
     },
     primaryName: 'Saffron Lash',
     exaltedName: 'Coiled Verdict',
-    primaryBase: 532, exaltedBase: 928,
+    primaryBase: 644, exaltedBase: 1123,
     primaryCooldown: 5, exaltedCooldown: 7,
     primaryScaling: 1.30, exaltedScaling: 1.47,
     baseStats: { basePower: 78, bonusType: 'oblivion_per_card', bonusValue: 52 },
@@ -527,7 +527,7 @@ const baseAngels: AngelDefinition[] = [
     },
     primaryName: 'Reforged Cut',
     exaltedName: 'Iorek Verdict',
-    primaryBase: 702, exaltedBase: 1238,
+    primaryBase: 849, exaltedBase: 1498,
     primaryCooldown: 6, exaltedCooldown: 8,
     primaryScaling: 1.34, exaltedScaling: 1.52,
     baseStats: { basePower: 92, bonusType: 'oblivion_per_card', bonusValue: 65 },
@@ -548,7 +548,7 @@ const baseAngels: AngelDefinition[] = [
     },
     primaryName: 'Hue Slash',
     exaltedName: 'Unrecorded Verdict',
-    primaryBase: 720, exaltedBase: 1268,
+    primaryBase: 871, exaltedBase: 1534,
     primaryCooldown: 6, exaltedCooldown: 8,
     primaryScaling: 1.35, exaltedScaling: 1.53,
     baseStats: { basePower: 98, bonusType: 'oblivion_per_card', bonusValue: 70 },
@@ -571,7 +571,7 @@ const eternalCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Forge-beneath Strike',
     synergizedName: 'Elder Forge Verdict',
-    unsynergizedBase: 1010, synergizedBase: 1770,
+    unsynergizedBase: 1479, synergizedBase: 2142,
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   }),
   buildSeraphim({
@@ -590,7 +590,7 @@ const eternalCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Ouroglas Dream',
     synergizedName: 'Coiled Dream Verdict',
-    unsynergizedBase: 1040, synergizedBase: 1820,
+    unsynergizedBase: 1522, synergizedBase: 2202,
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   }),
   buildSeraphim({
@@ -608,7 +608,7 @@ const eternalCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Quench Cut',
     synergizedName: 'Drifted Verdict',
-    unsynergizedBase: 1060, synergizedBase: 1860,
+    unsynergizedBase: 1552, synergizedBase: 2251,
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   }),
   buildSeraphim({
@@ -626,7 +626,7 @@ const eternalCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Procession Cut',
     synergizedName: 'Nacre Procession Verdict',
-    unsynergizedBase: 1080, synergizedBase: 1900,
+    unsynergizedBase: 1581, synergizedBase: 2299,
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   }),
   buildSeraphim({
@@ -644,7 +644,7 @@ const eternalCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Pearled Verdict',
     synergizedName: 'Pantheon Verdict',
-    unsynergizedBase: 1110, synergizedBase: 1950,
+    unsynergizedBase: 1625, synergizedBase: 2360,
     unsynergizedCooldown: 6, synergizedCooldown: 8,
   })];
 
@@ -665,7 +665,7 @@ const infinityCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Uncoiled Strike',
     synergizedName: 'Coil Apocalypse',
-    unsynergizedBase: 2060, synergizedBase: 3600,
+    unsynergizedBase: 3017, synergizedBase: 4356,
     unsynergizedCooldown: 7, synergizedCooldown: 9,
   }),
   buildSeraphim({
@@ -684,7 +684,7 @@ const infinityCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Forge Itself',
     synergizedName: 'Abyssal Verdict',
-    unsynergizedBase: 2120, synergizedBase: 3700,
+    unsynergizedBase: 3104, synergizedBase: 4477,
     unsynergizedCooldown: 7, synergizedCooldown: 9,
   }),
   buildSeraphim({
@@ -702,7 +702,7 @@ const infinityCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Unrecorded Cut',
     synergizedName: 'Unrecorded Apocalypse',
-    unsynergizedBase: 2080, synergizedBase: 3640,
+    unsynergizedBase: 3046, synergizedBase: 4404,
     unsynergizedCooldown: 7, synergizedCooldown: 9,
   }),
   buildSeraphim({
@@ -720,7 +720,7 @@ const infinityCards: CardDefinition[] = [
     ],
     unsynergizedName: 'Coiled Fire',
     synergizedName: 'Covenant Apocalypse',
-    unsynergizedBase: 2160, synergizedBase: 3770,
+    unsynergizedBase: 3163, synergizedBase: 4562,
     unsynergizedCooldown: 7, synergizedCooldown: 9,
   }),
   buildSeraphim({
@@ -739,7 +739,7 @@ const infinityCards: CardDefinition[] = [
     ],
     unsynergizedName: 'World Verdict',
     synergizedName: 'Reforging of the World',
-    unsynergizedBase: 2240, synergizedBase: 3900,
+    unsynergizedBase: 3279, synergizedBase: 4719,
     unsynergizedCooldown: 7, synergizedCooldown: 9,
   })];
 

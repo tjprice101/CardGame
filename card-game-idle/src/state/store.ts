@@ -246,6 +246,7 @@ const defaultTurn: TurnState = {
   dfhAngelResonantCashoutUsed: false,
   dfhVeilAttackBonusByDefinition: {},
   equippedArtifactIds: [],
+  seraphimBonusAmp: 0,
 };
 
 const defaultProgress: ProgressState = {
@@ -1966,6 +1967,7 @@ function ensureNeutralityTurnState(turn: TurnState): void {
   if (turn.neutralityEquilibriumSentinelTempoUsed === undefined) turn.neutralityEquilibriumSentinelTempoUsed = false;
   if (turn.neutralityTriggeredEffects === undefined) turn.neutralityTriggeredEffects = [];
   if (turn.lastPlayedElement === undefined) turn.lastPlayedElement = null;
+  if (turn.seraphimBonusAmp === undefined) turn.seraphimBonusAmp = 0;
 }
 
 function ensurePyroTurnState(turn: TurnState): void {
@@ -3874,6 +3876,17 @@ function awardOblivionForCardPlay(
     totalAward += cherubimOblivionBonus;
   }
 
+  // Active Seraphim per-card Oblivion bonus (oblivion_per_card bonusType): every card play earns this.
+  if (s.computedStats.oblivionPerCardBonus > 0) {
+    totalAward += Math.round(s.computedStats.oblivionPerCardBonus);
+  }
+
+  // Seraphim bonus amplifier: +N Oblivion per active Seraphim this play (from seraphim_bonus_amplifier effects).
+  const seraphimAmp = s.turn.seraphimBonusAmp ?? 0;
+  if (seraphimAmp > 0 && s.computedStats.activeSynergies > 0) {
+    totalAward += Math.round(seraphimAmp * s.computedStats.activeSynergies);
+  }
+
   if (sourceDef?.element === 'Neutrality' && totalAward > 0) {
     const resolvedClass = actionClass ?? classifyActionClass(sourceDef, getDefinitionOnPlayEffects(sourceDef));
     const attenuationMultiplier = applyAttenuationMultiplier(s, resolvedClass);
@@ -3921,11 +3934,15 @@ function awardOblivionForCardPlay(
     const channelCount = new Set(s.turn.prismaticDistinctChannels ?? []).size;
     const refractionDepth = s.turn.prismaticRefractionDepth ?? 0;
     const nodeCharges = s.turn.prismaticNodeCharges ?? 0;
+    const prismaticLight = s.turn.prismaticLight ?? 0;
+    const resonanceCharge = s.turn.prismaticResonanceCharge ?? 0;
     const channelMultiplier = 1 + Math.min(0.42, channelCount * 0.07);
     const refractionMultiplier = 1 + Math.min(0.36, refractionDepth * 0.05);
     const nodeMultiplier = 1 + Math.min(0.18, nodeCharges * 0.05);
+    const prismaticLightMultiplier = 1 + Math.min(0.15, prismaticLight * 0.015);
+    const resonanceMultiplier = 1 + Math.min(0.12, resonanceCharge * 0.04);
     const fullFireMultiplier = getPrismaticFullFireMultiplier(s, sourceDef);
-    totalAward = Math.round(totalAward * channelMultiplier * refractionMultiplier * nodeMultiplier * fullFireMultiplier);
+    totalAward = Math.round(totalAward * channelMultiplier * refractionMultiplier * nodeMultiplier * prismaticLightMultiplier * resonanceMultiplier * fullFireMultiplier);
     if (sourceDef.rarity === 'Infinite') {
       totalAward += channelCount * 40;
     }
@@ -4264,6 +4281,14 @@ function applyCherubimPassiveEffects(s: Store): void {
               break;
             case 'arcticCharge':
               s.turn.arcticCharge = Math.max(0, (s.turn.arcticCharge ?? 0) + (effect as { value: number }).value);
+              break;
+            case 'absol': {
+              const ctr = (s.turn.secondaryCounters ?? (s.turn.secondaryCounters = {})) as Record<string, number>;
+              ctr['absol'] = (ctr['absol'] ?? 0) + effect.value;
+              break;
+            }
+            case 'undertow':
+              s.turn.eternalSeasUndertow = (s.turn.eternalSeasUndertow ?? 0) + effect.value;
               break;
           }
           break;

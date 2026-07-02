@@ -77,6 +77,9 @@ export default function AngelStatPanel() {
           {stats.activeSynergies > 0 && (
             <div style={styles.stat}>+{formatNumber(stats.oblivionPerCardBonus)} Oblivion/card</div>
           )}
+          {(turn.seraphimBonusAmp ?? 0) > 0 && (
+            <div style={styles.stat}>+{formatNumber(turn.seraphimBonusAmp!)} per Seraphim payout this turn</div>
+          )}
           {turn.oblivionEarnedThisTurn > 0 && (
             <div style={styles.stat}>+{formatNumber(turn.oblivionEarnedThisTurn)} this turn</div>
           )}

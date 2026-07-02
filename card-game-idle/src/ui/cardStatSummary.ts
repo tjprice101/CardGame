@@ -333,7 +333,7 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
       if (runtimeScaled) return runtimeScaled;
       return `+${effect.value} Oblivion`;
     }
-    case 'score_flat': return `+${effect.value}% total Oblivion this turn`;
+    case 'score_flat': return `+${effect.value} Oblivion`;
     case 'radiance_gain': return `Gain ${effect.value} Radiance`;
     case 'radiance_spend': return `Spend ${effect.value} Radiance`;
     case 'pyro_heat_gain': return `Gain ${effect.value} Heat`;
@@ -370,10 +370,8 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'trail_spend': return `Spend ${effect.value} Trail`;
     case 'strain_gain': return `Gain ${effect.value} Strain`;
     case 'strain_vent': return `Vent ${effect.value} Strain`;
-    case 'power_flat': return `Your board gains +${effect.value} power`;
-    case 'power_percent': return `Your board gains +${effect.value}% power`;
-    case 'score_multiplier': return `Gain +${effect.value}% total Oblivion this turn`;
-    case 'seraphim_bonus_amplifier': return `Seraphim bonuses are amplified by +${effect.value}`;
+    case 'score_multiplier': return `+${effect.value}% of this turn's Oblivion`;
+    case 'seraphim_bonus_amplifier': return `Each active Seraphim's payout +${effect.value} Oblivion this turn`;
     case 'patience_gain_all': return `All Seraphim on board gain +${effect.value} Patience`;
     case 'patience_double_all': return 'Double all Patience on the board';
     case 'neutrality_equilibrium_sigil_gain': return `Gain ${effect.value} Equilibrium Sigil${effect.value === 1 ? '' : 's'}`;

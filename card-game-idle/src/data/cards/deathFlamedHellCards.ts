@@ -1,4 +1,4 @@
-import type { AngelDefinition, AttackCost, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
+﻿import type { AngelDefinition, AttackCost, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
 
 // Death-flamed Hell - Funeral Procession + Veil Rite.
 // Set #16. Base cards run the Funeral Procession loop (flip between veiled and revealed faces while building Pyre Embers and Cinder Crowns).
@@ -24,6 +24,8 @@ type SeraphSpec = {
   synergizedCooldown: number;
   unsynergizedCosts?: AttackCost[];
   synergizedCosts?: AttackCost[];
+  unsynergizedDescription?: string;
+  synergizedDescription?: string;
 };
 
 type CherubSpec = {
@@ -66,6 +68,8 @@ type AngelSpec = {
   primaryScaling: number;
   exaltedScaling: number;
   baseStats: AngelDefinition['baseStats'];
+  primaryDescription?: string;
+  exaltedDescription?: string;
 };
 
 function buildSeraphim(spec: SeraphSpec): SeraphimDefinition {
@@ -88,7 +92,7 @@ function buildSeraphim(spec: SeraphSpec): SeraphimDefinition {
         id: `${spec.definitionId}:unsyn`,
         label: 'Unsynergized',
         name: spec.unsynergizedName,
-        description: 'Pyre-lit strike.',
+        description: spec.unsynergizedDescription ?? 'Pyre-lit strike.',
         baseOblivion: spec.unsynergizedBase,
         cooldownCards: spec.unsynergizedCooldown,
         costs: spec.unsynergizedCosts ?? [],
@@ -97,7 +101,7 @@ function buildSeraphim(spec: SeraphSpec): SeraphimDefinition {
         id: `${spec.definitionId}:syn`,
         label: 'Synergized',
         name: spec.synergizedName,
-        description: 'Ash-march verdict.',
+        description: spec.synergizedDescription ?? 'Ash-march verdict.',
         baseOblivion: spec.synergizedBase,
         cooldownCards: spec.synergizedCooldown,
         costs: spec.synergizedCosts ?? [],
@@ -152,7 +156,7 @@ function buildAngel(spec: AngelSpec): AngelDefinition {
         id: `${spec.definitionId}:primary`,
         label: 'Primary',
         name: spec.primaryName,
-        description: 'Death-flame strike.',
+        description: spec.primaryDescription ?? 'Death-flame strike.',
         baseOblivion: spec.primaryBase,
         cooldownCards: spec.primaryCooldown,
         costs: spec.primaryCosts ?? [],
@@ -161,7 +165,7 @@ function buildAngel(spec: AngelSpec): AngelDefinition {
         id: `${spec.definitionId}:exalted`,
         label: 'Exalted',
         name: spec.exaltedName,
-        description: 'Pyre-throned verdict.',
+        description: spec.exaltedDescription ?? 'Pyre-throned verdict.',
         baseOblivion: spec.exaltedBase,
         cooldownCards: spec.exaltedCooldown,
         costs: spec.exaltedCosts ?? [],
@@ -190,8 +194,10 @@ const baseSeraphim: SeraphimDefinition[] = [
       },
     ],
     unsynergizedName: 'Soot Cut', synergizedName: 'Veiled March',
-    unsynergizedBase: 320, synergizedBase: 540,
+    unsynergizedBase: 664, synergizedBase: 778,
     unsynergizedCooldown: 3, synergizedCooldown: 5,
+    unsynergizedDescription: '664 base Oblivion · 3 cards cooldown',
+    synergizedDescription: '778 base Oblivion · 5 cards cooldown · Requires Angel',
   }),
   buildSeraphim({
     definitionId: 'dfh-ser-last-breath-standard-bearer',
@@ -203,8 +209,10 @@ const baseSeraphim: SeraphimDefinition[] = [
     bonusValue: 22,
     onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 1 }, { type: 'set_secondary_gain', kind: 'pyre', value: 1 }],
     unsynergizedName: 'Standard Strike', synergizedName: 'Last-breath Verdict',
-    unsynergizedBase: 360, synergizedBase: 620,
+    unsynergizedBase: 746, synergizedBase: 893,
     unsynergizedCooldown: 4, synergizedCooldown: 6,
+    unsynergizedDescription: '746 base Oblivion · 4 cards cooldown',
+    synergizedDescription: '893 base Oblivion · 6 cards cooldown · Requires Angel',
   }),
   buildSeraphim({
     definitionId: 'dfh-ser-lullaby-forgot-censer',
@@ -216,10 +224,12 @@ const baseSeraphim: SeraphimDefinition[] = [
     bonusValue: 16,
     onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'discard_draw', discard: 1, draw: 1 }],
     unsynergizedName: 'Lullaby Cut', synergizedName: 'Forgot Hymn',
-    unsynergizedBase: 340, synergizedBase: 610,
+    unsynergizedBase: 706, synergizedBase: 878,
     unsynergizedCooldown: 2, synergizedCooldown: 5,
     unsynergizedCosts: [{ type: 'discard_from_hand', value: 1 }],
     synergizedCosts: [{ type: 'discard_from_hand', value: 1 }],
+    unsynergizedDescription: '706 base Oblivion · 2 cards cooldown · Cost: discard 1 card',
+    synergizedDescription: '878 base Oblivion · 5 cards cooldown · Requires Angel · Cost: discard 1 card',
   }),
   buildSeraphim({
     definitionId: 'dfh-ser-ash-marrow-reaver',
@@ -231,8 +241,10 @@ const baseSeraphim: SeraphimDefinition[] = [
     bonusValue: 18,
     onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'discard_draw', discard: 1, draw: 1 }],
     unsynergizedName: 'Marrow Rend', synergizedName: 'Ash-Marrow Verdict',
-    unsynergizedBase: 420, synergizedBase: 760,
+    unsynergizedBase: 871, synergizedBase: 1094,
     unsynergizedCooldown: 4, synergizedCooldown: 8,
+    unsynergizedDescription: '871 base Oblivion · 4 cards cooldown',
+    synergizedDescription: '1094 base Oblivion · 8 cards cooldown · Requires Angel',
   }),
   buildSeraphim({
     definitionId: 'dfh-ser-choirhouse-cantor',
@@ -244,8 +256,10 @@ const baseSeraphim: SeraphimDefinition[] = [
     bonusValue: 34,
     onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 4 }],
     unsynergizedName: 'Choir Note', synergizedName: 'Cantor Verdict',
-    unsynergizedBase: 460, synergizedBase: 820,
+    unsynergizedBase: 953, synergizedBase: 1181,
     unsynergizedCooldown: 5, synergizedCooldown: 8,
+    unsynergizedDescription: '953 base Oblivion · 5 cards cooldown',
+    synergizedDescription: '1181 base Oblivion · 8 cards cooldown · Requires Angel',
   }),
   buildSeraphim({
     definitionId: 'dfh-ser-pyrelungs-vassal',
@@ -257,8 +271,10 @@ const baseSeraphim: SeraphimDefinition[] = [
     bonusValue: 20,
     onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 2 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }],
     unsynergizedName: 'Vassal Lash', synergizedName: 'Pyrelung Verdict',
-    unsynergizedBase: 500, synergizedBase: 900,
+    unsynergizedBase: 1037, synergizedBase: 1296,
     unsynergizedCooldown: 5, synergizedCooldown: 9,
+    unsynergizedDescription: '1037 base Oblivion · 5 cards cooldown',
+    synergizedDescription: '1296 base Oblivion · 9 cards cooldown · Requires Angel',
   }),
   buildSeraphim({
     definitionId: 'dfh-ser-sablecrown-herald',
@@ -270,8 +286,10 @@ const baseSeraphim: SeraphimDefinition[] = [
     bonusValue: 24,
     onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }, { type: 'set_secondary_gain', kind: 'pyre', value: 2 }],
     unsynergizedName: 'Sable Edict', synergizedName: 'Herald of the Crown',
-    unsynergizedBase: 620, synergizedBase: 1080,
+    unsynergizedBase: 1286, synergizedBase: 1555,
     unsynergizedCooldown: 6, synergizedCooldown: 11,
+    unsynergizedDescription: '1286 base Oblivion · 6 cards cooldown',
+    synergizedDescription: '1555 base Oblivion · 11 cards cooldown · Requires Angel',
   }),
   buildSeraphim({
     definitionId: 'dfh-ser-khorr-vael-no-face',
@@ -283,8 +301,10 @@ const baseSeraphim: SeraphimDefinition[] = [
     bonusValue: 90,
     onPlayEffects: [{ type: 'eternal_stack_gain', stack: 'pyre', value: 5 }, { type: 'set_secondary_gain', kind: 'pyre', value: 3 }],
     unsynergizedName: 'No-face Strike', synergizedName: 'Faceless Verdict',
-    unsynergizedBase: 760, synergizedBase: 1320,
+    unsynergizedBase: 1575, synergizedBase: 1901,
     unsynergizedCooldown: 8, synergizedCooldown: 13,
+    unsynergizedDescription: '1575 base Oblivion · 8 cards cooldown',
+    synergizedDescription: '1901 base Oblivion · 13 cards cooldown · Requires Angel',
   })];
 
 // Cherubim (10).
@@ -715,10 +735,12 @@ const baseAngels: AngelDefinition[] = [
       ],
     },
     primaryName: 'Wickless Cut', exaltedName: 'Mournshade Verdict',
-    primaryBase: 860, exaltedBase: 1460,
+    primaryBase: 1238, exaltedBase: 2102,
     primaryCooldown: 8, exaltedCooldown: 13,
     primaryCosts: [{ type: 'discard_from_hand', value: 1 }],
     exaltedCosts: [{ type: 'discard_from_hand', value: 2 }],
+    primaryDescription: '1238 base Oblivion · 8 cards cooldown · Cost: discard 1 card',
+    exaltedDescription: '2102 base Oblivion · 13 cards cooldown · Cost: discard 2 cards',
     primaryScaling: 1.35, exaltedScaling: 1.53,
     baseStats: { basePower: 92, bonusType: 'oblivion_per_card', bonusValue: 9 },
   }),
@@ -744,10 +766,12 @@ const baseAngels: AngelDefinition[] = [
       ],
     },
     primaryName: 'Breathless Strike', exaltedName: 'Pyrelung Verdict',
-    primaryBase: 900, exaltedBase: 1520,
+    primaryBase: 1296, exaltedBase: 2189,
     primaryCooldown: 8, exaltedCooldown: 13,
     primaryCosts: [{ type: 'discard_from_hand', value: 1 }],
     exaltedCosts: [{ type: 'discard_from_hand', value: 2 }],
+    primaryDescription: '1296 base Oblivion · 8 cards cooldown · Cost: discard 1 card',
+    exaltedDescription: '2189 base Oblivion · 13 cards cooldown · Cost: discard 2 cards',
     primaryScaling: 1.36, exaltedScaling: 1.54,
     baseStats: { basePower: 98, bonusType: 'oblivion_per_card', bonusValue: 62 },
   }),
@@ -769,10 +793,12 @@ const baseAngels: AngelDefinition[] = [
       ],
     },
     primaryName: 'Sable Edict', exaltedName: 'Unnamed Verdict',
-    primaryBase: 940, exaltedBase: 1580,
+    primaryBase: 1354, exaltedBase: 2275,
     primaryCooldown: 8, exaltedCooldown: 14,
     primaryCosts: [{ type: 'discard_from_hand', value: 1 }],
     exaltedCosts: [{ type: 'discard_from_hand', value: 2 }],
+    primaryDescription: '1354 base Oblivion · 8 cards cooldown · Cost: discard 1 card',
+    exaltedDescription: '2275 base Oblivion · 14 cards cooldown · Cost: discard 2 cards',
     primaryScaling: 1.37, exaltedScaling: 1.55,
     baseStats: { basePower: 104, bonusType: 'oblivion_per_card', bonusValue: 11 },
   }),
@@ -797,10 +823,12 @@ const baseAngels: AngelDefinition[] = [
       ],
     },
     primaryName: 'Faceless Cut', exaltedName: 'Veil-iorn Verdict',
-    primaryBase: 960, exaltedBase: 1600,
+    primaryBase: 1382, exaltedBase: 2304,
     primaryCooldown: 9, exaltedCooldown: 14,
     primaryCosts: [{ type: 'discard_from_hand', value: 1 }],
     exaltedCosts: [{ type: 'discard_from_hand', value: 2 }],
+    primaryDescription: '1382 base Oblivion · 9 cards cooldown · Cost: discard 1 card',
+    exaltedDescription: '2304 base Oblivion · 14 cards cooldown · Cost: discard 2 cards',
     primaryScaling: 1.38, exaltedScaling: 1.56,
     baseStats: { basePower: 112, bonusType: 'oblivion_per_card', bonusValue: 72 },
   }),
@@ -819,10 +847,12 @@ const baseAngels: AngelDefinition[] = [
       effects: [{ type: 'dfh_crown_cashout', oblivionPerCrown: 170, consume: 12 }],
     },
     primaryName: 'Council Edict', exaltedName: 'Seven-Choir Apex',
-    primaryBase: 980, exaltedBase: 1620,
+    primaryBase: 1411, exaltedBase: 2333,
     primaryCooldown: 9, exaltedCooldown: 14,
     primaryCosts: [{ type: 'discard_from_hand', value: 1 }],
     exaltedCosts: [{ type: 'discard_from_hand', value: 2 }],
+    primaryDescription: '1411 base Oblivion · 9 cards cooldown · Cost: discard 1 card',
+    exaltedDescription: '2333 base Oblivion · 14 cards cooldown · Cost: discard 2 cards',
     primaryScaling: 1.40, exaltedScaling: 1.58,
     baseStats: { basePower: 124, bonusType: 'oblivion_per_card', bonusValue: 14 },
   })];
@@ -843,10 +873,12 @@ const eternalCards: CardDefinition[] = [
       { type: 'dfh_veil_marks_attack_bonus', perMark: 95, consumeMax: 8, mode: 'synergized' },
     ],
     unsynergizedName: 'Garrison Strike', synergizedName: 'Skull-ceiling Verdict',
-    unsynergizedBase: 980, synergizedBase: 1580,
+    unsynergizedBase: 2032, synergizedBase: 2275,
     unsynergizedCooldown: 9, synergizedCooldown: 14,
     unsynergizedCosts: [{ type: 'discard_from_hand', value: 1 }],
     synergizedCosts: [{ type: 'discard_from_hand', value: 2 }],
+    unsynergizedDescription: '2032 base Oblivion · 9 cards cooldown · Cost: discard 1 card',
+    synergizedDescription: '2275 base Oblivion · 14 cards cooldown · Requires Angel · Cost: discard 2 cards',
   }),
   buildCherubim({
     definitionId: 'dfh-et-othraks-eternal-communion',
@@ -914,10 +946,12 @@ const infinityCards: CardDefinition[] = [
       { type: 'dfh_veil_marks_attack_bonus', perMark: 120, consumeMax: 10, mode: 'synergized' },
     ],
     unsynergizedName: 'Vakhresh Marches', synergizedName: 'March of the Dead-flame',
-    unsynergizedBase: 1480, synergizedBase: 2260,
+    unsynergizedBase: 3069, synergizedBase: 3254,
     unsynergizedCooldown: 13, synergizedCooldown: 15,
     unsynergizedCosts: [{ type: 'discard_from_hand', value: 2 }],
     synergizedCosts: [{ type: 'discard_from_hand', value: 4 }],
+    unsynergizedDescription: '3069 base Oblivion · 13 cards cooldown · Cost: discard 2 cards',
+    synergizedDescription: '3254 base Oblivion · 15 cards cooldown · Requires Angel · Cost: discard 4 cards',
   }),
   buildCherubim({
     definitionId: 'dfh-inf-final-communion-of-halos',
