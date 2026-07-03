@@ -2,3 +2,5 @@
 .env
 .env.local
 .env.*.local
+# Dev/audit scripts — not part of the shipped game.
+scripts/
