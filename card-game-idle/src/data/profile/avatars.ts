@@ -73,9 +73,10 @@ function _sigilByIds(ids: readonly string[]): (p: ProgressState) => boolean {
 }
 
 function _sigilByPrefix(prefix: string): (p: ProgressState) => boolean {
-  return (p) => CardRegistry.getAll().some(card =>
-    card.definitionId.startsWith(prefix) && getEverInfiniteCount(p, card.definitionId) > 0,
-  );
+  // Pre-filter the registry at declaration time so the closure only holds a
+  // small frozen array instead of scanning all cards on every unlock check.
+  const matching = Object.freeze(CardRegistry.getAll().filter(card => card.definitionId.startsWith(prefix)).map(card => card.definitionId));
+  return (p) => matching.some(id => getEverInfiniteCount(p, id) > 0);
 }
 
 // ── Shared (core) Infinite card sets, precomputed at module load ──────────
@@ -97,6 +98,12 @@ const INF_THORNBOUND = _infByElement('Thornbound');
 const INF_MECHANICAL = _infByElement('Mechanical');
 const INF_PRISMATIC  = _infByElement('Prismatic');
 const INF_ALL_CORE   = Object.freeze(_coreInfiniteCards.map(c => c.definitionId));
+
+// Pre-computed Eternal card ID list so isUnlocked closures don't scan the
+// full registry on every recompute() latch cycle.
+const _eternalIds = Object.freeze(
+  CardRegistry.getAll().filter(c => c.definitionId.startsWith('btei-')).map(c => c.definitionId),
+);
 
 // ── Eternal card ID sets per set, precomputed at module load ─────────────
 
@@ -430,9 +437,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '🌊',
     imageUrl: '/assets/profile-pictures/master-eternal-seas.png',
     description: 'Collect every card in the Eternal Seas set.',
-      isUnlocked: (p: ProgressState) => CardRegistry.getAll().some(card =>
-        card.definitionId.startsWith('btei-') && getEverCollectionCount(p, card.definitionId) > 0,
-      ),
+      isUnlocked: (p: ProgressState) => _eternalIds.some(id => getEverCollectionCount(p, id) > 0),
   },
   {
     id: 'pic-master-abyssal-forge',
@@ -507,9 +512,7 @@ export const AVATARS: AvatarDefinition[] = [
     glyph: '✨',
     imageUrl: '/assets/profile-pictures/classic-eternal.png',
     description: 'Obtain any Eternal card.',
-    isUnlocked: (p: ProgressState) => CardRegistry.getAll().some(card =>
-      card.definitionId.startsWith('btei-') && getEverCollectionCount(p, card.definitionId) > 0,
-    ),
+    isUnlocked: (p: ProgressState) => _eternalIds.some(id => getEverCollectionCount(p, id) > 0),
   },
   {
     id: 'pic-classic-boss-slayer',
@@ -580,6 +583,14 @@ function _getPersistedUnlockSet(progress: ProgressState): Set<string> {
 export function latchUnlockedAvatars(progress: ProgressState): boolean {
   const unlockSet = _getPersistedUnlockSet(progress);
   const before = unlockSet.size;
+
+  // Fast path: if all avatars are already latched nothing can change.
+  if (unlockSet.size >= AVATARS.length) {
+    const sanitizedCount = Array.isArray(progress.profile.unlockedAvatarIds)
+      ? progress.profile.unlockedAvatarIds.filter((id): id is string => typeof id === 'string').length
+      : 0;
+    if (sanitizedCount === unlockSet.size) return false;
+  }
 
   for (const avatar of AVATARS) {
     if (avatar.isUnlocked(progress)) unlockSet.add(avatar.id);

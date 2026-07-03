@@ -29,7 +29,10 @@ export default function ProfilePage({ onClose }: Props) {
   const setSignatureCard = useStore(s => s.setSignatureCard);
 
   const unlockedTitles = useMemo(
-    () => TITLE_BADGES.filter(t => t.isUnlocked(progress)),
+    // Use the persisted achievementUnlocks ledger (maintained by latchUnlockedAchievements)
+    // instead of re-evaluating every badge predicate on each render. This is O(1) per
+    // badge (hash-map lookup) vs O(n * predicate cost) previously.
+    () => TITLE_BADGES.filter(t => progress.achievementUnlocks?.[t.id] === true || t.isUnlocked(progress)),
     [progress],
   );
 
@@ -41,9 +44,11 @@ export default function ProfilePage({ onClose }: Props) {
     () => Object.values(progress.collection).reduce((a, b) => a + b, 0),
     [progress.collection],
   );
-  const distinctCards = Object.keys(progress.collection).length;
-  const distinctBosses = Object.keys(progress.bossClearCounts).length;
-  const totalBossClears = Object.values(progress.bossClearCounts).reduce((a, b) => a + b, 0);
+  const { distinctCards, distinctBosses, totalBossClears } = useMemo(() => ({
+    distinctCards: Object.keys(progress.collection).length,
+    distinctBosses: Object.keys(progress.bossClearCounts).length,
+    totalBossClears: Object.values(progress.bossClearCounts).reduce((a, b) => a + b, 0),
+  }), [progress.collection, progress.bossClearCounts]);
 
   function commitName() {
     if (nameDraft.trim()) setPlayerName(nameDraft);

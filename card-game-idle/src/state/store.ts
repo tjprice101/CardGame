@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { cloneState } from '@/utils/stateClone';
 import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
   DeckState, ExtraDeckEntry, GameState, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
@@ -930,6 +931,10 @@ function ensureSocialStats(progress: ProgressState): NonNullable<ProgressState['
 
 function latchUnlockedAchievements(progress: ProgressState): void {
   if (!progress.achievementUnlocks) progress.achievementUnlocks = {};
+  // Fast path: once every badge that can ever unlock has been latched there is
+  // nothing left to scan.  On a fully-completed save this avoids iterating
+  // hundreds of TITLE_BADGES entries on every recompute() call.
+  if (Object.keys(progress.achievementUnlocks).length >= TITLE_BADGES.length) return;
   for (const badge of TITLE_BADGES) {
     if (progress.achievementUnlocks[badge.id]) continue;
     if (badge.isUnlocked(progress)) progress.achievementUnlocks[badge.id] = true;
@@ -1165,7 +1170,7 @@ function buildNeutralityTutorialDeck(
   }
 
   const rarity = tier === 'eternal' ? 'Eternal' : 'Infinite';
-  const pool = CardRegistry.getAll().filter(def => def.element === 'Neutrality' && def.rarity === rarity);
+  const pool = CardRegistry.getByElementAndRarity('Neutrality', rarity);
   const mainPool = pool.filter(def => def.type !== 'Angel');
   const deckList = buildPracticeDeckListFromPool(mainPool, 45);
   const extraDeck = buildPracticeExtraDeckFromPool(pool);
@@ -6728,10 +6733,10 @@ export const useStore = create<Store>()(
       set(s => {
         if (s.battleground.mode !== 'idle') return;
         const savedState: BattlegroundSavedGameState = {
-          deck: JSON.parse(JSON.stringify(s.deck)) as DeckState,
-          board: JSON.parse(JSON.stringify(s.board)) as BoardState,
-          turn: JSON.parse(JSON.stringify(s.turn)) as TurnState,
-          progress: JSON.parse(JSON.stringify(s.progress)) as ProgressState,
+          deck: cloneState(s.deck),
+          board: cloneState(s.board),
+          turn: cloneState(s.turn),
+          progress: cloneState(s.progress),
           settings: { ...s.settings },
         };
         s.battleground = {
@@ -6852,10 +6857,10 @@ export const useStore = create<Store>()(
         if (!savedDeck) return;
 
         const savedState: SavedGameState = {
-          deck: JSON.parse(JSON.stringify(s.deck)) as DeckState,
-          board: JSON.parse(JSON.stringify(s.board)) as BoardState,
-          turn: JSON.parse(JSON.stringify(s.turn)) as TurnState,
-          progress: JSON.parse(JSON.stringify(s.progress)) as ProgressState,
+          deck: cloneState(s.deck),
+          board: cloneState(s.board),
+          turn: cloneState(s.turn),
+          progress: cloneState(s.progress),
           settings: { ...s.settings },
         };
 
@@ -6947,10 +6952,10 @@ export const useStore = create<Store>()(
 
       set(s => {
         const savedState: SavedGameState = {
-          deck: JSON.parse(JSON.stringify(s.deck)) as typeof s.deck,
-          board: JSON.parse(JSON.stringify(s.board)) as typeof s.board,
-          turn: JSON.parse(JSON.stringify(s.turn)) as typeof s.turn,
-          progress: JSON.parse(JSON.stringify(s.progress)) as typeof s.progress,
+          deck: cloneState(s.deck),
+          board: cloneState(s.board),
+          turn: cloneState(s.turn),
+          progress: cloneState(s.progress),
           settings: { ...s.settings },
         };
 
@@ -7012,10 +7017,10 @@ export const useStore = create<Store>()(
       set(s => {
         // Save current game state so we can restore it after the raid.
         const savedState: SavedGameState = {
-          deck: JSON.parse(JSON.stringify(s.deck)) as typeof s.deck,
-          board: JSON.parse(JSON.stringify(s.board)) as typeof s.board,
-          turn: JSON.parse(JSON.stringify(s.turn)) as typeof s.turn,
-          progress: JSON.parse(JSON.stringify(s.progress)) as typeof s.progress,
+          deck: cloneState(s.deck),
+          board: cloneState(s.board),
+          turn: cloneState(s.turn),
+          progress: cloneState(s.progress),
           settings: { ...s.settings },
         };
 
@@ -7177,10 +7182,10 @@ export const useStore = create<Store>()(
         const trialMode: 'solo' = 'solo';
 
         const savedState: SavedGameState = {
-          deck: JSON.parse(JSON.stringify(s.deck)) as DeckState,
-          board: JSON.parse(JSON.stringify(s.board)) as BoardState,
-          turn: JSON.parse(JSON.stringify(s.turn)) as TurnState,
-          progress: JSON.parse(JSON.stringify(s.progress)) as ProgressState,
+          deck: cloneState(s.deck),
+          board: cloneState(s.board),
+          turn: cloneState(s.turn),
+          progress: cloneState(s.progress),
           settings: { ...s.settings },
         };
 
@@ -7215,10 +7220,10 @@ export const useStore = create<Store>()(
         const def = buildNeutralityTutorialDeck(tier);
 
         const savedState: SavedGameState = {
-          deck: JSON.parse(JSON.stringify(s.deck)) as DeckState,
-          board: JSON.parse(JSON.stringify(s.board)) as BoardState,
-          turn: JSON.parse(JSON.stringify(s.turn)) as TurnState,
-          progress: JSON.parse(JSON.stringify(s.progress)) as ProgressState,
+          deck: cloneState(s.deck),
+          board: cloneState(s.board),
+          turn: cloneState(s.turn),
+          progress: cloneState(s.progress),
           settings: { ...s.settings },
         };
 
@@ -7251,10 +7256,10 @@ export const useStore = create<Store>()(
         if (s.trialDeck.mode !== 'active') return;
         const saved = s.trialDeck.savedGameState;
         if (saved) {
-          s.deck = JSON.parse(JSON.stringify(saved.deck)) as DeckState;
-          s.board = JSON.parse(JSON.stringify(saved.board)) as BoardState;
-          s.turn = JSON.parse(JSON.stringify(saved.turn)) as TurnState;
-          s.progress = JSON.parse(JSON.stringify(saved.progress)) as ProgressState;
+          s.deck = cloneState(saved.deck);
+          s.board = cloneState(saved.board);
+          s.turn = cloneState(saved.turn);
+          s.progress = cloneState(saved.progress);
           s.settings = { ...saved.settings };
         }
         s.trialDeck = { ...defaultTrialDeckState };

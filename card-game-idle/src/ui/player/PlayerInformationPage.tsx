@@ -162,11 +162,13 @@ export default function PlayerInformationPage({
     () => Object.values(progress.collection).reduce((a, b) => a + b, 0),
     [progress.collection],
   );
-  const distinctCards = Object.keys(progress.collection).length;
-  const distinctBosses = Object.keys(progress.bossClearCounts).length;
-  const totalBossClears = Object.values(progress.bossClearCounts).reduce((a, b) => a + b, 0);
+  const { distinctCards, distinctBosses, totalBossClears } = useMemo(() => ({
+    distinctCards: Object.keys(progress.collection).length,
+    distinctBosses: Object.keys(progress.bossClearCounts).length,
+    totalBossClears: Object.values(progress.bossClearCounts).reduce((a, b) => a + b, 0),
+  }), [progress.collection, progress.bossClearCounts]);
   const unlockedTitles = useMemo(
-    () => TITLE_BADGES.filter(tb => tb.isUnlocked(progress)),
+    () => TITLE_BADGES.filter(tb => progress.achievementUnlocks?.[tb.id] === true || tb.isUnlocked(progress)),
     [progress],
   );
 

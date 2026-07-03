@@ -95,14 +95,23 @@ export function getResonanceContributionForCount(count: number): number {
   return contribution;
 }
 
+// Module-level memo: skip the full scan when cardPlayCounts hasn't changed.
+let _resonanceMemoRef: Record<string, number> | null = null;
+let _resonanceMemoScore = 0;
+
 export function computeGlobalResonanceScore(progress: ProgressState): number {
   const counts = progress.cardPlayCounts ?? {};
+  // Zustand/Immer creates a new object reference whenever cardPlayCounts changes.
+  // If the reference is the same as last time we computed, return the cached result.
+  if (counts === _resonanceMemoRef) return _resonanceMemoScore;
+  _resonanceMemoRef = counts;
   let score = 0;
   for (const definitionId of Object.keys(counts)) {
     const playCount = counts[definitionId] ?? 0;
     if (playCount <= 0) continue;
     score += getResonanceContributionForCount(playCount);
   }
+  _resonanceMemoScore = score;
   return score;
 }
 

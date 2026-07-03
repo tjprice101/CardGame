@@ -606,6 +606,33 @@ export class SaveManager {
   }
 
   /**
+   * Schedule an autosave to run during browser idle time so the expensive
+   * JSON.stringify + LZ-compress + SHA-256 encoding does not block the main
+   * thread while the player is actively playing.
+   *
+   * Falls back to a synchronous `save()` if `requestIdleCallback` is not
+   * available (e.g. Firefox, Safari, or some Electron builds).
+   */
+  private _saveIdleHandle: ReturnType<typeof requestIdleCallback> | null = null;
+
+  saveAsync(): void {
+    // Deduplicate: if an idle callback is already queued, let it run.
+    if (this._saveIdleHandle !== null) return;
+    if (typeof requestIdleCallback === 'function') {
+      this._saveIdleHandle = requestIdleCallback(
+        () => {
+          this._saveIdleHandle = null;
+          this.save();
+        },
+        { timeout: 5_000 }, // hard deadline: run within 5 s even if never idle
+      );
+    } else {
+      // Fallback: defer by one event-loop turn so the current frame can paint.
+      Promise.resolve().then(() => this.save()).catch(() => this.save());
+    }
+  }
+
+  /**
    * Returns a portable string suitable for writing to a .pansave file.
    * Format: "PANTHEON1:" + base64(envelopeJson). The signature inside the
    * envelope still protects against casual edits after export.
@@ -656,7 +683,9 @@ export class SaveManager {
   }
 
   startAutoSave(): void {
-    this.autoSaveTimer = setInterval(() => this.save(), AUTO_SAVE_INTERVAL_MS);
+    // Use `saveAsync` for interval ticks so the encode work runs during idle
+    // time and doesn't block player input or rendering.
+    this.autoSaveTimer = setInterval(() => this.saveAsync(), AUTO_SAVE_INTERVAL_MS);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
   }
 
@@ -664,6 +693,10 @@ export class SaveManager {
     if (this.autoSaveTimer) {
       clearInterval(this.autoSaveTimer);
       this.autoSaveTimer = null;
+    }
+    if (this._saveIdleHandle !== null && typeof cancelIdleCallback === 'function') {
+      cancelIdleCallback(this._saveIdleHandle);
+      this._saveIdleHandle = null;
     }
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
   }

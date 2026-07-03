@@ -1,4 +1,4 @@
-﻿import type { CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
+import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition } from '@/types/cards';
 
 const BLAZING_GARDEN_ELEMENT = 'BlazingGarden';
 
@@ -522,4 +522,267 @@ export const blazingGardenCards: CardDefinition[] = [
         { type: 'garden_wild_pollen_seed', oblivionPerPollen: 36, scoreMultPerBloom: 0.07, consume: 5 }],
   })];
 
+// ── Angels (5) ────────────────────────────────────────────────────────────────
+
+interface BgAngelSpec {
+  definitionId: string;
+  name: string;
+  description: string;
+  rarity: AngelDefinition['rarity'];
+  artKey: string;
+  summonCost: string[];
+  extraSummonConditions?: AngelDefinition['extraSummonConditions'];
+  onSummonEffects: AngelDefinition['onSummonEffects'];
+  activatedAbility: AngelDefinition['activatedAbility'];
+  primaryName: string;
+  exaltedName: string;
+  primaryBase: number;
+  exaltedBase: number;
+  primaryCooldown: number;
+  exaltedCooldown: number;
+  primaryDescription: string;
+  exaltedDescription: string;
+  baseStats: AngelDefinition['baseStats'];
+}
+
+function buildBgAngel(spec: BgAngelSpec): AngelDefinition {
+  return {
+    definitionId: spec.definitionId,
+    type: 'Angel',
+    element: BLAZING_GARDEN_ELEMENT as AngelDefinition['element'],
+    rarity: spec.rarity,
+    name: spec.name,
+    description: spec.description,
+    artKey: spec.artKey,
+    summonCost: spec.summonCost,
+    extraSummonConditions: spec.extraSummonConditions,
+    onSummonEffects: spec.onSummonEffects,
+    activatedAbility: spec.activatedAbility,
+    attacks: {
+      primary: {
+        id: `${spec.definitionId}:primary`,
+        label: 'Primary',
+        name: spec.primaryName,
+        description: spec.primaryDescription,
+        baseOblivion: spec.primaryBase,
+        cooldownCards: spec.primaryCooldown,
+        costs: [],
+        tags: ['angel', 'primary', 'blazing-garden'],
+      },
+      exalted: {
+        id: `${spec.definitionId}:exalted`,
+        label: 'Exalted',
+        name: spec.exaltedName,
+        description: spec.exaltedDescription,
+        baseOblivion: spec.exaltedBase,
+        cooldownCards: spec.exaltedCooldown,
+        costs: [],
+        tags: ['angel', 'exalted', 'blazing-garden'],
+      },
+    },
+    baseStats: spec.baseStats,
+  };
+}
+
+export const blazingGardenAngels: AngelDefinition[] = [
+  // Role: BURN MAINTAINER. The dedicated Ignite specialist — ignites 2 units on summon,
+  // re-ignites 1 every 2 cards on ability, and gates the ability's Ob on having 2+ Seraphim
+  // active in Burn. Never harvests or stacks Echo: purely about keeping all units alight.
+  buildBgAngel({
+    definitionId: 'bg-angel-ember-court-warden',
+    name: 'Ember Court Warden',
+    description: 'On summon: Gain 14 Bloom; Ignite up to 2 units into Burn; +120 Oblivion; Draw 1 card. After 2 cards played: Ignite up to 1 unit into Burn; Gain 8 Bloom; If you control 2+ active Seraphim, +120 Oblivion. While on board: +46 Oblivion per card played while on board',
+    rarity: 'Rare',
+    artKey: 'bg_angel_ember_court_warden',
+    summonCost: ['bg-ser-serevathi-ember-spiral', 'bg-ser-aureveth-noon-petal'],
+    onSummonEffects: [
+      { type: 'bloom_gain', value: 14 },
+      { type: 'ignite_units_burn', count: 2 },
+      { type: 'oblivion_flat', value: 120 },
+      { type: 'draw', value: 1 },
+    ],
+    activatedAbility: {
+      name: 'Court Ember',
+      cardsPlayedRequirement: 2,
+      description: 'Ignite up to 1 unit into Burn; Gain 8 Bloom; If you control 2+ active Seraphim, +120 Oblivion',
+      effects: [
+        { type: 'ignite_units_burn', count: 1 },
+        { type: 'bloom_gain', value: 8 },
+        { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 120 }] },
+      ],
+    },
+    primaryName: 'Ember Court Verdict',
+    exaltedName: 'Ember Court Final Strike',
+    primaryBase: 660,
+    exaltedBase: 1140,
+    primaryCooldown: 5,
+    exaltedCooldown: 7,
+    primaryDescription: '660 base Oblivion · 5 cards cooldown',
+    exaltedDescription: '1140 base Oblivion · 7 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 46 },
+  }),
+  // Role: ECHO ARCHITECT + REPLAY ENGINE. Stacks 2 Echo immediately on summon AND replays a
+  // Burn card — then every 3 cards it stacks 2 more Echo and conditionally replays again when
+  // 2+ Seraphim are present. Pure echo depth + burn doubling; never harvests, never ignites.
+  buildBgAngel({
+    definitionId: 'bg-angel-thornline-herald',
+    name: 'Thornline Herald',
+    description: 'On summon: Gain 10 Bloom; Gain 2 Echo; Replay the last Burn-phase card played this turn; +80 Oblivion. After 3 cards played: Gain 2 Echo; If you control 2+ active Seraphim, Replay the last Burn-phase card played this turn; Gain 6 Bloom; Draw 1 card. While on board: +48 Oblivion per card played while on board',
+    rarity: 'Rare',
+    artKey: 'bg_angel_thornline_herald',
+    summonCost: ['bg-ser-serevathi-ember-spiral', 'bg-ser-vethkorath-starspine'],
+    onSummonEffects: [
+      { type: 'bloom_gain', value: 10 },
+      { type: 'gain_echo', value: 2 },
+      { type: 'replay_last_burn_card' },
+      { type: 'oblivion_flat', value: 80 },
+    ],
+    activatedAbility: {
+      name: 'Thorn Echo Replay',
+      cardsPlayedRequirement: 3,
+      description: 'Gain 2 Echo; If you control 2+ active Seraphim, Replay the last Burn-phase card played this turn; Gain 6 Bloom; Draw 1 card',
+      effects: [
+        { type: 'gain_echo', value: 2 },
+        { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'replay_last_burn_card' }] },
+        { type: 'bloom_gain', value: 6 },
+        { type: 'draw', value: 1 },
+      ],
+    },
+    primaryName: 'Thornline Verdict',
+    exaltedName: 'Thornline Final Strike',
+    primaryBase: 700,
+    exaltedBase: 1200,
+    primaryCooldown: 5,
+    exaltedCooldown: 8,
+    primaryDescription: '700 base Oblivion · 5 cards cooldown',
+    exaltedDescription: '1200 base Oblivion · 8 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 48 },
+  }),
+  // Role: DRAW + ECHO NEXUS (Sunflower-Thistle fusion). Delivers 2 Echo + 2 draws on summon,
+  // then 2 more Echo + draw every 3 cards — with a second draw gated on 2+ Seraphim. The
+  // Sunflower lineage's draw identity merged with Thistle's Echo depth. Never ignites or
+  // harvests: this Angel keeps the hand full and the Echo counter climbing.
+  buildBgAngel({
+    definitionId: 'bg-angel-soleth-choir',
+    name: 'Soleth Choir Conductor',
+    description: 'On summon: Gain 16 Bloom; Gain 2 Echo; +160 Oblivion; Draw 2 cards. After 3 cards played: Gain 10 Bloom; Gain 2 Echo; Draw 1 card; If you control 2+ active Seraphim, Draw 1 card. While on board: +56 Oblivion per card played while on board',
+    rarity: 'Epic',
+    artKey: 'bg_angel_soleth_choir',
+    summonCost: ['bg-ser-aureveth-noon-petal', 'bg-ser-vethkorath-starspine'],
+    extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
+    onSummonEffects: [
+      { type: 'bloom_gain', value: 16 },
+      { type: 'gain_echo', value: 2 },
+      { type: 'oblivion_flat', value: 160 },
+      { type: 'draw', value: 2 },
+    ],
+    activatedAbility: {
+      name: 'Choir Convergence',
+      cardsPlayedRequirement: 3,
+      description: 'Gain 10 Bloom; Gain 2 Echo; Draw 1 card; If you control 2+ active Seraphim, Draw 1 card',
+      effects: [
+        { type: 'bloom_gain', value: 10 },
+        { type: 'gain_echo', value: 2 },
+        { type: 'draw', value: 1 },
+        { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'draw', value: 1 }] },
+      ],
+    },
+    primaryName: 'Soleth Choir Verdict',
+    exaltedName: 'Soleth Choir Final Strike',
+    primaryBase: 880,
+    exaltedBase: 1500,
+    primaryCooldown: 6,
+    exaltedCooldown: 9,
+    primaryDescription: '880 base Oblivion · 6 cards cooldown',
+    exaltedDescription: '1500 base Oblivion · 9 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 56 },
+  }),
+  // Role: DOUBLE HARVEST MASTER. Harvests Bloom on BOTH summon and ability — the premiere
+  // Bloom converter. Each cycle: generate a big Bloom stack, instantly convert it to Ob,
+  // then Ignite 2 units to keep them burning for the next cycle. Also stacks Echo on the
+  // ability to build Grove depth between harvests.
+  buildBgAngel({
+    definitionId: 'bg-angel-groveborn-ascendant',
+    name: 'Groveborn Ascendant',
+    description: 'On summon: Gain 22 Bloom; Harvest Bloom; Ignite up to 2 units into Burn; +140 Oblivion; Draw 1 card. After 4 cards played: Gain 14 Bloom; Harvest Bloom; Gain 2 Echo; Draw 1 card. While on board: +64 Oblivion per card played while on board',
+    rarity: 'Legendary',
+    artKey: 'bg_angel_groveborn_ascendant',
+    summonCost: ['bg-angel-soleth-choir', 'bg-ser-embergrove-cantor'],
+    extraSummonConditions: [{ type: 'seraphim_active_gte', value: 1 }],
+    onSummonEffects: [
+      { type: 'bloom_gain', value: 22 },
+      { type: 'bloom_harvest' },
+      { type: 'ignite_units_burn', count: 2 },
+      { type: 'oblivion_flat', value: 140 },
+      { type: 'draw', value: 1 },
+    ],
+    activatedAbility: {
+      name: 'Grove Ascension',
+      cardsPlayedRequirement: 4,
+      description: 'Gain 14 Bloom; Harvest Bloom; Gain 2 Echo; Draw 1 card',
+      effects: [
+        { type: 'bloom_gain', value: 14 },
+        { type: 'bloom_harvest' },
+        { type: 'gain_echo', value: 2 },
+        { type: 'draw', value: 1 },
+      ],
+    },
+    primaryName: 'Groveborn Verdict',
+    exaltedName: 'Groveborn Final Strike',
+    primaryBase: 1130,
+    exaltedBase: 1980,
+    primaryCooldown: 6,
+    exaltedCooldown: 10,
+    primaryDescription: '1130 base Oblivion · 6 cards cooldown',
+    exaltedDescription: '1980 base Oblivion · 10 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 64 },
+  }),
+  // Role: APEX CONVERGENCE. Every BG mechanic in one card — Bloom, Echo, Harvest, Ignite.
+  // The full-fire gate on the ability locks the Replay + double-draw behind 4+ cards played
+  // this turn, demanding a built engine before the payoff fires. Represents all three
+  // lineages merging at the moment of the Final Chord.
+  buildBgAngel({
+    definitionId: 'bg-angel-final-chord-avatar',
+    name: 'Final Chord Avatar',
+    description: 'On summon: Gain 24 Bloom; Gain 3 Echo; Harvest Bloom; Ignite up to 2 units into Burn; +160 Oblivion; Draw 1 card. After 5 cards played: If you have played 4+ cards this turn, Gain 14 Bloom; Gain 2 Echo; Harvest Bloom; Replay the last Burn-phase card played this turn; Draw 2 cards. While on board: +76 Oblivion per card played while on board',
+    rarity: 'Legendary',
+    artKey: 'bg_angel_final_chord_avatar',
+    summonCost: ['bg-angel-groveborn-ascendant', 'bg-ser-final-chord-herald'],
+    extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
+    onSummonEffects: [
+      { type: 'bloom_gain', value: 24 },
+      { type: 'gain_echo', value: 3 },
+      { type: 'bloom_harvest' },
+      { type: 'ignite_units_burn', count: 2 },
+      { type: 'oblivion_flat', value: 160 },
+      { type: 'draw', value: 1 },
+    ],
+    activatedAbility: {
+      name: 'Final Chord',
+      cardsPlayedRequirement: 5,
+      description: 'If you have played 4+ cards this turn, Gain 14 Bloom; Gain 2 Echo; Harvest Bloom; Replay the last Burn-phase card played this turn; Draw 2 cards',
+      effects: [
+        { type: 'conditional', condition: { type: 'cards_played_gte', value: 4 }, then: [
+          { type: 'bloom_gain', value: 14 },
+          { type: 'gain_echo', value: 2 },
+          { type: 'bloom_harvest' },
+          { type: 'replay_last_burn_card' },
+          { type: 'draw', value: 2 },
+        ]},
+      ],
+    },
+    primaryName: 'Final Chord Verdict',
+    exaltedName: 'Final Chord Absolute Strike',
+    primaryBase: 1400,
+    exaltedBase: 2440,
+    primaryCooldown: 7,
+    exaltedCooldown: 12,
+    primaryDescription: '1400 base Oblivion · 7 cards cooldown',
+    exaltedDescription: '2440 base Oblivion · 12 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 76 },
+  }),
+];
+
+
+blazingGardenCards.push(...blazingGardenAngels);
 export const blazingGardenPackPool = blazingGardenCards.map(card => card.definitionId);

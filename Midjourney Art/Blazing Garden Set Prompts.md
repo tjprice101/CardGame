@@ -243,3 +243,43 @@ noon that never sets, infinite aureveth expression where golden floral suns over
 ```text
 proof completed sky, infinite vethkorath theorem manifest as a sky of triangular floral stars and violet spine-fire constellations, trading card illustration, severe geometric perfection with layered recursive thistle architectures, cosmic sacred finality, deep violet, charcoal, ember gold, cyan, and white proof-light, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
 ```
+
+
+---
+
+## ANGEL CARDS
+
+### Ember Court Warden | Angel | Rare
+`definitionId: bg-angel-ember-court-warden`
+
+```
+ember court warden, guardian angel of the blazing garden court, trading card illustration, armored angelic figure clad in ember-veined rose petal plate, standing before a vaulted court of burning floral arches, wings of overlapping layered petals with internal flame that does not consume, one hand carrying a rose-flame scepter, stance of absolute protective stillness, background of the ember court cathedral with sunflower columns and thistle-spine balustrades lit from within, ember-gold, rose red, sunlit amber, and deep green with char-edge accents, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+### Thornline Herald | Angel | Rare
+`definitionId: bg-angel-thornline-herald`
+
+```
+thornline herald, messenger angel of the thistle lineage, trading card illustration, swift-posed angular angelic figure with wings formed from violet thistle-spine arrays, spine-fire trailing behind in motion, carrying a scroll of thorn-geometry proof that glows with cyan and violet flame-blood, body traced with geometric thistle vein patterns visible under translucent skin, background of a thistle-spine sky with suspended violet star-nodes and ember-gold horizon, violet, cyan, ember-gold, and deep char, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+### Soleth Choir | Angel | Epic
+`definitionId: bg-angel-soleth-choir`
+
+```
+soleth choir conductor, tri-lineage angel conductor of the world bloom, trading card illustration, grand imposing angelic figure with rose, sunflower, and thistle elements fused in perfect harmonic symmetry across the wings, one wing of rose-red petals, one wing of sunflower-gold radiance, and a thistle-spine halo crown of violet, both arms conducting an invisible chord, background of the soleth vair bloom cathedral with all three lineages visible as glowing choir formations, ember-gold, rose red, violet, and chromatic cyan bloom-light, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+### Groveborn Ascendant | Angel | Legendary
+`definitionId: bg-angel-groveborn-ascendant`
+
+```
+groveborn ascendant, the angel rising from the ember grove with all lineages merged, trading card illustration, soaring angelic figure emerging upward from a grove of rekindled bloom-memory, body fusing rose, sunflower, and thistle flame-biology as a unified ascending form, wings of layered botanical fire spreading wide and upward, trailing absorbed bloom-color from below, the ascendant carries the color-memory of every fallen lineage within, background of the ember grove below and a sky of convergent bloom light above, ember-gold, rose red, sunlit amber, deep green, violet, and chromatic cyan, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+### Final Chord Avatar | Angel | Legendary
+`definitionId: bg-angel-final-chord-avatar`
+
+```
+final chord avatar, the embodiment of the world bloom event, trading card illustration, transcendent angelic figure that is the total convergence of all three lineages in the moment of the final chord, rose and sunflower and thistle merged into one perfect botanical being of living flame and color, wings filling the entire frame with overlapping floral fire architecture, a halo of the world total bloom radiating in all directions, face serene and absolute as the last harmonic resolves, background of soleth vair transformed into a single unified bloom megastructure, ember-gold, rose red, sunlit amber, spectral violet, chromatic cyan, deep green, and absolute white bloom-light, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```

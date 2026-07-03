@@ -243,6 +243,10 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'af-ser-ophrax-vermilion-kraken': 'Ophrax, The Vermilion Kraken.png',
   'af-ser-tessareth-opal-manta': 'Tessareth, The Opal Manta.png',
   'af-ser-vairoch-sapphire-bellows': 'Vairoch, The Sapphire Bellows.png',
+  // Glass Absolute Angels — art live; overrides only where filename diverges from card.name
+  'ga-angel-white-terminus': 'White Terminus Angel.png',
+  // Yrethborn comma dropped: CSS multi-image url() lists can misparse %2C in filenames
+  'ga-angel-yrethborn-absolute': 'Yrethborn The Absolute.png',
 };
 
 function getSnowboundEternalFileName(card: CardDefinition): string {

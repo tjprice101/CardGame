@@ -46,7 +46,7 @@ export default function BattlegroundMatch() {
   useEffect(() => {
     if (battleground.mode !== 'active' || battleground.kind !== 'cpu') return;
 
-    const seraphimDefs = CardRegistry.getAll().filter(d => d.type === 'Seraphim');
+    const seraphimDefs = CardRegistry.getByType('Seraphim');
     const fakeFront = Array.from({ length: 5 }, (_, i) => {
       const def = seraphimDefs[i];
       if (!def || def.type !== 'Seraphim') return null;

@@ -809,7 +809,7 @@ const glassAbsoluteTrial: TrialDeckDefinition = {
     d('ga-oph-crystal-echo-archive', 3),
     d('ga-oph-white-transit', 2),
   ],
-  extraDeck: [],
+  extraDeck: [e('ga-angel-prism-arbiter')],
   guideSteps: [
     {
       cardDefinitionId: 'ga-cher-mirrorbody-archivist',
@@ -912,7 +912,7 @@ const blazingGardenTrial: TrialDeckDefinition = {
     d('bg-oph-spiral-memory-bloom', 3),
     d('bg-oph-chordbearing-migration', 2),
   ],
-  extraDeck: [],
+  extraDeck: [e('bg-angel-ember-court-warden')],
   guideSteps: [
     {
       cardDefinitionId: 'bg-cher-root-lantern-attendant',

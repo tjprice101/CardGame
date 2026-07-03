@@ -1,4 +1,4 @@
-﻿import type { CardDefinition, CherubimDefinition, OphanimDefinition, PrismaticDepth, SeraphimDefinition } from '@/types/cards';
+import type { CardDefinition, CherubimDefinition, OphanimDefinition, PrismaticDepth, SeraphimDefinition } from '@/types/cards';
 
 const GLASS_ABSOLUTE_ELEMENT = 'GlassAbsolute';
 
@@ -124,6 +124,66 @@ function buildOphanim(spec: OphanimSpec): OphanimDefinition {
     description: spec.description,
     artKey: spec.artKey,
     effects: spec.effects,
+  };
+}
+
+interface AngelSpec {
+  definitionId: string;
+  name: string;
+  description: string;
+  rarity: AngelDefinition['rarity'];
+  artKey: string;
+  summonCost: string[];
+  extraSummonConditions?: AngelDefinition['extraSummonConditions'];
+  onSummonEffects: AngelDefinition['onSummonEffects'];
+  activatedAbility: AngelDefinition['activatedAbility'];
+  primaryName: string;
+  exaltedName: string;
+  primaryBase: number;
+  exaltedBase: number;
+  primaryCooldown: number;
+  exaltedCooldown: number;
+  primaryDescription: string;
+  exaltedDescription: string;
+  baseStats: AngelDefinition['baseStats'];
+}
+
+function buildAngel(spec: AngelSpec): AngelDefinition {
+  return {
+    definitionId: spec.definitionId,
+    type: 'Angel',
+    element: GLASS_ABSOLUTE_ELEMENT as AngelDefinition['element'],
+    rarity: spec.rarity,
+    name: spec.name,
+    description: spec.description,
+    artKey: spec.artKey,
+    summonCost: spec.summonCost,
+    extraSummonConditions: spec.extraSummonConditions,
+    onSummonEffects: spec.onSummonEffects,
+    activatedAbility: spec.activatedAbility,
+    attacks: {
+      primary: {
+        id: `${spec.definitionId}:primary`,
+        label: 'Primary',
+        name: spec.primaryName,
+        description: spec.primaryDescription,
+        baseOblivion: spec.primaryBase,
+        cooldownCards: spec.primaryCooldown,
+        costs: [],
+        tags: ['angel', 'primary', 'glass-absolute'],
+      },
+      exalted: {
+        id: `${spec.definitionId}:exalted`,
+        label: 'Exalted',
+        name: spec.exaltedName,
+        description: spec.exaltedDescription,
+        baseOblivion: spec.exaltedBase,
+        cooldownCards: spec.exaltedCooldown,
+        costs: [],
+        tags: ['angel', 'exalted', 'glass-absolute'],
+      },
+    },
+    baseStats: spec.baseStats,
   };
 }
 
@@ -676,4 +736,194 @@ export const glassAbsoluteCards: CardDefinition[] = [
       }],
   })];
 
+
+// ── Angels (5) ────────────────────────────────────────────────────────────────
+
+export const glassAbsoluteAngels: AngelDefinition[] = [
+  // Role: CHARGE SPENDER. Net-neutral on charges; trades +2 gain for -2 spend every cycle,
+  // delivering large flat Oblivion instead of conditional thresholds. Rewards having built
+  // charges before summoning so the spend always fires.
+  buildAngel({
+    definitionId: 'ga-angel-prism-arbiter',
+    name: 'Prism Arbiter',
+    description: 'On summon: Gain 4 Refraction Charges; Spend 2 Refraction Charges; +280 Oblivion; Draw 1 card. After 2 cards played: Gain 2 Refraction Charges; Spend 2 Refraction Charges; +300 Oblivion. While on board: +44 Oblivion per card played while on board',
+    rarity: 'Rare',
+    artKey: 'ga_angel_prism_arbiter',
+    summonCost: ['ga-ser-prismwake', 'ga-ser-lattice-canticle'],
+    onSummonEffects: [
+      { type: 'set_secondary_gain', kind: 'absol', value: 4 },
+      { type: 'set_secondary_spend', kind: 'absol', value: 2 },
+      { type: 'oblivion_flat', value: 280 },
+      { type: 'draw', value: 1 },
+    ],
+    activatedAbility: {
+      name: 'Refraction Verdict',
+      cardsPlayedRequirement: 2,
+      description: 'Gain 2 Refraction Charges; Spend 2 Refraction Charges; +300 Oblivion',
+      effects: [
+        { type: 'set_secondary_gain', kind: 'absol', value: 2 },
+        { type: 'set_secondary_spend', kind: 'absol', value: 2 },
+        { type: 'oblivion_flat', value: 300 },
+      ],
+    },
+    primaryName: 'Prism Arbiter Ordinance',
+    exaltedName: 'Prism Arbiter Throne Decree',
+    primaryBase: 660, exaltedBase: 1140,
+    primaryCooldown: 5, exaltedCooldown: 7,
+    primaryDescription: '660 base Oblivion · 5 cards cooldown',
+    exaltedDescription: '1140 base Oblivion · 7 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 44 },
+  }),
+  // Role: FORMATION READER + DRAW ENGINE. Fills hand via look/take on summon, then builds
+  // charges through the Seraphim synergy gate. The 5+ threshold on ability rewards keeping
+  // a charge floor — distinct from Prism Arbiter's flat-spend loop.
+  buildAngel({
+    definitionId: 'ga-angel-white-terminus',
+    name: 'White Terminus',
+    description: 'On summon: Gain 3 Refraction Charges; Look at the top 5 cards, take 2 cards, and put the rest on the bottom; If you control 2+ active Seraphim, Gain 2 Refraction Charges; +160 Oblivion. After 2 cards played: Gain 2 Refraction Charges; If you have 5+ Refraction Charges, +200 Oblivion; Draw 1 card. While on board: +46 Oblivion per card played while on board',
+    rarity: 'Rare',
+    artKey: 'ga_angel_white_terminus',
+    summonCost: ['ga-ser-white-edge', 'ga-ser-prismwake'],
+    onSummonEffects: [
+      { type: 'set_secondary_gain', kind: 'absol', value: 3 },
+      { type: 'look_top_take', look: 5, take: 2 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'set_secondary_gain', kind: 'absol', value: 2 }] },
+      { type: 'oblivion_flat', value: 160 },
+    ],
+    activatedAbility: {
+      name: 'Edge Dissolution',
+      cardsPlayedRequirement: 2,
+      description: 'Gain 2 Refraction Charges; If you have 5+ Refraction Charges, +200 Oblivion; Draw 1 card',
+      effects: [
+        { type: 'set_secondary_gain', kind: 'absol', value: 2 },
+        { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 5 }, then: [{ type: 'oblivion_flat', value: 200 }] },
+        { type: 'draw', value: 1 },
+      ],
+    },
+    primaryName: 'White Terminus Ordinance',
+    exaltedName: 'White Terminus Throne Decree',
+    primaryBase: 680, exaltedBase: 1160,
+    primaryCooldown: 5, exaltedCooldown: 7,
+    primaryDescription: '680 base Oblivion · 5 cards cooldown',
+    exaltedDescription: '1160 base Oblivion · 7 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 46 },
+  }),
+  // Role: SALVAGE ENGINE. The only Angel with salvage — reclaims used Cherubim or spent
+  // Seraphim from the discard while building charges. Ability is a conditional spend: you
+  // gain charges freely, but the big Ob only fires when 5+ are sitting in reserve.
+  buildAngel({
+    definitionId: 'ga-angel-lattice-sovereign',
+    name: 'Lattice Sovereign',
+    description: 'On summon: Gain 4 Refraction Charges; Salvage any 1 card; +200 Oblivion; Draw 1 card. After 3 cards played: Gain 3 Refraction Charges; If you have 5+ Refraction Charges, Spend 2 Refraction Charges; +300 Oblivion; Draw 1 card. While on board: +54 Oblivion per card played while on board',
+    rarity: 'Epic',
+    artKey: 'ga_angel_lattice_sovereign',
+    summonCost: ['ga-ser-lattice-canticle', 'ga-ser-white-edge'],
+    extraSummonConditions: [{ type: 'set_secondary_gte', kind: 'absol', value: 3 }],
+    onSummonEffects: [
+      { type: 'set_secondary_gain', kind: 'absol', value: 4 },
+      { type: 'salvage_any' },
+      { type: 'oblivion_flat', value: 200 },
+      { type: 'draw', value: 1 },
+    ],
+    activatedAbility: {
+      name: 'Sovereign Cascade',
+      cardsPlayedRequirement: 3,
+      description: 'Gain 3 Refraction Charges; If you have 5+ Refraction Charges, Spend 2 Refraction Charges; +300 Oblivion; Draw 1 card',
+      effects: [
+        { type: 'set_secondary_gain', kind: 'absol', value: 3 },
+        { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 5 }, then: [
+          { type: 'set_secondary_spend', kind: 'absol', value: 2 },
+          { type: 'oblivion_flat', value: 300 },
+          { type: 'draw', value: 1 },
+        ]},
+      ],
+    },
+    primaryName: 'Lattice Sovereign Ordinance',
+    exaltedName: 'Lattice Sovereign Throne Decree',
+    primaryBase: 880, exaltedBase: 1500,
+    primaryCooldown: 5, exaltedCooldown: 8,
+    primaryDescription: '880 base Oblivion · 5 cards cooldown',
+    exaltedDescription: '1500 base Oblivion · 8 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 54 },
+  }),
+  // Role: HIGH-THRESHOLD SIPHON. Designed for charge-heavy mid/late turns. Both summon and
+  // ability have independent high-threshold cashouts (6+ and 7+) that spend large chunks for
+  // massive Ob — rewarding decks that stack charges across multiple cards before Angel lands.
+  buildAngel({
+    definitionId: 'ga-angel-glass-hymn-oracle',
+    name: 'Glass Hymn Oracle',
+    description: 'On summon: Gain 5 Refraction Charges; If you have 6+ Refraction Charges, Spend 3 Refraction Charges; +420 Oblivion; Draw 2 cards. After 4 cards played: Gain 3 Refraction Charges; If you have 7+ Refraction Charges, Spend 4 Refraction Charges; +540 Oblivion; Draw 1 card. While on board: +62 Oblivion per card played while on board',
+    rarity: 'Legendary',
+    artKey: 'ga_angel_glass_hymn_oracle',
+    summonCost: ['ga-angel-lattice-sovereign', 'ga-ser-glass-hymn'],
+    extraSummonConditions: [{ type: 'cherubim_active_gte', value: 1 }],
+    onSummonEffects: [
+      { type: 'set_secondary_gain', kind: 'absol', value: 5 },
+      { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 6 }, then: [
+        { type: 'set_secondary_spend', kind: 'absol', value: 3 },
+        { type: 'oblivion_flat', value: 420 },
+      ]},
+      { type: 'draw', value: 2 },
+    ],
+    activatedAbility: {
+      name: 'Oracle Resonance',
+      cardsPlayedRequirement: 4,
+      description: 'Gain 3 Refraction Charges; If you have 7+ Refraction Charges, Spend 4 Refraction Charges; +540 Oblivion; Draw 1 card',
+      effects: [
+        { type: 'set_secondary_gain', kind: 'absol', value: 3 },
+        { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 7 }, then: [
+          { type: 'set_secondary_spend', kind: 'absol', value: 4 },
+          { type: 'oblivion_flat', value: 540 },
+          { type: 'draw', value: 1 },
+        ]},
+      ],
+    },
+    primaryName: 'Glass Hymn Oracle Ordinance',
+    exaltedName: 'Glass Hymn Oracle Throne Decree',
+    primaryBase: 1160, exaltedBase: 2060,
+    primaryCooldown: 6, exaltedCooldown: 10,
+    primaryDescription: '1160 base Oblivion · 6 cards cooldown',
+    exaltedDescription: '2060 base Oblivion · 10 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 62 },
+  }),
+  // Role: APEX TOTAL CASHOUT. The singular 9+ threshold dumps 6 charges at once for the
+  // largest single Ob burst in the set. Summon is itself a spend (-3) to pre-clear room
+  // for the ability reload. Requires maximal charge stacking across the whole deck.
+  buildAngel({
+    definitionId: 'ga-angel-yrethborn-absolute',
+    name: 'Yrethborn, The Absolute',
+    description: 'On summon: Gain 6 Refraction Charges; Spend 3 Refraction Charges; +360 Oblivion; Draw 2 cards. After 5 cards played: If you have 9+ Refraction Charges, Spend 6 Refraction Charges; +700 Oblivion; Draw 2 cards. While on board: +74 Oblivion per card played while on board',
+    rarity: 'Legendary',
+    artKey: 'ga_angel_yrethborn_absolute',
+    summonCost: ['ga-angel-glass-hymn-oracle', 'ga-ser-yrethborn'],
+    extraSummonConditions: [{ type: 'cherubim_active_gte', value: 2 }],
+    onSummonEffects: [
+      { type: 'set_secondary_gain', kind: 'absol', value: 6 },
+      { type: 'set_secondary_spend', kind: 'absol', value: 3 },
+      { type: 'oblivion_flat', value: 360 },
+      { type: 'draw', value: 2 },
+    ],
+    activatedAbility: {
+      name: 'Absolute Refraction',
+      cardsPlayedRequirement: 5,
+      description: 'If you have 9+ Refraction Charges, Spend 6 Refraction Charges; +700 Oblivion; Draw 2 cards',
+      effects: [
+        { type: 'conditional', condition: { type: 'set_secondary_gte', kind: 'absol', value: 9 }, then: [
+          { type: 'set_secondary_spend', kind: 'absol', value: 6 },
+          { type: 'oblivion_flat', value: 700 },
+          { type: 'draw', value: 2 },
+        ]},
+      ],
+    },
+    primaryName: 'Yrethborn Absolute Ordinance',
+    exaltedName: 'Yrethborn Absolute Throne Decree',
+    primaryBase: 1420, exaltedBase: 2500,
+    primaryCooldown: 7, exaltedCooldown: 12,
+    primaryDescription: '1420 base Oblivion · 7 cards cooldown',
+    exaltedDescription: '2500 base Oblivion · 12 cards cooldown',
+    baseStats: { basePower: 0, bonusType: 'oblivion_per_card', bonusValue: 74 },
+  }),
+];
+
+glassAbsoluteCards.push(...glassAbsoluteAngels);
 export const glassAbsolutePackPool = glassAbsoluteCards.map(card => card.definitionId);

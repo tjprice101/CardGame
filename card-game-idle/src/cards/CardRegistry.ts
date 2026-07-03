@@ -2352,6 +2352,28 @@ const DISPLAY_DEFINITION_BY_ID = new Map(
   DISPLAY_DEFINITIONS.map((definition) => [definition.definitionId, definition] as const),
 );
 
+// ── Pre-built indices for O(1) filtered lookups ───────────────────────────
+// Built once at module load; avoids repeated getAll().filter() scans across
+// store.ts, titleBadges.ts, avatars.ts, and uiThemes.ts hot paths.
+
+const _byElement = new Map<string, CardDefinition[]>();
+const _byType = new Map<string, CardDefinition[]>();
+const _byRarity = new Map<string, CardDefinition[]>();
+
+for (const def of DISPLAY_DEFINITIONS) {
+  const el = def.element ?? '';
+  if (!_byElement.has(el)) _byElement.set(el, []);
+  _byElement.get(el)!.push(def);
+
+  const ty = def.type ?? '';
+  if (!_byType.has(ty)) _byType.set(ty, []);
+  _byType.get(ty)!.push(def);
+
+  const ra = def.rarity ?? '';
+  if (!_byRarity.has(ra)) _byRarity.set(ra, []);
+  _byRarity.get(ra)!.push(def);
+}
+
 ScoreSystem.getDefinition = (id: string) => registry.get(resolveCardId(id));
 
 export const CardRegistry = {
@@ -2359,8 +2381,30 @@ export const CardRegistry = {
     return DISPLAY_DEFINITION_BY_ID.get(resolveCardId(id));
   },
   getAll: (): CardDefinition[] => DISPLAY_DEFINITIONS,
+  /**
+   * Returns all cards matching the given element (O(1) index lookup).
+   * Prefer this over `getAll().filter(d => d.element === element)`.
+   */
+  getByElement: (element: string): CardDefinition[] => _byElement.get(element) ?? [],
+  /**
+   * Returns all cards matching the given rarity (O(1) index lookup).
+   */
+  getByRarity: (rarity: string): CardDefinition[] => _byRarity.get(rarity) ?? [],
+  /**
+   * Returns all cards matching the given element AND rarity.
+   * Iterates the smaller of the two index lists.
+   */
+  getByElementAndRarity: (element: string, rarity: string): CardDefinition[] => {
+    const byEl = _byElement.get(element) ?? [];
+    const byRa = _byRarity.get(rarity) ?? [];
+    // Iterate the smaller list and check membership in the larger.
+    if (byEl.length <= byRa.length) {
+      return byEl.filter(d => d.rarity === rarity);
+    }
+    return byRa.filter(d => d.element === element);
+  },
   getByType: (type: CardDefinition['type']): CardDefinition[] =>
-    DISPLAY_DEFINITIONS.filter(d => d.type === type),
+    _byType.get(type) ?? [],
   has: (id: string): boolean => registry.has(resolveCardId(id)),
 };
 

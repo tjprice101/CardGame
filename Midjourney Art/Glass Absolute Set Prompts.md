@@ -285,3 +285,43 @@ shattered without shattering, infinite cherubim whose fractures are perfect geom
 ```
 color after white, infinite ophanim revelation beyond the spectrum, trading card illustration, a radiant wheel-body emerging from pure white into the first impossible band beyond the rainbow, the surrounding chamber filled with transparent prisms and the hint of a color no ordinary eye can name, background of endless mirrored glass and soft spectral collapse, spectral silver, white, pale cyan, and violet with a faint unknown hue at the edge, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
 ```
+
+
+---
+
+## ANGEL CARDS
+
+### Prism Arbiter | Angel | Rare
+`definitionId: ga-angel-prism-arbiter`
+
+```
+prism arbiter, judging glass angel of the first refraction law, trading card illustration, towering translucent figure seated on a suspended geometric throne of interlocked prisms, angular wings spread symmetrically into spectral fan arrays, one hand raised with a beam of white light passing through the palm to split into a clean verdict-spectrum below, face an elegant refractive mask of layered glass planes, background of soaring mirrored halls receding into a vanishing-point of pure white light, clear glass, spectral silver, pale cyan, and soft violet judgement-light, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+### White Terminus | Angel | Rare
+`definitionId: ga-angel-white-terminus`
+
+```
+white terminus angel, the boundary-of-white glass angel, trading card illustration, slender blade-like angelic figure at the edge of a mirrored plane where all light converges and stops, wings composed of thin razor glass edges that refract the last spectral band before white silence, body dissolving at the extremities into white nothingness, face serene and cut like a prism vertex, background of the final mirrored corridor emptying into featureless white, spectral silver, pale cyan, and crisp angular glass with a corona of pure white termination, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+### Lattice Sovereign | Angel | Epic
+`definitionId: ga-angel-lattice-sovereign`
+
+```
+lattice sovereign, ruling angel of the prism lattice, trading card illustration, monumental glass-body figure composed of recursive crystalline chambers nested within chambers, a crown of floating prism spires above the head, six symmetrical wings of pure geometric facets each refracting a unique spectral band, both arms extended with the entire lattice world visible inside the hollow torso, background of throne-chamber geometry built from repeating glass arches converging into the figure, regal, translucent, and cosmically ornate, clear glass, spectral silver, pale cyan, and violet sovereign-radiance, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+### Glass Hymn Oracle | Angel | Legendary
+`definitionId: ga-angel-glass-hymn-oracle`
+
+```
+glass hymn oracle, prophetic angel of refracted song, trading card illustration, grand semi-transparent angelic figure standing inside a prism cathedral whose entire structure resonates with visible sound-light, the body itself a lens through which song becomes spectrum, mouth open emitting a white hymn that fractures into colored prophecy rays, wings of layered glass plates vibrating with harmonic frequency, a halo of concentric mirrored rings amplifying the oracle's light, background of the singing cathedral with recursive glass choir alcoves, clear glass, spectral silver, pale cyan, violet, and harmonic white resonance, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```
+
+### Yrethborn, The Absolute | Angel | Legendary
+`definitionId: ga-angel-yrethborn-absolute`
+
+```
+yrethborn the absolute, transcendent first-prism angel, trading card illustration, colossal angelic figure made entirely of the original prism-light that created Glass Absolute, the body a single crystalline absolute containing all spectra simultaneously, eight symmetrical wings spread to fill the full frame with refracted white radiance, face a perfect prism point emitting the genesis beam, the entire background dissolving into the interior of a living crystal world, a being that is not in the world but is the medium of the world, clear glass, white absolute, spectral silver, pale cyan, and violet transcendence, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, figure fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+```

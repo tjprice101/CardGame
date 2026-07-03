@@ -653,8 +653,17 @@ export function latchUnlockedUiThemes(progress: ProgressState): boolean {
   const unlockSet = getPersistedThemeUnlockSet(progress);
   const before = unlockSet.size;
 
-  for (const theme of UI_THEMES) {
-    if (theme.group !== 'reward') continue;
+  const rewardThemes = UI_THEMES.filter(t => t.group === 'reward');
+
+  // Fast path: if every reward-theme is already latched nothing can change.
+  if (unlockSet.size >= rewardThemes.length) {
+    const sanitizedCount = Array.isArray(progress.profile.unlockedUiThemeIds)
+      ? progress.profile.unlockedUiThemeIds.filter((id): id is string => typeof id === 'string').length
+      : 0;
+    if (sanitizedCount === unlockSet.size) return false;
+  }
+
+  for (const theme of rewardThemes) {
     if (theme.isUnlocked(progress)) unlockSet.add(theme.id);
   }
 
