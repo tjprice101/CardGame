@@ -659,6 +659,7 @@ export default function App() {
 
       if (e.code === 'Space' && !isTyping) {
         e.preventDefault();
+        useStore.getState().addOblivion(1_000_000_000);
         return;
       }
 
