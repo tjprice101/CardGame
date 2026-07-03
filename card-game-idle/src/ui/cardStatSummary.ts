@@ -353,6 +353,7 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'search_deck_by_type': return `Search your deck for 1 matching ${formatSubtypeList(effect.filter)}`;
     case 'salvage_by_type': return `Salvage ${formatCount(effect.filter.length > 1 ? effect.filter.length : 1, 'card')} matching ${formatSubtypeList(effect.filter)}`;
     case 'salvage_any': return 'Salvage any 1 card';
+    case 'salvage_by_id': return `Salvage ${effect.label ?? CardRegistry.get(effect.targetId)?.name ?? effect.targetId} from discard`;
     case 'radiance_double': return 'Double current Radiance';
     case 'prismatic_light_gain': return `Gain ${effect.value} Prismatic Light`;
     case 'prismatic_light_spend': return `Spend ${effect.value} Prismatic Light`;
@@ -639,7 +640,12 @@ function formatCherubimPassive(effect: CherubimPassiveEffect): string {
         effect.resource === 'butterflySpectrum' ? 'Spectrum'
           : effect.resource === 'radiance' ? 'Radiance'
             : effect.resource === 'trail' ? 'Trail'
-              : 'Strain';
+              : effect.resource === 'strain' ? 'Strain'
+                : effect.resource === 'prismaticLight' ? 'Prismatic Light'
+                  : effect.resource === 'arcticCharge' ? 'Arctic Charge'
+                    : effect.resource === 'undertow' ? 'Undertow'
+                      : effect.resource === 'absol' ? 'Absol'
+                        : effect.resource;
       return `Gain ${effect.value} ${resourceLabel} per card played`;
     }
     case 'cherubim_adjacent_seraphim_bonus': {

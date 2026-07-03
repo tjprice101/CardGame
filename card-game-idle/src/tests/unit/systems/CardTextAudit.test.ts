@@ -70,7 +70,7 @@ describe('card text audit', () => {
     const card = CardRegistry.getAll().find(entry => entry.name === 'Null Seek');
     expect(card).toBeTruthy();
 
-    expect(getCardPreviewLines(card!, 3)).toEqual(['Play: Draw 2 cards']);
+    expect(getCardPreviewLines(card!, 3)).toEqual(['Play: Draw 2 cards; First card this turn: All Seraphim +2 Patience']);
     expect(getCardPreviewText(card!, 3)).not.toContain('•');
   });
 });

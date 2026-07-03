@@ -2094,6 +2094,14 @@ export class CardEffectExecutor {
           }
           break;
 
+        case 'salvage_by_id': {
+          if (pendingEffect === null) {
+            const matching = mutableDeck.discardPile.filter(card => card.definitionId === effect.targetId);
+            pendingEffect = { type: 'salvage', cards: matching, filter: null, count: 1 };
+          }
+          break;
+        }
+
         case 'conditional': {
           let met = false;
           met = CardEffectExecutor.evaluateCondition(effect.condition, mutableTurn, mutableBoard);

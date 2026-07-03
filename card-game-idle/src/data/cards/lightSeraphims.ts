@@ -44,7 +44,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Thornwatch Seraphim',
-    description: 'On play: Salvage 1 card matching Ophanim. While on board: +12 Oblivion whenever you play an Ophanim while active',
+    description: 'On play: Gain 2 Radiance; Salvage 1 card matching Ophanim. While on board: +12 Oblivion whenever you play an Ophanim while active',
     artKey: 'ser_light_vigil',
     attacks: {
       unsynergized: {
@@ -71,6 +71,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'ophanim_bonus', bonusValue: 12, synergyRequirement: 'Light' },
     onPlayEffects: [
+      { type: 'radiance_gain', value: 2 },
       { type: 'salvage_by_type', filter: ['Ophanim'] },
     ],
   },
@@ -117,7 +118,7 @@ export const lightSeraphims: SeraphimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Thorncrown Seraphim',
-    description: 'On play: Gain 2 Radiance; Draw 1 card. While on board: +12 Oblivion per card played while active',
+    description: 'On play: Gain 3 Radiance; Draw 1 card; If you have played 2+ cards this turn, +60 Oblivion. While on board: +12 Oblivion per card played while active',
     artKey: 'ser_light_throne',
     attacks: {
       unsynergized: {
@@ -144,8 +145,9 @@ export const lightSeraphims: SeraphimDefinition[] = [
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 12, synergyRequirement: 'Light' },
     onPlayEffects: [
-      { type: 'radiance_gain', value: 2 },
+      { type: 'radiance_gain', value: 3 },
       { type: 'draw', value: 1 },
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 60 }] },
     ],
   },
   {

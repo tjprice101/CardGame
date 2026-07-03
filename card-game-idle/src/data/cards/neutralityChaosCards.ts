@@ -68,7 +68,7 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Null Fortification',
-    description: 'On play: All Seraphim on board gain +4 Patience; +40 Oblivion. While on board: Adjacent Seraphim and Angels gain +2 Patience per card played',
+    description: 'On play: If this is the first card you played this turn, +60 Oblivion; Draw 1 card; All Seraphim on board gain +4 Patience. While on board: Adjacent Seraphim and Angels gain +2 Patience per card played',
     artKey: 'cherubim_neutral_null_fortify',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 15 }],
     onPlayEffects: [{ type: 'search_deck_by_type', filter: ['Seraphim'] }, { type: 'oblivion_flat', value: 40 }],

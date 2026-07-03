@@ -393,3 +393,54 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - **Card face art**: `public/assets/card-backgrounds/<element-folder>/`. `src/ui/cardBackgrounds.ts` resolves element-specific subfolders. Neutrality uses `neutrality/`. `CARD_BACKGROUND_FILE_OVERRIDES` handles special cases. Infinite BGI cards route to `black-glass-inferno/` not `infinite/`.
 - **UI set ordering**: sourced from `PACK_DEFINITIONS`. Collection/Eternity tabs stay aligned with the Card Store menu.
 - **Materialized balance overrides** may append extra effects (including draw) after base card definitions; runtime audits must use `CardRegistry.getAll()`, not raw source text.
+
+
+---
+
+## Documentation Single Source of Truth
+
+### Card Effect Text Pipeline
+
+Card descriptions are **hand-authored** in source .ts files and kept in sync with canonical formatters via the regen script:
+
+`
+npx tsx scripts/regen-canonical-descriptions.mts
+`
+
+- Source files: src/data/cards/*.ts ? authoritative for card.description and ctivatedAbility.description.
+- src/data/cards/materializedCardBalance.ts ? **auto-generated**. Contains attack description, aseOblivion, and cooldownCards overrides for Seraphim/Angel attacks. **Do not hand-edit.**
+- src/data/cards/neutralityDocOverrides.ts ? intentional hand-authored overrides for Neutrality complex cards.
+- Canonical formatters live in src/ui/cardStatSummary.ts ? getCanonicalCardDescription, getCanonicalAttackDescription, getCanonicalActivatedAbilityDescription.
+
+### Root Markdown Docs
+
+Human-readable card effect documents live at workspace-root Card Effects/<Set Name>/<Set Name> Card Effects.md.
+These are **auto-generated** ? do not hand-edit them.
+
+`
+npm run docs:cards
+# or
+npx tsx scripts/generate-card-effects-docs.mts
+`
+
+The script reads from CardRegistry (which applies MCB overrides) so the docs always reflect live game values.
+
+### Tutorial / Resource Text
+
+All tutorial copy lives in:
+- src/data/tutorialContent.ts ? section metadata, set engine summaries, rarity tiers, card-born tier milestones.
+- src/data/resourceExplanations.ts ? per-resource short/long descriptions used by TutorialModal.
+
+src/ui/menus/TutorialModal.tsx is **pure presentation** ? it imports from the data modules above and contains no hardcoded game text.
+
+### Cross-Set Resource Rule
+
+**Each card set owns its resources exclusively** ? no card may use an effect, condition, or Cherubim resource belonging to a different set.
+
+The allowed resource-to-set mapping is defined in src/data/setResourceRegistry.ts.
+
+Automated enforcement runs on every itest run:
+- src/tests/unit/data/CrossSetContaminationAudit.test.ts ? fails if any card uses another set's resource.
+- src/tests/unit/data/DescriptionDriftAudit.test.ts ? fails if any card's description has drifted from canonical.
+
+Exceptions (whitelisted in CROSS_SET_EXEMPT_ID_PREFIXES): inf-*, tei-*, sv-eternal-*, sv-infinite-*.

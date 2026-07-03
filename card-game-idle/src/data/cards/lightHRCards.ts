@@ -95,11 +95,12 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Thorncrown Mandate',
-    description: 'Each active Seraphim\'s payout +25 Oblivion this turn; If you have 8+ Radiance, Gain 4 Radiance',
+    description: 'Gain 2 Radiance; Each active Seraphim\'s payout +22 Oblivion this turn; If you have 8+ Radiance, Double current Radiance',
     artKey: 'hr_light_gilded_mandate',
     effects: [
-      { type: 'seraphim_bonus_amplifier', value: 25 },
-      { type: 'conditional', condition: { type: 'radiance_gte', value: 8 }, then: [{ type: 'radiance_gain', value: 4 }] },
+      { type: 'seraphim_bonus_amplifier', value: 22 },
+      { type: 'radiance_gain', value: 2 },
+      { type: 'conditional', condition: { type: 'radiance_gte', value: 8 }, then: [{ type: 'radiance_double' }] },
     ],
   },
 
@@ -211,11 +212,12 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Undying Thornwatch',
-    description: 'Gain 3 Radiance; Salvage any 1 card',
+    description: 'Gain 3 Radiance; If you have 6+ Radiance, Salvage 1 card matching Ophanim; If you have 5 or fewer Radiance, Draw 1 card',
     artKey: 'hr_light_undying_vigil',
     effects: [
       { type: 'radiance_gain', value: 3 },
-      { type: 'salvage_any' },
+      { type: 'conditional', condition: { type: 'radiance_gte', value: 6 }, then: [{ type: 'salvage_by_type', filter: ['Ophanim'] }] },
+      { type: 'conditional', condition: { type: 'radiance_lte', value: 5 }, then: [{ type: 'draw', value: 1 }] },
     ],
   },
 
@@ -271,10 +273,12 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Silverthorn Insight',
-    description: 'Look at the top 5 cards and take 1 matching Ophanim',
+    description: 'Gain 3 Radiance; Look at the top 5 cards and take 1 matching Ophanim; If you have 6+ Radiance, Draw 1 card',
     artKey: 'hr_light_holy_insight',
     effects: [
-      { type: 'look_top_take_type', look: 5, filter: ['Ophanim'], take: 2 },
+      { type: 'radiance_gain', value: 3 },
+      { type: 'look_top_take_type', look: 5, filter: ['Ophanim'], take: 1 },
+      { type: 'conditional', condition: { type: 'radiance_gte', value: 6 }, then: [{ type: 'draw', value: 1 }] },
     ],
   },
   {
@@ -283,11 +287,13 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Emberthorn Mantle',
-    description: 'Draw 3 cards; Choose and discard 1 card',
+    description: 'Spend 2 Radiance; Draw 3 cards; Choose and discard 1 card; If you have played 3+ cards this turn, +90 Oblivion',
     artKey: 'hr_light_exalted_mantle',
     effects: [
+      { type: 'radiance_spend', value: 2 },
       { type: 'draw', value: 3 },
       { type: 'discard_choice', value: 1 },
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 90 }] },
     ],
   },
   {
@@ -309,11 +315,12 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Thorngate Passage',
-    description: 'Gain 2 Radiance; Discard 2 cards, then draw 3 cards',
+    description: 'Gain 2 Radiance; Double current Radiance; Draw 1 card',
     artKey: 'hr_light_gleaming_passage',
     effects: [
-      { type: 'discard_draw', discard: 2, draw: 3 },
       { type: 'radiance_gain', value: 2 },
+      { type: 'radiance_double' },
+      { type: 'draw', value: 1 },
     ],
   },
 
@@ -393,11 +400,11 @@ export const lightHRCards: OphanimDefinition[] = [
     element: 'Light',
     rarity: 'Epic',
     name: 'Ascendant Blaze',
-    description: 'If this is the first card you played this turn, Draw 1 card; If you have played 1+ cards this turn, Gain 2 Radiance',
+    description: 'If this is the first card you played this turn, Gain 4 Radiance; Draw 1 card; If you have played 3+ cards this turn, Gain 2 Radiance; +80 Oblivion',
     artKey: 'hr_light_transcendent_surge',
     effects: [
-      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'draw', value: 1 }] },
-      { type: 'conditional', condition: { type: 'cards_played_gte', value: 1 }, then: [{ type: 'radiance_gain', value: 2 }] },
+      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'radiance_gain', value: 4 }, { type: 'draw', value: 1 }] },
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'radiance_gain', value: 2 }, { type: 'oblivion_flat', value: 80 }] },
     ],
   },
   {

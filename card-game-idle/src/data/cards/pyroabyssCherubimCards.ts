@@ -22,14 +22,15 @@ export const pyroabyssCherubimCards: CherubimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Veil',
-    description: 'On play: +35 Oblivion; Gain 3 Heat. While on board: +12 Oblivion per card played',
+    description: 'On play: +25 Oblivion; Gain 2 Heat; If you control 2+ active Seraphim, +20 Oblivion; Gain 2 Heat. While on board: +12 Oblivion per card played',
     artKey: 'cherubim_fire_abyssal_veil',
     maxDurability: 3,
     effects: [
       { type: 'cherubim_oblivion_per_card', value: 12 }],
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 35 },
-      { type: 'pyro_heat_gain', value: 3 }],
+      { type: 'oblivion_flat', value: 25 },
+      { type: 'pyro_heat_gain', value: 2 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 20 }, { type: 'pyro_heat_gain', value: 2 }] }],
   },
   {
     definitionId: 'cherubim-fire-pyre-mantle',

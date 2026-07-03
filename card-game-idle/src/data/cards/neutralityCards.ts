@@ -123,7 +123,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Equilibrium Seraphim',
-    description: 'On play: +36 Oblivion. While on board: +8 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 2 cards',
+    description: 'On play: +18 Oblivion; If you control 3+ active Seraphim, +24 Oblivion; All Seraphim on board gain +3 Patience. While on board: +8 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 2 cards',
     artKey: 'ser_neutral_equilibrium',
     attacks: {
       unsynergized: {
@@ -152,7 +152,8 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     patienceThreshold: 4,
     patienceThresholdDraw: 2,
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 36 }],
+      { type: 'oblivion_flat', value: 18 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 24 }, { type: 'patience_gain_all', value: 3 }] }],
   },
   {
     definitionId: 'ser-neutral-still',
@@ -202,10 +203,11 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Seek',
-    description: 'Draw 2 cards',
+    description: 'Draw 2 cards; If this is the first card you played this turn, All Seraphim on board gain +2 Patience',
     artKey: 'seek_neutral_null_seek',
     effects: [
-      { type: 'draw', value: 2 }],
+      { type: 'draw', value: 2 },
+      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'patience_gain_all', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-neutral-seraph-recall',
@@ -238,10 +240,11 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Common',
     name: 'Measured Seek',
-    description: 'Look at the top 4 cards, take 1 card, put 1 card on the bottom, and discard the rest',
+    description: 'Look at the top 3 cards, take 1 card, and put the rest on the bottom; If you control 1+ active Seraphim, All Seraphim on board gain +2 Patience',
     artKey: 'seek_neutral_measured_seek',
     effects: [
-      { type: 'look_top_take_drop', look: 4, take: 1, drop: 1 }],
+      { type: 'look_top_take', look: 3, take: 1 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'patience_gain_all', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-neutral-void-surge',
@@ -273,11 +276,11 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Oblivion Pulse',
-    description: 'All Seraphim on board gain +2 Patience; +20 Oblivion',
+    description: 'All Seraphim on board gain +2 Patience; If you have played 2+ cards this turn, +40 Oblivion; Draw 1 card',
     artKey: 'seek_neutral_chain_pulse',
     effects: [
       { type: 'patience_gain_all', value: 2 },
-      { type: 'oblivion_flat', value: 20 }],
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 2 }, then: [{ type: 'oblivion_flat', value: 40 }, { type: 'draw', value: 1 }] }],
   },
   {
     definitionId: 'ophanim-neutral-cherubim-recall',
@@ -285,12 +288,11 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Cherubim Recall',
-    description: 'Salvage 1 card matching Cherubim; All Seraphim on board gain +2 Patience; Choose and discard 1 card',
+    description: 'Salvage Null Veil from discard; All Seraphim on board gain +3 Patience',
     artKey: 'seek_neutral_cherubim_recall',
     effects: [
-      { type: 'salvage_by_type', filter: ['Cherubim'] },
-      { type: 'patience_gain_all', value: 2 },
-      { type: 'discard_choice', value: 1 }],
+      { type: 'salvage_by_id', targetId: 'cherubim-neutral-null-veil', label: 'Null Veil' },
+      { type: 'patience_gain_all', value: 3 }],
   },
   {
     definitionId: 'ophanim-neutral-deep-seek',
@@ -315,11 +317,11 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Grand Seek',
-    description: 'Draw 2 cards; All Seraphim on board gain +2 Patience',
+    description: 'Draw 2 cards; If you control 2+ active Seraphim, All Seraphim on board gain +3 Patience',
     artKey: 'seek_neutral_grand_seek',
     effects: [
       { type: 'draw', value: 2 },
-      { type: 'patience_gain_all', value: 2 }],
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'patience_gain_all', value: 3 }] }],
   },
   {
     definitionId: 'ophanim-neutral-echo-pulse',
@@ -327,10 +329,11 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Echo Pulse',
-    description: 'All Seraphim on board gain +5 Patience',
+    description: 'All Seraphim on board gain +4 Patience; If you have played 4+ cards this turn, Double all Patience on the board',
     artKey: 'seek_neutral_echo_pulse',
     effects: [
-      { type: 'patience_gain_all', value: 5 }],
+      { type: 'patience_gain_all', value: 4 },
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 4 }, then: [{ type: 'patience_double_all' }] }],
   },
   {
     definitionId: 'ophanim-neutral-seraph-hunt',
@@ -338,11 +341,12 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Seraph Hunt',
-    description: 'Search your deck for 1 matching Seraphim; All Seraphim on board gain +4 Patience',
+    description: 'Search your deck for 1 matching Seraphim; All Seraphim on board gain +3 Patience; If you have played 3+ cards this turn, All Seraphim on board gain +2 Patience',
     artKey: 'seek_neutral_seraph_hunt',
     effects: [
       { type: 'search_deck_by_type', filter: ['Seraphim'] },
-      { type: 'patience_gain_all', value: 4 }],
+      { type: 'patience_gain_all', value: 3 },
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'patience_gain_all', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-neutral-nullfall',

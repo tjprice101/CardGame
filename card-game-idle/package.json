@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "deploy": "npm run build:web && gh-pages -d dist",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "docs:cards": "tsx scripts/generate-card-effects-docs.mts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",

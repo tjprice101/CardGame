@@ -351,11 +351,11 @@ const baseCherubim: CherubimDefinition[] = [
   buildCherubim({
     definitionId: 'af-cher-anvilborn-sovereign',
     name: 'Anvilborn Sovereign',
-    description: 'On play: Gain 3 Reforge Charges; Drop 3 Pearls; Gain 1 Forge Crown. While on board: Gain 1 Reforge Charge every 2 cards you play; Buffs Seraphim and Angel attacks: base +66',
+    description: 'On play: Gain 3 Reforge Charges; Drop 4 Pearls. While on board: Gain 1 Reforge Charge every 2 cards you play; Buffs Seraphim and Angel attacks: base +66',
     rarity: 'Legendary',
     artKey: 'af_cher_anvilborn_sovereign',
     effects: [{ type: 'cherubim_charge_per_n_cards', n: 2 }, { type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 66 }],
-    onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 3 }, { type: 'forge_pearl_drop', value: 3 }, { type: 'eternal_stack_gain', stack: 'forge', value: 1 }],
+    onPlayEffects: [{ type: 'forge_reforge_charge_gain', value: 3 }, { type: 'forge_pearl_drop', value: 4 }],
   })];
 
 // Ophanim (8).
@@ -363,18 +363,18 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'af-oph-saffron-ember-wheel',
     name: 'Saffron Cinder Wheel',
-    description: 'Gain 2 Reforge Charges; Draw 1 card',
+    description: 'Gain 2 Reforge Charges; Draw 1 card; If this is the first card you played this turn, Drop 1 Pearl',
     rarity: 'Common',
     artKey: 'af_oph_saffron_ember_wheel',
-    effects: [{ type: 'forge_reforge_charge_gain', value: 2 }, { type: 'draw', value: 1 }],
+    effects: [{ type: 'forge_reforge_charge_gain', value: 2 }, { type: 'draw', value: 1 }, { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'forge_pearl_drop', value: 1 }] }],
   }),
   buildOphanim({
     definitionId: 'af-oph-cobalt-ember-wheel',
     name: 'Cobalt Cinder Wheel',
-    description: 'Drop 2 Pearls',
+    description: 'Drop 2 Pearls; Gain 1 Reforge Charge; If you have played 2+ cards this turn, Recast the last card at 40% power',
     rarity: 'Common',
     artKey: 'af_oph_cobalt_ember_wheel',
-    effects: [{ type: 'forge_pearl_drop', value: 2 }],
+    effects: [{ type: 'forge_pearl_drop', value: 2 }, { type: 'forge_reforge_charge_gain', value: 1 }, { type: 'conditional', condition: { type: 'cards_played_gte', value: 2 }, then: [{ type: 'forge_recast_last', power: 0.4 }] }],
   }),
   buildOphanim({
     definitionId: 'af-oph-forge-wheel-sigil',
@@ -411,18 +411,18 @@ const baseOphanim: OphanimDefinition[] = [
   buildOphanim({
     definitionId: 'af-oph-crown-of-the-forge-beneath',
     name: 'Crown of the Forge-beneath',
-    description: 'Gain 1 Forge Crown; Gain 2 Reforge Charges; Raise the Reforge Charge cap by 1; Drop 3 Pearls; Cash out all Forge Crowns (+80 Oblivion per Crown)',
+    description: 'Gain 3 Reforge Charges; Raise the Reforge Charge cap by 1; Drop 5 Pearls; Spend 25 Pearls (+90 Oblivion per Pearl)',
     rarity: 'Legendary',
     artKey: 'af_oph_crown_of_the_forge_beneath',
-    effects: [{ type: 'eternal_stack_gain', stack: 'forge', value: 1 }, { type: 'forge_reforge_charge_gain', value: 2 }, { type: 'forge_reforge_charge_cap_raise', value: 1 }, { type: 'forge_pearl_drop', value: 3 }, { type: 'forge_crown_cashout', oblivionPerCrown: 80 }],
+    effects: [{ type: 'forge_reforge_charge_gain', value: 3 }, { type: 'forge_reforge_charge_cap_raise', value: 1 }, { type: 'forge_pearl_drop', value: 5 }, { type: 'forge_pearl_cashout', spend: 25, oblivionPerPearl: 90 }],
   }),
   buildOphanim({
     definitionId: 'af-oph-ouroglas-discarded-scale',
     name: "Ouroglas's Discarded Scale",
-    description: 'Gain 2 Forge Crowns; Recast the last 4 cards at 60% power; Drop 2 Pearls',
+    description: 'Recast the last 4 cards at 60% power; Drop 4 Pearls; Gain 3 Reforge Charges',
     rarity: 'Legendary',
     artKey: 'af_oph_ouroglas_discarded_scale',
-    effects: [{ type: 'eternal_stack_gain', stack: 'forge', value: 2 }, { type: 'forge_recast_last_n', count: 4, power: 0.6 }, { type: 'forge_pearl_drop', value: 2 }],
+    effects: [{ type: 'forge_recast_last_n', count: 4, power: 0.6 }, { type: 'forge_pearl_drop', value: 4 }, { type: 'forge_reforge_charge_gain', value: 3 }],
   })];
 
 // Angels (6)

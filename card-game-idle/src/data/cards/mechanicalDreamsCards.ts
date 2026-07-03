@@ -75,7 +75,7 @@ export const mechanicalDreamsSeraphims: SeraphimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Dreamforge Lancer',
-    description: 'On play: Gain 1 Strain. While on board: Each new Cherubim summoned while active gains +1 durability',
+    description: 'On play: Gain 2 Strain; If you have 4+ Strain, Draw 1 card. While on board: Each new Cherubim summoned while active gains +1 durability',
     artKey: 'md_ser_dreamforge_lancer',
     attacks: {
       unsynergized: {
@@ -101,7 +101,7 @@ export const mechanicalDreamsSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 1, synergyRequirement: 'Mechanical' },
-    onPlayEffects: [{ type: 'strain_gain', value: 1 }],
+    onPlayEffects: [{ type: 'strain_gain', value: 2 }, { type: 'conditional', condition: { type: 'strain_gte', value: 4 }, then: [{ type: 'draw', value: 1 }] }],
   },
   {
     definitionId: 'md-ser-ivory-null-operator',
@@ -109,7 +109,7 @@ export const mechanicalDreamsSeraphims: SeraphimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Ivory-Null Operator',
-    description: 'On play: +25 Oblivion. While on board: +12 Oblivion per card played while active',
+    description: 'On play: Gain 2 Strain; +25 Oblivion; If you have 5+ Strain, +30 Oblivion. While on board: +12 Oblivion per card played while active',
     artKey: 'md_ser_ivory_null_operator',
     attacks: {
       unsynergized: {
@@ -135,7 +135,7 @@ export const mechanicalDreamsSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 12, synergyRequirement: 'Mechanical' },
-    onPlayEffects: [{ type: 'oblivion_flat', value: 25 }],
+    onPlayEffects: [{ type: 'strain_gain', value: 2 }, { type: 'oblivion_flat', value: 25 }, { type: 'conditional', condition: { type: 'strain_gte', value: 5 }, then: [{ type: 'oblivion_flat', value: 30 }] }],
   },
   {
     definitionId: 'md-ser-pyrecoil-ascetic',
@@ -177,7 +177,7 @@ export const mechanicalDreamsSeraphims: SeraphimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Legendary',
     name: 'Fate-Sever Colossus',
-    description: 'On play: Gain 2 Strain. While on board: +16 Oblivion per card played while active',
+    description: 'On play: Gain 2 Strain; If you have 8+ Strain, Vent 3 Strain; +200 Oblivion. While on board: +16 Oblivion per card played while active',
     artKey: 'md_ser_fate_sever_colossus',
     attacks: {
       unsynergized: {
@@ -203,7 +203,7 @@ export const mechanicalDreamsSeraphims: SeraphimDefinition[] = [
       },
     },
     baseStats: { bonusType: 'oblivion_per_card', bonusValue: 16, synergyRequirement: 'Mechanical' },
-    onPlayEffects: [{ type: 'strain_gain', value: 2 }],
+    onPlayEffects: [{ type: 'strain_gain', value: 2 }, { type: 'conditional', condition: { type: 'strain_gte', value: 8 }, then: [{ type: 'strain_vent', value: 3 }, { type: 'oblivion_flat', value: 200 }] }],
   }];
 
 export const mechanicalDreamsOphanims: OphanimDefinition[] = [
@@ -241,11 +241,11 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Common',
     name: 'Servo Divination',
-    description: 'Gain 3 Strain; Salvage any 1 card; Shuffle discard into deck',
+    description: 'Gain 3 Strain; Salvage 1 card matching Seraphim; Shuffle discard into deck',
     artKey: 'md_seek_servo_divination',
     effects: [
       { type: 'strain_gain', value: 3 },
-      { type: 'salvage_any' },
+      { type: 'salvage_by_type', filter: ['Seraphim'] },
       { type: 'shuffle_discard' }
     ],
   },
@@ -282,9 +282,9 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Directive Zero',
-    description: 'Search your deck for 1 matching Ophanim; Gain 3 Strain',
+    description: 'Search your deck for 1 matching Ophanim; Gain 3 Strain; If you have 5+ Strain, +60 Oblivion',
     artKey: 'md_seek_directive_zero',
-    effects: [{ type: 'search_deck_by_type', filter: ['Ophanim'] }, { type: 'strain_gain', value: 3 }],
+    effects: [{ type: 'search_deck_by_type', filter: ['Ophanim'] }, { type: 'strain_gain', value: 3 }, { type: 'conditional', condition: { type: 'strain_gte', value: 5 }, then: [{ type: 'oblivion_flat', value: 60 }] }],
   },
   {
     definitionId: 'md-ophanim-furnace-sync',
@@ -292,9 +292,9 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Furnace Sync',
-    description: 'Vent 2 Strain; +150 Oblivion',
+    description: 'Vent 2 Strain; +150 Oblivion; If you have played 2+ cards this turn, Draw 1 card',
     artKey: 'md_seek_furnace_sync',
-    effects: [{ type: 'strain_vent', value: 2 }, { type: 'oblivion_flat', value: 150 }],
+    effects: [{ type: 'strain_vent', value: 2 }, { type: 'oblivion_flat', value: 150 }, { type: 'conditional', condition: { type: 'cards_played_gte', value: 2 }, then: [{ type: 'draw', value: 1 }] }],
   },
   {
     definitionId: 'md-ophanim-coil-edge-recursion',
@@ -302,11 +302,11 @@ export const mechanicalDreamsOphanims: OphanimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Coil-Edge Recursion',
-    description: 'Salvage any 1 card; If you have 2 or less Strain, Gain 2 Strain',
+    description: 'Salvage 1 card matching Cherubim; If you have 2 or less Strain, Gain 3 Strain',
     artKey: 'md_seek_coil_edge_recursion',
     effects: [
-      { type: 'salvage_any' },
-      { type: 'conditional', condition: { type: 'strain_lte', value: 2 }, then: [{ type: 'strain_gain', value: 2 }] }],
+      { type: 'salvage_by_type', filter: ['Cherubim'] },
+      { type: 'conditional', condition: { type: 'strain_lte', value: 2 }, then: [{ type: 'strain_gain', value: 3 }] }],
   },
   {
     definitionId: 'md-ophanim-predestination-break',
@@ -369,11 +369,11 @@ export const mechanicalDreamsCherubim: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Rust Halo Chamber',
-      description: 'On play: Gain 7 Strain',
+      description: 'On play: Gain 6 Strain; If you have 5+ Strain, +80 Oblivion. While on board: Gain 1 Strain per card played',
     artKey: 'md_cherubim_rust_halo_chamber',
     maxDurability: 3,
-      effects: [],
-      onPlayEffects: [{ type: 'strain_gain', value: 7 }],
+      effects: [{ type: 'cherubim_resource_per_card', resource: 'strain', value: 1 }],
+      onPlayEffects: [{ type: 'strain_gain', value: 6 }, { type: 'conditional', condition: { type: 'strain_gte', value: 5 }, then: [{ type: 'oblivion_flat', value: 80 }] }],
   },
   {
     definitionId: 'md-cherubim-yellowwake-pistons',
@@ -393,11 +393,11 @@ export const mechanicalDreamsCherubim: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Monolith Relay',
-      description: 'On play: Gain 2 Strain. While on board: Adjacent active Seraphim gain +16 Oblivion per card played',
+      description: 'On play: Gain 3 Strain; If you have 5+ Strain, Vent 1 Strain; +80 Oblivion. While on board: Adjacent active Seraphim gain +16 Oblivion per card played',
     artKey: 'md_cherubim_monolith_relay',
     maxDurability: 3,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 16 }],
-      onPlayEffects: [{ type: 'strain_gain', value: 2 }],
+      onPlayEffects: [{ type: 'strain_gain', value: 3 }, { type: 'conditional', condition: { type: 'strain_gte', value: 5 }, then: [{ type: 'strain_vent', value: 1 }, { type: 'oblivion_flat', value: 80 }] }],
   },
   {
     definitionId: 'md-cherubim-cinder-protocol-engine',
@@ -405,11 +405,11 @@ export const mechanicalDreamsCherubim: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Epic',
     name: 'Cinder Protocol Engine',
-      description: 'On play: Gain 9 Strain. While on board: Adjacent active Seraphim gain +14 Oblivion per card played',
+      description: 'On play: Gain 9 Strain; If you have 6+ Strain, +120 Oblivion. While on board: Adjacent active Seraphim gain +14 Oblivion per card played',
     artKey: 'md_cherubim_cinder_protocol_engine',
     maxDurability: 4,
       effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 14 }],
-      onPlayEffects: [{ type: 'strain_gain', value: 9 }],
+      onPlayEffects: [{ type: 'strain_gain', value: 9 }, { type: 'conditional', condition: { type: 'strain_gte', value: 6 }, then: [{ type: 'oblivion_flat', value: 120 }] }],
   },
   {
     definitionId: 'md-cherubim-blackglass-reactor-crown',
@@ -467,11 +467,11 @@ export const mechanicalDreamsCherubimCards: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Overclock Amplifier',
-    description: 'On play: Gain 6 Strain. While on board: Buffs Seraphim and Angel attacks: base +38',
+    description: 'On play: Gain 5 Strain; If you have 4+ Strain, +50 Oblivion. While on board: Buffs Seraphim and Angel attacks: base +38',
     artKey: 'md_cherubim_overclock_amplifier',
     maxDurability: 3,
-    effects: [],
-    onPlayEffects: [{ type: 'strain_gain', value: 6 }],
+    effects: [{ type: 'cherubim_attack_buff', targetUnitType: 'Any', bonusBaseOblivion: 38 }],
+    onPlayEffects: [{ type: 'strain_gain', value: 5 }, { type: 'conditional', condition: { type: 'strain_gte', value: 4 }, then: [{ type: 'oblivion_flat', value: 50 }] }],
   },
   {
     definitionId: 'cherubim-mechanical-dynamo-shell',
@@ -479,11 +479,11 @@ export const mechanicalDreamsCherubimCards: CherubimDefinition[] = [
     element: 'Mechanical',
     rarity: 'Rare',
     name: 'Dynamo Shell',
-    description: 'On play: Gain 4 Strain; +40 Oblivion. While on board: If you control 1+ active Cherubim, this Cherubim grants +2 bonus power; Buffs Seraphim attacks: base +42, cooldown -1, multiplier x1.70',
+    description: 'On play: Gain 4 Strain; +40 Oblivion; If you have 5+ Strain, Vent 1 Strain; +60 Oblivion. While on board: If you control 1+ active Cherubim, this Cherubim grants +2 bonus power; Buffs Seraphim attacks: base +42, cooldown -1, multiplier x1.70',
     artKey: 'md_cherubim_dynamo_shell',
     maxDurability: 3,
-    effects: [{ type: 'cherubim_conditional_buff', condition: { type: 'cherubim_active_gte', value: 1 }, value: 2 }],
-    onPlayEffects: [{ type: 'strain_gain', value: 4 }, { type: 'oblivion_flat', value: 40 }],
+    effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 14 }],
+    onPlayEffects: [{ type: 'strain_gain', value: 4 }, { type: 'oblivion_flat', value: 40 }, { type: 'conditional', condition: { type: 'strain_gte', value: 5 }, then: [{ type: 'strain_vent', value: 1 }, { type: 'oblivion_flat', value: 60 }] }],
   },
   {
     definitionId: 'cherubim-mechanical-pulse-matrix',

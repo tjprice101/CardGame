@@ -53,13 +53,14 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Equilibrium Ward',
-    description: 'On play: Look at the top 4 cards, take 1 card, and put the rest on the bottom. While on board: Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'On play: Look at the top 4 cards, take 1 card, and put the rest on the bottom; If you control 1+ active Seraphim, All Seraphim on board gain +2 Patience. While on board: Adjacent Seraphim and Angels gain +2 Patience per card played',
     artKey: 'cherubim_neutral_equilibrium_ward',
     maxDurability: 3,
     effects: [
       { type: 'cherubim_patience_per_card', value: 2 }],
     onPlayEffects: [
-      { type: 'look_top_take', look: 4, take: 1 }],
+      { type: 'look_top_take', look: 4, take: 1 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'patience_gain_all', value: 2 }] }],
   },
   {
     definitionId: 'cherubim-neutral-still-shell',
@@ -87,14 +88,14 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Null Fortification',
-    description: 'On play: All Seraphim on board gain +4 Patience; +40 Oblivion. While on board: Buffs Seraphim attacks: base +36, cooldown +0, multiplier x1.00',
+    description: 'On play: If this is the first card you played this turn, +60 Oblivion and draw 1 card; All Seraphim on board gain +4 Patience. While on board: Adjacent Seraphim and Angels gain +2 Patience per card played',
     artKey: 'cherubim_neutral_null_fortify',
     maxDurability: 3,
     effects: [
       { type: 'cherubim_patience_per_card', value: 2 }],
     onPlayEffects: [
-      { type: 'patience_gain_all', value: 4 },
-      { type: 'oblivion_flat', value: 40 }],
+      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'oblivion_flat', value: 60 }, { type: 'draw', value: 1 }] },
+      { type: 'patience_gain_all', value: 4 }],
   },
   {
     definitionId: 'cherubim-neutral-void-amp',

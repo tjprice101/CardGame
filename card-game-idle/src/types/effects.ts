@@ -34,6 +34,7 @@ export type ImmediateEffect =
   | { type: 'salvage_by_type'; filter: CardSubtypeFilter[] }
   | { type: 'salvage_by_type_count'; filter: CardSubtypeFilter[]; count: number }
   | { type: 'salvage_any' }
+  | { type: 'salvage_by_id'; targetId: string; label?: string }
   | { type: 'radiance_double' }
   | { type: 'prismatic_light_gain'; value: number }
   | { type: 'prismatic_light_spend'; value: number }
@@ -268,7 +269,7 @@ export type CherubimPassiveEffect =
   | { type: 'cherubim_seraphim_amp'; value: number }
   | { type: 'cherubim_pyro_heat_gain'; value: number }
   | { type: 'cherubim_draw_per_card'; value: number }
-  | { type: 'cherubim_resource_per_card'; resource: 'butterflySpectrum' | 'radiance' | 'trail' | 'strain' | 'prismaticLight' | 'arcticCharge'; value: number }
+  | { type: 'cherubim_resource_per_card'; resource: 'butterflySpectrum' | 'radiance' | 'trail' | 'strain' | 'prismaticLight' | 'arcticCharge' | 'undertow' | 'absol'; value: number }
   | { type: 'cherubim_adjacent_seraphim_bonus'; value: number; bonusType: 'oblivion' | 'draw' }
   | { type: 'cherubim_on_discard'; value: number }
   | {

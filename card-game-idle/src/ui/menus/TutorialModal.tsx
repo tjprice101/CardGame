@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { type NeutralityTutorialTier } from '@/data/trialDecks';
 import { uiTypography } from '@/ui/theme';
+import { RARITY_TIERS, SET_ENGINE_ENTRIES, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
 
 interface Props {
   onClose: () => void;
@@ -321,20 +322,7 @@ function PatienceBody() {
 }
 
 function SetsBody() {
-  const sets: Array<[string, string, string]> = [
-    ['Neutrality', 'Patience / Stasis', 'Stockpile Patience on Seraphim, cash it out on attack. The friendly starter engine.'],
-    ['Heavenly Light', 'Radiance & Halo', 'Build Radiance, then spend stocked Halo on your biggest Light burst turns.'],
-    ['Pyroabyss', 'Heat Roles and Burst Windows', 'Base cards now split into stoke, threshold, tutor, and burst roles. Build Heat first, then cash in one burst window; add Chroma overlays only on higher-rarity turns.'],
-    ['Thornbound Plains', 'Trail, Scar & Briar Spiral', 'Build Trail, convert to Scar manually in the HUD, then use Eternal Briar Spirals to amplify your payoff turn.'],
-    ['Snowbound Voltage', 'Frost, Voltage & Polar Capacitors', 'Frost cards build Arctic Charge and Voltage cards cash it out; Eternity/Infinite cards add Polar Capacitor bank-and-release lines.'],
-    ['Mechanical Dreams', 'Strain & Clock-Chime', 'Build Strain, track the 3-tick Clock, and spend stored Chimes on your strongest Mechanical attacks.'],
-    ['Prismatic', 'Refraction & Prism Charge', 'Switch channels to build Refraction Depth and Prism Charge, then spend fixed charge amounts on payoff turns.'],
-    ['Black Glass Inferno', 'Twin-Flame, Fracture & Eclipse', 'Balance White and Black Flame, build Fracture, then convert banked Eclipse through Eternal/Infinity burst windows.'],
-    ['Glass Absolute', 'Fragments, Formation & Refraction', 'Build dense Glass board presence to hit fragment tiers, then use Refraction Charge on Eternal/Infinite cards to convert that formation into larger burst turns.'],
-    ['Blazing Garden', 'Burn, Grove, Echo & Wild Pollen', 'Keep units in Burn, let charred cards seed Ember Grove, generate Wild Pollen from Eternal cards, then spend seeded payoffs for your lineage burst turn.'],
-    ['Age of the Butterfly', 'Flutter Formation + Wing Resonance', 'Charge shared Spectrum, complete Formation across unit types, then cash Wing Resonance windows on Eternity/Infinite turns before Descent reset.'],
-    ['Eternal Seas', 'Undertow, Foam & Deepwake', 'Build Undertow during the turn, release it for burst, spend 5 Foam in the HUD to draw 1 card, and use Deepwake on Eternal/Infinite cards to amplify your conversion turns.'],
-  ];
+  const sets = SET_ENGINE_ENTRIES;
 
   return (
     <>
@@ -348,7 +336,7 @@ function SetsBody() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
-        {sets.map(([name, mech, body]) => (
+        {sets.map(({ name, mechanic, body }) => (
           <div key={name} style={{
             ...cardAltStyle,
             padding: '9px 11px',
@@ -368,7 +356,7 @@ function SetsBody() {
               fontWeight: 700,
               marginTop: 1,
               marginBottom: 4,
-            }}>{mech}</div>
+            }}>{mechanic}</div>
             <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>{body}</div>
           </div>
         ))}
@@ -378,14 +366,7 @@ function SetsBody() {
 }
 
 function RaritiesBody() {
-  const tiers: Array<[string, string, string]> = [
-    ['Common', 'Card packs', 'Simple and modest. The early deck backbone.'],
-    ['Rare', 'Card packs', 'Noticeably stronger than Commons; introduces subset mechanics.'],
-    ['Epic', 'Card packs', 'Impactful, often combo-shaped.'],
-    ['Legendary', 'Card packs', 'Dramatic, deck-defining plays.'],
-    ['Eternal', "Eternity's Wake boss drops", 'Much stronger; higher patience thresholds, bigger Cherubim payouts, set-defining payoff lines.'],
-    ['Infinite', 'Infinitude crafting', 'Apex tier. Forged by consuming specific Eternals. Patience thresholds 8+, Angels with patience-double abilities.'],
-  ];
+  const tiers = RARITY_TIERS;
 
   return (
     <>
@@ -398,8 +379,8 @@ function RaritiesBody() {
       </div>
 
       <div style={{ marginTop: 10, ...cardAltStyle, padding: '6px 10px' }}>
-        {tiers.map(([tier, source, body], i) => (
-          <div key={tier} style={{
+        {tiers.map(({ name, source, description }, i) => (
+          <div key={name} style={{
             display: 'grid',
             gridTemplateColumns: '92px 160px 1fr',
             gap: 10,
@@ -407,9 +388,9 @@ function RaritiesBody() {
             borderBottom: i < tiers.length - 1 ? `1px solid ${PALETTE.borderSoft}` : 'none',
             alignItems: 'baseline',
           }}>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT, letterSpacing: 0.4 }}>{tier}</div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT, letterSpacing: 0.4 }}>{name}</div>
             <div style={{ fontSize: 11, color: PALETTE.inkSoft, fontStyle: 'italic' }}>{source}</div>
-            <div style={{ ...bodyTextStyle, fontSize: 12 }}>{body}</div>
+            <div style={{ ...bodyTextStyle, fontSize: 12 }}>{description}</div>
           </div>
         ))}
       </div>
@@ -447,16 +428,7 @@ function ModesBody() {
 }
 
 function CardBornTierBody() {
-  const tiers: Array<[string, string, number, string]> = [
-    ['Practiced',     '◈', 25,     'First steps. The card becomes familiar in your hands.'],
-    ['Veteran',       '◆', 75,     'Consistent use — you know this card\'s timing.'],
-    ['Master',        '✦', 400,    'Real commitment. The card has shaped your play.'],
-    ['Eternal Bond',  '★', 1_500,  'This card is a staple, deeply understood.'],
-    ['Resonant',      '✵', 3_000,  'Refined command — you push its limits each turn.'],
-    ['Transcendent',  '✷', 6_000,  'Near-peak. Rare few reach here.'],
-    ['Ascendant',     '✸', 15_000, 'One of your defining cards. Profound familiarity.'],
-    ['Infinite Bond', '∞', 30_000, 'The apex tier. You and this card are inseparable.'],
-  ];
+  const tiers = CARD_BORN_TIERS;
 
   return (
     <>
@@ -474,7 +446,7 @@ function CardBornTierBody() {
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>The 8 Tiers</div>
-        {tiers.map(([name, glyph, threshold, desc], i) => (
+        {tiers.map(({ name, glyph, threshold, description }, i) => (
           <div key={name} style={{
             display: 'grid', gridTemplateColumns: '28px 110px 70px 1fr',
             gap: 10, padding: '6px 4px',
@@ -484,7 +456,7 @@ function CardBornTierBody() {
             <div style={{ fontSize: 14, color: PALETTE.accent, textAlign: 'center' }}>{glyph}</div>
             <div style={{ fontSize: 12, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT }}>{name}</div>
             <div style={{ fontSize: 11, color: PALETTE.inkSoft }}>{threshold.toLocaleString()} Card-light</div>
-            <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>{desc}</div>
+            <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>{description}</div>
           </div>
         ))}
       </div>
@@ -643,19 +615,20 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 function buildSections(onPlayTutorialTurn: (tier: NeutralityTutorialTier) => void): Section[] {
-  return [
-    { id: 'overview', label: 'Overview', title: 'How To Play', subtitle: 'The game loop, currencies, and modes.', body: <OverviewBody /> },
-    { id: 'play-turn', label: 'Play Tutorial Turn', title: 'Play Tutorial Turn', subtitle: 'Neutrality Starter -> Eternal -> Infinite practice lanes.', body: <PlayTutorialTurnBody onPlayTutorialTurn={onPlayTutorialTurn} /> },
-    { id: 'turn-flow', label: 'Turn Flow', title: 'Turn Flow', subtitle: 'Begin -> Mulligan -> Play -> End.', body: <TurnFlowBody /> },
-    { id: 'board', label: 'Board & Cards', title: 'The Board', subtitle: 'Slots, card types, and click behavior.', body: <BoardBody /> },
-    { id: 'attacks', label: 'Attacks', title: 'Attacks', subtitle: 'How Seraphim and Angel attacks pay out.', body: <AttacksBody /> },
-    { id: 'patience', label: 'Patience', title: 'Patience System', subtitle: 'The Neutrality starter engine.', body: <PatienceBody /> },
-    { id: 'sets', label: 'Sets', title: 'Set Engines', subtitle: 'The mechanical identity of every set.', body: <SetsBody /> },
-    { id: 'rarities', label: 'Rarities', title: 'Rarity Tiers', subtitle: 'From Common through Infinite.', body: <RaritiesBody /> },
-    { id: 'modes', label: 'Modes', title: 'Wake, Infinitude & Packs', subtitle: 'Boss fights, crafting, and the store.', body: <ModesBody /> },
-    { id: 'card-born-tier', label: 'Card-born Tier', title: 'Card-born Tier', subtitle: 'Card-light mastery, Resonance, and Collection Power.', body: <CardBornTierBody /> },
-    { id: 'progression', label: 'Progression', title: 'Progression & Cosmetics', subtitle: 'Shards, holofoils, profile, and themes.', body: <ProgressionBody /> },
-  ];
+  const bodyMap: Record<string, React.ReactNode> = {
+    'overview':       <OverviewBody />,
+    'play-turn':      <PlayTutorialTurnBody onPlayTutorialTurn={onPlayTutorialTurn} />,
+    'turn-flow':      <TurnFlowBody />,
+    'board':          <BoardBody />,
+    'attacks':        <AttacksBody />,
+    'patience':       <PatienceBody />,
+    'sets':           <SetsBody />,
+    'rarities':       <RaritiesBody />,
+    'modes':          <ModesBody />,
+    'card-born-tier': <CardBornTierBody />,
+    'progression':    <ProgressionBody />,
+  };
+  return TUTORIAL_SECTIONS.map(s => ({ ...s, body: bodyMap[s.id] ?? null }));
 }
 
 export default function TutorialModal({ onClose, onPlayTutorialTurn }: Props) {

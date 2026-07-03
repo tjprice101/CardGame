@@ -70,7 +70,7 @@ function buildSeraphim(spec: SnowboundSeraphimSpec): SeraphimDefinition {
   return {
     definitionId: spec.definitionId,
     type: 'Seraphim',
-    element: 'Mechanical',
+    element: 'Snowbound',
     rarity: spec.rarity,
     snowboundPhase: spec.phase,
     name: spec.name,
@@ -99,7 +99,7 @@ function buildSeraphim(spec: SnowboundSeraphimSpec): SeraphimDefinition {
         tags: ['seraphim', 'synergized', 'mechanical', 'snowbound', 'voltage'],
       },
     },
-    baseStats: { bonusType: spec.bonusType, bonusValue: spec.bonusValue, synergyRequirement: 'Mechanical' },
+    baseStats: { bonusType: spec.bonusType, bonusValue: spec.bonusValue, synergyRequirement: 'Snowbound' },
     onPlayEffects: spec.onPlayEffects,
   };
 }
@@ -108,7 +108,7 @@ function buildCherubim(spec: SnowboundCherubimSpec): CherubimDefinition {
   return {
     definitionId: spec.definitionId,
     type: 'Cherubim',
-    element: 'Mechanical',
+    element: 'Snowbound',
     rarity: spec.rarity,
     snowboundPhase: spec.phase,
     name: spec.name,
@@ -124,7 +124,7 @@ function buildOphanim(spec: SnowboundOphanimSpec): OphanimDefinition {
   return {
     definitionId: spec.definitionId,
     type: 'Ophanim',
-    element: 'Mechanical',
+    element: 'Snowbound',
     rarity: spec.rarity,
     snowboundPhase: spec.phase,
     name: spec.name,
@@ -138,7 +138,7 @@ function buildAngel(spec: SnowboundAngelSpec): AngelDefinition {
   return {
     definitionId: spec.definitionId,
     type: 'Angel',
-    element: 'Mechanical',
+    element: 'Snowbound',
     rarity: spec.rarity,
     snowboundPhase: spec.phase,
     name: spec.name,
@@ -179,13 +179,13 @@ const SNOWBOUND_SERAPHIM_SPECS: SnowboundSeraphimSpec[] = [
   {
     definitionId: 'sv-ser-frostcoil',
     name: 'Frostcoil Seraphim',
-    description: 'Frost. On play: Gain 8 Arctic Charge. While on board: +10 Oblivion per card played while active',
+    description: 'Frost. On play: Gain 8 Arctic Charge; If you control 1+ active Seraphim, Draw 1 card. While on board: +10 Oblivion per card played while active',
     rarity: 'Common',
     phase: 'Frost',
     artKey: 'sv_ser_frostcoil',
     bonusType: 'oblivion_per_card',
     bonusValue: 10,
-    onPlayEffects: [{ type: 'arctic_charge_gain', value: 8 }],
+    onPlayEffects: [{ type: 'arctic_charge_gain', value: 8 }, { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'draw', value: 1 }] }],
     unsynergizedName: 'Frostcoil Vector Break',
     synergizedName: 'Frostcoil Angelic Verdict',
     unsynergizedDescription: '210 base Oblivion · 4 cards cooldown',
@@ -217,13 +217,13 @@ const SNOWBOUND_SERAPHIM_SPECS: SnowboundSeraphimSpec[] = [
   {
     definitionId: 'sv-ser-glacier-relay',
     name: 'Glacier Relay Seraphim',
-    description: 'Frost. On play: Gain 9 Arctic Charge. While on board: +16 Oblivion per card played while active',
+    description: 'Frost. On play: Gain 9 Arctic Charge; If you control 1+ active Cherubim, Gain 3 Arctic Charge. While on board: +16 Oblivion per card played while active',
     rarity: 'Rare',
     phase: 'Frost',
     artKey: 'sv_ser_glacier_relay',
     bonusType: 'oblivion_per_card',
     bonusValue: 16,
-    onPlayEffects: [{ type: 'arctic_charge_gain', value: 9 }],
+    onPlayEffects: [{ type: 'arctic_charge_gain', value: 9 }, { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 1 }, then: [{ type: 'arctic_charge_gain', value: 3 }] }],
     unsynergizedName: 'Glacier Relay Vector Break',
     synergizedName: 'Glacier Relay Angelic Verdict',
     unsynergizedDescription: '352 base Oblivion · 4 cards cooldown',
@@ -274,13 +274,13 @@ const SNOWBOUND_SERAPHIM_SPECS: SnowboundSeraphimSpec[] = [
   {
     definitionId: 'sv-ser-arctic-vector',
     name: 'Arctic Vector Seraphim',
-    description: 'Frost. On play: Gain 10 Arctic Charge. While on board: +15 Oblivion per card played while active',
+    description: 'Frost. On play: Gain 10 Arctic Charge; If you have played 2+ cards this turn, Draw 1 card. While on board: +15 Oblivion per card played while active',
     rarity: 'Epic',
     phase: 'Frost',
     artKey: 'sv_ser_arctic_vector',
     bonusType: 'oblivion_per_card',
     bonusValue: 15,
-    onPlayEffects: [{ type: 'arctic_charge_gain', value: 10 }],
+    onPlayEffects: [{ type: 'arctic_charge_gain', value: 10 }, { type: 'conditional', condition: { type: 'cards_played_gte', value: 2 }, then: [{ type: 'draw', value: 1 }] }],
     unsynergizedName: 'Arctic Vector Break',
     synergizedName: 'Arctic Vector Angelic Verdict',
     unsynergizedDescription: '560 base Oblivion · 5 cards cooldown',
@@ -333,7 +333,7 @@ const SNOWBOUND_CHERUBIM_SPECS: SnowboundCherubimSpec[] = [
   {
     definitionId: 'sv-cher-polar-sanctum',
     name: 'The Polar Sanctum',
-    description: 'Frost. On play: Gain 16 Arctic Charge. While on board: Gain 2 Strain per card played',
+    description: 'Frost. On play: Gain 16 Arctic Charge. While on board: Gain 2 Arctic Charge per card played',
     rarity: 'Common',
     phase: 'Frost',
     artKey: 'sv_cher_polar_sanctum',
@@ -355,7 +355,7 @@ const SNOWBOUND_CHERUBIM_SPECS: SnowboundCherubimSpec[] = [
   {
     definitionId: 'sv-cher-cryoscale-engine',
     name: 'The Cryoscale Engine',
-    description: 'Frost. On play: Gain 19 Arctic Charge. While on board: Gain 3 Strain per card played',
+    description: 'Frost. On play: Gain 19 Arctic Charge. While on board: Gain 3 Arctic Charge per card played',
     rarity: 'Rare',
     phase: 'Frost',
     artKey: 'sv_cher_cryoscale_engine',
@@ -407,13 +407,13 @@ const SNOWBOUND_CHERUBIM_SPECS: SnowboundCherubimSpec[] = [
   {
     definitionId: 'sv-cher-aurora-gate',
     name: 'The Aurora Gate',
-    description: 'Frost. On play: Gain 32 Arctic Charge. While on board: All Oblivion gain +30%',
+    description: 'Frost. On play: Gain 32 Arctic Charge; If you control 2+ active Cherubim, Gain 8 Arctic Charge. While on board: All Oblivion gain +30%',
     rarity: 'Legendary',
     phase: 'Frost',
     artKey: 'sv_cher_aurora_gate',
     maxDurability: 8,
     effects: [{ type: 'cherubim_global_oblivion_mult', value: 0.30 }],
-    onPlayEffects: [{ type: 'arctic_charge_gain', value: 32 }],
+    onPlayEffects: [{ type: 'arctic_charge_gain', value: 32 }, { type: 'conditional', condition: { type: 'cherubim_active_gte', value: 2 }, then: [{ type: 'arctic_charge_gain', value: 8 }] }],
   },
   {
     definitionId: 'sv-cher-conductor-vael',
@@ -429,24 +429,24 @@ const SNOWBOUND_CHERUBIM_SPECS: SnowboundCherubimSpec[] = [
   {
     definitionId: 'sv-cher-last-transmission',
     name: 'The Last Transmission',
-    description: 'Voltage. On play: Gain 4 Arctic Charge; Discharge Arctic Charge. While on board: +18 Oblivion per card played',
+    description: 'Voltage. On play: Gain 4 Arctic Charge; Discharge Arctic Charge; If you have played 3+ cards this turn, +120 Oblivion; Draw 1 card. While on board: +18 Oblivion per card played',
     rarity: 'Legendary',
     phase: 'Voltage',
     artKey: 'sv_cher_last_transmission',
     maxDurability: 4,
     effects: [{ type: 'cherubim_oblivion_per_card', value: 18 }],
-    onPlayEffects: [{ type: 'arctic_charge_gain', value: 4 }, { type: 'arctic_charge_discharge' }],
+    onPlayEffects: [{ type: 'arctic_charge_gain', value: 4 }, { type: 'arctic_charge_discharge' }, { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 120 }, { type: 'draw', value: 1 }] }],
   }];
 
 const SNOWBOUND_OPHANIM_SPECS: SnowboundOphanimSpec[] = [
   {
     definitionId: 'sv-oph-sleetline-highway',
     name: 'The Sleetline Highway',
-    description: 'Frost. Draw 1 card; Gain 10 Arctic Charge',
+    description: 'Frost. Draw 1 card; Gain 10 Arctic Charge; If you control 2+ active Seraphim, Gain 5 Arctic Charge',
     rarity: 'Common',
     phase: 'Frost',
     artKey: 'sv_oph_sleetline_highway',
-    effects: [{ type: 'draw', value: 1 }, { type: 'arctic_charge_gain', value: 10 }],
+    effects: [{ type: 'draw', value: 1 }, { type: 'arctic_charge_gain', value: 10 }, { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 2 }, then: [{ type: 'arctic_charge_gain', value: 5 }] }],
   },
   {
     definitionId: 'sv-oph-glacier-abyss',
@@ -478,11 +478,11 @@ const SNOWBOUND_OPHANIM_SPECS: SnowboundOphanimSpec[] = [
   {
     definitionId: 'sv-oph-first-static',
     name: 'The First Static',
-    description: 'Voltage. Gain 9 Arctic Charge; Discharge Arctic Charge',
+    description: 'Voltage. Gain 9 Arctic Charge; Discharge Arctic Charge; If you have played 3+ cards this turn, +80 Oblivion',
     rarity: 'Epic',
     phase: 'Voltage',
     artKey: 'sv_oph_first_static',
-    effects: [{ type: 'arctic_charge_gain', value: 9 }, { type: 'arctic_charge_discharge' }],
+    effects: [{ type: 'arctic_charge_gain', value: 9 }, { type: 'arctic_charge_discharge' }, { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'oblivion_flat', value: 80 }] }],
   },
   {
     definitionId: 'sv-oph-aurora-convergence',

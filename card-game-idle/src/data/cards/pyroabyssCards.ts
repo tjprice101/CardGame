@@ -199,12 +199,13 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Cinder Draw',
-    description: 'Gain 2 Heat; Draw 1 card; +8 Oblivion',
+    description: 'Gain 2 Heat; Draw 1 card; +8 Oblivion; If this is the first card you played this turn, Gain 1 Heat',
     artKey: 'seek_fire_cinder_draw',
     effects: [
       { type: 'pyro_heat_gain', value: 2 },
       { type: 'draw', value: 1 },
-      { type: 'oblivion_flat', value: 8 }],
+      { type: 'oblivion_flat', value: 8 },
+      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'pyro_heat_gain', value: 1 }] }],
   },
   {
     definitionId: 'ophanim-fire-abyssal-kindle',
@@ -212,11 +213,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Abyssal Kindle',
-    description: '+28 Oblivion; Gain 1 Heat',
+    description: '+24 Oblivion; Gain 1 Heat; If this is the first card you played this turn, +12 Oblivion; Gain 2 Heat',
     artKey: 'seek_fire_abyssal_kindle',
     effects: [
-      { type: 'oblivion_flat', value: 28 },
-      { type: 'pyro_heat_gain', value: 1 }],
+      { type: 'oblivion_flat', value: 24 },
+      { type: 'pyro_heat_gain', value: 1 },
+      { type: 'conditional', condition: { type: 'first_card_this_turn' }, then: [{ type: 'oblivion_flat', value: 12 }, { type: 'pyro_heat_gain', value: 2 }] }],
   },
   {
     definitionId: 'ophanim-fire-pyre-ignite',
@@ -248,11 +250,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Void Kindling',
-    description: 'Shuffle discard into deck; Gain 3 Heat',
+    description: 'Shuffle discard into deck; Gain 3 Heat; If you control 1+ active Seraphim, +30 Oblivion',
     artKey: 'seek_fire_void_kindling',
     effects: [
       { type: 'shuffle_discard' },
-      { type: 'pyro_heat_gain', value: 3 }],
+      { type: 'pyro_heat_gain', value: 3 },
+      { type: 'conditional', condition: { type: 'seraphim_active_gte', value: 1 }, then: [{ type: 'oblivion_flat', value: 30 }] }],
   },
   {
     definitionId: 'ophanim-fire-void-flare',
@@ -272,12 +275,13 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Common',
     name: 'Smoldering Cycle',
-    description: 'Shuffle discard into deck; Draw 1 card; Gain 1 Heat',
+    description: 'Shuffle discard into deck; Draw 1 card; Gain 1 Heat; If you have 5+ Heat, Gain 1 Heat',
     artKey: 'seek_fire_smoldering_cycle',
     effects: [
       { type: 'shuffle_discard' },
       { type: 'draw', value: 1 },
-      { type: 'pyro_heat_gain', value: 1 }],
+      { type: 'pyro_heat_gain', value: 1 },
+      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 5 }, then: [{ type: 'pyro_heat_gain', value: 1 }] }],
   },
   {
     definitionId: 'ophanim-fire-abyssal-recall',
@@ -365,11 +369,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Pyre Hunt',
-    description: 'Search your deck for 1 matching Cherubim; Gain 2 Heat',
+    description: 'Search your deck for 1 matching Cherubim; Gain 2 Heat; If you have 6+ Heat, +30 Oblivion; Draw 1 card',
     artKey: 'seek_fire_pyre_hunt',
     effects: [
       { type: 'search_deck_by_type', filter: ['Cherubim'] },
-      { type: 'pyro_heat_gain', value: 2 }],
+      { type: 'pyro_heat_gain', value: 2 },
+      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 6 }, then: [{ type: 'oblivion_flat', value: 30 }, { type: 'draw', value: 1 }] }],
   },
   {
     definitionId: 'ophanim-fire-ember-chain',
@@ -377,11 +382,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Rare',
     name: 'Cinder Chain',
-    description: 'Gain 3 Heat; If you have 10+ Heat, Gain 3 Heat',
+    description: 'Gain 3 Heat; If you have 8+ Heat, Gain 3 Heat; If you have 12+ Heat, +50 Oblivion',
     artKey: 'seek_fire_ember_chain',
     effects: [
       { type: 'pyro_heat_gain', value: 3 },
-      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 10 }, then: [{ type: 'pyro_heat_gain', value: 3 }] }],
+      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 8 }, then: [{ type: 'pyro_heat_gain', value: 3 }] },
+      { type: 'conditional', condition: { type: 'pyro_heat_gte', value: 12 }, then: [{ type: 'oblivion_flat', value: 50 }] }],
   },
   // Epics
   {
@@ -402,11 +408,12 @@ export const pyroabyssOphanimCards: OphanimDefinition[] = [
     element: 'Fire',
     rarity: 'Epic',
     name: 'Inferno',
-    description: 'Burst up to 5 Heat (+48 Oblivion per Heat); +110 Oblivion',
+    description: 'Burst up to 5 Heat (+48 Oblivion per Heat); +110 Oblivion; If you have played 3+ cards this turn, Draw 1 card',
     artKey: 'seek_fire_inferno',
     effects: [
       { type: 'pyro_heat_burst', oblivionPerHeat: 48, consume: 5 },
-      { type: 'oblivion_flat', value: 110 }],
+      { type: 'oblivion_flat', value: 110 },
+      { type: 'conditional', condition: { type: 'cards_played_gte', value: 3 }, then: [{ type: 'draw', value: 1 }] }],
   },
   // Legendary
   {
