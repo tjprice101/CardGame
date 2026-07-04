@@ -322,6 +322,12 @@ export const GLASS_ABSOLUTE_PACK_POOL: string[] = [
   'ga-inf-chorus-unbroken-spectrum',
   'ga-inf-shattered-without-shattering',
   'ga-inf-color-after-white',
+  // Angels
+  'ga-angel-prism-arbiter',
+  'ga-angel-white-terminus',
+  'ga-angel-lattice-sovereign',
+  'ga-angel-glass-hymn-oracle',
+  'ga-angel-yrethborn-absolute',
 ];
 
 export const BLAZING_GARDEN_PACK_POOL: string[] = [
