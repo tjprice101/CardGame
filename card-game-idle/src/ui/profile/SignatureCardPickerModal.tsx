@@ -230,7 +230,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
                       onClick={() => onPick(d.definitionId)}
                       style={{
                         width: 116, height: 160,
-                        ...getDenseCardFaceBackgroundStyle(d, 'normal'),
+                        ...getDenseCardFaceBackgroundStyle(d, 'normal', 'front', true),
                         backgroundColor: warmTheme.surfaceStrong,
                         border: `1px solid ${rarityColor}55`,
                         borderRadius: 12,
@@ -250,23 +250,26 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
                       }}
                       title={`${d.name} · ${d.rarity}`}
                     >
-                      <div style={getCardNameRibbonStyle('grid')}>
-                        <div style={{
-                          fontSize: faceMetrics.typeSize, letterSpacing: 1,
-                          textTransform: 'uppercase', color: cardFacePalette.text,
-                        }}>
-                          {getDisplayCardTypeLabel(d.type)}
+                      {getCardBackgroundUrl(d) && <img src={getCardBackgroundUrl(d)!} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
+                      <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={getCardNameRibbonStyle('grid')}>
+                          <div style={{
+                            fontSize: faceMetrics.typeSize, letterSpacing: 1,
+                            textTransform: 'uppercase', color: cardFacePalette.text,
+                          }}>
+                            {getDisplayCardTypeLabel(d.type)}
+                          </div>
                         </div>
-                      </div>
-                      <div style={getCardRulesPanelStyle('grid')}>
-                        <div style={{
-                          fontSize: faceMetrics.nameSize, fontWeight: 'bold',
-                          color: cardFacePalette.text, lineHeight: 1.25,
-                        }}>
-                          {d.name}
-                        </div>
-                        <div style={{ fontSize: faceMetrics.typeSize, color: rarityColor, letterSpacing: 0.4, marginTop: 2 }}>
-                          {d.rarity}
+                        <div style={getCardRulesPanelStyle('grid')}>
+                          <div style={{
+                            fontSize: faceMetrics.nameSize, fontWeight: 'bold',
+                            color: cardFacePalette.text, lineHeight: 1.25,
+                          }}>
+                            {d.name}
+                          </div>
+                          <div style={{ fontSize: faceMetrics.typeSize, color: rarityColor, letterSpacing: 0.4, marginTop: 2 }}>
+                            {d.rarity}
+                          </div>
                         </div>
                       </div>
                     </div>

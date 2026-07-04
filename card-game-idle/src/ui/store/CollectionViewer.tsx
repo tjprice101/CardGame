@@ -8,6 +8,7 @@ import { getCardFinishKey, getCardFinishLabel, isHoloOnlyCard } from '@/systems/
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
+  getCardBackgroundUrl,
   getCardBackBackgroundStyle,
   getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
@@ -264,8 +265,9 @@ export default function CollectionViewer({ onClose }: Props) {
     const isFeaturedTranscendent = isFeaturedCollectionTranscendent(card);
     const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
     const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
+    const artUrl = owned > 0 ? getCardBackgroundUrl(card) : null;
     let cardSurfaceStyle = owned > 0
-      ? getDenseCardFaceBackgroundStyle(card, finish)
+      ? getDenseCardFaceBackgroundStyle(card, finish, 'front', true)
       : (isLockedStandardHolo
         ? getLockedHoloCardBackStyle(card)
         : getCardBackBackgroundStyle(card, { dimmed: false }));
@@ -313,6 +315,7 @@ export default function CollectionViewer({ onClose }: Props) {
         }}
         title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not discovered'}
       >
+        {artUrl && <img src={artUrl} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
         {isNew && (
           <div style={{
             position: 'absolute',
@@ -370,47 +373,49 @@ export default function CollectionViewer({ onClose }: Props) {
 
         <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
 
-        <div style={getCardNameRibbonStyle('grid')}>
-          <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
-            {finishLabel ? `${getDisplayCardTypeLabel(card.type)} · ${finishLabel}` : getDisplayCardTypeLabel(card.type)}
+        <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={getCardNameRibbonStyle('grid')}>
+            <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
+              {finishLabel ? `${getDisplayCardTypeLabel(card.type)} · ${finishLabel}` : getDisplayCardTypeLabel(card.type)}
+            </div>
+            <div style={{
+              fontSize: faceMetrics.nameSize,
+              fontWeight: 'bold',
+              color: cardFacePalette.text,
+              lineHeight: 1.25,
+              minHeight: 24,
+              textAlign: 'center',
+            }}>
+              {card.name}
+            </div>
           </div>
-          <div style={{
-            fontSize: faceMetrics.nameSize,
-            fontWeight: 'bold',
-            color: cardFacePalette.text,
-            lineHeight: 1.25,
-            minHeight: 24,
-            textAlign: 'center',
-          }}>
-            {card.name}
-          </div>
-        </div>
 
-        <div style={getCardRulesPanelStyle('grid')}>
-          <div style={{
-            fontSize: faceMetrics.descSize,
-            color: cardFacePalette.textSoft,
-            lineHeight: faceMetrics.descLineHeight,
-            textAlign: 'center',
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            WebkitLineClamp: 3,
-            overflow: 'hidden',
-          }}>
-            {previewText}
-          </div>
-          <div style={{
-            marginTop: 6,
-            fontSize: 10,
-            letterSpacing: 1,
-            color: owned > 0 ? cardFacePalette.textMuted : warmTheme.textFaint,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 8,
-          }}>
-            <span style={{ color: cardFacePalette.textMuted, textTransform: 'uppercase' }}>{card.rarity}</span>
-            <span>{owned > 0 ? `×${owned} discovered` : 'Not discovered'}</span>
+          <div style={getCardRulesPanelStyle('grid')}>
+            <div style={{
+              fontSize: faceMetrics.descSize,
+              color: cardFacePalette.textSoft,
+              lineHeight: faceMetrics.descLineHeight,
+              textAlign: 'center',
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 3,
+              overflow: 'hidden',
+            }}>
+              {previewText}
+            </div>
+            <div style={{
+              marginTop: 6,
+              fontSize: 10,
+              letterSpacing: 1,
+              color: owned > 0 ? cardFacePalette.textMuted : warmTheme.textFaint,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 8,
+            }}>
+              <span style={{ color: cardFacePalette.textMuted, textTransform: 'uppercase' }}>{card.rarity}</span>
+              <span>{owned > 0 ? `×${owned} discovered` : 'Not discovered'}</span>
+            </div>
           </div>
         </div>
       </div>

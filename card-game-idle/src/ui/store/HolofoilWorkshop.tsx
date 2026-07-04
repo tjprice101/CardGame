@@ -6,6 +6,7 @@ import { useStore } from '@/state/store';
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
+  getCardBackgroundUrl,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -400,26 +401,30 @@ export default function HolofoilWorkshop() {
                 const cost = getHolofoilConversionCost(def, holoCollection) ?? 0;
                 const canAfford = shards >= cost;
                 const previewText = getCardPreviewLines(def, 3).join(' ');
+                const artUrl = getCardBackgroundUrl(def);
 
                 return (
                   <div key={def.definitionId} style={styles.cardTile}>
                     <div
                       className="holofoil-menu-card"
-                      style={{ ...styles.card, ...getDenseCardFaceBackgroundStyle(def, 'holo') }}
+                      style={{ ...styles.card, position: 'relative', ...getDenseCardFaceBackgroundStyle(def, 'holo', 'front', true) }}
                       title={getCardPreviewLines(def, 4).join('\n')}
                     >
-                      <div style={getCardNameRibbonStyle('grid')}>
-                        <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.3, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
-                          {def.type} · {getCardFinishLabel('holo')}
+                      {artUrl && <img src={artUrl} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
+                      <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                        <div style={getCardNameRibbonStyle('grid')}>
+                          <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.3, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
+                            {def.type} · {getCardFinishLabel('holo')}
+                          </div>
+                          <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 }}>
+                            {def.name}
+                          </div>
                         </div>
-                        <div style={{ fontSize: faceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25 }}>
-                          {def.name}
-                        </div>
-                      </div>
 
-                      <div style={getCardRulesPanelStyle('grid')}>
-                        <div style={{ ...styles.desc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 3 }}>
-                          {previewText}
+                        <div style={getCardRulesPanelStyle('grid')}>
+                          <div style={{ ...styles.desc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 3 }}>
+                            {previewText}
+                          </div>
                         </div>
                       </div>
                     </div>

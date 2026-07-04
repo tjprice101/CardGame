@@ -6,6 +6,7 @@ import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CollectionCardDetail from '@/ui/store/CollectionCardDetail';
 import {
   getDenseCardFaceBackgroundStyle,
+  getCardBackgroundUrl,
   getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
@@ -473,9 +474,10 @@ export default function AscensionHub({ onClose }: Props) {
                                       padding: 0,
                                       cursor: 'pointer',
                                       background: 'transparent',
-                                      ...getDenseCardFaceBackgroundStyle(card, 'normal'),
+                                      ...getDenseCardFaceBackgroundStyle(card, 'normal', 'front', true),
                                     }}
                                   >
+                                    {getCardBackgroundUrl(card) && <img src={getCardBackgroundUrl(card)!} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
                                     <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
                                     <div style={{
                                       position: 'absolute',
