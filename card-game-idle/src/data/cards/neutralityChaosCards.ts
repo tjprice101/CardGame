@@ -53,7 +53,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Shell',
-    description: 'On play: All Seraphim on board gain +2 Patience; Salvage any 1 card; Designate the Seraphim with the highest Patience as your Vessel. While on board: All Oblivion gain +5%',
+    description: 'On play: All Seraphim on board gain +2 Patience; Salvage any 1 card. While on board: All Oblivion gain +5%',
     artKey: 'cherubim_neutral_still_shell',
     effects: [{ type: 'cherubim_adjacent_seraphim_bonus', bonusType: 'oblivion', value: 20 }],
     onPlayEffects: [{ type: 'oblivion_flat', value: 50 }, { type: 'draw', value: 2 }],

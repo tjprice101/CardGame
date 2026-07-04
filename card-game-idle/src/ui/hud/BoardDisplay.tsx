@@ -311,32 +311,6 @@ function renderPatienceBadge(stacks: number) {
   );
 }
 
-function renderVesselBadge() {
-  return (
-    <div style={{
-      position: 'absolute',
-      bottom: 7,
-      right: 7,
-      zIndex: 8,
-      padding: '2px 6px',
-      borderRadius: 999,
-      border: '1px solid rgba(180,210,255,0.55)',
-      background: 'rgba(36, 58, 148, 0.90)',
-      color: 'rgba(220,234,255,0.98)',
-      fontSize: 9,
-      lineHeight: 1,
-      letterSpacing: 0.8,
-      fontFamily: DISPLAY_FONT,
-      fontWeight: 700,
-      pointerEvents: 'none',
-      boxShadow: '0 2px 10px rgba(80,130,255,0.4)',
-      animation: 'boardFocusPulse 2s ease-in-out infinite',
-    }}>
-      VESSEL
-    </div>
-  );
-}
-
 function renderSnowboundBadge(phase?: 'Frost' | 'Voltage' | null, arcticCharge?: number) {
   if (!phase && (arcticCharge ?? 0) <= 0) return null;
   const isFrost = phase !== 'Voltage';
@@ -1389,8 +1363,6 @@ export default function BoardDisplay() {
                 </div>
                 {/* Patience stacks badge (bottom-left) */}
                 {(slot.patienceStacks ?? 0) > 0 && renderPatienceBadge(slot.patienceStacks!)}
-                {/* Vessel designation badge (bottom-right) */}
-                {turn.neutralityVesselInstanceId && slot.instanceId === turn.neutralityVesselInstanceId && renderVesselBadge()}
                 {isFocused && (
                   renderBoardFocusOverlay(12, serDef?.element)
                 )}
@@ -2141,15 +2113,6 @@ export default function BoardDisplay() {
             title: `Patient Light: +${patientLightStacks} stack${patientLightStacks === 1 ? '' : 's'} — Seraphim now gain +${perCardGain} Patience per card played. Gains use diminishing returns after 4 stacks. Angels also accumulate Patience at this rate and spend it when they attack (+2% base Oblivion per stack consumed).`,
             highlight: true,
           });
-        }
-        if (turn.neutralityVesselInstanceId) {
-          const vesselName = board.frontSlots.find(s => s?.instanceId === turn.neutralityVesselInstanceId)
-            ? (CardRegistry.get(board.frontSlots.find(s => s?.instanceId === turn.neutralityVesselInstanceId)!.definitionId)?.name ?? 'Vessel')
-            : 'Vessel';
-          chips.push({ label: 'Vessel: ' + vesselName, title: 'A Seraphim has been designated as your Vessel for this turn.' });
-        }
-        if ((turn.neutralityVesselCopyPercent ?? 0) > 0) {
-          chips.push({ label: `Copy ${turn.neutralityVesselCopyPercent}%`, title: `Your Vessel copies ${turn.neutralityVesselCopyPercent}% of Patience gained by other Seraphim this turn.` });
         }
         if ((turn.neutralityLinkedGainBonus ?? 0) > 0) {
           const retain = turn.neutralityLinkedRetainPercent ?? 0;

@@ -52,12 +52,6 @@ const PLAYSTYLE_MAP: Record<EngineKey, CoreMechanicPlaystyle[]> = {
       winCondition: 'One or two high-stack Seraphim attacks with threshold draws to bridge into the next burst.',
     },
     {
-      name: 'Vessel Routing',
-      pattern: 'Designate a Vessel early, then use copy/redistribute tools to smooth stack distribution.',
-      pilotTips: 'Route into your best cooldown window instead of overcapping one unit while others idle.',
-      winCondition: 'Synchronized board attack where multiple Seraphim cross threshold in the same turn.',
-    },
-    {
       name: 'Angel Doubled Patience',
       pattern: 'Build medium stacks first, then summon Angel and double to force a compressed finisher turn.',
       pilotTips: 'Hold doubling effects for the turn where attacks are ready or nearly ready.',
@@ -371,11 +365,6 @@ const ADVANCED_LINES_MAP: Record<EngineKey, CoreMechanicAdvancedLine[]> = {
       sequence: 'Set two Seraphim just below threshold, then fire one draw-heavy Ophanim sequence to cross both before attacks.',
       whyItWorks: 'You convert one setup burst into two threshold draw payouts and keep hand velocity high.',
     },
-    {
-      name: 'Vessel Redistribute Pivot',
-      sequence: 'Overcharge one vessel unit intentionally, then redistribute before attack cooldowns refresh.',
-      whyItWorks: 'You avoid overcap waste and align damage across multiple cooldown lanes.',
-    },
   ],
   light: [
     {
@@ -570,7 +559,6 @@ const ADVANCED_LINES_MAP: Record<EngineKey, CoreMechanicAdvancedLine[]> = {
 const COMMON_MISTAKES_MAP: Record<EngineKey, CoreMechanicMistake[]> = {
   neutrality: [
     { mistake: 'Attacking too early', consequence: 'Low stack conversion and missed threshold draws.', correction: 'Delay attacks until meaningful stack and threshold values are reached.' },
-    { mistake: 'Ignoring vessel routing', consequence: 'Overcapped stacks on one unit while others underperform.', correction: 'Use designate/copy/redistribute effects to balance board payoff timing.' },
   ],
   light: [
     { mistake: 'Firing Light Ophanim on weak turns', consequence: 'Radiance drains without a payoff line ready.', correction: 'Hold Light Ophanim until Seraphim/Angel attacks are online.' },

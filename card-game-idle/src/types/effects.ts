@@ -85,7 +85,6 @@ export type ImmediateEffect =
       patientLightGain?: number;
     }
   | { type: 'neutrality_patient_light_gain'; value: number }
-  | { type: 'neutrality_designate_vessel' }
   | { type: 'neutrality_attack_preserve'; percent: number }
   // Eternal/Infinity per-set amplifier stacks. Each set has its own thematic
   // "stack" keyword that only Eternal and Infinite cards interact with.

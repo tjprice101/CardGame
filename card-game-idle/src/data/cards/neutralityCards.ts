@@ -85,7 +85,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Seraphim',
-    description: 'On play: +20 Oblivion; Designate the Seraphim with the highest Patience as your Vessel. While on board: Each new Cherubim summoned while active gains +2 durability. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 1 card',
+    description: 'On play: +20 Oblivion. While on board: Each new Cherubim summoned while active gains +2 durability. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 1 card',
     artKey: 'ser_neutral_balance',
     attacks: {
       unsynergized: {
@@ -114,8 +114,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     patienceThreshold: 4,
     patienceThresholdDraw: 1,
     onPlayEffects: [
-      { type: 'oblivion_flat', value: 20 },
-      { type: 'neutrality_designate_vessel' }],
+      { type: 'oblivion_flat', value: 20 }],
   },
   {
     definitionId: 'ser-neutral-equilibrium',

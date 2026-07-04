@@ -54,10 +54,6 @@ interface CherubimRecastPassiveBonus {
   seraphimRecastAmp: number;
 }
 
-function isActiveSeraphim(unit: BoardState['frontSlots'][number]): unit is SeraphimInstance {
-  return unit?.type === 'Seraphim' && unit.isActive;
-}
-
 function isActivePatienceUnit(unit: BoardState['frontSlots'][number]): unit is SeraphimInstance | AngelInstance {
   return !!unit && (unit.type === 'Angel' || (unit.type === 'Seraphim' && unit.isActive));
 }
@@ -1214,11 +1210,8 @@ export class CardEffectExecutor {
         case 'patience_gain_all': {
           const linkedBonus = Math.max(0, mutableTurn.neutralityLinkedGainBonus ?? 0);
           const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus();
-          const vesselId = mutableTurn.neutralityVesselInstanceId ?? null;
-          const vesselCopyPercent = Math.max(0, mutableTurn.neutralityVesselCopyPercent ?? 0);
           const perUnitGain = effect.value + linkedBonus + equilibriumBonus;
           let totalGain = 0;
-          let nonVesselGain = 0;
 
           for (const unit of mutableBoard.frontSlots) {
             if (!isActivePatienceUnit(unit)) continue;
@@ -1228,29 +1221,6 @@ export class CardEffectExecutor {
             }
             unit.patienceStacks = (unit.patienceStacks ?? 0) + perUnitGain;
             totalGain += perUnitGain;
-            if (vesselId && unit.instanceId !== vesselId) {
-              nonVesselGain += perUnitGain;
-            }
-          }
-
-          if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
-            const vessel = mutableBoard.frontSlots.find(
-              (unit): unit is SeraphimInstance | AngelInstance => {
-                if (!isActivePatienceUnit(unit) || unit.instanceId !== vesselId) return false;
-                if (sourceSetKey) {
-                  const unitDef = CardRegistry.get(unit.definitionId);
-                  if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) return false;
-                }
-                return true;
-              },
-            );
-            if (vessel) {
-              const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
-              if (copied > 0) {
-                vessel.patienceStacks = (vessel.patienceStacks ?? 0) + copied;
-                totalGain += copied;
-              }
-            }
           }
 
           if (def?.element === 'Neutrality' && totalGain > 0) {
@@ -1337,29 +1307,6 @@ export class CardEffectExecutor {
             mutableTurn.neutralityTriggeredEffects = [
               ...(mutableTurn.neutralityTriggeredEffects ?? []),
               `${deckCard.definitionId}: +${gain} Patient Light`,
-            ].slice(-8);
-          }
-          break;
-        }
-
-        case 'neutrality_designate_vessel': {
-          // Same-set: vessel must be an active Seraphim sharing the source
-          // card's set so Patient Light's anchor stays within Neutrality.
-          const candidates = mutableBoard.frontSlots
-            .filter((unit): unit is SeraphimInstance => {
-              if (!isActiveSeraphim(unit)) return false;
-              if (sourceSetKey) {
-                const unitDef = CardRegistry.get(unit.definitionId);
-                if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) return false;
-              }
-              return true;
-            })
-            .sort((a, b) => (b.patienceStacks ?? 0) - (a.patienceStacks ?? 0));
-          if (candidates.length > 0) {
-            mutableTurn.neutralityVesselInstanceId = candidates[0].instanceId;
-            mutableTurn.neutralityTriggeredEffects = [
-              ...(mutableTurn.neutralityTriggeredEffects ?? []),
-              `${deckCard.definitionId}: vessel set`,
             ].slice(-8);
           }
           break;

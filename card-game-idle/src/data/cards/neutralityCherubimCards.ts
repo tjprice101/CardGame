@@ -75,8 +75,7 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
       { type: 'cherubim_global_oblivion_mult', value: 0.05 }],
     onPlayEffects: [
       { type: 'patience_gain_all', value: 2 },
-      { type: 'salvage_any' },
-      { type: 'neutrality_designate_vessel' }],
+      { type: 'salvage_any' }],
   }];
 
 // Pack-exclusive Cherubim cards.

@@ -34,7 +34,6 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   },
   "btei-colossus-advent": {
     "bullets": [
-      "On play: Designate the Seraphim with the most Patience as your Vessel",
       "On play: All Seraphim on board gain +8 Patience",
       "On play: Grant 1 Patient Light stack",
       

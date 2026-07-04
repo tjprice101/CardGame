@@ -4168,11 +4168,8 @@ function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
 function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: number): void {
   const sourceDef = ScoreSystem.getDefinition(sourceDefinitionId);
   const sourceSetKey = sourceDef ? getCardCategoryKey(sourceDef) : null;
-  const vesselId = s.turn.neutralityVesselInstanceId ?? null;
-  const vesselCopyPercent = Math.max(0, s.turn.neutralityVesselCopyPercent ?? 0);
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
   const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
-  let nonVesselGain = 0;
 
   // Same-set: Patience only flows to active frontline units sharing the source
   // card's set so set-bound stacks never leak across sets.
@@ -4184,26 +4181,6 @@ function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: numbe
     }
     const gain = value + linkedBonus + equilibriumBonus;
     unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
-    if (vesselId && unit.instanceId !== vesselId) {
-      nonVesselGain += gain;
-    }
-  }
-
-  if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
-    const vessel = s.board.frontSlots.find(unit => {
-      if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel') || unit.instanceId !== vesselId) return false;
-      if (sourceSetKey) {
-        const unitDef = ScoreSystem.getDefinition(unit.definitionId);
-        if (!unitDef || getCardCategoryKey(unitDef) !== sourceSetKey) return false;
-      }
-      return true;
-    });
-    if (vessel) {
-      const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
-      if (copied > 0) {
-        vessel.patienceStacks = (vessel.patienceStacks ?? 0) + copied;
-      }
-    }
   }
 
   clampNeutralityGainState(s);
@@ -4224,13 +4201,10 @@ function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
 function applyCherubimPassiveEffects(s: Store): void {
   // Reset conditional multiplier  Eit's recomputed fresh from board state each card play.
   s.turn.cherubimConditionalMult = 1;
-  const vesselId = s.turn.neutralityVesselInstanceId ?? null;
-  const vesselCopyPercent = Math.max(0, s.turn.neutralityVesselCopyPercent ?? 0);
   const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
   const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
   const patientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0);
   const patientLightGain = getEffectivePatientLightPerCardPatienceGain(patientLightStacks);
-  let nonVesselGain = 0;
 
   // Auto-accumulate +1 Patience for every Seraphim on board that has patienceThreshold set.
   for (const unit of s.board.frontSlots) {
@@ -4240,7 +4214,6 @@ function applyCherubimPassiveEffects(s: Store): void {
       const patienceGainBonus = Math.floor(getArtifactEffect(s.turn, 'patience_gain_bonus', s.progress.ownedArtifacts));
       const gain = patientLightGain + linkedBonus + equilibriumBonus + patienceGainBonus;
       unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
-      if (vesselId && unit.instanceId !== vesselId) nonVesselGain += gain;
     }
   }
 
@@ -4335,9 +4308,6 @@ function applyCherubimPassiveEffects(s: Store): void {
             if (!frontDef || getCardCategoryKey(frontDef) !== sourceSetKey) continue;
             const gain = effect.value + linkedBonus + equilibriumBonus;
             frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
-            if (vesselId && frontUnit.type === 'Seraphim' && frontUnit.instanceId !== vesselId) {
-              nonVesselGain += gain;
-            }
           }
           break;
         }
@@ -4374,18 +4344,6 @@ function applyCherubimPassiveEffects(s: Store): void {
           }
           break;
         }
-      }
-    }
-  }
-
-  if (vesselId && vesselCopyPercent > 0 && nonVesselGain > 0) {
-    const vessel = s.board.frontSlots.find(
-      unit => unit?.type === 'Seraphim' && unit.instanceId === vesselId,
-    );
-    if (vessel) {
-      const copied = Math.floor(nonVesselGain * (vesselCopyPercent / 100));
-      if (copied > 0) {
-        vessel.patienceStacks = (vessel.patienceStacks ?? 0) + copied;
       }
     }
   }

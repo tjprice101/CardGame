@@ -167,8 +167,6 @@ export interface TurnState {
   neutralityEquilibriumSentinelTempoUsed?: boolean;
   neutralityTriggeredEffects?: string[];
   lastShuffleSubtypeCounts?: Partial<Record<CardSubtypeFilter, number>>;
-  neutralityVesselInstanceId?: string | null;
-  neutralityVesselCopyPercent?: number;
   neutralityMarkedCardIds?: string[];
   neutralityMarkedPatienceGain?: number;
   neutralityNextAttackOblivionByInstance?: Record<string, number>;

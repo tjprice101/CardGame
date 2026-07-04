@@ -861,11 +861,6 @@ function parseDocEffectClauses(text: string): CardEffect[] {
       continue;
     }
 
-    if (/Designate the Seraphim with the highest Patience as your Vessel/i.test(clause)) {
-      effects.push({ type: 'neutrality_designate_vessel' });
-      continue;
-    }
-
     const preserve = clause.match(/Seraphim attacks preserve\s+(\d+(?:\.\d+)?)%\s+of consumed Patience/i);
     if (preserve) {
       effects.push({ type: 'neutrality_attack_preserve', percent: Number(preserve[1]) });

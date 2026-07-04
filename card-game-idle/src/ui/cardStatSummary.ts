@@ -379,7 +379,6 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'neutrality_equilibrium_starbound_cashout': return `Spend all Equilibrium Sigils: double all Patience and gain +${effect.oblivionPerSigil} Oblivion per Sigil spent`;
     case 'neutrality_equilibrium_tactical_spend': return `If you have ${effect.spend}+ Equilibrium Sigils, spend ${effect.spend} for either +${effect.burstOblivion} Oblivion burst or ${effect.restorePercent}% team Patience restore`;
     case 'neutrality_patient_light_gain': return `Grant ${effect.value} Patient Light stack${effect.value === 1 ? '' : 's'} (boosts card-play Patience gain with diminishing returns at high stacks)`;
-    case 'neutrality_designate_vessel': return 'Designate the Seraphim with the highest Patience as your Vessel';
     case 'neutrality_attack_preserve': return `Seraphim attacks preserve ${effect.percent}% of consumed Patience this turn`;
     case 'overclock':
       return `Overclock: gain ${effect.strain} Strain, then ${formatEffectsInline(effect.then.filter(Boolean), definitionId)}`;
@@ -925,8 +924,8 @@ function collectMechanicNotes(card: CardDefinition): string[] {
     if (effect.type === 'neutrality_equilibrium_sigil_gain' || effect.type === 'neutrality_equilibrium_starbound_cashout' || effect.type === 'neutrality_equilibrium_tactical_spend') {
       turnResources.add('Equilibrium Sigils');
     }
-    if (effect.type === 'neutrality_patient_light_gain' || effect.type === 'neutrality_designate_vessel' || effect.type === 'neutrality_attack_preserve') {
-      turnResources.add('Patient Light and Vessel');
+    if (effect.type === 'neutrality_patient_light_gain' || effect.type === 'neutrality_attack_preserve') {
+      turnResources.add('Patient Light');
     }
     if (effect.type === 'prismatic_charge_spend') turnResources.add('Prism Charges');
     if (effect.type === 'resonance_charge_gain' || effect.type === 'resonance_charge_spend') turnResources.add('Resonance Charge');
@@ -1004,7 +1003,7 @@ function collectMechanicNotes(card: CardDefinition): string[] {
   if (turnResources.has('Trail')) pushNote('Trail: Thornbound tempo resource that fuels spend/cashout cards.');
   if (turnResources.has('Strain')) pushNote('Strain: Mechanical overload resource; this card either builds, vents, or spends it.');
   if (turnResources.has('Equilibrium Sigils')) pushNote('Equilibrium Sigils: Neutrality setup currency for tactical spend or full cashout turns.');
-  if (turnResources.has('Patient Light and Vessel')) pushNote('Patient Light / Vessel: Neutrality patience enhancer and focus target for attack conversion lines.');
+  if (turnResources.has('Patient Light')) pushNote('Patient Light: Neutrality patience enhancer for attack conversion lines.');
   if (turnResources.has('Patience')) pushNote('Patience: Seraphim combat stacks gained per card play and converted on attack.');
   if (turnResources.has('Resonance Charge')) pushNote('Resonance Charge: Prismatic-Light accumulator used for conditional high-value conversions.');
   if (turnResources.has('Prism Charges')) pushNote('Prism Charges: channel-switch charges spent by advanced Prismatic effects.');

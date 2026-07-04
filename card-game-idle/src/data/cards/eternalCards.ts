@@ -132,7 +132,6 @@ export const eternalSeraphimCards: SeraphimDefinition[] = [
     onPlayEffects: [
       { type: 'patience_gain_all', value: 8 },
       { type: 'neutrality_patient_light_gain', value: 1 },
-      { type: 'neutrality_designate_vessel' },
       { type: 'oblivion_flat', value: 300 }],
   }];
 

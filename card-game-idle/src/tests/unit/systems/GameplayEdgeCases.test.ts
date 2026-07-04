@@ -251,60 +251,6 @@ describe('Neutrality patience stacking', () => {
     }
   });
 
-  it('lets vessel copy a percentage of non-vessel patience gains from patience_gain_all', () => {
-    const vessel: SeraphimInstance = {
-      instanceId: 'ser_vessel',
-      definitionId: 'btei-eternal-vigil',
-      type: 'Seraphim',
-      element: 'Neutrality',
-      rarity: 'Eternal',
-      level: 1,
-      isActive: true,
-      boardSlot: 0,
-      patienceStacks: 3,
-    };
-    const ally: SeraphimInstance = {
-      instanceId: 'ser_ally',
-      definitionId: 'btei-colossus-advent',
-      type: 'Seraphim',
-      element: 'Neutrality',
-      rarity: 'Eternal',
-      level: 1,
-      isActive: true,
-      boardSlot: 1,
-      patienceStacks: 1,
-    };
-
-    const result = CardEffectExecutor.execute(
-      { instanceId: 'play_1', definitionId: 'hr-light-grand-illumination' },
-      makePlayingTurn({
-        neutralityVesselInstanceId: 'ser_vessel',
-        neutralityVesselCopyPercent: 50,
-        neutralityLinkedGainBonus: 1,
-      }),
-      {
-        frontSlots: [vessel, ally, null, null, null],
-        backSlots: [null, null, null, null],
-        activeBoardEffects: [],
-      },
-      makeDeck('hr-light-grand-illumination'),
-      false,
-      {
-        effects: [{ type: 'patience_gain_all', value: 2 }],
-        countAsPlay: false,
-      },
-    );
-
-    const nextVessel = result.board.frontSlots[0];
-    const nextAlly = result.board.frontSlots[1];
-    expect(nextVessel?.type).toBe('Seraphim');
-    expect(nextAlly?.type).toBe('Seraphim');
-    if (nextVessel?.type === 'Seraphim' && nextAlly?.type === 'Seraphim') {
-      expect(nextVessel.patienceStacks).toBe(3);
-      expect(nextAlly.patienceStacks).toBe(1);
-    }
-  });
-
   it('caps Patience at 150 and Patient Light at 15 by default', () => {
     resetStore();
 

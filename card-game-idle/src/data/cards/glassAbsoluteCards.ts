@@ -1,4 +1,4 @@
-import type { CardDefinition, CherubimDefinition, OphanimDefinition, PrismaticDepth, SeraphimDefinition } from '@/types/cards';
+import type { AngelDefinition, CardDefinition, CherubimDefinition, OphanimDefinition, PrismaticDepth, SeraphimDefinition } from '@/types/cards';
 
 const GLASS_ABSOLUTE_ELEMENT = 'GlassAbsolute';
 
