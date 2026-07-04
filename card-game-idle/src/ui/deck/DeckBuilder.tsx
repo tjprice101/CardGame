@@ -745,7 +745,7 @@ export default function DeckBuilder({ onClose }: Props) {
             <img
               src={artUrl}
               alt=""
-              loading="eager"
+              loading="lazy"
               decoding="async"
               aria-hidden
               style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }}
@@ -905,7 +905,7 @@ export default function DeckBuilder({ onClose }: Props) {
             getItemHeight={(row) => row.kind === 'heading' ? 44 : 214}
             topPadding={16}
             bottomPadding={24}
-            overscanPx={520}
+            overscanPx={300}
             viewportRef={cardPoolViewportRef}
             style={styles.cardPool}
             renderItem={(row) => {

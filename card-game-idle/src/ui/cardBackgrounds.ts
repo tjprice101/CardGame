@@ -460,10 +460,6 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
   }
 
   if (card.definitionId.startsWith('sv-')) {
-    // Only Angels have individually correct art files using the artKey convention.
-    // Regular SV Cherubim/Seraphim/Ophanim artKey PNGs all contain the same
-    // placeholder art, so we return null to fall through to the set card-back.
-    if (card.type !== 'Angel') return null;
     const fileName = getSnowboundBaseFileName(card);
     return `${CARD_BACKGROUND_ROOT}/snowbound-voltage/${encodeURI(fileName)}`;
   }

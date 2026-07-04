@@ -661,6 +661,7 @@ select {
   background-size: 210% 210%, 168% 168%;
   mix-blend-mode: overlay;
   animation: holoLivePulse 1.6s linear infinite alternate;
+  animation-play-state: paused;
 }
 
 .holofoil-menu-card::after {
@@ -678,6 +679,7 @@ select {
 .holofoil-menu-card:hover::before {
   opacity: 0.92;
   animation: holoFractalDrift 1.1s linear infinite alternate;
+  animation-play-state: running;
 }
 
 .holofoil-menu-card:hover::after {
@@ -694,6 +696,7 @@ select {
   background-size: 170% 170%, 160% 160%, 130% 130%;
   mix-blend-mode: luminosity;
   animation: infiniteShardOverlayShift 1.44s linear infinite alternate;
+  animation-play-state: paused;
 }
 
 .holofoil-menu-card.infinite-holo-bw-hover::after {
@@ -704,6 +707,7 @@ select {
   background-size: 180% 180%, 160% 160%;
   mix-blend-mode: overlay;
   animation: holoEtchShift 1.52s linear infinite alternate;
+  animation-play-state: paused;
 }
 
 .holofoil-menu-card.infinite-holo-bw-hover:hover::before {
@@ -723,6 +727,7 @@ select {
   background-size: 170% 170%, 160% 160%, 130% 130%;
   mix-blend-mode: luminosity;
   animation: eternalSparkShift 1.28s linear infinite alternate;
+  animation-play-state: paused;
 }
 
 .holofoil-menu-card.eternal-holo-red-hover::after {
@@ -733,6 +738,7 @@ select {
   background-size: 178% 178%, 156% 156%;
   mix-blend-mode: overlay;
   animation: holoEtchShift 1.36s linear infinite alternate;
+  animation-play-state: paused;
 }
 
 .holofoil-menu-card.eternal-holo-red-hover:hover::before {

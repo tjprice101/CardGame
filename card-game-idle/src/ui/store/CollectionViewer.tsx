@@ -315,7 +315,7 @@ export default function CollectionViewer({ onClose }: Props) {
         }}
         title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not discovered'}
       >
-        {artUrl && <img src={artUrl} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
+        {artUrl && <img src={artUrl} alt="" loading="lazy" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
         {isNew && (
           <div style={{
             position: 'absolute',
@@ -613,9 +613,9 @@ export default function CollectionViewer({ onClose }: Props) {
           items={virtualRows}
           getItemKey={(row) => row.key}
           getItemHeight={(row) => row.height}
+          overscanPx={300}
           topPadding={20}
           bottomPadding={24}
-          overscanPx={520}
           viewportRef={gridViewportRef}
           style={{ flex: 1 }}
           renderItem={(row) => {

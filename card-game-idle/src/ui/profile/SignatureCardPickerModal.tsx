@@ -8,6 +8,7 @@ import {
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
+  getCardBackgroundUrl,
 } from '@/ui/cardBackgrounds';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
@@ -250,7 +251,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
                       }}
                       title={`${d.name} · ${d.rarity}`}
                     >
-                      {getCardBackgroundUrl(d) && <img src={getCardBackgroundUrl(d)!} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
+                      {getCardBackgroundUrl(d) && <img src={getCardBackgroundUrl(d)!} alt="" loading="lazy" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
                       <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={getCardNameRibbonStyle('grid')}>
                           <div style={{
