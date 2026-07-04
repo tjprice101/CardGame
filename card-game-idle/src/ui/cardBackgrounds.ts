@@ -727,8 +727,9 @@ export function getDenseCardFaceBackgroundStyle(
   card: CardDefinition | null | undefined,
   finish: CardFinish = 'normal',
   faceState: CardFaceState = 'front',
+  skipImage = false,
 ): CSSProperties {
-  const cacheKey = getDenseCardFaceCacheKey(card, finish, faceState);
+  const cacheKey = getDenseCardFaceCacheKey(card, finish, faceState) + (skipImage ? '|noimg' : '');
   const cached = DENSE_CARD_FACE_STYLE_CACHE.get(cacheKey);
   if (cached) return cached;
 
@@ -760,11 +761,13 @@ export function getDenseCardFaceBackgroundStyle(
     return style;
   }
 
-  const imageUrl = getCardBackgroundUrl(card);
-  const fallbackImageUrl = getCardBackUrl(card);
   const imageLayers: string[] = [];
-  if (imageUrl) imageLayers.push(`url("${imageUrl}")`);
-  if (fallbackImageUrl && fallbackImageUrl !== imageUrl) imageLayers.push(`url("${fallbackImageUrl}")`);
+  if (!skipImage) {
+    const imageUrl = getCardBackgroundUrl(card);
+    const fallbackImageUrl = getCardBackUrl(card);
+    if (imageUrl) imageLayers.push(`url("${imageUrl}")`);
+    if (fallbackImageUrl && fallbackImageUrl !== imageUrl) imageLayers.push(`url("${fallbackImageUrl}")`);
+  }
 
   const tintLayers = [
     `radial-gradient(circle at 78% 14%, ${theme.highlight} 0%, rgba(255,255,255,0) 38%)`,

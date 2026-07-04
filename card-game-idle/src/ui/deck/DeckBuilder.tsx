@@ -6,6 +6,7 @@ import { ELEMENT_COLORS, ELEMENT_SET_NAMES, getCardCategoryKey } from '@/data/el
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
+  getCardBackgroundUrl,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -721,6 +722,7 @@ export default function DeckBuilder({ onClose }: Props) {
       ? count < owned && totalForDefinition < cap && extraDeckList.length < 10
       : !(count >= owned || totalForDefinition >= cap);
     const previewText = getCardPreviewLines(def.def, isAngel ? 3 : 2).join(' ');
+    const artUrl = getCardBackgroundUrl(def.def);
 
     return (
       <div key={def.key} style={styles.cardWithMeta}>
@@ -730,7 +732,7 @@ export default function DeckBuilder({ onClose }: Props) {
             : undefined}
           style={{
             ...styles.card,
-            ...getDenseCardFaceBackgroundStyle(def.def, def.finish),
+            ...getDenseCardFaceBackgroundStyle(def.def, def.finish, 'front', true),
             ...(count > 0 ? styles.cardAdded : {}),
             ...((isAngel ? (count === 0 && !canAdd) : !canAdd) ? styles.cardFull : {}),
           }}
@@ -739,27 +741,39 @@ export default function DeckBuilder({ onClose }: Props) {
           onMouseEnter={() => startTooltip(def.def)}
           onMouseLeave={clearTooltip}
         >
-          <div style={getCardNameRibbonStyle('grid')}>
-                          <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
-                            {(() => {
-                              const baseLabel = isAngel ? 'Angel' : getDisplayCardTypeLabel(def.def.type);
-                              const finishLabel = getFinishLabel(def.def, def.finish);
-                              return finishLabel ? `${baseLabel} · ${finishLabel}` : baseLabel;
-                            })()}
-                          </div>
-            <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
-          </div>
-          <div style={getCardRulesPanelStyle('grid')}>
-            <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: isAngel ? 3 : 2 }}>
-              {previewText}
+          {artUrl && (
+            <img
+              src={artUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              aria-hidden
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }}
+            />
+          )}
+          <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={getCardNameRibbonStyle('grid')}>
+                            <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
+                              {(() => {
+                                const baseLabel = isAngel ? 'Angel' : getDisplayCardTypeLabel(def.def.type);
+                                const finishLabel = getFinishLabel(def.def, def.finish);
+                                return finishLabel ? `${baseLabel} · ${finishLabel}` : baseLabel;
+                              })()}
+                            </div>
+              <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
             </div>
-            {isAngel && def.def.type === 'Angel' && (
-              <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
-                Cost: {(def.def as AngelDefinition).summonCost.length} materials
+            <div style={getCardRulesPanelStyle('grid')}>
+              <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: isAngel ? 3 : 2 }}>
+                {previewText}
               </div>
-            )}
+              {isAngel && def.def.type === 'Angel' && (
+                <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
+                  Cost: {(def.def as AngelDefinition).summonCost.length} materials
+                </div>
+              )}
+            </div>
           </div>
-          {count > 0 && <div style={styles.badge}>{count}</div>}
+          {count > 0 && <div style={{ ...styles.badge, zIndex: 2 }}>{count}</div>}
         </div>
         <div style={styles.ownedLabelBelow}>owns {owned}</div>
         {renderLockControl(
