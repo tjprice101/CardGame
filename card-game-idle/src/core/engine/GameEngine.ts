@@ -37,12 +37,8 @@ export class GameEngine {
 
     try {
       this.renderer = await Renderer.create(canvas);
-      this.boardEffects = new BoardEffectsRenderer(
-        this.renderer.layers,
-        this.renderer.width,
-        this.renderer.height,
-      );
-      this.boardEffects.positionForBoard(this.renderer.width / 2, this.renderer.height * 0.42);
+      // BoardEffectsRenderer (GodRays + Halo PIXI shaders) removed — ran
+      // every animation frame when an Angel was on board and caused crashes.
     } catch (err) {
       console.warn('Renderer failed to initialize; running without graphics.', err);
     }

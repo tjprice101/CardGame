@@ -4882,6 +4882,13 @@ export const useStore = create<Store>()(
           delete unit.flutterAttackBuff;
         }
 
+        // Light: consume all Radiance to amplify attack (+0.4% per point, cap 250 → max ×2)
+        if (def.element === 'Light' && s.turn.radiance > 0) {
+          const consumed = Math.min(s.turn.radiance, 250);
+          amount = Math.round(amount * (1 + consumed * 0.004));
+          s.turn.radiance = 0;
+        }
+
         if (targetedNextAttackBonus > 0 && s.turn.neutralityNextAttackOblivionByInstance) {
           const next = { ...s.turn.neutralityNextAttackOblivionByInstance };
           delete next[unit.instanceId];
@@ -5078,9 +5085,11 @@ export const useStore = create<Store>()(
           delete unit.flutterAttackBuff;
         }
 
-        // Light: attack amplified by Radiance (+0.4% per point, cap 250 → max ×2)
-        if (def.element === 'Light') {
-          amount = Math.round(amount * (1 + Math.min(s.turn.radiance, 250) * 0.004));
+        // Light: consume all Radiance to amplify attack (+0.4% per point, cap 250 → max ×2)
+        if (def.element === 'Light' && s.turn.radiance > 0) {
+          const consumed = Math.min(s.turn.radiance, 250);
+          amount = Math.round(amount * (1 + consumed * 0.004));
+          s.turn.radiance = 0;
         }
 
         if (def.definitionId === 'inf-prismatic-judgement-array') {
