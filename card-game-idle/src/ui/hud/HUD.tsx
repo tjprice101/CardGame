@@ -9,6 +9,7 @@ import AngelStatPanel from './AngelStatPanel';
 import HandDisplay from './HandDisplay';
 import DeckStatus from './DeckStatus';
 import SetEngineDisplay from './SetEngineDisplay';
+import RadianceDisplay from './RadianceDisplay';
 import TurnControls from './TurnControls';
 import BoardDisplay from './BoardDisplay';
 import PendingEffectModal from './PendingEffectModal';
@@ -226,6 +227,9 @@ export default function HUD() {
 
       {/* Pending-effect modal — floats above everything */}
       <PendingEffectModal />
+
+      {/* Radiance orb — visible during Light-deck fights */}
+      <RadianceDisplay />
 
       {/* Full-screen radial flash overlay — triggered by game events */}
       <FlashOverlay />

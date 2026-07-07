@@ -679,7 +679,7 @@ function reviveBurningGardenEcho(
   s.turn.burningGardenEchoesBloomed = (s.turn.burningGardenEchoesBloomed ?? 0) + 1;
   s.turn.burningGardenLineagesPlayed = [...(s.turn.burningGardenLineagesPlayed ?? []), lineage].slice(-8);
   if (s.turn.burningGardenLaw === 'Sunflower') {
-    s.turn.radiance += 4;
+    s.turn.radiance = Math.min(250, s.turn.radiance + 4);
   } else if (s.turn.burningGardenLaw === 'Thistle') {
   }
 
@@ -2950,7 +2950,7 @@ function applyBurningGardenPlayState(
     s.turn.burningGardenSunSigils = (s.turn.burningGardenSunSigils ?? 0) + 1;
     if ((s.turn.burningGardenSunSigils ?? 0) >= 3) {
       s.turn.burningGardenSunSigils = (s.turn.burningGardenSunSigils ?? 0) - 3;
-      s.turn.radiance += 10;
+      s.turn.radiance = Math.min(250, s.turn.radiance + 10);
       reviveBurningGardenEcho(s, { consumeEchoUse: false, extraCounters: 1 });
     }
   }
@@ -3041,7 +3041,7 @@ function applyBurningGardenPlayState(
     }
     s.turn.burningGardenSkyLaw = s.turn.burningGardenLaw;
     if (s.turn.burningGardenSkyLaw === 'Sunflower') {
-      s.turn.radiance += 8;
+      s.turn.radiance = Math.min(250, s.turn.radiance + 8);
     } else if (s.turn.burningGardenSkyLaw === 'Thistle') {
     }
   }
@@ -3700,7 +3700,7 @@ function grantDominantAttackResource(s: Store, sourceDefinitionId: string, eleme
   const sourceSetKey = sourceDef ? getCardCategoryKey(sourceDef) : null;
   switch (element) {
     case 'Light':
-      s.turn.radiance += amount;
+      s.turn.radiance = Math.min(250, s.turn.radiance + amount);
       break;
     case 'Mechanical':
       s.turn.strain += amount;
@@ -3909,7 +3909,7 @@ function awardOblivionForCardPlay(
 
   if (sourceDef?.element === 'Light' && totalAward > 0) {
     ensureLightTurnState(s.turn);
-    const radianceMultiplier = 1 + Math.min(0.35, s.turn.radiance * 0.015);
+    const radianceMultiplier = 1 + Math.min(0.5, s.turn.radiance * 0.002);
     totalAward = Math.round(totalAward * radianceMultiplier);
   }
 
@@ -4246,7 +4246,7 @@ function applyCherubimPassiveEffects(s: Store): void {
               s.turn.butterflySpectrum = (s.turn.butterflySpectrum ?? 0) + effect.value;
               break;
             case 'radiance':
-              s.turn.radiance += effect.value;
+              s.turn.radiance = Math.min(250, s.turn.radiance + effect.value);
               break;
             case 'trail':
               s.turn.trail += effect.value;
@@ -5076,6 +5076,11 @@ export const useStore = create<Store>()(
         );
         if (unit.flutterAttackBuff?.mode === attackId) {
           delete unit.flutterAttackBuff;
+        }
+
+        // Light: attack amplified by Radiance (+0.4% per point, cap 250 → max ×2)
+        if (def.element === 'Light') {
+          amount = Math.round(amount * (1 + Math.min(s.turn.radiance, 250) * 0.004));
         }
 
         if (def.definitionId === 'inf-prismatic-judgement-array') {

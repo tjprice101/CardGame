@@ -354,7 +354,7 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'salvage_by_type': return `Salvage ${formatCount(effect.filter.length > 1 ? effect.filter.length : 1, 'card')} matching ${formatSubtypeList(effect.filter)}`;
     case 'salvage_any': return 'Salvage any 1 card';
     case 'salvage_by_id': return `Salvage ${effect.label ?? CardRegistry.get(effect.targetId)?.name ?? effect.targetId} from discard`;
-    case 'radiance_double': return 'Double current Radiance';
+    case 'radiance_double': return 'Double current Radiance (max 250)';
     case 'prismatic_light_gain': return `Gain ${effect.value} Prismatic Light`;
     case 'prismatic_light_spend': return `Spend ${effect.value} Prismatic Light`;
     case 'resonance_charge_gain': return `Gain ${effect.value} Resonance Charge`;
@@ -1067,7 +1067,10 @@ export function getCanonicalAttackDescription(attack: {
     : infiniteFireAttackForChroma
       ? ' · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)'
       : (options?.eternityChrono ? ' · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)' : '');
-  return `${attack.baseOblivion} base Oblivion · ${formatCount(attack.cooldownCards, 'card')} cooldown${angelText}${costText}${furnaceText}${chromaText}`;
+  const lightText = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'light')
+    ? ' · +0.4% attack per Radiance (max +100% at 250 Radiance)'
+    : '';
+  return `${attack.baseOblivion} base Oblivion · ${formatCount(attack.cooldownCards, 'card')} cooldown${angelText}${costText}${furnaceText}${chromaText}${lightText}`;
 }
 
 function normalizePreviewFingerprint(text: string): string {

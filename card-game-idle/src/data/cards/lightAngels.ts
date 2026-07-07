@@ -7,7 +7,7 @@ export const lightAngels: AngelDefinition[] = [
     element: 'Light',
     rarity: 'Common',
     name: 'Seraphiel Embermane',
-    description: 'On summon: Gain 8 Radiance. After 3 cards played: Double current Radiance; Draw 1 card. While on board: +24 Oblivion whenever you play an Ophanim while on board',
+    description: 'On summon: Gain 8 Radiance. After 3 cards played: Double current Radiance (max 250); Draw 1 card. While on board: +24 Oblivion whenever you play an Ophanim while on board',
     artKey: 'angel_light_seraphiel',
     summonCost: ['ser-light-dawn', 'ser-light-vigil'],
     onSummonEffects: [
@@ -15,7 +15,7 @@ export const lightAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Canticle of First Flame',
       cardsPlayedRequirement: 3,
-      description: 'Double current Radiance; Draw 1 card',
+      description: 'Double current Radiance (max 250); Draw 1 card',
       effects: [
         { type: 'radiance_double' },
         { type: 'draw', value: 1 }],
@@ -25,7 +25,7 @@ export const lightAngels: AngelDefinition[] = [
         id: 'angel-light-seraphiel:primary',
         label: 'Primary',
         name: 'Seraphiel Embermane Ordinance',
-        description: '265 base Oblivion · 4 cards cooldown',
+        description: '265 base Oblivion · 4 cards cooldown · +0.4% attack per Radiance (max +100% at 250 Radiance)',
         baseOblivion: 265,
         cooldownCards: 4,
         costs: [],
@@ -35,7 +35,7 @@ export const lightAngels: AngelDefinition[] = [
         id: 'angel-light-seraphiel:exalted',
         label: 'Exalted',
         name: 'Seraphiel Embermane Throne Decree',
-        description: '500 base Oblivion · 8 cards cooldown · Requires Synergy',
+        description: '500 base Oblivion · 8 cards cooldown · Requires Synergy · +0.4% attack per Radiance (max +100% at 250 Radiance)',
         baseOblivion: 500,
         cooldownCards: 8,
         costs: [],
@@ -50,7 +50,7 @@ export const lightAngels: AngelDefinition[] = [
     element: 'Light',
     rarity: 'Rare',
     name: 'Aurelion Thorncrowned',
-    description: 'On summon: Gain 12 Radiance. After 4 cards played: Double current Radiance; Each active Seraphim\'s payout +45 Oblivion this turn; +120 Oblivion. While on board: +42 Oblivion per card played while on board',
+    description: 'On summon: Gain 12 Radiance. After 4 cards played: Double current Radiance (max 250); Each active Seraphim\'s payout +45 Oblivion this turn; +120 Oblivion. While on board: +42 Oblivion per card played while on board',
     artKey: 'angel_light_aurelion',
     summonCost: ['angel-light-seraphiel', 'ser-light-choir'],
     onSummonEffects: [
@@ -58,7 +58,7 @@ export const lightAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Thorncrown Zenith',
       cardsPlayedRequirement: 4,
-      description: 'Double current Radiance; Each active Seraphim\'s payout +45 Oblivion this turn; +120 Oblivion',
+      description: 'Double current Radiance (max 250); Each active Seraphim\'s payout +45 Oblivion this turn; +120 Oblivion',
       effects: [
         { type: 'radiance_double' },
         { type: 'seraphim_bonus_amplifier', value: 45 },
@@ -69,7 +69,7 @@ export const lightAngels: AngelDefinition[] = [
         id: 'angel-light-aurelion:primary',
         label: 'Primary',
         name: 'Aurelion Thorncrowned Ordinance',
-        description: '398 base Oblivion · 7 cards cooldown',
+        description: '398 base Oblivion · 7 cards cooldown · +0.4% attack per Radiance (max +100% at 250 Radiance)',
         baseOblivion: 398,
         cooldownCards: 7,
         costs: [],
@@ -79,7 +79,7 @@ export const lightAngels: AngelDefinition[] = [
         id: 'angel-light-aurelion:exalted',
         label: 'Exalted',
         name: 'Aurelion Thorncrowned Throne Decree',
-        description: '755 base Oblivion · 13 cards cooldown · Requires Synergy',
+        description: '755 base Oblivion · 13 cards cooldown · Requires Synergy · +0.4% attack per Radiance (max +100% at 250 Radiance)',
         baseOblivion: 755,
         cooldownCards: 13,
         costs: [],
@@ -94,7 +94,7 @@ export const lightAngels: AngelDefinition[] = [
     element: 'Light',
     rarity: 'Legendary',
     name: 'Solarius Emberthorn Ascendant',
-    description: 'On summon: Gain 12 Radiance; Each active Seraphim\'s payout +30 Oblivion this turn. After 5 cards played: Double current Radiance; +80% of this turn\'s Oblivion; Draw 2 cards; +160 Oblivion. While on board: +26 Oblivion per card played while on board',
+    description: 'On summon: Gain 12 Radiance; Each active Seraphim\'s payout +30 Oblivion this turn. After 5 cards played: Double current Radiance (max 250); +80% of this turn\'s Oblivion; Draw 2 cards; +160 Oblivion. While on board: +26 Oblivion per card played while on board',
     artKey: 'angel_light_solarius',
     summonCost: ['angel-light-aurelion', 'ser-light-throne', 'ser-light-herald'],
     onSummonEffects: [
@@ -103,7 +103,7 @@ export const lightAngels: AngelDefinition[] = [
     activatedAbility: {
       name: 'Emberthorn Apotheosis',
       cardsPlayedRequirement: 5,
-      description: 'Double current Radiance; +80% of this turn\'s Oblivion; Draw 2 cards; +160 Oblivion',
+      description: 'Double current Radiance (max 250); +80% of this turn\'s Oblivion; Draw 2 cards; +160 Oblivion',
       effects: [
         { type: 'radiance_double' },
         { type: 'score_multiplier', value: 80 },
@@ -115,7 +115,7 @@ export const lightAngels: AngelDefinition[] = [
         id: 'angel-light-solarius:primary',
         label: 'Primary',
         name: 'Solarius Emberthorn Ordinance',
-        description: '622 base Oblivion · 11 cards cooldown',
+        description: '622 base Oblivion · 11 cards cooldown · +0.4% attack per Radiance (max +100% at 250 Radiance)',
         baseOblivion: 622,
         cooldownCards: 11,
         costs: [],
@@ -125,7 +125,7 @@ export const lightAngels: AngelDefinition[] = [
         id: 'angel-light-solarius:exalted',
         label: 'Exalted',
         name: 'Solarius Emberthorn Throne Decree',
-        description: '857 base Oblivion · 15 cards cooldown · Requires Synergy',
+        description: '857 base Oblivion · 15 cards cooldown · Requires Synergy · +0.4% attack per Radiance (max +100% at 250 Radiance)',
         baseOblivion: 857,
         cooldownCards: 15,
         costs: [],

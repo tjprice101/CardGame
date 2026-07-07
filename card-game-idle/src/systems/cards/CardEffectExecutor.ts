@@ -579,7 +579,7 @@ export class CardEffectExecutor {
     };
 
     function applyRadianceGain(base: number): void {
-      mutableTurn.radiance += base;
+      mutableTurn.radiance = Math.min(250, mutableTurn.radiance + base);
     }
 
     function getNeutralityEquilibriumSigilCap(): number {
@@ -1348,7 +1348,7 @@ export class CardEffectExecutor {
         }
 
         case 'radiance_double':
-          mutableTurn.radiance = mutableTurn.radiance * 2;
+          mutableTurn.radiance = Math.min(250, mutableTurn.radiance * 2);
           break;
 
         // �E�E�E��E�E�E��E�E�E��E�E�E� Ember effects (Pyroabyss) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�

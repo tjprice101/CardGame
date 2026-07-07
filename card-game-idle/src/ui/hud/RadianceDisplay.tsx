@@ -83,6 +83,7 @@ export default function RadianceDisplay() {
       >
         {radiance}
       </div>
+      <div style={{ fontSize: 8, letterSpacing: 1, color: '#FFD700', opacity: 0.45, fontFamily: 'Georgia, serif', marginTop: 3 }}>/ 250 max</div>
     </div>
   );
 }
