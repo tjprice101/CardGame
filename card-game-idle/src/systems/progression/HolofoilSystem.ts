@@ -26,7 +26,10 @@ export function getCardFinishLabel(finish: CardFinish): string {
 }
 
 export function isHoloOnlyCard(definition: CardDefinition): boolean {
-  return definition.rarity === 'Eternal' || definition.rarity === 'Infinite';
+  // Eternal/Infinite rarities are always holofoil.
+  // Transcendent cards (tx- prefix) are also always holofoil — they drop pre-foiled.
+  return definition.rarity === 'Eternal' || definition.rarity === 'Infinite'
+    || definition.definitionId.startsWith('tx-');
 }
 
 export function getHoloOwnedCopies(
