@@ -13,7 +13,6 @@ import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 export type ModifierKind =
   | 'time_pressure'        // Round timer reduced by 30s
   | 'boss_hp_boost'        // Boss HP +25%
-  | 'forbidden_element'    // Cards of the given element earn 50% less Oblivion
   | 'durability_drain'     // Cherubim durability halved on placement
   | 'no_angels'            // Angels cannot be summoned this fight
   | 'patience_lock';       // Cards take double resource cost (placeholder: just reduces oblivion)
@@ -33,12 +32,6 @@ const MODIFIER_POOL: Array<Omit<TrialModifier, 'payload'> & { payloadOptions?: s
   { kind: 'durability_drain', text: 'Brittle Vows — Cherubim durability halved', rewardMult: 1.2 },
   { kind: 'no_angels',       text: 'Heavens Closed — Angels cannot be summoned', rewardMult: 1.5 },
   { kind: 'patience_lock',   text: 'Crowded Mind — all Oblivion gains −15%', rewardMult: 1.3 },
-  {
-    kind: 'forbidden_element',
-    text: 'Forbidden Element — chosen element earns 50% less Oblivion',
-    rewardMult: 1.35,
-    payloadOptions: ['Neutrality', 'Fire', 'Light', 'Thornbound', 'Mechanical', 'Prismatic', 'Dark'],
-  },
 ];
 
 function mulberry32(seed: number) {

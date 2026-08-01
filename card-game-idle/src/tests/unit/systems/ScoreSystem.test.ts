@@ -228,7 +228,7 @@ describe('SynergySystem', () => {
     expect(seraphim?.type === 'Seraphim' ? seraphim.isActive : true).toBe(false);
   });
 
-  it('marks seraphims active only when an angel of the matching element exists', () => {
+  it('marks seraphims active when any angel is on the board (any-Angel rule)', () => {
     const matchBoard = makeBoard({
       frontSlots: [
         makeAngel('angel-light-card-bonus', 0),
@@ -238,7 +238,7 @@ describe('SynergySystem', () => {
         null,
       ],
     });
-    const mismatchBoard = makeBoard({
+    const alsoActiveBoard = makeBoard({
       frontSlots: [
         makeAngel('angel-light-card-bonus', 0),
         makeSeraphim('ser-dark-test', 1, 'Dark', false),
@@ -249,10 +249,10 @@ describe('SynergySystem', () => {
     });
 
     const matched = SynergySystem.computeActiveSlots(matchBoard);
-    const mismatched = SynergySystem.computeActiveSlots(mismatchBoard);
+    const alsoActive = SynergySystem.computeActiveSlots(alsoActiveBoard);
 
     expect(matched[1]?.type === 'Seraphim' ? matched[1].isActive : false).toBe(true);
-    expect(mismatched[1]?.type === 'Seraphim' ? mismatched[1].isActive : true).toBe(false);
+    expect(alsoActive[1]?.type === 'Seraphim' ? alsoActive[1].isActive : false).toBe(true);
   });
 
   it('counts active synergies from current front slots', () => {
@@ -261,11 +261,11 @@ describe('SynergySystem', () => {
         makeAngel('angel-light-card-bonus', 0),
         makeSeraphim('ser-light-oblivion', 1, 'Light', true),
         makeSeraphim('ser-light-ophanim', 2, 'Light', true),
-        makeSeraphim('ser-dark-test', 3, 'Dark', false),
+        makeSeraphim('ser-dark-test', 3, 'Dark', true),
         null,
       ],
     });
 
-    expect(SynergySystem.countActiveSynergies(board)).toBe(2);
+    expect(SynergySystem.countActiveSynergies(board)).toBe(3);
   });
 });

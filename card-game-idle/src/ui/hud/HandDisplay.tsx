@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings, selectBattleground, selectBossFight } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
+import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
   cardFacePalette,
@@ -22,7 +22,6 @@ import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
 import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { warmTheme } from '@/ui/theme';
 import type { CardFinish, SeraphimDefinition, AngelDefinition } from '@/types/cards';
-import { isDeathFlamedHellBaseDefinitionId } from '@/utils/cardFaces';
 
 const IDLE_SHOWCASE_SLOTS = 6;
 const IDLE_SHOWCASE_INTERVAL_MS = 2600;
@@ -215,7 +214,6 @@ function formatSeraphimSynergyLine(def: SeraphimDefinition): string {
       return `Synergy: Cherubim gain +${bonusValue} durability`;
     case 'ophanim_bonus':
       return `Synergy: Ophanim plays gain +${bonusValue} Oblivion`;
-    case 'pyro_heat_per_card':
       return `Synergy: +${bonusValue} Heat per card played`;
     case 'oblivion_per_card':
       return `Synergy: attack profile scales with card-play Oblivion focus (+${bonusValue})`;
@@ -239,7 +237,7 @@ export default function HandDisplay() {
   const showTopPanel = cardArtDisplay === 'both' || cardArtDisplay === 'top-only';
   const showBottomPanel = cardArtDisplay === 'both' || cardArtDisplay === 'bottom-only';
   const artOnlyMode = cardArtDisplay === 'art-only';
-  const { playCard, toggleMulliganCard, summonAngel, toggleCardFace } = useStore.getState();
+  const { playCard, toggleMulliganCard, summonAngel } = useStore.getState();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -486,8 +484,8 @@ export default function HandDisplay() {
           </div>
           <CardEngineCallout card={hoveredDef} variant="detail" tone="light" />
           <div style={styles.tooltipFooter}>
-            <span style={{ color: ELEMENT_COLORS[hoveredDef.element] ?? '#aaa' }}>
-              {ELEMENT_SET_NAMES[hoveredDef.element] ?? hoveredDef.element}
+            <span style={{ color: SET_ACCENT }}>
+              {SET_LABEL}
             </span>
             {hoveredActionClassLabel && (
               <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
@@ -507,11 +505,7 @@ export default function HandDisplay() {
                 <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
                   Attacks: Primary + Exalted (cards-play cooldown)
                 </span>
-                {hoveredDef.element === 'Fire' && (
-                  <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                    Fire attacks: +2.5% attack per Heat (max +75%) and spend up to 5 Heat for +1% attack per Heat spent (max +5%)
-                  </span>
-                )}
+
               </>
             )}
             {hoveredDef.type === 'Seraphim' && (
@@ -539,11 +533,6 @@ export default function HandDisplay() {
                       <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
                         Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} | Cost: {formatAttackCosts(attacks.synergized.costs)}
                       </span>
-                      {hoveredDef.element === 'Fire' && (
-                        <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                          Fire attacks: +2.5% attack per Heat (max +75%) and spend up to 5 Heat for +1% attack per Heat spent (max +5%)
-                        </span>
-                      )}
                     </>
                   );
                 })()}
@@ -698,10 +687,8 @@ export default function HandDisplay() {
           const nameLength = (def?.name ?? '').length;
           const adaptiveNameSize = nameLength > 24 ? faceMetrics.nameSize - 2.2 : nameLength > 16 ? faceMetrics.nameSize - 1.0 : faceMetrics.nameSize;
 
-          // Neutrality cards get a cool silver shimmer, others get warm white
-          const shimmerColor = def?.element === 'Neutrality'
-            ? 'linear-gradient(90deg, transparent, rgba(200,210,255,0.09), transparent)'
-            : 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)';
+          // All Neutrality cards get a silver shimmer
+          const shimmerColor = 'linear-gradient(90deg, transparent, rgba(200,210,255,0.09), transparent)';
 
           const isDraggable = !isExtraDeckView && isPlaying && isPlayable && (def?.type === 'Seraphim' || def?.type === 'Ophanim' || def?.type === 'Cherubim');
           const isDragging = !isExtraDeckView && draggingId === deckCard.instanceId;
@@ -748,34 +735,6 @@ export default function HandDisplay() {
               }}
               onDragEnd={() => setDraggingId(null)}
             >
-              {def && isDeathFlamedHellBaseDefinitionId(def.definitionId) && (
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    toggleCardFace(deckCard.instanceId);
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: 6,
-                    right: 6,
-                    zIndex: 14,
-                    borderRadius: 999,
-                    border: '1px solid rgba(255,255,255,0.18)',
-                    background: deckCard.faceState === 'back' ? 'rgba(28, 14, 10, 0.82)' : 'rgba(14, 8, 22, 0.72)',
-                    color: deckCard.faceState === 'back' ? '#f1d6bf' : '#dcbcff',
-                    fontSize: 9,
-                    fontFamily: 'Georgia, serif',
-                    letterSpacing: 1,
-                    textTransform: 'uppercase',
-                    padding: '4px 8px',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-                  }}
-                >
-                  {deckCard.faceState === 'back' ? 'Reveal' : 'Flip'}
-                </button>
-              )}
 
               {showTopPanel && (
                 <div style={getCardNameRibbonStyle('hand')}>

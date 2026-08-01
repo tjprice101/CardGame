@@ -1,6 +1,6 @@
 ﻿import { Fragment, useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { ELEMENT_SET_NAMES, getCardCategoryKey } from '@/data/elements';
+import { SET_LABEL } from '@/data/elements';
 import { INFINITE_RECIPES, type InfiniteRecipe } from '@/data/cards/infiniteCards';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -28,7 +28,7 @@ type RecipeListEntry = {
 };
 
 const INFINITE_SET_ORDER = PACK_DEFINITIONS.map(pack => (
-  pack.id === 'pack-snowbound-voltage' ? 'SnowboundVoltage' : pack.element
+  pack.id === 'pack-snowbound-voltage' ? 'SnowboundVoltage' : pack.setId
 ));
 
 interface Props { onClose: () => void }
@@ -44,8 +44,8 @@ export default function Infinitude({ onClose }: Props) {
     return INFINITE_RECIPES
       .map((recipe, originalIndex) => {
         const definition = CardRegistry.get(recipe.resultId) ?? null;
-        const setKey = definition ? getCardCategoryKey(definition) : 'Unknown';
-        return { recipe, definition, setKey, setLabel: ELEMENT_SET_NAMES[setKey] ?? setKey, originalIndex };
+        const setKey = definition ? 'Neutrality' : 'Unknown';
+        return { recipe, definition, setKey, setLabel: SET_LABEL, originalIndex };
       })
       .sort((left, right) => {
         const rankDelta = (setRank.get(left.setKey) ?? Number.MAX_SAFE_INTEGER)
@@ -237,7 +237,7 @@ export default function Infinitude({ onClose }: Props) {
                   </div>
                   <div style={styles.detailIntro}>
                     <div style={styles.cardEyebrow}>
-                      {resultDef.type} {'\u00B7'} {resultDef.element} {'\u00B7'} Infinite
+                      {resultDef.type} {'\u00B7'} {SET_LABEL} {'\u00B7'} Infinite
                     </div>
                     <h1 style={styles.cardTitle}>{resultDef.name}</h1>
                     <div style={styles.ownedNote}>
@@ -299,7 +299,7 @@ export default function Infinitude({ onClose }: Props) {
                             </div>
                             {ingDef && (
                               <div style={styles.ingredientSub}>
-                                {ingDef.type} {'\u00B7'} {ingDef.element}
+                                {ingDef.type} {'\u00B7'} {SET_LABEL}
                               </div>
                             )}
                             <div style={styles.progBarTrack}>
@@ -408,7 +408,7 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
     >
       <div style={getCardNameRibbonStyle('grid')}>
         <div style={{ fontSize: previewFaceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-          {def.type} {'\u00B7'} {def.element} {'\u00B7'} Infinite
+          {def.type} {'\u00B7'} {SET_LABEL} {'\u00B7'} Infinite
         </div>
         <div style={{ fontSize: previewFaceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, lineHeight: 1.25, marginTop: 3 }}>
           {def.name}

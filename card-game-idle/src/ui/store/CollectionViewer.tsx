@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { ELEMENT_SET_NAMES, ELEMENT_COLORS, getCardCategoryKey } from '@/data/elements';
+import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { getCardFinishKey, getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import {
@@ -35,11 +35,11 @@ const INFINITE_TYPE_ORDER = ['Ophanim', 'Seraphim', 'Cherubim', 'Angel'] as cons
 const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));
 const STORE_COLLECTION_SET_ORDER = STORE_PACK_ORDER.map(packId => {
   const pack = PACK_BY_ID.get(packId);
-  return pack?.id === 'pack-snowbound-voltage' ? 'SnowboundVoltage' : (pack?.element ?? 'Neutrality');
+  return pack?.setId ?? 'Neutrality';
 });
 
 function isFeaturedCollectionTranscendent(card: ReturnType<typeof CardRegistry.getAll>[number]): boolean {
-  return card.definitionId.startsWith('tx-') && (card.element === 'Neutrality' || card.element === 'Fire');
+  return card.definitionId.startsWith('tx-');
 }
 
 interface Props { onClose: () => void }
@@ -152,12 +152,6 @@ export default function CollectionViewer({ onClose }: Props) {
       if (ta !== tb) return tb - ta;
       return a.card.name.localeCompare(b.card.name);
     }
-    const categoryA = getCardCategoryKey(a.card);
-    const categoryB = getCardCategoryKey(b.card);
-    const categoryRankA = categoryOrderRank.get(categoryA) ?? Number.MAX_SAFE_INTEGER;
-    const categoryRankB = categoryOrderRank.get(categoryB) ?? Number.MAX_SAFE_INTEGER;
-    if (categoryRankA !== categoryRankB) return categoryRankA - categoryRankB;
-    if (categoryA !== categoryB) return categoryA.localeCompare(categoryB);
     if (RARITY_ORDER[a.card.rarity] !== RARITY_ORDER[b.card.rarity]) {
       return RARITY_ORDER[a.card.rarity] - RARITY_ORDER[b.card.rarity];
     }
@@ -166,17 +160,17 @@ export default function CollectionViewer({ onClose }: Props) {
   }), [categoryOrderRank, progress, recentlyAcquired, registryCards, sortMode]);
 
   const elements = useMemo(() => {
-    const availableCategories = new Set(allCards.map(card => getCardCategoryKey(card.card)));
+    const availableCategories = new Set(['Neutrality']);
     const orderedCategories = STORE_COLLECTION_SET_ORDER.filter(category => availableCategories.has(category));
     const orderedCategorySet = new Set(orderedCategories);
     const remainingCategories = Array.from(availableCategories)
       .filter(category => !orderedCategorySet.has(category))
       .sort((a, b) => a.localeCompare(b));
     return ['All', ...orderedCategories, ...remainingCategories];
-  }, [allCards]);
+  }, []);
   const lowerSearch = searchText.trim().toLowerCase();
   const filtered = useMemo(() => allCards.filter(entry => {
-    if (activeElement !== 'All' && getCardCategoryKey(entry.card) !== activeElement) return false;
+    if (activeElement !== 'All' && 'Neutrality' !== activeElement) return false;
     if (rarityFilter !== 'All' && entry.card.rarity !== rarityFilter) return false;
     if (ownedFilter === 'owned' && entry.owned <= 0) return false;
     if (ownedFilter === 'missing' && entry.owned > 0) return false;
@@ -482,8 +476,8 @@ export default function CollectionViewer({ onClose }: Props) {
       }}>
         {elements.map(el => {
           const isActive = activeElement === el;
-          const color = el === 'All' ? '#FFD700' : (ELEMENT_COLORS[el] ?? '#aaa');
-          const setName = el === 'All' ? 'All' : (ELEMENT_SET_NAMES[el] ?? el);
+          const color = el === 'All' ? '#FFD700' : (SET_ACCENT);
+          const setName = el === 'All' ? 'All' : (SET_LABEL);
           return (
             <button
               key={el}

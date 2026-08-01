@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   AVATARS,
   AVATAR_BY_ID,
@@ -238,7 +238,7 @@ describe('dynamic title generation', () => {
   it('provides id helpers that round-trip', () => {
     expect(bossClearTitleId('boss-eternal')).toBe('title-bossclear-boss-eternal');
     expect(infiniteCardTitleId('inf-card-1')).toBe('title-infinite-inf-card-1');
-    expect(setCompletionTitleId('Thornbound Plains')).toBe('title-set-thornbound-plains');
+    expect(setCompletionTitleId('Neutrality')).toBe('title-set-neutrality');
   });
 
   it('exposes the new four groups exhaustively', () => {
@@ -294,12 +294,12 @@ describe('ui theme registry', () => {
 
   it('keeps reward themes unlocked after requirements are no longer met once latched', () => {
     const rewardTheme = UI_THEMES.find(
-      (t) => t.group === 'reward' && t.rewardKind === 'base-set' && t.setElement === 'Neutrality',
+      (t) => t.group === 'reward' && t.rewardKind === 'base-set' && t.setId === 'Neutrality',
     );
     expect(rewardTheme).toBeTruthy();
 
     const requiredBaseNeutralityIds = CardRegistry.getAll()
-      .filter((card) => card.element === 'Neutrality' && ['Common', 'Rare', 'Epic', 'Legendary'].includes(card.rarity))
+      .filter((card) => ['Common', 'Rare', 'Epic', 'Legendary'].includes(card.rarity))
       .map((card) => card.definitionId);
 
     const ownedCollection: Record<string, number> = {};
@@ -316,12 +316,12 @@ describe('ui theme registry', () => {
 
   it('unlocks reward themes from ever-owned set completion without requiring current ownership', () => {
     const rewardTheme = UI_THEMES.find(
-      (t) => t.group === 'reward' && t.rewardKind === 'base-set' && t.setElement === 'Neutrality',
+      (t) => t.group === 'reward' && t.rewardKind === 'base-set' && t.setId === 'Neutrality',
     );
     expect(rewardTheme).toBeTruthy();
 
     const requiredBaseNeutralityIds = CardRegistry.getAll()
-      .filter((card) => card.element === 'Neutrality' && ['Common', 'Rare', 'Epic', 'Legendary'].includes(card.rarity))
+      .filter((card) => ['Common', 'Rare', 'Epic', 'Legendary'].includes(card.rarity))
       .map((card) => card.definitionId);
 
     const everOwnedCollection: Record<string, number> = {};

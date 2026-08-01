@@ -104,15 +104,6 @@ Seraphim and Angels have attack stats that fire periodically as cards are played
 | Set Name | Element Key |
 |---|---|
 | Neutrality | `Neutrality` |
-| Heavenly Light | `Light` |
-| Pyroabyss | `Fire` |
-| Thornbound Plains | `Thornbound` |
-| Snowbound Voltage | `Snowbound` |
-| Mechanical Dreams | `Mechanical` |
-| Prismatic Accord | `Prismatic` |
-| Black Glass Inferno | `Dark` |
-| Glass Absolute | `Glass` |
-| Blazing Garden | `BlazeGarden` (or `BurningGarden`) |
 
 - **Set name** is what players see in the UI. **Element key** is the internal value stored on card definitions.
 - Use `ELEMENT_SET_NAMES` from `src/data/elements.ts` to convert. Never display raw element keys to the player.
@@ -134,77 +125,7 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - **Live Neutrality-specific effect types** (Eternal/Infinite layer): `neutrality_equilibrium_sigil_gain`, `neutrality_equilibrium_starbound_cashout` (ascension Transcendent cards only — in `src/data/ascension/transcendentCards.ts`), `neutrality_equilibrium_tactical_spend`, `neutrality_patient_light_gain`, `neutrality_designate_vessel`, `neutrality_attack_preserve`.
 - **Dead/removed effect types (do NOT re-add)**: `neutrality_equilibrium_sigil_cap_bonus`, `neutrality_vessel_copy_gain`, `neutrality_vessel_redistribute`, `neutrality_mark_hand`, `neutrality_attack_restore`, `neutrality_linked_mode`.
 
-### Heavenly Light — "Radiance"
-- **Cadence** tracks the current note sequence and rewards variety.
-- **Radiance** is a per-turn fuel counter that resets at turn end.
-- Cards generate Radiance, spend Radiance, or scale off current Radiance.
-- Radiance is **exclusive to Heavenly Light**. No other element may use `radiance_gain`, `radiance_spend`, `radiance_double`, or any Radiance effect.
-- **Halo** is the Eternity/Infinity-only ancillary: Eternal and Infinite Light cards stack Halo via `eternal_stack_gain stack:'light'` and spend/cash it via threshold and cashout effects.
-- Heavenly Light should read as a two-resource engine: build Cadence cleanly, then spend Radiance and Halo to convert into a focused burst.
-
-### Pyroabyss — "Embers"
-- **Inferno Tiers** are the core Fire stack. Base Fire cards primarily build Inferno Tiers, and Fire Seraphim/Angel attacks scale from them (`+2.5%` per Inferno Tier, max `+75%`).
-- **Chroma Embers** are the higher-rarity cashout layer. Eternal and Infinite Fire cards explicitly generate and spend Chroma Embers through their own effects.
-- **Ignite** converts Chroma Embers into burst Oblivion; it is the main Fire cashout action rather than a reset of the Inferno engine.
-- **Higher-rarity Fire attacks** also consume Chroma Embers for bonus scaling: Eternal Fire attacks gain `+4%` per Chroma Ember (max `+16%`), Infinite Fire attacks gain `+5%` per Chroma Ember (max `+25%`).
-- Pyroabyss should read as a two-layer engine: build Inferno first, seed Chroma second, then choose between ignite payoffs and Chroma-fueled higher-rarity attacks.
-- **Audit result (2026):** All Pyroabyss effects and TurnState fields are live. `pyroHeat`, `pyro_heat_gain/spend/burst`, `pyro_heat_gte`, `pyro_cinder_echo_ignite`, `pyro_transcendent_confluence` — all used by card data. Nothing to purge.
-
-### Thornbound Plains — "Trail / Scar"
-- **Trail** is the base resource. Accumulated via card plays, spent on high-power effects and attack costs.
-- **Scar** is built only by the manual Trail→Scar HUD orb (1 Trail → 1 Scar). Base cards check Scar thresholds (`scar_count_gte`) for riders.
-- **Briar Spiral** (`set_secondary_*` kind:'thorn', `thorn_briar_spiral_bloom`) is the sole Eternal/Infinity ancillary — generators stack it, bloom cards spend it for Trail + Oblivion bursts.
-- Extra Cherubim plays per turn (`cherubim_extra_plays` bonusType) is a Thornbound Seraphim trait.
-
-### Snowbound Voltage — "Frost / Voltage / Arctic Charge"
-- **Arctic Charge** is the core Snowbound resource. Tracked on `turn.arcticCharge`.
-- Frost cards build Arctic Charge via `arctic_charge_gain`; Voltage cards cash it out via `arctic_charge_discharge` (Charge × 8 Oblivion flat).
-- `applySnowboundPlayState` resolves the Frost/Voltage phase from card element and bumps `arcticCharge` by 2 (or 3 if phase shifted this play), then sets `turn.snowboundPhase`.
-- **Polar Capacitor** (`snow_polar_capacitor_release`) is the shared Eternal/Infinite ancillary: spends `secondaryCounters.snow` (Static Pulse, built via `set_secondary_gain kind:'snow'`) for per-capacitor Oblivion (Voltage phase) or per-capacitor Arctic Charge (Frost phase), with an optional `consume` limit.
-- Full fire gate (Infinite): `snowboundPhase === 'Voltage'` (setup-ready) AND `arcticCharge >= 12` (engines-ready) → 1.35× bonus / 0.70× penalty.
-- **Deprecated/removed (2025 audit):** `snowboundPotential`, `snowboundConduits`, `snowboundAlternations`, `snowboundPreviousPhase`, `snowboundAlternatedThisTurn`, `snowboundOnBoardEffects` TurnState fields. Effect types `snowbound_set_phase`, `snowbound_flip_phase`, `snowbound_reset_phase`, `snowbound_potential_gain/spend/floor`, `snowbound_alternations_gain`, `snowbound_conduits_gain/spend`, `snowbound_charge_from_potential`, `snowbound_potential_from_charge`, `snowbound_cashout_conduits`, `snowbound_alternate_phase`, `snowbound_potential_to_conduits`, `snowbound_conduits_to_arctic_charge`, `snowbound_conduits_double`, `arctic_charge_double`, `while_on_board`. Condition types `snowbound_phase_is`, `arctic_charge_gte`, `snowbound_potential_gte`, `snowbound_alternations_gte`, `snowbound_conduits_gte`, `snowbound_alternated_this_turn`, `snowbound_same_phase_as_last_turn`. The entire Potential/Conduits/Alternations subsystem was a replaced mechanic layer; no card data ever used any of these. `snowboundAlternatedThisPlay` local var and the `snowbound_alternated_this_turn` special-case block in the conditional handler were also removed. Save migration now deletes these 6 stale TurnState fields.
-
-### Mechanical Dreams — "Strain / Reactor Core"
-- **Strain** is the core resource. Most Mechanical cards `strain_gain`/`strain_vent`; `spend_strain` is a real attack cost; `overclock` consumes Strain to unlock an inline effect block. Strain in the 6–12 band amplifies all Mechanical oblivion.
-- **Reactor Core** (`eternal_stack_*` stack:'mech') is the sole Eternal/Infinity ancillary. Eternal/Infinite cards gain, spend, or cash out Reactor Cores for burst payoffs.
-
-### Prismatic Accord — "Prism Charge / Channels"
-- **Core mechanic — Prism Charge (Node Charges):** every channel switch grants +1 Prism Charge (capped at 3) and is spent via `prismatic_charge_spend`. Tracked on `turn.prismaticNodeCharges`.
-- **Ancillary 1 — Distinct Channels:** unique channels played this turn (`prismaticDistinctChannels`), gated via `prismatic_distinct_channels_gte`.
-- **Ancillary 2 — Refraction Depth:** switching channels increases `prismaticRefractionDepth` by 1 (or 2 with multiplier), capped at 9; gated via `prismatic_refraction_depth_gte`.
-- **Ancillary 3 — Resonance Charge:** Eternal/Infinite overlay. Prismatic Eternity and Infinite cards build/spend Resonance Charge via `resonance_charge_gain` / `resonance_charge_spend`, gated via `resonance_charge_gte`.
-- **Removed/deprecated (do not re-introduce):** channel locks, memory shards, storm memories, switch-depth marks, accord channel, refraction echoes, echo cascade, chord scoring, refraction spikes, sentencing chains, lattice resonance. Save migration silently strips these legacy fields.
-- **Board fields kept:** `prismaticDepth` and `spectrumTokens` on card instances remain live for Glass Absolute formations and `refractSpectrumTokens`. They no longer contribute a chord bonus inside `ScoreSystem`.
-
-### Black Glass Inferno — "Twin Flames / Fracture / Eclipse"
-- **Core (base loop):** every base Seraphim/Cherubim/Ophanim seeds **Monochromatic Shards** (gated by `shards_gte`, spent via `monochromatic_shards_spend`) and **Twin Flames** — `black_glass_white_flame_gain` / `black_glass_black_flame_gain`. Both flames cap at 30; tracked on TurnState as `blackGlassWhiteFlame`/`blackGlassBlackFlame`, with `blackGlassLastPolarity` updated by `applyBlackGlassPlayState`. Conditions: `black_glass_white_flame_gte`, `black_glass_black_flame_gte`, `black_glass_flames_equal`.
-- **Ancillary 1 (Eternal/Infinite): Fracture.** Built when flames are balanced via `black_glass_fracture_gain` (`blackGlassFracture`, caps 18). Gated by `black_glass_fracture_gte`; collapsed for payoff via `black_glass_fracture_collapse`. Scales Eclipse bursts (`fractureBonusPerEclipse`). Setup-ready = fracture ≥ 2; engines-ready = `min(white,black) ≥ 6 && |white-black| ≤ 2` (see `getDarkFullFireMultiplier`).
-- **Ancillary 2 (Eternal/Infinite): Eclipse.** Uses `eternal_stack_gain`/`eternal_stack_consume` with `stack: 'glass'`, cashed via `black_glass_eclipse_burst` (per-Eclipse Oblivion plus `balanceBonusPerEclipse` × `max(0, 3 - |W-B|)` and `fractureBonusPerEclipse` × Fracture). `black_glass_flames_swap` (1 Infinite card) inverts White/Black for control plays.
-- Dark element; uses `cherubim_adjacent_seraphim_bonus` passives (Oblivion to adjacent Seraphim attacks).
-- `blackGlassLastPayoff` is HUD-only (auto-written by store on burst, displayed in `setEngineSummary`).
-- **Deprecated/removed (Nov 2025 audit):** `blackGlassGriefOaths`, `blackGlassCollapsePending` TurnState fields; `black_glass_register_state` effect (all 3 keys); `black_glass_flame_delta_gte` / `black_glass_flame_delta_lte` conditions. Two cards (`btei-bgi-elegy-of-veth-serath`, `inf-bgi-midplace-apocalypse`) had `register_state` lines stripped from their effect arrays + descriptions.
-
-### Glass Absolute — "Fragments & Formation"
-- **Core mechanic**: Board Formation — fill the board with Glass Absolute cards; `computeGlassProofMetrics` counts fragments and depth from board `prismaticDepth`/`spectrumTokens` values; `applyGlassAbsolutePlayState` pays tiered formation bonuses (3/5/7 fragments threshold).
-- **Ancillary 1 (Eternal + Infinite)**: Refraction Charge — `set_secondary kind:'absol'` (`secondaryCounters.absol`). Eternal cards build/spend charge for conversion windows; charge deepens proof depth so Eternal amplifies fragment-linked payouts.
-- **Ancillary 2 (Infinite tier)**: Wave/Snapshot/Ledger overlay — `glassWaveQueue`, `glassSnapshotFragments/Depth/Cascade/Axioms`, `glassWhiteLedger/Active`, `glassDepthFloor/Increased`, `glassSyntheticFragments`. Infinite cards accumulate wave queue and snapshot state for big cashout turns.
-- **Deprecated/removed (2025 audit):** `glassProofCascade` (adjacency links), `glassAxioms` array + `GlassAxiom` type, `glassArchiveSeals`, `glassAngleCharges`, `glassOriginPulseUsed`, `glassAxiomFocus`, `glassSyntheticCascade` TurnState fields. Effects `proof_gain`, `proof_spend`, `proof_gte` and `turn.proof` field removed (no cards ever used them). `renderGlassAbsoluteBadge` HUD badge removed (always returned null). `getGlassNeighbors` helper removed; `computeGlassProofMetrics` simplified to return `{ fragments, depth }` only. Wave attack handler for `ga-inf-chorus-unbroken-spectrum` simplified to `queue * (140 + depth * 12)`. `ga-et-lattice-archive-seraph` lost its `newProofs`-gated charge escalation and dead archive-seal attack block.
-
-### Blazing Garden — "Burn / Ember Grove / Echo / Wild Pollen"
-- **Ember Grove** is persistent board state (survives across turns, unlike per-turn resources).
-- Base loop: maintain **Burn uptime**, branch Rose/Sunflower/Thistle lineages, then convert Grove seeds into Echo turns.
-- One-per-turn **echo** remains, with additional free-echo gain from specific card effects.
-- End-turn: char converts to Ember Grove. Seraphim have dedicated BlazeGarden instance initialization.
-- **Wild Pollen** is the higher-rarity ancillary mechanic (`set_secondary kind:'garden'`, `secondaryCounters.garden`): Eternal cards generate it, and Eternal/Infinite seed effects (`garden_wild_pollen_seed`) spend it for amplified Oblivion and score payout.
-- Infinite Blazing Garden full fire gate: `cardsPlayedThisTurn >= 4` or `burningGardenTransitGateCredit > 0` (setup-ready) and `countBurningGardenEngines >= 2 && emberGrove.length >= 1` (engines-ready) → 1.35× bonus / 0.70× penalty. A special Zenith credit path returns 1.35× unconditionally for one play when `burningGardenZenithNextInfinite` is set.
-- **Deprecated/removed (2025 audit):** `BlazingGardenEffect` types `effect_plus`, `sigil_threshold_echo_return`, `sigil_draw_on_gain`, `burn_cooldown_reduction_per_crown`, `char_to_memory_echo`, `memory_echo_buff`, `memory_echo_cost_reduction` — all had type definitions in `effects.ts`, executor case handlers, and `cardStatSummary.ts` formatter entries, but zero card data files ever used them. Removed from all three locations. No TurnState fields removed (all live).
-
-### Eternal Seas — "Undertow / Foam / Deepwake"
-- **Undertow** is the base same-turn setup pool. Base cards build Undertow and cash it through `seas_undertow_release` for direct Oblivion.
-- **Foam** is the support layer. Base release lines often skim Foam, and the HUD action spends 5 Foam to draw 1 card.
-- **Deepwake** (`set_secondary kind:'deepwake'`, `secondaryCounters.deepwake`) is the shared higher-rarity overlay (Eternal and Infinite). Deepwake surge effects (`seas_deepwake_surge`) amplify Undertow conversion and optional Foam return.
-- Infinite Eternal Seas full fire gate: `undertow >= 10` (setup-ready) and `deepwake >= 3` (engines-ready) → 1.35× bonus / 0.70× penalty.
-- **Deprecated/removed (2025 audit):** `eternalSeasCurrent`, `eternalSeasPolarity`, `eternalSeasWhiteFlow`, `eternalSeasBlackFlow`, `eternalSeasMarginCharge` TurnState fields. The Polarity/Current HUD badge branch in `renderSeasBadge` removed. Full fire gate rebased from `current >= 9 && marginCharge >= 3` to `undertow >= 10 && deepwake >= 3`.
+> **Note:** Only Neutrality is currently implemented. Additional sets will be introduced as the game expands.
 
 ---
 
@@ -295,7 +216,6 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 
 ### Current Economy Reference
 - Neutrality Pack: 200 Oblivion, 5 cards
-- Heavenly Light Pack: 600 Oblivion, 5 cards
 - Deck Builder unlocks at 15 unique collected cards
 - Deck size: exactly **50** main deck cards (max **4** copies per definition) + up to **5** Angels in the extra deck (max **2** copies per Angel definition)
 
@@ -320,7 +240,6 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - **Set Engine Display**: `src/ui/hud/SetEngineDisplay.tsx` — surfaces the live set-engine readout. Data comes from `src/ui/setEngineSummary.ts` (`buildEngineSnapshot`, `ENGINE_ROLE_TEXT`, `SET_ENGINE_GUIDES`).
 - **Turn controls**: bottom-right, large buttons.
 - **Deck status pills**: bottom-right, showing Deck / Discard / Hand counts.
-- **Radiance orb**: bottom-left, gold orb showing current Radiance (only visible during a turn, Light element only).
 
 ### Board Display
 - Front row: 5 slots. Empty slots show "Place Seraphim" prompt when a Seraphim is in hand.
@@ -356,8 +275,8 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 | `src/data/cards/neutralityCards.ts` | Base Neutrality Ophanim + Seraphim |
 | `src/data/cards/neutralityCherubimCards.ts` | Neutrality Cherubim |
 | `src/data/cards/neutralityAngel.ts` | Neutrality Angels |
-| `src/data/cards/eternalCards.ts` | All Eternal cards (all sets); includes `expansionEternalCards` for cross-set Eternals |
-| `src/data/cards/infiniteCards.ts` | All Infinite cards + `InfiniteRecipe` definitions |
+| `src/data/cards/eternalCards.ts` | Neutrality Eternal cards; `expansionEternalCards` for Null Raid reward Eternals |
+| `src/data/cards/infiniteCards.ts` | Neutrality Infinite cards + `InfiniteRecipe` definitions |
 | `src/ui/setEngineSummary.ts` | ENGINE_ROLE_TEXT, buildEngineSnapshot, SET_ENGINE_GUIDES per set |
 | `src/ui/cardBackgrounds.ts` | Card art resolution; `CARD_BACKGROUND_FILE_OVERRIDES` for special cases |
 | `src/ui/eternitysWake/EternitysWake.tsx` | Eternity's Wake boss fight UI; `BOSS_ART_FILES` map |
@@ -371,8 +290,7 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 
 - **TypeScript strict mode**. No `any` types without justification.
 - **No new effect types** without updating `src/types/effects.ts`. New immediate effects that the `CardEffectExecutor` doesn't handle must also be wired into `store.ts` (see how `patience_gain_all`/`patience_double_all` are handled post-executor in all `playCard` branches and in `summonAngel`/`activateAngel`).
-- **No Radiance effects on non-Light cards**. Hard constraint.
-- **No `dominant_stack_gain` on Neutrality cards**. That effect type is legacy; Neutrality now uses `patience_gain_all`. `dominant_stack_gain` remains valid for other sets.
+- **No `dominant_stack_gain` on Neutrality cards**. That effect type is legacy; Neutrality now uses `patience_gain_all`.
 - **No `cherubim_adjacent_seraphim_bonus` on Neutrality Cherubim**. Neutrality Cherubim use `cherubim_patience_per_card` exclusively.
 - Dynamic scaling uses the `value: 0` sentinel pattern — see `CardEffectExecutor.ts` for existing examples.
 - Store mutations use Immer (`set(state => { state... })`). Always mutate draft state inside `set`.
@@ -387,11 +305,7 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - **Seraphim discard-cost attacks**: require explicit `paymentSelection`; store does not auto-pick. `BoardDisplay` opens a Seraphim discard picker modal before calling `activateSeraphimAttack`.
 - **Infinitude visibility**: recipe-driven via `INFINITE_RECIPES` in `infiniteCards.ts`. Eternity's Wake visibility: boss-data-driven via `BossCategory` + `mapPackToBossCategory` + `BOSS_DEFINITIONS`. Adding set cards alone will not surface them in those menus.
 - **`Embrace the Infinite`** button: available when `hand` has 40+ cards, phase is `playing`, and no pending effect. Does not require an empty draw pile.
-- **Glass Absolute**: base loop is fragments-first; Eternal/Infinite overlays are Refraction Charge-first. Runtime still tracks depth/token board data, but player-facing higher-rarity conversion is now charge/queue/ledger driven.
-- **Burning Garden**: uses persistent `emberGrove` board state; one-per-turn echo; Burn ignition; end-turn char-to-Ember-Grove conversion. `initializeBurningGardenInstance` must be called when placing a Burning Garden Seraphim.
-- **Balance override scripts**: `scripts/add-explicit-attacks.mjs`, `scripts/enforce-attack-power-constraints.mjs`, etc. Attack regex must use word boundaries (`\bsynergized`) because bare `synergized:` also matches inside `unsynergized:`.
-- **Card face art**: `public/assets/card-backgrounds/<element-folder>/`. `src/ui/cardBackgrounds.ts` resolves element-specific subfolders. Neutrality uses `neutrality/`. `CARD_BACKGROUND_FILE_OVERRIDES` handles special cases. Infinite BGI cards route to `black-glass-inferno/` not `infinite/`.
-- **UI set ordering**: sourced from `PACK_DEFINITIONS`. Collection/Eternity tabs stay aligned with the Card Store menu.
+- **Card face art**: `public/assets/card-backgrounds/<element-folder>/`. `src/ui/cardBackgrounds.ts` resolves element-specific subfolders. Neutrality uses `neutrality/`. `CARD_BACKGROUND_FILE_OVERRIDES` handles special cases.
 - **Materialized balance overrides** may append extra effects (including draw) after base card definitions; runtime audits must use `CardRegistry.getAll()`, not raw source text.
 
 
@@ -414,16 +328,7 @@ npx tsx scripts/regen-canonical-descriptions.mts
 
 ### Root Markdown Docs
 
-Human-readable card effect documents live at workspace-root Card Effects/<Set Name>/<Set Name> Card Effects.md.
-These are **auto-generated** ? do not hand-edit them.
-
-`
-npm run docs:cards
-# or
-npx tsx scripts/generate-card-effects-docs.mts
-`
-
-The script reads from CardRegistry (which applies MCB overrides) so the docs always reflect live game values.
+Human-readable card effect documents for Neutrality live at `Card Effects/Neutrality/Neutrality Card Effects.md` (workspace root).
 
 ### Tutorial / Resource Text
 
@@ -431,16 +336,4 @@ All tutorial copy lives in:
 - src/data/tutorialContent.ts ? section metadata, set engine summaries, rarity tiers, card-born tier milestones.
 - src/data/resourceExplanations.ts ? per-resource short/long descriptions used by TutorialModal.
 
-src/ui/menus/TutorialModal.tsx is **pure presentation** ? it imports from the data modules above and contains no hardcoded game text.
-
-### Cross-Set Resource Rule
-
-**Each card set owns its resources exclusively** ? no card may use an effect, condition, or Cherubim resource belonging to a different set.
-
-The allowed resource-to-set mapping is defined in src/data/setResourceRegistry.ts.
-
-Automated enforcement runs on every itest run:
-- src/tests/unit/data/CrossSetContaminationAudit.test.ts ? fails if any card uses another set's resource.
-- src/tests/unit/data/DescriptionDriftAudit.test.ts ? fails if any card's description has drifted from canonical.
-
-Exceptions (whitelisted in CROSS_SET_EXEMPT_ID_PREFIXES): inf-*, tei-*, sv-eternal-*, sv-infinite-*.
+src/ui/menus/TutorialModal.tsx is **pure presentation** — it imports from the data modules above and contains no hardcoded game text.

@@ -213,7 +213,7 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{def.name}</div>
           <div style={{ fontSize: 10, color: P.textMuted, marginTop: 1 }}>
-            {def.element} · {def.rarity} · {def.type}
+            {def.rarity} · {def.type}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'baseline', flexShrink: 0 }}>

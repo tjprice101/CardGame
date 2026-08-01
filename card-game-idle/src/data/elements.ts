@@ -1,60 +1,9 @@
-import type { CardDefinition } from '@/types/cards';
+/** Player-facing label for the sole active set. */
+export const SET_LABEL = 'Neutrality';
 
-// Maps internal element keys to their player-facing set names.
-// Element keys are stored on card definitions; set names are shown in the UI.
-export const ELEMENT_SET_NAMES: Record<string, string> = {
-  Eternal: 'Eternal',
-  Neutrality: 'Neutrality',
-  Light: 'Heavenly Light',
-  Dark: 'Black Glass Inferno',
-  Thornbound: 'Thornbound Plains',
-  Mechanical: 'Mechanical Dreams',
-  SnowboundVoltage: 'Snowbound Voltage',
-  Prismatic: 'Prismatic Accord',
-  GlassAbsolute: 'Glass Absolute',
-  BlazingGarden: 'The Blazing Garden',
-  Butterfly: 'Age of the Butterfly',
-  EternalSeas: 'Eternal Seas',
-  AbyssalForge: 'Abyssal Forge',
-  DeathFlamedHell: 'Death-flamed Hell',
-  WishedUponAStar: 'Wished Upon A Star',
-  Fire: 'Pyroabyss',
-  Water: 'Water',
-  Earth: 'Earth',
-  Wind: 'Wind',
-};
+/** Accent color used for all Neutrality set UI elements. */
+export const SET_ACCENT = '#9090a8';
 
-export const ELEMENT_COLORS: Record<string, string> = {
-  Eternal: '#ff6b6b',
-  Neutrality: '#9090a8',
-  Light: '#FFD700',
-  Thornbound: '#b63030',
-  Mechanical: '#f0a018',
-  SnowboundVoltage: '#87ceeb',
-  Prismatic: '#7ecfcf',
-  GlassAbsolute: '#cfefff',
-  BlazingGarden: '#ff8d3a',
-  Butterfly: '#9bb7ff',
-  EternalSeas: '#38c9d8',
-  AbyssalForge: '#b8a26d',
-  DeathFlamedHell: '#c01818',
-  WishedUponAStar: '#B8C8E8',
-  Dark: '#8d7f8f',
-  Fire: '#b04aff',
-  Water: '#3498db',
-  Earth: '#8b6914',
-  Wind: '#2ecc71',
-};
-
-export function isSnowboundCard(card: Pick<CardDefinition, 'definitionId'>): boolean {
-  return card.definitionId.startsWith('sv-') || card.definitionId.startsWith('inf-sv-');
-}
-
-export function getCardCategoryKey(card: Pick<CardDefinition, 'element' | 'rarity' | 'definitionId' | any>): string {
-  // Snowbound Voltage cards are a distinct set across all rarities
-  if (card.definitionId && isSnowboundCard(card)) {
-    return 'SnowboundVoltage';
-  }
-  // Eternal cards now show under their element instead of a generic "Eternal" category
-  return card.element;
-}
+/** Legacy-compat: single-entry record so UI components can still use record lookups during migration. */
+export const SET_LABELS: Record<string, string> = { Neutrality: 'Neutrality' };
+export const SET_COLORS: Record<string, string> = { Neutrality: '#9090a8' };

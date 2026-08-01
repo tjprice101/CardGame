@@ -24,7 +24,6 @@ function makeSeraphim(instanceId: string, definitionId: string, slot: 0 | 1 | 2 
     instanceId,
     definitionId,
     type: 'Seraphim',
-    element: def.element,
     rarity: def.rarity,
     finish: 'normal',
     level: 1,
@@ -47,7 +46,6 @@ function makeAngel(
     instanceId,
     definitionId,
     type: 'Angel',
-    element: def.element,
     rarity: def.rarity,
     finish: 'normal',
     level: 1,
@@ -66,7 +64,6 @@ function makeCherubim(instanceId: string, definitionId: string, slot: 0 | 1 | 2 
     instanceId,
     definitionId,
     type: 'Cherubim',
-    element: def.element,
     rarity: def.rarity,
     finish: 'normal',
     level: 1,
@@ -287,7 +284,7 @@ describe('Angel mechanics', () => {
       board: {
         ...state.board,
         frontSlots: [
-          makeAngel('ang_light', 'angel-light-seraphiel', 0, { cardsPlayedSinceSummon: 2 }),
+          makeAngel('ang_neutral', 'angel-neutral-equilibrium', 0, { cardsPlayedSinceSummon: 4 }),
           null,
           null,
           null,
@@ -297,12 +294,12 @@ describe('Angel mechanics', () => {
       deck: {
         ...state.deck,
         deckList: [],
-        extraDeck: [{ definitionId: 'angel-light-seraphiel', finish: 'normal' }],
+        extraDeck: [{ definitionId: 'angel-neutral-equilibrium', finish: 'normal' }],
         drawPile,
-        hand: [{ instanceId: 'play_1', definitionId: 'ophanim-fire-pyre-ignite', finish: 'normal' }],
+        hand: [{ instanceId: 'play_1', definitionId: 'ophanim-neutral-null-seek', finish: 'normal' }],
         discardPile: [],
       },
-      turn: makePlayingTurn({ radiance: 4 }),
+      turn: makePlayingTurn(),
       progress: {
         ...state.progress,
         oblivion: 0,
@@ -315,14 +312,13 @@ describe('Angel mechanics', () => {
     let state = useStore.getState();
     const readyAngel = state.board.frontSlots[0];
     expect(readyAngel?.type).toBe('Angel');
-    expect((readyAngel as AngelInstance).cardsPlayedSinceSummon).toBe(3);
+    expect((readyAngel as AngelInstance).cardsPlayedSinceSummon).toBe(5);
 
     useStore.getState().activateAngel(0);
 
     state = useStore.getState();
     const activatedAngel = state.board.frontSlots[0] as AngelInstance;
     expect(activatedAngel.activated).toBe(true);
-    expect(state.turn.radiance).toBe(8);
   });
 
   it('does not allow Angel cards to satisfy discard-choice pending effects', () => {
@@ -364,7 +360,7 @@ describe('Angel mechanics', () => {
     expect(state.deck.discardPile.some(card => card.instanceId === 'oph_hand')).toBe(true);
   });
 
-  it('does not allow Duality draw mode to discard an Angel card', () => {
+  it.skip('does not allow Duality draw mode to discard an Angel card (Duality mechanic removed — HeavenlyLight set)', () => {
     useStore.setState(state => ({
       ...state,
       deck: {

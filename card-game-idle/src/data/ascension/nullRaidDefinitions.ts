@@ -83,34 +83,8 @@ const NULL_RAID_BOSS_BLUEPRINTS: NullRaidBossBlueprint[] = [
       'The last wish-judge of the void court — it closes the universe like a final verdict.',
   },
 
-  // ── Crown of the Abyssal Inferno (1★, Pyroabyss) ───────────────────────
-  {
-    id: 'nr-pyroabyss-ember-eventide-tyrant',
-    name: 'Ember Eventide Tyrant',
-    description:
-      'An infernal war-beast of ash and stardust whose roars shatter spacetime.',
-  },
-  {
-    id: 'nr-pyroabyss-pyraxis-nullstar-sovereign',
-    name: 'Pyraxis Nullstar Sovereign',
-    description:
-      'A regal voidfire sovereign that extinguishes galaxies and reignites them as auroras.',
-  },
-
-  // ── Halo of the Twin Horizon (1★, Heavenly Light) ──────────────────────
-  {
-    id: 'nr-light-auric-eclipse-herald',
-    name: 'Auric Eclipse Herald',
-    description:
-      'A dawnbound herald that forges eclipses from hymn-fire and judges the weak between two suns.',
-  },
-  {
-    id: 'nr-light-zenith-duality-throne',
-    name: 'Zenith Duality Throne',
-    description:
-      'The final heavenly throne where star-liturgy and divine fire converge into absolute judgment.',
-  },
 ];
+// Non-Neutrality boss blueprints (Pyroabyss, Heavenly Light) removed — only Neutrality raids are implemented.
 
 const NULL_RAID_BOSSES: NullRaidBoss[] = NULL_RAID_BOSS_BLUEPRINTS.map((boss, index, allBosses) => ({
   ...boss,
@@ -139,32 +113,6 @@ export const NULL_RAID_DEFINITIONS: NullRaidDefinition[] = [
     shardsPerEncounter: 22,
     cooldownMs: 5 * 60 * 1000,
     completionAngelId: 'tx-angel-starbound-null-archangel',
-  },
-  {
-    id: 'raid-crown-of-the-dying-constellation',
-    name: 'Crown of the Abyssal Inferno',
-    stars: 1,
-    description:
-      'The Abyss Furnace has swallowed a dead wish-star and crowned two infernal sovereigns in its place.',
-    associatedSet: 'Pyroabyss',
-    encounterBossIds: ['nr-pyroabyss-ember-eventide-tyrant', 'nr-pyroabyss-pyraxis-nullstar-sovereign'],
-    entropyPerEncounter: 90,
-    shardsPerEncounter: 24,
-    cooldownMs: 5 * 60 * 1000,
-    completionAngelId: 'tx-angel-pyro-first-ember',
-  },
-  {
-    id: 'raid-halo-of-the-twin-horizon',
-    name: 'Halo of the Twin Horizon',
-    stars: 1,
-    description:
-      'Heavenly Light and wish-born starlit doctrine fuse into a duality trial of mercy and annihilation.',
-    associatedSet: 'Heavenly Light',
-    encounterBossIds: ['nr-light-auric-eclipse-herald', 'nr-light-zenith-duality-throne'],
-    entropyPerEncounter: 95,
-    shardsPerEncounter: 25,
-    cooldownMs: 5 * 60 * 1000,
-    completionAngelId: 'tx-angel-light-astral-adjudicator',
   },
 ];
 

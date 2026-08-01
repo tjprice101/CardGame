@@ -1,5 +1,4 @@
 import type { CardDefinition, CardFinish } from '@/types/cards';
-import { CardRegistry } from '@/cards/CardRegistry';
 
 export const HOLOFOIL_RARITY_COSTS = {
   Common: 5,
@@ -59,19 +58,16 @@ export function getOwnedCopiesForFinish(
 }
 
 /**
- * Count of total holofoil copies the player already owns across every card in
- * the same set (element) as `definition`. Drives the exponential cost ramp.
+ * Count of total holofoil copies the player already owns. Drives the exponential cost ramp.
  */
 export function getSetHoloCount(
-  definition: CardDefinition,
+  _definition: CardDefinition,
   holoCollection: Record<string, number>,
 ): number {
   let total = 0;
-  for (const [defId, count] of Object.entries(holoCollection)) {
+  for (const [, count] of Object.entries(holoCollection)) {
     if ((count ?? 0) <= 0) continue;
-    const def = CardRegistry.get(defId);
-    if (!def) continue;
-    if (def.element === definition.element) total += count;
+    total += count;
   }
   return total;
 }

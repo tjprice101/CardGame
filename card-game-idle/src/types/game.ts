@@ -9,7 +9,6 @@ export interface EmberGroveEntry {
   sourceId: string;
   chromaticSources: string[];
   charredAtTurn: number;
-  lineage?: 'Rose' | 'Sunflower' | 'Thistle';
   memoryPower?: number;
 }
 
@@ -67,8 +66,6 @@ export interface DeckState {
 // ── Turn ──────────────────────────────────────────────────────────────────────
 
 export type TurnPhase = 'idle' | 'mulligan' | 'playing';
-export type PrismaticChannel = 'amber' | 'azure' | 'crimson' | 'emerald' | 'violet' | 'white';
-export type SnowboundPhase = 'Frost' | 'Voltage';
 
 export type PendingEffect =
   | {
@@ -78,14 +75,6 @@ export type PendingEffect =
       sourceDefinitionId?: string;
       sourceInstanceId?: string;
       resolutionEffects?: CardEffect[];
-    }
-  | {
-      type: 'light_transcendent_duality_choice';
-      baseOblivion: number;
-      radianceScale: number;
-      haloScale: number;
-      thresholdDivisor: number;
-      thresholdScale: number;
     }
   | {
       type: 'neutrality_equilibrium_tactical_choice';
@@ -112,17 +101,6 @@ export type PendingEffect =
   | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'embrace_infinite'; cards: DeckCard[]; allCards: DeckCard[]; keep: number };
 
-/** One play recorded in the per-turn Recast Ledger. */
-export interface RecastLedgerEntry {
-  definitionId: string;
-  instanceId: string;
-  ledgerIndex: number;
-  recastCount: number;
-  imprintStacks: number;
-  isAnvilSealed: boolean;
-  isNacreCoated: boolean;
-}
-
 export interface TurnState {
   phase: TurnPhase;
   radiance: number;
@@ -133,7 +111,6 @@ export interface TurnState {
   oblivionEarnedThisTurn: number;
   lastPlayedDefinitionId: string | null;
   turnNumber?: number;
-  emberGroveEchoUsedThisTurn?: boolean;
   // Flat additive added to each active Seraphim's per-play Oblivion payout for the rest of this turn.
   // Accumulates each time a card resolves a `seraphim_bonus_amplifier` effect.
   seraphimBonusAmp?: number;
@@ -154,7 +131,6 @@ export interface TurnState {
   attenuationClassUses?: Partial<Record<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher', number>>;
   attenuationBreaksUsed?: number;
   attenuationBrokenClasses?: Array<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher'>;
-  crossSetConversionDistinctSources?: string[];
   neutralityEngineSignatures?: string[];
   neutralityPatienceChargedThisTurn?: number;
   neutralityPatienceConsumedThisTurn?: number;
@@ -175,97 +151,10 @@ export interface TurnState {
   neutralityAttackRestorePercent?: number;
   neutralityLinkedGainBonus?: number;
   neutralityLinkedRetainPercent?: number;
-  thornScar?: number;
-  prismaticCurrentChannel?: PrismaticChannel | null;
-  prismaticDistinctChannels?: PrismaticChannel[];
-  prismaticRecentChannels?: PrismaticChannel[];
-  prismaticRefractionDepth?: number;
-  prismaticNodeCharges?: number;
-  prismaticResonanceCharge?: number;
-  blackGlassWhiteFlame?: number;
-  blackGlassBlackFlame?: number;
-  blackGlassFracture?: number;
-  blackGlassLastPolarity?: 'white' | 'black' | 'both' | null;
-  blackGlassLastPayoff?: number;
-  snowboundPhase?: SnowboundPhase | null;
-  glassProofFragments?: number;
-  glassProofDepth?: number;
-  glassSnapshotFragments?: number;
-  glassSnapshotDepth?: number;
-  glassSnapshotCascade?: number;
-  glassSnapshotAxioms?: number;
-  glassWaveQueue?: number;
-  glassDepthFloor?: number;
-  glassDepthFloorIncreased?: boolean;
-  glassWhiteLedger?: number;
-  glassWhiteLedgerActive?: boolean;
-  glassSyntheticFragments?: number;
-  burningGardenLaw?: 'Rose' | 'Sunflower' | 'Thistle' | null;
-  burningGardenLineagesPlayed?: Array<'Rose' | 'Sunflower' | 'Thistle'>;
-  burningGardenEchoesBloomed?: number;
-  burningGardenNextFinalChordScaleBonus?: number;
-  burningGardenSunSigils?: number;
-  burningGardenCrownStacks?: number;
-  burningGardenCodexLineage?: 'Rose' | 'Sunflower' | 'Thistle' | null;
-  burningGardenCodexCopiesRemaining?: number;
-  burningGardenTransitGateCredit?: number;
-  burningGardenIncandescentSnapshot?: Array<'Rose' | 'Sunflower' | 'Thistle'>;
-  burningGardenWorldflowerGrowth?: number;
-  burningGardenArrayFreeEchoes?: number;
-  burningGardenGeometryMode?: boolean;
-  burningGardenZenithNextInfinite?: boolean;
-  burningGardenSkyLaw?: 'Rose' | 'Sunflower' | 'Thistle' | null;
-  pyroHeat?: number;
-  lastPlayedElement?: string | null;
-  /** Distinct card elements played this turn — used for 'play_unique_sets_in_turn' quest tracking. */
-  uniqueElementsPlayedThisTurn?: string[];
+
   cherubimConditionalMult?: number; // multiplier from cherubim_conditional_buff passives, applied per card play
-  prismaticLight?: number;
-  monochromaticShards?: number;
-  arcticCharge?: number;
-  bloom?: number;
-  butterflySpectrum?: number;
-  butterflyStance?: 'Reflect' | 'Absorb' | 'Dual' | null;
-  butterflyFlutterLevel?: number;
-  butterflyFormation?: number;
-  butterflyFormationTypesSeen?: Array<'Seraphim' | 'Cherubim' | 'Ophanim' | 'Angel'>;
   lastFiredSeraphimAttackMode?: 'unsynergized' | 'synergized' | null;
   lastFiredSeraphimAttackOblivion?: number;
-  eternalSeasUndertow?: number;
-  eternalSeasFoam?: number;
-  eternalSeasReleaseReactionUsedThisTurn?: boolean;
-  // ── Abyssal Forge — The Reforging ────────────────────────────────────────
-  recastLedger?: RecastLedgerEntry[];
-  reforgeCharges?: number;
-  reforgeChargeCap?: number;
-  pearls?: number;
-  unrecordedHueActive?: boolean;
-  forgeTemperQueue?: number; // pending +temper factor for the next attack on a board-wide source
-  forgeRecastEventsThisTurn?: number;
-  forgePendingCherubimTemper?: number; // queued factor from a Cherubim passive; applied to next Seraphim played
-  // Death-flamed Hell Eternal/Infinite overlay.
-  dfhVeilMarks?: number;
-  dfhAngelResonantCashoutUsed?: boolean;
-  dfhVeilAttackBonusByDefinition?: Partial<Record<string, {
-    perMark: number;
-    consumeMax: number;
-    mode: 'synergized' | 'unsynergized' | 'any';
-  }>>;
-  // Eternal/Infinity per-set amplifier stacks. Keyed by EternalStackKind.
-  eternalStacks?: Partial<Record<import('./effects').EternalStackKind, number>>;
-  // Per-set secondary keyword counters (gain/spend/cashout). One per set.
-  secondaryCounters?: Partial<Record<import('./effects').SetSecondaryKind, number>>;
-  // Wing Pulse: number of pending spectrum gains to be doubled.
-  flutterWingPulseDoubles?: number;
-  // ── Wished Upon A Star — Stellar Wish System ──────────────────────────────
-  // starlightCharges: accumulated through card play, drives Nova Wish scaling.
-  // dreamLattice: secondary amplifier; resets each turn unless Solarvex Ward is active.
-  starlightCharges?: number;
-  dreamLattice?: number;
-  // solarvexWardActive: set by Solarvex Ward Cherubim passive; prevents decay.
-  solarvexWardActive?: boolean;
-  // starlaceAmplifierActive: one-shot flag set by Starlace Binding; doubles next Nova Wish.
-  starlaceAmplifierActive?: boolean;
   /** Artifact ids equipped on the active deck; populated at game start from SavedDeck.equippedArtifacts. */
   equippedArtifactIds?: string[];
 }

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { ELEMENT_COLORS, ELEMENT_SET_NAMES, getCardCategoryKey } from '@/data/elements';
+import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { canConvertCardToHolo, getCardFinishLabel, getHolofoilConversionCost, getHoloOwnedCopies, getNormalOwnedCopies } from '@/systems/progression/HolofoilSystem';
 import { useStore } from '@/state/store';
 import {
@@ -200,9 +200,6 @@ export default function HolofoilWorkshop() {
     return registryCards
       .filter(def => canConvertCardToHolo(def, collection, holoCollection))
       .sort((a, b) => {
-        const categoryA = getCardCategoryKey(a);
-        const categoryB = getCardCategoryKey(b);
-        if (categoryA !== categoryB) return categoryA.localeCompare(categoryB);
         const rarityDelta = (RARITY_ORDER[a.rarity] ?? 0) - (RARITY_ORDER[b.rarity] ?? 0);
         if (rarityDelta !== 0) return rarityDelta;
         return a.name.localeCompare(b.name);
@@ -215,14 +212,14 @@ export default function HolofoilWorkshop() {
   );
 
   const elements = useMemo(
-    () => ['All', ...Array.from(new Set(cards.map(card => getCardCategoryKey(card))))],
-    [cards],
+    () => ['All', 'Neutrality'],
+    [],
   );
 
   const filtered = useMemo(() => {
     const byElement = activeElement === 'All'
       ? cards
-      : cards.filter(card => getCardCategoryKey(card) === activeElement);
+      : cards;
     const byRarity = activeRarity === 'All'
       ? byElement
       : byElement.filter(card => (card.type === 'Angel' ? 'Angel' : card.rarity) === activeRarity);
@@ -258,9 +255,6 @@ export default function HolofoilWorkshop() {
         return a.name.localeCompare(b.name);
       }
 
-      const categoryA = getCardCategoryKey(a);
-      const categoryB = getCardCategoryKey(b);
-      if (categoryA !== categoryB) return categoryA.localeCompare(categoryB);
       const rarityDelta = (RARITY_ORDER[a.rarity] ?? 0) - (RARITY_ORDER[b.rarity] ?? 0);
       if (rarityDelta !== 0) return rarityDelta;
       return a.name.localeCompare(b.name);
@@ -304,7 +298,7 @@ export default function HolofoilWorkshop() {
       <div style={styles.filterBar}>
         {elements.map(element => {
           const isActive = activeElement === element;
-          const color = element === 'All' ? '#72caf5' : (ELEMENT_COLORS[element] ?? 'rgba(205,228,255,0.75)');
+          const color = element === 'All' ? '#72caf5' : (SET_ACCENT);
           return (
             <button className="menu-tactile-btn"
               key={element}
@@ -316,7 +310,7 @@ export default function HolofoilWorkshop() {
               }}
               onClick={() => setActiveElement(element)}
             >
-              {element === 'All' ? 'All' : (ELEMENT_SET_NAMES[element] ?? element)}
+              {element === 'All' ? 'All' : (SET_LABEL)}
             </button>
           );
         })}

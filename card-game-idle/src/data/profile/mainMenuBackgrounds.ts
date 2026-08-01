@@ -26,20 +26,6 @@ let cachedPromise: Promise<MainMenuBackgroundEntry[]> | null = null;
 
 const REWARD_THEME_FILE_STEMS: Record<string, string> = {
   neutrality: 'neutrality',
-  pyroabyss: 'pyroabyss',
-  'heavenly-light': 'heavenly light',
-  'thornbound-plains': 'thornbound plains',
-  'prismatic-accord': 'prismatic accord',
-  'snowbound-voltage': 'snowbound voltage',
-  'black-glass-inferno': 'black glass inferno',
-  'mechanical-dreams': 'mechanical dreams',
-  'glass-absolute': 'glass absolute',
-  'the-blazing-garden': 'blazing garden',
-  'age-of-the-butterfly': 'age of the butterfly',
-  'eternal-seas': 'eternal seas',
-  'abyssal-forge': 'abyssal forge',
-  'death-flamed-hell': 'death-flamed hell',
-  'wished-upon-a-star': 'wished upon a star',
   'infinite-cards': 'infinite cards',
 };
 
@@ -77,21 +63,7 @@ function inferRewardThemeUnlock(name: string): { themeId?: string; hint?: string
 
   const setRule = [
     { slug: 'neutrality', label: 'Neutrality', aliases: ['neutrality'] },
-    { slug: 'pyroabyss', label: 'Pyroabyss', aliases: ['pyroabyss'] },
-    { slug: 'heavenly-light', label: 'Heavenly Light', aliases: ['heavenly light', 'heavenly-light'] },
-    { slug: 'thornbound-plains', label: 'Thornbound Plains', aliases: ['thornbound plains', 'thornbound'] },
-    { slug: 'prismatic-accord', label: 'Prismatic Accord', aliases: ['prismatic accord', 'prismatic'] },
-    { slug: 'snowbound-voltage', label: 'Snowbound Voltage', aliases: ['snowbound voltage', 'snowbound'] },
-    { slug: 'black-glass-inferno', label: 'Black Glass Inferno', aliases: ['black glass inferno', 'black glass'] },
-    { slug: 'glass-absolute', label: 'Glass Absolute', aliases: ['glass absolute'] },
-    { slug: 'age-of-the-butterfly', label: 'Age of the Butterfly', aliases: ['age of the butterfly', 'butterfly'] },
-    { slug: 'abyssal-forge', label: 'Abyssal Forge', aliases: ['abyssal forge'] },
-    { slug: 'death-flamed-hell', label: 'Death-flamed Hell', aliases: ['death-flamed hell', 'death flamed hell'] },
-    { slug: 'mechanical-dreams', label: 'Mechanical Dreams', aliases: ['mechanical dreams', 'mechanical'] },
-    { slug: 'the-blazing-garden', label: 'The Blazing Garden', aliases: ['the blazing garden', 'blazing garden'] },
-    { slug: 'eternal-seas', label: 'Eternal Seas', aliases: ['eternal seas'] },
     { slug: 'infinite-cards', label: 'Infinite Cards', aliases: ['infinite cards'] },
-    { slug: 'wished-upon-a-star', label: 'Wished Upon A Star', aliases: ['wished upon a star', 'wish'] },
   ].find((r) => r.aliases.some((alias) => lower.includes(alias)));
 
   if (!setRule) return {};
@@ -109,20 +81,6 @@ function inferRewardThemeUnlock(name: string): { themeId?: string; hint?: string
 function buildRewardBackgroundSlots(): MainMenuBackgroundEntry[] {
   const setRank: Record<string, number> = {
     Neutrality: 0,
-    Fire: 1,
-    Light: 2,
-    Thornbound: 3,
-    Mechanical: 4,
-    Prismatic: 5,
-    Snowbound: 6,
-    Dark: 7,
-    GlassAbsolute: 8,
-    BlazingGarden: 9,
-    Butterfly: 10,
-    EternalSeas: 11,
-    AbyssalForge: 12,
-    DeathFlamedHell: 13,
-    WishedUponAStar: 14,
   };
 
   const rewardThemes = UI_THEMES
@@ -130,8 +88,8 @@ function buildRewardBackgroundSlots(): MainMenuBackgroundEntry[] {
     // Hide base-set placeholders for now; only show Eternal/Infinite rewards.
     .filter((theme) => theme.rewardKind === 'eternal-full' || theme.rewardKind === 'infinite-full')
     .sort((a, b) => {
-      const rankA = setRank[a.setElement ?? ''] ?? Number.MAX_SAFE_INTEGER;
-      const rankB = setRank[b.setElement ?? ''] ?? Number.MAX_SAFE_INTEGER;
+      const rankA = setRank[a.setId ?? ''] ?? Number.MAX_SAFE_INTEGER;
+      const rankB = setRank[b.setId ?? ''] ?? Number.MAX_SAFE_INTEGER;
       if (rankA !== rankB) return rankA - rankB;
 
       const tierRank = (kind: typeof a.rewardKind): number => {

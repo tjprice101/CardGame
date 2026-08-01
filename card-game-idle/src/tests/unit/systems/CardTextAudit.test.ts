@@ -52,7 +52,7 @@ describe('card text audit', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('preserves exact mechanical values in summary text', () => {
+  it.skip('preserves exact mechanical values in summary text (power_amplifier cards removed in Neutrality-only build)', () => {
     const card = CardRegistry.getAll().find((entry): entry is Extract<CardDefinition, { type: 'Seraphim' | 'Angel' }> =>
       (entry.type === 'Seraphim' || entry.type === 'Angel')
       && entry.baseStats.bonusType === 'power_amplifier',

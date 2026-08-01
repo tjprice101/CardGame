@@ -1,52 +1,15 @@
-import { useMemo } from 'react';
-import { useStore, selectBoard, selectDeck, selectBossFight } from '@/state/store';
-import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
-import { CardRegistry } from '@/cards/CardRegistry';
-import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+﻿import { useMemo } from 'react';
+import { useStore, selectBossFight } from '@/state/store';
+import { SET_ACCENT } from '@/data/elements';
 
 /**
- * Ambient arena backdrop. Mounted only while the player is actively in the
- * arena scene. Renders a dynamic gradient tinted by the currently dominant
- * element (boss element if in a fight, otherwise the most-represented
- * element across the deck) plus a quiet status ribbon. Stays beneath the
- * HUD so all existing controls remain interactive.
+ * Ambient arena backdrop. Renders a dynamic gradient tinted by the Neutrality
+ * set accent color plus a quiet status ribbon.
  */
 export default function ArenaShell() {
-  const board = useStore(selectBoard);
-  const deck = useStore(selectDeck);
   const bossFight = useStore(selectBossFight);
 
-  const dominantElement = useMemo(() => {
-    if (bossFight.mode === 'active' && bossFight.activeBossId) {
-      const boss = BOSS_DEFINITIONS.find(b => b.id === bossFight.activeBossId);
-      if (boss) {
-        // Boss exposes its set as `category` (e.g. 'Pyroabyss'). Invert the
-        // ELEMENT_SET_NAMES map to recover the element key.
-        const key = Object.keys(ELEMENT_SET_NAMES).find(k => ELEMENT_SET_NAMES[k] === boss.category);
-        if (key) return key;
-      }
-    }
-    const counts: Record<string, number> = {};
-    for (const slot of board.frontSlots) {
-      if (!slot) continue;
-      const def = CardRegistry.get(slot.definitionId);
-      if (def?.element) counts[def.element] = (counts[def.element] ?? 0) + 1;
-    }
-    if (Object.keys(counts).length === 0) {
-      for (const entry of deck.deckList) {
-        const def = CardRegistry.get(entry.definitionId);
-        if (def?.element) counts[def.element] = (counts[def.element] ?? 0) + entry.copies;
-      }
-    }
-    let best: string | null = null;
-    let bestCount = 0;
-    for (const [el, n] of Object.entries(counts)) {
-      if (n > bestCount) { best = el; bestCount = n; }
-    }
-    return best;
-  }, [board.frontSlots, deck.deckList, bossFight.mode, bossFight.activeBossId]);
-
-  const tint = dominantElement ? ELEMENT_COLORS[dominantElement] ?? '#9090a8' : '#9090a8';
+  const tint = SET_ACCENT;
   const isBossActive = bossFight.mode === 'active';
 
   // Parse hex → rgb components for nebula corner gradients.

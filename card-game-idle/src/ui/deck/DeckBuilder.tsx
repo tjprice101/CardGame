@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+﻿import { useEffect, useState, useMemo, useRef } from 'react';
 import { useStore, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
-import { ELEMENT_COLORS, ELEMENT_SET_NAMES, getCardCategoryKey } from '@/data/elements';
+import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
@@ -459,10 +459,8 @@ export default function DeckBuilder({ onClose }: Props) {
       }
       return variants;
     });
-    const availableElements = [...new Set(
-      ownedCards.map(d => getCardCategoryKey(d.def))
-    )].sort();
-    const filtered = ownedCards.filter(d => elementFilter === null || getCardCategoryKey(d.def) === elementFilter);
+    const availableElements = ['Neutrality'];
+    const filtered = ownedCards.filter(_d => elementFilter === null || elementFilter === 'Neutrality');
 
     const byRarity = (a: CardVariantDisplay, b: CardVariantDisplay) => {
       const rarityDelta = (RARITY_ORDER[a.def.rarity as keyof typeof RARITY_ORDER] ?? 0) -
@@ -560,7 +558,7 @@ export default function DeckBuilder({ onClose }: Props) {
     for (const entry of deckList) {
       const def = CardRegistry.get(entry.definitionId);
       if (!def) continue;
-      const el = getCardCategoryKey(def);
+      const el = 'Neutrality';
       elementCounts[el] = (elementCounts[el] ?? 0) + entry.copies;
       rarityCounts[def.rarity] = (rarityCounts[def.rarity] ?? 0) + entry.copies;
       if (def.type === 'Seraphim') typeSeraphim += entry.copies;
@@ -671,7 +669,7 @@ export default function DeckBuilder({ onClose }: Props) {
       // Skip Angels — they belong in extra deck.
       if (def.type === 'Angel') continue;
       // Respect element filter if active.
-      if (elementFilter !== null && getCardCategoryKey(def) !== elementFilter) continue;
+      if (elementFilter !== null && 'Neutrality' !== elementFilter) continue;
       const ownedNormal = getOwnedCopiesForFinish(def, 'normal', collection, holoCollection);
       const ownedHolo = getOwnedCopiesForFinish(def, 'holo', collection, holoCollection);
       // Prefer holo first when ranking ties.
@@ -875,17 +873,17 @@ export default function DeckBuilder({ onClose }: Props) {
               ...styles.filterBtn,
               ...(elementFilter === el ? {
                 ...styles.filterBtnActive,
-                color: ELEMENT_COLORS[el] ?? '#58aada',
-                borderBottomColor: ELEMENT_COLORS[el] ?? '#58aada',
-                background: `${(ELEMENT_COLORS[el] ?? '#58aada')}14`,
+                color: SET_ACCENT,
+                borderBottomColor: SET_ACCENT,
+                background: `${(SET_ACCENT)}14`,
               } : {}),
             }}
             onClick={() => setElementFilter(el === elementFilter ? null : el)}
           >
             {elementFilter === el && (
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: ELEMENT_COLORS[el] ?? '#f0bd78', display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
             )}
-            {ELEMENT_SET_NAMES[el] ?? el}
+            {SET_LABEL}
           </button>
         ))}
       </div>
@@ -895,7 +893,7 @@ export default function DeckBuilder({ onClose }: Props) {
         {mainSections.length === 0 && angelSection.length === 0 ? (
           <div style={styles.cardPool}>
             <div style={styles.empty}>
-              No {elementFilter ? (ELEMENT_SET_NAMES[elementFilter] ?? elementFilter) : ''} cards in your collection yet.
+              No {elementFilter ? (SET_LABEL) : ''} cards in your collection yet.
             </div>
           </div>
         ) : (
@@ -1017,7 +1015,7 @@ export default function DeckBuilder({ onClose }: Props) {
                 disabled={totalCards >= 50}
                 title={elementFilter === null
                   ? 'Top up the deck with your highest-rarity owned cards.'
-                  : `Top up the deck with the best owned ${ELEMENT_SET_NAMES[elementFilter] ?? elementFilter} cards.`}
+                  : `Top up the deck with the best owned ${SET_LABEL} cards.`}
               >
                 Fill with Best
               </button>
@@ -1160,8 +1158,8 @@ export default function DeckBuilder({ onClose }: Props) {
                       .sort((a, b) => b[1] - a[1])
                       .slice(0, 6)
                       .map(([el, n]) => (
-                        <span key={el} style={{ color: ELEMENT_COLORS[el] ?? '#caa57a' }}>
-                          {ELEMENT_SET_NAMES[el] ?? el}: {n}
+                        <span key={el} style={{ color: SET_ACCENT }}>
+                          {SET_LABEL}: {n}
                         </span>
                       ))}
                   </div>
@@ -1262,7 +1260,7 @@ export default function DeckBuilder({ onClose }: Props) {
             {cardTooltip.card.name}
           </div>
           <div style={{ fontSize: 10, color: 'rgba(234,217,192,0.6)', letterSpacing: 1, marginBottom: 10 }}>
-            {getDisplayCardTypeLabel(cardTooltip.card.type)} · <span style={{ color: RARITY_COLORS_DB[cardTooltip.card.rarity] ?? '#aaa' }}>{cardTooltip.card.rarity}</span> · {ELEMENT_SET_NAMES[cardTooltip.card.element] ?? cardTooltip.card.element}
+            {getDisplayCardTypeLabel(cardTooltip.card.type)} · <span style={{ color: RARITY_COLORS_DB[cardTooltip.card.rarity] ?? '#aaa' }}>{cardTooltip.card.rarity}</span> · {SET_LABEL}
           </div>
           <div style={{ marginBottom: 10 }}>
             <CardEngineCallout card={cardTooltip.card} variant="detail" />

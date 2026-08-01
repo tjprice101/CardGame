@@ -572,20 +572,6 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
 
 const CATEGORY_TITLE_OVERRIDES: Record<BossCategory, { text: string; description: string }> = {
   'Neutrality': { text: 'Arbiter of Neutrality', description: 'Defeat every Neutrality boss in Eternity\'s Wake.' },
-  'Pyroabyss': { text: 'Quencher of the Pyroabyss', description: 'Defeat every Pyroabyss boss in Eternity\'s Wake.' },
-  'Heavenly Light': { text: 'Eclipse of Heavenly Light', description: 'Defeat every Heavenly Light boss in Eternity\'s Wake.' },
-  'Thornbound Plains': { text: 'Reaper of the Thornbound', description: 'Defeat every Thornbound Plains boss in Eternity\'s Wake.' },
-  'Mechanical Dreams': { text: 'Stiller of Mechanical Dreams', description: 'Defeat every Mechanical Dreams boss in Eternity\'s Wake.' },
-  'Prismatic Accord': { text: 'Breaker of the Prismatic Accord', description: 'Defeat every Prismatic Accord boss in Eternity\'s Wake.' },
-  'Snowbound Voltage': { text: 'Stormgrounder of Snowbound Voltage', description: 'Defeat every Snowbound Voltage boss in Eternity\'s Wake.' },
-  'Black Glass Inferno': { text: 'Heir of the Black Glass Inferno', description: 'Defeat every Black Glass Inferno boss in Eternity\'s Wake.' },
-  'Glass Absolute': { text: 'Pane of the Glass Absolute', description: 'Defeat every Glass Absolute boss in Eternity\'s Wake.' },
-  'The Blazing Garden': { text: 'Tender of the Blazing Garden', description: 'Defeat every Blazing Garden boss in Eternity\'s Wake.' },
-  'Age of the Butterfly': { text: 'Witness to the Butterfly', description: 'Defeat every Age of the Butterfly boss in Eternity\'s Wake.' },
-  'Eternal Seas': { text: 'Deepwake-Bearer of the Eternal Seas', description: 'Defeat every Eternal Seas boss in Eternity\'s Wake.' },
-  'Abyssal Forge': { text: 'Hammerlord of the Abyssal Forge', description: 'Defeat every Abyssal Forge boss in Eternity\'s Wake.' },
-  'Death-flamed Hell': { text: 'Pallbearer of the Death-flame', description: 'Defeat every Death-flamed Hell boss in Eternity\'s Wake.' },
-  '[EVENT] Wished Upon A Star': { text: 'Starwarden', description: 'Defeat every Wished Upon A Star boss in Eternity\'s Wake.' },
 };
 
 function buildCategoryClearTitles(): TitleBadgeDefinition[] {
@@ -636,74 +622,7 @@ const BOSS_TITLE_OVERRIDES: Record<string, { text: string; description: string }
   'boss-neutrality-equilibrium-rex': { text: 'Past the Balance Point', description: 'Tip the Equilibrium Rex past its own balance point.' },
   'boss-neutrality-axiom-maw': { text: 'Speaker of Closed Axioms', description: 'Seal the Axiom Maw with one of its own truths.' },
   'boss-neutrality-prime-judge': { text: 'Acquitted in Silence', description: 'Walk free from the Prime Judge\'s last verdict.' },
-  // Pyroabyss
-  'boss-pyroabyss-cinder-leviathan': { text: 'Quencher of Cinder Tides', description: 'Drown the Cinder Leviathan in its own ash-tide.' },
-  'boss-pyroabyss-ash-kings': { text: 'Of the Broken Ash Crowns', description: 'Snap each Ash King\'s smoldering crown in turn.' },
-  'boss-pyroabyss-infernal-sun': { text: 'Eclipse of the Sun Below', description: 'Stand between the world and the Infernal Sun until it dimmed.' },
-  'boss-pyroabyss-rift-bell': { text: 'After the Riftbell\'s Toll', description: 'Silence the Riftbell whose toll opened the second pyre.' },
-  'boss-pyroabyss-phoenix-judge': { text: 'Past the Returning Flame', description: 'Outlast the Phoenix Judge across every returning flame.' },
-  // Heavenly Light
-  'boss-light-aurora-throne': { text: 'Of the Toppled Dawn', description: 'Unseat the Aurora Throne at its dawn.' },
-  'boss-light-sanctum-breaker': { text: 'The Sanctum Restored', description: 'Drive the Sanctum Breaker from a sanctuary it had already claimed.' },
-  'boss-light-choral-tyrant': { text: 'The Severed Hymn', description: 'Cut the Choral Tyrant\'s endless hymn at its measure.' },
-  'boss-light-halo-legion': { text: 'Among the Unwound Rings', description: 'Unwind the Halo Legion ring by burning ring.' },
-  'boss-light-morning-crown': { text: 'Brighter than the Morning', description: 'Eclipse the Morning Crown at its zenith.' },
-  // Thornbound Plains
-  'boss-thornbound-bleeding-road': { text: 'Past the Bleeding Road', description: 'Pass the Bleeding Road\'s last marker still on your feet.' },
-  'boss-thornbound-ragged-banner': { text: 'The Banner Down', description: 'Rip down the Ragged Banner of the lost campaign.' },
-  'boss-thornbound-cathedral-lance': { text: 'Of the Broken Cathedral', description: 'Shatter the Cathedral Lance against its own kneeling stone.' },
-  'boss-thornbound-grave-hedge': { text: 'Through the Grave Hedge', description: 'Cut a clean path through the Grave Hedge.' },
-  'boss-thornbound-gallowcrown': { text: 'Out from the Gallowcrown', description: 'Walk out from beneath the Gallowcrown unhanged.' },
-  // Mechanical Dreams
-  'boss-mech-overclock-arch': { text: 'Quiet of the Arch-Engine', description: 'Throttle the Overclock Arch into silence.' },
-  'boss-mech-furnace-mind': { text: 'After the Furnace Cooled', description: 'Quench the Furnace Mind\'s last thought.' },
-  'boss-mech-brass-tribunal': { text: 'The Brass Recused', description: 'Stand down the Brass Tribunal mid-judgement.' },
-  'boss-mech-reactor-psalm': { text: 'Hush of the Reactor Psalm', description: 'Mute the Reactor Psalm at its final stanza.' },
-  'boss-mech-primevector': { text: 'Against the Primevector', description: 'Reverse the Primevector\'s decided arc.' },
-  // Prismatic Accord
-  'boss-prismatic-mirror-regent': { text: 'Across the Broken Mirror', description: 'Crack the Mirror Regent across every reflected face.' },
-  'boss-prismatic-fracture-hierophant': { text: 'Closer of Fracture Roads', description: 'Seal each road the Fracture Hierophant opened.' },
-  'boss-prismatic-drift-leviathan': { text: 'Stillwater of the Drift', description: 'Still the Drift Leviathan as it crossed the seam.' },
-  'boss-prismatic-blindwars-reliquary': { text: 'Seal of the Blindwars', description: 'Close the Blindwars Reliquary on its last unseeing relic.' },
-  'boss-prismatic-whitebeam-concordat': { text: 'Witness to the Whitebeam', description: 'Witness the Whitebeam Concordat sign its own dissolution.' },
-  // Snowbound Voltage
-  'boss-snowbound-polar-conductor': { text: 'Last Note of the Conductor', description: 'Drown out the Polar Conductor\'s final note.' },
-  'boss-snowbound-aurora-nexus': { text: 'Unhooked from the Aurora', description: 'Unhook the Aurora Nexus from the polar sky.' },
-  'boss-snowbound-glacier-beacon': { text: 'After the Beacon Dimmed', description: 'Snuff the Glacier Beacon at its peak.' },
-  'boss-snowbound-white-requiem': { text: 'Past the White Requiem', description: 'Walk out of the White Requiem still breathing.' },
-  'boss-snowbound-blizzard-requiem': { text: 'Closer of the Blizzard\'s Score', description: 'Lead the Blizzard Requiem into its final, frozen rest.' },
-  // Black Glass Inferno
-  'boss-inferno-vaelthorax-grief': { text: 'Unwriter of Vaelthorax', description: 'Erase Vaelthorax\'s grief from the obsidian record.' },
-  'boss-inferno-morvakael-answer': { text: 'The Answer to Morvakael', description: 'Speak the line Morvakael could not refute.' },
-  'boss-inferno-sorveth-flame': { text: 'Past Sorveth\'s Flame', description: 'Carry one true word past Sorveth\'s flame.' },
-  'boss-inferno-cinderborn-court': { text: 'Throne of the Cinderborn, Empty', description: 'Topple the Cinderborn Court in its molten hall.' },
-  'boss-inferno-ashen-sovereign': { text: 'Heir of the Ashen Court', description: 'Inherit the Ashen Sovereign\'s ruined dominion.' },
-  // Glass Absolute
-  'boss-glass-lattice-archive': { text: 'Reader of the Lattice', description: 'Read the Lattice Archive end to end and close it.' },
-  'boss-glass-angled-infinity': { text: 'Folder of the Angled Infinite', description: 'Fold the Angled Infinity flat against itself.' },
-  'boss-glass-first-white': { text: 'Past the First White', description: 'Endure the First White without looking away.' },
-  'boss-glass-center-everywhere': { text: 'The Center Found', description: 'Locate the center of the Center-Everywhere and claim it.' },
-  'boss-glass-perfect-refraction': { text: 'True Line of Refraction', description: 'Solve the Perfect Refraction to a single, true line.' },
-  // The Blazing Garden
-  'boss-garden-proofflame': { text: 'Keeper of the Proofflame', description: 'Tend the Proofflame past its last theorem.' },
-  'boss-garden-evernoon': { text: 'Through the Evernoon', description: 'Stand through the Evernoon\'s unmoving sun.' },
-  'boss-garden-seven-crown': { text: 'Of the Pruned Crowns', description: 'Cut each of the Seven Crowns back to its root.' },
-  'boss-garden-codex': { text: 'Closer of the Garden Codex', description: 'Close the Garden Codex on its own last entry.' },
-  'boss-garden-noonproof-transit': { text: 'Walker of the Noonproof', description: 'Cross the Noonproof Transit while it still tried to bar you.' },
-  // Age of the Butterfly
-  'boss-butterfly-kethravoss': { text: 'Reader of the Seven Wings', description: 'Read Kethravoss\' wings and write your own conclusion.' },
-  'boss-butterfly-mirrorglass': { text: 'Past the Mirrorglass Bench', description: 'Dismiss the Mirrorglass Conclave from its glass-bench.' },
-  'boss-butterfly-nullwing': { text: 'Through the Nullwing', description: 'Pass through the Nullwing without losing form.' },
-  'boss-butterfly-pyrethkai': { text: 'Heavier than Pyrethkai', description: 'Outweigh Pyrethkai on its own scale.' },
-  'boss-butterfly-volthari': { text: 'Quicker than Volthari', description: 'Move once more than Volthari thought possible.' },
-  // Eternal Seas
-  'boss-seas-aeveleth': { text: 'Against the First Drift', description: 'Push back against Aeveleth\'s First Drift and hold.' },
-  'boss-seas-surevaan': { text: 'Of the Anomaly Log', description: 'Append your line to Surevaan\'s anomaly log.' },
-  'boss-seas-thyrvaan': { text: 'Reader of the Oldlight Grid', description: 'Decode Thyrvaan\'s Oldlight Grid to its last cell.' },
-  'boss-seas-seven-margins': { text: 'Bearer of the Seven Margins', description: 'Carry the Seven Margins through the crowned reef.' },
-  'boss-seas-veleth-abyss': { text: 'Voice of the Veleth Reply', description: 'Answer the Veleth Abyss\' question — and survive the asking.' },
 };
-
 function buildBossClearTitles(): TitleBadgeDefinition[] {
   return BOSS_DEFINITIONS.map((boss) => {
     const ov = BOSS_TITLE_OVERRIDES[boss.id];
@@ -730,52 +649,12 @@ const INFINITE_CARD_TITLE_OVERRIDES: Record<string, { text: string; description:
   // Neutrality core infinites
   'inf-oblivion-absolute': { text: 'The Final Zero', description: 'Forge Oblivion Absolute — the card that ends counting.' },
   'inf-void-cascade': { text: 'Of the Cascading Nothing', description: 'Forge Void Cascade and channel the slope into the void.' },
-  'inf-ash-kings-apocalypse': { text: 'Herald of the Ash Apocalypse', description: 'Forge Ash Kings\' Apocalypse and walk before its smoke.' },
-  'inf-prismatic-axiom-rain': { text: 'Rain of Axioms', description: 'Forge Prismatic Axiom Rain and let true things fall.' },
-  'inf-thornbound-last-procession': { text: 'The Last Procession', description: 'Forge Thornbound Last Procession and carry its standard.' },
-  'inf-celestial-blackout': { text: 'After the Heavens Dimmed', description: 'Forge Celestial Blackout and put the heavens out.' },
-  'inf-machina-eternal-loop': { text: 'Of the Unbroken Loop', description: 'Forge Machina Eternal Loop and ride the unbroken cycle.' },
   'inf-genesis-throne': { text: 'Seated Before the Word', description: 'Forge Genesis Throne and seat yourself before the first word.' },
   'inf-null-apex': { text: 'The Apex That Refuses', description: 'Forge Null Apex — the peak that disclaims itself.' },
-  'inf-pyraxis-colossus': { text: 'Of Pyraxis\' Marrow', description: 'Forge Pyraxis Colossus from the underforge\'s last iron.' },
-  'inf-prismatic-choir-splinter': { text: 'Cantor of the Splinter Choir', description: 'Forge Prismatic Choir Splinter and lead its fractured hymn.' },
-  'inf-thorn-widow-engine': { text: 'Of the Widow Spindle', description: 'Forge Thorn Widow Engine and tend its spindle.' },
-  'inf-lucent-cataclysm-archon': { text: 'Archon of Lucent Ruin', description: 'Forge Lucent Cataclysm Archon and rule the bright ruin.' },
-  'inf-brass-eidolon-prime': { text: 'Within the Brass Eidolon', description: 'Forge Brass Eidolon Prime and step inside its hollow chest.' },
   'inf-entropic-crown': { text: 'Crowned in Unwinding', description: 'Forge the Entropic Crown and wear what unwinds.' },
   'inf-annihilation-field': { text: 'The Drawn Perimeter', description: 'Forge Annihilation Field and draw its perimeter.' },
-  'inf-pyroclasm-engine': { text: 'Of the Banked Pyroclasm', description: 'Forge Pyroclasm Engine and bank its detonation.' },
-  'inf-prismatic-collapse-lattice': { text: 'The Lattice Folded Shut', description: 'Forge Prismatic Collapse Lattice and crease it shut.' },
-  'inf-gravebloom-singularity': { text: 'Tender of the Gravebloom', description: 'Forge Gravebloom Singularity and prune its dark flower.' },
-  'inf-heliarch-eclipse-engine': { text: 'The Sun on Standby', description: 'Forge Heliarch Eclipse Engine and place the sun on standby.' },
-  'inf-mech-entropy-foundry': { text: 'Of the Inevitable Forge', description: 'Forge Mech Entropy Foundry and cast its inevitable ingots.' },
   'inf-sovereign-void': { text: 'Sovereign of the Unwritten', description: 'Forge Sovereign Void and rule the unwritten page.' },
   'inf-eternity-rupture': { text: 'Of the Cracked Thread', description: 'Forge Eternity Rupture and crack the long thread.' },
-  'inf-riftborn-sovereign': { text: 'Crowned at the Seam', description: 'Forge Riftborn Sovereign and inherit the seam between worlds.' },
-  'inf-prismatic-judgement-array': { text: 'Verdict in Nine Beams', description: 'Forge Prismatic Judgement Array and read out its verdict.' },
-  'inf-thornbound-elegy-titan': { text: 'Marshal of the Long Lament', description: 'Forge Thornbound Elegy Titan and march the long lament.' },
-  'inf-mechanical-apotheosis-core': { text: 'Held in Apotheosis', description: 'Forge Mechanical Apotheosis Core and accept its uplift.' },
-  // Black Glass Inferno infinites
-  'inf-bgi-sorveths-final-breath': { text: 'Keeper of the Final Breath', description: 'Forge Sorveth\'s Final Breath and hold the last exhalation.' },
-  'inf-bgi-chromatic-ruin-deluge': { text: 'Of the Chromatic Flood', description: 'Forge Chromatic Ruin Deluge and open every dyed sluice.' },
-  'inf-bgi-obsidian-covenant-colossus': { text: 'Signed in Obsidian', description: 'Forge Obsidian Covenant Colossus and sign in dark glass.' },
-  'inf-bgi-glassrose-leviathan': { text: 'Rider of the Glassrose Wake', description: 'Forge Glassrose Leviathan and ride its blooming wake.' },
-  'inf-bgi-inferno-of-two-truths': { text: 'Twin Truths, One Flame', description: 'Forge Inferno of Two Truths and speak both fires at once.' },
-  'inf-bgi-ashen-cinder-cathedral': { text: 'Of the Cinder Cathedral', description: 'Forge Ashen Cinder Cathedral nave by smoking nave.' },
-  'inf-bgi-vaelmor-umbra-sovereign': { text: 'Heir of the Umbra Crown', description: 'Forge Vaelmor, Umbra Sovereign and accept its shaded crown.' },
-  'inf-bgi-midplace-apocalypse': { text: 'Of the Unwitnessed Chapter', description: 'Forge Midplace Apocalypse and read the unwitnessed chapter.' },
-  // Snowbound Voltage — original ids
-  'sv-infinite-polar-fission': { text: 'Split of the Pole', description: 'Forge Polar Cataclysm in its original split-pole form.' },
-  'sv-infinite-neon-snowfall': { text: 'Under Descending Neon', description: 'Forge Neon Deluge in its first descending light.' },
-  'sv-infinite-crystal-storm': { text: 'Within the Crystal Storm', description: 'Forge Crystal Maelstrom from its founding flurry.' },
-  'sv-infinite-black-ice-throne': { text: 'Throne of Black Ice', description: 'Forge Black Ice Dominion in its first throne-form.' },
-  'sv-infinite-aurora-collapse': { text: 'Heart of the Aurora', description: 'Forge Aurora Singularity in its inaugural collapse.' },
-  // Snowbound Voltage — renamed ids
-  'inf-sv-polar-cataclysm': { text: 'The Pole, Undone', description: 'Re-forge Polar Cataclysm with its full chain awakened.' },
-  'inf-sv-neon-deluge': { text: 'Diviner of the Neon Flood', description: 'Re-forge Neon Deluge with every conduit lit.' },
-  'inf-sv-crystal-maelstrom': { text: 'Eye of the Maelstrom', description: 'Re-forge Crystal Maelstrom with every shard counted.' },
-  'inf-sv-black-ice-dominion': { text: 'Warden of Black Ice', description: 'Re-forge Black Ice Dominion under your own warding.' },
-  'inf-sv-aurora-singularity': { text: 'Bearer of the Aurora Point', description: 'Re-forge Aurora Singularity and carry its point of light.' },
 };
 
 function buildInfiniteCardTitles(): TitleBadgeDefinition[] {
@@ -802,20 +681,7 @@ interface SetSpec {
 }
 
 const SET_SPECS: SetSpec[] = [
-  { category: 'Neutrality', title: 'Of the Quiet Center', prefixes: ['neut-', 'angel-neutral-', 'btei-neutrality-', 'inf-oblivion-', 'inf-void-cascade', 'inf-entropic-crown', 'inf-annihilation-field', 'inf-sovereign-void', 'inf-eternity-rupture', 'inf-genesis-throne', 'inf-null-apex'] },
-  { category: 'Pyroabyss', title: 'Sovereign of the Underflame', prefixes: ['btei-pyroabyss-', 'inf-pyraxis-colossus', 'inf-ash-kings-apocalypse', 'inf-pyroclasm-engine', 'inf-riftborn-sovereign', 'pyro-'] },
-  { category: 'Heavenly Light', title: 'Voice of the Choir', prefixes: ['btei-light-', 'angel-light-', 'inf-celestial-blackout', 'inf-lucent-cataclysm-archon', 'inf-heliarch-eclipse-engine', 'light-'] },
-  { category: 'Thornbound Plains', title: 'Walker of the Thornbound', prefixes: ['btei-thornbound-', 'tbp-', 'inf-thornbound-', 'inf-thorn-widow-engine', 'inf-gravebloom-singularity'] },
-  { category: 'Mechanical Dreams', title: 'Of Brass and Dream', prefixes: ['btei-mech-', 'md-', 'inf-machina-eternal-loop', 'inf-brass-eidolon-prime', 'inf-mech-entropy-foundry', 'inf-mechanical-apotheosis-core'] },
-  { category: 'Prismatic Accord', title: 'Witness of the Accord', prefixes: ['btei-prismatic-', 'pa-', 'inf-prismatic-'] },
-  { category: 'Snowbound Voltage', title: 'Of Snow and Current', prefixes: ['sv-', 'inf-sv-'] },
-  { category: 'Black Glass Inferno', title: 'Regent of Black Glass', prefixes: ['btei-bgi-', 'bgi-', 'inf-bgi-'] },
-  { category: 'Glass Absolute', title: 'Of the Glass Absolute', prefixes: ['ga-'] },
-  { category: 'The Blazing Garden', title: 'Of the Blazing Garden', prefixes: ['bg-'] },
-  { category: 'Age of the Butterfly', title: 'Heir of the Butterfly Age', prefixes: ['bf-'] },
-  { category: 'Eternal Seas', title: 'Deepwake of the Eternal', prefixes: ['es-'] },
-  { category: 'Abyssal Forge', title: 'Of the Abyssal Forge', prefixes: ['af-'] },
-  { category: 'Death-flamed Hell', title: 'Of the Death-flame', prefixes: ['dfh-'] },
+  { category: 'Neutrality', title: 'Of the Quiet Center', prefixes: ['neut-', 'ser-neutral-', 'ophanim-neutral-', 'cherubim-neutral-', 'angel-neutral-', 'btei-neutrality-', 'btei-voids-', 'btei-temporal-', 'btei-null-', 'btei-axiom-', 'btei-eternal-', 'btei-colossus-', 'btei-sovereign-', 'btei-architects-', 'btei-convergence-', 'btei-omniscient-', 'inf-oblivion-', 'inf-void-cascade', 'inf-entropic-crown', 'inf-annihilation-field', 'inf-sovereign-void', 'inf-eternity-rupture', 'inf-genesis-throne', 'inf-null-apex'] },
 ];
 
 export function setCompletionTitleId(category: BossCategory): string {

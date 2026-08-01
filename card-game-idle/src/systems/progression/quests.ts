@@ -8,15 +8,14 @@ import { CardRegistry } from '@/cards/CardRegistry';
  */
 
 export type QuestKind =
-  | 'play_cards_of_element'
+  | 'play_cards'
   | 'play_seraphim'
   | 'play_cherubim'
   | 'play_ophanim'
   | 'summon_angel'
   | 'earn_oblivion_in_turn'
   | 'win_boss'
-  | 'open_packs'
-  | 'play_unique_sets_in_turn';
+  | 'open_packs';
 
 export interface QuestTemplate {
   id: string;
@@ -33,71 +32,26 @@ export interface QuestTemplate {
   oblivionReward?: number;
 }
 
-/** Element ids that have a meaningful pack/set in the game. */
-const ENGINE_ELEMENTS: { element: string; label: string }[] = [
-  { element: 'Neutrality', label: 'Neutrality' },
-  { element: 'Fire', label: 'Pyroabyss' },
-  { element: 'Light', label: 'Heavenly Light' },
-  { element: 'Thornbound', label: 'Thornbound' },
-  { element: 'Mechanical', label: 'Mechanical Dreams' },
-  { element: 'Prismatic', label: 'Prismatic Accord' },
-  { element: 'Dark', label: 'Black Glass Inferno' },
-  { element: 'GlassAbsolute', label: 'Glass Absolute' },
-  { element: 'BlazingGarden', label: 'Blazing Garden' },
-  { element: 'Butterfly', label: 'Age of the Butterfly' },
-  { element: 'EternalSeas', label: 'Eternal Seas' },
-  { element: 'AbyssalForge', label: 'Abyssal Forge' },
-  { element: 'DeathFlamedHell', label: 'Death-flamed Hell' },
-];
-
 const DAILY_QUEST_POOL: QuestTemplate[] = [
-  // Generic "play any cards" — accessible at every stage (play_cards_of_element
-  // with no target matches all element events fired for every card played).
-  { id: 'daily-any-cards-10', text: 'Play 10 cards', kind: 'play_cards_of_element', goal: 10, shardReward: 0, oblivionReward: 5_000 },
-  { id: 'daily-any-cards-20', text: 'Play 20 cards', kind: 'play_cards_of_element', goal: 20, shardReward: 0, oblivionReward: 7_500 },
-  // Element-specific (5 cards each — a small hand's worth)
-  ...ENGINE_ELEMENTS.map<QuestTemplate>(({ element, label }) => ({
-    id: `daily-element-${element.toLowerCase()}`,
-    text: `Play 5 ${label} cards`,
-    kind: 'play_cards_of_element' as QuestKind,
-    target: element,
-    goal: 5,
-    shardReward: 0,
-    oblivionReward: 6_000,
-  })),
-  // Angel type plays (low thresholds, no summon requirement)
+  { id: 'daily-any-cards-10', text: 'Play 10 cards', kind: 'play_cards', goal: 10, shardReward: 0, oblivionReward: 5_000 },
+  { id: 'daily-any-cards-20', text: 'Play 20 cards', kind: 'play_cards', goal: 20, shardReward: 0, oblivionReward: 7_500 },
+  // Card type plays
   { id: 'daily-ophanim-5', text: 'Play 5 Ophanim', kind: 'play_ophanim', goal: 5, shardReward: 0, oblivionReward: 5_500 },
   { id: 'daily-seraphim-3', text: 'Place 3 Seraphim', kind: 'play_seraphim', goal: 3, shardReward: 0, oblivionReward: 5_000 },
   { id: 'daily-cherubim-2', text: 'Place 2 Cherubim', kind: 'play_cherubim', goal: 2, shardReward: 0, oblivionReward: 5_000 },
   // Pack opening
   { id: 'daily-pack-1', text: 'Open any card pack', kind: 'open_packs', goal: 1, shardReward: 0, oblivionReward: 8_000 },
-
-  // Boss (the first boss is accessible from the start)
+  // Boss
   { id: 'daily-boss-1', text: 'Defeat any boss', kind: 'win_boss', goal: 1, shardReward: 0, oblivionReward: 10_000 },
-  // Multi-set (2 sets is achievable with a modest collection)
-  { id: 'daily-multisets-2', text: 'Play cards from 2 different sets in one turn', kind: 'play_unique_sets_in_turn', goal: 2, shardReward: 0, oblivionReward: 6_500 },
 ];
 
 const WEEKLY_QUEST_POOL: QuestTemplate[] = [
-  // Generic "play any cards" accumulated over the week
-  { id: 'weekly-any-cards-50', text: 'Play 50 cards this week', kind: 'play_cards_of_element', goal: 50, shardReward: 50 },
-  { id: 'weekly-any-cards-100', text: 'Play 100 cards this week', kind: 'play_cards_of_element', goal: 100, shardReward: 70 },
-  // Element-specific (~4/day over 7 days)
-  ...ENGINE_ELEMENTS.map<QuestTemplate>(({ element, label }) => ({
-    id: `weekly-element-${element.toLowerCase()}`,
-    text: `Play 30 ${label} cards this week`,
-    kind: 'play_cards_of_element' as QuestKind,
-    target: element,
-    goal: 30,
-    shardReward: 55,
-  })),
+  { id: 'weekly-any-cards-50', text: 'Play 50 cards this week', kind: 'play_cards', goal: 50, shardReward: 50 },
+  { id: 'weekly-any-cards-100', text: 'Play 100 cards this week', kind: 'play_cards', goal: 100, shardReward: 70 },
   // Boss (2 over a week — very achievable)
   { id: 'weekly-bosses-2', text: 'Defeat 2 bosses', kind: 'win_boss', goal: 2, shardReward: 60 },
-
   // Packs (3 over a week)
   { id: 'weekly-packs-3', text: 'Open 3 card packs', kind: 'open_packs', goal: 3, shardReward: 45 },
-  // Multi-set (3 sets in one turn — requires a modest collection by week's end)
-  { id: 'weekly-multisets-3', text: 'Play cards from 3 different sets in one turn', kind: 'play_unique_sets_in_turn', goal: 3, shardReward: 65 },
 ];
 
 export interface QuestInstance {
@@ -229,19 +183,19 @@ export function refreshQuestRotation(state: QuestState, timestamp: number): Ques
 }
 
 /**
- * Inspects a card to derive the set "element" key used by quests. Falls back
- * to the raw element string from the card definition.
+ * Inspects a card to derive the set id for quest tracking.
  */
 export function getCardElementKey(definitionId: string): string | null {
   const def: CardDefinition | undefined = CardRegistry.get(definitionId);
-  return def?.element ?? null;
+  return def ? 'Neutrality' : null;
 }
 
 export interface QuestProgressEvent {
   kind: QuestKind;
   amount: number;
+  /** @deprecated element targeting removed; field kept for back-compat but ignored for play_cards. */
   element?: string;
-  /** For 'reach_chain_multiplier' / 'earn_oblivion_in_turn': the achieved value, used as a peak (not summed). */
+  /** For 'earn_oblivion_in_turn': the achieved value, used as a peak (not summed). */
   peak?: number;
 }
 
@@ -255,8 +209,6 @@ export function applyQuestProgress(quests: QuestInstance[], evt: QuestProgressEv
   const next = quests.map(q => {
     if (q.claimed) return q;
     if (q.kind !== evt.kind) return q;
-    if (q.target && evt.element && q.target !== evt.element) return q;
-    if (q.target && evt.element === undefined) return q;
     const isPeak = evt.peak !== undefined;
     const newRaw = isPeak ? Math.max(q.progress, evt.peak ?? 0) : Math.min(q.goal, q.progress + Math.max(0, evt.amount));
     const newProgress = Math.min(q.goal, newRaw);

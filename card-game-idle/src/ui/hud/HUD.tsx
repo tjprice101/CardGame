@@ -1,15 +1,12 @@
-import { useState } from 'react';
-import { useStore, selectTurn, selectDeck, selectBossFight, selectBattleground } from '@/state/store';
-import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
-import { CardRegistry } from '@/cards/CardRegistry';
-import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
+﻿import { useState } from 'react';
+import { useStore, selectTurn, selectBossFight, selectBattleground } from '@/state/store';
+import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { uiTypography } from '@/ui/theme';
 import ScoreDisplay from './ScoreDisplay';
 import AngelStatPanel from './AngelStatPanel';
 import HandDisplay from './HandDisplay';
 import DeckStatus from './DeckStatus';
 import SetEngineDisplay from './SetEngineDisplay';
-import RadianceDisplay from './RadianceDisplay';
 import TurnControls from './TurnControls';
 import BoardDisplay from './BoardDisplay';
 import PendingEffectModal from './PendingEffectModal';
@@ -25,30 +22,11 @@ import OblivionAcquisitionScreen from './OblivionAcquisitionScreen';
  */
 function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => void }) {
   const turn = useStore(selectTurn);
-  const deck = useStore(selectDeck);
   const bossFight = useStore(selectBossFight);
 
-  // Resolve dominant element for tint (mirrors ArenaShell logic, lightweight).
-  let dominantEl: string | null = null;
-  if (bossFight.mode === 'active' && bossFight.activeBossId) {
-    const boss = BOSS_DEFINITIONS.find(b => b.id === bossFight.activeBossId);
-    if (boss) {
-      dominantEl = Object.keys(ELEMENT_SET_NAMES).find(k => ELEMENT_SET_NAMES[k] === boss.category) ?? null;
-    }
-  }
-  if (!dominantEl) {
-    const counts: Record<string, number> = {};
-    for (const entry of deck.deckList) {
-      const def = CardRegistry.get(entry.definitionId);
-      if (def?.element) counts[def.element] = (counts[def.element] ?? 0) + entry.copies;
-    }
-    let best = 0;
-    for (const [el, n] of Object.entries(counts)) {
-      if (n > best) { best = n; dominantEl = el; }
-    }
-  }
-  const tint = dominantEl ? ELEMENT_COLORS[dominantEl] ?? '#9090a8' : '#9090a8';
-  const setName = dominantEl ? ELEMENT_SET_NAMES[dominantEl] ?? dominantEl : 'Arena';
+  // All cards are Neutrality; dominant element is always Neutrality.
+  const tint = SET_ACCENT;
+  const setName = SET_LABEL;
   const isBoss = bossFight.mode === 'active';
   const tintCss = isBoss ? '#ff6b6b' : tint;
   const phaseLabel = turn.phase === 'mulligan' ? 'Mulligan' : turn.phase === 'playing' ? 'Playing' : 'Idle';
@@ -229,7 +207,6 @@ export default function HUD() {
       <PendingEffectModal />
 
       {/* Radiance orb — visible during Light-deck fights */}
-      <RadianceDisplay />
 
       {/* Full-screen radial flash overlay — triggered by game events */}
       <FlashOverlay />

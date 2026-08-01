@@ -11,36 +11,14 @@ import type {
   SeraphimDefinition,
 } from '@/types/cards';
 import type { CherubimPassiveEffect, CardEffect } from '@/types/effects';
-import { lightAngels } from '../data/cards/lightAngels';
-import { lightHRCards } from '../data/cards/lightHRCards';
-import { lightSeraphims } from '../data/cards/lightSeraphims';
 import { neutralityAngels } from '../data/cards/neutralityAngel';
 import { neutralityCards } from '../data/cards/neutralityCards';
 import { neutralityCherubimCards } from '../data/cards/neutralityCherubimCards';
-import { pyroabyssAngels } from '../data/cards/pyroabyssAngels';
-import { pyroabyssSeraphims, pyroabyssOphanimCards } from '../data/cards/pyroabyssCards';
-import { pyroabyssCherubimCards } from '../data/cards/pyroabyssCherubimCards';
 import { eternalCards } from '../data/cards/eternalCards';
-import { thornboundAngels } from '../data/cards/thornboundAngels';
-import { thornboundCherubim, thornboundCherubimCards, thornboundOphanims, thornboundSeraphims } from '../data/cards/thornboundCards';
-import { mechanicalDreamsAngels } from '../data/cards/mechanicalDreamsAngels';
-import { mechanicalDreamsCherubim, mechanicalDreamsCherubimCards, mechanicalDreamsOphanims, mechanicalDreamsSeraphims } from '../data/cards/mechanicalDreamsCards';
-import { prismaticAccordAngels } from '../data/cards/prismaticAccordAngels';
-import { prismaticAccordCherubim, prismaticAccordCherubimCards, prismaticAccordOphanims, prismaticAccordSeraphims } from '../data/cards/prismaticAccordCards';
-import { blackGlassInfernoAngels } from '../data/cards/blackGlassInfernoAngels';
-import { blackGlassInfernoCherubim, blackGlassInfernoCherubimCards, blackGlassInfernoOphanims, blackGlassInfernoSeraphims } from '../data/cards/blackGlassInfernoCards';
-import { glassAbsoluteCards } from '../data/cards/glassAbsoluteCards';
-import { blazingGardenCards } from '../data/cards/blazingGardenCards';
-import { butterflySetCards } from '../data/cards/butterflySetCards';
-import { eternalSeasCards } from '../data/cards/eternalSeasCards';
-import { abyssalForgeCards } from '../data/cards/abyssalForgeCards';
-import { deathFlamedHellCards } from '../data/cards/deathFlamedHellCards';
-import { wishedUponAStarCards } from '../data/cards/wishedUponAStarCards';
-import { snowboundVoltageAngels, snowboundVoltageCherubimCards, snowboundVoltageOphanimCards, snowboundVoltageSeraphims } from '../data/cards/snowboundVoltageCards';
 import { infiniteCards } from '../data/cards/infiniteCards';
 import { NEUTRALITY_DOC_OVERRIDES } from '../data/cards/neutralityDocOverrides';
 import { transcendentCardDefinitions } from '../data/ascension/transcendentCards';
-import { getCardCategoryKey } from '../data/elements';
+import { SET_ACCENT } from '../data/elements';
 import { MATERIALIZED_CARD_BALANCE } from '../data/cards/materializedCardBalance';
 import { ScoreSystem } from '../systems/scoring/ScoreSystem';
 import { formatDisplayCardText } from '../ui/preferences';
@@ -48,7 +26,6 @@ import { formatDisplayCardText } from '../ui/preferences';
 const registry = new Map<string, CardDefinition>();
 
 const CARD_ID_ALIASES: Record<string, string> = {
-  'bg-et-vethkorath-seven-crown': 'bg-et-vethkorath-seven-crown-proof',
 };
 
 function resolveCardId(id: string): string {
@@ -56,60 +33,16 @@ function resolveCardId(id: string): string {
 }
 
 const SOURCE_DEFINITIONS: CardDefinition[] = [
-  ...(lightAngels as unknown as CardDefinition[]),
-  ...(lightHRCards as unknown as CardDefinition[]),
-  ...(lightSeraphims as unknown as CardDefinition[]),
   ...(neutralityAngels as unknown as CardDefinition[]),
   ...(neutralityCards as unknown as CardDefinition[]),
   ...(neutralityCherubimCards as unknown as CardDefinition[]),
-  ...(pyroabyssAngels as unknown as CardDefinition[]),
-  ...(pyroabyssSeraphims as unknown as CardDefinition[]),
-  ...(pyroabyssOphanimCards as unknown as CardDefinition[]),
-  ...(pyroabyssCherubimCards as unknown as CardDefinition[]),
   ...(eternalCards as unknown as CardDefinition[]),
-  ...(thornboundAngels as unknown as CardDefinition[]),
-  ...(thornboundCherubim as unknown as CardDefinition[]),
-  ...(thornboundCherubimCards as unknown as CardDefinition[]),
-  ...(thornboundOphanims as unknown as CardDefinition[]),
-  ...(thornboundSeraphims as unknown as CardDefinition[]),
-  ...(mechanicalDreamsAngels as unknown as CardDefinition[]),
-  ...(mechanicalDreamsCherubim as unknown as CardDefinition[]),
-  ...(mechanicalDreamsCherubimCards as unknown as CardDefinition[]),
-  ...(mechanicalDreamsOphanims as unknown as CardDefinition[]),
-  ...(mechanicalDreamsSeraphims as unknown as CardDefinition[]),
-  ...(prismaticAccordAngels as unknown as CardDefinition[]),
-  ...(prismaticAccordCherubim as unknown as CardDefinition[]),
-  ...(prismaticAccordCherubimCards as unknown as CardDefinition[]),
-  ...(prismaticAccordOphanims as unknown as CardDefinition[]),
-  ...(prismaticAccordSeraphims as unknown as CardDefinition[]),
-  ...(blackGlassInfernoAngels as unknown as CardDefinition[]),
-  ...(blackGlassInfernoCherubim as unknown as CardDefinition[]),
-  ...(blackGlassInfernoCherubimCards as unknown as CardDefinition[]),
-  ...(blackGlassInfernoOphanims as unknown as CardDefinition[]),
-  ...(blackGlassInfernoSeraphims as unknown as CardDefinition[]),
-  ...(snowboundVoltageAngels as unknown as CardDefinition[]),
-  ...(snowboundVoltageCherubimCards as unknown as CardDefinition[]),
-  ...(snowboundVoltageOphanimCards as unknown as CardDefinition[]),
-  ...(snowboundVoltageSeraphims as unknown as CardDefinition[]),
-  ...(glassAbsoluteCards as unknown as CardDefinition[]),
-  ...(blazingGardenCards as unknown as CardDefinition[]),
-  ...(butterflySetCards as unknown as CardDefinition[]),
-  ...(eternalSeasCards as unknown as CardDefinition[]),
-  ...(abyssalForgeCards as unknown as CardDefinition[]),
-  ...(deathFlamedHellCards as unknown as CardDefinition[]),
-  ...(wishedUponAStarCards as unknown as CardDefinition[]),
   ...(infiniteCards as unknown as CardDefinition[]),
   ...(transcendentCardDefinitions as unknown as CardDefinition[]),
 ];
 
 const ELEMENT_MOTIFS: Record<string, string[]> = {
-  fire: ['Pyre', 'Cinder', 'Ember', 'Ash', 'Inferno'],
-  light: ['Halo', 'Aurora', 'Dawn', 'Lumen', 'Canticle'],
   neutrality: ['Null', 'Axiom', 'Paradox', 'Stillness', 'Void'],
-  thornbound: ['Briar', 'Thorn', 'Harrow', 'Gallow', 'Vine'],
-  mechanical: ['Gear', 'Brass', 'Reactor', 'Forge', 'Vector'],
-  prismatic: ['Prism', 'Spectrum', 'Refraction', 'Mirror', 'Lattice'],
-  dark: ['Umbral', 'Obsidian', 'Nocturne', 'Abyss', 'Blackglass'],
 };
 
 const SERAPHIM_UNSYN_ACTIONS = ['Rend', 'Sunder', 'Lance', 'Cleave', 'Riftcarve'];
@@ -187,32 +120,20 @@ for (const angel of sourceAngels) {
 
 function findRelatedUnitIds(
   unitType: 'Seraphim' | 'Angel',
-  element: string,
   family: string,
   maxCount: number,
 ): string[] {
   const source = unitType === 'Seraphim' ? sourceSeraphim : sourceAngels;
-  const elementMatches = source.filter(def => def.element === element);
-  const exactFamily = elementMatches.filter(def => primaryFamily(def.definitionId) === family);
-  const fallbackFamily = elementMatches.filter(def => primaryFamily(def.definitionId).startsWith(family.split('-')[0] ?? family));
-  const merged = [...exactFamily, ...fallbackFamily, ...elementMatches]
+  const exactFamily = source.filter(def => primaryFamily(def.definitionId) === family);
+  const fallbackFamily = source.filter(def => primaryFamily(def.definitionId).startsWith(family.split('-')[0] ?? family));
+  const merged = [...exactFamily, ...fallbackFamily, ...source]
     .filter((def, index, arr) => arr.findIndex(other => other.definitionId === def.definitionId) === index);
   return merged.slice(0, maxCount).map(def => def.definitionId);
 }
 
-function areCardsInSameSet(
-  left: Pick<CardDefinition, 'definitionId' | 'element' | 'rarity'>,
-  right: Pick<CardDefinition, 'definitionId' | 'element' | 'rarity'>,
-): boolean {
-  return getCardCategoryKey(left) === getCardCategoryKey(right);
-}
-
-function isSummonCostSetAligned(def: AngelDefinition, summonCost: ReadonlyArray<string>): boolean {
+function isSummonCostSetAligned(summonCost: ReadonlyArray<string>): boolean {
   if (summonCost.length === 0) return false;
-  return summonCost.every((definitionId) => {
-    const material = sourceDefinitionsById.get(definitionId);
-    return !!material && areCardsInSameSet(def, material);
-  });
+  return summonCost.every((definitionId) => !!sourceDefinitionsById.get(definitionId));
 }
 
 function collectEffectTraitTokens(
@@ -248,7 +169,8 @@ function collectEffectTraitTokens(
 
 function extractCardTraitTokens(def: CardDefinition): Set<string> {
   const tokens = new Set<string>();
-  tokens.add(`element:${def.element.toLowerCase()}`);
+  tokens.add('set:neutrality');
+  tokens.add(`accent:${SET_ACCENT}`);
   tokens.add(`family:${primaryFamily(def.definitionId)}`);
 
   switch (def.type) {
@@ -296,10 +218,6 @@ function conditionFingerprint(condition: SummonCondition): string {
   switch (condition.type) {
     case 'board_definition_gte':
       return `${condition.type}:${condition.definitionId}:${condition.value}`;
-    case 'eternal_stack_gte':
-      return `${condition.type}:${condition.stack}:${condition.value}`;
-    case 'set_secondary_gte':
-      return `${condition.type}:${condition.kind}:${condition.value}`;
     default:
       return `${condition.type}:${condition.value}`;
   }
@@ -315,32 +233,7 @@ function pushUniqueSummonCondition(conditions: SummonCondition[], condition: Sum
 function summarizePrimarySummonResourceGate(def: AngelDefinition): SummonCondition {
   const isInfinite = def.rarity === 'Infinite';
   const bump = hashString(def.definitionId) % 3;
-
-  // IMPORTANT: Eternal/Infinite angels must NEVER gate on resources from a higher tier.
-  // Equilibrium Sigils are a Transcendent-tier mechanic (only generated by Transcendent
-  // cards in transcendentCards.ts), so Neutrality Eternal/Infinite angels gate on
-  // synergized Seraphim count instead — that's the Patience-system-native Eternal
-  // resource for the element.
-  switch (def.element) {
-    case 'Neutrality':
-      return { type: 'seraphim_on_board_gte', value: (isInfinite ? 4 : 3) + (bump % 2) };
-    case 'Fire':
-      return { type: 'pyro_heat_gte', value: (isInfinite ? 9 : 7) + bump };
-    case 'Light':
-      return { type: 'eternal_stack_gte', stack: 'light', value: (isInfinite ? 7 : 5) + bump };
-    case 'Thornbound':
-      return { type: 'set_secondary_gte', kind: 'thorn', value: (isInfinite ? 7 : 5) + bump };
-    case 'Mechanical':
-      return { type: 'set_secondary_gte', kind: 'mech', value: (isInfinite ? 8 : 6) + bump };
-    case 'Prismatic':
-      return { type: 'set_secondary_gte', kind: 'prism', value: (isInfinite ? 8 : 6) + bump };
-    case 'Dark':
-      return { type: 'eternal_stack_gte', stack: 'glass', value: (isInfinite ? 7 : 5) + bump };
-    case 'Snowbound':
-      return { type: 'eternal_stack_gte', stack: 'snow', value: (isInfinite ? 8 : 6) + bump };
-    default:
-      return { type: 'seraphim_on_board_gte', value: (isInfinite ? 4 : 3) + (bump % 2) };
-  }
+  return { type: 'seraphim_on_board_gte', value: (isInfinite ? 4 : 3) + (bump % 2) };
 }
 
 function pickHighTierSupportDefinitionId(
@@ -352,7 +245,6 @@ function pickHighTierSupportDefinitionId(
   const familyRoot = family.split('-')[0] ?? family;
   const pool = SOURCE_DEFINITIONS
     .filter(card => card.type === 'Seraphim' || card.type === 'Cherubim')
-    .filter(card => areCardsInSameSet(def, card))
     .filter(card => !summonMaterialSet.has(card.definitionId));
 
   if (pool.length === 0) return undefined;
@@ -361,7 +253,6 @@ function pickHighTierSupportDefinitionId(
     .map((card) => {
       let score = 0;
       const candidateFamily = primaryFamily(card.definitionId);
-      if (card.element === def.element) score += 80;
       if (candidateFamily === family) score += 100;
       else if (candidateFamily.startsWith(familyRoot)) score += 40;
       if (card.type === 'Seraphim') score += 15;
@@ -444,19 +335,15 @@ function pickHighTierAngelMaterials(def: AngelDefinition): string[] {
   const familyRoot = family.split('-')[0] ?? family;
   const angelTokens = extractCardTraitTokens(def);
   const allowedSeraphim = sourceSeraphim.filter(seraphim => seraphimTierRank(seraphim) <= allowedTier);
-  const inSet = allowedSeraphim.filter(seraphim => areCardsInSameSet(def, seraphim));
-  const elementScoped = allowedSeraphim.filter(seraphim => seraphim.element === def.element);
-  const candidatePool = inSet.length > 0 ? inSet : (elementScoped.length > 0 ? elementScoped : allowedSeraphim);
+  const candidatePool = allowedSeraphim;
   const materialCount = pickHighTierMaterialCount(def, candidatePool.length);
 
   const ranked = candidatePool
     .map((seraphim) => {
       let score = 0;
       const seraphimFamily = primaryFamily(seraphim.definitionId);
-      if (seraphim.element === def.element) score += 80;
       if (seraphimFamily === family) score += 120;
       else if (seraphimFamily.startsWith(familyRoot)) score += 40;
-      if (areCardsInSameSet(def, seraphim)) score += 60;
 
       const seraphimTokens = extractCardTraitTokens(seraphim);
       for (const token of angelTokens) {
@@ -504,7 +391,7 @@ function buildHighTierAngelSummonProfile(def: AngelDefinition): Pick<AngelDefini
   let finalSummonCost: string[] | null = null;
 
   if (authoredSummonCost.length > 0) {
-    if (isSummonCostSetAligned(def, authoredSummonCost)) {
+    if (isSummonCostSetAligned(authoredSummonCost)) {
       const authoredFingerprint = [...authoredSummonCost].sort().join('|');
       const existingOwner = RESERVED_HIGH_TIER_SUMMON_FINGERPRINTS.get(authoredFingerprint);
       if (!existingOwner || existingOwner === def.definitionId) {
@@ -548,10 +435,9 @@ function pruneRedundantSummonConditions(
   });
 }
 
-function motifFor(def: { definitionId: string; element: string }): string {
-  const elementKey = def.element.toLowerCase();
-  const motifs = ELEMENT_MOTIFS[elementKey] ?? ['Eclipse', 'Aether', 'Rift', 'Crown', 'Pulse'];
-  return pickByHash(motifs, `${def.definitionId}:${def.element}`);
+function motifFor(def: { definitionId: string }): string {
+  const motifs = ELEMENT_MOTIFS['neutrality'] ?? ['Eclipse', 'Aether', 'Rift', 'Crown', 'Pulse'];
+  return pickByHash(motifs, def.definitionId);
 }
 
 function archetypeIndex(definitionId: string, buckets: number): number {
@@ -621,7 +507,7 @@ function buildSeraphimAttacks(def: SeraphimDefinition): SeraphimAttackSet {
       description: 'Standard attack. Usable whenever its cooldown reaches 0.',
       baseOblivion: unsynergizedBase,
       cooldownCards: unsynCooldown,
-      tags: ['seraphim', 'unsynergized', def.element.toLowerCase(), ...familyTags(def.definitionId)],
+      tags: ['seraphim', 'unsynergized', 'neutrality', ...familyTags(def.definitionId)],
     },
     synergized: {
       id: `${def.definitionId}:synergized`,
@@ -632,7 +518,7 @@ function buildSeraphimAttacks(def: SeraphimDefinition): SeraphimAttackSet {
       cooldownCards: synCooldown,
       requiresAngelOnBoard: true,
       costs: uniqueArchetype === 3 && weight >= 3 ? [{ type: 'discard_from_hand', value: 1 }] : undefined,
-      tags: ['seraphim', 'synergized', 'covenant', def.element.toLowerCase(), ...familyTags(def.definitionId)],
+      tags: ['seraphim', 'synergized', 'covenant', 'neutrality', ...familyTags(def.definitionId)],
     },
   };
 }
@@ -646,39 +532,12 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
   const primaryBase = 130 + weight * 45 + summonPressure * 18;
   // Exalted is ~3× the equivalent Seraphim synergized base (same rarity), independent of summonPressure.
   const exaltedBase = Math.round((80 + weight * 30) * 1.85 * 3.0);
-  const costValue = 2 + Math.min(6, weight + Math.floor(summonPressure / 2));
   const uniqueArchetype = archetypeIndex(def.definitionId, 4);
 
-  let dominantCost: AttackCost;
-  switch (def.element) {
-    case 'Light':
-      dominantCost = { type: 'spend_radiance', value: costValue };
-      break;
-    case 'Fire':
-      dominantCost = { type: 'spend_pyro_heat', value: costValue };
-      break;
-    case 'Thornbound':
-      dominantCost = { type: 'spend_trail', value: Math.max(2, costValue - 1) };
-      break;
-    case 'Mechanical':
-      dominantCost = { type: 'spend_strain', value: Math.max(2, costValue - 1) };
-      break;
-    default:
-      dominantCost = { type: 'discard_from_hand', value: Math.max(1, Math.floor(weight / 2)) };
-      break;
-  }
+  const dominantCost: AttackCost = { type: 'discard_from_hand', value: Math.max(1, Math.floor(weight / 2)) };
 
   // Secondary cost creates sought-after uniqueness between Angels.
-  const archetype2Cost: AttackCost = (() => {
-    const v = Math.max(1, Math.floor(costValue / 2));
-    switch (def.element) {
-      case 'Light':      return { type: 'spend_radiance' as const, value: v };
-      case 'Fire':       return { type: 'spend_pyro_heat' as const, value: v };
-      case 'Thornbound': return { type: 'spend_trail' as const, value: Math.max(1, Math.floor(v / 2)) };
-      case 'Mechanical': return { type: 'spend_strain' as const, value: v };
-      default:           return { type: 'discard_from_hand' as const, value: 1 };
-    }
-  })();
+  const archetype2Cost: AttackCost = { type: 'discard_from_hand' as const, value: 1 };
   const secondaryCost: AttackCost | null = uniqueArchetype === 0
     ? { type: 'discard_from_hand', value: 1 }
     : uniqueArchetype === 1
@@ -706,7 +565,7 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
       description: 'Core Angel attack with stable cooldown cadence.',
       baseOblivion: primaryTunedBase,
       cooldownCards: (3 + Math.min(2, Math.floor((weight + summonPressure) / 4))) + (uniqueArchetype === 1 ? -1 : 0),
-      tags: ['angel', 'primary', def.element.toLowerCase(), ...familyTags(def.definitionId)],
+      tags: ['angel', 'primary', 'neutrality', ...familyTags(def.definitionId)],
     },
     exalted: {
       id: `${def.definitionId}:exalted`,
@@ -716,24 +575,9 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
       baseOblivion: exaltedTunedBase,
       cooldownCards: (5 + Math.min(3, Math.floor((weight + summonPressure) / 3))) + (uniqueArchetype === 0 ? 1 : 0),
       costs: [dominantCost, ...(secondaryCost ? [secondaryCost] : [])],
-      tags: ['angel', 'exalted', 'finisher', def.element.toLowerCase(), ...familyTags(def.definitionId)],
+      tags: ['angel', 'exalted', 'finisher', 'neutrality', ...familyTags(def.definitionId)],
     },
   };
-}
-
-function dominantAngelCostForElement(element: string, value: number): AttackCost {
-  switch (element) {
-    case 'Light':
-      return { type: 'spend_radiance', value };
-    case 'Fire':
-      return { type: 'spend_pyro_heat', value };
-    case 'Thornbound':
-      return { type: 'spend_trail', value: Math.max(2, value - 1) };
-    case 'Mechanical':
-      return { type: 'spend_strain', value: Math.max(2, value - 1) };
-    default:
-      return { type: 'discard_from_hand', value: Math.max(1, Math.floor(value / 3)) };
-  }
 }
 
 function parseAttackCostsFromDescription(description: string): AttackCost[] {
@@ -764,22 +608,22 @@ function parseAttackCostsFromDescription(description: string): AttackCost[] {
 
     const spend = clause.match(/^spend\s+(\d+)\s+(.+)$/i);
     if (spend) {
-      const value = Number(spend[1]);
+      void spend[1];
       const resource = spend[2].trim().toLowerCase();
       if (resource === 'heat' || resource === 'heats' || resource === 'ember' || resource === 'embers') {
-        parsed.push({ type: 'spend_pyro_heat', value });
+        // pyro_heat is a dead-set resource; skip
         continue;
       }
       if (resource === 'radiance' || resource === 'radiances') {
-        parsed.push({ type: 'spend_radiance', value });
+        // radiance is a dead-set resource; skip
         continue;
       }
       if (resource === 'trail' || resource === 'trails') {
-        parsed.push({ type: 'spend_trail', value });
+        // trail is dead-set resource; skip
         continue;
       }
       if (resource === 'strain' || resource === 'strains') {
-        parsed.push({ type: 'spend_strain', value });
+        // strain is dead-set resource; skip
         continue;
       }
     }
@@ -904,7 +748,7 @@ function parseDocEffectClauses(text: string): CardEffect[] {
 
     const prismaticGain = clause.match(/^Gain\s+(\d+)\s+Prismatic Light/i);
     if (prismaticGain) {
-      effects.push({ type: 'prismatic_light_gain', value: Number(prismaticGain[1]) });
+      // prismatic_light_gain is a dead-set effect; skip
       continue;
     }
 
@@ -1132,11 +976,8 @@ function resolveAttackCosts(
   return fallbackCosts;
 }
 
-function isStackingResourceCost(type: AttackCost['type']): boolean {
-  return type === 'spend_pyro_heat'
-    || type === 'spend_radiance'
-    || type === 'spend_trail'
-    || type === 'spend_strain';
+function isStackingResourceCost(_type: AttackCost['type']): boolean {
+  return false; // All resource costs from dead sets removed
 }
 
 function tuneResourceCostAttackPressure<T extends { baseOblivion: number; cooldownCards: number; costs?: AttackCost[] }>(attack: T): T {
@@ -1152,49 +993,20 @@ function tuneResourceCostAttackPressure<T extends { baseOblivion: number; cooldo
   };
 }
 
-function firstSeraphimCostForDefinition(def: SeraphimDefinition, weight: number): AttackCost[] {
+function firstSeraphimCostForDefinition(def: SeraphimDefinition, _weight: number): AttackCost[] {
   const variant = archetypeIndex(def.definitionId, 5);
-  const boost = hashString(`${def.definitionId}:first-cost`) % 2;
-
-  const dominantResourceCost: AttackCost = (() => {
-    const baseValue = 1 + Math.floor(Math.max(0, weight - 1 + boost) / 4);
-    switch (def.element) {
-      case 'Light':
-        return { type: 'spend_radiance', value: baseValue };
-      case 'Fire':
-        return { type: 'spend_pyro_heat', value: baseValue };
-      case 'Thornbound':
-        return { type: 'spend_trail', value: baseValue };
-      case 'Mechanical':
-        return { type: 'spend_strain', value: baseValue };
-      case 'Prismatic':
-        return (hashString(`${def.definitionId}:prismatic-choice`) % 2 === 0)
-          ? { type: 'spend_radiance', value: baseValue }
-          : { type: 'spend_pyro_heat', value: baseValue };
-      default:
-        return { type: 'discard_from_hand', value: 1 };
-    }
-  })();
-
+  const dominantResourceCost: AttackCost = { type: 'discard_from_hand', value: 1 };
   const discardCost: AttackCost = { type: 'discard_from_hand', value: 1 };
 
   switch (variant) {
     case 0:
       return [dominantResourceCost];
     case 1:
-      return dominantResourceCost.type === 'discard_from_hand'
-        ? [discardCost]
-        : [dominantResourceCost, discardCost];
     case 2:
-      return dominantResourceCost.type === 'discard_from_hand'
-        ? [discardCost]
-        : [{ ...dominantResourceCost, value: dominantResourceCost.value + 1 }];
     case 3:
       return [discardCost];
     default:
-      return dominantResourceCost.type === 'discard_from_hand'
-        ? [discardCost]
-        : [discardCost, dominantResourceCost];
+      return [discardCost];
   }
 }
 
@@ -1203,7 +1015,7 @@ function buildSeraphimAttackDescription(
   attackName: string,
   mode: 'unsynergized' | 'synergized',
 ): string {
-  const motifs = ELEMENT_MOTIFS[def.element.toLowerCase()] ?? ['Rift'];
+  const motifs = ELEMENT_MOTIFS['neutrality'] ?? ['Rift'];
   const motif = pickByHash(motifs, `${def.definitionId}:${mode}:motif`);
   const unsynergizedTemplates = [
     `${attackName} tears a steady ${motif.toLowerCase()} seam and keeps your pressure alive between finishers.`,
@@ -1226,7 +1038,7 @@ function buildAngelAttackDescription(
   attackName: string,
   mode: 'primary' | 'exalted',
 ): string {
-  const motifs = ELEMENT_MOTIFS[def.element.toLowerCase()] ?? ['Radiant'];
+  const motifs = ELEMENT_MOTIFS['neutrality'] ?? ['Radiant'];
   const motif = pickByHash(motifs, `${def.definitionId}:${mode}:motif`);
   const primaryTemplates = [
     `${attackName} carves a commanding ${motif.toLowerCase()} line to keep your offense stable and threatening.`,
@@ -1272,38 +1084,6 @@ function tuneSeraphimAttackSet(def: SeraphimDefinition, attacks: SeraphimAttackS
       break;
     default:
       break;
-  }
-
-  // Set identity tuning across all Seraphims (Eternal/Infinite remain universal by request).
-  if (def.rarity !== 'Eternal' && def.rarity !== 'Infinite') {
-    switch (def.element) {
-      case 'Fire':
-        unsynBase = Math.round(unsynBase * 1.08);
-        synBase = Math.round(synBase * 1.05);
-        unsynCooldown = Math.max(1, unsynCooldown - 1);
-        break;
-      case 'Thornbound':
-        synBase = Math.round(synBase * 1.12);
-        synCooldown = Math.min(7, synCooldown + 1);
-        break;
-      case 'Mechanical':
-        unsynBase = Math.round(unsynBase * 0.96);
-        unsynCooldown = Math.max(1, unsynCooldown - 1);
-        synCooldown = Math.max(3, synCooldown - 1);
-        break;
-      case 'Prismatic':
-        unsynBase = Math.round(unsynBase * 0.95);
-        synBase = Math.round(synBase * 0.97);
-        break;
-      case 'Light':
-        break;
-      case 'Dark':
-        unsynBase = Math.round(unsynBase * 1.03);
-        synBase = Math.round(synBase * 1.1);
-        break;
-      default:
-        break;
-    }
   }
 
   const tunedUnsynergizedCosts = resolveAttackCosts(
@@ -1364,7 +1144,7 @@ function tuneAngelAttackSet(def: AngelDefinition, attacks: AngelAttackSet): Ange
   const tunedExaltedCosts = resolveAttackCosts(
     attacks.exalted.costs,
     attacks.exalted.description,
-    [dominantAngelCostForElement(def.element, 2 + Math.min(6, weight + Math.floor(summonPressure / 2)))],
+    [{ type: 'discard_from_hand', value: Math.max(1, Math.floor((2 + Math.min(6, weight + Math.floor(summonPressure / 2))) / 3)) }],
   );
 
   const tunedPrimaryAttack = tuneResourceCostAttackPressure({
@@ -1504,7 +1284,7 @@ function cherubimDurabilityFor(def: CherubimDefinition): number {
 }
 
 function applyNeutralityInfiniteIdentityTweaks(def: CardDefinition): CardDefinition {
-  if (def.type === 'Cherubim' && def.element === 'Neutrality' && def.rarity === 'Infinite') {
+  if (def.type === 'Cherubim' && def.rarity === 'Infinite') {
     if (def.definitionId === 'inf-entropic-crown') {
       const tuned: CherubimDefinition = {
         ...def,
@@ -1534,7 +1314,7 @@ function applyNeutralityInfiniteIdentityTweaks(def: CardDefinition): CardDefinit
     }
   }
 
-  if (def.type === 'Angel' && def.element === 'Neutrality' && def.rarity === 'Infinite') {
+  if (def.type === 'Angel' && def.rarity === 'Infinite') {
     if (def.definitionId === 'inf-sovereign-void') {
       const tuned: AngelDefinition = {
         ...def,
@@ -1811,8 +1591,8 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
   if (baseOblivion <= 0) baseOblivion = 16 + weight * 10;
 
   const family = primaryFamily(def.definitionId);
-  const relatedSeraphim = findRelatedUnitIds('Seraphim', def.element, family, 8);
-  const relatedAngels = findRelatedUnitIds('Angel', def.element, family, 5);
+  const relatedSeraphim = findRelatedUnitIds('Seraphim', family, 8);
+  const relatedAngels = findRelatedUnitIds('Angel', family, 5);
   const uniqueArchetype = archetypeIndex(def.definitionId, 5);
 
   const existingBuffs = def.effects.filter(
@@ -1829,7 +1609,7 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
           : (effect.targetUnitType === 'Angel' ? relatedAngels : effect.targetUnitType === 'Seraphim' ? relatedSeraphim : [...relatedSeraphim, ...relatedAngels]),
         targetTags: effect.targetTags && effect.targetTags.length > 0
           ? effect.targetTags
-          : [def.element.toLowerCase(), ...familyTags(def.definitionId)],
+          : ['neutrality', ...familyTags(def.definitionId)],
       };
     });
   }
@@ -1873,7 +1653,7 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
     type: 'cherubim_attack_buff',
     targetUnitType: targetUnit,
     targetDefinitionIds: targetIds,
-    targetTags: [def.element.toLowerCase(), family],
+    targetTags: ['neutrality', family],
     bonusBaseOblivion: tunedBase,
     cooldownDeltaCards: tunedCooldownDelta,
     multiplier: tunedMultiplier,
@@ -1883,7 +1663,7 @@ function deriveCherubimAttackBuff(def: CherubimDefinition): CherubimPassiveEffec
     type: 'cherubim_attack_buff',
     targetUnitType: 'Angel',
     targetDefinitionIds: relatedAngels,
-    targetTags: [def.element.toLowerCase(), family, 'angel'],
+    targetTags: ['neutrality', family, 'angel'],
     bonusBaseOblivion: Math.round(tunedBase * 0.78),
     cooldownDeltaCards: weight >= 4 ? -1 : 0,
     multiplier: Number((1 + (tunedMultiplier - 1) * 0.75).toFixed(3)),
@@ -1905,23 +1685,8 @@ function isOphanimUtilityEffect(effect: CardEffect): boolean {
     case 'salvage_by_type':
     case 'salvage_any':
     case 'shuffle_discard':
-    // Set-specific resource gains that replace draw as the set's card-advantage mechanic
-    case 'trail_gain':
-    case 'strain_gain':
-    case 'arctic_charge_gain':
-    case 'prismatic_light_gain':
-    case 'eternal_stack_gain':
-    case 'bloom_gain':
-    case 'butterfly_spectrum_gain':
-    case 'seas_undertow_gain':
-    case 'seas_foam_gain':
-    case 'radiance_gain':
-    case 'pyro_heat_gain':
-    case 'monochromatic_shards_gain':
       return true;
-    // Recurse into overclock/conditional so nested resource gains are recognised
-    case 'overclock':
-      return effect.then.some(isOphanimUtilityEffect);
+    // Recurse into conditional so nested resource gains are recognised
     case 'conditional':
       return effect.then.some(isOphanimUtilityEffect);
     default:
@@ -1955,7 +1720,6 @@ function injectOphanimUtility(def: OphanimDefinition): OphanimDefinition {
       extraEffects.push({ type: 'draw', value: weight >= 5 ? 2 : 1 });
       break;
     default:
-      extraEffects.push({ type: 'prismatic_light_gain', value: 2 + Math.min(4, weight) });
       extraEffects.push({ type: 'draw', value: 1 });
       break;
   }
@@ -1990,100 +1754,10 @@ const NEUTRALITY_NON_CORE_REWORK_IDS = new Set<string>([
   'btei-neutrality-void-throne',
   'btei-neutrality-axiom-maw',
   'btei-neutrality-prime-equilibrium',
-  'btei-prismatic-vorthum-edict',
-  'btei-prismatic-fracture-archive',
-  'inf-prismatic-axiom-rain',
-  'inf-prismatic-collapse-lattice',
-  'btei-light-sunbreak-canon',
-  'btei-light-aureate-rapture',
-  'btei-light-choir-imperator',
-  'btei-light-halo-dominion',
-  'btei-light-throne-of-morning',
-  'inf-celestial-blackout',
-  'inf-lucent-cataclysm-archon',
-  'inf-heliarch-eclipse-engine',
-  'btei-pyroabyss-cinder-cataclysm',
-  'btei-pyroabyss-ashfall-engine',
-  'btei-pyroabyss-infernal-archon',
-  'btei-pyroabyss-hellrift-mandala',
-  'btei-pyroabyss-oblivion-phoenix',
-  'inf-ash-kings-apocalypse',
-  'inf-pyraxis-colossus',
-  'inf-pyroclasm-engine',
-  'inf-riftborn-sovereign',
-  'ser-fire-cinder',
-  'ser-fire-abyssal',
-  'ser-fire-pyre',
-  'ser-fire-infernal',
-  'ser-fire-voidflame',
-  'ophanim-fire-cinder-draw',
-  'ophanim-fire-abyssal-kindle',
-  'ophanim-fire-pyre-ignite',
-  'ophanim-fire-infernal-surge',
-  'ophanim-fire-void-kindling',
-  'ophanim-fire-void-flare',
-  'ophanim-fire-smoldering-cycle',
-  'ophanim-fire-abyssal-recall',
-  'ophanim-fire-flame-burst',
-  'ophanim-fire-abyssal-detonation',
-  'ophanim-fire-pyroclast',
-  'ophanim-fire-ember-threshold',
-  'ophanim-fire-conflagration',
-  'ophanim-fire-pyre-hunt',
-  'ophanim-fire-ember-chain',
-  'ophanim-fire-void-combustion',
-  'ophanim-fire-inferno',
-  'ophanim-fire-void-apocalypse',
-  'cherubim-fire-ember-shroud',
-  'cherubim-fire-abyssal-veil',
-  'cherubim-fire-pyre-mantle',
-  'cherubim-fire-infernal-ward',
-  'cherubim-fire-void-cinder-shell',
-  'cherubim-fire-flame-fortify',
-  'cherubim-fire-abyss-amp',
-  'angel-fire-cinderwing',
-  'angel-fire-pyroclast-wraith',
-  'angel-fire-obliteron',
-  'ga-et-lattice-archive-seraph',
-  'ga-et-angled-infinity',
-  'ga-et-first-white',
-  'ga-et-center-everywhere',
-  'ga-et-perfect-refraction',
-  'ga-inf-glass-absolute',
-  'ga-inf-refracted-sovereign',
-  'ga-inf-yreth-prism-at-center',
-  'ga-inf-chorus-unbroken-spectrum',
-  'ga-inf-shattered-without-shattering',
-  'ga-inf-color-after-white',
-  // Snowbound Voltage Eternal/Infinite reworks (typed snowbound_* / arctic_charge_* effects in
-  // src/data/cards/eternalCards.ts + infiniteCards.ts must bypass materializedCardBalance stubs).
-  'sv-eternal-frost-charge',
-  'sv-eternal-aurora-battery',
-  'sv-eternal-glacier-signal',
-  'sv-eternal-white-static',
-  'sv-eternal-sleet-choir',
-  'sv-infinite-polar-fission',
-  'sv-infinite-neon-snowfall',
-  'sv-infinite-crystal-storm',
-  'sv-infinite-black-ice-throne',
-  'sv-infinite-aurora-collapse',
-]);
-
-const BUTTERFLY_BASE_OPHANIM_SOURCE_IDS = new Set<string>([
-  'bf-oph-ridge-trace',
-  'bf-oph-lens-current',
-  'bf-oph-copper-green-trail',
-  'bf-oph-crystal-ornament-route',
-  'bf-oph-suppression-wake',
-  'bf-oph-electromagnetic-arrival',
-  'bf-oph-midair-citadel',
-  'bf-oph-velmargin-lensfall',
 ]);
 
 function shouldKeepSourceDefinition(def: CardDefinition): boolean {
   const { definitionId } = def;
-  if (definitionId.startsWith('bg-')) return true;
-  if (definitionId.startsWith('bf-')) return true;
   const isHighTierAngel = def.type === 'Angel' && (def.rarity === 'Eternal' || def.rarity === 'Infinite');
   if (isNeutralityCoreCard(definitionId) || NEUTRALITY_NON_CORE_REWORK_IDS.has(definitionId)) {
     if (isHighTierAngel) {
@@ -2092,56 +1766,9 @@ function shouldKeepSourceDefinition(def: CardDefinition): boolean {
       return true;
     }
   }
-  if (BUTTERFLY_BASE_OPHANIM_SOURCE_IDS.has(definitionId)) return true;
-  // Base Pyroabyss cards are authored reworks and must remain source-driven.
-  if (definitionId.startsWith('ser-fire-')) return true;
-  if (definitionId.startsWith('ophanim-fire-')) return true;
-  if (definitionId.startsWith('cherubim-fire-')) return true;
-  if (definitionId.startsWith('angel-fire-')) return true;
-  if (definitionId.startsWith('ser-light-')) return true;
-  if (definitionId.startsWith('hr-light-')) return true;
-  if (definitionId.startsWith('angel-light-')) return true;
-  if (definitionId.startsWith('md-')) return true;
-  // Infinite reward cards must execute the exact source-defined effects so UI text matches behavior.
-  // High-rarity Angels are the one exception: they are normalized centrally so summon gates stay consistent.
+  // Infinite reward cards must execute exact source-defined effects so UI text matches behavior.
+  // High-rarity Angels are the one exception: normalized centrally so summon gates stay consistent.
   if (definitionId.startsWith('inf-') && def.type !== 'Angel') return true;
-  // Base Snowbound cards were explicitly reauthored around Frost/Voltage + Arctic Charge.
-  // Keep source behavior except for Eternal/Infinite Angels, which are normalized for summon gating.
-  if (definitionId.startsWith('sv-')) {
-    if (def.type === 'Angel' && (def.rarity === 'Eternal' || def.rarity === 'Infinite')) {
-      // Continue to normalized handling for high-tier Snowbound Angels.
-    } else {
-      return true;
-    }
-  }
-  // Black Glass Inferno cards are authored source-first so the set can be tuned
-  // directly from its card files without materialized overrides reintroducing stale behavior.
-  if (definitionId.startsWith('bgi-')) return true;
-  if (definitionId.startsWith('btei-bgi-')) return true;
-  if (definitionId.startsWith('btei-mech-') && !isHighTierAngel) return true;
-  if (definitionId.startsWith('inf-bgi-')) return true;
-  if (definitionId.startsWith('btei-pyroabyss-') && !isHighTierAngel) return true;
-  if (definitionId.startsWith('btei-light-') && !isHighTierAngel) return true;
-  if (definitionId === 'btei-light-halo-dominion') return true;
-  if (definitionId.startsWith('btei-thornbound-') && !isHighTierAngel) return true;
-  // Thornbound high-tier Angels are also authored end-to-end (custom summon shell + bloom timing).
-  if (definitionId === 'btei-thornbound-funeral-bramble') return true;
-  if (definitionId === 'inf-thornbound-elegy-titan') return true;
-  // Base Thornbound cards are authored reworks (Trail / Scar / in-set isolation) and must remain source-driven.
-  if (definitionId.startsWith('tbp-')) return true;
-  if (definitionId.startsWith('cherubim-thornbound-')) return true;
-  if (definitionId.startsWith('dfh-')) return true;
-  if (definitionId.startsWith('af-')) return true;
-  // Prismatic Accord retune is source-authored across base, Eternal, and Infinite cards.
-  // Keep source definitions (including high-tier Angels) so authored effects and costs are not overwritten.
-  if (definitionId.startsWith('pa-')) return true;
-  if (definitionId.startsWith('cherubim-prismatic-')) return true;
-  if (definitionId.startsWith('btei-prismatic-')) return true;
-  if (definitionId.startsWith('inf-prismatic-')) return true;
-  if (definitionId.startsWith('ga-')) return true;
-  if (definitionId.startsWith('wuas-')) return true;
-  if (definitionId.startsWith('inf-wuas-')) return true;
-  if (definitionId.startsWith('es-')) return true;
   return false;
 }
 
@@ -2165,7 +1792,7 @@ function normalizeDefinition(def: CardDefinition): CardDefinition {
     return {
       ...seraphim,
       attacks: tunedAttacks,
-      attackTags: seraphim.attackTags ?? [seraphim.element.toLowerCase(), ...familyTags(seraphim.definitionId)],
+      attackTags: seraphim.attackTags ?? ['neutrality', ...familyTags(seraphim.definitionId)],
     };
   }
 
@@ -2204,7 +1831,7 @@ function normalizeDefinition(def: CardDefinition): CardDefinition {
     return {
       ...conditionCleanAngel,
       attacks: tunedAttacks,
-      attackTags: angel.attackTags ?? [angel.element.toLowerCase(), ...familyTags(angel.definitionId)],
+      attackTags: angel.attackTags ?? ['neutrality', ...familyTags(angel.definitionId)],
     };
   }
 
@@ -2252,14 +1879,6 @@ function formatDisplayAttackCost(cost: AttackCost): string {
       return `sacrifice ${cost.value} Seraphim`;
     case 'sacrifice_angel':
       return `sacrifice ${cost.value} Angel`;
-    case 'spend_pyro_heat':
-      return `spend ${cost.value} Heat`;
-    case 'spend_radiance':
-      return `spend ${cost.value} Radiance`;
-    case 'spend_trail':
-      return `spend ${cost.value} Trail`;
-    case 'spend_strain':
-      return `spend ${cost.value} Strain`;
   }
 }
 
@@ -2268,28 +1887,15 @@ function buildDisplayAttackDescription(attack: {
   cooldownCards: number;
   costs?: ReadonlyArray<AttackCost>;
   requiresAngelOnBoard?: boolean;
-  tags?: ReadonlyArray<string>;
-}, options?: { infiniteFireLabel?: boolean; fireChromaTier?: 'eternal' | 'infinite' | null }): string {
+}): string {
   const angelText = attack.requiresAngelOnBoard ? ' · Requires Angel' : '';
   const costText = attack.costs && attack.costs.length > 0
     ? ` · Cost: ${attack.costs.map(formatDisplayAttackCost).join(', ')}`
     : '';
-  const furnaceText = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire')
-    ? ' · +2.5% attack per Heat (max +75%) · Spend up to 5 Heat: +1% attack per Heat spent (max +5%)'
-    : '';
-  const chromaText = options?.fireChromaTier === 'eternal'
-    ? ' · +4% attack per Chroma Ember (max +16%, consumed on Eternal Fire attack)'
-    : options?.fireChromaTier === 'infinite'
-      ? ' · +5% attack per Chroma Ember (max +25%, consumed on Infinite Fire attack)'
-      : '';
-  return `${attack.baseOblivion} base Oblivion · ${attack.cooldownCards} cards cooldown${angelText}${costText}${furnaceText}${chromaText}`;
+  return `${attack.baseOblivion} base Oblivion · ${attack.cooldownCards} cards cooldown${angelText}${costText}`;
 }
 
 function displayCardDefinition(def: CardDefinition): CardDefinition {
-  const infiniteFireLabel = def.element === 'Fire' && def.definitionId.startsWith('inf-');
-  const fireChromaTier = def.element === 'Fire'
-    ? (def.rarity === 'Eternal' ? 'eternal' : def.rarity === 'Infinite' ? 'infinite' : null)
-    : null;
   const displayDef = {
     ...def,
     name: formatDisplayCardText(def.name),
@@ -2303,12 +1909,12 @@ function displayCardDefinition(def: CardDefinition): CardDefinition {
         unsynergized: {
           ...def.attacks.unsynergized,
           name: formatDisplayCardText(def.attacks.unsynergized.name),
-          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.unsynergized, { infiniteFireLabel, fireChromaTier })),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.unsynergized)),
         },
         synergized: {
           ...def.attacks.synergized,
           name: formatDisplayCardText(def.attacks.synergized.name),
-          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.synergized, { infiniteFireLabel, fireChromaTier })),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.synergized)),
         },
       },
     } as CardDefinition;
@@ -2326,12 +1932,12 @@ function displayCardDefinition(def: CardDefinition): CardDefinition {
         primary: {
           ...def.attacks.primary,
           name: formatDisplayCardText(def.attacks.primary.name),
-          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.primary, { infiniteFireLabel, fireChromaTier })),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.primary)),
         },
         exalted: {
           ...def.attacks.exalted,
           name: formatDisplayCardText(def.attacks.exalted.name),
-          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.exalted, { infiniteFireLabel, fireChromaTier })),
+          description: formatDisplayCardText(buildDisplayAttackDescription(def.attacks.exalted)),
         },
       } : def.attacks,
     } as CardDefinition;
@@ -2351,15 +1957,10 @@ const DISPLAY_DEFINITION_BY_ID = new Map(
 // Built once at module load; avoids repeated getAll().filter() scans across
 // store.ts, titleBadges.ts, avatars.ts, and uiThemes.ts hot paths.
 
-const _byElement = new Map<string, CardDefinition[]>();
 const _byType = new Map<string, CardDefinition[]>();
 const _byRarity = new Map<string, CardDefinition[]>();
 
 for (const def of DISPLAY_DEFINITIONS) {
-  const el = def.element ?? '';
-  if (!_byElement.has(el)) _byElement.set(el, []);
-  _byElement.get(el)!.push(def);
-
   const ty = def.type ?? '';
   if (!_byType.has(ty)) _byType.set(ty, []);
   _byType.get(ty)!.push(def);
@@ -2377,27 +1978,9 @@ export const CardRegistry = {
   },
   getAll: (): CardDefinition[] => DISPLAY_DEFINITIONS,
   /**
-   * Returns all cards matching the given element (O(1) index lookup).
-   * Prefer this over `getAll().filter(d => d.element === element)`.
-   */
-  getByElement: (element: string): CardDefinition[] => _byElement.get(element) ?? [],
-  /**
    * Returns all cards matching the given rarity (O(1) index lookup).
    */
   getByRarity: (rarity: string): CardDefinition[] => _byRarity.get(rarity) ?? [],
-  /**
-   * Returns all cards matching the given element AND rarity.
-   * Iterates the smaller of the two index lists.
-   */
-  getByElementAndRarity: (element: string, rarity: string): CardDefinition[] => {
-    const byEl = _byElement.get(element) ?? [];
-    const byRa = _byRarity.get(rarity) ?? [];
-    // Iterate the smaller list and check membership in the larger.
-    if (byEl.length <= byRa.length) {
-      return byEl.filter(d => d.rarity === rarity);
-    }
-    return byRa.filter(d => d.element === element);
-  },
   getByType: (type: CardDefinition['type']): CardDefinition[] =>
     _byType.get(type) ?? [],
   has: (id: string): boolean => registry.has(resolveCardId(id)),

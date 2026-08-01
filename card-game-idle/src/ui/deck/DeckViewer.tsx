@@ -1,7 +1,7 @@
 ﻿import { useState } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { ELEMENT_COLORS, ELEMENT_SET_NAMES } from '@/data/elements';
+import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { uiTypography } from '@/ui/theme';
 import type { CardDefinition } from '@/types/cards';
 import type { SavedDeck } from '@/types/game';
@@ -96,8 +96,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
     (deck.extraDeck ?? []).forEach(e => push(e.definitionId, 1));
 
     const totalCards = deck.deckList.reduce((s, e) => s + e.copies, 0) + (deck.extraDeck?.length ?? 0);
-    const elements = new Set<string>();
-    grouped.forEach(e => elements.add(e.def.element));
+    const elements = new Set<string>(['Neutrality']);
     const rarityCounts: Record<string, number> = {};
     grouped.forEach(e => { rarityCounts[e.def.rarity] = (rarityCounts[e.def.rarity] ?? 0) + e.copies; });
 
@@ -325,17 +324,17 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                       <div key={el} style={{
                         display: 'flex', alignItems: 'center', gap: 5,
                         padding: '3px 9px', borderRadius: 20,
-                        border: `1px solid ${(ELEMENT_COLORS[el] ?? '#888')}44`,
-                        background: `${(ELEMENT_COLORS[el] ?? '#888')}11`,
+                        border: `1px solid ${(SET_ACCENT)}44`,
+                        background: `${(SET_ACCENT)}11`,
                         fontSize: 11,
                       }}>
                         <div style={{
                           width: 7, height: 7, borderRadius: '50%',
-                          background: ELEMENT_COLORS[el] ?? '#888',
-                          boxShadow: `0 0 5px ${ELEMENT_COLORS[el] ?? '#888'}88`,
+                          background: SET_ACCENT,
+                          boxShadow: `0 0 5px ${SET_ACCENT}88`,
                         }} />
-                        <span style={{ color: ELEMENT_COLORS[el] ?? '#aaa' }}>
-                          {ELEMENT_SET_NAMES[el] ?? el}
+                        <span style={{ color: SET_ACCENT }}>
+                          {SET_LABEL}
                         </span>
                       </div>
                     ))}

@@ -19,14 +19,11 @@ export type ArtifactEffectType =
   | 'resonance_gain_bonus'             // (Legacy Cadence artifact; runtime handler retired in Phase 0 gut)
 
   // Thornbound
-  | 'trail_gain_bonus'                // +N Trail per Thornbound card played
   | 'trail_spend_discount'            // Trail spend abilities cost N less (min 0)
 
   // Mechanical Dreams
-  | 'queue_capacity_bonus'            // +N Reactor Core at start of each turn (Mechanical Dreams)
 
   // Prismatic Accord
-  | 'channel_count_bonus'             // +N Spectrum tokens per Prismatic card played
 
   // Black Glass Inferno
   | 'flame_start_bonus'               // White Flame and Black Flame each start N higher
@@ -41,7 +38,6 @@ export type ArtifactEffectType =
   | 'bloom_start_bonus'               // +N Bloom at the start of each turn
 
   // Age of the Butterfly
-  | 'wing_resonance_gain_bonus'       // +N Wing Resonance per Butterfly card played
 
   // Eternal Seas (legacy key kept for back-compat data)
   | 'tide_crown_rate_bonus'           // +N legacy Tide Crown tokens at turn start
@@ -60,8 +56,8 @@ export interface ArtifactEffect {
 
 export interface ArtifactDefinition {
   id: string;
-  /** Element key matching PackDefinition.element or special-cased values ('SnowboundVoltage'). */
-  setElementKey: string;
+  /** Set identifier for this artifact (e.g. 'Neutrality'). */
+  setId: string;
   /** Display name of the set (for grouping). */
   setName: string;
   tier: ArtifactTier;
@@ -82,38 +78,9 @@ export const RARITY_POWDER_YIELD: Record<string, number> = {
   Infinite: 300,
 };
 
-/** Rarity index used for set-progression dissolve scaling (1..6). */
-const RARITY_PROGRESSION_INDEX: Record<string, number> = {
-  Common: 1,
-  Rare: 2,
-  Epic: 3,
-  Legendary: 4,
-  Eternal: 5,
-  Infinite: 6,
-};
-
-/**
- * Dissolve yield for a single card. Base RARITY_POWDER_YIELD plus a
- * progression bonus of +50 per rarity tier per card-set step beyond the first.
- * The set step is the card's element index in {@link ARTIFACT_SET_COST_ORDER}
- * (1-based; Neutrality = 1, Death-flamed Hell = 14). Neutrality contributes
- * no bonus so its cards keep their base RARITY_POWDER_YIELD values. Unknown
- * sets use step = 1 (no bonus).
- *
- *   yield = baseRarityYield + 50 × rarityIndex × (setIndex - 1)
- *
- * Examples:
- *   Neutrality Common       = 1   + 50×1×0  = 1
- *   Neutrality Infinite     = 300 + 50×6×0  = 300
- *   Fire Common             = 1   + 50×1×1  = 51
- *   Death-flamed Hell Infinite = 300 + 50×6×13 = 4200
- */
-export function getCardDissolveYield(rarity: string, element: string): number {
-  const base = RARITY_POWDER_YIELD[rarity] ?? 1;
-  const rarityIdx = RARITY_PROGRESSION_INDEX[rarity] ?? 1;
-  const elementIdx = ARTIFACT_SET_COST_ORDER.indexOf(element);
-  const setStep = elementIdx >= 0 ? elementIdx : 0;
-  return base + 50 * rarityIdx * setStep;
+/** Dissolve yield for a single card by rarity. Only Neutrality (step 0) exists. */
+export function getCardDissolveYield(rarity: string): number {
+  return RARITY_POWDER_YIELD[rarity] ?? 1;
 }
 
 /** Legacy tier-based one-shot cost (no longer used for purchasing; kept to avoid breaking back-compat). */
@@ -141,43 +108,14 @@ export const ARTIFACT_TIER_COPY_COST: Record<ArtifactTier, number> = {
   apex: 200_000,
 };
 
-/**
- * Per-set Light cost multiplier. Index in this list = power of 2 applied to base tier cost,
- * matching the doubling pattern of PACK_DEFINITIONS pack costs.
- * Neutrality = ×1, Fire = ×2, Light = ×4, ..., DeathFlamedHell = ×2^13.
- * Non-Neutrality sets additionally receive a flat ×5 multiplier on top.
- */
-export const ARTIFACT_SET_COST_ORDER: string[] = [
-  'Neutrality',
-  'Fire',
-  'Light',
-  'Thornbound',
-  'Mechanical',
-  'Prismatic',
-  'Dark',
-  'SnowboundVoltage',
-  'GlassAbsolute',
-  'BlazingGarden',
-  'Butterfly',
-  'EternalSeas',
-  'AbyssalForge',
-  'DeathFlamedHell',
-];
-
-/**
- * Returns the Light cost multiplier for a set's artifacts.
- * Neutrality stays at ×1 (no scaling); every other set doubles per index AND
- * gets an additional ×5 progression tax.
- */
-export function getArtifactSetCostMultiplier(setElementKey: string): number {
-  const idx = ARTIFACT_SET_COST_ORDER.indexOf(setElementKey);
-  if (idx <= 0) return 1;
-  return 5 * Math.pow(2, idx);
+/** Returns the Light cost multiplier for a set's artifacts. Only Neutrality (×1) is active. */
+export function getArtifactSetCostMultiplier(_setId: string): number {
+  return 1;
 }
 
 /** Returns the Light cost of buying one additional copy of an artifact. */
-export function getArtifactCopyCost(artifact: { tier: ArtifactTier; setElementKey: string }): number {
-  return ARTIFACT_TIER_COPY_COST[artifact.tier] * getArtifactSetCostMultiplier(artifact.setElementKey);
+export function getArtifactCopyCost(artifact: { tier: ArtifactTier; setId: string }): number {
+  return ARTIFACT_TIER_COPY_COST[artifact.tier] * getArtifactSetCostMultiplier(artifact.setId);
 }
 
 /** Aberrated Shards required to unlock Mastery Level 3 (Apex Form). */

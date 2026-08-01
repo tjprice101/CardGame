@@ -19,7 +19,7 @@ export interface UiThemeDefinition {
   palette: UiPalette;
   group: 'core' | 'reward';
   rewardKind?: 'base-set' | 'infinite-full' | 'eternal-full';
-  setElement?: string;
+  setId?: string;
   unlockHint?: string;
   oscillation?: {
     from: Partial<UiPalette>;
@@ -224,7 +224,7 @@ const NEUTRALITY: UiPalette = makePalette({
 export const DEFAULT_UI_THEME_ID = 'theme-warm-default';
 
 interface ThemeSetSpec {
-  element: string;
+  setId: string;
   label: string;
   slug: string;
   palette: UiPalette;
@@ -242,56 +242,10 @@ const BASE_RARITIES = new Set(['Common', 'Rare', 'Epic', 'Legendary']);
 
 const SET_LABELS: Record<string, string> = {
   Neutrality: 'Neutrality',
-  Fire: 'Pyroabyss',
-  Light: 'Heavenly Light',
-  Thornbound: 'Thornbound Plains',
-  Mechanical: 'Mechanical Dreams',
-  Prismatic: 'Prismatic Accord',
-  Snowbound: 'Snowbound Voltage',
-  Dark: 'Black Glass Inferno',
-  GlassAbsolute: 'Glass Absolute',
-  BlazingGarden: 'The Blazing Garden',
-  Butterfly: 'Age of the Butterfly',
-  EternalSeas: 'Eternal Seas',
-  AbyssalForge: 'Abyssal Forge',
-  DeathFlamedHell: 'Death-flamed Hell',
-  WishedUponAStar: 'Wished Upon A Star',
 };
-
-const ELEMENT_ORDER = [
-  'Neutrality',
-  'Fire',
-  'Light',
-  'Thornbound',
-  'Mechanical',
-  'Prismatic',
-  'Snowbound',
-  'Dark',
-  'GlassAbsolute',
-  'BlazingGarden',
-  'Butterfly',
-  'EternalSeas',
-  'AbyssalForge',
-  'DeathFlamedHell',
-  'WishedUponAStar',
-] as const;
 
 const ELEMENT_THEME_PALETTE: Record<string, UiPalette> = {
   Neutrality: NEUTRALITY,
-  Fire: PYROABYSS,
-  Light: HEAVENLY_LIGHT,
-  Thornbound: THORNBOUND,
-  Mechanical: MECHANICAL,
-  Prismatic: PRISMATIC,
-  Snowbound: SNOWBOUND,
-  Dark: BLACK_GLASS_INFERNO,
-  GlassAbsolute: PRISMATIC,
-  BlazingGarden: ABYSSAL_FORGE,
-  Butterfly: PRISMATIC,
-  EternalSeas: SNOWBOUND,
-  AbyssalForge: ABYSSAL_FORGE,
-  DeathFlamedHell: DEATH_FLAMED_HELL,
-  WishedUponAStar: PRISMATIC,
 };
 
 type ParsedColor = { r: number; g: number; b: number; a: number };
@@ -413,30 +367,23 @@ function getThemeSetSpecs(): ThemeSetSpec[] {
   const grouped = new Map<string, ThemeSetSpec>();
   const cards = CardRegistry.getAll();
 
-  const resolveThemeElement = (definitionId: string, rawElement: string | undefined): string | undefined => {
-    // Snowbound cards currently use sv-* IDs; normalize them into the Snowbound
-    // reward-theme track so Snowbound Eternal/Infinite splash slots are generated.
-    if (definitionId.startsWith('sv-')) return 'Snowbound';
-    return rawElement;
-  };
-
   for (const card of cards) {
-    const element = resolveThemeElement(card.definitionId, card.element);
-    if (!element) continue;
+    // All remaining cards belong to the Neutrality set
+    const setId = 'Neutrality';
 
-    let spec = grouped.get(element);
+    let spec = grouped.get(setId);
     if (!spec) {
-      const palette = ELEMENT_THEME_PALETTE[element] ?? DEFAULT_WARM_PALETTE;
+      const palette = ELEMENT_THEME_PALETTE[setId] ?? DEFAULT_WARM_PALETTE;
       spec = {
-        element,
-        label: SET_LABELS[element] ?? element,
-        slug: makeThemeSetSlug(element),
+        setId,
+        label: SET_LABELS[setId] ?? setId,
+        slug: makeThemeSetSlug(setId),
         palette,
         baseIds: [],
         infiniteIds: [],
         eternalIds: [],
       };
-      grouped.set(element, spec);
+      grouped.set(setId, spec);
     }
 
     if (BASE_RARITIES.has(card.rarity)) {
@@ -448,14 +395,9 @@ function getThemeSetSpecs(): ThemeSetSpec[] {
     }
   }
 
-  const order = new Map<string, number>(ELEMENT_ORDER.map((element, idx) => [element, idx]));
   const sorted = [...grouped.values()]
     .filter((spec) => spec.baseIds.length > 0)
-    .sort((a, b) => {
-      const oa = order.get(a.element as string) ?? Number.MAX_SAFE_INTEGER;
-      const ob = order.get(b.element as string) ?? Number.MAX_SAFE_INTEGER;
-      return oa - ob || a.label.localeCompare(b.label);
-    });
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   themeSetSpecCache = sorted;
   return sorted;
@@ -507,7 +449,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       palette: baseTierPalette,
       group: 'reward',
       rewardKind: 'base-set',
-      setElement: spec.element,
+      setId: spec.setId,
       oscillation: buildOscillation(baseTierPalette, 'base-set'),
       isUnlocked: (progress) => hasAllEverOwned(progress, spec.baseIds, 'collection'),
     });
@@ -520,7 +462,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       palette: infiniteTierPalette,
       group: 'reward',
       rewardKind: 'infinite-full',
-      setElement: spec.element,
+      setId: spec.setId,
       oscillation: buildOscillation(infiniteTierPalette, 'infinite-full'),
       isUnlocked: (progress) => hasAllEverOwned(progress, spec.infiniteIds, 'infinite'),
     });
@@ -533,7 +475,7 @@ function buildRewardThemes(): UiThemeDefinition[] {
       palette: eternalTierPalette,
       group: 'reward',
       rewardKind: 'eternal-full',
-      setElement: spec.element,
+      setId: spec.setId,
       oscillation: buildOscillation(eternalTierPalette, 'eternal-full'),
       isUnlocked: (progress) => hasAllEverOwned(progress, spec.eternalIds, 'collection'),
     });
@@ -679,8 +621,8 @@ export function latchUnlockedUiThemes(progress: ProgressState): boolean {
 
 export function getRewardThemeSeed(themeId: string): RewardThemeSeed | null {
   const rewardTheme = REWARD_UI_THEMES.find(theme => theme.id === themeId);
-  if (!rewardTheme || !rewardTheme.setElement || !rewardTheme.rewardKind) return null;
-  const spec = getThemeSetSpecs().find(entry => entry.element === rewardTheme.setElement);
+  if (!rewardTheme || !rewardTheme.setId || !rewardTheme.rewardKind) return null;
+  const spec = getThemeSetSpecs().find(entry => entry.setId === rewardTheme.setId);
   if (!spec) return null;
 
   if (rewardTheme.rewardKind === 'infinite-full') {

@@ -6,7 +6,6 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
   {
     definitionId: 'cherubim-neutral-null-veil',
     type: 'Cherubim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Veil',
     description: 'On play: Search your deck for 1 matching Seraphim. While on board: Adjacent Seraphim and Angels gain +1 Patience per card played',
@@ -17,7 +16,6 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
   {
     definitionId: 'cherubim-neutral-void-shroud',
     type: 'Cherubim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Shroud',
     description: 'On play: Shuffle discard into deck; All Seraphim on board gain +3 Patience. While on board: Adjacent Seraphim and Angels gain +1 Patience per card played',
@@ -28,7 +26,6 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
   {
     definitionId: 'cherubim-neutral-balance-mantle',
     type: 'Cherubim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Mantle',
     description: 'On play: Search your deck for 1 matching Seraphim or Cherubim; All Seraphim on board gain +2 Patience. While on board: Adjacent Seraphim and Angels gain +2 Patience per card played',
@@ -39,7 +36,6 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
   {
     definitionId: 'cherubim-neutral-equilibrium-ward',
     type: 'Cherubim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Equilibrium Ward',
     description: 'On play: Look at the top 4 cards, take 1 card, and put the rest on the bottom. While on board: Adjacent Seraphim and Angels gain +2 Patience per card played',
@@ -50,7 +46,6 @@ export const neutralityStarterCherubimCards: CherubimDefinition[] = [
   {
     definitionId: 'cherubim-neutral-still-shell',
     type: 'Cherubim',
-    element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Shell',
     description: 'On play: All Seraphim on board gain +2 Patience; Salvage any 1 card. While on board: All Oblivion gain +5%',
@@ -65,7 +60,6 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
   {
     definitionId: 'cherubim-neutral-null-fortify',
     type: 'Cherubim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Null Fortification',
     description: 'On play: If this is the first card you played this turn, +60 Oblivion; Draw 1 card; All Seraphim on board gain +4 Patience. While on board: Adjacent Seraphim and Angels gain +2 Patience per card played',
@@ -76,7 +70,6 @@ export const neutralityPackCherubimCards: CherubimDefinition[] = [
   {
     definitionId: 'cherubim-neutral-void-amp',
     type: 'Cherubim',
-    element: 'Neutrality',
     rarity: 'Epic',
     name: 'Void Amplifier',
     description: 'On play: +140 Oblivion; Salvage any 1 card. While on board: Adjacent Seraphim and Angels gain +3 Patience per card played',

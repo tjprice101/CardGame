@@ -6,7 +6,6 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
   {
     definitionId: 'ser-neutral-null',
     type: 'Seraphim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Seraphim',
     description: 'On play: +14 Oblivion; All Seraphim on board gain +3 Patience. While on board: +6 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
@@ -34,7 +33,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         tags: ['seraphim', 'synergized', 'neutrality'],
       },
     },
-    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 6, synergyRequirement: 'Neutrality' },
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 6},
     patienceThreshold: 3,
     patienceThresholdDraw: 1,
     onPlayEffects: [
@@ -44,7 +43,6 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
   {
     definitionId: 'ser-neutral-void',
     type: 'Seraphim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Seraphim',
     description: 'On play: +20 Oblivion; If you control 1+ active Cherubim, All Seraphim on board gain +4 Patience. While on board: +12 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
@@ -72,7 +70,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         tags: ['seraphim', 'synergized', 'neutrality'],
       },
     },
-    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 12, synergyRequirement: 'Neutrality' },
+    baseStats: { bonusType: 'ophanim_bonus', bonusValue: 12},
     patienceThreshold: 3,
     patienceThresholdDraw: 1,
     onPlayEffects: [
@@ -82,7 +80,6 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
   {
     definitionId: 'ser-neutral-balance',
     type: 'Seraphim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Balance Seraphim',
     description: 'On play: +20 Oblivion. While on board: Each new Cherubim summoned while active gains +2 durability. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 1 card',
@@ -110,7 +107,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         tags: ['seraphim', 'synergized', 'neutrality'],
       },
     },
-    baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 2, synergyRequirement: 'Neutrality' },
+    baseStats: { bonusType: 'cherubim_extra_plays', bonusValue: 2},
     patienceThreshold: 4,
     patienceThresholdDraw: 1,
     onPlayEffects: [
@@ -119,7 +116,6 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
   {
     definitionId: 'ser-neutral-equilibrium',
     type: 'Seraphim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Equilibrium Seraphim',
     description: 'On play: +18 Oblivion; If you control 3+ active Seraphim, +24 Oblivion; All Seraphim on board gain +3 Patience. While on board: +8 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 2 cards',
@@ -147,7 +143,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         tags: ['seraphim', 'synergized', 'neutrality'],
       },
     },
-    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 8, synergyRequirement: 'Neutrality' },
+    baseStats: { bonusType: 'oblivion_per_card', bonusValue: 8},
     patienceThreshold: 4,
     patienceThresholdDraw: 2,
     onPlayEffects: [
@@ -157,7 +153,6 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
   {
     definitionId: 'ser-neutral-still',
     type: 'Seraphim',
-    element: 'Neutrality',
     rarity: 'Epic',
     name: 'Still Seraphim',
     description: 'On play: +48 Oblivion; Seraphim attacks preserve 20% of consumed Patience this turn. While on board: Gain +50 Oblivion when a Cherubim expires while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 5 on attack, also draw 2 cards',
@@ -185,7 +180,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
         tags: ['seraphim', 'synergized', 'neutrality'],
       },
     },
-    baseStats: { bonusType: 'cherubim_expire_bonus', bonusValue: 50, synergyRequirement: 'Neutrality' },
+    baseStats: { bonusType: 'cherubim_expire_bonus', bonusValue: 50},
     patienceThreshold: 5,
     patienceThresholdDraw: 2,
     onPlayEffects: [
@@ -199,7 +194,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-null-seek',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Null Seek',
     description: 'Draw 2 cards; If this is the first card you played this turn, All Seraphim on board gain +2 Patience',
@@ -211,7 +205,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-seraph-recall',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Seraph Recall',
     description: 'Salvage 1 card matching Seraphim; All Seraphim on board gain +2 Patience; Choose and discard 1 card',
@@ -224,7 +217,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-neutral-cycle',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Neutral Cycle',
     description: 'Shuffle discard into deck; All Seraphim on board gain +4 Patience',
@@ -236,7 +228,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-measured-seek',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Measured Seek',
     description: 'Look at the top 3 cards, take 1 card, and put the rest on the bottom; If you control 1+ active Seraphim, All Seraphim on board gain +2 Patience',
@@ -248,7 +239,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-void-surge',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Void Surge',
     description: '+25 Oblivion; If you control 1+ active Cherubim, +15 Oblivion; All Seraphim on board gain +2 Patience',
@@ -260,7 +250,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-still-pulse',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Common',
     name: 'Still Pulse',
     description: 'All Seraphim on board gain +3 Patience; If you control 3+ active Seraphim, All Seraphim on board gain +3 Patience',
@@ -272,7 +261,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-chain-pulse',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Oblivion Pulse',
     description: 'All Seraphim on board gain +2 Patience; If you have played 2+ cards this turn, +40 Oblivion; Draw 1 card',
@@ -284,7 +272,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-cherubim-recall',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Cherubim Recall',
     description: 'Salvage Null Veil from discard; All Seraphim on board gain +3 Patience',
@@ -296,7 +283,6 @@ export const neutralityOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-deep-seek',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Deep Seek',
     description: 'Search your deck for 1 matching Seraphim or Cherubim; All Seraphim on board gain +3 Patience; Choose and discard 1 card',
@@ -313,7 +299,6 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-grand-seek',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Grand Seek',
     description: 'Draw 2 cards; If you control 2+ active Seraphim, All Seraphim on board gain +3 Patience',
@@ -325,7 +310,6 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-echo-pulse',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Echo Pulse',
     description: 'All Seraphim on board gain +4 Patience; If you have played 4+ cards this turn, Double all Patience on the board',
@@ -337,7 +321,6 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-seraph-hunt',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Rare',
     name: 'Seraph Hunt',
     description: 'Search your deck for 1 matching Seraphim; All Seraphim on board gain +3 Patience; If you have played 3+ cards this turn, All Seraphim on board gain +2 Patience',
@@ -350,7 +333,6 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
   {
     definitionId: 'ophanim-neutral-nullfall',
     type: 'Ophanim',
-    element: 'Neutrality',
     rarity: 'Epic',
     name: 'Nullfall',
     description: 'Salvage 2 cards matching Seraphim or Cherubim',

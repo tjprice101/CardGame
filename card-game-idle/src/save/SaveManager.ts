@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 37;
+export const CURRENT_VERSION = 39;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -532,6 +532,214 @@ const migrations: Record<number, Migration> = {
   },
   37: (data) => {
     // v37 adds seraphimPlayedThisTurn; it's optional so no-op migration.
+    return data;
+  },
+
+  38: (data) => {
+    // v38: Purge all non-Neutrality cards, bosses, packs, and raids.
+    // Only Neutrality set remains active; everything else is removed.
+    const NEUTRAL_PREFIXES = [
+      'ser-neutral-', 'ophanim-neutral-', 'cherubim-neutral-', 'angel-neutral-',
+      'chaos-neutral-', 'btei-', 'tx-',
+    ];
+    const NEUTRAL_INFINITE_IDS = new Set([
+      'inf-oblivion-absolute', 'inf-void-cascade', 'inf-genesis-throne', 'inf-null-apex',
+      'inf-entropic-crown', 'inf-annihilation-field', 'inf-sovereign-void', 'inf-eternity-rupture',
+    ]);
+    const NEUTRAL_BOSS_PREFIX = 'boss-hollow-king boss-immortal-warden boss-cherubim-sovereign boss-eternal-seraph boss-time-eater boss-void-architect boss-null-sovereign boss-shattered-oracle boss-abyssal-colossus boss-eternal-null boss-neutrality-paradox-throne boss-neutrality-void-exchequer boss-neutrality-equilibrium-rex boss-neutrality-axiom-maw boss-neutrality-prime-judge'.split(' ');
+    const NEUTRAL_RAID_IDS = new Set(['raid-null-verdict-of-stars']);
+    const NEUTRAL_PACK_IDS = new Set(['pack-neutrality']);
+
+    function isNeutralCard(id: string): boolean {
+      if (NEUTRAL_INFINITE_IDS.has(id)) return true;
+      return NEUTRAL_PREFIXES.some(p => id.startsWith(p));
+    }
+
+    function filterRecord(rec: Record<string, unknown> | null | undefined): void {
+      if (!rec) return;
+      for (const k of Object.keys(rec)) {
+        if (!isNeutralCard(k)) delete rec[k];
+      }
+    }
+
+    function filterDeckEntries(arr: Array<{ definitionId: string } | null> | undefined): void {
+      if (!arr) return;
+      for (let i = arr.length - 1; i >= 0; i--) {
+        const entry = arr[i];
+        // Guard: skip null, non-objects, or entries without a definitionId (legacy string format)
+        if (!entry || typeof entry !== 'object' || !('definitionId' in entry)) continue;
+        if (!isNeutralCard(entry.definitionId)) arr.splice(i, 1);
+      }
+    }
+
+    const p = data.progress;
+    if (p) {
+      filterRecord(p.collection as Record<string, unknown> | undefined);
+      filterRecord(p.holoCollection as Record<string, unknown> | undefined);
+      filterRecord(p.infiniteCollection as Record<string, unknown> | undefined);
+      filterRecord(p.favoriteCollection as Record<string, unknown> | undefined);
+      filterRecord(p.cardPlayCounts as Record<string, unknown> | undefined);
+      filterRecord(p.cardMasteryClaims as Record<string, unknown> | undefined);
+      // savedDecks: strip non-Neutrality cards from each deck
+      if (p.savedDecks) {
+        for (const deck of p.savedDecks) {
+          if (deck.deckList) filterDeckEntries(deck.deckList as Array<{ definitionId: string }> | undefined);
+          if (deck.extraDeck) filterDeckEntries(deck.extraDeck as Array<{ definitionId: string }> | undefined);
+        }
+      }
+      // recentlyAcquired: remove non-Neutrality
+      if (p.recentlyAcquired) {
+        const rec = p.recentlyAcquired as Record<string, number>;
+        for (const k of Object.keys(rec)) {
+          if (!isNeutralCard(k)) delete rec[k];
+        }
+      }
+      // packOpenHistory: remove non-Neutrality pack events
+      if (p.packOpenHistory) {
+        const hist = p.packOpenHistory;
+        for (let i = hist.length - 1; i >= 0; i--) {
+          const e = hist[i];
+          if (e && !NEUTRAL_PACK_IDS.has(e.packId)) hist.splice(i, 1);
+        }
+      }
+      // bossCodex: remove non-Neutrality bosses
+      if (p.bossCodex) {
+        const codex = p.bossCodex as Record<string, unknown>;
+        for (const k of Object.keys(codex)) {
+          if (!NEUTRAL_BOSS_PREFIX.includes(k)) delete codex[k];
+        }
+      }
+      // bossClearCounts: remove non-Neutrality bosses
+      if (p.bossClearCounts) {
+        const counts = p.bossClearCounts as Record<string, unknown>;
+        for (const k of Object.keys(counts)) {
+          if (!NEUTRAL_BOSS_PREFIX.includes(k)) delete counts[k];
+        }
+      }
+      // packPityCounters: remove non-Neutrality packs
+      if (p.packPityCounters) {
+        const pity = p.packPityCounters as Record<string, unknown>;
+        for (const k of Object.keys(pity)) {
+          if (!NEUTRAL_PACK_IDS.has(k)) delete pity[k];
+        }
+      }
+      // nullRaidProveUnlocks: remove non-Neutrality raids
+      const anyP = p as unknown as Record<string, unknown>;
+      if (anyP.nullRaidProveUnlocks) {
+        const unlocks = anyP.nullRaidProveUnlocks as Record<string, unknown>;
+        for (const k of Object.keys(unlocks)) {
+          if (!NEUTRAL_RAID_IDS.has(k)) delete unlocks[k];
+        }
+      }
+      // eventBossHpSnapshots: clear all (no event bosses remain)
+      if (p.eventBossHpSnapshots) {
+        p.eventBossHpSnapshots = {};
+      }
+    }
+    return data;
+  },
+
+  39: (data) => {
+    // v39: Strip the now-removed `element` field from every saved card instance
+    // (board slots, card instances) and purge dead-set TurnState fields that
+    // were removed when the element system was dismantled.
+
+    // ── Board: remove `element` from every slot ──────────────────────────────
+    const board = (data as Partial<Record<string, unknown>>).board as Record<string, unknown> | undefined;
+    if (board) {
+      const stripElement = (slot: unknown) => {
+        if (slot && typeof slot === 'object') {
+          delete (slot as Record<string, unknown>).element;
+          delete (slot as Record<string, unknown>).synergyRequirement;
+          delete (slot as Record<string, unknown>).prismaticDepth;
+          delete (slot as Record<string, unknown>).burningGardenPhase;
+          delete (slot as Record<string, unknown>).snowboundPhase;
+          delete (slot as Record<string, unknown>).spectrumTokens;
+          delete (slot as Record<string, unknown>).chromaticCounters;
+          delete (slot as Record<string, unknown>).chromaticSources;
+          delete (slot as Record<string, unknown>).burnTurnsRemaining;
+          delete (slot as Record<string, unknown>).isEcho;
+          delete (slot as Record<string, unknown>).flutterAttackBuff;
+        }
+      };
+      const frontSlots = board.frontSlots as unknown[] | undefined;
+      const backSlots = board.backSlots as unknown[] | undefined;
+      if (Array.isArray(frontSlots)) frontSlots.forEach(stripElement);
+      if (Array.isArray(backSlots)) backSlots.forEach(stripElement);
+      // EmberGrove is gone — remove it entirely
+      delete board.emberGrove;
+    }
+
+    // ── Turn: remove all dead-set optional fields ────────────────────────────
+    const turn = (data as Partial<Record<string, unknown>>).turn as Record<string, unknown> | undefined;
+    if (turn) {
+      const DEAD_TURN_FIELDS = [
+        // Dead-set resources
+        'radiance', 'trail', 'strain', 'pyroHeat',
+        // Prismatic Accord
+        'prismaticCurrentChannel', 'prismaticDistinctChannels', 'prismaticRecentChannels',
+        'prismaticRefractionDepth', 'prismaticNodeCharges', 'prismaticResonanceCharge', 'prismaticLight',
+        // Black Glass Inferno
+        'blackGlassWhiteFlame', 'blackGlassBlackFlame', 'blackGlassFracture',
+        'blackGlassLastPolarity', 'blackGlassLastPayoff',
+        // Snowbound Voltage
+        'snowboundPhase', 'arcticCharge',
+        // Glass Absolute
+        'glassProofFragments', 'glassProofDepth', 'glassSnapshotFragments', 'glassSnapshotDepth',
+        'glassSnapshotCascade', 'glassSnapshotAxioms', 'glassWaveQueue', 'glassDepthFloor',
+        'glassDepthFloorIncreased', 'glassWhiteLedger', 'glassWhiteLedgerActive', 'glassSyntheticFragments',
+        // Blazing Garden
+        'burningGardenLaw', 'burningGardenLineagesPlayed', 'burningGardenEchoesBloomed',
+        'burningGardenNextFinalChordScaleBonus', 'burningGardenSunSigils', 'burningGardenCrownStacks',
+        'burningGardenCodexLineage', 'burningGardenCodexCopiesRemaining', 'burningGardenTransitGateCredit',
+        'burningGardenIncandescentSnapshot', 'burningGardenWorldflowerGrowth', 'burningGardenArrayFreeEchoes',
+        'burningGardenGeometryMode', 'burningGardenZenithNextInfinite', 'burningGardenSkyLaw',
+        // Pyroabyss
+        'pyroHeat',
+        // Misc dead resources
+        'monochromaticShards', 'bloom',
+        // Age of the Butterfly
+        'butterflySpectrum', 'butterflyStance', 'butterflyFlutterLevel',
+        'butterflyFormation', 'butterflyFormationTypesSeen',
+        // Eternal Seas
+        'eternalSeasUndertow', 'eternalSeasFoam', 'eternalSeasReleaseReactionUsedThisTurn',
+        // Abyssal Forge
+        'recastLedger', 'reforgeCharges', 'reforgeChargeCap', 'pearls',
+        'unrecordedHueActive', 'forgeTemperQueue', 'forgeRecastEventsThisTurn', 'forgePendingCherubimTemper',
+        // Death-flamed Hell
+        'dfhVeilMarks', 'dfhAngelResonantCashoutUsed', 'dfhVeilAttackBonusByDefinition',
+        'dfhVeilOblivionPerMark',
+        // Wished Upon a Star
+        'starlightCharges', 'dreamLattice', 'solarvexWardActive', 'starlaceAmplifierActive',
+        // Dead generic tracking
+        'eternalStacks', 'secondaryCounters', 'flutterWingPulseDoubles',
+        // EmberGrove echo tracking
+        'emberGroveEchoUsedThisTurn',
+        // Cross-set conversion (no longer relevant with single-set)
+        'crossSetConversionDistinctSources',
+        // Strain vent tracking
+        'strainVentedThisTurn',
+      ];
+      for (const field of DEAD_TURN_FIELDS) {
+        delete turn[field];
+      }
+    }
+
+    // ── Deck hand/draw/discard: remove `element` from card instances ─────────
+    const deck = (data as Partial<Record<string, unknown>>).deck as Record<string, unknown> | undefined;
+    if (deck) {
+      const stripCardElement = (card: unknown) => {
+        if (card && typeof card === 'object') {
+          delete (card as Record<string, unknown>).element;
+        }
+      };
+      const zones = ['hand', 'drawPile', 'discardPile'] as const;
+      for (const zone of zones) {
+        const arr = deck[zone] as unknown[] | undefined;
+        if (Array.isArray(arr)) arr.forEach(stripCardElement);
+      }
+    }
+
     return data;
   },
 };

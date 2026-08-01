@@ -16,7 +16,7 @@ export class BoardEffectsRenderer {
   private canvasHeight: number;
 
   // Cached board state — updated via store subscription, not read per frame
-  private angelElement: string | null = null;
+  private hasAngel = false;
   private seraphimExists: [boolean, boolean, boolean] = [false, false, false];
   private seraphimActive: [boolean, boolean, boolean] = [false, false, false];
   private readonly unsubscribe: () => void;
@@ -58,8 +58,7 @@ export class BoardEffectsRenderer {
     // Subscribe to board changes once rather than reading store every frame
     this.unsubscribe = useStore.subscribe(state => {
       const slots = state.board.frontSlots;
-      const angelSlot = slots.find(s => s?.type === 'Angel');
-      this.angelElement = angelSlot?.element ?? null;
+      this.hasAngel = slots.some(s => s?.type === 'Angel');
       const seraphims = slots.filter(s => s?.type === 'Seraphim').slice(0, 3);
       for (let i = 0; i < 3; i++) {
         const s = seraphims[i];
@@ -89,17 +88,12 @@ export class BoardEffectsRenderer {
   update(deltaMs: number): void {
     this.elapsed += deltaMs / 1000;
 
-    const hasAngel = this.angelElement !== null;
+    const hasAngel = this.hasAngel;
     // Disable the filter entirely when no angel is on board — skips GPU shader execution
     this.godRaysFilter.enabled = hasAngel;
     if (hasAngel) {
       this.godRaysFilter.time = this.elapsed;
-      const isNeutrality = this.angelElement === 'Neutrality';
-      if (isNeutrality) {
-        this.godRaysFilter.setRayColor(0.7, 0.75, 1.0);
-      } else {
-        this.godRaysFilter.setRayColor(1.0, 0.84, 0.0);
-      }
+      this.godRaysFilter.setRayColor(0.7, 0.75, 1.0);
       this.godRaysFilter.intensity = 0.22;
     }
 

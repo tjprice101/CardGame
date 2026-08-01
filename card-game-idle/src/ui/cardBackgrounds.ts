@@ -2,25 +2,9 @@ import type { CSSProperties } from 'react';
 import type { CardDefinition, CardFaceState } from '@/types/cards';
 import type { CardFinish } from '@/types/cards';
 import { warmTheme } from '@/ui/theme';
-import { getCardThemePackForElement, getCardThemePackStyle, getFontScale } from '@/ui/preferences';
+import { getCardThemePackStyle, getFontScale } from '@/ui/preferences';
 
 const CARD_BACKGROUND_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
-const CARD_BACKGROUND_FOLDERS: Partial<Record<string, string>> = {
-  Fire: 'pyroabyss',
-  Mechanical: 'mechanical-dreams',
-  Light: 'heavenly-light',
-  Neutrality: 'neutrality',
-  Thornbound: 'thornbound-plains',
-  Prismatic: 'prismatic-accord',
-  GlassAbsolute: 'glass-absolute',
-  BlazingGarden: 'blazing-garden',
-  Butterfly: 'age-of-the-butterfly',
-  EternalSeas: 'eternal-seas',
-  AbyssalForge: 'abyssal-forge',
-  DeathFlamedHell: 'death-flamed-hell',
-  WishedUponAStar: 'wished-upon-a-star',
-  Dark: 'black-glass-inferno',
-};
 
 export type CardFaceVariant = 'hand' | 'pack' | 'grid' | 'compact' | 'board' | 'boardMini';
 
@@ -169,7 +153,6 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'btei-omniscient-fracture': 'Shattered Oracle.png',
   'btei-colossus-advent': 'Abyssal Colossus.png',
   'btei-axiom-of-oblivion': 'Eternal Null.png',
-  'btei-prismatic-blindwars-reliquary': 'Reliquary of Blind Wars.png',
   'inf-ash-kings-apocalypse': 'Ash Kings Apocalypse.png',
   'tbp-ser-scar-mantle-reclaimer': 'Scar-mantle Reclaimer.png',
   'tbp-angel-velmora-harrowed-crown': 'Velmora Crown of Harrowed Plains.png',
@@ -184,30 +167,6 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'sv-infinite-crystal-storm': 'Crystal Maelstrom.png',
   'sv-infinite-neon-snowfall': 'Neon Deluge.png',
   // Reworked cherubim without dedicated exported PNGs yet: keep them on set-matched art.
-  'cherubim-thornbound-null-thorn': 'Thornwake Ditch.png',
-  'cherubim-thornbound-path-keeper': 'Spitebloom Sink.png',
-  'cherubim-thornbound-vine-mantle': 'Thornwake Ditch.png',
-  'cherubim-thornbound-trail-accelerator': 'Gallows Bramble.png',
-  'cherubim-thornbound-growth-shell': 'Pale Vine Reliquary.png',
-  'cherubim-thornbound-bramble-arbor': 'Funeral Hedgerow.png',
-  'cherubim-thornbound-wildroot-ascension': 'Funeral Hedgerow.png',
-  'cherubim-thornbound-eternal-roots': 'Cathedral of Splinters.png',
-  'cherubim-mechanical-null-coil': 'Dreambreak Turbine.png',
-  'cherubim-mechanical-strain-ward': 'White Iron Chorus.png',
-  'cherubim-mechanical-gearbound-mantle': 'Dreambreak Turbine.png',
-  'cherubim-mechanical-overclock-amplifier': 'Rust Halo Chamber.png',
-  'cherubim-mechanical-dynamo-shell': 'Monolith Relay.png',
-  'cherubim-mechanical-pulse-matrix': 'Cinder Protocol Engine.png',
-  'cherubim-mechanical-infinite-rhythm': 'Cinder Protocol Engine.png',
-  'cherubim-mechanical-core-ascension': 'Blackglass Reactor Crown.png',
-  'cherubim-prismatic-null-prism': 'Mirrorfield Locus.png',
-  'cherubim-prismatic-light-echo': 'Mirrorfield Locus.png',
-  'cherubim-prismatic-spectrum-veil': 'Fracture Veil.png',
-  'cherubim-prismatic-radiance-ward': 'Buried Prism Cache.png',
-  'cherubim-prismatic-harmony-shell': 'Canopy Eclipse Knot.png',
-  'cherubim-prismatic-convergence-beacon': 'Century Blind Scar.png',
-  'cherubim-prismatic-luminous-ascent': 'Century Blind Scar.png',
-  'cherubim-prismatic-absolute-light': 'Whitebeam Confluence.png',
   'cherubim-dark-null-obsidian': 'Ashen Court Sigil.png',
   'cherubim-dark-rose-shroud': 'Glassrose Pyre.png',
   'cherubim-dark-void-veil': 'Glassrose Pyre.png',
@@ -249,30 +208,8 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'ga-angel-yrethborn-absolute': 'Yrethborn The Absolute.png',
 };
 
-function getSnowboundEternalFileName(card: CardDefinition): string {
-  return CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-}
-
-function getSnowboundBaseFileName(card: CardDefinition): string {
-  return CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.artKey}.png`;
-}
-
 const CARD_BACK_ASSET_BY_ELEMENT: Partial<Record<string, { folder: string; file: string }>> = {
   Neutrality: { folder: 'neutrality', file: 'Neutrality Card Backing.png' },
-  Fire: { folder: 'pyroabyss', file: 'Pyroabyss Card Back.png' },
-  Light: { folder: 'heavenly-light', file: 'Heavenly Light Card Back.png' },
-  Thornbound: { folder: 'thornbound-plains', file: 'Thornbound Plains Card Back.png' },
-  Mechanical: { folder: 'mechanical-dreams', file: 'Mechanical Dreams Card Back.png' },
-  SnowboundVoltage: { folder: 'snowbound-voltage', file: 'Snowbound Voltage Card Back.png' },
-  Prismatic: { folder: 'prismatic-accord', file: 'Prismatic Accord Card Back.png' },
-  GlassAbsolute: { folder: 'glass-absolute', file: 'Glass Absolute Card Back.png' },
-  BlazingGarden: { folder: 'blazing-garden', file: 'Blazing Garden Card Back.png' },
-  Butterfly: { folder: 'age-of-the-butterfly', file: 'Age of the Butterfly Card Back.png' },
-  EternalSeas: { folder: 'eternal-seas', file: 'Eternal Seas Card Back.png' },
-  AbyssalForge: { folder: 'abyssal-forge', file: 'Abyssal Forge Card Back.png' },
-  DeathFlamedHell: { folder: 'death-flamed-hell', file: 'Death-flamed Hell Card Back.png' },
-  WishedUponAStar: { folder: 'wished-upon-a-star', file: 'Wished Upon A Star Card Back.png' },
-  Dark: { folder: 'black-glass-inferno', file: 'Black Glass Inferno Card Back.png' },
 };
 
 const INFINITE_CARD_BACK_ASSET = { folder: 'infinite', file: 'Infinity Cards Card Back.png' };
@@ -280,11 +217,7 @@ const ETERNAL_CARD_BACK_ASSET = { folder: 'eternal', file: 'Eternal Cards Card B
 
 const BTEI_FOLDER_BY_PREFIX: ReadonlyArray<{ prefix: string; folder: string }> = [
   { prefix: 'btei-bgi-', folder: 'black-glass-inferno' },
-  { prefix: 'btei-prismatic-', folder: 'prismatic-accord' },
-  { prefix: 'btei-mech-', folder: 'mechanical-dreams' },
-  { prefix: 'btei-thornbound-', folder: 'thornbound-plains' },
   { prefix: 'btei-light-', folder: 'heavenly-light' },
-  { prefix: 'btei-pyroabyss-', folder: 'pyroabyss' },
   { prefix: 'btei-neutrality-', folder: 'neutrality' },
 ];
 
@@ -297,11 +230,6 @@ function getBteiFolder(definitionId: string): string | null {
 function getCardBackUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
 
-  if (card.definitionId.startsWith('sv-')) {
-    const { folder, file } = CARD_BACK_ASSET_BY_ELEMENT.SnowboundVoltage!;
-    return `${CARD_BACKGROUND_ROOT}/${folder}/${encodeURI(file)}`;
-  }
-
   if (card.rarity === 'Infinite') {
     return `${CARD_BACKGROUND_ROOT}/${INFINITE_CARD_BACK_ASSET.folder}/${encodeURI(INFINITE_CARD_BACK_ASSET.file)}`;
   }
@@ -310,8 +238,7 @@ function getCardBackUrl(card: CardDefinition | null | undefined): string | null 
     return `${CARD_BACKGROUND_ROOT}/${ETERNAL_CARD_BACK_ASSET.folder}/${encodeURI(ETERNAL_CARD_BACK_ASSET.file)}`;
   }
 
-  const cardBackKey = card.element;
-  const asset = CARD_BACK_ASSET_BY_ELEMENT[cardBackKey];
+  const asset = CARD_BACK_ASSET_BY_ELEMENT['Neutrality'];
   if (!asset) return null;
   return `${CARD_BACKGROUND_ROOT}/${asset.folder}/${encodeURI(asset.file)}`;
 }
@@ -441,7 +368,6 @@ function getDenseCardFaceCacheKey(
     finish,
     faceState,
     card.rarity,
-    getCardThemePackForElement(card.element),
     warmTheme.surfaceStrong,
   ].join('::');
 }
@@ -449,54 +375,9 @@ function getDenseCardFaceCacheKey(
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
 
-  if (card.definitionId.startsWith('sv-infinite-')) {
+  if (card.rarity === 'Infinite') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
     return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURI(fileName)}`;
-  }
-
-  if (card.definitionId.startsWith('sv-eternal-')) {
-    const fileName = getSnowboundEternalFileName(card);
-    return `${CARD_BACKGROUND_ROOT}/snowbound-voltage/${encodeURI(fileName)}`;
-  }
-
-  if (card.definitionId.startsWith('sv-')) {
-    const fileName = getSnowboundBaseFileName(card);
-    return `${CARD_BACKGROUND_ROOT}/snowbound-voltage/${encodeURI(fileName)}`;
-  }
-
-  if (card.element === 'GlassAbsolute') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/glass-absolute/${encodeURI(fileName)}`;
-  }
-
-  if (card.element === 'BlazingGarden') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/blazing-garden/${encodeURI(fileName)}`;
-  }
-
-  if (card.element === 'Butterfly') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/age-of-the-butterfly/${encodeURI(fileName)}`;
-  }
-
-  if (card.element === 'EternalSeas') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/eternal-seas/${encodeURI(fileName)}`;
-  }
-
-  if (card.element === 'AbyssalForge') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/abyssal-forge/${encodeURI(fileName)}`;
-  }
-
-  if (card.element === 'DeathFlamedHell') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/death-flamed-hell/${encodeURI(fileName)}`;
-  }
-
-  if (card.element === 'WishedUponAStar') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/wished-upon-a-star/${encodeURI(fileName)}`;
   }
 
   const bteiFolder = getBteiFolder(card.definitionId);
@@ -505,21 +386,8 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
     return `${CARD_BACKGROUND_ROOT}/${bteiFolder}/${encodeURI(fileName)}`;
   }
 
-  if (card.definitionId.startsWith('inf-bgi-')) {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/black-glass-inferno/${encodeURI(fileName)}`;
-  }
-
-  if (card.rarity === 'Infinite') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-    return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURI(fileName)}`;
-  }
-
-  const folder = CARD_BACKGROUND_FOLDERS[card.element];
-  if (!folder) return null;
-
   const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
-  return `${CARD_BACKGROUND_ROOT}/${folder}/${encodeURI(fileName)}`;
+  return `${CARD_BACKGROUND_ROOT}/neutrality/${encodeURI(fileName)}`;
 }
 
 export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal', faceState: CardFaceState = 'front'): CSSProperties {

@@ -1,6 +1,6 @@
 import type { BoardState, DeckState, ProgressState, SettingsState, TurnState } from './game';
 
-export type BossCategory = 'Neutrality' | 'Pyroabyss' | 'Heavenly Light' | 'Thornbound Plains' | 'Mechanical Dreams' | 'Prismatic Accord' | 'Snowbound Voltage' | 'Black Glass Inferno' | 'Glass Absolute' | 'The Blazing Garden' | 'Age of the Butterfly' | 'Eternal Seas' | 'Abyssal Forge' | 'Death-flamed Hell' | '[EVENT] Wished Upon A Star';
+export type BossCategory = 'Neutrality';
 
 export interface BossDefinition {
   id: string;
@@ -12,8 +12,7 @@ export interface BossDefinition {
   firstClearShards: number;
   repeatClearShards: number;
   description: string;
-  /** Element key that this boss is weak to (×1.25 damage when deck plurality matches). */
-  weakElement?: string;
+
   /** If true, this boss belongs to a Null Raid and should not appear in Eternity's Wake boss lists. */
   isNullRaidBoss?: boolean;
 }
@@ -32,7 +31,6 @@ export interface TrialModifierRef {
   kind:
     | 'time_pressure'
     | 'boss_hp_boost'
-    | 'forbidden_element'
     | 'durability_drain'
     | 'no_angels'
     | 'patience_lock';

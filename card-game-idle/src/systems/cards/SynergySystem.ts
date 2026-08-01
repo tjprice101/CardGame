@@ -1,27 +1,18 @@
 import type { BoardState } from '@/types/game';
 import type { SeraphimInstance } from '@/types/cards';
-import { CardRegistry } from '@/cards/CardRegistry';
 
-function hasMatchingAngel(
-  board: BoardState,
-  requiredElement: SeraphimInstance['element'],
-): boolean {
-  return board.frontSlots.some(slot => (
-    slot !== null
-    && slot.type === 'Angel'
-    && slot.element === requiredElement
-  ));
+function hasAnyAngel(board: BoardState): boolean {
+  return board.frontSlots.some(slot => slot !== null && slot.type === 'Angel');
 }
 
 export class SynergySystem {
   static computeActiveSlots(board: BoardState): BoardState['frontSlots'] {
+    const angelPresent = hasAnyAngel(board);
     return board.frontSlots.map((slot) => {
       if (!slot || slot.type !== 'Seraphim') return slot;
-      const def = CardRegistry.get(slot.definitionId);
-      const requirement = def?.type === 'Seraphim' ? def.baseStats.synergyRequirement : slot.element;
       return {
         ...slot,
-        isActive: hasMatchingAngel(board, requirement),
+        isActive: angelPresent,
       };
     }) as BoardState['frontSlots'];
   }

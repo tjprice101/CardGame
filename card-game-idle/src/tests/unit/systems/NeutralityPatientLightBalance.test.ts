@@ -27,8 +27,8 @@ describe('Neutrality tuned card profile', () => {
     const seraphim = card as SeraphimDefinition;
 
     expect(seraphim.baseStats.bonusValue).toBe(0);
-    expect(seraphim.attacks?.unsynergized.baseOblivion).toBe(2550);
-    expect(seraphim.attacks?.synergized.baseOblivion).toBe(3400);
+    expect(seraphim.attacks?.unsynergized.baseOblivion).toBe(2720);
+    expect(seraphim.attacks?.synergized.baseOblivion).toBe(3834);
 
     const onPlay = seraphim.onPlayEffects;
     const patience = onPlay.find(effect => effect.type === 'patience_gain_all');
@@ -58,9 +58,9 @@ describe('Neutrality tuned card profile', () => {
     const genesisGain = genesisSeraphim.onPlayEffects.find(effect => effect.type === 'neutrality_patient_light_gain');
     const annihilationGain = annihilationCherubim.onPlayEffects.find(effect => effect.type === 'neutrality_patient_light_gain');
 
-    expect(sovereigntyGain && 'value' in sovereigntyGain ? sovereigntyGain.value : null).toBe(3);
-    expect(ruptureGain && 'value' in ruptureGain ? ruptureGain.value : null).toBe(1);
+    expect(sovereigntyGain && 'value' in sovereigntyGain ? sovereigntyGain.value : null).toBe(4);
+    expect(ruptureGain && 'value' in ruptureGain ? ruptureGain.value : null).toBe(2);
     expect(genesisGain && 'value' in genesisGain ? genesisGain.value : null).toBeNull();
-    expect(annihilationGain && 'value' in annihilationGain ? annihilationGain.value : null).toBeNull();
+    expect(annihilationGain && 'value' in annihilationGain ? annihilationGain.value : null).toBe(3);
   });
 });

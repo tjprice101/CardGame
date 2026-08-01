@@ -31,9 +31,6 @@ export const DEFAULT_CARD_THEME_PACKS: Record<string, CardThemePackId> = {
   Neutrality: 'classic',
   Light: 'luminous',
   Dark: 'luminous',
-  Thornbound: 'nocturne',
-  Mechanical: 'classic',
-  Prismatic: 'luminous',
   Fire: 'luminous',
   Water: 'classic',
   Earth: 'classic',
@@ -86,20 +83,6 @@ const CARD_THEME_PACK_STYLES: Record<CardThemePackId, {
   },
 };
 
-const ELEMENT_TINTS: Record<string, string> = {
-  Eternal: '#ff8a8a',
-  Neutrality: '#b69c72',
-  Light: '#f2d46b',
-  Dark: '#6a4a3f',
-  Thornbound: '#c26b63',
-  Mechanical: '#93a6d2',
-  Prismatic: '#c59df1',
-  Fire: '#ef8a4f',
-  Water: '#68b8e8',
-  Earth: '#c39b53',
-  Wind: '#65d39c',
-};
-
 let currentPreferences: UiPreferences = {
   language: 'en',
   fontSizePreset: 'standard',
@@ -133,27 +116,12 @@ export function getCardArtDisplay(): CardArtDisplay {
   return currentPreferences.cardArtDisplay;
 }
 
-export function getCardThemePackForElement(element: string): CardThemePackId {
-  const configured = currentPreferences.cardThemePacks[element] ?? 'classic';
-  // Backward-compat override: old saves may force a blue-leaning pack on these sets.
-  if ((element === 'Dark' || element === 'Prismatic') && configured === 'nocturne') {
-    return 'luminous';
-  }
-  return configured;
+export function getCardThemePackForElement(_element: string): CardThemePackId {
+  return 'classic';
 }
 
-export function getCardThemePackStyle(card: Pick<CardDefinition, 'element'> | null | undefined): (typeof CARD_THEME_PACK_STYLES)[CardThemePackId] {
-  const element = card?.element ?? 'Neutrality';
-  const packId = getCardThemePackForElement(element);
-  const base = CARD_THEME_PACK_STYLES[packId];
-  const tint = ELEMENT_TINTS[element] ?? ELEMENT_TINTS.Neutrality;
-  return {
-    ...base,
-    baseGradient: packId === 'nocturne'
-      ? 'linear-gradient(180deg, rgba(24, 28, 40, 0.98) 0%, rgba(44, 54, 74, 0.98) 100%)'
-      : base.baseGradient,
-    highlight: `rgba(${hexToRgb(tint)}, ${packId === 'nocturne' ? 0.16 : 0.2})`,
-  };
+export function getCardThemePackStyle(_card?: Pick<CardDefinition, 'rarity' | 'type' | 'definitionId'> | null): (typeof CARD_THEME_PACK_STYLES)[CardThemePackId] {
+  return CARD_THEME_PACK_STYLES['classic'];
 }
 
 const TRANSLATIONS = {
@@ -288,13 +256,4 @@ export function isDisplayCherubimType(type: string): boolean {
 
 export function formatDisplayCardText(text: string): string {
   return sanitizeDisplayText(text);
-}
-
-function hexToRgb(hex: string): string {
-  const clean = hex.replace('#', '');
-  const value = clean.length === 3 ? clean.split('').map(ch => ch + ch).join('') : clean;
-  const r = parseInt(value.slice(0, 2), 16);
-  const g = parseInt(value.slice(2, 4), 16);
-  const b = parseInt(value.slice(4, 6), 16);
-  return `${r}, ${g}, ${b}`;
 }

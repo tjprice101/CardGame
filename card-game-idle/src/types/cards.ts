@@ -1,20 +1,15 @@
-import type { Element } from './elements';
-import type { CardEffect, CherubimPassiveEffect, EternalStackKind, SetSecondaryKind } from './effects';
-import type { SnowboundPhase } from './game';
+import type { CardEffect, CherubimPassiveEffect } from './effects';
 
 export type CardType = 'Ophanim' | 'Cherubim' | 'Seraphim' | 'Angel';
 export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal' | 'Infinite';
 export type CardFinish = 'normal' | 'holo';
 export type CardFaceState = 'front' | 'back';
-export type PrismaticDepth = 1 | 2 | 3 | 4 | 5;
-export type BurningGardenPhase = 'Bloom' | 'Burn';
 
 export const SERAPHIM_BONUS_TYPES = [
   'oblivion_per_card',
   'ophanim_bonus',
   'cherubim_extra_plays',
   'cherubim_expire_bonus',
-  'pyro_heat_per_card',
   'power_amplifier',
   'score_per_second',
   'resource_generation',
@@ -38,11 +33,7 @@ export interface AngelActivatedAbility {
 export type AttackCostType =
   | 'discard_from_hand'
   | 'sacrifice_seraphim'
-  | 'sacrifice_angel'
-  | 'spend_pyro_heat'
-  | 'spend_radiance'
-  | 'spend_trail'
-  | 'spend_strain';
+  | 'sacrifice_angel';
 
 export interface AttackCost {
   readonly type: AttackCostType;
@@ -80,17 +71,11 @@ export type SummonCondition =
   | { type: 'seraphim_on_board_gte'; value: number }
   | { type: 'board_definition_gte'; definitionId: string; value: number }
   | { type: 'equilibrium_sigils_gte'; value: number }
-  | { type: 'pyro_heat_gte'; value: number }
-  | { type: 'eternal_stack_gte'; stack: EternalStackKind; value: number }
-  | { type: 'set_secondary_gte'; kind: SetSecondaryKind; value: number };
 
 export interface AngelDefinition {
   readonly definitionId: string;
   readonly type: 'Angel';
-  readonly element: Element;
   readonly rarity: CardRarity;
-  readonly snowboundPhase?: SnowboundPhase;
-  readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
@@ -107,13 +92,9 @@ export interface AngelInstance {
   readonly instanceId: string;
   readonly definitionId: string;
   readonly type: 'Angel';
-  readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
   faceState?: CardFaceState;
-  prismaticDepth?: PrismaticDepth;
-  spectrumTokens?: number;
-  burningGardenPhase?: BurningGardenPhase;
   chromaticCounters?: number;
   chromaticSources?: string[];
   burnTurnsRemaining?: number;
@@ -130,16 +111,12 @@ export interface AngelInstance {
 export interface SeraphimStats {
   bonusType: SeraphimBonusType;
   bonusValue: number;
-  synergyRequirement: Element;
 }
 
 export interface SeraphimDefinition {
   readonly definitionId: string;
   readonly type: 'Seraphim';
-  readonly element: Element;
   readonly rarity: CardRarity;
-  readonly snowboundPhase?: SnowboundPhase;
-  readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
@@ -155,13 +132,9 @@ export interface SeraphimInstance {
   readonly instanceId: string;
   readonly definitionId: string;
   readonly type: 'Seraphim';
-  readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
   faceState?: CardFaceState;
-  prismaticDepth?: PrismaticDepth;
-  spectrumTokens?: number;
-  burningGardenPhase?: BurningGardenPhase;
   chromaticCounters?: number;
   chromaticSources?: string[];
   burnTurnsRemaining?: number;
@@ -183,10 +156,7 @@ export interface CherubimDiscardCondition {
 export interface CherubimDefinition {
   readonly definitionId: string;
   readonly type: 'Cherubim';
-  readonly element: Element;
   readonly rarity: CardRarity;
-  readonly snowboundPhase?: SnowboundPhase;
-  readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
@@ -200,13 +170,9 @@ export interface CherubimInstance {
   instanceId: string;
   definitionId: string;
   readonly type: 'Cherubim';
-  readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
   faceState?: CardFaceState;
-  prismaticDepth?: PrismaticDepth;
-  spectrumTokens?: number;
-  burningGardenPhase?: BurningGardenPhase;
   chromaticCounters?: number;
   chromaticSources?: string[];
   burnTurnsRemaining?: number;
@@ -220,10 +186,7 @@ export interface CherubimInstance {
 export interface OphanimDefinition {
   readonly definitionId: string;
   readonly type: 'Ophanim';
-  readonly element: Element;
   readonly rarity: CardRarity;
-  readonly snowboundPhase?: SnowboundPhase;
-  readonly prismaticDepth?: PrismaticDepth;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
@@ -234,11 +197,9 @@ export interface OphanimInstance {
   readonly instanceId: string;
   readonly definitionId: string;
   readonly type: 'Ophanim';
-  readonly element: Element;
   readonly rarity: CardRarity;
   readonly finish: CardFinish;
   faceState?: CardFaceState;
-  burningGardenPhase?: BurningGardenPhase;
   chromaticCounters?: number;
   chromaticSources?: string[];
   burnTurnsRemaining?: number;

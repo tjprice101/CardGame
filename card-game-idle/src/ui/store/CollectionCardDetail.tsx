@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useStore } from '@/state/store';
-import { ELEMENT_SET_NAMES, ELEMENT_COLORS } from '@/data/elements';
+import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { getCardFaceBackgroundStyle, getCardBackBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
@@ -63,11 +63,6 @@ function renderCombatOverview(card: Props['card']) {
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
             Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} · Cost: {formatAttackCosts(attacks.synergized.costs)}
           </div>
-          {card.element === 'Fire' && (
-            <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
-              Fire attacks: +2.5% per Heat (max +75%) and spend up to 5 Heat for +1% per Heat spent (max +5%).
-            </div>
-          )}
         </div>
       </div>
     );
@@ -92,11 +87,6 @@ function renderCombatOverview(card: Props['card']) {
           <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
             Cost: {formatAttackCosts(attacks.exalted.costs)}
           </div>
-          {card.element === 'Fire' && (
-            <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
-              Fire attacks: +2.5% per Heat (max +75%) and spend up to 5 Heat for +1% per Heat spent (max +5%).
-            </div>
-          )}
         </div>
       </div>
     );
@@ -105,11 +95,11 @@ function renderCombatOverview(card: Props['card']) {
   return TYPE_DESCRIPTIONS[card.type];
 }
 
-function findPacksForCard(cardId: string): Array<{ packId: string; packName: string; element: string }> {
-  const packs: Array<{ packId: string; packName: string; element: string }> = [];
+function findPacksForCard(cardId: string): Array<{ packId: string; packName: string; setId: string }> {
+  const packs: Array<{ packId: string; packName: string; setId: string }> = [];
   for (const pack of PACK_DEFINITIONS) {
     if (pack.cardPool.includes(cardId)) {
-      packs.push({ packId: pack.id, packName: pack.name, element: pack.element ?? 'Neutrality' });
+      packs.push({ packId: pack.id, packName: pack.name, setId: pack.setId ?? 'Neutrality' });
     }
   }
   return packs;
@@ -122,7 +112,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
 
   const isFavorite = favoriteCollection[`${card.definitionId}:${finish}`] ?? false;
   const packs = findPacksForCard(card.definitionId);
-  const elementColor = ELEMENT_COLORS[card.element] ?? '#aaa';
+  const elementColor = SET_ACCENT;
   const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
   const actionClassLabel = getActionClassLabel(getCardActionClass(card));
   const finishLabel = isHoloOnlyCard(card) ? 'Intrinsic Foil' : getCardFinishLabel(finish);
@@ -276,7 +266,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                 Element
               </div>
               <div style={{ fontSize: 14, color: elementColor, fontWeight: 500 }}>
-                {ELEMENT_SET_NAMES[card.element] ?? card.element}
+                {SET_LABEL}
               </div>
             </div>
             <div>

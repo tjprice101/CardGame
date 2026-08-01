@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getHolofoilConversionCost } from '@/systems/progression/HolofoilSystem';
+import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import { defaultGameState, useStore } from '@/state/store';
 import type { SavedGameState } from '@/types/bossFight';
 import type { BoardState, DeckState, ProgressState, TurnState } from '@/types/game';
@@ -115,7 +116,7 @@ describe('Holofoil progression', () => {
 
     let next = useStore.getState();
     expect(next.bossFight.mode).toBe('victory');
-    expect(next.progress.aberratedShards).toBe(boss.firstClearShards);
+    expect(next.progress.aberratedShards).toBe(Math.round(boss.firstClearShards * getBossRewardMultiplier(boss.id)));
     expect(next.progress.collection[boss.rewardCardId]).toBe(1);
     expect(next.progress.holoCollection[boss.rewardCardId]).toBe(1);
     expect(next.progress.bossClearCounts[boss.id]).toBe(1);
@@ -148,7 +149,7 @@ describe('Holofoil progression', () => {
     useStore.getState().playCard('play_2');
     next = useStore.getState();
 
-    expect(next.progress.aberratedShards).toBe(boss.firstClearShards + boss.repeatClearShards);
+    expect(next.progress.aberratedShards).toBe(Math.round(boss.firstClearShards * getBossRewardMultiplier(boss.id)) + Math.round(boss.repeatClearShards * getBossRewardMultiplier(boss.id)));
     expect(next.progress.collection[boss.rewardCardId]).toBe(2);
     expect(next.progress.holoCollection[boss.rewardCardId]).toBe(2);
     expect(next.progress.bossClearCounts[boss.id]).toBe(2);
@@ -167,7 +168,7 @@ describe('Holofoil progression', () => {
     loadedProgress.holoCollection = {};
 
     const loadedDeck = loaded.deck as DeckState & Record<string, unknown>;
-    loadedDeck.extraDeck = ['angel-light-seraphiel'] as unknown as DeckState['extraDeck'];
+    loadedDeck.extraDeck = ['angel-neutral-equilibrium'] as unknown as DeckState['extraDeck'];
     loadedDeck.hand = [{ instanceId: 'legacy_1', definitionId: 'ophanim-neutral-null-seek' }] as unknown as DeckState['hand'];
 
     useStore.getState().loadState(loaded as unknown as typeof defaultGameState);

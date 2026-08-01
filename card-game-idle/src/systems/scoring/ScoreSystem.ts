@@ -36,14 +36,10 @@ export class ScoreSystem {
       const def = ScoreSystem.getDefinition(s.definitionId);
       if (!def || def.type !== 'Seraphim') continue;
       const { bonusType, bonusValue } = def.baseStats;
-      const burnMultiplier = def.element === 'BlazingGarden' && s.burningGardenPhase === 'Burn'
-        ? 1.45 + Math.min(0.75, (s.chromaticCounters ?? 0) * 0.12)
-        : 1;
       switch (bonusType) {
-        case 'oblivion_per_card':   oblivionPerCardBonus += bonusValue * burnMultiplier; break;
-        case 'ophanim_bonus':        ophanimOblivionBonus  += bonusValue * burnMultiplier; break;
-        case 'cherubim_extra_plays':   cherubimExtraPlays      += Math.round(bonusValue * burnMultiplier); break;
-        case 'pyro_heat_per_card':    break;
+        case 'oblivion_per_card':   oblivionPerCardBonus += bonusValue; break;
+        case 'ophanim_bonus':        ophanimOblivionBonus  += bonusValue; break;
+        case 'cherubim_extra_plays':   cherubimExtraPlays      += Math.round(bonusValue); break;
         // chain_bonus, cherubim_expire_bonus are handled at play-time
         // Light-only bonus types are handled elsewhere in the current rework model.
       }
@@ -54,14 +50,10 @@ export class ScoreSystem {
     for (const a of angels) {
       const def = ScoreSystem.getDefinition(a.definitionId);
       if (!def || def.type !== 'Angel') continue;
-      const burnMultiplier = def.element === 'BlazingGarden' && a.burningGardenPhase === 'Burn'
-        ? 1.45 + Math.min(0.75, (a.chromaticCounters ?? 0) * 0.12)
-        : 1;
       if (def.baseStats.bonusType === 'oblivion_per_card') {
-        oblivionPerCardBonus += def.baseStats.bonusValue * burnMultiplier;
+        oblivionPerCardBonus += def.baseStats.bonusValue;
       } else if (def.baseStats.bonusType === 'oblivion_per_seraphim') {
-        // Each active Seraphim contributes bonusValue additional Oblivion per card
-        oblivionPerCardBonus += def.baseStats.bonusValue * activeSynergies * burnMultiplier;
+        oblivionPerCardBonus += def.baseStats.bonusValue * activeSynergies;
       }
     }
 

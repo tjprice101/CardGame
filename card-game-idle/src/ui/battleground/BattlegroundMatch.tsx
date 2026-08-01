@@ -54,7 +54,6 @@ export default function BattlegroundMatch() {
         instanceId: `cpu-s-${i}`,
         definitionId: def.definitionId,
         type: 'Seraphim' as const,
-        element: def.element,
         rarity: def.rarity,
         finish: 'normal' as const,
         level: 1,

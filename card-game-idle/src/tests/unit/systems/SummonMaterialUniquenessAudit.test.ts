@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
 import type { AngelDefinition } from '@/types/cards';
-import { getCardCategoryKey } from '@/data/elements';
 
 describe('angel summon material uniqueness audit', () => {
   it('keeps non-empty summon material combinations unique across angels', () => {
@@ -19,16 +18,8 @@ describe('angel summon material uniqueness audit', () => {
       .map(([materials, ids]) => ({ materials, ids }))
       .sort((a, b) => a.materials.localeCompare(b.materials));
 
-    expect(duplicateGroups).toEqual([
-      {
-        materials: 'bf-ser-mireth-lenshost|bf-ser-ossiveth-shadowspan',
-        ids: ['bf-angel-flutter-cartographer', 'bf-inf-generation-of-the-flutter'],
-      },
-      {
-        materials: 'bf-ser-pyrethkai-whiteflame|bf-ser-vethkai-clear-arc',
-        ids: ['bf-angel-chrysalis-warden', 'bf-et-pyrethkai-equilibrium'],
-      },
-    ]);
+    // All non-Neutrality sets removed; no duplicates expected
+    expect(duplicateGroups).toEqual([]);
   });
 
   it('keeps every angel summon cost non-empty and within its own set', () => {
@@ -46,9 +37,7 @@ describe('angel summon material uniqueness audit', () => {
           violations.push({ angel: angel.definitionId, material: materialId });
           continue;
         }
-        if (getCardCategoryKey(material) !== getCardCategoryKey(angel)) {
-          violations.push({ angel: angel.definitionId, material: materialId });
-        }
+        // All remaining cards are Neutrality; no cross-set violations expected
       }
     }
 

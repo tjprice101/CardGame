@@ -6,7 +6,7 @@
 // This file is the single source of truth — adding a new keyword here is
 // enough to make it highlight everywhere CardRulesDigest is rendered.
 
-import { ELEMENT_SET_NAMES, ELEMENT_COLORS } from '@/data/elements';
+import { SET_ACCENT } from '@/data/elements';
 
 export type HighlightCategory =
   | 'mechanic'
@@ -70,7 +70,6 @@ const VOCAB: Record<Exclude<HighlightCategory, 'element' | 'number'>, string[]> 
     'Holo',
     'Eternal',
     'Infinite',
-    'Prismatic Depth',
     'Refraction Depth',
     'Draw',
     'Discard',
@@ -126,7 +125,6 @@ const VOCAB: Record<Exclude<HighlightCategory, 'element' | 'number'>, string[]> 
     'Heat',
     'Trail',
     'Strain',
-    'Prismatic Light',
     'Resonance Charge',
     'Prism Charge',
     'Prism Charges',
@@ -170,16 +168,8 @@ export function getVocabularyEntries(): VocabEntry[] {
     }
   }
 
-  // Element set names — pull from the canonical map so new sets light up
-  // automatically. Use the element color when available.
-  for (const [key, name] of Object.entries(ELEMENT_SET_NAMES)) {
-    if (!name) continue;
-    entries.push({ phrase: name, category: 'element', color: ELEMENT_COLORS[key] });
-    // Also match the raw element key for cards that reference it bare.
-    if (key !== name) {
-      entries.push({ phrase: key, category: 'element', color: ELEMENT_COLORS[key] });
-    }
-  }
+  // Set names — add Neutrality as a highlighted vocab term
+  entries.push({ phrase: 'Neutrality', category: 'element', color: SET_ACCENT });
 
   // Deduplicate by lowercased phrase, preferring the first occurrence so the
   // explicit VOCAB takes precedence over element name collisions.

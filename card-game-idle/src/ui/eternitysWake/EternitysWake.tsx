@@ -61,41 +61,6 @@ const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
   boss_neutrality_equilibrium_rex: { folder: 'neutrality', file: 'Equilibrium Rex.png' },
   boss_neutrality_axiom_maw: { folder: 'neutrality', file: 'Axiom Maw.png' },
   boss_neutrality_prime_judge: { folder: 'neutrality', file: 'Prime Judge of Silence.png' },
-  // Pyroabyss
-  boss_pyroabyss_cinder_leviathan: { folder: 'pyroabyss', file: 'Cinder Leviathan.png' },
-  boss_pyroabyss_ash_kings: { folder: 'pyroabyss', file: 'Ash Kings Unbound.png' },
-  boss_pyroabyss_infernal_sun: { folder: 'pyroabyss', file: 'Infernal Suncore.png' },
-  boss_pyroabyss_rift_bell: { folder: 'pyroabyss', file: 'Riftbell Catastrophe.png' },
-  boss_pyroabyss_phoenix_judge: { folder: 'pyroabyss', file: 'Phoenix Judge of the Abyss.png' },
-  // Heavenly Light
-  boss_light_aurora_throne: { folder: 'heavenly-light', file: 'Aurora Throne.png' },
-  boss_light_sanctum_breaker: { folder: 'heavenly-light', file: 'Sanctum Breaker.png' },
-  boss_light_choral_tyrant: { folder: 'heavenly-light', file: 'Choral Tyrant.png' },
-  boss_light_halo_legion: { folder: 'heavenly-light', file: 'Halo Legion Prime.png' },
-  boss_light_morning_crown: { folder: 'heavenly-light', file: 'Morning Crown Absolute.png' },
-  // Thornbound Plains
-  boss_thornbound_bleeding_road: { folder: 'thornbound-plains', file: 'Bleeding Road Matriarch.png' },
-  boss_thornbound_ragged_banner: { folder: 'thornbound-plains', file: 'Ragged Banner Host.png' },
-  boss_thornbound_cathedral_lance: { folder: 'thornbound-plains', file: 'Cathedral Lance.png' },
-  boss_thornbound_grave_hedge: { folder: 'thornbound-plains', file: 'Grave Hedge Reliquary.png' },
-  boss_thornbound_gallowcrown: { folder: 'thornbound-plains', file: 'Gallowcrown Matron.png' },
-  // Mechanical Dreams
-  boss_mech_overclock_arch: { folder: 'mechanical-dreams', file: 'Overclock Arch-Engine.png' },
-  boss_mech_furnace_mind: { folder: 'mechanical-dreams', file: 'Furnace Mind Helix.png' },
-  boss_mech_brass_tribunal: { folder: 'mechanical-dreams', file: 'Brass Tribunal.png' },
-  boss_mech_reactor_psalm: { folder: 'mechanical-dreams', file: 'Reactor Psalm Engine.png' },
-  boss_mech_primevector: { folder: 'mechanical-dreams', file: 'Primevector Thaumiel.png' },
-  // Prismatic Accord
-  boss_prismatic_mirror_regent: { folder: 'prismatic-accord', file: 'Vorthum Mirror Regent.png' },
-  boss_prismatic_fracture_hierophant: { folder: 'prismatic-accord', file: 'Fracture Road Hierophant.png' },
-  boss_prismatic_drift_leviathan: { folder: 'prismatic-accord', file: 'Drift Canopy Leviathan.png' },
-  boss_prismatic_blindwars_reliquary: { folder: 'prismatic-accord', file: 'Reliquary of Blind Wars.png' },
-  boss_prismatic_whitebeam_concordat: { folder: 'prismatic-accord', file: 'Whitebeam Concordat.png' },
-  // Black Glass Inferno — no separate boss art; header falls back to reward card art.
-  // Wished Upon A Star
-  boss_wuas_aethervex_wishwright: { folder: 'wished-upon-a-star', file: 'Aethervex, the Wishwright.png' },
-  boss_wuas_selenira_voidbane: { folder: 'wished-upon-a-star', file: 'Selenira Voidbane.png' },
-  boss_wuas_draethos_unforgotten: { folder: 'wished-upon-a-star', file: 'Draethos, The Unforgotten.png' },
 };
 
 function getBossArtUrl(keyArt: string): string | null {
@@ -106,46 +71,14 @@ function getBossArtUrl(keyArt: string): string | null {
   return artData ? `${BOSS_ART_ROOT}/${artData.folder}/${encodeURI(artData.file)}` : null;
 }
 
-function mapPackToBossCategory(packId: string, packElement: string): BossCategory {
-  if (packId === 'pack-snowbound-voltage') return 'Snowbound Voltage';
-  switch (packElement) {
-    case 'Neutrality':
-      return 'Neutrality';
-    case 'Fire':
-      return 'Pyroabyss';
-    case 'Light':
-      return 'Heavenly Light';
-    case 'Thornbound':
-      return 'Thornbound Plains';
-    case 'Mechanical':
-      return 'Mechanical Dreams';
-    case 'Prismatic':
-      return 'Prismatic Accord';
-    case 'GlassAbsolute':
-      return 'Glass Absolute';
-    case 'BlazingGarden':
-      return 'The Blazing Garden';
-    case 'Butterfly':
-      return 'Age of the Butterfly';
-    case 'EternalSeas':
-      return 'Eternal Seas';
-    case 'AbyssalForge':
-      return 'Abyssal Forge';
-    case 'DeathFlamedHell':
-      return 'Death-flamed Hell';
-    case 'Dark':
-      return 'Black Glass Inferno';
-    case 'WishedUponAStar':
-      return '[EVENT] Wished Upon A Star';
-    default:
-      return 'Neutrality';
-  }
+function mapPackToBossCategory(_packId: string, _packElement: string): BossCategory {
+  return 'Neutrality';
 }
 
 const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));
 const STORE_BOSS_TAB_ORDER: BossCategory[] = STORE_PACK_ORDER.map(packId => {
   const pack = PACK_BY_ID.get(packId);
-  return pack ? mapPackToBossCategory(pack.id, pack.element) : 'Neutrality';
+  return pack ? mapPackToBossCategory(pack.id, pack.setId ?? 'Neutrality') : 'Neutrality';
 });
 
 interface Props {

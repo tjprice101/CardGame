@@ -647,9 +647,7 @@ function BonusesTab() {
         <SectionTitle label="Set Mechanics (Cashouts)" accent={C.red.fg} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
-            { set: 'Pyroabyss',       mech: 'Chroma Ember Ignite',        desc: 'Quadratic burst — Oblivion scales with embers². Maximise Chroma Ember count before igniting.', accent: C.red    },
             { set: 'Eternal Seas',    mech: 'Undertow Release',            desc: 'Base cards spend Undertow for same-turn burst, skim Foam into manual draw, and use Deepwake as the shared higher-rarity amplification overlay.', accent: C.blue   },
-            { set: 'Butterfly Set',   mech: 'Wing Resonance',              desc: 'Butterfly Eternity and Infinite cards bank Wing Resonance, then cash it through current Spectrum and Formation for sharper payoff turns.', accent: C.purple },
             { set: 'Blazing Garden',  mech: 'Wild Pollen Seed',            desc: 'Eternal cards generate Wild Pollen, then seed effects convert it into direct Oblivion and Bloom-scaled score. Build Burn/Grove first, then cash out.', accent: C.red    },
             { set: 'Glass Absolute',  mech: 'Refraction Charge Conversion', desc: 'Build fragments first, then spend Refraction Charge for stronger Eternal/Infinite burst windows with queue or ledger riders.', accent: C.blue   },
             { set: 'Eternal / Inf.',  mech: 'Eternal Stack Cashout',       desc: "Each set's primary stack (e.g., Furnace Heat) converts to Oblivion on cashout cards.", accent: C.gold   },
@@ -734,8 +732,8 @@ function TipsTab() {
       />
       <TipCard
         rank={5}
-        title="Time Your Set Mechanic Cashouts"
-        detail="Set mechanics (Eternal Stacks, Chroma Embers, Refraction Charge, etc.) produce disproportionate Oblivion when cashed out at high counts. Hold off triggering cashout cards until your stack is large for the biggest burst possible."
+        title="Time Your Neutrality Cashouts"
+        detail="Wait for Patience and Equilibrium Sigils to stack before triggering cashouts for maximum payout."
         accent={C.red.fg}
       />
       <TipCard

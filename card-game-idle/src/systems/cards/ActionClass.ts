@@ -30,7 +30,7 @@ export function classifyCardActionClass(def: CardDefinition, effects: CardEffect
   if (effects.some(effect => effect.type === 'draw' || effect.type === 'look_top_take' || effect.type === 'look_top_take_drop' || effect.type === 'look_top_take_type' || effect.type === 'search_deck_by_type' || effect.type === 'shuffle_discard')) {
     return 'setup';
   }
-  if (effects.some(effect => effect.type === 'oblivion_flat' || effect.type === 'score_flat' || effect.type === 'radiance_gain' || effect.type === 'radiance_spend' || effect.type === 'prismatic_light_gain' || effect.type === 'prismatic_light_spend' || effect.type === 'monochromatic_shards_gain' || effect.type === 'arctic_charge_gain' || effect.type === 'arctic_charge_discharge' || effect.type === 'bloom_gain' || effect.type === 'bloom_harvest' || effect.type === 'trail_gain' || effect.type === 'trail_spend' || effect.type === 'strain_gain' || effect.type === 'strain_vent' || effect.type === 'overclock')) {
+  if (effects.some(effect => effect.type === 'oblivion_flat' || effect.type === 'score_flat' || effect.type === 'patience_gain_all' || effect.type === 'patience_double_all' || effect.type === 'neutrality_equilibrium_sigil_gain' || effect.type === 'neutrality_equilibrium_starbound_cashout' || effect.type === 'neutrality_equilibrium_tactical_spend')) {
     return 'conversion';
   }
   return 'conversion';

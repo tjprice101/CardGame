@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Shared read-only card-slot rendering used by both OpponentBoardPreview
  * and (in future) a player-side snapshot. Mirrors the visual style of the
  * live BoardDisplay without any interactivity.
  */
 import { CardRegistry } from '@/cards/CardRegistry';
-import { ELEMENT_COLORS } from '@/data/elements';
+import { SET_ACCENT } from '@/data/elements';
 import {
   getCardFaceBackgroundStyle,
   getCardNameRibbonStyle,
@@ -43,7 +43,7 @@ export function FrontSlotCard({ slot }: { slot: FrontSlot }) {
   }
 
   const def = CardRegistry.get(slot.definitionId);
-  const elColor = def?.element ? (ELEMENT_COLORS[def.element] ?? '#9090a8') : '#9090a8';
+  const elColor = SET_ACCENT;
   const typeLabel = slot.type === 'Angel' ? 'Angel' : (def?.type ?? slot.type);
 
   return (
@@ -91,7 +91,6 @@ export function FrontSlotCard({ slot }: { slot: FrontSlot }) {
           textAlign: 'center', fontFamily: BODY_FONT,
           lineHeight: FM.descLineHeight, opacity: 0.75,
         }}>
-          {def?.element ?? ''}
         </div>
       </div>
     </div>
@@ -114,7 +113,7 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
   }
 
   const def = CardRegistry.get(slot.definitionId);
-  const elColor = def?.element ? (ELEMENT_COLORS[def.element] ?? '#9090a8') : '#9090a8';
+  const elColor = SET_ACCENT;
 
   return (
     <div
@@ -158,7 +157,7 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
           fontSize: FMM.descSize, color: '#3a251b',
           textAlign: 'center', fontFamily: BODY_FONT, opacity: 0.7,
         }}>
-          {def?.element ?? ''}
+          
           {slot.durability != null ? ` · ${slot.durability}` : ''}
         </div>
       </div>

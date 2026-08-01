@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useStore, selectRadiance, selectTurn } from '@/state/store';
-import { CardRegistry } from '@/cards/CardRegistry';
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -46,7 +45,6 @@ const styles: Record<string, React.CSSProperties> = {
 export default function RadianceDisplay() {
   const radiance = useStore(selectRadiance);
   const turn = useStore(selectTurn);
-  const deckList = useStore(s => s.deck.deckList);
 
   const prevRadianceRef = useRef(radiance);
   const [flashing, setFlashing] = useState(false);
@@ -65,10 +63,7 @@ export default function RadianceDisplay() {
     prevRadianceRef.current = radiance;
   });
 
-  const hasLightCards = deckList.some(e => {
-    const def = CardRegistry.get(e.definitionId);
-    return def?.element === 'Light';
-  });
+  const hasLightCards = false; // Light set removed
 
   if (turn.phase === 'idle' || !hasLightCards) return null;
 

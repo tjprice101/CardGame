@@ -73,7 +73,7 @@ export default function WishedUponAStarEvent({ onClose, onCardStore, onEternitys
   const eventCountdown = formatCountdown(getWuasEventCountdown(nowMs));
 
   const wuasPack = PACK_DEFINITIONS.find(p => p.id === 'pack-wished-upon-a-star');
-  const wuasBosses = BOSS_DEFINITIONS.filter(b => b.category === '[EVENT] Wished Upon A Star');
+  const wuasBosses = BOSS_DEFINITIONS.filter(_b => false); // Event set removed; no WUAS bosses active
 
   return (
     <div style={{ ...overlay, background: C.background }}>

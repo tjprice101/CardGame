@@ -208,26 +208,11 @@ export default function AscensionHub({ onClose }: Props) {
   for (const r of NULL_RAID_DEFINITIONS) raidsByStars[r.stars].push(r);
 
   const raidShopSections = useMemo(() => {
-    const elementToSet: Record<string, string> = {
-      neutrality: 'Neutrality',
-      fire: 'Pyroabyss',
-      light: 'Heavenly Light',
-    };
     const mechanicOverviewBySet: Record<string, { title: string; body: string }> = {
       Neutrality: {
         title: 'Equilibrium Sigils',
         body:
           'These cards create and spend Equilibrium Sigils. Sigils amplify Patience growth passively, then convert into tactical spikes: burst Oblivion, Patience restoration, and cooldown pressure relief when spent at the right moment.',
-      },
-      Pyroabyss: {
-        title: 'Inferno Confluence',
-        body:
-          'These cards build matched Heat and Chroma Ember pairs, then cash those pairs in through Confluence. The suite rewards balancing both pools, correcting lopsided states, and timing the angel ritual after the Seraph and Cherub are online.',
-      },
-      'Heavenly Light': {
-        title: 'Duality',
-        body:
-          'Every Transcendent in this suite triggers Duality: choose Discard 1, Draw 2, or cash out a massive Oblivion burst that scales from Radiance and Halo. The cards also inject above-rate Radiance and Halo to accelerate Light endgame lines.',
       },
     };
 
@@ -237,8 +222,7 @@ export default function AscensionHub({ onClose }: Props) {
         if (!card) return null;
         const cost = TRANSCENDENT_SHOP_COSTS[definitionId] ?? 0;
         if (cost <= 0) return null;
-        const normalizedElement = card.element.toLowerCase();
-        const associatedSet = elementToSet[normalizedElement] ?? card.element;
+        const associatedSet = 'Neutrality';
         const matchingRaid = NULL_RAID_DEFINITIONS.find(r => r.associatedSet.toLowerCase() === associatedSet.toLowerCase()) ?? null;
         return { card, cost, associatedSet, raid: matchingRaid };
       })

@@ -57,11 +57,11 @@ describe('Boss fight rules', () => {
   it('uses set-anchored linear HP segments for eternal bosses', () => {
     const hpValues = BOSS_DEFINITIONS.map(boss => boss.hp);
     expect(hpValues[0]).toBeGreaterThanOrEqual(40_000);
-    expect(hpValues[hpValues.length - 1]).toBeGreaterThanOrEqual(1_000_000);
+    // With only Neutrality active (15 bosses), top HP stays well under 1M
+    expect(hpValues[hpValues.length - 1]).toBeGreaterThanOrEqual(100_000);
 
     const categoryOrder = Array.from(new Set(
       BOSS_DEFINITIONS
-        .filter(boss => boss.category !== '[EVENT] Wished Upon A Star')
         .map(boss => boss.category),
     ));
 

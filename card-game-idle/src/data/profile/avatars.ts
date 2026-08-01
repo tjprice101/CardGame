@@ -7,19 +7,7 @@ import {
   infiniteCherubimCards,
   infiniteAngelCards,
 } from '@/data/cards/infiniteCards';
-import {
-  NEUTRALITY_PACK_POOL,
-  PYROABYSS_PACK_POOL,
-  HEAVENLY_LIGHT_PACK_POOL,
-  THORNBOUND_PLAINS_PACK_POOL,
-  MECHANICAL_DREAMS_PACK_POOL,
-  PRISMATIC_ACCORD_PACK_POOL,
-  BLACK_GLASS_INFERNO_PACK_POOL,
-  SNOWBOUND_VOLTAGE_PACK_POOL,
-  GLASS_ABSOLUTE_PACK_POOL,
-  BLAZING_GARDEN_PACK_POOL,
-  BUTTERFLY_PACK_POOL,
-} from '@/data/packs/packDefinitions';
+import { NEUTRALITY_PACK_POOL } from '@/data/packs/packDefinitions';
 import {
   getEverCollectionCount,
   getEverCollectionTotal,
@@ -72,13 +60,6 @@ function _sigilByIds(ids: readonly string[]): (p: ProgressState) => boolean {
   return (p) => ids.some(id => getEverInfiniteCount(p, id) > 0);
 }
 
-function _sigilByPrefix(prefix: string): (p: ProgressState) => boolean {
-  // Pre-filter the registry at declaration time so the closure only holds a
-  // small frozen array instead of scanning all cards on every unlock check.
-  const matching = Object.freeze(CardRegistry.getAll().filter(card => card.definitionId.startsWith(prefix)).map(card => card.definitionId));
-  return (p) => matching.some(id => getEverInfiniteCount(p, id) > 0);
-}
-
 // ── Shared (core) Infinite card sets, precomputed at module load ──────────
 
 const _coreInfiniteCards = Object.freeze([
@@ -88,16 +69,8 @@ const _coreInfiniteCards = Object.freeze([
   ...infiniteAngelCards,
 ]);
 
-const _infByElement = (el: string): readonly string[] =>
-  Object.freeze(_coreInfiniteCards.filter(c => c.element === el).map(c => c.definitionId));
-
-const INF_NEUTRALITY = _infByElement('Neutrality');
-const INF_FIRE       = _infByElement('Fire');
-const INF_LIGHT      = _infByElement('Light');
-const INF_THORNBOUND = _infByElement('Thornbound');
-const INF_MECHANICAL = _infByElement('Mechanical');
-const INF_PRISMATIC  = _infByElement('Prismatic');
-const INF_ALL_CORE   = Object.freeze(_coreInfiniteCards.map(c => c.definitionId));
+const INF_NEUTRALITY = Object.freeze(_coreInfiniteCards.map(c => c.definitionId));
+const INF_ALL_CORE   = INF_NEUTRALITY;
 
 // Pre-computed Eternal card ID list so isUnlocked closures don't scan the
 // full registry on every recompute() latch cycle.
@@ -107,27 +80,10 @@ const _eternalIds = Object.freeze(
 
 // ── Eternal card ID sets per set, precomputed at module load ─────────────
 
-const _eternalOf = (prefix: string): string[] =>
-  eternalCards.filter(c => c.definitionId.startsWith(prefix)).map(c => c.definitionId);
-
-// Neutrality eternals = all btei-* that aren't claimed by a specific sub-set prefix
-const _neutralitySetPrefixes = Object.freeze([
-  'btei-pyroabyss-', 'btei-light-', 'btei-thornbound-',
-  'btei-mech-', 'btei-prismatic-', 'btei-bgi-',
-]);
+// All Neutrality Eternals are every btei-* card (only Neutrality remains in eternalCards)
 const ET_NEUTRALITY = Object.freeze(
-  eternalCards
-    .filter(c => c.definitionId.startsWith('btei-') &&
-      !_neutralitySetPrefixes.some(p => c.definitionId.startsWith(p)))
-    .map(c => c.definitionId),
+  eternalCards.filter(c => c.definitionId.startsWith('btei-')).map(c => c.definitionId),
 );
-const ET_PYRO    = Object.freeze(_eternalOf('btei-pyroabyss-'));
-const ET_LIGHT   = Object.freeze(_eternalOf('btei-light-'));
-const ET_THORN   = Object.freeze(_eternalOf('btei-thornbound-'));
-const ET_MECH    = Object.freeze(_eternalOf('btei-mech-'));
-const ET_PRISM   = Object.freeze(_eternalOf('btei-prismatic-'));
-const ET_BGI     = Object.freeze(_eternalOf('btei-bgi-'));
-const ET_SV      = Object.freeze(_eternalOf('sv-eternal-'));
 
 export const DEFAULT_AVATAR_ID = 'pic-classic-acolyte';
 
@@ -221,118 +177,6 @@ export const AVATARS: AvatarDefinition[] = [
     isUnlocked: _sigilByIds(INF_NEUTRALITY),
   },
   {
-    id: 'pic-sigil-pyroabyss',
-    name: 'Pyroabyss Sigil',
-    glyph: '🔥',
-    imageUrl: '/assets/profile-pictures/sigil-pyroabyss.png',
-    description: 'Obtain any Pyroabyss-element Infinity card.',
-    isUnlocked: _sigilByIds(INF_FIRE),
-  },
-  {
-    id: 'pic-sigil-heavenly-light',
-    name: 'Heavenly Light Sigil',
-    glyph: '✦',
-    imageUrl: '/assets/profile-pictures/sigil-heavenly-light.png',
-    description: 'Obtain any Heavenly Light-element Infinity card.',
-    isUnlocked: _sigilByIds(INF_LIGHT),
-  },
-  {
-    id: 'pic-sigil-thornbound-plains',
-    name: 'Thornbound Plains Sigil',
-    glyph: '🌿',
-    imageUrl: '/assets/profile-pictures/sigil-thornbound-plains.png',
-    description: 'Obtain any Thornbound-element Infinity card.',
-    isUnlocked: _sigilByIds(INF_THORNBOUND),
-  },
-  {
-    id: 'pic-sigil-mechanical-dreams',
-    name: 'Mechanical Dreams Sigil',
-    glyph: '⚙',
-    imageUrl: '/assets/profile-pictures/sigil-mechanical-dreams.png',
-    description: 'Obtain any Mechanical-element Infinity card.',
-    isUnlocked: _sigilByIds(INF_MECHANICAL),
-  },
-  {
-    id: 'pic-sigil-prismatic-accord',
-    name: 'Prismatic Accord Sigil',
-    glyph: '◈',
-    imageUrl: '/assets/profile-pictures/sigil-prismatic-accord.png',
-    description: 'Obtain any Prismatic-element Infinity card.',
-    isUnlocked: _sigilByIds(INF_PRISMATIC),
-  },
-  {
-    id: 'pic-sigil-black-glass-inferno',
-    name: 'Black Glass Inferno Sigil',
-    glyph: '◼',
-    imageUrl: '/assets/profile-pictures/sigil-black-glass-inferno.png',
-    description: 'Obtain any Black Glass Inferno Infinity card.',
-    isUnlocked: _sigilByPrefix('inf-bgi-'),
-  },
-  {
-    id: 'pic-sigil-snowbound-voltage',
-    name: 'Snowbound Voltage Sigil',
-    glyph: '⚡',
-    imageUrl: '/assets/profile-pictures/sigil-snowbound-voltage.png',
-    description: 'Obtain any Snowbound Voltage Infinity card.',
-    isUnlocked: _sigilByPrefix('inf-sv-'),
-  },
-  {
-    id: 'pic-sigil-glass-absolute',
-    name: 'Glass Absolute Sigil',
-    glyph: '◇',
-    imageUrl: '/assets/profile-pictures/sigil-glass-absolute.png',
-    description: 'Obtain any Glass Absolute Infinity card.',
-    isUnlocked: _sigilByPrefix('ga-inf-'),
-  },
-  {
-    id: 'pic-sigil-blazing-garden',
-    name: 'Blazing Garden Sigil',
-    glyph: '🌸',
-    imageUrl: '/assets/profile-pictures/sigil-blazing-garden.png',
-    description: 'Obtain any Blazing Garden Infinity card.',
-    isUnlocked: _sigilByPrefix('bg-inf-'),
-  },
-  {
-    id: 'pic-sigil-age-of-the-butterfly',
-    name: 'Age of the Butterfly Sigil',
-    glyph: '🦋',
-    imageUrl: '/assets/profile-pictures/sigil-age-of-the-butterfly.png',
-    description: 'Obtain any Age of the Butterfly Infinity card.',
-    isUnlocked: _sigilByPrefix('bf-inf-'),
-  },
-  {
-    id: 'pic-sigil-eternal-seas',
-    name: 'Eternal Seas Sigil',
-    glyph: '🌊',
-    imageUrl: '/assets/profile-pictures/sigil-eternal-seas.png',
-    description: 'Obtain any Eternal Seas Infinity card.',
-    isUnlocked: _sigilByPrefix('es-inf-'),
-  },
-  {
-    id: 'pic-sigil-abyssal-forge',
-    name: 'Abyssal Forge Sigil',
-    glyph: '⚒',
-    imageUrl: '/assets/profile-pictures/sigil-abyssal-forge.png',
-    description: 'Obtain any Abyssal Forge Infinity card.',
-    isUnlocked: _sigilByPrefix('af-inf-'),
-  },
-  {
-    id: 'pic-sigil-death-flamed-hell',
-    name: 'Death-Flamed Hell Sigil',
-    glyph: '💀',
-    imageUrl: '/assets/profile-pictures/sigil-death-flamed-hell.png',
-    description: 'Obtain any Death-Flamed Hell Infinity card.',
-    isUnlocked: _sigilByPrefix('dfh-inf-'),
-  },
-  {
-    id: 'pic-sigil-wished-upon-a-star',
-    name: 'Wished Upon A Star Sigil',
-    glyph: '⭐',
-    imageUrl: '/assets/profile-pictures/sigil-wished-upon-a-star.png',
-    description: 'Obtain any Wished Upon A Star Infinity card.',
-    isUnlocked: _sigilByPrefix('inf-wuas-'),
-  },
-  {
     id: 'pic-sigil-infinitude',
     name: 'Infinitude Sigil',
     glyph: '∞',
@@ -350,118 +194,6 @@ export const AVATARS: AvatarDefinition[] = [
     imageUrl: '/assets/profile-pictures/master-neutrality.png',
     description: 'Collect every Neutrality base card and every Neutrality Eternal card.',
     isUnlocked: _mastery(NEUTRALITY_PACK_POOL, ET_NEUTRALITY as string[]),
-  },
-  {
-    id: 'pic-master-pyroabyss',
-    name: 'Pyroabyss Master',
-    glyph: '🔥',
-    imageUrl: '/assets/profile-pictures/master-pyroabyss.png',
-    description: 'Collect every Pyroabyss base card and every Pyroabyss Eternal card.',
-    isUnlocked: _mastery(PYROABYSS_PACK_POOL, ET_PYRO as string[]),
-  },
-  {
-    id: 'pic-master-heavenly-light',
-    name: 'Heavenly Light Master',
-    glyph: '✦',
-    imageUrl: '/assets/profile-pictures/master-heavenly-light.png',
-    description: 'Collect every Heavenly Light base card and every Heavenly Light Eternal card.',
-    isUnlocked: _mastery(HEAVENLY_LIGHT_PACK_POOL, ET_LIGHT as string[]),
-  },
-  {
-    id: 'pic-master-thornbound-plains',
-    name: 'Thornbound Plains Master',
-    glyph: '🌿',
-    imageUrl: '/assets/profile-pictures/master-thornbound-plains.png',
-    description: 'Collect every Thornbound Plains base card and every Thornbound Eternal card.',
-    isUnlocked: _mastery(THORNBOUND_PLAINS_PACK_POOL, ET_THORN as string[]),
-  },
-  {
-    id: 'pic-master-mechanical-dreams',
-    name: 'Mechanical Dreams Master',
-    glyph: '⚙',
-    imageUrl: '/assets/profile-pictures/master-mechanical-dreams.png',
-    description: 'Collect every Mechanical Dreams base card and every Mechanical Dreams Eternal card.',
-    isUnlocked: _mastery(MECHANICAL_DREAMS_PACK_POOL, ET_MECH as string[]),
-  },
-  {
-    id: 'pic-master-prismatic-accord',
-    name: 'Prismatic Accord Master',
-    glyph: '◈',
-    imageUrl: '/assets/profile-pictures/master-prismatic-accord.png',
-    description: 'Collect every Prismatic Accord base card and every Prismatic Eternal card.',
-    isUnlocked: _mastery(PRISMATIC_ACCORD_PACK_POOL, ET_PRISM as string[]),
-  },
-  {
-    id: 'pic-master-black-glass-inferno',
-    name: 'Black Glass Inferno Master',
-    glyph: '◼',
-    imageUrl: '/assets/profile-pictures/master-black-glass-inferno.png',
-    description: 'Collect every Black Glass Inferno base card and every BGI Eternal card.',
-    isUnlocked: _mastery(BLACK_GLASS_INFERNO_PACK_POOL, ET_BGI as string[]),
-  },
-  {
-    id: 'pic-master-snowbound-voltage',
-    name: 'Snowbound Voltage Master',
-    glyph: '⚡',
-    imageUrl: '/assets/profile-pictures/master-snowbound-voltage.png',
-    description: 'Collect every Snowbound Voltage base card and every Snowbound Eternal card.',
-    isUnlocked: _mastery(SNOWBOUND_VOLTAGE_PACK_POOL, ET_SV as string[]),
-  },
-  {
-    id: 'pic-master-glass-absolute',
-    name: 'Glass Absolute Master',
-    glyph: '◇',
-    imageUrl: '/assets/profile-pictures/master-glass-absolute.png',
-    description: 'Collect every card in the Glass Absolute set.',
-    isUnlocked: _mastery(GLASS_ABSOLUTE_PACK_POOL, []),
-  },
-  {
-    id: 'pic-master-blazing-garden',
-    name: 'Blazing Garden Master',
-    glyph: '🌸',
-    imageUrl: '/assets/profile-pictures/master-blazing-garden.png',
-    description: 'Collect every card in the Blazing Garden set.',
-    isUnlocked: _mastery(BLAZING_GARDEN_PACK_POOL, []),
-  },
-  {
-    id: 'pic-master-age-of-the-butterfly',
-    name: 'Age of the Butterfly Master',
-    glyph: '🦋',
-    imageUrl: '/assets/profile-pictures/master-age-of-the-butterfly.png',
-    description: 'Collect every card in the Age of the Butterfly set.',
-    isUnlocked: _mastery(BUTTERFLY_PACK_POOL, []),
-  },
-  {
-    id: 'pic-master-eternal-seas',
-    name: 'Eternal Seas Master',
-    glyph: '🌊',
-    imageUrl: '/assets/profile-pictures/master-eternal-seas.png',
-    description: 'Collect every card in the Eternal Seas set.',
-      isUnlocked: (p: ProgressState) => _eternalIds.some(id => getEverCollectionCount(p, id) > 0),
-  },
-  {
-    id: 'pic-master-abyssal-forge',
-    name: 'Abyssal Forge Master',
-    glyph: '⚒',
-    imageUrl: '/assets/profile-pictures/master-abyssal-forge.png',
-    description: 'Collect every card in the Abyssal Forge set.',
-      isUnlocked: (p: ProgressState) => getEverDistinctCollectionCount(p) >= 50,
-  },
-  {
-    id: 'pic-master-death-flamed-hell',
-    name: 'Death-Flamed Hell Master',
-    glyph: '💀',
-    imageUrl: '/assets/profile-pictures/master-death-flamed-hell.png',
-    description: 'Collect every card in the Death-Flamed Hell set.',
-      isUnlocked: (p: ProgressState) => getEverDistinctHoloCount(p) >= 20,
-  },
-  {
-    id: 'pic-master-wished-upon-a-star',
-    name: 'Wished Upon A Star Master',
-    glyph: '⭐',
-    imageUrl: '/assets/profile-pictures/master-wished-upon-a-star.png',
-    description: 'Collect every card in the Wished Upon A Star set.',
-      isUnlocked: (p: ProgressState) => getEverInfiniteTotal(p) > 0,
   },
   {
     id: 'pic-master-infinitude',

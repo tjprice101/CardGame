@@ -29,7 +29,6 @@ interface FractureCardRow {
   id: string;
   name: string;
   rarity: CardRarity;
-  element: string;
   owned: number;
   fracturable: number;
   cardLight: number;
@@ -97,7 +96,6 @@ export default function FractureModal({ onClose }: Props) {
         id,
         name: def.name,
         rarity,
-        element: def.element,
         owned: owned ?? 0,
         fracturable,
         cardLight,
@@ -377,7 +375,7 @@ export default function FractureModal({ onClose }: Props) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 18, fontFamily: uiTypography.display, color: P.text, letterSpacing: 1 }}>{selectedDef.name}</div>
                   <div style={{ fontSize: 11, color: RARITY_COLOR[selectedRow.rarity] ?? P.textMuted, marginTop: 3, letterSpacing: 0.5 }}>
-                    {selectedRow.rarity} · {selectedRow.element}
+                    {selectedRow.rarity}
                   </div>
                   <div style={{ fontSize: 11, color: P.textMuted, marginTop: 8 }}>
                     Owned: {selectedRow.owned} · Fracturable: {selectedRow.fracturable}

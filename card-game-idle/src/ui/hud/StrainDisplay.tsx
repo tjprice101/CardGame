@@ -1,6 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useStore, selectTurn } from '@/state/store';
-import { CardRegistry } from '@/cards/CardRegistry';
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -67,7 +66,6 @@ const styles: Record<string, React.CSSProperties> = {
 
 export default function StrainDisplay() {
   const turn = useStore(selectTurn);
-  const deckList = useStore(s => s.deck.deckList);
   const [hovered, setHovered] = useState(false);
   const prevStrainRef = useRef(turn.strain);
   const [flashing, setFlashing] = useState(false);
@@ -86,10 +84,7 @@ export default function StrainDisplay() {
     prevStrainRef.current = turn.strain;
   });
 
-  const hasMechanicalCards = deckList.some(entry => {
-    const def = CardRegistry.get(entry.definitionId);
-    return def?.element === 'Mechanical';
-  });
+  const hasMechanicalCards = false; // Mechanical set removed
 
   if (turn.phase === 'idle' || !hasMechanicalCards) return null;
 
