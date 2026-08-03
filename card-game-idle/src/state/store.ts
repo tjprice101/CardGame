@@ -52,6 +52,13 @@ import {
   refreshQuestRotation,
   type QuestKind,
 } from '@/systems/progression/quests';
+import {
+  ensureEnigmaState,
+  ensureNeutralMysteryInstance,
+  evaluateEnigmaAcquisition,
+  evaluateNeutralMysteryProgress,
+  awardEnigmaReward,
+} from '@/systems/progression/EnigmaSystem';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import {
   getAchievementShardReward,
@@ -223,6 +230,7 @@ const defaultProgress: ProgressState = {
     totalClaims: 0,
   },
   quests: { daily: [], weekly: [], lastDailyRollDay: -1, lastWeeklyRollWeek: -1 },
+  enigmas: { activeEnigmaId: null, instances: {} },
   achievementClaims: {},
   achievementUnlocks: {},
   cardPlayCounts: {},
@@ -475,6 +483,9 @@ interface StoreActions {
   /** Begin a Null Raid run. Validates cooldown, Prove Yourself unlock, and idle state. */
   startNullRaid: (raidId: string, savedDeckId: string) => boolean;
   claimDailyReward: () => { shards: number; streak: number } | null;
+  setActiveEnigma: (enigmaId: string) => void;
+  sacrificeEnigmaOblivion: (enigmaId: string) => boolean;
+  claimEnigmaReward: (enigmaId: string) => boolean;
   /** Engagement: claim a single quest. */
   claimQuest: (questId: string) => { shards: number; oblivion?: number } | null;
   /** Engagement: claim an unlocked achievement (one-shot). */
@@ -1545,6 +1556,87 @@ function applyNeutralityTimerPauseFromTurn(s: Store): void {
   s.turn.neutralityPauseActiveTimersSeconds = 0;
 }
 
+function pushRewardToast(s: Store, message: string): void {
+  if (!s.toasts) s.toasts = [];
+  const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  s.toasts.push({ id, message, kind: 'reward', ts: Date.now(), durationMs: 4200 });
+  if (s.toasts.length > 8) s.toasts.splice(0, s.toasts.length - 8);
+}
+
+function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void {
+  ensureEnigmaState(s.progress);
+  if (checkAcquisition) {
+    const acquisition = evaluateEnigmaAcquisition({ board: s.board, progress: s.progress });
+    if (acquisition.newlyAcquired.length > 0) {
+      if (!s.progress.enigmas.activeEnigmaId) {
+        s.progress.enigmas.activeEnigmaId = acquisition.newlyAcquired[0] ?? null;
+      }
+      for (const enigmaId of acquisition.newlyAcquired) {
+        const instance = s.progress.enigmas.instances[enigmaId];
+        if (instance && !instance.acquiredAt) instance.acquiredAt = Date.now();
+        pushRewardToast(s, `Enigma Acquired: ${enigmaId === 'neutral-mystery' ? 'Neutral Mystery' : enigmaId}`);
+      }
+    }
+  }
+
+  evaluateNeutralMysteryProgress({ board: s.board, progress: s.progress });
+}
+
+function completeSummonedAngelPlacement(
+  s: Store,
+  definitionId: string,
+  finish: CardFinish,
+  slot: 0 | 1 | 2 | 3 | 4,
+): boolean {
+  if (s.board.frontSlots[slot] !== null) return false;
+  const def = ScoreSystem.getDefinition(definitionId);
+  if (!def || def.type !== 'Angel') return false;
+  const angelDef = def as AngelDefinition;
+
+  const angelInst: AngelInstance = {
+    instanceId: `ang_${++angelInstanceCounter}`,
+    definitionId,
+    type: 'Angel',
+    rarity: angelDef.rarity,
+    finish,
+    level: 1,
+    cardsPlayedSinceSummon: 0,
+    activated: false,
+    attackCooldowns: {},
+    boardSlot: slot,
+  };
+
+  s.board.frontSlots[slot] = angelInst;
+  s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
+  eventBus.emit('angel:summoned', { definitionId, slot });
+  recompute(s);
+
+  const result = CardEffectExecutor.execute(
+    { instanceId: angelInst.instanceId, definitionId, finish: angelInst.finish },
+    s.turn,
+    s.board,
+    s.deck,
+    false,
+    { countAsPlay: false, removeFromHand: false },
+  );
+  if (result.canPlay) {
+    const turnBefore = captureTurnSnapshot(s.turn);
+    const actionClass = classifyActionClass(angelDef, angelDef.onSummonEffects);
+    s.turn = result.turn;
+    s.board = result.board;
+    s.deck = result.deck;
+    applyNeutralityTimerPauseFromTurn(s);
+    applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
+    awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
+    if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+  }
+
+  syncEnigmaProgressFromBoard(s, true);
+  checkBossDefeated(s);
+  recompute(s);
+  return true;
+}
+
 function effectCanDraw(effect: CardEffect): boolean {
   switch (effect.type) {
     case 'draw':
@@ -1553,6 +1645,7 @@ function effectCanDraw(effect: CardEffect): boolean {
     case 'look_top_take_drop':
     case 'look_top_take_type':
     case 'search_deck_by_type':
+    case 'search_deck_distinct_types':
     case 'salvage_by_type':
     case 'salvage_by_type_count':
     case 'salvage_any':
@@ -2775,6 +2868,8 @@ export const useStore = create<Store>()(
           eventBus.emit('seraphim:synergy-gained', { slot, instanceId: deckCard.instanceId });
         }
         recordCardPlay(s, deckCard.definitionId);
+        syncEnigmaProgressFromBoard(s, false);
+        checkBossDefeated(s);
         recompute(s);
       });
     },
@@ -2856,6 +2951,7 @@ export const useStore = create<Store>()(
         resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
         incrementAngelProgress(s.board);
         recordCardPlay(s, deckCard.definitionId);
+        syncEnigmaProgressFromBoard(s, false);
         checkBossDefeated(s);
         recompute(s);
       });
@@ -2951,6 +3047,7 @@ export const useStore = create<Store>()(
     summonAngel: (definitionId, finish) => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
+        if (s.turn.pendingEffect !== null) return;
         const summonedEntry = getAvailableAngelEntry(s.deck.extraDeck, definitionId, finish);
         if (!summonedEntry) return;
         const def = ScoreSystem.getDefinition(definitionId);
@@ -2964,6 +3061,8 @@ export const useStore = create<Store>()(
         for (const [id, needed] of Object.entries(costCount)) {
           if ((boardCount[id] ?? 0) < needed) return;
         }
+
+        if (!s.board.frontSlots.some(slot => slot === null)) return;
 
         if (angelDef.extraSummonConditions) {
           for (const cond of angelDef.extraSummonConditions) {
@@ -2997,10 +3096,6 @@ export const useStore = create<Store>()(
         recordLossEvent(s, toSacrifice.map(material => ({ definitionId: material.definitionId })), 'sacrifice');
         s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
 
-        const emptySlotIdx = s.board.frontSlots.findIndex(sl => sl === null);
-        if (emptySlotIdx === -1) return;
-        const slot = emptySlotIdx as 0 | 1 | 2 | 3 | 4;
-
         // Consume this copy only after all requirements pass.
         const deckIdx = s.deck.extraDeck.findIndex(
           e => e.definitionId === definitionId && e.finish === summonedEntry.finish,
@@ -3008,44 +3103,12 @@ export const useStore = create<Store>()(
         if (deckIdx === -1) return;
         s.deck.extraDeck.splice(deckIdx, 1);
 
-        const angelInst: AngelInstance = {
-          instanceId: `ang_${++angelInstanceCounter}`,
+        s.turn.pendingEffect = {
+          type: 'summon_angel_place',
           definitionId,
-          type: 'Angel',
-          rarity: angelDef.rarity,
           finish: summonedEntry.finish,
-          level: 1,
-          cardsPlayedSinceSummon: 0,
-          activated: false,
-          attackCooldowns: {},
-          boardSlot: slot,
         };
-        s.board.frontSlots[slot] = angelInst;
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        eventBus.emit('angel:summoned', { definitionId, slot });
-        recompute(s);
-
-        const result = CardEffectExecutor.execute(
-          { instanceId: angelInst.instanceId, definitionId, finish: angelInst.finish },
-          s.turn,
-          s.board,
-          s.deck,
-          false,
-          { countAsPlay: false, removeFromHand: false }
-        );
-        if (result.canPlay) {
-          const turnBefore = captureTurnSnapshot(s.turn);
-          const actionClass = classifyActionClass(angelDef, angelDef.onSummonEffects);
-          s.turn = result.turn;
-          s.board = result.board;
-          s.deck = result.deck;
-          applyNeutralityTimerPauseFromTurn(s);
-          applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
-          awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
-          if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
-        }
-
-        checkBossDefeated(s);
+        pushRewardToast(s, 'Choose a front slot for the summoned Angel.');
         recompute(s);
       });
     },
@@ -3792,14 +3855,28 @@ export const useStore = create<Store>()(
             s.deck = TurnSystem.takeFromTop(s.deck, takenCards, pending.cards.filter(c => !selected.includes(c.instanceId)));
           }
         } else if (pending.type === 'search_deck') {
-          const requiredSelections = Math.min(pending.take, pending.cards.length);
+          const maxSelections = Math.min(pending.take, pending.cards.length);
+          const minSelections = Math.max(0, Math.min(pending.minTake ?? maxSelections, maxSelections));
           const pendingCardIds = new Set(pending.cards.map(c => c.instanceId));
           const uniqueSelections = new Set(selected);
 
+          if (selected.length < minSelections || selected.length > maxSelections) return;
           if (selected.length > 0) {
-            if (selected.length !== requiredSelections) return;
             if (uniqueSelections.size !== selected.length) return;
             if (selected.some(id => !pendingCardIds.has(id))) return;
+          }
+
+          if (pending.distinctTypes && selected.length > 0) {
+            const chosenByType: Partial<Record<CardSubtypeFilter, number>> = {};
+            for (const selectedId of selected) {
+              const card = pending.cards.find(c => c.instanceId === selectedId);
+              if (!card) return;
+              const subtype = CardRegistry.get(card.definitionId)?.type;
+              if (subtype !== 'Seraphim' && subtype !== 'Cherubim' && subtype !== 'Ophanim') return;
+              if (!pending.filter.includes(subtype)) return;
+              chosenByType[subtype] = (chosenByType[subtype] ?? 0) + 1;
+              if ((chosenByType[subtype] ?? 0) > 1) return;
+            }
           }
 
           s.deck.drawPile = s.deck.drawPile.filter(c => !selected.includes(c.instanceId));
@@ -3911,6 +3988,12 @@ export const useStore = create<Store>()(
               };
             }
           }
+        } else if (pending.type === 'summon_angel_place') {
+          const slotText = selected[0];
+          const parsedSlot = Number(slotText);
+          if (!Number.isInteger(parsedSlot) || parsedSlot < 0 || parsedSlot > 4) return;
+          const slot = parsedSlot as 0 | 1 | 2 | 3 | 4;
+          if (!completeSummonedAngelPlacement(s, pending.definitionId, pending.finish, slot)) return;
         }
 
           s.turn.lastPendingTakenSubtypeCounts = pendingTakenSubtypeCounts;
@@ -4435,6 +4518,57 @@ export const useStore = create<Store>()(
         s.progress.aberratedShards += evalResult.pendingReward.shards;
       });
       return { shards: evalResult.pendingReward.shards, streak: evalResult.pendingStreak };
+    },
+
+    setActiveEnigma: (enigmaId) => {
+      set(s => {
+        ensureEnigmaState(s.progress);
+        if (enigmaId === 'neutral-mystery') ensureNeutralMysteryInstance(s.progress);
+        if (!s.progress.enigmas.instances[enigmaId]) return;
+        s.progress.enigmas.activeEnigmaId = enigmaId;
+      });
+    },
+
+    sacrificeEnigmaOblivion: (enigmaId) => {
+      const state = get();
+      if (enigmaId !== 'neutral-mystery') return false;
+      const instance = state.progress.enigmas.instances[enigmaId];
+      if (!instance || instance.status === 'locked') return false;
+      if (instance.currentStepIndex !== 1) return false;
+      if ((state.progress.lifetimeOblivion ?? 0) < 50_000) return false;
+
+      set(s => {
+        const target = s.progress.enigmas.instances[enigmaId] ?? ensureNeutralMysteryInstance(s.progress);
+        if (!target) return;
+        if (target.currentStepIndex !== 1) return;
+        if ((s.progress.lifetimeOblivion ?? 0) < 50_000) return;
+        s.progress.lifetimeOblivion = (s.progress.lifetimeOblivion ?? 0) - 50_000;
+        target.stepsComplete[1] = true;
+        target.currentStepIndex = 2;
+      });
+      return true;
+    },
+
+    claimEnigmaReward: (enigmaId) => {
+      const state = get();
+      const instance = state.progress.enigmas.instances[enigmaId];
+      if (!instance) return false;
+      if (instance.status === 'completed') return false;
+      if (enigmaId === 'neutral-mystery') {
+        if (instance.currentStepIndex < 4) return false;
+        if (!instance.stepsComplete[3]) return false;
+      }
+
+      set(s => {
+        const target = s.progress.enigmas.instances[enigmaId];
+        if (!target || target.status === 'completed') return;
+        awardEnigmaReward(s.progress, enigmaId);
+        target.stepsComplete[4] = true;
+        target.currentStepIndex = Math.max(target.currentStepIndex, 5);
+        target.completedAt = Date.now();
+        pushRewardToast(s, `Enigma Complete: ${enigmaId === 'neutral-mystery' ? 'Neutral Mystery' : enigmaId}`);
+      });
+      return true;
     },
 
     claimQuest: (questId) => {

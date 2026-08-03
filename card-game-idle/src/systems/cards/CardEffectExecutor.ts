@@ -516,6 +516,35 @@ export class CardEffectExecutor {
           break;
         }
 
+        case 'search_deck_distinct_types': {
+          if (pendingEffect === null) {
+            const matching = mutableDeck.drawPile.filter(card => {
+              const d = CardRegistry.get(card.definitionId);
+              if (!d) return false;
+              if (sourceSetKey && 'Neutrality' !== sourceSetKey) return false;
+              return effect.filter.some(f =>
+                f === 'Seraphim' ? d.type === 'Seraphim'
+                : f === 'Cherubim' ? d.type === 'Cherubim'
+                : f === 'Ophanim' ? d.type === 'Ophanim'
+                : false
+              );
+            });
+            const takePerType = Math.max(1, effect.takePerType ?? 1);
+            const maxTake = effect.filter.length * takePerType;
+            if (matching.length > 0) {
+              pendingEffect = {
+                type: 'search_deck',
+                cards: matching,
+                filter: effect.filter,
+                take: Math.min(maxTake, matching.length),
+                minTake: 0,
+                distinctTypes: true,
+              };
+            }
+          }
+          break;
+        }
+
         case 'salvage_by_type': {
           if (pendingEffect === null) {
             const matching = mutableDeck.discardPile.filter(card => {

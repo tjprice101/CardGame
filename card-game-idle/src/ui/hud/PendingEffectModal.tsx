@@ -555,17 +555,23 @@ export default function PendingEffectModal() {
 
   if (pending.type === 'search_deck') {
     const maxTake = Math.min(pending.take, pending.cards.length);
+    const minTake = Math.max(0, Math.min(pending.minTake ?? maxTake, maxTake));
 
     const toggleCard = (id: string) => {
       setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : prev.length < maxTake ? [...prev, id] : prev);
     };
-    const canConfirm = selected.length >= maxTake;
+    const canConfirm = selected.length >= minTake && selected.length <= maxTake;
 
     return (
       <div className="anim-backdrop-fade" style={backdropStyle}>
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Search Deck</div>
-          <div style={styles.subtitle}>Choose {maxTake} card{maxTake === 1 ? '' : 's'} to add to your hand. Your deck will be shuffled afterward.</div>
+          <div style={styles.subtitle}>
+            {minTake === maxTake
+              ? `Choose ${maxTake} card${maxTake === 1 ? '' : 's'} to add to your hand.`
+              : `Choose ${minTake === 0 ? 'up to ' : ''}${maxTake} card${maxTake === 1 ? '' : 's'} to add to your hand.`}
+            {pending.distinctTypes ? ' You may only choose one card per subtype.' : ''} Your deck will be shuffled afterward.
+          </div>
           <div style={styles.cardGrid}>
             {pending.cards.map(c => {
               const isTake = selected.includes(c.instanceId);

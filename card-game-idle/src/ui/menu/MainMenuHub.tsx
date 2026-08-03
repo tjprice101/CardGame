@@ -417,9 +417,6 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Left: utility icon strip */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <IconStripButton glyph="⚙" ariaLabel="Settings" onClick={props.onSettings} theme={uiTheme} />
-          <IconStripButton glyph="🏆" ariaLabel="Achievements" onClick={props.onAchievements} dot theme={uiTheme} />
-          <IconStripButton glyph="✦" ariaLabel="Card-born Tier" onClick={props.onMastery} theme={uiTheme} />
-          <IconStripButton glyph="📜" ariaLabel="Quests" onClick={props.onQuests} theme={uiTheme} />
           <IconStripButton glyph="?" ariaLabel="Tutorial" onClick={props.onTutorial} theme={uiTheme} />
         </div>
         {/* Right: resource pills + clock */}
@@ -625,7 +622,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             size="hero"
             onClick={props.onBeginTurn}
             disabled={!canBeginTurn}
-            meta={canBeginTurn ? <span style={{ opacity: 0.85 }}>{deck.deckList.length} cards · ready to draw</span> : undefined}
+            meta={canBeginTurn ? <span style={{ opacity: 0.85 }}>Full Deck Ready</span> : undefined}
             clipPath="polygon(0 0, 100% 0, 100% calc(100% - 14px), calc(100% - 52px) 100%, 0 100%)"
             glassAngle={128}
           />
@@ -636,7 +633,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label={t('eternityWake') || "Eternity's Wake"}
-            caption="Boss challenges · Earn Eternals"
+            caption="Challenge story bosses to earn Eternal cards"
             size="half"
             onClick={props.onEternitysWake}
             clipPath="polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
@@ -647,7 +644,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label={t('infinitude') || 'Infinitude'}
-            caption="Merge Eternals into Infinites"
+            caption="Combine Eternal cards into Infinite-rarity cards"
             size="half"
             onClick={props.onInfinitude}
             clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
@@ -660,7 +657,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label="Card-bound Co-op"
-            caption="Global party · squad chat · activity invites"
+            caption="Team up with other players for co-op boss fights"
             tone="primary"
             size="wide"
             onClick={props.onCardBoundCoop}
@@ -688,7 +685,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label="Ascension"
-            caption="Endgame · Null Raids · Transcendent Cards"
+            caption="Push endgame raids to earn Transcendent cards"
             tone="primary"
             size="wide"
             onClick={props.onAscension}
@@ -703,7 +700,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             <TileButton
               theme={uiTheme}
               label={t('cardStore') || 'Store'}
-              caption="Open card packs"
+              caption="Open packs to expand your collection"
               tone="primary"
               size="wide"
               onClick={props.onCardStore}
@@ -715,7 +712,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             <TileButton
               theme={uiTheme}
               label={noDecklist ? '+ Deck' : 'Edit Deck'}
-              caption="Build & tune"
+              caption="Build and manage your deck"
               tone="cream"
               size="wide"
               onClick={props.onDeckBuilder}
@@ -727,7 +724,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             <TileButton
               theme={uiTheme}
               label="Viewer"
-              caption="Inspect your deck"
+              caption="Browse and inspect your full deck"
               tone="cream-dim"
               size="wide"
               onClick={props.onDeckViewer}
@@ -742,7 +739,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label="Quests"
-            caption="Daily & weekly goals"
+            caption="Daily, weekly goals and Enigmas"
             size="half"
             onClick={props.onQuests}
             clipPath="polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
@@ -764,7 +761,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label="Card-born Tier"
-            caption="Card-born progression"
+            caption="Track mastery milestones for every card"
             size="half"
             onClick={props.onMastery}
             clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
@@ -783,18 +780,6 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             onClick={props.onPlayerInfo}
             clipPath="polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
             glassAngle={128}
-          />
-        </div>
-        <div style={{ gridColumn: 'span 2', transform: 'rotate(-0.5deg)', filter: 'drop-shadow(0 4px 12px rgba(0,20,60,0.42))' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Settings"
-            caption="Audio · controls"
-            tone="cream-dim"
-            size="small"
-            onClick={props.onSettings}
-            clipPath="polygon(16px 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"
-            glassAngle={145}
           />
         </div>
         <div style={{ gridColumn: 'span 2', transform: 'rotate(0.8deg)', filter: 'drop-shadow(0 4px 12px rgba(0,20,60,0.42))' }}>

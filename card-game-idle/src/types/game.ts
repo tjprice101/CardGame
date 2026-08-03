@@ -94,10 +94,25 @@ export type PendingEffect =
       sourceInstanceId: string;
       bonusOblivionIfOphanim: number;
     }
+  | {
+      type: 'summon_angel_place';
+      definitionId: string;
+      finish: CardFinish;
+    }
   | { type: 'look_top_take'; cards: DeckCard[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'look_top_take_drop'; cards: DeckCard[]; take: number; drop: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'look_top_take_type'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
-  | { type: 'search_deck'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
+  | {
+      type: 'search_deck';
+      cards: DeckCard[];
+      filter: CardSubtypeFilter[];
+      take: number;
+      minTake?: number;
+      distinctTypes?: boolean;
+      sourceDefinitionId?: string;
+      sourceInstanceId?: string;
+      resolutionEffects?: CardEffect[];
+    }
   | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'embrace_infinite'; cards: DeckCard[]; allCards: DeckCard[]; keep: number };
 
@@ -209,6 +224,22 @@ export interface EventBossHpSnapshot {
   hp: number;
 }
 
+export type EnigmaStatus = 'locked' | 'acquired' | 'completed';
+
+export interface EnigmaInstance {
+  id: string;
+  status: EnigmaStatus;
+  currentStepIndex: number;
+  stepsComplete: boolean[];
+  acquiredAt?: number;
+  completedAt?: number;
+}
+
+export interface EnigmaState {
+  activeEnigmaId: string | null;
+  instances: Record<string, EnigmaInstance>;
+}
+
 export interface ProgressState {
   oblivion: number;
   /** Total Oblivion ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
@@ -243,6 +274,8 @@ export interface ProgressState {
   dailyLogin: DailyLoginState;
   /** Daily/weekly quest rotation + progress. Save v11. */
   quests: import('@/systems/progression/quests').QuestState;
+  /** Enigma quest-like milestones. Save v40. */
+  enigmas: EnigmaState;
   /** Achievement claim flags (one-shot shard rewards). Save v11. Keyed by title-badge id. */
   achievementClaims: Record<string, boolean>;
   /** Achievement unlock latches. Once true, the achievement stays unlocked. Save v25. */

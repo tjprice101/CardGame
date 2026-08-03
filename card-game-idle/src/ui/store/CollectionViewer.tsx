@@ -23,11 +23,11 @@ import { getEverCollectionCount, getEverHoloCount, getEverInfiniteCount } from '
 import CollectionCardDetail from './CollectionCardDetail';
 
 const RARITY_COLORS: Record<string, string> = {
-  Common: '#888', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
+  Common: '#888', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0', Enigmatic: '#b76cff', Transcendent: '#f2b24f',
 };
 
 const RARITY_ORDER: Record<string, number> = {
-  Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5,
+  Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5, Enigmatic: 6, Transcendent: 7,
 };
 
 const INFINITE_TYPE_ORDER = ['Ophanim', 'Seraphim', 'Cherubim', 'Angel'] as const;
@@ -171,7 +171,11 @@ export default function CollectionViewer({ onClose }: Props) {
   const lowerSearch = searchText.trim().toLowerCase();
   const filtered = useMemo(() => allCards.filter(entry => {
     if (activeElement !== 'All' && 'Neutrality' !== activeElement) return false;
-    if (rarityFilter !== 'All' && entry.card.rarity !== rarityFilter) return false;
+    if (rarityFilter === 'Transcendent') {
+      if (!isFeaturedCollectionTranscendent(entry.card)) return false;
+    } else if (rarityFilter !== 'All' && entry.card.rarity !== rarityFilter) {
+      return false;
+    }
     if (ownedFilter === 'owned' && entry.owned <= 0) return false;
     if (ownedFilter === 'missing' && entry.owned > 0) return false;
     if (lowerSearch) {
@@ -216,6 +220,11 @@ export default function CollectionViewer({ onClose }: Props) {
       }
     };
 
+    if (sortMode !== 'set') {
+      pushCardRows(filtered, 'all');
+      return rows;
+    }
+
     pushCardRows(standardFiltered, 'standard');
 
     if (infiniteSections.length > 0) {
@@ -248,7 +257,7 @@ export default function CollectionViewer({ onClose }: Props) {
     }
 
     return rows;
-  }, [featuredTranscendentFiltered, gridColumns, infiniteSections, standardFiltered]);
+  }, [featuredTranscendentFiltered, filtered, gridColumns, infiniteSections, sortMode, standardFiltered]);
 
   const renderCardEntry = (entry: CollectionVariantEntry) => {
     const { card, finish, owned } = entry;
@@ -550,7 +559,7 @@ export default function CollectionViewer({ onClose }: Props) {
         </div>
 
         <div style={{ display: 'flex', gap: 4, marginLeft: 6, flexWrap: 'wrap' }}>
-          {(['All', 'Common', 'Rare', 'Epic', 'Legendary', 'Eternal', 'Infinite'] as const).map(r => {
+          {(['All', 'Common', 'Rare', 'Epic', 'Legendary', 'Eternal', 'Infinite', 'Enigmatic', 'Transcendent'] as const).map(r => {
             const isActive = rarityFilter === r;
             const color = r === 'All' ? '#FFD700' : (RARITY_COLORS[r] ?? '#aaa');
             return (

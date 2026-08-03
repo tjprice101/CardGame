@@ -174,8 +174,8 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
           }}
         >
           <div
-            className={finish === 'holo' || card.rarity === 'Infinite' || card.rarity === 'Eternal'
-              ? `holofoil-menu-card${card.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${card.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
+            className={finish === 'holo' || card.rarity === 'Infinite' || card.rarity === 'Eternal' || card.rarity === 'Enigmatic'
+              ? `holofoil-menu-card${card.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${card.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${card.rarity === 'Enigmatic' ? ' enigmatic-holo-violet-hover' : ''}`
               : undefined}
             style={{
               width: '100%',

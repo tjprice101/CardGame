@@ -1,7 +1,7 @@
 import type { CardEffect, CherubimPassiveEffect } from './effects';
 
 export type CardType = 'Ophanim' | 'Cherubim' | 'Seraphim' | 'Angel';
-export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal' | 'Infinite';
+export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal' | 'Infinite' | 'Enigmatic';
 export type CardFinish = 'normal' | 'holo';
 export type CardFaceState = 'front' | 'back';
 

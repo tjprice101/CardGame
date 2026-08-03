@@ -341,7 +341,22 @@ export const neutralityPackOphanimCards: OphanimDefinition[] = [
       { type: 'salvage_by_type', filter: ['Seraphim', 'Cherubim'] }],
   }];
 
+export const neutralityEnigmaticCards: OphanimDefinition[] = [
+  {
+    definitionId: 'enig-neutralistic-flame',
+    type: 'Ophanim',
+    rarity: 'Enigmatic',
+    name: 'Neutralistic Flame',
+    description: 'On play from hand, search your deck for up to 1 Seraphim, 1 Ophanim, and 1 Cherubim, then add them to your hand.',
+    artKey: 'enig_neutralistic_flame',
+    effects: [
+      { type: 'search_deck_distinct_types', filter: ['Seraphim', 'Ophanim', 'Cherubim'], takePerType: 1 },
+    ],
+  },
+];
+
 export const neutralityCards = [
   ...neutralitySeraphims,
   ...neutralityOphanimCards,
-  ...neutralityPackOphanimCards];
+  ...neutralityPackOphanimCards,
+  ...neutralityEnigmaticCards];

@@ -38,7 +38,7 @@ interface FractureCardRow {
 }
 
 const FRACTURE_SHARD_YIELD: Record<CardRarity, number> = {
-  Common: 1, Rare: 3, Epic: 7, Legendary: 12, Eternal: 22, Infinite: 35,
+  Common: 1, Rare: 3, Epic: 7, Legendary: 12, Eternal: 22, Infinite: 35, Enigmatic: 50,
 };
 
 const RARITY_COLOR: Record<CardRarity, string> = {
@@ -48,6 +48,7 @@ const RARITY_COLOR: Record<CardRarity, string> = {
   Legendary: '#ffd700',
   Eternal: '#ffb347',
   Infinite: '#ffeaff',
+  Enigmatic: '#b76cff',
 };
 
 const FRACTURE_PRESETS = [1, 5, 10, 15] as const;

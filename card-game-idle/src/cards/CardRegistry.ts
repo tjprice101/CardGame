@@ -95,6 +95,7 @@ const CARD_RARITY_RANK: Record<CardRarity, number> = {
   Legendary: 3,
   Eternal: 4,
   Infinite: 5,
+  Enigmatic: 6,
 };
 
 function angelTierRank(def: Pick<CardDefinition, 'definitionId' | 'rarity'>): number {
@@ -1280,6 +1281,8 @@ function cherubimDurabilityFor(def: CherubimDefinition): number {
     case 'Legendary': return 8;
     case 'Eternal': return 10;
     case 'Infinite': return 15 + (hashString(`${def.definitionId}:durability`) % 6);
+    case 'Enigmatic': return 12;
+    default: return 6;
   }
 }
 

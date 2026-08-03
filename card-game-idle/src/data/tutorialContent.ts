@@ -53,6 +53,7 @@ export const RARITY_TIERS: RarityTier[] = [
   { name: 'Legendary', source: 'Card packs',                   description: 'Dramatic, deck-defining plays.' },
   { name: 'Eternal',  source: "Eternity's Wake boss drops",    description: 'Much stronger; higher patience thresholds, bigger Cherubim payouts, set-defining payoff lines.' },
   { name: 'Infinite', source: 'Infinitude crafting',           description: 'Apex tier. Forged by consuming specific Eternals. Patience thresholds 8+, Angels with patience-double abilities.' },
+  { name: 'Enigmatic', source: 'Enigma rewards',               description: 'Quest-like reward cards with shimmering purple-white holofoil treatment.' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -62,8 +63,8 @@ export const RARITY_TIERS: RarityTier[] = [
 export const SET_ENGINE_ENTRIES: SetEntry[] = [
   {
     name: 'Neutrality',
-    mechanic: 'Patience / Stasis',
-    body: 'Stockpile Patience on Seraphim, cash it out on attack. The friendly starter engine.',
+    mechanic: 'Patience / Equilibrium',
+    body: 'Stockpile Patience on Seraphim, cash it out on attack, and layer Equilibrium Sigils for the Eternal/Infinite engine path.',
   },
 ];
 

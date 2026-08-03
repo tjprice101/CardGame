@@ -20,6 +20,7 @@ export type ImmediateEffect =
   | { type: 'look_top_take_drop'; look: number; take: number; drop: number }
   | { type: 'look_top_take_type'; look: number; filter: CardSubtypeFilter[]; take?: number }
   | { type: 'search_deck_by_type'; filter: CardSubtypeFilter[] }
+  | { type: 'search_deck_distinct_types'; filter: CardSubtypeFilter[]; takePerType?: number }
   | { type: 'salvage_by_type'; filter: CardSubtypeFilter[] }
   | { type: 'salvage_by_type_count'; filter: CardSubtypeFilter[]; count: number }
   | { type: 'salvage_any' }

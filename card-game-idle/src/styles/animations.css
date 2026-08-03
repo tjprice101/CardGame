@@ -751,6 +751,39 @@ select {
   animation: holoEtchShift 0.78s linear infinite alternate;
 }
 
+.holofoil-menu-card.enigmatic-holo-violet-hover::before {
+  opacity: 0.62;
+  background-image:
+    linear-gradient(140deg, rgba(120, 74, 210, 0.34) 0%, rgba(238, 226, 255, 0.2) 30%, rgba(76, 34, 144, 0.26) 62%, rgba(245, 236, 255, 0.18) 100%),
+    radial-gradient(ellipse at 28% 18%, rgba(255, 255, 255, 0.3) 0%, rgba(236, 220, 255, 0.18) 28%, rgba(34, 14, 58, 0) 58%),
+    linear-gradient(128deg, rgba(150, 102, 236, 0.3) 0%, rgba(255, 255, 255, 0.1) 34%, rgba(56, 24, 106, 0.26) 62%, rgba(232, 216, 255, 0.16) 100%);
+  background-size: 170% 170%, 160% 160%, 130% 130%;
+  mix-blend-mode: luminosity;
+  animation: eternalSparkShift 1.22s linear infinite alternate;
+  animation-play-state: paused;
+}
+
+.holofoil-menu-card.enigmatic-holo-violet-hover::after {
+  opacity: 0.38;
+  background-image:
+    linear-gradient(110deg, rgba(255,255,255,0) 18%, rgba(242, 232, 255, 0.24) 34%, rgba(255,255,255,0.04) 48%, rgba(52, 24, 96, 0.24) 62%, rgba(255,255,255,0) 76%),
+    linear-gradient(164deg, rgba(112, 68, 196, 0.26) 0%, rgba(226, 206, 255, 0.1) 24%, rgba(42, 16, 82, 0.3) 52%, rgba(238, 222, 255, 0.16) 100%);
+  background-size: 178% 178%, 156% 156%;
+  mix-blend-mode: overlay;
+  animation: holoEtchShift 1.26s linear infinite alternate;
+  animation-play-state: paused;
+}
+
+.holofoil-menu-card.enigmatic-holo-violet-hover:hover::before {
+  opacity: 0.88;
+  animation: eternalSparkShift 0.8s linear infinite alternate;
+}
+
+.holofoil-menu-card.enigmatic-holo-violet-hover:hover::after {
+  opacity: 0.74;
+  animation: holoEtchShift 0.76s linear infinite alternate;
+}
+
 /* ── Gameplay holo overlay for hand and board visibility ── */
 .holofoil-live-card {
   position: relative;

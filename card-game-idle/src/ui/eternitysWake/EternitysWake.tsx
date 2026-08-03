@@ -394,8 +394,8 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                         justifyContent: 'center',
                       }}>
                         <div
-                          className={rewardDef.rarity === 'Infinite' || rewardDef.rarity === 'Eternal'
-                            ? `holofoil-menu-card${rewardDef.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${rewardDef.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}`
+                          className={rewardDef.rarity === 'Infinite' || rewardDef.rarity === 'Eternal' || rewardDef.rarity === 'Enigmatic'
+                            ? `holofoil-menu-card${rewardDef.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${rewardDef.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${rewardDef.rarity === 'Enigmatic' ? ' enigmatic-holo-violet-hover' : ''}`
                             : undefined}
                           style={{
                             width: REWARD_FACE_WIDTH,

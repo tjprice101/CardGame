@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 39;
+export const CURRENT_VERSION = 40;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -740,6 +740,21 @@ const migrations: Record<number, Migration> = {
       }
     }
 
+    return data;
+  },
+
+  40: (data) => {
+    // v40 adds persistent Enigma milestone state.
+    if (data.progress) {
+      const p = data.progress as unknown as Record<string, unknown>;
+      if (p.enigmas === undefined || p.enigmas === null) {
+        p.enigmas = { activeEnigmaId: null, instances: {} };
+      } else {
+        const enigmas = p.enigmas as Record<string, unknown>;
+        if (enigmas.activeEnigmaId === undefined) enigmas.activeEnigmaId = null;
+        if (!enigmas.instances || typeof enigmas.instances !== 'object') enigmas.instances = {};
+      }
+    }
     return data;
   },
 };

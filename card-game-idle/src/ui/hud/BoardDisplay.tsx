@@ -311,6 +311,7 @@ export default function BoardDisplay() {
     activateSeraphimAttack,
     activateAngelAttack,
     returnAngelToExtraDeck,
+    resolvePending,
   } = useStore.getState();
 
   const hand = deck.hand;
@@ -325,6 +326,7 @@ export default function BoardDisplay() {
     hasCherubimInHand: hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Cherubim'),
   }), [hand]);
   const canPlay = turn.phase === 'playing';
+  const pendingAngelSummon = turn.pendingEffect?.type === 'summon_angel_place';
 
   const prevSlotsRef = useRef(board.frontSlots);
   const [lastPlacedInstanceId, setLastPlacedInstanceId] = useState<string | null>(null);
@@ -372,6 +374,12 @@ export default function BoardDisplay() {
 
   function handleFrontSlotClick(slotIndex: 0 | 1 | 2 | 3 | 4) {
     const slot = board.frontSlots[slotIndex];
+    if (pendingAngelSummon) {
+      if (!slot && canPlay) {
+        resolvePending([String(slotIndex)]);
+      }
+      return;
+    }
     if (slot?.type === 'Seraphim') {
       if (canPlay) {
         setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
@@ -983,19 +991,23 @@ export default function BoardDisplay() {
           }
 
           // Empty front slot ? accepts Seraphim drops
-          const hasAction = canPlay && hasSeraphimInHand;
+          const hasAction = canPlay && (hasSeraphimInHand || pendingAngelSummon);
           const glowColor = isDragTarget
             ? 'rgba(244,244,248,0.95)'
-            : hasSeraphimInHand ? 'rgba(244,244,248,0.65)' : 'rgba(244,244,248,0.2)';
+            : pendingAngelSummon
+              ? 'rgba(232, 214, 255, 0.9)'
+              : hasSeraphimInHand ? 'rgba(244,244,248,0.65)' : 'rgba(244,244,248,0.2)';
           return (
             <div
               key={slotIndex}
               style={{
                 width: SLOT_W, height: SLOT_H,
-                border: isDragTarget ? '2px solid rgba(244,244,248,0.9)' : `1px solid rgba(244,244,248,${hasSeraphimInHand ? '0.4' : '0.22'})`,
+                border: isDragTarget ? '2px solid rgba(244,244,248,0.9)' : pendingAngelSummon ? '1px solid rgba(190, 138, 255, 0.8)' : `1px solid rgba(244,244,248,${hasSeraphimInHand ? '0.4' : '0.22'})`,
                 borderRadius: 12,
                 background: isDragTarget
                   ? 'rgba(244,244,248,0.1)'
+                  : pendingAngelSummon
+                    ? 'linear-gradient(180deg, rgba(86, 46, 150, 0.18) 0%, rgba(24, 12, 42, 0.12) 100%)'
                   : 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
                 backdropFilter: 'blur(3px)',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -1003,6 +1015,8 @@ export default function BoardDisplay() {
                 fontFamily: BODY_FONT, transition: 'border-color 0.2s, background 0.2s, box-shadow 0.2s',
                 boxShadow: isDragTarget
                   ? `0 0 0 2px rgba(255,215,0,0.45), 0 0 22px rgba(255,215,0,0.18)`
+                  : pendingAngelSummon
+                    ? '0 0 0 2px rgba(190, 138, 255, 0.28), 0 0 22px rgba(190, 138, 255, 0.18)'
                   : hasSeraphimInHand
                     ? `inset 0 1px 0 rgba(255,255,255,0.05), 0 0 14px rgba(255,215,0,0.06)`
                     : 'inset 0 1px 0 rgba(255,255,255,0.04)',
@@ -1050,7 +1064,7 @@ export default function BoardDisplay() {
               )}
               <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.4, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>✦</div>
               <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.4, transition: 'opacity 0.2s, color 0.2s' }}>
-                {isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
+                {pendingAngelSummon ? 'Choose Angel Slot' : isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
               </div>
             </div>
           );

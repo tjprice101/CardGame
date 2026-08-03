@@ -6,6 +6,8 @@ import {
   isQuestComplete,
   type QuestInstance,
 } from '@/systems/progression/quests';
+import { listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
+import { getActiveEnigmaInstance } from '@/data/enigmas/enigmaDefinitions';
 
 type QuestVisualPalette = {
   bg: string;
@@ -131,8 +133,14 @@ interface Props { onClose: () => void; }
 export default function QuestsModal({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const claimQuest = useStore(s => s.claimQuest);
+  const setActiveEnigma = useStore(s => s.setActiveEnigma);
+  const sacrificeEnigmaOblivion = useStore(s => s.sacrificeEnigmaOblivion);
+  const claimEnigmaReward = useStore(s => s.claimEnigmaReward);
   const { daily: dailyMs, weekly: weeklyMs } = useQuestCountdowns();
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'enigmas'>('daily');
   const C = buildQuestPalette(warmTheme);
+  const enigmaDefinitions = useMemo(() => listEnigmaDefinitions(), []);
+  const activeEnigma = getActiveEnigmaInstance(progress);
 
   const view = useMemo(() => {
     const snapshot = {
@@ -236,8 +244,39 @@ export default function QuestsModal({ onClose }: Props) {
           </button>
         </div>
 
-        {/* ── Body: two panels side by side ── */}
-        <div style={{ display: 'flex', flex: 1, overflow: 'hidden', gap: 0 }}>
+        <div style={{ display: 'flex', gap: 8, padding: '12px 28px 0', flexShrink: 0 }}>
+          {([
+            ['daily', 'Daily'],
+            ['weekly', 'Weekly'],
+            ['enigmas', 'Enigmas'],
+          ] as const).map(([key, label]) => {
+            const isActive = activeTab === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                style={{
+                  padding: '8px 14px',
+                  borderRadius: 999,
+                  border: `1px solid ${isActive ? withAlpha(C.accentDaily, 0.42) : C.border}`,
+                  background: isActive ? withAlpha(C.accentDaily, 0.14) : withAlpha(C.text, 0.04),
+                  color: isActive ? C.accentDaily : C.textMuted,
+                  fontFamily: uiTypography.display,
+                  fontSize: 11,
+                  letterSpacing: 1.2,
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                }}
+              >
+                {label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Body ── */}
+        {activeTab !== 'enigmas' ? (
+          <div style={{ display: 'flex', flex: 1, overflow: 'hidden', gap: 0 }}>
 
           {/* ── Daily column ── */}
           <div style={{
@@ -360,7 +399,23 @@ export default function QuestsModal({ onClose }: Props) {
               )}
             </div>
           </div>
-        </div>
+          </div>
+        ) : (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '18px 28px 24px' }}>
+            <EnigmasPanel
+              progress={progress}
+              enigmaDefinitions={enigmaDefinitions}
+              activeEnigmaId={activeEnigma?.id ?? progress.enigmas.activeEnigmaId}
+              onActivate={setActiveEnigma}
+              onSacrificeOblivion={sacrificeEnigmaOblivion}
+              onClaimReward={claimEnigmaReward}
+              accent={C.accentGold}
+              border={C.border}
+              text={C.text}
+              textMuted={C.textMuted}
+            />
+          </div>
+        )}
       </div>
 
       {/* Bottom accent */}
@@ -525,6 +580,131 @@ function QuestCard({ quest, accent, palette, onClaim }: {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate, onSacrificeOblivion, onClaimReward, accent, border, text, textMuted }: {
+  progress: ReturnType<typeof useStore.getState>['progress'];
+  enigmaDefinitions: ReturnType<typeof listEnigmaDefinitions>;
+  activeEnigmaId: string | null;
+  onActivate: (enigmaId: string) => void;
+  onSacrificeOblivion: (enigmaId: string) => boolean;
+  onClaimReward: (enigmaId: string) => boolean;
+  accent: string;
+  border: string;
+  text: string;
+  textMuted: string;
+}) {
+  return (
+    <div style={{ display: 'grid', gap: 14 }}>
+      {enigmaDefinitions.map(def => {
+        const instance = progress.enigmas.instances[def.id];
+        const status = instance?.status ?? 'locked';
+        const isActive = activeEnigmaId === def.id;
+        const currentStep = instance ? def.steps[Math.min(instance.currentStepIndex, def.steps.length - 1)] : def.steps[0];
+        const canSacrifice = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) === 1;
+        const canClaim = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) >= 4 && status !== 'completed';
+        return (
+          <div
+            key={def.id}
+            onClick={() => onActivate(def.id)}
+            style={{
+              aspectRatio: '16 / 9',
+              borderRadius: 16,
+              border: `1px solid ${isActive ? accent : border}`,
+              background: `linear-gradient(180deg, rgba(45, 28, 60, 0.72), rgba(18, 14, 28, 0.92))`,
+              boxShadow: isActive ? `0 0 24px rgba(183, 108, 255, 0.24)` : 'none',
+              padding: 18,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 10,
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
+              <div>
+                <div style={{ fontFamily: uiTypography.display, fontSize: 20, color: text }}>{def.title}</div>
+                <div style={{ fontSize: 12, color: textMuted, marginTop: 3 }}>{status === 'locked' ? def.hintText : currentStep?.description ?? def.hintText}</div>
+              </div>
+              <div style={{
+                padding: '4px 10px',
+                borderRadius: 999,
+                border: `1px solid ${isActive ? accent : border}`,
+                color: isActive ? accent : textMuted,
+                fontFamily: uiTypography.display,
+                fontSize: 11,
+                letterSpacing: 1,
+                textTransform: 'uppercase',
+              }}>
+                {status === 'completed' ? 'Completed' : isActive ? 'Active' : 'Inactive'}
+              </div>
+            </div>
+            <div style={{ display: 'grid', gap: 6, marginTop: 4 }}>
+              {def.steps.map((step, index) => {
+                const complete = !!instance?.stepsComplete[index];
+                const current = instance?.currentStepIndex === index;
+                return (
+                  <div key={step.title} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: complete ? textMuted : text }}>
+                    <div style={{ width: 20, flexShrink: 0, color: current ? accent : textMuted, fontWeight: 700 }}>{index + 1}.</div>
+                    <div>
+                      <div style={{ fontFamily: uiTypography.display, fontSize: 13 }}>{step.title}</div>
+                      <div style={{ fontSize: 11, color: textMuted, marginTop: 2 }}>{step.description}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {(canSacrifice || canClaim) && (
+              <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                {canSacrifice && (
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSacrificeOblivion(def.id);
+                    }}
+                    disabled={(progress.lifetimeOblivion ?? 0) < 50_000}
+                    style={{
+                      borderRadius: 8,
+                      border: `1px solid ${withAlpha(accent, 0.44)}`,
+                      background: withAlpha(accent, 0.16),
+                      color: text,
+                      fontFamily: uiTypography.display,
+                      fontSize: 11,
+                      letterSpacing: 0.8,
+                      padding: '6px 12px',
+                      cursor: (progress.lifetimeOblivion ?? 0) >= 50_000 ? 'pointer' : 'default',
+                    }}
+                  >
+                    Sacrifice 50,000 Oblivion
+                  </button>
+                )}
+                {canClaim && (
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onClaimReward(def.id);
+                    }}
+                    style={{
+                      borderRadius: 8,
+                      border: `1px solid ${withAlpha(accent, 0.5)}`,
+                      background: `linear-gradient(135deg, ${withAlpha(accent, 0.85)}, ${withAlpha(accent, 0.56)})`,
+                      color: '#201308',
+                      fontFamily: uiTypography.display,
+                      fontSize: 11,
+                      letterSpacing: 0.8,
+                      padding: '6px 12px',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Claim Reward
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
