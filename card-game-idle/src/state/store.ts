@@ -3062,8 +3062,6 @@ export const useStore = create<Store>()(
           if ((boardCount[id] ?? 0) < needed) return;
         }
 
-        if (!s.board.frontSlots.some(slot => slot === null)) return;
-
         if (angelDef.extraSummonConditions) {
           for (const cond of angelDef.extraSummonConditions) {
             if (cond.type === 'cherubim_active_gte' && s.board.backSlots.filter(sl => sl !== null).length < cond.value) return;
@@ -3095,6 +3093,7 @@ export const useStore = create<Store>()(
         }
         recordLossEvent(s, toSacrifice.map(material => ({ definitionId: material.definitionId })), 'sacrifice');
         s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
+        if (!s.board.frontSlots.some(slot => slot === null)) return;
 
         // Consume this copy only after all requirements pass.
         const deckIdx = s.deck.extraDeck.findIndex(

@@ -410,7 +410,6 @@ export default function QuestsModal({ onClose }: Props) {
               onSacrificeOblivion={sacrificeEnigmaOblivion}
               onClaimReward={claimEnigmaReward}
               accent={C.accentGold}
-              border={C.border}
               text={C.text}
               textMuted={C.textMuted}
             />
@@ -584,7 +583,7 @@ function QuestCard({ quest, accent, palette, onClaim }: {
   );
 }
 
-function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate, onSacrificeOblivion, onClaimReward, accent, border, text, textMuted }: {
+function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate, onSacrificeOblivion, onClaimReward, accent, text, textMuted }: {
   progress: ReturnType<typeof useStore.getState>['progress'];
   enigmaDefinitions: ReturnType<typeof listEnigmaDefinitions>;
   activeEnigmaId: string | null;
@@ -592,7 +591,6 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
   onSacrificeOblivion: (enigmaId: string) => boolean;
   onClaimReward: (enigmaId: string) => boolean;
   accent: string;
-  border: string;
   text: string;
   textMuted: string;
 }) {
@@ -602,6 +600,8 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
         const instance = progress.enigmas.instances[def.id];
         const status = instance?.status ?? 'locked';
         const isActive = activeEnigmaId === def.id;
+        const isLocked = status === 'locked';
+        const goldAccent = '#f4cf6b';
         const currentStep = instance ? def.steps[Math.min(instance.currentStepIndex, def.steps.length - 1)] : def.steps[0];
         const canSacrifice = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) === 1;
         const canClaim = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) >= 4 && status !== 'completed';
@@ -610,52 +610,63 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
             key={def.id}
             onClick={() => onActivate(def.id)}
             style={{
-              aspectRatio: '16 / 9',
+              aspectRatio: isLocked ? '16 / 6.8' : '16 / 9',
               borderRadius: 16,
-              border: `1px solid ${isActive ? accent : border}`,
-              background: `linear-gradient(180deg, rgba(45, 28, 60, 0.72), rgba(18, 14, 28, 0.92))`,
-              boxShadow: isActive ? `0 0 24px rgba(183, 108, 255, 0.24)` : 'none',
-              padding: 18,
+              border: `1px solid ${isActive ? goldAccent : isLocked ? withAlpha(goldAccent, 0.55) : withAlpha(goldAccent, 0.72)}`,
+              background: isLocked
+                ? `linear-gradient(180deg, rgba(70, 50, 8, 0.76), rgba(20, 16, 28, 0.94)), radial-gradient(circle at 18% 12%, rgba(255, 224, 149, 0.16) 0%, rgba(255, 224, 149, 0) 34%), radial-gradient(circle at 86% 10%, rgba(255, 246, 220, 0.14) 0%, rgba(255, 246, 220, 0) 28%)`
+                : `linear-gradient(180deg, rgba(45, 28, 60, 0.72), rgba(18, 14, 28, 0.92))`,
+              boxShadow: isActive
+                ? `0 0 24px rgba(244, 207, 107, 0.34), 0 0 0 1px rgba(255, 240, 185, 0.18) inset`
+                : isLocked
+                  ? '0 0 0 1px rgba(244, 207, 107, 0.08) inset, 0 0 24px rgba(244, 207, 107, 0.08)'
+                  : `0 0 0 1px rgba(244, 207, 107, 0.16) inset, 0 0 20px rgba(244, 207, 107, 0.12)`,
+              padding: isLocked ? 14 : 18,
               display: 'flex',
               flexDirection: 'column',
               gap: 10,
               cursor: 'pointer',
+              transform: isLocked ? 'scale(0.96)' : 'scale(1)',
+              transition: 'transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
               <div>
-                <div style={{ fontFamily: uiTypography.display, fontSize: 20, color: text }}>{def.title}</div>
-                <div style={{ fontSize: 12, color: textMuted, marginTop: 3 }}>{status === 'locked' ? def.hintText : currentStep?.description ?? def.hintText}</div>
+                <div style={{ fontFamily: uiTypography.display, fontSize: isLocked ? 18 : 20, color: isLocked ? '#fff0bf' : '#fff0d1', textShadow: '0 0 14px rgba(244, 207, 107, 0.22)' }}>{def.title}</div>
+                <div style={{ fontSize: isLocked ? 12 : 12, color: isLocked ? '#f4d78e' : textMuted, marginTop: 3, lineHeight: 1.45 }}>{isLocked ? def.hintText : currentStep?.description ?? def.hintText}</div>
               </div>
               <div style={{
                 padding: '4px 10px',
                 borderRadius: 999,
-                border: `1px solid ${isActive ? accent : border}`,
-                color: isActive ? accent : textMuted,
+                border: `1px solid ${isActive ? goldAccent : isLocked ? 'rgba(244, 207, 107, 0.26)' : 'rgba(244, 207, 107, 0.42)'}`,
+                color: isActive ? '#ffe39d' : isLocked ? '#f4d78e' : '#ffefb7',
                 fontFamily: uiTypography.display,
                 fontSize: 11,
                 letterSpacing: 1,
                 textTransform: 'uppercase',
+                background: isLocked ? 'rgba(64, 44, 6, 0.24)' : 'transparent',
               }}>
                 {status === 'completed' ? 'Completed' : isActive ? 'Active' : 'Inactive'}
               </div>
             </div>
-            <div style={{ display: 'grid', gap: 6, marginTop: 4 }}>
-              {def.steps.map((step, index) => {
-                const complete = !!instance?.stepsComplete[index];
-                const current = instance?.currentStepIndex === index;
-                return (
-                  <div key={step.title} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: complete ? textMuted : text }}>
-                    <div style={{ width: 20, flexShrink: 0, color: current ? accent : textMuted, fontWeight: 700 }}>{index + 1}.</div>
-                    <div>
-                      <div style={{ fontFamily: uiTypography.display, fontSize: 13 }}>{step.title}</div>
-                      <div style={{ fontSize: 11, color: textMuted, marginTop: 2 }}>{step.description}</div>
+            {!isLocked && (
+              <div style={{ display: 'grid', gap: 6, marginTop: 4 }}>
+                {def.steps.map((step, index) => {
+                  const complete = !!instance?.stepsComplete[index];
+                  const current = instance?.currentStepIndex === index;
+                  return (
+                    <div key={step.title} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: complete ? textMuted : text }}>
+                      <div style={{ width: 20, flexShrink: 0, color: current ? accent : textMuted, fontWeight: 700 }}>{index + 1}.</div>
+                      <div>
+                        <div style={{ fontFamily: uiTypography.display, fontSize: 13 }}>{step.title}</div>
+                        <div style={{ fontSize: 11, color: textMuted, marginTop: 2 }}>{step.description}</div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-            {(canSacrifice || canClaim) && (
+                  );
+                })}
+              </div>
+            )}
+            {!isLocked && (canSacrifice || canClaim) && (
               <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                 {canSacrifice && (
                   <button

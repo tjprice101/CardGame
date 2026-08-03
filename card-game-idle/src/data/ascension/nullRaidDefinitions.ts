@@ -50,9 +50,9 @@ export interface NullRaidDefinition {
 // ── Null Raid Bosses ────────────────────────────────────────────────────────
 // These bosses are exclusively used inside Null Raids and do not appear
 // in Eternity's Wake tabs. Their HP continues the endgame curve using a
-// linear ramp from the first to last encounter.
-const NULL_RAID_FIRST_BOSS_HP = 112_500_000;
-const NULL_RAID_FINAL_BOSS_HP = 337_500_000;
+// linear ramp from 220M to 1.12B.
+const NULL_RAID_FIRST_BOSS_HP = 220_000_000;
+const NULL_RAID_FINAL_BOSS_HP = 1_120_000_000;
 
 function roundNullRaidHp(value: number): number {
   return Math.max(1, Math.round(value / 5_000_000) * 5_000_000);
