@@ -61,10 +61,9 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
         targetDefinitionId: AEGIS_OF_PRESENCE_ID,
       },
       {
-        title: 'Form the Silent Pattern',
-        description: 'Place the formation: Null Seraphim, The Beginning and the End, Null Seraphim, Aegis of Presence, Aegis of Equilibrium.',
-        kind: 'match_formation',
-        boardPattern: [NULL_SERAPHIM_ID, TBATE_ID, NULL_SERAPHIM_ID, AEGIS_OF_PRESENCE_ID, AEGIS_OF_EQUILIBRIUM_ID],
+        title: 'Field Null and Equilibrium',
+        description: 'Have 3 Null Seraphims and 2 Aegis of Equilibrium on your board at the same time during the same turn.',
+        kind: 'count_active_cards',
       },
       {
         title: 'Claim the Reward',

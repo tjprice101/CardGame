@@ -370,10 +370,10 @@ export default function DeckBuilder({ onClose }: Props) {
   const isEditingStarter = activeDeck?.isStarter ?? false;
 
   const [deckList, setDeckList] = useState<DeckEntry[]>(
-    currentDeck.deckList.length > 0 ? [...currentDeck.deckList] : []
+    activeDeck?.deckList?.length ? [...activeDeck.deckList] : (currentDeck.deckList.length > 0 ? [...currentDeck.deckList] : [])
   );
   const [extraDeckList, setExtraDeckList] = useState<ExtraDeckEntry[]>(
-    currentDeck.extraDeck ? [...currentDeck.extraDeck] : []
+    activeDeck?.extraDeck ? [...activeDeck.extraDeck] : (currentDeck.extraDeck ? [...currentDeck.extraDeck] : [])
   );
   const [elementFilter, setElementFilter] = useState<string | null>(null);
   const [saveMode, setSaveMode] = useState(false);

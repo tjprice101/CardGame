@@ -250,6 +250,7 @@ export default function QuestsModal({ onClose }: Props) {
             ['enigmas', 'Enigmas'],
           ] as const).map(([key, label]) => {
             const isActive = activeTab === key;
+            const isEnigmasTab = key === 'enigmas';
             return (
               <button
                 key={key}
@@ -257,9 +258,15 @@ export default function QuestsModal({ onClose }: Props) {
                 style={{
                   padding: '8px 14px',
                   borderRadius: 999,
-                  border: `1px solid ${isActive ? withAlpha(C.accentDaily, 0.42) : C.border}`,
-                  background: isActive ? withAlpha(C.accentDaily, 0.14) : withAlpha(C.text, 0.04),
-                  color: isActive ? C.accentDaily : C.textMuted,
+                  border: `1px solid ${isEnigmasTab
+                    ? (isActive ? 'rgba(244, 207, 107, 0.7)' : 'rgba(244, 207, 107, 0.35)')
+                    : (isActive ? withAlpha(C.accentDaily, 0.42) : C.border)}`,
+                  background: isEnigmasTab
+                    ? (isActive
+                      ? 'linear-gradient(180deg, rgba(92, 62, 19, 0.8), rgba(54, 37, 93, 0.86))'
+                      : 'linear-gradient(180deg, rgba(41, 30, 64, 0.52), rgba(22, 16, 36, 0.62))')
+                    : (isActive ? withAlpha(C.accentDaily, 0.14) : withAlpha(C.text, 0.04)),
+                  color: isEnigmasTab ? '#f9e4a9' : (isActive ? C.accentDaily : C.textMuted),
                   fontFamily: uiTypography.display,
                   fontSize: 11,
                   letterSpacing: 1.2,
@@ -400,7 +407,13 @@ export default function QuestsModal({ onClose }: Props) {
           </div>
           </div>
         ) : (
-          <div style={{ flex: 1, overflowY: 'auto', padding: '18px 28px 24px' }}>
+          <div style={{
+            flex: 1,
+            overflowY: 'auto',
+            padding: '18px 28px 24px',
+            background: 'radial-gradient(circle at 16% -12%, rgba(245, 212, 122, 0.12) 0%, rgba(245, 212, 122, 0) 42%), radial-gradient(circle at 86% 2%, rgba(170, 120, 255, 0.14) 0%, rgba(170, 120, 255, 0) 38%), linear-gradient(180deg, rgba(25, 18, 44, 0.94) 0%, rgba(16, 12, 30, 0.96) 100%)',
+            borderTop: '1px solid rgba(244, 207, 107, 0.2)',
+          }}>
             <EnigmasPanel
               progress={progress}
               enigmaDefinitions={enigmaDefinitions}
@@ -408,9 +421,6 @@ export default function QuestsModal({ onClose }: Props) {
               onActivate={setActiveEnigma}
               onSacrificeOblivion={sacrificeEnigmaOblivion}
               onClaimReward={claimEnigmaReward}
-              accent={C.accentGold}
-              text={C.text}
-              textMuted={C.textMuted}
             />
           </div>
         )}
@@ -582,24 +592,19 @@ function QuestCard({ quest, accent, palette, onClaim }: {
   );
 }
 
-function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate, onSacrificeOblivion, onClaimReward, accent, text, textMuted }: {
+function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate, onSacrificeOblivion, onClaimReward }: {
   progress: ReturnType<typeof useStore.getState>['progress'];
   enigmaDefinitions: ReturnType<typeof listEnigmaDefinitions>;
   activeEnigmaId: string | null;
   onActivate: (enigmaId: string) => void;
   onSacrificeOblivion: (enigmaId: string) => boolean;
   onClaimReward: (enigmaId: string) => boolean;
-  accent: string;
-  text: string;
-  textMuted: string;
 }) {
-  const [expandedEnigmaId, setExpandedEnigmaId] = useState<string | null>(activeEnigmaId);
-
-  useEffect(() => {
-    if (!expandedEnigmaId && activeEnigmaId) {
-      setExpandedEnigmaId(activeEnigmaId);
-    }
-  }, [activeEnigmaId, expandedEnigmaId]);
+  const [expandedEnigmaId, setExpandedEnigmaId] = useState<string | null>(null);
+  const enigmaAccent = '#f4cf6b';
+  const enigmaAccentSoft = '#ffe9b3';
+  const enigmaText = '#f8f0de';
+  const enigmaTextMuted = '#d5c3eb';
 
   return (
     <div style={{ display: 'grid', gap: 14 }}>
@@ -609,7 +614,6 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
         const isActive = activeEnigmaId === def.id;
         const isLocked = status === 'locked';
         const isExpanded = expandedEnigmaId === def.id;
-        const goldAccent = '#f4cf6b';
         const currentStep = instance ? def.steps[Math.min(instance.currentStepIndex, def.steps.length - 1)] : def.steps[0];
         const canSacrifice = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) === 1;
         const canClaim = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) >= 4 && status !== 'completed';
@@ -623,10 +627,10 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
             style={{
               minHeight: isExpanded && !isLocked ? 210 : 84,
               borderRadius: 16,
-              border: `1px solid ${isActive ? goldAccent : isLocked ? withAlpha(goldAccent, 0.55) : withAlpha(goldAccent, 0.72)}`,
+              border: `1px solid ${isActive ? enigmaAccent : isLocked ? withAlpha(enigmaAccent, 0.55) : withAlpha(enigmaAccent, 0.72)}`,
               background: isLocked
                 ? `linear-gradient(180deg, rgba(70, 50, 8, 0.76), rgba(20, 16, 28, 0.94)), radial-gradient(circle at 18% 12%, rgba(255, 224, 149, 0.16) 0%, rgba(255, 224, 149, 0) 34%), radial-gradient(circle at 86% 10%, rgba(255, 246, 220, 0.14) 0%, rgba(255, 246, 220, 0) 28%)`
-                : `linear-gradient(180deg, rgba(45, 28, 60, 0.72), rgba(18, 14, 28, 0.92))`,
+                : `linear-gradient(180deg, rgba(58, 38, 88, 0.74), rgba(20, 14, 36, 0.94))`,
               boxShadow: isActive
                 ? `0 0 24px rgba(244, 207, 107, 0.34), 0 0 0 1px rgba(255, 240, 185, 0.18) inset`
                 : isLocked
@@ -644,15 +648,15 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontFamily: uiTypography.display, fontSize: isLocked ? 18 : 20, color: isLocked ? '#fff0bf' : '#fff0d1', textShadow: '0 0 14px rgba(244, 207, 107, 0.22)' }}>{def.title}</div>
-                <div style={{ fontSize: 12, color: isLocked ? '#f4d78e' : textMuted, marginTop: 3, lineHeight: 1.45 }}>
+                <div style={{ fontSize: 12, color: isLocked ? '#f4d78e' : enigmaTextMuted, marginTop: 3, lineHeight: 1.45 }}>
                   {isLocked ? def.hintText : currentStep?.description ?? def.hintText}
                 </div>
               </div>
               <div style={{
                 padding: '4px 10px',
                 borderRadius: 999,
-                border: `1px solid ${isActive ? goldAccent : isLocked ? 'rgba(244, 207, 107, 0.26)' : 'rgba(244, 207, 107, 0.42)'}`,
-                color: isActive ? '#ffe39d' : isLocked ? '#f4d78e' : '#ffefb7',
+                border: `1px solid ${isActive ? enigmaAccent : isLocked ? 'rgba(244, 207, 107, 0.26)' : 'rgba(244, 207, 107, 0.42)'}`,
+                color: isActive ? enigmaAccentSoft : isLocked ? '#f4d78e' : '#ffefb7',
                 fontFamily: uiTypography.display,
                 fontSize: 11,
                 letterSpacing: 1,
@@ -668,11 +672,11 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
                   const complete = !!instance?.stepsComplete[index];
                   const current = instance?.currentStepIndex === index;
                   return (
-                    <div key={step.title} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: complete ? textMuted : text }}>
-                      <div style={{ width: 20, flexShrink: 0, color: current ? accent : textMuted, fontWeight: 700 }}>{index + 1}.</div>
+                    <div key={step.title} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', color: complete ? enigmaTextMuted : enigmaText }}>
+                      <div style={{ width: 20, flexShrink: 0, color: current ? enigmaAccent : enigmaTextMuted, fontWeight: 700 }}>{index + 1}.</div>
                       <div>
                         <div style={{ fontFamily: uiTypography.display, fontSize: 13 }}>{step.title}</div>
-                        <div style={{ fontSize: 11, color: textMuted, marginTop: 2 }}>{step.description}</div>
+                        <div style={{ fontSize: 11, color: enigmaTextMuted, marginTop: 2 }}>{step.description}</div>
                       </div>
                     </div>
                   );
@@ -690,9 +694,9 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
                     disabled={(progress.lifetimeOblivion ?? 0) < 50_000}
                     style={{
                       borderRadius: 8,
-                      border: `1px solid ${withAlpha(accent, 0.44)}`,
-                      background: withAlpha(accent, 0.16),
-                      color: text,
+                      border: `1px solid ${withAlpha(enigmaAccent, 0.5)}`,
+                      background: withAlpha(enigmaAccent, 0.16),
+                      color: enigmaText,
                       fontFamily: uiTypography.display,
                       fontSize: 11,
                       letterSpacing: 0.8,
@@ -711,8 +715,8 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
                     }}
                     style={{
                       borderRadius: 8,
-                      border: `1px solid ${withAlpha(accent, 0.5)}`,
-                      background: `linear-gradient(135deg, ${withAlpha(accent, 0.85)}, ${withAlpha(accent, 0.56)})`,
+                      border: `1px solid ${withAlpha(enigmaAccent, 0.5)}`,
+                      background: `linear-gradient(135deg, ${withAlpha(enigmaAccent, 0.85)}, ${withAlpha(enigmaAccent, 0.56)})`,
                       color: '#201308',
                       fontFamily: uiTypography.display,
                       fontSize: 11,

@@ -8,7 +8,6 @@ import {
   TBATE_ID,
   getEnigmaDefinition,
   isNeutralMysteryAcquired,
-  isNeutralMysteryBoardPattern,
 } from '@/data/enigmas/enigmaDefinitions';
 
 export interface EnigmaProgressResult {
@@ -72,7 +71,9 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
   }
 
   if (instance.currentStepIndex === 3) {
-    if (isNeutralMysteryBoardPattern(state.board)) {
+    const nullSeraphimCount = state.board.frontSlots.filter(slot => slot?.definitionId === NULL_SERAPHIM_ID).length;
+    const equilibriumCount = state.board.frontSlots.filter(slot => slot?.definitionId === AEGIS_OF_EQUILIBRIUM_ID).length;
+    if (nullSeraphimCount >= 3 && equilibriumCount >= 2) {
       instance.stepsComplete[3] = true;
       instance.currentStepIndex = 4;
     }
