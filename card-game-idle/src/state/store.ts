@@ -3113,6 +3113,9 @@ export const useStore = create<Store>()(
           const material = s.board.frontSlots[slotIdx];
           if (material?.type === 'Seraphim') {
             s.deck.discardPile.push(toDeckCard(material));
+          } else if (material?.type === 'Angel') {
+            // Angel ritual materials return to the extra deck rather than being lost.
+            s.deck.extraDeck.push({ definitionId: material.definitionId, finish: material.finish });
           }
           (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[slotIdx] = null;
         }

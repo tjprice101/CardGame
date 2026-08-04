@@ -34,6 +34,7 @@ export const NEUTRAL_MYSTERY_ID = 'neutral-mystery';
 export const TBATE_ID = 'angel-neutral-beginning';
 export const AEGIS_OF_PRESENCE_ID = 'angel-neutral-presence';
 export const AEGIS_OF_EQUILIBRIUM_ID = 'angel-neutral-equilibrium';
+export const EQUILIBRIUM_SERAPHIM_ID = 'ser-neutral-equilibrium';
 export const NULL_SERAPHIM_ID = 'ser-neutral-null';
 
 export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
@@ -62,7 +63,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       },
       {
         title: 'Field Null and Equilibrium',
-        description: 'Have 3 Null Seraphims and 2 Aegis of Equilibrium on your board at the same time during the same turn.',
+        description: 'Have 3 Null Seraphims and 2 Equilibrium Seraphims on your board at the same time during the same turn.',
         kind: 'count_active_cards',
       },
       {

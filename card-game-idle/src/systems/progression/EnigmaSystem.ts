@@ -3,6 +3,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import {
   AEGIS_OF_EQUILIBRIUM_ID,
   AEGIS_OF_PRESENCE_ID,
+  EQUILIBRIUM_SERAPHIM_ID,
   ENIGMA_DEFINITIONS,
   NULL_SERAPHIM_ID,
   TBATE_ID,
@@ -72,7 +73,7 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
 
   if (instance.currentStepIndex === 3) {
     const nullSeraphimCount = state.board.frontSlots.filter(slot => slot?.definitionId === NULL_SERAPHIM_ID).length;
-    const equilibriumCount = state.board.frontSlots.filter(slot => slot?.definitionId === AEGIS_OF_EQUILIBRIUM_ID).length;
+    const equilibriumCount = state.board.frontSlots.filter(slot => slot?.definitionId === EQUILIBRIUM_SERAPHIM_ID).length;
     if (nullSeraphimCount >= 3 && equilibriumCount >= 2) {
       instance.stepsComplete[3] = true;
       instance.currentStepIndex = 4;
