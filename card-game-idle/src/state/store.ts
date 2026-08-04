@@ -59,6 +59,7 @@ import {
   evaluateNeutralMysteryProgress,
   awardEnigmaReward,
 } from '@/systems/progression/EnigmaSystem';
+import { getEnigmaDefinition } from '@/data/enigmas/enigmaDefinitions';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import {
   getAchievementShardReward,
@@ -1563,8 +1564,20 @@ function pushRewardToast(s: Store, message: string): void {
   if (s.toasts.length > 8) s.toasts.splice(0, s.toasts.length - 8);
 }
 
+function pushEnigmaStepToast(s: Store, enigmaId: string, stepIndex: number): void {
+  const definition = getEnigmaDefinition(enigmaId);
+  const step = definition?.steps[stepIndex];
+  if (!definition || !step) return;
+  pushRewardToast(s, `Enigma Step Complete: ${definition.title} - ${step.title}`);
+}
+
 function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void {
   ensureEnigmaState(s.progress);
+  const previousSteps = new Map<string, boolean[]>();
+  for (const [id, instance] of Object.entries(s.progress.enigmas.instances)) {
+    previousSteps.set(id, instance.stepsComplete.slice());
+  }
+
   if (checkAcquisition) {
     const acquisition = evaluateEnigmaAcquisition({ board: s.board, progress: s.progress });
     if (acquisition.newlyAcquired.length > 0) {
@@ -1580,6 +1593,18 @@ function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void 
   }
 
   evaluateNeutralMysteryProgress({ board: s.board, progress: s.progress });
+
+  for (const [id, instance] of Object.entries(s.progress.enigmas.instances)) {
+    const before = previousSteps.get(id) ?? [];
+    const lastIndex = instance.stepsComplete.length - 1;
+    for (let stepIndex = 1; stepIndex < lastIndex; stepIndex += 1) {
+      const wasComplete = !!before[stepIndex];
+      const isComplete = !!instance.stepsComplete[stepIndex];
+      if (!wasComplete && isComplete) {
+        pushEnigmaStepToast(s, id, stepIndex);
+      }
+    }
+  }
 }
 
 function completeSummonedAngelPlacement(
@@ -4544,6 +4569,7 @@ export const useStore = create<Store>()(
         s.progress.lifetimeOblivion = (s.progress.lifetimeOblivion ?? 0) - 50_000;
         target.stepsComplete[1] = true;
         target.currentStepIndex = 2;
+        pushEnigmaStepToast(s, enigmaId, 1);
       });
       return true;
     },

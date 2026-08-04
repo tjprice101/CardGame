@@ -137,7 +137,7 @@ export default function QuestsModal({ onClose }: Props) {
   const sacrificeEnigmaOblivion = useStore(s => s.sacrificeEnigmaOblivion);
   const claimEnigmaReward = useStore(s => s.claimEnigmaReward);
   const { daily: dailyMs, weekly: weeklyMs } = useQuestCountdowns();
-  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'enigmas'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'enigmas'>('daily');
   const C = buildQuestPalette(warmTheme);
   const enigmaDefinitions = useMemo(() => listEnigmaDefinitions(), []);
   const activeEnigma = getActiveEnigmaInstance(progress);
@@ -247,7 +247,6 @@ export default function QuestsModal({ onClose }: Props) {
         <div style={{ display: 'flex', gap: 8, padding: '12px 28px 0', flexShrink: 0 }}>
           {([
             ['daily', 'Daily'],
-            ['weekly', 'Weekly'],
             ['enigmas', 'Enigmas'],
           ] as const).map(([key, label]) => {
             const isActive = activeTab === key;
@@ -594,6 +593,14 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
   text: string;
   textMuted: string;
 }) {
+  const [expandedEnigmaId, setExpandedEnigmaId] = useState<string | null>(activeEnigmaId);
+
+  useEffect(() => {
+    if (!expandedEnigmaId && activeEnigmaId) {
+      setExpandedEnigmaId(activeEnigmaId);
+    }
+  }, [activeEnigmaId, expandedEnigmaId]);
+
   return (
     <div style={{ display: 'grid', gap: 14 }}>
       {enigmaDefinitions.map(def => {
@@ -601,6 +608,7 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
         const status = instance?.status ?? 'locked';
         const isActive = activeEnigmaId === def.id;
         const isLocked = status === 'locked';
+        const isExpanded = expandedEnigmaId === def.id;
         const goldAccent = '#f4cf6b';
         const currentStep = instance ? def.steps[Math.min(instance.currentStepIndex, def.steps.length - 1)] : def.steps[0];
         const canSacrifice = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) === 1;
@@ -608,9 +616,12 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
         return (
           <div
             key={def.id}
-            onClick={() => onActivate(def.id)}
+            onClick={() => {
+              onActivate(def.id);
+              setExpandedEnigmaId(prev => prev === def.id ? null : def.id);
+            }}
             style={{
-              aspectRatio: isLocked ? '16 / 6.8' : '16 / 9',
+              minHeight: isExpanded && !isLocked ? 210 : 84,
               borderRadius: 16,
               border: `1px solid ${isActive ? goldAccent : isLocked ? withAlpha(goldAccent, 0.55) : withAlpha(goldAccent, 0.72)}`,
               background: isLocked
@@ -626,14 +637,16 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
               flexDirection: 'column',
               gap: 10,
               cursor: 'pointer',
-              transform: isLocked ? 'scale(0.96)' : 'scale(1)',
-              transition: 'transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease',
+              transform: isLocked ? 'scale(0.98)' : 'scale(1)',
+              transition: 'transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, min-height 0.2s ease',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
               <div>
                 <div style={{ fontFamily: uiTypography.display, fontSize: isLocked ? 18 : 20, color: isLocked ? '#fff0bf' : '#fff0d1', textShadow: '0 0 14px rgba(244, 207, 107, 0.22)' }}>{def.title}</div>
-                <div style={{ fontSize: isLocked ? 12 : 12, color: isLocked ? '#f4d78e' : textMuted, marginTop: 3, lineHeight: 1.45 }}>{isLocked ? def.hintText : currentStep?.description ?? def.hintText}</div>
+                <div style={{ fontSize: 12, color: isLocked ? '#f4d78e' : textMuted, marginTop: 3, lineHeight: 1.45 }}>
+                  {isLocked ? def.hintText : currentStep?.description ?? def.hintText}
+                </div>
               </div>
               <div style={{
                 padding: '4px 10px',
@@ -646,10 +659,10 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
                 textTransform: 'uppercase',
                 background: isLocked ? 'rgba(64, 44, 6, 0.24)' : 'transparent',
               }}>
-                {status === 'completed' ? 'Completed' : isActive ? 'Active' : 'Inactive'}
+                {status === 'completed' ? 'Completed' : isActive ? 'Active' : 'Inactive'} {isExpanded ? '▾' : '▸'}
               </div>
             </div>
-            {!isLocked && (
+            {isExpanded && !isLocked && (
               <div style={{ display: 'grid', gap: 6, marginTop: 4 }}>
                 {def.steps.map((step, index) => {
                   const complete = !!instance?.stepsComplete[index];
@@ -666,7 +679,7 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
                 })}
               </div>
             )}
-            {!isLocked && (canSacrifice || canClaim) && (
+            {isExpanded && !isLocked && (canSacrifice || canClaim) && (
               <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                 {canSacrifice && (
                   <button
