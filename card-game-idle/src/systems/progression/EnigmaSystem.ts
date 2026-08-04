@@ -63,21 +63,26 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
   const instance = ensureNeutralMysteryInstance(state.progress);
   if (!instance || instance.status === 'locked') return result;
 
-  if (instance.currentStepIndex === 2) {
-    const activePresence = state.board.frontSlots.filter(slot => slot?.definitionId === AEGIS_OF_PRESENCE_ID).length;
-    if (activePresence >= 3) {
-      instance.stepsComplete[2] = true;
-      instance.currentStepIndex = 3;
-    }
+  const activePresence = state.board.frontSlots.filter(slot => slot?.definitionId === AEGIS_OF_PRESENCE_ID).length;
+  const nullSeraphimCount = state.board.frontSlots.filter(slot => slot?.definitionId === NULL_SERAPHIM_ID).length;
+  const equilibriumCount = state.board.frontSlots.filter(slot => (
+    slot?.definitionId === EQUILIBRIUM_SERAPHIM_ID || slot?.definitionId === AEGIS_OF_EQUILIBRIUM_ID
+  )).length;
+
+  // Step 3 (index 2): 3 Aegis of Presence on board at once.
+  if (instance.currentStepIndex <= 2 && activePresence >= 3) {
+    instance.stepsComplete[2] = true;
+    instance.currentStepIndex = Math.max(instance.currentStepIndex, 3);
   }
 
-  if (instance.currentStepIndex === 3) {
-    const nullSeraphimCount = state.board.frontSlots.filter(slot => slot?.definitionId === NULL_SERAPHIM_ID).length;
-    const equilibriumCount = state.board.frontSlots.filter(slot => slot?.definitionId === EQUILIBRIUM_SERAPHIM_ID).length;
-    if (nullSeraphimCount >= 3 && equilibriumCount >= 2) {
-      instance.stepsComplete[3] = true;
-      instance.currentStepIndex = 4;
-    }
+  // Step 4 (index 3): 3 Null Seraphim + 2 Equilibrium Seraphim on board.
+  // Strict composition in any order: exactly 3 Null Seraphim and 2 Equilibrium Seraphim.
+  const strictStep4Match = state.board.frontSlots.every(slot => (
+    !!slot && (slot.definitionId === NULL_SERAPHIM_ID || slot.definitionId === EQUILIBRIUM_SERAPHIM_ID)
+  )) && nullSeraphimCount === 3 && equilibriumCount === 2;
+  if (instance.currentStepIndex <= 3 && instance.stepsComplete[2] && strictStep4Match) {
+    instance.stepsComplete[3] = true;
+    instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
   }
 
   return result;
