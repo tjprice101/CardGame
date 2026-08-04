@@ -80,7 +80,7 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
   const strictStep4Match = state.board.frontSlots.every(slot => (
     !!slot && (slot.definitionId === NULL_SERAPHIM_ID || slot.definitionId === EQUILIBRIUM_SERAPHIM_ID)
   )) && nullSeraphimCount === 3 && equilibriumCount === 2;
-  if (instance.currentStepIndex <= 3 && instance.stepsComplete[2] && strictStep4Match) {
+  if (instance.currentStepIndex <= 3 && strictStep4Match) {
     instance.stepsComplete[3] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
   }
