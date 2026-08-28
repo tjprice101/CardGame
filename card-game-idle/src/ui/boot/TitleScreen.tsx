@@ -63,12 +63,12 @@ interface CardSpec {
 // ── Left cluster — celestial / aquatic / cosmic ──────────────────────────────
 const LEFT_CARDS: CardSpec[] = [
   {
-    src: card('heavenly-light', 'Halo Legion Prime'),
+    src: card('neutrality', 'Eternal Null'),
     rot: -15, opacity: 0.52, dur: 5.0, delay: 0.4, fadeEdge: 'left',
     pos: { left: '-2%', top: '16%' },
   },
   {
-    src: card('eternal-seas', 'Crowned One Azure Margin'),
+    src: card('neutrality', 'Eternal Seraph'),
     rot: -8, opacity: 0.74, dur: 5.4, delay: 1.2,
     pos: { left: '4%', top: '29%' },
   },
@@ -82,17 +82,17 @@ const LEFT_CARDS: CardSpec[] = [
 // ── Right cluster — mechanical / infernal / celestial ────────────────────────
 const RIGHT_CARDS: CardSpec[] = [
   {
-    src: card('mechanical-dreams', 'Steel Hymn Executor'),
+    src: card('infinite', 'Void Cascade'),
     rot: 15, opacity: 0.52, dur: 4.8, delay: 0.7, fadeEdge: 'right',
     pos: { right: '-2%', top: '16%' },
   },
   {
-    src: card('black-glass-inferno', 'Morvakael the Twice-Scarred'),
+    src: card('infinite', 'Sovereign Void'),
     rot: 8, opacity: 0.74, dur: 5.2, delay: 1.5,
     pos: { right: '4%', top: '29%' },
   },
   {
-    src: card('heavenly-light', 'Solarius Emberthorn Ascendant'),
+    src: card('neutrality', 'Immortal Warden'),
     rot: 2, opacity: 0.92, dur: 4.4, delay: 0.2,
     pos: { right: '10%', top: '43%' },
   },
