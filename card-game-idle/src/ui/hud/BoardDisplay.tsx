@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import CardEngineCallout from '@/ui/components/CardEngineCallout';
+import SetAbilityStrip from '@/ui/hud/SetAbilityStrip';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
@@ -1745,6 +1746,9 @@ export default function BoardDisplay() {
           </div>
         );
       })()}
+
+      {/* Set Ability hotkey strip — shows during playing phase */}
+      <SetAbilityStrip />
 
       {/* Zone separator with rank labels */}
       <div style={{

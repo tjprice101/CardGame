@@ -172,6 +172,16 @@ export interface TurnState {
   lastFiredSeraphimAttackOblivion?: number;
   /** Artifact ids equipped on the active deck; populated at game start from SavedDeck.equippedArtifacts. */
   equippedArtifactIds?: string[];
+  /**
+   * Remaining hand-play cooldown per set-ability id. Decrements once per card
+   * played from hand. Ability is available when value is 0 or absent. Save v41.
+   */
+  setAbilityCooldowns?: Record<string, number>;
+  /**
+   * Remaining one-off uses per set-ability id. Ability is available when value
+   * is > 0 or absent (undefined treated as unlimited). Save v41.
+   */
+  setAbilityUsesRemaining?: Record<string, number>;
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────
@@ -186,6 +196,11 @@ export interface SavedDeck {
   equippedArtifacts?: string[];
   /** Player-authored notes describing how the deck plays. Save v18. */
   notes?: string;
+  /**
+   * Per-slot set-ability selection. Keys are ability slot indices 1–4;
+   * values are SetAbilityDefinition ids. Save v41.
+   */
+  abilityLoadout?: Partial<Record<1 | 2 | 3 | 4, string>>;
 }
 
 // ── Progress / Settings ────────────────────────────────────────────────────────
@@ -415,7 +430,11 @@ export type KeybindActionId =
   | 'openTutorial'
   | 'closeOverlay'
   | 'toggleRadioUi'
-  | 'togglePartyUi';
+  | 'togglePartyUi'
+  | 'activateSetAbility1'
+  | 'activateSetAbility2'
+  | 'activateSetAbility3'
+  | 'activateSetAbility4';
 
 /** Default keyboard control bindings (KeyboardEvent.code values). */
 export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
@@ -424,6 +443,10 @@ export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
   closeOverlay: 'Escape',
   toggleRadioUi: 'KeyR',
   togglePartyUi: 'KeyP',
+  activateSetAbility1: 'Digit1',
+  activateSetAbility2: 'Digit2',
+  activateSetAbility3: 'Digit3',
+  activateSetAbility4: 'Digit4',
 };
 
 export type UiLanguage = 'en' | 'es' | 'fr';

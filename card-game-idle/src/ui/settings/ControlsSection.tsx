@@ -39,6 +39,10 @@ export default function ControlsSection() {
     { id: 'closeOverlay',  label: 'Close Overlay',          hint: 'Dismiss the topmost modal.' },
     { id: 'toggleRadioUi', label: 'Toggle Radio UI',        hint: 'Show or hide on-screen radio controls/toasts.' },
     { id: 'togglePartyUi', label: 'Toggle Party UI',        hint: 'Show or hide the Card-bound Co-op overlay.' },
+    { id: 'activateSetAbility1', label: 'Set Ability — Slot 1', hint: 'Activate your Base set ability (Composed Draw).' },
+    { id: 'activateSetAbility2', label: 'Set Ability — Slot 2', hint: 'Activate your Eternal set ability (Vigil\'s Ledger).' },
+    { id: 'activateSetAbility3', label: 'Set Ability — Slot 3', hint: 'Activate your Infinite set ability (Recursive Calm).' },
+    { id: 'activateSetAbility4', label: 'Set Ability — Slot 4', hint: 'Activate your Angel set ability (Aegis Uprising).' },
   ];
 
   function beginCapture(id: KeybindActionId) {

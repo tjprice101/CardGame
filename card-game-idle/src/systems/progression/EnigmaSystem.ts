@@ -65,22 +65,24 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
 
   const activePresence = state.board.frontSlots.filter(slot => slot?.definitionId === AEGIS_OF_PRESENCE_ID).length;
   const nullSeraphimCount = state.board.frontSlots.filter(slot => slot?.definitionId === NULL_SERAPHIM_ID).length;
-  const equilibriumCount = state.board.frontSlots.filter(slot => (
-    slot?.definitionId === EQUILIBRIUM_SERAPHIM_ID || slot?.definitionId === AEGIS_OF_EQUILIBRIUM_ID
-  )).length;
+  // Only the Seraphim form counts; the Angel (Aegis of Equilibrium) is a different unit.
+  const equilibriumCount = state.board.frontSlots.filter(slot =>
+    slot?.definitionId === EQUILIBRIUM_SERAPHIM_ID
+  ).length;
 
   // Step 3 (index 2): 3 Aegis of Presence on board at once.
-  if (instance.currentStepIndex <= 2 && activePresence >= 3) {
+  if (!instance.stepsComplete[2] && activePresence >= 3) {
     instance.stepsComplete[2] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 3);
   }
 
-  // Step 4 (index 3): 3 Null Seraphim + 2 Equilibrium Seraphim on board.
-  // Strict composition in any order: exactly 3 Null Seraphim and 2 Equilibrium Seraphim.
-  const strictStep4Match = state.board.frontSlots.every(slot => (
-    !!slot && (slot.definitionId === NULL_SERAPHIM_ID || slot.definitionId === EQUILIBRIUM_SERAPHIM_ID)
-  )) && nullSeraphimCount === 3 && equilibriumCount === 2;
-  if (instance.currentStepIndex <= 3 && strictStep4Match) {
+  // Step 4 (index 3): board must contain exactly 3 Null Seraphim + 2 Equilibrium Seraphim in any order.
+  // Gate is purely on stepsComplete[3] so save-state drift in currentStepIndex cannot block it.
+  const strictStep4Match = nullSeraphimCount === 3 && equilibriumCount === 2
+    && state.board.frontSlots.every(slot =>
+      !!slot && (slot.definitionId === NULL_SERAPHIM_ID || slot.definitionId === EQUILIBRIUM_SERAPHIM_ID)
+    );
+  if (!instance.stepsComplete[3] && strictStep4Match) {
     instance.stepsComplete[3] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
   }

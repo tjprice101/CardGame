@@ -60,6 +60,7 @@ import {
   awardEnigmaReward,
 } from '@/systems/progression/EnigmaSystem';
 import { getEnigmaDefinition } from '@/data/enigmas/enigmaDefinitions';
+import { resolveActiveAbilitiesForDeck } from '@/systems/sets/SetEngine';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import {
   getAchievementShardReward,
@@ -188,6 +189,8 @@ const defaultTurn: TurnState = {
   lastFiredSeraphimAttackOblivion: 0,
   equippedArtifactIds: [],
   seraphimBonusAmp: 0,
+  setAbilityCooldowns: {},
+  setAbilityUsesRemaining: {},
 };
 
 const defaultProgress: ProgressState = {
@@ -515,6 +518,10 @@ interface StoreActions {
   setCardLock: (definitionId: string, count: number) => void;
   /** Update a saved deck's player-authored how-to-play notes. */
   setDeckNotes: (deckId: string, notes: string) => void;
+  /** Update a saved deck's per-slot set-ability loadout. */
+  setDeckAbilityLoadout: (deckId: string, slot: 1 | 2 | 3 | 4, abilityId: string) => void;
+  /** Activate a set ability by hotkey slot (1–4). No-op if gated, on cooldown, or uses exhausted. */
+  activateSetAbility: (slot: 1 | 2 | 3 | 4) => void;
   /** Enqueue a transient toast notification. */
   enqueueToast: (message: string, kind?: 'info' | 'success' | 'warning' | 'reward', durationMs?: number) => void;
   /** Dismiss a toast notification by id. */
@@ -2616,6 +2623,20 @@ function awardOblivionForCardPlay(
 
 }
 
+/**
+ * Decrements all active set-ability cooldowns by 1. Must be called once for
+ * every card played from hand (at the same sites as tickCherubimDurability).
+ */
+function tickHandPlayCooldowns(s: Store): void {
+  const cd = s.turn.setAbilityCooldowns;
+  if (!cd) return;
+  for (const key of Object.keys(cd)) {
+    if ((cd[key] ?? 0) > 0) {
+      cd[key] -= 1;
+    }
+  }
+}
+
 function tickCherubimDurability(s: Store): void {
   let expiredCount = 0;
   const expiredCards: Array<{ definitionId: string }> = [];
@@ -2868,6 +2889,7 @@ export const useStore = create<Store>()(
         awardOblivionForCardPlay(s, 0, false);
         applyCherubimPassiveEffects(s);
         tickCherubimDurability(s);
+        tickHandPlayCooldowns(s);
 
         if (def?.type === 'Seraphim') {
           const turnBefore = captureTurnSnapshot(s.turn);
@@ -2959,6 +2981,7 @@ export const useStore = create<Store>()(
         awardOblivionForCardPlay(s, 0, false);
         applyCherubimPassiveEffects(s);
         tickCherubimDurability(s);
+        tickHandPlayCooldowns(s);
 
         const result = CardEffectExecutor.execute(deckCard, s.turn, s.board, s.deck, true);
         const turnBefore = captureTurnSnapshot(s.turn);
@@ -3048,6 +3071,7 @@ export const useStore = create<Store>()(
         awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
         applyCherubimPassiveEffects(s);
         tickCherubimDurability(s);
+        tickHandPlayCooldowns(s);
         incrementAngelProgress(s.board);
         recordCardPlay(s, deckCard.definitionId);
         checkBossDefeated(s);
@@ -3649,6 +3673,7 @@ export const useStore = create<Store>()(
           awardOblivionForCardPlay(s, 0, false);
           applyCherubimPassiveEffects(s);
           tickCherubimDurability(s);
+          tickHandPlayCooldowns(s);
 
           const result = CardEffectExecutor.execute(deckCard, s.turn, s.board, s.deck, true);
           if (result.canPlay) {
@@ -3722,6 +3747,7 @@ export const useStore = create<Store>()(
           awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
           applyCherubimPassiveEffects(s);
           tickCherubimDurability(s);
+          tickHandPlayCooldowns(s);
           incrementAngelProgress(s.board);
           recordCardPlay(s, deckCard.definitionId);
           advanceTrialGuideStep(s, deckCard.definitionId);
@@ -3743,6 +3769,7 @@ export const useStore = create<Store>()(
         awardOblivionForCardPlay(s, result.oblivionBonus, true, undefined, def, actionClass);
         applyCherubimPassiveEffects(s);
         tickCherubimDurability(s);
+        tickHandPlayCooldowns(s);
 
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
         resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
@@ -4858,6 +4885,71 @@ export const useStore = create<Store>()(
         // Cap notes at 2000 characters to keep saves reasonable.
         d.notes = notes.length > 2000 ? notes.slice(0, 2000) : notes;
       });
+    },
+
+    setDeckAbilityLoadout: (deckId, slot, abilityId) => {
+      set(s => {
+        const d = s.progress.savedDecks.find(dk => dk.id === deckId);
+        if (!d) return;
+        if (!d.abilityLoadout) d.abilityLoadout = {};
+        d.abilityLoadout[slot] = abilityId;
+      });
+    },
+
+    activateSetAbility: (slot) => {
+      const state = get();
+      if (state.turn.phase !== 'playing') return;
+      if (state.turn.pendingEffect) return;
+
+      // Resolve the active deck's ability for this slot.
+      const activeDeck = state.progress.savedDecks.find(d => d.id === state.progress.activeDeckId);
+      if (!activeDeck) return;
+
+      const resolved = resolveActiveAbilitiesForDeck(
+        'Neutrality',
+        activeDeck.deckList,
+        activeDeck.extraDeck,
+      );
+      const ability = resolved[slot];
+      if (!ability) {
+        get().enqueueToast(`Ability slot ${slot}: gate not met for current deck.`, 'warning', 2500);
+        return;
+      }
+
+      // Check cooldown.
+      const cd = state.turn.setAbilityCooldowns ?? {};
+      if ((cd[ability.id] ?? 0) > 0) {
+        get().enqueueToast(`${ability.label} is on cooldown (${cd[ability.id]} plays).`, 'warning', 2000);
+        return;
+      }
+
+      // Check one-off uses.
+      if (ability.maxUsesPerRun !== undefined) {
+        const uses = state.turn.setAbilityUsesRemaining ?? {};
+        if (ability.id in uses && (uses[ability.id] ?? 0) <= 0) {
+          get().enqueueToast(`${ability.label} has already been used this run.`, 'warning', 2000);
+          return;
+        }
+      }
+
+      // Execute and write cooldown / use count.
+      set(s => {
+        ability.execute(s as unknown as import('@/types/game').GameState);
+
+        if (!s.turn.setAbilityCooldowns) s.turn.setAbilityCooldowns = {};
+        if (!s.turn.setAbilityUsesRemaining) s.turn.setAbilityUsesRemaining = {};
+
+        if (ability.cooldownCards > 0) {
+          s.turn.setAbilityCooldowns[ability.id] = ability.cooldownCards;
+        }
+
+        if (ability.maxUsesPerRun !== undefined) {
+          const prevUses = s.turn.setAbilityUsesRemaining[ability.id] ?? ability.maxUsesPerRun;
+          s.turn.setAbilityUsesRemaining[ability.id] = Math.max(0, prevUses - 1);
+        }
+      });
+
+      get().enqueueToast(`${ability.label} activated.`, 'success', 2000);
     },
 
     enqueueToast: (message, kind = 'info', durationMs) => {

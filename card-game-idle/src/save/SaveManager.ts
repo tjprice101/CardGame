@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 40;
+export const CURRENT_VERSION = 41;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -753,6 +753,23 @@ const migrations: Record<number, Migration> = {
         const enigmas = p.enigmas as Record<string, unknown>;
         if (enigmas.activeEnigmaId === undefined) enigmas.activeEnigmaId = null;
         if (!enigmas.instances || typeof enigmas.instances !== 'object') enigmas.instances = {};
+      }
+    }
+    return data;
+  },
+
+  41: (data) => {
+    // v41 adds SavedDeck.abilityLoadout (per-slot ability picks) and
+    // TurnState.setAbilityCooldowns / setAbilityUsesRemaining.
+    // All are optional with sensible defaults, so this migration is a
+    // structural no-op — existing saves remain valid.
+    const turn = (data as Partial<Record<string, unknown>>).turn as Record<string, unknown> | undefined;
+    if (turn) {
+      if (!turn.setAbilityCooldowns || typeof turn.setAbilityCooldowns !== 'object') {
+        turn.setAbilityCooldowns = {};
+      }
+      if (!turn.setAbilityUsesRemaining || typeof turn.setAbilityUsesRemaining !== 'object') {
+        turn.setAbilityUsesRemaining = {};
       }
     }
     return data;

@@ -90,6 +90,47 @@ Seraphim and Angels have attack stats that fire periodically as cards are played
 
 ---
 
+## Cooldown Convention
+
+All cooldowns in the game — Seraphim/Angel attack cooldowns, card activated-ability gates, and **set ability cooldowns** — are measured in **cards played from hand**, not turns.
+
+- The shared helper `tickHandPlayCooldowns(s: Store)` in `src/state/store.ts` decrements all active set-ability cooldowns and must be called at every hand-play site alongside `tickCherubimDurability(s)`.
+- Per-play attack cooldowns are tracked on individual Seraphim/Angel instances as `cooldownCards`.
+- Set-ability cooldowns are tracked in `TurnState.setAbilityCooldowns: Record<abilityId, number>` (remaining plays).
+- Nothing ticks cooldowns at turn end — only hand plays tick them.
+
+---
+
+## Set Ability System
+
+Each card set exposes four **hotkey-activated abilities** (default keys `1`–`4`) gated by deck composition:
+
+| Slot | Gate | Requirement |
+|---|---|---|
+| 1 | Base | Any card of the set in the main deck |
+| 2 | Eternal | ≥1 Eternal card of the set in the main deck |
+| 3 | Infinite | ≥1 Infinite card of the set in the main deck |
+| 4 | Angel | ≥1 Angel of the set in the extra deck |
+
+**Neutrality abilities:**
+- Slot 1 — *Composed Draw* (Base, 3-hand-play CD): Draw 2 cards; grant +3 Patience to every front-row unit.
+- Slot 2 — *Vigil's Ledger* (Eternal, 5-hand-play CD): Units with ≥20 Patience get +5 Patience; draw 2 cards.
+- Slot 3 — *Recursive Calm* (Infinite, one-off): Consume all front-row Patience; gain Oblivion = totalPatience × 500 × min(3, 1 + resonanceScore/1000).
+- Slot 4 — *Aegis Uprising* (Angel, one-off): Find lowest Patience on board; grant every unit that value × 3.
+
+**Key files:**
+- `src/systems/sets/SetEngine.ts` — types (`SetAbilityDefinition`, `SetEngineDefinition`), registry (`registerSet`, `getSet`), gate resolution (`resolveActiveAbilitiesForDeck`, `resolveGatesForDeck`).
+- `src/systems/sets/neutrality/NeutralityAbilities.ts` — Neutrality set definition + four ability implementations.
+- `src/ui/hud/SetAbilityStrip.tsx` — in-game HUD strip showing 4 slots with hotkey, label, and cooldown state.
+- `src/main.tsx` — imports `NeutralityAbilities` as a side-effect to register the set at startup.
+- `KeybindActionId` in `src/types/game.ts` includes `activateSetAbility1`–`activateSetAbility4`; defaults `Digit1`–`Digit4`.
+- `SavedDeck.abilityLoadout?: Partial<Record<1|2|3|4, string>>` stores per-deck ability picks (save v41).
+- `TurnState.setAbilityCooldowns` / `setAbilityUsesRemaining` track cooldowns/one-off uses per ability id.
+
+**Adding a new set:** implement a `SetEngineDefinition`, call `registerSet`, import it from `main.tsx`. No store changes are needed unless the ability's effect requires a new pending-effect flow.
+
+---
+
 ## Oblivion
 
 - **Oblivion** is the primary currency. Earned by playing cards and from Seraphim/Angel attacks. Spent in the Card Pack Store.
@@ -115,15 +156,16 @@ Seraphim and Angels have attack stats that fire periodically as cards are played
 Each set has a **distinct primary mechanic** that defines its strategic identity. Overlap is acceptable but the primary identity must remain clear.
 
 ### Neutrality — "Patience / Stasis"
-- **Patience** is the core mechanic. Seraphim with `patienceThreshold` defined auto-accumulate +1 Patience per card played. Cherubim give additional Patience per card to adjacent front slots via the `cherubim_patience_per_card` passive.
+- **Patience** is the sole mechanic. Seraphim with `patienceThreshold` defined auto-accumulate +1 Patience per card played from hand. Cherubim give additional Patience per card to adjacent front slots via the `cherubim_patience_per_card` passive.
 - **On attack**: each accumulated Patience stack is consumed for +15 Oblivion. If total stacks ≥ `patienceThreshold`, also draws `patienceThresholdDraw` cards.
 - Ophanim: draw/deck manipulation and Patience setup. Key effects: `patience_gain_all` (instant Patience burst for all Seraphim), `patience_double_all` (double all Patience).
 - Angels: mass Patience injection on summon; `patience_double_all` in activated abilities.
 - Beginner-friendly. Universal Synergy Angel activates all Seraphim regardless of element. Salvage loop enabled by Ophanim like Seraph Recall.
 - **Patience thresholds by rarity**: Common/Rare 3–4, Epic 5, Eternal 6, Infinite 8+.
 - **Patience per card by Cherubim rarity**: Common +1, Rare +2, Epic +3, Eternal +4–5, Infinite +6–8.
-- **Live Neutrality-specific effect types** (Eternal/Infinite layer): `neutrality_equilibrium_sigil_gain`, `neutrality_equilibrium_starbound_cashout` (ascension Transcendent cards only — in `src/data/ascension/transcendentCards.ts`), `neutrality_equilibrium_tactical_spend`, `neutrality_patient_light_gain`, `neutrality_designate_vessel`, `neutrality_attack_preserve`.
-- **Dead/removed effect types (do NOT re-add)**: `neutrality_equilibrium_sigil_cap_bonus`, `neutrality_vessel_copy_gain`, `neutrality_vessel_redistribute`, `neutrality_mark_hand`, `neutrality_attack_restore`, `neutrality_linked_mode`.
+- **Patience stack cap**: 150 per unit (enforced in `src/systems/cards/neutralityPatience.ts`).
+- **Live Neutrality effect types**: `patience_gain_all`, `patience_double_all`, `cherubim_patience_per_card`, `neutrality_equilibrium_starbound_cashout` (Transcendent only — `src/data/ascension/transcendentCards.ts`), `neutrality_equilibrium_tactical_spend`.
+- **Removed sub-systems (do NOT re-add)**: Patient Light, Equilibrium Sigils, Marked Cards, Linked Gain Bonus, Timer Pause, Uncapped Gains, Infinite Oblivion Signature tracking. Their TurnState fields and effect types have been stripped. Any surviving references outside archived migrations are bugs.
 
 > **Note:** Only Neutrality is currently implemented. Additional sets will be introduced as the game expands.
 
@@ -238,6 +280,7 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - **Oblivion display**: centered top, 36px, gold with glow. Shows sequence multiplier during a turn.
 - **Stat panel**: top-left, shows active synergies, Oblivion earned this turn, sequence multiplier, active Cherubim count.
 - **Set Engine Display**: `src/ui/hud/SetEngineDisplay.tsx` — surfaces the live set-engine readout. Data comes from `src/ui/setEngineSummary.ts` (`buildEngineSnapshot`, `ENGINE_ROLE_TEXT`, `SET_ENGINE_GUIDES`).
+- **Set Ability Strip**: `src/ui/hud/SetAbilityStrip.tsx` — four hotkey tiles (1–4) shown during the playing phase. Slots show gate, cooldown, and ready state. Clicking or pressing the hotkey calls `activateSetAbility(slot)` in the store.
 - **Turn controls**: bottom-right, large buttons.
 - **Deck status pills**: bottom-right, showing Deck / Discard / Hand counts.
 
@@ -270,19 +313,24 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 |---|---|
 | `src/types/cards.ts` | Card definition and instance interfaces (SeraphimDefinition, CherubimDefinition, OphanimDefinition, AngelDefinition) |
 | `src/types/effects.ts` | ImmediateEffect, CherubimPassiveEffect, AngelEffect union types |
-| `src/state/store.ts` | All game state mutations: playCard, summonAngel, activateAngel, activateSeraphimAttack, patience helpers, set mechanics |
+| `src/state/store.ts` | All game state mutations: playCard, summonAngel, activateAngel, activateSeraphimAttack, patience helpers, set mechanics, `activateSetAbility` |
 | `src/systems/cards/CardEffectExecutor.ts` | Executes ImmediateEffect arrays for Ophanim, Seraphim onPlayEffects, and Angel effects |
+| `src/systems/sets/SetEngine.ts` | Set ability types, registry, and gate resolution (`resolveActiveAbilitiesForDeck`) |
+| `src/systems/sets/neutrality/NeutralityAbilities.ts` | Neutrality set definition + four ability implementations; registers via `registerSet` |
 | `src/data/cards/neutralityCards.ts` | Base Neutrality Ophanim + Seraphim |
 | `src/data/cards/neutralityCherubimCards.ts` | Neutrality Cherubim |
 | `src/data/cards/neutralityAngel.ts` | Neutrality Angels |
 | `src/data/cards/eternalCards.ts` | Neutrality Eternal cards; `expansionEternalCards` for Null Raid reward Eternals |
 | `src/data/cards/infiniteCards.ts` | Neutrality Infinite cards + `InfiniteRecipe` definitions |
+| `src/data/enigmas/enigmaDefinitions.ts` | Enigma definitions (`ENIGMA_DEFINITIONS`). Neutral Mystery step 4 checks `!stepsComplete[3]` (not `currentStepIndex`) against strictly 3 Null Seraphim + 2 Equilibrium Seraphim on board. |
+| `src/systems/progression/EnigmaSystem.ts` | Enigma evaluation; `evaluateNeutralMysteryProgress`, `syncEnigmaProgressFromBoard` |
 | `src/ui/setEngineSummary.ts` | ENGINE_ROLE_TEXT, buildEngineSnapshot, SET_ENGINE_GUIDES per set |
+| `src/ui/hud/SetAbilityStrip.tsx` | In-game HUD strip for 4 set ability slots |
 | `src/ui/cardBackgrounds.ts` | Card art resolution; `CARD_BACKGROUND_FILE_OVERRIDES` for special cases |
 | `src/ui/eternitysWake/EternitysWake.tsx` | Eternity's Wake boss fight UI; `BOSS_ART_FILES` map |
 | `src/data/bosses/` | Boss definitions (`BossDefinition`, `BossCategory`, `BOSS_DEFINITIONS`) |
 | `src/cards/CardRegistry.ts` | Card lookup + alias resolution; `CardRegistry.getAll()` for runtime audits |
-| `src/save/SaveManager.ts` | Persistence; `progress.savedDecks` for boss fight deck snapshots |
+| `src/save/SaveManager.ts` | Persistence; `CURRENT_VERSION = 41`; `progress.savedDecks` for boss fight deck snapshots |
 
 ---
 
@@ -301,6 +349,7 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - **Sequence multiplier timing**: For Ophanim cards, capture `prePlayChain = s.turn.chainMultiplier` before calling the executor, then pass it as `chainOverride` to `awardOblivionForCardPlay`. The executor increments the sequence before returning.
 - **`CherubimPassiveEffect`** is a separate union type from `CardEffect` and `ImmediateEffect`. Cherubim `effects` field is `CherubimPassiveEffect[]`, not `ImmediateEffect[]`.
 - **`tickCherubimDurability`** must be called after awarding Oblivion in all card-play paths.
+- **`tickHandPlayCooldowns`** must be called alongside `tickCherubimDurability` at every hand-play site. This is the canonical decrement point for all set-ability cooldowns.
 - **Attack cooldown floor**: Both Seraphim and Angel attack activations enforce a post-fire cooldown floor of 1 card minimum (before and after late-game identity reductions).
 - **Seraphim discard-cost attacks**: require explicit `paymentSelection`; store does not auto-pick. `BoardDisplay` opens a Seraphim discard picker modal before calling `activateSeraphimAttack`.
 - **Infinitude visibility**: recipe-driven via `INFINITE_RECIPES` in `infiniteCards.ts`. Eternity's Wake visibility: boss-data-driven via `BossCategory` + `mapPackToBossCategory` + `BOSS_DEFINITIONS`. Adding set cards alone will not surface them in those menus.
