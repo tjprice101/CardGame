@@ -24,7 +24,6 @@ const GATE_LABELS: Record<string, string> = {
   base: 'Base',
   eternal: 'Eternal',
   infinite: 'Infinite',
-  angel: 'Angel',
 };
 
 function hotkeyLabel(code: string): string {
@@ -57,7 +56,7 @@ export default function SetAbilityStrip() {
     activeDeck.deckList,
     activeDeck.extraDeck,
   );
-  const activeGates = resolveGatesForDeck(activeDeck.deckList, activeDeck.extraDeck);
+  const activeGates = resolveGatesForDeck(NEUTRALITY_SET.id, activeDeck.deckList, activeDeck.extraDeck);
 
   const cd = turn.setAbilityCooldowns ?? {};
   const uses = turn.setAbilityUsesRemaining ?? {};

@@ -21,7 +21,6 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
-import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import BossCodex from './BossCodex';
 import { getBossBaseMasteryPerCard, previewMasteryReward } from '@/systems/progression/cardMastery';
@@ -475,9 +474,6 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
                         <div style={{ fontSize: 13, color: '#ff6b6b', marginTop: 1, fontWeight: 'bold', lineHeight: 1.15 }}>{rewardDisplayName}</div>
                         <div style={{ fontSize: 10, color: RARITY_COLORS[rewardDef.rarity], marginTop: 1 }}>
                           {rewardDef.rarity} · {rewardDef.type}
-                        </div>
-                        <div style={{ marginTop: 4 }}>
-                          <CardEngineCallout card={rewardDef} variant="compact" />
                         </div>
                         <div style={{ marginTop: 2 }}>
                           <CardRulesDigest

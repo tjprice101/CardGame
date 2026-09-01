@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
+import { EQUILIBRIUM_SERAPHIM_ID, NULL_SERAPHIM_ID } from '@/data/enigmas/enigmaDefinitions';
 import type { EnigmaInstance } from '@/types/game';
+import type { SeraphimInstance } from '@/types/cards';
 import type { SavedGameState } from '@/types/bossFight';
 
 function resetStore(): void {
@@ -154,5 +156,59 @@ describe('Enigma progress persists through boss-fight snapshot restore', () => {
 
     const instance = useStore.getState().progress.enigmas.instances['neutral-mystery'];
     expect(instance?.stepsComplete).toEqual([true, true, true, true, false]);
+  });
+});
+
+describe('Neutral Mystery step 4 flips mid-turn via playCard (no boss fight involved)', () => {
+  beforeEach(() => {
+    resetStore();
+  });
+
+  function frontSeraphim(definitionId: string, instanceId: string): SeraphimInstance {
+    return {
+      instanceId,
+      definitionId,
+      type: 'Seraphim',
+      element: 'Neutrality',
+      rarity: 'Common',
+      level: 1,
+      isActive: true,
+      boardSlot: 0,
+      attackCooldowns: {},
+      patienceStacks: 0,
+    };
+  }
+
+  it('completes step 4 when the 5th matching Seraphim is played from hand via the normal click path', () => {
+    useStore.setState(s => ({
+      ...s,
+      progress: {
+        ...s.progress,
+        enigmas: {
+          activeEnigmaId: 'neutral-mystery',
+          instances: { 'neutral-mystery': neutralMysteryInstance([true, false, false, false, false]) },
+        },
+      },
+      board: {
+        ...s.board,
+        frontSlots: [
+          frontSeraphim(NULL_SERAPHIM_ID, 'n1'),
+          frontSeraphim(NULL_SERAPHIM_ID, 'n2'),
+          frontSeraphim(NULL_SERAPHIM_ID, 'n3'),
+          frontSeraphim(EQUILIBRIUM_SERAPHIM_ID, 'e1'),
+          null,
+        ],
+      },
+      deck: {
+        ...s.deck,
+        hand: [{ instanceId: 'p5', definitionId: EQUILIBRIUM_SERAPHIM_ID, finish: 'normal' as const }],
+      },
+      turn: { ...s.turn, phase: 'playing', pendingEffect: null },
+    }));
+
+    useStore.getState().playCard('p5');
+
+    const instance = useStore.getState().progress.enigmas.instances['neutral-mystery'];
+    expect(instance?.stepsComplete[3]).toBe(true);
   });
 });

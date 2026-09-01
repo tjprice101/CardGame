@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme } from '@/ui/theme';
 import { isDisplayCherubimType } from '@/ui/preferences';
@@ -23,6 +23,9 @@ interface Props {
   extraDeckList: ExtraDeckEntry[];
   totalCards: number;
   deckStats: DeckStats;
+  deckId: string | null;
+  currentNotes: string;
+  setDeckNotes: (deckId: string, notes: string) => void;
 }
 
 type CardRow = { name: string; rarity: string; count: number; finish: string };
@@ -62,7 +65,18 @@ function renderSection(label: string, rows: CardRow[], accent: string): React.Re
   );
 }
 
-export default function DeckBuilderStatsTab({ deckList, extraDeckList, totalCards, deckStats }: Props) {
+/**
+ * Merges the former Stats + Notes tabs into a single "Analyze" sub-tab.
+ * Stats render first (always visible); Notes render below as an expandable
+ * section so they stay one click away without needing a dedicated tab.
+ */
+export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCards, deckStats, deckId, currentNotes, setDeckNotes }: Props) {
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [draft, setDraft] = useState(currentNotes);
+  const isDirty = draft !== currentNotes;
+
+  useEffect(() => { setDraft(currentNotes); }, [currentNotes]);
+
   const sections = useMemo(() => {
     const seraphim: CardRow[] = [];
     const cherubim: CardRow[] = [];
@@ -91,7 +105,7 @@ export default function DeckBuilderStatsTab({ deckList, extraDeckList, totalCard
     return { seraphim, cherubim, ophanim, angels };
   }, [deckList, extraDeckList]);
 
-  if (totalCards === 0 && extraDeckList.length === 0) {
+  if (totalCards === 0 && extraDeckList.length === 0 && !deckId) {
     return (
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ fontSize: 13, color: 'rgba(165,205,245,0.45)', fontStyle: 'italic', fontFamily: 'Georgia, serif' }}>
@@ -151,6 +165,78 @@ export default function DeckBuilderStatsTab({ deckList, extraDeckList, totalCard
       {renderSection('Cherubim', sections.cherubim, warmTheme.cherubim)}
       {renderSection('Ophanim', sections.ophanim, '#9070b8')}
       {renderSection('Extra Deck (Angels)', sections.angels, '#70c890')}
+
+      {/* Notes — expandable, one click away */}
+      <div style={{ marginTop: 8, borderTop: '1px solid rgba(72,128,190,0.18)', paddingTop: 12 }}>
+        <button
+          className="menu-tactile-btn"
+          onClick={() => setNotesOpen(v => !v)}
+          disabled={!deckId}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '6px 2px', background: 'transparent', border: 'none', cursor: deckId ? 'pointer' : 'not-allowed',
+            color: 'rgba(190,215,245,0.60)', fontFamily: 'Georgia, serif',
+          }}
+        >
+          <span style={{ fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase' }}>
+            📝 How-to-Play Notes{isDirty ? ' · Unsaved' : ''}
+          </span>
+          <span>{notesOpen ? '▾' : '▸'}</span>
+        </button>
+        {notesOpen && (
+          !deckId ? (
+            <div style={{ fontSize: 12, color: 'rgba(165,205,245,0.45)', fontStyle: 'italic', marginTop: 8 }}>
+              Load a saved deck to edit its notes.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+              <textarea
+                value={draft}
+                onChange={e => setDraft(e.target.value)}
+                placeholder="Describe how this deck plays — opener, key combos, win condition, side tech…"
+                maxLength={2000}
+                rows={6}
+                style={{
+                  boxSizing: 'border-box',
+                  padding: 12,
+                  borderRadius: 8,
+                  background: 'rgba(2,5,12,0.75)',
+                  border: `1px solid ${isDirty ? 'rgba(200,155,72,0.45)' : 'rgba(72,128,190,0.30)'}`,
+                  color: '#e8f4ff',
+                  fontFamily: 'Georgia, serif',
+                  fontSize: 12,
+                  lineHeight: 1.6,
+                  resize: 'vertical',
+                  outline: 'none',
+                  transition: 'border-color 0.2s',
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.40)' }}>
+                  {draft.length} / 2000
+                </div>
+                <button
+                  style={{
+                    padding: '6px 16px', borderRadius: 7,
+                    border: `1px solid ${isDirty ? 'rgba(240,189,120,0.65)' : 'rgba(72,128,190,0.30)'}`,
+                    background: isDirty
+                      ? 'linear-gradient(180deg, #c09040 0%, #8a5e10 50%, #6a4408 100%)'
+                      : 'rgba(72,128,190,0.08)',
+                    color: isDirty ? '#fff8ea' : 'rgba(190,215,245,0.40)',
+                    cursor: isDirty ? 'pointer' : 'not-allowed',
+                    fontFamily: 'Georgia, serif', fontSize: 11, letterSpacing: 1,
+                    transition: 'all 0.2s',
+                  }}
+                  disabled={!isDirty}
+                  onClick={() => setDeckNotes(deckId, draft)}
+                >
+                  Save Notes
+                </button>
+              </div>
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 }

@@ -59,7 +59,7 @@ import {
   awardEnigmaReward,
 } from '@/systems/progression/EnigmaSystem';
 import { getEnigmaDefinition } from '@/data/enigmas/enigmaDefinitions';
-import { resolveActiveAbilitiesForDeck } from '@/systems/sets/SetEngine';
+import { getSet, resolveActiveAbilitiesForDeck } from '@/systems/sets/SetEngine';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import {
   getAchievementShardReward,
@@ -3623,6 +3623,7 @@ export const useStore = create<Store>()(
           incrementAngelProgress(s.board);
           recordCardPlay(s, deckCard.definitionId);
           advanceTrialGuideStep(s, deckCard.definitionId);
+          syncEnigmaProgressFromBoard(s, false);
           checkBossDefeated(s);
           recompute(s);
           return;
@@ -3707,6 +3708,7 @@ export const useStore = create<Store>()(
         recordCardPlay(s, deckCard.definitionId);
         advanceTrialGuideStep(s, deckCard.definitionId);
         eventBus.emit('card:played', { card: deckCard as never, board: s.board });
+        syncEnigmaProgressFromBoard(s, false);
         checkBossDefeated(s);
         recompute(s);
       });
@@ -4875,13 +4877,14 @@ export const useStore = create<Store>()(
         return;
       }
 
-      // Transcendent-Angel gated abilities also require the Angel to be on the board right now.
-      if (ability.gate === 'transcendent-angel') {
-        const hasBoardAngel = state.board.frontSlots.some(
-          u => u && u.type === 'Angel' && u.definitionId.startsWith('tx-angel-'),
+      // Slot 4 also requires a Transcendent Angel of this set on the board right now.
+      if (slot === 4) {
+        const neutralitySet = getSet('Neutrality');
+        const hasBoardAngel = !!neutralitySet && state.board.frontSlots.some(
+          u => u && u.type === 'Angel' && neutralitySet.membership.isTranscendentAngel(u.definitionId),
         );
         if (!hasBoardAngel) {
-          get().enqueueToast('Requires a Transcendent Angel on your board.', 'warning', 2500);
+          get().enqueueToast('Requires a Transcendent Angel of this set on your board.', 'warning', 2500);
           return;
         }
       }

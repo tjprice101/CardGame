@@ -5,11 +5,8 @@ import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { getCardFaceBackgroundStyle, getCardBackBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
-import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { warmTheme } from '@/ui/theme';
-import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
-import type { CardType, AngelDefinition, SeraphimDefinition } from '@/types/cards';
 
 interface Props {
   card: ReturnType<(typeof import('@/cards/CardRegistry'))['CardRegistry']['getAll']>[number];
@@ -25,75 +22,6 @@ interface Props {
 const RARITY_COLORS: Record<string, string> = {
   Common: '#888', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
 };
-
-const TYPE_DESCRIPTIONS: Record<CardType, string> = {
-  Ophanim: 'Direct Attack Actions: none. Uses play effects only.',
-  Cherubim: 'Direct Attack Actions: none. Uses passive and on-play effects only.',
-  Seraphim: 'Direct Attack Actions: 2 (Unsynergized, Synergized).',
-  Angel: 'Direct Attack Actions: 2 (Primary, Exalted).',
-};
-
-function formatAttackCosts(costs: ReadonlyArray<{ type: string; value: number }> | undefined): string {
-  if (!costs || costs.length === 0) return 'No additional cost';
-  return costs
-    .map(cost => `${cost.type.replace(/_/g, ' ')} ${cost.value}`)
-    .join(', ');
-}
-
-function renderCombatOverview(card: Props['card']) {
-  if (card.type === 'Seraphim') {
-    const attacks = (card as SeraphimDefinition).attacks;
-    if (!attacks) return 'Direct Attack Actions: none (attack set not defined).';
-    return (
-      <div style={{ display: 'grid', gap: 8 }}>
-        <div style={{ padding: '8px 10px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
-          <div style={{ fontSize: 11, color: '#f0bd78', textTransform: 'uppercase', letterSpacing: 0.8 }}>Unsynergized · {attacks.unsynergized.name}</div>
-          <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 6 }}>
-            Oblivion {attacks.unsynergized.baseOblivion} · Cooldown {attacks.unsynergized.cooldownCards} cards
-          </div>
-          <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
-            Cost: {formatAttackCosts(attacks.unsynergized.costs)}
-          </div>
-        </div>
-        <div style={{ padding: '8px 10px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
-          <div style={{ fontSize: 11, color: '#f0bd78', textTransform: 'uppercase', letterSpacing: 0.8 }}>Synergized · {attacks.synergized.name}</div>
-          <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 6 }}>
-            Oblivion {attacks.synergized.baseOblivion} · Cooldown {attacks.synergized.cooldownCards} cards
-          </div>
-          <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
-            Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} · Cost: {formatAttackCosts(attacks.synergized.costs)}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (card.type === 'Angel') {
-    const attacks = (card as AngelDefinition).attacks;
-    if (!attacks) return 'Direct Attack Actions: none (attack set not defined).';
-    return (
-      <div style={{ display: 'grid', gap: 8 }}>
-        <div style={{ padding: '8px 10px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
-          <div style={{ fontSize: 11, color: '#f0bd78', textTransform: 'uppercase', letterSpacing: 0.8 }}>Primary · {attacks.primary.name}</div>
-          <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 6 }}>
-            Oblivion {attacks.primary.baseOblivion} · Cooldown {attacks.primary.cooldownCards} cards
-          </div>
-        </div>
-        <div style={{ padding: '8px 10px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, background: 'rgba(255,255,255,0.03)' }}>
-          <div style={{ fontSize: 11, color: '#f0bd78', textTransform: 'uppercase', letterSpacing: 0.8 }}>Exalted · {attacks.exalted.name}</div>
-          <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 6 }}>
-            Oblivion {attacks.exalted.baseOblivion} · Cooldown {attacks.exalted.cooldownCards} cards
-          </div>
-          <div style={{ fontSize: 11, color: '#cfd8e6', marginTop: 4 }}>
-            Cost: {formatAttackCosts(attacks.exalted.costs)}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return TYPE_DESCRIPTIONS[card.type];
-}
 
 function findPacksForCard(cardId: string): Array<{ packId: string; packName: string; setId: string }> {
   const packs: Array<{ packId: string; packName: string; setId: string }> = [];
@@ -114,8 +42,16 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
   const packs = findPacksForCard(card.definitionId);
   const elementColor = SET_ACCENT;
   const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
-  const actionClassLabel = getActionClassLabel(getCardActionClass(card));
   const finishLabel = isHoloOnlyCard(card) ? 'Intrinsic Foil' : getCardFinishLabel(finish);
+  const flavorObtain = card.rarity === 'Infinite'
+    ? "Crafted from the depths of the cards' souls."
+    : card.rarity === 'Eternal'
+      ? "Awarded for defeating mighty foes. (Eternity's Wake)"
+      : card.definitionId.startsWith('tx-')
+        ? 'Raid finality, and survive. (Null Raids)'
+        : card.rarity === 'Enigmatic'
+          ? 'The mystery unfolds only for those who solve it. (Enigmas)'
+          : null;
 
   useEffect(() => {
     if (!favoriteFeedback) return;
@@ -277,14 +213,6 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                 {finishLabel}
               </div>
             </div>
-            <div>
-              <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
-                Action Class
-              </div>
-              <div style={{ fontSize: 14, color: '#ead9c0', fontWeight: 500 }}>
-                {actionClassLabel}
-              </div>
-            </div>
           </div>
 
           {/* Rarity & Owned */}
@@ -311,29 +239,6 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               <div style={{ fontSize: 14, color: owned > 0 ? '#a8d86d' : '#888', fontWeight: 500 }}>
                 {owned > 0 ? `x${owned}` : 'Not owned'}
               </div>
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
-              Engine Role
-            </div>
-            <CardEngineCallout card={card} variant="detail" />
-          </div>
-
-          {/* Type explanation */}
-          <div>
-            <div style={{ fontSize: 10, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
-              {getDisplayCardTypeLabel(card.type)} Ability
-            </div>
-            <div
-              style={{
-                fontSize: 12,
-                lineHeight: 1.5,
-                color: 'rgba(234, 217, 192, 0.9)',
-              }}
-            >
-              {renderCombatOverview(card)}
             </div>
           </div>
 
@@ -415,7 +320,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
               </div>
             ) : (
               <div style={{ fontSize: 12, color: '#888', fontStyle: 'italic' }}>
-                (Obtained through other means)
+                {flavorObtain ?? '(Obtained through other means)'}
               </div>
             )}
           </div>

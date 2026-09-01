@@ -11,7 +11,6 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getCardPreviewLines, getCardSummarySections } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
@@ -417,9 +416,6 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
       <div style={{ ...getCardRulesPanelStyle('grid'), maxHeight: '31%' }}>
         <div style={{ fontSize: 7, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 3 }}>
           {'\u2726'} Infinite {'\u2726'}
-        </div>
-        <div style={{ marginBottom: 4 }}>
-          <CardEngineCallout card={def} variant="compact" />
         </div>
         <CardRulesDigest
           card={def}

@@ -5,7 +5,7 @@
  *   1 — Base    : always available (any card of the set in the deck)
  *   2 — Eternal : requires ≥1 Eternal card of this set in the deck
  *   3 — Infinite: requires ≥1 Infinite card of this set in the deck
- *   4 — Transcendent Angel : requires a Transcendent-tier Angel in the extra deck AND on the board
+ *   4 — Base    : requires a Transcendent-tier Angel of this set on the board (runtime-only check)
  *
  * Cooldowns are measured in **cards played from hand** (not turns).
  * One-off abilities use `maxUsesPerRun: 1`; when depleted they cannot fire again
@@ -13,11 +13,10 @@
  */
 
 import type { DeckEntry, ExtraDeckEntry, GameState } from '@/types/game';
-import { CardRegistry } from '@/cards/CardRegistry';
 
 // ── Gate types ─────────────────────────────────────────────────────────────────
 
-export type SetAbilityGate = 'base' | 'eternal' | 'infinite' | 'transcendent-angel';
+export type SetAbilityGate = 'base' | 'eternal' | 'infinite';
 export type SetAbilitySlot = 1 | 2 | 3 | 4;
 
 // ── Ability definition ─────────────────────────────────────────────────────────
@@ -65,6 +64,14 @@ export interface SetEngineDefinition {
   signatureMechanic: 'patience';
   /** Exactly four abilities, one per slot. */
   abilities: [SetAbilityDefinition, SetAbilityDefinition, SetAbilityDefinition, SetAbilityDefinition];
+  /** Set-scoped card membership; gates only trigger on cards belonging to THIS set. */
+  membership: SetCardMembership;
+}
+
+export interface SetCardMembership {
+  isEternal: (definitionId: string) => boolean;
+  isInfinite: (definitionId: string) => boolean;
+  isTranscendentAngel: (definitionId: string) => boolean;
 }
 
 // ── Registry ───────────────────────────────────────────────────────────────────
@@ -85,48 +92,27 @@ export function listSets(): SetEngineDefinition[] {
 
 // ── Gate resolution ────────────────────────────────────────────────────────────
 
-/** Prefixes / id patterns that identify card tiers within a set. */
-const ETERNAL_PREFIXES = ['btei-'];
-const INFINITE_IDS = new Set([
-  'inf-oblivion-absolute', 'inf-void-cascade', 'inf-genesis-throne', 'inf-null-apex',
-  'inf-entropic-crown', 'inf-annihilation-field', 'inf-sovereign-void', 'inf-eternity-rupture',
-]);
-
-function isEternalCard(id: string): boolean {
-  return ETERNAL_PREFIXES.some(p => id.startsWith(p));
-}
-
-function isInfiniteCard(id: string): boolean {
-  return INFINITE_IDS.has(id);
-}
-
-function isAngelCard(id: string): boolean {
-  const def = CardRegistry.get(id);
-  return def?.type === 'Angel';
-}
-
-/** Transcendent-tier Angels are tagged with this id prefix regardless of registry rarity label. */
-export function isTranscendentAngelCardId(id: string): boolean {
-  return id.startsWith('tx-angel-');
-}
-
 /**
- * Returns which gates are currently satisfied by the given deck composition.
+ * Returns which gates are currently satisfied by the given deck composition **for `setId`**.
+ * Eternal/Infinite membership is per-set, so another set's cards never satisfy this set's gates.
  */
 export function resolveGatesForDeck(
+  setId: string,
   deckList: DeckEntry[],
   extraDeck: ExtraDeckEntry[],
 ): Set<SetAbilityGate> {
   const gates = new Set<SetAbilityGate>();
+  const set = getSet(setId);
+  if (!set) {
+    if (import.meta.env.DEV) console.warn('[SetEngine] resolveGatesForDeck: unknown setId', setId);
+    return gates;
+  }
 
   const hasAny = deckList.length > 0 || extraDeck.length > 0;
   if (hasAny) gates.add('base');
 
-  if (deckList.some(e => isEternalCard(e.definitionId))) gates.add('eternal');
-  if (deckList.some(e => isInfiniteCard(e.definitionId))) gates.add('infinite');
-  if (extraDeck.some(e => isTranscendentAngelCardId(e.definitionId) && isAngelCard(e.definitionId))) {
-    gates.add('transcendent-angel');
-  }
+  if (deckList.some(e => set.membership.isEternal(e.definitionId))) gates.add('eternal');
+  if (deckList.some(e => set.membership.isInfinite(e.definitionId))) gates.add('infinite');
 
   return gates;
 }
@@ -143,7 +129,7 @@ export function resolveActiveAbilitiesForDeck(
   const set = getSet(setId);
   if (!set) return {};
 
-  const gates = resolveGatesForDeck(deckList, extraDeck);
+  const gates = resolveGatesForDeck(setId, deckList, extraDeck);
   const result: Partial<Record<SetAbilitySlot, SetAbilityDefinition>> = {};
   for (const ability of set.abilities) {
     if (gates.has(ability.gate)) {

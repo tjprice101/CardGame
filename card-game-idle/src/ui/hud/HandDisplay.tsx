@@ -13,13 +13,10 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
-import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
-import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { warmTheme } from '@/ui/theme';
 import type { CardFinish, SeraphimDefinition, AngelDefinition } from '@/types/cards';
 
@@ -432,8 +429,6 @@ export default function HandDisplay() {
         : hand.find(c => c.instanceId === hoveredId))
     : null;
   const hoveredDef = hoveredDeckCard ? CardRegistry.get(hoveredDeckCard.definitionId) : null;
-  const hoveredActionClassLabel = hoveredDef ? getActionClassLabel(getCardActionClass(hoveredDef)) : null;
-  const hoveredEngine = hoveredDef ? getSetEngineSnapshotForCard(hoveredDef, turn, board) : null;
   const handRightInset = 'var(--angel-drawer-hand-offset, 348px)';
 
   const idleCards = idleShowcaseCards
@@ -482,21 +477,10 @@ export default function HandDisplay() {
               sectionBackground="transparent"
               sectionBorder="transparent"              lightBg={true}            />
           </div>
-          <CardEngineCallout card={hoveredDef} variant="detail" tone="light" />
           <div style={styles.tooltipFooter}>
             <span style={{ color: SET_ACCENT }}>
               {SET_LABEL}
             </span>
-            {hoveredActionClassLabel && (
-              <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                Action Class: {hoveredActionClassLabel}
-              </span>
-            )}
-            {hoveredEngine && (
-              <span style={{ color: hoveredEngine.accent, fontWeight: 700 }}>
-                {hoveredEngine.label} engine: {hoveredEngine.compact}
-              </span>
-            )}
             {hoveredDef.type === 'Angel' && (
               <>
                 <span style={{ color: TOOLTIP_DETAIL_COLOR }}>

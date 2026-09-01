@@ -12,7 +12,6 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
-import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
@@ -23,12 +22,15 @@ import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { AngelDefinition, CardDefinition, CardFinish } from '@/types/cards';
 import DeckBuilderAbilitiesTab from '@/ui/deck/tabs/DeckBuilderAbilitiesTab';
-import DeckBuilderStatsTab from '@/ui/deck/tabs/DeckBuilderStatsTab';
-import DeckBuilderNotesTab from '@/ui/deck/tabs/DeckBuilderNotesTab';
+import DeckBuilderAnalyzeTab from '@/ui/deck/tabs/DeckBuilderAnalyzeTab';
 
 // Stable selector fallback: returning a fresh `{}` from a Zustand v5 selector
 // triggers the "getSnapshot should be cached" infinite-render loop.
 const EMPTY_CARD_LOCKS: Readonly<Record<string, number>> = Object.freeze({});
+
+const NARROW_BREAKPOINT = 1000;
+const MAIN_DECK_SIZE = 50;
+const EXTRA_DECK_SIZE = 10;
 
 const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
 // Built lazily per render so theme switches reflect immediately.
@@ -51,47 +53,79 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#e8f4ff',
   },
   header: {
-    padding: '20px 28px 16px',
-    borderBottom: '1px solid rgba(72,128,190,0.32)',
-    display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexShrink: 0,
+    padding: '16px 24px', borderBottom: '1px solid rgba(72,128,190,0.32)',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
     background: 'linear-gradient(180deg, rgba(4, 8, 18, 0.92) 0%, rgba(6, 11, 22, 0.70) 100%)',
     boxShadow: '0 1px 0 rgba(78,148,210,0.18), 0 4px 22px rgba(0,0,0,0.55)',
+    gap: 16, flexWrap: 'wrap',
   },
   title: {
-    fontSize: 24, fontWeight: 'bold', color: '#7dd4f8',
-    letterSpacing: 4, textTransform: 'uppercase',
+    fontSize: 22, fontWeight: 'bold', color: '#7dd4f8',
+    letterSpacing: 3, textTransform: 'uppercase',
     textShadow: '0 0 36px rgba(88,180,235,0.55), 0 2px 8px rgba(0,0,0,0.9)',
     lineHeight: 1,
   },
-  deckCount: { fontSize: 12, color: 'rgba(205,228,255,0.68)', letterSpacing: 0.5 },
+  deckNameChip: {
+    fontSize: 11, color: 'rgba(190,215,245,0.80)', marginTop: 4,
+    display: 'flex', alignItems: 'center', gap: 6,
+  },
+  toolbar: {
+    display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', flexShrink: 0,
+    padding: '10px 24px',
+    background: 'rgba(3, 6, 14, 0.6)',
+    borderBottom: '1px solid rgba(72,128,190,0.20)',
+  },
+  toolbarBtn: {
+    padding: '6px 14px', borderRadius: 7,
+    border: '1px solid rgba(72,128,190,0.42)',
+    background: 'rgba(78,155,220,0.10)', color: '#7dd4f8', fontSize: 11,
+    cursor: 'pointer', fontFamily: 'Georgia, serif',
+    letterSpacing: 0.5, transition: 'background 0.15s, box-shadow 0.15s',
+    display: 'flex', alignItems: 'center', gap: 6,
+  },
+  toolbarBtnDanger: {
+    borderColor: 'rgba(184, 90, 79, 0.4)', color: '#e07060',
+    background: 'rgba(184, 90, 79, 0.08)',
+  },
+  toolbarBtnDisabled: { opacity: 0.35, cursor: 'not-allowed' },
+  validationBanner: {
+    padding: '8px 24px', fontSize: 11, flexShrink: 0,
+    display: 'flex', alignItems: 'center', gap: 8,
+  },
   filterBar: {
-    display: 'flex', alignItems: 'stretch', flexShrink: 0, flexWrap: 'wrap',
+    display: 'flex', alignItems: 'center', flexShrink: 0, flexWrap: 'wrap', gap: 4,
+    padding: '8px 16px',
     background: 'rgba(3, 6, 14, 0.6)',
     borderBottom: '1px solid rgba(72,128,190,0.20)',
   },
   filterBtn: {
-    padding: '0 16px', height: 36, border: 'none',
-    borderBottom: '3px solid transparent',
-    borderRight: '1px solid rgba(72,128,190,0.16)',
-    background: 'transparent', color: 'rgba(205,228,255,0.55)', fontSize: 10.5,
-    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1.2,
+    padding: '5px 12px', height: 28, border: '1px solid rgba(72,128,190,0.20)',
+    borderRadius: 999,
+    background: 'transparent', color: 'rgba(205,228,255,0.55)', fontSize: 10,
+    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1,
     textTransform: 'uppercase', transition: 'all 0.18s ease',
     display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
   },
   filterBtnActive: {
     color: '#7dd4f8',
-    borderBottomColor: '#4298d8',
-    background: 'rgba(78,160,220,0.12)',
+    borderColor: '#4298d8',
+    background: 'rgba(78,160,220,0.16)',
   },
   body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  cardPool: { flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 },
+  poolPane: { flex: '1 1 60%', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 },
+  cardPool: { flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 0 },
+  deckPane: {
+    flex: '1 1 40%', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    borderLeft: '1px solid rgba(72,128,190,0.24)',
+    background: 'linear-gradient(180deg, rgba(3, 6, 14, 0.82) 0%, rgba(4, 8, 18, 0.78) 100%)',
+    boxShadow: 'inset 2px 0 18px rgba(0,0,0,0.40)',
+  },
   sectionHeader: {
     display: 'flex', alignItems: 'center', gap: 10,
     padding: '10px 0 8px', marginBottom: 10,
   },
   sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2.5, textTransform: 'uppercase' },
   sectionCount: { fontSize: 9, color: 'rgba(205,228,255,0.52)', letterSpacing: 1.2 },
-  sectionGrid: { display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 24 },
   cardWithMeta: {
     width: 116,
     display: 'flex',
@@ -156,28 +190,45 @@ const styles: Record<string, React.CSSProperties> = {
   lockBtnDisabled: {
     opacity: 0.3, cursor: 'not-allowed',
   },
-  sidebar: {
-    width: 290, borderLeft: '1px solid rgba(72,128,190,0.24)',
-    display: 'flex', flexDirection: 'column', overflow: 'hidden',
-    background: 'linear-gradient(180deg, rgba(3, 6, 14, 0.82) 0%, rgba(4, 8, 18, 0.78) 100%)',
-    boxShadow: 'inset 2px 0 18px rgba(0,0,0,0.40)',
+  extraStripWrap: {
+    padding: '10px 14px', borderBottom: '1px solid rgba(72,128,190,0.18)', flexShrink: 0,
   },
-  sidebarSection: {
-    padding: '12px 14px', borderBottom: '1px solid rgba(72,128,190,0.18)', flexShrink: 0,
+  extraStripHeader: {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
+    color: 'rgba(205,228,255,0.55)', marginBottom: 8,
   },
-  sidebarSectionTitle: {
-    fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase',
-    color: 'rgba(205,228,255,0.62)', marginBottom: 10,
-    display: 'flex', alignItems: 'center', gap: 6,
+  extraStrip: {
+    display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4,
   },
-  savedDeckRow: {
-    display: 'flex', alignItems: 'center', gap: 6,
-    padding: '6px 8px 6px 10px', marginBottom: 2, borderRadius: 6,
-    transition: 'background 0.15s',
-    borderLeft: '2px solid transparent',
+  extraStripCard: {
+    flex: '0 0 auto', width: 52, height: 74, borderRadius: 8,
+    border: '1px solid rgba(112,200,144,0.45)',
+    background: 'rgba(4,8,18,0.9)',
+    position: 'relative', overflow: 'hidden', cursor: 'pointer',
   },
-  savedDeckName: { fontSize: 11, color: 'rgba(205,228,255,0.78)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  deckList: { flex: 1, overflowY: 'auto', padding: '10px 12px' },
+  extraStripEmptySlot: {
+    flex: '0 0 auto', width: 52, height: 74, borderRadius: 8,
+    border: '1px dashed rgba(72,128,190,0.30)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    color: 'rgba(190,215,245,0.28)', fontSize: 16,
+  },
+  subTabStrip: {
+    display: 'flex', alignItems: 'stretch', flexShrink: 0,
+    background: 'rgba(3,6,14,0.85)',
+    borderBottom: '1px solid rgba(72,128,190,0.20)',
+  },
+  subTabBtn: {
+    flex: 1, padding: '0 12px', height: 36, border: 'none',
+    borderBottom: '2px solid transparent',
+    background: 'transparent', color: 'rgba(205,228,255,0.50)', fontSize: 10.5,
+    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1,
+    textTransform: 'uppercase', transition: 'all 0.18s ease',
+  },
+  subTabBtnActive: {
+    color: '#7dd4f8', borderBottomColor: '#4298d8',
+    background: 'rgba(78,160,220,0.10)',
+  },
   entryRow: {
     display: 'flex', alignItems: 'center',
     padding: '4px 6px', marginBottom: 1, borderRadius: 4,
@@ -221,36 +272,6 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer', fontFamily: 'Georgia, serif',
     letterSpacing: 0.5, transition: 'background 0.15s, border-color 0.15s',
   },
-  miniBtn: {
-    padding: '5px 10px', borderRadius: 6,
-    border: '1px solid rgba(72,128,190,0.42)',
-    background: 'rgba(78,155,220,0.13)', color: '#7dd4f8', fontSize: 10,
-    cursor: 'pointer', fontFamily: 'Georgia, serif', flexShrink: 0,
-    letterSpacing: 0.5, transition: 'background 0.15s, box-shadow 0.15s',
-  },
-  miniBtnDanger: {
-    borderColor: 'rgba(184, 90, 79, 0.4)', color: '#e07060',
-    background: 'rgba(184, 90, 79, 0.08)',
-  },
-  sectionToggleBtn: {
-    width: 20,
-    height: 20,
-    borderRadius: 5,
-    border: '1px solid rgba(72,128,190,0.32)',
-    background: 'rgba(78,155,220,0.10)',
-    color: 'rgba(205,228,255,0.72)',
-    fontSize: 10,
-    lineHeight: 1,
-    padding: 0,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  sidebarActionRow: {
-    display: 'flex', gap: 6, flexWrap: 'wrap',
-  },
   empty: {
     width: '100%', textAlign: 'center', marginTop: 48,
     fontSize: 13, color: 'rgba(165,205,245,0.52)', fontStyle: 'italic',
@@ -259,23 +280,19 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'rgba(2, 5, 14, 0.82)',
     border: '1px solid rgba(72,128,190,0.45)',
     color: '#d8f0ff', fontSize: 12, padding: '6px 10px', borderRadius: 6,
-    fontFamily: 'Georgia, serif', outline: 'none', width: '100%', boxSizing: 'border-box',
+    fontFamily: 'Georgia, serif', outline: 'none', width: 180, boxSizing: 'border-box',
   },
-  tabStrip: {
-    display: 'flex', alignItems: 'stretch', flexShrink: 0,
-    background: 'rgba(3,6,14,0.85)',
-    borderBottom: '1px solid rgba(72,128,190,0.20)',
+  loadDropdownPanel: {
+    position: 'absolute', top: '100%', left: 0, marginTop: 4, zIndex: 30,
+    minWidth: 240, maxHeight: 320, overflowY: 'auto',
+    background: 'linear-gradient(180deg, rgba(8,12,22,0.98), rgba(5,8,16,0.98))',
+    border: '1px solid rgba(72,128,190,0.4)', borderRadius: 10,
+    boxShadow: '0 12px 32px rgba(0,0,0,0.6)', padding: 6,
   },
-  tabBtn: {
-    padding: '0 18px', height: 38, border: 'none',
-    borderBottom: '2px solid transparent',
-    background: 'transparent', color: 'rgba(205,228,255,0.50)', fontSize: 11,
-    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1,
-    textTransform: 'uppercase', transition: 'all 0.18s ease', flexShrink: 0,
-  },
-  tabBtnActive: {
-    color: '#7dd4f8', borderBottomColor: '#4298d8',
-    background: 'rgba(78,160,220,0.10)',
+  loadDeckRow: {
+    display: 'flex', alignItems: 'center', gap: 6,
+    padding: '6px 8px', borderRadius: 6, cursor: 'pointer',
+    transition: 'background 0.12s',
   },
 };
 
@@ -370,6 +387,35 @@ const RARITY_COLORS_DB: Record<string, string> = {
   Common: '#888', Rare: '#5b9bd5', Epic: '#9b59b6', Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e8e8f0',
 };
 
+/** Small radial progress ring used in the header banner. */
+function ProgressRing({ value, max, color, size = 44, label }: { value: number; max: number; color: string; size?: number; label: string }) {
+  const stroke = 4;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const pct = Math.min(1, max > 0 ? value / max : 0);
+  const dashOffset = circumference * (1 - pct);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }} title={`${label}: ${value} / ${max}`}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)', filter: `drop-shadow(0 0 6px ${color}60)` }}>
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={stroke}
+          strokeDasharray={circumference} strokeDashoffset={dashOffset} strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.35s ease' }}
+        />
+        <text
+          x="50%" y="50%" textAnchor="middle" dominantBaseline="middle"
+          fill={color} fontSize={size * 0.28} fontWeight="bold" fontFamily="Georgia, serif"
+          transform={`rotate(90, ${size / 2}, ${size / 2})`}
+        >
+          {value}
+        </text>
+      </svg>
+      <span style={{ fontSize: 8, letterSpacing: 1, color: 'rgba(190,215,245,0.5)', textTransform: 'uppercase' }}>{label}</span>
+    </div>
+  );
+}
+
 export default function DeckBuilder({ onClose }: Props) {
   useThemeVersion();
   const faceMetrics = getCardFaceMetrics('grid');
@@ -398,13 +444,8 @@ export default function DeckBuilder({ onClose }: Props) {
   const [elementFilter, setElementFilter] = useState<string | null>(null);
   const [saveMode, setSaveMode] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
-  const [activeTab, setActiveTab] = useState<'cards' | 'extra' | 'abilities' | 'stats' | 'notes'>('cards');
-  const [collapsedSidebarSections, setCollapsedSidebarSections] = useState({
-    savedDecks: false,
-    save: false,
-    extraDeck: false,
-    mainDeck: false,
-  });
+  const [loadMenuOpen, setLoadMenuOpen] = useState(false);
+  const [subTab, setSubTab] = useState<'cards' | 'abilities' | 'analyze'>('cards');
 
   // Card hover tooltip (1.5s delay)
   const [cardTooltip, setCardTooltip] = useState<{ card: CardDefinition; x: number; y: number } | null>(null);
@@ -413,6 +454,8 @@ export default function DeckBuilder({ onClose }: Props) {
   const mousePosRef = useRef({ x: 0, y: 0 });
   const cardPoolViewportRef = useRef<HTMLDivElement | null>(null);
   const [cardPoolViewportWidth, setCardPoolViewportWidth] = useState(0);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const [isNarrow, setIsNarrow] = useState(false);
 
   useEffect(() => {
     const node = cardPoolViewportRef.current;
@@ -422,6 +465,16 @@ export default function DeckBuilder({ onClose }: Props) {
     updateWidth();
 
     const resizeObserver = new ResizeObserver(() => updateWidth());
+    resizeObserver.observe(node);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const node = bodyRef.current;
+    if (!node) return;
+    const update = () => setIsNarrow(node.clientWidth < NARROW_BREAKPOINT);
+    update();
+    const resizeObserver = new ResizeObserver(() => update());
     resizeObserver.observe(node);
     return () => resizeObserver.disconnect();
   }, []);
@@ -454,7 +507,9 @@ export default function DeckBuilder({ onClose }: Props) {
     setCardTooltip(null);
   }
 
-  // Card pool grouped into subsections (Angels go to Extra Deck section, excluded from main pool)
+  // Card pool grouped into subsections (Angels get their own section too — the
+  // Extra Deck strip is filled by clicking Angel cards from the pool, same as
+  // any other card. There is no separate Extra Deck tab.)
   const { mainSections, angelSection, availableElements } = useMemo(() => {
     const ownedCards = CardRegistry.getAll().flatMap(def => {
       const variants: CardVariantDisplay[] = [];
@@ -551,7 +606,7 @@ export default function DeckBuilder({ onClose }: Props) {
         key: 'heading-Angel',
         kind: 'heading',
         sectionLabel: 'Angel',
-        countText: `${extraDeckList.length} / 10 selected`,
+        countText: `${extraDeckList.length} / ${EXTRA_DECK_SIZE} selected`,
       });
       pushCardRows(angelSection, 'Angel', 'Angel');
     }
@@ -599,7 +654,7 @@ export default function DeckBuilder({ onClose }: Props) {
         const cap = Math.min(4, ownedCopies);
         const totalForDefinition = prev.filter(entry => entry.definitionId === defId).length;
         const totalForFinish = prev.filter(entry => entry.definitionId === defId && entry.finish === finish).length;
-        if (cap <= 0 || ownedFinishCopies <= 0 || totalForDefinition >= cap || totalForFinish >= ownedFinishCopies || prev.length >= 10) return prev;
+        if (cap <= 0 || ownedFinishCopies <= 0 || totalForDefinition >= cap || totalForFinish >= ownedFinishCopies || prev.length >= EXTRA_DECK_SIZE) return prev;
         return [...prev, { definitionId: defId, finish }];
       });
       return;
@@ -647,6 +702,7 @@ export default function DeckBuilder({ onClose }: Props) {
       setDeckList([...deck.deckList]);
       setExtraDeckList([...(deck.extraDeck ?? [])]);
     }
+    setLoadMenuOpen(false);
   }
 
   function handleSaveNew() {
@@ -669,10 +725,6 @@ export default function DeckBuilder({ onClose }: Props) {
   function handleClearDeck() {
     setDeckList([]);
     setExtraDeckList([]);
-  }
-
-  function toggleSidebarSection(section: 'savedDecks' | 'save' | 'extraDeck' | 'mainDeck') {
-    setCollapsedSidebarSections(prev => ({ ...prev, [section]: !prev[section] }));
   }
 
   // Auto-fill the main deck with the highest-rarity owned cards. Respects the
@@ -704,10 +756,10 @@ export default function DeckBuilder({ onClose }: Props) {
     let next = [...deckList];
     let total = next.reduce((sum, e) => sum + e.copies, 0);
     for (const c of candidates) {
-      if (total >= 50) break;
+      if (total >= MAIN_DECK_SIZE) break;
       const ownedTotal = collection[c.def.definitionId] ?? 0;
       // Keep adding copies of this candidate until cap or deck full.
-      while (total < 50) {
+      while (total < MAIN_DECK_SIZE) {
         const before = next;
         next = DeckSystem.addDeckEntry(next, c.def.definitionId, c.finish, ownedTotal, c.owned);
         const after = next.reduce((sum, e) => sum + e.copies, 0);
@@ -721,7 +773,7 @@ export default function DeckBuilder({ onClose }: Props) {
     }
     setDeckList(next);
     useStore.getState().enqueueToast(
-      total >= 50 ? `Deck filled to 50 with best owned cards.` : `Deck filled with ${total} cards (no more cards available).`,
+      total >= MAIN_DECK_SIZE ? `Deck filled to ${MAIN_DECK_SIZE} with best owned cards.` : `Deck filled with ${total} cards (no more cards available).`,
       'success',
     );
   }
@@ -736,7 +788,7 @@ export default function DeckBuilder({ onClose }: Props) {
       ? (extraDeckDefinitionCountMap.get(def.def.definitionId) ?? 0)
       : (deckDefinitionCountMap.get(def.def.definitionId) ?? 0);
     const canAdd = isAngel
-      ? count < owned && totalForDefinition < cap && extraDeckList.length < 10
+      ? count < owned && totalForDefinition < cap && extraDeckList.length < EXTRA_DECK_SIZE
       : !(count >= owned || totalForDefinition >= cap);
     const previewText = getCardPreviewLines(def.def, isAngel ? 3 : 2).join(' ');
     const artUrl = getCardBackgroundUrl(def.def);
@@ -770,13 +822,13 @@ export default function DeckBuilder({ onClose }: Props) {
           )}
           <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={getCardNameRibbonStyle('grid')}>
-                            <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
-                              {(() => {
-                                const baseLabel = isAngel ? 'Angel' : getDisplayCardTypeLabel(def.def.type);
-                                const finishLabel = getFinishLabel(def.def, def.finish);
-                                return finishLabel ? `${baseLabel} · ${finishLabel}` : baseLabel;
-                              })()}
-                            </div>
+              <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
+                {(() => {
+                  const baseLabel = isAngel ? 'Angel' : getDisplayCardTypeLabel(def.def.type);
+                  const finishLabel = getFinishLabel(def.def, def.finish);
+                  return finishLabel ? `${baseLabel} · ${finishLabel}` : baseLabel;
+                })()}
+              </div>
               <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
             </div>
             <div style={getCardRulesPanelStyle('grid')}>
@@ -824,154 +876,185 @@ export default function DeckBuilder({ onClose }: Props) {
         </div>
       )}
 
-      <div className="ui-shimmer-band" style={{ ...styles.header, position: 'relative' }}>
+      {/* Header banner */}
+      <div className="ui-shimmer-band" style={styles.header}>
         <div>
           <div className="ui-title-glow" style={styles.title}>Deck Builder</div>
           {activeDeck && (
-            <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.80)', marginTop: 2 }}>
-              {activeDeck.isStarter ? '🔒 ' : ''}{activeDeck.name}
+            <div style={styles.deckNameChip}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, flexShrink: 0 }} />
+              {activeDeck.isStarter ? '🔒 ' : ''}{activeDeck.name} · {SET_LABEL}
             </div>
-          )}
-          {activeDeck && (
-            <button
-              className="menu-tactile-btn"
-              title="Edit how-to-play notes for this deck"
-              onClick={() => setActiveTab('notes')}
-              style={{
-                marginTop: 6,
-                padding: '4px 10px',
-                borderRadius: 7,
-                border: '1px solid rgba(90,170,220,0.28)',
-                background: 'rgba(90,170,220,0.06)',
-                color: 'rgba(190,215,245,0.70)',
-                fontSize: 10,
-                letterSpacing: 1,
-                textTransform: 'uppercase',
-                cursor: 'pointer',
-                fontFamily: 'Georgia, serif',
-              }}
-            >
-              {(activeDeck.notes && activeDeck.notes.trim().length > 0) ? '📝 Notes' : '📝 Add Notes'}
-            </button>
           )}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-          <div>
-            <div style={{ textAlign: 'right', marginBottom: 4 }}>
-              <span style={{ fontSize: 22, fontWeight: 'bold', color: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e06060' : '#7dd4f8', lineHeight: 1 }}>
-                {totalCards}
-              </span>
-              <span style={{ fontSize: 12, color: 'rgba(165,205,245,0.52)', marginLeft: 4 }}> / 50</span>
-            </div>
-            <div style={{ width: 120, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-              <div style={{
-                height: '100%', borderRadius: 2,
-                width: `${Math.min(100, (totalCards / 50) * 100)}%`,
-                background: totalCards === 50 ? '#80e860' : totalCards > 50 ? '#e06060' : 'linear-gradient(90deg, #3888c4, #58aada)',
-                transition: 'width 0.3s ease, background 0.3s ease',
-              }} />
-            </div>
-          </div>
-          <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.45)', textAlign: 'right' }}>
-            <span style={{ color: '#58aada' }}>{extraDeckList.length}</span>
-            <span> / 10 extra deck</span>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+          <ProgressRing
+            value={totalCards} max={MAIN_DECK_SIZE}
+            color={totalCards === MAIN_DECK_SIZE ? '#80e860' : totalCards > MAIN_DECK_SIZE ? '#e06060' : '#58aada'}
+            label="Main"
+          />
+          <ProgressRing value={extraDeckList.length} max={EXTRA_DECK_SIZE} color="#70c890" size={38} label="Extra" />
         </div>
       </div>
 
-      {/* Tab strip */}
-      <div style={styles.tabStrip}>
-        {(['cards', 'extra', 'abilities', 'stats', 'notes'] as const).map(tab => {
-          const TAB_LABELS: Record<string, string> = {
-            cards: 'Cards', extra: 'Extra Deck', abilities: 'Abilities', stats: 'Stats', notes: 'Notes',
-          };
-          return (
+      {/* Toolbar — replaces the old sidebar */}
+      <div style={styles.toolbar}>
+        <div style={{ position: 'relative' }}>
+          <button
+            className="menu-tactile-btn"
+            style={styles.toolbarBtn}
+            onClick={() => setLoadMenuOpen(v => !v)}
+          >
+            Load ▾
+          </button>
+          {loadMenuOpen && (
+            <div style={styles.loadDropdownPanel} onMouseLeave={() => setLoadMenuOpen(false)}>
+              {savedDecks.map(sd => (
+                <div
+                  key={sd.id}
+                  style={{
+                    ...styles.loadDeckRow,
+                    ...(sd.id === activeDeckId ? { background: 'rgba(58,142,200,0.14)' } : {}),
+                  }}
+                >
+                  <div style={{ flex: 1, fontSize: 11, color: 'rgba(205,228,255,0.82)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} onClick={() => handleLoadSaved(sd.id)}>
+                    {sd.isStarter ? '🔒 ' : ''}{sd.name}
+                  </div>
+                  {!sd.isStarter && (
+                    <button
+                      className="menu-tactile-btn"
+                      style={{ ...styles.toolbarBtn, ...styles.toolbarBtnDanger, padding: '3px 8px', fontSize: 10 }}
+                      onClick={() => {
+                        if (window.confirm(`Delete deck "${sd.name}"? This cannot be undone.`)) deleteSavedDeck(sd.id);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {saveMode ? (
+          <>
+            <input
+              style={styles.nameInput}
+              placeholder="Deck name…"
+              value={newDeckName}
+              onChange={e => setNewDeckName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') handleSaveNew(); if (e.key === 'Escape') setSaveMode(false); }}
+              autoFocus
+            />
             <button
-              key={tab}
               className="menu-tactile-btn"
-              style={{ ...styles.tabBtn, ...(activeTab === tab ? styles.tabBtnActive : {}) } as React.CSSProperties}
-              onClick={() => setActiveTab(tab)}
+              style={{ ...styles.toolbarBtn, ...((validation.valid && newDeckName.trim()) ? {} : styles.toolbarBtnDisabled) }}
+              onClick={handleSaveNew}
             >
-              {TAB_LABELS[tab]}
+              Save
             </button>
-          );
-        })}
+            <button className="menu-tactile-btn" style={{ ...styles.toolbarBtn, ...styles.toolbarBtnDanger }} onClick={() => { setSaveMode(false); setNewDeckName(''); }}>
+              Cancel
+            </button>
+          </>
+        ) : (
+          <button
+            className="menu-tactile-btn"
+            style={{ ...styles.toolbarBtn, ...(validation.valid ? {} : styles.toolbarBtnDisabled) }}
+            onClick={() => validation.valid && setSaveMode(true)}
+          >
+            Save As
+          </button>
+        )}
+
+        {!isEditingStarter && activeDeckId && (
+          <button
+            className="menu-tactile-btn"
+            style={{ ...styles.toolbarBtn, ...(validation.valid ? {} : styles.toolbarBtnDisabled) }}
+            onClick={handleUpdateCurrent}
+          >
+            Update
+          </button>
+        )}
+
+        <button
+          className="menu-tactile-btn"
+          style={{ ...styles.toolbarBtn, ...(totalCards < MAIN_DECK_SIZE ? {} : styles.toolbarBtnDisabled) }}
+          onClick={handleFillWithBest}
+          disabled={totalCards >= MAIN_DECK_SIZE}
+          title="Top up the deck with your highest-rarity owned cards."
+        >
+          Fill Best
+        </button>
+
+        <button
+          className="menu-tactile-btn"
+          style={{ ...styles.toolbarBtn, ...styles.toolbarBtnDanger, ...((deckList.length > 0 || extraDeckList.length > 0) ? {} : styles.toolbarBtnDisabled) }}
+          onClick={handleClearDeck}
+          disabled={deckList.length === 0 && extraDeckList.length === 0}
+        >
+          Clear
+        </button>
       </div>
 
-      {/* Element filter — Cards tab only */}
-      {activeTab === 'cards' && (
-        <div style={styles.filterBar}>
-          <button className="menu-tactile-btn"
-            style={{ ...styles.filterBtn, ...(elementFilter === null ? styles.filterBtnActive : {}) }}
-            onClick={() => setElementFilter(null)}
-          >All</button>
-          {availableElements.map(el => (
-            <button className="menu-tactile-btn"
-              key={el}
-              style={{
-                ...styles.filterBtn,
-                ...(elementFilter === el ? {
-                  ...styles.filterBtnActive,
-                  color: SET_ACCENT,
-                  borderBottomColor: SET_ACCENT,
-                  background: `${(SET_ACCENT)}14`,
-                } : {}),
-              }}
-              onClick={() => setElementFilter(el === elementFilter ? null : el)}
-            >
-              {elementFilter === el && (
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
-              )}
-              {SET_LABEL}
-            </button>
-          ))}
+      {/* Validation banner */}
+      {!validation.valid ? (
+        <div style={{ ...styles.validationBanner, color: '#e07060' }}>
+          <span style={{ fontSize: 13, lineHeight: 1 }}>✕</span>
+          {validation.errors[0]}
+        </div>
+      ) : (
+        <div style={{ ...styles.validationBanner, color: '#80e860', textShadow: '0 0 14px rgba(128, 232, 96, 0.4)' }}>
+          <span style={{ fontSize: 13, lineHeight: 1 }}>✓</span>
+          Deck valid — {MAIN_DECK_SIZE} cards
         </div>
       )}
 
-      <div style={styles.body}>
-        {/* Main content switches by tab */}
-        {activeTab === 'abilities' ? (
-          <DeckBuilderAbilitiesTab
-            deckList={deckList}
-            extraDeckList={extraDeckList}
-            activeDeck={activeDeck}
-            setDeckAbilityLoadout={setDeckAbilityLoadout}
-          />
-        ) : activeTab === 'stats' ? (
-          <DeckBuilderStatsTab
-            deckList={deckList}
-            extraDeckList={extraDeckList}
-            totalCards={totalCards}
-            deckStats={deckStats}
-          />
-        ) : activeTab === 'notes' ? (
-          <DeckBuilderNotesTab
-            key={activeDeckId ?? 'no-deck'}
-            deckId={activeDeckId ?? null}
-            currentNotes={activeDeck?.notes ?? ''}
-            setDeckNotes={setDeckNotes}
-          />
-        ) : (() => {
-          const poolRows = activeTab === 'cards'
-            ? deckPoolRows.filter(r => r.sectionLabel !== 'Angel')
-            : deckPoolRows.filter(r => r.sectionLabel === 'Angel');
-          if (poolRows.length === 0) {
-            return (
-              <div style={styles.cardPool}>
-                <div style={styles.empty}>
-                  {activeTab === 'extra'
-                    ? 'No Angels in your collection yet.'
-                    : `No${elementFilter ? ` ${SET_LABEL}` : ''} cards in your collection yet.`}
-                </div>
+      {/* Element filter */}
+      <div style={styles.filterBar}>
+        <button className="menu-tactile-btn"
+          style={{ ...styles.filterBtn, ...(elementFilter === null ? styles.filterBtnActive : {}) }}
+          onClick={() => setElementFilter(null)}
+        >All</button>
+        {availableElements.map(el => (
+          <button className="menu-tactile-btn"
+            key={el}
+            style={{
+              ...styles.filterBtn,
+              ...(elementFilter === el ? {
+                ...styles.filterBtnActive,
+                color: SET_ACCENT,
+                borderColor: SET_ACCENT,
+                background: `${(SET_ACCENT)}14`,
+              } : {}),
+            }}
+            onClick={() => setElementFilter(el === elementFilter ? null : el)}
+          >
+            {elementFilter === el && (
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
+            )}
+            {SET_LABEL}
+          </button>
+        ))}
+      </div>
+
+      {/* Two-pane body: pool (left/top) + deck (right/bottom) */}
+      <div ref={bodyRef} style={{ ...styles.body, flexDirection: isNarrow ? 'column' : 'row' }}>
+        {/* Pool pane */}
+        <div style={{ ...styles.poolPane, flex: isNarrow ? '1 1 55%' : styles.poolPane.flex }}>
+          {deckPoolRows.length === 0 ? (
+            <div style={styles.cardPool}>
+              <div style={styles.empty}>
+                {`No${elementFilter ? ` ${SET_LABEL}` : ''} cards in your collection yet.`}
               </div>
-            );
-          }
-          return (
+            </div>
+          ) : (
             <VirtualizedList
-              items={poolRows}
+              items={deckPoolRows}
               getItemKey={(row) => row.key}
               getItemHeight={(row) => row.kind === 'heading' ? 44 : 214}
-              topPadding={16}
+              topPadding={12}
               bottomPadding={24}
               overscanPx={300}
               viewportRef={cardPoolViewportRef}
@@ -979,9 +1062,9 @@ export default function DeckBuilder({ onClose }: Props) {
               renderItem={(row) => {
                 if (row.kind === 'heading') {
                   const accent = getSectionColors()[row.sectionLabel] ?? '#58aada';
-                  const title = row.sectionLabel === 'Angel' ? 'Angels' : row.sectionLabel;
+                  const title = row.sectionLabel === 'Angel' ? 'Angels (adds to Extra Deck)' : row.sectionLabel;
                   return (
-                    <div style={{ padding: '0 20px' }}>
+                    <div style={{ padding: '0 4px' }}>
                       <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
                         <div style={{ width: 4, height: 20, borderRadius: 2, background: accent, boxShadow: `0 0 8px ${accent}50`, flexShrink: 0 }} />
                         <span style={{ ...styles.sectionLabel, color: accent }}>
@@ -994,289 +1077,126 @@ export default function DeckBuilder({ onClose }: Props) {
                   );
                 }
                 return (
-                  <div style={{ display: 'flex', gap: 10, padding: '0 20px 24px', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: 10, padding: '0 4px 24px', alignItems: 'flex-start' }}>
                     {row.entries?.map((entry) => renderPoolCard(entry, row.sectionLabel))}
                   </div>
                 );
               }}
             />
-          );
-        })()}
+          )}
+        </div>
 
-        {/* Sidebar */}
-        <div style={styles.sidebar}>
-          {/* Saved decks */}
-          <div style={styles.sidebarSection}>
-            <div style={{ ...styles.sidebarSectionTitle, justifyContent: 'space-between', marginBottom: collapsedSidebarSections.savedDecks ? 0 : 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
-                Saved Decks
-              </div>
-              <button
-                className="menu-tactile-btn"
-                style={styles.sectionToggleBtn}
-                onClick={() => toggleSidebarSection('savedDecks')}
-                title={collapsedSidebarSections.savedDecks ? 'Expand Saved Decks' : 'Collapse Saved Decks'}
-              >
-                {collapsedSidebarSections.savedDecks ? '▸' : '▾'}
-              </button>
+        {/* Deck pane */}
+        <div style={styles.deckPane}>
+          {/* Extra Deck strip — always visible, the sole Extra Deck surface */}
+          <div style={styles.extraStripWrap}>
+            <div style={styles.extraStripHeader}>
+              <span>Extra Deck</span>
+              <span>{extraDeckList.length} / {EXTRA_DECK_SIZE}</span>
             </div>
-            {!collapsedSidebarSections.savedDecks && savedDecks.map(sd => (
-              <div key={sd.id} style={{
-                ...styles.savedDeckRow,
-                ...(sd.id === activeDeckId ? { borderLeftColor: '#58aada', background: 'rgba(58,142,200,0.09)' } : {}),
-              }}>
-                <div style={styles.savedDeckName} title={sd.name}>
-                  {sd.isStarter ? '🔒 ' : ''}{sd.name}
-                </div>
-                <button className="menu-tactile-btn" style={styles.miniBtn} onClick={() => handleLoadSaved(sd.id)}>Load</button>
-                {!sd.isStarter && (
-                  <button className="menu-tactile-btn"
-                    style={{ ...styles.miniBtn, ...styles.miniBtnDanger }}
-                    onClick={() => {
-                      if (window.confirm(`Delete deck "${sd.name}"? This cannot be undone.`)) {
-                        deleteSavedDeck(sd.id);
-                      }
+            <div style={styles.extraStrip}>
+              {extraDeckEntries.map(entry => {
+                const def = CardRegistry.get(entry.definitionId);
+                if (!def) return null;
+                return (
+                  <div
+                    key={entry.key}
+                    style={{
+                      ...styles.extraStripCard,
+                      ...getDenseCardFaceBackgroundStyle(def, entry.finish, 'front', true),
                     }}
-                  >Delete</button>
-                )}
-              </div>
-            ))}
-            {!collapsedSidebarSections.savedDecks && savedDecks.length === 1 && (
-              <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.55)', marginTop: 6, fontStyle: 'italic' }}>
-                Build a deck below and save it to create a custom deck.
-              </div>
-            )}
+                    title={`${def.name} ×${entry.copies} — click to remove one`}
+                    onClick={() => removeCard(entry.definitionId, entry.finish)}
+                  >
+                    {entry.copies > 1 && (
+                      <div style={{ position: 'absolute', bottom: 2, right: 2, fontSize: 9, fontWeight: 'bold', color: '#3a1800', background: '#f8d878', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {entry.copies}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              {extraDeckList.length === 0 && (
+                <div style={styles.extraStripEmptySlot}>+</div>
+              )}
+            </div>
           </div>
 
-          {/* Save controls */}
-          <div style={styles.sidebarSection}>
-            <div style={{ ...styles.sidebarSectionTitle, justifyContent: 'space-between', marginBottom: collapsedSidebarSections.save ? 0 : 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ display: 'inline-block', width: 12, height: 1, background: '#d4a84e', opacity: 0.7 }} />
-                Save
-              </div>
-              <button
-                className="menu-tactile-btn"
-                style={styles.sectionToggleBtn}
-                onClick={() => toggleSidebarSection('save')}
-                title={collapsedSidebarSections.save ? 'Expand Save Controls' : 'Collapse Save Controls'}
-              >
-                {collapsedSidebarSections.save ? '▸' : '▾'}
-              </button>
-            </div>
-            {!collapsedSidebarSections.save && !isEditingStarter && activeDeckId && (
-              <button className="menu-tactile-btn"
-                style={{ ...styles.miniBtn, marginBottom: 6, opacity: validation.valid ? 1 : 0.35, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
-                onClick={handleUpdateCurrent}
-              >
-                Update "{activeDeck?.name}"
-              </button>
-            )}
-            {!collapsedSidebarSections.save && (
-              <div style={{ ...styles.sidebarActionRow, marginBottom: 6 }}>
-              <button className="menu-tactile-btn"
-                style={{
-                  ...styles.miniBtn,
-                  opacity: totalCards < 50 ? 1 : 0.35,
-                  cursor: totalCards < 50 ? 'pointer' : 'not-allowed',
-                }}
-                onClick={handleFillWithBest}
-                disabled={totalCards >= 50}
-                title={elementFilter === null
-                  ? 'Top up the deck with your highest-rarity owned cards.'
-                  : `Top up the deck with the best owned ${SET_LABEL} cards.`}
-              >
-                Fill with Best
-              </button>
-              <button className="menu-tactile-btn"
-                style={{
-                  ...styles.miniBtn,
-                  ...styles.miniBtnDanger,
-                  opacity: deckList.length > 0 || extraDeckList.length > 0 ? 1 : 0.35,
-                  cursor: deckList.length > 0 || extraDeckList.length > 0 ? 'pointer' : 'not-allowed',
-                }}
-                onClick={handleClearDeck}
-                disabled={deckList.length === 0 && extraDeckList.length === 0}
-              >
-                Remove All Cards
-              </button>
-              </div>
-            )}
-            {!collapsedSidebarSections.save && (saveMode ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <input
-                  style={styles.nameInput}
-                  placeholder="Deck name…"
-                  value={newDeckName}
-                  onChange={e => setNewDeckName(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleSaveNew(); if (e.key === 'Escape') setSaveMode(false); }}
-                  autoFocus
-                />
-                <div style={{ display: 'flex', gap: 4 }}>
-                  <button className="menu-tactile-btn"
-                    style={{ ...styles.miniBtn, opacity: (validation.valid && newDeckName.trim()) ? 1 : 0.35 }}
-                    onClick={handleSaveNew}
-                  >Save</button>
-                  <button className="menu-tactile-btn" style={{ ...styles.miniBtn, ...styles.miniBtnDanger }} onClick={() => { setSaveMode(false); setNewDeckName(''); }}>Cancel</button>
-                </div>
-              </div>
-            ) : (
-              <button className="menu-tactile-btn"
-                style={{ ...styles.miniBtn, opacity: validation.valid ? 1 : 0.35, cursor: validation.valid ? 'pointer' : 'not-allowed' }}
-                onClick={() => validation.valid && setSaveMode(true)}
-              >
-                Save as New Deck
-              </button>
-            ))}
-          </div>
-
-          {/* Extra deck list */}
-          <div style={{ ...styles.sidebarSection, flexShrink: 0 }}>
-            <div style={{ ...styles.sidebarSectionTitle, justifyContent: 'space-between', marginBottom: collapsedSidebarSections.extraDeck ? 0 : 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
-                Extra Deck ({extraDeckList.length} / 10)
-              </div>
-              <button
-                className="menu-tactile-btn"
-                style={styles.sectionToggleBtn}
-                onClick={() => toggleSidebarSection('extraDeck')}
-                title={collapsedSidebarSections.extraDeck ? 'Expand Extra Deck' : 'Collapse Extra Deck'}
-              >
-                {collapsedSidebarSections.extraDeck ? '▸' : '▾'}
-              </button>
-            </div>
-            {!collapsedSidebarSections.extraDeck && extraDeckList.length === 0 && (
-              <div style={{ fontSize: 10, color: 'rgba(190,215,245,0.50)', fontStyle: 'italic' }}>No angels selected</div>
-            )}
-            {!collapsedSidebarSections.extraDeck && extraDeckEntries.map(entry => {
-              const def = CardRegistry.get(entry.definitionId);
-              const cap = Math.min(4, collection[entry.definitionId] ?? 0);
-              const owned = def ? getOwnedCopiesForFinish(def, entry.finish, collection, holoCollection) : 0;
-              const totalForDefinition = extraDeckDefinitionCountMap.get(entry.definitionId) ?? 0;
-              const canAdd = entry.copies < owned && totalForDefinition < cap && extraDeckList.length < 10;
-              const rarityColorEx = RARITY_COLORS_DB[def?.rarity ?? ''] ?? 'rgba(200,155,72,0.5)';
+          {/* Sub-tabs: Cards · Abilities · Analyze */}
+          <div style={styles.subTabStrip}>
+            {(['cards', 'abilities', 'analyze'] as const).map(tab => {
+              const LABELS: Record<string, string> = { cards: 'Cards', abilities: 'Abilities', analyze: 'Analyze' };
               return (
-                <div key={entry.key} style={styles.entryRow}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: rarityColorEx, boxShadow: `0 0 4px ${rarityColorEx}70` }} />
-                  <div style={styles.entryName}>{def?.name ?? entry.definitionId}{entry.finish === 'holo' ? ' ✦' : ''}</div>
-                  <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>−</button>
-                  <div style={styles.entryCount}>×{entry.copies}</div>
-                  <button className="menu-tactile-btn"
-                    style={{ ...styles.entryBtn, opacity: canAdd ? 1 : 0.3 }}
-                    onClick={() => canAdd && addCard(entry.definitionId, entry.finish)}
-                  >+</button>
-                </div>
+                <button
+                  key={tab}
+                  className="menu-tactile-btn"
+                  style={{ ...styles.subTabBtn, ...(subTab === tab ? styles.subTabBtnActive : {}) } as React.CSSProperties}
+                  onClick={() => setSubTab(tab)}
+                >
+                  {LABELS[tab]}
+                </button>
               );
             })}
           </div>
 
-          {/* Main deck list */}
-          <div style={styles.deckList}>
-            <div style={{ ...styles.sidebarSectionTitle, justifyContent: 'space-between', marginBottom: collapsedSidebarSections.mainDeck ? 0 : 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <span style={{ display: 'inline-block', width: 12, height: 1, background: '#58aada', opacity: 0.7 }} />
-                Main Deck ({totalCards} / 50)
-              </div>
-              <button
-                className="menu-tactile-btn"
-                style={styles.sectionToggleBtn}
-                onClick={() => toggleSidebarSection('mainDeck')}
-                title={collapsedSidebarSections.mainDeck ? 'Expand Main Deck' : 'Collapse Main Deck'}
-              >
-                {collapsedSidebarSections.mainDeck ? '▸' : '▾'}
-              </button>
+          {subTab === 'abilities' ? (
+            <DeckBuilderAbilitiesTab
+              deckList={deckList}
+              extraDeckList={extraDeckList}
+              activeDeck={activeDeck}
+              setDeckAbilityLoadout={setDeckAbilityLoadout}
+            />
+          ) : subTab === 'analyze' ? (
+            <DeckBuilderAnalyzeTab
+              deckList={deckList}
+              extraDeckList={extraDeckList}
+              totalCards={totalCards}
+              deckStats={deckStats}
+              deckId={activeDeckId ?? null}
+              currentNotes={activeDeck?.notes ?? ''}
+              setDeckNotes={setDeckNotes}
+            />
+          ) : (
+            <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px' }}>
+              {deckList.length === 0 && (
+                <div style={{ fontSize: 12, color: 'rgba(232, 215, 191, 0.6)', textAlign: 'center', marginTop: 16 }}>
+                  Click cards in the pool to add them.
+                </div>
+              )}
+              {deckList.map(entry => {
+                const def = CardRegistry.get(entry.definitionId);
+                const cap = Math.min(4, collection[entry.definitionId] ?? 0);
+                const owned = def ? getOwnedCopiesForFinish(def, entry.finish, collection, holoCollection) : 0;
+                const totalForDefinition = deckDefinitionCountMap.get(entry.definitionId) ?? 0;
+                const rarityColorMain = RARITY_COLORS_DB[def?.rarity ?? ''] ?? 'rgba(200,155,72,0.5)';
+                return (
+                  <div key={getVariantKey(entry.definitionId, entry.finish)} style={styles.entryRow}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: rarityColorMain, boxShadow: `0 0 4px ${rarityColorMain}70` }} />
+                    <div style={styles.entryName}>{def?.name ?? entry.definitionId}{entry.finish === 'holo' ? ' ✦' : ''}</div>
+                    <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>−</button>
+                    <div style={styles.entryCount}>×{entry.copies}</div>
+                    <button className="menu-tactile-btn"
+                      style={{ ...styles.entryBtn, opacity: entry.copies >= owned || totalForDefinition >= cap ? 0.3 : 1 }}
+                      onClick={() => addCard(entry.definitionId, entry.finish)}
+                    >+</button>
+                  </div>
+                );
+              })}
             </div>
-            {/* Stats summary */}
-            {!collapsedSidebarSections.mainDeck && deckList.length > 0 && (
-              <div style={{
-                marginBottom: 10,
-                padding: '8px 10px',
-                background: 'rgba(5, 8, 16, 0.7)',
-                border: '1px solid rgba(62,112,168,0.20)',
-                borderRadius: 8,
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.03)',
-              }}>
-                <div style={{ fontSize: 9, letterSpacing: 2, color: 'rgba(190,215,245,0.55)', marginBottom: 6, textTransform: 'uppercase' }}>Stats</div>
-                <div style={{ fontSize: 10, color: '#c8dff2', display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 5 }}>
-                  {(['Legendary','Epic','Rare','Common'] as const).map(r => {
-                    const n = deckStats.rarityCounts[r] ?? 0;
-                    if (n === 0) return null;
-                    const color = r === 'Legendary' ? '#f39c12' : r === 'Epic' ? '#9b59b6' : r === 'Rare' ? '#5b9bd5' : '#888';
-                    return <span key={r} style={{ color }}>{r[0]}: <strong>{n}</strong></span>;
-                  })}
-                </div>
-                {totalCards > 0 && (
-                  <div style={{ display: 'flex', height: 4, borderRadius: 2, overflow: 'hidden', marginBottom: 6, background: 'rgba(255,255,255,0.06)' }}>
-                    {(['Legendary','Epic','Rare','Common'] as const).map(r => {
-                      const n = deckStats.rarityCounts[r] ?? 0;
-                      if (n === 0) return null;
-                      const color = r === 'Legendary' ? '#f39c12' : r === 'Epic' ? '#9b59b6' : r === 'Rare' ? '#5b9bd5' : '#555';
-                      return <div key={r} style={{ width: `${(n / totalCards) * 100}%`, background: color, transition: 'width 0.3s' }} />;
-                    })}
-                  </div>
-                )}
-                <div style={{ fontSize: 10, display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
-                  <span style={{ color: '#f0bd78' }}>Ser: <strong>{deckStats.typeSeraphim}</strong></span>
-                  <span style={{ color: warmTheme.cherubim }}>Che: <strong>{deckStats.typeCherubim}</strong></span>
-                  <span style={{ color: '#9070b8' }}>Oph: <strong>{deckStats.typeOphanim}</strong></span>
-                </div>
-                {Object.keys(deckStats.elementCounts).length > 1 && (
-                  <div style={{ fontSize: 9, color: '#9aa1aa', display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                    {Object.entries(deckStats.elementCounts)
-                      .sort((a, b) => b[1] - a[1])
-                      .slice(0, 6)
-                      .map(([el, n]) => (
-                        <span key={el} style={{ color: SET_ACCENT }}>
-                          {SET_LABEL}: {n}
-                        </span>
-                      ))}
-                  </div>
-                )}
-              </div>
-            )}
-            {!collapsedSidebarSections.mainDeck && deckList.length === 0 && (
-              <div style={{ fontSize: 12, color: 'rgba(232, 215, 191, 0.6)', textAlign: 'center', marginTop: 16 }}>
-                Click cards to add them
-              </div>
-            )}
-            {!collapsedSidebarSections.mainDeck && deckList.map(entry => {
-              const def = CardRegistry.get(entry.definitionId);
-              const cap = Math.min(4, collection[entry.definitionId] ?? 0);
-              const owned = def ? getOwnedCopiesForFinish(def, entry.finish, collection, holoCollection) : 0;
-              const totalForDefinition = deckDefinitionCountMap.get(entry.definitionId) ?? 0;
-              const rarityColorMain = RARITY_COLORS_DB[def?.rarity ?? ''] ?? 'rgba(200,155,72,0.5)';
-              return (
-                <div key={getVariantKey(entry.definitionId, entry.finish)} style={styles.entryRow}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: rarityColorMain, boxShadow: `0 0 4px ${rarityColorMain}70` }} />
-                  <div style={styles.entryName}>{def?.name ?? entry.definitionId}{entry.finish === 'holo' ? ' ✦' : ''}</div>
-                  <button className="menu-tactile-btn" style={styles.entryBtn} onClick={() => removeCard(entry.definitionId, entry.finish)}>−</button>
-                  <div style={styles.entryCount}>×{entry.copies}</div>
-                  <button className="menu-tactile-btn"
-                    style={{ ...styles.entryBtn, opacity: entry.copies >= owned || totalForDefinition >= cap ? 0.3 : 1 }}
-                    onClick={() => addCard(entry.definitionId, entry.finish)}
-                  >+</button>
-                </div>
-              );
-            })}
-          </div>
+          )}
         </div>
       </div>
 
       <div style={styles.footer}>
-        <div>
-          {!validation.valid && (
-            <div style={{ color: '#e07060', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 14, lineHeight: 1 }}>✕</span>
-              {validation.errors[0]}
-            </div>
-          )}
-          {validation.valid && (
-            <div style={{ color: '#80e860', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6, textShadow: '0 0 14px rgba(128, 232, 96, 0.4)' }}>
-              <span style={{ fontSize: 14, lineHeight: 1 }}>✓</span>
-              Deck valid — 50 cards
-            </div>
+        <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.5)' }}>
+          {activeDeck?.notes && activeDeck.notes.trim().length > 0 && subTab !== 'analyze' && (
+            <button
+              className="menu-tactile-btn"
+              onClick={() => setSubTab('analyze')}
+              style={{ background: 'transparent', border: 'none', color: 'rgba(190,215,245,0.55)', cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 11 }}
+            >
+              📝 This deck has notes — view in Analyze
+            </button>
           )}
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
@@ -1289,8 +1209,6 @@ export default function DeckBuilder({ onClose }: Props) {
           </button>
         </div>
       </div>
-
-
 
       {/* Card hover tooltip — appears after 1.5s hover */}
       {cardTooltip && (
@@ -1320,9 +1238,6 @@ export default function DeckBuilder({ onClose }: Props) {
           <div style={{ fontSize: 10, color: 'rgba(234,217,192,0.6)', letterSpacing: 1, marginBottom: 10 }}>
             {getDisplayCardTypeLabel(cardTooltip.card.type)} · <span style={{ color: RARITY_COLORS_DB[cardTooltip.card.rarity] ?? '#aaa' }}>{cardTooltip.card.rarity}</span> · {SET_LABEL}
           </div>
-          <div style={{ marginBottom: 10 }}>
-            <CardEngineCallout card={cardTooltip.card} variant="detail" />
-          </div>
           <CardRulesDigest
             card={cardTooltip.card}
             variant="detail"
@@ -1336,5 +1251,3 @@ export default function DeckBuilder({ onClose }: Props) {
     </div>
   );
 }
-
-

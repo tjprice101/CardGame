@@ -103,23 +103,25 @@ All cooldowns in the game — Seraphim/Angel attack cooldowns, card activated-ab
 
 ## Set Ability System
 
-Each card set exposes four **hotkey-activated abilities** (default keys `1`–`4`) gated by deck composition:
+Each card set exposes four **hotkey-activated abilities** (default keys `1`–`4`) gated by set-scoped deck composition:
 
 | Slot | Gate | Requirement |
 |---|---|---|
 | 1 | Base | Any card of the set in the main deck |
 | 2 | Eternal | ≥1 Eternal card of the set in the main deck |
 | 3 | Infinite | ≥1 Infinite card of the set in the main deck |
-| 4 | Transcendent Angel | A Transcendent-tier Angel (`tx-angel-*`) of the set in the extra deck **AND** currently on the board |
+| 4 | Base, plus a runtime board check | Base deck-composition gate; additionally requires a Transcendent Angel of the set physically on the board right now |
+
+Gates are resolved per set via `SetEngineDefinition.membership` (`isEternal`/`isInfinite`/`isTranscendentAngel` predicates), so cross-set cards never satisfy another set's gates. `SetAbilityGate` is now only `'base' | 'eternal' | 'infinite'` — the old `'transcendent-angel'` gate value was removed; slot 4's on-board requirement is enforced purely at runtime in `activateSetAbility`, not as a deck-composition gate.
 
 **Neutrality abilities:**
-- Slot 1 — *Composed Draw* (Base, 3-hand-play CD): Draw 2 cards; grant +3 Patience to every front-row unit.
+- Slot 1 — *Composed Advance* (Base, 3-hand-play CD): Grant +3 Patience to every front-row unit; reduce every attack cooldown on the board by 1 (no draw).
 - Slot 2 — *Vigil's Ledger* (Eternal, 5-hand-play CD): Units with ≥20 Patience get +5 Patience; draw 2 cards.
 - Slot 3 — *Recursive Calm* (Infinite, one-off): Consume all front-row Patience; gain Oblivion = totalPatience × 500 × min(3, 1 + resonanceScore/1000).
-- Slot 4 — *Aegis Uprising* (Transcendent Angel, 12-hand-play CD, repeatable): Find lowest Patience on board; grant every unit that value × 3. Blocked with a toast unless a `tx-angel-*` Angel is on the board right now (runtime check in `activateSetAbility`, separate from the deck-composition gate).
+- Slot 4 — *Aegis Uprising* (Base gate + on-board check, 12-hand-play CD, repeatable): Find lowest Patience on board; grant every unit that value × 3. Blocked with a toast unless a Transcendent Angel of the set is on the board right now (checked via `neutralitySet.membership.isTranscendentAngel` in `activateSetAbility`, store.ts). No extra-deck requirement anymore — only the physical board check.
 
 **Key files:**
-- `src/systems/sets/SetEngine.ts` — types (`SetAbilityDefinition`, `SetEngineDefinition`), registry (`registerSet`, `getSet`), gate resolution (`resolveActiveAbilitiesForDeck`, `resolveGatesForDeck`), `isTranscendentAngelCardId(id)` helper (`id.startsWith('tx-angel-')`).
+- `src/systems/sets/SetEngine.ts` — types (`SetAbilityDefinition`, `SetEngineDefinition`, `SetCardMembership`), registry (`registerSet`, `getSet`, `listSets`), gate resolution (`resolveActiveAbilitiesForDeck`, `resolveGatesForDeck(setId, deckList, extraDeck)` — now takes `setId` as first arg and returns an empty set + dev-warns for an unknown set id).
 - `src/systems/sets/neutrality/NeutralityAbilities.ts` — Neutrality set definition + four ability implementations.
 - `src/ui/hud/SetAbilityStrip.tsx` — in-game HUD strip showing 4 slots with hotkey, label, and cooldown state.
 - `src/main.tsx` — imports `NeutralityAbilities` as a side-effect to register the set at startup.
@@ -131,7 +133,7 @@ Each card set exposes four **hotkey-activated abilities** (default keys `1`–`4
 
 ## Enigmas — boss-fight progression persistence
 
-Enigma step progress (`ProgressState.enigmas.instances[id].stepsComplete`) can be flipped **mid-fight** by `syncEnigmaProgressFromBoard` (e.g. after `placeSeraphim`) — this matters because some board patterns (like Neutral Mystery's "3 Null + 2 Equilibrium Seraphim" step 4) are only assemblable *inside* a boss fight, trial deck, or null raid, never in the persistent overworld board.
+Enigma step progress (`ProgressState.enigmas.instances[id].stepsComplete`) can be flipped **mid-fight** by `syncEnigmaProgressFromBoard` — this matters because some board patterns (like Neutral Mystery's "3 Null + 2 Equilibrium Seraphim" step 4) are only assemblable *inside* a boss fight, trial deck, or null raid, never in the persistent overworld board. Call sites in `store.ts`: after `placeSeraphim`, and inside `playCard` in **both** the Seraphim-placement branch and the generic-card fallback branch (added so a Seraphim placed via `playCard`, not just via `placeSeraphim` directly, can also complete a step mid-turn — the Cherubim branch is intentionally excluded since back-row placement can't satisfy Neutral Mystery step 4).
 
 All four run-ending restore sites in `src/state/store.ts` (`completeBossFight`'s normal-victory path, `completeBossFight`'s null-raid path, `forfeitBossFight`'s null-raid branch, `endTrialDeck`) overwrite `s.progress` wholesale with a pre-run snapshot (`s.progress = saved.progress`). Without special handling this would **silently wipe** any enigma step flipped during the run. Each of these four sites now:
 1. Captures `cloneState(s.progress.enigmas.instances)` immediately before the restore.
@@ -309,15 +311,17 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 
 ### Deck Builder
 - Locked until 15 unique cards are collected. Lock overlay explains the requirement with current progress.
-- 5-tab shell in `src/ui/deck/DeckBuilder.tsx`: **Cards** · **Extra Deck** · **Abilities** · **Stats** · **Notes**. Per-tab components live under `src/ui/deck/tabs/DeckBuilder{Abilities,Stats,Notes}Tab.tsx` (Cards/Extra Deck tabs are inline in `DeckBuilder.tsx`). The old standalone Notes modal has been removed in favor of the Notes tab.
-- Has two zones: **Main Deck** (50 cards, max 4 copies per definition, non-Angel cards only) and **Extra Deck** (up to 5 Angels, max 2 per definition).
-- Cards tab filters `deckPoolRows` by `sectionLabel !== 'Angel'`; Extra Deck tab filters by `sectionLabel === 'Angel'`.
-- Sections in main deck pool: **Seraphim**, **Ophanim**, **Cherubim** (no cardSubtype groupings).
-- Abilities tab (`DeckBuilderAbilitiesTab.tsx`) shows all 4 set-ability slots with their gate label/color/hint (`GATE_LABELS`/`GATE_COLORS`/`GATE_HINTS` keyed by `SetAbilityGate`, including `'transcendent-angel'`) and lets the player assign `SavedDeck.abilityLoadout`.
-- Valid deck: exactly 50 main deck cards, max 4 copies of any definition. Extra deck: 0–5 Angels.
+- **Two-pane shell** in `src/ui/deck/DeckBuilder.tsx` (redesigned; no more global tab strip / 4-section sidebar): header banner (title, deck name, radial progress rings for Main/Extra deck counts) → toolbar row (Load ▾ dropdown of saved decks with per-deck delete, Save As, Update, Fill Best, Clear) → validation banner → element filter chips → body split into a left **pool pane** (~60% width, virtualized card grid grouped by section) and a right **deck pane** (~40% width). There is no separate "Extra Deck" tab — Angel cards live in the pool alongside Seraphim/Cherubim/Ophanim and are added to the Extra Deck by the same click-to-add interaction.
+- The deck pane always shows an **Extra Deck strip** at the top (horizontally scrollable, click a card to remove one copy), followed by 3 sub-tabs: **Cards** (main deck list with +/- controls), **Abilities** (`DeckBuilderAbilitiesTab.tsx`), **Analyze** (`DeckBuilderAnalyzeTab.tsx` — merges the former separate Stats and Notes tabs: rarity/type breakdown always visible, notes editor is an expandable section below it). The standalone `DeckBuilderStatsTab.tsx`/`DeckBuilderNotesTab.tsx` files were deleted.
+- Below **1000px** viewport width the two panes stack vertically (pool above deck) instead of side-by-side.
+- Has two zones: **Main Deck** (50 cards, max 4 copies per definition, non-Angel cards only) and **Extra Deck** (up to 10 Angels, max 4 per definition — capped by owned copies).
+- Sections in the pool: **Angel** (adds to Extra Deck), **Seraphim**, **Ophanim**, **Cherubim** (no cardSubtype groupings).
+- Abilities tab (`DeckBuilderAbilitiesTab.tsx`) shows all 4 set-ability slots with their gate label/color/hint (`GATE_LABELS`/`GATE_COLORS`/`GATE_HINTS` keyed by `SetAbilityGate`, now only `'base' | 'eternal' | 'infinite'`) and lets the player assign `SavedDeck.abilityLoadout`.
+- Valid deck: exactly 50 main deck cards, max 4 copies of any definition. Extra deck: 0–10 Angels, max 4 copies per Angel definition (capped by owned copies).
 - Does **not** allow fewer than 50 main deck cards.
 - Main-deck size clamping lives in `DeckSystem.addDeckEntry`; DeckBuilder enforces the 50-card cap through that helper.
 - Boss fights (Eternity's Wake) load decks from `progress.savedDecks`; `saveCurrentDeck` must receive the edited `deckList` and `extraDeck` snapshot.
+- Card-info surfaces (Collection detail, DeckBuilder hover tooltip, HUD hand/board tooltips, boss/infinitude reward previews) no longer show "Action Class"/"Engine Role"/"{Type} Ability" sections — `CardEngineCallout.tsx` and its call sites were removed; only `CardRulesDigest` renders card rules text now. Collection detail's "How to Obtain" fallback shows tier-specific flavor text keyed by rarity/id prefix (`flavorObtain` in `CollectionCardDetail.tsx`).
 
 ---
 

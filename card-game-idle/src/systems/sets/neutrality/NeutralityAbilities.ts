@@ -20,27 +20,36 @@ function clampPatience(val: number): number {
   return Math.max(0, Math.min(NEUTRALITY_PATIENCE_CAP, val));
 }
 
+// ── Set-scoped card membership ───────────────────────────────────────────
+
+const NEUTRALITY_INFINITE_IDS = new Set([
+  'inf-oblivion-absolute', 'inf-void-cascade', 'inf-genesis-throne', 'inf-null-apex',
+  'inf-entropic-crown', 'inf-annihilation-field', 'inf-sovereign-void', 'inf-eternity-rupture',
+]);
+const NEUTRALITY_TX_ANGEL_IDS = new Set(['tx-angel-starbound-null-archangel']);
+
 // ── Ability implementations ────────────────────────────────────────────────────
 
 /**
- * Slot 1 — Composed Draw (Base, 3 hand-play CD)
- * Draw 2 cards; grant +3 Patience to every unit on the front row.
+ * Slot 1 — Composed Advance (Base, 3 hand-play CD)
+ * Grant +3 Patience to every front-row unit; reduce every front-row unit's
+ * attack cooldowns by 1 (min 0).
  */
 function composedDrawExecute(s: GameState): void {
-  // Draw up to 2 cards from draw pile into hand.
-  let drawn = 0;
-  while (drawn < 2 && s.deck.drawPile.length > 0) {
-    const card = s.deck.drawPile.pop()!;
-    s.deck.hand.push(card);
-    drawn++;
-  }
-  // Grant +3 Patience to all front-row units.
   for (const slot of s.board.frontSlots) {
     if (!slot) continue;
     if ('patienceStacks' in slot) {
       (slot as { patienceStacks?: number }).patienceStacks = clampPatience(
         ((slot as { patienceStacks?: number }).patienceStacks ?? 0) + 3
       );
+    }
+  }
+  for (const slot of s.board.frontSlots) {
+    if (!slot) continue;
+    const cooldowns = (slot as { attackCooldowns?: Record<string, number> }).attackCooldowns;
+    if (!cooldowns) continue;
+    for (const key of Object.keys(cooldowns)) {
+      cooldowns[key] = Math.max(0, cooldowns[key] - 1);
     }
   }
 }
@@ -95,9 +104,10 @@ function recursiveCalmExecute(s: GameState): void {
 }
 
 /**
- * Slot 4 — Aegis Uprising (Transcendent Angel, 12 hand-play CD, repeatable)
+ * Slot 4 — Aegis Uprising (Base, 12 hand-play CD, repeatable)
  * Find the lowest Patience value among front-row units; grant each unit
- * Patience equal to that minimum × 3.
+ * Patience equal to that minimum × 3. Requires a Transcendent Angel of this
+ * set on the board (enforced at runtime in activateSetAbility, not by a deck gate).
  */
 function aegisUprisingExecute(s: GameState): void {
   const stacks = s.board.frontSlots
@@ -122,14 +132,19 @@ const NEUTRALITY_SET: SetEngineDefinition = {
   id: 'Neutrality',
   label: 'Neutrality',
   signatureMechanic: 'patience',
+  membership: {
+    isEternal: id => id.startsWith('btei-'),
+    isInfinite: id => NEUTRALITY_INFINITE_IDS.has(id),
+    isTranscendentAngel: id => NEUTRALITY_TX_ANGEL_IDS.has(id),
+  },
   abilities: [
     {
       id: 'neutrality-slot1-composed-draw',
       setId: 'Neutrality',
       slot: 1,
       gate: 'base',
-      label: 'Composed Draw',
-      description: 'Draw 2 cards and grant +3 Patience to every unit on your front row.',
+      label: 'Composed Advance',
+      description: 'Grant +3 Patience to every front-row unit and reduce every attack cooldown on your board by 1.',
       cooldownCards: 3,
       execute: composedDrawExecute,
     },
@@ -158,9 +173,9 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       id: 'neutrality-slot4-aegis-uprising',
       setId: 'Neutrality',
       slot: 4,
-      gate: 'transcendent-angel',
+      gate: 'base',
       label: 'Aegis Uprising',
-      description: 'Find the lowest Patience among your front-row units and grant every unit that value × 3. Requires a Transcendent Angel in your extra deck AND on your board.',
+      description: 'Find the lowest Patience among your front-row units and grant every unit that value × 3. Requires a Transcendent Angel on your board.',
       cooldownCards: 12,
       execute: aegisUprisingExecute,
     },

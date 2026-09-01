@@ -65,35 +65,34 @@ function setActiveDeck(deckList: DeckEntry[], extraDeck: ExtraDeckEntry[] = []):
 
 describe('resolveGatesForDeck', () => {
   it('grants base gate when at least one card is present', () => {
-    const gates = resolveGatesForDeck([entry('ser-neutral-null')], []);
+    const gates = resolveGatesForDeck('Neutrality', [entry('ser-neutral-null')], []);
     expect(gates.has('base')).toBe(true);
   });
 
   it('grants eternal gate for a btei- prefixed card', () => {
-    const gates = resolveGatesForDeck([entry('btei-eternal-vigil')], []);
+    const gates = resolveGatesForDeck('Neutrality', [entry('btei-eternal-vigil')], []);
     expect(gates.has('eternal')).toBe(true);
   });
 
   it('grants infinite gate for a card in the Infinite set', () => {
-    const gates = resolveGatesForDeck([entry('inf-oblivion-absolute')], []);
+    const gates = resolveGatesForDeck('Neutrality', [entry('inf-oblivion-absolute')], []);
     expect(gates.has('infinite')).toBe(true);
   });
 
-  it('grants transcendent-angel gate for a tx-angel- Angel in the extra deck', () => {
-    const gates = resolveGatesForDeck([], [extraEntry('tx-angel-starbound-null-archangel')]);
-    expect(gates.has('transcendent-angel')).toBe(true);
-  });
-
-  it('does not grant transcendent-angel gate for a non-transcendent Angel', () => {
-    const gates = resolveGatesForDeck([], [extraEntry('angel-neutral-beginning')]);
-    expect(gates.has('transcendent-angel')).toBe(false);
-  });
-
   it('does not grant eternal gate for a regular card', () => {
-    const gates = resolveGatesForDeck([entry('ser-neutral-null')], []);
+    const gates = resolveGatesForDeck('Neutrality', [entry('ser-neutral-null')], []);
     expect(gates.has('eternal')).toBe(false);
     expect(gates.has('infinite')).toBe(false);
-    expect(gates.has('transcendent-angel')).toBe(false);
+  });
+
+  it('does not grant infinite gate for an id outside the Neutrality Infinite set', () => {
+    const gates = resolveGatesForDeck('Neutrality', [entry('inf-fake-heavenly-crown')], []);
+    expect(gates.has('infinite')).toBe(false);
+  });
+
+  it('returns an empty set for an unknown setId', () => {
+    const gates = resolveGatesForDeck('NotARealSet', [entry('btei-eternal-vigil')], []);
+    expect(gates.size).toBe(0);
   });
 });
 
@@ -111,10 +110,9 @@ describe('resolveActiveAbilitiesForDeck', () => {
     expect(abilities[3]).toBeUndefined();
   });
 
-  it('returns all four slots when all gates are met', () => {
+  it('returns all four slots when both eternal and infinite gates are met', () => {
     const deckList = [entry('btei-eternal-vigil'), entry('inf-oblivion-absolute')];
-    const extraDeck = [extraEntry('tx-angel-starbound-null-archangel')];
-    const abilities = resolveActiveAbilitiesForDeck('Neutrality', deckList, extraDeck);
+    const abilities = resolveActiveAbilitiesForDeck('Neutrality', deckList, []);
     expect(abilities[1]).toBeDefined();
     expect(abilities[2]).toBeDefined();
     expect(abilities[3]).toBeDefined();
@@ -142,7 +140,7 @@ describe('activateSetAbility — gate and phase guards', () => {
   });
 });
 
-describe('Composed Draw (slot 1)', () => {
+describe('Composed Advance (slot 1)', () => {
   beforeEach(() => {
     resetStore();
     setActiveDeck([entry('ser-neutral-null')]);
@@ -153,12 +151,6 @@ describe('Composed Draw (slot 1)', () => {
         frontSlots: [makeSeraphim(5), null, null, null, null],
       },
     }));
-  });
-
-  it('draws 2 cards from the draw pile', () => {
-    const before = useStore.getState().deck.hand.length;
-    useStore.getState().activateSetAbility(1);
-    expect(useStore.getState().deck.hand.length).toBe(before + 2);
   });
 
   it('grants +3 patience to every front-row unit', () => {
@@ -175,9 +167,43 @@ describe('Composed Draw (slot 1)', () => {
 
   it('is blocked while the cooldown is active', () => {
     useStore.getState().activateSetAbility(1);
-    const handAfterFirst = useStore.getState().deck.hand.length;
+    const unitAfterFirst = useStore.getState().board.frontSlots[0];
+    expect(unitAfterFirst?.type === 'Seraphim' && unitAfterFirst.patienceStacks).toBe(8);
     useStore.getState().activateSetAbility(1);
-    expect(useStore.getState().deck.hand.length).toBe(handAfterFirst);
+    const unitAfterSecond = useStore.getState().board.frontSlots[0];
+    expect(unitAfterSecond?.type === 'Seraphim' && unitAfterSecond.patienceStacks).toBe(8);
+  });
+
+  it('reduces attack cooldowns on front-row units by 1', () => {
+    useStore.setState(s => ({
+      ...s,
+      board: {
+        ...s.board,
+        frontSlots: [
+          { ...makeSeraphim(5), attackCooldowns: { 'atk-a': 3, 'atk-b': 1 } },
+          null, null, null, null,
+        ],
+      },
+    }));
+    useStore.getState().activateSetAbility(1);
+    const unit = useStore.getState().board.frontSlots[0] as SeraphimInstance;
+    expect(unit.attackCooldowns).toEqual({ 'atk-a': 2, 'atk-b': 0 });
+  });
+
+  it('does not drive attack cooldowns below zero', () => {
+    useStore.setState(s => ({
+      ...s,
+      board: {
+        ...s.board,
+        frontSlots: [
+          { ...makeSeraphim(5), attackCooldowns: { 'atk-a': 0 } },
+          null, null, null, null,
+        ],
+      },
+    }));
+    useStore.getState().activateSetAbility(1);
+    const unit = useStore.getState().board.frontSlots[0] as SeraphimInstance;
+    expect(unit.attackCooldowns).toEqual({ 'atk-a': 0 });
   });
 });
 

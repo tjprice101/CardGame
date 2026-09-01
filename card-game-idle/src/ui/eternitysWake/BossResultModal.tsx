@@ -8,7 +8,6 @@ import {
   MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
   MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
 } from '@/systems/progression/cardMastery';
-import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import {
   cardFacePalette,
@@ -374,9 +373,6 @@ export default function BossResultModal() {
                   </div>
                 </div>
 
-                <div style={{ width: '100%', marginTop: 2 }}>
-                  <CardEngineCallout card={rewardDef} variant="compact" />
-                </div>
                 <div style={{ width: '100%', marginTop: 1 }}>
                   <CardRulesDigest
                     card={rewardDef}

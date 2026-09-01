@@ -5,16 +5,15 @@ import type { SetAbilityGate } from '@/systems/sets/SetEngine';
 import type { DeckEntry, ExtraDeckEntry, SavedDeck } from '@/types/game';
 
 const GATE_LABELS: Record<SetAbilityGate, string> = {
-  base: 'Base', eternal: 'Eternal', infinite: 'Infinite', 'transcendent-angel': 'Transcendent Angel',
+  base: 'Base', eternal: 'Eternal', infinite: 'Infinite',
 };
 const GATE_COLORS: Record<SetAbilityGate, string> = {
-  base: '#7dd4f8', eternal: '#ff8888', infinite: '#c8c8e8', 'transcendent-angel': '#70c890',
+  base: '#7dd4f8', eternal: '#ff8888', infinite: '#c8c8e8',
 };
 const GATE_HINTS: Record<SetAbilityGate, string> = {
   base: 'any card in your deck',
   eternal: 'an Eternal card in your main deck',
   infinite: 'an Infinite card in your main deck',
-  'transcendent-angel': 'a Transcendent Angel in your extra deck AND on your board',
 };
 
 interface Props {
@@ -31,7 +30,7 @@ export default function DeckBuilderAbilitiesTab({
   setDeckAbilityLoadout,
 }: Props) {
   const gates = useMemo(
-    () => resolveGatesForDeck(deckList, extraDeckList),
+    () => resolveGatesForDeck(NEUTRALITY_SET.id, deckList, extraDeckList),
     [deckList, extraDeckList],
   );
 

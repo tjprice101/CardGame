@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
-import CardEngineCallout from '@/ui/components/CardEngineCallout';
 import SetAbilityStrip from '@/ui/hud/SetAbilityStrip';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
@@ -18,8 +17,6 @@ import {
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
-import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
-import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import type { DeckCard } from '@/types/game';
@@ -585,8 +582,6 @@ export default function BoardDisplay() {
         (hoveredBackSlot !== null ? board.backSlots[hoveredBackSlot] : null)
       : null;
   const boardHoveredDef = boardHoveredCard ? CardRegistry.get(boardHoveredCard.definitionId) ?? null : null;
-  const boardHoveredActionClassLabel = boardHoveredDef ? getActionClassLabel(getCardActionClass(boardHoveredDef)) : null;
-  const boardHoveredEngine = boardHoveredDef ? getSetEngineSnapshotForCard(boardHoveredDef, turn, board) : null;
 
   const BOARD_TOOLTIP_TYPE_COLORS: Record<string, string> = {
     Seraphim: '#FFD700',
@@ -652,21 +647,10 @@ export default function BoardDisplay() {
               lightBg={true}
             />
           </div>
-          <CardEngineCallout card={boardHoveredDef} variant="detail" tone="light" />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start', fontSize: 10, color: 'rgba(58, 40, 24, 0.86)', lineHeight: 1.35, marginTop: 6 }}>
             <span style={{ color: SET_ACCENT }}>
               {SET_LABEL ?? 'Neutrality'}
             </span>
-            {boardHoveredActionClassLabel && (
-              <span style={{ color: 'rgba(52, 36, 20, 0.94)' }}>
-                Action Class: {boardHoveredActionClassLabel}
-              </span>
-            )}
-            {boardHoveredEngine && (
-              <span style={{ color: boardHoveredEngine.accent, fontWeight: 700 }}>
-                {boardHoveredEngine.label} engine: {boardHoveredEngine.compact}
-              </span>
-            )}
           </div>
         </div>
       )}
