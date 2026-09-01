@@ -30,10 +30,8 @@ import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import {
   clampPatienceStacks,
-  clampPatientLightStacks,
-  getEffectivePatientLightPerCardPatienceGain,
   hasNeutralityUncappedGainsInDeck,
-} from '@/systems/cards/neutralityPatientLight';
+} from '@/systems/cards/neutralityPatience';
 import {
   type ActionClass,
   classifyCardActionClass,
@@ -54,6 +52,7 @@ import {
 } from '@/systems/progression/quests';
 import {
   ensureEnigmaState,
+  ensureInstance,
   ensureNeutralMysteryInstance,
   evaluateEnigmaAcquisition,
   evaluateNeutralMysteryProgress,
@@ -122,8 +121,7 @@ type AttenuationClass = ActionClass;
 
 const ATTENUATION_CLASSES: AttenuationClass[] = ['setup', 'conversion', 'multiplier', 'refund', 'finisher'];
 const ATTENUATION_TIERS = [1, 0.75, 0.55, 0.4] as const;
-const NEUTRALITY_SETUP_FOR_FULL_FIRE = 3;
-const NEUTRALITY_ENGINES_FOR_FULL_FIRE = 3;
+const NEUTRALITY_FULL_FIRE_PATIENCE_THRESHOLD = 40;
 const COOP_BOSS_HP_SCALE_BY_PARTY_SIZE: Record<number, number> = {
   1: 1,
   2: 1.68,
@@ -135,7 +133,7 @@ const BOSS_FIGHT_HP_SCALE_BY_COUNT: Record<number, number> = {
   3: 3.5,
 };
 
-// �E��E��E��E� Defaults �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Defaults �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
 const NOW = Date.now();
 let angelInstanceCounter = 0;
@@ -171,19 +169,11 @@ const defaultTurn: TurnState = {
   cherubimSummonedThisTurn: 0,
   equilibriumDrift: 0,
   equilibriumStability: 0,
-  neutralitySetupCount: 0,
   attenuationClassUses: { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 },
   attenuationBreaksUsed: 0,
   attenuationBrokenClasses: [],
-  neutralityEngineSignatures: [],
   neutralityPatienceChargedThisTurn: 0,
   neutralityPatienceConsumedThisTurn: 0,
-  neutralityPatientLightStacks: 0,
-  neutralityEquilibriumSigils: 0,
-  neutralityEquilibriumSigilsGainedThisTurn: 0,
-  neutralityEquilibriumPatientLightFromSigilsThisTurn: 0,
-  neutralityEquilibriumSigilCapBonus: 0,
-  neutralityEquilibriumSentinelTempoUsed: false,
   neutralityTriggeredEffects: [],
   lastFiredSeraphimAttackMode: null,
   lastFiredSeraphimAttackOblivion: 0,
@@ -360,7 +350,7 @@ export const defaultGameState: GameState = {
   toasts: [],
 };
 
-// �E��E��E��E� Store type �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Store type �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
 interface StoreActions {
   placeSeraphim: (deckCard: DeckCard, slot: 0 | 1 | 2 | 3 | 4) => void;
@@ -489,6 +479,7 @@ interface StoreActions {
   claimDailyReward: () => { shards: number; streak: number } | null;
   setActiveEnigma: (enigmaId: string) => void;
   sacrificeEnigmaOblivion: (enigmaId: string) => boolean;
+  sacrificeShardsForEnigma: (enigmaId: string, amount: number) => boolean;
   claimEnigmaReward: (enigmaId: string) => boolean;
   /** Engagement: claim a single quest. */
   claimQuest: (questId: string) => { shards: number; oblivion?: number } | null;
@@ -498,7 +489,7 @@ interface StoreActions {
   claimCardMastery: (definitionId: string, tier: number) => { shards: number } | null;
   /** Quick-claim all currently available mastery tiers. Returns aggregate shard reward & tiers claimed. */
   claimAllAvailableMastery: () => { shards: number; tiersClaimed: number };
-  /** Mark the collection viewer as seen — clears NEW badges. */
+  /** Mark the collection viewer as seen  Eclears NEW badges. */
   markCollectionViewed: () => void;
   /** Update Endless Gauntlet personal bests after a run. */
   recordGauntletRun: (depth: number, shards: number) => void;
@@ -520,7 +511,7 @@ interface StoreActions {
   setDeckNotes: (deckId: string, notes: string) => void;
   /** Update a saved deck's per-slot set-ability loadout. */
   setDeckAbilityLoadout: (deckId: string, slot: 1 | 2 | 3 | 4, abilityId: string) => void;
-  /** Activate a set ability by hotkey slot (1–4). No-op if gated, on cooldown, or uses exhausted. */
+  /** Activate a set ability by hotkey slot (1 E). No-op if gated, on cooldown, or uses exhausted. */
   activateSetAbility: (slot: 1 | 2 | 3 | 4) => void;
   /** Enqueue a transient toast notification. */
   enqueueToast: (message: string, kind?: 'info' | 'success' | 'warning' | 'reward', durationMs?: number) => void;
@@ -531,7 +522,7 @@ interface StoreActions {
   enterBattleground: (kind: BattlegroundKind, cpuDifficulty?: CpuDifficulty, opponentProfile?: BattlegroundOpponentProfile) => void;
   /** Tick the countdown timer. Called by centralized app-level timer loops. */
   tickBattlegroundTimer: (deltaSeconds: number) => void;
-  /** Complete the match — computes result, grants rewards, restores saved state. */
+  /** Complete the match  Ecomputes result, grants rewards, restores saved state. */
   completeBattleground: () => void;
   /** Update opponent's live board + score (PvP realtime sync). */
   updateOpponentBattleground: (board: BoardState | null, score: number, handSize?: number) => void;
@@ -551,7 +542,7 @@ interface AttackPaymentSelection {
 
 /**
  * Tune this constant so a complete, fully-mastered collection reaches
- * approximately ×40–50 total globalOblivionMult from resonance alone.
+ * approximately ÁE0 E0 total globalOblivionMult from resonance alone.
  * Lower value = stronger resonance; higher value = weaker.
  */
 const RESONANCE_SCALE_CONSTANT = 500;
@@ -599,10 +590,6 @@ function latchUnlockedAchievements(progress: ProgressState): void {
 
 function clampNeutralityGainState(state: Pick<Store, 'board' | 'turn' | 'deck'>): void {
   const isUncapped = hasNeutralityUncappedGainsInDeck(state.deck);
-  state.turn.neutralityPatientLightStacks = clampPatientLightStacks(
-    state.turn.neutralityPatientLightStacks ?? 0,
-    isUncapped,
-  );
 
   for (const unit of state.board.frontSlots) {
     if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
@@ -965,7 +952,7 @@ function recordCardPlay(s: Store, definitionId: string): void {
   }
 }
 
-// �E��E��E��E� Boss fight helpers �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Boss fight helpers �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
 function completeBossFight(s: Store, victory: boolean): void {
   const bossId = s.bossFight.activeBossId;
@@ -1099,7 +1086,7 @@ function completeBossFight(s: Store, victory: boolean): void {
       }
     }
 
-    // Raid ended (defeat or final boss cleared) — restore saved game state.
+    // Raid ended (defeat or final boss cleared)  Erestore saved game state.
     if (saved) {
       s.deck = saved.deck;
       s.board = saved.board;
@@ -1160,6 +1147,8 @@ function completeBossFight(s: Store, victory: boolean): void {
   // Capture per-fight bests BEFORE we restore the saved progress snapshot,
   // since we need the live (active) fight stats here.
   const elapsedSeconds = Math.max(0, Math.round(BOSS_FIGHT_ROUND_SECONDS - s.bossFight.fightTimeRemaining));
+  const fightTimeRemaining = s.bossFight.fightTimeRemaining;
+  const capturedFightCount = Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1));
   const fightDamageTotal = s.bossFight.damageDealtThisFight;
   // Capture the deck in use for mastery awards before state is restored.
   const fightDeckList = s.deck.deckList;
@@ -1190,7 +1179,7 @@ function completeBossFight(s: Store, victory: boolean): void {
         entry.highestFightDamage = fightDamageTotal;
       }
       s.progress.bossCodex[boss.id] = entry;
-      // Trial reward bonus — applied on top of base + featured multipliers.
+      // Trial reward bonus  Eapplied on top of base + featured multipliers.
       if (kind === 'trial' && trialMult > 1) {
         const base = (s.progress.bossClearCounts[boss.id] ?? 1) === 1 ? boss.firstClearShards : boss.repeatClearShards;
         s.progress.aberratedShards += Math.round(base * (trialMult - 1));
@@ -1226,6 +1215,32 @@ function completeBossFight(s: Store, victory: boolean): void {
         resonanceGained: masteryAward.resonanceGain,
         cardsTieredUp: masteryAward.cardsTieredUp,
       };
+
+      // Neutralizing the Void — boss-victory enigma hooks.
+      if (bossId === 'boss-immortal-warden') {
+        ensureEnigmaState(s.progress);
+        const ntvInstance = s.progress.enigmas.instances['neutralizing-the-void'];
+        if (!ntvInstance) {
+          // Step 0: unlock if won with ≥90s remaining.
+          if (fightTimeRemaining >= 90) {
+            const fresh = ensureInstance(s.progress, 'neutralizing-the-void');
+            if (fresh) {
+              fresh.status = 'acquired';
+              fresh.currentStepIndex = 1;
+              fresh.stepsComplete[0] = true;
+              if (!s.progress.enigmas.activeEnigmaId) s.progress.enigmas.activeEnigmaId = 'neutralizing-the-void';
+              pushRewardToast(s, 'Enigma Acquired: Neutralizing the Void');
+            }
+          }
+        } else if (ntvInstance.status === 'acquired' && !ntvInstance.stepsComplete[1]) {
+          // Step 1: clear ×3-HP scaled variant.
+          if (capturedFightCount >= 3) {
+            ntvInstance.stepsComplete[1] = true;
+            ntvInstance.currentStepIndex = Math.max(ntvInstance.currentStepIndex, 2);
+            pushEnigmaStepToast(s, 'neutralizing-the-void', 1);
+          }
+        }
+      }
     }
   }
 
@@ -1234,7 +1249,7 @@ function completeBossFight(s: Store, victory: boolean): void {
     s.progress.aberratedShards += gauntletShardsBanked;
   }
 
-  // Gauntlet run ended — record personal-best stats.
+  // Gauntlet run ended  Erecord personal-best stats.
   if (kind === 'gauntlet') {
     if (!s.progress.gauntletBest) s.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
     const best = s.progress.gauntletBest;
@@ -1549,21 +1564,6 @@ function canEmbraceInfinite(state: Pick<GameState, 'deck' | 'turn'>): boolean {
     && state.deck.hand.length >= EMBRACE_INFINITE_MIN_HAND;
 }
 
-function applyNeutralityTimerPauseFromTurn(s: Store): void {
-  const seconds = Math.max(0, Math.floor(s.turn.neutralityPauseActiveTimersSeconds ?? 0));
-  if (seconds <= 0) return;
-
-  if (s.bossFight.mode === 'active') {
-    s.bossFight.fightTimeRemaining = Math.max(0, s.bossFight.fightTimeRemaining + seconds);
-  }
-
-  if (s.battleground.mode === 'active') {
-    s.battleground.timeRemaining = Math.max(0, s.battleground.timeRemaining + seconds);
-  }
-
-  s.turn.neutralityPauseActiveTimersSeconds = 0;
-}
-
 function pushRewardToast(s: Store, message: string): void {
   if (!s.toasts) s.toasts = [];
   const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -1614,6 +1614,22 @@ function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void 
   }
 }
 
+// Checks step 3 of Neutralizing the Void (card-born Tier ≥4); safe to call multiple times.
+function checkNtvMasteryTierStep(progress: ProgressState): void {
+  const instance = progress.enigmas?.instances['neutralizing-the-void'];
+  if (!instance || instance.stepsComplete[3] || !instance.stepsComplete[2]) return;
+  const claims = progress.cardMasteryClaims as Record<string, unknown> | undefined;
+  if (!claims) return;
+  const hasRequiredTier = Object.keys(claims).some(key => {
+    const tierStr = key.split('::')[1];
+    return tierStr !== undefined && parseInt(tierStr, 10) >= 4;
+  });
+  if (hasRequiredTier) {
+    instance.stepsComplete[3] = true;
+    instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
+  }
+}
+
 function completeSummonedAngelPlacement(
   s: Store,
   definitionId: string,
@@ -1657,7 +1673,6 @@ function completeSummonedAngelPlacement(
     s.turn = result.turn;
     s.board = result.board;
     s.deck = result.deck;
-    applyNeutralityTimerPauseFromTurn(s);
     applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
     awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
     if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
@@ -1701,7 +1716,6 @@ function cardCanDraw(definitionId: string): boolean {
 function ensureNeutralityTurnState(turn: TurnState): void {
   if (turn.equilibriumDrift === undefined) turn.equilibriumDrift = 0;
   if (turn.equilibriumStability === undefined) turn.equilibriumStability = 0;
-  if (turn.neutralitySetupCount === undefined) turn.neutralitySetupCount = 0;
   if (turn.attenuationClassUses === undefined) {
     turn.attenuationClassUses = { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 };
   }
@@ -1710,15 +1724,8 @@ function ensureNeutralityTurnState(turn: TurnState): void {
   }
   if (turn.attenuationBreaksUsed === undefined) turn.attenuationBreaksUsed = 0;
   if (turn.attenuationBrokenClasses === undefined) turn.attenuationBrokenClasses = [];
-  if (turn.neutralityEngineSignatures === undefined) turn.neutralityEngineSignatures = [];
   if (turn.neutralityPatienceChargedThisTurn === undefined) turn.neutralityPatienceChargedThisTurn = 0;
   if (turn.neutralityPatienceConsumedThisTurn === undefined) turn.neutralityPatienceConsumedThisTurn = 0;
-  if (turn.neutralityPatientLightStacks === undefined) turn.neutralityPatientLightStacks = 0;
-  if (turn.neutralityEquilibriumSigils === undefined) turn.neutralityEquilibriumSigils = 0;
-  if (turn.neutralityEquilibriumSigilsGainedThisTurn === undefined) turn.neutralityEquilibriumSigilsGainedThisTurn = 0;
-  if (turn.neutralityEquilibriumPatientLightFromSigilsThisTurn === undefined) turn.neutralityEquilibriumPatientLightFromSigilsThisTurn = 0;
-  if (turn.neutralityEquilibriumSigilCapBonus === undefined) turn.neutralityEquilibriumSigilCapBonus = 0;
-  if (turn.neutralityEquilibriumSentinelTempoUsed === undefined) turn.neutralityEquilibriumSentinelTempoUsed = false;
   if (turn.neutralityTriggeredEffects === undefined) turn.neutralityTriggeredEffects = [];
   if (turn.seraphimBonusAmp === undefined) turn.seraphimBonusAmp = 0;
 }
@@ -1728,7 +1735,6 @@ function captureTurnSnapshot(turn: TurnState): TurnState {
     ...turn,
     attenuationClassUses: { ...(turn.attenuationClassUses ?? {}) },
     attenuationBrokenClasses: [...(turn.attenuationBrokenClasses ?? [])],
-    neutralityEngineSignatures: [...(turn.neutralityEngineSignatures ?? [])],
   };
 }
 
@@ -1764,9 +1770,12 @@ function getDeckSetCount(s: Store): number {
 function getNeutralityFullFireMultiplier(s: Store, def: CardDefinition): number {
   if (false || def.rarity !== 'Infinite') return 1;
   ensureNeutralityTurnState(s.turn);
-  const setupReady = (s.turn.neutralitySetupCount ?? 0) >= NEUTRALITY_SETUP_FOR_FULL_FIRE;
-  const enginesReady = (s.turn.neutralityEngineSignatures?.length ?? 0) >= NEUTRALITY_ENGINES_FOR_FULL_FIRE;
-  return setupReady && enginesReady ? 1.35 : 0.70;
+  const totalBoardPatience = s.board.frontSlots.reduce((sum, unit) => {
+    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return sum;
+    return sum + (unit.patienceStacks ?? 0);
+  }, 0);
+  const patienceReady = totalBoardPatience >= NEUTRALITY_FULL_FIRE_PATIENCE_THRESHOLD;
+  return patienceReady ? 1.35 : 0.70;
 }
 
 
@@ -1839,15 +1848,6 @@ function applyNeutralityPlayState(
   if (def.rarity === 'Eternal') stabilityDelta += 1;
 
   s.turn.equilibriumStability = Math.max(0, Math.min(12, (s.turn.equilibriumStability ?? 0) + stabilityDelta));
-
-  if (def.rarity !== 'Infinite') {
-    s.turn.neutralitySetupCount = Math.min(6, (s.turn.neutralitySetupCount ?? 0) + 1);
-  }
-
-  const signature = `${def.type}:${actionClass}`;
-  if (!(s.turn.neutralityEngineSignatures ?? []).includes(signature)) {
-    s.turn.neutralityEngineSignatures = [...(s.turn.neutralityEngineSignatures ?? []), signature].slice(-6);
-  }
 
   if (actionClass === 'conversion') {
     // Cross-set conversion tracking removed (single-set game)
@@ -2481,7 +2481,7 @@ function applyLateGameAttackIdentity(
   void baseAttackAward;
 }
 
-// �E��E��E��E� Cherubim helpers �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Cherubim helpers �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
 function computeCherubimPassiveOblivionBonus(board: BoardState, isOphanimPlay: boolean): number {
   let bonus = 0;
@@ -2506,7 +2506,7 @@ function computeCherubimPassiveOblivionBonus(board: BoardState, isOphanimPlay: b
   return bonus;
 }
 
-// �E��E��E��E� Cherubim helpers �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Cherubim helpers �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
 function computeCherubimAdjacentBonus(board: BoardState, bonusType: 'oblivion' | 'draw'): number {
   let bonus = 0;
@@ -2659,43 +2659,6 @@ function tickCherubimDurability(s: Store): void {
   applyCherubimExpireBonuses(s, expiredCount);
 }
 
-function getNeutralityEquilibriumPatienceGainBonus(turn: TurnState, board?: BoardState): number {
-  const sentinelPresent = board?.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel') ?? false;
-  if (!sentinelPresent) return 0;
-  const base = Math.floor(Math.max(0, turn.neutralityEquilibriumSigils ?? 0) / 2);
-  return base > 0 ? base * 2 : 0;
-}
-
-function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
-  const spend = Math.max(0, Math.floor(requested));
-  if (spend <= 0) return 0;
-  const before = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
-  const spent = Math.min(before, spend);
-  s.turn.neutralityEquilibriumSigils = before - spent;
-  return spent;
-}
-
-function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: number): void {
-  const sourceDef = ScoreSystem.getDefinition(sourceDefinitionId);
-  const sourceSetKey = sourceDef ? 'Neutrality' : null;
-  const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
-  const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
-
-  // Same-set: Patience only flows to active frontline units sharing the source
-  // card's set so set-bound stacks never leak across sets.
-  for (const unit of s.board.frontSlots) {
-    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
-    if (sourceSetKey) {
-      const unitDef = ScoreSystem.getDefinition(unit.definitionId);
-      if (!unitDef || 'Neutrality' !== sourceSetKey) continue;
-    }
-    const gain = value + linkedBonus + equilibriumBonus;
-    unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
-  }
-
-  clampNeutralityGainState(s);
-}
-
 function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
   if (drawValue <= 0) return;
   const totalDraw = s.turn.cherubimDrawFraction + drawValue;
@@ -2711,10 +2674,6 @@ function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
 function applyCherubimPassiveEffects(s: Store): void {
   // Reset conditional multiplier  Eit's recomputed fresh from board state each card play.
   s.turn.cherubimConditionalMult = 1;
-  const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
-  const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
-  const patientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0);
-  const patientLightGain = getEffectivePatientLightPerCardPatienceGain(patientLightStacks);
 
   // Auto-accumulate +1 Patience for every Seraphim on board that has patienceThreshold set.
   for (const unit of s.board.frontSlots) {
@@ -2722,15 +2681,7 @@ function applyCherubimPassiveEffects(s: Store): void {
     const unitDef = ScoreSystem.getDefinition(unit.definitionId);
     if (unitDef?.type === 'Seraphim' && (unitDef as import('@/types/cards').SeraphimDefinition).patienceThreshold !== undefined) {
       const patienceGainBonus = Math.floor(getArtifactEffect(s.turn, 'patience_gain_bonus', s.progress.ownedArtifacts));
-      const gain = patientLightGain + linkedBonus + equilibriumBonus + patienceGainBonus;
-      unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
-    }
-  }
-
-  if (patientLightStacks > 0) {
-    for (const unit of s.board.frontSlots) {
-      if (!unit || unit.type !== 'Angel') continue;
-      const gain = patientLightGain + linkedBonus + equilibriumBonus;
+      const gain = 1 + patienceGainBonus;
       unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
     }
   }
@@ -2765,7 +2716,7 @@ function applyCherubimPassiveEffects(s: Store): void {
             if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
             const frontDef = ScoreSystem.getDefinition(frontUnit.definitionId);
             if (!frontDef || 'Neutrality' !== sourceSetKey) continue;
-            const gain = effect.value + linkedBonus + equilibriumBonus;
+            const gain = effect.value;
             frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
           }
           break;
@@ -2780,8 +2731,6 @@ function applyCherubimPassiveEffects(s: Store): void {
               conditionMet = s.turn.cardsPlayedThisTurn >= effect.condition.value;
             } else if (effect.condition.type === 'cherubim_active_gte') {
               conditionMet = s.board.backSlots.filter(sl => sl !== null && sl.type === 'Cherubim').length >= effect.condition.value;
-            } else if (effect.condition.type === 'equilibrium_sigils_gte') {
-              conditionMet = (s.turn.neutralityEquilibriumSigils ?? 0) >= effect.condition.value;
             }
           }
           if (conditionMet && effect.value > 1) {
@@ -2826,17 +2775,6 @@ function applyCherubimPassiveEffects(s: Store): void {
   }
 }
 
-function resolveNeutralityMarkedCardTrigger(s: Store, playedInstanceId: string, sourceDefinitionId: string): void {
-  const marked = s.turn.neutralityMarkedCardIds ?? [];
-  if (!marked.includes(playedInstanceId)) return;
-
-  const gain = Math.max(0, s.turn.neutralityMarkedPatienceGain ?? 0);
-  if (gain > 0) {
-    applyPatienceGainAll(s, sourceDefinitionId, gain);
-  }
-  s.turn.neutralityMarkedCardIds = marked.filter(id => id !== playedInstanceId);
-}
-
 /** Advance the trial guide step when a guided trial card matches the current step. */
 function advanceTrialGuideStep(s: Store, definitionId: string): void {
   if (s.trialDeck.mode !== 'active' || s.trialDeck.trialMode !== 'guided') return;
@@ -2860,7 +2798,7 @@ export const useStore = create<Store>()(
 
     refreshComputedStats: () => { set(s => { recompute(s); }); },
 
-    // �E��E��E��E� Seraphim �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Seraphim �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     placeSeraphim: (deckCard, slot) => {
       set(s => {
@@ -2899,7 +2837,6 @@ export const useStore = create<Store>()(
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
-            applyNeutralityTimerPauseFromTurn(s);
             if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
@@ -2907,7 +2844,6 @@ export const useStore = create<Store>()(
         }
 
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
         incrementAngelProgress(s.board);
         s.turn.seraphimPlayedThisTurn = (s.turn.seraphimPlayedThisTurn ?? 0) + 1;
         const newInst = s.board.frontSlots[slot];
@@ -2990,13 +2926,11 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
-          applyNeutralityTimerPauseFromTurn(s);
           if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
           applyAllSetPlayStates(s, def, turnBefore, actionClass);
           awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
         }
         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
         incrementAngelProgress(s.board);
         recordCardPlay(s, deckCard.definitionId);
         syncEnigmaProgressFromBoard(s, false);
@@ -3005,7 +2939,7 @@ export const useStore = create<Store>()(
       });
     },
 
-    // �E��E��E��E� Cherubim �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Cherubim �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     placeCherubim: (backSlotIndex, instanceId) => {
       set(s => {
@@ -3062,7 +2996,6 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
-        applyNeutralityTimerPauseFromTurn(s);
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
         applyAllSetPlayStates(s, def, turnBefore, actionClass);
 
@@ -3091,7 +3024,7 @@ export const useStore = create<Store>()(
       });
     },
 
-    // �E��E��E��E� Angels �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Angels �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     summonAngel: (definitionId, finish) => {
       set(s => {
@@ -3117,7 +3050,6 @@ export const useStore = create<Store>()(
             if (cond.type === 'seraphim_active_gte' && s.board.frontSlots.filter(sl => sl?.type === 'Seraphim' && sl.isActive).length < cond.value) return;
             if (cond.type === 'seraphim_on_board_gte' && s.board.frontSlots.filter(sl => sl?.type === 'Seraphim').length < cond.value) return;
             if (cond.type === 'board_definition_gte' && (boardDefinitionCount[cond.definitionId] ?? 0) < cond.value) return;
-            if (cond.type === 'equilibrium_sigils_gte' && (s.turn.neutralityEquilibriumSigils ?? 0) < cond.value) return;
           }
         }
 
@@ -3206,7 +3138,6 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
-        applyNeutralityTimerPauseFromTurn(s);
         applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
 
         for (const frontSlot of s.board.frontSlots) {
@@ -3274,10 +3205,9 @@ export const useStore = create<Store>()(
         void attackMode;
 
         if (def.definitionId === 'tx-sera-null-entropy') {
-          const sigils = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
-          amount += sigils * 300;
-          if (sigils > 0) {
-            amount = Math.round(amount * (1 + Math.min(0.4, sigils * 0.02)));
+          amount += capturedPatience * 50;
+          if (capturedPatience > 0) {
+            amount = Math.round(amount * (1 + Math.min(0.4, capturedPatience * 0.01)));
           }
         }
 
@@ -3288,24 +3218,12 @@ export const useStore = create<Store>()(
         s.turn.lastFiredSeraphimAttackOblivion = amount;
         // Card-break: synergized Seraphim attacks build +15 stagger.
         if (attackId === 'synergized') applyCardBreakStagger(s, 15);
-        if (def.definitionId === 'tx-sera-null-entropy' && capturedPatience >= 14) {
-          s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
-        }
         eventBus.emit('seraphim:attacked', { slot, attackId: attack.id, amount });
 
         const refreshed = s.board.frontSlots[slot];
         if (refreshed && refreshed.type === 'Seraphim') {
           const crownCooldownReduction = 0;
-          let sentinelReduction = 0;
-          const sentinelOnBoard = s.board.backSlots.some(back => back?.type === 'Cherubim' && back.definitionId === 'tx-cher-null-sentinel');
-          if (sentinelOnBoard) {
-            const spent = spendNeutralityEquilibriumSigils(s, 4);
-            if (spent >= 4) {
-              sentinelReduction = 2;
-              s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + 1;
-            }
-          }
-          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - crownCooldownReduction - sentinelReduction);
+          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - crownCooldownReduction);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
           // Reset patience after consuming it.
           if (seraphimDef.patienceThreshold !== undefined) {
@@ -3320,26 +3238,7 @@ export const useStore = create<Store>()(
                 grantOblivion(s, oblivionBonus);
               }
             }
-            const preservePercent = Math.max(0, s.turn.neutralityAttackPreservePercent ?? 0);
-            const baseRestorePercent = Math.max(0, s.turn.neutralityAttackRestorePercent ?? 0);
-            const entropySigils = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
-            const attackSetKey = 'Neutrality';
-            const entropyRestorePercent = def.definitionId === 'tx-sera-null-entropy'
-              ? Math.min(70, entropySigils * 7)
-              : 0;
-            const preserveApplied = attackSetKey === 'Neutrality' ? preservePercent : 0;
-            const restorePercent = attackSetKey === 'Neutrality' ? baseRestorePercent + entropyRestorePercent : 0;
-            const preserved = Math.floor(capturedPatience * (preserveApplied / 100));
-            const restored = Math.floor(capturedPatience * (restorePercent / 100));
-            refreshed.patienceStacks = Math.max(0, preserved + restored);
-
-            const linkedRetainPercent = attackSetKey === 'Neutrality' ? Math.max(0, s.turn.neutralityLinkedRetainPercent ?? 0) : 0;
-            if (linkedRetainPercent > 0) {
-              for (const other of s.board.frontSlots) {
-                if (!other || other.type !== 'Seraphim' || !other.isActive || other.instanceId === refreshed.instanceId) continue;
-                other.patienceStacks = Math.floor((other.patienceStacks ?? 0) * (linkedRetainPercent / 100));
-              }
-            }
+            refreshed.patienceStacks = 0;
           }
         }
 
@@ -3401,13 +3300,10 @@ export const useStore = create<Store>()(
         if (refreshed && refreshed.type === 'Angel') {
           const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards);
           refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
-          // Neutrality: consume patience stacks after the attack resolves, respecting Preserve.
+          // Neutrality: consume patience stacks after the attack resolves.
           if (true && capturedAngelPatience > 0) {
-            const preservePercent = Math.max(0, s.turn.neutralityAttackPreservePercent ?? 0);
-            const preserved = Math.floor(capturedAngelPatience * (preservePercent / 100));
-            refreshed.patienceStacks = preserved;
-            // Record only the consumed portion for the turn tracker.
-            s.turn.neutralityPatienceConsumedThisTurn = (s.turn.neutralityPatienceConsumedThisTurn ?? 0) + (capturedAngelPatience - preserved);
+            refreshed.patienceStacks = 0;
+            s.turn.neutralityPatienceConsumedThisTurn = (s.turn.neutralityPatienceConsumedThisTurn ?? 0) + capturedAngelPatience;
           }
         }
 
@@ -3419,7 +3315,7 @@ export const useStore = create<Store>()(
       });
     },
 
-    // �E��E��E��E� Deck management �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Deck management �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     initDeck: (deckList, extraDeck?) => {
       set(s => {
@@ -3498,7 +3394,7 @@ export const useStore = create<Store>()(
       });
     },
 
-    // �E��E��E��E� Turn flow �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Turn flow �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     beginTurn: () => {
       set(s => {
@@ -3533,7 +3429,7 @@ export const useStore = create<Store>()(
               hand.push(s.deck.drawPile[idx]);
               s.deck.drawPile.splice(idx, 1);
             } else {
-              // Card not in draw pile — create a fresh instance
+              // Card not in draw pile  Ecreate a fresh instance
               const { nextDeckId: _nextId } = (() => {
                 // We can't call nextDeckId() here; use a deterministic id
                 return { nextDeckId: () => `trial-guided-hand-${defId}-${Date.now()}` };
@@ -3542,7 +3438,7 @@ export const useStore = create<Store>()(
             }
           }
           for (const card of hand) s.deck.hand.push(card);
-          // Skip mulligan in guided mode — go straight to playing
+          // Skip mulligan in guided mode  Ego straight to playing
           s.turn = { ...defaultTurn, phase: 'playing' };
           return;
         }
@@ -3680,13 +3576,11 @@ export const useStore = create<Store>()(
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
-            applyNeutralityTimerPauseFromTurn(s);
             if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
           }
           s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-          resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
           incrementAngelProgress(s.board);
           recordCardPlay(s, deckCard.definitionId);
           advanceTrialGuideStep(s, deckCard.definitionId);
@@ -3738,7 +3632,6 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
-          applyNeutralityTimerPauseFromTurn(s);
           if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
           applyAllSetPlayStates(s, def, turnBefore, actionClass);
 
@@ -3763,7 +3656,6 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
-        applyNeutralityTimerPauseFromTurn(s);
         applyAllSetPlayStates(s, def, turnBefore, actionClass);
 
         awardOblivionForCardPlay(s, result.oblivionBonus, true, undefined, def, actionClass);
@@ -3772,7 +3664,6 @@ export const useStore = create<Store>()(
         tickHandPlayCooldowns(s);
 
         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
         incrementAngelProgress(s.board);
         recordCardPlay(s, deckCard.definitionId);
         advanceTrialGuideStep(s, deckCard.definitionId);
@@ -3975,33 +3866,25 @@ export const useStore = create<Store>()(
           const reshuffledCards = pending.allCards.filter(c => !keptIds.has(c.instanceId));
           s.deck.hand = keptCards;
           s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, ...reshuffledCards]);
-        } else if (pending.type === 'neutrality_equilibrium_tactical_choice') {
-          const choice = selected[0];
-          if (choice !== 'burst' && choice !== 'restore') return;
+        } else if (pending.type === 'neutralizing_bane_choose_target') {
+          // selected = [] means no valid target was found (failToFind); just clear the pending effect.
+          if (selected.length > 0) {
+            const activeUnits = s.board.frontSlots.filter(
+              (unit): unit is SeraphimInstance | AngelInstance =>
+                !!unit && (unit.type === 'Seraphim' || unit.type === 'Angel') && (unit.type !== 'Seraphim' || unit.isActive),
+            );
+            const selectedId = selected[0] ?? null;
+            const target = activeUnits.find((unit) => unit.instanceId === selectedId);
+            if (!target) return;
 
-          const available = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
-          const spend = Math.max(0, pending.spend);
-          if (available < spend || spend <= 0) return;
-
-          s.turn.neutralityEquilibriumSigils = available - spend;
-
-          const activeSeraphim = s.board.frontSlots.filter(
-            (unit): unit is SeraphimInstance => unit?.type === 'Seraphim' && unit.isActive,
-          );
-
-          if (choice === 'burst') {
-            grantOblivion(s, Math.max(0, pending.burstOblivion));
-          } else {
-            const restorePercent = Math.max(0, pending.restorePercent);
-            for (const unit of activeSeraphim) {
-              const current = Math.max(0, unit.patienceStacks ?? 0);
-              const restored = Math.floor(current * (restorePercent / 100));
-              unit.patienceStacks = current + restored;
-            }
-          }
-
-          if (pending.patientLightGain > 0) {
-            s.turn.neutralityPatientLightStacks = Math.max(0, s.turn.neutralityPatientLightStacks ?? 0) + pending.patientLightGain;
+            const patience = Math.max(0, target.patienceStacks ?? 0);
+            const resonanceScore = computeGlobalResonanceScore(s.progress);
+            const masteryMult = Math.min(pending.masteryMultiplierCap, 1 + resonanceScore / 1000);
+            const bonus = Math.round(patience * pending.multiplier * masteryMult);
+            if (bonus > 0) grantOblivion(s, bonus);
+            // Consume 50% of target's Patience post-fire.
+            target.patienceStacks = Math.floor(patience / 2);
+            if (patience >= 30) s.deck = TurnSystem.drawCards(s.deck, 1);
           }
         } else if (pending.type === 'neutrality_echo_pulse_choose') {
           const activeSeraphim = s.board.frontSlots.filter(
@@ -4076,7 +3959,6 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
-          applyNeutralityTimerPauseFromTurn(s);
           nextPending = result.pendingEffect;
         }
 
@@ -4173,7 +4055,7 @@ export const useStore = create<Store>()(
       }
     },
 
-    // �E��E��E��E� Oblivion �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Oblivion �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     addOblivion: (delta) => {
       set(s => { s.progress.oblivion += delta; });
@@ -4394,7 +4276,7 @@ export const useStore = create<Store>()(
       return true;
     },
 
-    // �E��E��E��E� Settings �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Settings �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     updateSettings: (patch) => {
       set(s => {
@@ -4604,24 +4486,60 @@ export const useStore = create<Store>()(
       return true;
     },
 
+    sacrificeShardsForEnigma: (enigmaId: string, amount: number) => {
+      const state = get();
+      const instance = state.progress.enigmas.instances[enigmaId];
+      if (!instance || instance.status === 'locked') return false;
+      if (state.progress.aberratedShards < amount) return false;
+
+      set(s => {
+        const target = s.progress.enigmas.instances[enigmaId];
+        if (!target || target.status === 'locked') return;
+        if (s.progress.aberratedShards < amount) return;
+        s.progress.aberratedShards -= amount;
+        // Step 2 of Neutralizing the Void (index 2).
+        if (enigmaId === 'neutralizing-the-void' && !target.stepsComplete[2]) {
+          target.stepsComplete[2] = true;
+          target.currentStepIndex = Math.max(target.currentStepIndex, 3);
+          pushEnigmaStepToast(s, enigmaId, 2);
+          // Retro-check step 3 (card mastery tier) immediately after step 2 unlocks.
+          checkNtvMasteryTierStep(s.progress);
+        }
+      });
+      return true;
+    },
+
     claimEnigmaReward: (enigmaId) => {
       const state = get();
       const instance = state.progress.enigmas.instances[enigmaId];
       if (!instance) return false;
       if (instance.status === 'completed') return false;
+
+      // Re-evaluate board progress before gating — heals saves stuck before the Phase-0 evaluator fix.
       if (enigmaId === 'neutral-mystery') {
-        if (instance.currentStepIndex < 4) return false;
-        if (!instance.stepsComplete[3]) return false;
+        // Run inside set() so stepsComplete mutations are on a mutable Immer draft.
+        set(s => {
+          evaluateNeutralMysteryProgress({ board: s.board, progress: s.progress });
+        });
+        const refreshed = get().progress.enigmas.instances['neutral-mystery'];
+        if (!refreshed || !refreshed.stepsComplete[3]) return false;
+      }
+
+      if (enigmaId === 'neutralizing-the-void') {
+        const ntv = get().progress.enigmas.instances['neutralizing-the-void'];
+        if (!ntv || !ntv.stepsComplete[3]) return false;
       }
 
       set(s => {
         const target = s.progress.enigmas.instances[enigmaId];
         if (!target || target.status === 'completed') return;
         awardEnigmaReward(s.progress, enigmaId);
-        target.stepsComplete[4] = true;
-        target.currentStepIndex = Math.max(target.currentStepIndex, 5);
+        const lastStep = target.stepsComplete.length - 1;
+        target.stepsComplete[lastStep] = true;
+        target.currentStepIndex = Math.max(target.currentStepIndex, target.stepsComplete.length);
         target.completedAt = Date.now();
-        pushRewardToast(s, `Enigma Complete: ${enigmaId === 'neutral-mystery' ? 'Neutral Mystery' : enigmaId}`);
+        const title = enigmaId === 'neutral-mystery' ? 'Neutral Mystery' : enigmaId === 'neutralizing-the-void' ? 'Neutralizing the Void' : enigmaId;
+        pushRewardToast(s, `Enigma Complete: ${title}`);
       });
       return true;
     },
@@ -4690,6 +4608,7 @@ export const useStore = create<Store>()(
         if (!state.progress.cardMasteryClaims) state.progress.cardMasteryClaims = {};
         state.progress.cardMasteryClaims[claimKey] = true;
         state.progress.aberratedShards += tierDef.shardReward;
+        checkNtvMasteryTierStep(state.progress);
       });
       return { shards: tierDef.shardReward };
     },
@@ -4717,6 +4636,7 @@ export const useStore = create<Store>()(
         if (!state.progress.cardMasteryClaims) state.progress.cardMasteryClaims = {};
         for (const c of toClaim) state.progress.cardMasteryClaims[c.key] = true;
         state.progress.aberratedShards += totalShards;
+        checkNtvMasteryTierStep(state.progress);
       });
       return { shards: totalShards, tiersClaimed };
     },
@@ -5027,12 +4947,12 @@ export const useStore = create<Store>()(
         const oppEmpty = s.battleground.opponentHandEmpty;
         const myScore = s.battleground.myScore;
         const oppScore = s.battleground.opponentScore;
-        // Win condition: timer expired → compare scores.
+        // Win condition: timer expired ↁEcompare scores.
         if (next <= 0) {
           completeBattlegroundFight(s);
           return;
         }
-        // Win condition: both done → resolve by score.
+        // Win condition: both done ↁEresolve by score.
         if (myEmpty && oppEmpty) {
           completeBattlegroundFight(s);
           return;
@@ -5082,7 +5002,7 @@ export const useStore = create<Store>()(
 
 
 
-    // �E��E��E��E� Boss fight �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Boss fight �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     startBossFight: (bossId, savedDeckId, options) => {
       set(s => {
@@ -5308,7 +5228,7 @@ export const useStore = create<Store>()(
         const delta = Math.max(0, Number.isFinite(deltaSeconds) ? deltaSeconds : 0);
         // Card-break freeze: consume freeze seconds before counting down the fight timer,
         // but only while the player still has comfortable headroom on the clock. Once we're
-        // within the final second, freeze must NOT be allowed to keep the timer pinned —
+        // within the final second, freeze must NOT be allowed to keep the timer pinned  E
         // otherwise the screen gets stuck on 0:01 forever.
         const freezeLeft = s.bossFight.bossCardBreakFreezeLeft ?? 0;
         if (freezeLeft > 0 && current > 1) {
@@ -5509,18 +5429,18 @@ export const useStore = create<Store>()(
       });
     },
 
-    // �E��E��E��E� Save/load �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Save/load �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     loadState: (loaded) => {
       set(s => {
-        // Migrate collection: string[] �E��E� Record<string, number>
+        // Migrate collection: string[] �E�E�E�E�E�E�E��E�E�E�E�E�E�E� Record<string, number>
         if (Array.isArray((loaded.progress as { collection: unknown }).collection)) {
           const rec: Record<string, number> = {};
           for (const id of (loaded.progress as unknown as { collection: string[] }).collection) rec[id] = 1;
           (loaded.progress as { collection: Record<string, number> }).collection = rec;
         }
 
-        // Migrate progress: score �E��E� oblivion
+        // Migrate progress: score �E�E�E�E�E�E�E��E�E�E�E�E�E�E� oblivion
         const op = loaded.progress as unknown as Record<string, unknown>;
         if (op['score'] !== undefined && op['oblivion'] === undefined) {
           op['oblivion'] = op['score'];
@@ -5674,7 +5594,7 @@ export const useStore = create<Store>()(
           settings['cardThemePacks'] = { ...DEFAULT_CARD_THEME_PACKS, ...(settings['cardThemePacks'] as Record<string, string>) };
         }
 
-        // Migrate board: old slots �E��E� frontSlots + backSlots
+        // Migrate board: old slots �E�E�E�E�E�E�E��E�E�E�E�E�E�E� frontSlots + backSlots
         const ob = loaded.board as unknown as Record<string, unknown>;
         if (ob['slots'] !== undefined && ob['frontSlots'] === undefined) {
           ob['frontSlots'] = (ob['slots'] as unknown[]).slice(0, 5);
@@ -5708,22 +5628,31 @@ export const useStore = create<Store>()(
         if (ot['turnNumber'] === undefined) ot['turnNumber'] = 0;
         if (ot['equilibriumDrift'] === undefined) ot['equilibriumDrift'] = 0;
         if (ot['equilibriumStability'] === undefined) ot['equilibriumStability'] = 0;
-        if (ot['neutralitySetupCount'] === undefined) ot['neutralitySetupCount'] = 0;
         if (ot['attenuationClassUses'] === undefined) {
           ot['attenuationClassUses'] = { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 };
         }
         if (ot['attenuationBreaksUsed'] === undefined) ot['attenuationBreaksUsed'] = 0;
         if (ot['attenuationBrokenClasses'] === undefined) ot['attenuationBrokenClasses'] = [];
-        if (ot['neutralityEngineSignatures'] === undefined) ot['neutralityEngineSignatures'] = [];
         if (ot['neutralityPatienceChargedThisTurn'] === undefined) ot['neutralityPatienceChargedThisTurn'] = 0;
         if (ot['neutralityPatienceConsumedThisTurn'] === undefined) ot['neutralityPatienceConsumedThisTurn'] = 0;
-        if (ot['neutralityPatientLightStacks'] === undefined) ot['neutralityPatientLightStacks'] = 0;
-        if (ot['neutralityEquilibriumSigils'] === undefined) ot['neutralityEquilibriumSigils'] = 0;
-        if (ot['neutralityEquilibriumSigilsGainedThisTurn'] === undefined) ot['neutralityEquilibriumSigilsGainedThisTurn'] = 0;
-        if (ot['neutralityEquilibriumPatientLightFromSigilsThisTurn'] === undefined) ot['neutralityEquilibriumPatientLightFromSigilsThisTurn'] = 0;
-        if (ot['neutralityEquilibriumSigilCapBonus'] === undefined) ot['neutralityEquilibriumSigilCapBonus'] = 0;
-        if (ot['neutralityEquilibriumSentinelTempoUsed'] === undefined) ot['neutralityEquilibriumSentinelTempoUsed'] = false;
         if (ot['neutralityTriggeredEffects'] === undefined) ot['neutralityTriggeredEffects'] = [];
+        // Phase 2 Neutrality rework: Sigil/Patient-Light/marked-card/timer-pause/attack-preserve
+        // sub-mechanics were gutted in favor of Patience-only design; strip their old save fields.
+        delete ot['neutralitySetupCount'];
+        delete ot['neutralityEngineSignatures'];
+        delete ot['neutralityPatientLightStacks'];
+        delete ot['neutralityEquilibriumSigils'];
+        delete ot['neutralityEquilibriumSigilsGainedThisTurn'];
+        delete ot['neutralityEquilibriumPatientLightFromSigilsThisTurn'];
+        delete ot['neutralityEquilibriumSigilCapBonus'];
+        delete ot['neutralityEquilibriumSentinelTempoUsed'];
+        delete ot['neutralityMarkedCardIds'];
+        delete ot['neutralityMarkedPatienceGain'];
+        delete ot['neutralityPauseActiveTimersSeconds'];
+        delete ot['neutralityAttackPreservePercent'];
+        delete ot['neutralityAttackRestorePercent'];
+        delete ot['neutralityLinkedGainBonus'];
+        delete ot['neutralityLinkedRetainPercent'];
         // One-time legacy import shim: old Fire pools are folded
         // into modern Inferno Tier (eternalStacks.pyro) and Chroma Ember
         // (secondaryCounters.pyro), then removed.
@@ -5998,6 +5927,8 @@ export const useStore = create<Store>()(
         Object.assign(s, loaded);
         setUiPreferences(s.settings);
         recompute(s);
+        // Heal enigma progress that was stuck before Phase-0 evaluator fix shipped.
+        syncEnigmaProgressFromBoard(s, false);
       });
     },
 
@@ -6011,7 +5942,7 @@ export const useStore = create<Store>()(
   }))
 );
 
-// �E��E��E��E� Selectors �E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E��E�
+// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Selectors �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
 export const selectComputedStats = (s: Store): ComputedBoardStats => s.computedStats;
 export const selectOblivion = (s: Store): number => s.progress.oblivion;

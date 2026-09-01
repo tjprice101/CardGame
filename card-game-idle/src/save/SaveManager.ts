@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 41;
+export const CURRENT_VERSION = 42;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -770,6 +770,26 @@ const migrations: Record<number, Migration> = {
       }
       if (!turn.setAbilityUsesRemaining || typeof turn.setAbilityUsesRemaining !== 'object') {
         turn.setAbilityUsesRemaining = {};
+      }
+    }
+    return data;
+  },
+
+  42: (data) => {
+    // v42 adds the "Neutralizing the Void" enigma; seed it as locked on old saves.
+    const progress = (data as Partial<Record<string, unknown>>).progress as Record<string, unknown> | undefined;
+    if (progress) {
+      const enigmas = progress.enigmas as Record<string, unknown> | undefined;
+      if (enigmas) {
+        const instances = enigmas.instances as Record<string, unknown> | undefined;
+        if (instances && !instances['neutralizing-the-void']) {
+          instances['neutralizing-the-void'] = {
+            id: 'neutralizing-the-void',
+            status: 'locked',
+            currentStepIndex: 0,
+            stepsComplete: [false, false, false, false, false],
+          };
+        }
       }
     }
     return data;

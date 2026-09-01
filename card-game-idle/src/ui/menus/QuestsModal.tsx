@@ -135,6 +135,7 @@ export default function QuestsModal({ onClose }: Props) {
   const claimQuest = useStore(s => s.claimQuest);
   const setActiveEnigma = useStore(s => s.setActiveEnigma);
   const sacrificeEnigmaOblivion = useStore(s => s.sacrificeEnigmaOblivion);
+  const sacrificeShardsForEnigma = useStore(s => s.sacrificeShardsForEnigma);
   const claimEnigmaReward = useStore(s => s.claimEnigmaReward);
   const { daily: dailyMs, weekly: weeklyMs } = useQuestCountdowns();
   const [activeTab, setActiveTab] = useState<'daily' | 'enigmas'>('daily');
@@ -420,6 +421,7 @@ export default function QuestsModal({ onClose }: Props) {
               activeEnigmaId={activeEnigma?.id ?? progress.enigmas.activeEnigmaId}
               onActivate={setActiveEnigma}
               onSacrificeOblivion={sacrificeEnigmaOblivion}
+              onSacrificeShards={sacrificeShardsForEnigma}
               onClaimReward={claimEnigmaReward}
             />
           </div>
@@ -592,12 +594,13 @@ function QuestCard({ quest, accent, palette, onClaim }: {
   );
 }
 
-function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate, onSacrificeOblivion, onClaimReward }: {
+function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate, onSacrificeOblivion, onSacrificeShards, onClaimReward }: {
   progress: ReturnType<typeof useStore.getState>['progress'];
   enigmaDefinitions: ReturnType<typeof listEnigmaDefinitions>;
   activeEnigmaId: string | null;
   onActivate: (enigmaId: string) => void;
   onSacrificeOblivion: (enigmaId: string) => boolean;
+  onSacrificeShards: (enigmaId: string, amount: number) => boolean;
   onClaimReward: (enigmaId: string) => boolean;
 }) {
   const [expandedEnigmaId, setExpandedEnigmaId] = useState<string | null>(null);
@@ -616,7 +619,8 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
         const isExpanded = expandedEnigmaId === def.id;
         const currentStep = instance ? def.steps[Math.min(instance.currentStepIndex, def.steps.length - 1)] : def.steps[0];
         const canSacrifice = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) === 1;
-        const canClaim = def.id === 'neutral-mystery' && (instance?.currentStepIndex ?? 0) >= 4 && status !== 'completed';
+        const canSacrificeShards = def.id === 'neutralizing-the-void' && (instance?.currentStepIndex ?? 0) === 2 && !instance?.stepsComplete[2];
+        const canClaim = (instance?.currentStepIndex ?? 0) >= def.steps.length - 1 && !!instance?.stepsComplete[def.steps.length - 2] && status !== 'completed';
         return (
           <div
             key={def.id}
@@ -683,7 +687,7 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
                 })}
               </div>
             )}
-            {isExpanded && !isLocked && (canSacrifice || canClaim) && (
+            {isExpanded && !isLocked && (canSacrifice || canSacrificeShards || canClaim) && (
               <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
                 {canSacrifice && (
                   <button
@@ -705,6 +709,29 @@ function EnigmasPanel({ progress, enigmaDefinitions, activeEnigmaId, onActivate,
                     }}
                   >
                     Sacrifice 50,000 Oblivion
+                  </button>
+                )}
+                {canSacrificeShards && (
+                  <button
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onSacrificeShards(def.id, 2_500);
+                    }}
+                    disabled={(progress.aberratedShards ?? 0) < 2_500}
+                    style={{
+                      borderRadius: 8,
+                      border: `1px solid ${withAlpha(enigmaAccent, 0.5)}`,
+                      background: withAlpha(enigmaAccent, 0.16),
+                      color: enigmaText,
+                      fontFamily: uiTypography.display,
+                      fontSize: 11,
+                      letterSpacing: 0.8,
+                      padding: '6px 12px',
+                      cursor: (progress.aberratedShards ?? 0) >= 2_500 ? 'pointer' : 'default',
+                      opacity: (progress.aberratedShards ?? 0) < 2_500 ? 0.5 : 1,
+                    }}
+                  >
+                    Sacrifice 2,500 Shards ({(progress.aberratedShards ?? 0).toLocaleString()} available)
                   </button>
                 )}
                 {canClaim && (

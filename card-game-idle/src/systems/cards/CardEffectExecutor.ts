@@ -1,6 +1,7 @@
 import type { BoardState, DeckState, PendingEffect, TurnState } from '@/types/game';
 import type { CardEffect } from '@/types/effects';
 import type { AngelDefinition, AngelInstance, CardDefinition, CherubimDefinition, OphanimDefinition, SeraphimDefinition, SeraphimInstance } from '@/types/cards';
+
 import { CardRegistry } from '../../cards/CardRegistry';
 
 /** +10% buff applied to all non-Neutrality set mechanic core oblivion bursts. */
@@ -9,9 +10,8 @@ import { getActiveCoopRng as _getActiveCoopRng } from '@/state/coopSyncStore';
 import { TurnSystem } from './TurnSystem';
 import {
   clampPatienceStacks,
-  clampPatientLightStacks,
   hasNeutralityUncappedGainsInDeck,
-} from '@/systems/cards/neutralityPatientLight';
+} from '@/systems/cards/neutralityPatience';
 
 function countBoardDefinitionIds(board: BoardState): Record<string, number> {
   const counts: Record<string, number> = {};
@@ -49,11 +49,7 @@ function isActivePatienceUnit(unit: BoardState['frontSlots'][number]): unit is S
   return !!unit && (unit.type === 'Angel' || (unit.type === 'Seraphim' && unit.isActive));
 }
 
-function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: TurnState, board: BoardState): number | null {
-  const signatures = Math.min(5, turn.neutralityEngineSignatures?.length ?? 0);
-  const setupCount = Math.min(8, turn.neutralitySetupCount ?? 0);
-  const drift = Math.abs(turn.equilibriumDrift ?? 0);
-  const lowDriftBonus = drift <= 8 ? 550 : 0;
+function computeNeutralityInfiniteOblivionBonus(definitionId: string, _turn: TurnState, board: BoardState): number | null {
   const patienceSlots = board.frontSlots.filter(unit => {
     if (!unit) return false;
     if (unit.type === 'Seraphim') return unit.isActive;
@@ -66,9 +62,9 @@ function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: Turn
 
   switch (definitionId) {
     case 'inf-genesis-throne':
-      return 800 + totalPatience * 80 + peakPatience * 160 + signatures * 140 + setupCount * 90;
+      return 1300 + totalPatience * 80 + peakPatience * 160;
     case 'inf-null-apex':
-      return 620 + peakPatience * 300 + patienceUnits * 140 + lowDriftBonus;
+      return 800 + peakPatience * 300 + patienceUnits * 140;
     case 'inf-entropic-crown':
       return 850 + patienceUnits * 500 + totalPatience * 65;
     case 'inf-annihilation-field':
@@ -87,9 +83,6 @@ function computeNeutralityInfiniteOblivionBonus(definitionId: string, turn: Turn
 }
 
 function computeNeutralityEternalOblivionBonus(definitionId: string, turn: TurnState, board: BoardState): number | null {
-  const signatures = Math.min(4, turn.neutralityEngineSignatures?.length ?? 0);
-  const stability = Math.max(0, turn.equilibriumStability ?? 0);
-  const setupCount = Math.min(6, turn.neutralitySetupCount ?? 0);
   const patienceSlots = board.frontSlots.filter(unit => {
     if (!unit) return false;
     if (unit.type === 'Seraphim') return unit.isActive;
@@ -102,35 +95,35 @@ function computeNeutralityEternalOblivionBonus(definitionId: string, turn: TurnS
 
   switch (definitionId) {
     case 'btei-voids-reaping':
-      return 220 + totalPatience * 26 + setupCount * 34;
+      return 300 + totalPatience * 26;
     case 'btei-temporal-ruin':
-      return 280 + peakPatience * 40 + signatures * 32;
+      return 340 + peakPatience * 40;
     case 'btei-null-edict':
-      return 320 + totalPatience * 30 + stability * 36;
+      return 380 + totalPatience * 30;
     case 'btei-axiom-of-oblivion':
-      return 360 + peakPatience * 48 + setupCount * 32;
+      return 420 + peakPatience * 48;
     case 'btei-eternal-vigil':
       return 240 + peakPatience * 34 + patienceUnits * 28;
     case 'btei-colossus-advent':
-      return 340 + totalPatience * 28 + peakPatience * 30 + signatures * 30;
+      return 400 + totalPatience * 28 + peakPatience * 30;
     case 'btei-sovereign-domain':
-      return 290 + patienceUnits * 52 + setupCount * 30;
+      return 320 + patienceUnits * 52;
     case 'btei-architects-manifold':
       return 310 + patienceUnits * 56;
     case 'btei-convergence-of-eternity':
-      return 380 + totalPatience * 34 + signatures * 42;
+      return 420 + totalPatience * 34;
     case 'btei-omniscient-fracture':
-      return 420 + peakPatience * 52 + stability * 34 + signatures * 34;
+      return 480 + peakPatience * 52;
     case 'btei-neutrality-paradox-crown':
-      return 360 + setupCount * 56 + signatures * 44 + patienceUnits * 28;
+      return 420 + patienceUnits * 28;
     case 'btei-neutrality-zero-edict':
-      return 260 + patienceUnits * 48 + setupCount * 26;
+      return 290 + patienceUnits * 48;
     case 'btei-neutrality-void-throne':
-      return 350 + peakPatience * 44 + setupCount * 30 + stability * 26;
+      return 400 + peakPatience * 44;
     case 'btei-neutrality-axiom-maw':
-      return 430 + peakPatience * 58 + stability * 34 + signatures * 32;
+      return 490 + peakPatience * 58;
     case 'btei-neutrality-prime-equilibrium':
-      return 320 + firstCardBonus + stability * 38 + totalPatience * 24 + setupCount * 34;
+      return 320 + firstCardBonus + totalPatience * 24;
     default:
       return null;
   }
@@ -194,60 +187,6 @@ export class CardEffectExecutor {
     ));
     void isHighRarityMechanicCard;
 
-    function getNeutralityEquilibriumSigilCap(): number {
-      let capBonus = Math.max(0, mutableTurn.neutralityEquilibriumSigilCapBonus ?? 0);
-      const starboundPresent = mutableBoard.frontSlots.some(sl => sl?.type === 'Angel' && sl.definitionId === 'tx-angel-starbound-null-archangel');
-      if (starboundPresent) capBonus = Math.max(capBonus, 4);
-      return Math.max(0, 12 + capBonus);
-    }
-
-    function getNeutralityEquilibriumPatienceGainBonus(): number {
-      const sentinelPresent = mutableBoard.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel');
-      if (!sentinelPresent) return 0;
-      const base = Math.floor(Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0) / 2);
-      return base > 0 ? base * 2 : 0;
-    }
-
-    function grantNeutralityEquilibriumSigils(value: number, sourceTag?: string): number {
-      const gain = Math.max(0, Math.floor(value));
-      if (gain <= 0) return 0;
-
-      const before = Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0);
-      const next = Math.min(getNeutralityEquilibriumSigilCap(), before + gain);
-      const gained = Math.max(0, next - before);
-      if (gained <= 0) return 0;
-
-      mutableTurn.neutralityEquilibriumSigils = next;
-      const gainedThisTurn = Math.max(0, mutableTurn.neutralityEquilibriumSigilsGainedThisTurn ?? 0) + gained;
-      mutableTurn.neutralityEquilibriumSigilsGainedThisTurn = gainedThisTurn;
-
-      const patientLightAlready = Math.max(0, mutableTurn.neutralityEquilibriumPatientLightFromSigilsThisTurn ?? 0);
-      const patientLightEligible = Math.min(2, Math.floor(gainedThisTurn / 4));
-      const patientLightToGrant = Math.max(0, patientLightEligible - patientLightAlready);
-      if (patientLightToGrant > 0) {
-        mutableTurn.neutralityPatientLightStacks = Math.max(0, mutableTurn.neutralityPatientLightStacks ?? 0) + patientLightToGrant;
-        mutableTurn.neutralityEquilibriumPatientLightFromSigilsThisTurn = patientLightAlready + patientLightToGrant;
-      }
-
-      if (sourceTag) {
-        mutableTurn.neutralityTriggeredEffects = [
-          ...(mutableTurn.neutralityTriggeredEffects ?? []),
-          `${sourceTag}: +${gained} Equilibrium Sigils`,
-        ].slice(-8);
-      }
-
-      return gained;
-    }
-
-    function spendNeutralityEquilibriumSigils(requested: number): number {
-      const spend = Math.max(0, Math.floor(requested));
-      if (spend <= 0) return 0;
-      const before = Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0);
-      const spent = Math.min(before, spend);
-      mutableTurn.neutralityEquilibriumSigils = before - spent;
-      return spent;
-    }
-
     function processEffect(effect: CardEffect): boolean {
       switch (effect.type) {
         // �E�E�E��E�E�E��E�E�E��E�E�E� Oblivion effects �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
@@ -283,9 +222,7 @@ export class CardEffectExecutor {
         }
 
         case 'patience_gain_all': {
-          const linkedBonus = Math.max(0, mutableTurn.neutralityLinkedGainBonus ?? 0);
-          const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus();
-          const perUnitGain = effect.value + linkedBonus + equilibriumBonus;
+          const perUnitGain = effect.value;
           let totalGain = 0;
 
           for (const unit of mutableBoard.frontSlots) {
@@ -330,72 +267,20 @@ export class CardEffectExecutor {
           break;
         }
 
-        case 'neutrality_equilibrium_sigil_gain': {
-          grantNeutralityEquilibriumSigils(effect.value, deckCard.definitionId);
-          break;
-        }
-
-        case 'neutrality_equilibrium_starbound_cashout': {
-          const available = Math.max(0, mutableTurn.neutralityEquilibriumSigils ?? 0);
-          const spent = spendNeutralityEquilibriumSigils(available);
-          if (spent <= 0) break;
-
-          for (const unit of mutableBoard.frontSlots) {
-            if (!isActivePatienceUnit(unit)) continue;
-            if (sourceSetKey) {
-              const unitDef = CardRegistry.get(unit.definitionId);
-              if (!unitDef || 'Neutrality' !== sourceSetKey) continue;
-            }
-            unit.patienceStacks = (unit.patienceStacks ?? 0) * 2;
-          }
-          oblivionBonus += spent * Math.max(0, effect.oblivionPerSigil);
-
-          const patientLightPerSigils = Math.max(1, effect.patientLightPerSigils ?? 5);
-          const patientLightGain = Math.floor(spent / patientLightPerSigils);
-          if (patientLightGain > 0) {
-            mutableTurn.neutralityPatientLightStacks = Math.max(0, mutableTurn.neutralityPatientLightStacks ?? 0) + patientLightGain;
-          }
-          break;
-        }
-
-        case 'neutrality_equilibrium_tactical_spend': {
-          const spend = Math.max(0, effect.spend);
-          if (spend <= 0) break;
-          if ((mutableTurn.neutralityEquilibriumSigils ?? 0) < spend) break;
+        case 'oblivion_from_target_unit_patience': {
           if (pendingEffect === null) {
             pendingEffect = {
-              type: 'neutrality_equilibrium_tactical_choice',
-              spend,
-              burstOblivion: Math.max(0, effect.burstOblivion),
-              restorePercent: Math.max(0, effect.restorePercent),
-              patientLightGain: Math.max(0, effect.patientLightGain ?? 0),
+              type: 'neutralizing_bane_choose_target',
+              sourceDefinitionId: deckCard.definitionId,
+              sourceInstanceId: deckCard.instanceId,
+              multiplier: effect.multiplier,
+              masteryMultiplierCap: effect.masteryMultiplierCap,
             };
           }
           break;
         }
 
-        case 'neutrality_patient_light_gain': {
-          const gain = Math.max(0, effect.value);
-          if (gain <= 0) break;
-          mutableTurn.neutralityPatientLightStacks = (mutableTurn.neutralityPatientLightStacks ?? 0) + gain;
-          if ((def !== undefined && def !== null)) {
-            mutableTurn.neutralityTriggeredEffects = [
-              ...(mutableTurn.neutralityTriggeredEffects ?? []),
-              `${deckCard.definitionId}: +${gain} Patient Light`,
-            ].slice(-8);
-          }
-          break;
-        }
-
-        case 'neutrality_attack_preserve': {
-          mutableTurn.neutralityAttackPreservePercent = Math.max(
-            mutableTurn.neutralityAttackPreservePercent ?? 0,
-            Math.max(0, effect.percent),
-          );
-          break;
-        }
-
-        // �E�E�E��E�E�E��E�E�E��E�E�E� Legacy score/power effects (Light compat ? map to Oblivion) �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
+        // ──────── Legacy score/power effects (Light compat → map to Oblivion) ────────
         case 'score_flat':
           oblivionBonus += effect.value * multiplier;
           break;
@@ -631,10 +516,6 @@ export class CardEffectExecutor {
     }
 
     const hasUncappedNeutralityGains = hasNeutralityUncappedGainsInDeck(mutableDeck);
-    mutableTurn.neutralityPatientLightStacks = clampPatientLightStacks(
-      mutableTurn.neutralityPatientLightStacks ?? 0,
-      hasUncappedNeutralityGains,
-    );
     for (const unit of mutableBoard.frontSlots) {
       if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
       unit.patienceStacks = clampPatienceStacks(unit.patienceStacks ?? 0, hasUncappedNeutralityGains);
@@ -651,8 +532,6 @@ export class CardEffectExecutor {
     switch (condition.type) {
       case 'seraphim_played_this_turn':     return (turn.seraphimPlayedThisTurn ?? 0) > 0;
       case 'seraphim_not_played_this_turn': return (turn.seraphimPlayedThisTurn ?? 0) === 0;
-      case 'equilibrium_sigils_gte':
-        return (turn.neutralityEquilibriumSigils ?? 0) >= condition.value;
       case 'cards_played_gte':  return turn.cardsPlayedThisTurn >= condition.value;
       case 'first_card_this_turn': return turn.cardsPlayedThisTurn === 0;
       case 'seraphim_active_gte':
@@ -667,7 +546,7 @@ export class CardEffectExecutor {
   static checkPlayable(
     def: CardDefinition,
     handSize: number,
-    turn: TurnState,
+    _turn: TurnState,
     board?: BoardState,
   ): boolean {
     if (def.type === 'Angel') {
@@ -700,9 +579,6 @@ export class CardEffectExecutor {
           }
           if (cond.type === 'board_definition_gte') {
             if ((boardDefinitionCount[cond.definitionId] ?? 0) < cond.value) return false;
-          }
-          if (cond.type === 'equilibrium_sigils_gte') {
-            if ((turn.neutralityEquilibriumSigils ?? 0) < cond.value) return false;
           }
         }
       }

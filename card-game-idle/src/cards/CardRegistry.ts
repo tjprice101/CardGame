@@ -531,7 +531,7 @@ function buildAngelAttacks(def: AngelDefinition): AngelAttackSet {
   const exaltedAction = pickByHash(ANGEL_EXALTED_ACTIONS, `${def.definitionId}:exalted`);
   const summonPressure = def.summonCost.length + (def.extraSummonConditions?.length ?? 0);
   const primaryBase = 130 + weight * 45 + summonPressure * 18;
-  // Exalted is ~3× the equivalent Seraphim synergized base (same rarity), independent of summonPressure.
+  // Exalted is ~3ÁEthe equivalent Seraphim synergized base (same rarity), independent of summonPressure.
   const exaltedBase = Math.round((80 + weight * 30) * 1.85 * 3.0);
   const uniqueArchetype = archetypeIndex(def.definitionId, 4);
 
@@ -702,13 +702,13 @@ function parseDocEffectClauses(text: string): CardEffect[] {
 
     const patientLight = clause.match(/^Grant\s+(\d+)\s+Patient Light\s+stacks?/i);
     if (patientLight) {
-      effects.push({ type: 'neutrality_patient_light_gain', value: Number(patientLight[1]) });
+      effects.push({ type: 'patience_gain_all', value: Number(patientLight[1]) });
       continue;
     }
 
     const preserve = clause.match(/Seraphim attacks preserve\s+(\d+(?:\.\d+)?)%\s+of consumed Patience/i);
     if (preserve) {
-      effects.push({ type: 'neutrality_attack_preserve', percent: Number(preserve[1]) });
+      effects.push({ type: 'patience_gain_all', value: Math.round(Number(preserve[1]) / 10) });
       continue;
     }
 
@@ -1247,7 +1247,7 @@ function deterministicCooldown(seed: string, min: number, max: number): number {
 }
 
 function stripCardTaxCosts(_costs: ReadonlyArray<AttackCost> | undefined): AttackCost[] {
-  // Phase 0: all attacks are free — strip every cost type.
+  // Phase 0: all attacks are free  Estrip every cost type.
   return [];
 }
 
@@ -1296,7 +1296,7 @@ function applyNeutralityInfiniteIdentityTweaks(def: CardDefinition): CardDefinit
           { type: 'oblivion_flat', value: 3200 },
           { type: 'patience_gain_all', value: 8 },
           { type: 'patience_double_all' },
-          { type: 'neutrality_patient_light_gain', value: 2 },
+          { type: 'patience_gain_all', value: 2 },
         ],
       };
       return tuned;
@@ -1308,7 +1308,7 @@ function applyNeutralityInfiniteIdentityTweaks(def: CardDefinition): CardDefinit
         effects: [{ type: 'cherubim_patience_per_card', value: 4 }],
         onPlayEffects: [
           { type: 'patience_gain_all', value: 14 },
-          { type: 'neutrality_patient_light_gain', value: 3 },
+          { type: 'patience_gain_all', value: 3 },
           { type: 'shuffle_discard' },
           { type: 'oblivion_flat', value: 1800 },
         ],
@@ -1327,7 +1327,7 @@ function applyNeutralityInfiniteIdentityTweaks(def: CardDefinition): CardDefinit
           name: 'Null Dominion Prime',
           cardsPlayedRequirement: 4,
           effects: [
-            { type: 'neutrality_patient_light_gain', value: 4 },
+            { type: 'patience_gain_all', value: 4 },
             { type: 'patience_double_all' },
             { type: 'patience_gain_all', value: 14 },
             { type: 'draw', value: 2 },
@@ -1347,7 +1347,7 @@ function applyNeutralityInfiniteIdentityTweaks(def: CardDefinition): CardDefinit
           name: 'Rupture Singularity',
           cardsPlayedRequirement: 6,
           effects: [
-            { type: 'neutrality_patient_light_gain', value: 2 },
+            { type: 'patience_gain_all', value: 2 },
             { type: 'patience_gain_all', value: 18 },
             { type: 'shuffle_discard' },
             { type: 'salvage_any' },

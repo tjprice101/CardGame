@@ -773,31 +773,6 @@ export default function HandDisplay() {
                 <div style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, color: warmTheme.danger }}>?</div>
               )}
 
-              {/* Neutrality "marked" indicator — card was stamped by Temporal Ruin
-                  or similar; playing it grants +N Patience to all Seraphim */}
-              {!isExtraDeckView && (turn.neutralityMarkedCardIds ?? []).includes(deckCard.instanceId) && (
-                <div style={{
-                  position: 'absolute',
-                  bottom: 5,
-                  right: 5,
-                  zIndex: 10,
-                  padding: '2px 6px',
-                  borderRadius: 999,
-                  border: '1px solid rgba(166,198,255,0.45)',
-                  background: 'rgba(24, 20, 52, 0.88)',
-                  color: 'rgba(200,220,255,0.96)',
-                  fontSize: 8,
-                  lineHeight: 1,
-                  letterSpacing: 0.5,
-                  fontFamily: 'Georgia, serif',
-                  fontWeight: 700,
-                  pointerEvents: 'none',
-                  boxShadow: '0 2px 8px rgba(80,120,255,0.32)',
-                }}>
-                  {`★ +${turn.neutralityMarkedPatienceGain ?? 0} Pat`}
-                </div>
-              )}
-
               {/* Shimmer sweep on hover */}
               {isHovered && !selected && !isAnimatingOut && isPlayable && (
                 <div style={{

@@ -20,7 +20,6 @@ import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { getSetEngineSnapshotForCard } from '@/ui/setEngineSummary';
 import { getActionClassLabel, getCardActionClass } from '@/systems/cards/ActionClass';
-import { getEffectivePatientLightPerCardPatienceGain } from '@/systems/cards/neutralityPatientLight';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import type { DeckCard } from '@/types/game';
@@ -1669,84 +1668,6 @@ export default function BoardDisplay() {
           })()}
         </div>
       )}
-
-
-      {/* Active Neutrality turn mechanics chips */}
-      {canPlay && (() => {
-        const chips: { label: string; title: string; highlight?: boolean }[] = [];
-        const eqSigils = Math.max(0, turn.neutralityEquilibriumSigils ?? 0);
-        if (eqSigils > 0) {
-          const gainBonus = Math.floor(eqSigils / 2);
-          chips.push({
-            label: `Sigils ${eqSigils} (+${gainBonus} Pat Gain)`,
-            title: `Equilibrium Sigils: every 2 Sigils adds +1 to future Patience gains this turn.`,
-          });
-        }
-        // Patient Light: separate indicator — always shown when > 0 so the player
-        // can see exactly how many stacks are amplifying Patience gain each card play.
-        const patientLightStacks = Math.max(0, turn.neutralityPatientLightStacks ?? 0);
-        if (patientLightStacks > 0) {
-          const perCardGain = getEffectivePatientLightPerCardPatienceGain(patientLightStacks);
-          chips.push({
-            label: `Patient Light ×${patientLightStacks}`,
-            title: `Patient Light: +${patientLightStacks} stack${patientLightStacks === 1 ? '' : 's'} — Seraphim now gain +${perCardGain} Patience per card played. Gains use diminishing returns after 4 stacks. Angels also accumulate Patience at this rate and spend it when they attack (+2% base Oblivion per stack consumed).`,
-            highlight: true,
-          });
-        }
-        if ((turn.neutralityLinkedGainBonus ?? 0) > 0) {
-          const retain = turn.neutralityLinkedRetainPercent ?? 0;
-          chips.push({ label: `Linked +${turn.neutralityLinkedGainBonus} / Retain ${retain}%`, title: `Linked mode: patience gains grant +${turn.neutralityLinkedGainBonus} extra to all linked Seraphim; non-attackers retain ${retain}% Patience after linked attacks.` });
-        }
-        if ((turn.neutralityAttackPreservePercent ?? 0) > 0) {
-          chips.push({ label: `Preserve ${turn.neutralityAttackPreservePercent}%`, title: `Seraphim attacks preserve ${turn.neutralityAttackPreservePercent}% of consumed Patience this turn.` });
-        }
-        if ((turn.neutralityAttackRestorePercent ?? 0) > 0) {
-          chips.push({ label: `Restore ${turn.neutralityAttackRestorePercent}%`, title: `Seraphim attacks restore ${turn.neutralityAttackRestorePercent}% of consumed Patience this turn.` });
-        }
-        if ((turn.neutralityMarkedCardIds?.length ?? 0) > 0) {
-          const gain = turn.neutralityMarkedPatienceGain ?? 0;
-          chips.push({ label: `${turn.neutralityMarkedCardIds!.length} Marked (+${gain} Pat)`, title: `${turn.neutralityMarkedCardIds!.length} hand card(s) marked: each grants +${gain} Patience to all Seraphim when played.` });
-        }
-        if (chips.length === 0) return null;
-        return (
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 5,
-            justifyContent: 'center',
-            marginTop: 6,
-            pointerEvents: 'none',
-          }}>
-            {chips.map((chip, idx) => (
-              <div key={idx} title={chip.title} style={{
-                padding: '2px 8px',
-                borderRadius: 999,
-                border: chip.highlight
-                  ? '1px solid rgba(255,220,140,0.65)'
-                  : '1px solid rgba(160,190,255,0.38)',
-                background: chip.highlight
-                  ? 'rgba(56, 44, 14, 0.90)'
-                  : 'rgba(20, 24, 56, 0.82)',
-                color: chip.highlight
-                  ? 'rgba(255,225,130,0.98)'
-                  : 'rgba(190,215,255,0.94)',
-                fontSize: 8.5,
-                lineHeight: 1.4,
-                letterSpacing: 0.5,
-                fontFamily: DISPLAY_FONT,
-                fontWeight: 700,
-                pointerEvents: 'none',
-                boxShadow: chip.highlight
-                  ? '0 2px 8px rgba(200,160,40,0.30)'
-                  : '0 2px 6px rgba(0,0,0,0.24)',
-              }}>
-                {chip.label}
-              </div>
-            ))}
-          </div>
-        );
-      })()}
-
       {/* Set Ability hotkey strip — shows during playing phase */}
       <SetAbilityStrip />
 

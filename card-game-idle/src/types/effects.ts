@@ -27,22 +27,7 @@ export type ImmediateEffect =
   | { type: 'salvage_by_id'; targetId: string; label?: string }
   | { type: 'patience_gain_all'; value: number }
   | { type: 'patience_double_all' }
-  | { type: 'neutrality_equilibrium_sigil_gain'; value: number }
-  | {
-      type: 'neutrality_equilibrium_starbound_cashout';
-      oblivionPerSigil: number;
-      patientLightPerSigils?: number;
-      spendAll?: boolean;
-    }
-  | {
-      type: 'neutrality_equilibrium_tactical_spend';
-      spend: number;
-      burstOblivion: number;
-      restorePercent: number;
-      patientLightGain?: number;
-    }
-  | { type: 'neutrality_patient_light_gain'; value: number }
-  | { type: 'neutrality_attack_preserve'; percent: number };
+  | { type: 'oblivion_from_target_unit_patience'; multiplier: number; masteryMultiplierCap: number };
 
 export type EffectCondition =
   | { type: 'seraphim_played_this_turn' }
@@ -50,8 +35,7 @@ export type EffectCondition =
   | { type: 'cards_played_gte'; value: number }
   | { type: 'seraphim_active_gte'; value: number }
   | { type: 'cherubim_active_gte'; value: number }
-  | { type: 'first_card_this_turn' }
-  | { type: 'equilibrium_sigils_gte'; value: number };
+  | { type: 'first_card_this_turn' };
 
 export interface ConditionalEffect {
   type: 'conditional';

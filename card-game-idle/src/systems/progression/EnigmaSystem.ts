@@ -22,7 +22,7 @@ export function ensureEnigmaState(progress: ProgressState): void {
   }
 }
 
-function ensureInstance(progress: ProgressState, enigmaId: string) {
+export function ensureInstance(progress: ProgressState, enigmaId: string) {
   ensureEnigmaState(progress);
   const definition = getEnigmaDefinition(enigmaId);
   if (!definition) return null;

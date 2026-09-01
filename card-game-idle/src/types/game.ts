@@ -77,16 +77,16 @@ export type PendingEffect =
       resolutionEffects?: CardEffect[];
     }
   | {
-      type: 'neutrality_equilibrium_tactical_choice';
-      spend: number;
-      burstOblivion: number;
-      restorePercent: number;
-      patientLightGain: number;
-    }
-  | {
       type: 'neutrality_echo_pulse_choose';
       sourceDefinitionId: string;
       sourceInstanceId: string;
+    }
+  | {
+      type: 'neutralizing_bane_choose_target';
+      sourceDefinitionId: string;
+      sourceInstanceId: string;
+      multiplier: number;
+      masteryMultiplierCap: number;
     }
   | {
       type: 'neutrality_void_amp_choose_seraphim';
@@ -142,30 +142,15 @@ export interface TurnState {
   seraphimPlayedThisTurn?: number;
   equilibriumDrift?: number;
   equilibriumStability?: number;
-  neutralitySetupCount?: number;
   attenuationClassUses?: Partial<Record<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher', number>>;
   attenuationBreaksUsed?: number;
   attenuationBrokenClasses?: Array<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher'>;
-  neutralityEngineSignatures?: string[];
   neutralityPatienceChargedThisTurn?: number;
   neutralityPatienceConsumedThisTurn?: number;
 
-  neutralityPatientLightStacks?: number;
-  neutralityEquilibriumSigils?: number;
-  neutralityEquilibriumSigilsGainedThisTurn?: number;
-  neutralityEquilibriumPatientLightFromSigilsThisTurn?: number;
-  neutralityEquilibriumSigilCapBonus?: number;
-  neutralityEquilibriumSentinelTempoUsed?: boolean;
   neutralityTriggeredEffects?: string[];
   lastShuffleSubtypeCounts?: Partial<Record<CardSubtypeFilter, number>>;
-  neutralityMarkedCardIds?: string[];
-  neutralityMarkedPatienceGain?: number;
   neutralityNextAttackOblivionByInstance?: Record<string, number>;
-  neutralityPauseActiveTimersSeconds?: number;
-  neutralityAttackPreservePercent?: number;
-  neutralityAttackRestorePercent?: number;
-  neutralityLinkedGainBonus?: number;
-  neutralityLinkedRetainPercent?: number;
 
   cherubimConditionalMult?: number; // multiplier from cherubim_conditional_buff passives, applied per card play
   lastFiredSeraphimAttackMode?: 'unsynergized' | 'synergized' | null;

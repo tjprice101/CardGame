@@ -196,7 +196,7 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
     return 'setup';
   }
 
-  if (hasSomeEffect(def, ['patience_gain_all', 'patience_double_all', 'neutrality_equilibrium_sigil_gain'])) {
+  if (hasSomeEffect(def, ['patience_gain_all', 'patience_double_all'])) {
     return 'resource';
   }
 

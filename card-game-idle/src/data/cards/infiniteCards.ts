@@ -24,24 +24,24 @@ export const infiniteOphanimCards: OphanimDefinition[] = [
     type: 'Ophanim',
     rarity: 'Infinite',
     name: 'Oblivion Absolute',
-    description: 'Gain Oblivion scaled by total Patience and peak Patience; All Seraphim on board gain +15 Patience; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks)',
+    description: 'Gain Oblivion scaled by total Patience and peak Patience; All Seraphim on board gain +15 Patience; All Seraphim on board gain +2 Patience',
     artKey: 'inf_oblivion_absolute',
     effects: [
       { type: 'oblivion_flat', value: 6000 },
       { type: 'patience_gain_all', value: 26 },
-      { type: 'neutrality_patient_light_gain', value: 4 }],
+      { type: 'patience_gain_all', value: 4 }],
   },
   {
     definitionId: 'inf-void-cascade',
     type: 'Ophanim',
     rarity: 'Infinite',
     name: 'Void Cascade',
-    description: 'All Seraphim on board gain +25 Patience; Grant 1 Patient Light stack (boosts card-play Patience gain with diminishing returns at high stacks)',
+    description: 'All Seraphim on board gain +25 Patience; All Seraphim on board gain +1 Patience',
     artKey: 'inf_void_cascade',
     effects: [
       { type: 'oblivion_flat', value: 0 },
       { type: 'patience_gain_all', value: 13 },
-      { type: 'neutrality_patient_light_gain', value: 3 }],
+      { type: 'patience_gain_all', value: 3 }],
   },
 ];
 
@@ -51,7 +51,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     type: 'Seraphim',
     rarity: 'Infinite',
     name: 'Genesis Throne',
-    description: 'On play: Gain Oblivion scaled by total Patience, peak Patience, engine signatures, and setup count. While on board: +730 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion',
+    description: 'On play: Gain Oblivion scaled by total Patience, peak Patience, engine signatures, and setup count. While on board: +730 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack ↁE+15 Oblivion',
 
     artKey: 'inf_genesis_throne',
     attacks: {
@@ -82,14 +82,14 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     onPlayEffects: [
       { type: 'oblivion_flat', value: 2400 },
       { type: 'patience_gain_all', value: 9 },
-      { type: 'neutrality_patient_light_gain', value: 2 }],
+      { type: 'patience_gain_all', value: 2 }],
   },
   {
     definitionId: 'inf-null-apex',
     type: 'Seraphim',
     rarity: 'Infinite',
     name: 'Null Apex',
-    description: 'While on board: +2000 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion',
+    description: 'While on board: +2000 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack ↁE+15 Oblivion',
 
     artKey: 'inf_null_apex',
     attacks: {
@@ -119,7 +119,7 @@ export const infiniteSeraphimCards: SeraphimDefinition[] = [
     patienceThreshold: 8,
     onPlayEffects: [
       { type: 'patience_gain_all', value: 12 },
-      { type: 'neutrality_patient_light_gain', value: 2 },
+      { type: 'patience_gain_all', value: 2 },
       { type: 'oblivion_flat', value: 1100 }],
   },
 ];
@@ -130,20 +130,20 @@ export const infiniteCherubimCards: CherubimDefinition[] = [
       type: 'Cherubim',
     rarity: 'Infinite',
     name: 'Entropic Crown',
-      description: 'On play: Gain Oblivion scaled by Patience-bearing units and total Patience; All Seraphim on board gain +8 Patience; Double all Patience on the board; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks). While on board: Adjacent Seraphim and Angels gain +8 Patience per card played',
+      description: 'On play: Gain Oblivion scaled by Patience-bearing units and total Patience; All Seraphim on board gain +8 Patience; Double all Patience on the board; All Seraphim on board gain +2 Patience. While on board: Adjacent Seraphim and Angels gain +8 Patience per card played',
     artKey: 'inf_entropic_crown',
       effects: [{ type: 'cherubim_patience_per_card', value: 6 }],
-      onPlayEffects: [{ type: 'oblivion_flat', value: 2600 }, { type: 'patience_gain_all', value: 6 }, { type: 'neutrality_patient_light_gain', value: 1 }],
+      onPlayEffects: [{ type: 'oblivion_flat', value: 2600 }, { type: 'patience_gain_all', value: 6 }, { type: 'patience_gain_all', value: 1 }],
   },
   {
     definitionId: 'inf-annihilation-field',
       type: 'Cherubim',
     rarity: 'Infinite',
     name: 'Annihilation Field',
-      description: 'On play: All Seraphim on board gain +14 Patience; Grant 3 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Shuffle discard into deck; Gain Oblivion scaled by cross-set conversion sources and peak Patience. While on board: Adjacent Seraphim and Angels gain +4 Patience per card played',
+      description: 'On play: All Seraphim on board gain +14 Patience; All Seraphim on board gain +3 Patience; Shuffle discard into deck; Gain Oblivion scaled by cross-set conversion sources and peak Patience. While on board: Adjacent Seraphim and Angels gain +4 Patience per card played',
     artKey: 'inf_annihilation_field',
       effects: [{ type: 'cherubim_patience_per_card', value: 5 }],
-      onPlayEffects: [{ type: 'patience_gain_all', value: 10 }, { type: 'neutrality_patient_light_gain', value: 2 }],
+      onPlayEffects: [{ type: 'patience_gain_all', value: 10 }, { type: 'patience_gain_all', value: 2 }],
   },
 ];
 
@@ -153,7 +153,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     type: 'Angel',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: All Seraphim on board gain +20 Patience; Gain Oblivion scaled by total Patience and peak Patience. After 4 cards played: Grant 4 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +14 Patience; Draw 2 cards; Gain Oblivion scaled by total Patience and peak Patience. While on board: +950 Oblivion for each Seraphim on board while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +20 Patience; Gain Oblivion scaled by total Patience and peak Patience. After 4 cards played: All Seraphim on board gain +4 Patience; Double all Patience on the board; All Seraphim on board gain +14 Patience; Draw 2 cards; Gain Oblivion scaled by total Patience and peak Patience. While on board: +950 Oblivion for each Seraphim on board while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
     artKey: 'inf_sovereign_void',
     summonCost: [],
     extraSummonConditions: [
@@ -163,9 +163,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
     activatedAbility: {
       name: 'Null Dominion',
       cardsPlayedRequirement: 4,
-      description: 'Grant 4 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Double all Patience on the board; All Seraphim on board gain +14 Patience; Draw 2 cards; Gain Oblivion scaled by total Patience and peak Patience',
+      description: 'All Seraphim on board gain +4 Patience; Double all Patience on the board; All Seraphim on board gain +14 Patience; Draw 2 cards; Gain Oblivion scaled by total Patience and peak Patience',
       effects: [
-        { type: 'neutrality_patient_light_gain', value: 3 },
+        { type: 'patience_gain_all', value: 3 },
         { type: 'patience_double_all' },
         { type: 'patience_gain_all', value: 10 },
         { type: 'oblivion_flat', value: 2800 }],
@@ -199,7 +199,7 @@ export const infiniteAngelCards: AngelDefinition[] = [
     type: 'Angel',
     rarity: 'Infinite',
     name: 'Eternity Rupture',
-    description: 'On summon: All Seraphim on board gain +16 Patience; Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); Shuffle discard into deck. After 6 cards played: Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +18 Patience; Shuffle discard into deck; Salvage any 1 card; Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience. While on board: +1450 Oblivion whenever you play an Ophanim while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack → +2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +16 Patience; All Seraphim on board gain +2 Patience; Shuffle discard into deck. After 6 cards played: All Seraphim on board gain +2 Patience; All Seraphim on board gain +18 Patience; Shuffle discard into deck; Salvage any 1 card; Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience. While on board: +1450 Oblivion whenever you play an Ophanim while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
     artKey: 'inf_eternity_rupture',
     summonCost: [],
     extraSummonConditions: [
@@ -207,15 +207,15 @@ export const infiniteAngelCards: AngelDefinition[] = [
       { type: 'cherubim_active_gte', value: 2 }],
     onSummonEffects: [
       { type: 'patience_gain_all', value: 16 },
-      { type: 'neutrality_patient_light_gain', value: 2 },
+      { type: 'patience_gain_all', value: 2 },
       { type: 'shuffle_discard' },
       { type: 'oblivion_flat', value: 1800 }],
     activatedAbility: {
       name: 'Rupture Convergence',
       cardsPlayedRequirement: 5,
-      description: 'Grant 2 Patient Light stacks (boosts card-play Patience gain with diminishing returns at high stacks); All Seraphim on board gain +18 Patience; Shuffle discard into deck; Salvage any 1 card; Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience',
+      description: 'All Seraphim on board gain +2 Patience; All Seraphim on board gain +18 Patience; Shuffle discard into deck; Salvage any 1 card; Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience',
       effects: [
-        { type: 'neutrality_patient_light_gain', value: 3 },
+        { type: 'patience_gain_all', value: 3 },
         { type: 'patience_gain_all', value: 8 },
         { type: 'oblivion_flat', value: 2600 }],
     },

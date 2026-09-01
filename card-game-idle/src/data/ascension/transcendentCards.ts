@@ -15,30 +15,24 @@ const TX_ANGELS: CardDefinition[] = [
     rarity: 'Legendary' as const,
     name: 'Starbound Null Archangel',
     description:
-      'On summon: gain 6 Equilibrium Sigils and all Seraphim gain +12 Patience. ' +
-      'While on board: Equilibrium Sigil cap increases to 16. ' +
-      'While in your deck: all Patience and Patient Light gains are uncapped. ' +
-      'After 4 cards played: spend all Sigils, double all Patience, and gain heavy Oblivion per Sigil spent.',
+      'On summon: all Seraphim gain +16 Patience. ' +
+      'While in your deck: all Patience gains are uncapped. ' +
+      'After 4 cards played: double all Patience and gain +3600 Oblivion.',
     artKey: 'tx_angel_starbound_null_archangel',
     summonCost: ['inf-null-apex', 'tx-sera-null-entropy'],
     extraSummonConditions: [
       { type: 'board_definition_gte' as const, definitionId: 'tx-cher-null-sentinel', value: 1 },
-      { type: 'equilibrium_sigils_gte' as const, value: 10 },
     ],
     onSummonEffects: [
-      { type: 'neutrality_equilibrium_sigil_gain' as const, value: 6 },
-      { type: 'patience_gain_all' as const, value: 12 },
+      { type: 'patience_gain_all' as const, value: 16 },
     ],
     activatedAbility: {
       name: 'Starlit Equilibrium',
       cardsPlayedRequirement: 4,
-      description: 'Spend all Sigils: double all Patience and gain +900 Oblivion per Sigil spent.',
+      description: 'Double all Patience and gain +3600 Oblivion.',
       effects: [
-        {
-          type: 'neutrality_equilibrium_starbound_cashout' as const,
-          oblivionPerSigil: 900,
-          patientLightPerSigils: 5,
-        },
+        { type: 'patience_double_all' as const },
+        { type: 'oblivion_flat' as const, value: 3600 },
       ],
     },
     attacks: {
@@ -74,16 +68,14 @@ const TX_SHOP_CARDS: CardDefinition[] = [
     rarity: 'Legendary' as const,
     name: 'Null Entropy Seraph',
     description:
-      'On play: all Seraphim gain +8 Patience and gain 3 Equilibrium Sigils. ' +
-      'While in your deck: all Patience and Patient Light gains are uncapped. ' +
-      'While active: attacks scale heavily with your Sigils. ' +
-      'On attack: consumes Patience, then restores a Sigil-scaled portion; if 10+ Patience was consumed, gain +1 Patient Light.',
+      'On play: all Seraphim gain +10 Patience. ' +
+      'While in your deck: all Patience gains are uncapped. ' +
+      'While active: attacks scale heavily with consumed Patience.',
     artKey: 'tx_sera_null_entropy',
     baseStats: { bonusType: 'oblivion_per_card' as const, bonusValue: 0},
     patienceThreshold: 8,
     onPlayEffects: [
-      { type: 'patience_gain_all' as const, value: 8 },
-      { type: 'neutrality_equilibrium_sigil_gain' as const, value: 3 },
+      { type: 'patience_gain_all' as const, value: 10 },
     ],
     attacks: {
       unsynergized: {
@@ -115,14 +107,12 @@ const TX_SHOP_CARDS: CardDefinition[] = [
     rarity: 'Legendary' as const,
     name: 'Null Sentinel',
     description:
-      'On play: gain 2 Equilibrium Sigils and salvage any 1 card. ' +
-      'While in your deck: all Patience and Patient Light gains are uncapped. ' +
-      'Passive: Sigil-based Patience amplification remains online while this is on board. ' +
-      'Automatically spends 4 Sigils whenever it triggers to reduce Seraphim cooldown pressure and grants +1 Patient Light each time.',
+      'On play: all Seraphim gain +4 Patience and salvage any 1 card. ' +
+      'While in your deck: all Patience gains are uncapped.',
     artKey: 'tx_cher_null_sentinel',
     effects: [],
     onPlayEffects: [
-      { type: 'neutrality_equilibrium_sigil_gain' as const, value: 2 },
+      { type: 'patience_gain_all' as const, value: 4 },
       { type: 'salvage_any' as const },
     ],
     maxDurability: 10,
@@ -133,29 +123,25 @@ const TX_SHOP_CARDS: CardDefinition[] = [
     rarity: 'Legendary' as const,
     name: 'Null Convergence',
     description:
-      'Draw 2 cards, all Seraphim gain +10 Patience, and gain 4 Equilibrium Sigils. ' +
-      'While in your deck: all Patience and Patient Light gains are uncapped. ' +
-      'If you control 3+ active Seraphim: gain extra Oblivion and +1 Sigil. ' +
-      'Tactical mode: may spend 6 Sigils for either massive burst Oblivion or full-team Patience restore; gain +1 Patient Light.',
+      'Draw 2 cards and all Seraphim gain +12 Patience. ' +
+      'While in your deck: all Patience gains are uncapped. ' +
+      'If you control 3+ active Seraphim: gain extra Oblivion. ' +
+      'Choose a unit: consume all its Patience for heavy Oblivion.',
     artKey: 'tx_oph_null_convergence',
     effects: [
       { type: 'draw' as const, value: 2 },
-      { type: 'patience_gain_all' as const, value: 10 },
-      { type: 'neutrality_equilibrium_sigil_gain' as const, value: 4 },
+      { type: 'patience_gain_all' as const, value: 12 },
       {
         type: 'conditional' as const,
         condition: { type: 'seraphim_active_gte' as const, value: 3 },
         then: [
           { type: 'oblivion_flat' as const, value: 2800 },
-          { type: 'neutrality_equilibrium_sigil_gain' as const, value: 1 },
         ],
       },
       {
-        type: 'neutrality_equilibrium_tactical_spend' as const,
-        spend: 6,
-        burstOblivion: 7600,
-        restorePercent: 100,
-        patientLightGain: 1,
+        type: 'oblivion_from_target_unit_patience' as const,
+        multiplier: 400,
+        masteryMultiplierCap: 400,
       },
     ],
   },

@@ -13400,6 +13400,22 @@ export const MATERIALIZED_CARD_BALANCE = {
       {
         "type": "draw",
         "value": 2
+      },
+      {
+        "type": "patience_gain_all",
+        "value": 12
+      },
+      {
+        "type": "conditional",
+        "condition": { "type": "seraphim_active_gte", "value": 3 },
+        "then": [
+          { "type": "oblivion_flat", "value": 2800 }
+        ]
+      },
+      {
+        "type": "oblivion_from_target_unit_patience",
+        "multiplier": 400,
+        "masteryMultiplierCap": 400
       }
     ]
   },

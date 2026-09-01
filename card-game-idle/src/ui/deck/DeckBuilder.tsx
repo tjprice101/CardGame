@@ -22,6 +22,9 @@ import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { AngelDefinition, CardDefinition, CardFinish } from '@/types/cards';
+import DeckBuilderAbilitiesTab from '@/ui/deck/tabs/DeckBuilderAbilitiesTab';
+import DeckBuilderStatsTab from '@/ui/deck/tabs/DeckBuilderStatsTab';
+import DeckBuilderNotesTab from '@/ui/deck/tabs/DeckBuilderNotesTab';
 
 // Stable selector fallback: returning a fresh `{}` from a Zustand v5 selector
 // triggers the "getSnapshot should be cached" infinite-render loop.
@@ -258,6 +261,22 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#d8f0ff', fontSize: 12, padding: '6px 10px', borderRadius: 6,
     fontFamily: 'Georgia, serif', outline: 'none', width: '100%', boxSizing: 'border-box',
   },
+  tabStrip: {
+    display: 'flex', alignItems: 'stretch', flexShrink: 0,
+    background: 'rgba(3,6,14,0.85)',
+    borderBottom: '1px solid rgba(72,128,190,0.20)',
+  },
+  tabBtn: {
+    padding: '0 18px', height: 38, border: 'none',
+    borderBottom: '2px solid transparent',
+    background: 'transparent', color: 'rgba(205,228,255,0.50)', fontSize: 11,
+    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 1,
+    textTransform: 'uppercase', transition: 'all 0.18s ease', flexShrink: 0,
+  },
+  tabBtnActive: {
+    color: '#7dd4f8', borderBottomColor: '#4298d8',
+    background: 'rgba(78,160,220,0.10)',
+  },
 };
 
 interface Props { onClose: () => void }
@@ -363,6 +382,7 @@ export default function DeckBuilder({ onClose }: Props) {
   const savedDecks = useStore(s => s.progress.savedDecks);
   const activeDeckId = useStore(s => s.progress.activeDeckId);
   const setDeckNotes = useStore(s => s.setDeckNotes);
+  const setDeckAbilityLoadout = useStore(s => s.setDeckAbilityLoadout);
   const uniqueOwned = Object.keys(collection).length;
   const isLocked = uniqueOwned < 15;
 
@@ -378,8 +398,7 @@ export default function DeckBuilder({ onClose }: Props) {
   const [elementFilter, setElementFilter] = useState<string | null>(null);
   const [saveMode, setSaveMode] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
-  const [notesOpen, setNotesOpen] = useState(false);
-  const [notesDraft, setNotesDraft] = useState('');
+  const [activeTab, setActiveTab] = useState<'cards' | 'extra' | 'abilities' | 'stats' | 'notes'>('cards');
   const [collapsedSidebarSections, setCollapsedSidebarSections] = useState({
     savedDecks: false,
     save: false,
@@ -817,7 +836,7 @@ export default function DeckBuilder({ onClose }: Props) {
             <button
               className="menu-tactile-btn"
               title="Edit how-to-play notes for this deck"
-              onClick={() => { setNotesDraft(activeDeck.notes ?? ''); setNotesOpen(true); }}
+              onClick={() => setActiveTab('notes')}
               style={{
                 marginTop: 6,
                 padding: '4px 10px',
@@ -860,78 +879,129 @@ export default function DeckBuilder({ onClose }: Props) {
         </div>
       </div>
 
-      {/* Element filter tabs */}
-      <div style={styles.filterBar}>
-        <button className="menu-tactile-btn"
-          style={{ ...styles.filterBtn, ...(elementFilter === null ? styles.filterBtnActive : {}) }}
-          onClick={() => setElementFilter(null)}
-        >All</button>
-        {availableElements.map(el => (
-          <button className="menu-tactile-btn"
-            key={el}
-            style={{
-              ...styles.filterBtn,
-              ...(elementFilter === el ? {
-                ...styles.filterBtnActive,
-                color: SET_ACCENT,
-                borderBottomColor: SET_ACCENT,
-                background: `${(SET_ACCENT)}14`,
-              } : {}),
-            }}
-            onClick={() => setElementFilter(el === elementFilter ? null : el)}
-          >
-            {elementFilter === el && (
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
-            )}
-            {SET_LABEL}
-          </button>
-        ))}
+      {/* Tab strip */}
+      <div style={styles.tabStrip}>
+        {(['cards', 'extra', 'abilities', 'stats', 'notes'] as const).map(tab => {
+          const TAB_LABELS: Record<string, string> = {
+            cards: 'Cards', extra: 'Extra Deck', abilities: 'Abilities', stats: 'Stats', notes: 'Notes',
+          };
+          return (
+            <button
+              key={tab}
+              className="menu-tactile-btn"
+              style={{ ...styles.tabBtn, ...(activeTab === tab ? styles.tabBtnActive : {}) } as React.CSSProperties}
+              onClick={() => setActiveTab(tab)}
+            >
+              {TAB_LABELS[tab]}
+            </button>
+          );
+        })}
       </div>
 
+      {/* Element filter — Cards tab only */}
+      {activeTab === 'cards' && (
+        <div style={styles.filterBar}>
+          <button className="menu-tactile-btn"
+            style={{ ...styles.filterBtn, ...(elementFilter === null ? styles.filterBtnActive : {}) }}
+            onClick={() => setElementFilter(null)}
+          >All</button>
+          {availableElements.map(el => (
+            <button className="menu-tactile-btn"
+              key={el}
+              style={{
+                ...styles.filterBtn,
+                ...(elementFilter === el ? {
+                  ...styles.filterBtnActive,
+                  color: SET_ACCENT,
+                  borderBottomColor: SET_ACCENT,
+                  background: `${(SET_ACCENT)}14`,
+                } : {}),
+              }}
+              onClick={() => setElementFilter(el === elementFilter ? null : el)}
+            >
+              {elementFilter === el && (
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
+              )}
+              {SET_LABEL}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div style={styles.body}>
-        {/* Card Pool */}
-        {mainSections.length === 0 && angelSection.length === 0 ? (
-          <div style={styles.cardPool}>
-            <div style={styles.empty}>
-              No {elementFilter ? (SET_LABEL) : ''} cards in your collection yet.
-            </div>
-          </div>
-        ) : (
-          <VirtualizedList
-            items={deckPoolRows}
-            getItemKey={(row) => row.key}
-            getItemHeight={(row) => row.kind === 'heading' ? 44 : 214}
-            topPadding={16}
-            bottomPadding={24}
-            overscanPx={300}
-            viewportRef={cardPoolViewportRef}
-            style={styles.cardPool}
-            renderItem={(row) => {
-              if (row.kind === 'heading') {
-                const accent = getSectionColors()[row.sectionLabel] ?? '#58aada';
-                const title = row.sectionLabel === 'Angel' ? 'Extra Deck (Angels)' : row.sectionLabel;
-                return (
-                  <div style={{ padding: '0 20px' }}>
-                    <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
-                      <div style={{ width: 4, height: 20, borderRadius: 2, background: accent, boxShadow: `0 0 8px ${accent}50`, flexShrink: 0 }} />
-                      <span style={{ ...styles.sectionLabel, color: accent }}>
-                        {title}
-                      </span>
-                      <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${accent}45, transparent)`, marginLeft: 4 }} />
-                      <span style={styles.sectionCount}>{row.countText}</span>
+        {/* Main content switches by tab */}
+        {activeTab === 'abilities' ? (
+          <DeckBuilderAbilitiesTab
+            deckList={deckList}
+            extraDeckList={extraDeckList}
+            activeDeck={activeDeck}
+            setDeckAbilityLoadout={setDeckAbilityLoadout}
+          />
+        ) : activeTab === 'stats' ? (
+          <DeckBuilderStatsTab
+            deckList={deckList}
+            extraDeckList={extraDeckList}
+            totalCards={totalCards}
+            deckStats={deckStats}
+          />
+        ) : activeTab === 'notes' ? (
+          <DeckBuilderNotesTab
+            key={activeDeckId ?? 'no-deck'}
+            deckId={activeDeckId ?? null}
+            currentNotes={activeDeck?.notes ?? ''}
+            setDeckNotes={setDeckNotes}
+          />
+        ) : (() => {
+          const poolRows = activeTab === 'cards'
+            ? deckPoolRows.filter(r => r.sectionLabel !== 'Angel')
+            : deckPoolRows.filter(r => r.sectionLabel === 'Angel');
+          if (poolRows.length === 0) {
+            return (
+              <div style={styles.cardPool}>
+                <div style={styles.empty}>
+                  {activeTab === 'extra'
+                    ? 'No Angels in your collection yet.'
+                    : `No${elementFilter ? ` ${SET_LABEL}` : ''} cards in your collection yet.`}
+                </div>
+              </div>
+            );
+          }
+          return (
+            <VirtualizedList
+              items={poolRows}
+              getItemKey={(row) => row.key}
+              getItemHeight={(row) => row.kind === 'heading' ? 44 : 214}
+              topPadding={16}
+              bottomPadding={24}
+              overscanPx={300}
+              viewportRef={cardPoolViewportRef}
+              style={styles.cardPool}
+              renderItem={(row) => {
+                if (row.kind === 'heading') {
+                  const accent = getSectionColors()[row.sectionLabel] ?? '#58aada';
+                  const title = row.sectionLabel === 'Angel' ? 'Angels' : row.sectionLabel;
+                  return (
+                    <div style={{ padding: '0 20px' }}>
+                      <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>
+                        <div style={{ width: 4, height: 20, borderRadius: 2, background: accent, boxShadow: `0 0 8px ${accent}50`, flexShrink: 0 }} />
+                        <span style={{ ...styles.sectionLabel, color: accent }}>
+                          {title}
+                        </span>
+                        <div style={{ flex: 1, height: 1, background: `linear-gradient(90deg, ${accent}45, transparent)`, marginLeft: 4 }} />
+                        <span style={styles.sectionCount}>{row.countText}</span>
+                      </div>
                     </div>
+                  );
+                }
+                return (
+                  <div style={{ display: 'flex', gap: 10, padding: '0 20px 24px', alignItems: 'flex-start' }}>
+                    {row.entries?.map((entry) => renderPoolCard(entry, row.sectionLabel))}
                   </div>
                 );
-              }
-
-              return (
-                <div style={{ display: 'flex', gap: 10, padding: '0 20px 24px', alignItems: 'flex-start' }}>
-                  {row.entries?.map((entry) => renderPoolCard(entry, row.sectionLabel))}
-                </div>
-              );
-            }}
-          />
-        )}
+              }}
+            />
+          );
+        })()}
 
         {/* Sidebar */}
         <div style={styles.sidebar}>
@@ -1220,19 +1290,7 @@ export default function DeckBuilder({ onClose }: Props) {
         </div>
       </div>
 
-      {/* ── Notes Modal ─────────────────────────────────────────────────── */}
-      {notesOpen && activeDeck && (
-        <NotesModal
-          deckName={activeDeck.name}
-          value={notesDraft}
-          onChange={setNotesDraft}
-          onSave={() => {
-            setDeckNotes(activeDeck.id, notesDraft);
-            setNotesOpen(false);
-          }}
-          onClose={() => setNotesOpen(false)}
-        />
-      )}
+
 
       {/* Card hover tooltip — appears after 1.5s hover */}
       {cardTooltip && (
@@ -1279,85 +1337,4 @@ export default function DeckBuilder({ onClose }: Props) {
   );
 }
 
-// ────────────────────────────────────────────────────────────────────────────
-// Notes Modal
-// ────────────────────────────────────────────────────────────────────────────
 
-interface NotesModalProps {
-  deckName: string;
-  value: string;
-  onChange: (v: string) => void;
-  onSave: () => void;
-  onClose: () => void;
-}
-
-function NotesModal({ deckName, value, onChange, onSave, onClose }: NotesModalProps) {
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'absolute', inset: 0, zIndex: 80,
-        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(10px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 24,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: 'min(640px, 100%)',
-          background: 'linear-gradient(180deg, rgba(8, 12, 22, 0.98) 0%, rgba(5, 8, 16, 0.98) 100%)',
-          border: '1px solid rgba(200, 155, 72, 0.26)',
-          borderRadius: 14,
-          overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
-          fontFamily: 'Georgia, serif',
-          color: '#ead9c0',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(200, 155, 72, 0.06)',
-        }}
-      >
-        <div style={{
-          padding: '18px 22px',
-          borderBottom: '1px solid rgba(200, 155, 72, 0.16)',
-          background: 'rgba(4, 7, 14, 0.5)',
-        }}>
-          <div style={{ fontSize: 18, fontWeight: 'bold', color: '#f5c96c', letterSpacing: 3, textTransform: 'uppercase', textShadow: '0 0 20px rgba(240,189,120,0.3)' }}>How-to-Play Notes</div>
-          <div style={{ fontSize: 11, color: 'rgba(234,217,192,0.55)', marginTop: 4 }}>{deckName}</div>
-        </div>
-        <div style={{ padding: 16 }}>
-          <textarea
-            autoFocus
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="Describe how this deck plays — opener, key combos, win condition, side tech…"
-            maxLength={2000}
-            rows={12}
-            style={{
-              width: '100%',
-              boxSizing: 'border-box',
-              padding: 12,
-              borderRadius: 8,
-              background: 'rgba(2, 5, 12, 0.75)',
-              border: '1px solid rgba(200, 155, 72, 0.25)',
-              color: '#ead9c0',
-              fontFamily: 'Georgia, serif',
-              fontSize: 13,
-              lineHeight: 1.55,
-              resize: 'vertical',
-              outline: 'none',
-            }}
-          />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
-            <div style={{ fontSize: 10, opacity: 0.5 }}>
-              {value.length} / 2000 characters
-            </div>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button className="menu-tactile-btn" style={styles.closeBtn} onClick={onClose}>Cancel</button>
-              <button className="menu-tactile-btn" style={styles.startBtn} onClick={onSave}>Save Notes</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

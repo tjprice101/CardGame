@@ -40,34 +40,6 @@ export const RESOURCE_INFO: ResourceInfo[] = [
       'Stacks reset to zero after the attack fires.',
     ],
   },
-  {
-    key: 'equilibriumSigils',
-    name: 'Equilibrium Sigils',
-    setName: 'Neutrality',
-    setId: 'Neutrality',
-    shortDesc: 'Conditional Patience amplifiers granted by Neutrality Eternal/Infinite cards.',
-    longDesc:
-      'Equilibrium Sigils are a secondary Neutrality resource from Eternal and Infinite cards. ' +
-      'When you have enough Sigils, specific Eternal effects can spend them to double Patience, trigger Oblivion bursts, or restore team Patience.',
-    mechanics: [
-      'Gained via neutrality_equilibrium_sigil_gain effects.',
-      'Some cards have passive effects that only fire while Sigils are present on board.',
-      'Cashout effects spend Sigils: Starbound Cashout doubles all Patience + bonus Oblivion per Sigil.',
-    ],
-  },
-  {
-    key: 'patientLight',
-    name: 'Patient Light',
-    setName: 'Neutrality',
-    setId: 'Neutrality',
-    shortDesc: 'Boosts card-play Patience gain with diminishing returns at high stacks.',
-    longDesc:
-      'Patient Light is a stacking modifier on card-play Patience gain. Each stack adds diminishing returns to how much Patience you gain per card played — useful for raising the average Patience income without needing heavy Cherubim support.',
-    mechanics: [
-      'Granted by neutrality_patient_light_gain effects.',
-      'Applies a bonus to per-card Patience gain (diminishing returns at high stack counts).',
-    ],
-  },
 ];
 // Non-Neutrality resource entries removed — only Neutrality is implemented.
 

@@ -6,6 +6,10 @@ export type EnigmaStepKind =
   | 'spend_oblivion'
   | 'count_active_cards'
   | 'match_formation'
+  | 'boss_victory_timed'
+  | 'boss_victory_scaled'
+  | 'sacrifice_shards'
+  | 'card_mastery_tier'
   | 'claim_reward';
 
 export interface EnigmaRewardDefinition {
@@ -74,6 +78,47 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     ],
     rewards: [
       { definitionId: 'enig-neutralistic-flame', copies: 2 },
+    ],
+  },
+  {
+    id: 'neutralizing-the-void',
+    title: 'Neutralizing the Void',
+    hintText: 'Where the Eternal Vigil lies, cast him to his maker as fast as you can.',
+    steps: [
+      {
+        title: 'Acquire the Enigma',
+        description: 'Clear the Eternal Vigil boss fight with at least 1 minute and 30 seconds remaining on the clock.',
+        kind: 'boss_victory_timed',
+        amount: 90,
+        targetDefinitionId: 'boss-immortal-warden',
+      },
+      {
+        title: 'Activate and Clear Eternal Vigil \u00d73 HP',
+        description: 'Defeat the Eternal Vigil boss fight at \u00d73 HP scaling.',
+        kind: 'boss_victory_scaled',
+        amount: 3,
+        targetDefinitionId: 'boss-immortal-warden',
+      },
+      {
+        title: 'Sacrifice 2,500 Aberrated Shards',
+        description: 'Spend 2,500 Aberrated Shards to advance this seal.',
+        kind: 'sacrifice_shards',
+        amount: 2_500,
+      },
+      {
+        title: 'Reach Card-born Tier 4',
+        description: 'Have at least one card reach Card-born Tier 4 or higher. Completing this retroactively counts.',
+        kind: 'card_mastery_tier',
+        amount: 4,
+      },
+      {
+        title: 'Claim the Reward',
+        description: 'Receive 3 copies of Equilibrium\u2019s Bane.',
+        kind: 'claim_reward',
+      },
+    ],
+    rewards: [
+      { definitionId: 'enig-equilibriums-bane', copies: 3 },
     ],
   },
 ];

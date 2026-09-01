@@ -30,7 +30,7 @@ export function classifyCardActionClass(def: CardDefinition, effects: CardEffect
   if (effects.some(effect => effect.type === 'draw' || effect.type === 'look_top_take' || effect.type === 'look_top_take_drop' || effect.type === 'look_top_take_type' || effect.type === 'search_deck_by_type' || effect.type === 'shuffle_discard')) {
     return 'setup';
   }
-  if (effects.some(effect => effect.type === 'oblivion_flat' || effect.type === 'score_flat' || effect.type === 'patience_gain_all' || effect.type === 'patience_double_all' || effect.type === 'neutrality_equilibrium_sigil_gain' || effect.type === 'neutrality_equilibrium_starbound_cashout' || effect.type === 'neutrality_equilibrium_tactical_spend')) {
+  if (effects.some(effect => effect.type === 'oblivion_flat' || effect.type === 'score_flat' || effect.type === 'patience_gain_all' || effect.type === 'patience_double_all' || effect.type === 'oblivion_from_target_unit_patience')) {
     return 'conversion';
   }
   return 'conversion';

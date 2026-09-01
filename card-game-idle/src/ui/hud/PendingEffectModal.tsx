@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useStore, selectTurn, selectDeck } from '@/state/store';
+import { useStore, selectTurn, selectDeck, selectBoard } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
@@ -12,6 +12,7 @@ import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import type { CardSubtypeFilter } from '@/types/effects';
+import type { AngelInstance, SeraphimInstance } from '@/types/cards';
 import type { DeckCard } from '@/types/game';
 
 const DISPLAY_FONT = uiTypography.display;
@@ -138,6 +139,7 @@ export default function PendingEffectModal() {
   const faceMetrics = getCardFaceMetrics('compact');
   const turn = useStore(selectTurn);
   const deck = useStore(selectDeck);
+  const board = useStore(selectBoard);
   const { resolvePending } = useStore.getState();
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -187,63 +189,6 @@ export default function PendingEffectModal() {
       </>
     );
   };
-
-  if (pending.type === 'neutrality_equilibrium_tactical_choice') {
-    const selectedMode = selected[0] ?? null;
-    const canConfirm = selectedMode === 'burst' || selectedMode === 'restore';
-
-    return (
-      <div className="anim-backdrop-fade" style={backdropStyle}>
-        <div className="anim-panel-slide-up" style={styles.panel}>
-          <div style={styles.title}>Choose Tactical Sigil Mode</div>
-          <div style={styles.subtitle}>
-            Spend {pending.spend} Equilibrium Sigils: choose burst Oblivion or full-team Patience restore.
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(180px, 1fr))', gap: 10, marginBottom: 16 }}>
-            <button
-              className="menu-tactile-btn"
-              onClick={() => setSelected(['burst'])}
-              style={{
-                ...styles.secondaryBtn,
-                border: selectedMode === 'burst' ? '2px solid rgba(255,120,80,0.85)' : styles.secondaryBtn.border,
-                background: selectedMode === 'burst' ? 'rgba(255, 226, 188, 0.92)' : styles.secondaryBtn.background,
-                color: '#532912',
-                fontFamily: DISPLAY_FONT,
-                letterSpacing: 0.7,
-                fontSize: 12,
-              }}
-            >
-              Burst Oblivion (+{pending.burstOblivion})
-            </button>
-            <button
-              className="menu-tactile-btn"
-              onClick={() => setSelected(['restore'])}
-              style={{
-                ...styles.secondaryBtn,
-                border: selectedMode === 'restore' ? '2px solid rgba(255,120,80,0.85)' : styles.secondaryBtn.border,
-                background: selectedMode === 'restore' ? 'rgba(255, 226, 188, 0.92)' : styles.secondaryBtn.background,
-                color: '#532912',
-                fontFamily: DISPLAY_FONT,
-                letterSpacing: 0.7,
-                fontSize: 12,
-              }}
-            >
-              Restore Patience ({pending.restorePercent}%)
-            </button>
-          </div>
-          <div style={styles.footer}>
-            <div style={styles.info}>Both modes grant +{pending.patientLightGain} Patient Light.</div>
-            <button className="menu-tactile-btn"
-              style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (pending.type === 'discard_choice') {
     const maxDiscard = pending.count;
@@ -687,6 +632,83 @@ export default function PendingEffectModal() {
                 Confirm
               </button>
             </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (pending.type === 'neutralizing_bane_choose_target') {
+    const activeUnits = (board.frontSlots as Array<SeraphimInstance | AngelInstance | null>).filter(
+      (unit): unit is SeraphimInstance | AngelInstance =>
+        !!unit &&
+        (unit.type === 'Seraphim' || unit.type === 'Angel') &&
+        (unit.type !== 'Seraphim' || (unit as SeraphimInstance).isActive),
+    );
+    const selectedId = selected[0] ?? null;
+    const canConfirm = selectedId !== null && activeUnits.some(u => u.instanceId === selectedId);
+
+    if (activeUnits.length === 0) {
+      return (
+        <div className="anim-backdrop-fade" style={backdropStyle}>
+          <div className="anim-panel-slide-up" style={styles.panel}>
+            <div style={styles.title}>Equilibrium's Bane</div>
+            <div style={styles.subtitle}>No valid targets — no active Seraphim or Angels on your board.</div>
+            <div style={styles.footer}>
+              <div style={styles.info} />
+              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>Dismiss</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="anim-backdrop-fade" style={backdropStyle}>
+        <div className="anim-panel-slide-up" style={styles.panel}>
+          <div style={styles.title}>Equilibrium's Bane</div>
+          <div style={styles.subtitle}>
+            Choose a Seraphim or Angel. Gain Oblivion equal to their Patience × 5,000 × Mastery Multiplier, then they lose half their Patience.
+          </div>
+          <div style={styles.cardGrid}>
+            {activeUnits.map(unit => {
+              const isChosen = unit.instanceId === selectedId;
+              const patience = unit.patienceStacks ?? 0;
+              return (
+                <div
+                  key={unit.instanceId}
+                  style={buildCardStyle(
+                    { definitionId: unit.definitionId, finish: unit.finish },
+                    isChosen ? styles.cardTake : undefined,
+                  )}
+                  onClick={() => setSelected([unit.instanceId])}
+                >
+                  {renderCardFace(
+                    { definitionId: unit.definitionId, finish: unit.finish },
+                    patience > 0 ? `${patience} Patience` : undefined,
+                    patience >= 30 ? '#70c890' : '#f0bd78',
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div style={styles.footer}>
+            <div style={styles.info}>
+              {selectedId
+                ? (() => {
+                    const u = activeUnits.find(x => x.instanceId === selectedId);
+                    const p = u?.patienceStacks ?? 0;
+                    return `${p} Patience × 5,000${p >= 30 ? ' · +1 Draw' : ''}`;
+                  })()
+                : 'Select a target unit'}
+            </div>
+            <button
+              className="menu-tactile-btn"
+              style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
+              onClick={canConfirm ? confirm : undefined}
+            >
+              Confirm
+            </button>
           </div>
         </div>
       </div>

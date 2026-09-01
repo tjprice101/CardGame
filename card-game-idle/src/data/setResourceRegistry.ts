@@ -64,7 +64,7 @@ export const SET_PROFILES: SetProfile[] = [
     eternalStackKinds: [],
     setSecondaryKinds: [],
     cherubimResourceKeys: [],
-    conditionTypes: ['equilibrium_sigils_gte'],
+    conditionTypes: [],
     cherubimPassiveTypes: ['cherubim_patience_per_card'],
   },
 ];

@@ -151,7 +151,6 @@ function formatSummonCondition(condition: NonNullable<AngelDefinition['extraSumm
     const def = CardRegistry.get(condition.definitionId);
     return `${condition.value}+ ${def?.name ?? condition.definitionId} on board`;
   }
-  if (condition.type === 'equilibrium_sigils_gte') return `${condition.value}+ Equilibrium Sigils`;
   return 'special condition';
 }
 
@@ -220,8 +219,6 @@ function formatCondition(condition: EffectCondition): string {
       return `you control ${condition.value}+ active Seraphim`;
     case 'cherubim_active_gte':
       return `you control ${condition.value}+ active Cherubim`;
-    case 'equilibrium_sigils_gte':
-      return `you have ${condition.value}+ Equilibrium Sigils`;
     case 'seraphim_played_this_turn':
       return 'you played a Seraphim this turn';
     case 'seraphim_not_played_this_turn':
@@ -257,11 +254,7 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'seraphim_bonus_amplifier': return `Each active Seraphim's payout +${effect.value} Oblivion this turn`;
     case 'patience_gain_all': return `All Seraphim on board gain +${effect.value} Patience`;
     case 'patience_double_all': return 'Double all Patience on the board';
-    case 'neutrality_equilibrium_sigil_gain': return `Gain ${effect.value} Equilibrium Sigil${effect.value === 1 ? '' : 's'}`;
-    case 'neutrality_equilibrium_starbound_cashout': return `Spend all Equilibrium Sigils: double all Patience and gain +${effect.oblivionPerSigil} Oblivion per Sigil spent`;
-    case 'neutrality_equilibrium_tactical_spend': return `If you have ${effect.spend}+ Equilibrium Sigils, spend ${effect.spend} for either +${effect.burstOblivion} Oblivion burst or ${effect.restorePercent}% team Patience restore`;
-    case 'neutrality_patient_light_gain': return `Grant ${effect.value} Patient Light stack${effect.value === 1 ? '' : 's'} (boosts card-play Patience gain with diminishing returns at high stacks)`;
-    case 'neutrality_attack_preserve': return `Seraphim attacks preserve ${effect.percent}% of consumed Patience this turn`;
+    case 'oblivion_from_target_unit_patience': return `Choose a unit: consume all its Patience for +${formatExactValue(effect.multiplier)} Oblivion per stack (up to ${formatExactValue(effect.masteryMultiplierCap)}x)`;
     case 'conditional':
       return `If ${formatCondition(effect.condition)}, ${formatEffectsInline(effect.then.filter(Boolean), definitionId)}`;
     default:
@@ -508,20 +501,12 @@ function collectMechanicNotes(card: CardDefinition): string[] {
 
   const registerCondition = (condition: EffectCondition | undefined) => {
     if (!condition) return;
-    if (condition.type === 'equilibrium_sigils_gte') turnResources.add('Equilibrium Sigils');
   };
 
   for (const effect of allEffects) {
     if (effect.type === 'conditional') {
       registerCondition(effect.condition);
       continue;
-    }
-
-    if (effect.type === 'neutrality_equilibrium_sigil_gain' || effect.type === 'neutrality_equilibrium_starbound_cashout' || effect.type === 'neutrality_equilibrium_tactical_spend') {
-      turnResources.add('Equilibrium Sigils');
-    }
-    if (effect.type === 'neutrality_patient_light_gain' || effect.type === 'neutrality_attack_preserve') {
-      turnResources.add('Patient Light');
     }
   }
 

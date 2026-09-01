@@ -70,7 +70,6 @@ export type SummonCondition =
   | { type: 'seraphim_active_gte'; value: number }
   | { type: 'seraphim_on_board_gte'; value: number }
   | { type: 'board_definition_gte'; definitionId: string; value: number }
-  | { type: 'equilibrium_sigils_gte'; value: number }
 
 export interface AngelDefinition {
   readonly definitionId: string;

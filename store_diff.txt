@@ -1,0 +1,471 @@
+﻿diff --git a/card-game-idle/src/state/store.ts b/card-game-idle/src/state/store.ts
+index 664759a..9c08f94 100644
+--- a/card-game-idle/src/state/store.ts
++++ b/card-game-idle/src/state/store.ts
+@@ -122,8 +122,7 @@ type AttenuationClass = ActionClass;
+ 
+ const ATTENUATION_CLASSES: AttenuationClass[] = ['setup', 'conversion', 'multiplier', 'refund', 'finisher'];
+ const ATTENUATION_TIERS = [1, 0.75, 0.55, 0.4] as const;
+-const NEUTRALITY_SETUP_FOR_FULL_FIRE = 3;
+-const NEUTRALITY_ENGINES_FOR_FULL_FIRE = 3;
++const NEUTRALITY_FULL_FIRE_PATIENCE_THRESHOLD = 40;
+ const COOP_BOSS_HP_SCALE_BY_PARTY_SIZE: Record<number, number> = {
+   1: 1,
+   2: 1.68,
+@@ -135,7 +134,7 @@ const BOSS_FIGHT_HP_SCALE_BY_COUNT: Record<number, number> = {
+   3: 3.5,
+ };
+ 
+-// ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Defaults ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++// ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Defaults ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+ const NOW = Date.now();
+ let angelInstanceCounter = 0;
+@@ -171,19 +170,11 @@ const defaultTurn: TurnState = {
+   cherubimSummonedThisTurn: 0,
+   equilibriumDrift: 0,
+   equilibriumStability: 0,
+-  neutralitySetupCount: 0,
+   attenuationClassUses: { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 },
+   attenuationBreaksUsed: 0,
+   attenuationBrokenClasses: [],
+-  neutralityEngineSignatures: [],
+   neutralityPatienceChargedThisTurn: 0,
+   neutralityPatienceConsumedThisTurn: 0,
+-  neutralityPatientLightStacks: 0,
+-  neutralityEquilibriumSigils: 0,
+-  neutralityEquilibriumSigilsGainedThisTurn: 0,
+-  neutralityEquilibriumPatientLightFromSigilsThisTurn: 0,
+-  neutralityEquilibriumSigilCapBonus: 0,
+-  neutralityEquilibriumSentinelTempoUsed: false,
+   neutralityTriggeredEffects: [],
+   lastFiredSeraphimAttackMode: null,
+   lastFiredSeraphimAttackOblivion: 0,
+@@ -360,7 +351,7 @@ export const defaultGameState: GameState = {
+   toasts: [],
+ };
+ 
+-// ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Store type ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++// ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Store type ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+ interface StoreActions {
+   placeSeraphim: (deckCard: DeckCard, slot: 0 | 1 | 2 | 3 | 4) => void;
+@@ -498,7 +489,7 @@ interface StoreActions {
+   claimCardMastery: (definitionId: string, tier: number) => { shards: number } | null;
+   /** Quick-claim all currently available mastery tiers. Returns aggregate shard reward & tiers claimed. */
+   claimAllAvailableMastery: () => { shards: number; tiersClaimed: number };
+-  /** Mark the collection viewer as seen 窶・clears NEW badges. */
++  /** Mark the collection viewer as seen 窶・clears NEW badges. */
+   markCollectionViewed: () => void;
+   /** Update Endless Gauntlet personal bests after a run. */
+   recordGauntletRun: (depth: number, shards: number) => void;
+@@ -520,7 +511,7 @@ interface StoreActions {
+   setDeckNotes: (deckId: string, notes: string) => void;
+   /** Update a saved deck's per-slot set-ability loadout. */
+   setDeckAbilityLoadout: (deckId: string, slot: 1 | 2 | 3 | 4, abilityId: string) => void;
+-  /** Activate a set ability by hotkey slot (1窶・). No-op if gated, on cooldown, or uses exhausted. */
++  /** Activate a set ability by hotkey slot (1窶・). No-op if gated, on cooldown, or uses exhausted. */
+   activateSetAbility: (slot: 1 | 2 | 3 | 4) => void;
+   /** Enqueue a transient toast notification. */
+   enqueueToast: (message: string, kind?: 'info' | 'success' | 'warning' | 'reward', durationMs?: number) => void;
+@@ -531,7 +522,7 @@ interface StoreActions {
+   enterBattleground: (kind: BattlegroundKind, cpuDifficulty?: CpuDifficulty, opponentProfile?: BattlegroundOpponentProfile) => void;
+   /** Tick the countdown timer. Called by centralized app-level timer loops. */
+   tickBattlegroundTimer: (deltaSeconds: number) => void;
+-  /** Complete the match 窶・computes result, grants rewards, restores saved state. */
++  /** Complete the match 窶・computes result, grants rewards, restores saved state. */
+   completeBattleground: () => void;
+   /** Update opponent's live board + score (PvP realtime sync). */
+   updateOpponentBattleground: (board: BoardState | null, score: number, handSize?: number) => void;
+@@ -551,7 +542,7 @@ interface AttackPaymentSelection {
+ 
+ /**
+  * Tune this constant so a complete, fully-mastered collection reaches
+- * approximately ﾃ・0窶・0 total globalOblivionMult from resonance alone.
++ * approximately ﾃ・0窶・0 total globalOblivionMult from resonance alone.
+  * Lower value = stronger resonance; higher value = weaker.
+  */
+ const RESONANCE_SCALE_CONSTANT = 500;
+@@ -965,7 +956,7 @@ function recordCardPlay(s: Store, definitionId: string): void {
+   }
+ }
+ 
+-// ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Boss fight helpers ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++// ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Boss fight helpers ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+ function completeBossFight(s: Store, victory: boolean): void {
+   const bossId = s.bossFight.activeBossId;
+@@ -1099,7 +1090,7 @@ function completeBossFight(s: Store, victory: boolean): void {
+       }
+     }
+ 
+-    // Raid ended (defeat or final boss cleared) 窶・restore saved game state.
++    // Raid ended (defeat or final boss cleared) 窶・restore saved game state.
+     if (saved) {
+       s.deck = saved.deck;
+       s.board = saved.board;
+@@ -1190,7 +1181,7 @@ function completeBossFight(s: Store, victory: boolean): void {
+         entry.highestFightDamage = fightDamageTotal;
+       }
+       s.progress.bossCodex[boss.id] = entry;
+-      // Trial reward bonus 窶・applied on top of base + featured multipliers.
++      // Trial reward bonus 窶・applied on top of base + featured multipliers.
+       if (kind === 'trial' && trialMult > 1) {
+         const base = (s.progress.bossClearCounts[boss.id] ?? 1) === 1 ? boss.firstClearShards : boss.repeatClearShards;
+         s.progress.aberratedShards += Math.round(base * (trialMult - 1));
+@@ -1234,7 +1225,7 @@ function completeBossFight(s: Store, victory: boolean): void {
+     s.progress.aberratedShards += gauntletShardsBanked;
+   }
+ 
+-  // Gauntlet run ended 窶・record personal-best stats.
++  // Gauntlet run ended 窶・record personal-best stats.
+   if (kind === 'gauntlet') {
+     if (!s.progress.gauntletBest) s.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
+     const best = s.progress.gauntletBest;
+@@ -1701,7 +1692,6 @@ function cardCanDraw(definitionId: string): boolean {
+ function ensureNeutralityTurnState(turn: TurnState): void {
+   if (turn.equilibriumDrift === undefined) turn.equilibriumDrift = 0;
+   if (turn.equilibriumStability === undefined) turn.equilibriumStability = 0;
+-  if (turn.neutralitySetupCount === undefined) turn.neutralitySetupCount = 0;
+   if (turn.attenuationClassUses === undefined) {
+     turn.attenuationClassUses = { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 };
+   }
+@@ -1710,15 +1700,8 @@ function ensureNeutralityTurnState(turn: TurnState): void {
+   }
+   if (turn.attenuationBreaksUsed === undefined) turn.attenuationBreaksUsed = 0;
+   if (turn.attenuationBrokenClasses === undefined) turn.attenuationBrokenClasses = [];
+-  if (turn.neutralityEngineSignatures === undefined) turn.neutralityEngineSignatures = [];
+   if (turn.neutralityPatienceChargedThisTurn === undefined) turn.neutralityPatienceChargedThisTurn = 0;
+   if (turn.neutralityPatienceConsumedThisTurn === undefined) turn.neutralityPatienceConsumedThisTurn = 0;
+-  if (turn.neutralityPatientLightStacks === undefined) turn.neutralityPatientLightStacks = 0;
+-  if (turn.neutralityEquilibriumSigils === undefined) turn.neutralityEquilibriumSigils = 0;
+-  if (turn.neutralityEquilibriumSigilsGainedThisTurn === undefined) turn.neutralityEquilibriumSigilsGainedThisTurn = 0;
+-  if (turn.neutralityEquilibriumPatientLightFromSigilsThisTurn === undefined) turn.neutralityEquilibriumPatientLightFromSigilsThisTurn = 0;
+-  if (turn.neutralityEquilibriumSigilCapBonus === undefined) turn.neutralityEquilibriumSigilCapBonus = 0;
+-  if (turn.neutralityEquilibriumSentinelTempoUsed === undefined) turn.neutralityEquilibriumSentinelTempoUsed = false;
+   if (turn.neutralityTriggeredEffects === undefined) turn.neutralityTriggeredEffects = [];
+   if (turn.seraphimBonusAmp === undefined) turn.seraphimBonusAmp = 0;
+ }
+@@ -1728,7 +1711,6 @@ function captureTurnSnapshot(turn: TurnState): TurnState {
+     ...turn,
+     attenuationClassUses: { ...(turn.attenuationClassUses ?? {}) },
+     attenuationBrokenClasses: [...(turn.attenuationBrokenClasses ?? [])],
+-    neutralityEngineSignatures: [...(turn.neutralityEngineSignatures ?? [])],
+   };
+ }
+ 
+@@ -1764,9 +1746,12 @@ function getDeckSetCount(s: Store): number {
+ function getNeutralityFullFireMultiplier(s: Store, def: CardDefinition): number {
+   if (false || def.rarity !== 'Infinite') return 1;
+   ensureNeutralityTurnState(s.turn);
+-  const setupReady = (s.turn.neutralitySetupCount ?? 0) >= NEUTRALITY_SETUP_FOR_FULL_FIRE;
+-  const enginesReady = (s.turn.neutralityEngineSignatures?.length ?? 0) >= NEUTRALITY_ENGINES_FOR_FULL_FIRE;
+-  return setupReady && enginesReady ? 1.35 : 0.70;
++  const totalBoardPatience = s.board.frontSlots.reduce((sum, unit) => {
++    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return sum;
++    return sum + (unit.patienceStacks ?? 0);
++  }, 0);
++  const patienceReady = totalBoardPatience >= NEUTRALITY_FULL_FIRE_PATIENCE_THRESHOLD;
++  return patienceReady ? 1.35 : 0.70;
+ }
+ 
+ 
+@@ -1840,15 +1825,6 @@ function applyNeutralityPlayState(
+ 
+   s.turn.equilibriumStability = Math.max(0, Math.min(12, (s.turn.equilibriumStability ?? 0) + stabilityDelta));
+ 
+-  if (def.rarity !== 'Infinite') {
+-    s.turn.neutralitySetupCount = Math.min(6, (s.turn.neutralitySetupCount ?? 0) + 1);
+-  }
+-
+-  const signature = `${def.type}:${actionClass}`;
+-  if (!(s.turn.neutralityEngineSignatures ?? []).includes(signature)) {
+-    s.turn.neutralityEngineSignatures = [...(s.turn.neutralityEngineSignatures ?? []), signature].slice(-6);
+-  }
+-
+   if (actionClass === 'conversion') {
+     // Cross-set conversion tracking removed (single-set game)
+   }
+@@ -2481,7 +2457,7 @@ function applyLateGameAttackIdentity(
+   void baseAttackAward;
+ }
+ 
+-// ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Cherubim helpers ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++// ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Cherubim helpers ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+ function computeCherubimPassiveOblivionBonus(board: BoardState, isOphanimPlay: boolean): number {
+   let bonus = 0;
+@@ -2506,7 +2482,7 @@ function computeCherubimPassiveOblivionBonus(board: BoardState, isOphanimPlay: b
+   return bonus;
+ }
+ 
+-// ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Cherubim helpers ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++// ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Cherubim helpers ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+ function computeCherubimAdjacentBonus(board: BoardState, bonusType: 'oblivion' | 'draw'): number {
+   let bonus = 0;
+@@ -2659,43 +2635,6 @@ function tickCherubimDurability(s: Store): void {
+   applyCherubimExpireBonuses(s, expiredCount);
+ }
+ 
+-function getNeutralityEquilibriumPatienceGainBonus(turn: TurnState, board?: BoardState): number {
+-  const sentinelPresent = board?.backSlots.some(sl => sl?.type === 'Cherubim' && sl.definitionId === 'tx-cher-null-sentinel') ?? false;
+-  if (!sentinelPresent) return 0;
+-  const base = Math.floor(Math.max(0, turn.neutralityEquilibriumSigils ?? 0) / 2);
+-  return base > 0 ? base * 2 : 0;
+-}
+-
+-function spendNeutralityEquilibriumSigils(s: Store, requested: number): number {
+-  const spend = Math.max(0, Math.floor(requested));
+-  if (spend <= 0) return 0;
+-  const before = Math.max(0, s.turn.neutralityEquilibriumSigils ?? 0);
+-  const spent = Math.min(before, spend);
+-  s.turn.neutralityEquilibriumSigils = before - spent;
+-  return spent;
+-}
+-
+-function applyPatienceGainAll(s: Store, sourceDefinitionId: string, value: number): void {
+-  const sourceDef = ScoreSystem.getDefinition(sourceDefinitionId);
+-  const sourceSetKey = sourceDef ? 'Neutrality' : null;
+-  const linkedBonus = Math.max(0, s.turn.neutralityLinkedGainBonus ?? 0);
+-  const equilibriumBonus = getNeutralityEquilibriumPatienceGainBonus(s.turn, s.board);
+-
+-  // Same-set: Patience only flows to active frontline units sharing the source
+-  // card's set so set-bound stacks never leak across sets.
+-  for (const unit of s.board.frontSlots) {
+-    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
+-    if (sourceSetKey) {
+-      const unitDef = ScoreSystem.getDefinition(unit.definitionId);
+-      if (!unitDef || 'Neutrality' !== sourceSetKey) continue;
+-    }
+-    const gain = value + linkedBonus + equilibriumBonus;
+-    unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
+-  }
+-
+-  clampNeutralityGainState(s);
+-}
+-
+ function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
+   if (drawValue <= 0) return;
+   const totalDraw = s.turn.cherubimDrawFraction + drawValue;
+@@ -2765,7 +2704,7 @@ function applyCherubimPassiveEffects(s: Store): void {
+             if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
+             const frontDef = ScoreSystem.getDefinition(frontUnit.definitionId);
+             if (!frontDef || 'Neutrality' !== sourceSetKey) continue;
+-            const gain = effect.value + linkedBonus + equilibriumBonus;
++            const gain = effect.value;
+             frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
+           }
+           break;
+@@ -2780,8 +2719,6 @@ function applyCherubimPassiveEffects(s: Store): void {
+               conditionMet = s.turn.cardsPlayedThisTurn >= effect.condition.value;
+             } else if (effect.condition.type === 'cherubim_active_gte') {
+               conditionMet = s.board.backSlots.filter(sl => sl !== null && sl.type === 'Cherubim').length >= effect.condition.value;
+-            } else if (effect.condition.type === 'equilibrium_sigils_gte') {
+-              conditionMet = (s.turn.neutralityEquilibriumSigils ?? 0) >= effect.condition.value;
+             }
+           }
+           if (conditionMet && effect.value > 1) {
+@@ -2826,17 +2763,6 @@ function applyCherubimPassiveEffects(s: Store): void {
+   }
+ }
+ 
+-function resolveNeutralityMarkedCardTrigger(s: Store, playedInstanceId: string, sourceDefinitionId: string): void {
+-  const marked = s.turn.neutralityMarkedCardIds ?? [];
+-  if (!marked.includes(playedInstanceId)) return;
+-
+-  const gain = Math.max(0, s.turn.neutralityMarkedPatienceGain ?? 0);
+-  if (gain > 0) {
+-    applyPatienceGainAll(s, sourceDefinitionId, gain);
+-  }
+-  s.turn.neutralityMarkedCardIds = marked.filter(id => id !== playedInstanceId);
+-}
+-
+ /** Advance the trial guide step when a guided trial card matches the current step. */
+ function advanceTrialGuideStep(s: Store, definitionId: string): void {
+   if (s.trialDeck.mode !== 'active' || s.trialDeck.trialMode !== 'guided') return;
+@@ -2860,7 +2786,7 @@ export const useStore = create<Store>()(
+ 
+     refreshComputedStats: () => { set(s => { recompute(s); }); },
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Seraphim ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Seraphim ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     placeSeraphim: (deckCard, slot) => {
+       set(s => {
+@@ -2907,7 +2833,6 @@ export const useStore = create<Store>()(
+         }
+ 
+         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
+-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
+         incrementAngelProgress(s.board);
+         s.turn.seraphimPlayedThisTurn = (s.turn.seraphimPlayedThisTurn ?? 0) + 1;
+         const newInst = s.board.frontSlots[slot];
+@@ -2996,7 +2921,6 @@ export const useStore = create<Store>()(
+           awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
+         }
+         s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
+-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
+         incrementAngelProgress(s.board);
+         recordCardPlay(s, deckCard.definitionId);
+         syncEnigmaProgressFromBoard(s, false);
+@@ -3005,7 +2929,7 @@ export const useStore = create<Store>()(
+       });
+     },
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Cherubim ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Cherubim ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     placeCherubim: (backSlotIndex, instanceId) => {
+       set(s => {
+@@ -3091,7 +3015,7 @@ export const useStore = create<Store>()(
+       });
+     },
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Angels ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Angels ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     summonAngel: (definitionId, finish) => {
+       set(s => {
+@@ -3419,7 +3343,7 @@ export const useStore = create<Store>()(
+       });
+     },
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Deck management ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Deck management ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     initDeck: (deckList, extraDeck?) => {
+       set(s => {
+@@ -3498,7 +3422,7 @@ export const useStore = create<Store>()(
+       });
+     },
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Turn flow ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Turn flow ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     beginTurn: () => {
+       set(s => {
+@@ -3533,7 +3457,7 @@ export const useStore = create<Store>()(
+               hand.push(s.deck.drawPile[idx]);
+               s.deck.drawPile.splice(idx, 1);
+             } else {
+-              // Card not in draw pile 窶・create a fresh instance
++              // Card not in draw pile 窶・create a fresh instance
+               const { nextDeckId: _nextId } = (() => {
+                 // We can't call nextDeckId() here; use a deterministic id
+                 return { nextDeckId: () => `trial-guided-hand-${defId}-${Date.now()}` };
+@@ -3542,7 +3466,7 @@ export const useStore = create<Store>()(
+             }
+           }
+           for (const card of hand) s.deck.hand.push(card);
+-          // Skip mulligan in guided mode 窶・go straight to playing
++          // Skip mulligan in guided mode 窶・go straight to playing
+           s.turn = { ...defaultTurn, phase: 'playing' };
+           return;
+         }
+@@ -3686,7 +3610,6 @@ export const useStore = create<Store>()(
+             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
+           }
+           s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
+-          resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
+           incrementAngelProgress(s.board);
+           recordCardPlay(s, deckCard.definitionId);
+           advanceTrialGuideStep(s, deckCard.definitionId);
+@@ -3772,7 +3695,6 @@ export const useStore = create<Store>()(
+         tickHandPlayCooldowns(s);
+ 
+         if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+-        resolveNeutralityMarkedCardTrigger(s, deckCard.instanceId, deckCard.definitionId);
+         incrementAngelProgress(s.board);
+         recordCardPlay(s, deckCard.definitionId);
+         advanceTrialGuideStep(s, deckCard.definitionId);
+@@ -4173,7 +4095,7 @@ export const useStore = create<Store>()(
+       }
+     },
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Oblivion ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Oblivion ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     addOblivion: (delta) => {
+       set(s => { s.progress.oblivion += delta; });
+@@ -4394,7 +4316,7 @@ export const useStore = create<Store>()(
+       return true;
+     },
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Settings ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Settings ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     updateSettings: (patch) => {
+       set(s => {
+@@ -5027,12 +4949,12 @@ export const useStore = create<Store>()(
+         const oppEmpty = s.battleground.opponentHandEmpty;
+         const myScore = s.battleground.myScore;
+         const oppScore = s.battleground.opponentScore;
+-        // Win condition: timer expired 竊・compare scores.
++        // Win condition: timer expired 竊・compare scores.
+         if (next <= 0) {
+           completeBattlegroundFight(s);
+           return;
+         }
+-        // Win condition: both done 竊・resolve by score.
++        // Win condition: both done 竊・resolve by score.
+         if (myEmpty && oppEmpty) {
+           completeBattlegroundFight(s);
+           return;
+@@ -5082,7 +5004,7 @@ export const useStore = create<Store>()(
+ 
+ 
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Boss fight ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Boss fight ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     startBossFight: (bossId, savedDeckId, options) => {
+       set(s => {
+@@ -5308,7 +5230,7 @@ export const useStore = create<Store>()(
+         const delta = Math.max(0, Number.isFinite(deltaSeconds) ? deltaSeconds : 0);
+         // Card-break freeze: consume freeze seconds before counting down the fight timer,
+         // but only while the player still has comfortable headroom on the clock. Once we're
+-        // within the final second, freeze must NOT be allowed to keep the timer pinned 窶・+        // within the final second, freeze must NOT be allowed to keep the timer pinned 窶・
+         // otherwise the screen gets stuck on 0:01 forever.
+         const freezeLeft = s.bossFight.bossCardBreakFreezeLeft ?? 0;
+         if (freezeLeft > 0 && current > 1) {
+@@ -5509,18 +5431,18 @@ export const useStore = create<Store>()(
+       });
+     },
+ 
+-    // ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Save/load ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++    // ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Save/load ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+     loadState: (loaded) => {
+       set(s => {
+-        // Migrate collection: string[] ・ｽE・ｽ・ｽE・ｽ Record<string, number>
++        // Migrate collection: string[] ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Record<string, number>
+         if (Array.isArray((loaded.progress as { collection: unknown }).collection)) {
+           const rec: Record<string, number> = {};
+           for (const id of (loaded.progress as unknown as { collection: string[] }).collection) rec[id] = 1;
+           (loaded.progress as { collection: Record<string, number> }).collection = rec;
+         }
+ 
+-        // Migrate progress: score ・ｽE・ｽ・ｽE・ｽ oblivion
++        // Migrate progress: score ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ oblivion
+         const op = loaded.progress as unknown as Record<string, unknown>;
+         if (op['score'] !== undefined && op['oblivion'] === undefined) {
+           op['oblivion'] = op['score'];
+@@ -5674,7 +5596,7 @@ export const useStore = create<Store>()(
+           settings['cardThemePacks'] = { ...DEFAULT_CARD_THEME_PACKS, ...(settings['cardThemePacks'] as Record<string, string>) };
+         }
+ 
+-        // Migrate board: old slots ・ｽE・ｽ・ｽE・ｽ frontSlots + backSlots
++        // Migrate board: old slots ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ frontSlots + backSlots
+         const ob = loaded.board as unknown as Record<string, unknown>;
+         if (ob['slots'] !== undefined && ob['frontSlots'] === undefined) {
+           ob['frontSlots'] = (ob['slots'] as unknown[]).slice(0, 5);
+@@ -6011,7 +5933,7 @@ export const useStore = create<Store>()(
+   }))
+ );
+ 
+-// ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ Selectors ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ・ｽE・ｽ
++// ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ Selectors ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ・ｽE・ｽE・ｽE・ｽ
+ 
+ export const selectComputedStats = (s: Store): ComputedBoardStats => s.computedStats;
+ export const selectOblivion = (s: Store): number => s.progress.oblivion;

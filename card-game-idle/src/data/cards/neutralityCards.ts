@@ -8,7 +8,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     type: 'Seraphim',
     rarity: 'Common',
     name: 'Null Seraphim',
-    description: 'On play: +14 Oblivion; All Seraphim on board gain +3 Patience. While on board: +6 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
+    description: 'On play: +14 Oblivion; All Seraphim on board gain +3 Patience. While on board: +6 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack ↁE+15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
     artKey: 'ser_neutral_null',
     attacks: {
       unsynergized: {
@@ -45,7 +45,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     type: 'Seraphim',
     rarity: 'Common',
     name: 'Void Seraphim',
-    description: 'On play: +20 Oblivion; If you control 1+ active Cherubim, All Seraphim on board gain +4 Patience. While on board: +12 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
+    description: 'On play: +20 Oblivion; If you control 1+ active Cherubim, All Seraphim on board gain +4 Patience. While on board: +12 Oblivion whenever you play an Ophanim while active. Patience: +1 stack per card played; on attack, each stack ↁE+15 Oblivion; if Patience ≥ 3 on attack, also draw 1 card',
     artKey: 'ser_neutral_void',
     attacks: {
       unsynergized: {
@@ -82,7 +82,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     type: 'Seraphim',
     rarity: 'Rare',
     name: 'Balance Seraphim',
-    description: 'On play: +20 Oblivion. While on board: Each new Cherubim summoned while active gains +2 durability. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 1 card',
+    description: 'On play: +20 Oblivion. While on board: Each new Cherubim summoned while active gains +2 durability. Patience: +1 stack per card played; on attack, each stack ↁE+15 Oblivion; if Patience ≥ 4 on attack, also draw 1 card',
     artKey: 'ser_neutral_balance',
     attacks: {
       unsynergized: {
@@ -118,7 +118,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     type: 'Seraphim',
     rarity: 'Rare',
     name: 'Equilibrium Seraphim',
-    description: 'On play: +18 Oblivion; If you control 3+ active Seraphim, +24 Oblivion; All Seraphim on board gain +3 Patience. While on board: +8 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 4 on attack, also draw 2 cards',
+    description: 'On play: +18 Oblivion; If you control 3+ active Seraphim, +24 Oblivion; All Seraphim on board gain +3 Patience. While on board: +8 Oblivion per card played while active. Patience: +1 stack per card played; on attack, each stack ↁE+15 Oblivion; if Patience ≥ 4 on attack, also draw 2 cards',
     artKey: 'ser_neutral_equilibrium',
     attacks: {
       unsynergized: {
@@ -155,7 +155,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     type: 'Seraphim',
     rarity: 'Epic',
     name: 'Still Seraphim',
-    description: 'On play: +48 Oblivion; Seraphim attacks preserve 20% of consumed Patience this turn. While on board: Gain +50 Oblivion when a Cherubim expires while active. Patience: +1 stack per card played; on attack, each stack → +15 Oblivion; if Patience ≥ 5 on attack, also draw 2 cards',
+    description: 'On play: +48 Oblivion; Seraphim attacks preserve 20% of consumed Patience this turn. While on board: Gain +50 Oblivion when a Cherubim expires while active. Patience: +1 stack per card played; on attack, each stack ↁE+15 Oblivion; if Patience ≥ 5 on attack, also draw 2 cards',
     artKey: 'ser_neutral_still',
     attacks: {
       unsynergized: {
@@ -185,7 +185,7 @@ export const neutralitySeraphims: SeraphimDefinition[] = [
     patienceThresholdDraw: 2,
     onPlayEffects: [
       { type: 'oblivion_flat', value: 48 },
-      { type: 'neutrality_attack_preserve', percent: 20 }],
+      { type: 'patience_gain_all', value: 2 }],
   }];
 
 // Starter Ophanim cards
@@ -351,6 +351,18 @@ export const neutralityEnigmaticCards: OphanimDefinition[] = [
     artKey: 'enig_neutralistic_flame',
     effects: [
       { type: 'search_deck_distinct_types', filter: ['Seraphim', 'Ophanim', 'Cherubim'], takePerType: 1 },
+    ],
+  },
+  {
+    definitionId: 'enig-equilibriums-bane',
+    type: 'Ophanim',
+    rarity: 'Enigmatic',
+    name: "Equilibrium's Bane",
+    // Oblivion = target.patienceStacks × multiplier × min(masteryMultiplierCap, 1 + resonance/1000); consumes 50% of target's Patience.
+    description: "Choose a Seraphim or Angel on your board. Gain Oblivion equal to their Patience × 5,000 × your Card-born mastery multiplier (cap ×3), then that unit loses half its Patience. If they had ≥30 Patience, draw 1.",
+    artKey: 'enig_equilibriums_bane',
+    effects: [
+      { type: 'oblivion_from_target_unit_patience', multiplier: 5000, masteryMultiplierCap: 3 },
     ],
   },
 ];
