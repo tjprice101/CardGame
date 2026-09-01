@@ -5,7 +5,7 @@
  *   1 — Base    : always available (any card of the set in the deck)
  *   2 — Eternal : requires ≥1 Eternal card of this set in the deck
  *   3 — Infinite: requires ≥1 Infinite card of this set in the deck
- *   4 — Angel   : requires ≥1 Angel of this set in the extra deck
+ *   4 — Transcendent Angel : requires a Transcendent-tier Angel in the extra deck AND on the board
  *
  * Cooldowns are measured in **cards played from hand** (not turns).
  * One-off abilities use `maxUsesPerRun: 1`; when depleted they cannot fire again
@@ -17,7 +17,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 
 // ── Gate types ─────────────────────────────────────────────────────────────────
 
-export type SetAbilityGate = 'base' | 'eternal' | 'infinite' | 'angel';
+export type SetAbilityGate = 'base' | 'eternal' | 'infinite' | 'transcendent-angel';
 export type SetAbilitySlot = 1 | 2 | 3 | 4;
 
 // ── Ability definition ─────────────────────────────────────────────────────────
@@ -105,6 +105,11 @@ function isAngelCard(id: string): boolean {
   return def?.type === 'Angel';
 }
 
+/** Transcendent-tier Angels are tagged with this id prefix regardless of registry rarity label. */
+export function isTranscendentAngelCardId(id: string): boolean {
+  return id.startsWith('tx-angel-');
+}
+
 /**
  * Returns which gates are currently satisfied by the given deck composition.
  */
@@ -119,7 +124,9 @@ export function resolveGatesForDeck(
 
   if (deckList.some(e => isEternalCard(e.definitionId))) gates.add('eternal');
   if (deckList.some(e => isInfiniteCard(e.definitionId))) gates.add('infinite');
-  if (extraDeck.some(e => isAngelCard(e.definitionId))) gates.add('angel');
+  if (extraDeck.some(e => isTranscendentAngelCardId(e.definitionId) && isAngelCard(e.definitionId))) {
+    gates.add('transcendent-angel');
+  }
 
   return gates;
 }

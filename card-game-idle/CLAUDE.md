@@ -110,16 +110,16 @@ Each card set exposes four **hotkey-activated abilities** (default keys `1`–`4
 | 1 | Base | Any card of the set in the main deck |
 | 2 | Eternal | ≥1 Eternal card of the set in the main deck |
 | 3 | Infinite | ≥1 Infinite card of the set in the main deck |
-| 4 | Angel | ≥1 Angel of the set in the extra deck |
+| 4 | Transcendent Angel | A Transcendent-tier Angel (`tx-angel-*`) of the set in the extra deck **AND** currently on the board |
 
 **Neutrality abilities:**
 - Slot 1 — *Composed Draw* (Base, 3-hand-play CD): Draw 2 cards; grant +3 Patience to every front-row unit.
 - Slot 2 — *Vigil's Ledger* (Eternal, 5-hand-play CD): Units with ≥20 Patience get +5 Patience; draw 2 cards.
 - Slot 3 — *Recursive Calm* (Infinite, one-off): Consume all front-row Patience; gain Oblivion = totalPatience × 500 × min(3, 1 + resonanceScore/1000).
-- Slot 4 — *Aegis Uprising* (Angel, one-off): Find lowest Patience on board; grant every unit that value × 3.
+- Slot 4 — *Aegis Uprising* (Transcendent Angel, 12-hand-play CD, repeatable): Find lowest Patience on board; grant every unit that value × 3. Blocked with a toast unless a `tx-angel-*` Angel is on the board right now (runtime check in `activateSetAbility`, separate from the deck-composition gate).
 
 **Key files:**
-- `src/systems/sets/SetEngine.ts` — types (`SetAbilityDefinition`, `SetEngineDefinition`), registry (`registerSet`, `getSet`), gate resolution (`resolveActiveAbilitiesForDeck`, `resolveGatesForDeck`).
+- `src/systems/sets/SetEngine.ts` — types (`SetAbilityDefinition`, `SetEngineDefinition`), registry (`registerSet`, `getSet`), gate resolution (`resolveActiveAbilitiesForDeck`, `resolveGatesForDeck`), `isTranscendentAngelCardId(id)` helper (`id.startsWith('tx-angel-')`).
 - `src/systems/sets/neutrality/NeutralityAbilities.ts` — Neutrality set definition + four ability implementations.
 - `src/ui/hud/SetAbilityStrip.tsx` — in-game HUD strip showing 4 slots with hotkey, label, and cooldown state.
 - `src/main.tsx` — imports `NeutralityAbilities` as a side-effect to register the set at startup.
@@ -128,6 +128,17 @@ Each card set exposes four **hotkey-activated abilities** (default keys `1`–`4
 - `TurnState.setAbilityCooldowns` / `setAbilityUsesRemaining` track cooldowns/one-off uses per ability id.
 
 **Adding a new set:** implement a `SetEngineDefinition`, call `registerSet`, import it from `main.tsx`. No store changes are needed unless the ability's effect requires a new pending-effect flow.
+
+## Enigmas — boss-fight progression persistence
+
+Enigma step progress (`ProgressState.enigmas.instances[id].stepsComplete`) can be flipped **mid-fight** by `syncEnigmaProgressFromBoard` (e.g. after `placeSeraphim`) — this matters because some board patterns (like Neutral Mystery's "3 Null + 2 Equilibrium Seraphim" step 4) are only assemblable *inside* a boss fight, trial deck, or null raid, never in the persistent overworld board.
+
+All four run-ending restore sites in `src/state/store.ts` (`completeBossFight`'s normal-victory path, `completeBossFight`'s null-raid path, `forfeitBossFight`'s null-raid branch, `endTrialDeck`) overwrite `s.progress` wholesale with a pre-run snapshot (`s.progress = saved.progress`). Without special handling this would **silently wipe** any enigma step flipped during the run. Each of these four sites now:
+1. Captures `cloneState(s.progress.enigmas.instances)` immediately before the restore.
+2. Restores `s.progress` as before.
+3. Calls `mergeFightEnigmaProgress(s.progress, capturedSnapshot, onStepFlipped)` — which OR's `stepsComplete[i]` flags (false→true only), takes `Math.max` of `currentStepIndex`, and adopts wholesale any enigma instance that didn't exist pre-run. Non-final-step flips fire an "Enigma Step Complete" toast via the callback (final-step toasts are left to the reward-claim flow).
+
+If you add a new run-ending restore point that touches `s.progress`, you must apply this same capture-then-merge pattern or any enigma flip made during that run will be lost.
 
 ---
 
@@ -298,8 +309,11 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 
 ### Deck Builder
 - Locked until 15 unique cards are collected. Lock overlay explains the requirement with current progress.
+- 5-tab shell in `src/ui/deck/DeckBuilder.tsx`: **Cards** · **Extra Deck** · **Abilities** · **Stats** · **Notes**. Per-tab components live under `src/ui/deck/tabs/DeckBuilder{Abilities,Stats,Notes}Tab.tsx` (Cards/Extra Deck tabs are inline in `DeckBuilder.tsx`). The old standalone Notes modal has been removed in favor of the Notes tab.
 - Has two zones: **Main Deck** (50 cards, max 4 copies per definition, non-Angel cards only) and **Extra Deck** (up to 5 Angels, max 2 per definition).
+- Cards tab filters `deckPoolRows` by `sectionLabel !== 'Angel'`; Extra Deck tab filters by `sectionLabel === 'Angel'`.
 - Sections in main deck pool: **Seraphim**, **Ophanim**, **Cherubim** (no cardSubtype groupings).
+- Abilities tab (`DeckBuilderAbilitiesTab.tsx`) shows all 4 set-ability slots with their gate label/color/hint (`GATE_LABELS`/`GATE_COLORS`/`GATE_HINTS` keyed by `SetAbilityGate`, including `'transcendent-angel'`) and lets the player assign `SavedDeck.abilityLoadout`.
 - Valid deck: exactly 50 main deck cards, max 4 copies of any definition. Extra deck: 0–5 Angels.
 - Does **not** allow fewer than 50 main deck cards.
 - Main-deck size clamping lives in `DeckSystem.addDeckEntry`; DeckBuilder enforces the 50-card cap through that helper.
@@ -313,7 +327,7 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 |---|---|
 | `src/types/cards.ts` | Card definition and instance interfaces (SeraphimDefinition, CherubimDefinition, OphanimDefinition, AngelDefinition) |
 | `src/types/effects.ts` | ImmediateEffect, CherubimPassiveEffect, AngelEffect union types |
-| `src/state/store.ts` | All game state mutations: playCard, summonAngel, activateAngel, activateSeraphimAttack, patience helpers, set mechanics, `activateSetAbility` |
+| `src/state/store.ts` | All game state mutations: playCard, summonAngel, activateAngel, activateSeraphimAttack, patience helpers, set mechanics, `activateSetAbility`, `mergeFightEnigmaProgress` (boss-fight/trial-deck enigma persistence) |
 | `src/systems/cards/CardEffectExecutor.ts` | Executes ImmediateEffect arrays for Ophanim, Seraphim onPlayEffects, and Angel effects |
 | `src/systems/sets/SetEngine.ts` | Set ability types, registry, and gate resolution (`resolveActiveAbilitiesForDeck`) |
 | `src/systems/sets/neutrality/NeutralityAbilities.ts` | Neutrality set definition + four ability implementations; registers via `registerSet` |

@@ -79,16 +79,21 @@ describe('resolveGatesForDeck', () => {
     expect(gates.has('infinite')).toBe(true);
   });
 
-  it('grants angel gate for an Angel in the extra deck', () => {
+  it('grants transcendent-angel gate for a tx-angel- Angel in the extra deck', () => {
+    const gates = resolveGatesForDeck([], [extraEntry('tx-angel-starbound-null-archangel')]);
+    expect(gates.has('transcendent-angel')).toBe(true);
+  });
+
+  it('does not grant transcendent-angel gate for a non-transcendent Angel', () => {
     const gates = resolveGatesForDeck([], [extraEntry('angel-neutral-beginning')]);
-    expect(gates.has('angel')).toBe(true);
+    expect(gates.has('transcendent-angel')).toBe(false);
   });
 
   it('does not grant eternal gate for a regular card', () => {
     const gates = resolveGatesForDeck([entry('ser-neutral-null')], []);
     expect(gates.has('eternal')).toBe(false);
     expect(gates.has('infinite')).toBe(false);
-    expect(gates.has('angel')).toBe(false);
+    expect(gates.has('transcendent-angel')).toBe(false);
   });
 });
 
@@ -108,7 +113,7 @@ describe('resolveActiveAbilitiesForDeck', () => {
 
   it('returns all four slots when all gates are met', () => {
     const deckList = [entry('btei-eternal-vigil'), entry('inf-oblivion-absolute')];
-    const extraDeck = [extraEntry('angel-neutral-beginning')];
+    const extraDeck = [extraEntry('tx-angel-starbound-null-archangel')];
     const abilities = resolveActiveAbilitiesForDeck('Neutrality', deckList, extraDeck);
     expect(abilities[1]).toBeDefined();
     expect(abilities[2]).toBeDefined();
@@ -247,12 +252,29 @@ describe('Recursive Calm (slot 3)', () => {
 describe('Aegis Uprising (slot 4)', () => {
   beforeEach(() => {
     resetStore();
-    setActiveDeck([], [extraEntry('angel-neutral-beginning')]);
+    setActiveDeck([], [extraEntry('tx-angel-starbound-null-archangel')]);
     useStore.setState(s => ({
       ...s,
       board: {
         ...s.board,
-        frontSlots: [makeSeraphim(4, 'ser-a'), makeSeraphim(8, 'ser-b'), null, null, null],
+        frontSlots: [
+          makeSeraphim(4, 'ser-a'),
+          makeSeraphim(8, 'ser-b'),
+          {
+            instanceId: 'tx-angel-1',
+            definitionId: 'tx-angel-starbound-null-archangel',
+            type: 'Angel',
+            rarity: 'Legendary',
+            finish: 'normal',
+            level: 1,
+            cardsPlayedSinceSummon: 0,
+            activated: false,
+            boardSlot: 2,
+            patienceStacks: 999,
+          },
+          null,
+          null,
+        ],
       },
     }));
   });
@@ -266,10 +288,29 @@ describe('Aegis Uprising (slot 4)', () => {
     expect(b?.type === 'Seraphim' && b.patienceStacks).toBe(20);
   });
 
-  it('is blocked after the first use', () => {
+  it('sets a cooldown of 12 plays after activation', () => {
+    useStore.getState().activateSetAbility(4);
+    const cd = useStore.getState().turn.setAbilityCooldowns ?? {};
+    expect(cd['neutrality-slot4-aegis-uprising']).toBe(12);
+  });
+
+  it('is blocked while the cooldown is active (repeatable, not one-off)', () => {
     useStore.getState().activateSetAbility(4);
     const patienceAfterFirst = (useStore.getState().board.frontSlots[0] as SeraphimInstance).patienceStacks;
     useStore.getState().activateSetAbility(4);
     expect((useStore.getState().board.frontSlots[0] as SeraphimInstance).patienceStacks).toBe(patienceAfterFirst);
+  });
+
+  it('is blocked when the Transcendent Angel is in the extra deck but not on the board', () => {
+    useStore.setState(s => ({
+      ...s,
+      board: {
+        ...s.board,
+        frontSlots: [makeSeraphim(4, 'ser-a'), makeSeraphim(8, 'ser-b'), null, null, null],
+      },
+    }));
+    useStore.getState().activateSetAbility(4);
+    const a = useStore.getState().board.frontSlots[0];
+    expect(a?.type === 'Seraphim' && a.patienceStacks).toBe(4);
   });
 });

@@ -95,7 +95,7 @@ function recursiveCalmExecute(s: GameState): void {
 }
 
 /**
- * Slot 4 — Aegis Uprising (Angel, one-off per run)
+ * Slot 4 — Aegis Uprising (Transcendent Angel, 12 hand-play CD, repeatable)
  * Find the lowest Patience value among front-row units; grant each unit
  * Patience equal to that minimum × 3.
  */
@@ -158,11 +158,10 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       id: 'neutrality-slot4-aegis-uprising',
       setId: 'Neutrality',
       slot: 4,
-      gate: 'angel',
+      gate: 'transcendent-angel',
       label: 'Aegis Uprising',
-      description: 'Once per run: find the lowest Patience on your board and grant every unit that much Patience × 3.',
-      cooldownCards: 0,
-      maxUsesPerRun: 1,
+      description: 'Find the lowest Patience among your front-row units and grant every unit that value × 3. Requires a Transcendent Angel in your extra deck AND on your board.',
+      cooldownCards: 12,
       execute: aegisUprisingExecute,
     },
   ],

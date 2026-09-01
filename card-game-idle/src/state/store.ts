@@ -3,7 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import { cloneState } from '@/utils/stateClone';
 import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
-  DeckState, ExtraDeckEntry, GameState, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
+  DeckState, EnigmaInstance, ExtraDeckEntry, GameState, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
 } from '@/types/game';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import type {
@@ -954,6 +954,32 @@ function recordCardPlay(s: Store, definitionId: string): void {
 
 // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Boss fight helpers �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
+// Merges enigma step flips made mid-run (e.g. a board pattern only assemblable inside a
+// fight) back into progress after a saved-state restore wipes s.progress.enigmas.
+function mergeFightEnigmaProgress(
+  target: ProgressState,
+  snapshot: Record<string, EnigmaInstance>,
+  onStepFlipped: (id: string, stepIndex: number) => void,
+): void {
+  ensureEnigmaState(target);
+  for (const [id, snapInstance] of Object.entries(snapshot)) {
+    const restored = target.enigmas.instances[id];
+    if (!restored) {
+      target.enigmas.instances[id] = cloneState(snapInstance);
+      continue;
+    }
+    for (let i = 0; i < snapInstance.stepsComplete.length; i += 1) {
+      if (snapInstance.stepsComplete[i] && !restored.stepsComplete[i]) {
+        restored.stepsComplete[i] = true;
+        onStepFlipped(id, i);
+      }
+    }
+    restored.currentStepIndex = Math.max(restored.currentStepIndex, snapInstance.currentStepIndex);
+    if (!restored.acquiredAt && snapInstance.acquiredAt) restored.acquiredAt = snapInstance.acquiredAt;
+    if (restored.status === 'locked' && snapInstance.status !== 'locked') restored.status = snapInstance.status;
+  }
+}
+
 function completeBossFight(s: Store, victory: boolean): void {
   const bossId = s.bossFight.activeBossId;
   if (bossId) eventBus.emit('boss:defeated', { bossId, victory });
@@ -1088,11 +1114,17 @@ function completeBossFight(s: Store, victory: boolean): void {
 
     // Raid ended (defeat or final boss cleared)  Erestore saved game state.
     if (saved) {
+      ensureEnigmaState(s.progress);
+      const raidEnigmaSnapshot = cloneState(s.progress.enigmas.instances);
       s.deck = saved.deck;
       s.board = saved.board;
       s.turn = saved.turn;
       s.progress = saved.progress;
       s.settings = saved.settings;
+      mergeFightEnigmaProgress(s.progress, raidEnigmaSnapshot, (id, i) => {
+        const inst = s.progress.enigmas.instances[id];
+        if (inst && i < inst.stepsComplete.length - 1) pushEnigmaStepToast(s, id, i);
+      });
     }
 
     applyNullRaidProveYourselfUnlock(s.progress, raidId, raidBestDamageFirstMinute);
@@ -1153,6 +1185,8 @@ function completeBossFight(s: Store, victory: boolean): void {
   // Capture the deck in use for mastery awards before state is restored.
   const fightDeckList = s.deck.deckList;
   const fightExtraDeck = s.deck.extraDeck;
+  ensureEnigmaState(s.progress);
+  const fightEnigmaSnapshot = cloneState(s.progress.enigmas.instances);
 
   if (saved) {
     s.deck = saved.deck;
@@ -1161,6 +1195,11 @@ function completeBossFight(s: Store, victory: boolean): void {
     s.progress = saved.progress;
     s.settings = saved.settings;
   }
+
+  mergeFightEnigmaProgress(s.progress, fightEnigmaSnapshot, (id, i) => {
+    const inst = s.progress.enigmas.instances[id];
+    if (inst && i < inst.stepsComplete.length - 1) pushEnigmaStepToast(s, id, i);
+  });
 
   if (victory && bossId) {
     const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
@@ -4836,6 +4875,17 @@ export const useStore = create<Store>()(
         return;
       }
 
+      // Transcendent-Angel gated abilities also require the Angel to be on the board right now.
+      if (ability.gate === 'transcendent-angel') {
+        const hasBoardAngel = state.board.frontSlots.some(
+          u => u && u.type === 'Angel' && u.definitionId.startsWith('tx-angel-'),
+        );
+        if (!hasBoardAngel) {
+          get().enqueueToast('Requires a Transcendent Angel on your board.', 'warning', 2500);
+          return;
+        }
+      }
+
       // Check cooldown.
       const cd = state.turn.setAbilityCooldowns ?? {};
       if ((cd[ability.id] ?? 0) > 0) {
@@ -5259,11 +5309,17 @@ export const useStore = create<Store>()(
           const saved = s.bossFight.savedGameState;
           const cooldowns = { ...s.bossFight.cooldowns };
           if (saved) {
+            ensureEnigmaState(s.progress);
+            const raidEnigmaSnapshot = cloneState(s.progress.enigmas.instances);
             s.deck = saved.deck;
             s.board = saved.board;
             s.turn = saved.turn;
             s.progress = saved.progress;
             s.settings = saved.settings;
+            mergeFightEnigmaProgress(s.progress, raidEnigmaSnapshot, (id, i) => {
+              const inst = s.progress.enigmas.instances[id];
+              if (inst && i < inst.stepsComplete.length - 1) pushEnigmaStepToast(s, id, i);
+            });
           }
           s.bossFight = { ...defaultBossFight, cooldowns };
           recompute(s);
@@ -5418,11 +5474,17 @@ export const useStore = create<Store>()(
         if (s.trialDeck.mode !== 'active') return;
         const saved = s.trialDeck.savedGameState;
         if (saved) {
+          ensureEnigmaState(s.progress);
+          const trialEnigmaSnapshot = cloneState(s.progress.enigmas.instances);
           s.deck = cloneState(saved.deck);
           s.board = cloneState(saved.board);
           s.turn = cloneState(saved.turn);
           s.progress = cloneState(saved.progress);
           s.settings = { ...saved.settings };
+          mergeFightEnigmaProgress(s.progress, trialEnigmaSnapshot, (id, i) => {
+            const inst = s.progress.enigmas.instances[id];
+            if (inst && i < inst.stepsComplete.length - 1) pushEnigmaStepToast(s, id, i);
+          });
         }
         s.trialDeck = { ...defaultTrialDeckState };
         recompute(s);

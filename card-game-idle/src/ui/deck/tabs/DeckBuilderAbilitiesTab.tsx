@@ -5,16 +5,16 @@ import type { SetAbilityGate } from '@/systems/sets/SetEngine';
 import type { DeckEntry, ExtraDeckEntry, SavedDeck } from '@/types/game';
 
 const GATE_LABELS: Record<SetAbilityGate, string> = {
-  base: 'Base', eternal: 'Eternal', infinite: 'Infinite', angel: 'Angel',
+  base: 'Base', eternal: 'Eternal', infinite: 'Infinite', 'transcendent-angel': 'Transcendent Angel',
 };
 const GATE_COLORS: Record<SetAbilityGate, string> = {
-  base: '#7dd4f8', eternal: '#ff8888', infinite: '#c8c8e8', angel: '#70c890',
+  base: '#7dd4f8', eternal: '#ff8888', infinite: '#c8c8e8', 'transcendent-angel': '#70c890',
 };
 const GATE_HINTS: Record<SetAbilityGate, string> = {
   base: 'any card in your deck',
   eternal: 'an Eternal card in your main deck',
   infinite: 'an Infinite card in your main deck',
-  angel: 'an Angel in your extra deck',
+  'transcendent-angel': 'a Transcendent Angel in your extra deck AND on your board',
 };
 
 interface Props {
