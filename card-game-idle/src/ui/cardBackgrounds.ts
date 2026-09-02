@@ -214,6 +214,7 @@ const CARD_BACK_ASSET_BY_ELEMENT: Partial<Record<string, { folder: string; file:
 
 const INFINITE_CARD_BACK_ASSET = { folder: 'infinite', file: 'Infinity Cards Card Back.png' };
 const ETERNAL_CARD_BACK_ASSET = { folder: 'eternal', file: 'Eternal Cards Card Back.png' };
+const ENIGMATIC_CARD_BACK_ASSET = { folder: 'neutrality', file: 'Enigmatic Card Backing.png' };
 
 const BTEI_FOLDER_BY_PREFIX: ReadonlyArray<{ prefix: string; folder: string }> = [
   { prefix: 'btei-bgi-', folder: 'black-glass-inferno' },
@@ -236,6 +237,10 @@ function getCardBackUrl(card: CardDefinition | null | undefined): string | null 
 
   if (card.rarity === 'Eternal') {
     return `${CARD_BACKGROUND_ROOT}/${ETERNAL_CARD_BACK_ASSET.folder}/${encodeURI(ETERNAL_CARD_BACK_ASSET.file)}`;
+  }
+
+  if (card.rarity === 'Enigmatic') {
+    return `${CARD_BACKGROUND_ROOT}/${ENIGMATIC_CARD_BACK_ASSET.folder}/${encodeURI(ENIGMATIC_CARD_BACK_ASSET.file)}`;
   }
 
   const asset = CARD_BACK_ASSET_BY_ELEMENT['Neutrality'];

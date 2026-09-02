@@ -76,6 +76,54 @@ describe('CardEffectExecutor empty deck handling', () => {
   });
 });
 
+describe('Nullfall salvage availability', () => {
+  it('cannot be played when no Seraphim or Cherubim is in the discard pile', () => {
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'nullfall', definitionId: 'ophanim-neutral-nullfall' },
+      makePlayingTurn(),
+      emptyBoard,
+      makeDeck('ophanim-neutral-nullfall'),
+    );
+
+    expect(result.canPlay).toBe(false);
+    expect(result.deck.hand).toHaveLength(1);
+    expect(result.deck.discardPile).toHaveLength(0);
+  });
+
+  it('opens a salvage selection when a valid target is in the discard pile', () => {
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'ophanim-neutral-nullfall' },
+      makePlayingTurn(),
+      emptyBoard,
+      {
+        ...makeDeck('ophanim-neutral-nullfall'),
+        discardPile: [{ instanceId: 'discarded-seraph', definitionId: 'ser-neutral-null' }],
+      },
+    );
+
+    expect(result.canPlay).toBe(true);
+    expect(result.pendingEffect).toMatchObject({ type: 'salvage', count: 2 });
+    expect(result.deck.hand).toHaveLength(0);
+    expect(result.deck.discardPile).toHaveLength(2);
+  });
+
+  it('leaves Nullfall in hand when playCard rejects it for missing salvage targets', () => {
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      deck: makeDeck('ophanim-neutral-nullfall'),
+      turn: makePlayingTurn(),
+    }));
+
+    useStore.getState().playCard('play_1');
+
+    const state = useStore.getState();
+    expect(state.deck.hand).toEqual([{ instanceId: 'play_1', definitionId: 'ophanim-neutral-nullfall' }]);
+    expect(state.deck.discardPile).toEqual([]);
+    expect(state.turn.pendingEffect).toBeNull();
+  });
+});
+
 describe('CardEffectExecutor look-top menu routing', () => {
   it('routes Equilibrium Ward to look_top_take instead of look_top_take_drop', () => {
     const result = CardEffectExecutor.execute(

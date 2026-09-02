@@ -443,6 +443,7 @@ export class CardEffectExecutor {
                 : false
               );
             });
+            if (matching.length === 0) return false;
             pendingEffect = {
               type: 'salvage',
               cards: matching,
