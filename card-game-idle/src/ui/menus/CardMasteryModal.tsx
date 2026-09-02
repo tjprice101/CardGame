@@ -69,10 +69,10 @@ function SystemInfoPanel() {
           color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8,
         }}>What is Card-born Tier?</div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
-          Every card you play from hand gains <span style={{ color: P.accent, fontWeight: 700 }}>+1 Card-light</span>.
-          As its Card-light climbs through eight milestone thresholds — from <em>Practiced</em> to <em>Infinite Bond</em> —
-          you unlock Tier rewards and permanently raise that card's <span style={{ color: P.gold, fontWeight: 700 }}>Resonance</span> contribution.
-          Owning more copies of a card has no effect — only Card-light on each unique card matters.
+          Playing a card from your hand adds <span style={{ color: P.accent, fontWeight: 700 }}>1 Card-light</span> to it.
+          Reach the eight milestones, from <em>Practiced</em> to <em>Infinite Bond</em>, to earn a claimable shard reward
+          and increase that card's <span style={{ color: P.gold, fontWeight: 700 }}>Resonance</span> contribution.
+          Card-light belongs to the card itself, so every copy helps you play it more often but shares the same Tier progress.
         </div>
       </div>
 
@@ -130,16 +130,16 @@ function SystemInfoPanel() {
           Tier Progress from Boss Content
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body, marginBottom: 10 }}>
-          Completing boss fights, Wake Trials, and the Endless Gauntlet
-          <span style={{ color: P.accent, fontWeight: 700 }}> awards +X Card-light for each card in your deck upon completion</span>.
-          Active difficulty determines X, and Extra Deck cards are included.
+          A completed boss fight, Wake Trial, or Endless Gauntlet run also grants
+          <span style={{ color: P.accent, fontWeight: 700 }}> Card-light to every card in your Main and Extra Deck</span>.
+          The result screen shows the exact award before you play.
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {([
-            ['Boss fights', '~3 per card (easiest) → ~35 per card (hardest). Higher-index bosses grant more.'],
-            ['Wake Trials', 'Boss base × trial reward multiplier, capped at ×2.'],
-            ['Endless Gauntlet', 'Min 5 + 6 per depth level cleared on that run.'],
-            ['Per-tier scaling', '+5% extra per Tier already reached on each card. A T4 card receives ×1.20 the base; T7 receives ×1.35.'],
+            ['Boss fights', 'Awards rise with the boss roster, starting around 3 Card-light per card and reaching the 20-card-light cap.'],
+            ['Wake Trials', 'Use the boss award with the trial reward multiplier, up to ×2 before the same 20-card-light cap.'],
+            ['Endless Gauntlet', 'Awards build with depth: 5 Card-light at first, then +6 per depth, up to 35 per card.'],
+            ['Established Tiers', 'A card already at a Tier gains +5% more Card-light for each Tier reached. T4 earns ×1.20; T7 earns ×1.35.'],
           ] as [string, string][]).map(([label, body]) => (
             <div key={label} style={{
               padding: '7px 10px',
@@ -163,9 +163,20 @@ function SystemInfoPanel() {
         lineHeight: 1.6,
         fontFamily: uiTypography.body,
       }}>
-        💡 <strong style={{ color: P.accent }}>Tip:</strong> Playing cards from hand is still the primary way to advance Tiers.
-        Boss rewards supplement the grind — they cannot replace it. Higher tiers (T5–T8) require
-        tens of thousands of Card-light and remain a long-term investment even with boss bonuses.
+        💡 <strong style={{ color: P.accent }}>A long road, with shortcuts:</strong> Hand plays are the steady way to build Card-light.
+        Boss rewards help the cards you bring along, while higher Tiers give established cards a little more from every victory.
+      </div>
+
+      <div>
+        <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8 }}>
+          Fracture Extra Copies
+        </div>
+        <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
+          Got more copies than you need? Open <span style={{ color: P.gold, fontWeight: 700 }}>Fracture</span> from the main menu to turn
+          extra copies into Fracture Shards. Keep at least four copies of every card (and any copies you have locked); the rest can be
+          fractured. In the same menu, spend Fracture Shards <span style={{ color: P.accent, fontWeight: 700 }}>1:1 for Card-light</span>
+          on the card you choose.
+        </div>
       </div>
     </div>
   );

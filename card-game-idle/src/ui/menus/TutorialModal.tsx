@@ -435,12 +435,11 @@ function CardBornTierBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>What is Card-born Tier?</div>
         <div style={bodyTextStyle}>
-          Every card you play from hand gains <Tag>+1 Card-light</Tag>. As its Card-light climbs through{' '}
-          <Tag>8 tiers</Tag> — from Practiced to Infinite Bond — it earns{' '}
-          <Tag>Resonance points</Tag> and a one-time shard reward at each milestone. Resonance feeds
-          directly into your <Tag>Collection Power</Tag> multiplier, permanently boosting Oblivion
-          earned from all attacks. Owning more copies of a card has no effect on Resonance — only the
-          Card-light value on each unique card matters.
+          Playing a card from your hand adds <Tag>1 Card-light</Tag> to it. Across{' '}
+          <Tag>8 tiers</Tag> — from Practiced to Infinite Bond — each milestone grants{' '}
+          <Tag>Resonance points</Tag> and a shard reward you can claim. Resonance feeds your{' '}
+          <Tag>Collection Power</Tag> multiplier, strengthening Oblivion earned from attacks.
+          Copies share Card-light progress, but having more copies makes it easier to bring that card into play.
         </div>
       </div>
 
@@ -484,18 +483,17 @@ function CardBornTierBody() {
         <div style={sectionHeadingStyle}>Tier Progress from Boss Content</div>
         <div style={bodyTextStyle}>
           Completing Eternity's Wake boss fights, Wake Trials, and the Endless Gauntlet awards{' '}
-          <Tag>+X Card-light for each card in your deck upon completion</Tag>. This stacks with
-          Card-light gained from in-hand plays. The base amount scales with difficulty:
+          <Tag>Card-light to every card in your Main and Extra Deck</Tag>. This joins the Card-light earned
+          through hand plays. The result screen shows the exact award, which changes by mode:
         </div>
         <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <ListItem label="Boss fights">~3 per card for the easiest bosses, up to ~35 for the hardest. Higher-index bosses in each set are harder and grant more.</ListItem>
-          <ListItem label="Wake Trials">Apply the trial's reward multiplier to the boss base (capped at ×2 so stacked modifiers don't skip tiers).</ListItem>
-          <ListItem label="Endless Gauntlet">5 per card minimum + 6 per depth level cleared. A 10-boss run grants ~60 per card.</ListItem>
-          <ListItem label="Per-tier scaling">Each card also receives an extra +5% for every tier it has already reached. A T4 card gets ×1.20 the base amount; a T7 card gets ×1.35. Fresh cards are unaffected.</ListItem>
+          <ListItem label="Boss fights">Awards climb with each boss, from about 3 Card-light per card to the 20-card-light cap.</ListItem>
+          <ListItem label="Wake Trials">The trial multiplier boosts the boss award up to ×2, then the same 20-card-light cap applies.</ListItem>
+          <ListItem label="Endless Gauntlet">Start at 5 Card-light per card, then add 6 for depth reached, up to 35 per card.</ListItem>
+          <ListItem label="Established Tiers">Cards already at a Tier gain 5% more Card-light for every Tier reached. T4 earns ×1.20; T7 earns ×1.35.</ListItem>
         </div>
         <div style={{ ...bodyTextStyle, marginTop: 8, color: PALETTE.inkSoft }}>
-          The result screen for every boss fight shows the exact base amount awarded. Higher tiers still
-          require substantial hand-play — boss rewards supplement the grind but cannot replace it.
+          Hand plays steadily build Card-light, and cleared challenges give the cards you bring a welcome boost.
         </div>
       </div>
 
@@ -506,6 +504,15 @@ function CardBornTierBody() {
           manually claim each reward — they do not auto-collect. Use the filter toolbar (All / Claimable /
           In Progress) to find your pending milestones quickly. After claiming, the Claim All button at the
           top lets you sweep the rest in one click.
+        </div>
+      </div>
+
+      <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Fracture Extra Copies</div>
+        <div style={bodyTextStyle}>
+          The <Tag>Fracture</Tag> menu lets you turn spare card copies into Fracture Shards. It always keeps
+          four copies of a card, along with any copies you have locked. Spend those shards in the same menu
+          to add <Tag>1 Card-light per shard</Tag> to the card you want to advance.
         </div>
       </div>
     </>
