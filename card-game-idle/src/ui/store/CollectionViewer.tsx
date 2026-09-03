@@ -264,7 +264,10 @@ export default function CollectionViewer({ onClose }: Props) {
     const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
     const acquiredAt = recentlyAcquired?.[card.definitionId] ?? 0;
     const isNew = owned > 0 && acquiredAt > lastViewedSnapshotRef.current;
-    const isLockedStandardHolo = owned <= 0 && finish === 'holo' && card.rarity !== 'Infinite' && card.rarity !== 'Eternal';
+    const isLockedStandardHolo = owned <= 0 && finish === 'holo'
+      && card.rarity !== 'Infinite'
+      && card.rarity !== 'Eternal'
+      && card.rarity !== 'Enigmatic';
     const isFeaturedTranscendent = isFeaturedCollectionTranscendent(card);
     const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
     const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);

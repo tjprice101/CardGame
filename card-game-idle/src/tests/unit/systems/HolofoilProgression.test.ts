@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BOSS_DEFINITIONS, BOSS_FIGHT_ROUND_SECONDS } from '@/data/bosses/bossDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { getHolofoilConversionCost } from '@/systems/progression/HolofoilSystem';
+import { getHolofoilConversionCost, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import { defaultGameState, useStore } from '@/state/store';
 import type { SavedGameState } from '@/types/bossFight';
@@ -78,6 +78,85 @@ describe('Holofoil progression', () => {
     expect(didConvert).toBe(false);
     expect(next.progress.aberratedShards).toBe(0);
     expect(next.progress.holoCollection[definitionId] ?? 0).toBe(0);
+  });
+
+  it('treats Enigmatic cards as pre-holo by default and prevents fake holo variants', () => {
+    const definition = CardRegistry.get('enig-neutralistic-flame');
+    expect(definition).toBeDefined();
+    expect(isHoloOnlyCard(definition!)).toBe(true);
+    expect(getHolofoilConversionCost(definition, {})).toBeNull();
+  });
+
+  it('does not award card-light on a first-round gauntlet fail', () => {
+    const deckId = 'gauntlet-no-reward';
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        savedDecks: [{
+          id: deckId,
+          name: 'Gauntlet Test',
+          deckList: [{ definitionId: 'ser-neutral-null', copies: 1, finish: 'normal' }],
+          extraDeck: [],
+          isStarter: false,
+          notes: '',
+          createdAt: Date.now(),
+        }],
+        cardPlayCounts: { 'ser-neutral-null': 0 },
+      },
+    }));
+
+    useStore.getState().startEndlessGauntlet(deckId);
+    useStore.setState(state => ({
+      ...state,
+      turn: { ...state.turn, phase: 'playing' },
+    }));
+    const before = useStore.getState().progress.cardPlayCounts['ser-neutral-null'] ?? 0;
+    useStore.getState().endTurn();
+    const after = useStore.getState().progress.cardPlayCounts['ser-neutral-null'] ?? 0;
+
+    expect(useStore.getState().bossFight.mode).toBe('defeat');
+    expect(after).toBe(before);
+  });
+
+  it('still awards card-light for a gauntlet loss after at least one successful clear', () => {
+    const deckId = 'gauntlet-with-depth';
+    const cardId = 'ser-neutral-null';
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        savedDecks: [{
+          id: deckId,
+          name: 'Gauntlet Depth Test',
+          deckList: [{ definitionId: cardId, copies: 1, finish: 'normal' }],
+          extraDeck: [],
+          isStarter: false,
+          notes: '',
+          createdAt: Date.now(),
+        }],
+        cardPlayCounts: { [cardId]: 0 },
+      },
+      turn: { ...state.turn, phase: 'playing' },
+      bossFight: {
+        ...state.bossFight,
+        mode: 'active',
+        kind: 'gauntlet',
+        activeBossId: 'boss-hollow-king',
+        bossCurrentHp: 1,
+        bossMaxHp: 10,
+        damageDealtThisFight: 0,
+        damageDealtFirstMinute: 0,
+        fightTimeRemaining: 90,
+        gauntletDepth: 1,
+        gauntletShardsBanked: 5,
+        savedGameState: null,
+      },
+    }));
+
+    useStore.getState().endTurn();
+    const after = useStore.getState().progress.cardPlayCounts[cardId] ?? 0;
+    expect(after).toBeGreaterThan(0);
   });
 
   it('awards first-clear and repeat-clear shards and keeps Eternal boss rewards holo', () => {

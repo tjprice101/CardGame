@@ -190,25 +190,6 @@ export default function WakeTrialsModal({ onClose }: Props) {
           }}>
             Reward: cosmetic title progress (Weekly Pilgrim → Warden of the Week → Eternal of the Week). No shards, no cards.
           </div>
-          <button
-            onClick={launchWeekly}
-            disabled={!hasDecks}
-            style={{
-              marginTop: 10, width: '100%',
-              background: hasDecks
-                ? 'linear-gradient(180deg, rgba(180,140,255,0.55) 0%, rgba(110, 70, 180, 0.85) 100%)'
-                : 'rgba(40, 20, 60, 0.5)',
-              color: hasDecks ? '#fff' : EW.textMuted,
-              border: '1px solid rgba(180,140,255,0.6)',
-              borderRadius: 8, padding: '10px 14px',
-              fontFamily: 'Georgia, serif', fontSize: 13, fontWeight: 'bold',
-              letterSpacing: 2, textTransform: 'uppercase',
-              cursor: hasDecks ? 'pointer' : 'not-allowed',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            Challenge Weekly Trial
-          </button>
         </div>
 
         {/* Trials grid */}

@@ -27,8 +27,10 @@ export function getCardFinishLabel(finish: CardFinish): string {
 
 export function isHoloOnlyCard(definition: CardDefinition): boolean {
   // Eternal/Infinite rarities are always holofoil.
+  // Enigmatic cards are already printed with the holofoil treatment by default.
   // Transcendent cards (tx- prefix) are also always holofoil — they drop pre-foiled.
   return definition.rarity === 'Eternal' || definition.rarity === 'Infinite'
+    || definition.rarity === 'Enigmatic'
     || definition.definitionId.startsWith('tx-');
 }
 

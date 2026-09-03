@@ -1287,8 +1287,10 @@ function completeBossFight(s: Store, victory: boolean): void {
     s.progress.aberratedShards += gauntletShardsBanked;
   }
 
-  // Gauntlet run ended  Erecord personal-best stats.
-  if (kind === 'gauntlet') {
+  // Gauntlet run ended. Card-light is only awarded for completed clear depth;
+  // a first-round defeat should not grant any mastery rewards, but a later loss
+  // after a successful clear still rewards the completed depth reached.
+  if (kind === 'gauntlet' && gauntletDepth > 0) {
     if (!s.progress.gauntletBest) s.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
     const best = s.progress.gauntletBest;
     if (gauntletDepth > best.bestDepth) best.bestDepth = gauntletDepth;
@@ -1305,6 +1307,12 @@ function completeBossFight(s: Store, victory: boolean): void {
       resonanceGained: masteryAward.resonanceGain,
       cardsTieredUp: masteryAward.cardsTieredUp,
     };
+  } else if (kind === 'gauntlet') {
+    if (!s.progress.gauntletBest) s.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
+    const best = s.progress.gauntletBest;
+    if (gauntletDepth > best.bestDepth) best.bestDepth = gauntletDepth;
+    if (gauntletShardsBanked > best.bestShards) best.bestShards = gauntletShardsBanked;
+    best.runs += 1;
   }
 
   const finalHp = s.bossFight.bossCurrentHp;
