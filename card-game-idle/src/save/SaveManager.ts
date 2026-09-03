@@ -477,14 +477,8 @@ const migrations: Record<number, Migration> = {
     }
     return data;
   },
-  31: (data) => {
-    // v31 adds: coopNetplayEnabled (default false) feature flag.
-    if (data.settings) {
-      const s = data.settings as unknown as Record<string, unknown>;
-      if (typeof s.coopNetplayEnabled !== 'boolean') s.coopNetplayEnabled = false;
-    }
-    return data;
-  },
+  // v31 slot retired with the co-op netplay feature flag; keep the id for later migrations.
+  31: (data) => data,
   32: (data) => {
     // v32 retires legacy DFH Veil Rite carryover state and adds DFH attack-bonus runtime fields.
     if (data.turn) {

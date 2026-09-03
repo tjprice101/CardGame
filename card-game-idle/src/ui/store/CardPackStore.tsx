@@ -4,7 +4,6 @@ import { useStore } from '@/state/store';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { getTrialDeckDefinition } from '@/data/trialDecks';
 import { warmTheme, uiTypography } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import PackOpeningModal from './PackOpeningModal';
@@ -61,36 +60,37 @@ const styles: Record<string, React.CSSProperties> = {
   },
   packGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))',
-    gap: 12,
+    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 288px))',
+    gap: 14,
     alignItems: 'start',
+    justifyContent: 'start',
   },
   packCard: {
     width: '100%',
     background: 'linear-gradient(180deg, rgba(4,10,24,0.97) 0%, rgba(6,14,30,0.97) 100%)',
     border: '1px solid rgba(110,160,215,0.34)',
     borderRadius: 16,
-    padding: '14px',
+    padding: '12px',
     display: 'flex',
     flexDirection: 'column',
-    gap: 10,
+    gap: 8,
     boxShadow: 'inset 0 1px 0 rgba(140,210,255,0.08), 0 2px 14px rgba(0,0,0,0.60)',
   },
   packLocked: {
     opacity: 0.5,
     filter: 'grayscale(0.6)',
   },
-  packName: { fontSize: 16, fontWeight: 'bold', color: '#96daff' },
+  packName: { fontSize: 14, fontWeight: 'bold', color: '#96daff', letterSpacing: 0.4 },
   packDesc: { fontSize: 11, color: 'rgba(205,228,255,0.78)', lineHeight: 1.42 },
   packCost: { fontSize: 13, color: '#90d0f8' },
   openBtn: {
-    padding: '8px 16px',
+    padding: '6px 12px',
     borderRadius: 10,
     border: `1px solid rgba(72,148,210,0.60)`,
     background: 'linear-gradient(180deg, #6ec8f0 0%, #4298d8 100%)',
     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.15), 0 2px 8px rgba(60,140,210,0.35)',
     color: '#05111f',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: 600,
     fontFamily: uiTypography.body,
     cursor: 'pointer',
@@ -219,9 +219,9 @@ const styles: Record<string, React.CSSProperties> = {
   } as React.CSSProperties,
 };
 
-interface Props { onClose: () => void; onStartTrial: (packId: string) => void }
+interface Props { onClose: () => void }
 
-export default function CardPackStore({ onClose, onStartTrial }: Props) {
+export default function CardPackStore({ onClose }: Props) {
   useThemeVersion();
   const oblivion = useStore(s => s.progress.oblivion);
   const shards = useStore(s => s.progress.aberratedShards);
@@ -317,7 +317,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
 
     const artSrc = PACK_ART[pack.id];
     const displayName = pack.name.replace(/^\[EVENT\]\s*/, '');
-    const hasTrial = !isLocked && getTrialDeckDefinition(pack.id) !== null;
+    const hasCoreMechanicGuide = !isLocked;
 
     return (
       <div
@@ -362,7 +362,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
           <img
             src={artSrc}
             alt={displayName}
-            style={{ width: '100%', height: 130, borderRadius: 8, objectFit: 'cover', display: 'block' }}
+            style={{ width: '100%', height: 108, borderRadius: 8, objectFit: 'cover', display: 'block' }}
           />
         )}
 
@@ -464,7 +464,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
             </div>
           </div>
         )}
-        {hasTrial && (
+        {hasCoreMechanicGuide && (
           <button
             data-sfx="click"
             onClick={() => setCoreEnginePackId(pack.id)}
@@ -585,7 +585,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
             <div style={styles.helpPanel}>
               <strong style={{ color: '#7dd4f8', letterSpacing: 1 }}>How Opening Works</strong>
               <div style={styles.helpGrid}>
-                <div style={styles.helpItem}><strong>Pack:</strong> 5 cards with normal rarity odds.</div>
+                <div style={styles.helpItem}><strong>Pack:</strong> 5 cards.</div>
                 <div style={styles.helpItem}><strong>Box:</strong> 25 cards (5 packs), 2% discount, Legendary pity for that set.</div>
                 <div style={styles.helpItem}><strong>Case:</strong> 50 cards (10 packs), 4% discount, at least 1 guaranteed Legendary.</div>
                 <div style={styles.helpItem}>
@@ -608,7 +608,7 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
                   <span style={styles.eventDividerLabel}>⭐  Event Packs</span>
                   <div style={styles.eventDividerLine} />
                 </div>
-                <div className="ui-grid-stagger" style={{ ...styles.packGrid, gridTemplateColumns: 'repeat(auto-fill, minmax(270px, 320px))', justifyContent: 'start' }}>
+                <div className="ui-grid-stagger" style={{ ...styles.packGrid, gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 288px))' }}>
                 {PACK_DEFINITIONS.filter(p => (p as typeof p & { currencyType?: string }).currencyType === 'aberratedShards').map(renderPackCard)}
                 </div>
               </>
@@ -639,10 +639,8 @@ export default function CardPackStore({ onClose, onStartTrial }: Props) {
 
       {coreEnginePackId && (
         <CoreMechanicEngineModal
-          packId={coreEnginePackId}
           packName={PACK_DEFINITIONS.find(p => p.id === coreEnginePackId)?.name.replace(/^\[EVENT\]\s*/, '') ?? coreEnginePackId}
           cardPool={PACK_DEFINITIONS.find(p => p.id === coreEnginePackId)?.cardPool ?? []}
-          onStartTrial={onStartTrial}
           onClose={() => setCoreEnginePackId(null)}
         />
       )}

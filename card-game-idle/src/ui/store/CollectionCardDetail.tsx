@@ -44,13 +44,13 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
   const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
   const finishLabel = isHoloOnlyCard(card) ? 'Intrinsic Foil' : getCardFinishLabel(finish);
   const flavorObtain = card.rarity === 'Infinite'
-    ? "Crafted from the depths of the cards' souls."
+    ? 'Crafted through Infinitude recipes.'
     : card.rarity === 'Eternal'
       ? "Awarded for defeating mighty foes. (Eternity's Wake)"
       : card.definitionId.startsWith('tx-')
-        ? 'Raid finality, and survive. (Null Raids)'
+        ? 'Earned from Null Raids.'
         : card.rarity === 'Enigmatic'
-          ? 'The mystery unfolds only for those who solve it. (Enigmas)'
+          ? 'Earned by completing Enigmas.'
           : null;
 
   useEffect(() => {

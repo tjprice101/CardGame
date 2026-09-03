@@ -266,7 +266,6 @@ const defaultSettings: SettingsState = {
   sfxVolume: 0.8,
   particlesEnabled: true,
   reducedMotion: false,
-  coopNetplayEnabled: false,
   language: 'en',
   fontSizePreset: 'standard',
   cardArtDisplay: 'both',
@@ -5638,7 +5637,6 @@ export const useStore = create<Store>()(
         if (typeof settings['sfxVolume'] !== 'number') settings['sfxVolume'] = defaultSettings.sfxVolume;
         if (typeof settings['particlesEnabled'] !== 'boolean') settings['particlesEnabled'] = defaultSettings.particlesEnabled;
         if (typeof settings['reducedMotion'] !== 'boolean') settings['reducedMotion'] = defaultSettings.reducedMotion;
-        if (typeof settings['coopNetplayEnabled'] !== 'boolean') settings['coopNetplayEnabled'] = defaultSettings.coopNetplayEnabled;
         if (settings['language'] === undefined) settings['language'] = defaultSettings.language;
         if (settings['fontSizePreset'] === undefined) settings['fontSizePreset'] = defaultSettings.fontSizePreset;
         if (settings['cardArtDisplay'] === undefined) settings['cardArtDisplay'] = defaultSettings.cardArtDisplay;

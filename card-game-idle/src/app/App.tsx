@@ -917,14 +917,7 @@ export default function App() {
       {/* Card Pack Store modal */}
       {showCardStore && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><CardPackStore
-            onClose={() => setShowCardStore(false)}
-            onStartTrial={(packId) => {
-              setShowCardStore(false);
-              useStore.getState().startTrialDeck(packId);
-              setScene('arena');
-            }}
-          /></Suspense>
+          <Suspense fallback={null}><CardPackStore onClose={() => setShowCardStore(false)} /></Suspense>
         </div>
       )}
 

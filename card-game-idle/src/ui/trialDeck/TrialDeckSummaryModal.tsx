@@ -139,8 +139,7 @@ export default function TrialDeckSummaryModal({ packName, onConfirm, onClose }: 
 
         {isTutorialTurn && (
           <div style={styles.guideResult}>
-            <strong>You cleared a tutorial lane.</strong> Keep climbing into stronger tiers, seek greater cards,
-            and master every engine until your deck can command them all.
+            <strong>Tutorial complete.</strong> Move to higher difficulties to unlock stronger cards and learn advanced strategies.
           </div>
         )}
 

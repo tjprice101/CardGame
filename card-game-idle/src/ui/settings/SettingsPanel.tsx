@@ -216,7 +216,7 @@ export default function SettingsPanel({ onClose }: Props) {
             gap: 14,
             alignItems: 'start',
           }}>
-            <PanelCard title={t('gameplaySettings')} subtitle="Audio and gameplay comfort" palette={theme}>
+            <PanelCard title={t('gameplaySettings')} subtitle="Sound, motion, and layout" palette={theme}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <VolumeSlider
                   label={t('musicVolume')}
@@ -257,12 +257,6 @@ export default function SettingsPanel({ onClose }: Props) {
                   palette={theme}
                 />
                 <CheckRow
-                  label="Experimental co-op netplay"
-                  checked={!!(draft.coopNetplayEnabled ?? settings.coopNetplayEnabled)}
-                  onChange={on => patchDraft({ coopNetplayEnabled: on })}
-                  palette={theme}
-                />
-                <CheckRow
                   label="Compact UI mode"
                   checked={!!(draft.compactMode ?? settings.compactMode)}
                   onChange={on => patchDraft({ compactMode: on })}
@@ -277,7 +271,7 @@ export default function SettingsPanel({ onClose }: Props) {
               </div>
             </PanelCard>
 
-            <PanelCard title="Preferences" subtitle="Language and text scale" palette={theme}>
+            <PanelCard title="Preferences" subtitle="Language and text size" palette={theme}>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
@@ -308,7 +302,7 @@ export default function SettingsPanel({ onClose }: Props) {
               </div>
             </PanelCard>
 
-            <PanelCard title="Card Art Display" subtitle="Choose how card details render" palette={theme}>
+            <PanelCard title="Card Art Display" subtitle="Choose what card details show" palette={theme}>
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',

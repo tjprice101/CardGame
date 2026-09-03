@@ -67,7 +67,7 @@ const GROUP_ICON: Record<string, string> = {
 
 const GROUP_DESCRIPTION: Record<string, string> = {
   milestone: 'Core gameplay milestones — cards played, packs opened, turns completed, and collection thresholds reached.',
-  boss: "Conquer the pantheon's most fearsome guardians in Eternity's Wake boss fights.",
+  boss: "Defeat Eternity's Wake bosses.",
   infinite: 'Forge the rarest cards in existence through the Infinitude crafting system.',
   set: 'Collect every card in a complete set, including all Eternal rarities.',
 };
@@ -153,7 +153,7 @@ export default function AchievementsModal({ onClose }: Props) {
               fontSize: 10, letterSpacing: 3.5, textTransform: 'uppercase',
               color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 6,
             }}>
-              LEGACY OF THE ACOLYTE
+              MILESTONES
             </div>
             <div className="ui-title-glow" style={{
               fontSize: 32, fontWeight: 700, letterSpacing: 1.5,
@@ -166,7 +166,7 @@ export default function AchievementsModal({ onClose }: Props) {
               fontSize: 13, color: P.textMuted, marginTop: 5,
               letterSpacing: 0.3, lineHeight: 1.4,
             }}>
-              Record your feats — from humble first plays to mastering every boss and forging the infinite.
+              Track cards played, bosses defeated, and collections completed.
             </div>
           </div>
 

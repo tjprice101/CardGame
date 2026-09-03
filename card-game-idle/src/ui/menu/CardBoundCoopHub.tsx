@@ -4,12 +4,10 @@ import { useSocialStore } from '@/state/socialStore';
 import { useBattlegroundStore } from '@/state/battlegroundStore';
 import { useEternityBossCoopStore } from '@/state/eternityBossCoopStore';
 import { useCoopRaidStore } from '@/state/coopRaidStore';
-import { useCoopSyncStore } from '@/state/coopSyncStore';
 import { useStore } from '@/state/store';
 import { usePartyStore } from '@/state/partyStore';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { NULL_RAID_DEFINITIONS } from '@/data/ascension/nullRaidDefinitions';
-import { hashStringToSeed } from '@/net/coopRng';
 import { uiTypography, type UiPalette } from '@/ui/theme';
 import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
 
@@ -56,11 +54,8 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
   const sendRaidInvites = useCoopRaidStore(s => s.sendInvites);
   const sendEternityInvites = useEternityBossCoopStore(s => s.sendInvites);
   const enqueueToast = useStore(s => s.enqueueToast);
-  const coopNetplayEnabled = useStore(s => !!s.settings.coopNetplayEnabled);
   const profile = useStore(s => s.progress.profile);
   const progress = useStore(s => s.progress);
-  const syncAttached = useCoopSyncStore(s => s.attached);
-  const lastPingMs = useCoopSyncStore(s => s.lastLoopbackPingMs);
   const friends = useFriendsStore(selectFriendsList);
   const friendsLoaded = useFriendsStore(selectFriendsLoaded);
   const loadFriends = useFriendsStore(s => s.load);
@@ -121,7 +116,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
       return;
     }
     if (members.length < 2) {
-      enqueueToast('Unable to start the requested activity if player count is less than two.', 'warning');
+      enqueueToast('You need at least two players in the party.', 'warning');
       return;
     }
     if (partyTargets.length === 0) {
@@ -129,15 +124,15 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
       return;
     }
     if (partyTargets.length > 2) {
-      enqueueToast('Eternity co-op fights support up to 3 total players right now.', 'warning');
+      enqueueToast('Wake co-op supports up to 3 players.', 'warning');
       return;
     }
     if (!allPartyReady) {
-      enqueueToast('Everyone in the party must be ready before starting.', 'warning');
+      enqueueToast('Everyone needs to ready up first.', 'warning');
       return;
     }
     if (!selectedBoss) {
-      enqueueToast('That boss is no longer available.', 'warning');
+      enqueueToast("That boss isn't available right now.", 'warning');
       return;
     }
     const sessionId = await sendEternityInvites(
@@ -146,7 +141,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
       selectedDeck.id,
     );
     if (!sessionId) {
-      enqueueToast('Could not start the co-op fight.', 'warning');
+      enqueueToast("Couldn't start the fight.", 'warning');
       return;
     }
     enqueueToast(`Co-op fight launched for ${selectedBoss.name}.`, 'success');
@@ -159,7 +154,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
       return;
     }
     if (members.length < 2) {
-      enqueueToast('Unable to start the requested activity if player count is less than two.', 'warning');
+      enqueueToast('You need at least two players in the party.', 'warning');
       return;
     }
     if (partyTargets.length === 0) {
@@ -167,11 +162,11 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
       return;
     }
     if (partyTargets.length > 4) {
-      enqueueToast('Null raid co-op supports up to 5 total players right now.', 'warning');
+      enqueueToast('Null Raid co-op supports up to 5 players.', 'warning');
       return;
     }
     if (!allPartyReady) {
-      enqueueToast('Everyone in the party must be ready before starting.', 'warning');
+      enqueueToast('Everyone needs to ready up first.', 'warning');
       return;
     }
 
@@ -181,7 +176,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
       selectedRaidDeck.id,
     );
     if (!sessionId) {
-      enqueueToast('Could not start the co-op raid.', 'warning');
+      enqueueToast("Couldn't start the raid.", 'warning');
       return;
     }
     enqueueToast(`Co-op null raid launched for ${selectedRaid?.name ?? nullRaidDraft.raidId}.`, 'success');
@@ -192,43 +187,12 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
     setSendingBattleTo(userId);
     const sessionId = await sendBattlegroundInvite(userId, { displayName, avatarId, titleId });
     if (!sessionId) {
-      enqueueToast('Could not send battleground challenge from party.', 'warning');
+      enqueueToast("Couldn't send the challenge.", 'warning');
       setSendingBattleTo(null);
       return;
     }
     enqueueToast(`Battleground challenge sent to ${displayName}.`, 'success');
     setSendingBattleTo(null);
-  }
-
-  async function handleDebugPing() {
-    if (!coopNetplayEnabled) {
-      enqueueToast('Enable Experimental co-op netplay in Settings first.', 'info');
-      return;
-    }
-    if (!activePartyId || !me) {
-      enqueueToast('Create a party first.', 'warning');
-      return;
-    }
-
-    if (!useCoopSyncStore.getState().attached) {
-      await useCoopSyncStore.getState().attach({
-        id: `debug-${activePartyId}`,
-        mode: 'eternity_boss',
-        partyId: activePartyId,
-        hostUserId: me,
-        participantIds: members.map(m => m.userId),
-        rngSeed: hashStringToSeed(`${activePartyId}:${me}:debug`),
-        modePayload: { draft: activityDraft?.type ?? 'general' },
-        status: 'active',
-      });
-    }
-
-    const rtt = await useCoopSyncStore.getState().debugLoopbackPing('hub');
-    if (rtt === null) {
-      enqueueToast('Debug ping unavailable.', 'warning');
-      return;
-    }
-    enqueueToast(`Debug ping round-trip: ${rtt}ms.`, 'info');
   }
 
   return (
@@ -240,16 +204,8 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
             <div style={{ fontSize: 10, letterSpacing: 4, textTransform: 'uppercase', color: uiTheme.accentSoft, fontFamily: uiTypography.display }}>Social Home</div>
             <div style={{ fontSize: 26, fontFamily: uiTypography.display, letterSpacing: 1.8 }}>{modeTheme.title}</div>
             <div style={{ fontSize: 12, color: uiTheme.textMuted, marginTop: 4 }}>{modeTheme.subtitle}</div>
-            {coopNetplayEnabled && (
-              <div style={{ fontSize: 11, color: uiTheme.textMuted, marginTop: 6 }}>
-                Netplay scaffold: {syncAttached ? `attached${lastPingMs !== null ? ` · last ping ${lastPingMs}ms` : ''}` : 'detached'}
-              </div>
-            )}
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
-            {coopNetplayEnabled && (
-              <button className="menu-tactile-btn" onClick={() => void handleDebugPing()} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.surface, color: uiTheme.text, border: `1px solid ${uiTheme.borderStrong}` }}>Debug Ping</button>
-            )}
             <button className="menu-tactile-btn" onClick={() => void createParty()} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.button, color: uiTheme.accentDeep, border: `1px solid ${uiTheme.borderStrong}` }}>Create Party</button>
             <button className="menu-tactile-btn" onClick={() => setOverlayHidden(!overlayHidden)} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>{overlayHidden ? 'Show Overlay' : 'Hide Overlay'}</button>
             <button className="menu-tactile-btn" onClick={onClose} style={{ padding: '8px 12px', borderRadius: 8, background: uiTheme.surfaceMuted, color: uiTheme.textMuted, border: `1px solid ${uiTheme.border}` }}>Close</button>
@@ -342,7 +298,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
                   <div style={{ fontSize: 12, color: uiTheme.textMuted }}>Ready status: {allPartyReady ? 'Everyone is ready' : 'Waiting for party members'}</div>
                   {members.length < 2 && (
                     <div style={{ fontSize: 11, color: 'rgba(255,160,140,0.88)', lineHeight: 1.4 }}>
-                      Unable to start the requested activity if player count is less than two.
+                      You need at least two players in the party.
                     </div>
                   )}
                   <button
@@ -397,7 +353,7 @@ export default function CardBoundCoopHub({ onClose }: { onClose: () => void }) {
                   <div style={{ fontSize: 12, color: uiTheme.textMuted }}>Ready status: {allPartyReady ? 'Everyone is ready' : 'Waiting for party members'}</div>
                   {members.length < 2 && (
                     <div style={{ fontSize: 11, color: 'rgba(255,160,140,0.88)', lineHeight: 1.4 }}>
-                      Unable to start the requested activity if player count is less than two.
+                      You need at least two players in the party.
                     </div>
                   )}
                   <button

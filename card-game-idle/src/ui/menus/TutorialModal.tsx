@@ -224,7 +224,7 @@ function BoardBody() {
         <div style={{ ...bodyTextStyle, marginTop: 8 }}>
           Back slot <Tag>Ci</Tag> is adjacent to front slots <Tag>Si</Tag> and <Tag>Si+1</Tag>. Many Cherubim
           buff adjacent Seraphim attacks; others apply effects to the whole board. All board cards go to
-          discard at turn end (Angels simply leave &mdash; they live in the Extra Deck).
+          discard at turn end (Angels return to the Extra Deck instead).
         </div>
       </div>
 
@@ -406,7 +406,7 @@ function ModesBody() {
         <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Oblivion you generate is dealt as damage instead of banked.</ListItem>
         <ListItem label="Categories">Bosses are organized by set &mdash; Neutrality, Pyroabyss, Heavenly Light, Thornbound Plains, and so on. Use the tab strip at the top of the Wake menu to switch.</ListItem>
         <ListItem label="Rewards">First clear and repeat clears both grant Aberrated Shards and the boss's signature Eternal card. 60-second cooldown after any attempt.</ListItem>
-        <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more — early bosses grant ~3 per card, the hardest grant ~35. Wake Trials apply a bonus multiplier (capped at ×2). The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
+        <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. Wake Trials apply a bonus multiplier (capped at ×2). The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
@@ -542,7 +542,7 @@ function ProgressionBody() {
         <div style={bodyTextStyle}>
           Every card you play accumulates Card-light mastery across <Tag>8 tiers</Tag> (Practiced → Infinite Bond).
           Each tier grants <Tag>Resonance points</Tag> and a shard reward. Resonance feeds your{' '}
-          <Tag>Collection Power</Tag> multiplier, permanently boosting Oblivion earned from attacks.
+          <Tag>Collection Power</Tag> multiplier, raising the Oblivion earned from attacks.
           See the <Tag>Card-born Tier</Tag> section in this guide for the full breakdown.
         </div>
       </div>

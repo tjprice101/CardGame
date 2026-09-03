@@ -389,8 +389,6 @@ export interface SettingsState {
   sfxVolume: number;
   particlesEnabled: boolean;
   reducedMotion: boolean;
-  /** Feature-flag for the host-authoritative co-op netplay transport. Save v31. */
-  coopNetplayEnabled?: boolean;
   language: UiLanguage;
   fontSizePreset: FontSizePreset;
   cardArtDisplay: CardArtDisplay;

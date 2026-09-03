@@ -292,7 +292,7 @@ export default function HolofoilWorkshop() {
     <div style={styles.wrapper}>
       <div style={styles.intro}>
         Spend Aberrated Shards to permanently convert one owned normal copy into a holofoil copy.
-        Holofoils are purely cosmetic, but they are tracked separately in your collection and deck building.
+        Holofoils are purely cosmetic and tracked separately in your collection and deck building.
       </div>
 
       <div style={styles.filterBar}>
@@ -361,7 +361,7 @@ export default function HolofoilWorkshop() {
           }}
           onClick={() => setMultiCopyOnly(prev => !prev)}
         >
-          Show Convertible (2+ Normal)
+          Cards with 2+ Copies
         </button>
 
         <div style={styles.statusPill}>

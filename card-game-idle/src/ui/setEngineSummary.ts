@@ -377,32 +377,36 @@ export interface EngineGuide {
 const RAW_SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   neutrality: {
     engineKey: 'neutrality',
-    title: 'User Guide to: Neutrality',
-    intro: 'The Neutrality engine is called the Patience Engine. One rule drives everything: every card you play charges your waiting Seraphim. When a Seraphim attacks, it consumes every Patience stack it has built  Eand each stack adds +15 Oblivion to that attack. The longer you wait, the harder it hits.',
+    title: 'Neutrality: Patience Engine',
+    intro: 'Every card you play adds +1 Patience to each waiting Neutrality Seraphim. When it attacks, it consumes all of its Patience and gains +15 Oblivion per stack. Patience then resets to 0.',
     sections: [
       {
         heading: 'How Patience Builds',
-        body: 'Every time you play ANY card while a Neutrality Seraphim is on the board and waiting to attack, that Seraphim gains +1 Patience automatically. You do not need to activate anything  EPatience accumulates in the background with every single card played.\n\nPatience is stored per Seraphim individually. A Seraphim that has been waiting for 8 cards has 8 Patience. A Seraphim that just fired has 0 Patience and starts building again.\n\nOnly Neutrality Seraphim (those with a defined Patience threshold) participate in this system.',
+        body: 'Any card play adds +1 Patience to every Neutrality Seraphim on the board. Each Seraphim stores its own stacks. A unit that has waited for 8 card plays has 8 Patience; a unit that just attacked starts again at 0.\n\nPatience caps at 150 per Seraphim by default. Only Seraphim with a Patience threshold use this system.',
       },
       {
         heading: 'Seraphim Attack Payoff',
-        body: 'When a Neutrality Seraphim attacks, it consumes ALL of its Patience stacks in one burst:\n\n• Each Patience stack adds +15 Oblivion to that attack.\n• 5 Patience = +75 Oblivion bonus. 10 Patience = +150 Oblivion bonus.\n• After firing, Patience resets to 0 and starts building again for the next attack cycle.\n\nNeutrality Seraphim have longer cooldowns by design (5 E cards depending on rarity). That waiting time IS the engine  Ethe delayed attack arrives loaded with stacked Patience.',
+        body: 'On attack, a Seraphim consumes all of its Patience:\n\n• +15 Oblivion per stack.\n• 5 Patience gives +75 Oblivion; 10 gives +150.\n• Patience resets to 0 after the attack.\n\nNeutrality Seraphim cooldowns range from 5 to 6 cards, depending on the card.',
       },
       {
         heading: 'Patience Thresholds (Bonus Draw)',
-        body: 'Each Neutrality Seraphim has a Patience threshold. If it fires with Patience at or above that threshold, it draws bonus cards in addition to the Oblivion hit:\n\n• Common Seraphim (Null, Void): threshold 3 Patience ↁEdraw 1 card.\n• Rare Seraphim (Balance): threshold 4 Patience ↁEdraw 1 card.\n• Rare Seraphim (Equilibrium): threshold 4 Patience ↁEdraw 2 cards.\n• Epic Seraphim (Still): threshold 5 Patience ↁEdraw 2 cards.\n\nThe bonus draw fires automatically when the threshold is met. If you attack before reaching it, you still get the full +15 Oblivion per stack  Eyou just miss the draw.',
+        body: 'Attacking at or above a Seraphim\'s Patience threshold also draws cards:\n\n• Common Null and Void: threshold 3, draw 1.\n• Rare Balance: threshold 4, draw 1.\n• Rare Equilibrium: threshold 4, draw 2.\n• Epic Still: threshold 5, draw 2.\n\nAttacking below the threshold still pays +15 Oblivion per stack.',
       },
       {
         heading: 'Cherubim: Patience Amplifiers',
-        body: 'Neutrality Cherubim have one job: grant extra Patience to the Seraphim directly in front of them, every card you play.\n\n• Common Cherubim: +1 extra Patience per card (adjacent Seraphim gain +2 total instead of +1).\n• Rare Cherubim: +2 extra Patience per card (+3 total per card played).\n• Epic Cherubim: +3 extra Patience per card (+4 total per card played).\n\nA Seraphim sitting adjacent to an Epic Cherubim with a 6-card cooldown has 24 Patience before it fires  Ethat is +360 Oblivion added to the attack before any multipliers.\n\nPlace Cherubim next to your highest-rarity Seraphim first to maximise their amplification window.',
+        body: 'A Cherubim boosts the Seraphim directly in front of it on every card play:\n\n• Common: +1 extra Patience per card, for +2 total.\n• Rare: +2 extra, for +3 total.\n• Epic: +3 extra, for +4 total.\n\nAn Epic Cherubim beside a Seraphim gives that Seraphim 24 Patience over 6 card plays, worth +360 Oblivion before multipliers.',
       },
       {
-        heading: 'Ophanim: The Draw Engine',
-        body: 'Neutrality Ophanim are the fuel that runs the patience engine. Every Ophanim you play counts as a card played  Eadding Patience to every waiting Seraphim automatically.\n\nOphanim also draw cards, recycle your deck, and search for Seraphim and Cherubim. A turn full of Ophanim plays means more Patience stacked and a harder-hitting Seraphim attack when the cooldown fires.\n\nDo not hoard Ophanim. The engine rewards playing them early and often.',
+        heading: 'Ophanim: Draw and Recycle',
+        body: 'Ophanim draw cards, recycle the discard pile, and search for Seraphim or Cherubim. Playing an Ophanim also counts as a card play for Patience.',
       },
       {
         heading: 'Angels: Patience Bursts',
-        body: 'Neutrality Angels manipulate Patience directly rather than waiting for it to accumulate naturally:\n\n• On summon: all active Seraphim gain a flat Patience bonus instantly (+5 for The Beginning and the End, +6 for Aegis of Presence, +8 for Scales of Eternity\'s Wake).\n• Activated ability: doubles all current Patience on every active Seraphim simultaneously.\n\nA Seraphim sitting at 6 Patience when an Angel summons and immediately activates goes to 22 Patience after the summon bonus and the doubling  Ethat is +330 Oblivion from Patience alone, added to the next attack.',
+        body: 'Neutrality Angels add Patience directly:\n\n• On summon, they give Patience to every Seraphim on the board.\n• Their activated abilities can double the Patience of every Seraphim at once.\n\nAngel attacks use Patience differently: each stack adds +2% of the attack\'s base Oblivion instead of +15 flat Oblivion.',
+      },
+      {
+        heading: 'Patient Light',
+        body: 'Patient Light increases the Patience gained from each card play. Each stack adds +1 to that gain. Patient Light is capped at 15 stacks by default.',
       },
     ],
   },

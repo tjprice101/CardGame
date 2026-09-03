@@ -241,7 +241,7 @@ export default function WakeTrialsModal({ onClose }: Props) {
               </div>
             )}
           </PickerColumn>
-          <PickerColumn label="Vessel (Deck)">
+          <PickerColumn label="Deck">
             {hasDecks ? (
               <select
                 value={selectedDeckId}
@@ -274,9 +274,6 @@ export default function WakeTrialsModal({ onClose }: Props) {
             <div>
               <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: EW.textMuted, marginBottom: 4 }}>Trial Reward Preview</div>
               <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Selected deck: {selectedDeck.name}</div>
-              <div style={{ fontSize: 10, color: 'rgba(160,220,255,0.82)', marginTop: 4 }}>
-                Awards +{trialRewardPreview.resonanceGain.toLocaleString()} Card-light for each card in your deck upon completion.
-              </div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(140,230,255,0.7)', marginBottom: 4 }}>Card-light Award</div>

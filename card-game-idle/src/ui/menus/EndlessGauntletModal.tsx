@@ -160,7 +160,7 @@ export default function EndlessGauntletModal({ onClose }: Props) {
           <div style={{
             fontSize: 9, letterSpacing: 2, textTransform: 'uppercase',
             color: EW.accentSoft, marginBottom: 6, fontWeight: 'bold',
-          }}>Vessel (Deck)</div>
+          }}>Deck</div>
           {hasDecks ? (
             <select
               value={selectedDeckId}
@@ -198,12 +198,9 @@ export default function EndlessGauntletModal({ onClose }: Props) {
           }}>
             <div>
               <div style={{ fontSize: 9, letterSpacing: 2.4, color: EW.violet, textTransform: 'uppercase', marginBottom: 4 }}>
-                Opening Reward Preview
+                Completion Reward
               </div>
-              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Depth {currentDepth} formula: min(35, max(5, depth × 6))</div>
-              <div style={{ fontSize: 10, color: 'rgba(160,220,255,0.82)', marginTop: 4 }}>
-                Awards +{gauntletRewardPreview.resonanceGain.toLocaleString()} Card-light for each card in your deck upon completion.
-              </div>
+              <div style={{ fontSize: 10, color: EW.textMuted, marginTop: 3 }}>Depth {currentDepth} reward</div>
             </div>
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 9, letterSpacing: 2.4, color: '#8ce6ff', textTransform: 'uppercase', marginBottom: 4 }}>

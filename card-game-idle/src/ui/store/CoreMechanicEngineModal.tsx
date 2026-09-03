@@ -15,11 +15,9 @@ import { buildCoreMechanicContent } from './coreMechanicContent';
 import type { CardDefinition } from '@/types/cards';
 
 interface Props {
-  packId: string;
   packName: string;
   cardPool: string[];
   onClose: () => void;
-  onStartTrial: (packId: string) => void;
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -67,24 +65,6 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'rgba(195, 224, 245, 0.78)',
     letterSpacing: 0.4,
     lineHeight: 1.5,
-  },
-  headerActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    flexShrink: 0,
-  },
-  trialBtn: {
-    padding: '8px 12px',
-    borderRadius: 9,
-    border: '1px solid rgba(130, 210, 150, 0.54)',
-    background: 'linear-gradient(180deg, rgba(58, 134, 86, 0.36) 0%, rgba(26, 76, 52, 0.36) 100%)',
-    color: '#8de8a8',
-    fontSize: 11,
-    fontWeight: 700,
-    letterSpacing: 0.7,
-    fontFamily: uiTypography.body,
-    cursor: 'pointer',
   },
   closeBtn: {
     width: 34,
@@ -142,42 +122,6 @@ const styles: Record<string, React.CSSProperties> = {
     color: 'rgba(200, 220, 235, 0.9)',
     lineHeight: 1.55,
     whiteSpace: 'pre-line' as const,
-  },
-  playstyleGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: 10,
-  },
-  playstyleTitle: {
-    fontSize: 13,
-    fontWeight: 700,
-    color: '#9fd6ff',
-    marginBottom: 8,
-    letterSpacing: 0.4,
-  },
-  playstyleLine: {
-    fontSize: 11,
-    color: 'rgba(205, 226, 242, 0.92)',
-    lineHeight: 1.55,
-    marginBottom: 6,
-  },
-  splitGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-    gap: 10,
-  },
-  detailTitle: {
-    fontSize: 12,
-    fontWeight: 700,
-    color: '#9fd6ff',
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
-  detailLine: {
-    fontSize: 11,
-    color: 'rgba(205, 226, 242, 0.9)',
-    lineHeight: 1.55,
-    marginBottom: 8,
   },
   cardGrid: {
     display: 'grid',
@@ -255,13 +199,11 @@ function ExampleCardTile({ def }: { def: CardDefinition }) {
 }
 
 export default function CoreMechanicEngineModal({
-  packId,
   packName,
   cardPool,
   onClose,
-  onStartTrial,
 }: Props) {
-  const content = useMemo(() => buildCoreMechanicContent(packId, cardPool), [packId, cardPool]);
+  const content = useMemo(() => buildCoreMechanicContent(cardPool), [cardPool]);
 
   const exampleCards = useMemo(() => {
     if (!content) return [] as CardDefinition[];
@@ -284,11 +226,7 @@ export default function CoreMechanicEngineModal({
           <div style={styles.body}>
             <div style={styles.sectionCard}>
               <div style={styles.sectionTitle}>No Guide Data</div>
-              <div style={styles.introText}>This set does not currently expose engine guide data. Trial Deck is still available through the button below.</div>
-              <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                <button type="button" onClick={() => { onStartTrial(packId); onClose(); }} style={styles.trialBtn}>Start Trial Deck</button>
-                <button type="button" onClick={onClose} style={styles.closeBtn}>x</button>
-              </div>
+              <div style={styles.introText}>No core mechanic guide is available for this set yet.</div>
             </div>
           </div>
         </div>
@@ -304,10 +242,7 @@ export default function CoreMechanicEngineModal({
             <div style={styles.title}>Core Mechanic Engine</div>
             <div style={styles.subtitle}>{packName} - {content.title.replace('User Guide to: ', '')}</div>
           </div>
-          <div style={styles.headerActions}>
-            <button type="button" onClick={() => { onStartTrial(packId); onClose(); }} style={styles.trialBtn}>Start Trial Deck</button>
-            <button type="button" onClick={onClose} style={styles.closeBtn}>x</button>
-          </div>
+          <button type="button" onClick={onClose} style={styles.closeBtn}>x</button>
         </div>
 
         <div style={styles.body}>
@@ -327,62 +262,6 @@ export default function CoreMechanicEngineModal({
               ))}
             </div>
           </div>
-
-          <div style={styles.sectionCard}>
-            <div style={styles.sectionTitle}>Example Playstyles</div>
-            <div style={styles.playstyleGrid}>
-              {content.playstyles.map(style => (
-                <div key={style.name} style={styles.sectionCard}>
-                  <div style={styles.playstyleTitle}>{style.name}</div>
-                  <div style={styles.playstyleLine}><strong>Pattern:</strong> {style.pattern}</div>
-                  <div style={styles.playstyleLine}><strong>Pilot Tips:</strong> {style.pilotTips}</div>
-                  <div style={styles.playstyleLine}><strong>Win Condition:</strong> {style.winCondition}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={styles.sectionCard}>
-            <div style={styles.sectionTitle}>Advanced Lines and Mistake Proofing</div>
-            <div style={styles.splitGrid}>
-              <div style={styles.sectionCard}>
-                <div style={styles.detailTitle}>Advanced Sequencing Lines</div>
-                {content.advancedLines.map(line => (
-                  <div key={line.name} style={styles.detailLine}>
-                    <strong>{line.name}:</strong> {line.sequence}
-                    <br />
-                    <strong>Why it works:</strong> {line.whyItWorks}
-                  </div>
-                ))}
-              </div>
-              <div style={styles.sectionCard}>
-                <div style={styles.detailTitle}>Common Mistakes to Avoid</div>
-                {content.commonMistakes.map(item => (
-                  <div key={item.mistake} style={styles.detailLine}>
-                    <strong>Mistake:</strong> {item.mistake}
-                    <br />
-                    <strong>Consequence:</strong> {item.consequence}
-                    <br />
-                    <strong>Correction:</strong> {item.correction}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {content.exampleEffects.length > 0 && (
-            <div style={styles.sectionCard}>
-              <div style={styles.sectionTitle}>Example Effects in Real Lines</div>
-              <div style={styles.guideGrid}>
-                {content.exampleEffects.map(example => (
-                  <div key={`${example.cardName}:${example.effectSummary}`} style={styles.sectionCard}>
-                    <div style={styles.guideTitle}>{example.cardName}</div>
-                    <div style={styles.guideBody}>{example.effectSummary}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           <div style={styles.sectionCard}>
             <div style={styles.sectionTitle}>Example Cards and Effects</div>

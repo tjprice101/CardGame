@@ -221,9 +221,9 @@ export default function QuestsModal({ onClose }: Props) {
 
           {/* Hero stats — emblem pillars */}
           <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 20, borderLeft: `1px solid ${C.border}`, flexShrink: 0 }}>
-            <QuestStat label="Daily Complete" value={`${dailyComplete}/${view.daily.length}`} accent={C.accentDaily} sub={useOblivionForDaily ? `${dailyOblivionLeft.toLocaleString()} Oblivion left` : `${dailyShardsLeft} shards left`} />
+            <QuestStat label="Daily Quests" value={`${dailyComplete}/${view.daily.length}`} accent={C.accentDaily} sub={useOblivionForDaily ? `${dailyOblivionLeft.toLocaleString()} Oblivion left` : `${dailyShardsLeft} shards left`} />
             <div style={{ width: 1, height: 30, background: C.border, flexShrink: 0 }} />
-            <QuestStat label="Weekly Complete" value={`${weeklyComplete}/${view.weekly.length}`} accent={C.accentWeekly} sub={`${weeklyShardsLeft} shards left`} />
+            <QuestStat label="Weekly Quests" value={`${weeklyComplete}/${view.weekly.length}`} accent={C.accentWeekly} sub={`${weeklyShardsLeft} shards left`} />
             {(dailyOblivionLeft + dailyShardsLeft + weeklyShardsLeft) > 0 && (
               <>
                 <div style={{ width: 1, height: 30, background: C.border, flexShrink: 0 }} />
