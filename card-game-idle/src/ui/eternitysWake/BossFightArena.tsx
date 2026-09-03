@@ -72,18 +72,6 @@ export default function BossFightArena() {
   const lowHp = hpPercent <= 0.3;
   const hpColor = lowHp ? '#ffae5e' : EW_ACCENT;
 
-  const kind = bossFight.kind ?? 'normal';
-  const gauntletDepth = bossFight.gauntletDepth ?? 0;
-  const gauntletShardsBanked = bossFight.gauntletShardsBanked ?? 0;
-  const modifiers = bossFight.modifiers ?? [];
-
-  const modeBadge =
-    kind === 'gauntlet'
-      ? { text: `GAUNTLET · DEPTH ${gauntletDepth + 1}`, color: '#c2a8ff', bg: 'rgba(140, 90, 255, 0.18)' }
-      : kind === 'trial'
-        ? { text: 'WAKE TRIAL', color: '#ffd87a', bg: 'rgba(255, 215, 130, 0.18)' }
-        : null;
-
   const damageDealtPct = bossFight.bossMaxHp > 0
     ? Math.min(100, (bossFight.damageDealtThisFight / bossFight.bossMaxHp) * 100)
     : 0;
@@ -158,17 +146,6 @@ export default function BossFightArena() {
         {/* Header row: badge + boss name + timer */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-            {modeBadge && (
-              <div style={{
-                fontSize: 10, letterSpacing: 1.5, fontWeight: 'bold',
-                padding: '3px 8px', borderRadius: 4,
-                background: modeBadge.bg,
-                color: modeBadge.color,
-                border: `1px solid ${modeBadge.color}88`,
-                fontFamily: 'Georgia, serif',
-                whiteSpace: 'nowrap',
-              }}>{modeBadge.text}</div>
-            )}
             <div style={{
               fontSize: 14, fontWeight: 'bold', color: 'rgba(244,244,248,0.98)',
               fontFamily: 'Georgia, serif',
@@ -241,35 +218,6 @@ export default function BossFightArena() {
           }} />
         </div>
 
-        {kind === 'trial' && modifiers.length > 0 && (
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 2,
-          }}>
-            {modifiers.map((m, i) => (
-              <div key={i} style={{
-                fontSize: 9.5, letterSpacing: 0.6,
-                padding: '2px 7px', borderRadius: 4,
-                background: 'rgba(255,215,130,0.12)',
-                color: '#ffd87a',
-                border: '1px solid rgba(255,215,130,0.35)',
-                fontFamily: 'Georgia, serif',
-              }}>{m.text}</div>
-            ))}
-          </div>
-        )}
-
-        {kind === 'gauntlet' && (
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            marginTop: 2, padding: '4px 8px', borderRadius: 6,
-            background: 'rgba(140,90,255,0.08)',
-            border: '1px solid rgba(140,90,255,0.3)',
-            fontSize: 10, fontFamily: 'Georgia, serif', letterSpacing: 0.5,
-          }}>
-            <span style={{ color: '#c2a8ff' }}>SHARDS BANKED</span>
-            <span style={{ color: '#fff', fontWeight: 'bold' }}>{gauntletShardsBanked.toLocaleString()}</span>
-          </div>
-        )}
       </div>
 
       {callout && (

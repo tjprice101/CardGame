@@ -82,11 +82,9 @@ const STORE_BOSS_TAB_ORDER: BossCategory[] = STORE_PACK_ORDER.map(packId => {
 
 interface Props {
   onClose: () => void;
-  onOpenWakeTrials?: () => void;
-  onOpenEndlessGauntlet?: () => void;
 }
 
-export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndlessGauntlet }: Props) {
+export default function EternitysWake({ onClose }: Props) {
   const bossFight = useStore(selectBossFight);
   const progress = useStore(selectProgress);
   const startBossFight = useStore(s => s.startBossFight);
@@ -170,22 +168,12 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {onOpenWakeTrials && (
-            <button className="ui-cta-breath" onClick={onOpenWakeTrials} style={headerSecondaryButton} title="Daily modifier trials">
-              Wake Trials
-            </button>
-          )}
           <button className="ui-cta-breath" onClick={() => setShowCodex(true)} style={headerSecondaryButton} title="Personal-best records per boss">
             Codex
           </button>
           {socialStatus === 'authenticated' && (
             <button className="ui-cta-breath" onClick={() => setShowFriendsBoard(true)} style={headerSecondaryButton} title="Compare with friends">
               Friends
-            </button>
-          )}
-          {onOpenEndlessGauntlet && (
-            <button className="ui-cta-breath" onClick={onOpenEndlessGauntlet} style={headerSecondaryButton} title="Endless boss gauntlet">
-              Endless Gauntlet
             </button>
           )}
           <button onClick={onClose} style={{
@@ -737,7 +725,7 @@ export default function EternitysWake({ onClose, onOpenWakeTrials, onOpenEndless
             </div>
             <Suspense fallback={<div style={{ fontSize: 11, opacity: 0.6 }}>Loading…</div>}>
               <FriendsLeaderboard
-                metrics={['eternityClearsTotal', 'infinitePulls', 'gauntletDepth', 'gauntletShards']}
+                metrics={['eternityClearsTotal', 'infinitePulls']}
               />
             </Suspense>
           </div>

@@ -4,7 +4,7 @@
 //   1. Periodically upserts the user's `profile_stats` row so friend
 //      leaderboards stay current.
 //   2. Inserts `activity_events` rows when notable transitions occur
-//      (boss clears, infinite pulls, gauntlet PBs).
+//      (boss clears, infinite pulls).
 //
 // All work is best-effort and silently no-ops when Supabase is not configured
 // or the user is not authenticated. The game continues to work offline.
@@ -13,7 +13,7 @@ import { getSupabase } from '@/net/supabaseClient';
 import { useSocialStore } from '@/state/socialStore';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import type { ProgressState, GauntletBest } from '@/types/game';
+import type { ProgressState } from '@/types/game';
 
 // ── Module state ────────────────────────────────────────────────────────────
 
@@ -31,8 +31,6 @@ interface StatsSnapshot {
   bossClearByBoss: Record<string, number>;
   infiniteTotal: number;
   infiniteByDef: Record<string, number>;
-  gauntletBestDepth: number;
-  gauntletBestShards: number;
   battlegroundWins: number;
   battlegroundBestScore: number;
   battlegroundTotalMatches: number;
@@ -55,8 +53,6 @@ function snapshot(progress: ProgressState): StatsSnapshot {
     bossClearByBoss: { ...progress.bossClearCounts },
     infiniteTotal: sumValues(progress.infiniteCollection),
     infiniteByDef: { ...progress.infiniteCollection },
-    gauntletBestDepth: progress.gauntletBest?.bestDepth ?? 0,
-    gauntletBestShards: progress.gauntletBest?.bestShards ?? 0,
     battlegroundWins: progress.battlegroundStats?.wins ?? 0,
     battlegroundBestScore: progress.battlegroundStats?.bestScore ?? 0,
     battlegroundTotalMatches: progress.battlegroundStats?.totalMatches ?? 0,
@@ -64,15 +60,10 @@ function snapshot(progress: ProgressState): StatsSnapshot {
 }
 
 function statsRowFor(userId: string, progress: ProgressState) {
-  const gauntlet: GauntletBest =
-    progress.gauntletBest ?? { bestDepth: 0, bestShards: 0, runs: 0 };
   // eternity_clears stored as a per-boss count map.
   const eternityClears: Record<string, number> = { ...progress.bossClearCounts };
   return {
     user_id: userId,
-    gauntlet_best_depth: gauntlet.bestDepth,
-    gauntlet_best_shards: gauntlet.bestShards,
-    gauntlet_runs: gauntlet.runs,
     eternity_clears: eternityClears,
     infinite_pulls: sumValues(progress.infiniteCollection),
     battleground_wins: progress.battlegroundStats?.wins ?? 0,
@@ -109,7 +100,7 @@ function scheduleStatsUpsert(): void {
 }
 
 async function postActivity(
-  kind: 'boss_clear' | 'infinite_pull' | 'gauntlet_best' | 'set_completion' | 'title_unlocked' | 'battleground_result',
+  kind: 'boss_clear' | 'infinite_pull' | 'set_completion' | 'title_unlocked' | 'battleground_result',
   payload: Record<string, unknown>,
 ): Promise<void> {
   const sb = getSupabase();
@@ -149,15 +140,6 @@ function detectAndPostTransitions(prev: StatsSnapshot, next: StatsSnapshot): boo
         cardName: def?.name ?? defId,
       });
     }
-  }
-
-  // Gauntlet personal best.
-  if (next.gauntletBestDepth > prev.gauntletBestDepth) {
-    changed = true;
-    void postActivity('gauntlet_best', {
-      depth: next.gauntletBestDepth,
-      shards: next.gauntletBestShards,
-    });
   }
 
   // Battleground result: fires when total match count increases.
@@ -210,8 +192,6 @@ export function initStatsSync(): void {
     const driftChanged =
       next.bossClearTotal !== before.bossClearTotal
       || next.infiniteTotal !== before.infiniteTotal
-      || next.gauntletBestDepth !== before.gauntletBestDepth
-      || next.gauntletBestShards !== before.gauntletBestShards
       || next.battlegroundWins !== before.battlegroundWins
       || next.battlegroundBestScore !== before.battlegroundBestScore
       || next.battlegroundTotalMatches !== before.battlegroundTotalMatches;

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { uiTypography, type UiPalette } from '@/ui/theme';
 import { useStore, selectDeck, selectProfile, selectProgress, selectTurn } from '@/state/store';
+import { CardRegistry } from '@/cards/CardRegistry';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { resolveTitleBadge } from '@/data/profile/titleBadges';
 import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
@@ -27,6 +28,7 @@ interface MainMenuHubProps {
   onAchievements: () => void;
   onMastery: () => void;
   onFracture: () => void;
+  onEnigma: () => void;
   onSettings: () => void;
   /** Opens the Wished Upon A Star event landing page. */
   onEventWishedUponAStar?: () => void;
@@ -339,6 +341,16 @@ export default function MainMenuHub(props: MainMenuHubProps) {
     () => Object.values(progress.collection ?? {}).reduce((sum, count) => sum + (count ?? 0), 0),
     [progress.collection],
   );
+  const ownedByRarity = useMemo(() => {
+    const counts = { Eternal: 0, Infinite: 0 };
+    for (const [definitionId, copies] of Object.entries(progress.collection ?? {})) {
+      const rarity = CardRegistry.get(definitionId)?.rarity;
+      if (rarity === 'Eternal' || rarity === 'Infinite') counts[rarity] += copies ?? 0;
+    }
+    return counts;
+  }, [progress.collection]);
+  const infinitudeLocked = ownedByRarity.Eternal < 5;
+  const ascensionLocked = ownedByRarity.Infinite < 5;
 
   const [mounted, setMounted] = useState(false);
   const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
@@ -417,7 +429,6 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         {/* Left: utility icon strip */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <IconStripButton glyph="⚙" ariaLabel="Settings" onClick={props.onSettings} theme={uiTheme} />
-          <IconStripButton glyph="?" ariaLabel="Tutorial" onClick={props.onTutorial} theme={uiTheme} />
         </div>
         {/* Right: resource pills + clock */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -591,6 +602,24 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <div>Fracture</div>
           <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.7, textTransform: 'none' }}>Card-Born fast-track</div>
         </button>
+        <button
+          className="menu-tactile-btn enigma-golden-shimmer"
+          onClick={props.onEnigma}
+          disabled={ownedByRarity.Eternal < 1}
+          style={{
+            width: 150, minHeight: 52, padding: '10px 14px', borderRadius: 4,
+            border: '1px solid rgba(230, 190, 100, 0.7)',
+            background: 'linear-gradient(120deg, #6b4a12 0%, #d9a441 30%, #f8dd7a 50%, #d9a441 70%, #6b4a12 100%)',
+            color: '#1a1206', fontFamily: uiTypography.display, fontSize: 14,
+            letterSpacing: 1.4, textAlign: 'left', textTransform: 'uppercase',
+            cursor: ownedByRarity.Eternal < 1 ? 'not-allowed' : 'pointer',
+            opacity: ownedByRarity.Eternal < 1 ? 0.45 : 1,
+            backgroundSize: '200% 100%',
+          }}
+        >
+          <div>✦ Enigma</div>
+          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.78, textTransform: 'none' }}>{ownedByRarity.Eternal < 1 ? 'Locked — earn an Eternal card first' : 'Cosmic patterns of fate'}</div>
+        </button>
       </div>
 
       {/* ───────── Right: scattered glass shards ───────── */}
@@ -644,9 +673,10 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label={t('infinitude') || 'Infinitude'}
-            caption="Combine Eternal cards into Infinite-rarity cards"
+            caption={infinitudeLocked ? `Locked — Eternal cards ${ownedByRarity.Eternal}/5` : 'Combine Eternal cards into Infinite-rarity cards'}
             size="half"
             onClick={props.onInfinitude}
+            disabled={infinitudeLocked}
             clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
             glassAngle={142}
           />
@@ -685,10 +715,11 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label="Ascension"
-            caption="Push endgame raids to earn Transcendent cards"
+            caption={ascensionLocked ? `Locked — Infinite cards ${ownedByRarity.Infinite}/5` : 'Push endgame raids to earn Transcendent cards'}
             tone="primary"
             size="wide"
             onClick={props.onAscension}
+            disabled={ascensionLocked}
             clipPath="polygon(16px 0, 100% 0, 100% 100%, 0 100%)"
             glassAngle={145}
           />
@@ -738,8 +769,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         <div style={{ gridColumn: 'span 2', transform: 'rotate(-0.7deg)', filter: 'drop-shadow(0 5px 14px rgba(0,20,60,0.46))' }}>
           <TileButton
             theme={uiTheme}
-            label="Quests"
-            caption="Daily, weekly goals and Enigmas"
+            label="Challenges"
+            caption="Daily and weekly challenges"
             size="half"
             onClick={props.onQuests}
             clipPath="polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%)"

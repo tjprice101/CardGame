@@ -19,25 +19,9 @@ export interface BossDefinition {
 
 export type BossFightMode = 'idle' | 'active' | 'victory' | 'defeat';
 
-/**
- * What kind of fight run is currently active. Normal = single boss, Wake
- * Trial = modifier-stacked single boss, Gauntlet = endless chain of bosses
- * with HP carry-over, Null Raid = timed multi-encounter Ascension raid.
- */
-export type BossFightKind = 'normal' | 'trial' | 'gauntlet' | 'null_raid';
+/** What kind of fight run is currently active. */
+export type BossFightKind = 'normal' | 'null_raid';
 export type BossFightCoopRole = 'host' | 'guest';
-
-export interface TrialModifierRef {
-  kind:
-    | 'time_pressure'
-    | 'boss_hp_boost'
-    | 'durability_drain'
-    | 'no_angels'
-    | 'patience_lock';
-  payload?: string;
-  text: string;
-  rewardMult: number;
-}
 
 export interface SavedGameState {
   deck: DeckState;
@@ -69,16 +53,6 @@ export interface BossFightState {
   savedGameState: SavedGameState | null;
   /** Run mode flag. Defaults to 'normal' for any save that predates the field. */
   kind?: BossFightKind;
-  /** Active trial modifiers. Empty / absent for normal & gauntlet runs. */
-  modifiers?: TrialModifierRef[];
-  /** Reward multiplier locked in at fight start (trial only). */
-  trialRewardMult?: number;
-  /** Current depth in an endless gauntlet (0 = first boss). */
-  gauntletDepth?: number;
-  /** Shards banked over the course of a gauntlet, granted on loss / quit. */
-  gauntletShardsBanked?: number;
-  /** HP fraction (0..1) carried from the previous fight in a gauntlet. */
-  gauntletHpCarryFrac?: number;
   /** True when the active deck's plurality element matches the boss's weakElement. */
   bossWeaknessActive?: boolean;
   /** Co-op party size for Eternity's Wake fights (1..3 total players). */

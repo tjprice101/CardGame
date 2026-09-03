@@ -4,8 +4,7 @@
 // friends, then ranks them by a chosen metric. Lightweight: a single SELECT
 // on demand; no realtime channel (stats already upsert on transitions).
 //
-// Accepts an optional `metric` prop so endgame menus can show a focused board
-// (e.g. EndlessGauntletModal pins to depth/shards).
+// Accepts an optional `metric` prop so endgame menus can show a focused board.
 
 import { useEffect, useMemo, useState } from 'react';
 import { warmTheme } from '@/ui/theme';
@@ -19,8 +18,6 @@ import {
 import { AVATAR_BY_ID, DEFAULT_AVATAR_ID } from '@/data/profile/avatars';
 
 export type LeaderboardMetric =
-  | 'gauntletDepth'
-  | 'gauntletShards'
   | 'infinitePulls'
   | 'eternityClearsTotal'
   | 'battlegroundWins'
@@ -28,9 +25,6 @@ export type LeaderboardMetric =
 
 interface StatsRow {
   user_id: string;
-  gauntlet_best_depth: number | null;
-  gauntlet_best_shards: number | null;
-  gauntlet_runs: number | null;
   eternity_clears: Record<string, number> | null;
   infinite_pulls: number | null;
   battleground_wins: number | null;
@@ -42,9 +36,6 @@ interface LeaderboardEntry {
   displayName: string;
   avatarId: string;
   isSelf: boolean;
-  depth: number;
-  shards: number;
-  runs: number;
   infinite: number;
   eternityTotal: number;
   battlegroundWins: number;
@@ -52,8 +43,6 @@ interface LeaderboardEntry {
 }
 
 const METRIC_LABEL: Record<LeaderboardMetric, string> = {
-  gauntletDepth: 'Gauntlet Depth',
-  gauntletShards: 'Gauntlet Shards',
   infinitePulls: 'Infinite Pulls',
   eternityClearsTotal: 'Eternity Clears',
   battlegroundWins: 'Battleground Wins',
@@ -62,8 +51,6 @@ const METRIC_LABEL: Record<LeaderboardMetric, string> = {
 
 function metricValue(entry: LeaderboardEntry, metric: LeaderboardMetric): number {
   switch (metric) {
-    case 'gauntletDepth': return entry.depth;
-    case 'gauntletShards': return entry.shards;
     case 'infinitePulls': return entry.infinite;
     case 'eternityClearsTotal': return entry.eternityTotal;
     case 'battlegroundWins': return entry.battlegroundWins;
@@ -97,12 +84,12 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedMetric, setSelectedMetric] = useState<LeaderboardMetric>(
-    fixedMetric ?? metrics?.[0] ?? 'gauntletDepth',
+    fixedMetric ?? metrics?.[0] ?? 'infinitePulls',
   );
 
   const metric = fixedMetric ?? selectedMetric;
   const metricOptions = metrics ?? (
-    ['gauntletDepth', 'gauntletShards', 'infinitePulls', 'eternityClearsTotal', 'battlegroundWins', 'battlegroundBestScore'] as LeaderboardMetric[]
+    ['infinitePulls', 'eternityClearsTotal', 'battlegroundWins', 'battlegroundBestScore'] as LeaderboardMetric[]
   );
 
   useEffect(() => {
@@ -121,7 +108,7 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
     let cancelled = false;
     void sb
       .from('profile_stats')
-      .select('user_id, gauntlet_best_depth, gauntlet_best_shards, gauntlet_runs, eternity_clears, infinite_pulls, battleground_wins, battleground_best_score')
+      .select('user_id, eternity_clears, infinite_pulls, battleground_wins, battleground_best_score')
       .in('user_id', ids)
       .then(({ data, error }) => {
         if (cancelled) return;
@@ -154,9 +141,6 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
         displayName,
         avatarId,
         isSelf,
-        depth: s?.gauntlet_best_depth ?? 0,
-        shards: s?.gauntlet_best_shards ?? 0,
-        runs: s?.gauntlet_runs ?? 0,
         infinite: s?.infinite_pulls ?? 0,
         eternityTotal: sumValues(s?.eternity_clears ?? null),
         battlegroundWins: s?.battleground_wins ?? 0,
@@ -218,12 +202,6 @@ export default function FriendsLeaderboard({ metric: fixedMetric, metrics }: Pro
                 <div style={nameStyle}>
                   {e.displayName}{e.isSelf && <span style={selfChip}>YOU</span>}
                 </div>
-                {metric === 'gauntletDepth' && (
-                  <div style={subtle}>shards {e.shards} · runs {e.runs}</div>
-                )}
-                {metric === 'gauntletShards' && (
-                  <div style={subtle}>depth {e.depth} · runs {e.runs}</div>
-                )}
                 {metric === 'eternityClearsTotal' && (
                   <div style={subtle}>infinite {e.infinite}</div>
                 )}

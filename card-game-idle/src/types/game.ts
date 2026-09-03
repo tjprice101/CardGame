@@ -266,8 +266,6 @@ export interface ProgressState {
   packPityCounters?: Record<string, number>;
   /** Per-pack Boss Codex tracking. bossId → personal best stats. Save v13. */
   bossCodex?: Record<string, BossCodexEntry>;
-  /** Weekly trial completions. ISO-week-string → number of weekly trials completed. Save v13. */
-  weeklyTrialCompletions?: Record<string, number>;
   /** Player profile (name, current avatar, current title badge). Unlock status is derived from progress. */
   profile: PlayerProfileState;
   /** Daily login reward tracking. */
@@ -290,8 +288,6 @@ export interface ProgressState {
   lastCollectionViewedAt?: number;
   /** Rolling log of pack opens (most recent first, max 50). Save v14. */
   packOpenHistory?: PackOpenEntry[];
-  /** Endless Gauntlet personal bests. Save v14. */
-  gauntletBest?: GauntletBest;
   /** Artifact ids the player has purchased, mapped to total copies bought. Save v18 (was Record<string,true> in v17). */
   ownedArtifacts?: Record<string, number>;
   /** Universal Card-bane Light currency earned by dissolving cards. Save v18. */
@@ -341,12 +337,6 @@ export interface PackOpenEntry {
   packId: string;
   tier: 'pack' | 'box' | 'case';
   rarityCounts: Record<string, number>;
-}
-
-export interface GauntletBest {
-  bestDepth: number;
-  bestShards: number;
-  runs: number;
 }
 
 export interface PlayerProfileState {

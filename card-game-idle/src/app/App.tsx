@@ -23,8 +23,7 @@ const NullRaidArena = lazy(() => import('@/ui/ascension/NullRaidArena'));
 const NullRaidResults = lazy(() => import('@/ui/ascension/NullRaidResults'));
 const CardMasteryModal = lazy(() => import('@/ui/menus/CardMasteryModal'));
 const FractureModal = lazy(() => import('@/ui/menus/FractureModal'));
-const WakeTrialsModal = lazy(() => import('@/ui/menus/WakeTrialsModal'));
-const EndlessGauntletModal = lazy(() => import('@/ui/menus/EndlessGauntletModal'));
+const EnigmaModal = lazy(() => import('@/ui/menus/EnigmaModal'));
 const ChatWindow = lazy(() => import('@/ui/social/ChatWindow'));
 const ToastQueue = lazy(() => import('@/ui/components/ToastQueue'));
 const RadioNowPlaying = lazy(() => import('@/ui/components/RadioNowPlaying'));
@@ -63,6 +62,7 @@ import { useMessagesStore } from '@/state/messagesStore';
 import { MusicManager, type MusicTrackId } from '@/audio/MusicManager';
 import { MainMenuRadio } from '@/audio/MainMenuRadio';
 import { MainTurnRadio } from '@/audio/MainTurnRadio';
+import { EternityBossRadio } from '@/audio/EternityBossRadio';
 import type { NowPlayingEvent } from '@/ui/components/RadioNowPlaying';
 import { usePartyStore } from '@/state/partyStore';
 
@@ -183,12 +183,11 @@ export default function App() {
   const [showPlayerInfo, setShowPlayerInfo] = useState(false);
   const [showDailyReward, setShowDailyReward] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
+  const [showEnigma, setShowEnigma] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
   const [showMastery, setShowMastery] = useState(false);
   const [showFracture, setShowFracture] = useState(false);
   const [showAscension, setShowAscension] = useState(false);
-  const [showWakeTrials, setShowWakeTrials] = useState(false);
-  const [showEndlessGauntlet, setShowEndlessGauntlet] = useState(false);
   const [showTrialSummary, setShowTrialSummary] = useState(false);
   const [showAutosaveIndicator, setShowAutosaveIndicator] = useState(false);
   // Radio state — main menu
@@ -200,6 +199,7 @@ export default function App() {
   const [radioCurrentTrack, setRadioCurrentTrack] = useState<import('@/audio/MainMenuRadio').RadioTrackInfo | null>(null);
   // Radio state — main turn
   const turnRadioActiveRef = useRef(false);
+  const eternityRadioActiveRef = useRef(false);
   const turnNowPlayingEpochRef = useRef(0);
   const [turnNowPlayingEvent, setTurnNowPlayingEvent] = useState<NowPlayingEvent | null>(null);
   const [turnRadioPaused, setTurnRadioPaused] = useState(false);
@@ -327,11 +327,7 @@ export default function App() {
     } else if (bossFight.mode === 'active' && activeBoss) {
       label = bossFight.kind === 'null_raid'
         ? 'Null Raid'
-        : bossFight.kind === 'gauntlet'
-          ? 'Endless Gauntlet'
-          : bossFight.kind === 'trial'
-            ? 'Wake Trial'
-            : 'Boss Fight';
+        : 'Boss Fight';
       detail = `Fighting ${activeBoss.name}`;
       bossId = activeBoss.id;
       bossName = activeBoss.name;
@@ -347,7 +343,7 @@ export default function App() {
     } else if (showInfinitude) {
       label = 'Infinitude';
       detail = 'Hunting Infinite cards';
-    } else if (showEternitysWake || showWakeTrials || showEndlessGauntlet) {
+    } else if (showEternitysWake) {
       label = "Eternity's Wake";
       detail = 'Browsing boss challenges';
     } else if (showAscension) {
@@ -373,8 +369,6 @@ export default function App() {
     showCardStore,
     showInfinitude,
     showEternitysWake,
-    showWakeTrials,
-    showEndlessGauntlet,
     showAscension,
     showPlayerInfo,
     setPresenceActivity,
@@ -404,6 +398,7 @@ export default function App() {
     MusicManager.setVolume(vol);
     MainMenuRadio.setVolume(vol);
     MainTurnRadio.setVolume(vol);
+    EternityBossRadio.setVolume(vol);
   }, [settings.musicVolume]);
 
   // ── SFX volume ───────────────────────────────────────────────────────
@@ -464,11 +459,7 @@ export default function App() {
     let track: MusicTrackId | null = null;
     if (scene !== 'splash' && scene !== 'title') {
       if (bossFight.mode === 'active') {
-        if (bossFight.kind === 'gauntlet') {
-          track = (bossFight.gauntletDepth ?? 0) >= 5 ? 'battle-gauntlet-p2' : 'battle-gauntlet-p1';
-        } else if (bossFight.kind === 'trial') {
-          track = 'battle-wake-trials';
-        } else if (bossFight.kind === 'null_raid') {
+        if (bossFight.kind === 'null_raid') {
           if (bossFight.activeBossId === 'nr-neutrality-event-horizon-arbiter') {
             track = 'battle-null-raid-event-horizon-arbiter';
           } else if (bossFight.activeBossId === 'nr-neutrality-verdant-null') {
@@ -487,7 +478,7 @@ export default function App() {
         track = 'menu-shop';
       } else if (showInfinitude) {
         track = 'menu-infinitude';
-      } else if (showEternitysWake || showEndlessGauntlet || showWakeTrials) {
+      } else if (showEternitysWake) {
         track = 'menu-eternity';
       } else if (turn.phase === 'mulligan' || turn.phase === 'playing') {
         track = 'battle-normal';
@@ -515,6 +506,10 @@ export default function App() {
         setTurnRadioActive(false);
         MainTurnRadio.stop();
       }
+      if (eternityRadioActiveRef.current) {
+        eternityRadioActiveRef.current = false;
+        EternityBossRadio.stop();
+      }
     } else if (track === 'battle-normal') {
       // Route normal battle music through the turn radio playlist.
       if (!turnRadioActiveRef.current) {
@@ -535,6 +530,16 @@ export default function App() {
         setRadioActive(false);
         MainMenuRadio.stop();
       }
+      if (eternityRadioActiveRef.current) {
+        eternityRadioActiveRef.current = false;
+        EternityBossRadio.stop();
+      }
+    } else if (track === 'battle-eternity') {
+      if (!eternityRadioActiveRef.current) {
+        eternityRadioActiveRef.current = true;
+        EternityBossRadio.start(settings.musicVolume ?? 0.5);
+        MusicManager.stop();
+      }
     } else {
       if (radioActiveRef.current) {
         radioActiveRef.current = false;
@@ -546,6 +551,10 @@ export default function App() {
         setTurnRadioActive(false);
         MainTurnRadio.stop();
       }
+      if (eternityRadioActiveRef.current) {
+        eternityRadioActiveRef.current = false;
+        EternityBossRadio.stop();
+      }
       MusicManager.playTrack(track);
     }
   }, [
@@ -553,13 +562,10 @@ export default function App() {
     bossFight.mode,
     bossFight.kind,
     bossFight.activeBossId,
-    bossFight.gauntletDepth,
     showCardStore,
     showAscension,
     showInfinitude,
     showEternitysWake,
-    showEndlessGauntlet,
-    showWakeTrials,
     turn.phase,
   ]);
 
@@ -694,9 +700,8 @@ export default function App() {
         if (showQuests) { setShowQuests(false); e.preventDefault(); return; }
         if (showAchievements) { setShowAchievements(false); e.preventDefault(); return; }
         if (showMastery) { setShowMastery(false); e.preventDefault(); return; }
+        if (showEnigma) { setShowEnigma(false); e.preventDefault(); return; }
         if (showAscension) { setShowAscension(false); e.preventDefault(); return; }
-        if (showWakeTrials) { setShowWakeTrials(false); e.preventDefault(); return; }
-        if (showEndlessGauntlet) { setShowEndlessGauntlet(false); e.preventDefault(); return; }
         if (showDailyReward) { setShowDailyReward(false); e.preventDefault(); return; }
         // If in an active trial, show the summary instead of doing nothing
         if (trialDeck.mode === 'active') { setShowTrialSummary(true); e.preventDefault(); return; }
@@ -715,7 +720,7 @@ export default function App() {
       // an active turn is in play (mulligan OR playing), in regular or boss
       // fight modes.
       if (e.code === controls.swapExtraDeck && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showAscension;
+        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showAscension;
         if (anyModalOpen) return;
         const phase = useStore.getState().turn.phase;
         if (phase === 'playing' || phase === 'mulligan') {
@@ -733,7 +738,7 @@ export default function App() {
       ];
       for (const [code, slot] of abilitySlotMap) {
         if (e.code === code && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showAscension;
+          const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showAscension;
           if (anyModalOpen) return;
           e.preventDefault();
           useStore.getState().activateSetAbility(slot);
@@ -743,7 +748,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showWakeTrials, showEndlessGauntlet, showEventWuas, showAscension, settings.controls, trialDeck.mode]);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showEventWuas, showAscension, settings.controls, trialDeck.mode]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -758,7 +763,7 @@ export default function App() {
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
   const bossResultVisible = bossFight.kind !== 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat');
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showWakeTrials || showEndlessGauntlet || showEventWuas || showBattleground || showAscension || bossResultVisible;
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showBattleground || showAscension || bossResultVisible;
 
   // When a combat session starts (including co-op launches), force-close
   // open overlays so both clients transition into the arena immediately.
@@ -783,9 +788,8 @@ export default function App() {
     setShowQuests(false);
     setShowAchievements(false);
     setShowMastery(false);
+    setShowEnigma(false);
     setShowAscension(false);
-    setShowWakeTrials(false);
-    setShowEndlessGauntlet(false);
     setShowTrialSummary(false);
     usePartyStore.getState().closeHub();
   }, [bossFight.mode, battleground.mode, trialDeck.mode]);
@@ -888,6 +892,7 @@ export default function App() {
             onDeckBuilder={() => setShowDeckBuilder(true)}
             onPlayerInfo={() => setShowPlayerInfo(true)}
             onQuests={() => setShowQuests(true)}
+            onEnigma={() => setShowEnigma(true)}
             onAchievements={() => setShowAchievements(true)}
             onMastery={() => setShowMastery(true)}
             onFracture={() => setShowFracture(true)}
@@ -936,8 +941,6 @@ export default function App() {
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><EternitysWake
             onClose={() => setShowEternitysWake(false)}
-            onOpenWakeTrials={() => { setShowEternitysWake(false); setShowWakeTrials(true); }}
-            onOpenEndlessGauntlet={() => { setShowEternitysWake(false); setShowEndlessGauntlet(true); }}
           /></Suspense>
         </div>
       )}
@@ -1049,6 +1052,11 @@ export default function App() {
           <Suspense fallback={null}><QuestsModal onClose={() => setShowQuests(false)} /></Suspense>
         </div>
       )}
+      {showEnigma && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
+          <Suspense fallback={null}><EnigmaModal onClose={() => setShowEnigma(false)} /></Suspense>
+        </div>
+      )}
       {showAchievements && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><AchievementsModal onClose={() => setShowAchievements(false)} /></Suspense>
@@ -1062,16 +1070,6 @@ export default function App() {
       {showFracture && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><FractureModal onClose={() => setShowFracture(false)} /></Suspense>
-        </div>
-      )}
-      {showWakeTrials && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><WakeTrialsModal onClose={() => setShowWakeTrials(false)} /></Suspense>
-        </div>
-      )}
-      {showEndlessGauntlet && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 32, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><EndlessGauntletModal onClose={() => setShowEndlessGauntlet(false)} /></Suspense>
         </div>
       )}
 

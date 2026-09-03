@@ -42,11 +42,6 @@ function describe(event: ActivityEvent): string {
       const name = String(p.cardName ?? fallback);
       return `pulled an Infinite ${name}!`;
     }
-    case 'gauntlet_best': {
-      const depth = Number(p.depth ?? 0);
-      const shards = Number(p.shards ?? 0);
-      return `set a new Gauntlet best — depth ${depth}, ${shards} shards`;
-    }
     case 'set_completion':
       return `completed the ${String(p.setName ?? 'a')} set`;
     case 'title_unlocked':
@@ -60,7 +55,6 @@ function kindColor(kind: ActivityKind): string {
   switch (kind) {
     case 'boss_clear': return '#9a5a45';
     case 'infinite_pull': return '#b88a2a';
-    case 'gauntlet_best': return '#6a7a8c';
     case 'set_completion': return '#5a8a6a';
     case 'title_unlocked': return '#8c6aa0';
     default: return warmTheme.textMuted;

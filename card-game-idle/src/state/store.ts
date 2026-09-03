@@ -72,13 +72,8 @@ import {
   applyMasteryReward,
   computeGlobalResonanceScore,
   getBossFightMasteryPerCard,
-  getGauntletMasteryPerCard,
   getMasteryClaimKey,
-  MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
-  MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
 } from '@/systems/progression/cardMastery';
-import { getDailyTrials as _getDailyTrials, getWeeklyTrial, type TrialModifier } from '@/systems/progression/wakeTrials';
-void _getDailyTrials;
 import { getSpotlightPackId, getSpotlightPackCost } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost } from '@/systems/progression/dailyDeal';
 import { TITLE_BADGES, TITLE_BADGE_BY_ID } from '@/data/profile/titleBadges';
@@ -231,11 +226,9 @@ const defaultProgress: ProgressState = {
   cardMasteryClaims: {},
   packPityCounters: {},
   bossCodex: {},
-  weeklyTrialCompletions: {},
   recentlyAcquired: {},
   lastCollectionViewedAt: 0,
   packOpenHistory: [],
-  gauntletBest: { bestDepth: 0, bestShards: 0, runs: 0 },
   ownedArtifacts: {},
   cardbaneLight: 0,
   fractureShards: 0,
@@ -282,11 +275,6 @@ const defaultBossFight: BossFightState = {
   bossCurrentHp: 0,
   bossMaxHp: 0,
   kind: 'normal',
-  modifiers: [],
-  trialRewardMult: 1,
-  gauntletDepth: 0,
-  gauntletShardsBanked: 0,
-  gauntletHpCarryFrac: 1,
   coopPartySize: 1,
   fightCount: 1,
   damageDealtThisFight: 0,
@@ -399,16 +387,12 @@ interface StoreActions {
   loadState: (state: GameState) => void;
   resetToDefault: () => void;
   startBossFight: (bossId: string, savedDeckId: string, options?: {
-    kind?: 'normal' | 'trial' | 'gauntlet';
-    modifiers?: TrialModifier[];
-    trialRewardMult?: number;
+    kind?: 'normal';
     coopPartySize?: number;
     fightCount?: number;
     coopSessionId?: string;
     coopRole?: 'host' | 'guest';
   }) => void;
-  startWakeTrial: (bossId: string, savedDeckId: string, modifiers: TrialModifier[], rewardMult: number) => void;
-  startEndlessGauntlet: (savedDeckId: string) => void;
   tickBossTimer: (deltaSeconds: number) => void;
   forfeitBossFight: () => void;
   dismissBossResult: () => void;
@@ -491,7 +475,6 @@ interface StoreActions {
   /** Mark the collection viewer as seen  Eclears NEW badges. */
   markCollectionViewed: () => void;
   /** Update Endless Gauntlet personal bests after a run. */
-  recordGauntletRun: (depth: number, shards: number) => void;
   /** Set compact UI mode preference. */
   setCompactMode: (enabled: boolean) => void;
   /** Toggle keyword highlighting inside card rules text. */
@@ -983,74 +966,12 @@ function completeBossFight(s: Store, victory: boolean): void {
   const bossId = s.bossFight.activeBossId;
   if (bossId) eventBus.emit('boss:defeated', { bossId, victory });
   const newCooldowns = { ...s.bossFight.cooldowns };
-  if (bossId && s.bossFight.kind !== 'gauntlet' && s.bossFight.kind !== 'null_raid') newCooldowns[bossId] = Date.now() + 60_000;
+  if (bossId && s.bossFight.kind !== 'null_raid') newCooldowns[bossId] = Date.now() + 60_000;
 
   const kind = s.bossFight.kind ?? 'normal';
-  const trialMult = s.bossFight.trialRewardMult ?? 1;
-  const modifiers = s.bossFight.modifiers ?? [];
-  const gauntletShardsBanked = s.bossFight.gauntletShardsBanked ?? 0;
-  const gauntletDepth = s.bossFight.gauntletDepth ?? 0;
   const damageFirstMinute = s.bossFight.damageDealtFirstMinute ?? 0;
   const saved = s.bossFight.savedGameState;
   let rewardSummary: BossFightState['rewardSummary'] = null;
-
-  // ── Gauntlet continuation: on victory in gauntlet mode, advance to the
-  //    next boss instead of restoring saved state.
-  if (victory && kind === 'gauntlet' && bossId) {
-    const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
-    const nextIndex = (BOSS_DEFINITIONS.findIndex(b => b.id === bossId) + 1) % BOSS_DEFINITIONS.length;
-    const nextBoss = BOSS_DEFINITIONS[nextIndex];
-    if (boss && nextBoss) {
-      // Bank shards (scaled by depth) without granting them yet.
-      const earned = (boss.repeatClearShards ?? 5) + gauntletDepth * 3;
-      const newBanked = gauntletShardsBanked + earned;
-      // Carry HP fraction from current fight.
-      const hpFrac = s.bossFight.bossMaxHp > 0 ? Math.max(0.25, s.bossFight.bossCurrentHp > 0 ? 1 : 1) : 1;
-      // Continue with a fresh boss, slightly tougher each depth.
-      const nextBossBaseHp = isEventBossCategory(nextBoss.category)
-        ? ensureEventBossHpSnapshot(s.progress)
-        : nextBoss.hp;
-      const nextMaxHp = Math.round(nextBossBaseHp * (1 + gauntletDepth * 0.1));
-      // Reset board + turn but keep deck (shuffled fresh for next opponent).
-      const savedDeckSnapshot = s.bossFight.savedGameState; // preserve baseline
-      const snapshotDeck = savedDeckSnapshot?.deck;
-      const snapshotPool = snapshotDeck
-        ? [...snapshotDeck.hand, ...snapshotDeck.drawPile, ...snapshotDeck.discardPile]
-        : [...s.deck.hand, ...s.deck.drawPile, ...s.deck.discardPile];
-      s.deck = {
-        ...s.deck,
-        hand: [],
-        drawPile: DeckSystem.shuffle(snapshotPool),
-        discardPile: [],
-        extraDeck: snapshotDeck ? [...snapshotDeck.extraDeck] : [...s.deck.extraDeck],
-      };
-      s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
-      s.turn = { ...defaultTurn, phase: 'idle' };
-      s.bossFight = {
-        mode: 'active',
-        activeBossId: nextBoss.id,
-        bossCurrentHp: nextMaxHp,
-        bossMaxHp: nextMaxHp,
-        damageDealtThisFight: 0,
-        damageDealtFirstMinute: 0,
-        fightTimeRemaining: BOSS_FIGHT_ROUND_SECONDS,
-        cooldowns: newCooldowns,
-        savedGameState: savedDeckSnapshot,
-        kind: 'gauntlet',
-        modifiers: [],
-        trialRewardMult: 1,
-        gauntletDepth: gauntletDepth + 1,
-        gauntletShardsBanked: newBanked,
-        gauntletHpCarryFrac: hpFrac,
-        fightCount: 1,
-        rewardSummary: null,
-      };
-      // Count this clear toward quests.
-      emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
-      recompute(s);
-      return;
-    }
-  }
 
   // ── Null Raid encounter chain: on victory, advance to the next encounter.
   //    On defeat or last encounter victory, grant accumulated rewards.
@@ -1217,31 +1138,11 @@ function completeBossFight(s: Store, victory: boolean): void {
         entry.highestFightDamage = fightDamageTotal;
       }
       s.progress.bossCodex[boss.id] = entry;
-      // Trial reward bonus  Eapplied on top of base + featured multipliers.
-      if (kind === 'trial' && trialMult > 1) {
-        const base = (s.progress.bossClearCounts[boss.id] ?? 1) === 1 ? boss.firstClearShards : boss.repeatClearShards;
-        s.progress.aberratedShards += Math.round(base * (trialMult - 1));
-      }
-      // Weekly Trial cosmetic credit (no shards): if this trial matches the
-      // current week's rotating trial AND we haven't claimed this week yet,
-      // record the completion. This drives the milestone titles.
-      if (kind === 'trial') {
-        const weekly = getWeeklyTrial();
-        if (weekly.bossId === boss.id) {
-          if (!s.progress.weeklyTrialCompletions) s.progress.weeklyTrialCompletions = {};
-          const prior = s.progress.weeklyTrialCompletions[weekly.weekKey] ?? 0;
-          s.progress.weeklyTrialCompletions[weekly.weekKey] = prior + 1;
-        }
-      }
-      // Award card mastery for every card in the fight deck. Boss index drives
-      // the base amount (higher-tier bosses give more), then mode-specific
-      // caps keep rewards bounded (normal 20, trial 35).
+      // Award card mastery for every card in the fight deck.
       const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
       const baseMasteryPerCard = getBossFightMasteryPerCard(
         bossIdx,
         BOSS_DEFINITIONS.length,
-        kind === 'trial' ? trialMult : 1,
-        kind === 'trial' ? MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET : MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
       );
       const normalFightCount = kind === 'normal' ? Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1)) : 1;
       const masteryPerCard = baseMasteryPerCard * normalFightCount;
@@ -1282,39 +1183,6 @@ function completeBossFight(s: Store, victory: boolean): void {
     }
   }
 
-  // Gauntlet loss / quit: grant any banked shards.
-  if (kind === 'gauntlet' && gauntletShardsBanked > 0) {
-    s.progress.aberratedShards += gauntletShardsBanked;
-  }
-
-  // Gauntlet run ended. Card-light is only awarded for completed clear depth;
-  // a first-round defeat should not grant any mastery rewards, but a later loss
-  // after a successful clear still rewards the completed depth reached.
-  if (kind === 'gauntlet' && gauntletDepth > 0) {
-    if (!s.progress.gauntletBest) s.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
-    const best = s.progress.gauntletBest;
-    if (gauntletDepth > best.bestDepth) best.bestDepth = gauntletDepth;
-    if (gauntletShardsBanked > best.bestShards) best.bestShards = gauntletShardsBanked;
-    best.runs += 1;
-    // Award card mastery scaled by how many bosses were cleared this run,
-    // then clamp to the gauntlet cap (35 per card).
-    const gauntletMasteryPerCard = getGauntletMasteryPerCard(gauntletDepth);
-    const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, gauntletMasteryPerCard);
-    rewardSummary = {
-      shardsEarned: gauntletShardsBanked,
-      masteryPerCard: gauntletMasteryPerCard,
-      totalTierProgress: masteryAward.totalAppliedProgress,
-      resonanceGained: masteryAward.resonanceGain,
-      cardsTieredUp: masteryAward.cardsTieredUp,
-    };
-  } else if (kind === 'gauntlet') {
-    if (!s.progress.gauntletBest) s.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
-    const best = s.progress.gauntletBest;
-    if (gauntletDepth > best.bestDepth) best.bestDepth = gauntletDepth;
-    if (gauntletShardsBanked > best.bestShards) best.bestShards = gauntletShardsBanked;
-    best.runs += 1;
-  }
-
   const finalHp = s.bossFight.bossCurrentHp;
   const damageDealt = s.bossFight.damageDealtThisFight;
   const maxHp = s.bossFight.bossMaxHp;
@@ -1333,28 +1201,17 @@ function completeBossFight(s: Store, victory: boolean): void {
     cooldowns: newCooldowns,
     savedGameState: null,
     kind,
-    modifiers,
-    trialRewardMult: trialMult,
-    gauntletDepth,
-    gauntletShardsBanked,
-    gauntletHpCarryFrac: 1,
     coopPartySize,
     fightCount,
     coopSessionId,
     coopRole,
     rewardSummary,
   };
-  // Suppress reference to unused vars if linter cares
-  void modifiers;
   recompute(s);
 }
 
 function grantOblivion(s: Store, amount: number): void {
   if (amount <= 0) return;
-  // Trial: patience_lock reduces all Oblivion gains by 15%.
-  if (s.bossFight.mode === 'active' && s.bossFight.kind === 'trial' && s.bossFight.modifiers?.some(m => m.kind === 'patience_lock')) {
-    amount = Math.max(1, Math.floor(amount * 0.85));
-  }
   // Global Oblivion multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
   if (s.computedStats.globalOblivionMult > 0) {
     amount = Math.round(amount * (1 + s.computedStats.globalOblivionMult));
@@ -4695,18 +4552,6 @@ export const useStore = create<Store>()(
       });
     },
 
-    recordGauntletRun: (depth, shards) => {
-      set(state => {
-        if (!state.progress.gauntletBest) {
-          state.progress.gauntletBest = { bestDepth: 0, bestShards: 0, runs: 0 };
-        }
-        const best = state.progress.gauntletBest;
-        if (depth > best.bestDepth) best.bestDepth = depth;
-        if (shards > best.bestShards) best.bestShards = shards;
-        best.runs += 1;
-      });
-    },
-
     setCompactMode: (enabled) => {
       set(state => {
         state.settings.compactMode = enabled;
@@ -5071,10 +4916,9 @@ export const useStore = create<Store>()(
         if (!boss) return;
         const now = Date.now();
         const cooldown = s.bossFight.cooldowns[bossId];
-        // Gauntlet & trial runs ignore cooldown.
         const kind = options?.kind ?? 'normal';
-        if (kind === 'normal' && cooldown && cooldown > now) return;
-        if (kind !== 'gauntlet' && !isBossUnlocked(s.progress, bossId)) return;
+        if (cooldown && cooldown > now) return;
+        if (!isBossUnlocked(s.progress, bossId)) return;
         const savedDeck = s.progress.savedDecks.find(d => d.id === savedDeckId);
         if (!savedDeck) return;
 
@@ -5086,32 +4930,22 @@ export const useStore = create<Store>()(
           settings: { ...s.settings },
         };
 
-        const modifiers = options?.modifiers ?? [];
         const coopPartySize = Math.max(1, Math.min(3, options?.coopPartySize ?? 1));
         const requestedFightCount = Math.max(1, Math.min(3, Math.floor(options?.fightCount ?? 1)));
-        const fightCount = kind === 'normal' ? requestedFightCount : 1;
+        const fightCount = requestedFightCount;
 
         // Apply boss HP. Event bosses snapshot once per cycle and stay fixed.
         let maxHp = isEventBossCategory(boss.category)
           ? ensureEventBossHpSnapshot(s.progress)
           : boss.hp;
-        if (modifiers.some(m => m.kind === 'boss_hp_boost')) {
-          maxHp = Math.round(maxHp * 1.25);
-        }
         maxHp = Math.round(maxHp * (COOP_BOSS_HP_SCALE_BY_PARTY_SIZE[coopPartySize] ?? 1));
         maxHp = Math.round(maxHp * (BOSS_FIGHT_HP_SCALE_BY_COUNT[fightCount] ?? 1));
 
-        // Time pressure
-        let roundSeconds = BOSS_FIGHT_ROUND_SECONDS;
-        if (modifiers.some(m => m.kind === 'time_pressure')) {
-          roundSeconds = Math.max(60, roundSeconds - 30);
-        }
+        const roundSeconds = BOSS_FIGHT_ROUND_SECONDS;
 
         s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
         s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
-
-      // Chain start low modifier removed (chain mechanic purged in Phase 0).
 
         s.bossFight = {
           mode: 'active',
@@ -5124,11 +4958,6 @@ export const useStore = create<Store>()(
           cooldowns: { ...s.bossFight.cooldowns },
           savedGameState: savedState,
           kind,
-          modifiers,
-          trialRewardMult: options?.trialRewardMult ?? 1,
-          gauntletDepth: kind === 'gauntlet' ? 0 : 0,
-          gauntletShardsBanked: 0,
-          gauntletHpCarryFrac: 1,
           bossWeaknessActive: false,
           coopPartySize,
           fightCount,
@@ -5144,17 +4973,6 @@ export const useStore = create<Store>()(
       if (coopSessionId && sync.attached && sync.sessionId === coopSessionId) {
         void sync.requestResync();
       }
-    },
-
-    startWakeTrial: (bossId, savedDeckId, modifiers, rewardMult) => {
-      get().startBossFight(bossId, savedDeckId, { kind: 'trial', modifiers, trialRewardMult: rewardMult });
-    },
-
-    startEndlessGauntlet: (savedDeckId) => {
-      // Pick first boss deterministically by day for a stable opener.
-      const firstBoss = BOSS_DEFINITIONS[0];
-      if (!firstBoss) return;
-      get().startBossFight(firstBoss.id, savedDeckId, { kind: 'gauntlet', modifiers: [] });
     },
 
     startNullRaidProveYourself: (raidId, savedDeckId) => {

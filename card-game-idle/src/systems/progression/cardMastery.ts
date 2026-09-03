@@ -51,7 +51,6 @@ export interface MasteryRewardPreview {
 }
 
 export const MAX_MASTERY_PROGRESS_PER_CARD_BOSS = 20;
-export const MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET = 35;
 
 export function getBossBaseMasteryPerCard(bossIndex: number, totalBosses: number): number {
   const raw = Math.round(3 + (bossIndex / Math.max(1, totalBosses - 1)) * 32);
@@ -61,21 +60,12 @@ export function getBossBaseMasteryPerCard(bossIndex: number, totalBosses: number
 export function getBossFightMasteryPerCard(
   bossIndex: number,
   totalBosses: number,
-  trialRewardMultiplier = 1,
-  maxPerCard = MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
 ): number {
-  const mult = Math.min(Math.max(1, trialRewardMultiplier), 2.0);
   const baseRaw = Math.round(3 + (bossIndex / Math.max(1, totalBosses - 1)) * 32);
-  const raw = Math.round(baseRaw * mult);
-  return Math.min(maxPerCard, Math.max(1, raw));
+  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD_BOSS, Math.max(1, baseRaw));
 }
 
-export function getGauntletMasteryPerCard(depth: number): number {
-  const raw = Math.max(5, depth * 6);
-  return Math.min(MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET, raw);
-}
-
-export function getResonanceVictoryLine(masteryPerCard: number, _maxPerCard = MAX_MASTERY_PROGRESS_PER_CARD_BOSS): string {
+export function getResonanceVictoryLine(masteryPerCard: number): string {
   return `Awards +${masteryPerCard} Card-light for each card in your deck upon completion.`;
 }
 

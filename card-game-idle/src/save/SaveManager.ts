@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 42;
+export const CURRENT_VERSION = 43;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -784,6 +784,36 @@ const migrations: Record<number, Migration> = {
             stepsComplete: [false, false, false, false, false],
           };
         }
+      }
+    }
+    return data;
+  },
+
+  43: (data) => {
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (!progress) return data;
+    delete progress.weeklyTrialCompletions;
+    delete progress.gauntletBest;
+
+    const revokedTitleIds = new Set([
+      'title-weekly-pilgrim',
+      'title-weekly-warden',
+      'title-weekly-eternal',
+      'title-weekly-unbroken',
+    ]);
+    const profile = progress.profile as Record<string, unknown> | undefined;
+    if (profile) {
+      if (revokedTitleIds.has(String(profile.titleId))) profile.titleId = null;
+      const unlocked = profile.unlockedTitleBadgeIds;
+      if (Array.isArray(unlocked)) {
+        profile.unlockedTitleBadgeIds = unlocked.filter((id) => !revokedTitleIds.has(String(id)));
+      }
+    }
+    for (const key of ['achievementClaims', 'achievementUnlocks']) {
+      const records = progress[key] as Record<string, unknown> | undefined;
+      if (!records) continue;
+      for (const key of Object.keys(records)) {
+        if (revokedTitleIds.has(key)) delete records[key];
       }
     }
     return data;

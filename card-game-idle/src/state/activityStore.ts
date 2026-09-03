@@ -1,6 +1,6 @@
 // Activity feed store — Phase 5.
 //
-// Friend-visible activity events (boss clears, infinite pulls, gauntlet PBs).
+// Friend-visible activity events (boss clears and progression milestones).
 // Reads via the RLS policy installed in 0005_phase5_activity.sql, so a single
 // SELECT returns the user's own rows plus their accepted friends' rows.
 //
@@ -15,7 +15,6 @@ import { useSocialStore } from '@/state/socialStore';
 export type ActivityKind =
   | 'boss_clear'
   | 'infinite_pull'
-  | 'gauntlet_best'
   | 'set_completion'
   | 'title_unlocked'
   | 'battleground_result';

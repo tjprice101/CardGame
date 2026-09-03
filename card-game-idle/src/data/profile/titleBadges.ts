@@ -257,36 +257,6 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     isUnlocked: (p) => (p.dailyLogin?.totalClaims ?? 0) >= 50,
     group: 'milestone',
   },
-  // ── Weekly Trial ─────────────────────────────────────────────────────────
-  // Weekly Trial cosmetic titles (cosmetic-only rewards — no shards, no cards).
-  {
-    id: 'title-weekly-pilgrim',
-    text: 'Weekly Pilgrim',
-    description: 'Complete your first Weekly Trial.',
-    isUnlocked: (p) => Object.keys(p.weeklyTrialCompletions ?? {}).length >= 1,
-    group: 'milestone',
-  },
-  {
-    id: 'title-weekly-warden',
-    text: 'Warden of the Week',
-    description: 'Complete 4 different Weekly Trials.',
-    isUnlocked: (p) => Object.keys(p.weeklyTrialCompletions ?? {}).length >= 4,
-    group: 'milestone',
-  },
-  {
-    id: 'title-weekly-eternal',
-    text: 'Eternal of the Week',
-    description: 'Complete 12 different Weekly Trials.',
-    isUnlocked: (p) => Object.keys(p.weeklyTrialCompletions ?? {}).length >= 12,
-    group: 'milestone',
-  },
-  {
-    id: 'title-weekly-unbroken',
-    text: 'Unbroken Challenger',
-    description: 'Complete 24 different Weekly Trials.',
-    isUnlocked: (p) => Object.keys(p.weeklyTrialCompletions ?? {}).length >= 24,
-    group: 'milestone',
-  },
   // ── Collection milestones ────────────────────────────────────────────────
   {
     id: 'title-first-collection',

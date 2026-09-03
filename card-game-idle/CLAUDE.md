@@ -258,6 +258,16 @@ All patience logic lives in `src/state/store.ts`. The types are in `src/types/ca
 - `patienceThreshold?: number` — enables patience accumulation; threshold for bonus draw on attack
 - `patienceThresholdDraw?: number` — cards drawn when threshold is met
 
+## Removed Systems and Current Menu Gates
+
+- Wake Trials and Endless Gauntlet were fully removed. Do not reintroduce `trial` or `gauntlet` `BossFightKind` values, `weeklyTrialCompletions`, `gauntletBest`, or their UI/actions.
+- Ascension is dimmed and locked until the player owns 5 Infinite-rarity card copies. Infinitude is dimmed and locked until the player owns 5 Eternal-rarity card copies. Enigma is dimmed and locked until the player owns 1 Eternal-rarity card copy. Duplicate copies count; gates are derived from `progress.collection` and `CardRegistry`, never persisted as unlock flags.
+- Enigmas are presented by the standalone `src/ui/menus/EnigmaModal.tsx`; Daily and Weekly challenges remain in `QuestsModal.tsx`, whose visible title is "Challenges". The main-menu `?` icon was removed; the bottom-right Tutorial tile is the sole visible tutorial entry.
+- `SaveManager` v43 removes legacy trial/gauntlet progress and Weekly Trial title claims. A revoked equipped title is reset to `null`, leaving the player with the blank/default title.
+- Eternity's Wake boss music uses its own 5-track radio playlist with the same 1400 ms crossfade as the normal turn radio. The former trial/gauntlet track IDs are not valid `MusicTrackId` values.
+
+Neutrality card reworks must remain Patience-system-native. Do not replace Patience identity with generic draw chains or other unrelated templates.
+
 ---
 
 ## Balance Philosophy

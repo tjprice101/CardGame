@@ -406,7 +406,7 @@ function ModesBody() {
         <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Oblivion you generate is dealt as damage instead of banked.</ListItem>
         <ListItem label="Categories">Bosses are organized by set &mdash; Neutrality, Pyroabyss, Heavenly Light, Thornbound Plains, and so on. Use the tab strip at the top of the Wake menu to switch.</ListItem>
         <ListItem label="Rewards">First clear and repeat clears both grant Aberrated Shards and the boss's signature Eternal card. 60-second cooldown after any attempt.</ListItem>
-        <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. Wake Trials apply a bonus multiplier (capped at ×2). The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
+        <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
@@ -420,8 +420,17 @@ function ModesBody() {
         <div style={bodyTextStyle}>
           Open the Card Store to spend Oblivion on packs. Each pack has its own rarity weights and pity
           counters; the store displays them up front. Use the Deck Builder to assemble up to 50 cards plus an
-          Extra Deck of Angels (max 5, up to 2 copies per definition).
+          Extra Deck of Angels (up to 10 total, max 4 copies per definition).
         </div>
+      </div>
+
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>More Modes</div>
+        <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards.</ListItem>
+        <ListItem label="Fracture">Spend Fracture Shards to add Card-light to any card.</ListItem>
+        <ListItem label="Enigma">Enigma unlocks after you acquire 1 Eternal-rarity card.</ListItem>
+        <ListItem label="Infinitude">Infinitude unlocks after you acquire 5 Eternal-rarity cards.</ListItem>
+        <ListItem label="Ascension">Ascension unlocks after you acquire 5 Infinite-rarity cards.</ListItem>
       </div>
     </>
   );
@@ -482,14 +491,12 @@ function CardBornTierBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Tier Progress from Boss Content</div>
         <div style={bodyTextStyle}>
-          Completing Eternity's Wake boss fights, Wake Trials, and the Endless Gauntlet awards{' '}
+          Completing Eternity's Wake boss fights awards{' '}
           <Tag>Card-light to every card in your Main and Extra Deck</Tag>. This joins the Card-light earned
           through hand plays. The result screen shows the exact award, which changes by mode:
         </div>
         <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <ListItem label="Boss fights">Awards climb with each boss, from about 3 Card-light per card to the 20-card-light cap.</ListItem>
-          <ListItem label="Wake Trials">The trial multiplier boosts the boss award up to ×2, then the same 20-card-light cap applies.</ListItem>
-          <ListItem label="Endless Gauntlet">Start at 5 Card-light per card, then add 6 for depth reached, up to 35 per card.</ListItem>
           <ListItem label="Established Tiers">Cards already at a Tier gain 5% more Card-light for every Tier reached. T4 earns ×1.20; T7 earns ×1.35.</ListItem>
         </div>
         <div style={{ ...bodyTextStyle, marginTop: 8, color: PALETTE.inkSoft }}>

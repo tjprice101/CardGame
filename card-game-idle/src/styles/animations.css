@@ -1087,14 +1087,22 @@ html.reduced-motion .holofoil-card {
   100% { transform: translateY(-22px); opacity: 0; }
 }
 
-@keyframes ewGauntletSpiral {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 @keyframes ewTimerPulse {
   0%, 100% { box-shadow: 0 0 0 rgba(255, 80, 80, 0); }
   50%      { box-shadow: 0 0 16px rgba(255, 80, 80, 0.5); }
+}
+
+@keyframes enigmaGoldenShimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.enigma-golden-shimmer {
+  animation: enigmaGoldenShimmer 4.2s linear infinite;
+}
+
+html.reduced-motion .enigma-golden-shimmer {
+  animation: none;
 }
 
 html.reduced-motion .anim-ew-ember,
@@ -1104,7 +1112,6 @@ html.reduced-motion .anim-ew-boss-breathe,
 html.reduced-motion .anim-ew-hp-sheen,
 html.reduced-motion .anim-ew-rank-shimmer,
 html.reduced-motion .anim-ew-motivational,
-html.reduced-motion .anim-ew-gauntlet-spiral,
 html.reduced-motion .anim-ew-timer-pulse {
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;

@@ -4,9 +4,6 @@ import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   getBossFightMasteryPerCard,
-  getGauntletMasteryPerCard,
-  MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
-  MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET,
 } from '@/systems/progression/cardMastery';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import {
@@ -74,22 +71,14 @@ export default function BossResultModal() {
 
   const boss = BOSS_DEFINITIONS.find(b => b.id === bossFight.activeBossId);
   const kind = bossFight.kind ?? 'normal';
-  const gauntletDepth = bossFight.gauntletDepth ?? 0;
-  const trialMult = bossFight.trialRewardMult ?? 1;
   const normalFightCount = kind === 'normal' ? Math.max(1, Math.min(3, bossFight.fightCount ?? 1)) : 1;
 
-  // Compute mastery-per-card using the same capped helpers as the store.
   let masteryPerCard: number | null = null;
-  if (kind === 'gauntlet') {
-    masteryPerCard = getGauntletMasteryPerCard(gauntletDepth);
-  } else if (isVictory && boss) {
+  if (isVictory && boss) {
     const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(b => b.id === boss.id));
-    const trialFight = kind === 'trial';
     const baseMasteryPerCard = getBossFightMasteryPerCard(
       bossIdx,
       BOSS_DEFINITIONS.length,
-      trialFight ? trialMult : 1,
-      trialFight ? MAX_MASTERY_PROGRESS_PER_CARD_TRIAL_GAUNTLET : MAX_MASTERY_PROGRESS_PER_CARD_BOSS,
     );
     masteryPerCard = baseMasteryPerCard * normalFightCount;
   }

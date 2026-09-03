@@ -22,11 +22,7 @@ export type MusicTrackId =
   | 'battle-null-raid-event-horizon-arbiter'
   | 'battle-null-raid-verdant-null'
   | 'battle-null-raid-ember-eventide-tyrant'
-  | 'battle-eternity'
-  | 'battle-wake-trials'
-  | 'battle-gauntlet'
-  | 'battle-gauntlet-p1'
-  | 'battle-gauntlet-p2';
+  | 'battle-eternity';
 
 interface TrackDef {
   src: string;
@@ -48,10 +44,6 @@ const TRACKS: Record<MusicTrackId, TrackDef> = {
   'battle-null-raid-verdant-null':          { src: `${AUDIO_BASE}/null-raid-verdant-null-last-wish-executioner.mp3`, gain: 1.0 },
   'battle-null-raid-ember-eventide-tyrant': { src: `${AUDIO_BASE}/null-raid-ember-eventide-tyrant.mp3`, gain: 1.0 },
   'battle-eternity':   { src: `${AUDIO_BASE}/lifelong-fight-eternitys-wake-fight.mp3`,                gain: 1.0 },
-  'battle-wake-trials':{ src: `${AUDIO_BASE}/by-the-cards-everlasting-moment-wake-trials.mp3`,        gain: 1.0 },
-  'battle-gauntlet':   { src: `${AUDIO_BASE}/the-endless-dream-endless-gauntlet.mp3`,                 gain: 1.0 },
-  'battle-gauntlet-p1':{ src: `${AUDIO_BASE}/in-the-beginning-it-was-only-i-gauntlet-p1.mp3`,         gain: 1.0 },
-  'battle-gauntlet-p2':{ src: `${AUDIO_BASE}/but-in-the-end-we-only-have-eachother-gauntlet-p2.mp3`,  gain: 1.0 },
 };
 
 const CROSSFADE_MS = 900;
