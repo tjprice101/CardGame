@@ -17,8 +17,10 @@ const TX_ANGELS: CardDefinition[] = [
     description:
       'On summon: all Seraphim gain +16 Patience. ' +
       'While in your deck: all Patience gains are uncapped. ' +
-      'After 4 cards played: double all Patience and gain +3600 Oblivion.',
+      'After 4 cards played: double all Patience and gain +3600 Oblivion. ' +
+      'Signature: Aegis Uprising — replaces Slot 1.',
     artKey: 'tx_angel_starbound_null_archangel',
+    signatureAbility: { id: 'neutrality-signature-aegis-uprising', name: 'Aegis Uprising', replacesSlot: 1 },
     summonCost: ['inf-null-apex', 'tx-sera-null-entropy'],
     extraSummonConditions: [
       { type: 'board_definition_gte' as const, definitionId: 'tx-cher-null-sentinel', value: 1 },

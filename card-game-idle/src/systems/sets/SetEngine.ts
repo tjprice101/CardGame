@@ -1,11 +1,12 @@
 /**
  * Set Engine — types and registry for per-set ability systems.
  *
- * Each card set declares one `SetEngineDefinition` with four ability slots:
+ * Each card set declares one `SetEngineDefinition` with three ability slots:
  *   1 — Base    : always available (any card of the set in the deck)
  *   2 — Eternal : requires ≥1 Eternal card of this set in the deck
  *   3 — Infinite: requires ≥1 Infinite card of this set in the deck
- *   4 — Base    : requires a Transcendent-tier Angel of this set on the board (runtime-only check)
+ * Signatures are alternatives inside their target slot and are unlocked by
+ * the owning Angel's presence in the deck's extra deck.
  *
  * Cooldowns are measured in **cards played from hand** (not turns).
  * One-off abilities use `maxUsesPerRun: 1`; when depleted they cannot fire again
@@ -17,7 +18,7 @@ import type { DeckEntry, ExtraDeckEntry, GameState } from '@/types/game';
 // ── Gate types ─────────────────────────────────────────────────────────────────
 
 export type SetAbilityGate = 'base' | 'eternal' | 'infinite';
-export type SetAbilitySlot = 1 | 2 | 3 | 4;
+export type SetAbilitySlot = 1 | 2 | 3;
 
 // ── Ability definition ─────────────────────────────────────────────────────────
 
@@ -28,6 +29,8 @@ export interface SetAbilityDefinition {
   setId: string;
   /** Which slot (1–4) this ability fills. */
   slot: SetAbilitySlot;
+  /** Signature abilities replace the base ability in this slot when unlocked. */
+  signatureOwnerId?: string;
   /** Deck composition gate that must be met to use this ability. */
   gate: SetAbilityGate;
   /** Short player-facing name. */
@@ -62,8 +65,8 @@ export interface SetEngineDefinition {
   label: string;
   /** The one signature mechanic this set revolves around. */
   signatureMechanic: 'patience';
-  /** Exactly four abilities, one per slot. */
-  abilities: [SetAbilityDefinition, SetAbilityDefinition, SetAbilityDefinition, SetAbilityDefinition];
+  /** Base abilities, one per slot. Signature abilities may follow these entries. */
+  abilities: SetAbilityDefinition[];
   /** Set-scoped card membership; gates only trigger on cards belonging to THIS set. */
   membership: SetCardMembership;
 }
@@ -125,16 +128,49 @@ export function resolveActiveAbilitiesForDeck(
   setId: string,
   deckList: DeckEntry[],
   extraDeck: ExtraDeckEntry[],
+  abilityLoadout?: Partial<Record<SetAbilitySlot, string>>,
 ): Partial<Record<SetAbilitySlot, SetAbilityDefinition>> {
   const set = getSet(setId);
   if (!set) return {};
 
   const gates = resolveGatesForDeck(setId, deckList, extraDeck);
+  const extraDefinitionIds = new Set(extraDeck.map(entry => entry.definitionId));
   const result: Partial<Record<SetAbilitySlot, SetAbilityDefinition>> = {};
   for (const ability of set.abilities) {
-    if (gates.has(ability.gate)) {
-      result[ability.slot] = ability;
-    }
+    const isSignature = Boolean(ability.signatureOwnerId);
+    const isAvailable = isSignature
+      ? extraDefinitionIds.has(ability.signatureOwnerId!)
+      : gates.has(ability.gate);
+    if (!isAvailable) continue;
+
+    const selectedId = abilityLoadout?.[ability.slot];
+    if (selectedId === ability.id) result[ability.slot] = ability;
+    else if (!selectedId && !result[ability.slot]) result[ability.slot] = ability;
+  }
+  for (const ability of set.abilities) {
+    if (result[ability.slot] || ability.signatureOwnerId) continue;
+    if (gates.has(ability.gate)) result[ability.slot] = ability;
+  }
+  return result;
+}
+
+export function resolveAbilityOptionsForDeck(
+  setId: string,
+  deckList: DeckEntry[],
+  extraDeck: ExtraDeckEntry[],
+): Partial<Record<SetAbilitySlot, SetAbilityDefinition[]>> {
+  const set = getSet(setId);
+  if (!set) return {};
+
+  const gates = resolveGatesForDeck(setId, deckList, extraDeck);
+  const extraDefinitionIds = new Set(extraDeck.map(entry => entry.definitionId));
+  const result: Partial<Record<SetAbilitySlot, SetAbilityDefinition[]>> = {};
+  for (const ability of set.abilities) {
+    const isAvailable = ability.signatureOwnerId
+      ? extraDefinitionIds.has(ability.signatureOwnerId)
+      : gates.has(ability.gate);
+    if (!isAvailable) continue;
+    (result[ability.slot] ??= []).push(ability);
   }
   return result;
 }

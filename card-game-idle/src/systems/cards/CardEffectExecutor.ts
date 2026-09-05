@@ -32,6 +32,7 @@ export interface ExecutionResult {
   board: BoardState;
   oblivionBonus: number;    // direct Oblivion bonus from card effects (beyond chain calc)
   pendingEffect: PendingEffect | null;
+  pendingEffects: PendingEffect[];
   canPlay: boolean;         // false if radiance_spend failed
 }
 
@@ -149,7 +150,7 @@ export class CardEffectExecutor {
   ): ExecutionResult {
     const def = CardRegistry.get(deckCard.definitionId);
     if (!def) {
-      return { deck, turn, board, oblivionBonus: 0, pendingEffect: null, canPlay: true };
+      return { deck, turn, board, oblivionBonus: 0, pendingEffect: null, pendingEffects: [], canPlay: true };
     }
 
     const effects: CardEffect[] = options.effects ?? (
@@ -176,7 +177,7 @@ export class CardEffectExecutor {
     };
     let mutableBoard = cloneBoard(board);
     let oblivionBonus = 0;
-    let pendingEffect: PendingEffect | null = null;
+    const pendingEffects: PendingEffect[] = [];
 
     const multiplier = 1;
 
@@ -268,15 +269,13 @@ export class CardEffectExecutor {
         }
 
         case 'oblivion_from_target_unit_patience': {
-          if (pendingEffect === null) {
-            pendingEffect = {
-              type: 'neutralizing_bane_choose_target',
-              sourceDefinitionId: deckCard.definitionId,
-              sourceInstanceId: deckCard.instanceId,
-              multiplier: effect.multiplier,
-              masteryMultiplierCap: effect.masteryMultiplierCap,
-            };
-          }
+          pendingEffects.push({
+            type: 'neutralizing_bane_choose_target',
+            sourceDefinitionId: deckCard.definitionId,
+            sourceInstanceId: deckCard.instanceId,
+            multiplier: effect.multiplier,
+            masteryMultiplierCap: effect.masteryMultiplierCap,
+          });
           break;
         }
 
@@ -301,19 +300,15 @@ export class CardEffectExecutor {
         }
 
         case 'discard_choice':
-          if (pendingEffect === null) {
-            pendingEffect = { type: 'discard_choice', count: effect.value, sourceCard: deckCard.instanceId };
-          }
+          pendingEffects.push({ type: 'discard_choice', count: effect.value, sourceCard: deckCard.instanceId });
           break;
 
         case 'discard_draw':
-          if (pendingEffect === null) {
-            pendingEffect = {
-              type: 'discard_choice',
-              count: effect.discard,
-              sourceCard: `${deckCard.instanceId}:draw:${effect.draw}`,
-            };
-          }
+          pendingEffects.push({
+            type: 'discard_choice',
+            count: effect.discard,
+            sourceCard: `${deckCard.instanceId}:draw:${effect.draw}`,
+          });
           break;
 
         case 'shuffle_discard':
@@ -339,9 +334,7 @@ export class CardEffectExecutor {
                 mutableTurn = echoResult.turn;
                 mutableBoard = echoResult.board;
                 oblivionBonus += echoResult.oblivionBonus;
-                if (echoResult.pendingEffect !== null && pendingEffect === null) {
-                  pendingEffect = echoResult.pendingEffect;
-                }
+                pendingEffects.push(...echoResult.pendingEffects);
               }
             }
           }
@@ -349,25 +342,25 @@ export class CardEffectExecutor {
         }
 
         case 'look_top_take':
-          if (pendingEffect === null) {
+          {
             const peeked = TurnSystem.peekTop(mutableDeck, effect.look);
             if (peeked.length > 0) {
-              pendingEffect = { type: 'look_top_take', cards: peeked, take: effect.take };
+              pendingEffects.push({ type: 'look_top_take', cards: peeked, take: effect.take });
             }
           }
           break;
 
         case 'look_top_take_drop':
-          if (pendingEffect === null) {
+          {
             const peeked = TurnSystem.peekTop(mutableDeck, effect.look);
             if (peeked.length > 0) {
-              pendingEffect = { type: 'look_top_take_drop', cards: peeked, take: effect.take, drop: effect.drop };
+              pendingEffects.push({ type: 'look_top_take_drop', cards: peeked, take: effect.take, drop: effect.drop });
             }
           }
           break;
 
         case 'look_top_take_type':
-          if (pendingEffect === null) {
+          {
             const peeked = TurnSystem.peekTop(mutableDeck, effect.look);
             if (peeked.length > 0) {
               const sameSetPeeked = sourceSetKey
@@ -376,94 +369,88 @@ export class CardEffectExecutor {
                     return !!d && 'Neutrality' === sourceSetKey;
                   })
                 : peeked;
-              pendingEffect = { type: 'look_top_take_type', cards: sameSetPeeked, filter: effect.filter, take: effect.take ?? 1 };
+              pendingEffects.push({ type: 'look_top_take_type', cards: sameSetPeeked, filter: effect.filter, take: effect.take ?? 1 });
             }
           }
           break;
 
         case 'search_deck_by_type': {
-          if (pendingEffect === null) {
-            const matching = mutableDeck.drawPile.filter(card => {
-              const d = CardRegistry.get(card.definitionId);
-              if (!d) return false;
-              if (sourceSetKey && 'Neutrality' !== sourceSetKey) return false;
-              return effect.filter.some(f =>
-                f === 'Seraphim' ? d.type === 'Seraphim'
-                : f === 'Cherubim'  ? d.type === 'Cherubim'
-                : f === 'Ophanim' ? d.type === 'Ophanim'
-                : false
-              );
-            });
-            if (matching.length > 0) {
-              pendingEffect = { type: 'search_deck', cards: matching, filter: effect.filter, take: 1 };
-            }
+          const matching = mutableDeck.drawPile.filter(card => {
+            const d = CardRegistry.get(card.definitionId);
+            if (!d) return false;
+            if (sourceSetKey && 'Neutrality' !== sourceSetKey) return false;
+            return effect.filter.some(f =>
+              f === 'Seraphim' ? d.type === 'Seraphim'
+              : f === 'Cherubim'  ? d.type === 'Cherubim'
+              : f === 'Ophanim' ? d.type === 'Ophanim'
+              : false
+            );
+          });
+          if (matching.length > 0) {
+            pendingEffects.push({ type: 'search_deck', cards: matching, filter: effect.filter, take: 1 });
           }
           break;
         }
 
         case 'search_deck_distinct_types': {
-          if (pendingEffect === null) {
-            const matching = mutableDeck.drawPile.filter(card => {
-              const d = CardRegistry.get(card.definitionId);
-              if (!d) return false;
-              if (sourceSetKey && 'Neutrality' !== sourceSetKey) return false;
-              return effect.filter.some(f =>
-                f === 'Seraphim' ? d.type === 'Seraphim'
-                : f === 'Cherubim' ? d.type === 'Cherubim'
-                : f === 'Ophanim' ? d.type === 'Ophanim'
-                : false
-              );
+          const matching = mutableDeck.drawPile.filter(card => {
+            const d = CardRegistry.get(card.definitionId);
+            if (!d) return false;
+            if (sourceSetKey && 'Neutrality' !== sourceSetKey) return false;
+            return effect.filter.some(f =>
+              f === 'Seraphim' ? d.type === 'Seraphim'
+              : f === 'Cherubim' ? d.type === 'Cherubim'
+              : f === 'Ophanim' ? d.type === 'Ophanim'
+              : false
+            );
+          });
+          const takePerType = Math.max(1, effect.takePerType ?? 1);
+          const maxTake = effect.filter.length * takePerType;
+          if (matching.length > 0) {
+            pendingEffects.push({
+              type: 'search_deck',
+              cards: matching,
+              filter: effect.filter,
+              take: Math.min(maxTake, matching.length),
+              minTake: 0,
+              distinctTypes: true,
             });
-            const takePerType = Math.max(1, effect.takePerType ?? 1);
-            const maxTake = effect.filter.length * takePerType;
-            if (matching.length > 0) {
-              pendingEffect = {
-                type: 'search_deck',
-                cards: matching,
-                filter: effect.filter,
-                take: Math.min(maxTake, matching.length),
-                minTake: 0,
-                distinctTypes: true,
-              };
-            }
           }
           break;
         }
 
         case 'salvage_by_type': {
-          if (pendingEffect === null) {
-            const matching = mutableDeck.discardPile.filter(card => {
-              const d = CardRegistry.get(card.definitionId);
-              if (!d) return false;
-              if (sourceSetKey && 'Neutrality' !== sourceSetKey) return false;
-              return effect.filter.some(f =>
-                f === 'Seraphim' ? d.type === 'Seraphim'
-                : f === 'Cherubim'  ? d.type === 'Cherubim'
-                : f === 'Ophanim' ? d.type === 'Ophanim'
-                : false
-              );
-            });
-            if (matching.length === 0) return false;
-            pendingEffect = {
-              type: 'salvage',
-              cards: matching,
-              filter: effect.filter,
-              count: effect.filter.length > 1 ? effect.filter.length : 1,
-            };
-          }
+          const matching = mutableDeck.discardPile.filter(card => {
+            const d = CardRegistry.get(card.definitionId);
+            if (!d) return false;
+            if (sourceSetKey && 'Neutrality' !== sourceSetKey) return false;
+            return effect.filter.some(f =>
+              f === 'Seraphim' ? d.type === 'Seraphim'
+              : f === 'Cherubim'  ? d.type === 'Cherubim'
+              : f === 'Ophanim' ? d.type === 'Ophanim'
+              : false
+            );
+          });
+          if (matching.length === 0) return false;
+          pendingEffects.push({
+            type: 'salvage',
+            cards: matching,
+            filter: effect.filter,
+            count: effect.filter.length > 1 ? effect.filter.length : 1,
+          });
           break;
         }
 
         case 'salvage_any':
-          if (pendingEffect === null) {
-            pendingEffect = { type: 'salvage', cards: [...mutableDeck.discardPile], filter: null, count: 1 };
+          if (mutableDeck.discardPile.length > 0) {
+            pendingEffects.push({ type: 'salvage', cards: [...mutableDeck.discardPile], filter: null, count: 1 });
           }
           break;
 
         case 'salvage_by_id': {
-          if (pendingEffect === null) {
-            const matching = mutableDeck.discardPile.filter(card => card.definitionId === effect.targetId);
-            pendingEffect = { type: 'salvage', cards: matching, filter: null, count: 1 };
+          const matching = mutableDeck.discardPile.filter(card => card.definitionId === effect.targetId);
+          if (matching.length > 0) {
+            pendingEffects.push({ type: 'salvage', cards: matching, filter: null, count: 1 });
           }
           break;
         }
@@ -486,7 +473,7 @@ export class CardEffectExecutor {
     for (const effect of effects) {
       const ok = processEffect(effect);
       if (!ok) {
-        return { deck, turn, board, oblivionBonus: 0, pendingEffect: null, canPlay: false };
+        return { deck, turn, board, oblivionBonus: 0, pendingEffect: null, pendingEffects: [], canPlay: false };
       }
     }
 
@@ -522,7 +509,15 @@ export class CardEffectExecutor {
       unit.patienceStacks = clampPatienceStacks(unit.patienceStacks ?? 0, hasUncappedNeutralityGains);
     }
 
-    return { deck: mutableDeck, turn: mutableTurn, board: mutableBoard, oblivionBonus, pendingEffect, canPlay: true };
+    return {
+      deck: mutableDeck,
+      turn: mutableTurn,
+      board: mutableBoard,
+      oblivionBonus,
+      pendingEffect: pendingEffects[0] ?? null,
+      pendingEffects,
+      canPlay: true,
+    };
   }
 
   static evaluateCondition(

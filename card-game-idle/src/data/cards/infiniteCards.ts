@@ -153,8 +153,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
     type: 'Angel',
     rarity: 'Infinite',
     name: 'Sovereign Void',
-    description: 'On summon: All Seraphim on board gain +20 Patience; Gain Oblivion scaled by total Patience and peak Patience. After 4 cards played: All Seraphim on board gain +4 Patience; Double all Patience on the board; All Seraphim on board gain +14 Patience; Draw 2 cards; Gain Oblivion scaled by total Patience and peak Patience. While on board: +950 Oblivion for each Seraphim on board while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +20 Patience; Gain Oblivion scaled by total Patience and peak Patience. After 4 cards played: All Seraphim on board gain +4 Patience; Double all Patience on the board; All Seraphim on board gain +14 Patience; Draw 2 cards; Gain Oblivion scaled by total Patience and peak Patience. While on board: +950 Oblivion for each Seraphim on board while on board. Signature: Null Sovereign\'s Decree — replaces Slot 3. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
     artKey: 'inf_sovereign_void',
+    signatureAbility: { id: 'neutrality-signature-null-sovereigns-decree', name: "Null Sovereign's Decree", replacesSlot: 3 },
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 3 }],
@@ -199,8 +200,9 @@ export const infiniteAngelCards: AngelDefinition[] = [
     type: 'Angel',
     rarity: 'Infinite',
     name: 'Eternity Rupture',
-    description: 'On summon: All Seraphim on board gain +16 Patience; All Seraphim on board gain +2 Patience; Shuffle discard into deck. After 6 cards played: All Seraphim on board gain +2 Patience; All Seraphim on board gain +18 Patience; Shuffle discard into deck; Salvage any 1 card; Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience. While on board: +1450 Oblivion whenever you play an Ophanim while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +16 Patience; All Seraphim on board gain +2 Patience; Shuffle discard into deck. After 6 cards played: All Seraphim on board gain +2 Patience; All Seraphim on board gain +18 Patience; Shuffle discard into deck; Salvage any 1 card; Gain Oblivion scaled by Patience-bearing units, conversion sources, and peak Patience. While on board: +1450 Oblivion whenever you play an Ophanim while on board. Signature: Ruptured Continuum — replaces Slot 3. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
     artKey: 'inf_eternity_rupture',
+    signatureAbility: { id: 'neutrality-signature-ruptured-continuum', name: 'Ruptured Continuum', replacesSlot: 3 },
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 },

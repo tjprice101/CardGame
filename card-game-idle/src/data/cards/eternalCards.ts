@@ -36,7 +36,8 @@ export const eternalOphanimCards: OphanimDefinition[] = [
     effects: [
       { type: 'patience_gain_all', value: 7 },
       { type: 'patience_gain_all', value: 3 },
-      { type: 'oblivion_flat', value: 350 }],
+      { type: 'oblivion_flat', value: 250 },
+      { type: 'discard_choice', value: 1 }],
   },
   {
     definitionId: 'btei-axiom-of-oblivion',
@@ -157,8 +158,9 @@ export const eternalAngels: AngelDefinition[] = [
     type: 'Angel',
     rarity: 'Eternal',
     name: 'Convergence of Eternity',
-    description: 'On summon: All Seraphim on board gain +100 Patience; All Seraphim on board gain +1 Patience. After 5 cards played: All Seraphim on board gain +1 Patience; Salvage any 1 card. While on board: +10 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +100 Patience; All Seraphim on board gain +1 Patience. After 5 cards played: All Seraphim on board gain +1 Patience; Salvage any 1 card. While on board: +10 Oblivion per card played while on board. Signature: Convergent Refrain — replaces Slot 1. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
     artKey: 'btei_convergence_of_eternity',
+    signatureAbility: { id: 'neutrality-signature-convergent-refrain', name: 'Convergent Refrain', replacesSlot: 1 },
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 2 }],
@@ -204,8 +206,9 @@ export const eternalAngels: AngelDefinition[] = [
     type: 'Angel',
     rarity: 'Eternal',
     name: 'Omniscient Fracture',
-    description: 'On summon: All Seraphim on board gain +8 Patience; All Seraphim on board gain +3 Patience; +600 Oblivion. After 6 cards played: All Seraphim on board gain +1 Patience; All Seraphim on board gain +12 Patience; Seraphim attacks preserve 30% of consumed Patience this turn; +1000 Oblivion. While on board: +200 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +8 Patience; All Seraphim on board gain +3 Patience; +600 Oblivion. After 6 cards played: All Seraphim on board gain +1 Patience; All Seraphim on board gain +12 Patience; Seraphim attacks preserve 30% of consumed Patience this turn; +1000 Oblivion. While on board: +200 Oblivion per card played while on board. Signature: Parallax Verdict — replaces Slot 2. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
     artKey: 'btei_omniscient_fracture',
+    signatureAbility: { id: 'neutrality-signature-parallax-verdict', name: 'Parallax Verdict', replacesSlot: 2 },
     summonCost: [],
     extraSummonConditions: [
       { type: 'seraphim_on_board_gte', value: 3 }],
@@ -316,8 +319,9 @@ export const expansionEternalCards: Array<OphanimDefinition | SeraphimDefinition
     type: 'Angel',
     rarity: 'Eternal',
     name: 'Axiom Maw',
-    description: 'On summon: All Seraphim on board gain +10 Patience; All Seraphim on board gain +1 Patience; +1400 Oblivion. After 4 cards played: All Seraphim on board gain +2 Patience; Double all Patience on the board; All Seraphim on board gain +3 Patience; +1500 Oblivion. While on board: +125 Oblivion per card played while on board. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
+    description: 'On summon: All Seraphim on board gain +10 Patience; All Seraphim on board gain +1 Patience; +1400 Oblivion. After 4 cards played: All Seraphim on board gain +2 Patience; Double all Patience on the board; All Seraphim on board gain +3 Patience; +1500 Oblivion. While on board: +125 Oblivion per card played while on board. Signature: Axiomatic Devour — replaces Slot 1. Patience: accumulates +1 stack per card played (boosted by Patient Light and adjacent Cherubim); on attack, each stack ↁE+2% base Oblivion (stacks then reset)',
     artKey: 'btei_neutrality_axiom_maw',
+    signatureAbility: { id: 'neutrality-signature-axiomatic-devour', name: 'Axiomatic Devour', replacesSlot: 1 },
     summonCost: [],
     extraSummonConditions: [{ type: 'seraphim_on_board_gte', value: 2 }],
     onSummonEffects: [{ type: 'patience_gain_all', value: 10 }, { type: 'patience_gain_all', value: 1 }, { type: 'oblivion_flat', value: 400 }],

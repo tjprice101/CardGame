@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { NEUTRALITY_SET } from '@/systems/sets/neutrality/NeutralityAbilities';
-import { resolveGatesForDeck } from '@/systems/sets/SetEngine';
+import { resolveAbilityOptionsForDeck, resolveGatesForDeck } from '@/systems/sets/SetEngine';
 import type { SetAbilityGate } from '@/systems/sets/SetEngine';
 import type { DeckEntry, ExtraDeckEntry, SavedDeck } from '@/types/game';
 
@@ -20,7 +20,7 @@ interface Props {
   deckList: DeckEntry[];
   extraDeckList: ExtraDeckEntry[];
   activeDeck: SavedDeck | null;
-  setDeckAbilityLoadout: (deckId: string, slot: 1 | 2 | 3 | 4, abilityId: string) => void;
+  setDeckAbilityLoadout: (deckId: string, slot: 1 | 2 | 3, abilityId: string) => void;
 }
 
 export default function DeckBuilderAbilitiesTab({
@@ -31,6 +31,10 @@ export default function DeckBuilderAbilitiesTab({
 }: Props) {
   const gates = useMemo(
     () => resolveGatesForDeck(NEUTRALITY_SET.id, deckList, extraDeckList),
+    [deckList, extraDeckList],
+  );
+  const abilityOptions = useMemo(
+    () => resolveAbilityOptionsForDeck(NEUTRALITY_SET.id, deckList, extraDeckList),
     [deckList, extraDeckList],
   );
 
@@ -46,13 +50,13 @@ export default function DeckBuilderAbilitiesTab({
         Set Ability Loadout — Neutrality
       </div>
 
-      {NEUTRALITY_SET.abilities.map(ability => {
+      {NEUTRALITY_SET.abilities.filter(ability => !ability.signatureOwnerId).map(ability => {
         const gateMet = gates.has(ability.gate);
         const color = GATE_COLORS[ability.gate];
-        // Empty string = explicitly disabled; undefined = default (active when gate met)
-        const explicit = activeDeck?.abilityLoadout?.[ability.slot];
-        const isDisabled = explicit === '';
-        const isActive = gateMet && !isDisabled;
+        const options = abilityOptions[ability.slot] ?? [ability];
+        const selectedId = activeDeck?.abilityLoadout?.[ability.slot];
+        const selectedAbility = options.find(option => option.id === selectedId) ?? (gateMet ? ability : undefined);
+        const isActive = Boolean(selectedAbility);
 
         return (
           <div
@@ -82,7 +86,7 @@ export default function DeckBuilderAbilitiesTab({
                   fontSize: 13, fontWeight: 'bold', lineHeight: 1,
                   color: isActive ? '#e8f4ff' : 'rgba(200,220,245,0.48)',
                 }}>
-                  {ability.label}
+                  {selectedAbility?.label ?? ability.label}
                 </div>
                 <div style={{
                   fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', marginTop: 3,
@@ -94,21 +98,20 @@ export default function DeckBuilderAbilitiesTab({
                 </div>
               </div>
               {gateMet && activeDeck ? (
-                <button
+                <select
                   style={{
-                    padding: '4px 10px', borderRadius: 6, fontSize: 10,
-                    border: `1px solid ${isActive ? color + '70' : 'rgba(72,128,190,0.30)'}`,
-                    background: isActive ? color + '1a' : 'rgba(72,128,190,0.07)',
-                    color: isActive ? color : 'rgba(190,215,245,0.48)',
-                    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 0.5,
-                    transition: 'all 0.15s',
+                    padding: '4px 8px', borderRadius: 6, fontSize: 10,
+                    border: `1px solid ${color}70`,
+                    background: 'rgba(8,10,16,0.88)', color,
+                    cursor: 'pointer', fontFamily: 'Georgia, serif', letterSpacing: 0.3,
                   }}
-                  onClick={() => setDeckAbilityLoadout(
-                    activeDeck.id, ability.slot, isDisabled ? ability.id : '',
-                  )}
+                  value={selectedAbility?.id ?? ability.id}
+                  onChange={event => setDeckAbilityLoadout(activeDeck.id, ability.slot, event.target.value)}
                 >
-                  {isActive ? 'Active' : 'Disabled'}
-                </button>
+                  {options.map(option => (
+                    <option key={option.id} value={option.id}>{option.label}</option>
+                  ))}
+                </select>
               ) : (
                 <div style={{
                   padding: '4px 10px', borderRadius: 6, fontSize: 10,
@@ -122,8 +125,13 @@ export default function DeckBuilderAbilitiesTab({
               )}
             </div>
             <div style={{ fontSize: 11, color: 'rgba(200,225,245,0.72)', lineHeight: 1.5, paddingLeft: 38 }}>
-              {ability.description}
+              {selectedAbility?.description ?? ability.description}
             </div>
+            {options.length > 1 && (
+              <div style={{ fontSize: 9, color: 'rgba(220,220,220,0.58)', marginTop: 7, paddingLeft: 38 }}>
+                {options.length - 1} Angel signature{options.length === 2 ? '' : 's'} unlocked for this slot.
+              </div>
+            )}
             {!gateMet && (
               <div style={{ fontSize: 10, color: 'rgba(210,160,80,0.68)', marginTop: 6, paddingLeft: 38, fontStyle: 'italic' }}>
                 Requires {GATE_HINTS[ability.gate]}.

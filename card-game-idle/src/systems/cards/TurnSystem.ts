@@ -20,6 +20,7 @@ export class TurnSystem {
         lastPlayedDefinitionId: null,
         mulliganSelected: [],
         pendingEffect: null,
+        pendingEffectQueue: [],
       },
     };
   }

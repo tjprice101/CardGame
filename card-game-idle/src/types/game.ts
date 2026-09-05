@@ -131,6 +131,7 @@ export interface TurnState {
   seraphimBonusAmp?: number;
   mulliganSelected: string[];
   pendingEffect: PendingEffect | null;
+  pendingEffectQueue?: PendingEffect[];
   lastResolvedSubtype?: CardSubtypeFilter | null;
   lastResolvedCardInstanceId?: string | null;
   lastDrawnDefinitionIds?: string[];
@@ -182,10 +183,10 @@ export interface SavedDeck {
   /** Player-authored notes describing how the deck plays. Save v18. */
   notes?: string;
   /**
-   * Per-slot set-ability selection. Keys are ability slot indices 1–4;
-   * values are SetAbilityDefinition ids. Save v41.
+  * Per-slot set-ability selection. Keys are ability slot indices 1–3;
+  * values are SetAbilityDefinition ids. Save v44.
    */
-  abilityLoadout?: Partial<Record<1 | 2 | 3 | 4, string>>;
+  abilityLoadout?: Partial<Record<1 | 2 | 3, string>>;
 }
 
 // ── Progress / Settings ────────────────────────────────────────────────────────

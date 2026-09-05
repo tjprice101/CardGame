@@ -1,5 +1,5 @@
 /**
- * SetAbilityStrip — compact in-game HUD strip showing the 4 set ability slots.
+ * SetAbilityStrip — compact in-game HUD strip showing the 3 set ability slots.
  *
  * Shown during an active playing phase. Each tile displays:
  *   - Slot number (matches hotkey)
@@ -12,13 +12,13 @@
  */
 
 import { useStore } from '@/state/store';
-import { resolveActiveAbilitiesForDeck, resolveGatesForDeck } from '@/systems/sets/SetEngine';
+import { resolveActiveAbilitiesForDeck } from '@/systems/sets/SetEngine';
 import { uiTypography } from '@/ui/theme';
 import { NEUTRALITY_SET } from '@/systems/sets/neutrality/NeutralityAbilities';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 
 const FONT = uiTypography.display;
-const SLOTS: Array<1 | 2 | 3 | 4> = [1, 2, 3, 4];
+const SLOTS: Array<1 | 2 | 3> = [1, 2, 3];
 
 const GATE_LABELS: Record<string, string> = {
   base: 'Base',
@@ -44,20 +44,18 @@ export default function SetAbilityStrip() {
   if (!activeDeck) return null;
 
   const controls = { ...DEFAULT_CONTROL_BINDINGS, ...(settings.controls ?? {}) };
-  const hotkeyKeys: Record<1 | 2 | 3 | 4, string> = {
+  const hotkeyKeys: Record<1 | 2 | 3, string> = {
     1: hotkeyLabel(controls.activateSetAbility1 ?? 'Digit1'),
     2: hotkeyLabel(controls.activateSetAbility2 ?? 'Digit2'),
     3: hotkeyLabel(controls.activateSetAbility3 ?? 'Digit3'),
-    4: hotkeyLabel(controls.activateSetAbility4 ?? 'Digit4'),
   };
 
   const resolvedAbilities = resolveActiveAbilitiesForDeck(
     NEUTRALITY_SET.id,
     activeDeck.deckList,
     activeDeck.extraDeck,
+    activeDeck.abilityLoadout as Partial<Record<1 | 2 | 3, string>> | undefined,
   );
-  const activeGates = resolveGatesForDeck(NEUTRALITY_SET.id, activeDeck.deckList, activeDeck.extraDeck);
-
   const cd = turn.setAbilityCooldowns ?? {};
   const uses = turn.setAbilityUsesRemaining ?? {};
 
@@ -71,9 +69,10 @@ export default function SetAbilityStrip() {
     }}>
       {SLOTS.map(slot => {
         // Find the ability for this slot from the full set definition.
-        const abilityDef = NEUTRALITY_SET.abilities.find(a => a.slot === slot)!;
-        const isGateMet = activeGates.has(abilityDef.gate);
         const ability = resolvedAbilities[slot];
+        const abilityDef = NEUTRALITY_SET.abilities.find(a => a.slot === slot && !a.signatureOwnerId)!;
+        const isGateMet = Boolean(ability);
+        const isSignature = Boolean(ability?.signatureOwnerId);
 
         const cooldownLeft = ability ? (cd[ability.id] ?? 0) : 0;
         const usesLeft = ability && ability.maxUsesPerRun !== undefined
@@ -88,6 +87,14 @@ export default function SetAbilityStrip() {
         let textColor = 'rgba(180, 165, 210, 0.45)';
         let labelColor = 'rgba(160, 145, 195, 0.45)';
         let hotkeyColor = 'rgba(140, 120, 175, 0.45)';
+
+        if (isSignature) {
+          bg = 'linear-gradient(135deg, rgba(8,8,10,0.96), rgba(236,236,232,0.92))';
+          borderColor = ability?.signatureOwnerId?.startsWith('inf-') ? 'rgba(190,220,255,0.85)' : ability?.signatureOwnerId?.startsWith('tx-') ? 'rgba(255,210,110,0.90)' : 'rgba(220,220,220,0.85)';
+          textColor = '#111116';
+          labelColor = 'rgba(30,30,38,0.80)';
+          hotkeyColor = 'rgba(255,255,255,0.90)';
+        }
 
         if (isReady) {
           bg = 'rgba(28, 22, 48, 0.94)';
@@ -104,14 +111,14 @@ export default function SetAbilityStrip() {
         }
 
         const tooltipLines = [
-          abilityDef.label,
+          ability?.label ?? abilityDef.label,
           '',
-          abilityDef.description,
+          ability?.description ?? abilityDef.description,
           '',
-          `Gate: ${GATE_LABELS[abilityDef.gate] ?? abilityDef.gate}`,
-          abilityDef.cooldownCards > 0 ? `Cooldown: ${abilityDef.cooldownCards} hand plays` : '',
-          abilityDef.maxUsesPerRun !== undefined ? `Uses per run: ${abilityDef.maxUsesPerRun}` : '',
-          !isGateMet ? `⚠ Requires an ${GATE_LABELS[abilityDef.gate]} card in your deck.` : '',
+          `Gate: ${isSignature ? 'Angel signature' : GATE_LABELS[abilityDef.gate] ?? abilityDef.gate}`,
+          ability && ability.cooldownCards > 0 ? `Cooldown: ${ability.cooldownCards} hand plays` : '',
+          ability && ability.maxUsesPerRun !== undefined ? `Uses per run: ${ability.maxUsesPerRun}` : '',
+          !isGateMet ? `Requires the selected ability's unlock.` : '',
           isExhausted ? '✕ Already used this run.' : '',
           isOnCooldown ? `⏳ On cooldown: ${cooldownLeft} play${cooldownLeft === 1 ? '' : 's'} remaining.` : '',
         ].filter(Boolean).join('\n');
@@ -164,7 +171,7 @@ export default function SetAbilityStrip() {
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             }}>
-              {abilityDef.label}
+              {ability?.label ?? abilityDef.label}
             </div>
 
             {/* State indicator */}

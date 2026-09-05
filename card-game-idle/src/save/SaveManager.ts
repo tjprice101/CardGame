@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 43;
+export const CURRENT_VERSION = 44;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -815,6 +815,32 @@ const migrations: Record<number, Migration> = {
       for (const key of Object.keys(records)) {
         if (revokedTitleIds.has(key)) delete records[key];
       }
+    }
+    return data;
+  },
+
+  44: (data) => {
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    const savedDecks = progress?.savedDecks;
+    if (!Array.isArray(savedDecks)) return data;
+
+    for (const savedDeck of savedDecks) {
+      if (!savedDeck || typeof savedDeck !== 'object') continue;
+      const deck = savedDeck as Record<string, unknown>;
+      const loadout = deck.abilityLoadout as Record<string, unknown> | undefined;
+      if (!loadout) continue;
+
+      if (loadout['4'] === 'neutrality-slot4-aegis-uprising') {
+        const extraDeck = Array.isArray(deck.extraDeck) ? deck.extraDeck : [];
+        const hasStarboundAngel = extraDeck.some(entry => (
+          entry && typeof entry === 'object'
+          && (entry as Record<string, unknown>).definitionId === 'tx-angel-starbound-null-archangel'
+        ));
+        loadout['1'] = hasStarboundAngel
+          ? 'neutrality-signature-aegis-uprising'
+          : 'neutrality-slot1-composed-draw';
+      }
+      delete loadout['4'];
     }
     return data;
   },

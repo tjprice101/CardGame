@@ -1,5 +1,5 @@
 /**
- * Neutrality Set Abilities — four hotkey-activated abilities gated by deck composition.
+ * Neutrality Set Abilities — three hotkey-activated slots with Angel signatures.
  *
  * Cooldowns count cards played from hand (not turns). One-off abilities use
  * maxUsesPerRun: 1 and cannot fire again in the same run once exhausted.
@@ -126,6 +126,67 @@ function aegisUprisingExecute(s: GameState): void {
   }
 }
 
+function convergentRefrainExecute(s: GameState): void {
+  for (const slot of s.board.frontSlots) {
+    if (!slot) continue;
+    slot.patienceStacks = clampPatience((slot.patienceStacks ?? 0) + 5);
+  }
+}
+
+function parallaxVerdictExecute(s: GameState): void {
+  for (const slot of s.board.frontSlots) {
+    if (!slot || (slot.patienceStacks ?? 0) < 15) continue;
+    slot.patienceStacks = clampPatience((slot.patienceStacks ?? 0) + 8);
+  }
+  for (let index = 0; index < 3 && s.deck.drawPile.length > 0; index += 1) {
+    s.deck.hand.push(s.deck.drawPile.pop()!);
+  }
+}
+
+function axiomaticDevourExecute(s: GameState): void {
+  const units = s.board.frontSlots
+    .filter(Boolean)
+    .sort((left, right) => (right?.patienceStacks ?? 0) - (left?.patienceStacks ?? 0));
+  for (const slot of units.slice(0, 2)) {
+    slot!.patienceStacks = clampPatience((slot!.patienceStacks ?? 0) * 2);
+  }
+  for (const slot of s.board.frontSlots) {
+    if (!slot) continue;
+    for (const key of Object.keys(slot.attackCooldowns)) {
+      slot.attackCooldowns[key] = Math.max(0, slot.attackCooldowns[key] - 2);
+    }
+  }
+}
+
+function nullSovereignsDecreeExecute(s: GameState): void {
+  let total = 0;
+  for (const slot of s.board.frontSlots) {
+    if (!slot) continue;
+    total += slot.patienceStacks ?? 0;
+    slot.patienceStacks = 0;
+  }
+  const resonance = computeGlobalResonanceScore(s.progress);
+  const multiplier = Math.min(3, 1 + resonance / 900);
+  const oblivion = Math.floor(total * 700 * multiplier);
+  s.progress.oblivion = (s.progress.oblivion ?? 0) + oblivion;
+  s.turn.oblivionEarnedThisTurn = (s.turn.oblivionEarnedThisTurn ?? 0) + oblivion;
+}
+
+function rupturedContinuumExecute(s: GameState): void {
+  let total = 0;
+  for (const slot of s.board.frontSlots) {
+    if (!slot) continue;
+    total += slot.patienceStacks ?? 0;
+    slot.patienceStacks = Math.floor((slot.patienceStacks ?? 0) / 2);
+  }
+  const oblivion = Math.floor(total * 1250);
+  s.progress.oblivion = (s.progress.oblivion ?? 0) + oblivion;
+  s.turn.oblivionEarnedThisTurn = (s.turn.oblivionEarnedThisTurn ?? 0) + oblivion;
+  for (let index = 0; index < 4 && s.deck.drawPile.length > 0; index += 1) {
+    s.deck.hand.push(s.deck.drawPile.pop()!);
+  }
+}
+
 // ── Definition ─────────────────────────────────────────────────────────────────
 
 const NEUTRALITY_SET: SetEngineDefinition = {
@@ -170,10 +231,68 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       execute: recursiveCalmExecute,
     },
     {
-      id: 'neutrality-slot4-aegis-uprising',
+      id: 'neutrality-signature-convergent-refrain',
       setId: 'Neutrality',
-      slot: 4,
+      slot: 1,
       gate: 'base',
+      signatureOwnerId: 'btei-convergence-of-eternity',
+      label: 'Convergent Refrain',
+      description: 'Grant +5 Patience to every front-row unit.',
+      cooldownCards: 4,
+      execute: convergentRefrainExecute,
+    },
+    {
+      id: 'neutrality-signature-parallax-verdict',
+      setId: 'Neutrality',
+      slot: 2,
+      gate: 'base',
+      signatureOwnerId: 'btei-omniscient-fracture',
+      label: 'Parallax Verdict',
+      description: 'Front-row units with at least 15 Patience gain +8 Patience. Draw 3 cards.',
+      cooldownCards: 6,
+      execute: parallaxVerdictExecute,
+    },
+    {
+      id: 'neutrality-signature-axiomatic-devour',
+      setId: 'Neutrality',
+      slot: 1,
+      gate: 'base',
+      signatureOwnerId: 'btei-neutrality-axiom-maw',
+      label: 'Axiomatic Devour',
+      description: 'Double Patience on the two highest-Patience front-row units and reduce their attack cooldowns by 2.',
+      cooldownCards: 5,
+      execute: axiomaticDevourExecute,
+    },
+    {
+      id: 'neutrality-signature-null-sovereigns-decree',
+      setId: 'Neutrality',
+      slot: 3,
+      gate: 'base',
+      signatureOwnerId: 'inf-sovereign-void',
+      label: "Null Sovereign's Decree",
+      description: 'Once per run: consume all Patience and gain Oblivion equal to total Patience × 700 × resonance multiplier.',
+      cooldownCards: 0,
+      maxUsesPerRun: 1,
+      execute: nullSovereignsDecreeExecute,
+    },
+    {
+      id: 'neutrality-signature-ruptured-continuum',
+      setId: 'Neutrality',
+      slot: 3,
+      gate: 'base',
+      signatureOwnerId: 'inf-eternity-rupture',
+      label: 'Ruptured Continuum',
+      description: 'Once per run: halve Patience, convert the consumed half into Oblivion, and draw 4 cards.',
+      cooldownCards: 0,
+      maxUsesPerRun: 1,
+      execute: rupturedContinuumExecute,
+    },
+    {
+      id: 'neutrality-signature-aegis-uprising',
+      setId: 'Neutrality',
+      slot: 1,
+      gate: 'base',
+      signatureOwnerId: 'tx-angel-starbound-null-archangel',
       label: 'Aegis Uprising',
       description: 'Find the lowest Patience among your front-row units and grant every unit that value × 3. Requires a Transcendent Angel on your board.',
       cooldownCards: 12,

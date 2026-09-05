@@ -74,6 +74,27 @@ describe('CardEffectExecutor empty deck handling', () => {
     expect(result.canPlay).toBe(true);
     expect(result.pendingEffect).toBeNull();
   });
+
+  it('queues Seraph Recall salvage followed by its discard choice', () => {
+    const result = CardEffectExecutor.execute(
+      { instanceId: 'play_1', definitionId: 'ophanim-neutral-seraph-recall' },
+      makePlayingTurn(),
+      emptyBoard,
+      {
+        deckList: [],
+        extraDeck: [],
+        drawPile: [],
+        hand: [
+          { instanceId: 'play_1', definitionId: 'ophanim-neutral-seraph-recall' },
+          { instanceId: 'discard_1', definitionId: 'ophanim-neutral-null-seek' },
+        ],
+        discardPile: [{ instanceId: 'seraph_1', definitionId: 'ser-neutral-null', finish: 'normal' }],
+      },
+    );
+
+    expect(result.pendingEffects.map(effect => effect.type)).toEqual(['salvage', 'discard_choice']);
+    expect(result.pendingEffect?.type).toBe('salvage');
+  });
 });
 
 describe('Nullfall salvage availability', () => {

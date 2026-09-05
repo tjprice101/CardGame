@@ -729,12 +729,11 @@ export default function App() {
         }
       }
 
-      // Set ability hotkeys (default Digit1–Digit4). Fire during playing phase only.
-      const abilitySlotMap: Array<[string, 1 | 2 | 3 | 4]> = [
+      // Set ability hotkeys. Fire during playing phase only.
+      const abilitySlotMap: Array<[string, 1 | 2 | 3]> = [
         [controls.activateSetAbility1 ?? 'Digit1', 1],
         [controls.activateSetAbility2 ?? 'Digit2', 2],
         [controls.activateSetAbility3 ?? 'Digit3', 3],
-        [controls.activateSetAbility4 ?? 'Digit4', 4],
       ];
       for (const [code, slot] of abilitySlotMap) {
         if (e.code === code && !e.ctrlKey && !e.metaKey && !e.altKey) {

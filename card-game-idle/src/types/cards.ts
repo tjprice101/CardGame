@@ -82,6 +82,11 @@ export interface AngelDefinition {
   readonly extraSummonConditions?: SummonCondition[];
   readonly onSummonEffects: CardEffect[];
   readonly activatedAbility: AngelActivatedAbility;
+  readonly signatureAbility?: {
+    id: string;
+    name: string;
+    replacesSlot: 1 | 2 | 3;
+  };
   readonly attacks?: AngelAttackSet;
   readonly attackTags?: string[];
   readonly baseStats: AngelBoardStats;

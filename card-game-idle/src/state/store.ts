@@ -3,7 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import { cloneState } from '@/utils/stateClone';
 import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
-  DeckState, EnigmaInstance, ExtraDeckEntry, GameState, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
+  DeckState, EnigmaInstance, ExtraDeckEntry, GameState, PendingEffect, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
 } from '@/types/game';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import type {
@@ -160,6 +160,7 @@ const defaultTurn: TurnState = {
   turnNumber: 0,
   mulliganSelected: [],
   pendingEffect: null,
+  pendingEffectQueue: [],
   lastResolvedSubtype: null,
   cherubimSummonedThisTurn: 0,
   equilibriumDrift: 0,
@@ -177,6 +178,23 @@ const defaultTurn: TurnState = {
   setAbilityCooldowns: {},
   setAbilityUsesRemaining: {},
 };
+
+function queuePendingEffects(
+  turn: TurnState,
+  result: { pendingEffect: PendingEffect | null; pendingEffects?: PendingEffect[] },
+): void {
+  const pendingEffects = result.pendingEffects ?? (result.pendingEffect ? [result.pendingEffect] : []);
+  if (pendingEffects.length === 0) return;
+
+  const queue = turn.pendingEffectQueue ?? [];
+  if (turn.pendingEffect === null) {
+    turn.pendingEffect = pendingEffects[0];
+    queue.push(...pendingEffects.slice(1));
+  } else {
+    queue.push(...pendingEffects);
+  }
+  turn.pendingEffectQueue = queue;
+}
 
 const defaultProgress: ProgressState = {
   oblivion: 0,
@@ -492,9 +510,9 @@ interface StoreActions {
   /** Update a saved deck's player-authored how-to-play notes. */
   setDeckNotes: (deckId: string, notes: string) => void;
   /** Update a saved deck's per-slot set-ability loadout. */
-  setDeckAbilityLoadout: (deckId: string, slot: 1 | 2 | 3 | 4, abilityId: string) => void;
+  setDeckAbilityLoadout: (deckId: string, slot: 1 | 2 | 3, abilityId: string) => void;
   /** Activate a set ability by hotkey slot (1 E). No-op if gated, on cooldown, or uses exhausted. */
-  activateSetAbility: (slot: 1 | 2 | 3 | 4) => void;
+  activateSetAbility: (slot: 1 | 2 | 3) => void;
   /** Enqueue a transient toast notification. */
   enqueueToast: (message: string, kind?: 'info' | 'success' | 'warning' | 'reward', durationMs?: number) => void;
   /** Dismiss a toast notification by id. */
@@ -1578,7 +1596,7 @@ function completeSummonedAngelPlacement(
     s.deck = result.deck;
     applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
     awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
-    if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+    queuePendingEffects(s.turn, result);
   }
 
   syncEnigmaProgressFromBoard(s, true);
@@ -2740,7 +2758,7 @@ export const useStore = create<Store>()(
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
-            if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+            queuePendingEffects(s.turn, result);
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
           }
@@ -2829,7 +2847,7 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
-          if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+          queuePendingEffects(s.turn, result);
           applyAllSetPlayStates(s, def, turnBefore, actionClass);
           awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
         }
@@ -2899,7 +2917,7 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
-        if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+        queuePendingEffects(s.turn, result);
         applyAllSetPlayStates(s, def, turnBefore, actionClass);
 
         s.turn.cardsPlayedThisTurn += 1;
@@ -3051,7 +3069,7 @@ export const useStore = create<Store>()(
         }
 
         awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
-        if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+          queuePendingEffects(s.turn, result);
 
         checkBossDefeated(s);
         recompute(s);
@@ -3427,6 +3445,7 @@ export const useStore = create<Store>()(
           s.deck.hand = keptCards;
           s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, ...reshuffledCards]);
           s.turn.pendingEffect = null;
+          s.turn.pendingEffectQueue = [];
           endTurnInternal(s);
           return;
         }
@@ -3437,6 +3456,7 @@ export const useStore = create<Store>()(
           allCards: handSnapshot,
           keep: 1,
         };
+        s.turn.pendingEffectQueue = [];
       });
     },
 
@@ -3479,7 +3499,7 @@ export const useStore = create<Store>()(
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
-            if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+            queuePendingEffects(s.turn, result);
             applyAllSetPlayStates(s, def, turnBefore, actionClass);
             awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
           }
@@ -3536,7 +3556,7 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
-          if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+          queuePendingEffects(s.turn, result);
           applyAllSetPlayStates(s, def, turnBefore, actionClass);
 
           s.turn.cardsPlayedThisTurn += 1;
@@ -3567,7 +3587,7 @@ export const useStore = create<Store>()(
         tickCherubimDurability(s);
         tickHandPlayCooldowns(s);
 
-        if (result.pendingEffect) s.turn.pendingEffect = result.pendingEffect;
+          queuePendingEffects(s.turn, result);
         incrementAngelProgress(s.board);
         recordCardPlay(s, deckCard.definitionId);
         advanceTrialGuideStep(s, deckCard.definitionId);
@@ -3592,7 +3612,7 @@ export const useStore = create<Store>()(
         if (!pending) return;
         let resolvedSubtype: CardSubtypeFilter | null = null;
         let resolvedCardInstanceId: string | null = null;
-        let nextPending: import('@/types/game').PendingEffect | null = null;
+        const pendingQueue = [...(s.turn.pendingEffectQueue ?? [])];
         let pendingTakenSubtypeCounts: Partial<Record<CardSubtypeFilter, number>> = {};
         let pendingDiscardedSubtypeCounts: Partial<Record<CardSubtypeFilter, number>> = {};
         let pendingLookDiscardedCount = 0;
@@ -3864,12 +3884,13 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
-          nextPending = result.pendingEffect;
+          pendingQueue.push(...(result.pendingEffects ?? (result.pendingEffect ? [result.pendingEffect] : [])));
         }
 
         s.deck = normalizeDeckInstanceIds(s.deck);
 
-        s.turn.pendingEffect = nextPending;
+        s.turn.pendingEffect = pendingQueue.shift() ?? null;
+        s.turn.pendingEffectQueue = pendingQueue;
       });
     },
 
@@ -4722,6 +4743,7 @@ export const useStore = create<Store>()(
         'Neutrality',
         activeDeck.deckList,
         activeDeck.extraDeck,
+        activeDeck.abilityLoadout as Partial<Record<1 | 2 | 3, string>> | undefined,
       );
       const ability = resolved[slot];
       if (!ability) {
@@ -4729,8 +4751,8 @@ export const useStore = create<Store>()(
         return;
       }
 
-      // Slot 4 also requires a Transcendent Angel of this set on the board right now.
-      if (slot === 4) {
+      // Aegis Uprising still requires its Transcendent Angel on the board.
+      if (ability.id === 'neutrality-signature-aegis-uprising') {
         const neutralitySet = getSet('Neutrality');
         const hasBoardAngel = !!neutralitySet && state.board.frontSlots.some(
           u => u && u.type === 'Angel' && neutralitySet.membership.isTranscendentAngel(u.definitionId),
