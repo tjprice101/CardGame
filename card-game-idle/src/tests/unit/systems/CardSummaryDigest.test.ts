@@ -65,7 +65,7 @@ describe('card summary digest', () => {
     expect(awaken!.lines.length).toBe(1);
   });
 
-  it('keeps Eternal/Infinite Angel summon and awaken text canonical across digest sections', () => {
+  it('keeps Eternal/Infinite Angel summaries compact and exposes the signature unlock', () => {
     const target = CardRegistry.getAll().find(
       entry => entry.type === 'Angel' && (entry.rarity === 'Eternal' || entry.rarity === 'Infinite'),
     );
@@ -74,10 +74,9 @@ describe('card summary digest', () => {
     const summary = getCardSummarySections(target!);
     const canonical = getCardSummarySections(target!, { abilityTextMode: 'canonical' });
 
-    const ability = summary.find(section => section.title === 'Ability');
-    const canonicalAbility = canonical.find(section => section.title === 'Ability');
-    expect(ability?.lines[0]).toBe(canonicalAbility?.lines[0]);
-    expect(ability?.lines[0]).toBe(getCanonicalCardDescription(target!));
+    expect(summary.find(section => section.title === 'Ability')).toBeUndefined();
+    expect(canonical.find(section => section.title === 'Ability')).toBeUndefined();
+    expect(summary.length).toBeLessThanOrEqual(4);
 
     const awaken = summary.find(section => section.title === 'Awaken');
     expect(awaken).toBeTruthy();
@@ -86,5 +85,12 @@ describe('card summary digest', () => {
     const summon = summary.find(section => section.title === 'Summon');
     expect(summon).toBeTruthy();
     expect(summon!.lines.length).toBeGreaterThan(0);
+    expect(summon!.lines.length).toBe(1);
+
+    const onSummon = summary.find(section => section.title === 'On Summon');
+    expect(onSummon?.lines.length).toBe(1);
+
+    const signature = summary.find(section => section.title === 'Signature');
+    expect(signature?.lines[0]).toContain(`Unlocks ${target!.signatureAbility?.name}`);
   });
 });

@@ -60,6 +60,7 @@ const VOCAB: Record<Exclude<HighlightCategory, 'element' | 'number'>, string[]> 
     'Passive',
     'Hooks',
     'Awaken',
+    'Signature',
     'Materials',
   ],
   mechanic: [

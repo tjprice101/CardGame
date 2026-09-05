@@ -1098,6 +1098,7 @@ export default function DeckBuilder({ onClose }: Props) {
               {extraDeckEntries.map(entry => {
                 const def = CardRegistry.get(entry.definitionId);
                 if (!def) return null;
+                const artUrl = getCardBackgroundUrl(def);
                 return (
                   <div
                     key={entry.key}
@@ -1108,8 +1109,18 @@ export default function DeckBuilder({ onClose }: Props) {
                     title={`${def.name} ×${entry.copies} — click to remove one`}
                     onClick={() => removeCard(entry.definitionId, entry.finish)}
                   >
+                    {artUrl && (
+                      <img
+                        src={artUrl}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        aria-hidden
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }}
+                      />
+                    )}
                     {entry.copies > 1 && (
-                      <div style={{ position: 'absolute', bottom: 2, right: 2, fontSize: 9, fontWeight: 'bold', color: '#3a1800', background: '#f8d878', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ position: 'absolute', zIndex: 1, bottom: 2, right: 2, fontSize: 9, fontWeight: 'bold', color: '#3a1800', background: '#f8d878', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {entry.copies}
                       </div>
                     )}

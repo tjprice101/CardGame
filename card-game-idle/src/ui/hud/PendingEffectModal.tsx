@@ -668,7 +668,7 @@ export default function PendingEffectModal() {
         <div className="anim-panel-slide-up" style={styles.panel}>
           <div style={styles.title}>Equilibrium's Bane</div>
           <div style={styles.subtitle}>
-            Choose a Seraphim or Angel. Gain Oblivion equal to their Patience × 5,000 × Mastery Multiplier, then they lose half their Patience.
+            Choose a Seraphim or Angel. Gain Oblivion equal to their Patience × 5,000 × Collection Power, then they lose half their Patience.
           </div>
           <div style={styles.cardGrid}>
             {activeUnits.map(unit => {

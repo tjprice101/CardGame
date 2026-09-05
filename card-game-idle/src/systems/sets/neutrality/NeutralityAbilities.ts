@@ -225,7 +225,7 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       slot: 3,
       gate: 'infinite',
       label: 'Recursive Calm',
-      description: 'Once per run: consume all Patience from every front-row unit. Gain Oblivion equal to total Patience × 500 × Mastery Multiplier (up to ×3).',
+      description: 'Once per run: consume all Patience from every front-row unit. Gain Oblivion equal to total Patience × 500 × Collection Power (up to ×3).',
       cooldownCards: 0,
       maxUsesPerRun: 1,
       execute: recursiveCalmExecute,

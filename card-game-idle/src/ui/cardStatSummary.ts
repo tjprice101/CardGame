@@ -643,9 +643,12 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
   const canonicalDescription = getCanonicalCardDescription(card);
   const authoredDescription = resolveAbilityDescription(card, options);
 
-  pushSummarySection(sections, 'Ability', [authoredDescription]);
+  const isAngel = card.type === 'Angel';
+  if (!isAngel) {
+    pushSummarySection(sections, 'Ability', [authoredDescription]);
+  }
 
-  if (normalizePreviewFingerprint(authoredDescription) !== normalizePreviewFingerprint(canonicalDescription)) {
+  if (!isAngel && normalizePreviewFingerprint(authoredDescription) !== normalizePreviewFingerprint(canonicalDescription)) {
     pushSummarySection(sections, 'Rules', [canonicalDescription]);
   }
 
@@ -694,27 +697,24 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     const summonCostText = angel.summonCost.length > 0
       ? angel.summonCost.map(id => CardRegistry.get(id)?.name ?? id).join(', ')
       : 'none';
-    const summonLines = [`Materials: ${summonCostText}`];
     const displayableSummonConditions = getDisplayableSummonConditions(angel);
-    if (displayableSummonConditions.length > 0) {
-      summonLines.push(`Extra: ${displayableSummonConditions.map(formatSummonCondition).join('; ')}`);
+    const extraConditions = displayableSummonConditions.length > 0
+      ? ` · ${displayableSummonConditions.map(formatSummonCondition).join('; ')}`
+      : '';
+    pushSummarySection(sections, 'Summon', [`${summonCostText}${extraConditions}`]);
+    if (angel.signatureAbility) {
+      pushSummarySection(sections, 'Signature', [
+        `Unlocks ${angel.signatureAbility.name} — replaces Slot ${angel.signatureAbility.replacesSlot}`,
+      ]);
+    } else {
+      pushSummarySection(sections, 'Patience', [
+        'Accumulates +1 Patience per card played (boosted by Patient Light stacks and adjacent Patience Cherubim); on attack, each stack grants +2% base Oblivion, then resets',
+      ]);
     }
-    pushSummarySection(sections, 'Summon', summonLines);
-    pushSummarySection(sections, 'On Summon', formatEffectLines(angel.onSummonEffects));
+    pushSummarySection(sections, 'On Summon', [formatEffectsInline(angel.onSummonEffects, angel.definitionId)]);
     pushSummarySection(sections, 'Awaken', [
       `${angel.activatedAbility.name}: ${getCanonicalActivatedAbilityDescription(angel)}`,
     ]);
-    pushSummarySection(sections, 'On Board', [formatAngelBoardBonus(angel.baseStats)]);
-    pushSummarySection(sections, 'Patience', [
-      'Accumulates +1 Patience per card played (boosted by Patient Light stacks and adjacent Patience Cherubim)',
-      'On attack: each Patience stack grants +2% base Oblivion (stacks then reset)',
-    ]);
-    if (angel.attacks) {
-      pushSummarySection(sections, 'Attacks', [
-        formatAttackSummary('Primary', angel.attacks.primary, { eternityChrono: false }),
-        formatAttackSummary('Exalted', angel.attacks.exalted, { eternityChrono: false }),
-      ]);
-    }
   }
 
   if (hooks.length > 0) {

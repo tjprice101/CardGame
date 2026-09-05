@@ -359,7 +359,7 @@ export const neutralityEnigmaticCards: OphanimDefinition[] = [
     rarity: 'Enigmatic',
     name: "Equilibrium's Bane",
     // Oblivion = target.patienceStacks × multiplier × min(masteryMultiplierCap, 1 + resonance/1000); consumes 50% of target's Patience.
-    description: "Choose a Seraphim or Angel on your board. Gain Oblivion equal to their Patience × 5,000 × your Card-born mastery multiplier (cap ×3), then that unit loses half its Patience. If they had ≥30 Patience, draw 1.",
+    description: "Choose a Seraphim or Angel on your board. Gain Oblivion equal to their Patience × 5,000 × your Collection Power (cap ×3), then that unit loses half its Patience. If they had ≥30 Patience, draw 1.",
     artKey: 'enig_equilibriums_bane',
     effects: [
       { type: 'oblivion_from_target_unit_patience', multiplier: 5000, masteryMultiplierCap: 3 },
