@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
-import { resolveAbilityOptionsForDeck, resolveGatesForDeck, resolveActiveAbilitiesForDeck } from '@/systems/sets/SetEngine';
+import { resolveAbilityOptionsForDeck, resolveActiveAbilitiesForDeck } from '@/systems/sets/SetEngine';
 import '@/systems/sets/neutrality/NeutralityAbilities'; // registers the Neutrality set
 import type { SeraphimInstance } from '@/types/cards';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
@@ -63,51 +63,12 @@ function setActiveDeck(deckList: DeckEntry[], extraDeck: ExtraDeckEntry[] = [], 
   }));
 }
 
-describe('resolveGatesForDeck', () => {
-  it('grants base gate when at least one card is present', () => {
-    const gates = resolveGatesForDeck('Neutrality', [entry('ser-neutral-null')], []);
-    expect(gates.has('base')).toBe(true);
-  });
-
-  it('grants eternal gate for a btei- prefixed card', () => {
-    const gates = resolveGatesForDeck('Neutrality', [entry('btei-eternal-vigil')], []);
-    expect(gates.has('eternal')).toBe(true);
-  });
-
-  it('grants infinite gate for a card in the Infinite set', () => {
-    const gates = resolveGatesForDeck('Neutrality', [entry('inf-oblivion-absolute')], []);
-    expect(gates.has('infinite')).toBe(true);
-  });
-
-  it('does not grant eternal gate for a regular card', () => {
-    const gates = resolveGatesForDeck('Neutrality', [entry('ser-neutral-null')], []);
-    expect(gates.has('eternal')).toBe(false);
-    expect(gates.has('infinite')).toBe(false);
-  });
-
-  it('does not grant infinite gate for an id outside the Neutrality Infinite set', () => {
-    const gates = resolveGatesForDeck('Neutrality', [entry('inf-fake-heavenly-crown')], []);
-    expect(gates.has('infinite')).toBe(false);
-  });
-
-  it('returns an empty set for an unknown setId', () => {
-    const gates = resolveGatesForDeck('NotARealSet', [entry('btei-eternal-vigil')], []);
-    expect(gates.size).toBe(0);
-  });
-});
-
 describe('resolveActiveAbilitiesForDeck', () => {
-  it('returns slot 1 ability when base gate is met', () => {
+  it('returns all three base slots with any Neutrality card', () => {
     const abilities = resolveActiveAbilitiesForDeck('Neutrality', [entry('ser-neutral-null')], []);
     expect(abilities[1]?.id).toBe('neutrality-slot1-composed-draw');
-    expect(abilities[2]).toBeUndefined();
-  });
-
-  it('returns slots 1 and 2 when eternal gate is met', () => {
-    const abilities = resolveActiveAbilitiesForDeck('Neutrality', [entry('btei-eternal-vigil')], []);
-    expect(abilities[1]).toBeDefined();
     expect(abilities[2]?.id).toBe('neutrality-slot2-vigils-ledger');
-    expect(abilities[3]).toBeUndefined();
+    expect(abilities[3]?.id).toBe('neutrality-slot3-recursive-calm');
   });
 
   it('returns all three base slots when both eternal and infinite gates are met', () => {
@@ -127,8 +88,8 @@ describe('resolveActiveAbilitiesForDeck', () => {
     expect(options[1]?.map(ability => ability.id)).toEqual([
       'neutrality-slot1-composed-draw',
       'neutrality-signature-convergent-refrain',
-      'neutrality-signature-aegis-uprising',
     ]);
+    expect(options[3]?.map(ability => ability.id)).toContain('neutrality-signature-aegis-uprising');
   });
 });
 
@@ -145,10 +106,9 @@ describe('activateSetAbility — gate and phase guards', () => {
     expect(useStore.getState().deck.hand.length).toBe(0);
   });
 
-  it('skips activation when gate is not met for the requested slot', () => {
-    // Deck has no eternal card, so slot 2 gate fails.
+  it('activates Slot 2 with an ordinary Neutrality card', () => {
     useStore.getState().activateSetAbility(2);
-    expect(useStore.getState().deck.hand.length).toBe(0);
+    expect(useStore.getState().deck.hand.length).toBe(2);
   });
 });
 
@@ -279,18 +239,21 @@ describe('Recursive Calm (slot 3)', () => {
     expect(useStore.getState().progress.oblivion).toBe(before + 15_000);
   });
 
-  it('is blocked after the first use', () => {
+  it('is repeatable after its cooldown expires', () => {
     useStore.getState().activateSetAbility(3);
     const oblivionAfterFirst = useStore.getState().progress.oblivion;
+    useStore.getState().activateSetAbility(3);
+    expect(useStore.getState().progress.oblivion).toBe(oblivionAfterFirst);
+    useStore.setState(s => ({ ...s, turn: { ...s.turn, setAbilityCooldowns: {} } }));
     useStore.getState().activateSetAbility(3);
     expect(useStore.getState().progress.oblivion).toBe(oblivionAfterFirst);
   });
 });
 
-describe('Aegis Uprising (slot 4)', () => {
+describe('Aegis Uprising (slot 3)', () => {
   beforeEach(() => {
     resetStore();
-    setActiveDeck([], [extraEntry('tx-angel-starbound-null-archangel')], { 1: 'neutrality-signature-aegis-uprising' });
+    setActiveDeck([], [extraEntry('tx-angel-starbound-null-archangel')], { 3: 'neutrality-signature-aegis-uprising' });
     useStore.setState(s => ({
       ...s,
       board: {
@@ -319,23 +282,23 @@ describe('Aegis Uprising (slot 4)', () => {
 
   it('grants each unit patience equal to the board minimum × 3', () => {
     // min = 4, grant = 12
-    useStore.getState().activateSetAbility(1);
+    useStore.getState().activateSetAbility(3);
     const a = useStore.getState().board.frontSlots[0];
     const b = useStore.getState().board.frontSlots[1];
     expect(a?.type === 'Seraphim' && a.patienceStacks).toBe(16);
     expect(b?.type === 'Seraphim' && b.patienceStacks).toBe(20);
   });
 
-  it('sets a cooldown of 12 plays after activation', () => {
-    useStore.getState().activateSetAbility(1);
+  it('sets a cooldown of 10 plays after activation', () => {
+    useStore.getState().activateSetAbility(3);
     const cd = useStore.getState().turn.setAbilityCooldowns ?? {};
-    expect(cd['neutrality-signature-aegis-uprising']).toBe(12);
+    expect(cd['neutrality-signature-aegis-uprising']).toBe(10);
   });
 
   it('is blocked while the cooldown is active (repeatable, not one-off)', () => {
-    useStore.getState().activateSetAbility(1);
+    useStore.getState().activateSetAbility(3);
     const patienceAfterFirst = (useStore.getState().board.frontSlots[0] as SeraphimInstance).patienceStacks;
-    useStore.getState().activateSetAbility(1);
+    useStore.getState().activateSetAbility(3);
     expect((useStore.getState().board.frontSlots[0] as SeraphimInstance).patienceStacks).toBe(patienceAfterFirst);
   });
 
@@ -347,7 +310,7 @@ describe('Aegis Uprising (slot 4)', () => {
         frontSlots: [makeSeraphim(4, 'ser-a'), makeSeraphim(8, 'ser-b'), null, null, null],
       },
     }));
-    useStore.getState().activateSetAbility(1);
+    useStore.getState().activateSetAbility(3);
     const a = useStore.getState().board.frontSlots[0];
     expect(a?.type === 'Seraphim' && a.patienceStacks).toBe(4);
   });

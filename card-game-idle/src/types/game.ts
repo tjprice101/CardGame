@@ -407,8 +407,7 @@ export type KeybindActionId =
   | 'togglePartyUi'
   | 'activateSetAbility1'
   | 'activateSetAbility2'
-  | 'activateSetAbility3'
-  | 'activateSetAbility4';
+  | 'activateSetAbility3';
 
 /** Default keyboard control bindings (KeyboardEvent.code values). */
 export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
@@ -420,7 +419,6 @@ export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
   activateSetAbility1: 'Digit1',
   activateSetAbility2: 'Digit2',
   activateSetAbility3: 'Digit3',
-  activateSetAbility4: 'Digit4',
 };
 
 export type UiLanguage = 'en' | 'es' | 'fr';

@@ -4,8 +4,7 @@
  * Shown during an active playing phase. Each tile displays:
  *   - Slot number (matches hotkey)
  *   - Ability label
- *   - Gate badge (Base / Eternal / Infinite / Angel)
- *   - State: ready (bright) | cooldown (dim + count) | exhausted (dark) | locked (gated out)
+ *   - State: ready (bright) | cooldown (dim + count) | exhausted (dark)
  *
  * Clicking a tile calls activateSetAbility (same as the hotkey). Hovering shows
  * the full description.
@@ -19,12 +18,6 @@ import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 
 const FONT = uiTypography.display;
 const SLOTS: Array<1 | 2 | 3> = [1, 2, 3];
-
-const GATE_LABELS: Record<string, string> = {
-  base: 'Base',
-  eternal: 'Eternal',
-  infinite: 'Infinite',
-};
 
 function hotkeyLabel(code: string): string {
   if (code.startsWith('Digit')) return code.slice(5);
@@ -71,7 +64,7 @@ export default function SetAbilityStrip() {
         // Find the ability for this slot from the full set definition.
         const ability = resolvedAbilities[slot];
         const abilityDef = NEUTRALITY_SET.abilities.find(a => a.slot === slot && !a.signatureOwnerId)!;
-        const isGateMet = Boolean(ability);
+        const isAvailable = Boolean(ability);
         const isSignature = Boolean(ability?.signatureOwnerId);
 
         const cooldownLeft = ability ? (cd[ability.id] ?? 0) : 0;
@@ -80,7 +73,7 @@ export default function SetAbilityStrip() {
           : undefined;
         const isExhausted = usesLeft !== undefined && usesLeft <= 0;
         const isOnCooldown = cooldownLeft > 0;
-        const isReady = isGateMet && !isOnCooldown && !isExhausted;
+        const isReady = isAvailable && !isOnCooldown && !isExhausted;
 
         let bg = 'rgba(18, 16, 24, 0.88)';
         let borderColor = 'rgba(120, 100, 160, 0.30)';
@@ -115,10 +108,10 @@ export default function SetAbilityStrip() {
           '',
           ability?.description ?? abilityDef.description,
           '',
-          `Gate: ${isSignature ? 'Angel signature' : GATE_LABELS[abilityDef.gate] ?? abilityDef.gate}`,
+          isSignature ? 'Angel signature replacement' : 'Always unlocked',
           ability && ability.cooldownCards > 0 ? `Cooldown: ${ability.cooldownCards} hand plays` : '',
           ability && ability.maxUsesPerRun !== undefined ? `Uses per run: ${ability.maxUsesPerRun}` : '',
-          !isGateMet ? `Requires the selected ability's unlock.` : '',
+          !isAvailable ? 'Requires a Neutrality card in the active deck.' : '',
           isExhausted ? '✕ Already used this run.' : '',
           isOnCooldown ? `⏳ On cooldown: ${cooldownLeft} play${cooldownLeft === 1 ? '' : 's'} remaining.` : '',
         ].filter(Boolean).join('\n');
@@ -183,8 +176,8 @@ export default function SetAbilityStrip() {
               lineHeight: 1,
               marginTop: 1,
             }}>
-              {!isGateMet
-                ? GATE_LABELS[abilityDef.gate]
+              {!isAvailable
+                ? 'NO SET CARD'
                 : isExhausted
                   ? 'Used'
                   : isOnCooldown

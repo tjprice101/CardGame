@@ -1102,6 +1102,9 @@ export default function DeckBuilder({ onClose }: Props) {
                 return (
                   <div
                     key={entry.key}
+                    className={entry.finish === 'holo' || def.rarity === 'Infinite' || def.rarity === 'Eternal' || def.rarity === 'Enigmatic'
+                      ? `holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${def.rarity === 'Enigmatic' ? ' enigmatic-holo-violet-hover' : ''}`
+                      : undefined}
                     style={{
                       ...styles.extraStripCard,
                       ...getDenseCardFaceBackgroundStyle(def, entry.finish, 'front', true),
@@ -1116,7 +1119,7 @@ export default function DeckBuilder({ onClose }: Props) {
                         loading="lazy"
                         decoding="async"
                         aria-hidden
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }}
+                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', zIndex: 0, pointerEvents: 'none' }}
                       />
                     )}
                     {entry.copies > 1 && (

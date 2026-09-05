@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 44;
+export const CURRENT_VERSION = 45;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -841,6 +841,23 @@ const migrations: Record<number, Migration> = {
           : 'neutrality-slot1-composed-draw';
       }
       delete loadout['4'];
+    }
+    return data;
+  },
+
+  45: (data) => {
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    const savedDecks = progress?.savedDecks;
+    if (!Array.isArray(savedDecks)) return data;
+
+    for (const savedDeck of savedDecks) {
+      if (!savedDeck || typeof savedDeck !== 'object') continue;
+      const loadout = (savedDeck as Record<string, unknown>).abilityLoadout as Record<string, unknown> | undefined;
+      if (!loadout) continue;
+      if (loadout['1'] === 'neutrality-signature-aegis-uprising') {
+        loadout['3'] = loadout['1'];
+        delete loadout['1'];
+      }
     }
     return data;
   },

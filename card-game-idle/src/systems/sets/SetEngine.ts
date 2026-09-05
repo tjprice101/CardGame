@@ -1,10 +1,9 @@
 /**
  * Set Engine — types and registry for per-set ability systems.
  *
- * Each card set declares one `SetEngineDefinition` with three ability slots:
- *   1 — Base    : always available (any card of the set in the deck)
- *   2 — Eternal : requires ≥1 Eternal card of this set in the deck
- *   3 — Infinite: requires ≥1 Infinite card of this set in the deck
+ * Each card set declares one `SetEngineDefinition` with three ability slots.
+ * All three base abilities are available whenever any card from the set is
+ * present in the main or extra deck.
  * Signatures are alternatives inside their target slot and are unlocked by
  * the owning Angel's presence in the deck's extra deck.
  *
@@ -15,9 +14,6 @@
 
 import type { DeckEntry, ExtraDeckEntry, GameState } from '@/types/game';
 
-// ── Gate types ─────────────────────────────────────────────────────────────────
-
-export type SetAbilityGate = 'base' | 'eternal' | 'infinite';
 export type SetAbilitySlot = 1 | 2 | 3;
 
 // ── Ability definition ─────────────────────────────────────────────────────────
@@ -27,12 +23,10 @@ export interface SetAbilityDefinition {
   id: string;
   /** Parent set id, e.g. "Neutrality". */
   setId: string;
-  /** Which slot (1–4) this ability fills. */
+  /** Which slot (1–3) this ability fills. */
   slot: SetAbilitySlot;
   /** Signature abilities replace the base ability in this slot when unlocked. */
   signatureOwnerId?: string;
-  /** Deck composition gate that must be met to use this ability. */
-  gate: SetAbilityGate;
   /** Short player-facing name. */
   label: string;
   /** Full description shown in the ability strip tooltip and the Deckbuilder Abilities tab. */
@@ -67,11 +61,12 @@ export interface SetEngineDefinition {
   signatureMechanic: 'patience';
   /** Base abilities, one per slot. Signature abilities may follow these entries. */
   abilities: SetAbilityDefinition[];
-  /** Set-scoped card membership; gates only trigger on cards belonging to THIS set. */
+  /** Set-scoped card membership. */
   membership: SetCardMembership;
 }
 
 export interface SetCardMembership {
+  isMember: (definitionId: string) => boolean;
   isEternal: (definitionId: string) => boolean;
   isInfinite: (definitionId: string) => boolean;
   isTranscendentAngel: (definitionId: string) => boolean;
@@ -93,36 +88,9 @@ export function listSets(): SetEngineDefinition[] {
   return Array.from(_registry.values());
 }
 
-// ── Gate resolution ────────────────────────────────────────────────────────────
-
 /**
- * Returns which gates are currently satisfied by the given deck composition **for `setId`**.
- * Eternal/Infinite membership is per-set, so another set's cards never satisfy this set's gates.
- */
-export function resolveGatesForDeck(
-  setId: string,
-  deckList: DeckEntry[],
-  extraDeck: ExtraDeckEntry[],
-): Set<SetAbilityGate> {
-  const gates = new Set<SetAbilityGate>();
-  const set = getSet(setId);
-  if (!set) {
-    if (import.meta.env.DEV) console.warn('[SetEngine] resolveGatesForDeck: unknown setId', setId);
-    return gates;
-  }
-
-  const hasAny = deckList.length > 0 || extraDeck.length > 0;
-  if (hasAny) gates.add('base');
-
-  if (deckList.some(e => set.membership.isEternal(e.definitionId))) gates.add('eternal');
-  if (deckList.some(e => set.membership.isInfinite(e.definitionId))) gates.add('infinite');
-
-  return gates;
-}
-
-/**
- * Given a set's four abilities and the active deck, returns the ability that
- * should currently fill each slot (or undefined if the gate isn't met).
+ * Given a set's abilities and the active deck, returns the ability that should
+ * currently fill each slot (or undefined if the set is absent from the deck).
  */
 export function resolveActiveAbilitiesForDeck(
   setId: string,
@@ -133,23 +101,18 @@ export function resolveActiveAbilitiesForDeck(
   const set = getSet(setId);
   if (!set) return {};
 
-  const gates = resolveGatesForDeck(setId, deckList, extraDeck);
+  const hasSetCard = [...deckList, ...extraDeck].some(entry => set.membership.isMember(entry.definitionId));
+  if (!hasSetCard) return {};
   const extraDefinitionIds = new Set(extraDeck.map(entry => entry.definitionId));
   const result: Partial<Record<SetAbilitySlot, SetAbilityDefinition>> = {};
   for (const ability of set.abilities) {
     const isSignature = Boolean(ability.signatureOwnerId);
-    const isAvailable = isSignature
-      ? extraDefinitionIds.has(ability.signatureOwnerId!)
-      : gates.has(ability.gate);
+    const isAvailable = isSignature ? extraDefinitionIds.has(ability.signatureOwnerId!) : true;
     if (!isAvailable) continue;
 
     const selectedId = abilityLoadout?.[ability.slot];
     if (selectedId === ability.id) result[ability.slot] = ability;
     else if (!selectedId && !result[ability.slot]) result[ability.slot] = ability;
-  }
-  for (const ability of set.abilities) {
-    if (result[ability.slot] || ability.signatureOwnerId) continue;
-    if (gates.has(ability.gate)) result[ability.slot] = ability;
   }
   return result;
 }
@@ -162,13 +125,14 @@ export function resolveAbilityOptionsForDeck(
   const set = getSet(setId);
   if (!set) return {};
 
-  const gates = resolveGatesForDeck(setId, deckList, extraDeck);
+  const hasSetCard = [...deckList, ...extraDeck].some(entry => set.membership.isMember(entry.definitionId));
+  if (!hasSetCard) return {};
   const extraDefinitionIds = new Set(extraDeck.map(entry => entry.definitionId));
   const result: Partial<Record<SetAbilitySlot, SetAbilityDefinition[]>> = {};
   for (const ability of set.abilities) {
     const isAvailable = ability.signatureOwnerId
       ? extraDefinitionIds.has(ability.signatureOwnerId)
-      : gates.has(ability.gate);
+      : true;
     if (!isAvailable) continue;
     (result[ability.slot] ??= []).push(ability);
   }

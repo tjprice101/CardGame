@@ -1,8 +1,7 @@
 /**
  * Neutrality Set Abilities — three hotkey-activated slots with Angel signatures.
  *
- * Cooldowns count cards played from hand (not turns). One-off abilities use
- * maxUsesPerRun: 1 and cannot fire again in the same run once exhausted.
+ * Cooldowns count cards played from hand (not turns).
  *
  * Registration happens at the bottom of this file; import this module from
  * RegistryBoot.ts (or equivalent) to ensure it runs at startup.
@@ -79,7 +78,7 @@ function vigilsLedgerExecute(s: GameState): void {
 }
 
 /**
- * Slot 3 — Recursive Calm (Infinite, one-off per run)
+ * Slot 3 — Recursive Calm (10 hand-play CD, repeatable)
  * Consume ALL Patience from every front-row unit; grant Oblivion equal to
  * totalPatienceConsumed × 500 × globalMasteryMultiplier.
  * Mastery multiplier = min(3, 1 + resonanceScore / 1000).
@@ -104,7 +103,7 @@ function recursiveCalmExecute(s: GameState): void {
 }
 
 /**
- * Slot 4 — Aegis Uprising (Base, 12 hand-play CD, repeatable)
+ * Slot 3 — Aegis Uprising (10 hand-play CD, repeatable)
  * Find the lowest Patience value among front-row units; grant each unit
  * Patience equal to that minimum × 3. Requires a Transcendent Angel of this
  * set on the board (enforced at runtime in activateSetAbility, not by a deck gate).
@@ -194,6 +193,7 @@ const NEUTRALITY_SET: SetEngineDefinition = {
   label: 'Neutrality',
   signatureMechanic: 'patience',
   membership: {
+    isMember: id => id.startsWith('neutral-') || id.startsWith('angel-neutral-') || id.startsWith('ser-neutral-') || id.startsWith('cher-neutral-') || id.startsWith('oph-neutral-') || id.startsWith('btei-') || NEUTRALITY_INFINITE_IDS.has(id) || NEUTRALITY_TX_ANGEL_IDS.has(id),
     isEternal: id => id.startsWith('btei-'),
     isInfinite: id => NEUTRALITY_INFINITE_IDS.has(id),
     isTranscendentAngel: id => NEUTRALITY_TX_ANGEL_IDS.has(id),
@@ -203,7 +203,6 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       id: 'neutrality-slot1-composed-draw',
       setId: 'Neutrality',
       slot: 1,
-      gate: 'base',
       label: 'Composed Advance',
       description: 'Grant +3 Patience to every front-row unit and reduce every attack cooldown on your board by 1.',
       cooldownCards: 3,
@@ -213,7 +212,6 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       id: 'neutrality-slot2-vigils-ledger',
       setId: 'Neutrality',
       slot: 2,
-      gate: 'eternal',
       label: "Vigil's Ledger",
       description: 'For each front-row unit with ≥20 Patience, grant it +5 Patience. Draw 2 additional cards.',
       cooldownCards: 5,
@@ -223,18 +221,15 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       id: 'neutrality-slot3-recursive-calm',
       setId: 'Neutrality',
       slot: 3,
-      gate: 'infinite',
       label: 'Recursive Calm',
       description: 'Once per run: consume all Patience from every front-row unit. Gain Oblivion equal to total Patience × 500 × Collection Power (up to ×3).',
-      cooldownCards: 0,
-      maxUsesPerRun: 1,
+      cooldownCards: 10,
       execute: recursiveCalmExecute,
     },
     {
       id: 'neutrality-signature-convergent-refrain',
       setId: 'Neutrality',
       slot: 1,
-      gate: 'base',
       signatureOwnerId: 'btei-convergence-of-eternity',
       label: 'Convergent Refrain',
       description: 'Grant +5 Patience to every front-row unit.',
@@ -245,7 +240,6 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       id: 'neutrality-signature-parallax-verdict',
       setId: 'Neutrality',
       slot: 2,
-      gate: 'base',
       signatureOwnerId: 'btei-omniscient-fracture',
       label: 'Parallax Verdict',
       description: 'Front-row units with at least 15 Patience gain +8 Patience. Draw 3 cards.',
@@ -256,7 +250,6 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       id: 'neutrality-signature-axiomatic-devour',
       setId: 'Neutrality',
       slot: 1,
-      gate: 'base',
       signatureOwnerId: 'btei-neutrality-axiom-maw',
       label: 'Axiomatic Devour',
       description: 'Double Patience on the two highest-Patience front-row units and reduce their attack cooldowns by 2.',
@@ -267,35 +260,30 @@ const NEUTRALITY_SET: SetEngineDefinition = {
       id: 'neutrality-signature-null-sovereigns-decree',
       setId: 'Neutrality',
       slot: 3,
-      gate: 'base',
       signatureOwnerId: 'inf-sovereign-void',
       label: "Null Sovereign's Decree",
-      description: 'Once per run: consume all Patience and gain Oblivion equal to total Patience × 700 × resonance multiplier.',
-      cooldownCards: 0,
-      maxUsesPerRun: 1,
+      description: 'Consume all Patience and gain Oblivion equal to total Patience × 700 × resonance multiplier. Reusable after its cooldown.',
+      cooldownCards: 10,
       execute: nullSovereignsDecreeExecute,
     },
     {
       id: 'neutrality-signature-ruptured-continuum',
       setId: 'Neutrality',
       slot: 3,
-      gate: 'base',
       signatureOwnerId: 'inf-eternity-rupture',
       label: 'Ruptured Continuum',
-      description: 'Once per run: halve Patience, convert the consumed half into Oblivion, and draw 4 cards.',
-      cooldownCards: 0,
-      maxUsesPerRun: 1,
+      description: 'Halve Patience, convert the consumed half into Oblivion, and draw 4 cards. Reusable after its cooldown.',
+      cooldownCards: 10,
       execute: rupturedContinuumExecute,
     },
     {
       id: 'neutrality-signature-aegis-uprising',
       setId: 'Neutrality',
-      slot: 1,
-      gate: 'base',
+      slot: 3,
       signatureOwnerId: 'tx-angel-starbound-null-archangel',
       label: 'Aegis Uprising',
       description: 'Find the lowest Patience among your front-row units and grant every unit that value × 3. Requires a Transcendent Angel on your board.',
-      cooldownCards: 12,
+      cooldownCards: 10,
       execute: aegisUprisingExecute,
     },
   ],
