@@ -51,8 +51,8 @@ export const RARITY_TIERS: RarityTier[] = [
   { name: 'Rare',     source: 'Card packs',                    description: 'Noticeably stronger than Commons; introduces subset mechanics.' },
   { name: 'Epic',     source: 'Card packs',                    description: 'Impactful, often combo-shaped.' },
   { name: 'Legendary', source: 'Card packs',                   description: 'Dramatic, deck-defining plays.' },
-  { name: 'Eternal',  source: "Eternity's Wake boss drops",    description: 'Much stronger; higher patience thresholds, bigger Cherubim payouts, set-defining payoff lines.' },
-  { name: 'Infinite', source: 'Infinitude crafting',           description: 'Apex tier. Forged by consuming specific Eternals. Patience thresholds 8+, Angels with patience-double abilities.' },
+  { name: 'Eternal',  source: "Eternity's Wake boss drops",    description: 'Apex Ain/Soph cards with stronger attacks, deeper utility, and bespoke bridge effects.' },
+  { name: 'Infinite', source: 'Infinitude crafting',           description: 'Apex tier. Forged by consuming specific Eternals, with the strongest Ain/Soph scaling.' },
   { name: 'Enigmatic', source: 'Enigma rewards',               description: 'Quest-like reward cards with shimmering purple-white holofoil treatment.' },
 ];
 

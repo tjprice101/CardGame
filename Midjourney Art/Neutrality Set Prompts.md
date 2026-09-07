@@ -1,370 +1,783 @@
 # Neutrality Set — Midjourney Art Prompts
 
-**Element Identity:** Void, balance, equilibrium, nothingness, stillness.
-**Visual Direction:** Monochromatic trading card illustration in the niji 6 anime painterly style. Deep obsidian blacks, bone whites, and painted gray midtones — no color. Bold ink outlines thick to thin, cel shaded with visible brushwork, painterly and expressive. Characters fill 80% of the frame. Backgrounds are loose expressive dark brushwork — collapsing cathedrals, dissolving divine architecture, void space. Energy effects are gestural painted flares of white light. YGO secret rare card art meets Pokémon full-art EX composition. Every card keeps the same monochromatic baroque gothic framework but has its own unique character, pose, and compositional identity.
-**Parameters on every prompt:** `--ar 2:3 --niji 6 --stylize 900`
+**Element Identity:** Void, balance, equilibrium, nothingness, stillness, monochromatic infinity.
+**Visual Direction:** Every prompt below opens and closes with the identical style-lock phrasing so Midjourney renders the entire set in one consistent look: strict grayscale (no hues, no warm tones), flat cel-shaded anime line art, thick-to-thin ink outlines, painterly brushwork shading, YGO/Pokemon full-art card composition. Only the subject, pose, specific details, and background differ between cards. Each prompt also appends an explicit `--no` color-exclusion list to keep Midjourney from drifting into sepia, warm, or tinted renders.
+**Parameters on every prompt:** `--ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor`
 
 ---
 
-## SERAPHIM CARDS
+## ENIGMA AND TRANSCENDENT CARDS
+
+### Lumen Genesis | Enigma Reward | Light | Legendary
+`definitionId: enig-neutral-lumen-genesis`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, lumen genesis, a radiant humanoid formed from concentric white halos and black geometric voids, standing at the center of a silent cathedral that opens into a starless white horizon, one hand raising a newborn white star while the other balances a dark crystal sphere, symmetrical sacred geometry, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+### Null Catechism | Enigma Reward | Dark | Legendary
+`definitionId: enig-neutral-null-catechism`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, null catechism, an immense forbidden book floating open above a circular abyss, pages covered in blank geometric symbols, skeletal silver chains orbiting the tome, a faceless robed archivist kneeling beneath it, ruined library swallowed by a perfect black sphere, balanced centered composition, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+### Starbound Glimmer | Transcendent | Light | Infinite
+`definitionId: tx-neutral-starbound-glimmer`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, starbound glimmer, a colossal celestial light-being crossing a silent galaxy, crown of fractured white stars, long mantle made from concentric eclipse rings, both hands holding a balanced miniature cosmos, black crystal planets orbiting a white core, symmetrical cosmic composition, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+### Null Catalyst | Transcendent | Dark | Infinite
+`definitionId: tx-neutral-null-catalyst`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, null catalyst, a suspended black-white singularity engine built from interlocking rings, sharp geometric fragments and silent lightning, a lone gloved hand reaching toward its core, vast empty observatory with collapsed celestial instruments, high contrast centered composition, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+### Void Reliquary | Transcendent | Dark | Infinite
+`definitionId: tx-neutral-void-reliquary`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, void reliquary, an enormous sealed coffin-shaped artifact floating inside a moonless cathedral, white chains crossing its black glass surface, tiny recovered cards and relic fragments orbiting the lock, silent robed silhouettes bowing in the distant nave, severe symmetrical composition, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+### Starbound Null Archangel | Transcendent | Ain Soph Aur | Infinite
+`definitionId: tx-angel-starbound-null-archangel`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, starbound null archangel, an impossible four-winged cosmic guardian descending through a circular white event horizon, armor divided perfectly between polished bone-white plates and obsidian void glass, six orbiting halo rings, enormous folded wings containing starless black galaxies, three sacrificial geometric sigils beneath its feet, vast silent cosmos and broken celestial cathedral behind it, symmetrical front-facing apex composition, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+## LIGHT CARDS (25 Cards)
 
 ---
 
-### Null Seraphim | Seraphim | Common
-`definitionId: ser-neutral-null`
+### Lumen Stag | Light | Common
+`definitionId: light-neutrality-1`
 
 ```
-null seraph, cosmic void angel, monochromatic trading card illustration, front-facing low angle shot, six pairs of fractured obsidian shard wings exploding outward past frame edges, blank white oval face with single glowing vertical crack, layered gothic plate armor covered in dense inverted scripture brushwork, geometric halo rings painted as flat graphic circles, dissolving cathedral background in loose expressive dark brushwork, white void energy streaks at hands painted as gestural flares, deep blacks in wings and shadow, blazing whites on face and halo, painted gray midtones, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, character fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Void Seraphim | Seraphim | Common
-`definitionId: ser-neutral-void`
-
-```
-void seraph, colossal abyss leviathan, monochromatic trading card illustration, dynamic upward angle shot from below, serpentine obsidian body coiling upward through deep void space filling frame with spiral mass, hollow eye sockets blazing white light from within, baroque scale-plate armor panels engraved with recursive void scripture covering serpentine form, shattered halo collar fragments orbiting neck painted as flat graphic arcs, dissolving undersea cathedral ruins background in loose expressive dark brushwork, cold white radiance bleeding from eye sockets painted as gestural light flares, deep blacks in serpent coils and void space, blazing whites on eye sockets and scale leading edges, painted gray midtones on engraved armor panels, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, character fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Balance Seraphim | Seraphim | Rare
-`definitionId: ser-neutral-balance`
-
-```
-balance seraph, divine arbiter of judgment, monochromatic trading card illustration, front-facing perfectly symmetrical composition, figure split exactly down center bone white baroque plate armor on left and obsidian baroque plate armor on right, blazing silver seam crackling between both halves with angular glitch sparks, three white fractured shard wings on left and three void black wings on right exploding outward past frame edges, smooth two-toned helmet with single wide silver visor slit, cosmic balance scales held outstretched on silver chains from both gauntleted hands, judgment hall background split white left and void black right dissolving in loose expressive brushwork, silver crackling seam energy painted as gestural spark flares at center, deep blacks on right half and shadow, blazing whites on left half and seam, painted gray midtones on armor engraving detail, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, character fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Equilibrium Seraphim | Seraphim | Rare
-`definitionId: ser-neutral-equilibrium`
-
-```
-equilibrium seraph, sacred geometry celestial lancer, monochromatic trading card illustration, extreme low angle foreshortening shot with lance aimed directly at viewer, full gothic plate armor tessellated with sacred geometry mandala engravings covering every surface, smooth centered helmet with triangular silver visor mark, crystalline lance of four stacked sacred geometry rings outstretched in dramatic foreshortening outermost ring spanning full frame width at viewer, four obsidian crystalline wing-panels deployed at sharp diagonal angles past frame edges, shattering divine stone floor background fracture lines radiating from lance impact point in loose expressive dark brushwork, cold white energy discharged from lance rings painted as gestural geometric flares, deep blacks in armor shadows and wing-panel masses, blazing whites on lance rings and engraving channel glow, painted gray midtones on mandala armor planes, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, character fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Still Seraphim | Seraphim | Epic
-`definitionId: ser-neutral-still`
-
-```
-still seraph, divine stone colossus, monochromatic trading card illustration, extreme low angle upshot from dwarfed silhouettes in lower foreground, sphinx-guardian colossus carved from dark stone wide angular human features on blank stone mask face, six massive stone buttress wings spread wide like cathedral arches, dense network of hairline cracks across entire stone body blazing cold white light from within as if star imprisoned inside, baroque scripture engravings spiraling unbroken across every stone surface, shattered divine halo fragments orbiting head painted as flat graphic arc shards, frozen mid-battle army silhouettes dwarfed in lower foreground, void battlefield background in loose expressive dark brushwork, cold white crack-light blazing from body painted as gestural radiance flares, deep blacks in stone mass and shadow, blazing whites from crack light and stone engraving catch, painted gray midtones on stone texture and wing surface, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, character fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-## CHAOS CARDS
-
----
-
-### Null Veil | Chaos | Common
-`definitionId: chaos-neutral-null-veil`
-
-```
-null veil, divine erasure event, monochromatic trading card illustration, wide cinematic shot veil as towering central presence descending from above, enormous baroque tapestry curtain of null energy descending filling upper frame with scripture-embroidered fabric, embroidered leading edge crackling with void static and angular glitch-shard formations, bone white above leading edge and absolute void black below, two gothic-armored seraphim silhouettes blazing with silver halos in amplified glow below veil, cathedral interior being erased on void side background in loose expressive dark brushwork, silver halo radiance from amplified silhouettes painted as gestural light flares, deep blacks in void-side erased cathedral and curtain lower half, blazing whites on veil leading edge and seraphim halo bursts, painted gray midtones on tapestry scripture embroidery, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, lumen stag, a majestic celestial stag of pure stillness, divine white-null beast, front-facing low-angle power shot, massive presence standing proud dead-center in frame, towering antlers made of branching sacred geometry and fractured white crystal shards, obsidian-plated chest armor etched with fine gray script lines, calm glowing white eyes, hooves resting on cracked glass terrain, dissolving gothic cathedral nave with shattered rose windows admitting pillars of white light, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Void Shroud | Chaos | Common
-`definitionId: chaos-neutral-void-shroud`
+### Glasswing Sentinel | Light | Common
+`definitionId: light-neutrality-2`
 
 ```
-void shroud, divine support construct, monochromatic trading card illustration, two-figure rear-guard composition forward seraphim at center cloaked figure looming behind, cloaked obsidian silhouette guardian outlined only in cold silver rim-light raising both hands forward channeling power, thick coiling void tendrils covered in recursive scripture markings flowing from cloaked hands enveloping forward seraphim, forward seraphim blazing with intensified silver light baroque armor detail fully revealed by enhancement glow, collapsing baroque pillar arcade background in loose expressive dark brushwork, silver enhancement radiance from enveloped seraphim painted as gestural halo flares, deep blacks in void tendrils and cloaked rear figure mass, blazing whites on forward seraphim and tendril scripture, painted gray midtones on arcade architecture, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Balance Mantle | Chaos | Rare
-`definitionId: chaos-neutral-balance-mantle`
-
-```
-balance mantle, divine judgment vestment eruption, monochromatic trading card illustration, explosive upward-bursting composition erupting from center singularity point, enormous ceremonial mantle exploding from single origin point left half bone white baroque-embroidered fabric billowing left in heavy folds right half void black mirrored fabric billowing right, dense angelic embroidery and recursive scripture covering both halves, blazing silver seam crackling with angular glitch-fragment sparks at center origin, two gothic-armored seraphim silhouettes dwarfed far below receiving the mantle, shattered divine court architecture background in loose expressive dark brushwork, silver seam energy painted as gestural spark flares at origin point, deep blacks in void-black fabric half and court ruins, blazing whites on bone-white fabric half and blazing seam, painted gray midtones on scripture embroidery detail, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, glasswing sentinel, a crystalline fortress guardian knight of absolute silence, three-quarter heroic stance, colossal translucent glass wings deployed at sharp diagonal angles past the frame edges, polished obsidian plate armor with white filigree borders, smooth blank visor slit glowing pale gray, greatshield of layered geometric crystal held forward, crumbling gothic arcade with floating stone debris and suspended glass shards, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Equilibrium Ward | Chaos | Rare
-`definitionId: chaos-neutral-equilibrium-ward`
+### Dawn Warden | Light | Common
+`definitionId: light-neutrality-3`
 
 ```
-equilibrium ward, divine concentric barrier, monochromatic trading card illustration, radial overhead-ish composition sentinel at center rings expanding outward to frame edges, obsidian gothic-armored sentinel guardian at exact center holding ornate oval shield, concentric baroque halo rings erupting outward in sequence each engraved with dense angelic scripture slamming into place, outermost ring spanning frame edge to edge deflecting angular glitch-shard attacks at sharp angles with visible impact sparks, collapsed divine chamber converted to ward structure background in loose expressive dark brushwork, silver scripture-channel glow burning in ring faces painted as gestural radiance fills, deep blacks in ring masses and background void, blazing whites on innermost rings and attack deflection sparks, painted gray midtones on baroque scripture engraving across ring faces, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Still Shell | Chaos | Epic
-`definitionId: chaos-neutral-still-shell`
-
-```
-still shell, divine time-crystal eruption, monochromatic trading card illustration, explosive radial burst composition encased warrior at center, gothic-armored warrior being encased in erupting obsidian void-crystal shell shards blasting outward in all directions as dense spiky starburst, each crystal shard face engraved with recursive divine scripture, blazing bone-white warrior silhouette visible through hairline crystal seams arms raised mid-battle pose, circular stillness shockwave radiating outward freezing baroque battle architecture into dark suspended impossible silhouettes, frozen baroque mid-battle scene background in loose expressive dark brushwork, blazing white warrior silhouette light bleeding through crystal seams painted as gestural inner radiance, deep blacks in obsidian crystal shard masses and frozen battle shadows, blazing whites on warrior silhouette within shell and crystal leading edges, painted gray midtones on shard scripture engravings, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, dawn warden, a titan gatekeeper of the first silence, colossal divine defender, extreme low-angle upward perspective emphasizing towering scale and heavy armor mass, full baroque plate mail of bone-white and dark iron, enormous tower shield etched with recursive balance sigils planted into ground, six dual-toned wings arching high above head, shattered monolithic gateway opening onto a starless white event horizon, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Null Fortification | Chaos | Rare
-`definitionId: chaos-neutral-null-fortify`
+### Nullfire Seraph | Light | Common
+`definitionId: light-neutrality-4`
 
 ```
-null fortification, divine fortress eruption, monochromatic trading card illustration, extreme low angle upshot fortress wall still growing towering over tiny figures below, massive obsidian stone blocks violently erupting upward each face carved with dense recursive angelic scripture and sacred geometry, lower blocks already interlocked into towering baroque fortress wall still growing upper blocks mid-flight at apex with upward speed lines, baroque circular shockwave rings radiating from impact points as flat graphic circles, tiny gothic silhouettes and collapsing divine cityscape in lower corners dwarfed by ascending structure, flat white void-erasure front consuming ruined cityscape in far background in loose expressive dark brushwork, cold white void-erasure front radiance painted as gestural light wash on horizon, deep blacks in stone block masses and ruined cityscape, blazing whites on void erasure front and stone engraving edge catches, painted gray midtones on carved scripture block faces, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Void Amplifier | Chaos | Epic
-`definitionId: chaos-neutral-void-amp`
-
-```
-void amplifier, divine clockwork engine, monochromatic trading card illustration, machine-fills-frame wide cinematic composition, three enormous gyroscope baroque halo rings spinning simultaneously on different axes each covered in dense recursive divine scripture with silver-glowing engraving channels, rings intersecting at central ignition node blazing with concentrated void energy, silver beam lines connecting rings to ignition node, single blinding white-silver void beam firing horizontally from engine core across full frame width, dozens of smaller identical ring-engine structures at decreasing scale filling deep background dissolving into void, deep background baroque engine field in loose expressive dark brushwork, blinding horizontal void beam painted as gestural white slash across center, deep blacks in ring masses and void background, blazing whites on ignition node and horizontal beam output, painted gray midtones on ring engraving channel glow, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, nullfire seraph, a six-winged angel of cold ash flame, celestial inquisitor of the void, floating vertical descent composition, arms outstretched channeling twin vortices of white fire, six massive feathered wings of obsidian black edged with crackling white cold flames, porcelain mask face with a single vertical fissure glowing pale gray, flowing gothic tabard, interior of a burning cathedral where the flames are pure white and the smoke is deep black, floating embers, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-## SEEKER CARDS
-
----
-
-### Null Seek | Seeker | Common
-`definitionId: seek-neutral-null-seek`
+### Axiom Herald | Light | Common
+`definitionId: light-neutrality-5`
 
 ```
-null seek, divine card retrieval, monochromatic trading card illustration, first-person perspective shot two cards erupting directly at viewer, two enormous baroque card artifacts erupting from jagged void tear framed by dissolving gothic archway silver contrail speed lines trailing behind each, ornate recursive scripture borders visible on each card face, infinite cathedral-scale dark archive receding in perfect perspective through void tear with baroque shelf rows of card artifacts diminishing to silver glint points in deep shadow, dissolving gothic archive background in loose expressive dark brushwork, blazing void tear radiance painted as gestural white glow around tear edges, deep blacks in archive depth and torn archway shadow, blazing whites on void tear interior and card leading faces, painted gray midtones on baroque card border scripture engravings, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, axiom herald, a divine scholar of mathematical equilibrium, angel of cosmic theorems, centered symmetrical portrait, floating serenely in mid-air holding a giant radiant mandala seal, layered liturgical robes split exactly down the center between white silk and black velvet, rotating concentric halo rings of sacred geometry, hands conducting orbiting scripture fragments, infinite celestial library of towering stone arches and floating geometric polyhedra, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Seraph Recall | Seeker | Common
-`definitionId: seek-neutral-seraph-recall`
+### Stillwater Colossus | Light | Common
+`definitionId: light-neutrality-6`
 
 ```
-seraph recall, divine sequence retrieval, monochromatic trading card illustration, dynamic extreme velocity blur shot, gothic-armored seraphim figure stretched into blazing silver motion-blur streak armor engravings reading as speed lines leading figure-silhouette recognizable at front, massive baroque sequence links each engraved with binding scripture pulling taut from blazing recall portal, recall portal a blazing gothic gate archway dense with dimensional scripture silver rune-matrix blazing at center, vanishing-point tunnel of decreasing baroque portal-rings shrinking in perspective toward portal, dissolving gothic corridor background in loose expressive dark brushwork, blazing recall portal radiance painted as gestural silver burst at depth, deep blacks in corridor tunnel and sequence shadow undersides, blazing whites on recall portal and seraphim motion-blur streak, painted gray midtones on baroque sequence link scripture engravings, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Neutral Cycle | Seeker | Common
-`definitionId: seek-neutral-neutral-cycle`
-
-```
-neutral cycle, divine card renewal vortex, monochromatic trading card illustration, dramatic three-quarter low angle showing full vortex height towering above, double-helix spiral of baroque card artifacts corkscrewing upward two intertwining streams, outer stream cards materializing with glowing silver engraving detail inner stream cards dissolving into void static, both streams converging on blinding silver apex at top of frame, ornate baroque card borders and scripture visible on closest spiral cards, collapsing gothic cathedral chamber dissolving inward toward vortex in loose expressive dark brushwork, blinding silver apex radiance painted as gestural white burst at convergence, deep blacks in void-static dissolved cards and cathedral shadows, blazing whites on materializing cards and apex, painted gray midtones on baroque card border scripture detail, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, stillwater colossus, a monumental stone sphinx-guardian of eternal calm, ancient monolith deity, extreme low-angle upshot from ground level looking up at an immense cathedral-scale colossus, weathered obsidian stone body crossed with hairline fissures blazing with trapped white starlight, six massive stone buttress wings forming architectural arches, calm impassive stone face, petrified battlefield with tiny dwarfed silhouettes and frozen monuments, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Measured Seek | Seeker | Common
-`definitionId: seek-neutral-measured-seek`
+### Horizon Lion | Light | Common
+`definitionId: light-neutrality-7`
 
 ```
-measured seek, divine card selection, monochromatic trading card illustration, contemplative floating composition four cards in diamond formation cold shadow, four baroque card artifacts floating in precise diamond arrangement one isolated in silver divine spotlight beam descending from above, enormous baroque magnifying lens circle engraved with measurement scripture materializing between viewer and cards, spotlit target card seen through lens magnified and brilliant, infinite gothic library shelving receding in all directions background each shelf bearing rows of card artifacts in dark slots, dark divine library background in loose expressive dark brushwork, cold silver spotlight painted as gestural beam from above, deep blacks in library shadow depths and three unlit cards, blazing whites on spotlit card and lens refraction geometry, painted gray midtones on baroque card scripture engravings, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Void Surge | Seeker | Common
-`definitionId: seek-neutral-void-surge`
-
-```
-void surge, cosmic void annihilation, monochromatic trading card illustration, orbital view cinematic shot from above divine world, circular bloom of absolute void expanding from single point, shockwave ring edge blazing bone-white with angular glitch-shard formations along its entire leading face, divine civilization inside ring already consumed to flat void black, baroque planetary megastructures cathedrals and sacred geometry architecture on surviving side richly engraved detail still visible, void ring itself engraved with recursive scripture of civilization it erases, space void background in loose expressive dark brushwork, blazing white shockwave ring arc painted as gestural radiance, deep blacks in consumed void interior and space background, blazing whites on shockwave ring arc and surviving architecture rim-light edge, painted gray midtones on intact civilization baroque surface engravings, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, horizon lion, a celestial apex predator of the void boundary, white-maned guardian beast, dynamic three-quarter pounce-ready posture on a ruined stone ledge, roaring into the abyss, colossal mane of billowing white spirit flames, sleek obsidian coat with gray muscle definition, claws of hardened black glass gripping shattered stonework, ornate halo ring behind head, infinite event horizon where a black cosmic ocean meets a white starless sky, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Still Pulse | Seeker | Common
-`definitionId: seek-neutral-still-pulse`
+### Crown of Morning | Light | Common
+`definitionId: light-neutrality-8`
 
 ```
-still pulse, divine temporal divide, monochromatic trading card illustration, wide split-screen composition with silver pulse front bisecting frame vertically, clean silver shimmer pulse front as wall of crystallized time with crystalline freeze-shard formations at its edge, left side baroque gothic city in full catastrophic collapse architecture mid-shatter figures mid-combat explosions mid-bloom dense engraved surface detail on every fragmenting element, right side identical composition frozen in absolute impossible stillness all motion gone every surface more legible and detailed than the living side, frozen and collapsing gothic cityscape background in loose expressive dark brushwork, cold silver crystallization radiance painted as gestural shimmer along pulse front, deep blacks in both sides' shadow masses, blazing whites on pulse front edge and frozen still-side highlights, painted gray midtones on gothic architecture engraving detail both sides, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Sequence Pulse | Seeker | Rare
-`definitionId: seek-neutral-sequence-pulse`
-
-```
-sequence pulse, divine sequence detonation arc, monochromatic trading card illustration, diagonal arc composition lower-left to upper-right seven escalating blasts, seven divine detonations in dramatic diagonal arc each triggered by previous in escalating sequence, first a small pale silver starburst with baroque crater frame, seventh a screen-dominating silver inferno cathedral-scale impact baroque ruins visible in blast debris ring, baroque divine sequence of engraved scripture links in sky with detonation beams firing from each link, previous sequence craters as ornate baroque monument rings in scorched landscape, ruined gothic divine landscape background in loose expressive dark brushwork, escalating white radiance at each detonation painted as gestural burst flares largest and most dominant at seventh, deep blacks in ruined landscape mass and sequence shadow, blazing whites on seventh detonation inferno and sequence link leading edges, painted gray midtones on baroque crater inscription rings, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, crown of morning, an enthroned sovereign of the quiet dawn, regal monarch of equilibrium, centered frontal majesty shot, seated upon a throne of floating sacred-geometry arches, imposing crown of nested obsidian spires and floating white starbursts, voluminous embroidered black robe spreading across the stairs, slender gauntleted hands resting on a scepter of folded light, grand palace throne room with colossal gothic colonnades dissolving into silence, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Chaos Recall | Seeker | Rare
-`definitionId: seek-neutral-chaos-recall`
+### Veilbreaker | Light | Rare
+`definitionId: light-neutrality-9`
 
 ```
-chaos recall, divine reconstruction singularity, monochromatic trading card illustration, radial implosion composition all elements converging on blazing center, dozens of angular obsidian baroque architecture fragments hauled inward at high velocity toward blazing white-silver singularity at exact frame center, each fragment a baroque architectural shard with partial divine scripture lines visible on its face, silver light-streak contrails trailing behind each converging fragment, fragments already reconnecting with glowing silver weld-light at joints, gothic cathedral mid-explosion background fragments still erupting from walls in loose expressive dark brushwork, blazing singularity radiance painted as gestural white burst at center, deep blacks in obsidian fragment masses and cathedral explosion shadow, blazing whites on singularity and inward-facing lit fragment faces, painted gray midtones on baroque shard scripture engraving detail, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Deep Seek | Seeker | Rare
-`definitionId: seek-neutral-deep-seek`
-
-```
-deep seek, dimensional vertical plunge, monochromatic trading card illustration, extreme first-person downward perspective vertigo composition looking straight down, viewer in freefall through infinite stacked baroque divine planes each a horizontal cross-section of gothic architecture dense floor mosaic ceiling vault pillar detail visible as slice, planes shrinking in perfect vanishing-point perspective converging on blazing silver target point at extreme bottom, extreme downward motion lines radiating upward from target point across entire composition, obsidian tower walls between planes carved with continuous vertical divine scripture, divine dimension tower background in loose expressive dark brushwork, blazing silver target radiance painted as gestural white point at depth, deep blacks in tower walls and plane shadow interiors, blazing whites on target point below and nearest plane floor face, painted gray midtones on gothic floor mosaic inlay detail, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, veilbreaker, a vanguard duelist of dimensional erasure, swordmaster of null space, extreme high-speed diagonal slashing motion, greatsword cutting across the frame trailing a luminous white contrail, sleek aerodynamic gothic armor in matte obsidian, flowing white scarf trailing behind in speed lines, massive two-handed executioner blade glowing along its white cutting edge, shattering the dimensional fabric, woven tapestry veil of reality ripping apart into void static and geometric shards, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Grand Seek | Seeker | Rare
-`definitionId: seek-neutral-grand-seek`
+### First Radiance | Light | Rare
+`definitionId: light-neutrality-10`
 
 ```
-grand seek, triple divine card release, monochromatic trading card illustration, explosive three-way card burst composition from central rift, three enormous baroque card artifacts erupting simultaneously from blazing dimensional rift each in different direction silver contrail lines behind each, cards massive in foreground full ornate baroque border scripture and relief detail visible on each face, enormous jagged dimensional rift framed by gothic archway stonework dissolving into void static at edges through rift deep void architectural space, dissolving gothic dimensional rift background in loose expressive dark brushwork, blazing white rift interior radiance painted as gestural burst from center, deep blacks in rift void interior and archway stone shadow, blazing whites on rift interior and three card leading faces, painted gray midtones on baroque card scripture border engravings, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Echo Pulse | Seeker | Rare
-`definitionId: seek-neutral-echo-pulse`
-
-```
-echo pulse, divine resonance rings, monochromatic trading card illustration, centered three-dimensional ring bloom composition, single source ring at center generating six expanding echo copies propagating outward at slightly different spatial angles, innermost ring blazing bone-white minimal engraving clean geometric silver, each successive outer ring dimmer but more baroque in engraving complexity, outermost ring immense spanning frame edges filled with hyper-dense recursive divine scripture barely luminous, rings at different angles forming three-dimensional sphere of nested gothic halos some appearing as ovals some as circles, divine void space with gothic cathedral remnants dissolving through ring edges in loose expressive dark brushwork, innermost ring blazing painted as gestural white radiance source, deep blacks in background void and outer ring shadow faces, blazing whites on innermost ring and mid-ring scripture-channel glow, painted gray midtones on baroque halo engraving detail, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, first radiance, a primordial entity of nascent light, divine genesis spirit, upward soaring composition emerging from a dark abyssal pit toward the upper frame, ethereal humanoid silhouette woven from pure white radiance and gray ribbon tendrils, face a smooth oval mask of white glass, halo exploding into dozens of pointed light rays, swirling black vortex of raw void matter opening up to receive the ascending light, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Seraph Hunt | Seeker | Rare
-`definitionId: seek-neutral-seraph-hunt`
+### White Orchard Keeper | Light | Rare
+`definitionId: light-neutrality-11`
 
 ```
-seraph hunt, divine pursuit sequence, monochromatic trading card illustration, first-person tracking pursuit perspective dynamic velocity, gothic-armored seraphim figure streaking away upper background blazing silver motion-blur contrail cutting through dark baroque space, three baroque targeting reticles ornate mechanical rings with scripture-inscribed inner faces locking on from different frame angles converging targeting lines toward fleeing seraphim, collapsing gothic divine arcade architecture fragmenting in background dense relief carvings on falling column fragments readable, dense crumbling gothic arcade background in loose expressive dark brushwork, blazing silver seraphim contrail painted as gestural silver streak cutting across frame, deep blacks in collapsed arcade masses and background void, blazing whites on seraphim contrail and targeting reticle inner face illumination, painted gray midtones on gothic architecture relief carvings, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Nullfall | Seeker | Epic
-`definitionId: seek-neutral-nullfall`
-
-```
-nullfall, divine double descent, monochromatic trading card illustration, upward-looking spiral composition two figures falling from great height above, bone-white gothic-armored seraphim leaving blazing silver light contrail and absolute obsidian chaos entity with inverted scripture armor leaving matching dark contrail both spiraling downward in tightening double-helix, seraphim baroque armor fully lit chaos entity identical armor in total shadow, seraphim arm reaching toward chaos entity dissolving at its edges, upward-looking background revealing vast baroque event horizon above enormous gothic circular architectural boundary thin silver ring tracing circumference and blazing singularity at center, grand gothic cathedral architecture collapsing in slow motion around event horizon in loose expressive dark brushwork, blazing singularity radiance painted as gestural white burst at apex above, deep blacks in chaos entity form and cathedral collapse mass, blazing whites on seraphim form and event horizon singularity, painted gray midtones on gothic armor engraving spiral, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, white orchard keeper, a solemn priestess of petrified celestial flora, maiden of stillness, graceful standing portrait amid a grove of frozen white trees, holding a crystalline lantern, flowing gothic liturgical vestments in layered white and gray, dark hooded veil framing a serene porcelain face, lantern emitting a dense fog of cold white luminescence, delicate thorn staff, surreal orchard of petrified black-trunk trees bearing luminous white crystal blossoms, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-## ANGEL CARDS
-
----
-
-### The Beginning of the End | Angel | Common
-`definitionId: angel-neutral-beginning`
+### Paradox Knight | Light | Rare
+`definitionId: light-neutrality-12`
 
 ```
-the beginning and the end, dual-nature cosmic deity, monochromatic trading card illustration, front-facing symmetrical split composition towering figure, titanic armored figure split exactly in half left half radiant bone-white gothic plate armor creation-scripture glowing silver right half absolute obsidian gothic armor inverted dissolution-sigils absorbing light, six luminous white wings on left shard-fragmenting at tips into glitch formations, six void-black wings on right dissolving at tips into null static, smooth mask split bone-white left and void black right with single vertical silver eye-crack running through center seam, blazing silver cosmic seam crackling at center with angular glitch-fragment sparks, left background new cosmos baroque cathedrals assembling from light right background identical architecture dissolving into void static, split universe background in loose expressive dark brushwork, blazing silver seam energy painted as gestural crackling flares at center divide, deep blacks on right half and void background, blazing whites on left half and blazing silver seam, painted gray midtones on baroque armor engraving detail, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, character fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, paradox knight, a dual-aspected warrior of impossible balance, twin-blade champion, front-facing symmetrical combat stance with dual blades crossed in a gleaming X formation, armor divided exactly down the vertical centerline, bone-white on the left and obsidian black on the right, left blade pure void-black with white runes, right blade brilliant white steel with black runes, twin split halos, bifurcated cathedral ruins split into white stone on the left and black stone on the right, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Aegis of Presence | Angel | Legendary
-`definitionId: angel-neutral-presence`
+### Solar Cantor | Light | Rare
+`definitionId: light-neutrality-13`
 
 ```
-aegis of presence, colossal void deity, monochromatic trading card illustration, overwhelming extreme low angle upshot figure overflowing all frame edges incomprehensible scale, absolute obsidian gothic-armored colossus exceeding every frame border wings cut off above feet implied below, three ghost-image copies of figure offset behind in decreasing opacity each outlined in silver at overlap boundaries, ten enormous wings per ghost layer filling entire background with dark feathered mass, smooth featureless obsidian mask face with two pure blazing silver circle eyes staring down with calm apocalyptic certainty, massive baroque aegis shield before it obsidian stone engraved hyper-dense recursive divine scripture across entire face layers of sacred geometry and divine law the accumulated laws of a civilization on one object, space itself bending toward entity in visible gravitational arcs, void cosmic space curving inward around deity in background in loose expressive dark brushwork, silver eye circle radiance painted as blazing gestural sources, deep blacks in obsidian armor mass and ghost layer bodies, blazing whites on silver circle eyes and shield scripture glow, painted gray midtones on ghost-layer silver rim-light outlines, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, character fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Aegis of Equilibrium | Angel | Legendary
-`definitionId: angel-neutral-equilibrium`
-
-```
-aegis of equilibrium, legendary symmetry deity, monochromatic trading card illustration, front-facing perfect bilateral symmetry composition, legendary gothic plate armor entity dense recursive scripture on every surface entire form one continuous divine text, smooth centered helmet single wide silver visor slit, three bone-white wings on left shard-fragmenting at tips, three void-black wings on right dissolving at tips exact mirror, white-gauntleted left hand gripping enormous white baroque sequence engraved link scripture pulling taut toward blazing white creation explosion at left frame edge, obsidian right hand gripping identical black sequence inverted scripture pulling taut toward void absorption event at right frame edge, massive obsidian baroque aegis shield perfect bilateral symmetry floating at chest enormous central sacred geometry mandala and equilibrium scripture left half bone-white right half obsidian meeting at blazing silver center seam, left background baroque architecture under construction right background identical architecture dissolving both at same stage, split universe background in loose expressive dark brushwork, blazing silver shield seam energy painted as gestural crackling flares, deep blacks in right armor half and void background, blazing whites on left armor half and shield center seam, painted gray midtones on baroque armor and shield scripture engraving, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, character fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, solar cantor, a sacred hymn-weaver of the silent sun, celestial choir singer, dramatic three-quarter mid-aria pose with hands raised conducting visible sound-geometry, regal robes with musical scripture embroidered in gray thread, radiating halo of concentric notched musical rings, open mouth releasing a visible beam of geometric white light ribbons, vast cathedral choir loft with towering pipe-organ columns receding into infinite darkness, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-
-## BOSSES
-
----
-
-### Paradox Throne | Boss | Neutrality Expansion
-`bossId: boss-neutrality-paradox-throne`
+### Pale Star Drake | Light | Rare
+`definitionId: light-neutrality-14`
 
 ```
-paradox throne, timeline-overlap monarch, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, centered throne composition where five simultaneous versions of the same queen overlap in transparent crystal echoes, obsidian and bone monochrome body forms with prismatic rainbow seam refractions, stacked hourglass cathedrals collapsing upward in background, glass crown shards casting spectrum caustics across the frame, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, pale star drake, a colossal void leviathan dragon, cosmic wyrm of stillness, dynamic spiral descent coiling around a ruined gothic spire, head thrusting toward the viewer in dramatic foreshortening, bone-white iridescent scale armor, vast membranous wings of deep obsidian shadow marked with gray stellar constellations, single blazing white eye at the center of a crested dragon skull, razor horns, shattered celestial city floating in orbital void with planet fragments, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Void Exchequer | Boss | Neutrality Expansion
-`bossId: boss-neutrality-void-exchequer`
+### Measure of Dawn | Light | Rare
+`definitionId: light-neutrality-15`
 
 ```
-void exchequer, cosmic tax collector, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, high-angle ledger chamber composition with colossal armored treasurer seated behind floating crystal account-slabs, each slab drains light from player sigils and re-emits rainbow prismatic debt beams, baroque counting cathedral of obsidian glass and bone-white script pillars in background, monochrome framework with violent spectrum highlights, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Equilibrium Rex | Boss | Neutrality Expansion
-`bossId: boss-neutrality-equilibrium-rex`
-
-```
-equilibrium rex, weaponized balance sovereign, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, frontal symmetrical composition split into mirror halves of perfect equal force, crystal-obsidian armor with central white fracture seam, twelve suspended scale-blades hovering in exact geometric equilibrium around the ruler, every edge refracting full-spectrum rainbow caustics against monochrome stone, cathedral court background dissolving into mirrored void, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, measure of dawn, a cosmic arbiter of exact balance, judge of equilibrium, perfect symmetrical front-facing composition, holding massive balance scales suspended from both arms, regal hooded robes of geometric black-and-white grid patterns, floating balance scales carrying an orb of black void on the left and an orb of white starlight on the right, glowing geometric halo, judgment hall floor tiled in alternating black-and-white marble extending into infinite distance, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Axiom Maw | Boss | Neutrality Expansion
-`bossId: boss-neutrality-axiom-maw`
+### Equilibrium Titan | Light | Epic
+`definitionId: light-neutrality-16`
 
 ```
-axiom maw, theorem-devouring horror, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, worm's-eye composition into a massive impossible mouth formed from rotating crystal scripture plates, humanoid void core suspended inside jaws as if speaking axioms that erase matter, monochrome obsidian-bone geometry lit by prismatic rainbow fissures, ruined lecture-cathedral and shattered logic diagrams in background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Prime Judge of Silence | Boss | Neutrality Expansion
-`bossId: boss-neutrality-prime-judge`
-
-```
-prime judge of silence, final neutrality arbiter, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, monumental courtroom composition with faceless judge in crystalline gavel armor presiding over frozen reality, all sound visualized as shattered glass rings arrested in mid-air, monochrome obsidian and bone planes pierced by prismatic rainbow verdict rays, endless tribunal columns fading into void behind, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
-## BOSSES
-
----
-
-### Paradox Throne | Boss | Neutrality Expansion
-`bossId: boss-neutrality-paradox-throne`
-
-```
-paradox throne, timeline-overlap monarch, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, centered throne composition where five simultaneous versions of the same queen overlap in transparent crystal echoes, obsidian and bone monochrome body forms with prismatic rainbow seam refractions, stacked hourglass cathedrals collapsing upward in background, glass crown shards casting spectrum caustics across the frame, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, equilibrium titan, a colossal mountain-sized guardian of reality, primordial colossus, extreme low-angle worm's-eye view looking up at the titan standing astride a shattered world-rift, massive layered fortress-plate armor split between obsidian glass and white marble, four colossal arms holding pillars of cosmic balance, head crowned with three concentric planetary halo rings, catastrophic rift in the world with crumbling cathedrals and floating continents, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Void Exchequer | Boss | Neutrality Expansion
-`bossId: boss-neutrality-void-exchequer`
+### Lucent Pilgrim | Light | Epic
+`definitionId: light-neutrality-17`
 
 ```
-void exchequer, cosmic tax collector, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, high-angle ledger chamber composition with colossal armored treasurer seated behind floating crystal account-slabs, each slab drains light from player sigils and re-emits rainbow prismatic debt beams, baroque counting cathedral of obsidian glass and bone-white script pillars in background, monochrome framework with violent spectrum highlights, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
-```
-
----
-
-### Equilibrium Rex | Boss | Neutrality Expansion
-`bossId: boss-neutrality-equilibrium-rex`
-
-```
-equilibrium rex, weaponized balance sovereign, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, frontal symmetrical composition split into mirror halves of perfect equal force, crystal-obsidian armor with central white fracture seam, twelve suspended scale-blades hovering in exact geometric equilibrium around the ruler, every edge refracting full-spectrum rainbow caustics against monochrome stone, cathedral court background dissolving into mirrored void, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, lucent pilgrim, a lone wanderer across dead dimensions, ascetic traveler of the void, cinematic medium shot walking forward along a narrow path through an endless black-ash sea, tattered traveler cloak in obsidian gray, bone-white wooden staff topped with an encapsulated white star, delicate gray mask over the eyes, walking with calm determined grace, infinite desert of black ash beneath a sky filled with dead white star rings, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Axiom Maw | Boss | Neutrality Expansion
-`bossId: boss-neutrality-axiom-maw`
+### Ain-Bound Guardian | Light | Epic
+`definitionId: light-neutrality-18`
 
 ```
-axiom maw, theorem-devouring horror, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, worm's-eye composition into a massive impossible mouth formed from rotating crystal scripture plates, humanoid void core suspended inside jaws as if speaking axioms that erase matter, monochrome obsidian-bone geometry lit by prismatic rainbow fissures, ruined lecture-cathedral and shattered logic diagrams in background, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, ain-bound guardian, an avatar of the infinite before, eternal sentinel of absolute zero, centered standing monolith pose, palms facing forward projecting an omnidirectional stillness field, towering humanoid figure clad in interlocking obsidian ring-plates, immense circular halo spanning the full frame diameter engraved with sacred geometry, featureless gray visor glowing steadily, dimension collapsing into pure geometric wireframe and black void, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
 ---
 
-### Prime Judge of Silence | Boss | Neutrality Expansion
-`bossId: boss-neutrality-prime-judge`
+### Quiet Sun | Light | Epic
+`definitionId: light-neutrality-19`
 
 ```
-prime judge of silence, final neutrality arbiter, neutrality eternal boss trading card illustration, palette lock: obsidian black, bone white, painted gray with prismatic crystal refraction accents; no saturated base colors outside refracted spectrum effects, monumental courtroom composition with faceless judge in crystalline gavel armor presiding over frozen reality, all sound visualized as shattered glass rings arrested in mid-air, monochrome obsidian and bone planes pierced by prismatic rainbow verdict rays, endless tribunal columns fading into void behind, YGO secret rare card art, pokemon illustration rare full art, bold ink outlines thick to thin, cel shaded, visible brushwork, painterly, epic cinematic composition, boss fills 80% of frame --ar 2:3 --niji 6 --stylize 900
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, quiet sun, the flameless star at the center of creation, deity of silent warmth, reverent kneeling figure in the foreground looking up at a massive central black-and-white eclipse star, central star a perfect solid white disk surrounded by a corona of black obsidian prominence arcs and gray scripture rings, kneeling devotee wearing embroidered ceremonial vestments, ancient subterranean solar observatory with massive stone astrolabes, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
+
+---
+
+### Origin Bearer | Light | Epic
+`definitionId: light-neutrality-20`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, origin bearer, custodian of the first spark and the last breath, cosmic monarch, towering central figure standing at the apex of an infinite spiral staircase of light and dark stone, magnificent layered mantle billowing outward in heavy black-and-white folds, holding a small floating orb containing a newborn galaxy, six sweeping wings of structured white crystal shards, spiral galaxy of black-and-white nebula dust collapsing toward a single origin point, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Mirror Saint | Light | Epic
+`definitionId: light-neutrality-21`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, mirror saint, a holy entity of reflection and truth, oracle of glass, ethereal floating portrait surrounded by an array of suspended hovering obsidian mirror panes, porcelain-white skin and hair, blindfold of black silk with gray embroidery, each floating mirror shard reflecting a different perspective of the saint in white light, flowing glass-fiber robes, cathedral of infinite mirrors receding into black void, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Lightwell Watcher | Light | Legendary
+`definitionId: light-neutrality-22`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, lightwell watcher, immortal guardian of the font of creation, divine water-keeper, low-angle side-profile kneeling at the rim of a circular well of liquid white light, ornate liturgical armor of polished obsidian stone with gray fluid channels, hands cupping liquid starlight that drips back into the well, eight delicate halo rings orbiting vertically around the head, grand subterranean temple of black basalt pillars and vaulted ceilings, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Celestial Null | Light | Legendary
+`definitionId: light-neutrality-23`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, celestial null, a cosmic archangel of erasure, supreme entity of the starless expanse, awe-inspiring radial composition, deity fused into a massive celestial wheel of orbiting ring-spires, towering humanoid figure of polished obsidian glass, chest cavity open revealing a blinding white singularity star within, twelve wings of segmented black blade-feathers spanning all frame edges, outer cosmos with shattered constellations and collapsing nebula clouds, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Last Horizon | Light | Legendary
+`definitionId: light-neutrality-24`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, last horizon, the final emperor at the end of time, sovereign of the exhausted universe, regal silhouette standing on a high cliff edge overlooking the final sunset of all reality, sweeping coronation mantle of velvet black bordered in bone-white fur, great sword planted point-down into the stone, crowned with a jagged halo of black crystal spikes and gray thorns, shattered celestial horizon with a massive dying white sun dipping into a sea of obsidian void, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Unbroken Light | Light | Eternal
+`definitionId: light-neutrality-25`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the unbroken light, a supreme transcendent deity of pure stillness, the eternal white absolute, screen-dominating frontal composition, divine figure radiating absolute authority and perfect balance, sculpted armor of pristine bone-white divine porcelain, six massive obsidian shadow wings framing the figure like a gothic cathedral arch, face serene and ageless, surrounded by nested concentric halo mandalas, all architecture of heaven and earth disintegrating into pure white energy particles and dark void dust, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+## DARK CARDS (25 Cards)
+
+---
+
+### Null Compass | Dark | Common
+`definitionId: dark-neutrality-1`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, null compass, a mystical obsidian navigational instrument, tool of void exploration, first-person close-up perspective of hands holding an intricate astronomical compass, heavy astrolabe compass forged from polished black glass with rotating gray gear-rings, central needle a floating shard of pure white light pointing toward a dimensional fracture, desolate expanse of dark ruins beneath a swirling sky of black clouds and white lightning, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Void Archive | Dark | Common
+`definitionId: dark-neutrality-2`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, void archive, a vault of erased knowledge, forbidden black library, towering vertical composition showing a lone scholar standing before colossal black archive doors, monolithic doors of obsidian stone engraved with thousands of lines of inverted white scripture, shelves of black stone tablets stretching up to vanishing heights, scholar holding a pale gray scroll, infinite vaulted library hall receding into darkness with floating scripture fragments, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Balance Engine | Dark | Common
+`definitionId: dark-neutrality-3`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, balance engine, a clockwork mechanism of equilibrium, cosmic calculation apparatus, complex machine-fills-frame isometric composition with interlocking rotating rings, three massive gyroscope rings of black iron and gray filigree spinning simultaneously around a central ignition sphere, gears interlocking with visible white-energy spark discharge, dark subterranean workshop of cathedral proportions with hanging chains and steam, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Equilibrium Map | Dark | Common
+`definitionId: dark-neutrality-4`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, equilibrium map, a celestial star-chart of stillness, cartographic sacred artifact, overhead angled shot of an expansive map table illuminated by floating holographic coordinate grids, black velvet parchment unrolled across a stone altar, intricate white ink constellations and geometric coordinate circles floating above the surface in three dimensions, observatory chamber with massive stone arches framing a starless dark sky, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Stillness Chapel | Dark | Common
+`definitionId: dark-neutrality-5`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, stillness chapel, a sacred sanctuary of absolute quiet, gothic monument of peace, one-point perspective looking down the central aisle of an imposing obsidian chapel, soaring black stone rib vaults, a solitary robed priest kneeling at the far altar beneath a single tall vertical lancet window of pure blinding white light, silence palpable in every surface, chapel interior with rows of stone pews and carved seraph statues along the walls, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Measured Path | Dark | Common
+`definitionId: dark-neutrality-6`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, measured path, a geometric staircase into the abyss, surreal cosmic pilgrimage route, steep upward perspective following a spiral staircase of black stone suspended in an empty white void, lone robed traveler climbing steps with no supports or railings, each step an obsidian slab edged in white scripture, path coiling upward toward a distant black archway, blank white void space filled with faint geometric grid lines and floating architectural debris, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Seraphic Recall | Dark | Common
+`definitionId: dark-neutrality-7`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, seraphic recall, a memory extraction ritual, summoning of past angelic echoes, dynamic motion-blur shot of a dark sorcerer reaching into a blazing portal of memory, hooded figure in black vestments pulling taut glowing white thread-cables from a gothic gateway arch, spectral outline of a six-winged white seraph materializing through the portal, dissolving ritual chamber with shattered stone runes and energy contrails, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Neutral Cycle | Dark | Common
+`definitionId: dark-neutrality-8`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, neutral cycle, the eternal vortex of erasure and renewal, card reincarnation storm, sweeping three-quarter upward angle showing a colossal double-helix storm of floating cards, thousands of black-and-white tarot-sized card artifacts corkscrewing upward in intertwined ribbons, cards materializing with glowing white scripture on one stream and disintegrating into black ash on the other, cathedral chamber disintegrating inward toward the central vortex, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Deep Survey | Dark | Rare
+`definitionId: dark-neutrality-9`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, deep survey, a vertical plunge into the void abyss, dimensional cartography dive, extreme first-person downward perspective looking straight down an infinite vertical shaft, stacked horizontal floor-planes of gothic cathedrals receding in dizzying perspective toward a tiny white point far below, investigator hands holding measurement chains on a ledge, sheer vertical obsidian cliff walls carved with continuous scripture channels, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Paradox Lens | Dark | Rare
+`definitionId: dark-neutrality-10`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, paradox lens, an instrument revealing hidden cosmic truths, floating monocle artifact, dramatic shot looking through a massive floating circular glass lens held before an eye, ornate obsidian frame with gray calculation markings, through the lens the normal dark void is revealed as a dense matrix of white geometric lines and hidden angelic silhouettes, dark cosmic ruins outside the lens, hyper-detailed white wireframe visible through the lens, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Axiom Reservoir | Dark | Rare
+`definitionId: dark-neutrality-11`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, axiom reservoir, a subterranean lake of stillness, battery of void potential, wide panoramic composition of an underground cavern holding a calm lake of black glass, surface of liquid obsidian so still it acts as a perfect mirror, beneath the surface a glowing white geometric mandala grid pulses softly, massive gothic pillars rising from the water, colossal cavern ceiling with stalactites and hanging ritual bells, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Horizon Atlas | Dark | Rare
+`definitionId: dark-neutrality-12`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, horizon atlas, a scholar charting the end of space, celestial atlas chamber, three-quarter view of an elder scholar manipulating three concentric floating astrolabe rings, scholar in heavy black velvet robes with gray astrological embroidery, rings of polished black stone hovering around the head showing mapped constellations in white star-points, shattered observatory balcony opening out to a starless black horizon, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Silent Exchange | Dark | Rare
+`definitionId: dark-neutrality-13`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, silent exchange, a solemn bargain of equilibrium, two figures trading cosmic seals, intimate medium shot of two robed figures facing each other across a black stone plinth, left figure cloaked in bone-white robes, right figure cloaked in obsidian black robes, four hands meeting at center holding a floating sphere divided equally into light and shadow, sacred temple chamber with minimalist stone architecture and void mist, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Glass Archive | Dark | Rare
+`definitionId: dark-neutrality-14`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, glass archive, a hall of crystalline memories, floating scripture repository, sweeping perspective down a corridor filled with thousands of hovering transparent glass tablets, each rectangular glass slate etched with microscopic gray scripture glowing faintly, an archivist figure in black armor walking between the floating rows, selecting a tablet with a gauntleted hand, cathedral of black stone walls reflecting the floating glass tablets, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Night Orchard | Dark | Rare
+`definitionId: dark-neutrality-15`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, night orchard, a grove of petrified star-trees, mystical garden of silence, low-angle path shot looking through an orchard of twisted obsidian trees under a white sky, gnarled black trunks with crystalline bark, branches bearing delicate star-shaped white blossoms that glow softly, white flower petals drifting down through the dark atmosphere, distant silhouette of a ruined gothic cathedral against a pale starless horizon, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Unlit Gate | Dark | Epic
+`definitionId: dark-neutrality-16`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, unlit gate, a monolithic boundary between existence and nothingness, ancient threshold, monumental frontal view of an enormous obsidian portal rising hundreds of feet high, seamless black stone arch carved with recursive non-euclidean geometry, a tiny figure in white robes standing at the base with hands pressed against the sealed surface, hairline cracks of white light bleeding through, bleak desolate plateau of black stone under a stormy monochrome sky, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Black Sun Reliquary | Dark | Epic
+`definitionId: dark-neutrality-17`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, black sun reliquary, a sacred vessel containing a dead star, altar of void energy, dramatic three-quarter shot of an ornate obsidian reliquary chalice on a raised stone dais, floating inside the chalice is a miniature black sun sphere surrounded by a crackling corona of white cold lightning, four gothic spires surrounding the dais connected by gray binding chains, vaulted crypt with ritual pillars and kneeling guardian statues, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Long Pause | Dark | Epic
+`definitionId: dark-neutrality-18`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the long pause, a moment frozen between time and eternity, battlefield suspended in stillness, split-second combat scene frozen into absolute crystalline immobility, two gothic knights mid-clash with swords touching, the weapon-impact shockwave frozen as solid white glass shards in mid-air, falling stone debris and dust suspended motionless, collapsing cathedral frozen halfway through its collapse, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Void Cartograph | Dark | Epic
+`definitionId: dark-neutrality-19`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, void cartograph, a map of erased galaxies, master cartographer of nonexistence, scholar standing before a colossal wall-sized dark slate showing cosmic voids, scholar in layered black robes holding a bone-white stylus, drafting white geometric coordinate circles on a pitch-black wall, erased constellations crossed out in delicate gray hash-marks, towering observatory with astrolabe instruments and parchment scrolls, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Last Equation | Dark | Epic
+`definitionId: dark-neutrality-20`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, last equation, the mathematical proof of stillness, scholar at the edge of comprehension, overhead angle looking down at a scholar surrounded by rings of floating chalk mathematics, hundreds of white geometric theorems and mathematical symbols orbiting in concentric spheres around a kneeling figure in black vestments, head bowed in realization of total stillness, circular stone floor carved with an immense compass rose, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### World Without Echo | Dark | Epic
+`definitionId: dark-neutrality-21`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, world without echo, a desolate cityscape of soundless stone, post-extinction metropolis, sweeping wide vista of an empty gothic metropolis beneath a featureless white sky, soaring cathedrals and spires carved from black volcanic basalt, streets empty and pristine with no debris, mist of white starlight pooling in alleys, profound stillness in every line, endless rows of gothic spires fading into distant atmospheric fog, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Oblivion Key | Dark | Legendary
+`definitionId: dark-neutrality-22`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, oblivion key, a colossal greatsword forged in the shape of a cathedral key, sacred weapon, low-angle hero shot of an armored champion carrying an immense key-blade resting on the shoulder, blade crafted from folded black damascus steel with hollow key-teeth formed like gothic arches, glowing white runes pulsing along the spine, full-plate obsidian armor with a gray thorn mantle, ruined fortress courtyard with shattered statues and floating stone fragments, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Patient Star | Dark | Legendary
+`definitionId: dark-neutrality-23`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the patient star, a single surviving star resting in an obsidian cradle, celestial guardian, reverent medium shot of a serene angel holding a miniature star in outstretched palms, guardian in fluid black silk robes with gray hair flowing freely, hands cradling a bright white star that pulses softly without heat or flame, peaceful closed eyes, infinite dark space with empty orbit rings and distant nebula silhouettes, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Absolute Archive | Dark | Legendary
+`definitionId: dark-neutrality-24`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, absolute archive, the final repository of all vanished realities, cosmic library monolith, one-point perspective gazing into an impossible library spanning to infinity, colossal black stone pillars with millions of white scripture cubbies extending miles upward and forward, floating spiral staircases connecting balconies, a lone keeper figure walking down the central aisle, cathedral-scale vaulted ceiling lost in distant shadows, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### Dark Origin | Dark | Eternal
+`definitionId: dark-neutrality-25`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, dark origin, the primordial shadow before creation, supreme sovereign of the void, imposing centered frontal throne shot of a towering entity made of living shadow, figure a pure silhouette of absolute obsidian black, crowned with jagged shadow horns, chest split by a single vertical crack of blinding white starlight, seated upon an ancient monolith throne, cosmic void where reality is condensing from raw black matter into structured geometry, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+## AIN SOPH AUR CARDS (12 Cards)
+
+---
+
+### The White Null | AinSophAur | Legendary
+`definitionId: ain-soph-aur-neutrality-1`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the white null, ain soph aur, a supreme monarch of nonexistence, avatar of the pure zero, centered symmetrical majestic portrait, figure floating motionless dead-center in frame, armor divided in perfect vertical symmetry between bone-white porcelain on the left and obsidian glass on the right, six pairs of fractured crystal shard wings spanning past frame edges, blank white mask with a single gray visor slit, shattered throne hall of collapsing arches dissolving into void static, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Axiom Below | AinSophAur | Legendary
+`definitionId: ain-soph-aur-neutrality-2`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the axiom below, ain soph aur, a subterranean titan of primordial mathematics, god of foundations, low-angle foreshortened shot with giant stone hands reaching upward toward the viewer, colossal body of carved black basalt tessellated with white sacred-geometry theorems, chest a hollow cavern containing a rotating white star polyhedron, stone crown of square spires, bottomless subterranean chasm with floating geometric plates and stone chains, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Paradox Crown | AinSophAur | Legendary
+`definitionId: ain-soph-aur-neutrality-3`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the paradox crown, ain soph aur, a sovereign crowned in impossible contradiction, dual-aspected deity, three-quarter regal portrait of an enthroned monarch wearing a colossal multi-tiered crown, crown constructed of alternating rotating rings of black obsidian and white light, flowing robe of velvet void embroidered with gray constellations, wielding twin scepters of light and dark, court of impossible escher-style staircases and floating arches, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Stillbreak | AinSophAur | Legendary
+`definitionId: ain-soph-aur-neutrality-4`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the stillbreak, ain soph aur, a colossus that shatters the silence of eternity, warrior of the first motion, explosive dynamic action shot, giant armored warrior swinging a massive halberd downward, heavy gothic plate mail of bone white and dark steel, the halberd blade striking an invisible barrier and creating a spiderweb of glowing white cracks across space, shockwave radiating in concentric rings, shattering battlefield of dark stone cathedrals erupting into geometric shards, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Horizon of Silence | AinSophAur | Eternal
+`definitionId: ain-soph-aur-neutrality-5`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the horizon of silence, ain soph aur, a quiet emperor seated at the edge of the universe, watcher of ends, wide panoramic perspective of a colossal figure seated on a throne overlooking a flat horizon, billowing mantle of black velvet extending across the lower frame like a dark sea, porcelain-white face in peaceful contemplation, a giant thin halo ring floating miles behind the head spanning the sky, starless sky split horizontally between black void above and white stillness below, loose expressive brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Veil of Dawn | AinSophAur | Eternal
+`definitionId: ain-soph-aur-neutrality-6`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the veil of dawn, ain soph aur, a holy saint of the first morning in the void, dawn bearer, upward ascending floating pose, translucent veil trailing downward like a waterfall of light, slender angelic figure in bone-white liturgical robes, head draped in a sheer white veil through which gray eyes glow, six wings made of pure white aurora ribbons weaving through black space, first white dawn breaking over a dark ruined celestial citadel, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Mirror of Ash | AinSophAur | Eternal
+`definitionId: ain-soph-aur-neutrality-7`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the mirror of ash, ain soph aur, a sovereign of the ash wasteland, entity of silent reflection, centered frontal composition standing ankle-deep in a vast desert of black ash, full-plate armor of mirrored black obsidian glass reflecting a white sky, holding a massive oval mirror that shows an intact cathedral where ruins stand, swirling bone-white ash particles, endless dunes of black volcanic ash under an overcast pale white sky, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Gate of Inevitable | AinSophAur | Eternal
+`definitionId: ain-soph-aur-neutrality-8`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the gate of inevitable, ain soph aur, a gatekeeper of the final passage, sentinel of cosmic destiny, towering monumental composition fused into the framework of a colossal gothic gateway, armored titan whose body is integrated into the stone archway, massive hands holding the two door valves partially open, white starlight pouring through the vertical door gap in blinding rays, monumental staircase leading up to the gate with thousands of empty armor suits, loose expressive brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Hollow Well | AinSophAur | Infinite
+`definitionId: ain-soph-aur-neutrality-9`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the hollow well, ain soph aur, a primordial abyssal entity rising from the fountain of nonexistence, upward emerging composition from a circular black well at the base of the frame, serpentine humanoid body of pure obsidian glass rising toward the sky, crown of twelve floating glass spikes circling the head like a corona, hands releasing fountains of liquid white light that cascade back into the well, circular temple chamber with concentric stone terraces and carved serpent reliefs, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Sun Without Flame | AinSophAur | Infinite
+`definitionId: ain-soph-aur-neutrality-10`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the sun without flame, ain soph aur, the silent white star at the summit of creation, cold sun god, reverent centered composition dominated by a massive solid white circular disk behind the deity, sovereign figure in black-and-gray ceremonial robes standing in front of the sun disk, staff topped with an obsidian crescent moon, corona of black prominence flares curling around the white sun rim, orbital space above a dark planet with rings of frozen stone, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Last Aurora | AinSophAur | Infinite
+`definitionId: ain-soph-aur-neutrality-11`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the last aurora, ain soph aur, a goddess of monochrome sky ribbons, dancer of the final curtain, fluid sweeping dynamic motion with ribbons of black-and-white aurora weaving across the entire frame, graceful humanoid figure floating mid-air, dress transforming into vast luminous sky curtains of white and gray light, halo of delicate concentric needle-rings, calm serene expression, ruined gothic cityscape far below submerged in mist, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Infinite Origin | AinSophAur | Infinite
+`definitionId: ain-soph-aur-neutrality-12`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the infinite origin, ain soph aur, the apex source of all reality, beginning and end unified, transcendent radial mandala composition with the deity at the exact geometric center of all planes, perfect symmetrical humanoid form clad in radiant bone-white plate and obsidian velvet drapery, twelve nested geometric halos rotating in different spatial axes, palms open revealing twin cosmic singularities, entire cosmos collapsing and reassembling in infinite recursive sacred geometry, loose expressive brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+## ETERNAL CARDS (9 Cards)
+
+---
+
+### The Harrowing of the Last Dawn | Eternal | Eternal
+`definitionId: btei-voids-reaping`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the harrowing of the last dawn, a grim reaper of dead stars, celestial harvester of the final hour, sweeping diagonal harvest swing with a colossal scythe slicing through cosmic space, tall robed skeleton-angel in ragged obsidian silks, scythe blade forged from crystallized white starfire, trailing an arc of severed constellation sparks, crowned with seven black thorns, galaxy of dying white stars and collapsing dust lanes, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Ruin of Hours | Eternal | Eternal
+`definitionId: btei-temporal-ruin`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the ruin of hours, a monument to shattered time, crumbling clockwork cathedral of eternity, wide dramatic three-quarter view of a colossal clock tower collapsing into a central void singularity, massive gears of black stone and white glass fracturing into thousands of shards, clock faces spinning out of control with hands flying off into the void, a suspended pendulum frozen mid-swing, shattered temporal void with multiple timeline fragments visible in floating glass shards, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Null Verdict | Eternal | Eternal
+`definitionId: btei-null-edict`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the null verdict, a supreme judge pronouncing the erasure of worlds, magistrate of stillness, imposing low-angle shot of a judge seated atop an immense stone tribunal dais, judge in heavy obsidian judicial robes holding a gavel of black iron, the gavel striking a stone seal and sending shockwaves of white erasure through the courtroom, stone jury of silent hooded statues, grand courtroom of monolithic black pillars dissolving into void dust, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Axiom of Nothing | Eternal | Eternal
+`definitionId: btei-axiom-of-oblivion`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the axiom of nothing, an abstract mathematical embodiment of nonexistence, floating geometric core, centered hovering polyhedral artifact surrounded by orbiting scripture planes, twenty-sided regular icosahedron of polished obsidian stone with glowing white mathematical formulas etched into every face, surrounded by three floating rings of white scripture tape rotating rapidly, infinite white void space with faint black grid lines receding into a vanishing point, loose expressive brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Sovereign Quiet | Eternal | Eternal
+`definitionId: btei-sovereign-domain`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the sovereign quiet, a royal procession through a frozen realm, monarch of silent territory, regal walking composition down a grand palace hallway where all attendants are frozen statues, towering sovereign in a magnificent feathered mantle of obsidian and white down, crown of tall gray needles, walking with a measured step as trailing robes sweep across a polished mirror-black floor, palace colonnade with rows of bowed courtier statues frozen in permanent reverence, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Convergence Beyond Time | Eternal | Eternal
+`definitionId: btei-convergence-of-eternity`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the convergence beyond time, a nexus point where all timelines meet, cosmic intersection singularity, radial explosion composition with twelve beams of white light meeting at a single obsidian focal point, central sphere of polished black glass absorbing twelve incoming white starlight beams, beams refracting into spiderweb patterns of gray light, cathedral architecture warping around the focal point, collapsing dimensional space with fragments of different eras and cathedrals, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Fracture of Knowing | Eternal | Eternal
+`definitionId: btei-omniscient-fracture`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the fracture of knowing, an all-seeing eye of omniscience shattering into infinite facets, broken oracle, overwhelming mosaic composition composed of hundreds of floating mirror-glass shards, giant celestial eye at center shattering outward into angled glass panes, each pane reflecting a different future or past in high-contrast black-and-white ink, tears of liquid white light falling from the center, deep void abyss filled with floating reflection fragments, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Throne of Equilibrium | Eternal | Eternal
+`definitionId: btei-neutrality-void-throne`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the throne of equilibrium, the empty throne of a departed creator, sacred seat of neutrality, monumental frontal view of an empty throne carved from a single black meteor monolith, soaring throne back formed like gothic cathedral spires, a single vertical shaft of pure white starlight illuminating the empty seat, balance scales resting across the armrests in perfect level, grand throne room with crumbling stone stairs and silent statues, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Prime Judge of Silence | Eternal | Eternal
+`definitionId: btei-neutrality-prime-equilibrium`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the prime judge of silence, a supreme cosmic arbiter between existence and void, arch-judge, towering authoritative figure standing atop a pyramid of dissolved cathedrals, titan in dual-toned black-and-white judge robes, hands holding two floating spheres of pure white light and pure black void, head crowned with four concentric halo rings bearing divine law scripture, sea of dissolved cathedral ruins under a swirling monochrome sky, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+## INFINITE CARDS (8 Cards)
+
+---
+
+### The Absolute Null | Infinite | Infinite
+`definitionId: inf-oblivion-absolute`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the absolute null, the ultimate manifestation of nonexistence, the end of all things personified, screen-dominating pure black silhouette tearing a colossal rift in the fabric of the cosmos, towering humanoid entity composed of absolute light-absorbing negative space, outlined only by crackling bone-white corona lightning, hands ripping open a white dimensional seam across the frame, cosmic void with stars and galaxies being systematically extinguished into blackness, loose expressive brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Cascade of the Hollow Sky | Infinite | Infinite
+`definitionId: inf-void-cascade`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the cascade of the hollow sky, a cosmic waterfall of liquid black space pouring through heaven, towering vertical composition showing a massive cataract of void fluid pouring from cracked white clouds, liquid void pouring like a black waterfall onto a submerged gothic cathedral city below, splashing into white foam and gray droplets, ruined spires protruding from the dark floodwaters, cracked ceiling of heaven made of white marble and cloud, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The White Throne Before Beginning | Infinite | Infinite
+`definitionId: inf-genesis-throne`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the white throne before beginning, the primordial seat of creation existing before time and space, monumental low-angle shot of a colossal white marble throne floating in an empty black abyss, throne carved from seamless bone-white star-stone glowing with inner nuclear luminescence, surrounded by three orbiting rings of massive black obsidian megaliths, stairs leading up into blinding light, infinite pitch-black void of uncreated space, loose expressive brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Apex of Nothing | Infinite | Infinite
+`definitionId: inf-null-apex`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the apex of nothing, a needle-spire of black obsidian piercing the summit of existence, dramatic upward vertical perspective following a razor-sharp black pyramid needle reaching into heaven, spire forged from flawless black mirror glass, surrounded by concentric shockwave rings of expanding white energy, the tip touching the center of a swirling white galaxy storm, atmospheric space filled with concentric sacred-geometry circles, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Crown of Unmaking | Infinite | Infinite
+`definitionId: inf-entropic-crown`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the crown of unmaking, a floating regalia that unravels reality, artifact of cosmic decay, centered close-up shot of an enormous crown composed of floating fractured obsidian spires, twelve jagged black crystal spires orbiting in a circle, white void fire leaping between the spire tips, reality beneath the crown disintegrating into geometric wireframe and black static, dissolving coronation chamber with disintegrating stone arches, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Garden of Annihilation | Infinite | Infinite
+`definitionId: inf-annihilation-field`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the garden of annihilation, a surreal field of crystallized black glass roses dissolving into light, low-angle landscape shot across an infinite meadow of black crystal flowers under a stormy sky, thousands of razor-sharp obsidian roses, petals shattering and drifting upward as glowing bone-white sparks, a lone wandering silhouette walking through the field with a trailing white mantle, ruined gothic cathedrals on the horizon silhouetted against a white lightning-filled sky, loose expressive brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Sovereign Veil | Infinite | Infinite
+`definitionId: inf-sovereign-void`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the sovereign veil, a cosmic curtain of erasure descending from the heavens to wipe the slate clean, overwhelming wide view of an immense tapestry of black void-static dropping down across the world, tapestry embroidered with dense gray scripture, everything behind the veil erased into flat white nothingness, everything in front still a detailed black gothic city mid-erasure, two seraphim watching from the foreground, panoramic city being halved by the descending veil, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+
+### The Rift of Outer Silence | Infinite | Infinite
+`definitionId: inf-eternity-rupture`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, the rift of outer silence, a jagged vertical tear in the dimensional fabric of the universe, dynamic centered shot of a massive jagged vertical fissure splitting the frame from top to bottom, fissure edges crackling with angular glitch shards and white fire, through the tear reveals the absolute outside, a calm white void with floating geometric rings, surrounding dark space warping inward toward the tear, cosmic starfield and gothic space ruins being pulled into the fissure, loose expressive dark brushwork background, flat 2D cel-shaded anime illustration in the style of niji anime card art, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, dramatic chiaroscuro lighting, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, gothic gilded card border feel without color, subject fills 80 percent of the frame, symmetrical balanced composition, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+---
+

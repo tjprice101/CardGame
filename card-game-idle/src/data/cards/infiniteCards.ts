@@ -17,14 +17,14 @@ export interface InfiniteRecipe {
 // Legacy Infinite card cosmetic metadata — kept only for profile/avatar collection
 // bookkeeping (definitionId + name). These cards are not registered as playable.
 export const infiniteCards: LegacyCosmeticCard[] = [
-  { definitionId: 'inf-oblivion-absolute', rarity: 'Infinite', name: 'Oblivion Absolute', description: 'Gain Oblivion scaled by total Patience and peak Patience.', artKey: 'inf_oblivion_absolute' },
-  { definitionId: 'inf-void-cascade', rarity: 'Infinite', name: 'Void Cascade', description: 'All Seraphim on board gain Patience.', artKey: 'inf_void_cascade' },
-  { definitionId: 'inf-genesis-throne', rarity: 'Infinite', name: 'Genesis Throne', description: 'On play: Gain Oblivion scaled by total Patience, peak Patience, engine signatures, and setup count.', artKey: 'inf_genesis_throne' },
-  { definitionId: 'inf-null-apex', rarity: 'Infinite', name: 'Null Apex', description: 'While on board: +2000 Oblivion whenever you play an Ophanim while active.', artKey: 'inf_null_apex' },
-  { definitionId: 'inf-entropic-crown', rarity: 'Infinite', name: 'Entropic Crown', description: 'On play: Gain Oblivion scaled by Patience-bearing units and total Patience.', artKey: 'inf_entropic_crown' },
-  { definitionId: 'inf-annihilation-field', rarity: 'Infinite', name: 'Annihilation Field', description: 'On play: All Seraphim on board gain Patience; Shuffle discard into deck.', artKey: 'inf_annihilation_field' },
-  { definitionId: 'inf-sovereign-void', rarity: 'Infinite', name: 'Sovereign Void', description: "On summon: All Seraphim gain Patience and gain Oblivion from total and peak Patience.", artKey: 'inf_sovereign_void' },
-  { definitionId: 'inf-eternity-rupture', rarity: 'Infinite', name: 'Eternity Rupture', description: 'On summon: All Seraphim gain Patience; shuffle the discard into the deck.', artKey: 'inf_eternity_rupture' },
+  { definitionId: 'inf-oblivion-absolute', rarity: 'Infinite', name: 'The Absolute Null', description: 'Gain Oblivion scaled by total Patience and peak Patience.', artKey: 'inf_oblivion_absolute' },
+  { definitionId: 'inf-void-cascade', rarity: 'Infinite', name: 'The Cascade of the Hollow Sky', description: 'All Seraphim on board gain Patience.', artKey: 'inf_void_cascade' },
+  { definitionId: 'inf-genesis-throne', rarity: 'Infinite', name: 'The White Throne Before Beginning', description: 'On play: Gain Oblivion scaled by total Patience, peak Patience, engine signatures, and setup count.', artKey: 'inf_genesis_throne' },
+  { definitionId: 'inf-null-apex', rarity: 'Infinite', name: 'The Apex of Nothing', description: 'While on board: +2000 Oblivion whenever you play an Ophanim while active.', artKey: 'inf_null_apex' },
+  { definitionId: 'inf-entropic-crown', rarity: 'Infinite', name: 'The Crown of Unmaking', description: 'On play: Gain Oblivion scaled by Patience-bearing units and total Patience.', artKey: 'inf_entropic_crown' },
+  { definitionId: 'inf-annihilation-field', rarity: 'Infinite', name: 'The Garden of Annihilation', description: 'On play: All Seraphim on board gain Patience; Shuffle discard into deck.', artKey: 'inf_annihilation_field' },
+  { definitionId: 'inf-sovereign-void', rarity: 'Infinite', name: 'The Sovereign Veil', description: "On summon: All Seraphim gain Patience and gain Oblivion from total and peak Patience.", artKey: 'inf_sovereign_void' },
+  { definitionId: 'inf-eternity-rupture', rarity: 'Infinite', name: 'The Rift of Outer Silence', description: 'On summon: All Seraphim gain Patience; shuffle the discard into the deck.', artKey: 'inf_eternity_rupture' },
 ];
 
 // Combination recipes

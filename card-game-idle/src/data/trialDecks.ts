@@ -60,7 +60,7 @@ const neutralityTrial: TrialDeckDefinition = {
     d('ophanim-neutral-void-surge', 4),
     d('ophanim-neutral-chain-pulse', 4),
   ],
-  extraDeck: [e('angel-neutral-beginning')],
+  extraDeck: Array.from({ length: 4 }, () => e('ain-soph-aur-neutrality-1')),
   guideSteps: [
     {
       cardDefinitionId: 'ser-neutral-null',

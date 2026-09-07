@@ -74,7 +74,7 @@ export class CardEffectExecutor {
     const isHighRarityMechanicCard = (_cardDef: CardDefinition | undefined): boolean => Boolean(_cardDef && (
       _cardDef.rarity === 'Eternal'
       || _cardDef.rarity === 'Infinite'
-      || _cardDef.definitionId.startsWith('tx-')
+      || _cardDef.rarity === 'Transcendent'
     ));
     void isHighRarityMechanicCard;
 

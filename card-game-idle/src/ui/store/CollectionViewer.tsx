@@ -27,7 +27,7 @@ const RARITY_COLORS: Record<string, string> = {
 };
 
 const RARITY_ORDER: Record<string, number> = {
-  Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5, Enigmatic: 6, Transcendent: 7,
+  Common: 0, Rare: 1, Epic: 2, Legendary: 3, Enigmatic: 4, Transcendent: 5, Eternal: 6, Infinite: 7,
 };
 
 const INFINITE_TYPE_ORDER = ['Light', 'Dark', 'AinSophAur'] as const;
@@ -37,10 +37,6 @@ const STORE_COLLECTION_SET_ORDER = STORE_PACK_ORDER.map(packId => {
   const pack = PACK_BY_ID.get(packId);
   return pack?.setId ?? 'Neutrality';
 });
-
-function isFeaturedCollectionTranscendent(card: ReturnType<typeof CardRegistry.getAll>[number]): boolean {
-  return card.definitionId.startsWith('tx-');
-}
 
 interface Props { onClose: () => void }
 
@@ -108,7 +104,9 @@ export default function CollectionViewer({ onClose }: Props) {
 
   const allCards = useMemo(() => registryCards.flatMap(card => {
     const variants: CollectionVariantEntry[] = [];
-    const everCollectionOwned = getEverCollectionCount(progress, card.definitionId);
+    const everCollectionOwned = card.rarity === 'Transcendent'
+      ? (progress.transcendentCollection?.[card.definitionId] ?? 0)
+      : getEverCollectionCount(progress, card.definitionId);
     const everInfiniteOwned = card.rarity === 'Infinite'
       ? getEverInfiniteCount(progress, card.definitionId)
       : 0;
@@ -172,7 +170,7 @@ export default function CollectionViewer({ onClose }: Props) {
   const filtered = useMemo(() => allCards.filter(entry => {
     if (activeElement !== 'All' && 'Neutrality' !== activeElement) return false;
     if (rarityFilter === 'Transcendent') {
-      if (!isFeaturedCollectionTranscendent(entry.card)) return false;
+      if (entry.card.rarity !== 'Transcendent') return false;
     } else if (rarityFilter !== 'All' && entry.card.rarity !== rarityFilter) {
       return false;
     }
@@ -186,11 +184,7 @@ export default function CollectionViewer({ onClose }: Props) {
   }), [activeElement, allCards, lowerSearch, ownedFilter, rarityFilter]);
 
   const standardFiltered = useMemo(
-    () => filtered.filter(entry => entry.card.rarity !== 'Infinite' && !isFeaturedCollectionTranscendent(entry.card)),
-    [filtered],
-  );
-  const featuredTranscendentFiltered = useMemo(
-    () => filtered.filter(entry => isFeaturedCollectionTranscendent(entry.card)),
+    () => filtered.filter(entry => entry.card.rarity !== 'Infinite'),
     [filtered],
   );
   const infiniteSections = useMemo(() => INFINITE_TYPE_ORDER
@@ -246,18 +240,8 @@ export default function CollectionViewer({ onClose }: Props) {
       });
     }
 
-    if (featuredTranscendentFiltered.length > 0) {
-      rows.push({
-        key: 'transcendent-heading',
-        kind: 'heading',
-        height: (standardFiltered.length > 0 || infiniteSections.length > 0) ? 46 : 28,
-        label: 'Transcendent Cards',
-      });
-      pushCardRows(featuredTranscendentFiltered, 'transcendent');
-    }
-
     return rows;
-  }, [featuredTranscendentFiltered, filtered, gridColumns, infiniteSections, sortMode, standardFiltered]);
+  }, [filtered, gridColumns, infiniteSections, sortMode, standardFiltered]);
 
   const renderCardEntry = (entry: CollectionVariantEntry) => {
     const { card, finish, owned } = entry;
@@ -267,8 +251,9 @@ export default function CollectionViewer({ onClose }: Props) {
     const isLockedStandardHolo = owned <= 0 && finish === 'holo'
       && card.rarity !== 'Infinite'
       && card.rarity !== 'Eternal'
+      && card.rarity !== 'Transcendent'
       && card.rarity !== 'Enigmatic';
-    const isFeaturedTranscendent = isFeaturedCollectionTranscendent(card);
+    const isTranscendent = card.rarity === 'Transcendent';
     const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
     const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
     const artUrl = owned > 0 ? getCardBackgroundUrl(card) : null;
@@ -278,7 +263,7 @@ export default function CollectionViewer({ onClose }: Props) {
         ? getLockedHoloCardBackStyle(card)
         : getCardBackBackgroundStyle(card, { dimmed: false }));
 
-    if (isFeaturedTranscendent) {
+    if (isTranscendent) {
       const baseImage = typeof cardSurfaceStyle.backgroundImage === 'string' ? cardSurfaceStyle.backgroundImage : '';
       const baseBlend = typeof cardSurfaceStyle.backgroundBlendMode === 'string' ? cardSurfaceStyle.backgroundBlendMode : '';
       cardSurfaceStyle = {
@@ -297,7 +282,7 @@ export default function CollectionViewer({ onClose }: Props) {
           ...cardSurfaceStyle,
           backgroundColor: warmTheme.surfaceStrong,
           border: owned > 0
-            ? (isFeaturedTranscendent ? '1px solid rgba(224, 174, 72, 0.86)' : `1px solid ${rarityColor}55`)
+            ? (isTranscendent ? '1px solid rgba(224, 174, 72, 0.86)' : `1px solid ${rarityColor}55`)
             : `1px solid ${warmTheme.border}`,
           borderRadius: 12,
           height: 204,

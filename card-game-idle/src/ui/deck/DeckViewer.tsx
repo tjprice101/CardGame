@@ -30,6 +30,7 @@ const RARITY_COLORS: Record<string, string> = {
   Rare: '#5b9bd5',
   Epic: '#9b59b6',
   Legendary: '#f39c12',
+  Transcendent: '#f2b24f',
   Eternal: '#ff6b6b',
   Infinite: '#e8e8f0',
 };

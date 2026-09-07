@@ -4,6 +4,8 @@ import type {
 import { ainSophAurCards } from '../data/cards/ainSophAurCards';
 import { lightCards } from '../data/cards/lightCards';
 import { darkCards } from '../data/cards/darkCards';
+import { eternalCards } from '../data/cards/eternalCards';
+import { enigmaRewardCards } from '../data/cards/enigmaRewardCards';
 import { transcendentCardDefinitions } from '../data/ascension/transcendentCards';
 import { ScoreSystem } from '../systems/scoring/ScoreSystem';
 import { formatDisplayCardText } from '../ui/preferences';
@@ -21,6 +23,8 @@ const SOURCE_DEFINITIONS: CardDefinition[] = [
   ...(ainSophAurCards as unknown as CardDefinition[]),
   ...(lightCards as unknown as CardDefinition[]),
   ...(darkCards as unknown as CardDefinition[]),
+  ...(eternalCards as unknown as CardDefinition[]),
+  ...(enigmaRewardCards as unknown as CardDefinition[]),
   ...(transcendentCardDefinitions as unknown as CardDefinition[]),
 ];
 

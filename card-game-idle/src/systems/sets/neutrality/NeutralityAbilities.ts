@@ -4,6 +4,7 @@
  */
 
 import { type SetEngineDefinition, registerSet } from '@/systems/sets/SetEngine';
+import { TRANSCENDENT_ANGEL_IDS } from '@/data/ascension/transcendentCards';
 
 const NEUTRALITY_SET: SetEngineDefinition = {
   id: 'Neutrality',
@@ -13,7 +14,7 @@ const NEUTRALITY_SET: SetEngineDefinition = {
     isMember: id => id.startsWith('neutral-'),
     isEternal: () => false,
     isInfinite: () => false,
-    isTranscendentAngel: () => false,
+    isTranscendentAngel: id => TRANSCENDENT_ANGEL_IDS.has(id),
   },
   abilities: [],
 };

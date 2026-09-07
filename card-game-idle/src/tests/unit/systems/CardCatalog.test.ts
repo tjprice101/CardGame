@@ -75,9 +75,23 @@ describe('Ain/Soph card catalog', () => {
 
   it('registers exactly the 50 main-deck and 12 extra-deck cards as buildable', () => {
     const all = CardRegistry.getAll();
-    expect(all.filter(d => d.type === 'Light')).toHaveLength(25);
-    expect(all.filter(d => d.type === 'Dark')).toHaveLength(25);
-    expect(all.filter(d => d.type === 'AinSophAur')).toHaveLength(12);
+    expect(all.filter(d => d.definitionId.startsWith('light-neutrality-'))).toHaveLength(25);
+    expect(all.filter(d => d.definitionId.startsWith('dark-neutrality-'))).toHaveLength(25);
+    expect(all.filter(d => d.definitionId.startsWith('ain-soph-aur-neutrality-'))).toHaveLength(12);
+  });
+
+  it('registers every late-game reward card with its intended rarity', () => {
+    const all = CardRegistry.getAll();
+    const eternal = all.filter(card => card.definitionId.startsWith('btei-'));
+    const transcendent = all.filter(card => card.definitionId.startsWith('tx-'));
+    const enigmas = all.filter(card => card.definitionId.startsWith('enig-neutral-'));
+
+    expect(eternal).toHaveLength(9);
+    expect(eternal.every(card => card.rarity === 'Eternal')).toBe(true);
+    expect(transcendent).toHaveLength(4);
+    expect(transcendent.every(card => card.rarity === 'Transcendent')).toBe(true);
+    expect(enigmas).toHaveLength(2);
+    expect(enigmas.every(card => card.rarity === 'Legendary')).toBe(true);
   });
 
   it('keeps authored attack values intentionally distinct across the catalog', () => {

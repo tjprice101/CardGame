@@ -9,9 +9,10 @@ function normalExtraDeckEntry(definitionId: string, finish: CardFinish = 'normal
   return { definitionId, finish };
 }
 
-// Ain Soph Aur cards live in the Extra Deck and are never shuffled into hand.
-export const STARTER_EXTRA_DECK: ExtraDeckEntry[] = Array.from({ length: 12 }, (_, index) =>
-  normalExtraDeckEntry(`ain-soph-aur-neutrality-${index + 1}`),
+// Default starter deck uses a single Ain Soph Aur extra-deck finisher in 4 copies,
+// preserving the 4-copy rule while keeping the deck built from the base Neutrality card pool.
+export const STARTER_EXTRA_DECK: ExtraDeckEntry[] = Array.from({ length: 4 }, () =>
+  normalExtraDeckEntry('ain-soph-aur-neutrality-1'),
 );
 
 // 50-card Main Deck: 25 Light creatures + 25 Dark utilities.

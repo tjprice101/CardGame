@@ -143,13 +143,20 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'inf-bgi-ashen-cinder-cathedral': 'Ashen Cinder Cathedral.png',
   'inf-bgi-vaelmor-umbra-sovereign': 'Vaelmor Umbra Sovereign.png',
   'inf-bgi-midplace-apocalypse': 'Midplace Apocalypse.png',
-  'btei-voids-reaping': 'Hollow Queen.png',
-  'btei-sovereign-domain': 'Cherubim Sovereign.png',
-  'btei-convergence-of-eternity': 'Eternal Seraph.png',
-  'btei-temporal-ruin': 'The Time Eater.png',
-  'btei-null-edict': 'Null Sovereign.png',
-  'btei-omniscient-fracture': 'Shattered Oracle.png',
-  'btei-axiom-of-oblivion': 'Eternal Null.png',
+  'btei-voids-reaping': 'The Harrowing of the Last Dawn.png',
+  'btei-sovereign-domain': 'The Sovereign Quiet.png',
+  'btei-convergence-of-eternity': 'The Convergence Beyond Time.png',
+  'btei-temporal-ruin': 'The Ruin of Hours.png',
+  'btei-null-edict': 'The Null Verdict.png',
+  'btei-omniscient-fracture': 'The Fracture of Knowing.png',
+  'btei-axiom-of-oblivion': 'The Axiom of Nothing.png',
+  'btei-neutrality-void-throne': 'The Throne of Equilibrium.png',
+  'btei-neutrality-prime-equilibrium': 'The Prime Judge of Silence.png',
+  'enig-neutral-lumen-genesis': 'Lumen Genesis.png',
+  'enig-neutral-null-catechism': 'Null Catechism.png',
+  'tx-neutral-starbound-glimmer': 'Starbound Glimmer.png',
+  'tx-neutral-null-catalyst': 'Null Catalyst.png',
+  'tx-neutral-void-reliquary': 'Void Reliquary.png',
   'inf-ash-kings-apocalypse': 'Ash Kings Apocalypse.png',
   'tbp-ser-scar-mantle-reclaimer': 'Scar-mantle Reclaimer.png',
   'tbp-angel-velmora-harrowed-crown': 'Velmora Crown of Harrowed Plains.png',
@@ -207,23 +214,23 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
 
 const NEW_NEUTRALITY_ART: Record<'light' | 'dark' | 'asa', string[]> = {
   light: [
-    'Null Sentinel.png', 'Null Seraphim.png', 'Null Fortification.png', 'Null Entropy.png', 'Null Sovereign.png',
-    'Void Seraphim.png', 'Void Amplifier.png', 'Void Exchequer.png', 'Balance Seraphim.png', 'Balance Mantle.png',
-    'Aegis of Equilibrium.png', 'Equilibrium Rex.png', 'Equilibrium Ward.png', 'Immortal Warden.png', 'Aegis of Presence.png',
-    'Still Seraphim.png', 'Still Shell.png', 'Prime Judge of Silence.png', 'Event Horizon Arbiter.png', 'Shattered Oracle.png',
-    'Verdant Null, Last Wish Executioner.png', 'Paradox Throne.png', 'The Void Architect.png', 'Abyssal Colossus.png', 'The Beginning and the End.png',
+    'Lumen Stag.png', 'Glasswing Sentinel.png', 'Dawn Warden.png', 'Nullfire Seraph.png', 'Axiom Herald.png',
+    'Stillwater Colossus.png', 'Horizon Lion.png', 'Crown of Morning.png', 'Veilbreaker.png', 'First Radiance.png',
+    'White Orchard Keeper.png', 'Paradox Knight.png', 'Solar Cantor.png', 'Pale Star Drake.png', 'Crown of Morning.png',
+    'Equilibrium Titan.png', 'Lucent Pilgrim.png', 'Ain-bound Guardian.png', 'Quiet Sun.png', 'Origin Bearer.png',
+    'Mirror Saint.png', 'Lightwell Watcher.png', 'Celestial Null.png', 'Last Horizon.png', 'The Unbroken Light.png',
   ],
   dark: [
-    'Null Seek.png', 'Seraph Recall.png', 'Neutral Cycle.png', 'Measured Seek.png', 'Void Surge.png',
-    'Still Pulse.png', 'Chaos Recall.png', 'Void Shroud.png', 'Deep Seek.png', 'Grand Seek.png',
-    'Echo Pulse.png', 'Seraph Hunt.png', 'Nullfall.png', 'Neutralistic Flame.png', "Equilibrium's Bane.png",
-    'Null Veil.png', 'Void Shroud.png', 'Balance Mantle.png', 'Equilibrium Ward.png', 'Still Shell.png',
-    'Chaos Recall.png', 'Oblivion Pulse.png', 'Void Amplifier.png', 'Void Exchequer.png', 'Null Convergence.png',
+    'Null Compass.png', 'Void Archive.png', 'Balance Engine.png', 'Equilibrium Map.png', 'Stillness Chapel.png',
+    'Measured Path.png', 'Seraphic Recall.png', 'Neutral Cycle.png', 'Deep Survey.png', 'Paradox Lens.png',
+    'Axiom Reservoir.png', 'Horizon Atlas.png', 'Silent Exchange.png', 'Glass Archive.png', 'Night Orchard.png',
+    'Unlit Gate.png', 'Black Sun Reliquary.png', 'The Long Pause.png', 'Void Cartograph.png', 'Last Equation.png',
+    'World Without Echo.png', 'Oblivion Key.png', 'The Patient Star.png', 'Absolute Archive.png', 'Dark Origin.png',
   ],
   asa: [
-    'The Null Verdict of Stars.png', 'Starbound Null Archangel.png', 'Paradox Throne.png', 'The Beginning and the End.png',
-    'Prime Judge of Silence.png', 'Event Horizon Arbiter.png', 'Eternal Null.png', 'Hollow Queen.png',
-    'Genesis Throne.png', 'Null Apex.png', 'Entropic Crown.png', 'Eternity Rupture.png',
+    'The White Null.png', 'The Axiom Below.png', 'The Paradox Crown.png', 'Stillwater Colossus.png',
+    'The Horizon of Silence.png', 'The Veil of Dawn.png', 'The Mirror of Ash.png', 'The Gate of Inevitable.png',
+    'The Hollow Well.png', 'The Sun Without Flame.png', 'The Last Aurora.png', 'First Radiance.png',
   ],
 };
 
@@ -236,11 +243,13 @@ function getNewNeutralityArt(definitionId: string): string | undefined {
 
 const CARD_BACK_ASSET_BY_ELEMENT: Partial<Record<string, { folder: string; file: string }>> = {
   Neutrality: { folder: 'neutrality', file: 'Neutrality Card Backing.png' },
+  AinSophAur: { folder: 'neutrality', file: 'Neutrality Card Backing.png' },
 };
 
 const INFINITE_CARD_BACK_ASSET = { folder: 'infinite', file: 'Infinity Cards Card Back.png' };
 const ETERNAL_CARD_BACK_ASSET = { folder: 'eternal', file: 'Eternal Cards Card Back.png' };
 const ENIGMATIC_CARD_BACK_ASSET = { folder: 'neutrality', file: 'Enigmatic Card Backing.png' };
+const TRANSCENDENT_CARD_BACK_ASSET = { folder: 'infinite', file: 'Infinity Cards Card Back.png' };
 
 const BTEI_FOLDER_BY_PREFIX: ReadonlyArray<{ prefix: string; folder: string }> = [
   { prefix: 'btei-bgi-', folder: 'black-glass-inferno' },
@@ -261,6 +270,10 @@ function getCardBackUrl(card: CardDefinition | null | undefined): string | null 
     return `${CARD_BACKGROUND_ROOT}/${INFINITE_CARD_BACK_ASSET.folder}/${encodeURI(INFINITE_CARD_BACK_ASSET.file)}`;
   }
 
+  if (card.rarity === 'Transcendent') {
+    return `${CARD_BACKGROUND_ROOT}/${TRANSCENDENT_CARD_BACK_ASSET.folder}/${encodeURI(TRANSCENDENT_CARD_BACK_ASSET.file)}`;
+  }
+
   if (card.rarity === 'Eternal') {
     return `${CARD_BACKGROUND_ROOT}/${ETERNAL_CARD_BACK_ASSET.folder}/${encodeURI(ETERNAL_CARD_BACK_ASSET.file)}`;
   }
@@ -269,7 +282,7 @@ function getCardBackUrl(card: CardDefinition | null | undefined): string | null 
     return `${CARD_BACKGROUND_ROOT}/${ENIGMATIC_CARD_BACK_ASSET.folder}/${encodeURI(ENIGMATIC_CARD_BACK_ASSET.file)}`;
   }
 
-  const asset = CARD_BACK_ASSET_BY_ELEMENT['Neutrality'];
+  const asset = CARD_BACK_ASSET_BY_ELEMENT[card.type === 'AinSophAur' ? 'AinSophAur' : 'Neutrality'];
   if (!asset) return null;
   return `${CARD_BACKGROUND_ROOT}/${asset.folder}/${encodeURI(asset.file)}`;
 }
@@ -319,10 +332,7 @@ function getHolofoilAnimationStyle(definitionId: string): CSSProperties {
 
 function isTranscendentCard(card: CardDefinition | null | undefined): boolean {
   if (!card) return false;
-  // Keep rarity visuals authoritative: Infinity/Eternal cards should never render
-  // with Transcendent red framing, even if their definitionId uses tx-.
-  if (card.rarity === 'Infinite' || card.rarity === 'Eternal') return false;
-  return card.definitionId.startsWith('tx-');
+  return card.rarity === 'Transcendent';
 }
 
 function getTranscendentFoilAnimationStyle(definitionId: string): CSSProperties {
@@ -411,6 +421,11 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
   if (card.rarity === 'Infinite') {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? newCatalogFallback ?? `${card.name}.png`;
     return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURI(fileName)}`;
+  }
+
+  if (card.rarity === 'Transcendent') {
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    return `${CARD_BACKGROUND_ROOT}/neutrality/${encodeURI(fileName)}`;
   }
 
   const bteiFolder = getBteiFolder(card.definitionId);

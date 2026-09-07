@@ -205,7 +205,7 @@ export function formatReadableRuleText(text: string): string {
 }
 
 function shouldUseCanonicalAbility(card: CardDefinition): boolean {
-  return card.rarity === 'Infinite' || card.rarity === 'Eternal';
+  return card.rarity === 'Infinite' || card.rarity === 'Eternal' || card.rarity === 'Transcendent';
 }
 
 function resolveAbilityDescription(card: CardDefinition, options?: CardSummaryOptions): string {
@@ -222,6 +222,12 @@ function resolveAbilityDescription(card: CardDefinition, options?: CardSummaryOp
 export function getCardSummarySections(card: CardDefinition, options?: CardSummaryOptions): CardSummarySection[] {
   const sections: CardSummarySection[] = [];
   const authoredDescription = resolveAbilityDescription(card, options);
+
+  if (card.definitionId.startsWith('light-neutrality-')
+    || card.definitionId.startsWith('dark-neutrality-')
+    || card.definitionId.startsWith('ain-soph-aur-neutrality-')) {
+    pushSummarySection(sections, 'Source', ['Neutrality Card Pack']);
+  }
 
   pushSummarySection(sections, 'Effect', [authoredDescription]);
 

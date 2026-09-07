@@ -5,10 +5,10 @@ import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#777', Rare: '#5b9bd5', Epic: '#9b59b6',
-  Legendary: '#f39c12', Eternal: '#ff6b6b', Infinite: '#e0e0f0', Enigmatic: '#b370e8',
+  Legendary: '#f39c12', Transcendent: '#f2b24f', Eternal: '#ff6b6b', Infinite: '#e0e0f0', Enigmatic: '#b370e8',
 };
 
-const RARITY_ORDER = ['Legendary', 'Eternal', 'Infinite', 'Enigmatic', 'Epic', 'Rare', 'Common'];
+const RARITY_ORDER = ['Legendary', 'Transcendent', 'Eternal', 'Infinite', 'Enigmatic', 'Epic', 'Rare', 'Common'];
 
 interface DeckStats {
   rarityCounts: Record<string, number>;

@@ -1,15 +1,6 @@
 import type { GameState, ProgressState } from '@/types/game';
 import { CardRegistry } from '@/cards/CardRegistry';
-import {
-  AEGIS_OF_EQUILIBRIUM_ID,
-  AEGIS_OF_PRESENCE_ID,
-  EQUILIBRIUM_SERAPHIM_ID,
-  ENIGMA_DEFINITIONS,
-  NULL_SERAPHIM_ID,
-  TBATE_ID,
-  getEnigmaDefinition,
-  isNeutralMysteryAcquired,
-} from '@/data/enigmas/enigmaDefinitions';
+import { ENIGMA_DEFINITIONS, getEnigmaDefinition, isNeutralMysteryAcquired } from '@/data/enigmas/enigmaDefinitions';
 
 export interface EnigmaProgressResult {
   newlyAcquired: string[];
@@ -63,26 +54,22 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
   const instance = ensureNeutralMysteryInstance(state.progress);
   if (!instance || instance.status === 'locked') return result;
 
-  const activePresence = state.board.frontSlots.filter(slot => slot?.definitionId === AEGIS_OF_PRESENCE_ID).length;
-  const nullSeraphimCount = state.board.frontSlots.filter(slot => slot?.definitionId === NULL_SERAPHIM_ID).length;
-  // Only the Seraphim form counts; the Angel (Aegis of Equilibrium) is a different unit.
-  const equilibriumCount = state.board.frontSlots.filter(slot =>
-    slot?.definitionId === EQUILIBRIUM_SERAPHIM_ID
+  const chargedSophCount = state.board.backSlots.filter(slot =>
+    !!slot && slot.side === 'soph' && slot.limitlessCharge >= 3
   ).length;
+  const activeLightCount = state.board.backSlots.filter(slot =>
+    !!slot && slot.type === 'Light' && slot.side === 'ain'
+  ).length;
+  const activeAinSophAurCount = state.board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length;
 
-  // Step 3 (index 2): 3 Aegis of Presence on board at once.
-  if (!instance.stepsComplete[2] && activePresence >= 3) {
+  // Step 3 (index 2): three charged Soph cards form the quiet field.
+  if (!instance.stepsComplete[2] && chargedSophCount >= 3) {
     instance.stepsComplete[2] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 3);
   }
 
-  // Step 4 (index 3): board must contain exactly 3 Null Seraphim + 2 Equilibrium Seraphim in any order.
-  // Gate is purely on stepsComplete[3] so save-state drift in currentStepIndex cannot block it.
-  const strictStep4Match = nullSeraphimCount === 3 && equilibriumCount === 2
-    && state.board.frontSlots.every(slot =>
-      !!slot && (slot.definitionId === NULL_SERAPHIM_ID || slot.definitionId === EQUILIBRIUM_SERAPHIM_ID)
-    );
-  if (!instance.stepsComplete[3] && strictStep4Match) {
+  // Step 4 (index 3): an active Light and Ain Soph Aur must coexist.
+  if (!instance.stepsComplete[3] && activeLightCount >= 1 && activeAinSophAurCount >= 1) {
     instance.stepsComplete[3] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
   }
@@ -106,12 +93,7 @@ export function isNeutralMysteryReadyForReward(progress: ProgressState): boolean
 }
 
 export function neutralMysteryBoardIds() {
-  return {
-    tbate: TBATE_ID,
-    presence: AEGIS_OF_PRESENCE_ID,
-    equilibrium: AEGIS_OF_EQUILIBRIUM_ID,
-    nullSeraphim: NULL_SERAPHIM_ID,
-  };
+  return { rewardLight: 'enig-neutral-lumen-genesis', rewardDark: 'enig-neutral-null-catechism' };
 }
 
 export function awardEnigmaReward(progress: ProgressState, enigmaId: string): void {

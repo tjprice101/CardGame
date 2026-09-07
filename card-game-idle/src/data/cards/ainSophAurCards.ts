@@ -16,10 +16,10 @@ const artKeys = [
 ] as const;
 
 const names = [
-  'Ain Soph Aur: Void', 'Ain Soph Aur: Axiom', 'Ain Soph Aur: Paradox',
-  'Ain Soph Aur: Stillness', 'Ain Soph Aur: Horizon', 'Ain Soph Aur: Crown',
-  'Ain Soph Aur: Veil', 'Ain Soph Aur: Mirror', 'Ain Soph Aur: Gate',
-  'Ain Soph Aur: Well', 'Ain Soph Aur: Sun', 'Ain Soph Aur: Origin',
+  'The White Null', 'The Axiom Below', 'The Paradox Crown',
+  'The Stillbreak', 'The Horizon of Silence', 'The Veil of Dawn',
+  'The Mirror of Ash', 'The Gate of Inevitable', 'The Hollow Well',
+  'The Sun Without Flame', 'The Last Aurora', 'The Infinite Origin',
 ] as const;
 
 const rarities = ['Legendary', 'Legendary', 'Legendary', 'Legendary', 'Eternal', 'Eternal', 'Eternal', 'Eternal', 'Infinite', 'Infinite', 'Infinite', 'Infinite'] as const;

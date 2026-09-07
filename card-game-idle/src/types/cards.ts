@@ -2,7 +2,7 @@
 
 export type CardType = 'AinSophAur' | 'Light' | 'Dark';
 export type CardClass = 'light' | 'dark' | 'ain-soph-aur';
-export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal' | 'Infinite' | 'Enigmatic';
+export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Enigmatic' | 'Eternal' | 'Infinite' | 'Transcendent';
 export type CardFinish = 'normal' | 'holo';
 export type CardFaceState = 'front' | 'back';
 export type CardSide = 'ain' | 'soph';

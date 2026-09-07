@@ -210,9 +210,9 @@ export default function AscensionHub({ onClose }: Props) {
   const raidShopSections = useMemo(() => {
     const mechanicOverviewBySet: Record<string, { title: string; body: string }> = {
       Neutrality: {
-        title: 'Equilibrium Sigils',
+        title: 'Ain / Soph Convergence',
         body:
-          'These cards create and spend Equilibrium Sigils. Sigils amplify Patience growth passively, then convert into tactical spikes: burst Oblivion, Patience restoration, and cooldown pressure relief when spent at the right moment.',
+          'These cards create and spend Limitless Light Stacks. Their Ain and Soph actions reward careful charge timing, front-row summons, and deliberate stack spending.',
       },
     };
 

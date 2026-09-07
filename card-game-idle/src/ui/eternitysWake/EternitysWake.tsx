@@ -44,22 +44,22 @@ const REWARD_FACE_HEIGHT = 164;
 
 const BOSS_ART_ROOT = `${import.meta.env.BASE_URL}assets/card-backgrounds`;
 const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
-  boss_hollow_queen: { folder: 'neutrality', file: 'Hollow Queen.png' },
-  boss_immortal_warden: { folder: 'neutrality', file: 'Immortal Warden.png' },
-  boss_cherubim_sovereign: { folder: 'neutrality', file: 'Cherubim Sovereign.png' },
-  boss_eternal_seraph: { folder: 'neutrality', file: 'Eternal Seraph.png' },
-  boss_time_eater: { folder: 'neutrality', file: 'The Time Eater.png' },
-  boss_void_architect: { folder: 'neutrality', file: 'The Void Architect.png' },
-  boss_null_sovereign: { folder: 'neutrality', file: 'Null Sovereign.png' },
-  boss_shattered_oracle: { folder: 'neutrality', file: 'Shattered Oracle.png' },
-  boss_abyssal_colossus: { folder: 'neutrality', file: 'Abyssal Colossus.png' },
-  boss_eternal_null: { folder: 'neutrality', file: 'Eternal Null.png' },
+  boss_hollow_queen: { folder: 'neutrality', file: 'The Hollow Queen Boss Art.png' },
+  boss_immortal_warden: { folder: 'neutrality', file: 'The Immortal Warden Boss Art.png' },
+  boss_cherubim_sovereign: { folder: 'neutrality', file: 'The Cherubim Sovereign Boss Art.png' },
+  boss_eternal_seraph: { folder: 'neutrality', file: 'The Eternal Seraph Boss Art.png' },
+  boss_time_eater: { folder: 'neutrality', file: 'The Time Eater Boss Art.png' },
+  boss_void_architect: { folder: 'neutrality', file: 'The Void Architect Boss Art.png' },
+  boss_null_sovereign: { folder: 'neutrality', file: 'The Void Architect Boss Art.png' },
+  boss_shattered_oracle: { folder: 'neutrality', file: 'The Shattered Oracle Boss Art.png' },
+  boss_abyssal_colossus: { folder: 'neutrality', file: 'The Abyssal Colossus Boss Art.png' },
+  boss_eternal_null: { folder: 'neutrality', file: 'The Eternal Null Boss Art.png' },
   // Neutrality expansion
   boss_neutrality_paradox_throne: { folder: 'neutrality', file: 'Paradox Throne.png' },
   boss_neutrality_void_exchequer: { folder: 'neutrality', file: 'Void Exchequer.png' },
-  boss_neutrality_equilibrium_rex: { folder: 'neutrality', file: 'Equilibrium Rex.png' },
+  boss_neutrality_equilibrium_rex: { folder: 'neutrality', file: 'Equilibrium Rex Boss Art.png' },
   boss_neutrality_axiom_maw: { folder: 'neutrality', file: 'Axiom Maw.png' },
-  boss_neutrality_prime_judge: { folder: 'neutrality', file: 'Prime Judge of Silence.png' },
+  boss_neutrality_prime_judge: { folder: 'neutrality', file: 'Prime Judge of Silence Boss Art.png' },
 };
 
 function getBossArtUrl(keyArt: string): string | null {

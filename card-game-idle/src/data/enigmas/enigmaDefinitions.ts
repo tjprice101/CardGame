@@ -1,5 +1,4 @@
 import type { BoardState, EnigmaInstance, EnigmaState, ProgressState } from '@/types/game';
-import { CardRegistry } from '@/cards/CardRegistry';
 
 export type EnigmaStepKind =
   | 'acquire'
@@ -35,21 +34,18 @@ export interface EnigmaDefinition {
 }
 
 export const NEUTRAL_MYSTERY_ID = 'neutral-mystery';
-export const TBATE_ID = 'angel-neutral-beginning';
-export const AEGIS_OF_PRESENCE_ID = 'angel-neutral-presence';
-export const AEGIS_OF_EQUILIBRIUM_ID = 'angel-neutral-equilibrium';
-export const EQUILIBRIUM_SERAPHIM_ID = 'ser-neutral-equilibrium';
-export const NULL_SERAPHIM_ID = 'ser-neutral-null';
+export const ENIGMA_REWARD_LIGHT_ID = 'enig-neutral-lumen-genesis';
+export const ENIGMA_REWARD_DARK_ID = 'enig-neutral-null-catechism';
 
 export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
   {
     id: NEUTRAL_MYSTERY_ID,
     title: 'Neutral Mystery',
-    hintText: 'When each God of Equilibrium is brought forth, only then shall this mystery unfold.',
+    hintText: 'Bring an Ain Soph Aur into the front row and let the hidden pattern begin.',
     steps: [
       {
         title: 'Acquire the Enigma',
-        description: 'Summon and keep The Beginning and the End, Aegis of Presence, and Aegis of Equilibrium active together.',
+        description: 'Summon any Ain Soph Aur from the Extra Deck.',
         kind: 'acquire',
       },
       {
@@ -59,45 +55,45 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
         amount: 50_000,
       },
       {
-        title: 'Summon 3 Aegis of Presence',
-        description: 'Have three Aegis of Presence active at the same time in a single turn.',
+        title: 'Charge the Quiet Field',
+        description: 'Keep three face-down Soph cards at 3 or more Limitless Charge at the same time.',
         kind: 'count_active_cards',
         amount: 3,
-        targetDefinitionId: AEGIS_OF_PRESENCE_ID,
+        targetDefinitionId: 'soph-charge-3',
       },
       {
-        title: 'Field Null and Equilibrium',
-        description: 'Have 3 Null Seraphims and 2 Equilibrium Seraphims on your board at the same time during the same turn.',
+        title: 'Seat the Convergence',
+        description: 'Have an Ain-side Light and an Ain Soph Aur active together.',
         kind: 'count_active_cards',
       },
       {
         title: 'Claim the Reward',
-        description: 'Receive 2 copies of Neutralistic Flame.',
+        description: 'Receive Lumen Genesis.',
         kind: 'claim_reward',
       },
     ],
     rewards: [
-      { definitionId: 'enig-neutralistic-flame', copies: 2 },
+      { definitionId: ENIGMA_REWARD_LIGHT_ID, copies: 1 },
     ],
   },
   {
     id: 'neutralizing-the-void',
     title: 'Neutralizing the Void',
-    hintText: 'Where The Hollow Queen sits enthroned, cast her to her maker as fast as you can.',
+    hintText: 'Break the Eternal Null quickly, then prove that mastery survives the silence.',
     steps: [
       {
         title: 'Acquire the Enigma',
-        description: 'Clear The Hollow Queen boss fight with at least 1 minute and 30 seconds remaining on the clock.',
+        description: 'Clear The Eternal Null boss fight with at least 1 minute and 30 seconds remaining on the clock.',
         kind: 'boss_victory_timed',
         amount: 90,
-        targetDefinitionId: 'boss-hollow-king',
+        targetDefinitionId: 'boss-eternal-null',
       },
       {
         title: 'Activate and Clear Eternal Vigil \u00d73 HP',
         description: 'Defeat The Hollow Queen boss fight at \u00d73 HP scaling.',
         kind: 'boss_victory_scaled',
         amount: 3,
-        targetDefinitionId: 'boss-hollow-king',
+        targetDefinitionId: 'boss-eternal-null',
       },
       {
         title: 'Sacrifice 2,500 Aberrated Shards',
@@ -107,7 +103,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       },
       {
         title: 'Reach Card-born Tier 4',
-        description: 'Have at least one card reach Card-born Tier 4 or higher. Completing this retroactively counts.',
+        description: 'Have at least one Eternal card reach Card-born Tier 4 or higher. Completing this retroactively counts.',
         kind: 'card_mastery_tier',
         amount: 4,
       },
@@ -118,7 +114,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       },
     ],
     rewards: [
-      { definitionId: 'enig-equilibriums-bane', copies: 3 },
+      { definitionId: ENIGMA_REWARD_DARK_ID, copies: 1 },
     ],
   },
 ];
@@ -150,18 +146,12 @@ export function getEnigmaStep(instance: EnigmaInstance, stepIndex: number): Enig
 }
 
 export function isNeutralMysteryAcquired(board: BoardState): boolean {
-  const ids = [TBATE_ID, AEGIS_OF_PRESENCE_ID, AEGIS_OF_EQUILIBRIUM_ID];
-  return ids.every(definitionId => board.frontSlots.some(slot => {
-    if (!slot) return false;
-    const def = CardRegistry.get(slot.definitionId);
-    if (!def) return false;
-    return def.definitionId === definitionId;
-  }));
+  return board.frontSlots.some(slot => slot?.type === 'AinSophAur');
 }
 
 export function isNeutralMysteryBoardPattern(board: BoardState): boolean {
-  const pattern = [NULL_SERAPHIM_ID, TBATE_ID, NULL_SERAPHIM_ID, AEGIS_OF_PRESENCE_ID, AEGIS_OF_EQUILIBRIUM_ID];
-  return board.frontSlots.every((slot, index) => slot?.definitionId === pattern[index]);
+  return board.frontSlots.some(slot => slot?.type === 'AinSophAur')
+    && board.backSlots.some(slot => slot?.type === 'Light' && slot.side === 'ain');
 }
 
 export function getActiveEnigmaInstance(progress: ProgressState): EnigmaInstance | null {

@@ -47,7 +47,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
     ? 'Crafted through Infinitude recipes.'
     : card.rarity === 'Eternal'
       ? "Awarded for defeating mighty foes. (Eternity's Wake)"
-      : card.definitionId.startsWith('tx-')
+      : card.rarity === 'Transcendent'
         ? 'Earned from Null Raids.'
         : card.rarity === 'Enigmatic'
           ? 'Earned by completing Enigmas.'
@@ -110,8 +110,8 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
           }}
         >
           <div
-            className={finish === 'holo' || card.rarity === 'Infinite' || card.rarity === 'Eternal' || card.rarity === 'Enigmatic'
-              ? `holofoil-menu-card${card.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${card.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${card.rarity === 'Enigmatic' ? ' enigmatic-holo-violet-hover' : ''}`
+            className={finish === 'holo' || card.rarity === 'Infinite' || card.rarity === 'Eternal' || card.rarity === 'Transcendent' || card.rarity === 'Enigmatic'
+              ? `holofoil-menu-card${card.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${card.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${card.rarity === 'Transcendent' ? ' transcendent-holo-gold-hover' : ''}${card.rarity === 'Enigmatic' ? ' enigmatic-holo-violet-hover' : ''}`
               : undefined}
             style={{
               width: '100%',

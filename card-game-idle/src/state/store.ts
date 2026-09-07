@@ -1131,7 +1131,7 @@ function completeBossFight(s: Store, victory: boolean): void {
       };
 
       // Neutralizing the Void  Eboss-victory enigma hooks.
-      if (bossId === 'boss-hollow-king') {
+      if (bossId === 'boss-eternal-null') {
         ensureEnigmaState(s.progress);
         const ntvInstance = s.progress.enigmas.instances['neutralizing-the-void'];
         if (!ntvInstance) {
@@ -1483,6 +1483,7 @@ function checkNtvMasteryTierStep(progress: ProgressState): void {
   const claims = progress.cardMasteryClaims as Record<string, unknown> | undefined;
   if (!claims) return;
   const hasRequiredTier = Object.keys(claims).some(key => {
+    if (!key.startsWith('btei-')) return false;
     const tierStr = key.split('::')[1];
     return tierStr !== undefined && parseInt(tierStr, 10) >= 4;
   });
@@ -2975,14 +2976,14 @@ export const useStore = create<Store>()(
       const instance = state.progress.enigmas.instances[enigmaId];
       if (!instance || instance.status === 'locked') return false;
       if (instance.currentStepIndex !== 1) return false;
-      if ((state.progress.lifetimeOblivion ?? 0) < 50_000) return false;
+      if (state.progress.oblivion < 50_000) return false;
 
       set(s => {
         const target = s.progress.enigmas.instances[enigmaId] ?? ensureNeutralMysteryInstance(s.progress);
         if (!target) return;
         if (target.currentStepIndex !== 1) return;
-        if ((s.progress.lifetimeOblivion ?? 0) < 50_000) return;
-        s.progress.lifetimeOblivion = (s.progress.lifetimeOblivion ?? 0) - 50_000;
+        if (s.progress.oblivion < 50_000) return;
+        s.progress.oblivion -= 50_000;
         target.stepsComplete[1] = true;
         target.currentStepIndex = 2;
         pushEnigmaStepToast(s, enigmaId, 1);

@@ -1,7 +1,42 @@
 import type { CardDefinition } from '@/types/cards';
 
-// Legacy Angel/Seraphim/Cherubim/Ophanim content gutted for the Ain/Soph rework.
-export const transcendentCardDefinitions: CardDefinition[] = [];
-export const TRANSCENDENT_ANGEL_IDS: ReadonlySet<string> = new Set();
-export const TRANSCENDENT_SHOP_IDS: ReadonlySet<string> = new Set();
-export const TRANSCENDENT_SHOP_COSTS: Readonly<Record<string, number>> = {};
+const transcendentLight: CardDefinition = {
+	definitionId: 'tx-neutral-starbound-glimmer', type: 'Light', rarity: 'Transcendent',
+	name: 'Starbound Glimmer',
+	description: 'Transcendent Light. Ain Attack: 1250 base Oblivion, +900 triune scaling. Soph Attack: 1900 base Oblivion, +1200 triune scaling; consumes 5 stacks.',
+	artKey: 'tx_neutral_starbound_glimmer',
+	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'Ain Attack', description: '1250 base Oblivion with triune scaling.', baseOblivion: 1250, cooldownCards: 4, scaling: { kind: 'triune', amount: 900 }, tags: ['transcendent', 'ain-attack'] },
+	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Soph Attack', description: '1900 base Oblivion with triune scaling; consumes 5 stacks.', baseOblivion: 1900, cooldownCards: 5, scaling: { kind: 'triune', amount: 1200 }, stackCost: { kind: 'fixed', value: 5 }, tags: ['transcendent', 'soph-attack'] },
+	sacrificeOblivionRate: 120,
+};
+
+const transcendentDark: CardDefinition[] = [
+	{
+		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: 'Null Catalyst',
+		description: 'Transcendent Dark utility. Search a Light card and a Dark card, then return to hand.', artKey: 'tx_neutral_null_catalyst',
+		sophEffects: [{ type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }], activationCost: { kind: 'fixed', value: 5 }, cooldownCardsPlayed: 3, postActivationFate: 'hand', allowHandCast: true, sacrificeOblivionRate: 125,
+	},
+	{
+		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: 'Void Reliquary',
+		description: 'Transcendent Dark utility. Recover any card from the discard pile, then return to the deck.', artKey: 'tx_neutral_void_reliquary',
+		sophEffects: [{ type: 'salvage_any' }], activationCost: { kind: 'fixed', value: 6 }, cooldownCardsPlayed: 4, postActivationFate: 'deck', allowHandCast: false, sacrificeOblivionRate: 135,
+	},
+];
+
+const transcendentAur: CardDefinition = {
+	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'Starbound Null Archangel',
+	description: 'Transcendent Ain Soph Aur. Sacrifice 3 back-row cards to summon. Bridge the Light: 2400 base Oblivion, +1800 triune scaling; consumes 6 stacks.', artKey: 'tx_angel_starbound_null_archangel',
+	summonCost: ['light-neutrality-1', 'light-neutrality-2', 'dark-neutrality-1'], onSummonEffects: [{ type: 'oblivion_flat', value: 300 }],
+	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '2400 base Oblivion with triune scaling; consumes 6 stacks.', baseOblivion: 2400, cooldownCards: 5, scaling: { kind: 'triune', amount: 1800 }, consumesStacks: { kind: 'fixed', value: 6 } },
+	attacks: { primary: { id: 'tx-angel-starbound-null-archangel:bridge', label: 'Primary', name: 'Bridge the Light', description: '2400 base Oblivion', baseOblivion: 2400, cooldownCards: 5, tags: ['transcendent', 'bridge'] } },
+	baseStats: { basePower: 150, bonusType: 'oblivion_per_card', bonusValue: 40 },
+};
+
+export const transcendentCardDefinitions: CardDefinition[] = [transcendentLight, ...transcendentDark, transcendentAur];
+export const TRANSCENDENT_ANGEL_IDS: ReadonlySet<string> = new Set(transcendentCardDefinitions.map(card => card.definitionId));
+export const TRANSCENDENT_SHOP_IDS: ReadonlySet<string> = new Set(['tx-neutral-starbound-glimmer', 'tx-neutral-null-catalyst', 'tx-neutral-void-reliquary']);
+export const TRANSCENDENT_SHOP_COSTS: Readonly<Record<string, number>> = {
+	'tx-neutral-starbound-glimmer': 1200,
+	'tx-neutral-null-catalyst': 1000,
+	'tx-neutral-void-reliquary': 1400,
+};
