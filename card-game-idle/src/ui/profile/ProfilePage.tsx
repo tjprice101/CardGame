@@ -147,7 +147,7 @@ export default function ProfilePage({ onClose }: Props) {
           display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8,
           marginBottom: 16,
         }}>
-          <StatCell label="Oblivion" value={progress.oblivion.toLocaleString()} />
+          <StatCell label="Divine Light" value={progress.oblivion.toLocaleString()} />
           <StatCell label="Shards" value={progress.aberratedShards.toLocaleString()} />
           <StatCell label="Cards Played" value={progress.totalCardsPlayed.toLocaleString()} />
           <StatCell label="Cards Owned" value={`${totalCollection} (${distinctCards})`} />

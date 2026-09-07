@@ -26,7 +26,7 @@ A Seraphim has unsynergized and synergized attacks. An Angel has primary and exa
 3. Cooldown is ready.
 4. Required board condition is satisfied.
 5. Costs are explicitly paid.
-6. Base attack Oblivion and modifiers are calculated.
+6. Base Divine Light and modifiers are calculated.
 7. Boss damage, sequence effects, and Patience payoff are applied.
 8. Cooldown is reset with the minimum floor.
 
@@ -39,7 +39,7 @@ Patience is the live Neutrality core mechanic.
 - Each qualifying front-row unit gains Patience as cards are played.
 - Adjacent Neutrality Cherubim can add more per-card Patience.
 - Attacks consume the unit's stored Patience.
-- Each stack contributes +15 Oblivion on attack.
+- Each stack contributes Divine Light on attack according to the card's authored scaling.
 - A threshold can also trigger bonus draws.
 - Patience is hard-capped at 150 per unit.
 

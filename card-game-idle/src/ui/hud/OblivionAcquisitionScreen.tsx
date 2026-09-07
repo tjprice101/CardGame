@@ -277,7 +277,7 @@ function AsaBridgeRow({ instance, def }: { instance: AinSophAurInstance; def: Ai
         </div>
       </div>
       <div style={{ padding: '10px 14px' }}>
-        <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Base Oblivion</div>
+        <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Base Divine Light</div>
         <div style={{ fontSize: 18, fontWeight: 800, color: ready ? C.gold.fg : 'rgba(244,244,248,0.35)', fontFamily: DF }}>
           {formatNumber(bridge.baseOblivion)}
         </div>
@@ -308,7 +308,7 @@ function OverviewTab() {
 
       {/* Live stat pills */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' as const }}>
-        <StatPill label="Total Oblivion" value={oblivion} accent={C.gold.fg} glow />
+        <StatPill label="Total Divine Light" value={oblivion} accent={C.gold.fg} glow />
         <StatPill label="Earned This Turn" value={turn.oblivionEarnedThisTurn ?? 0} accent={C.blue.fg} />
         <StatPill label="Limitless Light" value={`${formatNumber(turn.limitlessLightStacks)} Stacks`} accent={C.green.fg} />
         <StatPill label="Board Slots" value={`${totalFilled}/9 Filled`} accent={C.green.fg} />
@@ -374,7 +374,7 @@ function OverviewTab() {
               border: `1px solid ${globalMult > 0 ? C.purple.br : C.dim.br}`,
               background: globalMult > 0 ? C.purple.bg : C.dim.bg,
             }}>
-              <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Global Oblivion Mult</div>
+              <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Global Divine Light Mult</div>
               <div style={{ fontSize: 22, fontWeight: 800, color: globalMult > 0 ? C.purple.fg : 'rgba(244,244,248,0.3)', fontFamily: DF }}>
                 {globalMult > 0 ? `+${Math.round(globalMult * 100)}%` : '—'}
               </div>
@@ -385,13 +385,13 @@ function OverviewTab() {
 
       {/* Summary of all source categories */}
       <div>
-        <SectionTitle label="All Oblivion Sources" accent={C.gold.fg} />
+        <SectionTitle label="All Divine Light Sources" accent={C.gold.fg} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           {[
             { icon: '⚔',  label: 'Ain Attacks',       desc: 'Cooldown-gated attacks on flipped Light cards. Read your stacks without spending them.', accent: C.blue   },
             { icon: '✾',  label: 'Soph Attacks',      desc: 'Higher base payout, consumes Limitless Light Stacks measured before the cost is paid.',  accent: C.blue   },
             { icon: '✦',  label: 'Bridge the Light',  desc: 'Ain Soph Aur front-row attacks — the highest base payouts available.',                    accent: C.gold   },
-            { icon: '☠',  label: 'Sacrifice',         desc: 'Sacrifice a charged Soph card to convert its charge straight into Oblivion.',             accent: C.red    },
+            { icon: '☠',  label: 'Sacrifice',         desc: 'Sacrifice a charged Soph card to convert its charge straight into Divine Light.',             accent: C.red    },
             { icon: '◈',  label: 'Collection Power',  desc: 'A permanent share of every attack’s scaling, earned by playing and mastering cards.',     accent: C.purple },
             { icon: '∞',  label: 'Limitless Light',   desc: 'Flip charged cards to bank stacks, then spend or scale off them the same turn.',          accent: C.green  },
           ].map(({ icon, label, desc, accent }) => (
@@ -417,7 +417,7 @@ function OverviewTab() {
         }}>
           <div style={{ fontSize: 11, letterSpacing: 2, textTransform: 'uppercase' as const, color: C.red.fg, fontFamily: DF, marginBottom: 5 }}>Boss Fight Active</div>
           <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.62)', lineHeight: 1.55, fontFamily: BF }}>
-            Boss fights have a higher Oblivion threshold. Focus on maximising attack sequencing and set-mechanic
+            Boss fights have a higher Divine Light threshold. Focus on maximising attack sequencing and set-mechanic
             cashouts to clear the damage check.
           </div>
         </div>
@@ -616,17 +616,17 @@ function BonusesTab() {
           />
           <SourceCard
             icon="☠"
-            title="Sacrifice for Oblivion"
-            subtitle="Instead of flipping, discard a charged card to convert its stored charge straight into Oblivion at that card's own sacrifice rate. Best when you cannot use another attack this turn."
+            title="Sacrifice for Divine Light"
+            subtitle="Instead of flipping, discard a charged card to convert its stored charge straight into Divine Light at that card's own sacrifice rate. Best when you cannot use another attack this turn."
             accent={C.red}
             tags={['instant payout', 'no cooldown']}
           />
           <SourceCard
             icon="⟳"
             title="Turn End Wipe"
-            subtitle="At turn end the whole board, your hand, all charges, and all Limitless Light Stacks reset. Only Oblivion and your collection carry across runs."
+            subtitle="At turn end the whole board, your hand, all charges, and all Limitless Light Stacks reset. Only Divine Light and your collection carry across runs."
             accent={C.dim}
-            tags={['oblivion persists', 'everything else resets']}
+            tags={['divine light persists', 'everything else resets']}
           />
         </div>
       </div>

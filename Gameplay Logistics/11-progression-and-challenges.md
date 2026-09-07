@@ -13,16 +13,16 @@ The current local reset schedule is:
 
 ## Collection Power
 
-Quest Oblivion is calculated at claim time, not permanently baked into the quest display:
+Quest Divine Light is calculated at claim time, not permanently baked into the quest display:
 
 ```text
 multiplier = min(3, 1 + max(0, resonanceScore) / 1000)
 reward = floor(baseReward * multiplier)
 ```
 
-`computeGlobalResonanceScore(progress)` supplies the current score. `getScaledQuestOblivion` applies the formula. This ensures collection growth affects future claims without retroactively changing a claimed reward.
+`computeGlobalResonanceScore(progress)` supplies the current score. The Divine Light scaling helper applies the formula. This ensures collection growth affects future claims without retroactively changing a claimed reward.
 
-Weekly quests grant both Oblivion and Shards. The store's `claimQuest` action is authoritative; the modal only previews the result.
+Weekly quests grant both Divine Light and Shards. The store's `claimQuest` action is authoritative; the modal only previews the result.
 
 ## Rotation hydration
 

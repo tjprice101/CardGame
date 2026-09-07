@@ -900,9 +900,8 @@ function recordCardPlay(s: Store, definitionId: string): void {
   if (!def) return;
   emitQuestProgressToProgress(s.progress, { kind: 'play_cards', amount: 1 });
   const typeKind: QuestKind | null =
-    def.type === 'Light' ? 'play_seraphim'
-    : def.type === 'Dark' ? 'play_cherubim'
-    : def.type === 'AinSophAur' ? 'play_ophanim'
+    def.type === 'Light' ? 'play_light'
+    : def.type === 'Dark' ? 'play_dark'
     : null;
   if (typeKind) {
     emitQuestProgressToProgress(s.progress, { kind: typeKind, amount: 1 });
@@ -1042,6 +1041,7 @@ function completeBossFight(s: Store, victory: boolean): void {
       s.progress.nullRaidClears[raidId] = (s.progress.nullRaidClears[raidId] ?? 0) + 1;
 
       emitQuestProgressToProgress(s.progress, { kind: 'win_boss', amount: 1 });
+      emitQuestProgressToProgress(s.progress, { kind: 'clear_null_raid', amount: 1 });
     }
 
     s.bossFight = {
@@ -1186,6 +1186,12 @@ function completeBossFight(s: Store, victory: boolean): void {
 }
 
 function grantOblivion(s: Store, amount: number): void {
+  if (amount <= 0) return;
+  // Every Oblivion source, including sacrifice rewards and card effects, scales
+  // from the player's current Collection Power before downstream rewards resolve.
+  const collectionPower = computeGlobalResonanceScore(s.progress);
+  const collectionPowerMultiplier = Math.min(3, 1 + Math.max(0, collectionPower) / 1_000);
+  amount = Math.floor(amount * collectionPowerMultiplier);
   if (amount <= 0) return;
   // Global Oblivion multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
   if (s.computedStats.globalOblivionMult > 0) {
@@ -1829,6 +1835,7 @@ export const useStore = create<Store>()(
           s.deck = result.deck;
           queuePendingEffects(s.turn, result);
         }
+        emitQuestProgressToProgress(s.progress, { kind: 'summon_ain_soph_aur', amount: 1 });
         recompute(s);
       });
     },
@@ -2133,6 +2140,7 @@ export const useStore = create<Store>()(
           slot.faceState = 'front';
           slot.limitlessCharge = 0;
           s.turn.limitlessLightStacks += charge;
+          emitQuestProgressToProgress(s.progress, { kind: 'flip_soph', amount: 1 });
           recompute(s);
           return;
         }
@@ -2161,6 +2169,7 @@ export const useStore = create<Store>()(
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
         grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling)));
+        emitQuestProgressToProgress(s.progress, { kind: 'activate_ain_attack', amount: 1 });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
     },
@@ -2185,6 +2194,8 @@ export const useStore = create<Store>()(
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
         grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling + selectedSpend)));
+        emitQuestProgressToProgress(s.progress, { kind: 'activate_soph_attack', amount: 1 });
+        emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
     },
@@ -2223,6 +2234,8 @@ export const useStore = create<Store>()(
         else if (def.postActivationFate === 'deck') s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, card]);
         else s.deck.discardPile.push(card);
         enforceHandCap(s);
+        emitQuestProgressToProgress(s.progress, { kind: 'activate_dark', amount: 1 });
+        emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: cost });
         recompute(s);
       });
     },
@@ -2247,6 +2260,8 @@ export const useStore = create<Store>()(
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
         grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling + selectedSpend)));
+        emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
+        emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
     },
@@ -3086,6 +3101,7 @@ export const useStore = create<Store>()(
       if (claims[achievementId]) return null;
       const shardReward = getAchievementShardReward(badge.group);
       const oblivionReward = getAchievementOblivionReward(badge.group);
+      const scaledOblivionReward = getScaledQuestOblivion(oblivionReward, computeGlobalResonanceScore(s.progress));
       set(state => {
         latchUnlockedAchievements(state.progress);
         if (!state.progress.achievementClaims) state.progress.achievementClaims = {};
@@ -3093,12 +3109,12 @@ export const useStore = create<Store>()(
         state.progress.achievementUnlocks[achievementId] = true;
         state.progress.achievementClaims[achievementId] = true;
         state.progress.aberratedShards += shardReward;
-        if (oblivionReward > 0) {
-          state.progress.oblivion += oblivionReward;
-          state.progress.lifetimeOblivion = (state.progress.lifetimeOblivion ?? 0) + oblivionReward;
+        if (scaledOblivionReward > 0) {
+          state.progress.oblivion += scaledOblivionReward;
+          state.progress.lifetimeOblivion = (state.progress.lifetimeOblivion ?? 0) + scaledOblivionReward;
         }
       });
-      return { shards: shardReward, oblivion: oblivionReward > 0 ? oblivionReward : undefined };
+      return { shards: shardReward, oblivion: scaledOblivionReward > 0 ? scaledOblivionReward : undefined };
     },
 
     claimCardMastery: (definitionId, tier) => {

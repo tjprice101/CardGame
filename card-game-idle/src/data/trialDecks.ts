@@ -42,93 +42,51 @@ function e(definitionId: string): { definitionId: string; finish: 'normal' } {
 // ── Neutrality ────────────────────────────────────────────────────────────────
 const neutralityTrial: TrialDeckDefinition = {
   packId: 'pack-neutrality',
-  displayName: 'Neutrality — Light',
+  displayName: 'Neutrality — First Light',
   deckList: [
-    d('ser-neutral-null', 4),
-    d('ser-neutral-void', 4),
-    d('ser-neutral-balance', 4),
-    d('ser-neutral-equilibrium', 4),
-    d('ser-neutral-still', 2),
-    d('cherubim-neutral-null-veil', 4),
-    d('cherubim-neutral-void-shroud', 3),
-    d('cherubim-neutral-balance-mantle', 2),
-    d('cherubim-neutral-equilibrium-ward', 2),
-    d('cherubim-neutral-still-shell', 1),
-    d('ophanim-neutral-null-seek', 4),
-    d('ophanim-neutral-seraph-recall', 4),
-    d('ophanim-neutral-neutral-cycle', 4),
-    d('ophanim-neutral-void-surge', 4),
-    d('ophanim-neutral-chain-pulse', 4),
+    d('light-neutrality-1', 4),
+    d('light-neutrality-2', 4),
+    d('light-neutrality-3', 4),
+    d('light-neutrality-4', 4),
+    d('light-neutrality-5', 4),
+    d('dark-neutrality-1', 4),
+    d('dark-neutrality-2', 4),
+    d('dark-neutrality-3', 4),
+    d('dark-neutrality-4', 4),
+    d('dark-neutrality-5', 4),
+    d('light-neutrality-1', 2),
+    d('dark-neutrality-1', 2),
   ],
   extraDeck: Array.from({ length: 4 }, () => e('ain-soph-aur-neutrality-1')),
   guideSteps: [
-    {
-      cardDefinitionId: 'ser-neutral-null',
-      hint: 'Null Seraphim (Slot A). On play: +16 Oblivion; the active board state gains Light-stack support while the turn tracks its live Light total for later payoff.',
-    },
-    {
-      cardDefinitionId: 'ser-neutral-equilibrium',
-      hint: 'Equilibrium Seraphim (Slot B). On play: +36 Oblivion. While active: +8 Oblivion per card played. Keep the live Light-stack count aligned with the board so the finisher resolves correctly.',
-    },
-    {
-      cardDefinitionId: 'ser-neutral-balance',
-      hint: 'Balance Seraphim (Slot C). On play: +20 Oblivion. With multiple active units, the turn tracks the aggregated Light-stack state across the board.',
-    },
-    {
-      cardDefinitionId: 'ophanim-neutral-null-seek',
-      hint: 'Null Seek. Draw 2 — pulls Null Seek + Neutral Cycle from top of deck.',
-    },
-    {
-      cardDefinitionId: 'ophanim-neutral-chain-pulse',
-      hint: 'Oblivion Pulse. Adds Light-stack support to the active board state, +20 Oblivion, empower next, and draw 1. Your Light total should be aligned with the current board state.',
-    },
-    {
-      cardDefinitionId: 'ophanim-neutral-null-seek',
-      hint: 'Null Seek (the one drawn at step 4). Draw 2 more cards. Pile draws keep all three Seraphim ticking +1 Patience each per card played.',
-    },
-    {
-      cardDefinitionId: 'ophanim-neutral-neutral-cycle',
-      hint: 'Neutral Cycle. Core mechanic: live board support across multiple Seraphim. Why it scales: every card play advances the active Light-stack state and the board reads it for later payoff. Exact payoff: click Equilibrium Seraphim → Attack now for the big burst while the board remains in the current runtime model.',
-    },
+    { cardDefinitionId: 'light-neutrality-1', hint: 'Play this Light card face-down as Soph. Each hand play charges face-down Soph cards.' },
+    { cardDefinitionId: 'dark-neutrality-1', hint: 'Play this Dark utility card face-down as Soph. Keep building charge before choosing when to flip.' },
+    { cardDefinitionId: 'light-neutrality-2', hint: 'At 5+ charge, flip a Soph card to Ain and bank its charge as Limitless Light Stacks.' },
+    { cardDefinitionId: 'light-neutrality-3', hint: 'Use an Ain Attack to earn Divine Light without spending your Light Stacks.' },
+    { cardDefinitionId: 'dark-neutrality-2', hint: 'Dark cards provide utility. Follow the card text for its activation cost and destination.' },
+    { cardDefinitionId: 'ain-soph-aur-neutrality-1', hint: 'Sacrifice the required back-row materials to summon The White Null from the Extra Deck.' },
   ],
   guidedOpeningHand: [
-    'ser-neutral-null',
-    'ser-neutral-equilibrium',
-    'ser-neutral-balance',
-    'ophanim-neutral-null-seek',
-    'ophanim-neutral-chain-pulse',
+    'light-neutrality-1',
+    'dark-neutrality-1',
+    'light-neutrality-2',
+    'light-neutrality-3',
+    'dark-neutrality-2',
   ],
   guidedDeckOrder: [
-    // Splice fodder — first 5 entries match the opening hand IDs 1:1.
-    // The store's opening-hand override does `drawPile.indexOf(defId)` then `splice`
-    // for each card in guidedOpeningHand, so these get removed from the top first.
-    d('ser-neutral-null', 1),
-    d('ser-neutral-equilibrium', 1),
-    d('ser-neutral-balance', 1),
-    d('ophanim-neutral-null-seek', 1),
-    d('ophanim-neutral-chain-pulse', 1),
-    // True top of deck after splice — drawn deterministically by guide steps:
-    d('ophanim-neutral-null-seek', 1),     // drawn by Null Seek at step 4 (1st)
-    d('ophanim-neutral-neutral-cycle', 1), // drawn by Null Seek at step 4 (2nd)
-    d('ophanim-neutral-void-surge', 1),    // drawn by Chain Pulse at step 5
-    d('ser-neutral-void', 1),              // drawn by Null Seek at step 6 (1st)
-    d('cherubim-neutral-null-veil', 1),    // drawn by Null Seek at step 6 (2nd)
-    // Filler — totals 35 more (45 - 10 above)
-    d('ser-neutral-null', 2),
-    d('ser-neutral-equilibrium', 2),
-    d('ser-neutral-balance', 2),
-    d('ser-neutral-void', 3),
-    d('ser-neutral-still', 2),
-    d('cherubim-neutral-null-veil', 3),
-    d('cherubim-neutral-void-shroud', 3),
-    d('cherubim-neutral-balance-mantle', 2),
-    d('cherubim-neutral-equilibrium-ward', 2),
-    d('cherubim-neutral-still-shell', 1),
-    d('ophanim-neutral-null-seek', 1),
-    d('ophanim-neutral-seraph-recall', 4),
-    d('ophanim-neutral-neutral-cycle', 3),
-    d('ophanim-neutral-void-surge', 3),
-    d('ophanim-neutral-chain-pulse', 2),
+    d('light-neutrality-1', 1),
+    d('dark-neutrality-1', 1),
+    d('light-neutrality-2', 1),
+    d('light-neutrality-3', 1),
+    d('dark-neutrality-2', 1),
+    d('light-neutrality-4', 4),
+    d('dark-neutrality-3', 4),
+    d('light-neutrality-5', 4),
+    d('dark-neutrality-4', 4),
+    d('light-neutrality-1', 3),
+    d('dark-neutrality-1', 3),
+    d('light-neutrality-2', 4),
+    d('dark-neutrality-2', 4),
   ],
 };
 

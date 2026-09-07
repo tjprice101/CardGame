@@ -348,7 +348,7 @@ export default function SettingsPanel({ onClose }: Props) {
                         {opt.showTop && (
                           <div style={{ background: 'rgba(240,228,210,0.93)', padding: '2px 3px' }}>
                             <div style={{ fontSize: 4, color: '#555' }}>OPHANIM</div>
-                            <div style={{ fontSize: 5, fontWeight: 'bold', color: '#1a0e06' }}>Oblivion Shard</div>
+                            <div style={{ fontSize: 5, fontWeight: 'bold', color: '#1a0e06' }}>Divine Light Shard</div>
                           </div>
                         )}
                         <div style={{ flex: 1 }} />

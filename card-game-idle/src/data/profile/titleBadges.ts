@@ -15,7 +15,7 @@ import {
  * than stored individually, so progression stays authoritative.
  *
  * After the milestone titles below, the registry is extended with dynamic
- * titles for every boss clear, every Infinite-finish card unlock, and every
+ * titles for every boss clear, every Infinity-menu craft, and every
  * full card-set completion.
  */
 export type TitleBadgeGroup = 'milestone' | 'boss' | 'infinite' | 'set';
@@ -40,6 +40,9 @@ const totalNullRaidClears = (p: ProgressState): number =>
 
 const totalTranscendentCards = (p: ProgressState): number =>
   Object.values(p.transcendentCollection ?? {}).reduce((a, b) => a + b, 0);
+
+const distinctEverOwnedRarity = (p: ProgressState, rarity: string): number =>
+  CardRegistry.getAll().filter(card => card.rarity === rarity && getEverCollectionCount(p, card.definitionId) > 0).length;
 
 const socialCount = (p: ProgressState, key: keyof NonNullable<ProgressState['socialStats']>): number =>
   p.socialStats?.[key] ?? 0;
@@ -106,47 +109,47 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     isUnlocked: (p) => p.totalCardsPlayed >= 100_000,
     group: 'milestone',
   },
-  // ── Oblivion milestones ──────────────────────────────────────────────────
+  // ── Divine Light milestones ──────────────────────────────────────────────
   {
     id: 'title-first-oblivion',
-    text: 'Spark of Oblivion',
-    description: 'Earn your first 1,000 Oblivion.',
+    text: 'Spark of Divine Light',
+    description: 'Earn your first 1,000 Divine Light.',
     isUnlocked: (p) => (p.lifetimeOblivion ?? p.oblivion) >= 1_000,
     group: 'milestone',
   },
   {
     id: 'title-oblivion-touched',
-    text: 'Oblivion-Touched',
-    description: 'Earn 10,000 Oblivion in a single turn.',
+    text: 'Divine Light-Touched',
+    description: 'Earn 10,000 Divine Light in a single turn.',
     isUnlocked: (p) => (p.bestSingleTurnOblivion ?? 0) >= 10_000,
     group: 'milestone',
   },
   {
     id: 'title-stillness',
     text: 'Walker of Stillness',
-    description: 'Earn 100,000 Oblivion.',
+    description: 'Earn 100,000 Divine Light.',
     isUnlocked: (p) => (p.lifetimeOblivion ?? p.oblivion) >= 100_000,
     group: 'milestone',
   },
   {
     id: 'title-million-veil',
     text: 'Veil of a Million',
-    description: 'Earn 1,000,000 Oblivion.',
+    description: 'Earn 1,000,000 Divine Light.',
     isUnlocked: (p) => (p.lifetimeOblivion ?? p.oblivion) >= 1_000_000,
     group: 'milestone',
   },
   {
     id: 'title-of-the-eternal',
     text: 'Of the Eternal',
-    description: 'Earn 10,000,000 Oblivion.',
+    description: 'Earn 10,000,000 Divine Light.',
     isUnlocked: (p) => (p.lifetimeOblivion ?? p.oblivion) >= 10_000_000,
     group: 'milestone',
   },
-  // ── Oblivion apex ────────────────────────────────────────────────────────
+  // ── Divine Light apex ────────────────────────────────────────────────────
   {
     id: 'title-oblivion-emperor',
-    text: 'Emperor of Oblivion',
-    description: 'Earn 100,000,000 Oblivion.',
+    text: 'Emperor of Divine Light',
+    description: 'Earn 100,000,000 Divine Light.',
     isUnlocked: (p) => (p.lifetimeOblivion ?? p.oblivion) >= 100_000_000,
     group: 'milestone',
   },
@@ -325,28 +328,28 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
   {
     id: 'title-first-infinite',
     text: 'Touched by Infinity',
-    description: 'Own your first Infinite-finish card.',
+    description: 'Craft your first card through the Infinity menu.',
     isUnlocked: (p) => getEverInfiniteTotal(p) >= 1,
     group: 'milestone',
   },
   {
     id: 'title-infinitude',
     text: 'Bearer of Infinitude',
-    description: 'Own any 5 Infinite-finish cards.',
+    description: 'Craft 5 cards through the Infinity menu.',
     isUnlocked: (p) => getEverInfiniteTotal(p) >= 5,
     group: 'milestone',
   },
   {
     id: 'title-infinite-sovereign',
     text: 'Sovereign of Infinity',
-    description: 'Own any 10 Infinite-finish cards.',
+    description: 'Craft 10 cards through the Infinity menu.',
     isUnlocked: (p) => getEverInfiniteTotal(p) >= 10,
     group: 'milestone',
   },
   {
     id: 'title-infinite-pantheon',
     text: 'The Infinite Pantheon',
-    description: 'Own any 20 Infinite-finish cards.',
+    description: 'Craft 20 cards through the Infinity menu.',
     isUnlocked: (p) => getEverInfiniteTotal(p) >= 20,
     group: 'milestone',
   },
@@ -406,6 +409,34 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     text: 'Pantheon of Transcendence',
     description: 'Own 12 Transcendent cards.',
     isUnlocked: (p) => totalTranscendentCards(p) >= 12,
+    group: 'milestone',
+  },
+  {
+    id: 'title-first-eternal',
+    text: 'Eternal Witness',
+    description: "Earn your first Eternal card from an Eternity's Wake boss.",
+    isUnlocked: (p) => distinctEverOwnedRarity(p, 'Eternal') >= 1,
+    group: 'milestone',
+  },
+  {
+    id: 'title-eternal-collection',
+    text: 'Keeper of Eternity',
+    description: 'Earn 5 distinct Eternal cards from Eternity\'s Wake.',
+    isUnlocked: (p) => distinctEverOwnedRarity(p, 'Eternal') >= 5,
+    group: 'milestone',
+  },
+  {
+    id: 'title-first-enigmatic',
+    text: 'Enigma-Bound',
+    description: 'Earn your first Enigmatic card by completing an Enigma.',
+    isUnlocked: (p) => distinctEverOwnedRarity(p, 'Enigmatic') >= 1,
+    group: 'milestone',
+  },
+  {
+    id: 'title-enigmatic-pair',
+    text: 'Reader of the Hidden Pattern',
+    description: 'Earn both current Enigmatic Neutrality reward cards.',
+    isUnlocked: (p) => distinctEverOwnedRarity(p, 'Enigmatic') >= 2,
     group: 'milestone',
   },
   {
@@ -524,7 +555,7 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
   {
     id: 'title-eternal',
     text: 'The Eternal',
-    description: "Defeat every boss in Eternity's Wake (all 70).",
+    description: "Defeat every currently defined boss in Eternity's Wake.",
     isUnlocked: (p) => {
       // Require ≥1 clear of every defined boss.
       for (const b of BOSS_DEFINITIONS) {
@@ -645,7 +676,11 @@ interface SetSpec {
 }
 
 const SET_SPECS: SetSpec[] = [
-  { category: 'Neutrality', title: 'Of the Quiet Center', prefixes: ['neut-', 'ser-neutral-', 'ophanim-neutral-', 'cherubim-neutral-', 'angel-neutral-', 'btei-neutrality-', 'btei-voids-', 'btei-temporal-', 'btei-null-', 'btei-axiom-', 'btei-eternal-', 'btei-colossus-', 'btei-sovereign-', 'btei-architects-', 'btei-convergence-', 'btei-omniscient-', 'inf-oblivion-', 'inf-void-cascade', 'inf-entropic-crown', 'inf-annihilation-field', 'inf-sovereign-void', 'inf-eternity-rupture', 'inf-genesis-throne', 'inf-null-apex'] },
+  {
+    category: 'Neutrality',
+    title: 'Of the Quiet Center',
+    prefixes: ['light-neutrality-', 'dark-neutrality-', 'ain-soph-aur-neutrality-', 'btei-'],
+  },
 ];
 
 export function setCompletionTitleId(category: BossCategory): string {

@@ -58,7 +58,7 @@ const ATMOSPHERE_LINES = [
   'No spark is wasted on the willing.',
   'Light is not waiting — it is building toward the next decisive turn.',
   'Every Seraphim carries a war the world forgot. Honor that.',
-  'Oblivion is earned. Spend it as boldly as you dare.',
+  'Divine Light is earned. Spend it as boldly as you dare.',
   'The Wake calls. Answer when you are strong enough to finish what you start.',
   'The infinite is not granted — it is played for, one card at a time.',
 ];

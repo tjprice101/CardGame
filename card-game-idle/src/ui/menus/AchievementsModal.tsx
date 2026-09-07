@@ -54,7 +54,7 @@ function getThemePalette() {
 const GROUP_LABEL: Record<string, string> = {
   milestone: 'Milestones',
   boss: "Eternity's Wake",
-  infinite: 'Infinite Cards',
+  infinite: 'Infinity Crafted',
   set: 'Set Completion',
 };
 
@@ -68,7 +68,7 @@ const GROUP_ICON: Record<string, string> = {
 const GROUP_DESCRIPTION: Record<string, string> = {
   milestone: 'Core gameplay milestones — cards played, packs opened, turns completed, and collection thresholds reached.',
   boss: "Defeat Eternity's Wake bosses.",
-  infinite: 'Forge the rarest cards in existence through the Infinitude crafting system.',
+  infinite: 'Cards crafted through the Infinity menu using the Infinitude system.',
   set: 'Collect every card in a complete set, including all Eternal rarities.',
 };
 

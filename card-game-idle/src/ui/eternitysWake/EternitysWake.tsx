@@ -683,7 +683,7 @@ export default function EternitysWake({ onClose }: Props) {
         padding: '12px 24px', borderTop: '1px solid rgba(255,107,107,0.15)',
         fontSize: 11, color: 'rgba(255,150,150,0.4)', flexShrink: 0,
       }}>
-        Boss fights last {Math.floor(BOSS_FIGHT_ROUND_SECONDS / 60)} minutes, and you only get one turn. All Oblivion earned deals damage instead. 60-second cooldown on success or failure.
+        Boss fights last {Math.floor(BOSS_FIGHT_ROUND_SECONDS / 60)} minutes, and you only get one turn. All Divine Light earned deals damage instead. 60-second cooldown on success or failure.
       </div>
 
       {showCodex && <BossCodex onClose={() => setShowCodex(false)} />}

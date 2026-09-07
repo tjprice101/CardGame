@@ -38,8 +38,12 @@ const CADENCE_THEME: Record<Cadence, {
 };
 
 const KIND_LABEL: Record<string, string> = {
-  play_cards: 'Play cards', play_ophanim: 'Play Ophanim', play_seraphim: 'Place Seraphim',
-  play_cherubim: 'Place Cherubim', open_packs: 'Open packs', win_boss: 'Defeat bosses',
+  play_cards: 'Play cards', play_light: 'Play Light', play_dark: 'Play Dark',
+  summon_ain_soph_aur: 'Summon Ain Soph Aur', flip_soph: 'Flip Soph',
+  activate_ain_attack: 'Ain Attack', activate_soph_attack: 'Soph Attack',
+  activate_dark: 'Dark activation', bridge_ain_soph_aur: 'Bridge attack',
+  spend_light_stacks: 'Spend Light Stacks', earn_oblivion_in_turn: 'Earn Oblivion',
+  open_packs: 'Open packs', win_boss: 'Defeat bosses', clear_null_raid: 'Clear Null Raid',
 };
 
 function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestInstance; cadence: Cadence; resonanceScore: number; onClaim: () => void }) {

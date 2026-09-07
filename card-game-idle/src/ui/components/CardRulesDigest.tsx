@@ -96,15 +96,20 @@ function CardRulesDigest({
   }
 
   return (
-    <div style={{ display: 'grid', gap: 10 }}>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+      gap: '0 18px',
+      alignItems: 'start',
+    }}>
       {sections.map(section => (
         <div
           key={section.title}
           style={{
-            borderRadius: 10,
-            border: `1px solid ${sectionBorder}`,
+            borderTop: `1px solid ${sectionBorder}`,
             background: sectionBackground,
-            padding: '9px 10px',
+            padding: '9px 4px 10px',
+            minWidth: 0,
           }}
         >
           <div style={{
@@ -113,18 +118,18 @@ function CardRulesDigest({
             textTransform: 'uppercase',
             color: labelColor,
             fontWeight: 700,
-            marginBottom: 6,
+            marginBottom: 5,
             fontFamily: 'Georgia, serif',
           }}>
             {section.title}
           </div>
-          <div style={{ display: 'grid', gap: 5 }}>
+          <div style={{ display: 'grid', gap: 4 }}>
             {section.lines.slice(0, maxLinesPerSection ?? section.lines.length).map((line, index) => (
               <div
                 key={`${section.title}-${index}`}
                 style={{
-                  fontSize: 11.5,
-                  lineHeight: 1.45,
+                  fontSize: 11,
+                  lineHeight: 1.38,
                   color: textColor,
                   fontFamily: 'Georgia, serif',
                 }}

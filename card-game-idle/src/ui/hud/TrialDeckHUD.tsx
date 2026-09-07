@@ -124,7 +124,7 @@ export default function TrialDeckHUD({ onEndTrialRequest }: Props) {
         <span style={styles.label}>🃏 Trial</span>
         <span style={styles.stat}>Turn {trialDeck.turnCount ?? 0}</span>
         <span style={styles.stat}>|</span>
-        <span style={styles.stat}>{Math.floor(trialDeck.trialOblivionTotal ?? 0).toLocaleString()} Oblivion</span>
+        <span style={styles.stat}>{Math.floor(trialDeck.trialOblivionTotal ?? 0).toLocaleString()} Divine Light</span>
         {isGuided && (
           <>
             <span style={styles.stat}>|</span>

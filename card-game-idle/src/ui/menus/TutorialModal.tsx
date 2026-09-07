@@ -135,7 +135,7 @@ function OverviewBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>The Loop</div>
         <div style={bodyTextStyle}>
-          Play cards each turn to earn <Tag>Oblivion</Tag>. Spend Oblivion on <Tag>Card Packs</Tag> to expand
+          Play cards each turn to earn <Tag>Divine Light</Tag>. Spend Divine Light on <Tag>Card Packs</Tag> to expand
           your collection, build stronger decks, and push deeper into <Tag>Eternity's Wake</Tag> boss fights
           and the <Tag>Infinitude</Tag> crafting chamber. There is no idle tick &mdash; every gain comes from a
           card you played.
@@ -145,7 +145,7 @@ function OverviewBody() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Currencies</div>
-          <ListItem label="Oblivion">Primary currency. Earned from card plays and Seraphim / Angel attacks. Spent on card packs.</ListItem>
+          <ListItem label="Divine Light">Primary currency. Earned from card plays and attacks. Spent on card packs.</ListItem>
           <ListItem label="Shards">Aberrated Shards. Earned from boss clears and daily logins. Spent to convert cards into holofoils.</ListItem>
         </div>
         <div style={cardAltStyle}>
@@ -218,30 +218,28 @@ function BoardBody() {
           textAlign: 'center',
           letterSpacing: 0.5,
         }}>
-{`[ S0 ] [ S1 ] [ S2 ] [ S3 ] [ S4 ]   <- Front: Seraphim / Angels
-   [ C0 ]  [ C1 ]  [ C2 ]  [ C3 ]     <- Back: Cherubim (staggered)`}
+{`[ F0 ] [ F1 ] [ F2 ] [ F3 ]   <- Front: Ain Soph Aur
+ [ B0 ] [ B1 ] [ B2 ] [ B3 ]   <- Back: Light / Dark`}
         </pre>
         <div style={{ ...bodyTextStyle, marginTop: 8 }}>
-          Back slot <Tag>Ci</Tag> is adjacent to front slots <Tag>Si</Tag> and <Tag>Si+1</Tag>. Many Cherubim
-          buff adjacent Seraphim attacks; others apply effects to the whole board. All board cards go to
-          discard at turn end (Angels return to the Extra Deck instead).
+          Back-row cards begin on their <Tag>Soph</Tag> side. Front-row cards are <Tag>Ain Soph Aur</Tag>
+          summons. The board and hand reset at turn end; only persistent progression and Divine Light remain.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card Types</div>
-        <ListItem label="Ophanim">Played from hand. Immediate effect. No board presence. Your main draw / cycling / resource tools.</ListItem>
-        <ListItem label="Seraphim">Front-row fighters with an On-Play effect, a While-On-Board passive, and an attack profile.</ListItem>
-        <ListItem label="Cherubim">Back-row support with durability. Has On-Play, optional Enthalpy (placed) and Entropy (expired) rituals, and a passive that pings each card played.</ListItem>
-        <ListItem label="Angel">Extra Deck. Summoned at any time when conditions are met. Spends the listed Seraphim, but the summon itself does not count as a card play.</ListItem>
+        <ListItem label="Light">Creature cards with an Ain Attack and a stack-consuming Soph Attack.</ListItem>
+        <ListItem label="Dark">Utility cards that activate from the board, with some cards also castable from hand.</ListItem>
+        <ListItem label="Ain Soph Aur">Extra Deck summons. Sacrifice the listed back-row materials to place one in the front row.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Click Reference</div>
-        <ListItem label="Hand">Left-click plays the card. Cherubim go to back row; Seraphim to front.</ListItem>
-        <ListItem label="Seraphim">Left-click opens its attack panel. Right-click removes it for free.</ListItem>
-        <ListItem label="Cherubim">Left-click an occupied slot to remove that Cherubim.</ListItem>
-        <ListItem label="Angel">Left-click opens Primary / Exalted attacks. Right-click triggers the awaken ability once its cards-played requirement is met.</ListItem>
+        <ListItem label="Hand">Left-click plays a card. Dark cards with hand casting can also be cast directly.</ListItem>
+        <ListItem label="Soph card">Click at 5+ charge to choose Flip to Ain or sacrifice it for Divine Light.</ListItem>
+        <ListItem label="Ain card">Click to choose its attack or utility action when ready.</ListItem>
+        <ListItem label="Extra Deck">Click an Ain Soph Aur, choose materials, then confirm the front-row summon.</ListItem>
       </div>
     </>
   );
@@ -253,23 +251,21 @@ function AttacksBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>How Attacks Fire</div>
         <div style={bodyTextStyle}>
-          Seraphim and Angels gain attack opportunities as you play cards. Their <Tag>cooldownCards</Tag> field
-          is the number of cards that must be played between firings &mdash; there is always a minimum of 1
-          card between consecutive shots. Each attack pays out a chunk of Oblivion, scaled by card effects and any
-          adjacent buffs.
+          Every card shows its own base Oblivion, cooldown, and scaling values. Cooldowns are measured in cards
+          played, not seconds. Universal rules belong here; the card panel only shows what is unique to that card.
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
         <div style={cardAltStyle}>
-          <div style={sectionHeadingStyle}>Seraphim Attacks</div>
-          <ListItem label="Unsynergized">The reliable baseline. Available any time. Costs are paid in element-appropriate resources or discards.</ListItem>
-          <ListItem label="Synergized">Requires an Angel on the board (often a matching element). Hits much harder, longer cooldown.</ListItem>
+          <div style={sectionHeadingStyle}>Light Attacks</div>
+          <ListItem label="Ain Attack">Reads the current Limitless Light Stack pool and does not consume it.</ListItem>
+          <ListItem label="Soph Attack">Uses the card&apos;s own stack cost and scaling, then pays Oblivion.</ListItem>
         </div>
         <div style={cardAltStyle}>
-          <div style={sectionHeadingStyle}>Angel Attacks</div>
-          <ListItem label="Primary">Consistent damage on a moderate cooldown.</ListItem>
-          <ListItem label="Exalted">Finisher. Biggest payoff, longest cooldown, frequently requires a discard or sacrifice cost.</ListItem>
+          <div style={sectionHeadingStyle}>Ain Soph Aur</div>
+          <ListItem label="Bridge">Each summon has one Bridge the Light attack with its own base, scaling, cooldown, and optional stack cost.</ListItem>
+          <ListItem label="Triune">Scaling divides evenly among Limitless Light Stacks, summoned Ain Soph Aur, and Collection Power.</ListItem>
         </div>
       </div>
 
@@ -288,31 +284,31 @@ function PatienceBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Neutrality &mdash; Light Stack Runtime</div>
+        <div style={sectionHeadingStyle}>Light Stack Runtime</div>
         <div style={bodyTextStyle}>
-          The current runtime tracks the active <Tag>Light stack</Tag> state directly on the turn and reads board support from the live Light / Dark / Ain-Soph composition.
+          Limitless Light Stacks are created when charged Soph cards flip to Ain. They are a shared, per-turn resource.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Accumulation Rules</div>
-        <ListItem label="Eligibility">The turn only stays live while the board has active support in the current runtime model. Legacy drift bookkeeping is not used.</ListItem>
-        <ListItem label="Current Value">Each turn stores its own Light-stack count, which is the canonical resource used by the engine.</ListItem>
-        <ListItem label="Board Support">Light, Dark, and Ain-Soph units contribute to the active state that the game evaluates when it resolves board effects and full-fire scaling.</ListItem>
-        <ListItem label="Effects">Set effects that amplify or trigger from the active state operate against the live board composition, not stale Neutrality attenuation fields.</ListItem>
+        <ListItem label="Charge">Each card played adds charge to every face-down Soph card on the back row.</ListItem>
+        <ListItem label="Flip">At 5+ charge, flip a Soph card to Ain and convert its charge into Light Stacks.</ListItem>
+        <ListItem label="Spend">Soph Attacks, Dark activations, and some Bridge attacks spend stacks according to their card text.</ListItem>
+        <ListItem label="Reset">The stack pool and board charges reset at the end of the turn.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>The Payoff</div>
         <div style={bodyTextStyle}>
-          Attack resolution and high-tier scaling are driven by the live board state and the active Light-stack value. This keeps the engine consistent with the final Light / Dark / Ain-Soph implementation instead of the removed legacy drift model.
+          Attack resolution reads the stack pool before any attack cost is spent. Collection Power and summoned Ain Soph Aur provide the other two triune scaling inputs.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Starter Deck Focus</div>
-        <ListItem label="Core Plan">Use the board to establish active support, then let the live Light-stack and side metadata drive later attack and payoff decisions.</ListItem>
-        <ListItem label="Practical Tip">Your best play is to build a clean board state and rely on the current runtime model rather than waiting for obsolete Neutrality bookkeeping.</ListItem>
+        <ListItem label="Core Plan">Play cards to charge Soph units, flip them, then sequence stack costs around cooldowns.</ListItem>
+        <ListItem label="Practical Tip">Keep enough stacks for your strongest card action instead of spending the entire pool at once.</ListItem>
       </div>
     </>
   );

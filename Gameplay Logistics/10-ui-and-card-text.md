@@ -4,7 +4,7 @@
 
 React components read state, render HTML/CSS, and dispatch store actions. They should not become alternate rule engines.
 
-A button should call an action such as `playCard(instanceId)`; it should not independently remove the card, award Oblivion, or tick cooldowns.
+A button should call an action such as `playCard(instanceId)`; it should not independently remove the card, award Divine Light, or tick cooldowns.
 
 ## Card rules digest
 

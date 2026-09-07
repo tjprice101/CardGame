@@ -101,16 +101,16 @@ export const AVATARS: AvatarDefinition[] = [
   },
   {
     id: 'avatar-oblivion-touched',
-    name: 'Oblivion-Touched',
+    name: 'Divine Light-Touched',
     glyph: '◉',
-    description: 'Earn 10,000 Oblivion in a single turn.',
+    description: 'Earn 10,000 Divine Light in a single turn.',
     isUnlocked: (p: ProgressState) => (p.bestSingleTurnOblivion ?? 0) >= 10_000,
   },
   {
     id: 'avatar-eternal',
     name: 'Eternal',
     glyph: '☉',
-    description: 'Earn 1,000,000 Oblivion.',
+    description: 'Earn 1,000,000 Divine Light.',
     isUnlocked: (p: ProgressState) => (p.lifetimeOblivion ?? p.oblivion) >= 1_000_000,
   },
   {
@@ -222,10 +222,10 @@ export const AVATARS: AvatarDefinition[] = [
   },
   {
     id: 'pic-classic-oblivion-touched',
-    name: 'Oblivion-Touched',
+    name: 'Divine Light-Touched',
     glyph: '∞',
     imageUrl: '/assets/profile-pictures/classic-oblivion-touched.png',
-    description: 'Earn 10,000 Oblivion in a single turn.',
+    description: 'Earn 10,000 Divine Light in a single turn.',
     isUnlocked: (p: ProgressState) => (p.bestSingleTurnOblivion ?? 0) >= 10_000,
   },
   {

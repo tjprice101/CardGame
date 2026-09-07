@@ -1,5 +1,16 @@
 # CLAUDE.md — Card Game Design Rules
 
+> **Current terminology and engine override:** The primary currency is named **Divine Light** in all player-facing text. The legacy persisted/API field names `oblivion`, `lifetimeOblivion`, `bestSingleTurnOblivion`, `oblivion_flat`, and related event identifiers remain compatibility keys until a versioned save migration replaces them. Do not reintroduce the word Oblivion into new UI, card text, tutorial text, quests, achievements, or design docs.
+
+## Current Engine Snapshot (2026-09)
+
+- Main Deck contains **Light and Dark only**.
+- Extra Deck contains **Ain Soph Aur only**. Ain Soph Aur cards are never placed in the Main Deck.
+- Soph is face-down and charging; Ain is face-up and active. At 5+ charge, a card flips to Ain and converts charge into Limitless Light Stacks, or can be sacrificed for Divine Light.
+- Light cards have Ain and Soph attacks. Dark cards provide utility. Ain Soph Aur cards summon to the front row from the Extra Deck and use Bridge the Light.
+- Every Divine Light gain, including sacrifice rewards and card effects, is scaled by Collection Power through the central grant path.
+- Rarity sources are separate: Enigmatic = Enigma rewards, Eternal = Eternity's Wake rewards, Infinite = Infinity-menu crafts, Transcendent = Null Raid progression.
+
 This file governs how to approach all work on this project. It covers game design rules, balance philosophy, and UI/UX standards. Always read this before making design decisions or adding new content.
 
 ---
@@ -189,6 +200,45 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 ---
 
 ## Card Design Rules
+
+## Authoritative Current State
+
+This section supersedes older historical sections in this document when they conflict with the live `card-game-idle/src` implementation.
+
+### Currency terminology
+
+- The player-facing primary currency is **Divine Light**.
+- All new UI, card descriptions, tutorials, challenges, achievements, prompts, and design documentation must say Divine Light.
+- The live save/API compatibility identifiers still contain the former name: `progress.oblivion`, `lifetimeOblivion`, `bestSingleTurnOblivion`, `baseOblivion`, `sacrificeOblivionRate`, `oblivion_flat`, `oblivion:earned`, and related names. These are intentionally retained until a versioned save migration replaces them.
+- Every runtime Divine Light gain is routed through the central grant path and scales with Collection Power, including card effects, attacks, and Soph-card sacrifice rewards. Achievement and challenge rewards use the same Collection Power scaling rule.
+
+### Ain/Soph card architecture
+
+- The Main Deck contains Light and Dark cards only.
+- Ain Soph Aur cards are **never Main Deck cards**. They exist only in the Extra Deck and summon to the front row using back-row materials.
+- Soph is face-down and charging. Ain is face-up and active. At 5+ charge, the player flips to Ain for Limitless Light Stacks or sacrifices the card for Divine Light.
+- Light cards have Ain and Soph attacks. Dark cards are utility cards. Ain Soph Aur cards use Bridge the Light.
+- Triune scaling reads the Limitless Light Stack pool, front-row Ain Soph Aur count, and Collection Power.
+
+### Rarity sources
+
+- Common, Rare, Epic, and Legendary: normal card-pack rarities.
+- Enigmatic: Enigma reward cards.
+- Eternal: Eternity's Wake boss rewards.
+- Infinite: cards crafted through the Infinity/Infinitude menu only.
+- Transcendent: Null Raid progression, including shop cards and rare final-boss rewards.
+- Do not represent Transcendent cards as Infinite, or Enigmatic cards as Legendary-only rewards.
+
+### Completed content and systems
+
+- Neutrality has 25 Light, 25 Dark, and 12 Ain Soph Aur cards registered.
+- Nine Eternity's Wake Neutrality Eternal cards are playable Ain/Soph definitions and map to the existing boss reward ids.
+- Four Neutrality Transcendent cards are registered: one Light shop card, two Dark shop cards, and one rare Ain Soph Aur Null Raid reward.
+- Two Enigma reward cards are registered as Enigmatic Light/Dark cards; both existing Enigmas use Ain/Soph-era conditions.
+- Daily and weekly challenges use current actions: Light/Dark plays, Soph flips, stack spending, Ain attacks, Soph attacks, Dark activations, Ain Soph Aur summons, Bridge attacks, boss clears, Null Raid clears, and pack opens.
+- Achievements distinguish Infinity crafting, Eternal boss rewards, Enigmatic rewards, and Transcendent Null Raid ownership. Neutrality set completion uses current card prefixes, not retired Seraphim/Cherubim/Ophanim/Angel ids.
+- Supplied Neutrality card art and wide Eternity's Wake boss art are installed in `public/assets/card-backgrounds`; new Enigmatic and Transcendent art files are wired by exact card id.
+- Card stat panels show card-specific values in a fluid layout. Universal Ain/Soph rules live in the base tutorial instead of being repeated on every card.
 
 ### Descriptions
 - Describe **only what the card does mechanically**. No strategic advice, tips, or flavor commentary.

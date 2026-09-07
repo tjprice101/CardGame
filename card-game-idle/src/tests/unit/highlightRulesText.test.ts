@@ -32,14 +32,14 @@ describe('highlightRulesText', () => {
   });
 
   it('tokenises numbers like +45% and x1.8', () => {
-    const nodes = highlightRulesText('Power amplified by x1.8 and gain +45% Oblivion');
+    const nodes = highlightRulesText('Power amplified by x1.8 and gain +45% Divine Light');
     const text = nodesToText(nodes);
-    expect(text).toBe('Power amplified by x1.8 and gain +45% Oblivion');
+    expect(text).toBe('Power amplified by x1.8 and gain +45% Divine Light');
     const styled = nodes.filter(n => typeof n === 'object') as any[];
     const styledTexts = styled.map(s => s.props.children);
     expect(styledTexts).toContain('x1.8');
     expect(styledTexts).toContain('+45%');
-    expect(styledTexts).toContain('Oblivion');
+    expect(styledTexts).toContain('Divine Light');
   });
 
   it('returns single-element array for empty input', () => {

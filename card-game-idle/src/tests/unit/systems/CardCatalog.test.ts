@@ -91,7 +91,7 @@ describe('Ain/Soph card catalog', () => {
     expect(transcendent).toHaveLength(4);
     expect(transcendent.every(card => card.rarity === 'Transcendent')).toBe(true);
     expect(enigmas).toHaveLength(2);
-    expect(enigmas.every(card => card.rarity === 'Legendary')).toBe(true);
+    expect(enigmas.every(card => card.rarity === 'Enigmatic')).toBe(true);
   });
 
   it('keeps authored attack values intentionally distinct across the catalog', () => {

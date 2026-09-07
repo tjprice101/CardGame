@@ -478,7 +478,7 @@ export default function PlayerInformationPage({
 
           {/* Emblem stat pillars */}
           <div style={S.heroStats}>
-            <EmblemStat label="Oblivion" value={progress.oblivion.toLocaleString()} />
+            <EmblemStat label="Divine Light" value={progress.oblivion.toLocaleString()} />
             <div style={S.emblemDivider} />
             <EmblemStat label="Shards" value={progress.aberratedShards.toLocaleString()} />
             <div style={S.emblemDivider} />

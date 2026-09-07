@@ -7,7 +7,7 @@
 ```ts
 type ImmediateEffect =
   | { type: 'draw'; value: number }
-  | { type: 'gain_oblivion'; value: number }
+  | { type: 'oblivion_flat'; value: number } // Legacy tag; player-facing text says Divine Light.
   | { type: 'patience_gain_all'; value: number };
 ```
 
@@ -32,7 +32,7 @@ A function stored inside a card definition would be difficult to serialize, insp
   turn,
   board,
   deck,
-  oblivionBonus,
+  oblivionBonus, // Legacy result key; player-facing text says Divine Light.
   pendingEffect,
 }
 ```

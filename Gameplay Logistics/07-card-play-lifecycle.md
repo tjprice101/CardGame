@@ -11,7 +11,7 @@ guard phase and card
   -> resolve definition
   -> place or execute card
   -> recompute board relationships
-  -> award ordinary play Oblivion
+  -> award ordinary play Divine Light
   -> apply passives
   -> tick durability and hand-play cooldowns
   -> execute card-specific effects
@@ -32,7 +32,7 @@ In `playCard`:
 2. Construct a `SeraphimInstance` from the hand card.
 3. Place it in `frontSlots`.
 4. Recompute active synergy.
-5. Award ordinary play Oblivion.
+5. Award ordinary play Divine Light.
 6. Apply Cherubim passives.
 7. Tick Cherubim durability.
 8. Tick set-ability cooldowns.
@@ -51,7 +51,7 @@ A Cherubim is placed in a back slot, its durability is initialized, and its imme
 
 ## Ophanim path
 
-An Ophanim has no board instance. The executor runs its immediate effects, then the store awards play Oblivion, applies passives, ticks durability and cooldowns, removes the card, records the play, and checks progression.
+Dark utility cards resolve through the executor, then the store awards Divine Light when applicable, applies current board effects, ticks cooldowns, removes or relocates the card, records the play, and checks progression.
 
 ## Why helpers are shared
 

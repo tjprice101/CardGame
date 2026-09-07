@@ -172,7 +172,7 @@ export default function BattlegroundInviteModal() {
             {challengerName}
           </div>
           <div style={{ fontSize: '0.8rem', color: warmTheme.textSoft, letterSpacing: '0.02em' }}>
-            challenges you to a 3-minute Oblivion race.
+            challenges you to a 3-minute Divine Light race.
           </div>
         </div>
 

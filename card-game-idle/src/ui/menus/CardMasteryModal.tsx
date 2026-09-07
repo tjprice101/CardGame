@@ -85,7 +85,7 @@ function SystemInfoPanel() {
           its highest reached Tier — once per card, regardless of copies owned. All Resonance across all
           played cards sums into your <span style={{ color: P.accent, fontWeight: 700 }}> Global Resonance Score</span>,
           which feeds directly into your <span style={{ color: P.gold, fontWeight: 700 }}>Collection Power</span> multiplier
-          — boosting every Oblivion gain for every turn you play.
+          — boosting every Divine Light gain for every turn you play.
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body, marginTop: 10 }}>
           Collection Power is also one of the three sources every attack scales from. Each Light card's

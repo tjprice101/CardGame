@@ -6,11 +6,6 @@ import type {
 } from '@/types/cards';
 import type { CardEffect, CardSubtypeFilter, EffectCondition } from '@/types/effects';
 import { CardRegistry } from '@/cards/CardRegistry';
-import {
-  TRIUNE_ASA_REFERENCE,
-  TRIUNE_COLLECTION_REFERENCE,
-  TRIUNE_STACK_REFERENCE,
-} from '@/systems/cards/CardScaling';
 import { formatDisplayCardText } from '@/ui/preferences';
 
 export interface CardSummarySection {
@@ -53,7 +48,7 @@ function formatScaling(expression: LightCardDefinition['ainAttack']['scaling']):
     }
     case 'triune': {
       const perShare = formatExactValue(expression.amount);
-      return `+${perShare} split evenly across Limitless Light Stacks (per ${TRIUNE_STACK_REFERENCE}), summoned Ain Soph Aur (per ${TRIUNE_ASA_REFERENCE}), and Collection Power (per ${TRIUNE_COLLECTION_REFERENCE})`;
+      return `+${perShare} triune scaling: Stacks / ASA / Collection Power`;
     }
     case 'custom': return `bespoke scaling (${expression.fnId})`;
   }
@@ -116,8 +111,8 @@ function formatCondition(condition: EffectCondition): string {
 function formatEffect(effect: CardEffect, definitionId?: string): string {
   if (!effect || typeof effect !== 'object' || !("type" in effect)) return 'Unknown effect';
   switch (effect.type) {
-    case 'oblivion_flat': return `+${effect.value} Oblivion`;
-    case 'score_flat': return `+${effect.value} Oblivion`;
+    case 'oblivion_flat': return `+${effect.value} Divine Light`;
+    case 'score_flat': return `+${effect.value} Divine Light`;
     case 'draw': return `Draw ${formatCount(effect.value, 'card')}`;
     case 'discard_choice': return `Choose and discard ${formatCount(effect.value, 'card')}`;
     case 'discard_draw': return `Discard ${formatCount(effect.discard, 'card')}, then draw ${formatCount(effect.draw, 'card')}`;
@@ -131,7 +126,7 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'salvage_by_type_count': return `Salvage ${formatCount(effect.count, 'card')} matching ${formatSubtypeList(effect.filter)}`;
     case 'salvage_any': return 'Salvage any 1 card';
     case 'salvage_by_id': return `Salvage ${effect.label ?? CardRegistry.get(effect.targetId)?.name ?? effect.targetId} from discard`;
-    case 'score_multiplier': return `+${effect.value}% of this turn's Oblivion`;
+    case 'score_multiplier': return `+${effect.value}% of this turn's Divine Light`;
     case 'conditional':
       return `If ${formatCondition(effect.condition)}, ${formatEffectsInline(effect.then.filter(Boolean), definitionId)}`;
     default:
@@ -235,11 +230,10 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     const light = card as LightCardDefinition;
     pushSummarySection(sections, 'Identity', [
       'Light creature',
-      'Starts face-down as Soph; flip at 5+ charge to become face-up Ain',
     ]);
     pushSummarySection(sections, 'Ain Attack', [
       `${light.ainAttack.baseOblivion} base Oblivion`,
-      `${formatScaling(light.ainAttack.scaling)}; does not consume stacks`,
+      `${formatScaling(light.ainAttack.scaling)}; no stack cost`,
       `Cooldown: ${formatCount(light.ainAttack.cooldownCards, 'card played')}`,
     ]);
     pushSummarySection(sections, 'Soph Attack', [
@@ -248,7 +242,6 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       `Cooldown: ${formatCount(light.sophAttack.cooldownCards, 'card played')}`,
     ]);
     pushSummarySection(sections, 'Charge', [
-      `Each card played adds 1 charge while this card is face-down Soph`,
       `Sacrifice: ${light.sacrificeOblivionRate} Oblivion per stored charge`,
       ...(light.onFlipEffects?.length ? [`On flip: ${formatEffectsInline(light.onFlipEffects, light.definitionId)}`] : []),
     ]);
@@ -258,7 +251,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     const dark = card as DarkCardDefinition;
     pushSummarySection(sections, 'Identity', [
       'Dark utility card',
-      dark.allowHandCast ? 'May be cast directly from hand or placed face-down as Soph' : 'Must be placed face-down as Soph',
+      dark.allowHandCast ? 'Hand cast or board activation' : 'Board activation only',
     ]);
     pushSummarySection(sections, 'Utility', [formatEffectsInline(dark.sophEffects, dark.definitionId)]);
     pushSummarySection(sections, 'Activation', [
@@ -267,7 +260,6 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       `After activation: ${dark.postActivationFate}`,
     ]);
     pushSummarySection(sections, 'Charge', [
-      'Flip at 5+ stored Soph charge to activate from the board',
       `Sacrifice: ${dark.sacrificeOblivionRate} Oblivion per stored charge`,
     ]);
   }
@@ -275,9 +267,9 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
   if (card.type === 'AinSophAur') {
     const asa = card as AinSophAurDefinition;
     const bridge = asa.bridgeAttack;
-    pushSummarySection(sections, 'Identity', ['Ain Soph Aur Extra Deck card', 'Front row only; summoned by sacrificing back-row cards']);
+    pushSummarySection(sections, 'Identity', ['Ain Soph Aur Extra Deck card']);
     pushSummarySection(sections, 'Summon', [
-      `Materials: ${asa.summonCost.length || 'card-defined'}`,
+      `Materials required: ${asa.summonCost.length || 'card-defined'}`,
       ...(asa.onSummonEffects.length ? [`On summon: ${formatEffectsInline(asa.onSummonEffects, asa.definitionId)}`] : []),
     ]);
     if (bridge) {

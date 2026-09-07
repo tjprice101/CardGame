@@ -76,6 +76,7 @@ interface AttackDefinition<TLabel extends string = string> {
   readonly label: TLabel;
   readonly name: string;
   readonly description: string;
+  /** Legacy field name; displayed to players as Divine Light. */
   readonly baseOblivion: number;
   readonly cooldownCards: number;
   readonly costs?: AttackCost[];

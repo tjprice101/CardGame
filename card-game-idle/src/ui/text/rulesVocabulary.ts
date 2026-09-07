@@ -118,7 +118,7 @@ const VOCAB: Record<Exclude<HighlightCategory, 'element' | 'number'>, string[]> 
     'Bramble',
   ],
   resource: [
-    'Oblivion',
+    'Divine Light',
     'Aberrated Shards',
     'Aberrated Shard',
     'Monochromatic Shards',

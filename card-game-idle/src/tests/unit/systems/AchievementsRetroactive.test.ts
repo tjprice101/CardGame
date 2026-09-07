@@ -29,4 +29,22 @@ describe('achievements retroactive unlocking', () => {
     const summary = summarizeAchievements(progress);
     expect(summary.unlocked).toBeGreaterThan(0);
   });
+
+  it('recognizes current late-game rarity progression', () => {
+    const progress = cloneProgress();
+    progress.collection['btei-voids-reaping'] = 1;
+    progress.collection['enig-neutral-lumen-genesis'] = 1;
+    progress.transcendentCollection = { 'tx-neutral-starbound-glimmer': 1 };
+
+    expect(isAchievementUnlocked(progress, 'title-first-eternal')).toBe(true);
+    expect(isAchievementUnlocked(progress, 'title-first-enigmatic')).toBe(true);
+    expect(isAchievementUnlocked(progress, 'title-transcendent-caller')).toBe(false);
+  });
+
+  it('does not treat ordinary Infinite ownership as a crafted Infinity card', () => {
+    const progress = cloneProgress();
+    progress.collection['inf-oblivion-absolute'] = 1;
+
+    expect(isAchievementUnlocked(progress, 'title-first-infinite')).toBe(false);
+  });
 });

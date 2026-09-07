@@ -173,7 +173,7 @@ export default function BattlegroundLobby({ onClose }: Props) {
               ARENA MODE
             </div>
             <h2 style={TITLE}>Battleground of the Card-born</h2>
-            <p style={CAPTION}>3-minute Oblivion race — highest score wins.</p>
+            <p style={CAPTION}>3-minute Divine Light race — highest score wins.</p>
           </div>
           {step !== 'cpu-ready' && (
             <button
