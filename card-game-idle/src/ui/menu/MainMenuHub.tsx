@@ -56,7 +56,7 @@ const ATMOSPHERE_LINES = [
   'Shuffle once for fortune. Twice for fate.',
   'The board remembers what the hand forgets.',
   'No spark is wasted on the willing.',
-  'Patience is not waiting — it is building toward something inevitable.',
+  'Light is not waiting — it is building toward the next decisive turn.',
   'Every Seraphim carries a war the world forgot. Honor that.',
   'Oblivion is earned. Spend it as boldly as you dare.',
   'The Wake calls. Answer when you are strong enough to finish what you start.',

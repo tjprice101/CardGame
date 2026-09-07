@@ -137,22 +137,17 @@ function getEffectTypes(def: CardDefinition): string[] {
     }
   };
 
-  if (def.type === 'Ophanim') {
-    pushEffectTypes(def.effects);
+  if (def.type === 'Light') {
+    pushEffectTypes(def.onFlipEffects ?? []);
   }
 
-  if (def.type === 'Cherubim') {
-    pushEffectTypes(def.effects);
-    pushEffectTypes(def.onPlayEffects);
+  if (def.type === 'Dark') {
+    pushEffectTypes(def.sophEffects);
   }
 
-  if (def.type === 'Seraphim') {
-    pushEffectTypes(def.onPlayEffects);
-  }
-
-  if (def.type === 'Angel') {
+  if (def.type === 'AinSophAur') {
     pushEffectTypes(def.onSummonEffects);
-    pushEffectTypes(def.activatedAbility.effects);
+    pushEffectTypes(def.onPlayEffects ?? []);
   }
 
   return types;
@@ -163,44 +158,19 @@ function hasSomeEffect(def: CardDefinition, candidates: string[]): boolean {
   return candidates.some(candidate => types.includes(candidate));
 }
 
-function hasTextSnippet(def: CardDefinition, snippets: string[]): boolean {
-  const text = [
-    def.description,
-    def.type === 'Angel' ? def.activatedAbility.description : '',
-    def.type === 'Seraphim' && def.attacks ? `${def.attacks.unsynergized.name} ${def.attacks.synergized.name}` : '',
-    def.type === 'Angel' && def.attacks ? `${def.attacks.primary.name} ${def.attacks.exalted.name}` : '',
-  ].join(' ').toLowerCase();
-
-  return snippets.some(snippet => text.includes(snippet));
-}
-
 function inferCardRolePattern(def: CardDefinition): CardRolePattern {
-  if (def.type === 'Angel') return 'finisher';
+  if (def.type === 'AinSophAur') return 'finisher';
 
-  if (def.type === 'Seraphim') {
-    if (def.baseStats.bonusType === 'ophanim_bonus' || hasTextSnippet(def, ['ophanim'])) return 'amplifier';
-    if (def.baseStats.bonusType === 'resource_generation') return 'resource';
-    if (hasTextSnippet(def, ['sequence'])) return 'setup';
-    if (def.baseStats.bonusType === 'power_amplifier' || def.baseStats.bonusType === 'score_per_second') return 'amplifier';
-    return 'payoff';
-  }
+  if (def.type === 'Light') return 'payoff';
 
-  if (def.type === 'Cherubim') {
-    if (hasSomeEffect(def, ['cherubim_resource_per_card', 'cherubim_draw_per_card'])) return 'resource';
-    if (hasSomeEffect(def, ['cherubim_adjacent_seraphim_bonus', 'cherubim_seraphim_amp', 'cherubim_attack_buff'])) return 'amplifier';
-    if (hasSomeEffect(def, ['draw', 'search_deck_by_type', 'look_top_take', 'look_top_take_drop', 'salvage_any', 'salvage_by_type'])) return 'setup';
+  if (def.type === 'Dark') {
+    if (hasSomeEffect(def, ['draw', 'search_deck_by_type', 'look_top_take', 'look_top_take_drop', 'look_top_take_type', 'salvage_any', 'salvage_by_type', 'shuffle_discard'])) {
+      return 'setup';
+    }
     return 'support';
   }
 
-  if (hasSomeEffect(def, ['draw', 'search_deck_by_type', 'look_top_take', 'look_top_take_drop', 'look_top_take_type', 'salvage_any', 'salvage_by_type', 'shuffle_discard', 'copy_last_hr'])) {
-    return 'setup';
-  }
-
-  if (hasSomeEffect(def, ['patience_gain_all', 'patience_double_all'])) {
-    return 'resource';
-  }
-
-  if (hasSomeEffect(def, ['score_flat', 'score_multiplier', 'oblivion_flat', 'butterfly_release', 'seas_undertow_release'])) {
+  if (hasSomeEffect(def, ['score_flat', 'score_multiplier', 'oblivion_flat'])) {
     return 'payoff';
   }
 
@@ -208,19 +178,15 @@ function inferCardRolePattern(def: CardDefinition): CardRolePattern {
 }
 
 function getCardRoleDetail(def: CardDefinition): string {
-  if (hasSomeEffect(def, ['radiance_gain', 'pyro_heat_gain', 'trail_gain', 'strain_gain', 'prismatic_light_gain', 'resonance_charge_gain', 'resonance_charge_spend', 'monochromatic_shards_gain', 'arctic_charge_gain', 'bloom_gain', 'butterfly_spectrum_gain', 'seas_undertow_gain', 'seas_foam_gain', 'radiance_double'])) {
-    return 'It stocks the resources this engine spends to stay online.';
-  }
-
-  if (def.type === 'Cherubim' || hasSomeEffect(def, ['cherubim_adjacent_seraphim_bonus', 'cherubim_seraphim_amp', 'cherubim_attack_buff'])) {
+  if (def.type === 'Dark') {
     return 'It strengthens the board once your setup pieces are already in place.';
   }
 
-  if (def.type === 'Seraphim') {
+  if (def.type === 'Light') {
     return 'Its impact is highest once the engine is already online and ready to convert setup into payoff.';
   }
 
-  if (def.type === 'Angel') {
+  if (def.type === 'AinSophAur') {
     return 'It turns completed setup into a real finisher instead of another setup piece.';
   }
 
@@ -278,10 +244,9 @@ export function getSetEngineContributorsForCards(
   }
 
   const typeRank: Record<CardDefinition['type'], number> = {
-    Ophanim: 0,
-    Cherubim: 1,
-    Seraphim: 2,
-    Angel: 3,
+    Light: 0,
+    Dark: 1,
+    AinSophAur: 2,
   };
 
   return Array.from(grouped.values())
@@ -299,59 +264,30 @@ function buildEngineSnapshot(
   switch (key) {
     case 'neutrality': {
       const frontSlots = board?.frontSlots ?? [];
-      const seraphimCount = frontSlots.filter(u => u?.type === 'Seraphim').length;
-      const angelCount = frontSlots.filter(u => u?.type === 'Angel').length;
-      const patienceEligible = seraphimCount > 0 || angelCount > 0;
-      const totalPatience = frontSlots.reduce((acc, unit) => {
-        if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return acc;
-        return acc + (unit.patienceStacks ?? 0);
-      }, 0);
-      const patienceUnits = frontSlots.filter(u =>
-        u && (u.type === 'Seraphim' || u.type === 'Angel') &&
-        (u.patienceStacks ?? 0) > 0,
-      ).length;
-      const maxPatience = frontSlots.reduce((acc, unit) => {
-        if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return acc;
-        return Math.max(acc, unit.patienceStacks ?? 0);
-      }, 0);
-      const activeCherubim = (board?.backSlots ?? []).filter(b => b !== null).length;
-      const potentialBonus = totalPatience * 15;
-      const chargedThisTurn = turn.neutralityPatienceChargedThisTurn ?? 0;
-      const consumedThisTurn = turn.neutralityPatienceConsumedThisTurn ?? 0;
-      const recentTriggers = (turn.neutralityTriggeredEffects ?? []).slice(-3);
+      const activeLightUnits = frontSlots.filter(u => u !== null);
+      const lightStackTotal = turn.limitlessLightStacks ?? 0;
+      const activeSupport = activeLightUnits.length > 0 || lightStackTotal > 0;
 
       return {
         key,
         label: meta.label,
         accent: meta.accent,
-        compact: patienceEligible
-          ? `Patience ${totalPatience} total | Peak ${maxPatience} | ${patienceUnits} unit${patienceUnits !== 1 ? 's' : ''} charged`
-          : 'Patience paused — no Seraphim or Angel on board',
-        detail: `Pending Bonus Oblivion ≁E+${potentialBonus} | Patience active this turn`,
-        tagline: 'Neutrality now reports charged, consumed, and converted Patience in real time.',
-        summary: 'Every card you play charges +1 Patience on each Seraphim on board, as long as at least one Seraphim or Angel is present. If neither is on board, Patience does not accumulate.',
+        compact: activeSupport
+          ? `Light stacks ${lightStackTotal} | ${activeLightUnits.length} active unit${activeLightUnits.length !== 1 ? 's' : ''}`
+          : 'Light stacks paused — no active support',
+        detail: `Current Light-stack state: ${lightStackTotal} stored, ${activeLightUnits.length} board support`,
+        tagline: 'Neutrality is now tracked in the final Light / Dark / Ain-Soph runtime model.',
+        summary: 'The runtime uses the active Light-stack state and the board’s Light/Dark/Ain-Soph unit composition; it no longer derives from archived Neutrality equilibrium bookkeeping.',
         metrics: [
-          createMetric('Eligibility', patienceEligible ? 'Active' : 'Paused', patienceEligible
-            ? `${seraphimCount} Seraphim, ${angelCount} Angel on board.`
-            : 'No Seraphim or Angel on board — Patience paused.'),
-          createMetric('Total Patience', totalPatience, 'Sum of all Patience stacks across Seraphim and Angels on board. Each stack = +15 Oblivion on next attack.'),
-          createMetric('Patience Charged', chargedThisTurn, 'Total Patience added by Neutrality card effects this turn.'),
-          createMetric('Patience Consumed', consumedThisTurn, 'Patience spent or transformed by Neutrality card effects this turn.'),
-          createMetric('Recent Triggers', recentTriggers.length === 0 ? 'none' : recentTriggers.join(' | '), 'Most recent Neutrality effect activations this turn.'),
+          createMetric('Light stacks', lightStackTotal, 'Total stored Light stacks available to the current turn.'),
+          createMetric('Board support', activeLightUnits.length, 'Active Light-side or Ain-Soph units contributing to the current board state.'),
+          createMetric('Runtime model', 'Light / Dark / Ain-Soph', 'The engine reflects the current taxonomy rather than the removed Neutrality attenuation model.'),
         ],
         nextSteps: [
-          createStep('Place a Seraphim or Angel', patienceEligible, patienceEligible
-            ? `${seraphimCount} Seraphim and ${angelCount} Angel on board — Patience is flowing.`
-            : 'No Seraphim or Angel on board — Patience cannot accumulate. Place a Seraphim or summon an Angel.'),
-          createStep('Build Patience stacks', totalPatience >= 3, totalPatience >= 3
-            ? `${totalPatience} total Patience built. Each stack adds +15 Oblivion to the next Seraphim attack.`
-            : 'Keep playing cards  Eevery card played automatically adds +1 Patience to each eligible Seraphim.'),
-          createStep('Amplify with Cherubim', activeCherubim >= 1, activeCherubim >= 1
-            ? `${activeCherubim} Cherubim on board  Egranting +1 to +3 extra Patience per card played to adjacent Seraphim.`
-            : 'Place Neutrality Cherubim to grant +1 E extra Patience per card played to adjacent Seraphim.'),
-          createStep('Hit the threshold', maxPatience >= 3, maxPatience >= 3
-            ? `Peak Patience is ${maxPatience}  Eat least one Seraphim can trigger its threshold draw bonus on next attack.`
-            : 'Reach your Seraphim\'s Patience threshold (3 E depending on rarity) to draw bonus cards when it attacks.'),
+          createStep('Stabilize the turn state', lightStackTotal >= 0, 'The Light-stack count is the canonical per-turn value; no legacy drift fields remain.'),
+          createStep('Maintain board support', activeLightUnits.length > 0, activeLightUnits.length > 0
+            ? `${activeLightUnits.length} active unit${activeLightUnits.length !== 1 ? 's' : ''} on board.`
+            : 'Add Light-side or Ain-Soph units to keep the board in the current runtime model.'),
         ],
       };
     }
@@ -377,36 +313,24 @@ export interface EngineGuide {
 const RAW_SET_ENGINE_GUIDES: Record<EngineKey, EngineGuide> = {
   neutrality: {
     engineKey: 'neutrality',
-    title: 'Neutrality: Patience Engine',
-    intro: 'Every card you play adds +1 Patience to each waiting Neutrality Seraphim. When it attacks, it consumes all of its Patience and gains +15 Oblivion per stack. Patience then resets to 0.',
+    title: 'Neutrality: Light / Dark / Ain-Soph Engine',
+    intro: 'The runtime uses the current Light-stack state and the board’s Light, Dark, and Ain-Soph unit composition. It no longer depends on archived Neutrality drift bookkeeping.',
     sections: [
       {
-        heading: 'How Patience Builds',
-        body: 'Any card play adds +1 Patience to every Neutrality Seraphim on the board. Each Seraphim stores its own stacks. A unit that has waited for 8 card plays has 8 Patience; a unit that just attacked starts again at 0.\n\nPatience caps at 150 per Seraphim by default. Only Seraphim with a Patience threshold use this system.',
+        heading: 'Current Runtime Model',
+        body: 'The active turn state tracks Light stacks directly. Board support is derived from the current unit composition, with Light and Dark family members plus Ain-Soph units contributing to the active engine state.',
       },
       {
-        heading: 'Seraphim Attack Payoff',
-        body: 'On attack, a Seraphim consumes all of its Patience:\n\n• +15 Oblivion per stack.\n• 5 Patience gives +75 Oblivion; 10 gives +150.\n• Patience resets to 0 after the attack.\n\nNeutrality Seraphim cooldowns range from 5 to 6 cards, depending on the card.',
+        heading: 'Set-State Logic',
+        body: 'Infinite full-fire checks evaluate the live board composition instead of the removed Neutrality equilibrium math. Light-stack totals remain the canonical per-turn resource.',
       },
       {
-        heading: 'Patience Thresholds (Bonus Draw)',
-        body: 'Attacking at or above a Seraphim\'s Patience threshold also draws cards:\n\n• Common Null and Void: threshold 3, draw 1.\n• Rare Balance: threshold 4, draw 1.\n• Rare Equilibrium: threshold 4, draw 2.\n• Epic Still: threshold 5, draw 2.\n\nAttacking below the threshold still pays +15 Oblivion per stack.',
+        heading: 'Ain-Soph and side metadata',
+        body: 'Extra-deck units carry the Ain-Soph side metadata and flash charge state needed by the runtime. This is the canonical data model used by summon placement, board effects, and save compatibility.',
       },
       {
-        heading: 'Cherubim: Patience Amplifiers',
-        body: 'A Cherubim boosts the Seraphim directly in front of it on every card play:\n\n• Common: +1 extra Patience per card, for +2 total.\n• Rare: +2 extra, for +3 total.\n• Epic: +3 extra, for +4 total.\n\nAn Epic Cherubim beside a Seraphim gives that Seraphim 24 Patience over 6 card plays, worth +360 Oblivion before multipliers.',
-      },
-      {
-        heading: 'Ophanim: Draw and Recycle',
-        body: 'Ophanim draw cards, recycle the discard pile, and search for Seraphim or Cherubim. Playing an Ophanim also counts as a card play for Patience.',
-      },
-      {
-        heading: 'Angels: Patience Bursts',
-        body: 'Neutrality Angels add Patience directly:\n\n• On summon, they give Patience to every Seraphim on the board.\n• Their activated abilities can double the Patience of every Seraphim at once.\n\nAngel attacks use Patience differently: each stack adds +2% of the attack\'s base Oblivion instead of +15 flat Oblivion.',
-      },
-      {
-        heading: 'Patient Light',
-        body: 'Patient Light increases the Patience gained from each card play. Each stack adds +1 to that gain. Patient Light is capped at 15 stacks by default.',
+        heading: 'No legacy drift fields',
+        body: 'Obsolete Debug/attenuation/equilibrium bookkeeping has been removed from the turn object. The engine now persists only the active runtime state that gameplay actually uses.',
       },
     ],
   },

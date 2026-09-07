@@ -87,6 +87,14 @@ function SystemInfoPanel() {
           which feeds directly into your <span style={{ color: P.gold, fontWeight: 700 }}>Collection Power</span> multiplier
           — boosting every Oblivion gain for every turn you play.
         </div>
+        <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body, marginTop: 10 }}>
+          Collection Power is also one of the three sources every attack scales from. Each Light card's
+          Ain Attack and Soph Attack, and every Ain Soph Aur's Bridge the Light, splits its scaling bonus
+          evenly across <span style={{ color: P.accent, fontWeight: 700 }}>Limitless Light Stacks</span>,{' '}
+          <span style={{ color: P.accent, fontWeight: 700 }}>summoned Ain Soph Aur</span>, and{' '}
+          <span style={{ color: P.gold, fontWeight: 700 }}>Collection Power</span> — so growing your
+          collection raises your damage floor on every turn, independent of board state.
+        </div>
       </div>
 
       <div>

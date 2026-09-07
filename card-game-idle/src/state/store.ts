@@ -8,35 +8,21 @@ import type {
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import type {
   CardDefinition,
-  AngelDefinition,
-  AngelInstance,
+  AinSophAurInstance,
   CardFinish,
   CardFaceState,
-  CherubimDefinition,
-  CherubimInstance,
-  SeraphimDefinition,
-  SeraphimInstance,
-  AttackCost,
-  AngelAttackSet,
-  SeraphimAttackSet,
+  DarkCardDefinition,
+  MainDeckBoardInstance,
 } from '@/types/cards';
 import type { CardEffect, CardSubtypeFilter } from '@/types/effects';
 import type { BossFightState, SavedGameState } from '@/types/bossFight';
 import type { BattlegroundState, BattlegroundKind, BattlegroundOpponentProfile, BattlegroundSavedGameState, CpuDifficulty } from '@/types/battleground';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
-import { SynergySystem } from '@/systems/cards/SynergySystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
+import { accrueSophCharges } from '@/systems/cards/AinSophRuntime';
+import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
-import {
-  clampPatienceStacks,
-  hasNeutralityUncappedGainsInDeck,
-} from '@/systems/cards/neutralityPatience';
-import {
-  type ActionClass,
-  classifyCardActionClass,
-  getCardActionClassEffects,
-} from '@/systems/cards/ActionClass';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { PackSystem } from '@/systems/cards/PackSystem';
 import { getActiveCoopRng, useCoopSyncStore } from '@/state/coopSyncStore';
@@ -47,6 +33,7 @@ import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/sys
 import { evaluateDailyLogin, getUtcDayIndex } from '@/systems/progression/dailyLogin';
 import {
   applyQuestProgress,
+  getScaledQuestOblivion,
   refreshQuestRotation,
   type QuestKind,
 } from '@/systems/progression/quests';
@@ -98,7 +85,6 @@ import { getSupabase } from '@/net/supabaseClient';
 import {
   getCardDissolveYield,
 } from '@/types/artifacts';
-import { getArtifactEffect } from '@/systems/artifacts/artifactRuntime';
 import { DEFAULT_CARD_THEME_PACKS, setUiPreferences } from '@/ui/preferences';
 import {
   NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS,
@@ -112,11 +98,6 @@ import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrou
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
-type AttenuationClass = ActionClass;
-
-const ATTENUATION_CLASSES: AttenuationClass[] = ['setup', 'conversion', 'multiplier', 'refund', 'finisher'];
-const ATTENUATION_TIERS = [1, 0.75, 0.55, 0.4] as const;
-const NEUTRALITY_FULL_FIRE_PATIENCE_THRESHOLD = 40;
 const COOP_BOSS_HP_SCALE_BY_PARTY_SIZE: Record<number, number> = {
   1: 1,
   2: 1.68,
@@ -128,13 +109,13 @@ const BOSS_FIGHT_HP_SCALE_BY_COUNT: Record<number, number> = {
   3: 3.5,
 };
 
-// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Defaults �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+// �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Defaults �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
 const NOW = Date.now();
 let angelInstanceCounter = 0;
 
 const defaultBoard: BoardState = {
-  frontSlots: [null, null, null, null, null],
+  frontSlots: [null, null, null, null],
   backSlots: [null, null, null, null],
   activeBoardEffects: [],
   emberGrove: [],
@@ -155,6 +136,7 @@ const defaultTurn: TurnState = {
   strain: 0,
   cherubimDrawFraction: 0,
   cardsPlayedThisTurn: 0,
+  limitlessLightStacks: 0,
   oblivionEarnedThisTurn: 0,
   lastPlayedDefinitionId: null,
   turnNumber: 0,
@@ -163,18 +145,9 @@ const defaultTurn: TurnState = {
   pendingEffectQueue: [],
   lastResolvedSubtype: null,
   cherubimSummonedThisTurn: 0,
-  equilibriumDrift: 0,
-  equilibriumStability: 0,
-  attenuationClassUses: { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 },
-  attenuationBreaksUsed: 0,
-  attenuationBrokenClasses: [],
-  neutralityPatienceChargedThisTurn: 0,
-  neutralityPatienceConsumedThisTurn: 0,
-  neutralityTriggeredEffects: [],
   lastFiredSeraphimAttackMode: null,
   lastFiredSeraphimAttackOblivion: 0,
   equippedArtifactIds: [],
-  seraphimBonusAmp: 0,
   setAbilityCooldowns: {},
   setAbilityUsesRemaining: {},
 };
@@ -194,6 +167,20 @@ function queuePendingEffects(
     queue.push(...pendingEffects);
   }
   turn.pendingEffectQueue = queue;
+}
+
+function resolveStackCost(cost: { kind: 'fixed' | 'percentage' | 'range'; value?: number; min?: number; max?: number }, stacks: number): number {
+  if (cost.kind === 'percentage') return Math.ceil(stacks * ((cost.value ?? 0) / 100));
+  if (cost.kind === 'range') return Math.max(0, cost.min ?? 0);
+  return Math.max(0, cost.value ?? 0);
+}
+
+function enforceHandCap(s: Store): void {
+  const overflow = s.deck.hand.length - 8;
+  if (overflow <= 0) return;
+  const pending: PendingEffect = { type: 'discard_choice', count: overflow, sourceCard: 'hand_overflow' };
+  if (s.turn.pendingEffect === null) s.turn.pendingEffect = pending;
+  else s.turn.pendingEffectQueue = [...(s.turn.pendingEffectQueue ?? []), pending];
 }
 
 const defaultProgress: ProgressState = {
@@ -355,29 +342,10 @@ export const defaultGameState: GameState = {
   toasts: [],
 };
 
-// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Store type �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+// �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Store type �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
 interface StoreActions {
-  placeSeraphim: (deckCard: DeckCard, slot: 0 | 1 | 2 | 3 | 4) => void;
-  placeSeraphimFromHand: (targetSlot: 0 | 1 | 2 | 3 | 4, instanceId?: string) => void;
-  removeSeraphim: (slot: 0 | 1 | 2 | 3 | 4) => void;
-  discardCardToRemoveSeraphim: (slot: 0 | 1 | 2 | 3 | 4) => void;
-  placeCherubim: (backSlotIndex: 0 | 1 | 2 | 3, instanceId?: string) => void;
-  removeCherubim: (backSlotIndex: 0 | 1 | 2 | 3) => void;
-  summonAngel: (definitionId: string, finish?: CardFinish) => void;
-  /** Return a summoned angel from the board back to the extra deck. */
-  returnAngelToExtraDeck: (slot: 0 | 1 | 2 | 3 | 4) => void;
-  activateAngel: (slot: 0 | 1 | 2 | 3 | 4) => void;
-  activateSeraphimAttack: (
-    slot: 0 | 1 | 2 | 3 | 4,
-    attackId?: 'unsynergized' | 'synergized',
-    paymentSelection?: AttackPaymentSelection,
-  ) => void;
-  activateAngelAttack: (
-    slot: 0 | 1 | 2 | 3 | 4,
-    attackId?: 'primary' | 'exalted',
-    paymentSelection?: AttackPaymentSelection,
-  ) => void;
+  summonAinSophAur: (definitionId: string, materialInstanceIds: string[], targetSlot: 0 | 1 | 2 | 3) => void;
   initDeck: (deckList: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => void;
   saveDeckList: (deckList: DeckEntry[]) => void;
   saveCurrentDeck: (name: string, deckList?: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => string;
@@ -390,7 +358,12 @@ interface StoreActions {
   confirmMulligan: () => void;
   embraceInfinite: () => void;
   /** placeholder: reserved for future set actions */
-  playCard: (instanceId: string) => void;
+  playCard: (instanceId: string, mode?: 'place' | 'cast') => void;
+  flipSoph: (instanceId: string, mode: 'flip' | 'sacrifice') => void;
+  activateLightAinAttack: (instanceId: string) => void;
+  activateLightSophAttack: (instanceId: string, spend?: number) => void;
+  activateDark: (instanceId: string) => void;
+  activateAsaBridge: (instanceId: string, spend?: number) => void;
   resolvePending: (selected: string[]) => void;
   endTurn: () => void;
   endAndBeginAgain: () => void;
@@ -534,12 +507,6 @@ interface StoreActions {
 
 type Store = GameState & StoreActions;
 
-interface AttackPaymentSelection {
-  discardInstanceIds?: string[];
-  sacrificeSeraphimInstanceIds?: string[];
-  sacrificeAngelInstanceIds?: string[];
-}
-
 /**
  * Tune this constant so a complete, fully-mastered collection reaches
  * approximately ÁE0 E0 total globalOblivionMult from resonance alone.
@@ -588,17 +555,7 @@ function latchUnlockedAchievements(progress: ProgressState): void {
   }
 }
 
-function clampNeutralityGainState(state: Pick<Store, 'board' | 'turn' | 'deck'>): void {
-  const isUncapped = hasNeutralityUncappedGainsInDeck(state.deck);
-
-  for (const unit of state.board.frontSlots) {
-    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) continue;
-    unit.patienceStacks = clampPatienceStacks(unit.patienceStacks ?? 0, isUncapped);
-  }
-}
-
 function recompute(state: Store): void {
-  clampNeutralityGainState(state);
   // Latch profile avatar unlocks permanently once their condition is met.
   latchUnlockedAvatars(state.progress);
   // Latch reward UI theme unlocks permanently once their condition is met.
@@ -750,7 +707,7 @@ function buildPracticeDeckListFromPool(pool: CardDefinition[], targetCopies: num
 
 function buildPracticeExtraDeckFromPool(pool: CardDefinition[]): ExtraDeckEntry[] {
   return pool
-    .filter(def => def.type === 'Angel')
+    .filter(def => def.type === 'AinSophAur')
     .sort((a, b) => a.definitionId.localeCompare(b.definitionId))
     .slice(0, 5)
     .map(def => ({ definitionId: def.definitionId, finish: 'normal' as const }));
@@ -814,7 +771,7 @@ function buildNeutralityTutorialDeck(
 
   const rarity = tier === 'eternal' ? 'Eternal' : 'Infinite';
   const pool = CardRegistry.getByRarity(rarity);
-  const mainPool = pool.filter(def => def.type !== 'Angel');
+  const mainPool = pool.filter(def => def.type !== 'AinSophAur');
   const deckList = buildPracticeDeckListFromPool(mainPool, 45);
   const extraDeck = buildPracticeExtraDeckFromPool(pool);
 
@@ -943,16 +900,16 @@ function recordCardPlay(s: Store, definitionId: string): void {
   if (!def) return;
   emitQuestProgressToProgress(s.progress, { kind: 'play_cards', amount: 1 });
   const typeKind: QuestKind | null =
-    def.type === 'Seraphim' ? 'play_seraphim'
-    : def.type === 'Cherubim' ? 'play_cherubim'
-    : def.type === 'Ophanim' ? 'play_ophanim'
+    def.type === 'Light' ? 'play_seraphim'
+    : def.type === 'Dark' ? 'play_cherubim'
+    : def.type === 'AinSophAur' ? 'play_ophanim'
     : null;
   if (typeKind) {
     emitQuestProgressToProgress(s.progress, { kind: typeKind, amount: 1 });
   }
 }
 
-// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Boss fight helpers �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+// �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Boss fight helpers �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
 // Merges enigma step flips made mid-run (e.g. a board pattern only assemblable inside a
 // fight) back into progress after a saved-state restore wipes s.progress.enigmas.
@@ -1019,7 +976,7 @@ function completeBossFight(s: Store, victory: boolean): void {
           drawPile: DeckSystem.shuffle([...s.deck.hand, ...s.deck.drawPile, ...s.deck.discardPile]),
           discardPile: [],
         };
-        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
         s.bossFight = {
           mode: 'active',
@@ -1173,8 +1130,8 @@ function completeBossFight(s: Store, victory: boolean): void {
         cardsTieredUp: masteryAward.cardsTieredUp,
       };
 
-      // Neutralizing the Void — boss-victory enigma hooks.
-      if (bossId === 'boss-immortal-warden') {
+      // Neutralizing the Void  Eboss-victory enigma hooks.
+      if (bossId === 'boss-hollow-king') {
         ensureEnigmaState(s.progress);
         const ntvInstance = s.progress.enigmas.instances['neutralizing-the-void'];
         if (!ntvInstance) {
@@ -1190,7 +1147,7 @@ function completeBossFight(s: Store, victory: boolean): void {
             }
           }
         } else if (ntvInstance.status === 'acquired' && !ntvInstance.stepsComplete[1]) {
-          // Step 1: clear ×3-HP scaled variant.
+          // Step 1: clear ÁE-HP scaled variant.
           if (capturedFightCount >= 3) {
             ntvInstance.stepsComplete[1] = true;
             ntvInstance.currentStepIndex = Math.max(ntvInstance.currentStepIndex, 2);
@@ -1276,22 +1233,6 @@ function grantOblivion(s: Store, amount: number): void {
     s.battleground.myScore += amount;
   }
   emitQuestProgressToProgress(s.progress, { kind: 'earn_oblivion_in_turn', amount: 0, peak: s.turn.oblivionEarnedThisTurn });
-}
-
-/** Accumulate stagger on the boss Card-break meter. Triggers a 5-second timer
- *  freeze every time the meter reaches 100. Each unit of `staggerAmount` is
- *  one point on the 0-100 scale. */
-function applyCardBreakStagger(s: Store, staggerAmount: number): void {
-  if (s.bossFight.mode !== 'active' || staggerAmount <= 0) return;
-  const CARD_BREAK_MAX = 100;
-  const CARD_BREAK_FREEZE_SECONDS = 5;
-  s.bossFight.bossCardBreakMeter = (s.bossFight.bossCardBreakMeter ?? 0) + staggerAmount;
-  if (s.bossFight.bossCardBreakMeter >= CARD_BREAK_MAX) {
-    s.bossFight.bossCardBreakMeter = 0;
-    s.bossFight.bossCardBreakFreezeLeft = (s.bossFight.bossCardBreakFreezeLeft ?? 0) + CARD_BREAK_FREEZE_SECONDS;
-    s.bossFight.bossCardBreakCount = (s.bossFight.bossCardBreakCount ?? 0) + 1;
-    eventBus.emit('boss:cardbreak', { count: s.bossFight.bossCardBreakCount });
-  }
 }
 
 function isActiveEternityCoopBossFight(state: Pick<Store, 'bossFight'>): boolean {
@@ -1551,60 +1492,6 @@ function checkNtvMasteryTierStep(progress: ProgressState): void {
   }
 }
 
-function completeSummonedAngelPlacement(
-  s: Store,
-  definitionId: string,
-  finish: CardFinish,
-  slot: 0 | 1 | 2 | 3 | 4,
-): boolean {
-  if (s.board.frontSlots[slot] !== null) return false;
-  const def = ScoreSystem.getDefinition(definitionId);
-  if (!def || def.type !== 'Angel') return false;
-  const angelDef = def as AngelDefinition;
-
-  const angelInst: AngelInstance = {
-    instanceId: `ang_${++angelInstanceCounter}`,
-    definitionId,
-    type: 'Angel',
-    rarity: angelDef.rarity,
-    finish,
-    level: 1,
-    cardsPlayedSinceSummon: 0,
-    activated: false,
-    attackCooldowns: {},
-    boardSlot: slot,
-  };
-
-  s.board.frontSlots[slot] = angelInst;
-  s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-  eventBus.emit('angel:summoned', { definitionId, slot });
-  recompute(s);
-
-  const result = CardEffectExecutor.execute(
-    { instanceId: angelInst.instanceId, definitionId, finish: angelInst.finish },
-    s.turn,
-    s.board,
-    s.deck,
-    false,
-    { countAsPlay: false, removeFromHand: false },
-  );
-  if (result.canPlay) {
-    const turnBefore = captureTurnSnapshot(s.turn);
-    const actionClass = classifyActionClass(angelDef, angelDef.onSummonEffects);
-    s.turn = result.turn;
-    s.board = result.board;
-    s.deck = result.deck;
-    applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
-    awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
-    queuePendingEffects(s.turn, result);
-  }
-
-  syncEnigmaProgressFromBoard(s, true);
-  checkBossDefeated(s);
-  recompute(s);
-  return true;
-}
-
 function effectCanDraw(effect: CardEffect): boolean {
   switch (effect.type) {
     case 'draw':
@@ -1628,35 +1515,9 @@ function effectCanDraw(effect: CardEffect): boolean {
 function cardCanDraw(definitionId: string): boolean {
   const def = CardRegistry.get(definitionId);
   if (!def) return false;
-  if (def.type === 'Ophanim') return def.effects.some(effect => effectCanDraw(effect));
-  if (def.type === 'Seraphim') return def.onPlayEffects.some(effect => effectCanDraw(effect));
-  if (def.type === 'Cherubim') return def.onPlayEffects.some(effect => effectCanDraw(effect));
+  if (def.type === 'Dark') return def.sophEffects.some(effect => effectCanDraw(effect));
+  if (def.type === 'Light') return (def.onFlipEffects ?? []).some(effect => effectCanDraw(effect));
   return false;
-}
-
-function ensureNeutralityTurnState(turn: TurnState): void {
-  if (turn.equilibriumDrift === undefined) turn.equilibriumDrift = 0;
-  if (turn.equilibriumStability === undefined) turn.equilibriumStability = 0;
-  if (turn.attenuationClassUses === undefined) {
-    turn.attenuationClassUses = { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 };
-  }
-  for (const cls of ATTENUATION_CLASSES) {
-    turn.attenuationClassUses[cls] = turn.attenuationClassUses[cls] ?? 0;
-  }
-  if (turn.attenuationBreaksUsed === undefined) turn.attenuationBreaksUsed = 0;
-  if (turn.attenuationBrokenClasses === undefined) turn.attenuationBrokenClasses = [];
-  if (turn.neutralityPatienceChargedThisTurn === undefined) turn.neutralityPatienceChargedThisTurn = 0;
-  if (turn.neutralityPatienceConsumedThisTurn === undefined) turn.neutralityPatienceConsumedThisTurn = 0;
-  if (turn.neutralityTriggeredEffects === undefined) turn.neutralityTriggeredEffects = [];
-  if (turn.seraphimBonusAmp === undefined) turn.seraphimBonusAmp = 0;
-}
-
-function captureTurnSnapshot(turn: TurnState): TurnState {
-  return {
-    ...turn,
-    attenuationClassUses: { ...(turn.attenuationClassUses ?? {}) },
-    attenuationBrokenClasses: [...(turn.attenuationBrokenClasses ?? [])],
-  };
 }
 
 function recordLossEvent(
@@ -1665,125 +1526,6 @@ function recordLossEvent(
   _source: 'discard' | 'board' | 'sacrifice' | 'expire',
 ): void {
   // All dead-set loss tracking removed
-}
-
-function getDefinitionOnPlayEffects(def: CardDefinition): CardEffect[] {
-  return getCardActionClassEffects(def);
-}
-
-function classifyActionClass(def: CardDefinition, effects: CardEffect[]): AttenuationClass {
-  return classifyCardActionClass(def, effects);
-}
-
-function getDeckSetCount(s: Store): number {
-  const setKeys = new Set<string>();
-  for (const entry of s.deck.deckList) {
-    const def = CardRegistry.get(entry.definitionId);
-    if (def) setKeys.add('Neutrality');
-  }
-  for (const entry of s.deck.extraDeck) {
-    const def = CardRegistry.get(entry.definitionId);
-    if (def) setKeys.add('Neutrality');
-  }
-  return Math.max(1, setKeys.size);
-}
-
-function getNeutralityFullFireMultiplier(s: Store, def: CardDefinition): number {
-  if (false || def.rarity !== 'Infinite') return 1;
-  ensureNeutralityTurnState(s.turn);
-  const totalBoardPatience = s.board.frontSlots.reduce((sum, unit) => {
-    if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return sum;
-    return sum + (unit.patienceStacks ?? 0);
-  }, 0);
-  const patienceReady = totalBoardPatience >= NEUTRALITY_FULL_FIRE_PATIENCE_THRESHOLD;
-  return patienceReady ? 1.35 : 0.70;
-}
-
-
-
-
-
-
-function getSetFullFireMultiplier(s: Store, def: CardDefinition): number {
-  return getNeutralityFullFireMultiplier(s, def);
-}
-
-function applyAttenuationMultiplier(s: Store, actionClass: AttenuationClass): number {
-  ensureNeutralityTurnState(s.turn);
-  const uses = s.turn.attenuationClassUses?.[actionClass] ?? 0;
-  const index = Math.min(uses, ATTENUATION_TIERS.length - 1);
-  let multiplier = ATTENUATION_TIERS[index];
-
-  const deckSetCount = getDeckSetCount(s);
-  const maxBreaks = deckSetCount >= 2 ? 2 : 1;
-  const breakCost = 3;
-  const canBreak = (s.turn.equilibriumStability ?? 0) >= breakCost
-    && (s.turn.attenuationBreaksUsed ?? 0) < maxBreaks
-    && !(s.turn.attenuationBrokenClasses ?? []).includes(actionClass);
-
-  if (canBreak) {
-    multiplier = 1;
-    s.turn.equilibriumStability = Math.max(0, (s.turn.equilibriumStability ?? 0) - breakCost);
-    s.turn.attenuationBreaksUsed = (s.turn.attenuationBreaksUsed ?? 0) + 1;
-    s.turn.attenuationBrokenClasses = [...(s.turn.attenuationBrokenClasses ?? []), actionClass];
-  }
-
-  s.turn.attenuationClassUses = {
-    ...(s.turn.attenuationClassUses ?? {}),
-    [actionClass]: uses + 1,
-  };
-
-  return multiplier;
-}
-
-function applyNeutralityPlayState(
-  s: Store,
-  def: CardDefinition,
-  _beforeTurn: TurnState,
-  actionClass: AttenuationClass,
-): void {
-  if (false) {
-    
-    return;
-  }
-
-  ensureNeutralityTurnState(s.turn);
-
-  // Equilibrium drift: measure patience gain/spend balance
-  const patienceGain = s.turn.neutralityPatienceChargedThisTurn ?? 0;
-  const patienceSpend = s.turn.neutralityPatienceConsumedThisTurn ?? 0;
-  const gain = patienceGain;
-  const spend = patienceSpend;
-
-  const oldDriftAbs = Math.abs(s.turn.equilibriumDrift ?? 0);
-  s.turn.equilibriumDrift = Math.max(-60, Math.min(60, (s.turn.equilibriumDrift ?? 0) + gain - spend));
-  const newDriftAbs = Math.abs(s.turn.equilibriumDrift ?? 0);
-
-  let stabilityDelta = 0;
-  if (newDriftAbs <= oldDriftAbs) stabilityDelta += 1;
-  else stabilityDelta -= 1;
-  if (gain > 0 && spend > 0) {
-    stabilityDelta += 1;
-  }
-  if (actionClass === 'setup') stabilityDelta += 1;
-  if (def.rarity === 'Eternal') stabilityDelta += 1;
-
-  s.turn.equilibriumStability = Math.max(0, Math.min(12, (s.turn.equilibriumStability ?? 0) + stabilityDelta));
-
-  if (actionClass === 'conversion') {
-    // Cross-set conversion tracking removed (single-set game)
-  }
-
-  
-}
-
-function applyAllSetPlayStates(
-  s: Store,
-  def: CardDefinition,
-  beforeTurn: TurnState,
-  actionClass: AttenuationClass,
-): void {
-  applyNeutralityPlayState(s, def, beforeTurn, actionClass);
 }
 
 function endTurnInternal(s: Store): void {
@@ -1822,8 +1564,13 @@ function endTurnInternal(s: Store): void {
     s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
     s.deck.discardPile = [];
   }
-  s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
   s.board.activeBoardEffects = [];
+  for (const slot of [...s.board.frontSlots, ...s.board.backSlots]) {
+    if (!slot) continue;
+    (slot as any).limitlessCharge = 0;
+    (slot as any).side = 'soph';
+  }
+  s.turn.limitlessLightStacks = 0;
   if (s.turn.oblivionEarnedThisTurn > (s.progress.bestSingleTurnOblivion ?? 0)) {
     s.progress.bestSingleTurnOblivion = s.turn.oblivionEarnedThisTurn;
   }
@@ -1853,15 +1600,6 @@ function endTurnInternal(s: Store): void {
   }
   s.turn = { ...defaultTurn, phase: 'idle' };
   recompute(s);
-}
-
-function countFrontDefinitionIds(board: BoardState): Record<string, number> {
-  const counts: Record<string, number> = {};
-  for (const slot of board.frontSlots) {
-    if (!slot) continue;
-    counts[slot.definitionId] = (counts[slot.definitionId] ?? 0) + 1;
-  }
-  return counts;
 }
 
 function isKnownCardDefinitionId(definitionId: string | null | undefined): definitionId is string {
@@ -1933,64 +1671,12 @@ function sanitizeLoadedCardReferences(loaded: GameState): void {
   }
 }
 
-function countBoardDefinitionIds(board: BoardState): Record<string, number> {
-  const counts = countFrontDefinitionIds(board);
-  for (const slot of board.backSlots) {
-    if (!slot) continue;
-    counts[slot.definitionId] = (counts[slot.definitionId] ?? 0) + 1;
-  }
-  return counts;
-}
-
-function getAvailableAngelEntry(
-  extraDeck: ExtraDeckEntry[],
-  definitionId: string,
-  preferredFinish?: CardFinish,
-): ExtraDeckEntry | null {
-  const matching = extraDeck.filter(entry => entry.definitionId === definitionId);
-  if (matching.length === 0) return null;
-
-  const orderedFinishes: CardFinish[] = [];
-  if (preferredFinish) orderedFinishes.push(preferredFinish);
-  for (const entry of matching) {
-    if (!orderedFinishes.includes(entry.finish)) {
-      orderedFinishes.push(entry.finish);
-    }
-  }
-
-  // extraDeck is kept in sync: entries are spliced out when summoned and pushed
-  // back when returned. So any remaining entry IS available to deploy.
-  for (const finish of orderedFinishes) {
-    if (extraDeck.some(e => e.definitionId === definitionId && e.finish === finish)) {
-      return createExtraDeckEntry(definitionId, finish);
-    }
-  }
-
-  return null;
-}
-
-function incrementAngelProgress(board: BoardState): void {
-  for (const slot of board.frontSlots) {
-    if (slot?.type === 'Angel' && !slot.activated) {
-      slot.cardsPlayedSinceSummon += 1;
-    }
-    if (slot && (slot.type === 'Angel' || slot.type === 'Seraphim')) {
-      const cooldowns = slot.attackCooldowns ?? {};
-      for (const key of Object.keys(cooldowns)) {
-        const current = cooldowns[key] ?? 0;
-        if (current > 0) cooldowns[key] = current - 1;
-      }
-      slot.attackCooldowns = cooldowns;
-    }
-  }
-}
-
 function enforceAngelExtraDeckInvariant(deck: DeckState, options: { refillHand?: boolean } = {}): void {
   // Angels belong exclusively to extraDeck. If they leak into main-deck zones,
   // move them out immediately and optionally refill vacated hand slots.
   const isAngelCard = (card: DeckCard | null | undefined): boolean => {
     if (!card || typeof card.definitionId !== 'string' || card.definitionId.length === 0) return false;
-    return CardRegistry.get(card.definitionId)?.type === 'Angel';
+    return CardRegistry.get(card.definitionId)?.type === 'AinSophAur';
   };
   let movedFromHand = 0;
 
@@ -2029,341 +1715,10 @@ function enforceAngelExtraDeckInvariant(deck: DeckState, options: { refillHand?:
   for (const card of drawn) deck.hand.push(card);
 }
 
-function canResolveActivatedEffects(
-  effects: CardEffect[],
-  turn: TurnState,
-  board: BoardState,
-): boolean {
-  const resourceTurn: TurnState = { ...turn };
-
-  const canResolveEffect = (effect: CardEffect): boolean => {
-    switch (effect.type) {
-      case 'conditional':
-        if (!CardEffectExecutor.evaluateCondition(effect.condition, resourceTurn, board)) return true;
-        for (const subEffect of effect.then) {
-          if (!canResolveEffect(subEffect)) return false;
-        }
-        return true;
-      default:
-        return true;
-    }
-  };
-
-  for (const effect of effects) {
-    if (!canResolveEffect(effect)) return false;
-  }
-
-  return true;
-}
-
-function canActivateAngelAbility(
-  angel: AngelInstance,
-  definition: AngelDefinition,
-  turn: TurnState,
-  board: BoardState,
-): boolean {
-  if (angel.activated) return false;
-  if (angel.cardsPlayedSinceSummon < definition.activatedAbility.cardsPlayedRequirement) return false;
-  return canResolveActivatedEffects(definition.activatedAbility.effects, turn, board);
-}
-
-function rarityWeight(rarity: string): number {
-  switch (rarity) {
-    case 'Infinite': return 5;
-    case 'Eternal': return 4;
-    case 'Legendary': return 3;
-    case 'Epic': return 2;
-    case 'Rare': return 1;
-    default: return 0;
-  }
-}
-
-function cardStem(name: string): string {
-  return (name.split(' ')[0] ?? 'Eclipse').replace(/[^a-zA-Z]/g, '') || 'Eclipse';
-}
-
-function buildDefaultSeraphimAttackSet(def: SeraphimDefinition): SeraphimAttackSet {
-  const power = rarityWeight(def.rarity);
-  const stem = cardStem(def.name);
-  const unsynergizedBase = 70 + power * 28;
-  const synergizedBase = Math.round(unsynergizedBase * 1.9);
-  return {
-    unsynergized: {
-      id: `${def.definitionId}:unsynergized`,
-      label: 'Unsynergized',
-      name: `${stem} Riftcarve`,
-      description: 'Reliable strike that can always fire when ready.',
-      baseOblivion: unsynergizedBase,
-      cooldownCards: 2 + Math.min(2, Math.floor(power / 2)),
-      tags: ['seraphim', 'unsynergized', 'Neutrality'.toLowerCase()],
-    },
-    synergized: {
-      id: `${def.definitionId}:synergized`,
-      label: 'Synergized',
-      name: `${stem} Covenant Cataclysm`,
-      description: 'Devastating strike requiring any Angel on your board.',
-      baseOblivion: synergizedBase,
-      cooldownCards: 4 + Math.min(2, Math.floor(power / 2)),
-      requiresAngelOnBoard: true,
-      tags: ['seraphim', 'synergized', 'covenant', 'Neutrality'.toLowerCase()],
-    },
-  };
-}
-
-function buildDefaultAngelAttackSet(def: AngelDefinition): AngelAttackSet {
-  const power = rarityWeight(def.rarity);
-  const stem = cardStem(def.name);
-  const primaryBase = 120 + power * 42;
-  const exaltedBase = Math.round(primaryBase * 2.1);
-  const dominantCost: AttackCost = { type: 'discard_from_hand', value: 1 + Math.min(2, Math.floor(power / 2)) };
-
-
-
-
-
-
-
-
-
-  return {
-    primary: {
-      id: `${def.definitionId}:primary`,
-      label: 'Primary',
-      name: `${stem} Halo Severance`,
-      description: 'Standard angelic attack with stable cadence.',
-      baseOblivion: primaryBase,
-      cooldownCards: 3 + Math.min(1, Math.floor(power / 3)),
-      tags: ['angel', 'primary', 'Neutrality'.toLowerCase()],
-    },
-    exalted: {
-      id: `${def.definitionId}:exalted`,
-      label: 'Exalted',
-      name: `${stem} Thronefall Decree`,
-      description: 'Heavy-cost finisher with higher payout.',
-      baseOblivion: exaltedBase,
-      cooldownCards: 5 + Math.min(2, Math.floor(power / 2)),
-      costs: [dominantCost],
-      tags: ['angel', 'exalted', 'finisher', 'Neutrality'.toLowerCase()],
-    },
-  };
-}
-
-function getSeraphimAttackSet(def: SeraphimDefinition): SeraphimAttackSet {
-  const attacks = def.attacks ?? buildDefaultSeraphimAttackSet(def);
-  return attacks;
-}
-
-function getAngelAttackSet(def: AngelDefinition): AngelAttackSet {
-  const attacks = def.attacks ?? buildDefaultAngelAttackSet(def);
-  return attacks;
-}
-
-function hasAnyAngelOnBoard(board: BoardState): boolean {
-  return board.frontSlots.some(slot => slot?.type === 'Angel');
-}
-
-interface AttackBuffSnapshot {
-  baseOblivionBonus: number;
-  cooldownDeltaCards: number;
-  multiplier: number;
-}
-
-function collectAttackBuffs(
-  board: BoardState,
-  turn: TurnState,
-  unitType: 'Seraphim' | 'Angel',
-  targetDefinitionId: string,
-  tags: string[],
-): AttackBuffSnapshot {
-  let baseOblivionBonus = 0;
-  let cooldownDeltaCards = 0;
-  let multiplier = 1;
-  const loweredTags = new Set(tags.map(tag => tag.toLowerCase()));
-  // Same-set gate: Cherubim attack buffs only apply to Seraphim/Angels of the
-  // same set. Set-bound stacking mechanics (Patience, etc.) must not leak
-  // across sets. Effect-level scope can still narrow further via
-  // targetTags / targetDefinitionIds.
-  const targetDef = ScoreSystem.getDefinition(targetDefinitionId);
-  const targetSetKey = targetDef ? 'Neutrality' : null;
-
-  for (const back of board.backSlots) {
-    if (!back || back.type !== 'Cherubim') continue;
-    const def = ScoreSystem.getDefinition(back.definitionId);
-    if (!def || def.type !== 'Cherubim') continue;
-    const sourceSetKey = 'Neutrality';
-    if (targetSetKey && sourceSetKey !== targetSetKey) continue;
-    for (const effect of def.effects) {
-      if (effect.type !== 'cherubim_attack_buff') continue;
-      if (effect.targetUnitType !== 'Any' && effect.targetUnitType !== unitType) continue;
-
-      const idMatch = !effect.targetDefinitionIds || effect.targetDefinitionIds.length === 0
-        ? true
-        : effect.targetDefinitionIds.includes(targetDefinitionId);
-
-      const tagMatch = !effect.targetTags || effect.targetTags.length === 0
-        ? true
-        : effect.targetTags.some(tag => loweredTags.has(tag.toLowerCase()));
-
-      const conditionMatch = !effect.condition || CardEffectExecutor.evaluateCondition(effect.condition, turn, board);
-
-      if (!idMatch || !tagMatch || !conditionMatch) continue;
-      baseOblivionBonus += effect.bonusBaseOblivion ?? 0;
-      cooldownDeltaCards += effect.cooldownDeltaCards ?? 0;
-      multiplier *= effect.multiplier ?? 1;
-    }
-  }
-
-  return {
-    baseOblivionBonus,
-    cooldownDeltaCards,
-    multiplier: Math.max(0.1, multiplier),
-  };
-}
-
-function canPayAttackCosts(
-  s: Store,
-  costs: AttackCost[],
-  actor: { type: 'Seraphim' | 'Angel'; instanceId: string },
-  selection?: AttackPaymentSelection,
-): boolean {
-  const requiredDiscardCount = costs
-    .filter(cost => cost.type === 'discard_from_hand')
-    .reduce((sum, cost) => sum + cost.value, 0);
-  const requiredSeraphimSacrificeCount = costs
-    .filter(cost => cost.type === 'sacrifice_seraphim')
-    .reduce((sum, cost) => sum + cost.value, 0);
-  const requiredAngelSacrificeCount = costs
-    .filter(cost => cost.type === 'sacrifice_angel')
-    .reduce((sum, cost) => sum + cost.value, 0);
-
-  const selectedDiscardIds = selection?.discardInstanceIds ?? [];
-  const selectedSeraphimSacrificeIds = selection?.sacrificeSeraphimInstanceIds ?? [];
-  const selectedAngelSacrificeIds = selection?.sacrificeAngelInstanceIds ?? [];
-
-  if (requiredDiscardCount > 0) {
-    if (selectedDiscardIds.length !== requiredDiscardCount) return false;
-    if (new Set(selectedDiscardIds).size !== selectedDiscardIds.length) return false;
-    const handIds = new Set(
-      s.deck.hand
-        .filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel')
-        .map(card => card.instanceId),
-    );
-    if (!selectedDiscardIds.every(id => handIds.has(id))) return false;
-  }
-
-  if (requiredSeraphimSacrificeCount > 0) {
-    if (selectedSeraphimSacrificeIds.length !== requiredSeraphimSacrificeCount) return false;
-    if (new Set(selectedSeraphimSacrificeIds).size !== selectedSeraphimSacrificeIds.length) return false;
-    const candidateIds = new Set(
-      s.board.frontSlots
-        .filter(slot => slot?.type === 'Seraphim' && slot.instanceId !== actor.instanceId)
-        .map(slot => slot!.instanceId),
-    );
-    if (!selectedSeraphimSacrificeIds.every(id => candidateIds.has(id))) return false;
-  }
-
-  if (requiredAngelSacrificeCount > 0) {
-    if (selectedAngelSacrificeIds.length !== requiredAngelSacrificeCount) return false;
-    if (new Set(selectedAngelSacrificeIds).size !== selectedAngelSacrificeIds.length) return false;
-    const candidateIds = new Set(
-      s.board.frontSlots
-        .filter(slot => slot?.type === 'Angel' && slot.instanceId !== actor.instanceId)
-        .map(slot => slot!.instanceId),
-    );
-    if (!selectedAngelSacrificeIds.every(id => candidateIds.has(id))) return false;
-  }
-
-  for (const cost of costs) {
-    switch (cost.type) {
-      case 'discard_from_hand':
-        if (s.deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel').length < cost.value) return false;
-        break;
-      case 'sacrifice_seraphim': {
-        const available = s.board.frontSlots.filter(slot => slot?.type === 'Seraphim' && slot.instanceId !== actor.instanceId).length;
-        if (available < cost.value) return false;
-        break;
-      }
-      case 'sacrifice_angel': {
-        const available = s.board.frontSlots.filter(slot => slot?.type === 'Angel' && slot.instanceId !== actor.instanceId).length;
-        if (available < cost.value) return false;
-        break;
-      }
-    }
-  }
-  return true;
-}
-
-function payAttackCosts(
-  s: Store,
-  costs: AttackCost[],
-  selection?: AttackPaymentSelection,
-): void {
-  const discardIdQueue = [...(selection?.discardInstanceIds ?? [])];
-  const sacrificeSeraphimIdQueue = [...(selection?.sacrificeSeraphimInstanceIds ?? [])];
-  const sacrificeAngelIdQueue = [...(selection?.sacrificeAngelInstanceIds ?? [])];
-
-  for (const cost of costs) {
-    switch (cost.type) {
-      case 'discard_from_hand': {
-        const idsForCost = discardIdQueue.splice(0, cost.value);
-        const discardableIds = new Set(
-          s.deck.hand
-            .filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel')
-            .map(card => card.instanceId),
-        );
-        const validIdsForCost = idsForCost.filter(id => discardableIds.has(id));
-        const discarded = s.deck.hand.filter(card => validIdsForCost.includes(card.instanceId));
-        s.deck.hand = s.deck.hand.filter(card => !validIdsForCost.includes(card.instanceId));
-        if (discarded.length > 0) {
-          recordLossEvent(s, discarded, 'discard');
-          s.deck.discardPile.push(...discarded);
-        }
-        break;
-      }
-      case 'sacrifice_seraphim': {
-        const idsForCost = new Set(sacrificeSeraphimIdQueue.splice(0, cost.value));
-        const sacrificed: Array<{ definitionId: string }> = [];
-        for (let i = 0; i < s.board.frontSlots.length; i++) {
-          const slot = s.board.frontSlots[i];
-          if (slot?.type === 'Seraphim' && idsForCost.has(slot.instanceId)) {
-            sacrificed.push({ definitionId: slot.definitionId });
-            s.deck.discardPile.push(toDeckCard(slot));
-            s.board.frontSlots[i] = null;
-          }
-        }
-        recordLossEvent(s, sacrificed, 'sacrifice');
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        break;
-      }
-      case 'sacrifice_angel': {
-        const idsForCost = new Set(sacrificeAngelIdQueue.splice(0, cost.value));
-        const sacrificed: Array<{ definitionId: string }> = [];
-        for (let i = 0; i < s.board.frontSlots.length; i++) {
-          const slot = s.board.frontSlots[i];
-          if (slot?.type === 'Angel' && idsForCost.has(slot.instanceId)) {
-            sacrificed.push({ definitionId: slot.definitionId });
-            s.board.frontSlots[i] = null;
-          }
-        }
-        recordLossEvent(s, sacrificed, 'sacrifice');
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        break;
-      }
-    }
-  }
-}
-
-function getHighTierAttackDamageMultiplier(
-  rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
-): number {
-  void rarity;
-  return 1;
-}
-
 function reduceFrontlineAttackCooldowns(board: BoardState, amount: number): void {
   if (amount <= 0) return;
   for (const slot of board.frontSlots) {
-    if (!slot || (slot.type !== 'Seraphim' && slot.type !== 'Angel')) continue;
+    if (!slot) continue;
     const nextCooldowns: Record<string, number> = {};
     for (const [id, value] of Object.entries(slot.attackCooldowns ?? {})) {
       nextCooldowns[id] = Math.max(0, value - amount);
@@ -2374,325 +1729,30 @@ function reduceFrontlineAttackCooldowns(board: BoardState, amount: number): void
 
 void reduceFrontlineAttackCooldowns;
 
-function enforceMinimumAttackCooldown(
-  board: BoardState,
-  slot: 0 | 1 | 2 | 3 | 4,
-  attackId: string,
-): void {
-  const unit = board.frontSlots[slot];
-  if (!unit || (unit.type !== 'Seraphim' && unit.type !== 'Angel')) return;
-  const current = unit.attackCooldowns?.[attackId] ?? 0;
-  unit.attackCooldowns = {
-    ...(unit.attackCooldowns ?? {}),
-    [attackId]: Math.max(1, current),
-  };
-}
+// �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Cherubim helpers �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
-function applyLateGameAttackIdentity(
-  s: Store,
-  definitionId: string,
-  rarity: SeraphimDefinition['rarity'] | AngelDefinition['rarity'],
-  attackLabel: string,
-  baseAttackAward: number,
-): void {
-  void s;
-  void definitionId;
-  void rarity;
-  void attackLabel;
-  void baseAttackAward;
-}
-
-// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Cherubim helpers �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
-
-function computeCherubimPassiveOblivionBonus(board: BoardState, isOphanimPlay: boolean): number {
-  let bonus = 0;
-
-  for (let i = 0; i < 4; i++) {
-    const card = board.backSlots[i];
-    if (!card || card.type !== 'Cherubim') continue;
-    const def = ScoreSystem.getDefinition(card.definitionId);
-    if (!def || def.type !== 'Cherubim') continue;
-
-    for (const effect of def.effects) {
-      if (effect.type === 'cherubim_oblivion_per_card') {
-        bonus += effect.value;
-      }
-      if (isOphanimPlay && effect.type === 'cherubim_ophanim_bonus') {
-        bonus += effect.value;
-      }
-    }
-  }
-
-  bonus += computeCherubimAdjacentBonus(board, 'oblivion');
-  return bonus;
-}
-
-// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Cherubim helpers �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
-
-function computeCherubimAdjacentBonus(board: BoardState, bonusType: 'oblivion' | 'draw'): number {
-  let bonus = 0;
-  for (let i = 0; i < 4; i++) {
-    const card = board.backSlots[i];
-    if (!card || card.type !== 'Cherubim') continue;
-    const def = ScoreSystem.getDefinition(card.definitionId);
-    if (!def || def.type !== 'Cherubim') continue;
-    // Same-set: only adjacent active Seraphim of the Cherubim's set count.
-    const sourceSetKey = 'Neutrality';
-    const leftSlot = board.frontSlots[i];
-    const rightSlot = board.frontSlots[i + 1];
-    const adjacentActive = [leftSlot, rightSlot].filter(s => {
-      if (!s || s.type !== 'Seraphim' || !(s as SeraphimInstance).isActive) return false;
-      const sDef = ScoreSystem.getDefinition(s.definitionId);
-      return !!sDef && 'Neutrality' === sourceSetKey;
-    }).length;
-    if (adjacentActive === 0) continue;
-    for (const effect of (def as import('@/types/cards').CherubimDefinition).effects) {
-      if (effect.type === 'cherubim_adjacent_seraphim_bonus' && effect.bonusType === bonusType) {
-        bonus += effect.value * adjacentActive;
-      }
-    }
-  }
-  return bonus;
-}
-
-function applyCherubimExpireBonuses(s: Store, expiredCount = 1): void {
-  if (expiredCount <= 0) return;
-
-  let totalBonus = 0;
-  for (const slot of s.board.frontSlots) {
-    if (!slot || slot.type !== 'Seraphim' || !slot.isActive) continue;
-    const def = ScoreSystem.getDefinition(slot.definitionId);
-    if (!def || def.type !== 'Seraphim') continue;
-    if (def.baseStats.bonusType === 'cherubim_expire_bonus') {
-      totalBonus += Math.max(0, Math.round(def.baseStats.bonusValue * expiredCount));
-    }
-  }
-
-  if (totalBonus > 0) {
-    grantOblivion(s, totalBonus);
-  }
-}
-
-function awardOblivionForCardPlay(
-  s: Store,
-  cardOblivionBonus: number,
-  isOphanim: boolean,
-  _unused?: undefined,
-  sourceDef?: CardDefinition,
-  actionClass?: AttenuationClass,
-): void {
-  let totalAward = 0;
-
-  if (sourceDef && cardOblivionBonus > 0) {
-    // +15% burst boost on all card-play oblivion (attacks are unaffected).
-    totalAward += Math.round(cardOblivionBonus * 1.15);
-  }
-
-  // Seraphim ophanim_bonus remains active in attack-centric pacing.
-  if (isOphanim && s.computedStats.ophanimOblivionBonus > 0) {
-    totalAward += s.computedStats.ophanimOblivionBonus;
-  }
-
-  const cherubimOblivionBonus = computeCherubimPassiveOblivionBonus(s.board, isOphanim);
-  if (cherubimOblivionBonus > 0) {
-    totalAward += cherubimOblivionBonus;
-  }
-
-  // Active Seraphim per-card Oblivion bonus (oblivion_per_card bonusType): every card play earns this.
-  if (s.computedStats.oblivionPerCardBonus > 0) {
-    totalAward += Math.round(s.computedStats.oblivionPerCardBonus);
-  }
-
-  // Seraphim bonus amplifier: +N Oblivion per active Seraphim this play (from seraphim_bonus_amplifier effects).
-  const seraphimAmp = s.turn.seraphimBonusAmp ?? 0;
-  if (seraphimAmp > 0 && s.computedStats.activeSynergies > 0) {
-    totalAward += Math.round(seraphimAmp * s.computedStats.activeSynergies);
-  }
-
-  if (sourceDef !== undefined && totalAward > 0) {
-    const resolvedClass = actionClass ?? classifyActionClass(sourceDef, getDefinitionOnPlayEffects(sourceDef));
-    const attenuationMultiplier = applyAttenuationMultiplier(s, resolvedClass);
-    const crossSetMultiplier = 1;
-    const fullFireMultiplier = getNeutralityFullFireMultiplier(s, sourceDef);
-    const stabilityFlat = Math.max(0, Math.round((s.turn.equilibriumStability ?? 0) * 3));
-    totalAward = Math.round(totalAward * attenuationMultiplier * crossSetMultiplier * fullFireMultiplier) + stabilityFlat;
-  }
-
-
-
-
-
-
-  // Apply conditional Cherubim board-presence multiplier (capped to prevent runaway scaling).
-  const cherubimCondMult = Math.min(1.6, s.turn.cherubimConditionalMult ?? 1);
-  if (cherubimCondMult > 1 && totalAward > 0) {
-    totalAward = Math.round(totalAward * cherubimCondMult);
-  }
-
-  // Gentle high-tier gain tuning for card-play payouts.
-  if (sourceDef && totalAward > 0) {
-    if (sourceDef.rarity === 'Eternal') {
-      totalAward = Math.round(totalAward * 0.92);
-    } else if (sourceDef.rarity === 'Infinite') {
-      totalAward = Math.round(totalAward * 0.86);
-    }
-  }
-
-  if (totalAward > 0) {
-    grantOblivion(s, totalAward);
-  }
-
-}
-
+/**
+ * Decrements all active set-ability cooldowns by 1. Must be called once for
 /**
  * Decrements all active set-ability cooldowns by 1. Must be called once for
  * every card played from hand (at the same sites as tickCherubimDurability).
  */
 function tickHandPlayCooldowns(s: Store): void {
   const cd = s.turn.setAbilityCooldowns;
-  if (!cd) return;
-  for (const key of Object.keys(cd)) {
-    if ((cd[key] ?? 0) > 0) {
-      cd[key] -= 1;
-    }
-  }
-}
-
-function tickCherubimDurability(s: Store): void {
-  let expiredCount = 0;
-  const expiredCards: Array<{ definitionId: string }> = [];
-  for (let i = 0; i < 4; i++) {
-    const card = s.board.backSlots[i];
-    if (!card || card.type !== 'Cherubim') continue; // only process Cherubim cards; Cherubim have different mechanics
-    const cherubim = card as CherubimInstance;
-    if (cherubim.durability === undefined || cherubim.maxDurability === undefined) continue;
-    cherubim.durability -= 1;
-    if (cherubim.durability <= 0) {
-      expiredCards.push({ definitionId: cherubim.definitionId });
-      s.deck.discardPile.push(toDeckCard(cherubim));
-      s.board.backSlots[i] = null;
-      expiredCount += 1;
-      eventBus.emit('cherubim:expired', { backSlot: i as 0 | 1 | 2 | 3, definitionId: cherubim.definitionId });
-    }
-  }
-
-  recordLossEvent(s, expiredCards, 'expire');
-  applyCherubimExpireBonuses(s, expiredCount);
-}
-
-function applyCherubimDrawPerCard(s: Store, drawValue: number): void {
-  if (drawValue <= 0) return;
-  const totalDraw = s.turn.cherubimDrawFraction + drawValue;
-  const wholeDraw = Math.floor(totalDraw);
-  s.turn.cherubimDrawFraction = totalDraw - wholeDraw;
-  if (wholeDraw > 0) {
-    s.deck = TurnSystem.drawCards(s.deck, wholeDraw);
-  }
-}
-
-// Apply per-card Cherubim passive effects. Called after each card is played.
-// Handles: resource generation, conditional buffs, patience accumulation.
-function applyCherubimPassiveEffects(s: Store): void {
-  // Reset conditional multiplier  Eit's recomputed fresh from board state each card play.
-  s.turn.cherubimConditionalMult = 1;
-
-  // Auto-accumulate +1 Patience for every Seraphim on board that has patienceThreshold set.
-  for (const unit of s.board.frontSlots) {
-    if (!unit || unit.type !== 'Seraphim') continue;
-    const unitDef = ScoreSystem.getDefinition(unit.definitionId);
-    if (unitDef?.type === 'Seraphim' && (unitDef as import('@/types/cards').SeraphimDefinition).patienceThreshold !== undefined) {
-      const patienceGainBonus = Math.floor(getArtifactEffect(s.turn, 'patience_gain_bonus', s.progress.ownedArtifacts));
-      const gain = 1 + patienceGainBonus;
-      unit.patienceStacks = (unit.patienceStacks ?? 0) + gain;
-    }
-  }
-
-  // Adjacent draw bonuses are represented as a Cherubim passive but resolved once per card play.
-  const adjacentDrawBonus = computeCherubimAdjacentBonus(s.board, 'draw');
-  if (adjacentDrawBonus > 0) {
-    applyCherubimDrawPerCard(s, adjacentDrawBonus);
-  }
-
-  for (let i = 0; i < 4; i++) {
-    const card = s.board.backSlots[i];
-    if (!card || card.type !== 'Cherubim') continue;
-    const cherubim = card as import('@/types/cards').CherubimInstance;
-    const def = ScoreSystem.getDefinition(cherubim.definitionId) as import('@/types/cards').CherubimDefinition | null;
-    if (!def || def.type !== 'Cherubim' || !def.effects) continue;
-
-    for (const effect of def.effects) {
-      switch (effect.type) {
-        case 'cherubim_draw_per_card': {
-          applyCherubimDrawPerCard(s, effect.value);
-          break;
-        }
-
-        case 'cherubim_patience_per_card': {
-          // Same-set: only adjacent Seraphim/Angels sharing the Cherubim's set
-          // receive Patience. Off-set frontline neighbors are ignored.
-          const sourceSetKey = 'Neutrality';
-          const leftFront = s.board.frontSlots[i];
-          const rightFront = s.board.frontSlots[i + 1];
-          for (const frontUnit of [leftFront, rightFront]) {
-            if (!frontUnit || (frontUnit.type !== 'Seraphim' && frontUnit.type !== 'Angel')) continue;
-            const frontDef = ScoreSystem.getDefinition(frontUnit.definitionId);
-            if (!frontDef || 'Neutrality' !== sourceSetKey) continue;
-            const gain = effect.value;
-            frontUnit.patienceStacks = (frontUnit.patienceStacks ?? 0) + gain;
-          }
-          break;
-        }
-
-        case 'cherubim_conditional_buff': {
-          // Check if condition is met, apply multiplier bonus
-          let conditionMet = false;
-          if (effect.condition) {
-            // Use same logic as CardEffectExecutor.evaluateCondition
-            if (effect.condition.type === 'cards_played_gte') {
-              conditionMet = s.turn.cardsPlayedThisTurn >= effect.condition.value;
-            } else if (effect.condition.type === 'cherubim_active_gte') {
-              conditionMet = s.board.backSlots.filter(sl => sl !== null && sl.type === 'Cherubim').length >= effect.condition.value;
-            }
-          }
-          if (conditionMet && effect.value > 1) {
-            // Record the highest conditional multiplier active this card play.
-            // Applied in awardOblivionForCardPlay  ENOT a direct Oblivion grant to avoid
-            // exponential feedback with s.progress.oblivion.
-            s.turn.cherubimConditionalMult = Math.max(
-              s.turn.cherubimConditionalMult ?? 1,
-              effect.value,
-            );
-          }
-          break;
-        }
+  if (cd) {
+    for (const key of Object.keys(cd)) {
+      if ((cd[key] ?? 0) > 0) {
+        cd[key] -= 1;
       }
     }
   }
 
-  clampNeutralityGainState(s);
-
-  // WUAS per-card passive handling is in applyCherubimPassiveEffects.
-
-  // WUAS bespoke Cherubim passives (set-identity triggers keyed by card ID).
-  // cardsPlayedThisTurn is incremented after this function, so use +1 for the resolving play index.
-  const resolvingPlayCount = (s.turn.cardsPlayedThisTurn ?? 0) + 1;
-  const allBoardUnits = [...s.board.frontSlots, ...s.board.backSlots];
-  const hasVoidbaneDoctrine = allBoardUnits.some(unit => unit?.definitionId === 'wuas-cher-voidbane-doctrine');
-
-  for (const unit of allBoardUnits) {
-    if (!unit || unit.type !== 'Cherubim') continue;
-
-    if (unit.definitionId === 'wuas-cher-dreamvault-keeper' && resolvingPlayCount % 3 === 0) {
-      applyCherubimDrawPerCard(s, 1);
+  accrueSophCharges(s.board.backSlots);
+  for (const slot of [...s.board.frontSlots, ...s.board.backSlots]) {
+    if (!slot || !('attackCooldowns' in slot)) continue;
+    for (const key of Object.keys(slot.attackCooldowns)) {
+      if (slot.attackCooldowns[key] > 0) slot.attackCooldowns[key] -= 1;
     }
-
-    if (unit.definitionId === 'wuas-cher-wishwright-pulse' && resolvingPlayCount % 2 === 0) {
-      grantOblivion(s, 39);
-    }
-  }
-
-  if (hasVoidbaneDoctrine && resolvingPlayCount === 5) {
-    // Dead: starlight/dream resources removed (WishedUponAStar set)
   }
 }
 
@@ -2719,524 +1779,59 @@ export const useStore = create<Store>()(
 
     refreshComputedStats: () => { set(s => { recompute(s); }); },
 
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Seraphim �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
-
-    placeSeraphim: (deckCard, slot) => {
+    summonAinSophAur: (definitionId, materialInstanceIds, targetSlot) => {
       set(s => {
-        const prevInSlot = s.board.frontSlots[slot];
-        if (prevInSlot) {
-          recordLossEvent(s, [{ definitionId: prevInSlot.definitionId }], 'board');
-          s.deck.discardPile.push(toDeckCard(prevInSlot));
+        if (s.turn.phase !== 'playing' || s.board.frontSlots[targetSlot] !== null) return;
+        const def = CardRegistry.get(definitionId);
+        if (!def || def.type !== 'AinSophAur') return;
+        const uniqueIds = [...new Set(materialInstanceIds)];
+        const materials = uniqueIds.map(id => s.board.backSlots.find(slot => slot?.instanceId === id));
+        const requiredMaterials = Math.max(1, def.summonCost.length);
+        if (uniqueIds.length !== requiredMaterials || materials.some(material => !material)) return;
+
+        for (const material of materials) {
+          if (!material) return;
+          recordLossEvent(s, [{ definitionId: material.definitionId }], 'board');
+          s.deck.discardPile.push(toDeckCard(material));
         }
-        const def = ScoreSystem.getDefinition(deckCard.definitionId);
-        const seraphimInst: SeraphimInstance = {
-          instanceId: deckCard.instanceId,
-          definitionId: deckCard.definitionId,
-          type: 'Seraphim',
-          rarity: def?.type === 'Seraphim' ? def.rarity : 'Common',
-          finish: deckCard.finish,
-          level: 1,
-          isActive: false,
-          attackCooldowns: {},
-          boardSlot: slot,
-          ...(deckCard.faceState ? { faceState: deckCard.faceState } : {}),
-        };
-        s.board.frontSlots[slot] = seraphimInst;
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        recompute(s);
-
-        awardOblivionForCardPlay(s, 0, false);
-        applyCherubimPassiveEffects(s);
-        tickCherubimDurability(s);
-        tickHandPlayCooldowns(s);
-
-        if (def?.type === 'Seraphim') {
-          const turnBefore = captureTurnSnapshot(s.turn);
-          const actionClass = classifyActionClass(def, getDefinitionOnPlayEffects(def));
-          const result = CardEffectExecutor.execute(deckCard, s.turn, s.board, s.deck, true);
-          if (result.canPlay) {
-            s.turn = result.turn;
-            s.board = result.board;
-            s.deck = result.deck;
-            queuePendingEffects(s.turn, result);
-            applyAllSetPlayStates(s, def, turnBefore, actionClass);
-            awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
-          }
+        for (const id of uniqueIds) {
+          const index = s.board.backSlots.findIndex(slot => slot?.instanceId === id);
+          if (index !== -1) s.board.backSlots[index] = null;
         }
 
-        s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-        incrementAngelProgress(s.board);
-        s.turn.seraphimPlayedThisTurn = (s.turn.seraphimPlayedThisTurn ?? 0) + 1;
-        const newInst = s.board.frontSlots[slot];
-        if (newInst?.type === 'Seraphim' && newInst.isActive) {
-          eventBus.emit('seraphim:synergy-gained', { slot, instanceId: deckCard.instanceId });
-        }
-        recordCardPlay(s, deckCard.definitionId);
-        syncEnigmaProgressFromBoard(s, false);
-        checkBossDefeated(s);
-        recompute(s);
-      });
-    },
-
-    removeSeraphim: (slot) => {
-      set(s => {
-        const occupant = s.board.frontSlots[slot];
-        if (occupant?.type === 'Seraphim' && occupant.isActive) {
-          eventBus.emit('seraphim:synergy-lost', { slot, instanceId: occupant.instanceId });
-        }
-        if (occupant) {
-          recordLossEvent(s, [{ definitionId: occupant.definitionId }], 'board');
-          s.deck.discardPile.push(toDeckCard(occupant));
-        }
-        s.board.frontSlots[slot] = null;
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        recompute(s);
-      });
-    },
-
-    discardCardToRemoveSeraphim: (slot) => {
-      set(s => {
-        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null) return;
-        const occupant = s.board.frontSlots[slot];
-        if (!occupant || occupant.type !== 'Seraphim') return;
-        if (s.deck.hand.length <= 0) return;
-        s.turn.pendingEffect = {
-          type: 'discard_choice',
-          count: 1,
-          sourceCard: `remove_seraphim:${slot}`,
-        };
-      });
-    },
-
-    placeSeraphimFromHand: (targetSlot, instanceId) => {
-      set(s => {
-        if (s.turn.phase !== 'playing') return;
-        if (s.board.frontSlots[targetSlot] !== null) return;
-        const deckCard = instanceId
-          ? s.deck.hand.find(c => c.instanceId === instanceId && ScoreSystem.getDefinition(c.definitionId)?.type === 'Seraphim')
-          : s.deck.hand.find(c => ScoreSystem.getDefinition(c.definitionId)?.type === 'Seraphim');
-        if (!deckCard) return;
-        const def = ScoreSystem.getDefinition(deckCard.definitionId);
-        if (!def || def.type !== 'Seraphim') return;
-
-        const seraphimInst: SeraphimInstance = {
-          instanceId: deckCard.instanceId,
-          definitionId: deckCard.definitionId,
-          type: 'Seraphim',
+        const extraIndex = s.deck.extraDeck.findIndex(entry => entry.definitionId === definitionId);
+        const finish = extraIndex === -1 ? 'normal' : s.deck.extraDeck[extraIndex].finish;
+        if (extraIndex !== -1) s.deck.extraDeck.splice(extraIndex, 1);
+        const instance: AinSophAurInstance = {
+          instanceId: `asa_${definitionId}_${++angelInstanceCounter}`,
+          definitionId,
+          type: 'AinSophAur',
           rarity: def.rarity,
-          finish: deckCard.finish,
-          level: 1,
-          isActive: false,
+          finish,
+          faceState: 'front',
+          side: 'ain',
+          cardClass: 'ain-soph-aur',
+          limitlessCharge: 0,
           attackCooldowns: {},
           boardSlot: targetSlot,
-          ...(deckCard.faceState ? { faceState: deckCard.faceState } : {}),
         };
-        s.board.frontSlots[targetSlot] = seraphimInst;
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        recompute(s);
-
-        awardOblivionForCardPlay(s, 0, false);
-        applyCherubimPassiveEffects(s);
-        tickCherubimDurability(s);
-        tickHandPlayCooldowns(s);
-
-        const result = CardEffectExecutor.execute(deckCard, s.turn, s.board, s.deck, true);
-        const turnBefore = captureTurnSnapshot(s.turn);
-        const actionClass = classifyActionClass(def, getDefinitionOnPlayEffects(def));
-        if (result.canPlay) {
+        s.board.frontSlots[targetSlot] = instance;
+        if (def.onSummonEffects.length > 0) {
+          const result = CardEffectExecutor.execute(toDeckCard(instance), s.turn, s.board, s.deck, false, {
+            effects: def.onSummonEffects,
+            countAsPlay: false,
+            removeFromHand: false,
+          });
+          if (!result.canPlay) return;
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
           queuePendingEffects(s.turn, result);
-          applyAllSetPlayStates(s, def, turnBefore, actionClass);
-          awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
-        }
-        s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-        incrementAngelProgress(s.board);
-        recordCardPlay(s, deckCard.definitionId);
-        syncEnigmaProgressFromBoard(s, false);
-        checkBossDefeated(s);
-        recompute(s);
-      });
-    },
-
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Cherubim �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
-
-    placeCherubim: (backSlotIndex, instanceId) => {
-      set(s => {
-        if (s.turn.phase !== 'playing') return;
-        const deckCard = instanceId
-          ? s.deck.hand.find(c => c.instanceId === instanceId && ScoreSystem.getDefinition(c.definitionId)?.type === 'Cherubim')
-          : s.deck.hand.find(c => ScoreSystem.getDefinition(c.definitionId)?.type === 'Cherubim');
-        if (!deckCard) return;
-        const def = ScoreSystem.getDefinition(deckCard.definitionId);
-        if (!def || def.type !== 'Cherubim') return;
-        const cherubimDef = def as import('@/types/cards').CherubimDefinition;
-
-        const existing = s.board.backSlots[backSlotIndex];
-        if (existing) {
-          recordLossEvent(s, [{ definitionId: existing.definitionId }], 'board');
-          s.deck.discardPile.push(toDeckCard(existing));
-        }
-        const cherubimInst: import('@/types/cards').CherubimInstance = {
-          instanceId: deckCard.instanceId,
-          definitionId: deckCard.definitionId,
-          type: 'Cherubim',
-          rarity: cherubimDef.rarity,
-          finish: deckCard.finish,
-          ...(deckCard.faceState ? { faceState: deckCard.faceState } : {}),
-          level: 1,
-          ...(cherubimDef.maxDurability !== undefined
-            ? {
-                durability: cherubimDef.maxDurability + s.computedStats.cherubimExtraPlays,
-                maxDurability: cherubimDef.maxDurability,
-              }
-            : {}),
-          backSlot: backSlotIndex,
-        };
-        s.board.backSlots[backSlotIndex] = cherubimInst;
-        s.turn.cherubimSummonedThisTurn = (s.turn.cherubimSummonedThisTurn ?? 0) + 1;
-        s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-            recompute(s);
-
-        const result = CardEffectExecutor.execute(
-          deckCard,
-          s.turn,
-          s.board,
-          s.deck,
-          false,
-          {
-            effects: cherubimDef.onPlayEffects,
-            countAsPlay: false,
-            removeFromHand: false,
-          },
-        );
-        if (!result.canPlay) return;
-        const turnBefore = captureTurnSnapshot(s.turn);
-        const actionClass = classifyActionClass(def, getDefinitionOnPlayEffects(def));
-        s.turn = result.turn;
-        s.board = result.board;
-        s.deck = result.deck;
-        queuePendingEffects(s.turn, result);
-        applyAllSetPlayStates(s, def, turnBefore, actionClass);
-
-        s.turn.cardsPlayedThisTurn += 1;
-
-        awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
-        applyCherubimPassiveEffects(s);
-        tickCherubimDurability(s);
-        tickHandPlayCooldowns(s);
-        incrementAngelProgress(s.board);
-        recordCardPlay(s, deckCard.definitionId);
-        checkBossDefeated(s);
-        recompute(s);
-      });
-    },
-
-    removeCherubim: (backSlotIndex) => {
-      set(s => {
-        const cherubim = s.board.backSlots[backSlotIndex];
-        if (cherubim && cherubim.type === 'Cherubim') {
-          recordLossEvent(s, [{ definitionId: cherubim.definitionId }], 'board');
-          s.deck.discardPile.push(toDeckCard(cherubim));
-          s.board.backSlots[backSlotIndex] = null;
         }
         recompute(s);
       });
     },
 
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Angels �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
-
-    summonAngel: (definitionId, finish) => {
-      set(s => {
-        if (s.turn.phase !== 'playing') return;
-        if (s.turn.pendingEffect !== null) return;
-        const summonedEntry = getAvailableAngelEntry(s.deck.extraDeck, definitionId, finish);
-        if (!summonedEntry) return;
-        const def = ScoreSystem.getDefinition(definitionId);
-        if (!def || def.type !== 'Angel') return;
-        const angelDef = def as AngelDefinition;
-
-        const costCount: Record<string, number> = {};
-        for (const id of angelDef.summonCost) costCount[id] = (costCount[id] ?? 0) + 1;
-        const boardCount = countFrontDefinitionIds(s.board);
-        const boardDefinitionCount = countBoardDefinitionIds(s.board);
-        for (const [id, needed] of Object.entries(costCount)) {
-          if ((boardCount[id] ?? 0) < needed) return;
-        }
-
-        if (angelDef.extraSummonConditions) {
-          for (const cond of angelDef.extraSummonConditions) {
-            if (cond.type === 'cherubim_active_gte' && s.board.backSlots.filter(sl => sl !== null).length < cond.value) return;
-            if (cond.type === 'seraphim_active_gte' && s.board.frontSlots.filter(sl => sl?.type === 'Seraphim' && sl.isActive).length < cond.value) return;
-            if (cond.type === 'seraphim_on_board_gte' && s.board.frontSlots.filter(sl => sl?.type === 'Seraphim').length < cond.value) return;
-            if (cond.type === 'board_definition_gte' && (boardDefinitionCount[cond.definitionId] ?? 0) < cond.value) return;
-          }
-        }
-
-        const toSacrifice: { slotIdx: number; instanceId: string; definitionId: string }[] = [];
-        const usedSlots = new Set<number>();
-        for (const reqId of angelDef.summonCost) {
-          const slotIdx = s.board.frontSlots.findIndex(
-            (sl, idx) => sl?.definitionId === reqId && !usedSlots.has(idx)
-          );
-          if (slotIdx === -1) return;
-          usedSlots.add(slotIdx);
-          const sl = s.board.frontSlots[slotIdx]!;
-          toSacrifice.push({ slotIdx, instanceId: sl.instanceId, definitionId: sl.definitionId });
-        }
-
-        for (const { slotIdx } of toSacrifice) {
-          const material = s.board.frontSlots[slotIdx];
-          if (material?.type === 'Seraphim') {
-            s.deck.discardPile.push(toDeckCard(material));
-          } else if (material?.type === 'Angel') {
-            // Angel ritual materials return to the extra deck rather than being lost.
-            s.deck.extraDeck.push({ definitionId: material.definitionId, finish: material.finish });
-          }
-          (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[slotIdx] = null;
-        }
-        recordLossEvent(s, toSacrifice.map(material => ({ definitionId: material.definitionId })), 'sacrifice');
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        if (!s.board.frontSlots.some(slot => slot === null)) return;
-
-        // Consume this copy only after all requirements pass.
-        const deckIdx = s.deck.extraDeck.findIndex(
-          e => e.definitionId === definitionId && e.finish === summonedEntry.finish,
-        );
-        if (deckIdx === -1) return;
-        s.deck.extraDeck.splice(deckIdx, 1);
-
-        s.turn.pendingEffect = {
-          type: 'summon_angel_place',
-          definitionId,
-          finish: summonedEntry.finish,
-        };
-        pushRewardToast(s, 'Choose a front slot for the summoned Angel.');
-        recompute(s);
-      });
-    },
-
-    returnAngelToExtraDeck: (slot) => {
-      set(s => {
-        const angel = s.board.frontSlots[slot];
-        if (!angel || angel.type !== 'Angel') return;
-        // Clear the slot and push the entry back so it reappears in the compartment.
-        (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[slot] = null;
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-        s.deck.extraDeck.push({ definitionId: angel.definitionId, finish: angel.finish });
-        recompute(s);
-      });
-    },
-
-    activateAngel: (slot) => {
-      set(s => {
-        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null) return;
-        const angel = s.board.frontSlots[slot];
-        if (!angel || angel.type !== 'Angel') return;
-        const def = ScoreSystem.getDefinition(angel.definitionId);
-        if (!def || def.type !== 'Angel') return;
-        const angelDef = def as AngelDefinition;
-        if (!canActivateAngelAbility(angel, angelDef, s.turn, s.board)) return;
-
-        const result = CardEffectExecutor.execute(
-          { instanceId: angel.instanceId, definitionId: angel.definitionId, finish: angel.finish },
-          s.turn,
-          s.board,
-          s.deck,
-          false,
-          {
-            effects: angelDef.activatedAbility.effects,
-            countAsPlay: false,
-            removeFromHand: false,
-          }
-        );
-        if (!result.canPlay) return;
-
-        const turnBefore = captureTurnSnapshot(s.turn);
-        const actionClass = classifyActionClass(angelDef, angelDef.activatedAbility.effects);
-
-        s.turn = result.turn;
-        s.board = result.board;
-        s.deck = result.deck;
-        applyAllSetPlayStates(s, angelDef, turnBefore, actionClass);
-
-        for (const frontSlot of s.board.frontSlots) {
-          if (frontSlot?.type === 'Angel' && frontSlot.instanceId === angel.instanceId) {
-            frontSlot.activated = true;
-            break;
-          }
-        }
-
-        awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, angelDef, actionClass);
-          queuePendingEffects(s.turn, result);
-
-        checkBossDefeated(s);
-        recompute(s);
-      });
-    },
-
-    activateSeraphimAttack: (slot, attackId = 'unsynergized', paymentSelection) => {
-      set(s => {
-        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null) return;
-        const unit = s.board.frontSlots[slot];
-        if (!unit || unit.type !== 'Seraphim') return;
-        const def = ScoreSystem.getDefinition(unit.definitionId);
-        if (!def || def.type !== 'Seraphim') return;
-
-        const attacks = getSeraphimAttackSet(def as SeraphimDefinition);
-        const attack = attackId === 'synergized' ? attacks.synergized : attacks.unsynergized;
-        const currentCooldown = unit.attackCooldowns?.[attack.id] ?? 0;
-        if (currentCooldown > 0) return;
-        if (attack.requiresAngelOnBoard && !hasAnyAngelOnBoard(s.board)) return;
-
-        const attackTags = [
-          ...(def.attackTags ?? []),
-          ...(attack.tags ?? []),
-          'Neutrality'.toLowerCase(),
-          attack.label.toLowerCase(),
-          attack.id.toLowerCase(),
-        ];
-        const buffs = collectAttackBuffs(s.board, s.turn, 'Seraphim', def.definitionId, attackTags);
-
-        const costs = attack.costs ?? [];
-        if (!canPayAttackCosts(s, costs, { type: 'Seraphim', instanceId: unit.instanceId }, paymentSelection)) return;
-        payAttackCosts(s, costs, paymentSelection);
-
-        // Attacking increases the chain by this attack's chain value, locking in the gain via floor
-
-        // Patience mechanic: consume stacks for bonus Oblivion (+1.05% of base attack per stack)
-        const seraphimDef = def as import('@/types/cards').SeraphimDefinition;
-        const capturedPatience = seraphimDef.patienceThreshold !== undefined ? (unit.patienceStacks ?? 0) : 0;
-        const patienceOblivion = Math.round(attack.baseOblivion * capturedPatience * 0.0105);
-        const targetedNextAttackBonus = Math.max(0, s.turn.neutralityNextAttackOblivionByInstance?.[unit.instanceId] ?? 0);
-
-        let amount = Math.round(
-          Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + patienceOblivion + targetedNextAttackBonus)
-          * Math.max(0.1, buffs.multiplier),
-        );
-
-        if (targetedNextAttackBonus > 0 && s.turn.neutralityNextAttackOblivionByInstance) {
-          const next = { ...s.turn.neutralityNextAttackOblivionByInstance };
-          delete next[unit.instanceId];
-          s.turn.neutralityNextAttackOblivionByInstance = next;
-        }
-
-        const attackMode = attackId === 'synergized' ? 'synergized' : 'unsynergized';
-        void attackMode;
-
-        if (def.definitionId === 'tx-sera-null-entropy') {
-          amount += capturedPatience * 50;
-          if (capturedPatience > 0) {
-            amount = Math.round(amount * (1 + Math.min(0.4, capturedPatience * 0.01)));
-          }
-        }
-
-        amount = Math.round(amount * getSetFullFireMultiplier(s, def));
-        amount = Math.round(amount * getHighTierAttackDamageMultiplier(def.rarity));
-        grantOblivion(s, amount);
-        s.turn.lastFiredSeraphimAttackMode = attackId === 'synergized' ? 'synergized' : 'unsynergized';
-        s.turn.lastFiredSeraphimAttackOblivion = amount;
-        // Card-break: synergized Seraphim attacks build +15 stagger.
-        if (attackId === 'synergized') applyCardBreakStagger(s, 15);
-        eventBus.emit('seraphim:attacked', { slot, attackId: attack.id, amount });
-
-        const refreshed = s.board.frontSlots[slot];
-        if (refreshed && refreshed.type === 'Seraphim') {
-          const crownCooldownReduction = 0;
-          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards - crownCooldownReduction);
-          refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
-          // Reset patience after consuming it.
-          if (seraphimDef.patienceThreshold !== undefined) {
-            const thresholdReduction = Math.floor(getArtifactEffect(s.turn, 'patience_threshold_reduction', s.progress.ownedArtifacts));
-            const effectiveThreshold = Math.max(1, seraphimDef.patienceThreshold - thresholdReduction);
-            if (capturedPatience >= effectiveThreshold) {
-              if (seraphimDef.patienceThresholdDraw) {
-                s.deck = TurnSystem.drawCards(s.deck, seraphimDef.patienceThresholdDraw);
-              }
-              const oblivionBonus = Math.floor(getArtifactEffect(s.turn, 'patience_attack_oblivion_bonus', s.progress.ownedArtifacts));
-              if (oblivionBonus > 0) {
-                grantOblivion(s, oblivionBonus);
-              }
-            }
-            refreshed.patienceStacks = 0;
-          }
-        }
-
-        applyLateGameAttackIdentity(s, def.definitionId, def.rarity, attack.label, amount);
-        enforceMinimumAttackCooldown(s.board, slot, attack.id);
-
-        checkBossDefeated(s);
-        recompute(s);
-      });
-    },
-
-    activateAngelAttack: (slot, attackId = 'primary', paymentSelection) => {
-      set(s => {
-        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null) return;
-        const unit = s.board.frontSlots[slot];
-        if (!unit || unit.type !== 'Angel') return;
-        const def = ScoreSystem.getDefinition(unit.definitionId);
-        if (!def || def.type !== 'Angel') return;
-
-        const attacks = getAngelAttackSet(def as AngelDefinition);
-        const attack = attackId === 'exalted' ? attacks.exalted : attacks.primary;
-        const currentCooldown = unit.attackCooldowns?.[attack.id] ?? 0;
-        if (currentCooldown > 0) return;
-
-        const attackTags = [
-          ...(def.attackTags ?? []),
-          ...(attack.tags ?? []),
-          'Neutrality'.toLowerCase(),
-          attack.label.toLowerCase(),
-          attack.id.toLowerCase(),
-        ];
-        const buffs = collectAttackBuffs(s.board, s.turn, 'Angel', def.definitionId, attackTags);
-
-        const costs = attack.costs ?? [];
-        if (!canPayAttackCosts(s, costs, { type: 'Angel', instanceId: unit.instanceId }, paymentSelection)) return;
-        payAttackCosts(s, costs, paymentSelection);
-
-        // Neutrality Angels: consume all accumulated patienceStacks for a bonus.
-        // Rate: +1.4% of base Oblivion per stack (nerfed from 2%; preserve logic mirrors Seraphim).
-        let neutralityAngelPatienceBonus = 0;
-        const capturedAngelPatience = true ? (unit.patienceStacks ?? 0) : 0;
-        if (capturedAngelPatience > 0) {
-          neutralityAngelPatienceBonus = Math.round(attack.baseOblivion * capturedAngelPatience * 0.014);
-        }
-
-        let amount = Math.round(
-          Math.max(0, attack.baseOblivion + buffs.baseOblivionBonus + neutralityAngelPatienceBonus)
-          * Math.max(0.1, buffs.multiplier),
-        );
-
-        amount = Math.round(amount * getSetFullFireMultiplier(s, def));
-        amount = Math.round(amount * getHighTierAttackDamageMultiplier(def.rarity));
-        grantOblivion(s, amount);
-        // Card-break: exalted Angel attacks build +25 stagger.
-        if (attackId === 'exalted') applyCardBreakStagger(s, 25);
-        eventBus.emit('angel:attacked', { slot, attackId: attack.id, amount });
-
-        const refreshed = s.board.frontSlots[slot];
-        if (refreshed && refreshed.type === 'Angel') {
-          const effectiveCooldown = Math.max(1, attack.cooldownCards + buffs.cooldownDeltaCards);
-          refreshed.attackCooldowns = { ...(refreshed.attackCooldowns ?? {}), [attack.id]: effectiveCooldown };
-          // Neutrality: consume patience stacks after the attack resolves.
-          if (true && capturedAngelPatience > 0) {
-            refreshed.patienceStacks = 0;
-            s.turn.neutralityPatienceConsumedThisTurn = (s.turn.neutralityPatienceConsumedThisTurn ?? 0) + capturedAngelPatience;
-          }
-        }
-
-        applyLateGameAttackIdentity(s, def.definitionId, def.rarity, attack.label, amount);
-        enforceMinimumAttackCooldown(s.board, slot, attack.id);
-
-        checkBossDefeated(s);
-        recompute(s);
-      });
-    },
-
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Deck management �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
 
     initDeck: (deckList, extraDeck?) => {
       set(s => {
@@ -3315,7 +1910,7 @@ export const useStore = create<Store>()(
       });
     },
 
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Turn flow �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+    // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Turn flow �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
     beginTurn: () => {
       set(s => {
@@ -3459,8 +2054,7 @@ export const useStore = create<Store>()(
         s.turn.pendingEffectQueue = [];
       });
     },
-
-    playCard: (instanceId) => {
+    playCard: (instanceId, mode = 'place') => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
         const deckCard = s.deck.hand.find(c => c.instanceId === instanceId);
@@ -3468,133 +2062,191 @@ export const useStore = create<Store>()(
         const def = ScoreSystem.getDefinition(deckCard.definitionId);
         if (!def) return;
 
-        if (def.type === 'Seraphim') {
-          const turnBefore = captureTurnSnapshot(s.turn);
-          const actionClass = classifyActionClass(def, getDefinitionOnPlayEffects(def));
-          const emptySlot = s.board.frontSlots.findIndex(sl => sl === null);
-          if (emptySlot === -1) return;
-          const slot = emptySlot as 0 | 1 | 2 | 3 | 4;
-          const seraphimInst: SeraphimInstance = {
-            instanceId: deckCard.instanceId,
-            definitionId: deckCard.definitionId,
-            type: 'Seraphim',
-            rarity: def.rarity,
-            finish: deckCard.finish,
-            level: 1,
-            isActive: false,
-            attackCooldowns: {},
-            boardSlot: slot,
-          };
-          s.board.frontSlots[slot] = seraphimInst;
-          s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-          recompute(s);
-
-          awardOblivionForCardPlay(s, 0, false);
-          applyCherubimPassiveEffects(s);
-          tickCherubimDurability(s);
-          tickHandPlayCooldowns(s);
-
-          const result = CardEffectExecutor.execute(deckCard, s.turn, s.board, s.deck, true);
-          if (result.canPlay) {
+        if (def.type === 'Light' || def.type === 'Dark') {
+          if (def.type === 'Dark' && mode === 'cast') {
+            const darkDef = def as DarkCardDefinition;
+            if (!darkDef.allowHandCast) return;
+            const cost = resolveStackCost(darkDef.activationCost, s.turn.limitlessLightStacks);
+            if (s.turn.limitlessLightStacks < cost) return;
+            s.turn.limitlessLightStacks -= cost;
+            s.deck.hand = s.deck.hand.filter(card => card.instanceId !== deckCard.instanceId);
+            const result = CardEffectExecutor.execute(
+              deckCard,
+              s.turn,
+              s.board,
+              s.deck,
+              false,
+              { effects: darkDef.sophEffects, countAsPlay: true, removeFromHand: false },
+            );
+            if (!result.canPlay) return;
             s.turn = result.turn;
             s.board = result.board;
             s.deck = result.deck;
             queuePendingEffects(s.turn, result);
-            applyAllSetPlayStates(s, def, turnBefore, actionClass);
-            awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
+            s.turn.cardsPlayedThisTurn += 1;
+            tickHandPlayCooldowns(s);
+            recordCardPlay(s, deckCard.definitionId);
+            advanceTrialGuideStep(s, deckCard.definitionId);
+            enforceHandCap(s);
+            recompute(s);
+            return;
           }
-          s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-          incrementAngelProgress(s.board);
-          recordCardPlay(s, deckCard.definitionId);
-          advanceTrialGuideStep(s, deckCard.definitionId);
-          syncEnigmaProgressFromBoard(s, false);
-          checkBossDefeated(s);
-          recompute(s);
-          return;
-        }
 
-        if (def.type === 'Cherubim') {
-          const turnBefore = captureTurnSnapshot(s.turn);
-          const actionClass = classifyActionClass(def, getDefinitionOnPlayEffects(def));
-          const emptyBack = s.board.backSlots.findIndex(sl => sl === null);
+          const emptyBack = s.board.backSlots.findIndex(slot => slot === null);
           if (emptyBack === -1) return;
-          const backSlotIndex = emptyBack as 0 | 1 | 2 | 3;
-          const cherubimDef = def as CherubimDefinition;
-          const cherubimInst: CherubimInstance = {
+          const boardCard: MainDeckBoardInstance = {
             instanceId: deckCard.instanceId,
             definitionId: deckCard.definitionId,
-            type: 'Cherubim',
-            rarity: cherubimDef.rarity,
+            type: def.type,
+            rarity: def.rarity,
             finish: deckCard.finish,
-            level: 1,
-            ...(cherubimDef.maxDurability !== undefined
-              ? {
-                  durability: cherubimDef.maxDurability + s.computedStats.cherubimExtraPlays,
-                  maxDurability: cherubimDef.maxDurability,
-                }
-              : {}),
-            backSlot: backSlotIndex,
+            side: 'soph',
+            faceState: 'back',
+            limitlessCharge: 0,
+            attackCooldowns: {},
+            backSlot: emptyBack as 0 | 1 | 2 | 3,
           };
-          s.board.backSlots[backSlotIndex] = cherubimInst;
-          s.turn.cherubimSummonedThisTurn = (s.turn.cherubimSummonedThisTurn ?? 0) + 1;
-          s.deck.hand = s.deck.hand.filter(c => c.instanceId !== deckCard.instanceId);
-              recompute(s);
-
-          const result = CardEffectExecutor.execute(
-            deckCard,
-            s.turn,
-            s.board,
-            s.deck,
-            false,
-            {
-              effects: cherubimDef.onPlayEffects,
-              countAsPlay: false,
-              removeFromHand: false,
-            },
-          );
-          if (!result.canPlay) return;
-          s.turn = result.turn;
-          s.board = result.board;
-          s.deck = result.deck;
-          queuePendingEffects(s.turn, result);
-          applyAllSetPlayStates(s, def, turnBefore, actionClass);
-
+          s.board.backSlots[emptyBack] = boardCard;
+          s.deck.hand = s.deck.hand.filter(card => card.instanceId !== deckCard.instanceId);
           s.turn.cardsPlayedThisTurn += 1;
-
-          awardOblivionForCardPlay(s, result.oblivionBonus, false, undefined, def, actionClass);
-          applyCherubimPassiveEffects(s);
-          tickCherubimDurability(s);
           tickHandPlayCooldowns(s);
-          incrementAngelProgress(s.board);
           recordCardPlay(s, deckCard.definitionId);
           advanceTrialGuideStep(s, deckCard.definitionId);
-          checkBossDefeated(s);
+          recompute(s);
+          return;
+        }
+      });
+    },
+
+    flipSoph: (instanceId, mode) => {
+      set(s => {
+        if (s.turn.phase !== 'playing') return;
+        const slotIndex = s.board.backSlots.findIndex(slot => slot?.instanceId === instanceId);
+        if (slotIndex === -1) return;
+        const slot = s.board.backSlots[slotIndex];
+        if (!slot || slot.side !== 'soph' || slot.faceState !== 'back') return;
+        const charge = slot.limitlessCharge ?? 0;
+        if (charge < 5) return;
+        if (mode === 'flip') {
+          slot.side = 'ain';
+          slot.faceState = 'front';
+          slot.limitlessCharge = 0;
+          s.turn.limitlessLightStacks += charge;
           recompute(s);
           return;
         }
 
-        const turnBefore = captureTurnSnapshot(s.turn);
-        const actionClass = classifyActionClass(def, getDefinitionOnPlayEffects(def));
-        const result = CardEffectExecutor.execute(deckCard, s.turn, s.board, s.deck);
+        const def = CardRegistry.get(slot.definitionId);
+        if (!def || (def.type !== 'Light' && def.type !== 'Dark')) return;
+        grantOblivion(s, Math.round(charge * def.sacrificeOblivionRate));
+        recordLossEvent(s, [{ definitionId: slot.definitionId }], 'board');
+        s.deck.discardPile.push(toDeckCard(slot));
+        s.board.backSlots[slotIndex] = null;
+        recompute(s);
+      });
+    },
+
+    activateLightAinAttack: (instanceId) => {
+      set(s => {
+        const slot = s.board.backSlots.find(card => card?.instanceId === instanceId);
+        if (!slot || slot.type !== 'Light' || slot.side !== 'ain' || slot.faceState !== 'front') return;
+        const def = CardRegistry.get(slot.definitionId);
+        if (!def || def.type !== 'Light') return;
+        const attack = def.ainAttack;
+        if ((slot.attackCooldowns[attack.id] ?? 0) > 0) return;
+        const scaling = resolveCardScaling(attack.scaling, {
+          limitlessLightStacks: s.turn.limitlessLightStacks,
+          asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
+          collectionPower: computeGlobalResonanceScore(s.progress),
+        });
+        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling)));
+        slot.attackCooldowns[attack.id] = attack.cooldownCards;
+      });
+    },
+
+    activateLightSophAttack: (instanceId, spend) => {
+      set(s => {
+        const slot = s.board.backSlots.find(card => card?.instanceId === instanceId);
+        if (!slot || slot.type !== 'Light' || slot.side !== 'ain' || slot.faceState !== 'front') return;
+        const def = CardRegistry.get(slot.definitionId);
+        if (!def || def.type !== 'Light') return;
+        const attack = def.sophAttack;
+        if ((slot.attackCooldowns[attack.id] ?? 0) > 0) return;
+        const cost = attack.stackCost ? resolveStackCost(attack.stackCost, s.turn.limitlessLightStacks) : 0;
+        const selectedSpend = spend ?? cost;
+        if (selectedSpend < cost || selectedSpend > s.turn.limitlessLightStacks) return;
+        // Scaling reads the pre-spend pool so paying the cost never shrinks the payout.
+        const stacksBeforeSpend = s.turn.limitlessLightStacks;
+        s.turn.limitlessLightStacks -= selectedSpend;
+        const scaling = resolveCardScaling(attack.scaling, {
+          limitlessLightStacks: stacksBeforeSpend,
+          asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
+          collectionPower: computeGlobalResonanceScore(s.progress),
+        });
+        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling + selectedSpend)));
+        slot.attackCooldowns[attack.id] = attack.cooldownCards;
+      });
+    },
+
+    activateDark: (instanceId) => {
+      set(s => {
+        const slotIndex = s.board.backSlots.findIndex(card => card?.instanceId === instanceId);
+        if (slotIndex === -1) return;
+        const slot = s.board.backSlots[slotIndex];
+        if (!slot || slot.type !== 'Dark' || slot.side !== 'ain' || slot.faceState !== 'front') return;
+        const def = CardRegistry.get(slot.definitionId);
+        if (!def || def.type !== 'Dark') return;
+        const darkSlot = slot as MainDeckBoardInstance;
+        const cooldownKey = `${def.definitionId}:activation`;
+        if ((darkSlot.attackCooldowns[cooldownKey] ?? 0) > 0) return;
+        const cost = resolveStackCost(def.activationCost, s.turn.limitlessLightStacks);
+        if (s.turn.limitlessLightStacks < cost) return;
+        s.turn.limitlessLightStacks -= cost;
+        const result = CardEffectExecutor.execute(
+          toDeckCard(slot),
+          s.turn,
+          s.board,
+          s.deck,
+          false,
+          { effects: def.sophEffects, countAsPlay: false, removeFromHand: false },
+        );
         if (!result.canPlay) return;
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
-        applyAllSetPlayStates(s, def, turnBefore, actionClass);
-
-        awardOblivionForCardPlay(s, result.oblivionBonus, true, undefined, def, actionClass);
-        applyCherubimPassiveEffects(s);
-        tickCherubimDurability(s);
-        tickHandPlayCooldowns(s);
-
-          queuePendingEffects(s.turn, result);
-        incrementAngelProgress(s.board);
-        recordCardPlay(s, deckCard.definitionId);
-        advanceTrialGuideStep(s, deckCard.definitionId);
-        eventBus.emit('card:played', { card: deckCard as never, board: s.board });
-        syncEnigmaProgressFromBoard(s, false);
-        checkBossDefeated(s);
+        queuePendingEffects(s.turn, result);
+        darkSlot.attackCooldowns[cooldownKey] = def.cooldownCardsPlayed;
+        const card = toDeckCard(darkSlot);
+        s.board.backSlots[slotIndex] = null;
+        if (def.postActivationFate === 'hand') s.deck.hand.push(card);
+        else if (def.postActivationFate === 'deck') s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, card]);
+        else s.deck.discardPile.push(card);
+        enforceHandCap(s);
         recompute(s);
+      });
+    },
+
+    activateAsaBridge: (instanceId, spend) => {
+      set(s => {
+        const slot = s.board.frontSlots.find(card => card?.instanceId === instanceId);
+        if (!slot || slot.type !== 'AinSophAur') return;
+        const def = CardRegistry.get(slot.definitionId);
+        if (!def || def.type !== 'AinSophAur' || !def.bridgeAttack) return;
+        const attack = def.bridgeAttack;
+        if ((slot.attackCooldowns[attack.id] ?? 0) > 0) return;
+        const requiredSpend = attack.consumesStacks ? resolveStackCost(attack.consumesStacks, s.turn.limitlessLightStacks) : 0;
+        const selectedSpend = spend ?? requiredSpend;
+        if (selectedSpend < requiredSpend || selectedSpend > s.turn.limitlessLightStacks) return;
+        // Scaling reads the pre-spend pool so paying the cost never shrinks the payout.
+        const stacksBeforeSpend = s.turn.limitlessLightStacks;
+        s.turn.limitlessLightStacks -= selectedSpend;
+        const scaling = resolveCardScaling(attack.scaling, {
+          limitlessLightStacks: stacksBeforeSpend,
+          asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
+          collectionPower: computeGlobalResonanceScore(s.progress),
+        });
+        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling + selectedSpend)));
+        slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
     },
 
@@ -3621,7 +2273,7 @@ export const useStore = create<Store>()(
           const counts: Partial<Record<CardSubtypeFilter, number>> = {};
           for (const card of cards) {
             const subtype = CardRegistry.get(card.definitionId)?.type;
-            if (subtype === 'Seraphim' || subtype === 'Cherubim' || subtype === 'Ophanim' || subtype === 'Angel') {
+            if (subtype === 'Light' || subtype === 'Dark' || subtype === 'AinSophAur') {
               counts[subtype] = (counts[subtype] ?? 0) + 1;
             }
           }
@@ -3629,7 +2281,7 @@ export const useStore = create<Store>()(
         };
 
         if (pending.type === 'discard_choice') {
-          const discardableHand = s.deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel');
+          const discardableHand = s.deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'AinSophAur');
           const handIds = new Set(discardableHand.map(card => card.instanceId));
           const uniqueSelected = Array.from(new Set(selected));
           if (!uniqueSelected.every(id => handIds.has(id))) return;
@@ -3654,22 +2306,6 @@ export const useStore = create<Store>()(
             s.deck = TurnSystem.drawCards(s.deck, parseInt(pending.sourceCard.split(':draw:')[1]));
           } else if (pending.sourceCard.includes(':draw_plus:')) {
             s.deck = TurnSystem.drawCards(s.deck, uniqueSelected.length + parseInt(pending.sourceCard.split(':draw_plus:')[1]));
-          } else if (pending.sourceCard.startsWith('remove_seraphim:')) {
-            const slotText = pending.sourceCard.split(':')[1];
-            const parsedSlot = Number(slotText);
-            if (!Number.isInteger(parsedSlot) || parsedSlot < 0 || parsedSlot > 4) return;
-            const slot = parsedSlot as 0 | 1 | 2 | 3 | 4;
-            const occupant = s.board.frontSlots[slot];
-            if (!occupant || occupant.type !== 'Seraphim') return;
-
-            if (occupant.isActive) {
-              eventBus.emit('seraphim:synergy-lost', { slot, instanceId: occupant.instanceId });
-            }
-            recordLossEvent(s, [{ definitionId: occupant.definitionId }], 'board');
-            s.deck.discardPile.push(toDeckCard(occupant));
-            s.board.frontSlots[slot] = null;
-            s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
-            recompute(s);
           }
         } else if (pending.type === 'look_top_take') {
           if (selected.length === 0) {
@@ -3742,7 +2378,7 @@ export const useStore = create<Store>()(
               const card = pending.cards.find(c => c.instanceId === selectedId);
               if (!card) return;
               const subtype = CardRegistry.get(card.definitionId)?.type;
-              if (subtype !== 'Seraphim' && subtype !== 'Cherubim' && subtype !== 'Ophanim') return;
+              if (subtype !== 'Light' && subtype !== 'Dark' && subtype !== 'AinSophAur') return;
               if (!pending.filter.includes(subtype)) return;
               chosenByType[subtype] = (chosenByType[subtype] ?? 0) + 1;
               if ((chosenByType[subtype] ?? 0) > 1) return;
@@ -3768,13 +2404,16 @@ export const useStore = create<Store>()(
           }
 
           if (selected.length > 0 && pending.filter && pending.filter.length > 1) {
+            const allowedSubtypeTypes: ReadonlySet<CardSubtypeFilter> = new Set([
+              'AinSophAur', 'Light', 'Dark',
+            ]);
             const selectedTypes = selected
               .map(id => pending.cards.find(card => card.instanceId === id))
               .filter((card): card is DeckCard => Boolean(card))
-              .map(card => CardRegistry.get(card.definitionId)?.type)
-              .filter((type): type is CardSubtypeFilter => type === 'Seraphim' || type === 'Cherubim' || type === 'Ophanim');
-            const requiredTypes = new Set(pending.filter);
-            const chosenTypes = new Set(selectedTypes);
+              .map(card => CardRegistry.get(card.definitionId)?.type as string | undefined)
+              .filter((type): type is CardSubtypeFilter => !!type && allowedSubtypeTypes.has(type as CardSubtypeFilter));
+            const requiredTypes = new Set<CardSubtypeFilter>(pending.filter);
+            const chosenTypes = new Set<CardSubtypeFilter>(selectedTypes);
             if ([...requiredTypes].some(type => !chosenTypes.has(type))) {
               return;
             }
@@ -3791,71 +2430,6 @@ export const useStore = create<Store>()(
           const reshuffledCards = pending.allCards.filter(c => !keptIds.has(c.instanceId));
           s.deck.hand = keptCards;
           s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, ...reshuffledCards]);
-        } else if (pending.type === 'neutralizing_bane_choose_target') {
-          // selected = [] means no valid target was found (failToFind); just clear the pending effect.
-          if (selected.length > 0) {
-            const activeUnits = s.board.frontSlots.filter(
-              (unit): unit is SeraphimInstance | AngelInstance =>
-                !!unit && (unit.type === 'Seraphim' || unit.type === 'Angel') && (unit.type !== 'Seraphim' || unit.isActive),
-            );
-            const selectedId = selected[0] ?? null;
-            const target = activeUnits.find((unit) => unit.instanceId === selectedId);
-            if (!target) return;
-
-            const patience = Math.max(0, target.patienceStacks ?? 0);
-            const resonanceScore = computeGlobalResonanceScore(s.progress);
-            const masteryMult = Math.min(pending.masteryMultiplierCap, 1 + resonanceScore / 1000);
-            const bonus = Math.round(patience * pending.multiplier * masteryMult);
-            if (bonus > 0) grantOblivion(s, bonus);
-            // Consume 50% of target's Patience post-fire.
-            target.patienceStacks = Math.floor(patience / 2);
-            if (patience >= 30) s.deck = TurnSystem.drawCards(s.deck, 1);
-          }
-        } else if (pending.type === 'neutrality_echo_pulse_choose') {
-          const activeSeraphim = s.board.frontSlots.filter(
-            (unit): unit is SeraphimInstance => unit?.type === 'Seraphim' && unit.isActive,
-          );
-          const selectedId = selected[0] ?? null;
-          if (activeSeraphim.length > 0) {
-            const target = activeSeraphim.find((unit) => unit.instanceId === selectedId);
-            if (!target) return;
-            const uncapped = hasNeutralityUncappedGainsInDeck(s.deck);
-            target.patienceStacks = clampPatienceStacks((target.patienceStacks ?? 0) + 5, uncapped);
-          }
-
-          s.deck = TurnSystem.drawCards(s.deck, 1);
-          const hasTwentyPatience = s.board.frontSlots.some((unit) => {
-            if (!unit) return false;
-            if (unit.type !== 'Seraphim' && unit.type !== 'Angel') return false;
-            return (unit.patienceStacks ?? 0) >= 20;
-          });
-          if (hasTwentyPatience) {
-            s.deck = TurnSystem.drawCards(s.deck, 1);
-          }
-        } else if (pending.type === 'neutrality_void_amp_choose_seraphim') {
-          const activeSeraphim = s.board.frontSlots.filter(
-            (unit): unit is SeraphimInstance => unit?.type === 'Seraphim' && unit.isActive,
-          );
-          const selectedId = selected[0] ?? null;
-          if (activeSeraphim.length > 0) {
-            const target = activeSeraphim.find((unit) => unit.instanceId === selectedId);
-            if (!target) return;
-            const uncapped = hasNeutralityUncappedGainsInDeck(s.deck);
-            target.patienceStacks = clampPatienceStacks((target.patienceStacks ?? 0) + 5, uncapped);
-            if (s.turn.lastResolvedSubtype === 'Ophanim') {
-              const current = s.turn.neutralityNextAttackOblivionByInstance ?? {};
-              s.turn.neutralityNextAttackOblivionByInstance = {
-                ...current,
-                [target.instanceId]: Math.max(0, (current[target.instanceId] ?? 0) + pending.bonusOblivionIfOphanim),
-              };
-            }
-          }
-        } else if (pending.type === 'summon_angel_place') {
-          const slotText = selected[0];
-          const parsedSlot = Number(slotText);
-          if (!Number.isInteger(parsedSlot) || parsedSlot < 0 || parsedSlot > 4) return;
-          const slot = parsedSlot as 0 | 1 | 2 | 3 | 4;
-          if (!completeSummonedAngelPlacement(s, pending.definitionId, pending.finish, slot)) return;
         }
 
           s.turn.lastPendingTakenSubtypeCounts = pendingTakenSubtypeCounts;
@@ -3888,6 +2462,11 @@ export const useStore = create<Store>()(
         }
 
         s.deck = normalizeDeckInstanceIds(s.deck);
+
+        const overflow = s.deck.hand.length - 8;
+        if (overflow > 0) {
+          pendingQueue.push({ type: 'discard_choice', count: overflow, sourceCard: 'hand_overflow' });
+        }
 
         s.turn.pendingEffect = pendingQueue.shift() ?? null;
         s.turn.pendingEffectQueue = pendingQueue;
@@ -3949,7 +2528,6 @@ export const useStore = create<Store>()(
           s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
           s.deck.discardPile = [];
         }
-        s.board.frontSlots = SynergySystem.computeActiveSlots(s.board);
         s.board.activeBoardEffects = [];
 
         // *** SKIP setting phase to 'idle' - instead, immediately begin a new turn ***
@@ -3981,7 +2559,7 @@ export const useStore = create<Store>()(
       }
     },
 
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Oblivion �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+    // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Oblivion �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
     addOblivion: (delta) => {
       set(s => { s.progress.oblivion += delta; });
@@ -4202,7 +2780,7 @@ export const useStore = create<Store>()(
       return true;
     },
 
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Settings �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+    // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Settings �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
     updateSettings: (patch) => {
       set(s => {
@@ -4441,7 +3019,7 @@ export const useStore = create<Store>()(
       if (!instance) return false;
       if (instance.status === 'completed') return false;
 
-      // Re-evaluate board progress before gating — heals saves stuck before the Phase-0 evaluator fix.
+      // Re-evaluate board progress before gating  Eheals saves stuck before the Phase-0 evaluator fix.
       if (enigmaId === 'neutral-mystery') {
         // Run inside set() so stepsComplete mutations are on a mutable Immer draft.
         set(s => {
@@ -4479,7 +3057,8 @@ export const useStore = create<Store>()(
       if (quest.claimed) return null;
       if (quest.progress < quest.goal) return null;
       const shardReward = quest.shardReward;
-      const oblivionReward = quest.oblivionReward ?? 0;
+      const resonanceScore = computeGlobalResonanceScore(s.progress);
+      const oblivionReward = getScaledQuestOblivion(quest.oblivionReward ?? 0, resonanceScore);
       set(state => {
         const list = state.progress.quests.daily.find(q => q.id === questId)
           ? state.progress.quests.daily
@@ -4489,13 +3068,12 @@ export const useStore = create<Store>()(
         if (oblivionReward > 0) {
           state.progress.oblivion += oblivionReward;
           state.progress.lifetimeOblivion = (state.progress.lifetimeOblivion ?? 0) + oblivionReward;
-        } else {
+        }
+        if (shardReward > 0) {
           state.progress.aberratedShards += shardReward;
         }
       });
-      return oblivionReward > 0
-        ? { shards: 0, oblivion: oblivionReward }
-        : { shards: shardReward };
+      return { shards: shardReward, oblivion: oblivionReward > 0 ? oblivionReward : undefined };
     },
 
     claimAchievement: (achievementId) => {
@@ -4755,7 +3333,7 @@ export const useStore = create<Store>()(
       if (ability.id === 'neutrality-signature-aegis-uprising') {
         const neutralitySet = getSet('Neutrality');
         const hasBoardAngel = !!neutralitySet && state.board.frontSlots.some(
-          u => u && u.type === 'Angel' && neutralitySet.membership.isTranscendentAngel(u.definitionId),
+          u => u && u.type === 'AinSophAur' && neutralitySet.membership.isTranscendentAngel(u.definitionId),
         );
         if (!hasBoardAngel) {
           get().enqueueToast('Requires a Transcendent Angel of this set on your board.', 'warning', 2500);
@@ -4848,7 +3426,7 @@ export const useStore = create<Store>()(
           turnTaken: false,
         };
         // Fresh board/turn for the match; deck retained so player has their built deck.
-        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
         recompute(s);
       });
@@ -4929,7 +3507,7 @@ export const useStore = create<Store>()(
 
 
 
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Boss fight �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+    // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Boss fight �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
     startBossFight: (bossId, savedDeckId, options) => {
       set(s => {
@@ -4966,7 +3544,7 @@ export const useStore = create<Store>()(
         const roundSeconds = BOSS_FIGHT_ROUND_SECONDS;
 
         s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
-        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
 
         s.bossFight = {
@@ -5022,7 +3600,7 @@ export const useStore = create<Store>()(
         };
 
         s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
-        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
         s.bossFight = {
           mode: 'active',
@@ -5087,7 +3665,7 @@ export const useStore = create<Store>()(
         };
 
         s.deck = createDeckState(savedDeck.deckList, savedDeck.extraDeck ?? []);
-        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
         s.bossFight = {
           mode: 'active',
@@ -5259,7 +3837,7 @@ export const useStore = create<Store>()(
 
         s.deck = createDeckState(def.deckList, def.extraDeck);
 
-        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
 
         s.trialDeck = {
@@ -5298,7 +3876,7 @@ export const useStore = create<Store>()(
         s.deck = createDeckState(def.deckList, def.extraDeck);
         const guidedOrder = def.guidedDeckOrder.length > 0 ? def.guidedDeckOrder : def.deckList;
         s.deck.drawPile = DeckSystem.buildOrdered(guidedOrder);
-        s.board = { frontSlots: [null, null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
+        s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
 
         s.trialDeck = {
@@ -5341,18 +3919,18 @@ export const useStore = create<Store>()(
       });
     },
 
-    // �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Save/load �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+    // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Save/load �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
     loadState: (loaded) => {
       set(s => {
-        // Migrate collection: string[] �E�E�E�E�E�E�E��E�E�E�E�E�E�E� Record<string, number>
+        // Migrate collection: string[] �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Record<string, number>
         if (Array.isArray((loaded.progress as { collection: unknown }).collection)) {
           const rec: Record<string, number> = {};
           for (const id of (loaded.progress as unknown as { collection: string[] }).collection) rec[id] = 1;
           (loaded.progress as { collection: Record<string, number> }).collection = rec;
         }
 
-        // Migrate progress: score �E�E�E�E�E�E�E��E�E�E�E�E�E�E� oblivion
+        // Migrate progress: score �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� oblivion
         const op = loaded.progress as unknown as Record<string, unknown>;
         if (op['score'] !== undefined && op['oblivion'] === undefined) {
           op['oblivion'] = op['score'];
@@ -5505,7 +4083,7 @@ export const useStore = create<Store>()(
           settings['cardThemePacks'] = { ...DEFAULT_CARD_THEME_PACKS, ...(settings['cardThemePacks'] as Record<string, string>) };
         }
 
-        // Migrate board: old slots �E�E�E�E�E�E�E��E�E�E�E�E�E�E� frontSlots + backSlots
+        // Migrate board: old slots �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� frontSlots + backSlots
         const ob = loaded.board as unknown as Record<string, unknown>;
         if (ob['slots'] !== undefined && ob['frontSlots'] === undefined) {
           ob['frontSlots'] = (ob['slots'] as unknown[]).slice(0, 5);
@@ -5537,16 +4115,6 @@ export const useStore = create<Store>()(
         if (ot['trail'] === undefined) ot['trail'] = 0;
         if (ot['strain'] === undefined) ot['strain'] = 0;
         if (ot['turnNumber'] === undefined) ot['turnNumber'] = 0;
-        if (ot['equilibriumDrift'] === undefined) ot['equilibriumDrift'] = 0;
-        if (ot['equilibriumStability'] === undefined) ot['equilibriumStability'] = 0;
-        if (ot['attenuationClassUses'] === undefined) {
-          ot['attenuationClassUses'] = { setup: 0, conversion: 0, multiplier: 0, refund: 0, finisher: 0 };
-        }
-        if (ot['attenuationBreaksUsed'] === undefined) ot['attenuationBreaksUsed'] = 0;
-        if (ot['attenuationBrokenClasses'] === undefined) ot['attenuationBrokenClasses'] = [];
-        if (ot['neutralityPatienceChargedThisTurn'] === undefined) ot['neutralityPatienceChargedThisTurn'] = 0;
-        if (ot['neutralityPatienceConsumedThisTurn'] === undefined) ot['neutralityPatienceConsumedThisTurn'] = 0;
-        if (ot['neutralityTriggeredEffects'] === undefined) ot['neutralityTriggeredEffects'] = [];
         // Phase 2 Neutrality rework: Sigil/Patient-Light/marked-card/timer-pause/attack-preserve
         // sub-mechanics were gutted in favor of Patience-only design; strip their old save fields.
         delete ot['neutralitySetupCount'];
@@ -5733,18 +4301,6 @@ export const useStore = create<Store>()(
         }
 
         if ((loaded.version ?? 0) < 5) {
-          for (const slot of loaded.board.frontSlots) {
-            if (slot?.type === 'Angel') {
-              const angel = slot as AngelInstance & Record<string, unknown>;
-              if (angel['cardsPlayedSinceSummon'] === undefined) angel['cardsPlayedSinceSummon'] = 0;
-              if (angel['activated'] === undefined) angel['activated'] = false;
-              if (angel['attackCooldowns'] === undefined) angel['attackCooldowns'] = {};
-            }
-            if (slot?.type === 'Seraphim') {
-              const seraphim = slot as SeraphimInstance & Record<string, unknown>;
-              if (seraphim['attackCooldowns'] === undefined) seraphim['attackCooldowns'] = {};
-            }
-          }
           loaded.version = 5;
         }
 
@@ -5759,27 +4315,6 @@ export const useStore = create<Store>()(
             }
           }
           loaded.version = 6;
-        }
-
-        for (const slot of loaded.board.frontSlots) {
-          if (slot?.type === 'Angel') {
-            const angel = slot as AngelInstance & Record<string, unknown>;
-            if (angel['cardsPlayedSinceSummon'] === undefined || Number.isNaN(Number(angel['cardsPlayedSinceSummon']))) {
-              angel['cardsPlayedSinceSummon'] = 0;
-            }
-            if (angel['activated'] !== true) {
-              angel['activated'] = false;
-            }
-            if (angel['attackCooldowns'] === undefined || typeof angel['attackCooldowns'] !== 'object') {
-              angel['attackCooldowns'] = {};
-            }
-          }
-          if (slot?.type === 'Seraphim') {
-            const seraphim = slot as SeraphimInstance & Record<string, unknown>;
-            if (seraphim['attackCooldowns'] === undefined || typeof seraphim['attackCooldowns'] !== 'object') {
-              seraphim['attackCooldowns'] = {};
-            }
-          }
         }
 
         const cleanedFavorites: Record<string, boolean> = {};
@@ -5853,7 +4388,7 @@ export const useStore = create<Store>()(
   }))
 );
 
-// �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E� Selectors �E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E��E�E�E�E�E�E�E�
+// �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Selectors �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
 export const selectComputedStats = (s: Store): ComputedBoardStats => s.computedStats;
 export const selectOblivion = (s: Store): number => s.progress.oblivion;
@@ -5875,6 +4410,7 @@ export const selectAchievementClaims = (s: Store) => s.progress.achievementClaim
 export const selectCardPlayCounts = (s: Store) => s.progress.cardPlayCounts;
 export const selectCanEmbraceInfinite = (s: Store): boolean => canEmbraceInfinite(s);
 export const selectRadiance = (s: Store): number => s.turn.radiance;
+
 
 
 

@@ -16,22 +16,18 @@ export function getActionClassLabel(actionClass: ActionClass): string {
 }
 
 export function getCardActionClassEffects(def: CardDefinition): CardEffect[] {
-  if (def.type === 'Seraphim') return def.onPlayEffects;
-  if (def.type === 'Cherubim') return def.onPlayEffects;
-  if (def.type === 'Angel') return def.onSummonEffects;
-  return def.effects;
+  if (def.type === 'Light') return def.onFlipEffects ?? [];
+  if (def.type === 'Dark') return def.sophEffects;
+  return def.onPlayEffects ?? def.onSummonEffects;
 }
 
 export function classifyCardActionClass(def: CardDefinition, effects: CardEffect[]): ActionClass {
   if (def.rarity === 'Infinite') return 'finisher';
-  if (effects.some(effect => effect.type === 'salvage_any' || effect.type === 'salvage_by_type' || effect.type === 'discard_draw' || effect.type === 'copy_last_hr')) {
+  if (effects.some(effect => effect.type === 'salvage_any' || effect.type === 'salvage_by_type' || effect.type === 'discard_draw')) {
     return 'refund';
   }
   if (effects.some(effect => effect.type === 'draw' || effect.type === 'look_top_take' || effect.type === 'look_top_take_drop' || effect.type === 'look_top_take_type' || effect.type === 'search_deck_by_type' || effect.type === 'shuffle_discard')) {
     return 'setup';
-  }
-  if (effects.some(effect => effect.type === 'oblivion_flat' || effect.type === 'score_flat' || effect.type === 'patience_gain_all' || effect.type === 'patience_double_all' || effect.type === 'oblivion_from_target_unit_patience')) {
-    return 'conversion';
   }
   return 'conversion';
 }

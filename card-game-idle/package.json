@@ -15,6 +15,7 @@
     "deploy": "npm run build:web && gh-pages -d dist",
     "test": "vitest run",
     "test:watch": "vitest",
+    "typecheck:tests": "tsc -p tsconfig.test.json",
     "docs:cards": "tsx scripts/generate-card-effects-docs.mts"
   },
   "dependencies": {

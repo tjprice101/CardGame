@@ -288,34 +288,31 @@ function PatienceBody() {
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Neutrality &mdash; Patience</div>
+        <div style={sectionHeadingStyle}>Neutrality &mdash; Light Stack Runtime</div>
         <div style={bodyTextStyle}>
-          The starter deck is built around <Tag>Patience</Tag>. Every Seraphim with a patience threshold
-          slowly stockpiles Patience as the turn unfolds, and cashes it in on attack.
+          The current runtime tracks the active <Tag>Light stack</Tag> state directly on the turn and reads board support from the live Light / Dark / Ain-Soph composition.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Accumulation Rules</div>
-        <ListItem label="Eligibility">Patience flows only when at least one Seraphim <em>or</em> Angel is on the board. With neither present, the engine is paused.</ListItem>
-        <ListItem label="Per Card">Each card you play adds +1 Patience to every Seraphim on the board (no Angel-element synergy required).</ListItem>
-        <ListItem label="Cherubim">Adjacent Cherubim with <Tag>patience per card</Tag> add extra Patience on top of the base +1.</ListItem>
-        <ListItem label="Bursts">Effects like <Tag>patience gain all</Tag> and <Tag>patience double all</Tag> inject or double current Patience on the spot.</ListItem>
+        <ListItem label="Eligibility">The turn only stays live while the board has active support in the current runtime model. Legacy drift bookkeeping is not used.</ListItem>
+        <ListItem label="Current Value">Each turn stores its own Light-stack count, which is the canonical resource used by the engine.</ListItem>
+        <ListItem label="Board Support">Light, Dark, and Ain-Soph units contribute to the active state that the game evaluates when it resolves board effects and full-fire scaling.</ListItem>
+        <ListItem label="Effects">Set effects that amplify or trigger from the active state operate against the live board composition, not stale Neutrality attenuation fields.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>The Payoff</div>
         <div style={bodyTextStyle}>
-          When a Seraphim or Angel fires an attack, all of its accumulated Patience is consumed for{' '}
-          <Tag>+15 Oblivion each</Tag>. If the stack met the unit's <Tag>patienceThreshold</Tag>, you also
-          draw bonus cards. Stacks reset to zero after the attack &mdash; time your big swings carefully.
+          Attack resolution and high-tier scaling are driven by the live board state and the active Light-stack value. This keeps the engine consistent with the final Light / Dark / Ain-Soph implementation instead of the removed legacy drift model.
         </div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Starter Deck Focus</div>
-        <ListItem label="Core Plan">The starter Neutrality lane teaches simple Patience sequencing: establish board, stack Patience through card plays, then attack at threshold breakpoints.</ListItem>
-        <ListItem label="Practical Tip">Open with board units first, then play your draw/search Ophanim so each play adds value while your Seraphim are active.</ListItem>
+        <ListItem label="Core Plan">Use the board to establish active support, then let the live Light-stack and side metadata drive later attack and payoff decisions.</ListItem>
+        <ListItem label="Practical Tip">Your best play is to build a clean board state and rely on the current runtime model rather than waiting for obsolete Neutrality bookkeeping.</ListItem>
       </div>
     </>
   );
@@ -482,8 +479,17 @@ function CardBornTierBody() {
           <div style={sectionHeadingStyle}>Collection Power</div>
           <div style={bodyTextStyle}>
             Your total Resonance fuels the <Tag>Collection Power</Tag> multiplier — a passive bonus that
-            amplifies all Oblivion earned from Seraphim and Angel attacks. Claim each tier milestone from
+            amplifies all Oblivion earned from attacks. Claim each tier milestone from
             the <Tag>Card-born Tier</Tag> screen to bank its shard reward.
+          </div>
+          <div style={{ ...bodyTextStyle, marginTop: 8 }}>
+            Collection Power is also one of the three scaling sources behind every Light card's{' '}
+            <Tag>Ain Attack</Tag> and <Tag>Soph Attack</Tag>, and every Ain Soph Aur{' '}
+            <Tag>Bridge the Light</Tag>. Each attack's scaling bonus is split evenly across{' '}
+            <Tag>Limitless Light Stacks</Tag>, <Tag>summoned Ain Soph Aur</Tag>, and{' '}
+            <Tag>Collection Power</Tag> — so a deep collection raises your damage floor even on turns
+            where you build few stacks or summon nothing. Stacks are measured before an attack spends
+            them, so paying a Soph Attack's cost never reduces that attack's own payout.
           </div>
         </div>
       </div>

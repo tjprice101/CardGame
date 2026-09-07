@@ -1,12 +1,7 @@
 ﻿import type { ProgressState } from '@/types/game';
 import { eternalCards } from '@/data/cards/eternalCards';
 import { CardRegistry } from '@/cards/CardRegistry';
-import {
-  infiniteOphanimCards,
-  infiniteSeraphimCards,
-  infiniteCherubimCards,
-  infiniteAngelCards,
-} from '@/data/cards/infiniteCards';
+import { infiniteCards } from '@/data/cards/infiniteCards';
 import { NEUTRALITY_PACK_POOL } from '@/data/packs/packDefinitions';
 import {
   getEverCollectionCount,
@@ -62,12 +57,7 @@ function _sigilByIds(ids: readonly string[]): (p: ProgressState) => boolean {
 
 // ── Shared (core) Infinite card sets, precomputed at module load ──────────
 
-const _coreInfiniteCards = Object.freeze([
-  ...infiniteOphanimCards,
-  ...infiniteSeraphimCards,
-  ...infiniteCherubimCards,
-  ...infiniteAngelCards,
-]);
+const _coreInfiniteCards = Object.freeze([...infiniteCards]);
 
 const INF_NEUTRALITY = Object.freeze(_coreInfiniteCards.map(c => c.definitionId));
 const INF_ALL_CORE   = INF_NEUTRALITY;

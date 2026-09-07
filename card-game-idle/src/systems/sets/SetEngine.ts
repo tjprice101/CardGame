@@ -58,7 +58,7 @@ export interface SetEngineDefinition {
   /** Display label. */
   label: string;
   /** The one signature mechanic this set revolves around. */
-  signatureMechanic: 'patience';
+  signatureMechanic: 'patience' | 'none';
   /** Base abilities, one per slot. Signature abilities may follow these entries. */
   abilities: SetAbilityDefinition[];
   /** Set-scoped card membership. */

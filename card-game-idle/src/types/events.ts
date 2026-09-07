@@ -1,14 +1,14 @@
-import type { OphanimInstance, SeraphimInstance } from './cards';
+import type { MainDeckBoardInstance, AinSophAurInstance } from './cards';
 import type { BoardState, ComputedBoardStats, DeckCard } from './game';
 
-type CardInstance = OphanimInstance | SeraphimInstance | DeckCard;
+type CardInstance = MainDeckBoardInstance | AinSophAurInstance | DeckCard;
 
 export interface EventPayloads {
   'card:played': { card: CardInstance; board: BoardState };
   'card:removed': { instanceId: string };
   'board:recomputed': ComputedBoardStats;
-  'seraphim:synergy-gained': { slot: 0 | 1 | 2 | 3 | 4; instanceId: string };
-  'seraphim:synergy-lost': { slot: 0 | 1 | 2 | 3 | 4; instanceId: string };
+  'seraphim:synergy-gained': { slot: 0 | 1 | 2 | 3; instanceId: string };
+  'seraphim:synergy-lost': { slot: 0 | 1 | 2 | 3; instanceId: string };
   'seraphim:attacked': { slot: number; attackId: string; amount: number };
   'angel:summoned': { definitionId: string; slot: number };
   'angel:attacked': { slot: number; attackId: string; amount: number };

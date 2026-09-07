@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 45;
+export const CURRENT_VERSION = 48;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -540,7 +540,7 @@ const migrations: Record<number, Migration> = {
       'inf-oblivion-absolute', 'inf-void-cascade', 'inf-genesis-throne', 'inf-null-apex',
       'inf-entropic-crown', 'inf-annihilation-field', 'inf-sovereign-void', 'inf-eternity-rupture',
     ]);
-    const NEUTRAL_BOSS_PREFIX = 'boss-hollow-king boss-immortal-warden boss-cherubim-sovereign boss-eternal-seraph boss-time-eater boss-void-architect boss-null-sovereign boss-shattered-oracle boss-abyssal-colossus boss-eternal-null boss-neutrality-paradox-throne boss-neutrality-void-exchequer boss-neutrality-equilibrium-rex boss-neutrality-axiom-maw boss-neutrality-prime-judge'.split(' ');
+    const NEUTRAL_BOSS_PREFIX = 'boss-hollow-king boss-cherubim-sovereign boss-eternal-seraph boss-time-eater boss-null-sovereign boss-shattered-oracle boss-eternal-null boss-neutrality-equilibrium-rex boss-neutrality-prime-judge'.split(' ');
     const NEUTRAL_RAID_IDS = new Set(['raid-null-verdict-of-stars']);
     const NEUTRAL_PACK_IDS = new Set(['pack-neutrality']);
 
@@ -857,6 +857,143 @@ const migrations: Record<number, Migration> = {
       if (loadout['1'] === 'neutrality-signature-aegis-uprising') {
         loadout['3'] = loadout['1'];
         delete loadout['1'];
+      }
+    }
+    return data;
+  },
+
+  46: (data) => {
+    const removedCards = new Set([
+      'btei-eternal-vigil', 'btei-colossus-advent', 'btei-architects-manifold',
+      'btei-neutrality-paradox-crown', 'btei-neutrality-zero-edict', 'btei-neutrality-axiom-maw',
+    ]);
+    const removedBosses = new Set([
+      'boss-immortal-warden', 'boss-void-architect', 'boss-abyssal-colossus',
+      'boss-neutrality-paradox-throne', 'boss-neutrality-void-exchequer', 'boss-neutrality-axiom-maw',
+    ]);
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (!progress) return data;
+
+    for (const field of ['collection', 'holoCollection', 'cardPlayCounts', 'cardMasteryClaims', 'cardLocks', 'favorites']) {
+      const record = progress[field] as Record<string, unknown> | undefined;
+      if (!record) continue;
+      for (const id of removedCards) {
+        delete record[id];
+        delete record[`${id}::normal`];
+        delete record[`${id}::holo`];
+      }
+    }
+
+    const savedDecks = progress.savedDecks;
+    if (Array.isArray(savedDecks)) {
+      for (const savedDeck of savedDecks) {
+        if (!savedDeck || typeof savedDeck !== 'object') continue;
+        const deck = savedDeck as Record<string, unknown>;
+        for (const field of ['deckList', 'extraDeck']) {
+          const entries = deck[field];
+          if (Array.isArray(entries)) deck[field] = entries.filter(entry => (
+            entry && typeof entry === 'object' && !removedCards.has(String((entry as Record<string, unknown>).definitionId))
+          ));
+        }
+        const loadout = deck.abilityLoadout as Record<string, unknown> | undefined;
+        if (loadout?.['1'] === 'neutrality-signature-axiomatic-devour') delete loadout['1'];
+      }
+    }
+
+    for (const field of ['bossCodex', 'bossWinCounts', 'bossBestTimes', 'bossStats']) {
+      const record = progress[field] as Record<string, unknown> | undefined;
+      if (!record) continue;
+      for (const id of removedBosses) delete record[id];
+    }
+
+    const enigma = (progress.enigmas as Record<string, unknown> | undefined)?.instances as Record<string, unknown> | undefined;
+    const neutralizing = enigma?.['neutralizing-the-void'] as Record<string, unknown> | undefined;
+    if (neutralizing) {
+      neutralizing.status = 'locked';
+      neutralizing.currentStepIndex = 0;
+      neutralizing.stepsComplete = [];
+    }
+    return data;
+  },
+  47: (data) => {
+    if (data.turn) {
+      const turn = data.turn as unknown as Record<string, unknown>;
+      if (typeof turn.limitlessLightStacks !== 'number') turn.limitlessLightStacks = 0;
+      for (const legacyField of [
+        'equilibriumDrift',
+        'equilibriumStability',
+        'attenuationClassUses',
+        'attenuationBreaksUsed',
+        'attenuationBrokenClasses',
+        'neutralityPatienceChargedThisTurn',
+        'neutralityPatienceConsumedThisTurn',
+        'neutralityTriggeredEffects',
+      ]) delete turn[legacyField];
+    }
+    if (data.deck) {
+      const deck = data.deck as unknown as Record<string, unknown>;
+      const normalizeCard = (card: Record<string, unknown> | null | undefined) => {
+        if (!card) return card;
+        if (typeof card.side !== 'string') card.side = 'soph';
+        if (typeof card.limitlessCharge !== 'number') card.limitlessCharge = 0;
+        return card;
+      };
+      for (const listName of ['drawPile', 'hand', 'discardPile']) {
+        const list = deck[listName] as Array<Record<string, unknown> | null> | undefined;
+        if (!Array.isArray(list)) continue;
+        list.forEach(normalizeCard);
+      }
+      const front = (data.board as unknown as Record<string, unknown> | undefined)?.frontSlots as Array<Record<string, unknown> | null> | undefined;
+      if (Array.isArray(front)) front.forEach(normalizeCard);
+      const back = (data.board as unknown as Record<string, unknown> | undefined)?.backSlots as Array<Record<string, unknown> | null> | undefined;
+      if (Array.isArray(back)) back.forEach(normalizeCard);
+    }
+    if (data.progress?.savedDecks) {
+      for (const deck of ((data.progress.savedDecks as unknown) as Array<Record<string, unknown>> | undefined) ?? []) {
+        if (!deck || typeof deck !== 'object') continue;
+        for (const field of ['deckList', 'extraDeck']) {
+          const list = deck[field] as Array<Record<string, unknown>> | undefined;
+          if (!Array.isArray(list)) continue;
+          list.forEach(entry => {
+            if (!entry || typeof entry !== 'object') return;
+            if (typeof entry.finish !== 'string') entry.finish = 'normal';
+          });
+        }
+      }
+    }
+    return data;
+  },
+  48: (data) => {
+    const board = data.board as unknown as Record<string, unknown> | undefined;
+    if (board) {
+      board.frontSlots = [null, null, null, null];
+      board.backSlots = [null, null, null, null];
+      board.activeBoardEffects = [];
+    }
+
+    const deck = data.deck as unknown as Record<string, unknown> | undefined;
+    if (deck) {
+      deck.hand = [];
+      deck.drawPile = [];
+      deck.discardPile = [];
+    }
+
+    const turn = data.turn as unknown as Record<string, unknown> | undefined;
+    if (turn) {
+      turn.phase = 'idle';
+      turn.cardsPlayedThisTurn = 0;
+      turn.limitlessLightStacks = 0;
+      turn.oblivionEarnedThisTurn = 0;
+      turn.mulliganSelected = [];
+      turn.pendingEffect = null;
+      turn.pendingEffectQueue = [];
+    }
+
+    const savedDecks = (data.progress as unknown as Record<string, unknown> | undefined)?.savedDecks;
+    if (Array.isArray(savedDecks)) {
+      for (const savedDeck of savedDecks) {
+        if (!savedDeck || typeof savedDeck !== 'object') continue;
+        (savedDeck as Record<string, unknown>).needsRebuild = true;
       }
     }
     return data;

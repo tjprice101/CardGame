@@ -46,20 +46,21 @@ export default function BattlegroundMatch() {
   useEffect(() => {
     if (battleground.mode !== 'active' || battleground.kind !== 'cpu') return;
 
-    const seraphimDefs = CardRegistry.getByType('Seraphim');
-    const fakeFront = Array.from({ length: 5 }, (_, i) => {
-      const def = seraphimDefs[i];
-      if (!def || def.type !== 'Seraphim') return null;
+    const asaDefs = CardRegistry.getByType('AinSophAur');
+    const fakeFront = Array.from({ length: 4 }, (_, i) => {
+      const def = asaDefs[i];
+      if (!def || def.type !== 'AinSophAur') return null;
       return {
         instanceId: `cpu-s-${i}`,
         definitionId: def.definitionId,
-        type: 'Seraphim' as const,
+        type: 'AinSophAur' as const,
         rarity: def.rarity,
         finish: 'normal' as const,
-        level: 1,
-        isActive: true,
+        faceState: 'front' as const,
+        side: 'ain' as const,
+        limitlessCharge: 0,
         attackCooldowns: {} as Record<string, number>,
-        boardSlot: i as 0 | 1 | 2 | 3 | 4,
+        boardSlot: i as 0 | 1 | 2 | 3,
       };
     }) as BoardState['frontSlots'];
 

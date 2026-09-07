@@ -27,17 +27,17 @@ export interface ResourceInfo {
 export const RESOURCE_INFO: ResourceInfo[] = [
   {
     key: 'patience',
-    name: 'Patience',
+    name: 'Light Stack',
     setName: 'Neutrality',
     setId: 'Neutrality',
-    shortDesc: 'Accumulates per card played; cashed out on Seraphim and Angel attacks.',
+    shortDesc: 'Tracks the live Light-stack value for the current turn and board state.',
     longDesc:
-      'Patience is Neutrality\'s core combat resource. While at least one Seraphim or Angel is on the board, each card you play adds +1 Patience to every Seraphim. Cherubim with a patience passive add extra stacks on top of the base +1.',
+      'The current runtime model stores Light stacks directly on the turn, then evaluates board support from the active Light, Dark, and Ain-Soph composition. This replaces the archived Neutrality patience drift bookkeeping.',
     mechanics: [
-      'Each card played → +1 Patience per active Seraphim (and any adjacent-Cherubim bonus on top).',
-      'On attack, each Patience stack → +15 Oblivion consumed.',
-      'If Patience ≥ patienceThreshold on attack, you also draw bonus cards.',
-      'Stacks reset to zero after the attack fires.',
+      'Turn-state Light stack count is the canonical resource value.',
+      'Board support is derived from active Light / Dark / Ain-Soph units on the board.',
+      'Infinite and high-tier full-fire scaling key off the live board state instead of obsolete drift fields.',
+      'Legacy patience-leak fields are intentionally not persisted or reintroduced.',
     ],
   },
 ];

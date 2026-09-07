@@ -14,13 +14,13 @@ import {
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
-import { getDisplayCardTypeLabel, isDisplayCherubimType, isDisplayOphanimType } from '@/ui/preferences';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { warmTheme } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
-import type { AngelDefinition, CardDefinition, CardFinish } from '@/types/cards';
+import type { AinSophAurDefinition, CardDefinition, CardFinish } from '@/types/cards';
 import DeckBuilderAbilitiesTab from '@/ui/deck/tabs/DeckBuilderAbilitiesTab';
 import DeckBuilderAnalyzeTab from '@/ui/deck/tabs/DeckBuilderAnalyzeTab';
 
@@ -36,10 +36,9 @@ const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
 // Built lazily per render so theme switches reflect immediately.
 function getSectionColors(): Record<string, string> {
   return {
-    Angel: warmTheme.accentDeep,
-    Seraphim: '#f0bd78',
-    Cherubim: warmTheme.cherubim,
-    Ophanim: '#7f629f',
+    'Ain Soph Aur': warmTheme.accentDeep,
+    Light: '#f0bd78',
+    Dark: warmTheme.cherubim,
   };
 }
 
@@ -546,11 +545,10 @@ export default function DeckBuilder({ onClose }: Props) {
 
     return {
       mainSections: [
-        { label: 'Seraphim', cards: filtered.filter(d => d.def.type === 'Seraphim').sort(byRarity) },
-        { label: 'Cherubim', cards: filtered.filter(d => isDisplayCherubimType(d.def.type)).sort(byRarity) },
-        { label: 'Ophanim', cards: filtered.filter(d => isDisplayOphanimType(d.def.type)).sort(byRarity) },
+        { label: 'Light', cards: filtered.filter(d => d.def.type === 'Light').sort(byRarity) },
+        { label: 'Dark', cards: filtered.filter(d => d.def.type === 'Dark').sort(byRarity) },
       ].filter(s => s.cards.length > 0),
-      angelSection: filtered.filter(d => d.def.type === 'Angel').sort(byRarity),
+      angelSection: filtered.filter(d => d.def.type === 'AinSophAur').sort(byRarity),
       availableElements,
     };
   }, [collection, holoCollection, elementFilter]);
@@ -605,10 +603,10 @@ export default function DeckBuilder({ onClose }: Props) {
       rows.push({
         key: 'heading-Angel',
         kind: 'heading',
-        sectionLabel: 'Angel',
+        sectionLabel: 'Ain Soph Aur',
         countText: `${extraDeckList.length} / ${EXTRA_DECK_SIZE} selected`,
       });
-      pushCardRows(angelSection, 'Angel', 'Angel');
+      pushCardRows(angelSection, 'Ain Soph Aur', 'Ain Soph Aur');
     }
 
     mainSections.forEach((section) => {
@@ -628,18 +626,17 @@ export default function DeckBuilder({ onClose }: Props) {
   const deckStats = useMemo(() => {
     const elementCounts: Record<string, number> = {};
     const rarityCounts: Record<string, number> = { Common: 0, Rare: 0, Epic: 0, Legendary: 0 };
-    let typeSeraphim = 0, typeCherubim = 0, typeOphanim = 0;
+    let typeLight = 0, typeDark = 0;
     for (const entry of deckList) {
       const def = CardRegistry.get(entry.definitionId);
       if (!def) continue;
       const el = 'Neutrality';
       elementCounts[el] = (elementCounts[el] ?? 0) + entry.copies;
       rarityCounts[def.rarity] = (rarityCounts[def.rarity] ?? 0) + entry.copies;
-      if (def.type === 'Seraphim') typeSeraphim += entry.copies;
-      else if (isDisplayCherubimType(def.type)) typeCherubim += entry.copies;
-      else if (isDisplayOphanimType(def.type)) typeOphanim += entry.copies;
+      if (def.type === 'Light') typeLight += entry.copies;
+      else if (def.type === 'Dark') typeDark += entry.copies;
     }
-    return { elementCounts, rarityCounts, typeSeraphim, typeCherubim, typeOphanim };
+    return { elementCounts, rarityCounts, typeLight, typeDark };
   }, [deckList]);
 
   function addCard(defId: string, finish: CardFinish) {
@@ -649,7 +646,7 @@ export default function DeckBuilder({ onClose }: Props) {
     const ownedCopies = collection[defId] ?? 0;
     const ownedFinishCopies = getOwnedCopiesForFinish(def, finish, collection, holoCollection);
 
-    if (def.type === 'Angel') {
+    if (def.type === 'AinSophAur') {
       setExtraDeckList(prev => {
         const cap = Math.min(4, ownedCopies);
         const totalForDefinition = prev.filter(entry => entry.definitionId === defId).length;
@@ -667,7 +664,7 @@ export default function DeckBuilder({ onClose }: Props) {
     const def = CardRegistry.get(defId);
     if (!def) return;
 
-    if (def.type === 'Angel') {
+    if (def.type === 'AinSophAur') {
       setExtraDeckList(prev => {
         let idx = -1;
         for (let i = prev.length - 1; i >= 0; i--) {
@@ -737,8 +734,8 @@ export default function DeckBuilder({ onClose }: Props) {
 
     const candidates: Candidate[] = [];
     for (const def of CardRegistry.getAll()) {
-      // Skip Angels — they belong in extra deck.
-      if (def.type === 'Angel') continue;
+      // Skip Ain Soph Aur — they belong in the extra deck.
+      if (def.type === 'AinSophAur') continue;
       // Respect element filter if active.
       if (elementFilter !== null && 'Neutrality' !== elementFilter) continue;
       const ownedNormal = getOwnedCopiesForFinish(def, 'normal', collection, holoCollection);
@@ -779,7 +776,7 @@ export default function DeckBuilder({ onClose }: Props) {
   }
 
   function renderPoolCard(def: CardVariantDisplay, sectionLabel: string): React.ReactNode {
-    const isAngel = sectionLabel === 'Angel';
+    const isAngel = sectionLabel === 'Ain Soph Aur';
     const variantKey = getVariantKey(def.def.definitionId, def.finish);
     const count = isAngel ? (extraDeckCountMap.get(variantKey) ?? 0) : (deckMap.get(variantKey) ?? 0);
     const owned = def.ownedCopies;
@@ -824,7 +821,7 @@ export default function DeckBuilder({ onClose }: Props) {
             <div style={getCardNameRibbonStyle('grid')}>
               <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
                 {(() => {
-                  const baseLabel = isAngel ? 'Angel' : getDisplayCardTypeLabel(def.def.type);
+                  const baseLabel = isAngel ? 'Ain Soph Aur' : getDisplayCardTypeLabel(def.def.type);
                   const finishLabel = getFinishLabel(def.def, def.finish);
                   return finishLabel ? `${baseLabel} · ${finishLabel}` : baseLabel;
                 })()}
@@ -835,9 +832,9 @@ export default function DeckBuilder({ onClose }: Props) {
               <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: isAngel ? 3 : 2 }}>
                 {previewText}
               </div>
-              {isAngel && def.def.type === 'Angel' && (
+              {isAngel && def.def.type === 'AinSophAur' && (
                 <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
-                  Cost: {(def.def as AngelDefinition).summonCost.length} materials
+                  Cost: {(def.def as AinSophAurDefinition).summonCost.length} material{(def.def as AinSophAurDefinition).summonCost.length === 1 ? '' : 's'}
                 </div>
               )}
             </div>
@@ -1062,7 +1059,7 @@ export default function DeckBuilder({ onClose }: Props) {
               renderItem={(row) => {
                 if (row.kind === 'heading') {
                   const accent = getSectionColors()[row.sectionLabel] ?? '#58aada';
-                  const title = row.sectionLabel === 'Angel' ? 'Angels (adds to Extra Deck)' : row.sectionLabel;
+                  const title = row.sectionLabel === 'Ain Soph Aur' ? 'Ain Soph Aur (adds to Extra Deck)' : row.sectionLabel;
                   return (
                     <div style={{ padding: '0 4px' }}>
                       <div style={{ ...styles.sectionHeader, marginBottom: 10 }}>

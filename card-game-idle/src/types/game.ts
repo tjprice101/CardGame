@@ -1,4 +1,4 @@
-import type { AngelInstance, CardFinish, CherubimInstance, SeraphimInstance } from './cards';
+import type { AinSophAurInstance, CardFinish, MainDeckBoardInstance } from './cards';
 import type { ActiveBoardEffect, CardEffect, CardSubtypeFilter } from './effects';
 import type { BossFightState } from './bossFight';
 import type { BattlegroundState } from './battleground';
@@ -14,23 +14,23 @@ export interface EmberGroveEntry {
 
 // ── Board ─────────────────────────────────────────────────────────────────────
 
-export type FrontSlot = SeraphimInstance | AngelInstance | null;
-export type BackSlot = CherubimInstance | null;
+export type FrontSlot = AinSophAurInstance | null;
+export type BackSlot = MainDeckBoardInstance | null;
 
 export interface BoardState {
-  frontSlots: [FrontSlot, FrontSlot, FrontSlot, FrontSlot, FrontSlot];
+  frontSlots: [FrontSlot, FrontSlot, FrontSlot, FrontSlot];
   backSlots: [BackSlot, BackSlot, BackSlot, BackSlot];
   activeBoardEffects: ActiveBoardEffect[];  // accumulated from cards this turn; reset at turn end
   emberGrove?: EmberGroveEntry[];
 }
 
 export interface ComputedBoardStats {
-  activeSynergies: number;
-  oblivionPerCardBonus: number;   // flat Oblivion added per card played (from active Seraphim)
-  ophanimOblivionBonus: number;    // bonus Oblivion when Ophanim cards are played (from active Seraphim)
-  cherubimExtraPlays: number;        // extra durability added to placed Cherubim cards (from active Seraphim)
-  globalOblivionMult: number;     // additive % bonus applied to ALL oblivion grants (from cherubim_global_oblivion_mult passives)
-  fullBoardActive: boolean;       // true when all 9 board slots are filled
+  /** Ain Soph Aur currently summoned to the front row. */
+  asaSummoned: number;
+  /** Main Deck cards currently occupying back-row slots. */
+  mainDeckOnBoard: number;
+  /** Additive % bonus applied to ALL Oblivion grants (driven by Collection Power resonance). */
+  globalOblivionMult: number;
   /** Global resonance score — sum of each card's highest reached mastery-tier contribution. Exposed for UI gating. */
   resonanceScore?: number;
 }
@@ -53,6 +53,8 @@ export interface DeckCard {
   definitionId: string;
   finish: CardFinish;
   faceState?: 'front' | 'back';
+  side?: 'ain' | 'soph';
+  limitlessCharge?: number;
 }
 
 export interface DeckState {
@@ -75,29 +77,6 @@ export type PendingEffect =
       sourceDefinitionId?: string;
       sourceInstanceId?: string;
       resolutionEffects?: CardEffect[];
-    }
-  | {
-      type: 'neutrality_echo_pulse_choose';
-      sourceDefinitionId: string;
-      sourceInstanceId: string;
-    }
-  | {
-      type: 'neutralizing_bane_choose_target';
-      sourceDefinitionId: string;
-      sourceInstanceId: string;
-      multiplier: number;
-      masteryMultiplierCap: number;
-    }
-  | {
-      type: 'neutrality_void_amp_choose_seraphim';
-      sourceDefinitionId: string;
-      sourceInstanceId: string;
-      bonusOblivionIfOphanim: number;
-    }
-  | {
-      type: 'summon_angel_place';
-      definitionId: string;
-      finish: CardFinish;
     }
   | { type: 'look_top_take'; cards: DeckCard[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'look_top_take_drop'; cards: DeckCard[]; take: number; drop: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
@@ -123,12 +102,10 @@ export interface TurnState {
   strain: number;
   cherubimDrawFraction: number;
   cardsPlayedThisTurn: number;
+  limitlessLightStacks: number;
   oblivionEarnedThisTurn: number;
   lastPlayedDefinitionId: string | null;
   turnNumber?: number;
-  // Flat additive added to each active Seraphim's per-play Oblivion payout for the rest of this turn.
-  // Accumulates each time a card resolves a `seraphim_bonus_amplifier` effect.
-  seraphimBonusAmp?: number;
   mulliganSelected: string[];
   pendingEffect: PendingEffect | null;
   pendingEffectQueue?: PendingEffect[];
@@ -141,15 +118,7 @@ export interface TurnState {
   strainVentedThisTurn?: boolean;
   cherubimSummonedThisTurn?: number;
   seraphimPlayedThisTurn?: number;
-  equilibriumDrift?: number;
-  equilibriumStability?: number;
-  attenuationClassUses?: Partial<Record<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher', number>>;
-  attenuationBreaksUsed?: number;
-  attenuationBrokenClasses?: Array<'setup' | 'conversion' | 'multiplier' | 'refund' | 'finisher'>;
-  neutralityPatienceChargedThisTurn?: number;
-  neutralityPatienceConsumedThisTurn?: number;
 
-  neutralityTriggeredEffects?: string[];
   lastShuffleSubtypeCounts?: Partial<Record<CardSubtypeFilter, number>>;
   neutralityNextAttackOblivionByInstance?: Record<string, number>;
 
@@ -178,6 +147,7 @@ export interface SavedDeck {
   deckList: DeckEntry[];
   extraDeck: ExtraDeckEntry[]; // up to 10 Angel entries, max 4 of each definition across finishes
   isStarter: boolean;
+  needsRebuild?: boolean;
   /** Artifact ids equipped to this deck (max 3). Save v17. */
   equippedArtifacts?: string[];
   /** Player-authored notes describing how the deck plays. Save v18. */

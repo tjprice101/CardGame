@@ -1,6 +1,16 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
-import { refreshQuestRotation, isQuestComplete, type QuestInstance } from '@/systems/progression/quests';
+import {
+  formatQuestCountdown,
+  getNextDailyResetAt,
+  getNextWeeklyResetAt,
+  getCollectionPowerMultiplier,
+  getScaledQuestOblivion,
+  refreshQuestRotation,
+  isQuestComplete,
+  type QuestInstance,
+} from '@/systems/progression/quests';
+import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { uiTypography } from '@/ui/theme';
 
 interface Props { onClose: () => void; }
@@ -32,14 +42,18 @@ const KIND_LABEL: Record<string, string> = {
   play_cherubim: 'Place Cherubim', open_packs: 'Open packs', win_boss: 'Defeat bosses',
 };
 
-function QuestCard({ quest, cadence, onClaim }: { quest: QuestInstance; cadence: Cadence; onClaim: () => void }) {
+function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestInstance; cadence: Cadence; resonanceScore: number; onClaim: () => void }) {
   const theme = CADENCE_THEME[cadence];
   const complete = isQuestComplete(quest);
   const progressPct = Math.min(100, Math.round((quest.progress / Math.max(1, quest.goal)) * 100));
   const claimable = complete && !quest.claimed;
-  const rewardText = quest.oblivionReward
-    ? `+${quest.oblivionReward.toLocaleString()} Oblivion`
-    : quest.shardReward ? `+${quest.shardReward} Aberrated Shards` : 'Reward';
+  const rewardParts = [] as string[];
+  if (quest.oblivionReward) {
+    rewardParts.push(`+${getScaledQuestOblivion(quest.oblivionReward, resonanceScore).toLocaleString()} Oblivion`);
+  }
+  if (quest.shardReward) rewardParts.push(`+${quest.shardReward} Aberrated Shards`);
+  const rewardText = rewardParts.join(' · ') || 'Reward';
+  const collectionPower = getCollectionPowerMultiplier(resonanceScore);
 
   return (
     <div style={{
@@ -65,7 +79,9 @@ function QuestCard({ quest, cadence, onClaim }: { quest: QuestInstance; cadence:
         <div style={{ width: `${progressPct}%`, height: '100%', background: `linear-gradient(90deg, ${theme.fillFrom}, ${theme.fillTo})`, boxShadow: claimable ? `0 0 12px ${theme.glow}` : 'none', transition: 'width 0.35s ease' }} />
       </div>
       <div style={{ position: 'relative', marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
-        <span style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.4, textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, color: theme.accentSoft, background: theme.chipBg, border: `1px solid ${theme.chipBorder}` }}>{rewardText}</span>
+        <span style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.1, textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, color: theme.accentSoft, background: theme.chipBg, border: `1px solid ${theme.chipBorder}` }}>
+          {rewardText}{quest.oblivionReward ? ` · ×${collectionPower.toFixed(2)} Collection Power` : ''}
+        </span>
         <button onClick={onClaim} disabled={!claimable} style={{
           fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', padding: '7px 16px', borderRadius: 8, cursor: claimable ? 'pointer' : 'default',
           color: quest.claimed ? 'rgba(240,230,210,0.55)' : claimable ? '#12070a' : 'rgba(240,230,210,0.72)',
@@ -78,7 +94,7 @@ function QuestCard({ quest, cadence, onClaim }: { quest: QuestInstance; cadence:
   );
 }
 
-function ChallengeColumn({ cadence, quests, onClaim }: { cadence: Cadence; quests: QuestInstance[]; onClaim: (id: string) => void }) {
+function ChallengeColumn({ cadence, quests, resonanceScore, onClaim }: { cadence: Cadence; quests: QuestInstance[]; resonanceScore: number; onClaim: (id: string) => void }) {
   const theme = CADENCE_THEME[cadence];
   const completedCount = quests.filter(q => isQuestComplete(q)).length;
   return (
@@ -87,19 +103,34 @@ function ChallengeColumn({ cadence, quests, onClaim }: { cadence: Cadence; quest
         <div><div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>{theme.tag}</div><h2 style={{ margin: '4px 0 0', color: '#fff2dc', fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1, textShadow: `0 0 14px ${theme.glow}` }}>{theme.label}</h2></div>
         <div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 2 }}>{completedCount}/{quests.length} READY</div>
       </header>
-      <div style={{ display: 'grid', gap: 12 }}>{quests.length === 0 ? <div style={{ color: 'rgba(240,230,210,0.55)', fontStyle: 'italic', padding: '18px 4px' }}>No challenges available right now.</div> : quests.map(quest => <QuestCard key={quest.id} quest={quest} cadence={cadence} onClaim={() => onClaim(quest.id)} />)}</div>
+      <div style={{ display: 'grid', gap: 12 }}>{quests.length === 0 ? <div style={{ color: 'rgba(240,230,210,0.55)', fontStyle: 'italic', padding: '18px 4px' }}>No challenges available right now.</div> : quests.map(quest => <QuestCard key={quest.id} quest={quest} cadence={cadence} resonanceScore={resonanceScore} onClaim={() => onClaim(quest.id)} />)}</div>
     </section>
   );
 }
 
+function ResetTimer({ cadence, now }: { cadence: Cadence; now: number }) {
+  const theme = CADENCE_THEME[cadence];
+  const resetAt = cadence === 'daily' ? getNextDailyResetAt(now) : getNextWeeklyResetAt(now);
+  return <div style={{ marginTop: 5, color: 'rgba(240,230,210,0.58)', fontSize: 10, letterSpacing: 1.1, fontFamily: uiTypography.display }}>
+    NEXT RESET <span style={{ color: theme.accentSoft }}>{formatQuestCountdown(resetAt - now)}</span>
+  </div>;
+}
+
 export default function QuestsModal({ onClose }: Props) {
+  const [now, setNow] = useState(() => Date.now());
   const progress = useStore(selectProgress);
   const claimQuest = useStore(s => s.claimQuest);
+  const resonanceScore = computeGlobalResonanceScore(progress);
   const view = useMemo(() => refreshQuestRotation({
     daily: progress.quests.daily.map(q => ({ ...q })), weekly: progress.quests.weekly.map(q => ({ ...q })),
     lastDailyRollDay: progress.quests.lastDailyRollDay, lastWeeklyRollWeek: progress.quests.lastWeeklyRollWeek,
-  }, Date.now()), [progress.quests]);
+  }, now), [progress.quests, now]);
   const readyCount = [...view.daily, ...view.weekly].filter(q => isQuestComplete(q) && !q.claimed).length;
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   return (
     <div onClick={onClose} role="dialog" aria-modal="true" className="ui-panel-intro" style={{ position: 'absolute', inset: 0, zIndex: 50, overflowY: 'auto', padding: '32px 28px 60px', background: 'radial-gradient(circle at 20% -10%, rgba(240,162,74,0.14), transparent 45%), radial-gradient(circle at 80% -10%, rgba(124,176,240,0.14), transparent 45%), linear-gradient(180deg, #10121e 0%, #0a0c14 100%)', color: '#f8f0de', fontFamily: uiTypography.body }}>
@@ -114,8 +145,14 @@ export default function QuestsModal({ onClose }: Props) {
           <button onClick={onClose} aria-label="Close Challenges" style={{ width: 42, height: 42, borderRadius: '50%', border: '1px solid rgba(240,209,138,0.4)', background: 'rgba(240,162,74,0.08)', color: '#f8f0de', fontSize: 18, cursor: 'pointer', fontFamily: uiTypography.display }}>✕</button>
         </header>
         <div style={{ display: 'grid', gap: 24, gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>
-          <ChallengeColumn cadence="daily" quests={view.daily} onClaim={claimQuest} />
-          <ChallengeColumn cadence="weekly" quests={view.weekly} onClaim={claimQuest} />
+          <div>
+            <ResetTimer cadence="daily" now={now} />
+            <ChallengeColumn cadence="daily" quests={view.daily} resonanceScore={resonanceScore} onClaim={claimQuest} />
+          </div>
+          <div>
+            <ResetTimer cadence="weekly" now={now} />
+            <ChallengeColumn cadence="weekly" quests={view.weekly} resonanceScore={resonanceScore} onClaim={claimQuest} />
+          </div>
         </div>
       </div>
     </div>

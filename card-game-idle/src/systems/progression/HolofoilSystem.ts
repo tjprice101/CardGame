@@ -79,7 +79,7 @@ export function getSetHoloCount(
 
 export function getHolofoilBaseCost(definition: CardDefinition | undefined): number | null {
   if (!definition || isHoloOnlyCard(definition)) return null;
-  if (definition.type === 'Angel') return HOLOFOIL_RARITY_COSTS.Angel;
+  if (definition.type === 'AinSophAur') return HOLOFOIL_RARITY_COSTS.Angel;
   return HOLOFOIL_RARITY_COSTS[definition.rarity as keyof Omit<typeof HOLOFOIL_RARITY_COSTS, 'Angel'>] ?? null;
 }
 

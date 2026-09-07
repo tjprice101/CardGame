@@ -42,7 +42,7 @@ function e(definitionId: string): { definitionId: string; finish: 'normal' } {
 // ── Neutrality ────────────────────────────────────────────────────────────────
 const neutralityTrial: TrialDeckDefinition = {
   packId: 'pack-neutrality',
-  displayName: 'Neutrality — Patience',
+  displayName: 'Neutrality — Light',
   deckList: [
     d('ser-neutral-null', 4),
     d('ser-neutral-void', 4),
@@ -64,15 +64,15 @@ const neutralityTrial: TrialDeckDefinition = {
   guideSteps: [
     {
       cardDefinitionId: 'ser-neutral-null',
-      hint: 'Null Seraphim (Slot A). On play: +16 Oblivion; all Seraphim on board gain +3 Patience. Patience is the Neutrality resource — each Seraphim stacks +1 per card played, and on attack each stack adds +15 Oblivion.',
+      hint: 'Null Seraphim (Slot A). On play: +16 Oblivion; the active board state gains Light-stack support while the turn tracks its live Light total for later payoff.',
     },
     {
       cardDefinitionId: 'ser-neutral-equilibrium',
-      hint: 'Equilibrium Seraphim (Slot B). On play: +36 Oblivion. While active: +8 Oblivion per card played. Patience threshold 4: attack draws 2 — this is your finisher.',
+      hint: 'Equilibrium Seraphim (Slot B). On play: +36 Oblivion. While active: +8 Oblivion per card played. Keep the live Light-stack count aligned with the board so the finisher resolves correctly.',
     },
     {
       cardDefinitionId: 'ser-neutral-balance',
-      hint: 'Balance Seraphim (Slot C). On play: +20 Oblivion. Three Seraphim on board now — each one accumulates Patience independently.',
+      hint: 'Balance Seraphim (Slot C). On play: +20 Oblivion. With multiple active units, the turn tracks the aggregated Light-stack state across the board.',
     },
     {
       cardDefinitionId: 'ophanim-neutral-null-seek',
@@ -80,7 +80,7 @@ const neutralityTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'ophanim-neutral-chain-pulse',
-      hint: 'Oblivion Pulse. +2 Patience to all Seraphim, +20 Oblivion, Empower next, draw 1. Equilibrium now ~4 Patience.',
+      hint: 'Oblivion Pulse. Adds Light-stack support to the active board state, +20 Oblivion, empower next, and draw 1. Your Light total should be aligned with the current board state.',
     },
     {
       cardDefinitionId: 'ophanim-neutral-null-seek',
@@ -88,7 +88,7 @@ const neutralityTrial: TrialDeckDefinition = {
     },
     {
       cardDefinitionId: 'ophanim-neutral-neutral-cycle',
-      hint: 'Neutral Cycle. Core mechanic: Patience stacking across multiple Seraphim. Why it scales: every card played adds Patience, and each Patience adds +15 Oblivion on attack while Equilibrium also gains per-card pressure. Exact payoff: click Equilibrium Seraphim → Attack now for a large burst and the 4+ Patience extra draws to continue the chain.',
+      hint: 'Neutral Cycle. Core mechanic: live board support across multiple Seraphim. Why it scales: every card play advances the active Light-stack state and the board reads it for later payoff. Exact payoff: click Equilibrium Seraphim → Attack now for the big burst while the board remains in the current runtime model.',
     },
   ],
   guidedOpeningHand: [

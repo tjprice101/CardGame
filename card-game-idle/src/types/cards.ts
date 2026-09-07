@@ -1,47 +1,78 @@
-import type { CardEffect, CherubimPassiveEffect } from './effects';
+﻿import type { CardEffect } from './effects';
 
-export type CardType = 'Ophanim' | 'Cherubim' | 'Seraphim' | 'Angel';
+export type CardType = 'AinSophAur' | 'Light' | 'Dark';
+export type CardClass = 'light' | 'dark' | 'ain-soph-aur';
 export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary' | 'Eternal' | 'Infinite' | 'Enigmatic';
 export type CardFinish = 'normal' | 'holo';
 export type CardFaceState = 'front' | 'back';
+export type CardSide = 'ain' | 'soph';
 
-export const SERAPHIM_BONUS_TYPES = [
-  'oblivion_per_card',
-  'ophanim_bonus',
-  'cherubim_extra_plays',
-  'cherubim_expire_bonus',
-  'power_amplifier',
-  'score_per_second',
-  'resource_generation',
-] as const;
-export type SeraphimBonusType = typeof SERAPHIM_BONUS_TYPES[number];
-export type AngelBonusType = SeraphimBonusType | 'power_per_seraphim' | 'oblivion_per_card' | 'oblivion_per_seraphim';
+export type CardScalingExpr =
+  | { readonly kind: 'constant'; readonly value: number }
+  | { readonly kind: 'linear'; readonly reads: 'limitlessLightStacks' | 'asaFrontCount' | 'collectionPower'; readonly multiplier: number; readonly offset?: number }
+  | { readonly kind: 'stepped'; readonly reads: 'limitlessLightStacks' | 'asaFrontCount' | 'collectionPower'; readonly step: number; readonly amount: number; readonly offset?: number }
+  // Weights Limitless Light Stacks, summoned Ain Soph Aur, and Collection Power equally.
+  | { readonly kind: 'triune'; readonly amount: number }
+  | { readonly kind: 'custom'; readonly fnId: string };
 
-export interface AngelBoardStats {
-  basePower: number;
-  bonusType: AngelBonusType;
-  bonusValue: number;
+export interface StackCostDefinition {
+  readonly kind: 'fixed' | 'percentage' | 'range';
+  readonly value?: number;
+  readonly min?: number;
+  readonly max?: number;
 }
 
-export interface AngelActivatedAbility {
+export interface LightAttackDefinition extends AttackDefinition {
+  readonly scaling: CardScalingExpr;
+  readonly stackCost?: StackCostDefinition;
+}
+
+export interface LightCardDefinition {
+  readonly definitionId: string;
+  readonly type: 'Light';
+  readonly rarity: CardRarity;
   readonly name: string;
-  readonly cardsPlayedRequirement: number;
   readonly description: string;
-  readonly effects: CardEffect[];
+  readonly artKey: string;
+  readonly ainAttack: LightAttackDefinition;
+  readonly sophAttack: LightAttackDefinition;
+  readonly onFlipEffects?: CardEffect[];
+  readonly sacrificeOblivionRate: number;
 }
 
-export type AttackCostType =
-  | 'discard_from_hand'
-  | 'sacrifice_seraphim'
-  | 'sacrifice_angel';
+export interface DarkCardDefinition {
+  readonly definitionId: string;
+  readonly type: 'Dark';
+  readonly rarity: CardRarity;
+  readonly name: string;
+  readonly description: string;
+  readonly artKey: string;
+  readonly sophEffects: CardEffect[];
+  readonly activationCost: StackCostDefinition;
+  readonly cooldownCardsPlayed: number;
+  readonly postActivationFate: 'hand' | 'deck' | 'discard';
+  readonly allowHandCast: boolean;
+  readonly sacrificeOblivionRate: number;
+}
+
+export interface MainDeckBoardInstance {
+  readonly instanceId: string;
+  readonly definitionId: string;
+  readonly type: 'Light' | 'Dark';
+  readonly rarity: CardRarity;
+  readonly finish: CardFinish;
+  side: CardSide;
+  faceState: CardFaceState;
+  limitlessCharge: number;
+  attackCooldowns: Record<string, number>;
+  backSlot: 0 | 1 | 2 | 3 | null;
+  readonly durability?: number;
+}
 
 export interface AttackCost {
-  readonly type: AttackCostType;
+  readonly type: 'discard_from_hand';
   readonly value: number;
 }
-
-export type SeraphimAttackLabel = 'Synergized' | 'Unsynergized';
-export type AngelAttackLabel = 'Primary' | 'Exalted';
 
 export interface AttackDefinition<TLabel extends string = string> {
   readonly id: string;
@@ -51,165 +82,46 @@ export interface AttackDefinition<TLabel extends string = string> {
   readonly baseOblivion: number;
   readonly cooldownCards: number;
   readonly costs?: AttackCost[];
-  readonly requiresAngelOnBoard?: boolean;
   readonly tags?: string[];
 }
 
-export interface SeraphimAttackSet {
-  readonly unsynergized: AttackDefinition<SeraphimAttackLabel>;
-  readonly synergized: AttackDefinition<SeraphimAttackLabel>;
-}
-
-export interface AngelAttackSet {
-  readonly primary: AttackDefinition<AngelAttackLabel>;
-  readonly exalted: AttackDefinition<AngelAttackLabel>;
-}
-
-export type SummonCondition =
-  | { type: 'cherubim_active_gte'; value: number }
-  | { type: 'seraphim_active_gte'; value: number }
-  | { type: 'seraphim_on_board_gte'; value: number }
-  | { type: 'board_definition_gte'; definitionId: string; value: number }
-
-export interface AngelDefinition {
+export interface AinSophAurInstance {
+  readonly instanceId: string;
   readonly definitionId: string;
-  readonly type: 'Angel';
+  readonly type: 'AinSophAur';
+  readonly rarity: CardRarity;
+  readonly finish: CardFinish;
+  faceState: CardFaceState;
+  side: CardSide;
+  cardClass?: CardClass;
+  limitlessCharge: number;
+  attackCooldowns: Record<string, number>;
+  boardSlot: 0 | 1 | 2 | 3 | null;
+}
+
+export interface AinSophAurDefinition {
+  readonly definitionId: string;
+  readonly type: 'AinSophAur';
   readonly rarity: CardRarity;
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
   readonly summonCost: string[];
-  readonly extraSummonConditions?: SummonCondition[];
+  readonly effects?: CardEffect[];
   readonly onSummonEffects: CardEffect[];
-  readonly activatedAbility: AngelActivatedAbility;
-  readonly signatureAbility?: {
-    id: string;
-    name: string;
-    replacesSlot: 1 | 2 | 3;
+  readonly onPlayEffects?: CardEffect[];
+  readonly attacks?: Record<string, AttackDefinition>;
+  readonly bridgeAttack?: {
+    readonly id: string;
+    readonly name: string;
+    readonly description: string;
+    readonly baseOblivion: number;
+    readonly cooldownCards: number;
+    readonly scaling: CardScalingExpr;
+    readonly consumesStacks?: StackCostDefinition;
   };
-  readonly attacks?: AngelAttackSet;
-  readonly attackTags?: string[];
-  readonly baseStats: AngelBoardStats;
+  readonly baseStats?: { basePower: number; bonusType?: string; bonusValue?: number };
 }
 
-export interface AngelInstance {
-  readonly instanceId: string;
-  readonly definitionId: string;
-  readonly type: 'Angel';
-  readonly rarity: CardRarity;
-  readonly finish: CardFinish;
-  faceState?: CardFaceState;
-  chromaticCounters?: number;
-  chromaticSources?: string[];
-  burnTurnsRemaining?: number;
-  isEcho?: boolean;
-  level: number;
-  cardsPlayedSinceSummon: number;
-  activated: boolean;
-  attackCooldowns: Record<string, number>;
-  boardSlot: 0 | 1 | 2 | 3 | 4 | null;
-  patienceStacks?: number;
-  flutterAttackBuff?: { multiplier: number; remainingCards: number; mode?: string };
-}
-
-export interface SeraphimStats {
-  bonusType: SeraphimBonusType;
-  bonusValue: number;
-}
-
-export interface SeraphimDefinition {
-  readonly definitionId: string;
-  readonly type: 'Seraphim';
-  readonly rarity: CardRarity;
-  readonly name: string;
-  readonly description: string;
-  readonly artKey: string;
-  readonly baseStats: SeraphimStats;
-  readonly attacks?: SeraphimAttackSet;
-  readonly attackTags?: string[];
-  readonly onPlayEffects: CardEffect[];
-  readonly patienceThreshold?: number;
-  readonly patienceThresholdDraw?: number;
-}
-
-export interface SeraphimInstance {
-  readonly instanceId: string;
-  readonly definitionId: string;
-  readonly type: 'Seraphim';
-  readonly rarity: CardRarity;
-  readonly finish: CardFinish;
-  faceState?: CardFaceState;
-  chromaticCounters?: number;
-  chromaticSources?: string[];
-  burnTurnsRemaining?: number;
-  isEcho?: boolean;
-  level: number;
-  isActive: boolean;
-  attackCooldowns: Record<string, number>;
-  boardSlot: 0 | 1 | 2 | 3 | 4 | null;
-  patienceStacks?: number;
-  flutterAttackBuff?: { multiplier: number; remainingCards: number; mode?: string };
-}
-
-export interface CherubimDiscardCondition {
-  readonly type: 'hand_size_lte' | 'chain_lte' | 'oblivion_lte' | 'radiance_lte' | 'cards_played_gte' | 'seraphim_count_lte' | 'trail_lte' | 'strain_gte';
-  readonly value: number;
-  readonly description: string;
-}
-
-export interface CherubimDefinition {
-  readonly definitionId: string;
-  readonly type: 'Cherubim';
-  readonly rarity: CardRarity;
-  readonly name: string;
-  readonly description: string;
-  readonly artKey: string;
-  readonly effects: CherubimPassiveEffect[];
-  readonly onPlayEffects: CardEffect[];
-  readonly maxDurability?: number;
-  readonly discardCondition?: CherubimDiscardCondition;
-}
-
-export interface CherubimInstance {
-  instanceId: string;
-  definitionId: string;
-  readonly type: 'Cherubim';
-  readonly rarity: CardRarity;
-  readonly finish: CardFinish;
-  faceState?: CardFaceState;
-  chromaticCounters?: number;
-  chromaticSources?: string[];
-  burnTurnsRemaining?: number;
-  isEcho?: boolean;
-  readonly level: 1;
-  backSlot: 0 | 1 | 2 | 3 | null;
-  durability?: number;
-  readonly maxDurability?: number;
-}
-
-export interface OphanimDefinition {
-  readonly definitionId: string;
-  readonly type: 'Ophanim';
-  readonly rarity: CardRarity;
-  readonly name: string;
-  readonly description: string;
-  readonly artKey: string;
-  readonly effects: CardEffect[];
-}
-
-export interface OphanimInstance {
-  readonly instanceId: string;
-  readonly definitionId: string;
-  readonly type: 'Ophanim';
-  readonly rarity: CardRarity;
-  readonly finish: CardFinish;
-  faceState?: CardFaceState;
-  chromaticCounters?: number;
-  chromaticSources?: string[];
-  burnTurnsRemaining?: number;
-  isEcho?: boolean;
-  level: number;
-}
-
-export type CardDefinition = AngelDefinition | OphanimDefinition | CherubimDefinition | SeraphimDefinition;
-export type DeckCardInstance = OphanimInstance | SeraphimInstance | CherubimInstance;
+export type CardDefinition = LightCardDefinition | DarkCardDefinition | AinSophAurDefinition;
+export type DeckCardInstance = MainDeckBoardInstance | AinSophAurInstance;

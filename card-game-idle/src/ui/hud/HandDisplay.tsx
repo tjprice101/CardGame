@@ -18,7 +18,7 @@ import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { warmTheme } from '@/ui/theme';
-import type { CardFinish, SeraphimDefinition, AngelDefinition } from '@/types/cards';
+import type { CardFinish, AinSophAurDefinition, DarkCardDefinition, LightCardDefinition } from '@/types/cards';
 
 const IDLE_SHOWCASE_SLOTS = 6;
 const IDLE_SHOWCASE_INTERVAL_MS = 2600;
@@ -197,28 +197,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
-function formatAttackCosts(costs: ReadonlyArray<{ type: string; value: number }> | undefined): string {
-  if (!costs || costs.length === 0) return 'none';
-  return costs.map(cost => `${cost.type.replace(/_/g, ' ')} ${cost.value}`).join(', ');
-}
-
-function formatSeraphimSynergyLine(def: SeraphimDefinition): string {
-  const { bonusType, bonusValue } = def.baseStats;
-  switch (bonusType) {
-    case 'cherubim_expire_bonus':
-      return `Synergy: whenever a Cherubim expires, gain +${bonusValue} Oblivion`;
-    case 'cherubim_extra_plays':
-      return `Synergy: Cherubim gain +${bonusValue} durability`;
-    case 'ophanim_bonus':
-      return `Synergy: Ophanim plays gain +${bonusValue} Oblivion`;
-      return `Synergy: +${bonusValue} Heat per card played`;
-    case 'oblivion_per_card':
-      return `Synergy: attack profile scales with card-play Oblivion focus (+${bonusValue})`;
-    default:
-      return `Synergy: ${bonusType.replace(/_/g, ' ')} +${bonusValue}`;
-  }
-}
-
 export default function HandDisplay() {
   useThemeVersion();
   const faceMetrics = getCardFaceMetrics('hand');
@@ -234,7 +212,7 @@ export default function HandDisplay() {
   const showTopPanel = cardArtDisplay === 'both' || cardArtDisplay === 'top-only';
   const showBottomPanel = cardArtDisplay === 'both' || cardArtDisplay === 'bottom-only';
   const artOnlyMode = cardArtDisplay === 'art-only';
-  const { playCard, toggleMulliganCard, summonAngel } = useStore.getState();
+  const { playCard, toggleMulliganCard } = useStore.getState();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -242,8 +220,7 @@ export default function HandDisplay() {
   const [idleShowcaseCards, setIdleShowcaseCards] = useState<IdleShowcaseCard[]>([]);
   const [idleSwapState, setIdleSwapState] = useState<{ slot: number; phase: 'out' | 'in' } | null>(null);
   // Hand <-> Extra Deck view toggle. Driven by the configurable keybind in
-  // App.tsx via the 'hr-toggle-extra-deck' window event. Read-only relocation
-  // — Angels are still summoned through AngelCompartment.
+  // App.tsx via the 'hr-toggle-extra-deck' window event.
   const [handView, setHandView] = useState<'hand' | 'extraDeck'>('hand');
 
   const isMulligan = turn.phase === 'mulligan';
@@ -377,18 +354,17 @@ export default function HandDisplay() {
     if (!isPlaying) setGuideHighlightDefId(null);
   }, [isPlaying]);
 
-  function handleClick(instanceId: string) {
+  function handleClick(instanceId: string, mode: 'place' | 'cast' = 'place') {
     if (isExtraDeckView) {
-      // Summon an Angel from the Extra Deck when conditions are met.
       if (!isPlaying) return;
       const deckCard = viewCards.find(c => c.instanceId === instanceId);
       if (!deckCard) return;
       const def = CardRegistry.get(deckCard.definitionId);
-      if (!def || def.type !== 'Angel') return;
-      if (!CardEffectExecutor.checkPlayable(def, 0, turn, board)) return;
-      summonAngel(deckCard.definitionId, deckCard.finish);
-      setHandView('hand');
-      window.dispatchEvent(new Event('hud-shake-soft'));
+      if (!def || def.type !== 'AinSophAur') return;
+      // Hand off to BoardDisplay's material picker; it owns the back-row selection UI.
+      window.dispatchEvent(new CustomEvent('asa-summon-request', {
+        detail: { definitionId: def.definitionId, required: Math.max(1, def.summonCost.length) },
+      }));
       return;
     }
     if (isMulligan) {
@@ -398,9 +374,11 @@ export default function HandDisplay() {
       const deckCard = hand.find(c => c.instanceId === instanceId);
       const def = deckCard ? CardRegistry.get(deckCard.definitionId) : null;
       if (def && !CardEffectExecutor.checkPlayable(def, hand.length, turn, board)) return;
+      // Dark cards without hand-cast support always place face-down regardless of click mode.
+      const resolvedMode = def && def.type === 'Dark' && !def.allowHandCast ? 'place' : mode;
       setPlayingCardId(instanceId);
       setTimeout(() => {
-        playCard(instanceId);
+        playCard(instanceId, resolvedMode);
         setPlayingCardId(null);
       }, 260);
     }
@@ -419,7 +397,7 @@ export default function HandDisplay() {
           finish: entry.finish,
         }))
       : hand
-          .filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'Angel')
+          .filter(deckCard => CardRegistry.get(deckCard.definitionId)?.type !== 'AinSophAur')
           .map(c => ({ instanceId: c.instanceId, definitionId: c.definitionId, finish: c.finish, faceState: c.faceState }));
   const hasActiveHandCards = viewCards.length > 0;
 
@@ -481,46 +459,37 @@ export default function HandDisplay() {
             <span style={{ color: SET_ACCENT }}>
               {SET_LABEL}
             </span>
-            {hoveredDef.type === 'Angel' && (
+            {hoveredDef.type === 'AinSophAur' && (
               <>
                 <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                  Cost: {(hoveredDef as AngelDefinition).summonCost.map(id => CardRegistry.get(id)?.name ?? id).join(', ')}
-                </span>
-                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                  Attacks: Primary + Exalted (cards-play cooldown)
-                </span>
-
-              </>
-            )}
-            {hoveredDef.type === 'Seraphim' && (
-              <>
-                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                  {formatSeraphimSynergyLine(hoveredDef as SeraphimDefinition)}
+                  Cost: {(hoveredDef as AinSophAurDefinition).summonCost.length} back-row material{(hoveredDef as AinSophAurDefinition).summonCost.length === 1 ? '' : 's'}
                 </span>
                 {(() => {
-                  const attacks = (hoveredDef as SeraphimDefinition).attacks;
-                  if (!attacks) {
-                    return (
-                      <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                        Attacks: Unsynergized + Synergized (Angel required)
-                      </span>
-                    );
-                  }
+                  const bridge = (hoveredDef as AinSophAurDefinition).bridgeAttack;
+                  if (!bridge) return null;
                   return (
-                    <>
-                      <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                        Unsynergized - {attacks.unsynergized.name} | Oblivion {attacks.unsynergized.baseOblivion} | Cooldown {attacks.unsynergized.cooldownCards} cards
-                      </span>
-                      <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                        Synergized - {attacks.synergized.name} | Oblivion {attacks.synergized.baseOblivion} | Cooldown {attacks.synergized.cooldownCards} cards
-                      </span>
-                      <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                        Requires Angel: {attacks.synergized.requiresAngelOnBoard ? 'Yes' : 'No'} | Cost: {formatAttackCosts(attacks.synergized.costs)}
-                      </span>
-                    </>
+                    <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                      {bridge.name} | Oblivion {bridge.baseOblivion} | Cooldown {bridge.cooldownCards} cards
+                    </span>
                   );
                 })()}
               </>
+            )}
+            {hoveredDef.type === 'Light' && (
+              <>
+                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                  Ain Attack - Oblivion {(hoveredDef as LightCardDefinition).ainAttack.baseOblivion} | Cooldown {(hoveredDef as LightCardDefinition).ainAttack.cooldownCards} cards
+                </span>
+                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                  Soph Attack - Oblivion {(hoveredDef as LightCardDefinition).sophAttack.baseOblivion} | Cooldown {(hoveredDef as LightCardDefinition).sophAttack.cooldownCards} cards
+                </span>
+              </>
+            )}
+            {hoveredDef.type === 'Dark' && (
+              <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
+                Utility · after use: {(hoveredDef as DarkCardDefinition).postActivationFate}
+                {(hoveredDef as DarkCardDefinition).allowHandCast ? ' · can cast from hand' : ''}
+              </span>
             )}
           </div>
         </div>
@@ -664,7 +633,7 @@ export default function HandDisplay() {
           const isHovered = hoveredId === deckCard.instanceId;
           const isAnimatingOut = !isExtraDeckView && playingCardId === deckCard.instanceId;
           const isPlayable = isExtraDeckView
-            ? (isPlaying && !!def && def.type === 'Angel' && CardEffectExecutor.checkPlayable(def, 0, turn, board))
+            ? (isPlaying && !!def && def.type === 'AinSophAur' && CardEffectExecutor.checkPlayable(def, 0, turn, board))
             : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board));
           const previewText = def ? getCardPreviewText(def, 2) : 'Card data unavailable';
           const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);
@@ -674,7 +643,7 @@ export default function HandDisplay() {
           // All Neutrality cards get a silver shimmer
           const shimmerColor = 'linear-gradient(90deg, transparent, rgba(200,210,255,0.09), transparent)';
 
-          const isDraggable = !isExtraDeckView && isPlaying && isPlayable && (def?.type === 'Seraphim' || def?.type === 'Ophanim' || def?.type === 'Cherubim');
+          const isDraggable = !isExtraDeckView && isPlaying && isPlayable && (def?.type === 'Light' || def?.type === 'Dark');
           const isDragging = !isExtraDeckView && draggingId === deckCard.instanceId;
           const isGuideHighlighted = isPlaying && !isExtraDeckView && guideHighlightDefId === deckCard.definitionId;
 
@@ -704,12 +673,16 @@ export default function HandDisplay() {
                   borderColor: artOnlyMode ? 'rgba(255,255,255,0.8)' : 'rgba(180,220,255,0.7)',
                 } : {}),
               }}
-              onClick={() => handleClick(deckCard.instanceId)}
+              onClick={() => handleClick(deckCard.instanceId, 'cast')}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                handleClick(deckCard.instanceId, 'place');
+              }}
               onMouseEnter={() => setHoveredId(deckCard.instanceId)}
               onMouseLeave={() => setHoveredId(null)}
               onDragStart={(e) => {
                 if (!isDraggable || !def) return;
-                const mimeType = def.type === 'Seraphim'
+                const mimeType = def.type === 'Light'
                   ? 'application/x-seraphim-card'
                   : 'application/x-cherubim-card';
                 e.dataTransfer.setData(mimeType, deckCard.instanceId);
@@ -757,6 +730,18 @@ export default function HandDisplay() {
                 <div style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, color: warmTheme.danger }}>?</div>
               )}
 
+              {isHovered && !isExtraDeckView && isPlaying && def?.type === 'Dark' && def.allowHandCast && (
+                <div style={{
+                  position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+                  marginBottom: 6, whiteSpace: 'nowrap', fontSize: 10, fontFamily: 'Georgia, serif',
+                  background: 'rgba(10,8,6,0.92)', color: 'rgba(240,232,214,0.92)',
+                  border: `1px solid ${warmTheme.border}`, borderRadius: 6, padding: '4px 8px',
+                  pointerEvents: 'none', zIndex: 5,
+                }}>
+                  Left-click: cast now · Right-click: place face-down
+                </div>
+              )}
+
               {/* Shimmer sweep on hover */}
               {isHovered && !selected && !isAnimatingOut && isPlayable && (
                 <div style={{
@@ -778,3 +763,4 @@ export default function HandDisplay() {
     </div>
   );
 }
+

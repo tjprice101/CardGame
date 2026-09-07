@@ -207,7 +207,7 @@ export default function HolofoilWorkshop() {
   }, [collection, holoCollection, registryCards]);
 
   const rarityFilters = useMemo(
-    () => ['All', ...Array.from(new Set(cards.map(card => card.type === 'Angel' ? 'Angel' : card.rarity)))],
+    () => ['All', ...Array.from(new Set(cards.map(card => card.type === 'AinSophAur' ? 'Ain Soph Aur' : card.rarity)))],
     [cards],
   );
 
@@ -222,7 +222,7 @@ export default function HolofoilWorkshop() {
       : cards;
     const byRarity = activeRarity === 'All'
       ? byElement
-      : byElement.filter(card => (card.type === 'Angel' ? 'Angel' : card.rarity) === activeRarity);
+      : byElement.filter(card => (card.type === 'AinSophAur' ? 'Ain Soph Aur' : card.rarity) === activeRarity);
     const byAffordable = affordableOnly
       ? byRarity.filter(card => shards >= (getHolofoilConversionCost(card, holoCollection) ?? Number.MAX_SAFE_INTEGER))
       : byRarity;

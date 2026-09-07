@@ -83,21 +83,21 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
   {
     id: 'neutralizing-the-void',
     title: 'Neutralizing the Void',
-    hintText: 'Where the Eternal Vigil lies, cast him to his maker as fast as you can.',
+    hintText: 'Where The Hollow Queen sits enthroned, cast her to her maker as fast as you can.',
     steps: [
       {
         title: 'Acquire the Enigma',
-        description: 'Clear the Eternal Vigil boss fight with at least 1 minute and 30 seconds remaining on the clock.',
+        description: 'Clear The Hollow Queen boss fight with at least 1 minute and 30 seconds remaining on the clock.',
         kind: 'boss_victory_timed',
         amount: 90,
-        targetDefinitionId: 'boss-immortal-warden',
+        targetDefinitionId: 'boss-hollow-king',
       },
       {
         title: 'Activate and Clear Eternal Vigil \u00d73 HP',
-        description: 'Defeat the Eternal Vigil boss fight at \u00d73 HP scaling.',
+        description: 'Defeat The Hollow Queen boss fight at \u00d73 HP scaling.',
         kind: 'boss_victory_scaled',
         amount: 3,
-        targetDefinitionId: 'boss-immortal-warden',
+        targetDefinitionId: 'boss-hollow-king',
       },
       {
         title: 'Sacrifice 2,500 Aberrated Shards',
@@ -155,8 +155,7 @@ export function isNeutralMysteryAcquired(board: BoardState): boolean {
     if (!slot) return false;
     const def = CardRegistry.get(slot.definitionId);
     if (!def) return false;
-    if (def.definitionId !== definitionId) return false;
-    return slot.type === 'Angel' ? true : slot.type === 'Seraphim' ? slot.isActive : false;
+    return def.definitionId === definitionId;
   }));
 }
 

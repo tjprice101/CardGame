@@ -4,8 +4,8 @@
  *
  * Four tabs:
  *   Overview  – live board stats (earned this turn, active bonuses)
- *   Attacks   – Seraphim / Angel attack breakdown
- *   Bonuses   – Active bonus sources and Cherubim passives
+ *   Attacks   – Light Ain/Soph and Ain Soph Aur Bridge breakdown
+ *   Bonuses   – Triune scaling sources and charge/flip economy
  *   Tips      – Prioritised strategy tips
  */
 
@@ -21,7 +21,12 @@ import {
 import { CardRegistry } from '@/cards/CardRegistry';
 import { formatNumber } from '@/utils/bignum';
 import { uiTypography } from '@/ui/theme';
-import type { SeraphimDefinition, AngelDefinition, SeraphimInstance, AngelInstance } from '@/types/cards';
+import type {
+  AinSophAurDefinition,
+  AinSophAurInstance,
+  LightCardDefinition,
+  MainDeckBoardInstance,
+} from '@/types/cards';
 
 // ─── constants ───────────────────────────────────────────────────────────────
 
@@ -198,23 +203,18 @@ function SectionTitle({ label, accent }: { label: string; accent: string }) {
 
 // ─── attack card (live board data) ───────────────────────────────────────────
 
-function SeraphimAttackRow({ instance, def }: {
-  instance: SeraphimInstance; def: SeraphimDefinition;
+function LightAttackRow({ instance, def }: {
+  instance: MainDeckBoardInstance; def: LightCardDefinition;
 }) {
-  const attacks = def.attacks;
-  if (!attacks) return null;
-
-  const unsyn = attacks.unsynergized;
-  const syn   = attacks.synergized;
-  const unsyncedCd = instance.attackCooldowns?.[unsyn.id] ?? 0;
-  const syncedCd   = instance.attackCooldowns?.[syn.id]  ?? 0;
+  const ainCd = instance.attackCooldowns?.[def.ainAttack.id] ?? 0;
+  const sophCd = instance.attackCooldowns?.[def.sophAttack.id] ?? 0;
+  const isActive = instance.side === 'ain' && instance.faceState === 'front';
 
   return (
     <div style={{
       borderRadius: 14, border: `1px solid ${C.blue.br}`,
       background: C.blue.bg, overflow: 'hidden',
     }}>
-      {/* Header */}
       <div style={{
         padding: '10px 14px', borderBottom: `1px solid ${C.dimLine}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -222,15 +222,14 @@ function SeraphimAttackRow({ instance, def }: {
         <div>
           <div style={{ fontSize: 12, fontWeight: 700, color: C.blue.fg, fontFamily: DF }}>{def.name}</div>
           <div style={{ fontSize: 10, color: 'rgba(244,244,248,0.4)', fontFamily: BF, letterSpacing: 0.5 }}>
-            {instance.isActive ? '✦ Synergy Active' : '○ Synergy Offline'}
+            {isActive ? '✦ Ain side — attacks online' : `○ Soph side — charge ${instance.limitlessCharge ?? 0}/5`}
           </div>
         </div>
       </div>
-      {/* Attacks */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
         {[
-          { label: 'Unsynergized', base: unsyn.baseOblivion, cd: unsyncedCd, ready: unsyncedCd <= 0 },
-          { label: 'Synergized',   base: syn.baseOblivion,   cd: syncedCd,   ready: syncedCd <= 0 && instance.isActive },
+          { label: 'Ain Attack', base: def.ainAttack.baseOblivion, cd: ainCd, ready: isActive && ainCd <= 0 },
+          { label: 'Soph Attack', base: def.sophAttack.baseOblivion, cd: sophCd, ready: isActive && sophCd <= 0 },
         ].map((a, i) => (
           <div key={a.label} style={{
             padding: '10px 14px',
@@ -241,7 +240,7 @@ function SeraphimAttackRow({ instance, def }: {
               {formatNumber(a.base)}
             </div>
             <div style={{ fontSize: 9, color: a.ready ? C.green.fg : 'rgba(244,244,248,0.35)', marginTop: 4, fontFamily: BF }}>
-              {a.ready ? '● Ready' : `Cooldown: ${a.cd} cards`}
+              {!isActive ? 'Flip to Ain first' : a.ready ? '● Ready' : `Cooldown: ${a.cd} cards`}
             </div>
           </div>
         ))}
@@ -250,14 +249,11 @@ function SeraphimAttackRow({ instance, def }: {
   );
 }
 
-function AngelAttackRow({ instance, def }: { instance: AngelInstance; def: AngelDefinition }) {
-  const attacks = def.attacks;
-  if (!attacks) return null;
-
-  const primary = attacks.primary;
-  const exalted = attacks.exalted;
-  const primaryCd = instance.attackCooldowns?.[primary.id] ?? 0;
-  const exaltedCd = instance.attackCooldowns?.[exalted.id] ?? 0;
+function AsaBridgeRow({ instance, def }: { instance: AinSophAurInstance; def: AinSophAurDefinition }) {
+  const bridge = def.bridgeAttack;
+  if (!bridge) return null;
+  const bridgeCd = instance.attackCooldowns?.[bridge.id] ?? 0;
+  const ready = bridgeCd <= 0;
 
   return (
     <div style={{
@@ -270,34 +266,24 @@ function AngelAttackRow({ instance, def }: { instance: AngelInstance; def: Angel
       }}>
         <div>
           <div style={{ fontSize: 12, fontWeight: 700, color: C.gold.fg, fontFamily: DF }}>{def.name}</div>
-          <div style={{ fontSize: 10, color: 'rgba(244,244,248,0.4)', fontFamily: BF }}>Angel · {def.rarity}</div>
+          <div style={{ fontSize: 10, color: 'rgba(244,244,248,0.4)', fontFamily: BF }}>Ain Soph Aur · {def.rarity}</div>
         </div>
         <div style={{
           fontSize: 9, padding: '3px 8px', borderRadius: 999,
           background: `${C.gold.fg}1a`, border: `1px solid ${C.gold.br}`,
           color: C.gold.fg, letterSpacing: 0.8, fontFamily: BF,
         }}>
-          Exalted finisher
+          Bridge the Light
         </div>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-        {[
-          { label: 'Primary',  base: primary.baseOblivion, cd: primaryCd, ready: primaryCd <= 0 },
-          { label: 'Exalted',  base: exalted.baseOblivion, cd: exaltedCd, ready: exaltedCd <= 0 },
-        ].map((a, i) => (
-          <div key={a.label} style={{
-            padding: '10px 14px',
-            borderLeft: i === 1 ? `1px solid ${C.dimLine}` : undefined,
-          }}>
-            <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>{a.label}</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: a.ready ? C.gold.fg : 'rgba(244,244,248,0.35)', fontFamily: DF }}>
-              {formatNumber(a.base)}
-            </div>
-            <div style={{ fontSize: 9, color: a.ready ? C.green.fg : 'rgba(244,244,248,0.35)', marginTop: 6, fontFamily: BF }}>
-              {a.ready ? '● Ready' : `Cooldown: ${a.cd} cards`}
-            </div>
-          </div>
-        ))}
+      <div style={{ padding: '10px 14px' }}>
+        <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Base Oblivion</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: ready ? C.gold.fg : 'rgba(244,244,248,0.35)', fontFamily: DF }}>
+          {formatNumber(bridge.baseOblivion)}
+        </div>
+        <div style={{ fontSize: 9, color: ready ? C.green.fg : 'rgba(244,244,248,0.35)', marginTop: 6, fontFamily: BF }}>
+          {ready ? '● Ready' : `Cooldown: ${bridgeCd} cards`}
+        </div>
       </div>
     </div>
   );
@@ -324,7 +310,7 @@ function OverviewTab() {
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' as const }}>
         <StatPill label="Total Oblivion" value={oblivion} accent={C.gold.fg} glow />
         <StatPill label="Earned This Turn" value={turn.oblivionEarnedThisTurn ?? 0} accent={C.blue.fg} />
-        <StatPill label="Per-Card Bonus" value={`+${formatNumber(stats.oblivionPerCardBonus)}`} accent={C.green.fg} />
+        <StatPill label="Limitless Light" value={`${formatNumber(turn.limitlessLightStacks)} Stacks`} accent={C.green.fg} />
         <StatPill label="Board Slots" value={`${totalFilled}/9 Filled`} accent={C.green.fg} />
       </div>
 
@@ -375,12 +361,12 @@ function OverviewTab() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{
               padding: '12px 14px', borderRadius: 14, flex: 1,
-              border: `1px solid ${stats.activeSynergies > 0 ? C.blue.br : C.dim.br}`,
-              background: stats.activeSynergies > 0 ? C.blue.bg : C.dim.bg,
+              border: `1px solid ${stats.asaSummoned > 0 ? C.blue.br : C.dim.br}`,
+              background: stats.asaSummoned > 0 ? C.blue.bg : C.dim.bg,
             }}>
-              <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Active Synergies</div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: stats.activeSynergies > 0 ? C.blue.fg : 'rgba(244,244,248,0.3)', fontFamily: DF }}>
-                {stats.activeSynergies}
+              <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Ain Soph Aur Summoned</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: stats.asaSummoned > 0 ? C.blue.fg : 'rgba(244,244,248,0.3)', fontFamily: DF }}>
+                {stats.asaSummoned}
               </div>
             </div>
             <div style={{
@@ -402,12 +388,12 @@ function OverviewTab() {
         <SectionTitle label="All Oblivion Sources" accent={C.gold.fg} />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
           {[
-            { icon: '🃏', label: 'Card Plays',         desc: 'Every card played generates Oblivion, amplified by Seraphim synergies.',     accent: C.gold   },
-            { icon: '⛳',  label: 'Seraphim Attacks',  desc: 'Cooldown-gated attacks — Unsynergized always available, Synergized requires an Angel.',             accent: C.blue   },
-            { icon: '✦',  label: 'Angel Attacks',     desc: 'Angel attacks provide high-impact burst windows, especially on Exalted cooldowns.',                   accent: C.gold   },
-            { icon: '⊞',  label: 'Board Occupancy',   desc: 'Track frontline and backline occupancy while building your turn engine.',      accent: C.green  },
-            { icon: '◈',  label: 'Cherubim Passives', desc: 'Cherubim in the back row grant ongoing per-card or on-expire bonuses.',       accent: C.purple },
-            { icon: '∞',  label: 'Set Mechanics',     desc: 'Each set has unique stacks, cascades, or cashouts that multiply payouts.',    accent: C.red    },
+            { icon: '⚔',  label: 'Ain Attacks',       desc: 'Cooldown-gated attacks on flipped Light cards. Read your stacks without spending them.', accent: C.blue   },
+            { icon: '✾',  label: 'Soph Attacks',      desc: 'Higher base payout, consumes Limitless Light Stacks measured before the cost is paid.',  accent: C.blue   },
+            { icon: '✦',  label: 'Bridge the Light',  desc: 'Ain Soph Aur front-row attacks — the highest base payouts available.',                    accent: C.gold   },
+            { icon: '☠',  label: 'Sacrifice',         desc: 'Sacrifice a charged Soph card to convert its charge straight into Oblivion.',             accent: C.red    },
+            { icon: '◈',  label: 'Collection Power',  desc: 'A permanent share of every attack’s scaling, earned by playing and mastering cards.',     accent: C.purple },
+            { icon: '∞',  label: 'Limitless Light',   desc: 'Flip charged cards to bank stacks, then spend or scale off them the same turn.',          accent: C.green  },
           ].map(({ icon, label, desc, accent }) => (
             <div key={label} style={{
               display: 'flex', gap: 10, alignItems: 'flex-start',
@@ -445,48 +431,55 @@ function OverviewTab() {
 function AttacksTab() {
   const board = useStore(selectBoard);
 
-  const frontUnits = board.frontSlots.filter(Boolean) as (SeraphimInstance | AngelInstance)[];
-  const seraphims  = frontUnits.filter((u): u is SeraphimInstance => u.type === 'Seraphim');
-  const angels     = frontUnits.filter((u): u is AngelInstance    => u.type === 'Angel');
+  const lightUnits = board.backSlots.filter(
+    (u): u is MainDeckBoardInstance => !!u && u.type === 'Light',
+  );
+  const asaUnits = board.frontSlots.filter(
+    (u): u is AinSophAurInstance => !!u && u.type === 'AinSophAur',
+  );
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
-      {/* Seraphim mechanics explanation */}
+      {/* Light card attacks */}
       <div>
-        <SectionTitle label="Seraphim Attacks" accent={C.blue.fg} />
+        <SectionTitle label="Light Card Attacks" accent={C.blue.fg} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <SourceCard
             icon="⚔"
-            title="Unsynergized Strike"
-            subtitle="Always available once cooldown expires. Deals base attack Oblivion as soon as the cooldown clears."
+            title="Ain Attack"
+            subtitle="Available on its own cooldown once the card is flipped to its Ain side. Reads your Limitless Light Stacks without consuming any."
             accent={C.blue}
-            tags={['cooldown-gated', 'always available']}
+            tags={['cooldown-gated', 'spends nothing']}
           />
           <SourceCard
             icon="✾"
-            title="Synergized Strike"
-            subtitle="Requires an Angel on the front row. Higher base than Unsynergized — typically 2–2.5× the base."
+            title="Soph Attack"
+            subtitle="Higher base payout, but consumes Limitless Light Stacks. Stacks are measured before the cost is paid, so spending never shrinks this attack's own payout."
             accent={C.blue}
-            tags={['requires angel', 'higher base']}
+            tags={['consumes stacks', 'higher base']}
+          />
+          <SourceCard
+            icon="◈"
+            title="Triune Scaling"
+            subtitle="Every attack's bonus is split evenly across Limitless Light Stacks, summoned Ain Soph Aur, and Collection Power — so a deep collection raises your floor even on a thin board."
+            accent={C.purple}
+            tags={['stacks', 'ain soph aur', 'collection power']}
           />
 
-          {/* Patience formula card removed */}
-
-          {/* Live Seraphim board */}
-          {seraphims.length > 0 ? (
+          {lightUnits.length > 0 ? (
             <>
               <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.35)', fontFamily: BF, marginTop: 4 }}>
-                Your current Seraphim
+                Your current Light cards
               </div>
-              {seraphims.map(ser => {
-                const def = CardRegistry.get(ser.definitionId) as SeraphimDefinition | undefined;
-                if (!def || def.type !== 'Seraphim') return null;
+              {lightUnits.map(unit => {
+                const def = CardRegistry.get(unit.definitionId);
+                if (!def || def.type !== 'Light') return null;
                 return (
-                  <SeraphimAttackRow
-                    key={ser.instanceId}
-                    instance={ser}
-                    def={def}
+                  <LightAttackRow
+                    key={unit.instanceId}
+                    instance={unit}
+                    def={def as LightCardDefinition}
                   />
                 );
               })}
@@ -497,7 +490,7 @@ function AttacksTab() {
               border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)',
               fontSize: 12, color: 'rgba(244,244,248,0.3)', fontFamily: BF, fontStyle: 'italic',
             }}>
-              No Seraphim on the board — drag a Seraphim card onto a front slot to see live attack data.
+              No Light cards on the board — play one into a back slot to see live attack data.
             </div>
           )}
         </div>
@@ -505,35 +498,35 @@ function AttacksTab() {
 
       <div style={{ height: 1, background: C.dimLine }} />
 
-      {/* Angel mechanics */}
+      {/* Ain Soph Aur */}
       <div>
-        <SectionTitle label="Angel Attacks" accent={C.gold.fg} />
+        <SectionTitle label="Bridge the Light" accent={C.gold.fg} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <SourceCard
             icon="✦"
-            title="Primary Attack"
-            subtitle="Moderate-cost hit. Available once the Angel's cooldown expires. Solid sustained damage option."
+            title="Ain Soph Aur Bridge"
+            subtitle="Each summoned Ain Soph Aur gains a unique Bridge the Light attack on its own cooldown. Highest base payouts in the game."
             accent={C.gold}
-            tags={['moderate cooldown', 'consistent damage']}
+            tags={['front row only', 'highest base']}
           />
           <SourceCard
             icon="◆"
-            title="Exalted Attack"
-            subtitle="Angels deal higher-burst exalted hits with longer cooldowns. Save exalted attacks for your strongest setup windows."
+            title="Summon Pressure"
+            subtitle="Every Ain Soph Aur you hold on the front row also raises the Soph Attack and Bridge payouts of everything else on your board."
             accent={C.gold}
-            tags={['higher burst', 'longer cooldown', 'high impact']}
+            tags={['board-wide scaling', 'up to 4']}
           />
 
-          {angels.length > 0 ? (
+          {asaUnits.length > 0 ? (
             <>
               <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.35)', fontFamily: BF, marginTop: 4 }}>
-                Your current Angels
+                Your current Ain Soph Aur
               </div>
-              {angels.map(ang => {
-                const def = CardRegistry.get(ang.definitionId) as AngelDefinition | undefined;
-                if (!def || def.type !== 'Angel') return null;
+              {asaUnits.map(unit => {
+                const def = CardRegistry.get(unit.definitionId);
+                if (!def || def.type !== 'AinSophAur') return null;
                 return (
-                  <AngelAttackRow key={ang.instanceId} instance={ang} def={def} />
+                  <AsaBridgeRow key={unit.instanceId} instance={unit} def={def as AinSophAurDefinition} />
                 );
               })}
             </>
@@ -543,7 +536,7 @@ function AttacksTab() {
               border: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)',
               fontSize: 12, color: 'rgba(244,244,248,0.3)', fontFamily: BF, fontStyle: 'italic',
             }}>
-              No Angels on the board — summon an Angel from your Extra Deck (if unlocked) to see live attack data.
+              No Ain Soph Aur summoned — sacrifice back-row cards from the Extra Deck view to summon one.
             </div>
           )}
         </div>
@@ -568,105 +561,73 @@ function AttacksTab() {
 // ─── bonuses tab ─────────────────────────────────────────────────────────────
 
 function BonusesTab() {
-  const stats  = useStore(selectComputedStats);
-  const board  = useStore(selectBoard);
+  const stats = useStore(selectComputedStats);
+  const board = useStore(selectBoard);
+  const turn = useStore(selectTurn);
 
-  const cherubimCount  = board.backSlots.filter(Boolean).length;
+  const asaCount = board.frontSlots.filter(u => u?.type === 'AinSophAur').length;
+  const chargedCount = board.backSlots.filter(
+    u => !!u && (u.limitlessCharge ?? 0) >= 5,
+  ).length;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
       <div>
-        <SectionTitle label="Board Bonuses" accent={C.green.fg} />
+        <SectionTitle label="Triune Attack Scaling" accent={C.green.fg} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <SourceCard
-            icon="◎"
-            title={`Seraphim Synergy  (+${formatNumber(stats.oblivionPerCardBonus)} / card)`}
-            subtitle="Active Seraphim whose element matches your element requirement contribute per-card Oblivion bonuses. The total stacks across all active Seraphim."
-            value={`+${formatNumber(stats.oblivionPerCardBonus)}/card`}
-            accent={stats.oblivionPerCardBonus > 0 ? C.blue : C.dim}
-            tags={['per card play', 'stacks with board', 'element-gated']}
+            icon="∞"
+            title={`Limitless Light Stacks  (${turn.limitlessLightStacks} banked)`}
+            subtitle="Flip a charged card to bank its charge as stacks. One third of every attack's scaling bonus comes from your stack count, measured before any cost is paid."
+            value={`${turn.limitlessLightStacks}`}
+            accent={turn.limitlessLightStacks > 0 ? C.green : C.dim}
+            tags={['per turn', 'resets at turn end']}
           />
           <SourceCard
-            icon="★"
-            title="Ophanim Bonus"
-            subtitle={`Ophanim plays award bonus Oblivion when a synergised Seraphim with ophanim_bonus is active. Bonus: +${formatNumber(stats.ophanimOblivionBonus)} per Ophanim play.`}
-            value={stats.ophanimOblivionBonus > 0 ? `+${formatNumber(stats.ophanimOblivionBonus)}/Ophanim` : '—'}
-            accent={stats.ophanimOblivionBonus > 0 ? C.gold : C.dim}
+            icon="✦"
+            title={`Summoned Ain Soph Aur  (${asaCount} / 4)`}
+            subtitle="Each Ain Soph Aur held on the front row contributes a share of every Soph Attack and Bridge payout across your whole board."
+            value={`${asaCount} / 4`}
+            accent={asaCount > 0 ? C.gold : C.dim}
+            tags={['front row', 'board-wide']}
           />
-        </div>
-      </div>
-
-      <div>
-        <SectionTitle label="Global Multiplier" accent={C.purple.fg} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <SourceCard
-            icon="⟳"
-            title={`Global Oblivion Multiplier  ${stats.globalOblivionMult > 0 ? `+${Math.round(stats.globalOblivionMult * 100)}%` : 'Inactive'}`}
-            subtitle="Certain Seraphim bonusType effects (power_amplifier, score_per_second) contribute to the global multiplier applied after all other Oblivion calculation. Stacks additively."
-            value={stats.globalOblivionMult > 0 ? `+${Math.round(stats.globalOblivionMult * 100)}%` : '—'}
-            accent={stats.globalOblivionMult > 0 ? C.purple : C.dim}
-            tags={['applied last', 'additive stacking', 'power_amplifier type']}
-          />
-        </div>
-      </div>
-
-      <div>
-        <SectionTitle label="Cherubim Passives" accent={C.purple.fg} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <SourceCard
             icon="◈"
-            title={`Back-row Cherubim  (${cherubimCount} / 4 active)`}
-            subtitle="Cherubim cards placed in the back row provide persistent passive effects every time you play a card. Effects range from Oblivion-per-card to Ember generation and adjacency bonuses."
-            accent={cherubimCount > 0 ? C.purple : C.dim}
-            tags={['per card play', 'passive', 'back row only']}
-          />
-          <SourceCard
-            icon="💧"
-            title="cherubim_oblivion_per_card"
-            subtitle="Directly adds flat Oblivion to every card play. One of the most reliable passive bonuses — look for Cherubim with this effect in your deck."
-            accent={C.purple}
-          />
-          <SourceCard
-            icon="⚡"
-            title="cherubim_expire_bonus"
-            subtitle="Grants an Oblivion burst when a Cherubim's durability reaches zero. Best used with decks that cycle Cherubim rapidly."
-            accent={C.purple}
-          />
-          <SourceCard
-            icon="◇"
-            title="cherubim_adjacent_seraphim_bonus"
-            subtitle="Grants a bonus to Seraphim that are in adjacent front slots. Position your Cherubim to maximise adjacency for your strongest Seraphim."
-            accent={C.purple}
-            tags={['positional', 'seraphim-linked']}
+            title={`Collection Power  ×${(1 + stats.globalOblivionMult).toFixed(2)}`}
+            subtitle="Earned permanently by playing and mastering cards. Contributes the final third of every attack's scaling, so it raises your damage floor on every turn regardless of board state."
+            value={`×${(1 + stats.globalOblivionMult).toFixed(2)}`}
+            accent={stats.globalOblivionMult > 0 ? C.purple : C.dim}
+            tags={['permanent', 'cross-turn', 'applied last']}
           />
         </div>
       </div>
 
       <div>
-        <SectionTitle label="Set Mechanics (Cashouts)" accent={C.red.fg} />
+        <SectionTitle label="Charge & Flip" accent={C.blue.fg} />
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[
-            { set: 'Eternal Seas',    mech: 'Undertow Release',            desc: 'Base cards spend Undertow for same-turn burst, skim Foam into manual draw, and use Deepwake as the shared higher-rarity amplification overlay.', accent: C.blue   },
-            { set: 'Blazing Garden',  mech: 'Wild Pollen Seed',            desc: 'Eternal cards generate Wild Pollen, then seed effects convert it into direct Oblivion and Bloom-scaled score. Build Burn/Grove first, then cash out.', accent: C.red    },
-            { set: 'Glass Absolute',  mech: 'Refraction Charge Conversion', desc: 'Build fragments first, then spend Refraction Charge for stronger Eternal/Infinite burst windows with queue or ledger riders.', accent: C.blue   },
-            { set: 'Eternal / Inf.',  mech: 'Eternal Stack Cashout',       desc: "Each set's primary stack (e.g., Furnace Heat) converts to Oblivion on cashout cards.", accent: C.gold   },
-          ].map(({ set, mech, desc, accent }) => (
-            <div key={set} style={{
-              display: 'flex', gap: 12, alignItems: 'flex-start',
-              padding: '12px 14px', borderRadius: 12,
-              border: `1px solid ${accent.br}`, background: accent.bg,
-            }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: accent.fg, fontFamily: DF }}>{set}</span>
-                  <span style={{ fontSize: 10, color: 'rgba(244,244,248,0.4)', fontFamily: BF }}>·</span>
-                  <span style={{ fontSize: 10, color: 'rgba(244,244,248,0.55)', fontFamily: BF }}>{mech}</span>
-                </div>
-                <div style={{ fontSize: 11, color: 'rgba(244,244,248,0.55)', lineHeight: 1.5, fontFamily: BF }}>{desc}</div>
-              </div>
-            </div>
-          ))}
+          <SourceCard
+            icon="◇"
+            title={`Cards Ready to Flip  (${chargedCount})`}
+            subtitle="Every card you play from hand adds +1 Limitless Charge to each face-down card on your board. At 5 charge a card can be flipped to its Ain side or sacrificed outright."
+            value={`${chargedCount}`}
+            accent={chargedCount > 0 ? C.blue : C.dim}
+            tags={['+1 per hand play', 'threshold 5']}
+          />
+          <SourceCard
+            icon="☠"
+            title="Sacrifice for Oblivion"
+            subtitle="Instead of flipping, discard a charged card to convert its stored charge straight into Oblivion at that card's own sacrifice rate. Best when you cannot use another attack this turn."
+            accent={C.red}
+            tags={['instant payout', 'no cooldown']}
+          />
+          <SourceCard
+            icon="⟳"
+            title="Turn End Wipe"
+            subtitle="At turn end the whole board, your hand, all charges, and all Limitless Light Stacks reset. Only Oblivion and your collection carry across runs."
+            accent={C.dim}
+            tags={['oblivion persists', 'everything else resets']}
+          />
         </div>
       </div>
     </div>
@@ -676,17 +637,20 @@ function BonusesTab() {
 // ─── tips tab ────────────────────────────────────────────────────────────────
 
 function TipsTab() {
-  const stats = useStore(selectComputedStats);
-  useStore(selectBoard);
+  const board = useStore(selectBoard);
+  const turn = useStore(selectTurn);
 
-  const noSynergies   = stats.activeSynergies === 0;
-  const perCardBonus  = stats.oblivionPerCardBonus;
+  const asaCount = board.frontSlots.filter(u => u?.type === 'AinSophAur').length;
+  const readyToFlip = board.backSlots.filter(
+    u => !!u && (u.limitlessCharge ?? 0) >= 5,
+  ).length;
+  const noStacks = turn.limitlessLightStacks === 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
       {/* Priority alerts — contextual */}
-      {noSynergies && (
+      {(readyToFlip > 0 || noStacks) && (
         <div style={{
           padding: '14px 16px', borderRadius: 14,
           border: `1px solid ${C.red.br}`, background: C.red.bg,
@@ -695,9 +659,14 @@ function TipsTab() {
             ⚠ Immediate Opportunities
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {noSynergies && (
+            {readyToFlip > 0 && (
               <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.72)', fontFamily: BF }}>
-                → <strong style={{ color: C.blue.fg }}>No Seraphim synergies active.</strong> Play Seraphim matching your deck's element, or place a Seraphim whose synergyRequirement matches your front-row Angel, to unlock per-card bonuses.
+                → <strong style={{ color: C.blue.fg }}>{readyToFlip} card{readyToFlip === 1 ? '' : 's'} ready to flip.</strong> Flip to bank the charge as Limitless Light Stacks, or sacrifice for immediate Oblivion.
+              </div>
+            )}
+            {noStacks && (
+              <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.72)', fontFamily: BF }}>
+                → <strong style={{ color: C.green.fg }}>No Limitless Light Stacks banked.</strong> Attacks are running on Collection Power alone — flip a charged card to unlock the other two thirds of your scaling.
               </div>
             )}
           </div>
@@ -708,45 +677,45 @@ function TipsTab() {
 
       <TipCard
         rank={1}
-        title="Prioritise Synergy Activation"
-        detail="Prioritise getting active Seraphim/Angel pairings online early, then sequence cards to maximize cooldown-ready attack windows."
+        title="Play Cheap Cards First to Charge the Board"
+        detail="Every card played from hand adds +1 charge to every face-down card at once. Dumping several low-impact cards early charges your whole back row in parallel, rather than one card at a time."
         accent={C.green.fg}
       />
       <TipCard
         rank={2}
-        title="Save Exalted Angel Attacks for Maximum Burst"
-        detail="Exalted hits are your biggest single-attack bursts. Save them for turns where explicit set mechanics and per-card bonuses are already primed."
-        accent={C.gold.fg}
+        title="Bank Stacks Before You Spend Them"
+        detail="Attack scaling reads your stack total before the cost is deducted, so flipping several cards before attacking raises every attack that turn — including the one paying the cost."
+        accent={C.blue.fg}
       />
       <TipCard
         rank={3}
-        title="Activate Seraphim Synergy Before Attacking"
-        detail="Synergized attacks have a far higher base than Unsynergized. Ensure an Angel of the right element is on the board before triggering your Seraphim's main attack. Check the coloured element stripe on each Seraphim card."
-        accent={C.blue.fg}
-      />
-      <TipCard
-        rank={4}
-        title="Match Cherubim to Your Seraphim Layout"
-        detail={`Current per-card bonus: +${formatNumber(perCardBonus)}. Increase it by placing Cherubim with cherubim_oblivion_per_card or cherubim_adjacent_seraphim_bonus adjacent to your strongest active Seraphim.`}
-        accent={C.purple.fg}
-      />
-      <TipCard
-        rank={5}
-        title="Time Your Neutrality Cashouts"
-        detail="Wait for Patience and Equilibrium Sigils to stack before triggering cashouts for maximum payout."
-        accent={C.red.fg}
-      />
-      <TipCard
-        rank={6}
-        title="Cycle Cherubim for Expire Bonuses"
-        detail="Cherubim with cherubim_expire_bonus detonate on death, granting Oblivion bursts. Some decks intentionally let Cherubim expire in sequence detonations — play cards that reduce durability slowly unless you are in the middle of a burst window."
+        title={`Summon Ain Soph Aur Early  (${asaCount} / 4 up)`}
+        detail="Each Ain Soph Aur on the front row raises the payout of every Soph Attack and Bridge on your board, not just its own. Getting them out early compounds across the rest of the turn."
         accent={C.gold.fg}
       />
       <TipCard
-        rank={7}
-        title="Upgrade to Higher-Rarity Attacks"
-        detail="Legendary and Eternal Seraphim have significantly higher base attack values, which amplifies the Patience multiplier. Even a small increase in base Oblivion compounds across every attack and Patience stack."
+        rank={4}
+        title="Sacrifice When You Cannot Attack"
+        detail="If a charged card has no useful attack window left this turn, sacrificing it converts its charge straight into Oblivion with no cooldown. A flip you never cash in is wasted at turn end."
+        accent={C.red.fg}
+      />
+      <TipCard
+        rank={5}
+        title="Use Ain Attacks to Preserve Stacks"
+        detail="Ain Attacks read your stacks without consuming them. Fire every ready Ain Attack before spending stacks on a Soph Attack to squeeze the most out of a single pool."
         accent={C.blue.fg}
+      />
+      <TipCard
+        rank={6}
+        title="Cast Dark Cards From Hand When Tempo Matters"
+        detail="Dark cards with hand-cast resolve immediately without occupying a back slot — useful when your back row is full or you need the utility now rather than five plays from now."
+        accent={C.purple.fg}
+      />
+      <TipCard
+        rank={7}
+        title="Grow Collection Power for a Permanent Floor"
+        detail="Collection Power is one third of every attack's scaling and never resets. Playing and mastering more unique cards raises your baseline payout on every future turn, even before you build a board."
+        accent={C.purple.fg}
       />
     </div>
   );

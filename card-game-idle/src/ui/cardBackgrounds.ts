@@ -144,14 +144,11 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'inf-bgi-vaelmor-umbra-sovereign': 'Vaelmor Umbra Sovereign.png',
   'inf-bgi-midplace-apocalypse': 'Midplace Apocalypse.png',
   'btei-voids-reaping': 'Hollow Queen.png',
-  'btei-eternal-vigil': 'Immortal Warden.png',
   'btei-sovereign-domain': 'Cherubim Sovereign.png',
   'btei-convergence-of-eternity': 'Eternal Seraph.png',
   'btei-temporal-ruin': 'The Time Eater.png',
-  'btei-architects-manifold': 'The Void Architect.png',
   'btei-null-edict': 'Null Sovereign.png',
   'btei-omniscient-fracture': 'Shattered Oracle.png',
-  'btei-colossus-advent': 'Abyssal Colossus.png',
   'btei-axiom-of-oblivion': 'Eternal Null.png',
   'inf-ash-kings-apocalypse': 'Ash Kings Apocalypse.png',
   'tbp-ser-scar-mantle-reclaimer': 'Scar-mantle Reclaimer.png',
@@ -207,6 +204,35 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   // Yrethborn comma dropped: CSS multi-image url() lists can misparse %2C in filenames
   'ga-angel-yrethborn-absolute': 'Yrethborn The Absolute.png',
 };
+
+const NEW_NEUTRALITY_ART: Record<'light' | 'dark' | 'asa', string[]> = {
+  light: [
+    'Null Sentinel.png', 'Null Seraphim.png', 'Null Fortification.png', 'Null Entropy.png', 'Null Sovereign.png',
+    'Void Seraphim.png', 'Void Amplifier.png', 'Void Exchequer.png', 'Balance Seraphim.png', 'Balance Mantle.png',
+    'Aegis of Equilibrium.png', 'Equilibrium Rex.png', 'Equilibrium Ward.png', 'Immortal Warden.png', 'Aegis of Presence.png',
+    'Still Seraphim.png', 'Still Shell.png', 'Prime Judge of Silence.png', 'Event Horizon Arbiter.png', 'Shattered Oracle.png',
+    'Verdant Null, Last Wish Executioner.png', 'Paradox Throne.png', 'The Void Architect.png', 'Abyssal Colossus.png', 'The Beginning and the End.png',
+  ],
+  dark: [
+    'Null Seek.png', 'Seraph Recall.png', 'Neutral Cycle.png', 'Measured Seek.png', 'Void Surge.png',
+    'Still Pulse.png', 'Chaos Recall.png', 'Void Shroud.png', 'Deep Seek.png', 'Grand Seek.png',
+    'Echo Pulse.png', 'Seraph Hunt.png', 'Nullfall.png', 'Neutralistic Flame.png', "Equilibrium's Bane.png",
+    'Null Veil.png', 'Void Shroud.png', 'Balance Mantle.png', 'Equilibrium Ward.png', 'Still Shell.png',
+    'Chaos Recall.png', 'Oblivion Pulse.png', 'Void Amplifier.png', 'Void Exchequer.png', 'Null Convergence.png',
+  ],
+  asa: [
+    'The Null Verdict of Stars.png', 'Starbound Null Archangel.png', 'Paradox Throne.png', 'The Beginning and the End.png',
+    'Prime Judge of Silence.png', 'Event Horizon Arbiter.png', 'Eternal Null.png', 'Hollow Queen.png',
+    'Genesis Throne.png', 'Null Apex.png', 'Entropic Crown.png', 'Eternity Rupture.png',
+  ],
+};
+
+function getNewNeutralityArt(definitionId: string): string | undefined {
+  const match = definitionId.match(/^(light|dark|ain-soph-aur)-neutrality-(\d+)$/);
+  if (!match) return undefined;
+  const kind = match[1] === 'ain-soph-aur' ? 'asa' : match[1] as 'light' | 'dark';
+  return NEW_NEUTRALITY_ART[kind][Number(match[2]) - 1];
+}
 
 const CARD_BACK_ASSET_BY_ELEMENT: Partial<Record<string, { folder: string; file: string }>> = {
   Neutrality: { folder: 'neutrality', file: 'Neutrality Card Backing.png' },
@@ -380,18 +406,20 @@ function getDenseCardFaceCacheKey(
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
 
+  const newCatalogFallback = getNewNeutralityArt(card.definitionId);
+
   if (card.rarity === 'Infinite') {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? newCatalogFallback ?? `${card.name}.png`;
     return `${CARD_BACKGROUND_ROOT}/infinite/${encodeURI(fileName)}`;
   }
 
   const bteiFolder = getBteiFolder(card.definitionId);
   if (bteiFolder) {
-    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? newCatalogFallback ?? `${card.name}.png`;
     return `${CARD_BACKGROUND_ROOT}/${bteiFolder}/${encodeURI(fileName)}`;
   }
 
-  const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+  const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? newCatalogFallback ?? `${card.name}.png`;
   return `${CARD_BACKGROUND_ROOT}/neutrality/${encodeURI(fileName)}`;
 }
 

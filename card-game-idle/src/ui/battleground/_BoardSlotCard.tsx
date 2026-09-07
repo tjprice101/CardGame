@@ -44,7 +44,7 @@ export function FrontSlotCard({ slot }: { slot: FrontSlot }) {
 
   const def = CardRegistry.get(slot.definitionId);
   const elColor = SET_ACCENT;
-  const typeLabel = slot.type === 'Angel' ? 'Angel' : (def?.type ?? slot.type);
+  const typeLabel = slot.type === 'AinSophAur' ? 'Ain Soph Aur' : (def?.type ?? slot.type);
 
   return (
     <div
@@ -142,7 +142,7 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
           textTransform: 'uppercase', textAlign: 'center', marginBottom: 1,
           fontFamily: DISPLAY_FONT, fontWeight: 700,
         }}>
-          {def?.type ?? 'Cherubim'}
+          {def?.type ?? 'Dark'}
         </div>
         <div style={{
           fontSize: FMM.nameSize, fontWeight: 'bold', color: '#2b1a12',

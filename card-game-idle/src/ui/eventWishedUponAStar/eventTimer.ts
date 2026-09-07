@@ -1,5 +1,5 @@
-export const WUAS_EVENT_ENDS_LABEL = 'June 28, 2026 at 8:00 PM EST';
-export const WUAS_EVENT_ENDS_AT_MS = new Date('2026-06-28T20:00:00-05:00').getTime();
+export const WUAS_EVENT_ENDS_LABEL = 'November 1, 2026 at 8:00 PM EST';
+export const WUAS_EVENT_ENDS_AT_MS = new Date('2026-11-01T20:00:00-05:00').getTime();
 
 export interface EventCountdownParts {
   ended: boolean;

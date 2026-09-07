@@ -137,10 +137,9 @@ const VOCAB: Record<Exclude<HighlightCategory, 'element' | 'number'>, string[]> 
     'Proof',
   ],
   cardtype: [
-    'Seraphim',
-    'Cherubim',
-    'Ophanim',
-    'Angel',
+    'Light',
+    'Dark',
+    'Ain Soph Aur',
   ],
 };
 

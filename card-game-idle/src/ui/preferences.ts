@@ -241,17 +241,8 @@ export function t(key: TranslationKey, vars?: Record<string, string | number>): 
 }
 
 export function getDisplayCardTypeLabel(type: string): string {
-  if (type === 'Ophanim') return 'Ophanim';
-  if (type === 'Cherubim') return 'Cherubim';
+  if (type === 'AinSophAur') return 'Ain Soph Aur';
   return type;
-}
-
-export function isDisplayOphanimType(type: string): boolean {
-  return type === 'Ophanim';
-}
-
-export function isDisplayCherubimType(type: string): boolean {
-  return type === 'Cherubim';
 }
 
 export function formatDisplayCardText(text: string): string {

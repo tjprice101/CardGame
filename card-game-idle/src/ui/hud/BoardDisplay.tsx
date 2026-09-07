@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import SetAbilityStrip from '@/ui/hud/SetAbilityStrip';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
-import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectDeck, selectTurn } from '@/state/store';
+import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
   cardFacePalette,
   getAdaptiveDescriptionMetrics,
@@ -16,19 +15,15 @@ import {
 } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
-import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
-import type { DeckCard } from '@/types/game';
+import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import type {
-  AngelDefinition,
-  AngelAttackSet,
-  AngelInstance,
-  CherubimInstance,
-  CherubimDefinition,
-  SeraphimDefinition,
-  SeraphimAttackSet,
-  SeraphimInstance,
+  LightCardDefinition,
+  DarkCardDefinition,
+  AinSophAurDefinition,
+  StackCostDefinition,
+  MainDeckBoardInstance,
 } from '@/types/cards';
 
 const SLOT_W = 118;
@@ -39,211 +34,10 @@ const FRONT_ROW_GAP = 'clamp(12px, 1.4vw, 18px)';
 const BACK_ROW_GAP = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
 const ROW_SEPARATION = 'clamp(14px, 2vh, 24px)';
 const BACK_ROW_STAGGER = `calc(${SLOT_W - CHERUBIM_W / 2}px + (${FRONT_ROW_GAP} / 2))`;
-const ATTACK_PANEL_WIDTH = 'min(900px, 94vw)';
 const FRONT_FACE_METRICS = getCardFaceMetrics('board');
 const CHERUBIM_FACE_METRICS = getCardFaceMetrics('boardMini');
-const ATTACK_CARD_FACE_METRICS = getCardFaceMetrics('compact');
 const DISPLAY_FONT = uiTypography.display;
 const BODY_FONT = uiTypography.body;
-const ATTACK_MODAL_BACKDROP = 'radial-gradient(circle at 14% 12%, rgba(227, 150, 82, 0.22) 0%, rgba(227, 150, 82, 0) 36%), radial-gradient(circle at 86% 22%, rgba(173, 126, 82, 0.18) 0%, rgba(173, 126, 82, 0) 34%), rgba(8, 7, 8, 0.8)';
-const ATTACK_MODAL_PANEL_BG = 'linear-gradient(180deg, rgba(248, 240, 225, 0.98) 0%, rgba(240, 224, 198, 0.96) 100%)';
-const ATTACK_MODAL_PANEL_BORDER = '1px solid rgba(138, 94, 58, 0.42)';
-const ATTACK_MODAL_PANEL_SHADOW = '0 26px 48px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.4)';
-
-function getSeraphimUiAttacks(def: SeraphimDefinition) {
-  if (def.attacks) return scaleSeraphimUiAttackSet(def.attacks, def.rarity);
-
-  const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
-  const bonusLabelByType: Record<string, string> = {
-    oblivion_per_card: 'steady per-card pressure',
-
-    ophanim_bonus: 'Ophanim-linked burst conversion',
-    cherubim_extra_plays: 'expanded Cherubim sequencing',
-    cherubim_expire_bonus: 'Cherubim expiry detonations',
-    pyro_heat_per_card: 'ember overflow scaling',
-    power_amplifier: 'board power amplification',
-    score_per_second: 'passive score accumulation',
-    resource_generation: 'resource generation pressure',
-    tick_acceleration: 'faster system cadence',
-  };
-
-  const elementLabelByElement: Record<string, string> = {
-    Neutrality: 'null-law',
-    Fire: 'emberforged',
-    Light: 'luminous',
-  };
-
-  const firstOnPlay = def.onPlayEffects[0]?.type ?? 'board_setup';
-  const onPlayLeadByType: Record<string, string> = {
-    draw: 'draw tempo',
-    oblivion_flat: 'immediate Oblivion injection',
-    chain_gain: 'draw tempo conversion',
-    chain_multiplier_set: 'oblivion scaling setup',
-    multiply_next: '',
-    salvage_any: 'discard reclamation',
-    look_top_take: 'topdeck sculpting',
-    look_top_take_drop: 'selection routing',
-    conditional: 'conditional conversion',
-    monochromatic_shards_gain: 'shard accumulation',
-    arctic_charge_gain: 'arctic charge build',
-    bloom_gain: 'bloom growth',
-    pyro_heat_gain: 'ember loading',
-    radiance_gain: 'radiance loading',
-    trail_gain: 'trail loading',
-    strain_gain: 'strain loading',
-    overclock: 'overclock priming',
-  };
-
-  const bonusPitch = bonusLabelByType[def.baseStats.bonusType] ?? 'board scaling';
-  const elementPitch = elementLabelByElement['Neutrality'] ?? 'arcane';
-  const onPlayPitch = onPlayLeadByType[firstOnPlay] ?? 'setup momentum';
-  const baseOblivion = Math.max(90, Math.round(80 + def.baseStats.bonusValue * 2.2));
-  const unsyncedCooldown = def.rarity === 'Legendary' || def.rarity === 'Eternal' || def.rarity === 'Infinite' ? 4 : 3;
-
-  const attacks: SeraphimAttackSet = {
-    unsynergized: {
-      id: `${def.definitionId}:unsynergized`,
-      label: 'Unsynergized',
-      name: `${crest} Vector Break`,
-      description: `${def.name} executes a ${elementPitch} opener that leans on ${onPlayPitch} and converts into ${bonusPitch}.`,
-      baseOblivion,
-      cooldownCards: unsyncedCooldown,
-      costs: [],
-      tags: ['seraphim', 'unsynergized', 'Neutrality'.toLowerCase()],
-    },
-    synergized: {
-      id: `${def.definitionId}:synergized`,
-      label: 'Synergized',
-      name: `${crest} Angelic Verdict`,
-      description: `With an Angel aligned, ${def.name} escalates into its ${elementPitch} finisher and over-converts ${bonusPitch}.`,
-      baseOblivion: Math.round(baseOblivion * 1.95),
-      cooldownCards: unsyncedCooldown + 2,
-      costs: [],
-      requiresAngelOnBoard: true,
-      tags: ['seraphim', 'synergized', 'Neutrality'.toLowerCase()],
-    },
-  };
-
-  return scaleSeraphimUiAttackSet(attacks, def.rarity);
-}
-
-function getAngelUiAttacks(def: AngelDefinition) {
-  if (def.attacks) return scaleAngelUiAttackSet(def.attacks, def.rarity);
-
-  const crest = def.name.split(' ').slice(0, 2).join(' ') || def.name;
-  const auraByBonusType: Record<string, string> = {
-    oblivion_per_card: 'steady field pressure',
-
-    ophanim_bonus: 'Ophanim-linked burst pressure',
-    power_per_seraphim: 'seraphim-linked scaling',
-    oblivion_per_seraphim: 'formation-linked conversion',
-  };
-  const aura = auraByBonusType[def.baseStats.bonusType] ?? 'battlefield pressure';
-  const summonTax = Math.max(1, def.summonCost.length);
-  const baseOblivion = Math.max(150, Math.round(140 + def.baseStats.bonusValue * 2 + summonTax * 28));
-
-  const attacks: AngelAttackSet = {
-    primary: {
-      id: `${def.definitionId}:primary`,
-      label: 'Primary',
-      name: `${crest} Ordinance`,
-      description: `${def.name} applies disciplined pressure and stabilizes your ${aura}.`,
-      baseOblivion,
-      cooldownCards: summonTax + 2,
-      costs: [],
-      tags: ['angel', 'primary', 'Neutrality'.toLowerCase()],
-    },
-    exalted: {
-      id: `${def.definitionId}:exalted`,
-      label: 'Exalted',
-      name: `${crest} Throne Decree`,
-      description: `Exalted channel of ${def.activatedAbility.name}; converts ${aura} into a decisive finisher window.`,
-      baseOblivion: Math.round(baseOblivion * 2.05),
-      cooldownCards: summonTax + 5,
-      costs: [],
-      tags: ['angel', 'exalted', 'Neutrality'.toLowerCase()],
-    },
-  };
-
-  return scaleAngelUiAttackSet(attacks, def.rarity);
-}
-
-function scaleSeraphimUiAttackSet(attacks: SeraphimAttackSet, rarity: SeraphimDefinition['rarity']): SeraphimAttackSet {
-  void rarity;
-  return attacks;
-}
-
-function scaleAngelUiAttackSet(attacks: AngelAttackSet, rarity: AngelDefinition['rarity']): AngelAttackSet {
-  void rarity;
-  return attacks;
-}
-
-function getAttackCostCount(
-  costs: ReadonlyArray<{ type: string; value: number }> | undefined,
-  costType: string,
-): number {
-  return (costs ?? [])
-    .filter(cost => cost.type === costType)
-    .reduce((sum, cost) => sum + cost.value, 0);
-}
-
-function hasRequiredAttackResources(
-  costs: ReadonlyArray<{ type: string; value: number }> | undefined,
-  _resources: Record<string, number>,
-): boolean {
-  // Only sacrifice-based costs remain; all resource costs are from dead sets
-  const sacrificeSeraphimCost = getAttackCostCount(costs, 'sacrifice_seraphim');
-  const sacrificeAngelCost = getAttackCostCount(costs, 'sacrifice_angel');
-  return sacrificeSeraphimCost === 0 && sacrificeAngelCost === 0;
-}
-
-function toggleSelectedId(current: string[], id: string, maxCount: number): string[] {
-  if (current.includes(id)) return current.filter(value => value !== id);
-  if (maxCount <= 0) return current;
-  if (current.length >= maxCount) return [...current.slice(1), id];
-  return [...current, id];
-}
-
-function renderBurningGardenBadge(phase?: string, counters?: number, isEcho?: boolean) {
-  if (!phase && (counters ?? 0) <= 0 && !isEcho) return null;
-
-  return (
-    <div style={{
-      position: 'absolute',
-      top: 7,
-      left: 7,
-      zIndex: 8,
-      padding: '2px 6px',
-      borderRadius: 999,
-      border: '1px solid rgba(255,214,180,0.34)',
-      background: phase === 'Burn' ? 'rgba(93, 30, 10, 0.82)' : 'rgba(34, 66, 30, 0.72)',
-      color: 'rgba(255,246,233,0.96)',
-      fontSize: 9,
-      lineHeight: 1,
-      letterSpacing: 0.45,
-      fontFamily: DISPLAY_FONT,
-      fontWeight: 700,
-      pointerEvents: 'none',
-      boxShadow: '0 4px 10px rgba(0,0,0,0.22)',
-    }}>
-      {`${phase ?? 'Bloom'}${isEcho ? ' Echo' : ''} · C${counters ?? 0}`}
-    </div>
-  );
-}
-
-interface PendingAngelAttack {
-  slot: 0 | 1 | 2 | 3 | 4;
-  attackId: 'primary' | 'exalted';
-  title: string;
-  description: string;
-}
-
-interface PendingSeraphimAttack {
-  slot: 0 | 1 | 2 | 3 | 4;
-  attackId: 'unsynergized' | 'synergized';
-  title: string;
-  description: string;
-}
 
 function renderPatienceBadge(stacks: number) {
   return (
@@ -265,29 +59,33 @@ function renderPatienceBadge(stacks: number) {
       pointerEvents: 'none',
       boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
     }}>
-      {`⬡ ${stacks}`}
+      {`筮｡ ${stacks}`}
     </div>
   );
 }
 
-function formatAttackCosts(costs: ReadonlyArray<{ type: string; value: number }> | undefined): string {
-  if (!costs || costs.length === 0) return 'No additional cost';
-  return costs.map(cost => `${cost.type.replace(/_/g, ' ')} ${cost.value}`).join(', ');
+// Mirrors store.ts resolveStackCost so previews match the actual runtime spend.
+function previewStackCost(cost: StackCostDefinition, stacks: number): number {
+  if (cost.kind === 'percentage') return Math.ceil(stacks * ((cost.value ?? 0) / 100));
+  if (cost.kind === 'range') return Math.max(0, cost.min ?? 0);
+  return Math.max(0, cost.value ?? 0);
 }
 
-function formatAttackSummary(attack: {
-  baseOblivion: number;
-  cooldownCards: number;
-  costs?: ReadonlyArray<{ type: string; value: number }>;
-  requiresAngelOnBoard?: boolean;
-  tags?: ReadonlyArray<string>;
-}): string {
-  const requirement = attack.requiresAngelOnBoard ? 'Requires Angel on board · ' : '';
-  const isFire = (attack.tags ?? []).some(tag => tag.toLowerCase() === 'fire');
-  const fireText = isFire
-    ? ' · +2.5%/Heat (max +75%) · Spend up to 5 Heat: +1% per Heat spent (max +5%)'
-    : '';
-  return `${requirement}Base ${attack.baseOblivion} · Cooldown ${attack.cooldownCards} cards · Cost ${formatAttackCosts(attack.costs)}${fireText}`;
+function actionBtnStyle(border: string, background: string, color: string, disabled?: boolean): React.CSSProperties {
+  return {
+    fontSize: 9,
+    padding: '5px 12px',
+    borderRadius: 6,
+    border: `1px solid ${border}`,
+    background,
+    color,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.4 : 1,
+    fontFamily: BODY_FONT,
+    letterSpacing: 0.6,
+    textAlign: 'center',
+    whiteSpace: 'nowrap',
+  };
 }
 
 export default function BoardDisplay() {
@@ -295,35 +93,23 @@ export default function BoardDisplay() {
   const board = useStore(selectBoard);
   const bossFight     = useStore(selectBossFight);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
-  const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
   const {
-    removeSeraphim,
-    placeSeraphimFromHand,
-    placeCherubim,
-    removeCherubim,
-    playCard,
     embraceInfinite,
-    activateAngel,
-    activateSeraphimAttack,
-    activateAngelAttack,
-    returnAngelToExtraDeck,
-    resolvePending,
+    flipSoph,
+    activateLightAinAttack,
+    activateLightSophAttack,
+    activateDark,
+    activateAsaBridge,
+    summonAinSophAur,
   } = useStore.getState();
 
-  const hand = deck.hand;
-  const discardableHand = useMemo(
-    () => hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel'),
-    [hand],
-  );
-
-  // Memoize hand-type checks to avoid O(n) CardRegistry scans on every render
-  const { hasSeraphimInHand, hasCherubimInHand } = useMemo(() => ({
-    hasSeraphimInHand: hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Seraphim'),
-    hasCherubimInHand: hand.some(c => CardRegistry.get(c.definitionId)?.type === 'Cherubim'),
-  }), [hand]);
+  // Seraphim/Cherubim/Angel are no longer registered card types; these flags stay
+  // false so the legacy empty-slot visuals and handlers below are dormant.
+  const hasSeraphimInHand = false;
+  const hasCherubimInHand = false;
   const canPlay = turn.phase === 'playing';
-  const pendingAngelSummon = turn.pendingEffect?.type === 'summon_angel_place';
+  const pendingAngelSummon = false;
 
   const prevSlotsRef = useRef(board.frontSlots);
   const [lastPlacedInstanceId, setLastPlacedInstanceId] = useState<string | null>(null);
@@ -332,17 +118,25 @@ export default function BoardDisplay() {
   const [hoveredFrontSlot, setHoveredFrontSlot] = useState<number | null>(null);
   const [hoveredBackSlot, setHoveredBackSlot] = useState<number | null>(null);
   const [attackPanelSlot, setAttackPanelSlot] = useState<number | null>(null);
-  const [selectedDiscardIds, setSelectedDiscardIds] = useState<string[]>([]);
-  const [selectedSacrificeSeraphimIds, setSelectedSacrificeSeraphimIds] = useState<string[]>([]);
-  const [selectedSacrificeAngelIds, setSelectedSacrificeAngelIds] = useState<string[]>([]);
-  const [pendingAngelAttack, setPendingAngelAttack] = useState<PendingAngelAttack | null>(null);
-  const [pendingSeraphimAttack, setPendingSeraphimAttack] = useState<PendingSeraphimAttack | null>(null);
-  const [confirmReturnAngelSlot, setConfirmReturnAngelSlot] = useState<number | null>(null);
+  const [newActionSlot, setNewActionSlot] = useState<{ zone: 'front' | 'back'; index: 0 | 1 | 2 | 3 } | null>(null);
+  const [asaSummonRequest, setAsaSummonRequest] = useState<{ definitionId: string; required: number } | null>(null);
+  const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<{ definitionId: string; required: number }>;
+      if (!ce.detail) return;
+      setAsaSummonRequest(ce.detail);
+      setSelectedMaterialIds([]);
+    };
+    window.addEventListener('asa-summon-request', handler);
+    return () => window.removeEventListener('asa-summon-request', handler);
+  }, []);
 
   useEffect(() => {
     const prev = prevSlotsRef.current;
     const curr = board.frontSlots;
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 4; i++) {
       if (!prev[i] && curr[i]) {
         setLastPlacedInstanceId(curr[i]!.instanceId);
         const t = setTimeout(() => setLastPlacedInstanceId(null), 500);
@@ -369,54 +163,20 @@ export default function BoardDisplay() {
     }
   }, [board.frontSlots, board.backSlots]);
 
-  function handleFrontSlotClick(slotIndex: 0 | 1 | 2 | 3 | 4) {
+  function handleFrontSlotClick(slotIndex: 0 | 1 | 2 | 3) {
     const slot = board.frontSlots[slotIndex];
-    if (pendingAngelSummon) {
-      if (!slot && canPlay) {
-        resolvePending([String(slotIndex)]);
-      }
-      return;
-    }
-    if (slot?.type === 'Seraphim') {
-      if (canPlay) {
-        setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
-      } else {
-        removeSeraphim(slotIndex);
-      }
-    } else if (slot?.type === 'Angel') {
-      if (canPlay) {
-        setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
-      }
-    } else if (!slot && canPlay && hasSeraphimInHand) {
-      placeSeraphimFromHand(slotIndex);
-      setAttackPanelSlot(null);
+    if (slot && canPlay) {
+      setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
     }
   }
 
-  function handleBackSlotClick(backSlot: 0 | 1 | 2 | 3) {
-    const cherubim = board.backSlots[backSlot];
-    if (cherubim) {
-      removeCherubim(backSlot);
-    } else if (canPlay && hasCherubimInHand) {
-      const backCard = hand.find(c => CardRegistry.get(c.definitionId)?.type === 'Cherubim');
-      if (backCard) {
-        const firstEmpty = board.backSlots.findIndex(s => s === null);
-        if (firstEmpty === backSlot) {
-          playCard(backCard.instanceId);
-        } else {
-          placeCherubim(backSlot);
-        }
-      }
-    }
+  function handleBackSlotClick(_backSlot: 0 | 1 | 2 | 3) {
+    // Back-row interaction is handled by the inline card overlays.
   }
 
   const selectedFront = attackPanelSlot !== null ? board.frontSlots[attackPanelSlot] : null;
   const selectedDef = selectedFront ? CardRegistry.get(selectedFront.definitionId) : null;
-  const isAttackPanelOpen =
-    canPlay &&
-    !!selectedFront &&
-    !!selectedDef &&
-    (selectedFront.type === 'Seraphim' || selectedFront.type === 'Angel');
+  const isAttackPanelOpen = canPlay && !!selectedFront && !!selectedDef;
 
   const getBoardFocusPalette = (element: string | undefined) => {
     if (element === 'Neutrality') {
@@ -500,74 +260,6 @@ export default function BoardDisplay() {
     );
   };
 
-  const renderAttackCostCard = (
-    card: Pick<DeckCard, 'definitionId' | 'finish'>,
-    selected: boolean,
-    actionLabel: string,
-    accentColor: string,
-  ) => {
-    const def = CardRegistry.get(card.definitionId);
-    return (
-      <>
-        <div style={getCardNameRibbonStyle('compact')}>
-          <div style={{ fontSize: Math.max(8.8, ATTACK_CARD_FACE_METRICS.typeSize), color: '#5c3b2b', letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center', marginBottom: 2, fontFamily: DISPLAY_FONT, fontWeight: 700 }}>
-            {def?.type ?? 'Card'}
-          </div>
-          <div style={{
-            fontSize: Math.max(10.8, ATTACK_CARD_FACE_METRICS.nameSize),
-            fontWeight: 'bold',
-            color: '#2b1a12',
-            textAlign: 'center',
-            lineHeight: 1.15,
-            fontFamily: DISPLAY_FONT,
-          }}>
-            {def?.name ?? card.definitionId}
-          </div>
-        </div>
-        <div style={getCardRulesPanelStyle('compact')}>
-          <div style={{
-            fontSize: Math.max(9.2, ATTACK_CARD_FACE_METRICS.descSize),
-            lineHeight: Math.max(1.3, ATTACK_CARD_FACE_METRICS.descLineHeight),
-            WebkitLineClamp: ATTACK_CARD_FACE_METRICS.descLines,
-            color: '#3a251b',
-            textAlign: 'center',
-            display: '-webkit-box',
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            fontFamily: BODY_FONT,
-          }}>
-            {def ? highlightRulesText(getCardPreviewText(def, 2), { lightBg: true }) : ''}
-          </div>
-          <div style={{ fontSize: 9, color: selected ? accentColor : '#6f4734', marginTop: 5, textAlign: 'center', fontFamily: DISPLAY_FONT, letterSpacing: 0.4, fontWeight: 700 }}>
-            {actionLabel}
-          </div>
-        </div>
-      </>
-    );
-  };
-
-  const selectableSeraphimSacrificeUnits = useMemo(
-    () => board.frontSlots.filter(
-      (unit): unit is SeraphimInstance => unit?.type === 'Seraphim' && unit.instanceId !== selectedFront?.instanceId,
-    ),
-    [board.frontSlots, selectedFront?.instanceId],
-  );
-
-  const selectableAngelSacrificeUnits = useMemo(
-    () => board.frontSlots.filter(
-      (unit): unit is AngelInstance => unit?.type === 'Angel' && unit.instanceId !== selectedFront?.instanceId,
-    ),
-    [board.frontSlots, selectedFront?.instanceId],
-  );
-
-  useEffect(() => {
-    setSelectedDiscardIds([]);
-    setSelectedSacrificeSeraphimIds([]);
-    setSelectedSacrificeAngelIds([]);
-    setPendingAngelAttack(null);
-    setPendingSeraphimAttack(null);
-  }, [attackPanelSlot, selectedFront?.instanceId, selectedDef?.definitionId]);
-
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('hr-attack-panel-open', { detail: isAttackPanelOpen }));
   }, [isAttackPanelOpen]);
@@ -608,6 +300,23 @@ export default function BoardDisplay() {
       overflowX: 'visible',
       width: 'max-content',
     }}>
+      <div style={{
+        pointerEvents: 'none',
+        alignSelf: 'center',
+        marginBottom: 8,
+        padding: '7px 14px',
+        borderRadius: 999,
+        border: '1px solid rgba(255,232,158,0.58)',
+        background: 'rgba(35,24,18,0.86)',
+        color: '#ffe89e',
+        fontFamily: BODY_FONT,
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: 0.5,
+        boxShadow: '0 4px 16px rgba(0,0,0,0.28)',
+      }}>
+        Limitless Light Stacks: {turn.limitlessLightStacks}
+      </div>
       {/* Immediate hover tooltip for board cards */}
       {boardHoveredDef && (
         <div style={{
@@ -682,6 +391,36 @@ export default function BoardDisplay() {
         </div>
       )}
 
+      {asaSummonRequest && (
+        <div style={{
+          pointerEvents: 'auto', marginBottom: 8, padding: '8px 16px', borderRadius: 10,
+          border: '1px solid rgba(160,200,255,0.5)', background: 'rgba(10,10,20,0.9)',
+          display: 'flex', gap: 12, alignItems: 'center', fontFamily: BODY_FONT,
+        }}>
+          <div style={{ fontSize: 11, color: '#cfe0ff' }}>
+            Select {asaSummonRequest.required} back-row material{asaSummonRequest.required !== 1 ? 's' : ''} to summon ({selectedMaterialIds.length}/{asaSummonRequest.required})
+          </div>
+          <button
+            type="button"
+            disabled={selectedMaterialIds.length !== asaSummonRequest.required || board.frontSlots.every(s => s !== null)}
+            onClick={() => {
+              const targetSlot = board.frontSlots.findIndex(s => s === null);
+              if (targetSlot !== -1) {
+                summonAinSophAur(asaSummonRequest.definitionId, selectedMaterialIds, targetSlot as 0 | 1 | 2 | 3);
+              }
+              setAsaSummonRequest(null);
+              setSelectedMaterialIds([]);
+            }}
+            style={actionBtnStyle('rgba(140,220,140,0.6)', 'rgba(20,50,20,0.85)', '#8de68d', selectedMaterialIds.length !== asaSummonRequest.required)}
+          >Confirm Summon</button>
+          <button
+            type="button"
+            onClick={() => { setAsaSummonRequest(null); setSelectedMaterialIds([]); }}
+            style={actionBtnStyle('rgba(220,100,100,0.5)', 'rgba(50,10,10,0.8)', '#e68d8d')}
+          >Cancel</button>
+        </div>
+      )}
+
 {/* Front row: 5 Seraphim/Angel slots */}
       <div style={{
         display: 'flex',
@@ -690,286 +429,106 @@ export default function BoardDisplay() {
         justifyContent: 'center',
       }}>
         {board.frontSlots.map((slot, i) => {
-          const slotIndex = i as 0 | 1 | 2 | 3 | 4;
+          const slotIndex = i as 0 | 1 | 2 | 3;
           const isNewlyPlaced = slot?.instanceId === lastPlacedInstanceId;
           const isDragTarget = dragOverFront === slotIndex && !slot && canPlay;
 
-          if (slot?.type === 'Angel') {
-            const angelDef = CardRegistry.get(slot.definitionId) as AngelDefinition | undefined;
-            const angelAttacks = angelDef ? getAngelUiAttacks(angelDef) : null;
-            const primaryCd = angelAttacks ? (slot.attackCooldowns?.[angelAttacks.primary.id] ?? 0) : 0;
-            const exaltedCd = angelAttacks ? (slot.attackCooldowns?.[angelAttacks.exalted.id] ?? 0) : 0;
-            const awakenRequirement = angelDef?.activatedAbility.cardsPlayedRequirement ?? 0;
-            const progress = Math.min(slot.cardsPlayedSinceSummon, awakenRequirement);
-            const hasAwakenRequirement = Boolean(angelDef) && !slot.activated && slot.cardsPlayedSinceSummon >= awakenRequirement;
-            const canPayAwakenCost = Boolean(angelDef) && CardEffectExecutor.execute(
-              { instanceId: slot.instanceId, definitionId: slot.definitionId, finish: slot.finish },
-              turn,
-              board,
-              deck,
-              false,
-              {
-                effects: angelDef?.activatedAbility.effects,
-                countAsPlay: false,
-                removeFromHand: false,
-              },
-            ).canPlay;
-            const isReady = hasAwakenRequirement && canPayAwakenCost;
-            const statusText = slot.activated
-              ? 'Awakened'
-              : isReady
-                ? 'Right-click'
-                : hasAwakenRequirement
-                  ? 'Insufficient resources'
-                  : `Awaken ${progress}/${awakenRequirement}`;
-            const detailText = slot.activated
-              ? angelDef?.activatedAbility.name ?? 'Ability spent'
-              : isReady
-                ? angelDef?.activatedAbility.name ?? 'Ability ready'
-                : angelDef?.activatedAbility.name ?? 'Awakening';
+          if (slot?.type === 'AinSophAur') {
+            const asaDef = CardRegistry.get(slot.definitionId) as AinSophAurDefinition | undefined;
             const isHovered = hoveredFrontSlot === slotIndex;
-            const isSelected = attackPanelSlot === slotIndex;
+            const isSelected = newActionSlot?.zone === 'front' && newActionSlot.index === slotIndex;
             const isFocused = isHovered || isSelected;
             const focusPalette = getBoardFocusPalette('Neutrality');
-            const angelDescMetrics = getAdaptiveDescriptionMetrics('board', detailText);
-            const angelElementColor = SET_ACCENT ?? warmTheme.accent;
+            const asaElementColor = SET_ACCENT ?? warmTheme.accent;
+            const scalingCtx = {
+              limitlessLightStacks: turn.limitlessLightStacks,
+              asaFrontCount: board.frontSlots.filter(front => front?.type === 'AinSophAur').length,
+              collectionPower: 0,
+            };
+            const bridgeCooldown = asaDef?.bridgeAttack ? (slot.attackCooldowns[asaDef.bridgeAttack.id] ?? 0) : 0;
+            const bridgeCost = asaDef?.bridgeAttack?.consumesStacks ? previewStackCost(asaDef.bridgeAttack.consumesStacks, turn.limitlessLightStacks) : 0;
+            const bridgePreview = asaDef?.bridgeAttack
+              ? Math.max(0, Math.round(asaDef.bridgeAttack.baseOblivion + resolveCardScaling(asaDef.bridgeAttack.scaling, scalingCtx) + bridgeCost))
+              : 0;
+            const asaText = asaDef ? getCardPreviewText(asaDef, 2) : '';
+            const asaDescMetrics = getAdaptiveDescriptionMetrics('board', asaText);
             return (
               <div
-                className={[
-                  isNewlyPlaced ? 'anim-angel-summon-pop' : 'anim-angel-breath',
-                  (slot.finish === 'holo' || angelDef?.rarity === 'Infinite' || angelDef?.rarity === 'Eternal')
-                    ? `holofoil-live-card${angelDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${angelDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
-                    : undefined,
-                ].filter(Boolean).join(' ')}
-                onContextMenu={(event) => {
-                  event.preventDefault();
-                  if (canPlay && isReady && !slot.activated) {
-                    activateAngel(slotIndex);
-                  } else if (canPlay) {
-                    // Ability spent or not ready — offer to return to extra deck.
-                    setConfirmReturnAngelSlot(prev => prev === slotIndex ? null : slotIndex);
-                  }
-                }}
-                onClick={() => {
-                  if (confirmReturnAngelSlot === slotIndex) {
-                    setConfirmReturnAngelSlot(null);
-                    return;
-                  }
-                  if (canPlay) setAttackPanelSlot(prev => prev === slotIndex ? null : slotIndex);
-                }}
+                key={slotIndex}
+                className={isNewlyPlaced ? 'anim-angel-summon-pop' : 'anim-angel-breath'}
+                onClick={() => { if (canPlay) setNewActionSlot(prev => (prev?.zone === 'front' && prev.index === slotIndex) ? null : { zone: 'front', index: slotIndex }); }}
                 onMouseEnter={() => setHoveredFrontSlot(slotIndex)}
                 onMouseLeave={() => setHoveredFrontSlot(current => (current === slotIndex ? null : current))}
-                title={slot.activated
-                  ? `${angelDef?.name ?? 'Angel'} - ability used · right-click to return to extra deck`
-                  : isReady
-                    ? `${angelDef?.name ?? 'Angel'} - right-click to activate ${angelDef?.activatedAbility.name ?? 'its awakened ability'}`
-                    : `${angelDef?.name ?? 'Angel'} - awaken after ${awakenRequirement} cards · right-click to return to extra deck`}
+                title={`${asaDef?.name ?? 'Ain Soph Aur'} ﾂｷ Bridge the Light`}
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
-                  ...getCardFaceBackgroundStyle(angelDef, slot.finish, slot.faceState),
-                  border: `2px solid ${isFocused ? focusPalette.rim : isReady ? warmTheme.accent : warmTheme.borderStrong}`,
+                  ...getCardFaceBackgroundStyle(asaDef, slot.finish, slot.faceState),
+                  border: `2px solid ${isFocused ? focusPalette.rim : warmTheme.borderStrong}`,
                   borderRadius: 14,
                   boxShadow: isFocused
                     ? `0 0 0 1px ${focusPalette.rim}, 0 0 0 4px ${focusPalette.glow}, 0 0 26px ${focusPalette.glow}, ${cardFacePalette.shadow}`
-                    : isReady
-                      ? `${warmTheme.glow}, ${cardFacePalette.shadow}`
-                      : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
+                    : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'stretch',
                   justifyContent: 'flex-start',
                   padding: 0,
                   fontFamily: BODY_FONT,
-                  cursor: canPlay && isReady && !slot.activated ? 'context-menu' : 'default',
+                  cursor: canPlay ? 'pointer' : 'default',
                   pointerEvents: 'auto',
                   overflow: 'hidden',
                   position: 'relative',
                 }}
               >
-                {/* Inline return-to-extra-deck confirm overlay */}
-                {confirmReturnAngelSlot === slotIndex && (
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${asaElementColor}cc, ${asaElementColor}, ${asaElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
+                <div style={getCardNameRibbonStyle('board')}>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
+                    Ain Soph Aur
+                  </div>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
+                    {asaDef?.name ?? 'Ain Soph Aur'}
+                  </div>
+                </div>
+                <div style={getCardRulesPanelStyle('board')}>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: bridgeCooldown <= 0 ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' }}>
+                    Bridge: {bridgeCooldown <= 0 ? 'Ready' : bridgeCooldown}
+                  </div>
+                  <div style={{
+                    fontSize: asaDescMetrics.fontSize,
+                    color: cardFacePalette.textSoft,
+                    marginTop: 5,
+                    lineHeight: asaDescMetrics.lineHeight,
+                    textAlign: 'center',
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: asaDescMetrics.lineClamp,
+                    overflow: 'hidden',
+                  }}>
+                    {asaText}
+                  </div>
+                </div>
+                {isSelected && (
                   <div style={{
                     position: 'absolute', inset: 0, zIndex: 20,
-                    background: 'rgba(5,3,12,0.92)',
+                    background: 'rgba(5,3,12,0.94)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                     gap: 6, padding: 8, borderRadius: 14,
                   }}>
-                    <div style={{ fontSize: 9, color: 'rgba(220,180,255,0.9)', letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' }}>
-                      Return to extra deck?
-                    </div>
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); returnAngelToExtraDeck(slotIndex); setConfirmReturnAngelSlot(null); setAttackPanelSlot(prev => prev === slotIndex ? null : prev); }}
-                        style={{ fontSize: 9, padding: '3px 10px', borderRadius: 6, border: '1px solid rgba(140,220,140,0.6)', background: 'rgba(20,50,20,0.8)', color: '#8de68d', cursor: 'pointer', fontFamily: BODY_FONT, letterSpacing: 1 }}
-                      >Yes</button>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setConfirmReturnAngelSlot(null); }}
-                        style={{ fontSize: 9, padding: '3px 10px', borderRadius: 6, border: '1px solid rgba(220,100,100,0.5)', background: 'rgba(50,10,10,0.8)', color: '#e68d8d', cursor: 'pointer', fontFamily: BODY_FONT, letterSpacing: 1 }}
-                      >No</button>
-                    </div>
+                    <button
+                      type="button"
+                      disabled={bridgeCooldown > 0 || turn.limitlessLightStacks < bridgeCost}
+                      onClick={(e) => { e.stopPropagation(); activateAsaBridge(slot.instanceId); setNewActionSlot(null); }}
+                      style={actionBtnStyle('rgba(255,214,120,0.6)', 'rgba(60,44,10,0.85)', '#ffd678', bridgeCooldown > 0 || turn.limitlessLightStacks < bridgeCost)}
+                    >Bridge the Light (~{bridgePreview}{bridgeCost > 0 ? `, -${bridgeCost} Stacks` : ''})</button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setNewActionSlot(null); }}
+                      style={actionBtnStyle('rgba(150,150,150,0.5)', 'rgba(30,30,30,0.8)', '#ccc')}
+                    >Cancel</button>
                   </div>
                 )}
-
-
-                {/* Element top stripe */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${angelElementColor}cc, ${angelElementColor}, ${angelElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
-                {renderBurningGardenBadge(undefined, slot.chromaticCounters, slot.isEcho)}
-                <div style={getCardNameRibbonStyle('board')}>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
-                    Angel
-                  </div>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
-                    {angelDef?.name ?? 'Angel'}
-                  </div>
-                </div>
-                <div style={getCardRulesPanelStyle('board')}>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: isReady ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' }}>
-                    {statusText}
-                  </div>
-                  <div style={{
-                    fontSize: angelDescMetrics.fontSize,
-                    color: cardFacePalette.textSoft,
-                    marginTop: 5,
-                    lineHeight: angelDescMetrics.lineHeight,
-                    textAlign: 'center',
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: angelDescMetrics.lineClamp,
-                    overflow: 'hidden',
-                  }}>
-                    {detailText}
-                  </div>
-                  <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 4, textAlign: 'center' }}>
-                    Primary: {primaryCd <= 0 ? 'Ready' : primaryCd} · Exalted: {exaltedCd <= 0 ? 'Ready' : exaltedCd}
-                  </div>
-                  <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, lineHeight: 1.35, textAlign: 'center' }}>
-                    {slot.activated
-                      ? 'Awakened effect spent this turn.'
-                      : isReady
-                        ? 'Right-click to fire the awakened effect.'
-                        : hasAwakenRequirement
-                          ? 'Need effect costs before awakening.'
-                          : `Charge ${progress}/${awakenRequirement}`}
-                  </div>
-                </div>
-                {/* Patience stacks badge (bottom-left) */}
-                {(slot.patienceStacks ?? 0) > 0 && renderPatienceBadge(slot.patienceStacks!)}
-                {isFocused && (
-                  renderBoardFocusOverlay(14, 'Neutrality')
-                )}
-              </div>
-            );
-          }
-
-          if (slot?.type === 'Seraphim') {
-            const serDef = CardRegistry.get(slot.definitionId) as SeraphimDefinition | undefined;
-            const isActive = slot.isActive;
-            const borderColor = isActive ? 'rgba(245, 245, 245, 0.95)' : 'rgba(16, 12, 12, 0.96)';
-            const seraphimText = serDef
-              ? getCardPreviewText(serDef, 2)
-              : 'Its elemental bonus is live on the board.';
-            const seraphimDescMetrics = getAdaptiveDescriptionMetrics('board', seraphimText);
-            const attacks = serDef ? getSeraphimUiAttacks(serDef) : null;
-            const unsyncedCd = attacks ? (slot.attackCooldowns?.[attacks.unsynergized.id] ?? 0) : 0;
-            const syncedCd = attacks ? (slot.attackCooldowns?.[attacks.synergized.id] ?? 0) : 0;
-            const hasAngel = board.frontSlots.some(front => front?.type === 'Angel');
-            const isHovered = hoveredFrontSlot === slotIndex;
-            const isSelected = attackPanelSlot === slotIndex;
-            const isFocused = isHovered || isSelected;
-            const focusPalette = getBoardFocusPalette('Neutrality');
-            const serElementColor = SET_ACCENT ?? warmTheme.accent;
-
-            return (
-              <div
-                className={[
-                  isNewlyPlaced ? 'anim-seraphim-pop' : undefined,
-                  isActive && !isNewlyPlaced ? 'anim-synergy-pulse' : undefined,
-                  (slot.finish === 'holo' || serDef?.rarity === 'Infinite' || serDef?.rarity === 'Eternal')
-                    ? `holofoil-live-card${serDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${serDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
-                    : undefined,
-                ].filter(Boolean).join(' ') || undefined}
-                style={{
-                  width: SLOT_W,
-                  height: SLOT_H,
-                  pointerEvents: 'auto',
-                  cursor: 'pointer',
-                  ...getCardFaceBackgroundStyle(serDef, slot.finish, slot.faceState),
-                  border: `1px solid ${isFocused ? focusPalette.rim : borderColor}`,
-                  borderRadius: 12,
-                  boxShadow: isFocused
-                    ? `0 0 0 1px ${focusPalette.rim}, 0 0 0 4px ${focusPalette.glow}, 0 0 24px ${focusPalette.glow}, ${cardFacePalette.shadow}`
-                    : isActive
-                      ? `${warmTheme.shadow}, 0 0 12px rgba(255, 255, 255, 0.72), 0 0 28px rgba(255, 255, 255, 0.38)`
-                      : `${warmTheme.shadow}, 0 0 12px rgba(0, 0, 0, 0.72), 0 0 24px rgba(0, 0, 0, 0.55) inset`,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'stretch',
-                  justifyContent: 'flex-start',
-                  padding: 0,
-                  overflow: 'hidden',
-                  fontFamily: BODY_FONT,
-                  transition: 'box-shadow 0.4s, border-color 0.4s',
-                  position: 'relative',
-                }}
-                onClick={() => handleFrontSlotClick(slotIndex)}
-                onMouseEnter={() => setHoveredFrontSlot(slotIndex)}
-                onMouseLeave={() => setHoveredFrontSlot(current => (current === slotIndex ? null : current))}
-                onContextMenu={(event) => {
-                  event.preventDefault();
-                  if (!canPlay) return;
-                  if (false) {
-                    // Dead code: BurningGarden removed
-                  } else {
-                    removeSeraphim(slotIndex);
-                  }
-                  setAttackPanelSlot(prev => (prev === slotIndex ? null : prev));
-                  setPendingSeraphimAttack(current => (current?.slot === slotIndex ? null : current));
-                }}
-                title={`${serDef?.name ?? 'Seraphim'} · Left-click attacks panel · Right-click remove from board`}
-              >
-
-
-                {/* Element top stripe */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${serElementColor}cc, ${serElementColor}, ${serElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
-                {renderBurningGardenBadge(undefined, slot.chromaticCounters, slot.isEcho)}
-                <div style={getCardNameRibbonStyle('board')}>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
-                    {getDisplayCardTypeLabel('Seraphim')}
-                  </div>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
-                    {serDef?.name ?? 'Seraphim'}
-                  </div>
-                </div>
-                <div style={getCardRulesPanelStyle('board')}>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, marginTop: 1, letterSpacing: 0.7, color: isActive ? warmTheme.success : 'rgba(36, 28, 28, 0.92)', textTransform: 'uppercase', textAlign: 'center' }}>
-                    Unsynergized: {unsyncedCd <= 0 ? 'Ready' : unsyncedCd} · Synergized: {!hasAngel ? 'Needs Angel' : syncedCd <= 0 ? 'Ready' : syncedCd}
-                  </div>
-                  <div style={{ fontSize: 7, color: isActive ? 'rgba(250, 250, 250, 0.95)' : 'rgba(18, 12, 12, 0.92)', marginTop: 2, textTransform: 'uppercase', letterSpacing: 0.7, textAlign: 'center' }}>
-                    {isActive ? 'Synergy Online' : 'Synergy Offline'}
-                  </div>
-                  <div style={{
-                    fontSize: seraphimDescMetrics.fontSize,
-                    color: cardFacePalette.textSoft,
-                    marginTop: 5,
-                    lineHeight: seraphimDescMetrics.lineHeight,
-                    textAlign: 'center',
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: seraphimDescMetrics.lineClamp,
-                    overflow: 'hidden',
-                  }}>
-                    {highlightRulesText(seraphimText, { lightBg: true })}
-                  </div>
-                  <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 6, letterSpacing: 0.5, textAlign: 'center' }}>left-click attacks · right-click remove</div>
-                </div>
-                {/* Patience stacks badge (bottom-left) */}
-                {(slot.patienceStacks ?? 0) > 0 && renderPatienceBadge(slot.patienceStacks!)}
-                {isFocused && (
-                  renderBoardFocusOverlay(12, 'Neutrality')
-                )}
+                {isFocused && renderBoardFocusOverlay(14, 'Neutrality')}
               </div>
             );
           }
@@ -1015,9 +574,7 @@ export default function BoardDisplay() {
                 setDragOverFront(slotIndex);
               }}
               onDragLeave={() => setDragOverFront(null)}
-              onDrop={(e) => {
-                const id = e.dataTransfer.getData('application/x-seraphim-card');
-                if (id && canPlay) placeSeraphimFromHand(slotIndex, id);
+              onDrop={() => {
                 setDragOverFront(null);
               }}
             >
@@ -1026,7 +583,7 @@ export default function BoardDisplay() {
               <div style={{ position: 'absolute', top: 6, right: 6, width: 10, height: 10, borderTop: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 6, left: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderLeft: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 6, right: 6, width: 10, height: 10, borderBottom: `1px solid ${glowColor}`, borderRight: `1px solid ${glowColor}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              {/* Orbital pulse rings — two staggered concentric rings radiate outward
+              {/* Orbital pulse rings 窶・two staggered concentric rings radiate outward
                   to grab the eye when a Seraphim is in hand and this slot is playable. */}
               {hasSeraphimInHand && (
                 <>
@@ -1046,7 +603,7 @@ export default function BoardDisplay() {
                   }} />
                 </>
               )}
-              <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.4, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>✦</div>
+              <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.4, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>笨ｦ</div>
               <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.4, transition: 'opacity 0.2s, color 0.2s' }}>
                 {pendingAngelSummon ? 'Choose Angel Slot' : isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
               </div>
@@ -1055,604 +612,7 @@ export default function BoardDisplay() {
         })}
       </div>
 
-      {isAttackPanelOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            left: 0,
-            right: 0,
-            bottom: 'calc(var(--hand-strip-height, 220px) + 16px)',
-            marginInline: 'auto',
-            pointerEvents: 'auto',
-            width: 'min(960px, 96vw)',
-            maxHeight: 'min(50vh, 460px)',
-            overflowY: 'auto',
-            border: ATTACK_MODAL_PANEL_BORDER,
-            borderRadius: 16,
-            background: ATTACK_MODAL_PANEL_BG,
-            boxShadow: ATTACK_MODAL_PANEL_SHADOW,
-            padding: '10px 12px',
-            fontFamily: BODY_FONT,
-            zIndex: 140,
-            isolation: 'isolate',
-          }}
-        >
-          <div style={{ fontSize: 14, color: '#4f2813', letterSpacing: 0.35, marginBottom: 7, fontFamily: DISPLAY_FONT, fontWeight: 700 }}>
-            {selectedDef.name} · Attack Panel
-          </div>
-
-          {selectedFront.type === 'Seraphim' && selectedDef.type === 'Seraphim' && (() => {
-            const attacks = getSeraphimUiAttacks(selectedDef);
-            const unsyncedCd = selectedFront.attackCooldowns?.[attacks.unsynergized.id] ?? 0;
-            const syncedCd = selectedFront.attackCooldowns?.[attacks.synergized.id] ?? 0;
-            const hasAngel = board.frontSlots.some(slot => slot?.type === 'Angel');
-            const openSeraphimAttackCostModal = (attackId: 'unsynergized' | 'synergized') => {
-              const attack = attackId === 'synergized' ? attacks.synergized : attacks.unsynergized;
-              if ((attack.costs?.length ?? 0) === 0) {
-                activateSeraphimAttack(attackPanelSlot as 0 | 1 | 2 | 3 | 4, attackId);
-                return;
-              }
-
-              setSelectedDiscardIds([]);
-              setPendingSeraphimAttack({
-                slot: attackPanelSlot as 0 | 1 | 2 | 3 | 4,
-                attackId,
-                title: `${attack.label} · ${attack.name}`,
-                description: formatAttackSummary(attack),
-              });
-            };
-            const buildAttackTileStyle = (ready: boolean): React.CSSProperties => ({
-              minHeight: 96,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              gap: 8,
-              borderRadius: 10,
-              border: `1px solid ${ready ? 'rgba(109, 154, 93, 0.66)' : 'rgba(130, 90, 67, 0.5)'}`,
-              background: ready ? 'rgba(247, 243, 234, 0.96)' : 'rgba(236, 225, 207, 0.95)',
-              color: '#2f1d14',
-              padding: '9px 10px',
-              cursor: ready ? 'pointer' : 'not-allowed',
-              textAlign: 'left',
-              fontFamily: BODY_FONT,
-              boxShadow: ready ? '0 8px 14px rgba(55, 75, 44, 0.16)' : 'none',
-            });
-            return (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                {[
-                  { attack: attacks.unsynergized, cd: unsyncedCd, readyText: 'Ready', enabled: true, attackId: 'unsynergized' as const },
-                  { attack: attacks.synergized, cd: syncedCd, readyText: 'Ready', enabled: hasAngel, attackId: 'synergized' as const },
-                ].map(({ attack, cd, readyText, enabled, attackId }) => (
-                  <button
-                    key={attack.id}
-                    className="attack-screen-tile"
-                    onClick={() => openSeraphimAttackCostModal(attackId)}
-                    disabled={cd > 0 || !enabled}
-                    style={buildAttackTileStyle(cd <= 0 && enabled)}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#7a3f1a', fontFamily: DISPLAY_FONT }}>{attack.label}</div>
-                        <div style={{ fontSize: 11.5, color: cd <= 0 && enabled ? '#3f6e37' : '#7c493a', fontWeight: 800 }}>{cd <= 0 ? (enabled ? readyText : 'Needs Angel') : `Cooldown ${cd}`}</div>
-                      </div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#2b1a12', marginTop: 1, lineHeight: 1.2, fontFamily: DISPLAY_FONT }}>{attack.name}</div>
-                    </div>
-                    <div style={{ fontSize: 10.5, color: '#523326' }}>
-                      {formatAttackSummary(attack)}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            );
-          })()}
-
-          {selectedFront.type === 'Angel' && selectedDef.type === 'Angel' && (() => {
-            const attacks = getAngelUiAttacks(selectedDef);
-            const primaryCd = selectedFront.attackCooldowns?.[attacks.primary.id] ?? 0;
-            const exaltedCd = selectedFront.attackCooldowns?.[attacks.exalted.id] ?? 0;
-            const primaryReady = primaryCd <= 0;
-            const exaltedReady = exaltedCd <= 0;
-
-            const openAttackCostModal = (attackId: 'primary' | 'exalted') => {
-              const attack = attackId === 'exalted' ? attacks.exalted : attacks.primary;
-              if ((attack.costs?.length ?? 0) === 0) {
-                activateAngelAttack(attackPanelSlot as 0 | 1 | 2 | 3 | 4, attackId);
-                return;
-              }
-
-              setSelectedDiscardIds([]);
-              setSelectedSacrificeSeraphimIds([]);
-              setSelectedSacrificeAngelIds([]);
-              setPendingAngelAttack({
-                slot: attackPanelSlot as 0 | 1 | 2 | 3 | 4,
-                attackId,
-                title: `${attack.label} · ${attack.name}`,
-                description: formatAttackSummary(attack),
-              });
-            };
-
-            const buildAttackTileStyle = (ready: boolean): React.CSSProperties => ({
-              minHeight: 96,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              gap: 8,
-              borderRadius: 10,
-              border: `1px solid ${ready ? 'rgba(109, 154, 93, 0.66)' : 'rgba(130, 90, 67, 0.5)'}`,
-              background: ready ? 'rgba(247, 243, 234, 0.96)' : 'rgba(236, 225, 207, 0.95)',
-              color: '#2f1d14',
-              padding: '9px 10px',
-              cursor: ready ? 'pointer' : 'not-allowed',
-              textAlign: 'left',
-              fontFamily: BODY_FONT,
-              boxShadow: ready ? '0 8px 14px rgba(55, 75, 44, 0.16)' : 'none',
-            });
-
-            return (
-              <div style={{ display: 'grid', gap: 10 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8 }}>
-                  <button
-                    className="attack-screen-tile"
-                    onClick={() => openAttackCostModal('primary')}
-                    disabled={!primaryReady}
-                    style={buildAttackTileStyle(primaryReady)}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#7a3f1a', fontFamily: DISPLAY_FONT }}>{attacks.primary.label}</div>
-                        <div style={{ fontSize: 11.5, color: primaryReady ? '#3f6e37' : '#7c493a', fontWeight: 800 }}>{primaryReady ? 'Ready' : `Cooldown ${primaryCd}`}</div>
-                      </div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#2b1a12', marginTop: 1, lineHeight: 1.2, fontFamily: DISPLAY_FONT }}>{attacks.primary.name}</div>
-                    </div>
-                    <div style={{ fontSize: 10.5, color: '#523326' }}>{formatAttackSummary(attacks.primary)}</div>
-                  </button>
-
-                  <button
-                    className="attack-screen-tile"
-                    onClick={() => openAttackCostModal('exalted')}
-                    disabled={!exaltedReady}
-                    style={buildAttackTileStyle(exaltedReady)}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'baseline' }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: '#7a3f1a', fontFamily: DISPLAY_FONT }}>{attacks.exalted.label}</div>
-                        <div style={{ fontSize: 11.5, color: exaltedReady ? '#3f6e37' : '#7c493a', fontWeight: 800 }}>{exaltedReady ? 'Ready' : `Cooldown ${exaltedCd}`}</div>
-                      </div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#2b1a12', marginTop: 1, lineHeight: 1.2, fontFamily: DISPLAY_FONT }}>{attacks.exalted.name}</div>
-                    </div>
-                    <div style={{ fontSize: 10.5, color: '#523326' }}>{formatAttackSummary(attacks.exalted)}</div>
-                  </button>
-                </div>
-
-                <div style={{ fontSize: 12, color: '#5b392b', textAlign: 'center' }}>
-                  Angel attacks now open a separate payment modal when they need discards or sacrifices.
-                </div>
-              </div>
-            );
-          })()}
-
-          {pendingAngelAttack && selectedFront?.type === 'Angel' && selectedDef?.type === 'Angel' && (() => {
-            const attacks = getAngelUiAttacks(selectedDef);
-            const activeAttack = pendingAngelAttack.attackId === 'exalted' ? attacks.exalted : attacks.primary;
-            const discardCost = getAttackCostCount(activeAttack.costs, 'discard_from_hand');
-            const seraphimSacCost = getAttackCostCount(activeAttack.costs, 'sacrifice_seraphim');
-            const angelSacCost = getAttackCostCount(activeAttack.costs, 'sacrifice_angel');
-            const hasResourceBudget = hasRequiredAttackResources(activeAttack.costs, {
-            });
-            const canConfirmAttack =
-              selectedDiscardIds.length === discardCost
-              && selectedSacrificeSeraphimIds.length === seraphimSacCost
-              && selectedSacrificeAngelIds.length === angelSacCost
-              && hasResourceBudget;
-
-            return (
-              <div style={{
-                position: 'fixed',
-                inset: 0,
-                background: ATTACK_MODAL_BACKDROP,
-                backdropFilter: 'blur(3px)',
-                zIndex: 220,
-                pointerEvents: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 'clamp(14px, 3.2vh, 28px)',
-              }}>
-                <div style={{
-                  width: ATTACK_PANEL_WIDTH,
-                  maxHeight: 'min(88vh, 820px)',
-                  overflowY: 'auto',
-                  borderRadius: 18,
-                  border: ATTACK_MODAL_PANEL_BORDER,
-                  background: ATTACK_MODAL_PANEL_BG,
-                  boxShadow: ATTACK_MODAL_PANEL_SHADOW,
-                  padding: 20,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 13,
-                  color: '#2f1a10',
-                  fontFamily: BODY_FONT,
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 12.5, letterSpacing: 1.25, textTransform: 'uppercase', color: '#522811', fontFamily: DISPLAY_FONT }}>Pay Attack Cost</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: '#5d2d14', marginTop: 4, fontFamily: DISPLAY_FONT }}>{pendingAngelAttack.title}</div>
-                      <div style={{ fontSize: 13, color: '#5a3119', marginTop: 6, lineHeight: 1.5 }}>{pendingAngelAttack.description}</div>
-                    </div>
-                    <button
-                      className="attack-modal-close"
-                      onClick={() => {
-                        setPendingAngelAttack(null);
-                        setSelectedDiscardIds([]);
-                        setSelectedSacrificeSeraphimIds([]);
-                        setSelectedSacrificeAngelIds([]);
-                      }}
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 999,
-                        border: '1px solid rgba(126, 86, 48, 0.35)',
-                        background: 'rgba(255, 247, 232, 0.88)',
-                        color: '#6d3f23',
-                        cursor: 'pointer',
-                        fontSize: 16,
-                      }}
-                    >
-                      ÁE                    </button>
-                  </div>
-
-                  {discardCost > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Discard from hand ({selectedDiscardIds.length}/{discardCost})</div>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 104px))',
-                        justifyContent: 'center',
-                        gap: 10,
-                        maxHeight: 'min(36vh, 340px)',
-                        overflowY: 'auto',
-                        paddingRight: 4,
-                      }}>
-                        {discardableHand.map(card => {
-                          const def = CardRegistry.get(card.definitionId);
-                          const selected = selectedDiscardIds.includes(card.instanceId);
-                          return (
-                            <button
-                              key={card.instanceId}
-                              className="attack-cost-choice"
-                              onClick={() => setSelectedDiscardIds(current => toggleSelectedId(current, card.instanceId, discardCost))}
-                              style={{
-                                ...getCardFaceBackgroundStyle(def, card.finish, card.faceState),
-                                width: '100%',
-                                aspectRatio: '0.73',
-                                borderRadius: 7,
-                                border: `1px solid ${selected ? '#c9773f' : 'rgba(124, 86, 49, 0.45)'}`,
-                                color: warmTheme.text,
-                                padding: 0,
-                                cursor: 'pointer',
-                                overflow: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'stretch',
-                                justifyContent: 'stretch',
-                                boxShadow: selected ? `0 0 0 2px rgba(236, 192, 128, 0.3), 0 8px 14px rgba(108, 61, 30, 0.2)` : 'none',
-                              }}
-                            >
-                              {renderAttackCostCard(card, selected, selected ? 'Discard' : 'Select', warmTheme.accentDeep)}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {seraphimSacCost > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Sacrifice Seraphim ({selectedSacrificeSeraphimIds.length}/{seraphimSacCost})</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 104px))', justifyContent: 'center', gap: 10, maxHeight: 'min(36vh, 340px)', overflowY: 'auto', paddingRight: 4 }}>
-                        {selectableSeraphimSacrificeUnits.map(unit => {
-                          const def = CardRegistry.get(unit.definitionId);
-                          const selected = selectedSacrificeSeraphimIds.includes(unit.instanceId);
-                          return (
-                            <button
-                              key={unit.instanceId}
-                              className="attack-cost-choice"
-                              onClick={() => setSelectedSacrificeSeraphimIds(current => toggleSelectedId(current, unit.instanceId, seraphimSacCost))}
-                              style={{
-                                ...getCardFaceBackgroundStyle(def, unit.finish, unit.faceState),
-                                width: '100%',
-                                aspectRatio: '0.73',
-                                borderRadius: 7,
-                                border: `1px solid ${selected ? '#c9773f' : 'rgba(124, 86, 49, 0.45)'}`,
-                                color: warmTheme.text,
-                                padding: 0,
-                                cursor: 'pointer',
-                                overflow: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'stretch',
-                                boxShadow: selected ? `0 0 0 2px rgba(224, 124, 92, 0.28), 0 8px 14px rgba(108, 61, 30, 0.2)` : 'none',
-                              }}
-                            >
-                              {renderAttackCostCard(unit, selected, selected ? 'Sacrifice' : 'Select', warmTheme.accentDeep)}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {angelSacCost > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Sacrifice Angel ({selectedSacrificeAngelIds.length}/{angelSacCost})</div>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 104px))', justifyContent: 'center', gap: 10, maxHeight: 'min(36vh, 340px)', overflowY: 'auto', paddingRight: 4 }}>
-                        {selectableAngelSacrificeUnits.map(unit => {
-                          const def = CardRegistry.get(unit.definitionId);
-                          const selected = selectedSacrificeAngelIds.includes(unit.instanceId);
-                          return (
-                            <button
-                              key={unit.instanceId}
-                              className="attack-cost-choice"
-                              onClick={() => setSelectedSacrificeAngelIds(current => toggleSelectedId(current, unit.instanceId, angelSacCost))}
-                              style={{
-                                ...getCardFaceBackgroundStyle(def, unit.finish, unit.faceState),
-                                width: '100%',
-                                aspectRatio: '0.73',
-                                borderRadius: 7,
-                                border: `1px solid ${selected ? '#c9773f' : 'rgba(124, 86, 49, 0.45)'}`,
-                                color: warmTheme.text,
-                                padding: 0,
-                                cursor: 'pointer',
-                                overflow: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'stretch',
-                                boxShadow: selected ? `0 0 0 2px rgba(168, 216, 109, 0.28), 0 8px 14px rgba(108, 61, 30, 0.2)` : 'none',
-                              }}
-                            >
-                              {renderAttackCostCard(unit, selected, selected ? 'Sacrifice' : 'Select', warmTheme.accentDeep)}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 'auto' }}>
-                    <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.35 }}>Select the required cards, then confirm the attack.</div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        className="attack-modal-secondary"
-                        onClick={() => {
-                          setPendingAngelAttack(null);
-                          setSelectedDiscardIds([]);
-                          setSelectedSacrificeSeraphimIds([]);
-                          setSelectedSacrificeAngelIds([]);
-                        }}
-                        style={{
-                          borderRadius: 8,
-                          border: '1px solid rgba(126, 86, 48, 0.33)',
-                          background: 'rgba(254, 245, 229, 0.74)',
-                          color: '#6a3d22',
-                          padding: '9px 14px',
-                          cursor: 'pointer',
-                          fontSize: 13,
-                          fontWeight: 700,
-                          fontFamily: BODY_FONT,
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="attack-modal-primary"
-                        onClick={() => {
-                          if (!canConfirmAttack) return;
-                          activateAngelAttack(pendingAngelAttack.slot, pendingAngelAttack.attackId, {
-                            discardInstanceIds: selectedDiscardIds,
-                            sacrificeSeraphimInstanceIds: selectedSacrificeSeraphimIds,
-                            sacrificeAngelInstanceIds: selectedSacrificeAngelIds,
-                          });
-                          setPendingAngelAttack(null);
-                          setAttackPanelSlot(null);
-                          setSelectedDiscardIds([]);
-                          setSelectedSacrificeSeraphimIds([]);
-                          setSelectedSacrificeAngelIds([]);
-                        }}
-                        disabled={!canConfirmAttack}
-                        style={{
-                          borderRadius: 8,
-                          border: '1px solid rgba(126, 86, 48, 0.44)',
-                          background: canConfirmAttack
-                            ? 'linear-gradient(180deg, rgba(250, 242, 227, 0.96) 0%, rgba(238, 216, 181, 0.94) 100%)'
-                            : 'rgba(236, 222, 197, 0.82)',
-                          color: '#56280f',
-                          padding: '9px 16px',
-                          cursor: canConfirmAttack ? 'pointer' : 'not-allowed',
-                          fontSize: 13,
-                          fontWeight: 'bold',
-                          fontFamily: DISPLAY_FONT,
-                        }}
-                      >
-                        Confirm Attack
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-
-          {pendingSeraphimAttack && selectedFront?.type === 'Seraphim' && selectedDef?.type === 'Seraphim' && (() => {
-            const attacks = getSeraphimUiAttacks(selectedDef);
-            const activeAttack = pendingSeraphimAttack.attackId === 'synergized' ? attacks.synergized : attacks.unsynergized;
-            const discardCost = getAttackCostCount(activeAttack.costs, 'discard_from_hand');
-            const hasResourceBudget = hasRequiredAttackResources(activeAttack.costs, {
-            });
-            const canConfirmAttack = selectedDiscardIds.length === discardCost && hasResourceBudget;
-
-            return (
-              <div style={{
-                position: 'fixed',
-                inset: 0,
-                background: ATTACK_MODAL_BACKDROP,
-                backdropFilter: 'blur(3px)',
-                zIndex: 220,
-                pointerEvents: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 'clamp(14px, 3.2vh, 28px)',
-              }}>
-                <div style={{
-                  width: ATTACK_PANEL_WIDTH,
-                  maxHeight: 'min(88vh, 820px)',
-                  overflowY: 'auto',
-                  borderRadius: 18,
-                  border: ATTACK_MODAL_PANEL_BORDER,
-                  background: ATTACK_MODAL_PANEL_BG,
-                  boxShadow: ATTACK_MODAL_PANEL_SHADOW,
-                  padding: 20,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 13,
-                  color: '#2f1a10',
-                  fontFamily: BODY_FONT,
-                }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                    <div>
-                      <div style={{ fontSize: 12.5, letterSpacing: 1.25, textTransform: 'uppercase', color: '#522811', fontFamily: DISPLAY_FONT }}>Pay Attack Cost</div>
-                      <div style={{ fontSize: 20, fontWeight: 700, color: '#5d2d14', marginTop: 4, fontFamily: DISPLAY_FONT }}>{pendingSeraphimAttack.title}</div>
-                      <div style={{ fontSize: 13, color: '#5a3119', marginTop: 6, lineHeight: 1.5 }}>{pendingSeraphimAttack.description}</div>
-                    </div>
-                    <button
-                      className="attack-modal-close"
-                      onClick={() => {
-                        setPendingSeraphimAttack(null);
-                        setSelectedDiscardIds([]);
-                      }}
-                      style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: 999,
-                        border: '1px solid rgba(126, 86, 48, 0.35)',
-                        background: 'rgba(255, 247, 232, 0.88)',
-                        color: '#6d3f23',
-                        cursor: 'pointer',
-                        fontSize: 16,
-                      }}
-                    >
-                      ÁE                    </button>
-                  </div>
-
-                  {discardCost > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      <div style={{ fontSize: 12.5, color: '#5a2f18', fontFamily: DISPLAY_FONT }}>Discard from hand ({selectedDiscardIds.length}/{discardCost})</div>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(104px, 104px))',
-                        justifyContent: 'center',
-                        gap: 10,
-                        maxHeight: 'min(36vh, 340px)',
-                        overflowY: 'auto',
-                        paddingRight: 4,
-                      }}>
-                        {discardableHand.map(card => {
-                          const def = CardRegistry.get(card.definitionId);
-                          const selected = selectedDiscardIds.includes(card.instanceId);
-                          return (
-                            <button
-                              key={card.instanceId}
-                              className="attack-cost-choice"
-                              onClick={() => setSelectedDiscardIds(current => toggleSelectedId(current, card.instanceId, discardCost))}
-                              style={{
-                                ...getCardFaceBackgroundStyle(def, card.finish, card.faceState),
-                                width: '100%',
-                                aspectRatio: '0.73',
-                                borderRadius: 7,
-                                border: `1px solid ${selected ? '#c9773f' : 'rgba(124, 86, 49, 0.45)'}`,
-                                color: warmTheme.text,
-                                padding: 0,
-                                cursor: 'pointer',
-                                overflow: 'hidden',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'stretch',
-                                justifyContent: 'stretch',
-                                boxShadow: selected ? `0 0 0 2px rgba(236, 192, 128, 0.3), 0 8px 14px rgba(108, 61, 30, 0.2)` : 'none',
-                              }}
-                            >
-                              {renderAttackCostCard(card, selected, selected ? 'Discard' : 'Select', warmTheme.accentDeep)}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, marginTop: 'auto' }}>
-                    <div style={{ fontSize: 11.5, color: '#5f3520', lineHeight: 1.35 }}>Select the discard card(s), then confirm the attack.</div>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <button
-                        className="attack-modal-secondary"
-                        onClick={() => {
-                          setPendingSeraphimAttack(null);
-                          setSelectedDiscardIds([]);
-                        }}
-                        style={{
-                          borderRadius: 8,
-                          border: '1px solid rgba(126, 86, 48, 0.33)',
-                          background: 'rgba(254, 245, 229, 0.74)',
-                          color: '#6a3d22',
-                          padding: '9px 14px',
-                          cursor: 'pointer',
-                          fontSize: 13,
-                          fontWeight: 700,
-                          fontFamily: BODY_FONT,
-                        }}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="attack-modal-primary"
-                        onClick={() => {
-                          if (!canConfirmAttack) return;
-                          activateSeraphimAttack(pendingSeraphimAttack.slot, pendingSeraphimAttack.attackId, {
-                            discardInstanceIds: selectedDiscardIds,
-                            sacrificeSeraphimInstanceIds: [],
-                            sacrificeAngelInstanceIds: [],
-                          });
-                          setPendingSeraphimAttack(null);
-                          setAttackPanelSlot(null);
-                          setSelectedDiscardIds([]);
-                        }}
-                        disabled={!canConfirmAttack}
-                        style={{
-                          borderRadius: 8,
-                          border: '1px solid rgba(126, 86, 48, 0.44)',
-                          background: canConfirmAttack
-                            ? 'linear-gradient(180deg, rgba(250, 242, 227, 0.96) 0%, rgba(238, 216, 181, 0.94) 100%)'
-                            : 'rgba(236, 222, 197, 0.82)',
-                          color: '#56280f',
-                          padding: '9px 16px',
-                          cursor: canConfirmAttack ? 'pointer' : 'not-allowed',
-                          fontSize: 13,
-                          fontWeight: 'bold',
-                          fontFamily: DISPLAY_FONT,
-                        }}
-                      >
-                        Confirm Attack
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
-        </div>
-      )}
-      {/* Set Ability hotkey strip — shows during playing phase */}
+      {/* Set Ability hotkey strip 窶・shows during playing phase */}
       <SetAbilityStrip />
 
       {/* Zone separator with rank labels */}
@@ -1684,98 +644,172 @@ export default function BoardDisplay() {
       }}>
         {board.backSlots.map((card, i) => {
           const backSlot = i as 0 | 1 | 2 | 3;
-          const cardDef = card ? CardRegistry.get(card.definitionId) : null;
           const isDragTarget = dragOverBack === backSlot && canPlay;
 
-          // Cherubim card rendering
-          if (card && card.type === 'Cherubim') {
-            const cherubim = card as CherubimInstance;
-            const hasDurability = cherubim.durability !== undefined && cherubim.maxDurability !== undefined;
-            const durabilityRatio = hasDurability
-              ? (cherubim.durability as number) / (cherubim.maxDurability as number)
-              : 1;
-            const durabilityColor = durabilityRatio > 0.5 ? '#c888f0' : durabilityRatio > 0.25 ? '#e8a040' : '#e86060';
-            const cherubimText = cardDef ? getCardPreviewText(cardDef, 2) : '';
-            const cherubimDescMetrics = getAdaptiveDescriptionMetrics('boardMini', cherubimText);
-            const def = CardRegistry.get(cherubim.definitionId) as CherubimDefinition | null;
-            const condition = def?.discardCondition;
-            const conditionDescMap: Record<string, string> = {
-              hand_size_lte: 'Discard when hand <= {val}',
-              chain_lte: 'Discard when chain <= {val}',
-              oblivion_lte: 'Discard when Oblivion <= {val}',
-              radiance_lte: 'Discard when radiance <= {val}',
-              cards_played_gte: 'Discard after {val}+ cards',
-              seraphim_count_lte: 'Discard when Seraphim <= {val}',
-              trail_lte: 'Discard when trail <= {val}',
-              strain_gte: 'Discard when strain >= {val}',
+          // Light / Dark Main Deck card rendering
+          if (card && (card.type === 'Light' || card.type === 'Dark')) {
+            const mainCard = card as MainDeckBoardInstance;
+            const mainDef = CardRegistry.get(mainCard.definitionId) as LightCardDefinition | DarkCardDefinition | undefined;
+            const charge = mainCard.limitlessCharge ?? 0;
+            const isSoph = mainCard.side === 'soph' && mainCard.faceState === 'back';
+            const isAin = mainCard.side === 'ain' && mainCard.faceState === 'front';
+            const isReadyToFlip = isSoph && charge >= 5;
+            const isSelected = newActionSlot?.zone === 'back' && newActionSlot.index === backSlot;
+            const isMaterialMode = !!asaSummonRequest;
+            const isMaterialSelected = isMaterialMode && selectedMaterialIds.includes(mainCard.instanceId);
+            const mainText = mainDef ? getCardPreviewText(mainDef, 2) : '';
+            const mainDescMetrics = getAdaptiveDescriptionMetrics('boardMini', mainText);
+            const mainElementColor = SET_ACCENT;
+            const scalingCtx = {
+              limitlessLightStacks: turn.limitlessLightStacks,
+              asaFrontCount: board.frontSlots.filter(front => front?.type === 'AinSophAur').length,
+              collectionPower: 0,
             };
-            const conditionText = condition
-              ? (conditionDescMap[condition.type] ?? 'Auto-discard').replace('{val}', String(condition.value))
-              : 'Persists indefinitely';
-            const isHovered = hoveredBackSlot === backSlot;
-            const focusPalette = getBoardFocusPalette('Neutrality');
-            const cherubElementColor = SET_ACCENT;
+
+            let ainCooldown = 0;
+            let sophCooldown = 0;
+            let ainPreview = 0;
+            let sophPreview = 0;
+            let darkCooldown = 0;
+            let darkCost = 0;
+            if (mainDef?.type === 'Light' && isAin) {
+              ainCooldown = mainCard.attackCooldowns[mainDef.ainAttack.id] ?? 0;
+              sophCooldown = mainCard.attackCooldowns[mainDef.sophAttack.id] ?? 0;
+              ainPreview = Math.max(0, Math.round(mainDef.ainAttack.baseOblivion + resolveCardScaling(mainDef.ainAttack.scaling, scalingCtx)));
+              const sophCost = mainDef.sophAttack.stackCost ? previewStackCost(mainDef.sophAttack.stackCost, turn.limitlessLightStacks) : 0;
+              sophPreview = Math.max(0, Math.round(mainDef.sophAttack.baseOblivion + resolveCardScaling(mainDef.sophAttack.scaling, scalingCtx) + sophCost));
+            }
+            if (mainDef?.type === 'Dark' && isAin) {
+              darkCooldown = mainCard.attackCooldowns[`${mainDef.definitionId}:activation`] ?? 0;
+              darkCost = previewStackCost(mainDef.activationCost, turn.limitlessLightStacks);
+            }
+
             return (
               <div
-                className={(cherubim.finish === 'holo' || cardDef?.rarity === 'Infinite' || cardDef?.rarity === 'Eternal')
-                  ? `holofoil-live-card${cardDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${cardDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                key={backSlot}
+                className={(mainCard.finish === 'holo' || mainDef?.rarity === 'Infinite' || mainDef?.rarity === 'Eternal')
+                  ? `holofoil-live-card${mainDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${mainDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
                   : undefined}
                 style={{
                   width: CHERUBIM_W, height: CHERUBIM_H,
-                  ...getCardFaceBackgroundStyle(cardDef, cherubim.finish, cherubim.faceState),
-                  border: `1px solid ${isHovered ? focusPalette.rim : 'rgba(143,116,169,0.5)'}`,
+                  ...getCardFaceBackgroundStyle(mainDef, mainCard.finish, mainCard.faceState),
+                  border: `1px solid ${isMaterialSelected ? 'rgba(120,220,140,0.9)' : isReadyToFlip ? 'rgba(255,224,140,0.9)' : 'rgba(160,160,200,0.4)'}`,
                   borderRadius: 12,
-                  boxShadow: isHovered
-                    ? `0 0 0 1px ${focusPalette.rim}, 0 0 0 3px ${focusPalette.glow}, 0 0 18px ${focusPalette.glow}, ${cardFacePalette.shadow}`
+                  boxShadow: isReadyToFlip
+                    ? `${warmTheme.glow}, 0 0 18px rgba(255,214,120,0.4)`
                     : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
                   display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start',
                   fontFamily: BODY_FONT, pointerEvents: 'auto', cursor: 'pointer',
-                  padding: 0,
-                  overflow: 'hidden',
-                  position: 'relative',
+                  padding: 0, overflow: 'hidden', position: 'relative',
                 }}
-                onClick={() => handleBackSlotClick(backSlot)}
+                onClick={() => {
+                  if (isMaterialMode && asaSummonRequest) {
+                    setSelectedMaterialIds(prev => prev.includes(mainCard.instanceId)
+                      ? prev.filter(id => id !== mainCard.instanceId)
+                      : (prev.length < asaSummonRequest.required ? [...prev, mainCard.instanceId] : prev));
+                    return;
+                  }
+                  setNewActionSlot(prev => (prev?.zone === 'back' && prev.index === backSlot) ? null : { zone: 'back', index: backSlot });
+                }}
                 onMouseEnter={() => setHoveredBackSlot(backSlot)}
                 onMouseLeave={() => setHoveredBackSlot(current => (current === backSlot ? null : current))}
-                title={hasDurability
-                  ? `${cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')} - ${cherubim.durability} play${cherubim.durability !== 1 ? 's' : ''} remaining - click to discard`
-                  : `${cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')} - ${conditionText} - click to discard`}
+                title={`${mainDef?.name ?? mainCard.type} ﾂｷ ${isSoph ? `Charge ${charge}/5` : 'Active'}`}
               >
-
-                {/* Element top stripe */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${cherubElementColor}cc, ${cherubElementColor}, ${cherubElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
-                {renderBurningGardenBadge(undefined, cherubim.chromaticCounters, cherubim.isEcho)}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${mainElementColor}cc, ${mainElementColor}, ${mainElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 <div style={getCardNameRibbonStyle('boardMini')}>
-                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>{getDisplayCardTypeLabel('Cherubim')}</div>
+                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>
+                    {getDisplayCardTypeLabel(mainDef?.type ?? mainCard.type)} ﾂｷ {isSoph ? 'Soph' : 'Ain'}
+                  </div>
                   <div style={{ fontSize: CHERUBIM_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
-                    {cardDef?.name ?? getDisplayCardTypeLabel('Cherubim')}
+                    {mainDef?.name ?? mainCard.definitionId}
                   </div>
                 </div>
                 <div style={getCardRulesPanelStyle('boardMini')}>
-                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: hasDurability ? durabilityColor : '#a8d5a8', letterSpacing: 0.4, textAlign: 'center' }}>
-                    {hasDurability
-                      ? `${cherubim.durability} play${cherubim.durability !== 1 ? 's' : ''} left`
-                      : conditionText}
+                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: isReadyToFlip ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center' }}>
+                    {isSoph
+                      ? (isReadyToFlip ? 'Ready 窶・click to flip/sacrifice' : `Charge ${charge}/5`)
+                      : mainDef?.type === 'Light'
+                        ? `Ain ${ainCooldown <= 0 ? 'Ready' : ainCooldown} ﾂｷ Soph ${sophCooldown <= 0 ? 'Ready' : sophCooldown}`
+                        : `Activate ${darkCooldown <= 0 ? 'Ready' : darkCooldown}`}
                   </div>
                   <div style={{
-                    fontSize: cherubimDescMetrics.fontSize,
+                    fontSize: mainDescMetrics.fontSize,
                     color: cardFacePalette.textSoft,
                     marginTop: 4,
-                    lineHeight: cherubimDescMetrics.lineHeight,
+                    lineHeight: mainDescMetrics.lineHeight,
                     textAlign: 'center',
                     display: '-webkit-box',
                     WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: cherubimDescMetrics.lineClamp,
+                    WebkitLineClamp: mainDescMetrics.lineClamp,
                     overflow: 'hidden',
                   }}>
-                    {cherubimText}
-                  </div>
-                  <div style={{ fontSize: 6, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
-                    click to remove
+                    {mainText}
                   </div>
                 </div>
-                {isHovered && (
-                  renderBoardFocusOverlay(12, 'Neutrality')
+                {charge > 0 && renderPatienceBadge(charge)}
+                {isMaterialMode && (
+                  <div style={{
+                    position: 'absolute', top: 6, right: 6, zIndex: 12, width: 16, height: 16, borderRadius: 4,
+                    border: '1px solid rgba(140,220,140,0.8)',
+                    background: isMaterialSelected ? 'rgba(60,180,90,0.9)' : 'rgba(0,0,0,0.4)',
+                  }} />
+                )}
+                {isSelected && !isMaterialMode && (
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 20,
+                    background: 'rgba(5,3,12,0.94)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 6, padding: 8, borderRadius: 12,
+                  }}>
+                    {isSoph && isReadyToFlip && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); flipSoph(mainCard.instanceId, 'flip'); setNewActionSlot(null); }}
+                          style={actionBtnStyle('rgba(140,220,140,0.6)', 'rgba(20,50,20,0.8)', '#8de68d')}
+                        >Flip to Ain (+{charge} Stacks)</button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); flipSoph(mainCard.instanceId, 'sacrifice'); setNewActionSlot(null); }}
+                          style={actionBtnStyle('rgba(220,100,100,0.5)', 'rgba(50,10,10,0.8)', '#e68d8d')}
+                        >Sacrifice (+{Math.round(charge * (mainDef?.sacrificeOblivionRate ?? 0))} Oblivion)</button>
+                      </>
+                    )}
+                    {isSoph && !isReadyToFlip && (
+                      <div style={{ fontSize: 9, color: 'rgba(220,220,240,0.8)', textAlign: 'center' }}>
+                        Needs {5 - charge} more card play{5 - charge !== 1 ? 's' : ''} to ready.
+                      </div>
+                    )}
+                    {isAin && mainDef?.type === 'Light' && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={ainCooldown > 0}
+                          onClick={(e) => { e.stopPropagation(); activateLightAinAttack(mainCard.instanceId); setNewActionSlot(null); }}
+                          style={actionBtnStyle('rgba(255,214,120,0.6)', 'rgba(60,44,10,0.85)', '#ffd678', ainCooldown > 0)}
+                        >Ain Attack (~{ainPreview})</button>
+                        <button
+                          type="button"
+                          disabled={sophCooldown > 0 || turn.limitlessLightStacks <= 0}
+                          onClick={(e) => { e.stopPropagation(); activateLightSophAttack(mainCard.instanceId); setNewActionSlot(null); }}
+                          style={actionBtnStyle('rgba(160,200,255,0.6)', 'rgba(14,30,60,0.85)', '#a0c8ff', sophCooldown > 0 || turn.limitlessLightStacks <= 0)}
+                        >Soph Attack (~{sophPreview})</button>
+                      </>
+                    )}
+                    {isAin && mainDef?.type === 'Dark' && (
+                      <button
+                        type="button"
+                        disabled={darkCooldown > 0 || turn.limitlessLightStacks < darkCost}
+                        onClick={(e) => { e.stopPropagation(); activateDark(mainCard.instanceId); setNewActionSlot(null); }}
+                        style={actionBtnStyle('rgba(200,160,255,0.6)', 'rgba(30,14,50,0.85)', '#c8a0ff', darkCooldown > 0 || turn.limitlessLightStacks < darkCost)}
+                      >Activate (-{darkCost} Stacks)</button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); setNewActionSlot(null); }}
+                      style={actionBtnStyle('rgba(150,150,150,0.5)', 'rgba(30,30,30,0.8)', '#ccc')}
+                    >Cancel</button>
+                  </div>
                 )}
               </div>
             );
@@ -1816,9 +850,7 @@ export default function BoardDisplay() {
                 setDragOverBack(backSlot);
               }}
               onDragLeave={() => setDragOverBack(null)}
-              onDrop={(e) => {
-                const id = e.dataTransfer.getData('application/x-cherubim-card');
-                if (id && canPlay) placeCherubim(backSlot, id);
+              onDrop={() => {
                 setDragOverBack(null);
               }}
             >
@@ -1827,7 +859,7 @@ export default function BoardDisplay() {
               <div style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 5, left: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 5, right: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ fontSize: 15, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.85 : 0.38, transition: 'opacity 0.2s, color 0.2s', animation: hasCherubimInHand ? 'constellationGlimmer 3.5s ease-in-out infinite' : undefined }}>✦</div>
+              <div style={{ fontSize: 15, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.85 : 0.38, transition: 'opacity 0.2s, color 0.2s', animation: hasCherubimInHand ? 'constellationGlimmer 3.5s ease-in-out infinite' : undefined }}>笨ｦ</div>
               <div style={{ fontSize: 6, color: cherubimGlow, marginTop: 5, letterSpacing: 1.5, textTransform: 'uppercase', opacity: hasCherubimInHand ? 0.8 : 0.38, transition: 'opacity 0.2s, color 0.2s' }}>
                 {isDragTarget ? 'Drop Cherubim' : hasCherubimInHand ? 'Click or Drop' : 'Empty'}
               </div>

@@ -1,4 +1,5 @@
 import type { DeckCard, DeckEntry, DeckState } from '@/types/game';
+import { normalizeSophCard } from '@/systems/cards/AinSophRuntime';
 import type { CardFinish } from '@/types/cards';
 import { getActiveCoopRng } from '@/state/coopSyncStore';
 
@@ -60,7 +61,7 @@ export class DeckSystem {
     const cards: DeckCard[] = [];
     for (const entry of deckList) {
       for (let i = 0; i < entry.copies; i++) {
-        cards.push({ instanceId: nextDeckId(), definitionId: entry.definitionId, finish: entry.finish });
+        cards.push(normalizeSophCard({ instanceId: nextDeckId(), definitionId: entry.definitionId, finish: entry.finish }));
       }
     }
     return DeckSystem.shuffle(cards);
@@ -71,7 +72,7 @@ export class DeckSystem {
     const cards: DeckCard[] = [];
     for (const entry of deckList) {
       for (let i = 0; i < entry.copies; i++) {
-        cards.push({ instanceId: nextDeckId(), definitionId: entry.definitionId, finish: entry.finish });
+        cards.push(normalizeSophCard({ instanceId: nextDeckId(), definitionId: entry.definitionId, finish: entry.finish }));
       }
     }
     return cards;

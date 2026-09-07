@@ -58,12 +58,12 @@ export class BoardEffectsRenderer {
     // Subscribe to board changes once rather than reading store every frame
     this.unsubscribe = useStore.subscribe(state => {
       const slots = state.board.frontSlots;
-      this.hasAngel = slots.some(s => s?.type === 'Angel');
-      const seraphims = slots.filter(s => s?.type === 'Seraphim').slice(0, 3);
+      this.hasAngel = slots.some(s => s !== null);
+      const flipped = state.board.backSlots.filter(s => s?.side === 'ain').slice(0, 3);
       for (let i = 0; i < 3; i++) {
-        const s = seraphims[i];
+        const s = flipped[i];
         this.seraphimExists[i] = !!s;
-        this.seraphimActive[i] = !!(s?.type === 'Seraphim' && (s as { isActive?: boolean }).isActive);
+        this.seraphimActive[i] = !!s;
       }
     });
   }

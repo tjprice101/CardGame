@@ -14,7 +14,7 @@ export type NeutralityDocOverride = {
   attacks: NeutralityDocAttackOverride[];
 };
 
-export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
+const LEGACY_NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
   "btei-architects-manifold": {
     "bullets": [
       "On play: All Seraphim on board gain +4 Patience",
@@ -711,3 +711,6 @@ export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {
     ]
   }
 } as const;
+
+void LEGACY_NEUTRALITY_DOC_OVERRIDES;
+export const NEUTRALITY_DOC_OVERRIDES: Record<string, NeutralityDocOverride> = {};

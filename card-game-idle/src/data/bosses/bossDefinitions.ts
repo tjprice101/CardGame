@@ -5,7 +5,7 @@ import type { BossDefinition, BossCategory } from '@/types/bossFight';
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
 
 // Re-anchored for the post-hidden-multiplier combat baseline.
-const FIRST_SET_FIRST_BOSS_HP = 84_375;
+const FIRST_SET_FIRST_BOSS_HP = 97_031;
 const SET_FINAL_HP_MULTIPLIER = 2.7;
 function roundBossHp(value: number): number {
   if (value >= 10_000_000) return Math.round(value / 25_000) * 25_000;
@@ -16,7 +16,7 @@ function roundBossHp(value: number): number {
 
 function getBossProgressionWeightFromRewardCardId(rewardCardId: string): number {
   const reward = CardRegistry.get(rewardCardId);
-  if (reward?.type === 'Angel') return 1;
+  if (reward?.type === 'AinSophAur') return 1;
   return 0;
 }
 
@@ -107,22 +107,16 @@ function createBoss(
 const BOSS_BLUEPRINTS: BossBlueprint[] = [
   // Neutrality legacy arc
   createBoss(0, 'boss-hollow-king', 'The Hollow Queen', 'Neutrality', 'btei-voids-reaping', 'A shattered queen of void whose broken regalia still bends reality around every strike.', 'boss_hollow_queen'),
-  createBoss(1, 'boss-immortal-warden', 'The Immortal Warden', 'Neutrality', 'btei-eternal-vigil', 'A sentinel that has never blinked across epochs; each heartbeat is a verdict.', 'boss_immortal_warden'),
   createBoss(2, 'boss-cherubim-sovereign', 'The Cherubim Sovereign', 'Neutrality', 'btei-sovereign-domain', 'Formed from colliding entropy stacks, it turns stable lines into catastrophic gambles.', 'boss_cherubim_sovereign'),
   createBoss(3, 'boss-eternal-seraph', 'The Eternal Seraph', 'Neutrality', 'btei-convergence-of-eternity', 'The first chorus and the final silence, condensed into one impossible wingbeat.', 'boss_eternal_seraph'),
   createBoss(4, 'boss-time-eater', 'The Time Eater', 'Neutrality', 'btei-temporal-ruin', 'It consumes turns before they exist; haste itself becomes prey.', 'boss_time_eater'),
-  createBoss(5, 'boss-void-architect', 'The Void Architect', 'Neutrality', 'btei-architects-manifold', 'A cosmic engineer that drafts your defeat as if it were structural law.', 'boss_void_architect'),
   createBoss(6, 'boss-null-sovereign', 'The Null Sovereign', 'Neutrality', 'btei-null-edict', 'It does not destroy; it revokes permissions to exist.', 'boss_null_sovereign'),
   createBoss(7, 'boss-shattered-oracle', 'The Shattered Oracle', 'Neutrality', 'btei-omniscient-fracture', 'Each shard fights from a timeline where you already failed.', 'boss_shattered_oracle'),
-  createBoss(8, 'boss-abyssal-colossus', 'The Abyssal Colossus', 'Neutrality', 'btei-colossus-advent', 'A depth-born titan whose shadow alone counts as a battlefield.', 'boss_abyssal_colossus'),
   createBoss(9, 'boss-eternal-null', 'The Eternal Null', 'Neutrality', 'btei-axiom-of-oblivion', 'The final theorem: what remains after all cards and all players are gone.', 'boss_eternal_null'),
 
   // Neutrality expansion (5 new)
-  createBoss(10, 'boss-neutrality-paradox-throne', 'Paradox Throne', 'Neutrality', 'btei-neutrality-paradox-crown', 'Every chain state exists at once; only one timeline lets you survive.', 'boss_neutrality_paradox_throne'),
-  createBoss(11, 'boss-neutrality-void-exchequer', 'Void Exchequer', 'Neutrality', 'btei-neutrality-zero-edict', 'It taxes all momentum and then auctions your future back to you.', 'boss_neutrality_void_exchequer'),
-  createBoss(12, 'boss-neutrality-equilibrium-rex', 'Equilibrium Rex', 'Neutrality', 'btei-neutrality-void-throne', 'Perfect balance weaponized: all extremes collapse into overwhelming force.', 'boss_neutrality_equilibrium_rex'),
-  createBoss(13, 'boss-neutrality-axiom-maw', 'Axiom Maw', 'Neutrality', 'btei-neutrality-axiom-maw', 'A living contradiction that feeds on resolved effects and unresolved fear.', 'boss_neutrality_axiom_maw'),
-  createBoss(14, 'boss-neutrality-prime-judge', 'Prime Judge of Silence', 'Neutrality', 'btei-neutrality-prime-equilibrium', 'The final arbiter of Neutrality, where every action is answered twice.', 'boss_neutrality_prime_judge'),
+  createBoss(10, 'boss-neutrality-equilibrium-rex', 'Equilibrium Rex', 'Neutrality', 'btei-neutrality-void-throne', 'Perfect balance weaponized: all extremes collapse into overwhelming force.', 'boss_neutrality_equilibrium_rex'),
+  createBoss(11, 'boss-neutrality-prime-judge', 'Prime Judge of Silence', 'Neutrality', 'btei-neutrality-prime-equilibrium', 'The final arbiter of Neutrality, where every action is answered twice.', 'boss_neutrality_prime_judge'),
 ];
 
 const BOSS_SCALED_HP_BY_INDEX = buildSetAnchoredBossHpCurve(BOSS_BLUEPRINTS);

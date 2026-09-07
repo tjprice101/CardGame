@@ -4,7 +4,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 /**
  * Quest system — daily and weekly engine-flavored objectives.
  * Pure functions; the store owns the persisted state. Rotations are seeded
- * by the UTC day index so they're stable across sessions and time zones.
+ * by the local reset window so they are stable across sessions for the player.
  */
 
 export type QuestKind =
@@ -26,9 +26,9 @@ export interface QuestTemplate {
   target?: string;
   /** Goal value the player must reach. */
   goal: number;
-  /** Aberrated Shard reward — used for weekly quests. */
+  /** Aberrated Shard reward, paid in addition to any Oblivion reward. */
   shardReward: number;
-  /** Oblivion reward — used for daily quests instead of shards. */
+  /** Base Oblivion reward before Collection Power scaling. */
   oblivionReward?: number;
 }
 
@@ -46,13 +46,25 @@ const DAILY_QUEST_POOL: QuestTemplate[] = [
 ];
 
 const WEEKLY_QUEST_POOL: QuestTemplate[] = [
-  { id: 'weekly-any-cards-50', text: 'Play 50 cards this week', kind: 'play_cards', goal: 50, shardReward: 50 },
-  { id: 'weekly-any-cards-100', text: 'Play 100 cards this week', kind: 'play_cards', goal: 100, shardReward: 70 },
+  { id: 'weekly-any-cards-50', text: 'Play 50 cards this week', kind: 'play_cards', goal: 50, shardReward: 50, oblivionReward: 50_000 },
+  { id: 'weekly-any-cards-100', text: 'Play 100 cards this week', kind: 'play_cards', goal: 100, shardReward: 70, oblivionReward: 75_000 },
   // Boss (2 over a week — very achievable)
-  { id: 'weekly-bosses-2', text: 'Defeat 2 bosses', kind: 'win_boss', goal: 2, shardReward: 60 },
+  { id: 'weekly-bosses-2', text: 'Defeat 2 bosses', kind: 'win_boss', goal: 2, shardReward: 60, oblivionReward: 100_000 },
   // Packs (3 over a week)
-  { id: 'weekly-packs-3', text: 'Open 3 card packs', kind: 'open_packs', goal: 3, shardReward: 45 },
+  { id: 'weekly-packs-3', text: 'Open 3 card packs', kind: 'open_packs', goal: 3, shardReward: 45, oblivionReward: 65_000 },
 ];
+
+const QUEST_TEMPLATES_BY_ID = new Map(
+  [...DAILY_QUEST_POOL, ...WEEKLY_QUEST_POOL].map(template => [template.id, template]),
+);
+
+export function getCollectionPowerMultiplier(resonanceScore: number): number {
+  return Math.min(3, 1 + Math.max(0, resonanceScore) / 1000);
+}
+
+export function getScaledQuestOblivion(baseReward: number, resonanceScore: number): number {
+  return Math.floor(Math.max(0, baseReward) * getCollectionPowerMultiplier(resonanceScore));
+}
 
 export interface QuestInstance {
   /** Unique id for this active quest (template id + roll id). */
@@ -64,9 +76,9 @@ export interface QuestInstance {
   target?: string;
   goal: number;
   progress: number;
-  /** Aberrated Shard reward — set on weekly quests. */
+  /** Aberrated Shard reward, paid in addition to any Oblivion reward. */
   shardReward: number;
-  /** Oblivion reward — set on daily quests instead of shards. */
+  /** Base Oblivion reward before Collection Power scaling. */
   oblivionReward?: number;
   claimed: boolean;
 }
@@ -74,9 +86,9 @@ export interface QuestInstance {
 export interface QuestState {
   daily: QuestInstance[];
   weekly: QuestInstance[];
-  /** UTC day index of last daily roll. */
+  /** Local reset-day index of last daily roll. */
   lastDailyRollDay: number;
-  /** UTC week index (day // 7) of last weekly roll. */
+  /** Local Sunday-reset week index of last weekly roll. */
   lastWeeklyRollWeek: number;
 }
 
@@ -144,24 +156,56 @@ export function rollWeeklyQuests(weekIndex: number): QuestInstance[] {
   return pickN(WEEKLY_QUEST_POOL, WEEKLY_QUEST_COUNT, seed).map(t => instantiate(t, `w${weekIndex}`));
 }
 
-/**
- * Quest day resets at 8:00 PM EST = 01:00 UTC (fixed UTC-5 offset, no DST).
- * A "quest day" runs from 01:00 UTC to 01:00 UTC the following day.
- */
-const QUEST_RESET_UTC_HOUR_MS = 3_600_000; // 1 hour = 01:00 UTC
+const DAILY_RESET_HOUR = 12;
+const WEEKLY_RESET_HOUR = 20;
 
-/**
- * Anchor for Monday-aligned quest weeks: Mon Jan 5, 1970 at 01:00 UTC.
- * Weekly quests reset every Monday at 01:00 UTC (= Sunday 8 PM EST).
- */
-const QUEST_WEEK_ANCHOR_MS = 349_200_000;
+function getDailyResetBoundary(timestamp: number): Date {
+  const boundary = new Date(timestamp);
+  boundary.setHours(DAILY_RESET_HOUR, 0, 0, 0);
+  if (boundary.getTime() > timestamp) boundary.setDate(boundary.getDate() - 1);
+  return boundary;
+}
+
+function getWeeklyResetBoundary(timestamp: number): Date {
+  const boundary = new Date(timestamp);
+  boundary.setHours(WEEKLY_RESET_HOUR, 0, 0, 0);
+  const daysSinceSunday = boundary.getDay();
+  boundary.setDate(boundary.getDate() - daysSinceSunday);
+  if (boundary.getTime() > timestamp) boundary.setDate(boundary.getDate() - 7);
+  return boundary;
+}
+
+export function getNextDailyResetAt(timestamp: number = Date.now()): number {
+  const next = getDailyResetBoundary(timestamp);
+  next.setDate(next.getDate() + 1);
+  return next.getTime();
+}
+
+export function getNextWeeklyResetAt(timestamp: number = Date.now()): number {
+  const next = getWeeklyResetBoundary(timestamp);
+  next.setDate(next.getDate() + 7);
+  return next.getTime();
+}
+
+export function formatQuestCountdown(totalMs: number): string {
+  const totalSeconds = Math.max(0, Math.floor(totalMs / 1000));
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return `${days}d ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
 
 export function getQuestDayIndex(timestamp: number): number {
-  return Math.floor((timestamp - QUEST_RESET_UTC_HOUR_MS) / 86_400_000);
+  const boundary = getDailyResetBoundary(timestamp);
+  return Math.floor(boundary.getTime() / 86_400_000);
 }
 
 export function getQuestWeekIndex(timestamp: number): number {
-  return Math.floor((timestamp - QUEST_WEEK_ANCHOR_MS) / 604_800_000);
+  const boundary = getWeeklyResetBoundary(timestamp);
+  const dateKey = Date.UTC(boundary.getFullYear(), boundary.getMonth(), boundary.getDate());
+  const sundayAnchor = Date.UTC(1970, 0, 4);
+  return Math.floor((dateKey - sundayAnchor) / 604_800_000);
 }
 
 /**
@@ -172,7 +216,22 @@ export function getQuestWeekIndex(timestamp: number): number {
 export function refreshQuestRotation(state: QuestState, timestamp: number): QuestState {
   const dayIndex = getQuestDayIndex(timestamp);
   const weekIndex = getQuestWeekIndex(timestamp);
-  let next = state;
+  const hydrateRewards = (quests: QuestInstance[]): QuestInstance[] => {
+    let changed = false;
+    const hydrated = quests.map(quest => {
+    const template = QUEST_TEMPLATES_BY_ID.get(quest.templateId);
+    if (!template) return quest;
+    if (quest.shardReward === template.shardReward && quest.oblivionReward === template.oblivionReward) return quest;
+    changed = true;
+    return { ...quest, shardReward: template.shardReward, oblivionReward: template.oblivionReward };
+    });
+    return changed ? hydrated : quests;
+  };
+  const hydratedDaily = hydrateRewards(state.daily);
+  const hydratedWeekly = hydrateRewards(state.weekly);
+  let next: QuestState = hydratedDaily !== state.daily || hydratedWeekly !== state.weekly
+    ? { ...state, daily: hydratedDaily, weekly: hydratedWeekly }
+    : state;
   if (state.lastDailyRollDay !== dayIndex || state.daily.length === 0) {
     next = { ...next, daily: rollDailyQuests(dayIndex), lastDailyRollDay: dayIndex };
   }

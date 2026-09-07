@@ -577,20 +577,14 @@ export function bossClearTitleId(bossId: string): string {
 const BOSS_TITLE_OVERRIDES: Record<string, { text: string; description: string }> = {
   // Neutrality — legacy ladder
   'boss-hollow-king': { text: 'The Hollow Heir', description: 'Unseat the Hollow Queen at the threshold of Eternity\'s Wake.' },
-  'boss-immortal-warden': { text: 'Past the Sleepless Gate', description: 'Outlast the Immortal Warden through every turning of the watch.' },
   'boss-cherubim-sovereign': { text: 'Above the Tiered Throne', description: 'Topple the Cherubim Sovereign from its tiered throne.' },
   'boss-eternal-seraph': { text: 'After the First Hymn', description: 'Still the Eternal Seraph mid-hymn.' },
   'boss-time-eater': { text: 'Untouched by the Hour', description: 'Consume the Time Eater before it finishes its meal.' },
-  'boss-void-architect': { text: 'The Unblueprinted', description: 'Erase the Void Architect\'s last blueprint.' },
   'boss-null-sovereign': { text: 'Unrevoked', description: 'Reject the Null Sovereign\'s decree of erasure.' },
   'boss-shattered-oracle': { text: 'Walker of the Shard Path', description: 'Reassemble enough of the Shattered Oracle to silence its last prophecy.' },
-  'boss-abyssal-colossus': { text: 'Of the Lightless Mooring', description: 'Sever the Abyssal Colossus from its lightless mooring.' },
   'boss-eternal-null': { text: 'After the Final Theorem', description: 'Remain after the Eternal Null closes the ledger of all things.' },
   // Neutrality — expansion
-  'boss-neutrality-paradox-throne': { text: 'Heir to the Paradox', description: 'Claim the seat the Paradox Throne could never quite hold.' },
-  'boss-neutrality-void-exchequer': { text: 'Default of the Void', description: 'Refuse the Void Exchequer\'s final invoice.' },
   'boss-neutrality-equilibrium-rex': { text: 'Past the Balance Point', description: 'Tip the Equilibrium Rex past its own balance point.' },
-  'boss-neutrality-axiom-maw': { text: 'Speaker of Closed Axioms', description: 'Seal the Axiom Maw with one of its own truths.' },
   'boss-neutrality-prime-judge': { text: 'Acquitted in Silence', description: 'Walk free from the Prime Judge\'s last verdict.' },
 };
 function buildBossClearTitles(): TitleBadgeDefinition[] {

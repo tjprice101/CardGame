@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme } from '@/ui/theme';
-import { isDisplayCherubimType } from '@/ui/preferences';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 
 const RARITY_COLORS: Record<string, string> = {
@@ -13,9 +12,8 @@ const RARITY_ORDER = ['Legendary', 'Eternal', 'Infinite', 'Enigmatic', 'Epic', '
 
 interface DeckStats {
   rarityCounts: Record<string, number>;
-  typeSeraphim: number;
-  typeCherubim: number;
-  typeOphanim: number;
+  typeLight: number;
+  typeDark: number;
 }
 
 interface Props {
@@ -86,8 +84,8 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
     for (const entry of deckList) {
       const def = CardRegistry.get(entry.definitionId);
       if (!def) continue;
-      const target = def.type === 'Seraphim' ? seraphim
-        : isDisplayCherubimType(def.type) ? cherubim
+      const target = def.type === 'Light' ? seraphim
+        : def.type === 'Dark' ? cherubim
         : ophanim;
       const existing = target.find(e => e.name === def.name && e.finish === entry.finish);
       if (existing) existing.count += entry.copies;
@@ -138,9 +136,8 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
         <div style={{ width: 1, background: 'rgba(72,128,190,0.22)', flexShrink: 0 }} />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
           <div style={{ display: 'flex', gap: 8, fontSize: 10, flexWrap: 'wrap' }}>
-            <span style={{ color: '#f0bd78' }}>Ser: <strong>{deckStats.typeSeraphim}</strong></span>
-            <span style={{ color: warmTheme.cherubim }}>Che: <strong>{deckStats.typeCherubim}</strong></span>
-            <span style={{ color: '#9070b8' }}>Oph: <strong>{deckStats.typeOphanim}</strong></span>
+            <span style={{ color: '#f0bd78' }}>Light: <strong>{deckStats.typeLight}</strong></span>
+            <span style={{ color: warmTheme.cherubim }}>Dark: <strong>{deckStats.typeDark}</strong></span>
           </div>
           {totalCards > 0 && (
             <div style={{ display: 'flex', height: 5, borderRadius: 2, overflow: 'hidden', background: 'rgba(255,255,255,0.06)' }}>
@@ -161,10 +158,9 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
         </div>
       </div>
 
-      {renderSection('Seraphim', sections.seraphim, '#f0bd78')}
-      {renderSection('Cherubim', sections.cherubim, warmTheme.cherubim)}
-      {renderSection('Ophanim', sections.ophanim, '#9070b8')}
-      {renderSection('Extra Deck (Angels)', sections.angels, '#70c890')}
+      {renderSection('Light', sections.seraphim, '#f0bd78')}
+      {renderSection('Dark', sections.cherubim, warmTheme.cherubim)}
+      {renderSection('Extra Deck (Ain Soph Aur)', sections.angels, '#70c890')}
 
       {/* Notes — expandable, one click away */}
       <div style={{ marginTop: 8, borderTop: '1px solid rgba(72,128,190,0.18)', paddingTop: 12 }}>

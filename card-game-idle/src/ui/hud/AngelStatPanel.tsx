@@ -48,57 +48,55 @@ export default function AngelStatPanel() {
   const stats = useStore(selectComputedStats);
   const bossFight = useStore(selectBossFight);
 
-  // Single pass over board slots instead of four separate .filter() calls.
+  // Single pass over board slots instead of separate .filter() calls.
   // Must be declared before any conditional return to satisfy Rules of Hooks.
-  const { angelCount, totalSeraphimCount, activeSeraphimCount, cherubimCount } = useMemo(() => {
-    let angelCount = 0, totalSeraphimCount = 0, activeSeraphimCount = 0;
+  const { asaCount, mainDeckCount, ainCount, sophCount } = useMemo(() => {
+    let asaCount = 0, ainCount = 0, sophCount = 0;
     for (const slot of board.frontSlots) {
-      if (slot?.type === 'Angel') { angelCount++; }
-      else if (slot?.type === 'Seraphim') {
-        totalSeraphimCount++;
-        if (slot.isActive) activeSeraphimCount++;
-      }
+      if (slot) asaCount++;
     }
-    const cherubimCount = board.backSlots.filter(s => s !== null).length;
-    return { angelCount, totalSeraphimCount, activeSeraphimCount, cherubimCount };
+    for (const slot of board.backSlots) {
+      if (!slot) continue;
+      if (slot.side === 'ain') ainCount++;
+      else sophCount++;
+    }
+    const mainDeckCount = ainCount + sophCount;
+    return { asaCount, mainDeckCount, ainCount, sophCount };
   }, [board.frontSlots, board.backSlots]);
 
   // During an active boss fight the boss panel covers this area — hide to
   // avoid visual clutter. Must come AFTER all hooks to satisfy Rules of Hooks.
   if (bossFight.mode === 'active') return null;
 
-  const hasAnything = angelCount > 0 || totalSeraphimCount > 0;
+  const hasAnything = asaCount > 0 || mainDeckCount > 0;
 
   return (
     <div style={styles.panel}>
       <div style={styles.title}>Board</div>
       {hasAnything ? (
         <>
-          {stats.activeSynergies > 0 && (
-            <div style={styles.stat}>+{formatNumber(stats.oblivionPerCardBonus)} Oblivion/card</div>
-          )}
-          {(turn.seraphimBonusAmp ?? 0) > 0 && (
-            <div style={styles.stat}>+{formatNumber(turn.seraphimBonusAmp!)} per Seraphim payout this turn</div>
+          {turn.limitlessLightStacks > 0 && (
+            <div style={styles.stat}>{formatNumber(turn.limitlessLightStacks)} Limitless Light Stacks</div>
           )}
           {turn.oblivionEarnedThisTurn > 0 && (
             <div style={styles.stat}>+{formatNumber(turn.oblivionEarnedThisTurn)} this turn</div>
           )}
-          {angelCount > 0 && (
+          {asaCount > 0 && (
             <div style={styles.synergy}>
-              ✦ {angelCount} Angel{angelCount > 1 ? 's' : ''} on board
+              ✦ {asaCount} Ain Soph Aur summoned
             </div>
           )}
-          {totalSeraphimCount > 0 && (
+          {mainDeckCount > 0 && (
             <div style={{
               ...styles.synergy,
-              color: activeSeraphimCount > 0 ? '#4f8a47' : 'rgba(244,244,248,0.38)',
+              color: ainCount > 0 ? '#4f8a47' : 'rgba(244,244,248,0.38)',
             }}>
-              {activeSeraphimCount}/{totalSeraphimCount} Seraphim{totalSeraphimCount > 1 ? 's' : ''} active
+              {ainCount} Ain · {sophCount} Soph
             </div>
           )}
-          {cherubimCount > 0 && (
+          {stats.globalOblivionMult > 0 && (
             <div style={{ ...styles.synergy, color: '#8f74a9' }}>
-              {cherubimCount} Cherubim card{cherubimCount > 1 ? 's' : ''} active
+              Collection Power ×{(1 + stats.globalOblivionMult).toFixed(2)}
             </div>
           )}
         </>

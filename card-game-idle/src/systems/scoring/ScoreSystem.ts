@@ -1,63 +1,15 @@
 import type { BoardState, ComputedBoardStats } from '@/types/game';
-import type { AngelInstance, SeraphimInstance } from '@/types/cards';
 
 export class ScoreSystem {
   static compute(board: BoardState): ComputedBoardStats {
-    // Sum global oblivion multiplier from back-slot Cherubim (independent of active Seraphim count).
-    let globalOblivionMult = 0;
-    for (const slot of board.backSlots) {
-      if (!slot) continue;
-      const cherDef = ScoreSystem.getDefinition(slot.definitionId);
-      if (!cherDef || cherDef.type !== 'Cherubim') continue;
-      for (const eff of cherDef.effects) {
-        if (eff.type === 'cherubim_global_oblivion_mult') {
-          globalOblivionMult += eff.value;
-        }
-      }
-    }
+    const asaCount = board.frontSlots.filter(slot => slot !== null).length;
+    const backCount = board.backSlots.filter(slot => slot !== null).length;
 
-    const activeSeraphims = board.frontSlots.filter(
-      (s): s is SeraphimInstance => s?.type === 'Seraphim' && s.isActive
-    );
-
-    const activeSynergies = activeSeraphims.length;
-    // Full-board Oblivion multiplier was removed; keep field for compatibility.
-    const fullBoardActive = false;
-
-    if (activeSynergies === 0) {
-      return { activeSynergies: 0, oblivionPerCardBonus: 0, ophanimOblivionBonus: 0, cherubimExtraPlays: 0, globalOblivionMult, fullBoardActive };
-    }
-
-    let oblivionPerCardBonus = 0;
-    let ophanimOblivionBonus = 0;
-    let cherubimExtraPlays = 0;
-
-    for (const s of activeSeraphims) {
-      const def = ScoreSystem.getDefinition(s.definitionId);
-      if (!def || def.type !== 'Seraphim') continue;
-      const { bonusType, bonusValue } = def.baseStats;
-      switch (bonusType) {
-        case 'oblivion_per_card':   oblivionPerCardBonus += bonusValue; break;
-        case 'ophanim_bonus':        ophanimOblivionBonus  += bonusValue; break;
-        case 'cherubim_extra_plays':   cherubimExtraPlays      += Math.round(bonusValue); break;
-        // chain_bonus, cherubim_expire_bonus are handled at play-time
-        // Light-only bonus types are handled elsewhere in the current rework model.
-      }
-    }
-
-    // Also sum oblivion_per_card and oblivion_per_seraphim from Angels on frontSlots
-    const angels = board.frontSlots.filter((s): s is AngelInstance => s?.type === 'Angel');
-    for (const a of angels) {
-      const def = ScoreSystem.getDefinition(a.definitionId);
-      if (!def || def.type !== 'Angel') continue;
-      if (def.baseStats.bonusType === 'oblivion_per_card') {
-        oblivionPerCardBonus += def.baseStats.bonusValue;
-      } else if (def.baseStats.bonusType === 'oblivion_per_seraphim') {
-        oblivionPerCardBonus += def.baseStats.bonusValue * activeSynergies;
-      }
-    }
-
-    return { activeSynergies, oblivionPerCardBonus, ophanimOblivionBonus, cherubimExtraPlays, globalOblivionMult, fullBoardActive };
+    return {
+      asaSummoned: asaCount,
+      mainDeckOnBoard: backCount,
+      globalOblivionMult: 0,
+    };
   }
 
   static getDefinition: (id: string) => import('@/types/cards').CardDefinition | undefined =

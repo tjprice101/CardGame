@@ -62,6 +62,8 @@ There are **no `cardSubtype` fields** on any card definition. There is **no `Hea
 | Eternal | Eternity's Wake boss rewards | Much more powerful; Seraphim get higher patience thresholds and draws; Cherubim give more Patience per card |
 | Infinite | Crafted via Infinitude (consuming specific Eternals) | Apex power level; Seraphim get patienceThreshold 8+; Angels have `patience_double_all` in activated abilities |
 
+The surviving Neutrality Eternal cards are currently blank-slate placeholders: their description is `To be redesigned.`, their play/summon/activated effect arrays are empty, their passive bonus is zero, and their Patience threshold is unset. Attack shells and rarity/type metadata remain intact. The six retired cards are Eternal Vigil, Colossus Advent, Architect's Manifold, Paradox Throne, Void Exchequer, and Axiom Maw; do not reintroduce them without an explicit redesign.
+
 Rarity is **feel-based**, not rule-based. No strict effect-type restrictions per tier (except Eternal/Infinite scale values appropriately).
 
 ---
@@ -142,6 +144,8 @@ All four run-ending restore sites in `src/state/store.ts` (`completeBossFight`'s
 
 If you add a new run-ending restore point that touches `s.progress`, you must apply this same capture-then-merge pattern or any enigma flip made during that run will be lost.
 
+The `neutralizing-the-void` enigma now targets `boss-hollow-king` (The Hollow Queen). Both its timed-clear and ×3 HP steps retain the requirement to finish with at least 1:30 remaining. Save v46 resets in-flight progress for this enigma so the retargeted milestones can be earned cleanly.
+
 ---
 
 ## Oblivion
@@ -178,7 +182,7 @@ Each set has a **distinct primary mechanic** that defines its strategic identity
 - **Patience per card by Cherubim rarity**: Common +1, Rare +2, Epic +3, Eternal +4–5, Infinite +6–8.
 - **Patience stack cap**: 150 per unit (enforced in `src/systems/cards/neutralityPatience.ts`).
 - **Live Neutrality effect types**: `patience_gain_all`, `patience_double_all`, `cherubim_patience_per_card`, `neutrality_equilibrium_starbound_cashout` (Transcendent only — `src/data/ascension/transcendentCards.ts`), `neutrality_equilibrium_tactical_spend`.
-- **Removed sub-systems (do NOT re-add)**: Patient Light, Equilibrium Sigils, Marked Cards, Linked Gain Bonus, Timer Pause, Uncapped Gains, Infinite Oblivion Signature tracking. Their TurnState fields and effect types have been stripped. Any surviving references outside archived migrations are bugs.
+- **Removed sub-systems (do NOT re-add)**: Patient Light, Equilibrium Sigils, Marked Cards, Linked Gain Bonus, Timer Pause, Uncapped Gains, Infinite Oblivion Signature tracking. Their TurnState fields, effect types, save state, UI panels, parsing rules, and card descriptions have been stripped. The Patience cap is fixed at 150; the Transcendent uncap path is gone. Any surviving references outside archived migrations are bugs.
 
 > **Note:** Only Neutrality is currently implemented. Additional sets will be introduced as the game expands.
 
@@ -333,6 +337,24 @@ Neutrality card reworks must remain Patience-system-native. Do not replace Patie
 - Boss fights (Eternity's Wake) load decks from `progress.savedDecks`; `saveCurrentDeck` must receive the edited `deckList` and `extraDeck` snapshot.
 - Card-info surfaces (Collection detail, DeckBuilder hover tooltip, HUD hand/board tooltips, boss/infinitude reward previews) no longer show "Action Class"/"Engine Role"/"{Type} Ability" sections — `CardEngineCallout.tsx` and its call sites were removed; only `CardRulesDigest` renders card rules text now. Collection detail's "How to Obtain" fallback shows tier-specific flavor text keyed by rarity/id prefix (`flavorObtain` in `CollectionCardDetail.tsx`).
 
+### Streamlined Card Summary Model
+
+`getCardSummarySections` in `src/ui/cardStatSummary.ts` emits at most four sections in this order: `Effect`, `Board`, `Attacks`, and `Summon`. The former Ability, Rules, On Play, On Board, Passive, Patience, Signature, On Summon, Awaken, Hooks, Mechanics, and Play sections are folded into that model. `Board` is omitted for zero-value passives, `Attacks` is limited to Seraphim and Angels, and `Summon` is Angel-only with materials, conditions, and signature information merged. Section titles are deduplicated case-insensitively. `getCardPreviewLines` and `CardRulesDigest` consume the same unified list.
+
+### Challenges and Timers
+
+- Daily challenges reset at 12:00 PM local time; weekly challenges reset Sunday at 8:00 PM local time.
+- `getNextDailyResetAt`, `getNextWeeklyResetAt`, and `formatQuestCountdown` in `src/systems/progression/quests.ts` provide the boundaries and countdown text. `QuestsModal.tsx` displays live one-second countdowns.
+- Daily and weekly Oblivion rewards scale at claim time with Collection Power: `floor(base * min(3, 1 + max(0, resonanceScore) / 1000))`. Weekly challenges award Oblivion and Shards together. `claimQuest` computes the current resonance score rather than trusting a stale displayed amount.
+
+### Wished Upon A Star
+
+The event ends November 1, 2026 at 8:00 PM EST. The shared timestamp and display label live in `src/ui/eventWishedUponAStar/eventTimer.ts`.
+
+### Eternity's Wake HP
+
+The set-anchored boss HP curve starts at `FIRST_SET_FIRST_BOSS_HP = 97_031`, approximately 15% above the previous anchor. The existing `SET_FINAL_HP_MULTIPLIER = 2.7` then carries the increase through later sets.
+
 ---
 
 ## Key File Map
@@ -358,7 +380,9 @@ Neutrality card reworks must remain Patience-system-native. Do not replace Patie
 | `src/ui/eternitysWake/EternitysWake.tsx` | Eternity's Wake boss fight UI; `BOSS_ART_FILES` map |
 | `src/data/bosses/` | Boss definitions (`BossDefinition`, `BossCategory`, `BOSS_DEFINITIONS`) |
 | `src/cards/CardRegistry.ts` | Card lookup + alias resolution; `CardRegistry.getAll()` for runtime audits |
-| `src/save/SaveManager.ts` | Persistence; `CURRENT_VERSION = 41`; `progress.savedDecks` for boss fight deck snapshots |
+| `src/save/SaveManager.ts` | Persistence; `CURRENT_VERSION = 46`; v46 removes retired cards/bosses and resets the retargeted Neutralizing the Void enigma |
+| `src/systems/progression/quests.ts` | Daily/weekly rotation, reset boundaries, countdown formatting, and Collection Power reward scaling |
+| `src/ui/eventWishedUponAStar/eventTimer.ts` | Shared Wished Upon A Star end timestamp and label |
 
 ---
 

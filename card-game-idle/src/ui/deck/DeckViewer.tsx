@@ -43,12 +43,12 @@ const RARITY_GLYPH: Record<string, string> = {
   Infinite: '∞',
 };
 
-const TYPE_ORDER: CardDefinition['type'][] = ['Ophanim', 'Seraphim', 'Cherubim', 'Angel'];
+const TYPE_ORDER: CardDefinition['type'][] = ['Light', 'Dark', 'AinSophAur'];
 const TYPE_LABELS: Record<CardDefinition['type'], string> = {
-  Ophanim: 'Ophanim', Seraphim: 'Seraphim', Cherubim: 'Cherubim', Angel: 'Angel',
+  Light: 'Light', Dark: 'Dark', AinSophAur: 'Ain Soph Aur',
 };
 const TYPE_ACCENT: Record<CardDefinition['type'], string> = {
-  Ophanim: '#ff9966', Seraphim: '#ffcc66', Cherubim: '#aaddff', Angel: '#99ffcc',
+  Light: '#fff0a8', Dark: '#8aa0c8', AinSophAur: '#d9a8ff',
 };
 const RARITY_ORDER: Record<string, number> = {
   Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5,

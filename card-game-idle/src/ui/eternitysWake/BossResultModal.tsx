@@ -84,7 +84,7 @@ export default function BossResultModal() {
   }
   const rewardDef = isVictory && boss ? CardRegistry.get(boss.rewardCardId) : undefined;
   const rewardPreviewText = rewardDef
-    ? getCardPreviewLines(rewardDef, rewardDef.type === 'Angel' ? 3 : 2).join(' ')
+    ? getCardPreviewLines(rewardDef, rewardDef.type === 'AinSophAur' ? 3 : 2).join(' ')
     : '';
   const rewardFaceMetrics = getCardFaceMetrics('grid');
 
@@ -325,11 +325,11 @@ export default function BossResultModal() {
                       overflow: 'hidden',
                       textAlign: 'center',
                       WebkitBoxOrient: 'vertical',
-                      WebkitLineClamp: rewardDef.type === 'Angel' ? 3 : 2,
+                      WebkitLineClamp: rewardDef.type === 'AinSophAur' ? 3 : 2,
                     }}>
                       {rewardPreviewText}
                     </div>
-                    {rewardDef.type === 'Angel' && (
+                    {rewardDef.type === 'AinSophAur' && (
                       <div style={{
                         fontSize: 6,
                         color: cardFacePalette.textMuted,

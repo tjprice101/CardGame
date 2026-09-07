@@ -42,16 +42,14 @@ function getExampleCardIds(packCardPool: string[]): string[] {
     .filter((d): d is NonNullable<ReturnType<typeof CardRegistry.get>> => d !== undefined);
 
   const byType: Record<string, string | undefined> = {
-    Ophanim: cardPoolDefs.find(d => d.type === 'Ophanim')?.definitionId,
-    Cherubim: cardPoolDefs.find(d => d.type === 'Cherubim')?.definitionId,
-    Seraphim: cardPoolDefs.find(d => d.type === 'Seraphim')?.definitionId,
-    Angel: cardPoolDefs.find(d => d.type === 'Angel')?.definitionId,
+    Light: cardPoolDefs.find(d => d.type === 'Light')?.definitionId,
+    Dark: cardPoolDefs.find(d => d.type === 'Dark')?.definitionId,
+    AinSophAur: cardPoolDefs.find(d => d.type === 'AinSophAur')?.definitionId,
   };
 
-  push(byType.Ophanim);
-  push(byType.Cherubim);
-  push(byType.Seraphim);
-  push(byType.Angel);
+  push(byType.Light);
+  push(byType.Dark);
+  push(byType.AinSophAur);
 
   for (const d of cardPoolDefs) push(d.definitionId);
 

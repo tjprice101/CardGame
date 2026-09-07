@@ -255,7 +255,7 @@ export default function EternitysWake({ onClose }: Props) {
           const previousBossName = previousBossNameById.get(boss.id);
           const rewardDisplayName = rewardDef?.name ?? '';
           const rewardPreviewText = rewardDef
-            ? getCardPreviewLines(rewardDef, rewardDef.type === 'Angel' ? 3 : 2).join(' ')
+            ? getCardPreviewLines(rewardDef, rewardDef.type === 'AinSophAur' ? 3 : 2).join(' ')
             : '';
           const rewardFaceMetrics = getCardFaceMetrics('grid');
           const bossIdx = Math.max(0, BOSS_DEFINITIONS.findIndex(entry => entry.id === boss.id));
@@ -430,11 +430,11 @@ export default function EternitysWake({ onClose }: Props) {
                               overflow: 'hidden',
                               textAlign: 'center',
                               WebkitBoxOrient: 'vertical',
-                              WebkitLineClamp: rewardDef.type === 'Angel' ? 3 : 2,
+                              WebkitLineClamp: rewardDef.type === 'AinSophAur' ? 3 : 2,
                             }}>
                               {rewardPreviewText}
                             </div>
-                            {rewardDef.type === 'Angel' && (
+                            {rewardDef.type === 'AinSophAur' && (
                               <div style={{
                                 fontSize: 6,
                                 color: cardFacePalette.textMuted,

@@ -18,7 +18,7 @@ import {
 
 const DISPLAY_FONT = uiTypography.display;
 
-const EMPTY_FRONT = [null, null, null, null, null] as BoardState['frontSlots'];
+const EMPTY_FRONT = [null, null, null, null] as BoardState['frontSlots'];
 const EMPTY_BACK  = [null, null, null, null]       as BoardState['backSlots'];
 
 interface Props {

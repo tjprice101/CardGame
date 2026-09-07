@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useStore, selectTurn, selectDeck, selectBoard } from '@/state/store';
+import { useStore, selectTurn, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
@@ -12,7 +12,6 @@ import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import type { CardSubtypeFilter } from '@/types/effects';
-import type { AngelInstance, SeraphimInstance } from '@/types/cards';
 import type { DeckCard } from '@/types/game';
 
 const DISPLAY_FONT = uiTypography.display;
@@ -139,7 +138,6 @@ export default function PendingEffectModal() {
   const faceMetrics = getCardFaceMetrics('compact');
   const turn = useStore(selectTurn);
   const deck = useStore(selectDeck);
-  const board = useStore(selectBoard);
   const { resolvePending } = useStore.getState();
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -182,7 +180,7 @@ export default function PendingEffectModal() {
           </div>
           {footerLabel && (
             <div style={{ fontSize: 11, fontWeight: 700, color: footerColor ?? cardFacePalette.textMuted, marginTop: 4, textAlign: 'center', fontFamily: BODY_FONT }}>
-              ✓ {footerLabel}
+              ✁E{footerLabel}
             </div>
           )}
         </div>
@@ -194,7 +192,7 @@ export default function PendingEffectModal() {
     const maxDiscard = pending.count;
     const isLuminousCycle = pending.sourceCard.includes(':draw_plus:');
     const isGleamingPassage = pending.sourceCard.includes(':draw:');
-    const discardableHand = deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'Angel');
+    const discardableHand = deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'AinSophAur');
 
     const toggleCard = (id: string) => {
       setSelected(prev =>
@@ -558,15 +556,18 @@ export default function PendingEffectModal() {
   if (pending.type === 'salvage') {
     const requiredCount = Math.min(pending.count, pending.cards.length);
 
+    const allowedSubtypeTypes: ReadonlySet<CardSubtypeFilter> = new Set([
+      'AinSophAur', 'Light', 'Dark',
+    ]);
     const selectedTypes = new Set<CardSubtypeFilter>(
       selected
         .map(id => pending.cards.find(card => card.instanceId === id))
         .filter((card): card is typeof pending.cards[number] => Boolean(card))
-        .map(card => CardRegistry.get(card.definitionId)?.type)
-        .filter((type): type is CardSubtypeFilter => type === 'Seraphim' || type === 'Cherubim' || type === 'Ophanim'),
+        .map(card => CardRegistry.get(card.definitionId)?.type as string | undefined)
+        .filter((type): type is CardSubtypeFilter => !!type && allowedSubtypeTypes.has(type as CardSubtypeFilter)),
     );
 
-    const requiredTypes = new Set<CardSubtypeFilter>(pending.filter ?? ['Ophanim']);
+    const requiredTypes = new Set<CardSubtypeFilter>(pending.filter ?? []);
     const hasRequiredTypes = pending.filter
       ? [...requiredTypes].every(type => selectedTypes.has(type))
       : true;
@@ -638,82 +639,7 @@ export default function PendingEffectModal() {
     );
   }
 
-  if (pending.type === 'neutralizing_bane_choose_target') {
-    const activeUnits = (board.frontSlots as Array<SeraphimInstance | AngelInstance | null>).filter(
-      (unit): unit is SeraphimInstance | AngelInstance =>
-        !!unit &&
-        (unit.type === 'Seraphim' || unit.type === 'Angel') &&
-        (unit.type !== 'Seraphim' || (unit as SeraphimInstance).isActive),
-    );
-    const selectedId = selected[0] ?? null;
-    const canConfirm = selectedId !== null && activeUnits.some(u => u.instanceId === selectedId);
-
-    if (activeUnits.length === 0) {
-      return (
-        <div className="anim-backdrop-fade" style={backdropStyle}>
-          <div className="anim-panel-slide-up" style={styles.panel}>
-            <div style={styles.title}>Equilibrium's Bane</div>
-            <div style={styles.subtitle}>No valid targets — no active Seraphim or Angels on your board.</div>
-            <div style={styles.footer}>
-              <div style={styles.info} />
-              <button className="menu-tactile-btn" style={styles.secondaryBtn} onClick={failToFind}>Dismiss</button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div className="anim-backdrop-fade" style={backdropStyle}>
-        <div className="anim-panel-slide-up" style={styles.panel}>
-          <div style={styles.title}>Equilibrium's Bane</div>
-          <div style={styles.subtitle}>
-            Choose a Seraphim or Angel. Gain Oblivion equal to their Patience × 5,000 × Collection Power, then they lose half their Patience.
-          </div>
-          <div style={styles.cardGrid}>
-            {activeUnits.map(unit => {
-              const isChosen = unit.instanceId === selectedId;
-              const patience = unit.patienceStacks ?? 0;
-              return (
-                <div
-                  key={unit.instanceId}
-                  style={buildCardStyle(
-                    { definitionId: unit.definitionId, finish: unit.finish },
-                    isChosen ? styles.cardTake : undefined,
-                  )}
-                  onClick={() => setSelected([unit.instanceId])}
-                >
-                  {renderCardFace(
-                    { definitionId: unit.definitionId, finish: unit.finish },
-                    patience > 0 ? `${patience} Patience` : undefined,
-                    patience >= 30 ? '#70c890' : '#f0bd78',
-                  )}
-                </div>
-              );
-            })}
-          </div>
-          <div style={styles.footer}>
-            <div style={styles.info}>
-              {selectedId
-                ? (() => {
-                    const u = activeUnits.find(x => x.instanceId === selectedId);
-                    const p = u?.patienceStacks ?? 0;
-                    return `${p} Patience × 5,000${p >= 30 ? ' · +1 Draw' : ''}`;
-                  })()
-                : 'Select a target unit'}
-            </div>
-            <button
-              className="menu-tactile-btn"
-              style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }}
-              onClick={canConfirm ? confirm : undefined}
-            >
-              Confirm
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return null;
 }
+

@@ -172,6 +172,77 @@ describe('SaveManager integrity', () => {
     });
   });
 
+  describe('v47 -> v48 migration', () => {
+    it('resets live board, hand, and turn state while preserving collection and progress', () => {
+      const storage = memStorage();
+      const legacyPayload = {
+        progress: {
+          collection: {
+            'light-neutrality-1': 2,
+            'dark-neutrality-11': 1,
+          },
+          favoriteCollection: {
+            'light-neutrality-1::normal': true,
+          },
+          savedDecks: [
+            {
+              name: 'Legacy Test',
+              deckList: [{ definitionId: 'light-neutrality-1', finish: 'normal' }],
+              extraDeck: [{ definitionId: 'ain-soph-aur-neutrality-1', finish: 'normal' }],
+              needsRebuild: false,
+            },
+          ],
+          profile: { name: 'Warden', avatarId: 'avatar-acolyte', titleId: null },
+        },
+        deck: {
+          hand: [{ definitionId: 'light-neutrality-3', side: 'soph', limitlessCharge: 2 }],
+          drawPile: [{ definitionId: 'dark-neutrality-2', side: 'soph', limitlessCharge: 0 }],
+          discardPile: [{ definitionId: 'light-neutrality-4', side: 'ain', limitlessCharge: 1 }],
+        },
+        board: {
+          frontSlots: [{ definitionId: 'ain-soph-aur-neutrality-2', type: 'AinSophAur', side: 'ain', faceState: 'front' }, null, null, null],
+          backSlots: [{ definitionId: 'light-neutrality-5', side: 'soph', limitlessCharge: 5 }, { definitionId: 'dark-neutrality-1', side: 'soph', limitlessCharge: 0 }, null, null],
+          activeBoardEffects: [{ id: 'legacy' }],
+        },
+        turn: {
+          phase: 'playing',
+          cardsPlayedThisTurn: 4,
+          limitlessLightStacks: 2,
+          oblivionEarnedThisTurn: 99,
+          mulliganSelected: ['0'],
+          pendingEffect: { id: 'legacy-effect' },
+          pendingEffectQueue: [{ id: 'legacy-effect-2' }],
+        },
+        settings: { musicVolume: 0.42 },
+      } as Record<string, unknown>;
+
+      const compressed = LZString.compressToUTF16(JSON.stringify(legacyPayload));
+      storage.write(JSON.stringify({ version: 47, data: compressed }));
+
+      const mgr = new SaveManager(() => makeState(), storage);
+      const result = mgr.loadWithStatus();
+
+      expect(result).not.toBeNull();
+      expect(result!.state.board.frontSlots).toEqual([null, null, null, null]);
+      expect(result!.state.board.backSlots).toEqual([null, null, null, null]);
+      expect(result!.state.board.activeBoardEffects).toEqual([]);
+      expect(result!.state.deck.hand).toEqual([]);
+      expect(result!.state.deck.drawPile).toEqual([]);
+      expect(result!.state.deck.discardPile).toEqual([]);
+      expect(result!.state.turn.phase).toBe('idle');
+      expect(result!.state.turn.cardsPlayedThisTurn).toBe(0);
+      expect(result!.state.turn.limitlessLightStacks).toBe(0);
+      expect(result!.state.turn.oblivionEarnedThisTurn).toBe(0);
+      expect(result!.state.turn.mulliganSelected).toEqual([]);
+      expect(result!.state.turn.pendingEffect).toBeNull();
+      expect(result!.state.turn.pendingEffectQueue).toEqual([]);
+      expect(result!.state.progress.collection).toMatchObject({ 'light-neutrality-1': 2, 'dark-neutrality-11': 1 });
+      expect(result!.state.progress.savedDecks?.[0]).toMatchObject({ needsRebuild: true });
+      expect(result!.state.progress.profile).toMatchObject({ name: 'Warden' });
+      expect(result!.state.settings.musicVolume).toBe(0.42);
+    });
+  });
+
   describe('current schema version', () => {
     it('is at least 9 (profile + daily login were introduced at v9)', () => {
       expect(CURRENT_VERSION).toBeGreaterThanOrEqual(9);

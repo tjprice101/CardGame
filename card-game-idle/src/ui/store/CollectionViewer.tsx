@@ -30,7 +30,7 @@ const RARITY_ORDER: Record<string, number> = {
   Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5, Enigmatic: 6, Transcendent: 7,
 };
 
-const INFINITE_TYPE_ORDER = ['Ophanim', 'Seraphim', 'Cherubim', 'Angel'] as const;
+const INFINITE_TYPE_ORDER = ['Light', 'Dark', 'AinSophAur'] as const;
 
 const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));
 const STORE_COLLECTION_SET_ORDER = STORE_PACK_ORDER.map(packId => {
