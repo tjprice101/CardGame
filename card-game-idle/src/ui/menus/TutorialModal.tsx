@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { type NeutralityTutorialTier } from '@/data/trialDecks';
 import { uiTypography } from '@/ui/theme';
 import { RARITY_TIERS, SET_ENGINE_ENTRIES, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
 
 interface Props {
   onClose: () => void;
-  onPlayTutorialTurn: (tier: NeutralityTutorialTier) => void;
 }
 
 const DISPLAY_FONT = uiTypography.display;
@@ -566,74 +564,11 @@ function ProgressionBody() {
   );
 }
 
-function PlayTutorialTurnBody({ onPlayTutorialTurn }: { onPlayTutorialTurn: (tier: NeutralityTutorialTier) => void }) {
-  const launch = (tier: NeutralityTutorialTier) => () => onPlayTutorialTurn(tier);
-
-  return (
-    <>
-      <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Neutrality Training Lanes</div>
-        <div style={bodyTextStyle}>
-          Pick a single-turn tutorial lane and jump directly into a practice turn. These runs are training-only:
-          no Card-light, no mastery rewards, no Resonance points, and no permanent account rewards.
-        </div>
-      </div>
-
-      <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Starter Lane</div>
-        <div style={{ ...bodyTextStyle, marginBottom: 10 }}>
-          Default Neutrality deck. Learn patience flow and setup rhythm before moving up.
-        </div>
-        <button className="menu-tactile-btn" style={styles.playTurnBtn} onClick={launch('starter')}>
-          Play Tutorial Turn: Neutrality Starter
-        </button>
-      </div>
-
-      <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Eternal Lane</div>
-        <div style={{ ...bodyTextStyle, marginBottom: 10 }}>
-          Neutrality Eternal practice deck with advanced lines and heavier payoffs.
-        </div>
-        <button className="menu-tactile-btn" style={styles.playTurnBtn} onClick={launch('eternal')}>
-          Play Tutorial Turn: Neutrality Eternal
-        </button>
-      </div>
-
-      <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Infinite Lane</div>
-        <div style={{ ...bodyTextStyle, marginBottom: 10 }}>
-          Neutrality Infinite practice deck for endgame sequencing and high-pressure turns.
-        </div>
-        <button className="menu-tactile-btn" style={styles.playTurnBtn} onClick={launch('infinite')}>
-          Play Tutorial Turn: Neutrality Infinite
-        </button>
-      </div>
-    </>
-  );
-}
-
 // --- Modal -------------------------------------------------------------------
 
-const styles: Record<string, React.CSSProperties> = {
-  playTurnBtn: {
-    borderRadius: 10,
-    border: `1px solid ${PALETTE.border}`,
-    background: 'linear-gradient(180deg, rgba(255, 249, 240, 0.95) 0%, rgba(243, 223, 192, 0.92) 100%)',
-    color: PALETTE.inkDeep,
-    cursor: 'pointer',
-    fontSize: 12,
-    padding: '8px 12px',
-    fontFamily: DISPLAY_FONT,
-    letterSpacing: 0.45,
-    width: '100%',
-    textAlign: 'left',
-  },
-};
-
-function buildSections(onPlayTutorialTurn: (tier: NeutralityTutorialTier) => void): Section[] {
+function buildSections(): Section[] {
   const bodyMap: Record<string, React.ReactNode> = {
     'overview':       <OverviewBody />,
-    'play-turn':      <PlayTutorialTurnBody onPlayTutorialTurn={onPlayTutorialTurn} />,
     'turn-flow':      <TurnFlowBody />,
     'board':          <BoardBody />,
     'attacks':        <AttacksBody />,
@@ -647,8 +582,8 @@ function buildSections(onPlayTutorialTurn: (tier: NeutralityTutorialTier) => voi
   return TUTORIAL_SECTIONS.map(s => ({ ...s, body: bodyMap[s.id] ?? null }));
 }
 
-export default function TutorialModal({ onClose, onPlayTutorialTurn }: Props) {
-  const sections = buildSections(onPlayTutorialTurn);
+export default function TutorialModal({ onClose }: Props) {
+  const sections = buildSections();
   const [activeId, setActiveId] = useState<string>(sections[0].id);
   const active = sections.find(s => s.id === activeId) ?? sections[0];
 

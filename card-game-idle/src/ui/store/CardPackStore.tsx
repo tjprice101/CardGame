@@ -219,7 +219,9 @@ const styles: Record<string, React.CSSProperties> = {
   } as React.CSSProperties,
 };
 
-interface Props { onClose: () => void }
+interface Props {
+  onClose: () => void;
+}
 
 export default function CardPackStore({ onClose }: Props) {
   useThemeVersion();

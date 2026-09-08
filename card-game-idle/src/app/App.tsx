@@ -42,12 +42,8 @@ const EternityBossCoopInviteModal = lazy(() => import('@/ui/eternitysWake/Eterni
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
 import { warmTheme } from '@/ui/theme';
 import { applyEffectiveTheme, DEFAULT_UI_THEME_ID, isThemeOscillating } from '@/data/profile/uiThemes';
-import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress, selectTrialDeck } from '@/state/store';
+import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress } from '@/state/store';
 import { useFriendsStore } from '@/state/friendsStore';
-import TrialDeckHUD from '@/ui/hud/TrialDeckHUD';
-const TrialDeckSummaryModal = lazy(() => import('@/ui/trialDeck/TrialDeckSummaryModal'));
-import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { getTrialDeckDisplayName, type NeutralityTutorialTier } from '@/data/trialDecks';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import { getFontScale, setUiPreferences } from '@/ui/preferences';
 import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
@@ -188,7 +184,6 @@ export default function App() {
   const [showMastery, setShowMastery] = useState(false);
   const [showFracture, setShowFracture] = useState(false);
   const [showAscension, setShowAscension] = useState(false);
-  const [showTrialSummary, setShowTrialSummary] = useState(false);
   const [showAutosaveIndicator, setShowAutosaveIndicator] = useState(false);
   // Radio state — main menu
   const radioActiveRef = useRef(false);
@@ -220,7 +215,6 @@ export default function App() {
   const battleground = useStore(selectBattleground);
   const settings = useStore(selectSettings);
   const progress = useStore(selectProgress);
-  const trialDeck = useStore(selectTrialDeck);
   const lastSavedAt = useStore(s => s.lastSavedAt);
   const setPresenceActivity = useFriendsStore(s => s.setPresenceActivity);
   const socialAuthStatus = useSocialStore(s => s.status);
@@ -703,8 +697,6 @@ export default function App() {
         if (showEnigma) { setShowEnigma(false); e.preventDefault(); return; }
         if (showAscension) { setShowAscension(false); e.preventDefault(); return; }
         if (showDailyReward) { setShowDailyReward(false); e.preventDefault(); return; }
-        // If in an active trial, show the summary instead of doing nothing
-        if (trialDeck.mode === 'active') { setShowTrialSummary(true); e.preventDefault(); return; }
         return;
       }
 
@@ -747,7 +739,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showEventWuas, showAscension, settings.controls, trialDeck.mode]);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showEventWuas, showAscension, settings.controls]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -767,7 +759,7 @@ export default function App() {
   // When a combat session starts (including co-op launches), force-close
   // open overlays so both clients transition into the arena immediately.
   useEffect(() => {
-    const combatActive = bossFight.mode === 'active' || battleground.mode === 'active' || trialDeck.mode === 'active';
+    const combatActive = bossFight.mode === 'active' || battleground.mode === 'active';
     const justEnteredCombat = combatActive && !wasCombatActiveRef.current;
     wasCombatActiveRef.current = combatActive;
     if (!justEnteredCombat) return;
@@ -789,9 +781,8 @@ export default function App() {
     setShowMastery(false);
     setShowEnigma(false);
     setShowAscension(false);
-    setShowTrialSummary(false);
     usePartyStore.getState().closeHub();
-  }, [bossFight.mode, battleground.mode, trialDeck.mode]);
+  }, [bossFight.mode, battleground.mode]);
 
   // Auto-sync scene to gameplay state once the player has reached the menu.
   // Entering an active turn or boss fight moves us into the arena; finishing
@@ -800,10 +791,10 @@ export default function App() {
   // Trial Deck sessions also keep arena active.
   useEffect(() => {
     if (scene === 'splash' || scene === 'title') return;
-    const inPlay = !idlePhase || inBossFight || battleground.mode === 'active' || trialDeck.mode === 'active';
+    const inPlay = !idlePhase || inBossFight || battleground.mode === 'active';
     if (inPlay && scene !== 'arena') setScene('arena');
     else if (!inPlay && scene !== 'menu') setScene('menu');
-  }, [scene, idlePhase, inBossFight, battleground.mode, trialDeck.mode]);
+  }, [scene, idlePhase, inBossFight, battleground.mode]);
 
   // Unified Eternity's Wake background overlay during any active boss fight (matches selection menu).
   const showBossBackdrop = inBossFight && BOSS_DEFINITIONS.some(b => b.id === bossFight.activeBossId);
@@ -869,11 +860,6 @@ export default function App() {
         <HudShakeWrapper>
           <HUD />
         </HudShakeWrapper>
-      )}
-
-      {/* Trial Deck HUD — shown in arena when a trial is active */}
-      {!isMenuOpen && scene === 'arena' && trialDeck.mode === 'active' && (
-        <TrialDeckHUD onEndTrialRequest={() => setShowTrialSummary(true)} />
       )}
 
       {/* Main menu hub — replaces the legacy scattered top-right nav clusters. */}
@@ -1021,11 +1007,6 @@ export default function App() {
         <div style={{ position: 'absolute', inset: 0, zIndex: 31, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><TutorialModal
             onClose={() => setShowTutorial(false)}
-            onPlayTutorialTurn={(tier: NeutralityTutorialTier) => {
-              setShowTutorial(false);
-              useStore.getState().startTutorialTurn(tier);
-              setScene('arena');
-            }}
           /></Suspense>
         </div>
       )}
@@ -1085,25 +1066,6 @@ export default function App() {
       )}
 
       <Suspense fallback={null}><PartyInviteModal /></Suspense>
-
-      {/* Trial Deck summary modal */}
-      {showTrialSummary && trialDeck.mode === 'active' && (
-        <Suspense fallback={null}>
-          <TrialDeckSummaryModal
-            packName={
-              (trialDeck.packId ? getTrialDeckDisplayName(trialDeck.packId) : null)
-              ?? PACK_DEFINITIONS.find(p => p.id === trialDeck.packId)?.name.replace(/^\[EVENT\]\s*/, '')
-              ?? (trialDeck.packId ?? 'Trial')
-            }
-            onConfirm={() => {
-              setShowTrialSummary(false);
-              useStore.getState().endTrialDeck();
-              setScene('menu');
-            }}
-            onClose={() => setShowTrialSummary(false)}
-          />
-        </Suspense>
-      )}
 
       {/* Autosave status indicator */}
       <div style={{

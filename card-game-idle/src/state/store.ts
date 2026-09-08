@@ -391,7 +391,7 @@ interface StoreActions {
   markCoopParticipantDisconnected: (userId: string) => void;
   // ── Trial Deck ──────────────────────────────────────────────────────────────
   /** Begin a Trial Deck practice session for the given pack. Saves current game state; restores on exit. */
-  startTrialDeck: (packId: string) => void;
+  startTrialDeck: (packId: string, mode?: 'solo' | 'guided') => void;
   /** Begin a Play Tutorial Turn practice session in Neutrality at the selected tier. */
   startTutorialTurn: (tier: NeutralityTutorialTier) => void;
   /** End the active Trial Deck session and restore the saved game state. */
@@ -3836,13 +3836,13 @@ export const useStore = create<Store>()(
 
     // ── Trial Deck ──────────────────────────────────────────────────────────────
 
-    startTrialDeck: (packId) => {
+    startTrialDeck: (packId, mode = 'solo') => {
       set(s => {
         if (s.trialDeck.mode !== 'idle') return;
         if (s.bossFight.mode !== 'idle') return;
         const def = getTrialDeckDefinition(packId);
         if (!def) return;
-        const trialMode: 'solo' = 'solo';
+        const trialMode: 'solo' | 'guided' = mode;
 
         const savedState: SavedGameState = {
           deck: cloneState(s.deck),
@@ -3853,6 +3853,10 @@ export const useStore = create<Store>()(
         };
 
         s.deck = createDeckState(def.deckList, def.extraDeck);
+        if (trialMode === 'guided') {
+          const guidedOrder = def.guidedDeckOrder.length > 0 ? def.guidedDeckOrder : def.deckList;
+          s.deck.drawPile = DeckSystem.buildOrdered(guidedOrder);
+        }
 
         s.board = { frontSlots: [null, null, null, null], backSlots: [null, null, null, null], activeBoardEffects: [] };
         s.turn = { ...defaultTurn, phase: 'idle' };
@@ -3863,9 +3867,9 @@ export const useStore = create<Store>()(
           trialMode,
           savedGameState: savedState,
           guideStep: 0,
-          guideSteps: [],
-          guidedOpeningHand: [],
-          guidedDeckOrder: [],
+          guideSteps: trialMode === 'guided' ? def.guideSteps : [],
+          guidedOpeningHand: trialMode === 'guided' ? def.guidedOpeningHand : [],
+          guidedDeckOrder: trialMode === 'guided' ? def.guidedDeckOrder : [],
           guideComplete: false,
           turnCount: 0,
           trialOblivionTotal: 0,
