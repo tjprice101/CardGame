@@ -1678,6 +1678,39 @@ function sanitizeLoadedCardReferences(loaded: GameState): void {
   }
 }
 
+function ensureDefaultStarterDeck(loaded: GameState): void {
+  const starterCopies = Object.entries(STARTER_COLLECTION);
+  for (const [definitionId, copies] of starterCopies) {
+    loaded.progress.collection[definitionId] = Math.max(loaded.progress.collection[definitionId] ?? 0, copies);
+    loaded.progress.everCollection = loaded.progress.everCollection ?? {};
+    loaded.progress.everCollection[definitionId] = Math.max(loaded.progress.everCollection[definitionId] ?? 0, copies);
+  }
+
+  const starterDeck = loaded.progress.savedDecks.find(deck => deck.id === 'starter-neutrality');
+  const starterDeckIsEmpty = !starterDeck || starterDeck.deckList.reduce((total, entry) => total + entry.copies, 0) === 0;
+  if (starterDeckIsEmpty) {
+    const replacement = {
+      id: 'starter-neutrality',
+      name: 'Neutrality Standard',
+      deckList: cloneDeckList(STARTER_DECK_LIST),
+      extraDeck: cloneExtraDeck(STARTER_EXTRA_DECK),
+      isStarter: true,
+    };
+    const index = loaded.progress.savedDecks.findIndex(deck => deck.id === 'starter-neutrality');
+    if (index === -1) loaded.progress.savedDecks.unshift(replacement);
+    else loaded.progress.savedDecks[index] = replacement;
+  }
+
+  if (!loaded.progress.activeDeckId || loaded.progress.activeDeckId === 'starter-neutrality') {
+    loaded.progress.activeDeckId = 'starter-neutrality';
+    loaded.deck.deckList = cloneDeckList(STARTER_DECK_LIST);
+    loaded.deck.extraDeck = cloneExtraDeck(STARTER_EXTRA_DECK);
+    loaded.deck.drawPile = DeckSystem.buildFromList(STARTER_DECK_LIST);
+    loaded.deck.hand = [];
+    loaded.deck.discardPile = [];
+  }
+}
+
 function enforceAngelExtraDeckInvariant(deck: DeckState, options: { refillHand?: boolean } = {}): void {
   // Angels belong exclusively to extraDeck. If they leak into main-deck zones,
   // move them out immediately and optionally refill vacated hand slots.
@@ -4390,6 +4423,7 @@ export const useStore = create<Store>()(
         // Strip orphaned saved card ids so deleted definitions cannot surface as
         // "Card data unavailable" placeholders in collection or Ascension views.
         sanitizeLoadedCardReferences(loaded);
+        ensureDefaultStarterDeck(loaded);
 
         Object.assign(s, loaded);
         setUiPreferences(s.settings);
