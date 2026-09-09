@@ -698,38 +698,40 @@ export default function HandDisplay() {
                 return artUrl ? <img src={artUrl} alt="" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} /> : null;
               })()}
 
-              {showTopPanel && (
-                <div style={getCardNameRibbonStyle('hand')}>
-                  {def?.type && (
-                    <div style={{ ...styles.subtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>{getDisplayCardTypeLabel(def.type)}</div>
-                  )}
-                  <div style={{
-                    ...styles.name,
-                    fontSize: adaptiveNameSize,
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: 2,
-                    overflow: 'hidden',
-                  }}>
-                    {def?.name ?? deckCard.definitionId}
+              <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {showTopPanel && (
+                  <div style={getCardNameRibbonStyle('hand')}>
+                    {def?.type && (
+                      <div style={{ ...styles.subtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>{getDisplayCardTypeLabel(def.type)}</div>
+                    )}
+                    <div style={{
+                      ...styles.name,
+                      fontSize: adaptiveNameSize,
+                      display: '-webkit-box',
+                      WebkitBoxOrient: 'vertical',
+                      WebkitLineClamp: 2,
+                      overflow: 'hidden',
+                    }}>
+                      {def?.name ?? deckCard.definitionId}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {showBottomPanel && (
-                <div style={getCardRulesPanelStyle('hand')}>
-                  <div
-                    style={{
-                      ...styles.desc,
-                      fontSize: descMetrics.fontSize,
-                      lineHeight: descMetrics.lineHeight,
-                      WebkitLineClamp: descMetrics.lineClamp,
-                    }}
-                  >
-                    {highlightRulesText(previewText, { disabled: settings.highlightRulesText === false, compact: true, lightBg: true })}
+                {showBottomPanel && (
+                  <div style={getCardRulesPanelStyle('hand')}>
+                    <div
+                      style={{
+                        ...styles.desc,
+                        fontSize: descMetrics.fontSize,
+                        lineHeight: descMetrics.lineHeight,
+                        WebkitLineClamp: descMetrics.lineClamp,
+                      }}
+                    >
+                      {highlightRulesText(previewText, { disabled: settings.highlightRulesText === false, compact: true, lightBg: true })}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               {selected && (
                 <div style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, color: warmTheme.danger }}>?</div>

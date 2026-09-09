@@ -62,7 +62,7 @@ export default function TurnControls() {
   }
 
   if (turn.phase === 'mulligan') {
-    const selected = turn.mulliganSelected.length;
+    const selected = (turn.mulliganSelected ?? []).length;
     return (
       <div style={styles.container}>
         <div style={{ color: 'rgba(244,244,248,0.55)', fontSize: 11, textAlign: 'center', letterSpacing: 1 }}>
