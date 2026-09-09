@@ -49,6 +49,12 @@ export default function SetAbilityStrip() {
     activeDeck.extraDeck,
     activeDeck.abilityLoadout as Partial<Record<1 | 2 | 3, string>> | undefined,
   );
+  const displayedSlots = SLOTS.filter(slot =>
+    Boolean(resolvedAbilities[slot])
+    || NEUTRALITY_SET.abilities.some(ability => ability.slot === slot && !ability.signatureOwnerId),
+  );
+  if (displayedSlots.length === 0) return null;
+
   const cd = turn.setAbilityCooldowns ?? {};
   const uses = turn.setAbilityUsesRemaining ?? {};
 
@@ -60,10 +66,11 @@ export default function SetAbilityStrip() {
       marginTop: 8,
       marginBottom: 2,
     }}>
-      {SLOTS.map(slot => {
+      {displayedSlots.map(slot => {
         // Find the ability for this slot from the full set definition.
         const ability = resolvedAbilities[slot];
-        const abilityDef = NEUTRALITY_SET.abilities.find(a => a.slot === slot && !a.signatureOwnerId)!;
+        const abilityDef = NEUTRALITY_SET.abilities.find(a => a.slot === slot && !a.signatureOwnerId);
+        if (!ability && !abilityDef) return null;
         const isAvailable = Boolean(ability);
         const isSignature = Boolean(ability?.signatureOwnerId);
 
@@ -104,9 +111,9 @@ export default function SetAbilityStrip() {
         }
 
         const tooltipLines = [
-          ability?.label ?? abilityDef.label,
+          ability?.label ?? abilityDef?.label ?? '',
           '',
-          ability?.description ?? abilityDef.description,
+          ability?.description ?? abilityDef?.description ?? '',
           '',
           isSignature ? 'Angel signature replacement' : 'Always unlocked',
           ability && ability.cooldownCards > 0 ? `Cooldown: ${ability.cooldownCards} hand plays` : '',
@@ -164,7 +171,7 @@ export default function SetAbilityStrip() {
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             }}>
-              {ability?.label ?? abilityDef.label}
+              {ability?.label ?? abilityDef?.label}
             </div>
 
             {/* State indicator */}
