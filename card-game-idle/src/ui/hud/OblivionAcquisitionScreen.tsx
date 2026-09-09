@@ -707,8 +707,8 @@ function TipsTab() {
       />
       <TipCard
         rank={6}
-        title="Cast Dark Cards From Hand When Tempo Matters"
-        detail="Dark cards with hand-cast resolve immediately without occupying a back slot — useful when your back row is full or you need the utility now rather than five plays from now."
+        title="Place Dark Cards on the Side You Need"
+        detail="Right-click a Dark card to place it face-up on Ain for immediate access to its utility. Left-click it onto Soph when you want it to accumulate charge first."
         accent={C.purple.fg}
       />
       <TipCard

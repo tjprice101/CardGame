@@ -252,7 +252,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     const dark = card as DarkCardDefinition;
     pushSummarySection(sections, 'Identity', [
       'Dark utility card',
-      dark.allowHandCast ? 'Hand cast or board activation' : 'Board activation only',
+      'Place on Ain to activate; place on Soph to charge',
     ]);
     pushSummarySection(sections, 'Utility', [formatEffectsInline(dark.sophEffects, dark.definitionId)]);
     pushSummarySection(sections, 'Activation', [

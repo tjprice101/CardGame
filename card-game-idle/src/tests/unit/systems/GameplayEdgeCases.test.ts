@@ -4,6 +4,7 @@ import { lightCards } from '@/data/cards/lightCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { enigmaRewardCards } from '@/data/cards/enigmaRewardCards';
+import { CardRegistry } from '@/cards/CardRegistry';
 import type { GameState } from '@/types/game';
 
 function resetStore(): void {
@@ -57,19 +58,32 @@ describe('Ain/Soph gameplay loop', () => {
     expect(useStore.getState().board.backSlots[0]).toMatchObject({ side: 'ain', faceState: 'front', limitlessCharge: 0 });
   });
 
-  it('casts an allowed Dark card directly from hand and spends LLS', () => {
-    resetStore();
-    const card = { instanceId: 'dark-cast', definitionId: darkCards[0].definitionId, finish: 'normal' as const };
-    useStore.setState(state => ({
-      ...state,
-      turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 10 },
-      deck: { ...state.deck, hand: [card] },
-    }));
+  it('places every main-deck card on Soph or Ain according to the requested side', () => {
+    const definitions = CardRegistry.getAll().filter(card => card.type === 'Light' || card.type === 'Dark');
+    expect(definitions.length).toBeGreaterThan(0);
 
-    useStore.getState().playCard(card.instanceId, 'cast');
+    for (const definition of definitions) {
+      for (const side of ['soph', 'ain'] as const) {
+        resetStore();
+        const instanceId = `${definition.definitionId}-${side}`;
+        useStore.setState(state => ({
+          ...state,
+          turn: { ...state.turn, phase: 'playing' },
+          deck: {
+            ...state.deck,
+            hand: [{ instanceId, definitionId: definition.definitionId, finish: 'normal' as const }],
+          },
+        }));
 
-    expect(useStore.getState().deck.hand.some(heldCard => heldCard.instanceId === card.instanceId)).toBe(false);
-    expect(useStore.getState().turn.limitlessLightStacks).toBe(9);
+        useStore.getState().playCard(instanceId, side);
+
+        expect(useStore.getState().board.backSlots[0], definition.definitionId).toMatchObject({
+          definitionId: definition.definitionId,
+          side,
+          faceState: side === 'soph' ? 'back' : 'front',
+        });
+      }
+    }
   });
 
   it('routes one-shot Dark cards away but keeps persistent Dark cards on the board with cooldowns', () => {

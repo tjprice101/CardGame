@@ -11,7 +11,6 @@ import type {
   AinSophAurInstance,
   CardFinish,
   CardFaceState,
-  DarkCardDefinition,
   MainDeckBoardInstance,
 } from '@/types/cards';
 import type { CardEffect, CardSubtypeFilter } from '@/types/effects';
@@ -357,8 +356,7 @@ interface StoreActions {
   toggleCardFace: (instanceId: string) => void;
   confirmMulligan: () => void;
   embraceInfinite: () => void;
-  /** placeholder: reserved for future set actions */
-  playCard: (instanceId: string, mode?: 'place' | 'cast') => void;
+  playCard: (instanceId: string, side?: 'soph' | 'ain') => void;
   flipSoph: (instanceId: string, mode: 'flip' | 'sacrifice') => void;
   activateLightAinAttack: (instanceId: string) => void;
   activateLightSophAttack: (instanceId: string, spend?: number) => void;
@@ -1828,22 +1826,22 @@ export const useStore = create<Store>()(
         const materials = uniqueIds.map(id => s.board.backSlots.find(slot => slot?.instanceId === id));
         const requiredMaterials = Math.max(1, def.summonCost.length);
         if (uniqueIds.length !== requiredMaterials || materials.some(material => !material)) return;
-
+        const selectedCounts: Record<string, number> = {};
         for (const material of materials) {
           if (!material) return;
-          recordLossEvent(s, [{ definitionId: material.definitionId }], 'board');
-          s.deck.discardPile.push(toDeckCard(material));
+          selectedCounts[material.definitionId] = (selectedCounts[material.definitionId] ?? 0) + 1;
         }
-        for (const id of uniqueIds) {
-          const index = s.board.backSlots.findIndex(slot => slot?.instanceId === id);
-          if (index !== -1) s.board.backSlots[index] = null;
+        const requiredCounts: Record<string, number> = {};
+        for (const definitionId of def.summonCost) {
+          requiredCounts[definitionId] = (requiredCounts[definitionId] ?? 0) + 1;
         }
-
+        if (Object.entries(requiredCounts).some(([definitionId, count]) => selectedCounts[definitionId] !== count)) return;
         const extraIndex = s.deck.extraDeck.findIndex(entry => entry.definitionId === definitionId);
-        const finish = extraIndex === -1 ? 'normal' : s.deck.extraDeck[extraIndex].finish;
-        if (extraIndex !== -1) s.deck.extraDeck.splice(extraIndex, 1);
+        if (extraIndex === -1) return;
+        const finish = s.deck.extraDeck[extraIndex].finish;
+        const nextInstanceId = `asa_${definitionId}_${angelInstanceCounter + 1}`;
         const instance: AinSophAurInstance = {
-          instanceId: `asa_${definitionId}_${++angelInstanceCounter}`,
+          instanceId: nextInstanceId,
           definitionId,
           type: 'AinSophAur',
           rarity: def.rarity,
@@ -1855,19 +1853,44 @@ export const useStore = create<Store>()(
           attackCooldowns: {},
           boardSlot: targetSlot,
         };
-        s.board.frontSlots[targetSlot] = instance;
-        if (def.onSummonEffects.length > 0) {
-          const result = CardEffectExecutor.execute(toDeckCard(instance), s.turn, s.board, s.deck, false, {
-            effects: def.onSummonEffects,
-            countAsPlay: false,
-            removeFromHand: false,
-          });
-          if (!result.canPlay) return;
-          s.turn = result.turn;
-          s.board = result.board;
-          s.deck = result.deck;
-          queuePendingEffects(s.turn, result);
+        const materialIds = new Set(uniqueIds);
+        const nextFrontSlots = [...s.board.frontSlots] as BoardState['frontSlots'];
+        nextFrontSlots[targetSlot] = instance;
+        const nextBackSlots = s.board.backSlots.map(
+          slot => slot && materialIds.has(slot.instanceId) ? null : slot,
+        ) as BoardState['backSlots'];
+        const nextBoard: BoardState = {
+          ...s.board,
+          frontSlots: nextFrontSlots,
+          backSlots: nextBackSlots,
+          activeBoardEffects: [...s.board.activeBoardEffects],
+        };
+        const nextExtraDeck = [...s.deck.extraDeck];
+        nextExtraDeck.splice(extraIndex, 1);
+        const nextDeck: DeckState = {
+          ...s.deck,
+          hand: [...s.deck.hand],
+          drawPile: [...s.deck.drawPile],
+          discardPile: [...s.deck.discardPile, ...materials.map(material => toDeckCard(material!))],
+          deckList: [...s.deck.deckList],
+          extraDeck: nextExtraDeck,
+        };
+        const result = CardEffectExecutor.execute(toDeckCard(instance), s.turn, nextBoard, nextDeck, false, {
+          effects: def.onSummonEffects,
+          countAsPlay: false,
+          removeFromHand: false,
+        });
+        if (!result.canPlay) return;
+
+        angelInstanceCounter += 1;
+        for (const material of materials) {
+          recordLossEvent(s, [{ definitionId: material!.definitionId }], 'board');
         }
+        s.turn = result.turn;
+        s.board = result.board;
+        s.deck = result.deck;
+        queuePendingEffects(s.turn, result);
+        grantOblivion(s, result.oblivionBonus);
         emitQuestProgressToProgress(s.progress, { kind: 'summon_ain_soph_aur', amount: 1 });
         recompute(s);
       });
@@ -2096,7 +2119,7 @@ export const useStore = create<Store>()(
         s.turn.pendingEffectQueue = [];
       });
     },
-    playCard: (instanceId, mode = 'place') => {
+    playCard: (instanceId, side = 'soph') => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
         const deckCard = s.deck.hand.find(c => c.instanceId === instanceId);
@@ -2105,35 +2128,6 @@ export const useStore = create<Store>()(
         if (!def) return;
 
         if (def.type === 'Light' || def.type === 'Dark') {
-          if (def.type === 'Dark' && mode === 'cast') {
-            const darkDef = def as DarkCardDefinition;
-            if (!darkDef.allowHandCast) return;
-            const cost = resolveStackCost(darkDef.activationCost, s.turn.limitlessLightStacks);
-            if (s.turn.limitlessLightStacks < cost) return;
-            s.turn.limitlessLightStacks -= cost;
-            s.deck.hand = s.deck.hand.filter(card => card.instanceId !== deckCard.instanceId);
-            const result = CardEffectExecutor.execute(
-              deckCard,
-              s.turn,
-              s.board,
-              s.deck,
-              false,
-              { effects: darkDef.sophEffects, countAsPlay: true, removeFromHand: false },
-            );
-            if (!result.canPlay) return;
-            s.turn = result.turn;
-            s.board = result.board;
-            s.deck = result.deck;
-            queuePendingEffects(s.turn, result);
-            s.turn.cardsPlayedThisTurn += 1;
-            tickHandPlayCooldowns(s);
-            recordCardPlay(s, deckCard.definitionId);
-            advanceTrialGuideStep(s, deckCard.definitionId);
-            enforceHandCap(s);
-            recompute(s);
-            return;
-          }
-
           const emptyBack = s.board.backSlots.findIndex(slot => slot === null);
           if (emptyBack === -1) return;
           const boardCard: MainDeckBoardInstance = {
@@ -2142,8 +2136,8 @@ export const useStore = create<Store>()(
             type: def.type,
             rarity: def.rarity,
             finish: deckCard.finish,
-            side: 'soph',
-            faceState: 'back',
+            side,
+            faceState: side === 'soph' ? 'back' : 'front',
             limitlessCharge: 0,
             attackCooldowns: {},
             backSlot: emptyBack as 0 | 1 | 2 | 3,
@@ -2174,6 +2168,24 @@ export const useStore = create<Store>()(
           slot.faceState = 'front';
           slot.limitlessCharge = 0;
           s.turn.limitlessLightStacks += charge;
+          const def = CardRegistry.get(slot.definitionId);
+          if (def?.type === 'Light' && def.onFlipEffects?.length) {
+            const result = CardEffectExecutor.execute(
+              toDeckCard(slot),
+              s.turn,
+              s.board,
+              s.deck,
+              false,
+              { effects: def.onFlipEffects, countAsPlay: false, removeFromHand: false },
+            );
+            if (result.canPlay) {
+              s.turn = result.turn;
+              s.board = result.board;
+              s.deck = result.deck;
+              queuePendingEffects(s.turn, result);
+              grantOblivion(s, result.oblivionBonus);
+            }
+          }
           emitQuestProgressToProgress(s.progress, { kind: 'flip_soph', amount: 1 });
           recompute(s);
           return;
@@ -2247,10 +2259,10 @@ export const useStore = create<Store>()(
         if (def.persistent && (darkSlot.attackCooldowns[cooldownKey] ?? 0) > 0) return;
         const cost = resolveStackCost(def.activationCost, s.turn.limitlessLightStacks);
         if (s.turn.limitlessLightStacks < cost) return;
-        s.turn.limitlessLightStacks -= cost;
+        const turnAfterCost = { ...s.turn, limitlessLightStacks: s.turn.limitlessLightStacks - cost };
         const result = CardEffectExecutor.execute(
           toDeckCard(slot),
-          s.turn,
+          turnAfterCost,
           s.board,
           s.deck,
           false,
@@ -2261,10 +2273,13 @@ export const useStore = create<Store>()(
         s.board = result.board;
         s.deck = result.deck;
         queuePendingEffects(s.turn, result);
+        grantOblivion(s, result.oblivionBonus);
+        const resolvedSlot = s.board.backSlots[slotIndex];
+        if (!resolvedSlot || resolvedSlot.instanceId !== instanceId) return;
         if (def.persistent) {
-          darkSlot.attackCooldowns[cooldownKey] = Math.max(1, def.cooldownCardsPlayed ?? 1);
+          resolvedSlot.attackCooldowns[cooldownKey] = Math.max(1, def.cooldownCardsPlayed ?? 1);
         } else {
-          const card = toDeckCard(darkSlot);
+          const card = toDeckCard(resolvedSlot);
           s.board.backSlots[slotIndex] = null;
           if (def.postActivationFate === 'hand') s.deck.hand.push(card);
           else if (def.postActivationFate === 'deck') s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, card]);
@@ -2400,18 +2415,27 @@ export const useStore = create<Store>()(
           const requiredSelections = Math.min(pending.take, pending.cards.length);
           const pendingCardIds = new Set(pending.cards.map(c => c.instanceId));
           const uniqueSelections = new Set(selected);
+          const lookedCardIds = new Set(pending.lookedCards.map(card => card.instanceId));
 
           if (selected.length === 0) {
-            s.deck.drawPile = [...s.deck.drawPile.slice(pending.cards.length), ...pending.cards];
+            s.deck.drawPile = [
+              ...s.deck.drawPile.filter(card => !lookedCardIds.has(card.instanceId)),
+              ...pending.lookedCards,
+            ];
           } else {
             if (selected.length !== requiredSelections) return;
             if (uniqueSelections.size !== selected.length) return;
             if (selected.some(id => !pendingCardIds.has(id))) return;
             const takenCards = pending.cards.filter(c => selected.includes(c.instanceId));
+            const untakenCards = pending.lookedCards.filter(card => !uniqueSelections.has(card.instanceId));
             pendingTakenSubtypeCounts = countSubtypeCards(takenCards);
             resolvedSubtype = takenCards.length === 1 ? (CardRegistry.get(takenCards[0].definitionId)?.type ?? null) as CardSubtypeFilter | null : null;
             resolvedCardInstanceId = takenCards.length === 1 ? takenCards[0].instanceId : null;
-            s.deck = TurnSystem.takeFromTop(s.deck, takenCards, pending.cards.filter(c => !selected.includes(c.instanceId)));
+            s.deck.drawPile = [
+              ...s.deck.drawPile.filter(card => !lookedCardIds.has(card.instanceId)),
+              ...untakenCards,
+            ];
+            s.deck.hand.push(...takenCards);
           }
         } else if (pending.type === 'search_deck') {
           const maxSelections = Math.min(pending.take, pending.cards.length);
@@ -2511,6 +2535,7 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
+          grantOblivion(s, result.oblivionBonus);
           pendingQueue.push(...(result.pendingEffects ?? (result.pendingEffect ? [result.pendingEffect] : [])));
         }
 

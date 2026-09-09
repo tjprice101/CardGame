@@ -51,7 +51,6 @@ export interface DarkCardDefinition {
   readonly activationCost: StackCostDefinition;
   readonly cooldownCardsPlayed?: number;
   readonly postActivationFate: 'hand' | 'deck' | 'discard';
-  readonly allowHandCast: boolean;
   readonly sacrificeOblivionRate: number;
   readonly persistent?: boolean;
 }
@@ -108,10 +107,7 @@ export interface AinSophAurDefinition {
   readonly description: string;
   readonly artKey: string;
   readonly summonCost: string[];
-  readonly effects?: CardEffect[];
   readonly onSummonEffects: CardEffect[];
-  readonly onPlayEffects?: CardEffect[];
-  readonly attacks?: Record<string, AttackDefinition>;
   readonly bridgeAttack?: {
     readonly id: string;
     readonly name: string;
@@ -121,7 +117,6 @@ export interface AinSophAurDefinition {
     readonly scaling: CardScalingExpr;
     readonly consumesStacks?: StackCostDefinition;
   };
-  readonly baseStats?: { basePower: number; bonusType?: string; bonusValue?: number };
 }
 
 export type CardDefinition = LightCardDefinition | DarkCardDefinition | AinSophAurDefinition;

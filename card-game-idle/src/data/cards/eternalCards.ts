@@ -50,7 +50,7 @@ const dark = (
   description: `Resolve ${effect.type.replace(/_/g, ' ')} for 4 Limitless Light Stacks, then return this card to the ${fate}.`,
   artKey,
   sophEffects: [effect], activationCost: { kind: 'fixed', value: 4 },
-  postActivationFate: fate, allowHandCast: true,
+  postActivationFate: fate,
   sacrificeOblivionRate: 85,
 });
 
@@ -76,12 +76,6 @@ const asa = (
     cooldownCards: 4, scaling: { kind: 'triune', amount: scale },
     consumesStacks: { kind: 'fixed', value: 4 },
   },
-  attacks: { primary: {
-    id: `${definitionId}:bridge`, label: 'Primary', name: 'Bridge the Light',
-    description: `${baseOblivion} base Divine Light`, baseOblivion, cooldownCards: 4,
-    tags: ['eternal', 'bridge'],
-  } },
-  baseStats: { basePower: 80, bonusType: 'oblivion_per_card', bonusValue: 25 },
 });
 
 export const eternalCards: CardDefinition[] = [

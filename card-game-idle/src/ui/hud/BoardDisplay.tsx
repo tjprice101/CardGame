@@ -2,7 +2,7 @@
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import SetAbilityStrip from '@/ui/hud/SetAbilityStrip';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
-import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectTurn } from '@/state/store';
+import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
@@ -18,6 +18,7 @@ import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
+import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import type {
   LightCardDefinition,
   DarkCardDefinition,
@@ -93,6 +94,8 @@ export default function BoardDisplay() {
   const bossFight     = useStore(selectBossFight);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
   const turn = useStore(selectTurn);
+  const progress = useStore(selectProgress);
+  const collectionPower = computeGlobalResonanceScore(progress);
   const {
     embraceInfinite,
     flipSoph,
@@ -442,13 +445,19 @@ export default function BoardDisplay() {
             const scalingCtx = {
               limitlessLightStacks: turn.limitlessLightStacks,
               asaFrontCount: board.frontSlots.filter(front => front?.type === 'AinSophAur').length,
-              collectionPower: 0,
+              collectionPower,
             };
             const bridgeCooldown = asaDef?.bridgeAttack ? (slot.attackCooldowns[asaDef.bridgeAttack.id] ?? 0) : 0;
             const bridgeCost = asaDef?.bridgeAttack?.consumesStacks ? previewStackCost(asaDef.bridgeAttack.consumesStacks, turn.limitlessLightStacks) : 0;
             const bridgePreview = asaDef?.bridgeAttack
               ? Math.max(0, Math.round(asaDef.bridgeAttack.baseOblivion + resolveCardScaling(asaDef.bridgeAttack.scaling, scalingCtx) + bridgeCost))
               : 0;
+            const bridgeDisabled = bridgeCooldown > 0 || turn.limitlessLightStacks < bridgeCost;
+            const bridgeActionLabel = bridgeCooldown > 0
+              ? `Bridge recharging (${bridgeCooldown})`
+              : turn.limitlessLightStacks < bridgeCost
+                ? `Need ${bridgeCost} Limitless Light Stacks`
+                : `Bridge the Light (~${bridgePreview}${bridgeCost > 0 ? `, -${bridgeCost} Stacks` : ''})`;
             const asaText = asaDef ? getCardPreviewText(asaDef, 2) : '';
             const asaDescMetrics = getAdaptiveDescriptionMetrics('board', asaText);
             return (
@@ -516,10 +525,10 @@ export default function BoardDisplay() {
                   }}>
                     <button
                       type="button"
-                      disabled={bridgeCooldown > 0 || turn.limitlessLightStacks < bridgeCost}
+                      disabled={bridgeDisabled}
                       onClick={(e) => { e.stopPropagation(); activateAsaBridge(slot.instanceId); setNewActionSlot(null); }}
-                      style={actionBtnStyle('rgba(255,214,120,0.6)', 'rgba(60,44,10,0.85)', '#ffd678', bridgeCooldown > 0 || turn.limitlessLightStacks < bridgeCost)}
-                    >Bridge the Light (~{bridgePreview}{bridgeCost > 0 ? `, -${bridgeCost} Stacks` : ''})</button>
+                      style={actionBtnStyle('rgba(255,214,120,0.6)', 'rgba(60,44,10,0.85)', '#ffd678', bridgeDisabled)}
+                    >{bridgeActionLabel}</button>
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setNewActionSlot(null); }}
@@ -655,26 +664,36 @@ export default function BoardDisplay() {
             const isSelected = newActionSlot?.zone === 'back' && newActionSlot.index === backSlot;
             const isMaterialMode = !!asaSummonRequest;
             const isMaterialSelected = isMaterialMode && selectedMaterialIds.includes(mainCard.instanceId);
+            const requestedAsa = asaSummonRequest ? CardRegistry.get(asaSummonRequest.definitionId) : undefined;
+            const requiredCopies = requestedAsa?.type === 'AinSophAur'
+              ? requestedAsa.summonCost.filter(definitionId => definitionId === mainCard.definitionId).length
+              : 0;
+            const selectedCopies = selectedMaterialIds.reduce((count, instanceId) => {
+              const selectedCard = board.backSlots.find(slot => slot?.instanceId === instanceId);
+              return count + (selectedCard?.definitionId === mainCard.definitionId ? 1 : 0);
+            }, 0);
+            const canSelectAsMaterial = isMaterialSelected || requiredCopies > selectedCopies;
             const mainText = mainDef ? getCardPreviewText(mainDef, 2) : '';
             const mainDescMetrics = getAdaptiveDescriptionMetrics('boardMini', mainText);
             const mainElementColor = SET_ACCENT;
             const scalingCtx = {
               limitlessLightStacks: turn.limitlessLightStacks,
               asaFrontCount: board.frontSlots.filter(front => front?.type === 'AinSophAur').length,
-              collectionPower: 0,
+              collectionPower,
             };
 
             let ainCooldown = 0;
             let sophCooldown = 0;
             let ainPreview = 0;
             let sophPreview = 0;
+            let sophCost = 0;
             let darkCooldown = 0;
             let darkCost = 0;
             if (mainDef?.type === 'Light' && isAin) {
               ainCooldown = mainCard.attackCooldowns[mainDef.ainAttack.id] ?? 0;
               sophCooldown = mainCard.attackCooldowns[mainDef.sophAttack.id] ?? 0;
               ainPreview = Math.max(0, Math.round(mainDef.ainAttack.baseOblivion + resolveCardScaling(mainDef.ainAttack.scaling, scalingCtx)));
-              const sophCost = mainDef.sophAttack.stackCost ? previewStackCost(mainDef.sophAttack.stackCost, turn.limitlessLightStacks) : 0;
+              sophCost = mainDef.sophAttack.stackCost ? previewStackCost(mainDef.sophAttack.stackCost, turn.limitlessLightStacks) : 0;
               sophPreview = Math.max(0, Math.round(mainDef.sophAttack.baseOblivion + resolveCardScaling(mainDef.sophAttack.scaling, scalingCtx) + sophCost));
             }
             if (mainDef?.type === 'Dark' && isAin) {
@@ -697,11 +716,13 @@ export default function BoardDisplay() {
                     ? `${warmTheme.glow}, 0 0 18px rgba(255,214,120,0.4)`
                     : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
                   display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start',
-                  fontFamily: BODY_FONT, pointerEvents: 'auto', cursor: 'pointer',
+                  fontFamily: BODY_FONT, pointerEvents: 'auto', cursor: isMaterialMode && !canSelectAsMaterial ? 'not-allowed' : 'pointer',
                   padding: 0, overflow: 'hidden', position: 'relative',
+                  ...(isMaterialMode && !canSelectAsMaterial ? { opacity: 0.38, filter: 'grayscale(0.7)' } : {}),
                 }}
                 onClick={() => {
                   if (isMaterialMode && asaSummonRequest) {
+                    if (!canSelectAsMaterial) return;
                     setSelectedMaterialIds(prev => prev.includes(mainCard.instanceId)
                       ? prev.filter(id => id !== mainCard.instanceId)
                       : (prev.length < asaSummonRequest.required ? [...prev, mainCard.instanceId] : prev));
@@ -790,10 +811,14 @@ export default function BoardDisplay() {
                         >Ain Attack (~{ainPreview})</button>
                         <button
                           type="button"
-                          disabled={sophCooldown > 0 || turn.limitlessLightStacks <= 0}
+                          disabled={sophCooldown > 0 || turn.limitlessLightStacks < sophCost}
                           onClick={(e) => { e.stopPropagation(); activateLightSophAttack(mainCard.instanceId); setNewActionSlot(null); }}
-                          style={actionBtnStyle('rgba(160,200,255,0.6)', 'rgba(14,30,60,0.85)', '#a0c8ff', sophCooldown > 0 || turn.limitlessLightStacks <= 0)}
-                        >Soph Attack (~{sophPreview})</button>
+                          style={actionBtnStyle('rgba(160,200,255,0.6)', 'rgba(14,30,60,0.85)', '#a0c8ff', sophCooldown > 0 || turn.limitlessLightStacks < sophCost)}
+                        >{sophCooldown > 0
+                          ? `Soph recharging (${sophCooldown})`
+                          : turn.limitlessLightStacks < sophCost
+                            ? `Need ${sophCost} Limitless Light Stacks`
+                            : `Soph Attack (~${sophPreview}${sophCost > 0 ? `, -${sophCost} Stacks` : ''})`}</button>
                       </>
                     )}
                     {isAin && mainDef?.type === 'Dark' && (

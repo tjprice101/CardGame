@@ -55,8 +55,6 @@ export class CardEffectExecutor {
     const removeFromHand = options.removeFromHand ?? (deckCard.instanceId !== 'echo' && !isSeraphim);
     const suppressForgeRecursion = options.suppressForgeRecursion ?? false;
     void suppressForgeRecursion;
-    const sourceSetKey = 'Neutrality';
-
     let mutableDeck = { ...deck, hand: [...deck.hand] };
     // Shallow-copy nested Record objects so mutations in this executor never
     // bleed back into the original turn (important when called from React renders
@@ -152,16 +150,34 @@ export class CardEffectExecutor {
           {
             const peeked = TurnSystem.peekTop(mutableDeck, effect.look);
             if (peeked.length > 0) {
-              const sameSetPeeked = sourceSetKey
-                ? peeked.filter(card => {
-                    const d = CardRegistry.get(card.definitionId);
-                    return !!d && 'Neutrality' === sourceSetKey;
-                  })
-                : peeked;
-              pendingEffects.push({ type: 'look_top_take_type', cards: sameSetPeeked, filter: effect.filter, take: effect.take ?? 1 });
+              const matching = peeked.filter(card => {
+                const definition = CardRegistry.get(card.definitionId);
+                return !!definition && effect.filter.includes(definition.type);
+              });
+              pendingEffects.push({
+                type: 'look_top_take_type',
+                cards: matching,
+                lookedCards: peeked,
+                filter: effect.filter,
+                take: effect.take ?? 1,
+              });
             }
           }
           break;
+        case 'salvage_by_type_count': {
+          const matching = mutableDeck.discardPile.filter(card => {
+            const definition = CardRegistry.get(card.definitionId);
+            return !!definition && effect.filter.includes(definition.type);
+          });
+          if (matching.length === 0) return false;
+          pendingEffects.push({
+            type: 'salvage',
+            cards: matching,
+            filter: effect.filter,
+            count: Math.min(effect.count, matching.length),
+          });
+          break;
+        }
 
         case 'search_deck_by_type': {
           const matching = mutableDeck.drawPile.filter(card => {
@@ -237,6 +253,10 @@ export class CardEffectExecutor {
           }
           break;
         }
+        default: {
+          const unsupportedEffect: never = effect;
+          return unsupportedEffect;
+        }
       }
       return true;
     }
@@ -296,7 +316,7 @@ export class CardEffectExecutor {
 
   static checkPlayable(
     def: CardDefinition,
-    handSize: number,
+    _handSize: number,
     _turn: TurnState,
     board?: BoardState,
   ): boolean {
@@ -306,38 +326,14 @@ export class CardEffectExecutor {
       const costCount: Record<string, number> = {};
       for (const id of summonCost) costCount[id] = (costCount[id] ?? 0) + 1;
       const boardCount: Record<string, number> = {};
-      for (const slot of board.frontSlots) {
+      for (const slot of board.backSlots) {
         if (slot) boardCount[slot.definitionId] = (boardCount[slot.definitionId] ?? 0) + 1;
       }
       for (const [id, needed] of Object.entries(costCount)) {
         if ((boardCount[id] ?? 0) < needed) return false;
       }
 
-      // Summoning must end with at least one free front slot. If summon materials
-      // are consumed they can free slots; otherwise an already-full front row blocks summon.
-      const frontHasEmptySlot = board.frontSlots.some(slot => slot === null);
-      if (!frontHasEmptySlot) {
-        if (summonCost.length === 0) return false;
-        const usedSlots = new Set<number>();
-        for (const reqId of summonCost) {
-          const slotIdx = board.frontSlots.findIndex(
-            (slot, idx) => slot?.definitionId === reqId && !usedSlots.has(idx),
-          );
-          if (slotIdx === -1) return false;
-          usedSlots.add(slotIdx);
-        }
-        if (usedSlots.size === 0) return false;
-      }
-
-      return true;
-    }
-
-    if (def.type === 'Dark' && def.allowHandCast) {
-      for (const effect of def.sophEffects) {
-        if (effect.type === 'discard_choice' && handSize - 1 < effect.value) return false;
-        if (effect.type === 'discard_draw' && handSize - 1 < effect.discard) return false;
-      }
-      return true;
+      return board.frontSlots.some(slot => slot === null);
     }
 
     if (!board) return true;

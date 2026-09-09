@@ -80,7 +80,7 @@ export type PendingEffect =
     }
   | { type: 'look_top_take'; cards: DeckCard[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'look_top_take_drop'; cards: DeckCard[]; take: number; drop: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
-  | { type: 'look_top_take_type'; cards: DeckCard[]; filter: CardSubtypeFilter[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
+  | { type: 'look_top_take_type'; cards: DeckCard[]; lookedCards: DeckCard[]; filter: CardSubtypeFilter[]; take: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | {
       type: 'search_deck';
       cards: DeckCard[];

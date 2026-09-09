@@ -72,7 +72,7 @@ describe('Full turn end-to-end', () => {
 
     // 1. Play a Light card and a Dark card face-down into the back row.
     useStore.getState().playCard(light.instanceId);
-    useStore.getState().playCard(dark.instanceId, 'place');
+    useStore.getState().playCard(dark.instanceId, 'soph');
 
     let board = useStore.getState().board;
     expect(board.backSlots[0]).toMatchObject({ type: 'Light', side: 'soph', faceState: 'back' });
@@ -146,10 +146,12 @@ describe('Full turn end-to-end', () => {
       };
     });
 
+    const divineLightBeforeSummon = useStore.getState().progress.oblivion;
     useStore.getState().summonAinSophAur(asaDef.definitionId, materialIds, 0);
 
     const board = useStore.getState().board;
     expect(board.frontSlots[0]).toMatchObject({ type: 'AinSophAur', side: 'ain', faceState: 'front' });
+    expect(useStore.getState().progress.oblivion).toBeGreaterThan(divineLightBeforeSummon);
     // Materials were consumed off the back row.
     for (let i = 0; i < materialCount; i++) {
       expect(board.backSlots[i]).toBeNull();
@@ -159,6 +161,48 @@ describe('Full turn end-to-end', () => {
     const oblivionBeforeBridge = useStore.getState().progress.oblivion;
     useStore.getState().activateAsaBridge(asaInstance.instanceId);
     expect(useStore.getState().progress.oblivion).toBeGreaterThan(oblivionBeforeBridge);
+  });
+
+  it('rejects an Ain Soph Aur summon made with the wrong back-row material', () => {
+    resetStore();
+    const asaDef = ainSophAurCards[0];
+    const wrongMaterial = {
+      ...activeLightSlot('wrong-material', 0),
+      definitionId: lightCards[1].definitionId,
+    };
+    useStore.setState(state => ({
+      ...state,
+      turn: { ...state.turn, phase: 'playing' },
+      board: { ...state.board, backSlots: [wrongMaterial, null, null, null] },
+      deck: { ...state.deck, extraDeck: [{ definitionId: asaDef.definitionId, finish: 'normal' as const }] },
+    }));
+
+    useStore.getState().summonAinSophAur(asaDef.definitionId, [wrongMaterial.instanceId], 0);
+
+    expect(useStore.getState().board.frontSlots[0]).toBeNull();
+    expect(useStore.getState().board.backSlots[0]?.instanceId).toBe(wrongMaterial.instanceId);
+    expect(useStore.getState().deck.extraDeck).toHaveLength(1);
+  });
+
+  it('rejects an Ain Soph Aur summon when the card is not in the Extra Deck', () => {
+    resetStore();
+    const asaDef = ainSophAurCards[0];
+    const material = {
+      ...activeLightSlot('owned-material', 0),
+      definitionId: asaDef.summonCost[0],
+    };
+    useStore.setState(state => ({
+      ...state,
+      turn: { ...state.turn, phase: 'playing' },
+      board: { ...state.board, backSlots: [material, null, null, null] },
+      deck: { ...state.deck, extraDeck: [] },
+    }));
+
+    useStore.getState().summonAinSophAur(asaDef.definitionId, [material.instanceId], 0);
+
+    expect(useStore.getState().board.frontSlots[0]).toBeNull();
+    expect(useStore.getState().board.backSlots[0]?.instanceId).toBe(material.instanceId);
+    expect(useStore.getState().deck.discardPile).toHaveLength(0);
   });
 
   it('pays a Soph Attack cost without shrinking that attack\'s own payout', () => {
@@ -194,12 +238,12 @@ describe('Full turn end-to-end', () => {
     expect(highPayout).toBeGreaterThan(lowPayout);
   });
 
-  it('enforces the hand cap of 8 after a hand-cast Dark card draws', () => {
+  it('enforces the hand cap of 8 after an Ain-side Dark card activates and draws', () => {
     resetStore();
 
-    // A hand-castable Dark card whose utility draws into an already-full hand.
-    const castable = darkCards.find(d => d.allowHandCast)!;
-    const cast = handCard('e2e-cast', castable.definitionId);
+    // A Dark card whose utility draws into an already-full hand.
+    const drawUtility = darkCards.find(card => card.sophEffects.some(effect => effect.type === 'draw'))!;
+    const cast = handCard('e2e-cast', drawUtility.definitionId);
     const rest = Array.from({ length: 7 }, (_, i) =>
       handCard(`e2e-hand-${i}`, darkCards[(i + 1) % darkCards.length].definitionId));
     const drawPile = Array.from({ length: 6 }, (_, i) =>
@@ -211,7 +255,8 @@ describe('Full turn end-to-end', () => {
       deck: { ...state.deck, hand: [cast, ...rest], drawPile },
     }));
 
-    useStore.getState().playCard(cast.instanceId, 'cast');
+    useStore.getState().playCard(cast.instanceId, 'ain');
+    useStore.getState().activateDark(cast.instanceId);
 
     const after = useStore.getState();
     const pending = after.turn.pendingEffect;

@@ -14,6 +14,6 @@ export const enigmaRewardCards: Array<LightCardDefinition | DarkCardDefinition> 
     description: 'Search your Main Deck for a Light card. When activated from the board, this card remains in play and can be used again after its cooldown.',
     artKey: 'enig_neutral_null_catechism',
     sophEffects: [{ type: 'search_deck_by_type', filter: ['Light'] }], activationCost: { kind: 'fixed', value: 3 },
-    cooldownCardsPlayed: 2, postActivationFate: 'hand', allowHandCast: true, sacrificeOblivionRate: 70, persistent: true,
+    cooldownCardsPlayed: 2, postActivationFate: 'hand', sacrificeOblivionRate: 70, persistent: true,
   },
 ];

@@ -147,7 +147,6 @@ function getEffectTypes(def: CardDefinition): string[] {
 
   if (def.type === 'AinSophAur') {
     pushEffectTypes(def.onSummonEffects);
-    pushEffectTypes(def.onPlayEffects ?? []);
   }
 
   return types;

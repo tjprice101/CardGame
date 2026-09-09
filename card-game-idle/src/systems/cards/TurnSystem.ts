@@ -70,7 +70,7 @@ export class TurnSystem {
     // Move unchosen top cards to bottom; move chosen to hand
     return {
       ...deck,
-      drawPile: [...remaining, ...deck.drawPile.slice(toTake.length + remaining.length)],
+      drawPile: [...deck.drawPile.slice(toTake.length + remaining.length), ...remaining],
       hand: [...deck.hand, ...toTake],
     };
   }

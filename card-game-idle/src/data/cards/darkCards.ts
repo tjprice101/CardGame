@@ -42,7 +42,7 @@ export const darkCards: DarkCardDefinition[] = darkNames.map((name, index) => {
     { type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 },
     { type: 'look_top_take_drop', look: 6, take: 2, drop: 1 },
     { type: 'salvage_by_id', targetId: 'light-neutrality-1', label: 'Null Sentinel' },
-    { type: 'search_deck_by_type', filter: ['AinSophAur'] },
+    { type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 },
     { type: 'draw', value: 3 },
     { type: 'salvage_any' },
     { type: 'discard_draw', discard: 1, draw: 3 },
@@ -54,12 +54,11 @@ export const darkCards: DarkCardDefinition[] = darkNames.map((name, index) => {
     type: 'Dark',
     rarity: index < 8 ? 'Common' : index < 15 ? 'Rare' : index < 21 ? 'Epic' : index < 24 ? 'Legendary' : 'Eternal',
     name,
-    description: `${index % 2 === 0 ? 'May be cast from hand or activated from the board.' : 'Activate from the board after flipping to Ain.'} Resolves ${effectText}.`,
+    description: `Activate from the Ain side of the board. Resolves ${effectText}.`,
     artKey: artKeys[index],
     sophEffects: [effects],
     activationCost: { kind: 'fixed', value: 1 + (index % 6) },
     postActivationFate: index % 3 === 0 ? 'hand' : index % 3 === 1 ? 'deck' : 'discard',
-    allowHandCast: index % 2 === 0,
     sacrificeOblivionRate: 20 + index * 5,
   };
 });

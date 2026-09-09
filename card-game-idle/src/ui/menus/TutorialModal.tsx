@@ -228,13 +228,13 @@ function BoardBody() {
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card Types</div>
         <ListItem label="Light">Creature cards with an Ain Attack and a stack-consuming Soph Attack.</ListItem>
-        <ListItem label="Dark">Utility cards that activate from the board, with some cards also castable from hand.</ListItem>
+        <ListItem label="Dark">Utility cards that activate from their face-up Ain side on the board.</ListItem>
         <ListItem label="Ain Soph Aur">Extra Deck summons. Sacrifice the listed back-row materials to place one in the front row.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Click Reference</div>
-        <ListItem label="Hand">Left-click plays a card. Dark cards with hand casting can also be cast directly.</ListItem>
+        <ListItem label="Hand">Left-click places a main-deck card face-down on its Soph side. Right-click places it face-up on its Ain side.</ListItem>
         <ListItem label="Soph card">Click at 5+ charge to choose Flip to Ain or sacrifice it for Divine Light.</ListItem>
         <ListItem label="Ain card">Click to choose its attack or utility action when ready.</ListItem>
         <ListItem label="Extra Deck">Click an Ain Soph Aur, choose materials, then confirm the front-row summon.</ListItem>

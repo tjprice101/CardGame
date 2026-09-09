@@ -59,8 +59,8 @@ const neutralityTrial: TrialDeckDefinition = {
   ],
   extraDeck: Array.from({ length: 4 }, () => e('ain-soph-aur-neutrality-1')),
   guideSteps: [
-    { cardDefinitionId: 'light-neutrality-1', hint: 'Play this Light card face-down as Soph. Each hand play charges face-down Soph cards.' },
-    { cardDefinitionId: 'dark-neutrality-1', hint: 'Play this Dark utility card face-down as Soph. Keep building charge before choosing when to flip.' },
+    { cardDefinitionId: 'light-neutrality-1', hint: 'Left-click this Light card to place it face-down as Soph. Each hand play charges face-down Soph cards.' },
+    { cardDefinitionId: 'dark-neutrality-1', hint: 'Left-click this Dark utility card to place it face-down as Soph. Keep building charge before choosing when to flip.' },
     { cardDefinitionId: 'light-neutrality-2', hint: 'At 5+ charge, flip a Soph card to Ain and bank its charge as Limitless Light Stacks.' },
     { cardDefinitionId: 'light-neutrality-3', hint: 'Use an Ain Attack to earn Divine Light without spending your Light Stacks.' },
     { cardDefinitionId: 'dark-neutrality-2', hint: 'Dark cards provide utility. Follow the card text for its activation cost and destination.' },

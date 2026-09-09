@@ -46,7 +46,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   handWrapper: {
     position: 'absolute',
-    bottom: 16,
+    bottom: 8,
     left: 0,
     right: 'var(--angel-drawer-hand-offset, 348px)',
     zIndex: 70,
@@ -54,7 +54,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 8,
+    gap: 4,
     pointerEvents: 'none',
     paddingLeft: 8,
     paddingRight: 8,
@@ -102,12 +102,12 @@ const styles: Record<string, React.CSSProperties> = {
     overflowY: 'clip',
     maxWidth: '100%',
     paddingBottom: 10,
-    paddingTop: 24,
+    paddingTop: 18,
     scrollbarGutter: 'stable',
   },
   card: {
-    width: 'clamp(116px, 8.2vw, 132px)',
-    height: 'clamp(168px, 11.8vw, 188px)',
+    width: 'clamp(104px, 8.2vw, 132px)',
+    height: 'clamp(148px, 20vh, 188px)',
     flex: '0 0 auto',
     background: warmTheme.surfaceStrong,
     border: `1px solid ${warmTheme.border}`,
@@ -354,7 +354,7 @@ export default function HandDisplay() {
     if (!isPlaying) setGuideHighlightDefId(null);
   }, [isPlaying]);
 
-  function handleClick(instanceId: string, mode: 'place' | 'cast' = 'place') {
+  function handleClick(instanceId: string, side: 'soph' | 'ain' = 'soph') {
     if (isExtraDeckView) {
       if (!isPlaying) return;
       const deckCard = viewCards.find(c => c.instanceId === instanceId);
@@ -374,11 +374,9 @@ export default function HandDisplay() {
       const deckCard = hand.find(c => c.instanceId === instanceId);
       const def = deckCard ? CardRegistry.get(deckCard.definitionId) : null;
       if (def && !CardEffectExecutor.checkPlayable(def, hand.length, turn, board)) return;
-      // Dark cards without hand-cast support always place face-down regardless of click mode.
-      const resolvedMode = def && def.type === 'Dark' && !def.allowHandCast ? 'place' : mode;
       setPlayingCardId(instanceId);
       setTimeout(() => {
-        playCard(instanceId, resolvedMode);
+        playCard(instanceId, side);
         setPlayingCardId(null);
       }, 260);
     }
@@ -487,8 +485,7 @@ export default function HandDisplay() {
             )}
             {hoveredDef.type === 'Dark' && (
               <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                Utility · after use: {(hoveredDef as DarkCardDefinition).postActivationFate}
-                {(hoveredDef as DarkCardDefinition).allowHandCast ? ' · can cast from hand' : ''}
+                Ain utility · after use: {(hoveredDef as DarkCardDefinition).postActivationFate}
               </span>
             )}
           </div>
@@ -607,7 +604,7 @@ export default function HandDisplay() {
             <span style={{
               marginLeft: 8, opacity: 0.55, fontSize: 9, letterSpacing: 1.5,
             }}>
-              Press E to swap
+              {isExtraDeckView ? 'Click to summon · E: hand' : 'Left: Soph · Right: Ain · E: Extra Deck'}
             </span>
           </div>
         )}
@@ -673,10 +670,10 @@ export default function HandDisplay() {
                   borderColor: artOnlyMode ? 'rgba(255,255,255,0.8)' : 'rgba(180,220,255,0.7)',
                 } : {}),
               }}
-              onClick={() => handleClick(deckCard.instanceId, 'cast')}
+              onClick={() => handleClick(deckCard.instanceId, 'soph')}
               onContextMenu={(e) => {
                 e.preventDefault();
-                handleClick(deckCard.instanceId, 'place');
+                handleClick(deckCard.instanceId, 'ain');
               }}
               onMouseEnter={() => setHoveredId(deckCard.instanceId)}
               onMouseLeave={() => setHoveredId(null)}
@@ -737,7 +734,7 @@ export default function HandDisplay() {
                 <div style={{ position: 'absolute', top: 4, right: 4, fontSize: 11, color: warmTheme.danger }}>?</div>
               )}
 
-              {isHovered && !isExtraDeckView && isPlaying && def?.type === 'Dark' && def.allowHandCast && (
+              {isHovered && !isExtraDeckView && isPlaying && (
                 <div style={{
                   position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
                   marginBottom: 6, whiteSpace: 'nowrap', fontSize: 10, fontFamily: 'Georgia, serif',
@@ -745,7 +742,7 @@ export default function HandDisplay() {
                   border: `1px solid ${warmTheme.border}`, borderRadius: 6, padding: '4px 8px',
                   pointerEvents: 'none', zIndex: 5,
                 }}>
-                  Left-click: cast now · Right-click: place face-down
+                  Left-click: place Soph · Right-click: place Ain
                 </div>
               )}
 

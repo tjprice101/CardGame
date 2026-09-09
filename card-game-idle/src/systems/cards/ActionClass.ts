@@ -18,7 +18,7 @@ export function getActionClassLabel(actionClass: ActionClass): string {
 export function getCardActionClassEffects(def: CardDefinition): CardEffect[] {
   if (def.type === 'Light') return def.onFlipEffects ?? [];
   if (def.type === 'Dark') return def.sophEffects;
-  return def.onPlayEffects ?? def.onSummonEffects;
+  return def.onSummonEffects;
 }
 
 export function classifyCardActionClass(def: CardDefinition, effects: CardEffect[]): ActionClass {

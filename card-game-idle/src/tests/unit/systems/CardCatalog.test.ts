@@ -14,7 +14,7 @@ describe('Ain/Soph card catalog', () => {
     expect(new Set([...lightCards, ...darkCards].map(card => card.definitionId)).size).toBe(48);
   });
 
-  it('contains twelve authored Extra Deck bridge definitions', () => {
+  it('contains four authored Extra Deck bridge definitions', () => {
     expect(ainSophAurCards).toHaveLength(4);
     expect(new Set(ainSophAurCards.map(card => card.definitionId)).size).toBe(4);
     for (const card of ainSophAurCards) {
@@ -58,6 +58,33 @@ describe('Ain/Soph card catalog', () => {
       expect(() => CardEffectExecutor.checkPlayable(card, 0, {} as TurnState, emptyBoard)).not.toThrow();
       expect(() => CardEffectExecutor.checkPlayable(card, 0, {} as TurnState, fullBoard)).not.toThrow();
       expect(() => CardEffectExecutor.checkPlayable(card, 0, {} as TurnState)).not.toThrow();
+    }
+  });
+
+  it('enables every Ain Soph Aur card only when its back-row materials and a front slot are available', () => {
+    for (const card of ainSophAurCards) {
+      const matchingMaterials = card.summonCost.map((definitionId, index) => ({
+        instanceId: `${card.definitionId}-material-${index}`,
+        definitionId,
+        type: 'Light' as const,
+      }));
+      const availableBoard = {
+        frontSlots: [null, null, null, null],
+        backSlots: [...matchingMaterials, ...Array(4 - matchingMaterials.length).fill(null)],
+        activeBoardEffects: [],
+      } as any;
+      const missingMaterialsBoard = {
+        ...availableBoard,
+        backSlots: [null, null, null, null],
+      } as any;
+      const fullFrontBoard = {
+        ...availableBoard,
+        frontSlots: [{}, {}, {}, {}],
+      } as any;
+
+      expect(CardEffectExecutor.checkPlayable(card, 0, {} as TurnState, availableBoard), card.definitionId).toBe(true);
+      expect(CardEffectExecutor.checkPlayable(card, 0, {} as TurnState, missingMaterialsBoard), card.definitionId).toBe(false);
+      expect(CardEffectExecutor.checkPlayable(card, 0, {} as TurnState, fullFrontBoard), card.definitionId).toBe(false);
     }
   });
 
