@@ -5,11 +5,11 @@ const lightNames = [
   'Stillwater Colossus', 'Horizon Lion', 'Crown of Morning', 'Veilbreaker', 'First Radiance',
   'White Orchard Keeper', 'Paradox Knight', 'Solar Cantor', 'Pale Star Drake', 'Measure of Dawn',
   'Equilibrium Titan', 'Lucent Pilgrim', 'Ain-Bound Guardian', 'Quiet Sun', 'Origin Bearer',
-  'Mirror Saint', 'Lightwell Watcher', 'Celestial Null', 'Last Horizon', 'The Unbroken Light',
+  'Mirror Saint', 'Lightwell Watcher', 'Celestial Null', 'Last Horizon',
 ] as const;
 
 const artKeys = [
-  'ser_neutral_null', 'ser_neutral_void', 'ser_neutral_balance', 'ser_neutral_equilibrium', 'ser_neutral_still',
+  'ser_neutral_null', 'ser_neutral_void', 'ser_neutral_balance', 'ser_neutral_equilibrium',
   'ser_neutral_null', 'ser_neutral_void', 'ser_neutral_balance', 'ser_neutral_equilibrium', 'ser_neutral_still',
   'ser_neutral_null', 'ser_neutral_void', 'ser_neutral_balance', 'ser_neutral_equilibrium', 'ser_neutral_still',
   'ser_neutral_null', 'ser_neutral_void', 'ser_neutral_balance', 'ser_neutral_equilibrium', 'ser_neutral_still',
@@ -27,7 +27,7 @@ export const lightCards: LightCardDefinition[] = lightNames.map((name, index) =>
     type: 'Light',
     rarity: index < 8 ? 'Common' : index < 15 ? 'Rare' : index < 21 ? 'Epic' : index < 24 ? 'Legendary' : 'Eternal',
     name,
-    description: `Light creature. Ain Attack: ${ainBase} base Divine Light, +${ainScale} scaled across Limitless Light Stack pool, front-row Ain Soph Aur count, and Collection Power, ${1 + (index % 4)}-play cooldown. Soph Attack: ${sophBase} base Divine Light, +${sophScale} scaled across the same three sources, costs ${1 + (index % 5)} Limitless Light Stack${1 + (index % 5) === 1 ? '' : 's'}, ${2 + (index % 6)}-play cooldown.`,
+    description: `Use Ain Attack for a steady Divine Light payout or spend Limitless Light Stacks on Soph Attack for a stronger burst.`,
     artKey: artKeys[index],
     ainAttack: {
       id: `${id}:ain-attack`, label: 'Ain', name: 'Ain Attack',

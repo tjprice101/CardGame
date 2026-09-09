@@ -72,7 +72,7 @@ const ENGINE_ROLE_TEXT: Record<EngineKey, Record<CardRolePattern, string>> = {
     setup: 'Draws cards or searches the deck while building Patience on waiting Seraphim.',
     support: 'Sits on board and adds Patience to adjacent Seraphim each card played.',
     resource: 'Adds flat Patience so setup turns still progress toward burst.',
-    payoff: 'Consumes Patience stacks to convert setup into Oblivion.',
+    payoff: 'Consumes Limitless Light Stacks to convert setup into Divine Light.',
     amplifier: 'Injects extra Patience or doubles existing stacks.',
     finisher: 'Resolves all Patience at once for a single burst turn.',
   },

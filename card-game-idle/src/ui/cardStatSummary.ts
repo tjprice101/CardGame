@@ -48,7 +48,7 @@ function formatScaling(expression: LightCardDefinition['ainAttack']['scaling']):
     }
     case 'triune': {
       const perShare = formatExactValue(expression.amount);
-      return `+${perShare} triune scaling: Stacks / ASA / Collection Power`;
+      return `+${perShare} triune scaling: Stacks / Ain Soph Aur / Collection Power`;
     }
     case 'custom': return `bespoke scaling (${expression.fnId})`;
   }
@@ -62,10 +62,11 @@ function formatStackCost(cost: LightCardDefinition['sophAttack']['stackCost'] | 
 }
 
 function formatSubtypeList(filters: ReadonlyArray<CardSubtypeFilter>): string {
-  if (filters.length === 0) return 'card';
-  if (filters.length === 1) return filters[0];
-  if (filters.length === 2) return `${filters[0]} or ${filters[1]}`;
-  return `${filters.slice(0, -1).join(', ')}, or ${filters[filters.length - 1]}`;
+  const names = filters.map(filter => filter === 'AinSophAur' ? 'Ain Soph Aur' : filter);
+  if (names.length === 0) return 'card';
+  if (names.length === 1) return names[0];
+  if (names.length === 2) return `${names[0]} or ${names[1]}`;
+  return `${names.slice(0, -1).join(', ')}, or ${names[names.length - 1]}`;
 }
 
 function formatEffectsInline(effects: CardEffect[], definitionId?: string): string {
@@ -232,17 +233,17 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       'Light creature',
     ]);
     pushSummarySection(sections, 'Ain Attack', [
-      `${light.ainAttack.baseOblivion} base Oblivion`,
+      `${light.ainAttack.baseOblivion} base Divine Light`,
       `${formatScaling(light.ainAttack.scaling)}; no stack cost`,
       `Cooldown: ${formatCount(light.ainAttack.cooldownCards, 'card played')}`,
     ]);
     pushSummarySection(sections, 'Soph Attack', [
-      `${light.sophAttack.baseOblivion} base Oblivion`,
+      `${light.sophAttack.baseOblivion} base Divine Light`,
       `${formatScaling(light.sophAttack.scaling)}; costs ${formatStackCost(light.sophAttack.stackCost)}`,
       `Cooldown: ${formatCount(light.sophAttack.cooldownCards, 'card played')}`,
     ]);
     pushSummarySection(sections, 'Charge', [
-      `Sacrifice: ${light.sacrificeOblivionRate} Oblivion per stored charge`,
+      `Sacrifice: ${light.sacrificeOblivionRate} Divine Light per stored charge`,
       ...(light.onFlipEffects?.length ? [`On flip: ${formatEffectsInline(light.onFlipEffects, light.definitionId)}`] : []),
     ]);
   }
@@ -256,11 +257,10 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     pushSummarySection(sections, 'Utility', [formatEffectsInline(dark.sophEffects, dark.definitionId)]);
     pushSummarySection(sections, 'Activation', [
       `Cost: ${formatStackCost(dark.activationCost)}`,
-      `Cooldown: ${formatCount(dark.cooldownCardsPlayed, 'card played')}`,
-      `After activation: ${dark.postActivationFate}`,
+      ...(dark.persistent ? [`Cooldown: ${formatCount(dark.cooldownCardsPlayed ?? 1, 'card played')}`, 'Remains on board after activation'] : [`One-shot: returns to ${dark.postActivationFate} after activation`]),
     ]);
     pushSummarySection(sections, 'Charge', [
-      `Sacrifice: ${dark.sacrificeOblivionRate} Oblivion per stored charge`,
+      `Sacrifice: ${dark.sacrificeOblivionRate} Divine Light per stored charge`,
     ]);
   }
 
@@ -274,7 +274,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     ]);
     if (bridge) {
       pushSummarySection(sections, 'Bridge the Light', [
-        `${bridge.baseOblivion} base Oblivion`,
+        `${bridge.baseOblivion} base Divine Light`,
         `${formatScaling(bridge.scaling)}${bridge.consumesStacks ? `; costs ${formatStackCost(bridge.consumesStacks)}` : '; does not consume stacks'}`,
         `Cooldown: ${formatCount(bridge.cooldownCards, 'card played')}`,
       ]);
@@ -288,7 +288,7 @@ export function getCardPreviewLines(card: CardDefinition, limit = 3): string[] {
   const preview: string[] = [];
   const seenFingerprints: string[] = [];
 
-  const sections = getCardSummarySections(card);
+  const sections = getCardSummarySections(card).filter(section => section.title !== 'Source');
 
   for (const section of sections) {
     for (const line of section.lines) {

@@ -28,7 +28,7 @@ import { PackSystem } from '@/systems/cards/PackSystem';
 import { getActiveCoopRng, useCoopSyncStore } from '@/state/coopSyncStore';
 import { useSocialStore } from '@/state/socialStore';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { canConvertCardToHolo, getCardFinishKey, getHolofoilConversionCost } from '@/systems/progression/HolofoilSystem';
+import { canConvertCardToHolo, getCardFinishKey, getHolofoilConversionCost, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { evaluateDailyLogin, getUtcDayIndex } from '@/systems/progression/dailyLogin';
 import {
@@ -810,8 +810,8 @@ function addCollectionCard(progress: ProgressState, definitionId: string, finish
   const nextCopies = (progress.collection[definitionId] ?? 0) + 1;
   progress.collection[definitionId] = nextCopies;
 
-  // Auto-holofoil Eternal and Infinite cards on acquisition
-  if (definition?.rarity === 'Eternal' || definition?.rarity === 'Infinite') {
+  // Innate holofoil cards always enter the collection with their foil finish.
+  if (definition && isHoloOnlyCard(definition)) {
     const nextHoloCopies = (progress.holoCollection[definitionId] ?? 0) + 1;
     progress.holoCollection[definitionId] = Math.min(nextHoloCopies, progress.collection[definitionId]);
   } else if (finish === 'holo') {
@@ -2011,6 +2011,7 @@ export const useStore = create<Store>()(
     toggleMulliganCard: (instanceId) => {
       set(s => {
         if (s.turn.phase !== 'mulligan') return;
+        if (!Array.isArray(s.turn.mulliganSelected)) s.turn.mulliganSelected = [];
         const idx = s.turn.mulliganSelected.indexOf(instanceId);
         if (idx === -1) s.turn.mulliganSelected.push(instanceId);
         else s.turn.mulliganSelected.splice(idx, 1);
@@ -2043,7 +2044,7 @@ export const useStore = create<Store>()(
     confirmMulligan: () => {
       set(s => {
         if (s.turn.phase !== 'mulligan') return;
-        const selected = [...s.turn.mulliganSelected];
+        const selected = Array.isArray(s.turn.mulliganSelected) ? [...s.turn.mulliganSelected] : [];
         enforceAngelExtraDeckInvariant(s.deck, { refillHand: true });
         s.turn.mulliganSelected = [];
         s.turn.phase = 'playing';
@@ -2243,7 +2244,7 @@ export const useStore = create<Store>()(
         if (!def || def.type !== 'Dark') return;
         const darkSlot = slot as MainDeckBoardInstance;
         const cooldownKey = `${def.definitionId}:activation`;
-        if ((darkSlot.attackCooldowns[cooldownKey] ?? 0) > 0) return;
+        if (def.persistent && (darkSlot.attackCooldowns[cooldownKey] ?? 0) > 0) return;
         const cost = resolveStackCost(def.activationCost, s.turn.limitlessLightStacks);
         if (s.turn.limitlessLightStacks < cost) return;
         s.turn.limitlessLightStacks -= cost;
@@ -2260,13 +2261,16 @@ export const useStore = create<Store>()(
         s.board = result.board;
         s.deck = result.deck;
         queuePendingEffects(s.turn, result);
-        darkSlot.attackCooldowns[cooldownKey] = def.cooldownCardsPlayed;
-        const card = toDeckCard(darkSlot);
-        s.board.backSlots[slotIndex] = null;
-        if (def.postActivationFate === 'hand') s.deck.hand.push(card);
-        else if (def.postActivationFate === 'deck') s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, card]);
-        else s.deck.discardPile.push(card);
-        enforceHandCap(s);
+        if (def.persistent) {
+          darkSlot.attackCooldowns[cooldownKey] = Math.max(1, def.cooldownCardsPlayed ?? 1);
+        } else {
+          const card = toDeckCard(darkSlot);
+          s.board.backSlots[slotIndex] = null;
+          if (def.postActivationFate === 'hand') s.deck.hand.push(card);
+          else if (def.postActivationFate === 'deck') s.deck.drawPile = DeckSystem.shuffle([...s.deck.drawPile, card]);
+          else s.deck.discardPile.push(card);
+          enforceHandCap(s);
+        }
         emitQuestProgressToProgress(s.progress, { kind: 'activate_dark', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: cost });
         recompute(s);

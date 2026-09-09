@@ -218,19 +218,17 @@ const NEW_NEUTRALITY_ART: Record<'light' | 'dark' | 'asa', string[]> = {
     'Stillwater Colossus.png', 'Horizon Lion.png', 'Crown of Morning.png', 'Veilbreaker.png', 'First Radiance.png',
     'White Orchard Keeper.png', 'Paradox Knight.png', 'Solar Cantor.png', 'Pale Star Drake.png', 'Crown of Morning.png',
     'Equilibrium Titan.png', 'Lucent Pilgrim.png', 'Ain-bound Guardian.png', 'Quiet Sun.png', 'Origin Bearer.png',
-    'Mirror Saint.png', 'Lightwell Watcher.png', 'Celestial Null.png', 'Last Horizon.png', 'The Unbroken Light.png',
+    'Mirror Saint.png', 'Lightwell Watcher.png', 'Celestial Null.png', 'Last Horizon.png',
   ],
   dark: [
     'Null Compass.png', 'Void Archive.png', 'Balance Engine.png', 'Equilibrium Map.png', 'Stillness Chapel.png',
     'Measured Path.png', 'Seraphic Recall.png', 'Neutral Cycle.png', 'Deep Survey.png', 'Paradox Lens.png',
     'Axiom Reservoir.png', 'Horizon Atlas.png', 'Silent Exchange.png', 'Glass Archive.png', 'Night Orchard.png',
     'Unlit Gate.png', 'Black Sun Reliquary.png', 'The Long Pause.png', 'Void Cartograph.png', 'Last Equation.png',
-    'World Without Echo.png', 'Oblivion Key.png', 'The Patient Star.png', 'Absolute Archive.png', 'Dark Origin.png',
+    'World Without Echo.png', 'Oblivion Key.png', 'The Patient Star.png', 'Absolute Archive.png',
   ],
   asa: [
     'The White Null.png', 'The Axiom Below.png', 'The Paradox Crown.png', 'Stillwater Colossus.png',
-    'The Horizon of Silence.png', 'The Veil of Dawn.png', 'The Mirror of Ash.png', 'The Gate of Inevitable.png',
-    'The Hollow Well.png', 'The Sun Without Flame.png', 'The Last Aurora.png', 'First Radiance.png',
   ],
 };
 

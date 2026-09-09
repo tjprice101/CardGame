@@ -3,6 +3,7 @@ import { useStore, defaultGameState } from '@/state/store';
 import { lightCards } from '@/data/cards/lightCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
+import { enigmaRewardCards } from '@/data/cards/enigmaRewardCards';
 import type { GameState } from '@/types/game';
 
 function resetStore(): void {
@@ -69,6 +70,41 @@ describe('Ain/Soph gameplay loop', () => {
 
     expect(useStore.getState().deck.hand.some(heldCard => heldCard.instanceId === card.instanceId)).toBe(false);
     expect(useStore.getState().turn.limitlessLightStacks).toBe(9);
+  });
+
+  it('routes one-shot Dark cards away but keeps persistent Dark cards on the board with cooldowns', () => {
+    resetStore();
+    const oneShot = darkCards[0];
+    const persistent = enigmaRewardCards.find(card => card.type === 'Dark' && card.persistent);
+    expect(persistent).toBeDefined();
+
+    const makeBoardDark = (instanceId: string, definitionId: string, rarity: typeof oneShot.rarity) => ({
+      instanceId, definitionId, type: 'Dark' as const, rarity, finish: 'normal' as const,
+      side: 'ain' as const, faceState: 'front' as const, limitlessCharge: 0,
+      attackCooldowns: {}, backSlot: 0 as const,
+    });
+    const persistentDark = persistent!;
+    useStore.setState(state => ({
+      ...state,
+      turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 12 },
+      board: {
+        ...state.board,
+        backSlots: [
+          makeBoardDark('one-shot-dark', oneShot.definitionId, oneShot.rarity),
+          { ...makeBoardDark('persistent-dark', persistentDark.definitionId, persistentDark.rarity), backSlot: 1 as const },
+          null,
+          null,
+        ],
+      },
+    }));
+
+    useStore.getState().activateDark('one-shot-dark');
+    expect(useStore.getState().board.backSlots[0]).toBeNull();
+
+    useStore.getState().activateDark('persistent-dark');
+    const retained = useStore.getState().board.backSlots[1];
+    expect(retained).toMatchObject({ instanceId: 'persistent-dark', definitionId: persistentDark.definitionId });
+    expect(retained?.attackCooldowns[`${persistentDark.definitionId}:activation`]).toBe(persistentDark.cooldownCardsPlayed);
   });
 
   it('summons Ain Soph Aur by consuming a back-row material', () => {

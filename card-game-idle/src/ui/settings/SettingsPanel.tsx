@@ -354,7 +354,7 @@ export default function SettingsPanel({ onClose }: Props) {
                         <div style={{ flex: 1 }} />
                         {opt.showBottom && (
                           <div style={{ background: 'rgba(234,220,200,0.92)', padding: '2px 3px' }}>
-                            <div style={{ fontSize: 4, color: '#2a1a0e' }}>Draw 2 cards. +800 Oblivion.</div>
+                            <div style={{ fontSize: 4, color: '#2a1a0e' }}>Draw 2 cards. +800 Divine Light.</div>
                           </div>
                         )}
                       </div>

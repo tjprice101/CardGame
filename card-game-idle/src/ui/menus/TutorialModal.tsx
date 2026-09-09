@@ -149,7 +149,7 @@ function OverviewBody() {
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Game Modes</div>
           <ListItem label="Main">The core deck loop &mdash; play turns, open packs, expand the collection.</ListItem>
-          <ListItem label="Wake">Eternity's Wake. A single-turn boss fight where all Oblivion deals damage. Rewards Eternal-rarity cards.</ListItem>
+          <ListItem label="Wake">Eternity's Wake. A single-turn boss fight where all Divine Light deals damage. Rewards Eternal-rarity cards.</ListItem>
           <ListItem label="Infinitude">Forge Infinite-rarity cards by consuming specific Eternals.</ListItem>
         </div>
       </div>
@@ -249,7 +249,7 @@ function AttacksBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>How Attacks Fire</div>
         <div style={bodyTextStyle}>
-          Every card shows its own base Oblivion, cooldown, and scaling values. Cooldowns are measured in cards
+          Every card shows its own base Divine Light, cooldown, and scaling values. Cooldowns are measured in cards
           played, not seconds. Universal rules belong here; the card panel only shows what is unique to that card.
         </div>
       </div>
@@ -258,7 +258,7 @@ function AttacksBody() {
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Light Attacks</div>
           <ListItem label="Ain Attack">Reads the current Limitless Light Stack pool and does not consume it.</ListItem>
-          <ListItem label="Soph Attack">Uses the card&apos;s own stack cost and scaling, then pays Oblivion.</ListItem>
+          <ListItem label="Soph Attack">Uses the card&apos;s own stack cost and scaling, then pays Divine Light.</ListItem>
         </div>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Ain Soph Aur</div>
@@ -394,7 +394,7 @@ function ModesBody() {
     <>
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>Eternity's Wake &mdash; Boss Fights</div>
-        <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Oblivion you generate is dealt as damage instead of banked.</ListItem>
+        <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Divine Light you generate is dealt as damage instead of banked.</ListItem>
         <ListItem label="Categories">Bosses are organized by set &mdash; Neutrality, Pyroabyss, Heavenly Light, Thornbound Plains, and so on. Use the tab strip at the top of the Wake menu to switch.</ListItem>
         <ListItem label="Rewards">First clear and repeat clears both grant Aberrated Shards and the boss's signature Eternal card. 60-second cooldown after any attempt.</ListItem>
         <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
@@ -409,7 +409,7 @@ function ModesBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card Packs</div>
         <div style={bodyTextStyle}>
-          Open the Card Store to spend Oblivion on packs. Each pack has its own rarity weights and pity
+          Open the Card Store to spend Divine Light on packs. Each pack has its own rarity weights and pity
           counters; the store displays them up front. Use the Deck Builder to assemble up to 50 cards plus an
           Extra Deck of Angels (up to 10 total, max 4 copies per definition).
         </div>
@@ -438,7 +438,7 @@ function CardBornTierBody() {
           Playing a card from your hand adds <Tag>1 Card-light</Tag> to it. Across{' '}
           <Tag>8 tiers</Tag> — from Practiced to Infinite Bond — each milestone grants{' '}
           <Tag>Resonance points</Tag> and a shard reward you can claim. Resonance feeds your{' '}
-          <Tag>Collection Power</Tag> multiplier, strengthening Oblivion earned from attacks.
+          <Tag>Collection Power</Tag> multiplier, strengthening Divine Light earned from attacks.
           Copies share Card-light progress, but having more copies makes it easier to bring that card into play.
         </div>
       </div>
@@ -473,7 +473,7 @@ function CardBornTierBody() {
           <div style={sectionHeadingStyle}>Collection Power</div>
           <div style={bodyTextStyle}>
             Your total Resonance fuels the <Tag>Collection Power</Tag> multiplier — a passive bonus that
-            amplifies all Oblivion earned from attacks. Claim each tier milestone from
+            amplifies all Divine Light earned from attacks. Claim each tier milestone from
             the <Tag>Card-born Tier</Tag> screen to bank its shard reward.
           </div>
           <div style={{ ...bodyTextStyle, marginTop: 8 }}>
@@ -549,7 +549,7 @@ function ProgressionBody() {
         <div style={bodyTextStyle}>
           Every card you play accumulates Card-light mastery across <Tag>8 tiers</Tag> (Practiced → Infinite Bond).
           Each tier grants <Tag>Resonance points</Tag> and a shard reward. Resonance feeds your{' '}
-          <Tag>Collection Power</Tag> multiplier, raising the Oblivion earned from attacks.
+          <Tag>Collection Power</Tag> multiplier, raising the Divine Light earned from attacks.
           See the <Tag>Card-born Tier</Tag> section in this guide for the full breakdown.
         </div>
       </div>

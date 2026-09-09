@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useMemo, memo } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo, memo } from 'react';
 import { gsap } from 'gsap';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
@@ -480,6 +480,11 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
     }
   }, [cards.length, rarities, triggerGlowBurst, bestIdx]);
 
+  useEffect(() => {
+    const revealTimer = window.setTimeout(revealAll, 420);
+    return () => window.clearTimeout(revealTimer);
+  }, [revealAll]);
+
   const allRevealed = allRevealedFlag || revealedSet.size === cards.length;
   // Best unrevealed (drives the pulsing border + "Reveal Best" label).
   let bestUnrevealedIdx = -1;
@@ -503,7 +508,7 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
             const def = CardRegistry.get(defId);
             const isRevealed = revealedSet.has(idx);
             // CSS-only stagger for the visual flip (cheap; no extra renders).
-            const flipDelayMs = isBulkOpen && allRevealedFlag ? Math.min(idx * 18, 1200) : 0;
+            const flipDelayMs = allRevealedFlag ? Math.min(idx * (isBulkOpen ? 18 : 140), isBulkOpen ? 1200 : 900) : 0;
             return (
               <CardTile
                 key={defId + idx}

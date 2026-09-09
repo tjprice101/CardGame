@@ -132,7 +132,7 @@ export default function TrialDeckSummaryModal({ packName, onConfirm, onClose }: 
             <div style={styles.statValue}>{turnCount}</div>
           </div>
           <div style={styles.statCard}>
-            <div style={styles.statLabel}>Oblivion Scored</div>
+            <div style={styles.statLabel}>Divine Light Scored</div>
             <div style={styles.statValue}>{oblivionTotal.toLocaleString()}</div>
           </div>
         </div>
@@ -144,7 +144,7 @@ export default function TrialDeckSummaryModal({ packName, onConfirm, onClose }: 
         )}
 
         <div style={styles.note}>
-          No oblivion, Card-light, mastery rewards, or Resonance points were gained during this trial. Your deck and collection are unchanged.
+          No Divine Light, Card-light, mastery rewards, or Resonance points were gained during this trial. Your deck and collection are unchanged.
         </div>
 
         <div style={styles.btnRow}>

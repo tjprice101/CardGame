@@ -33,7 +33,6 @@ const CHERUBIM_H = 148;
 const FRONT_ROW_GAP = 'clamp(12px, 1.4vw, 18px)';
 const BACK_ROW_GAP = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
 const ROW_SEPARATION = 'clamp(14px, 2vh, 24px)';
-const BACK_ROW_STAGGER = `calc(${SLOT_W - CHERUBIM_W / 2}px + (${FRONT_ROW_GAP} / 2))`;
 const FRONT_FACE_METRICS = getCardFaceMetrics('board');
 const CHERUBIM_FACE_METRICS = getCardFaceMetrics('boardMini');
 const DISPLAY_FONT = uiTypography.display;
@@ -386,7 +385,7 @@ export default function BoardDisplay() {
             Embrace the Infinite
           </button>
           <div style={{ fontSize: 10, color: 'rgba(107,63,24,0.74)', letterSpacing: 0.4 }}>
-            Gain 50 Oblivion per card, keep 3, reshuffle the rest.
+            Gain 50 Divine Light per card, keep 3, reshuffle the rest.
           </div>
         </div>
       )}
@@ -640,7 +639,6 @@ export default function BoardDisplay() {
         alignItems: 'center',
         justifyContent: 'center',
         marginTop: ROW_SEPARATION,
-        paddingLeft: BACK_ROW_STAGGER,
       }}>
         {board.backSlots.map((card, i) => {
           const backSlot = i as 0 | 1 | 2 | 3;
@@ -680,7 +678,7 @@ export default function BoardDisplay() {
               sophPreview = Math.max(0, Math.round(mainDef.sophAttack.baseOblivion + resolveCardScaling(mainDef.sophAttack.scaling, scalingCtx) + sophCost));
             }
             if (mainDef?.type === 'Dark' && isAin) {
-              darkCooldown = mainCard.attackCooldowns[`${mainDef.definitionId}:activation`] ?? 0;
+              darkCooldown = mainDef.persistent ? (mainCard.attackCooldowns[`${mainDef.definitionId}:activation`] ?? 0) : 0;
               darkCost = previewStackCost(mainDef.activationCost, turn.limitlessLightStacks);
             }
 
@@ -730,7 +728,9 @@ export default function BoardDisplay() {
                       ? (isReadyToFlip ? 'Ready 窶・click to flip/sacrifice' : `Charge ${charge}/5`)
                       : mainDef?.type === 'Light'
                         ? `Ain ${ainCooldown <= 0 ? 'Ready' : ainCooldown} ﾂｷ Soph ${sophCooldown <= 0 ? 'Ready' : sophCooldown}`
-                        : `Activate ${darkCooldown <= 0 ? 'Ready' : darkCooldown}`}
+                        : mainDef?.persistent
+                          ? `Recharge ${darkCooldown <= 0 ? 'Ready' : darkCooldown}`
+                          : 'One-shot activation'}
                   </div>
                   <div style={{
                     fontSize: mainDescMetrics.fontSize,
@@ -772,7 +772,7 @@ export default function BoardDisplay() {
                           type="button"
                           onClick={(e) => { e.stopPropagation(); flipSoph(mainCard.instanceId, 'sacrifice'); setNewActionSlot(null); }}
                           style={actionBtnStyle('rgba(220,100,100,0.5)', 'rgba(50,10,10,0.8)', '#e68d8d')}
-                        >Sacrifice (+{Math.round(charge * (mainDef?.sacrificeOblivionRate ?? 0))} Oblivion)</button>
+                        >Sacrifice (+{Math.round(charge * (mainDef?.sacrificeOblivionRate ?? 0))} Divine Light)</button>
                       </>
                     )}
                     {isSoph && !isReadyToFlip && (

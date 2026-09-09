@@ -642,7 +642,7 @@ export function infiniteCardTitleId(definitionId: string): string {
 // to "Wielder of {name}" for unmapped ids.
 const INFINITE_CARD_TITLE_OVERRIDES: Record<string, { text: string; description: string }> = {
   // Neutrality core infinites
-  'inf-oblivion-absolute': { text: 'The Final Zero', description: 'Forge Oblivion Absolute — the card that ends counting.' },
+  'inf-oblivion-absolute': { text: 'The Final Zero', description: 'Forge The Absolute Null — the card that ends counting.' },
   'inf-void-cascade': { text: 'Of the Cascading Nothing', description: 'Forge Void Cascade and channel the slope into the void.' },
   'inf-genesis-throne': { text: 'Seated Before the Word', description: 'Forge Genesis Throne and seat yourself before the first word.' },
   'inf-null-apex': { text: 'The Apex That Refuses', description: 'Forge Null Apex — the peak that disclaims itself.' },

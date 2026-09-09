@@ -9,14 +9,14 @@ import type { TurnState } from '@/types/game';
 
 describe('Ain/Soph card catalog', () => {
   it('contains the complete Main Deck taxonomy', () => {
-    expect(lightCards).toHaveLength(25);
-    expect(darkCards).toHaveLength(25);
-    expect(new Set([...lightCards, ...darkCards].map(card => card.definitionId)).size).toBe(50);
+    expect(lightCards).toHaveLength(24);
+    expect(darkCards).toHaveLength(24);
+    expect(new Set([...lightCards, ...darkCards].map(card => card.definitionId)).size).toBe(48);
   });
 
   it('contains twelve authored Extra Deck bridge definitions', () => {
-    expect(ainSophAurCards).toHaveLength(12);
-    expect(new Set(ainSophAurCards.map(card => card.definitionId)).size).toBe(12);
+    expect(ainSophAurCards).toHaveLength(4);
+    expect(new Set(ainSophAurCards.map(card => card.definitionId)).size).toBe(4);
     for (const card of ainSophAurCards) {
       expect(card.bridgeAttack?.baseOblivion).toBeGreaterThan(0);
       expect(card.bridgeAttack?.cooldownCards).toBeGreaterThan(0);
@@ -31,7 +31,8 @@ describe('Ain/Soph card catalog', () => {
       expect(card.sacrificeOblivionRate).toBeGreaterThan(0);
     }
     for (const card of darkCards) {
-      expect(card.cooldownCardsPlayed).toBeGreaterThan(0);
+      expect(card.persistent).not.toBe(true);
+      expect(card.cooldownCardsPlayed).toBeUndefined();
       expect(card.sacrificeOblivionRate).toBeGreaterThan(0);
       expect(card.postActivationFate).toMatch(/^(hand|deck|discard)$/);
     }
@@ -73,11 +74,11 @@ describe('Ain/Soph card catalog', () => {
     }
   });
 
-  it('registers exactly the 50 main-deck and 12 extra-deck cards as buildable', () => {
+  it('registers exactly the 48 base Main Deck and 4 base Extra Deck cards as buildable', () => {
     const all = CardRegistry.getAll();
-    expect(all.filter(d => d.definitionId.startsWith('light-neutrality-'))).toHaveLength(25);
-    expect(all.filter(d => d.definitionId.startsWith('dark-neutrality-'))).toHaveLength(25);
-    expect(all.filter(d => d.definitionId.startsWith('ain-soph-aur-neutrality-'))).toHaveLength(12);
+    expect(all.filter(d => d.definitionId.startsWith('light-neutrality-'))).toHaveLength(24);
+    expect(all.filter(d => d.definitionId.startsWith('dark-neutrality-'))).toHaveLength(24);
+    expect(all.filter(d => d.definitionId.startsWith('ain-soph-aur-neutrality-'))).toHaveLength(4);
   });
 
   it('registers every late-game reward card with its intended rarity', () => {
@@ -92,6 +93,23 @@ describe('Ain/Soph card catalog', () => {
     expect(transcendent.every(card => card.rarity === 'Transcendent')).toBe(true);
     expect(enigmas).toHaveLength(2);
     expect(enigmas.every(card => card.rarity === 'Enigmatic')).toBe(true);
+  });
+
+  it('reserves Dark cooldowns for the three persistent utility cards', () => {
+    const persistentDarkIds = CardRegistry.getAll()
+      .filter((card): card is Extract<typeof card, { type: 'Dark' }> => card.type === 'Dark' && card.persistent)
+      .map(card => card.definitionId)
+      .sort();
+    expect(persistentDarkIds).toEqual([
+      'enig-neutral-null-catechism',
+      'tx-neutral-null-catalyst',
+      'tx-neutral-void-reliquary',
+    ]);
+
+    for (const card of CardRegistry.getAll()) {
+      if (card.type !== 'Dark' || card.persistent) continue;
+      expect(card.cooldownCardsPlayed, `${card.definitionId} should be a one-shot Dark card`).toBeUndefined();
+    }
   });
 
   it('keeps authored attack values intentionally distinct across the catalog', () => {

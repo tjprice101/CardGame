@@ -440,7 +440,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           </div>
           <ResourcePill glyph="◇" label="Cards" value={cards.toLocaleString()} tone="cool" theme={uiTheme} />
           <ResourcePill glyph="✦" label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} />
-          <ResourcePill glyph="⬡" label="Oblivion" value={oblivion.toLocaleString()} tone="gold" theme={uiTheme} />
+          <ResourcePill glyph="⬡" label="Divine Light" value={oblivion.toLocaleString()} tone="gold" theme={uiTheme} />
         </div>
       </div>
 
@@ -701,7 +701,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label="Battleground of the Card-born"
-            caption="3-min Oblivion race · PvP or CPU"
+            caption="3-min Divine Light race · PvP or CPU"
             tone="cream"
             size="wide"
             onClick={props.onBattleground}

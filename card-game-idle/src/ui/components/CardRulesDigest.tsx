@@ -35,14 +35,14 @@ function CardRulesDigest({
   const highlightEnabled = useStore(state => state.settings.highlightRulesText !== false);
   const sections = useMemo(() => {
     const all = getCardSummarySections(card, { abilityTextMode });
-    // Preview: hide 'On Play'/'Play'/'Hooks' — 'Ability' already summarises them.
-    // Detail: hide 'Rules' — the type-specific sections (On Play, Passive, Attacks, etc.)
-    // already break down the same canonical mechanics, making Rules redundant.
-    const previewVisible = all.filter(s => s.title !== 'On Play' && s.title !== 'Play' && s.title !== 'Hooks' && s.title !== 'Rules');
     const detailBase = all.filter(s => s.title !== 'Rules');
     const hasSpecificSections = detailBase.some(s => s.title !== 'Ability');
-    const detailVisible = hasSpecificSections ? detailBase.filter(s => s.title !== 'Ability') : detailBase;
-    const visible = variant === 'preview' ? previewVisible : detailVisible;
+    const structured = hasSpecificSections
+      ? detailBase.filter(s => s.title !== 'Ability' && s.title !== 'Effect' && s.title !== 'On Play' && s.title !== 'Play' && s.title !== 'Hooks')
+      : detailBase;
+    const visible = variant === 'preview'
+      ? structured.filter(section => section.title !== 'Source')
+      : structured;
     const readable = visible.map(section => ({
       ...section,
       lines: section.lines.map(formatReadableRuleText),
@@ -53,43 +53,49 @@ function CardRulesDigest({
 
   if (variant === 'preview') {
     return (
-      <div style={{ display: 'grid', gap: 4 }}>
+      <div style={{ display: 'grid', gap: 6 }}>
         {sections.map(section => (
-          section.lines.slice(0, maxLinesPerSection ?? 1).map((line, index) => (
-            <div
-              key={`${section.title}-${index}`}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'auto minmax(0, 1fr)',
-                gap: 6,
-                alignItems: 'start',
-              }}
-            >
-              <div style={{
-                fontSize: 7,
-                letterSpacing: 0.9,
-                textTransform: 'uppercase',
-                color: labelColor,
-                fontWeight: 700,
-                marginTop: 1,
-                fontFamily: 'Georgia, serif',
-              }}>
-                {section.title}
-              </div>
-              <div style={{
-                fontSize: 9,
-                lineHeight: 1.35,
-                color: textColor,
-                display: '-webkit-box',
-                WebkitBoxOrient: 'vertical',
-                WebkitLineClamp: lineClamp,
-                overflow: 'hidden',
-                fontFamily: 'Georgia, serif',
-              }}>
-                {highlightRulesText(line, { disabled: !highlightEnabled, compact: true, lightBg })}
-              </div>
+          <div
+            key={section.title}
+            style={{
+              border: `1px solid ${sectionBorder}`,
+              background: sectionBackground,
+              borderRadius: 6,
+              padding: '6px 7px',
+              minWidth: 0,
+            }}
+          >
+            <div style={{
+              fontSize: 7,
+              letterSpacing: 1,
+              textTransform: 'uppercase',
+              color: labelColor,
+              fontWeight: 700,
+              marginBottom: 4,
+              fontFamily: 'Georgia, serif',
+            }}>
+              {section.title}
             </div>
-          ))
+            <div style={{ display: 'grid', gap: 3 }}>
+              {section.lines.slice(0, maxLinesPerSection ?? 1).map((line, index) => (
+                <div
+                  key={`${section.title}-${index}`}
+                  style={{
+                    fontSize: 9,
+                    lineHeight: 1.32,
+                    color: textColor,
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: lineClamp,
+                    overflow: 'hidden',
+                    fontFamily: 'Georgia, serif',
+                  }}
+                >
+                  {highlightRulesText(line, { disabled: !highlightEnabled, compact: true, lightBg })}
+                </div>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     );

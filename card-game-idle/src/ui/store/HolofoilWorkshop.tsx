@@ -1,12 +1,11 @@
 ﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
-import { canConvertCardToHolo, getCardFinishLabel, getHolofoilConversionCost, getHoloOwnedCopies, getNormalOwnedCopies } from '@/systems/progression/HolofoilSystem';
+import { canConvertCardToHolo, getCardFinishLabel, getHolofoilConversionCost, getHoloOwnedCopies, getNormalOwnedCopies, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { useStore } from '@/state/store';
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
-  getCardBackgroundUrl,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -198,7 +197,8 @@ export default function HolofoilWorkshop() {
 
   const cards = useMemo(() => {
     return registryCards
-      .filter(def => canConvertCardToHolo(def, collection, holoCollection))
+      .filter(def => canConvertCardToHolo(def, collection, holoCollection)
+        || (isHoloOnlyCard(def) && (collection[def.definitionId] ?? 0) > 0))
       .sort((a, b) => {
         const rarityDelta = (RARITY_ORDER[a.rarity] ?? 0) - (RARITY_ORDER[b.rarity] ?? 0);
         if (rarityDelta !== 0) return rarityDelta;
@@ -365,7 +365,7 @@ export default function HolofoilWorkshop() {
         </button>
 
         <div style={styles.statusPill}>
-          {filtered.length} convertible cards
+          {filtered.length} holofoil cards
         </div>
       </div>
 
@@ -391,20 +391,20 @@ export default function HolofoilWorkshop() {
             <div style={{ display: 'flex', gap: 14, padding: '0 24px 14px', alignItems: 'flex-start' }}>
               {row.cards.map(def => {
                 const normalOwned = getNormalOwnedCopies(def, collection, holoCollection);
-                const holoOwned = getHoloOwnedCopies(collection, holoCollection, def.definitionId);
+                const intrinsicHolo = isHoloOnlyCard(def);
+                const holoOwned = intrinsicHolo
+                  ? (collection[def.definitionId] ?? 0)
+                  : getHoloOwnedCopies(collection, holoCollection, def.definitionId);
                 const cost = getHolofoilConversionCost(def, holoCollection) ?? 0;
-                const canAfford = shards >= cost;
+                const canAfford = !intrinsicHolo && shards >= cost;
                 const previewText = getCardPreviewLines(def, 3).join(' ');
-                const artUrl = getCardBackgroundUrl(def);
-
                 return (
                   <div key={def.definitionId} style={styles.cardTile}>
                     <div
                       className="holofoil-menu-card"
-                      style={{ ...styles.card, position: 'relative', ...getDenseCardFaceBackgroundStyle(def, 'holo', 'front', true) }}
+                      style={{ ...styles.card, position: 'relative', ...getDenseCardFaceBackgroundStyle(def, 'holo') }}
                       title={getCardPreviewLines(def, 4).join('\n')}
                     >
-                      {artUrl && <img src={artUrl} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
                       <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={getCardNameRibbonStyle('grid')}>
                           <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.3, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
@@ -430,7 +430,7 @@ export default function HolofoilWorkshop() {
                       </div>
                       <div style={{ ...styles.countRow, marginTop: 4 }}>
                         <span>{def.rarity}</span>
-                        <span>{cost} Shards</span>
+                        <span>{intrinsicHolo ? 'Intrinsic Holofoil' : `${cost} Shards`}</span>
                       </div>
                       <button className="menu-tactile-btn"
                         style={{
@@ -441,7 +441,7 @@ export default function HolofoilWorkshop() {
                         onClick={() => canAfford && handleConvert(def.definitionId, def.name)}
                         disabled={!canAfford}
                       >
-                        {canAfford ? `Convert (${cost} Shards)` : `Need ${cost - shards} More`}
+                        {intrinsicHolo ? 'Intrinsic Holofoil' : canAfford ? `Convert (${cost} Shards)` : `Need ${cost - shards} More`}
                       </button>
                     </div>
                   </div>

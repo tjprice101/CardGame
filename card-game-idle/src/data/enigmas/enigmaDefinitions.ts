@@ -49,8 +49,8 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
         kind: 'acquire',
       },
       {
-        title: 'Sacrifice 50,000 Oblivion',
-        description: 'Spend down your lifetime Oblivion total to fuel the next seal.',
+        title: 'Sacrifice 50,000 Divine Light',
+        description: 'Spend 50,000 Divine Light to fuel the next seal.',
         kind: 'spend_oblivion',
         amount: 50_000,
       },

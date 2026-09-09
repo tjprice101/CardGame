@@ -661,7 +661,7 @@ function TipsTab() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {readyToFlip > 0 && (
               <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.72)', fontFamily: BF }}>
-                → <strong style={{ color: C.blue.fg }}>{readyToFlip} card{readyToFlip === 1 ? '' : 's'} ready to flip.</strong> Flip to bank the charge as Limitless Light Stacks, or sacrifice for immediate Oblivion.
+                → <strong style={{ color: C.blue.fg }}>{readyToFlip} card{readyToFlip === 1 ? '' : 's'} ready to flip.</strong> Flip to bank the charge as Limitless Light Stacks, or sacrifice for immediate Divine Light.
               </div>
             )}
             {noStacks && (
@@ -696,7 +696,7 @@ function TipsTab() {
       <TipCard
         rank={4}
         title="Sacrifice When You Cannot Attack"
-        detail="If a charged card has no useful attack window left this turn, sacrificing it converts its charge straight into Oblivion with no cooldown. A flip you never cash in is wasted at turn end."
+        detail="If a charged card has no useful attack window left this turn, sacrificing it converts its charge straight into Divine Light with no cooldown. A flip you never cash in is wasted at turn end."
         accent={C.red.fg}
       />
       <TipCard
@@ -750,7 +750,7 @@ export default function OblivionAcquisitionScreen({ onClose }: OblivionAcquisiti
     <div
       className="anim-backdrop-fade"
       role="dialog"
-      aria-label="Oblivion Acquisition"
+      aria-label="Divine Light Acquisition"
       style={{
         position: 'fixed', inset: 0,
         background: C.backdrop,
@@ -836,7 +836,7 @@ export default function OblivionAcquisitionScreen({ onClose }: OblivionAcquisiti
                 backgroundClip: 'text',
                 animation: 'obAcqTitleShimmer 5s linear infinite',
               }}>
-                ◈ Oblivion Acquisition
+                ◈ Divine Light Acquisition
               </h1>
               <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.40)', fontFamily: BF, marginTop: 4 }}>
                 All sources, multipliers, and strategies — updated live from your board.

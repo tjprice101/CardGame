@@ -3,7 +3,7 @@ import type { CardDefinition } from '@/types/cards';
 const transcendentLight: CardDefinition = {
 	definitionId: 'tx-neutral-starbound-glimmer', type: 'Light', rarity: 'Transcendent',
 	name: 'Starbound Glimmer',
-	description: 'Transcendent Light. Ain Attack: 1250 base Divine Light, +900 triune scaling. Soph Attack: 1900 base Divine Light, +1200 triune scaling; consumes 5 stacks.',
+	description: 'Two apex attacks with exceptional triune scaling and a high-impact Soph burst.',
 	artKey: 'tx_neutral_starbound_glimmer',
 	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'Ain Attack', description: '1250 base Divine Light with triune scaling.', baseOblivion: 1250, cooldownCards: 4, scaling: { kind: 'triune', amount: 900 }, tags: ['transcendent', 'ain-attack'] },
 	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Soph Attack', description: '1900 base Divine Light with triune scaling; consumes 5 stacks.', baseOblivion: 1900, cooldownCards: 5, scaling: { kind: 'triune', amount: 1200 }, stackCost: { kind: 'fixed', value: 5 }, tags: ['transcendent', 'soph-attack'] },
@@ -13,19 +13,19 @@ const transcendentLight: CardDefinition = {
 const transcendentDark: CardDefinition[] = [
 	{
 		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: 'Null Catalyst',
-		description: 'Transcendent Dark utility. Search a Light card and a Dark card, then return to hand.', artKey: 'tx_neutral_null_catalyst',
-		sophEffects: [{ type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }], activationCost: { kind: 'fixed', value: 5 }, cooldownCardsPlayed: 3, postActivationFate: 'hand', allowHandCast: true, sacrificeOblivionRate: 125,
+		description: 'Search a Light card and a Dark card. When activated from the board, this card remains in play and can be used again after its cooldown.', artKey: 'tx_neutral_null_catalyst',
+		sophEffects: [{ type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }], activationCost: { kind: 'fixed', value: 5 }, cooldownCardsPlayed: 3, postActivationFate: 'hand', allowHandCast: true, sacrificeOblivionRate: 125, persistent: true,
 	},
 	{
 		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: 'Void Reliquary',
-		description: 'Transcendent Dark utility. Recover any card from the discard pile, then return to the deck.', artKey: 'tx_neutral_void_reliquary',
-		sophEffects: [{ type: 'salvage_any' }], activationCost: { kind: 'fixed', value: 6 }, cooldownCardsPlayed: 4, postActivationFate: 'deck', allowHandCast: false, sacrificeOblivionRate: 135,
+		description: 'Recover any card from the discard pile. This card remains in play after board activation and can be used again after its cooldown.', artKey: 'tx_neutral_void_reliquary',
+		sophEffects: [{ type: 'salvage_any' }], activationCost: { kind: 'fixed', value: 6 }, cooldownCardsPlayed: 4, postActivationFate: 'deck', allowHandCast: false, sacrificeOblivionRate: 135, persistent: true,
 	},
 ];
 
 const transcendentAur: CardDefinition = {
 	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'Starbound Null Archangel',
-	description: 'Transcendent Ain Soph Aur. Sacrifice 3 back-row cards to summon. Bridge the Light: 2400 base Divine Light, +1800 triune scaling; consumes 6 stacks.', artKey: 'tx_angel_starbound_null_archangel',
+	description: 'Sacrifice 3 back-row cards to summon, then use Bridge the Light for an apex triune Divine Light payout.', artKey: 'tx_angel_starbound_null_archangel',
 	summonCost: ['light-neutrality-1', 'light-neutrality-2', 'dark-neutrality-1'], onSummonEffects: [{ type: 'oblivion_flat', value: 300 }],
 	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '2400 base Divine Light with triune scaling; consumes 6 stacks.', baseOblivion: 2400, cooldownCards: 5, scaling: { kind: 'triune', amount: 1800 }, consumesStacks: { kind: 'fixed', value: 6 } },
 	attacks: { primary: { id: 'tx-angel-starbound-null-archangel:bridge', label: 'Primary', name: 'Bridge the Light', description: '2400 base Divine Light', baseOblivion: 2400, cooldownCards: 5, tags: ['transcendent', 'bridge'] } },

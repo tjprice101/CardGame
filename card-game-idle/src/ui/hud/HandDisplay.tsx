@@ -469,7 +469,7 @@ export default function HandDisplay() {
                   if (!bridge) return null;
                   return (
                     <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                      {bridge.name} | Oblivion {bridge.baseOblivion} | Cooldown {bridge.cooldownCards} cards
+                      {bridge.name} | Divine Light {bridge.baseOblivion} | Cooldown {bridge.cooldownCards} cards
                     </span>
                   );
                 })()}
@@ -478,10 +478,10 @@ export default function HandDisplay() {
             {hoveredDef.type === 'Light' && (
               <>
                 <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                  Ain Attack - Oblivion {(hoveredDef as LightCardDefinition).ainAttack.baseOblivion} | Cooldown {(hoveredDef as LightCardDefinition).ainAttack.cooldownCards} cards
+                  Ain Attack - Divine Light {(hoveredDef as LightCardDefinition).ainAttack.baseOblivion} | Cooldown {(hoveredDef as LightCardDefinition).ainAttack.cooldownCards} cards
                 </span>
                 <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                  Soph Attack - Oblivion {(hoveredDef as LightCardDefinition).sophAttack.baseOblivion} | Cooldown {(hoveredDef as LightCardDefinition).sophAttack.cooldownCards} cards
+                  Soph Attack - Divine Light {(hoveredDef as LightCardDefinition).sophAttack.baseOblivion} | Cooldown {(hoveredDef as LightCardDefinition).sophAttack.cooldownCards} cards
                 </span>
               </>
             )}
@@ -629,7 +629,7 @@ export default function HandDisplay() {
         >
           {viewCards.map((deckCard, idx) => {
           const def = CardRegistry.get(deckCard.definitionId);
-          const selected = !isExtraDeckView && turn.mulliganSelected.includes(deckCard.instanceId);
+          const selected = !isExtraDeckView && (turn.mulliganSelected ?? []).includes(deckCard.instanceId);
           const isHovered = hoveredId === deckCard.instanceId;
           const isAnimatingOut = !isExtraDeckView && playingCardId === deckCard.instanceId;
           const isPlayable = isExtraDeckView
@@ -660,7 +660,7 @@ export default function HandDisplay() {
               draggable={isDraggable}
               style={{
                 ...styles.card,
-                ...getCardFaceBackgroundStyle(def, deckCard.finish, deckCard.faceState),
+                ...getCardFaceBackgroundStyle(def, deckCard.finish, 'front'),
                 ...(selected ? styles.cardMulligan : {}),
                 ...(!isPlayable ? { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.5)' } : {}),
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
@@ -692,6 +692,11 @@ export default function HandDisplay() {
               }}
               onDragEnd={() => setDraggingId(null)}
             >
+
+              {def && (() => {
+                const artUrl = getCardBackgroundUrl(def);
+                return artUrl ? <img src={artUrl} alt="" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} /> : null;
+              })()}
 
               {showTopPanel && (
                 <div style={getCardNameRibbonStyle('hand')}>

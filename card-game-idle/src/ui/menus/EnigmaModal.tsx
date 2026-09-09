@@ -45,7 +45,7 @@ export default function EnigmaModal({ onClose }: Props) {
                   <div style={{ color: '#f4cf6b', fontSize: 11, letterSpacing: 1, whiteSpace: 'nowrap' }}>{status === 'completed' ? 'COMPLETED' : isActive ? 'ACTIVE' : 'INACTIVE'} {expanded ? '▾' : '▸'}</div>
                 </div>
                 {expanded && !locked && <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>{definition.steps.map((step, index) => <div key={step.title} style={{ display: 'flex', gap: 10, color: instance?.stepsComplete[index] ? '#d5c3eb' : '#f8f0de' }}><b>{index + 1}.</b><div><div style={{ fontFamily: uiTypography.display }}>{step.title}</div><div style={{ fontSize: 12, marginTop: 2 }}>{step.description}</div></div></div>)}<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
-                  {canOblivion && <button onClick={event => { event.stopPropagation(); sacrificeEnigmaOblivion(definition.id); }} disabled={progress.oblivion < 50000}>Sacrifice 50,000 Oblivion</button>}
+                  {canOblivion && <button onClick={event => { event.stopPropagation(); sacrificeEnigmaOblivion(definition.id); }} disabled={progress.oblivion < 50000}>Sacrifice 50,000 Divine Light</button>}
                   {canShards && <button onClick={event => { event.stopPropagation(); sacrificeShardsForEnigma(definition.id, 2500); }} disabled={(progress.aberratedShards ?? 0) < 2500}>Sacrifice 2,500 Shards</button>}
                   {canClaim && <button onClick={event => { event.stopPropagation(); claimEnigmaReward(definition.id); }}>Claim Reward</button>}
                 </div></div>}

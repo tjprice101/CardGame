@@ -42,7 +42,7 @@ const KIND_LABEL: Record<string, string> = {
   summon_ain_soph_aur: 'Summon Ain Soph Aur', flip_soph: 'Flip Soph',
   activate_ain_attack: 'Ain Attack', activate_soph_attack: 'Soph Attack',
   activate_dark: 'Dark activation', bridge_ain_soph_aur: 'Bridge attack',
-  spend_light_stacks: 'Spend Light Stacks', earn_oblivion_in_turn: 'Earn Oblivion',
+  spend_light_stacks: 'Spend Light Stacks', earn_oblivion_in_turn: 'Earn Divine Light',
   open_packs: 'Open packs', win_boss: 'Defeat bosses', clear_null_raid: 'Clear Null Raid',
 };
 
@@ -53,7 +53,7 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
   const claimable = complete && !quest.claimed;
   const rewardParts = [] as string[];
   if (quest.oblivionReward) {
-    rewardParts.push(`+${getScaledQuestOblivion(quest.oblivionReward, resonanceScore).toLocaleString()} Oblivion`);
+    rewardParts.push(`+${getScaledQuestOblivion(quest.oblivionReward, resonanceScore).toLocaleString()} Divine Light`);
   }
   if (quest.shardReward) rewardParts.push(`+${quest.shardReward} Aberrated Shards`);
   const rewardText = rewardParts.join(' · ') || 'Reward';
@@ -102,12 +102,12 @@ function ChallengeColumn({ cadence, quests, resonanceScore, onClaim }: { cadence
   const theme = CADENCE_THEME[cadence];
   const completedCount = quests.filter(q => isQuestComplete(q)).length;
   return (
-    <section style={{ position: 'relative', padding: '20px 20px 24px', borderRadius: 18, border: `1px solid ${theme.border}`, background: `${theme.headerTint}, linear-gradient(180deg, rgba(10,12,22,0.65) 0%, rgba(8,10,18,0.55) 100%)` }}>
+    <section style={{ position: 'relative', display: 'flex', flexDirection: 'column', minHeight: 0, maxHeight: 'min(720px, calc(100vh - 190px))', padding: '20px 14px 18px 20px', borderRadius: 18, border: `1px solid ${theme.border}`, background: `${theme.headerTint}, linear-gradient(180deg, rgba(10,12,22,0.65) 0%, rgba(8,10,18,0.55) 100%)` }}>
       <header style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 16 }}>
         <div><div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>{theme.tag}</div><h2 style={{ margin: '4px 0 0', color: '#fff2dc', fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1, textShadow: `0 0 14px ${theme.glow}` }}>{theme.label}</h2></div>
         <div style={{ color: theme.accentSoft, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 2 }}>{completedCount}/{quests.length} READY</div>
       </header>
-      <div style={{ display: 'grid', gap: 12 }}>{quests.length === 0 ? <div style={{ color: 'rgba(240,230,210,0.55)', fontStyle: 'italic', padding: '18px 4px' }}>No challenges available right now.</div> : quests.map(quest => <QuestCard key={quest.id} quest={quest} cadence={cadence} resonanceScore={resonanceScore} onClaim={() => onClaim(quest.id)} />)}</div>
+      <div className="ornate-scroll" style={{ display: 'grid', gap: 12, minHeight: 0, overflowY: 'auto', paddingRight: 6 }}>{quests.length === 0 ? <div style={{ color: 'rgba(240,230,210,0.55)', fontStyle: 'italic', padding: '18px 4px' }}>No challenges available right now.</div> : quests.map(quest => <QuestCard key={quest.id} quest={quest} cadence={cadence} resonanceScore={resonanceScore} onClaim={() => onClaim(quest.id)} />)}</div>
     </section>
   );
 }
@@ -143,7 +143,7 @@ export default function QuestsModal({ onClose }: Props) {
           <div>
             <div style={{ color: '#f0a24a', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 3 }}>✦ DAILY & WEEKLY OBJECTIVES</div>
             <h1 style={{ margin: '8px 0 4px', color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 34, letterSpacing: 1.5 }}>Challenges</h1>
-            <div style={{ color: 'rgba(240,230,210,0.72)', fontSize: 13 }}>Complete daily and weekly challenges for Oblivion and Aberrated Shards.</div>
+            <div style={{ color: 'rgba(240,230,210,0.72)', fontSize: 13 }}>Complete daily and weekly challenges for Divine Light and Aberrated Shards.</div>
             {readyCount > 0 && <div style={{ display: 'inline-block', marginTop: 12, padding: '5px 12px', borderRadius: 999, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, color: '#12070a', background: 'linear-gradient(180deg, #ffd88f 0%, #f0a24a 100%)', border: '1px solid rgba(255,209,138,0.7)', boxShadow: '0 6px 14px rgba(240,162,74,0.35)' }}>{readyCount} REWARD{readyCount === 1 ? '' : 'S'} READY</div>}
           </div>
           <button onClick={onClose} aria-label="Close Challenges" style={{ width: 42, height: 42, borderRadius: '50%', border: '1px solid rgba(240,209,138,0.4)', background: 'rgba(240,162,74,0.08)', color: '#f8f0de', fontSize: 18, cursor: 'pointer', fontFamily: uiTypography.display }}>✕</button>

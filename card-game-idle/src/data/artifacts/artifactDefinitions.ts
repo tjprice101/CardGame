@@ -25,7 +25,7 @@ export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
     setName: 'Neutrality',
     tier: 'advanced',
     name: 'Patience Surge',
-    description: 'When a Seraphim fires a Patience-powered attack, deal +150 bonus Oblivion. The release is worth the wait.',
+    description: 'When a Light attack resolves, gain +150 bonus Divine Light. The release is worth the wait.',
     powderCost: T2,
     effects: [{ type: 'patience_attack_oblivion_bonus', value: 150 }],
   },

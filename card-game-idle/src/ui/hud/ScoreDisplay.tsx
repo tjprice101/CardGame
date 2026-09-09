@@ -53,7 +53,7 @@ export default function ScoreDisplay() {
 
   return (
     <div className={popping ? 'anim-score-pop' : undefined} style={styles.container}>
-      <div style={styles.label}>Oblivion</div>
+      <div style={styles.label}>Divine Light</div>
       <div style={styles.score}>{formatNumber(oblivion)}</div>
     </div>
   );

@@ -20,7 +20,7 @@ const light = (
   type: 'Light',
   rarity: 'Eternal',
   name,
-  description: `Eternal Light. Ain Attack: ${baseAin} base Divine Light, +${scale} triune scaling. Soph Attack: ${baseSoph} base Divine Light, +${scale + 80} triune scaling; costs 3 Limitless Light Stacks.`,
+  description: 'A powerful two-attack card with strong triune scaling and a stack-consuming Soph burst.',
   artKey,
   ainAttack: {
     id: `${definitionId}:ain-attack`, label: 'Ain', name: 'Ain Attack',
@@ -47,10 +47,10 @@ const dark = (
   type: 'Dark',
   rarity: 'Eternal',
   name,
-  description: `Eternal Dark utility. Resolves ${effect.type.replace(/_/g, ' ')} for 4 Limitless Light Stacks, then returns to the ${fate}.`,
+  description: `Resolve ${effect.type.replace(/_/g, ' ')} for 4 Limitless Light Stacks, then return this card to the ${fate}.`,
   artKey,
   sophEffects: [effect], activationCost: { kind: 'fixed', value: 4 },
-  cooldownCardsPlayed: 3, postActivationFate: fate, allowHandCast: true,
+  postActivationFate: fate, allowHandCast: true,
   sacrificeOblivionRate: 85,
 });
 
@@ -66,7 +66,7 @@ const asa = (
   type: 'AinSophAur',
   rarity: 'Eternal',
   name,
-  description: `Eternal Ain Soph Aur. Sacrifice ${materials} back-row cards to summon. Bridge the Light: ${baseOblivion} base Divine Light, +${scale} triune scaling.`,
+  description: `Sacrifice ${materials} back-row cards to summon, then use Bridge the Light for a high triune Divine Light payout.`,
   artKey,
   summonCost: Array.from({ length: materials }, (_, index) => `light-neutrality-${index + 1}`),
   onSummonEffects: [{ type: 'oblivion_flat', value: 150 }],

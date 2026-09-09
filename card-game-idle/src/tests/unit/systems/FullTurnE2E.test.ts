@@ -3,6 +3,8 @@ import { useStore, defaultGameState } from '@/state/store';
 import { lightCards } from '@/data/cards/lightCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
+import { CardRegistry } from '@/cards/CardRegistry';
+import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import type { GameState, MainDeckBoardInstance } from '@/types/game';
 
 function resetStore(): void {
@@ -32,6 +34,28 @@ function activeLightSlot(instanceId: string, index: number) {
 }
 
 describe('Full turn end-to-end', () => {
+  it('starts a default deck turn with valid cards and resolves a selected mulligan', () => {
+    resetStore();
+
+    useStore.getState().beginTurn();
+    const opening = useStore.getState();
+    expect(opening.turn.phase).toBe('mulligan');
+    expect(opening.deck.hand).toHaveLength(5);
+    expect(opening.deck.hand.every(card => lightCards.some(def => def.definitionId === card.definitionId)
+      || darkCards.some(def => def.definitionId === card.definitionId))).toBe(true);
+    expect(opening.deck.hand.every(card => {
+      const definition = CardRegistry.get(card.definitionId);
+      return !!definition && getCardBackgroundUrl(definition) !== null;
+    })).toBe(true);
+
+    useStore.getState().toggleMulliganCard(opening.deck.hand[0]!.instanceId);
+    useStore.getState().confirmMulligan();
+
+    const after = useStore.getState();
+    expect(after.turn.phase).toBe('playing');
+    expect(after.deck.hand).toHaveLength(5);
+  });
+
   it('runs a complete build-up turn and wipes everything except Oblivion', () => {
     resetStore();
 

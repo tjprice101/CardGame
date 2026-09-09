@@ -75,10 +75,10 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
         </span>
       </div>
 
-      {/* Right — Oblivion Acquisition button */}
+      {/* Right — Divine Light Acquisition button */}
       <button
         onClick={onOpenOblivionScreen}
-        title="Oblivion Acquisition — view all Oblivion sources"
+        title="Divine Light Acquisition — view all Divine Light sources"
         style={{
           marginLeft: 'auto',
           pointerEvents: 'auto',
@@ -109,7 +109,7 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
           b.style.borderColor = 'rgba(247,192,74,0.35)';
         }}
       >
-        ◈ Oblivion
+        ◈ Divine Light
       </button>
 
     </div>
@@ -211,7 +211,7 @@ export default function HUD() {
       {/* Full-screen radial flash overlay — triggered by game events */}
       <FlashOverlay />
 
-      {/* Oblivion Acquisition reference screen */}
+      {/* Divine Light Acquisition reference screen */}
       {showOblivionScreen && (
         <OblivionAcquisitionScreen onClose={() => setShowOblivionScreen(false)} />
       )}

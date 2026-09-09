@@ -307,7 +307,7 @@ export default function CardPackStore({ onClose }: Props) {
       : pack.locked;
 
     const usesShards = (pack as typeof pack & { currencyType?: string }).currencyType === 'aberratedShards';
-    const currencyLabel = usesShards ? 'Aberrated Shards' : 'Oblivion';
+    const currencyLabel = usesShards ? 'Aberrated Shards' : 'Divine Light';
 
     const tiers = usesShards
       ? [{ tier: 'pack' as const, label: 'Pack', cards: pack.cardsPerOpen, cost: pack.cost, discount: '' }]
@@ -387,7 +387,7 @@ export default function CardPackStore({ onClose }: Props) {
             {pack.oblivionUnlock !== undefined ? (
               <>
                 <div style={{ marginBottom: 4 }}>
-                  🔒 {setName} — Unlocks at {pack.oblivionUnlock.toLocaleString()} Oblivion
+                  🔒 {setName} — Unlocks at {pack.oblivionUnlock.toLocaleString()} Divine Light
                 </div>
               </>
             ) : '🔒 Coming Soon'}
@@ -497,7 +497,7 @@ export default function CardPackStore({ onClose }: Props) {
       <div style={{ ...styles.header, position: 'relative' }}>
         <div className="ui-title-glow" style={styles.title}>Card Store</div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <div style={styles.score}>Oblivion: {Math.floor(oblivion).toLocaleString()}</div>
+          <div style={styles.score}>Divine Light: {Math.floor(oblivion).toLocaleString()}</div>
           <div style={styles.score}>Aberrated Shards: {shards.toLocaleString()}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
             <div style={styles.collectionBar}>{Object.keys(collection).length} unique cards collected</div>

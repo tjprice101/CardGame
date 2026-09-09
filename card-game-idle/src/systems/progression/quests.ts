@@ -46,6 +46,10 @@ const DAILY_QUEST_POOL: QuestTemplate[] = [
   { id: 'daily-stack-spend-8', text: 'Spend 8 Limitless Light Stacks', kind: 'spend_light_stacks', goal: 8, shardReward: 0, oblivionReward: 6_500 },
   { id: 'daily-summon-asa-1', text: 'Summon 1 Ain Soph Aur', kind: 'summon_ain_soph_aur', goal: 1, shardReward: 0, oblivionReward: 7_000 },
   { id: 'daily-attack-3', text: 'Activate 3 Light attacks', kind: 'activate_ain_attack', goal: 3, shardReward: 0, oblivionReward: 6_500 },
+  { id: 'daily-soph-attack-2', text: 'Activate 2 Soph Attacks', kind: 'activate_soph_attack', goal: 2, shardReward: 0, oblivionReward: 6_500 },
+  { id: 'daily-dark-activation-2', text: 'Resolve 2 Dark activations', kind: 'activate_dark', goal: 2, shardReward: 0, oblivionReward: 6_500 },
+  { id: 'daily-bridge-1', text: 'Activate 1 Bridge attack', kind: 'bridge_ain_soph_aur', goal: 1, shardReward: 0, oblivionReward: 7_500 },
+  { id: 'daily-divine-light-15000', text: 'Earn 15,000 Divine Light in one turn', kind: 'earn_oblivion_in_turn', goal: 15_000, shardReward: 0, oblivionReward: 7_000 },
   { id: 'daily-pack-1', text: 'Open 1 card pack', kind: 'open_packs', goal: 1, shardReward: 0, oblivionReward: 8_000 },
   { id: 'daily-boss-1', text: 'Defeat 1 boss', kind: 'win_boss', goal: 1, shardReward: 0, oblivionReward: 10_000 },
 ];
@@ -56,6 +60,11 @@ const WEEKLY_QUEST_POOL: QuestTemplate[] = [
   { id: 'weekly-summons-5', text: 'Summon 5 Ain Soph Aur', kind: 'summon_ain_soph_aur', goal: 5, shardReward: 70, oblivionReward: 75_000 },
   { id: 'weekly-dark-activations-12', text: 'Resolve 12 Dark activations', kind: 'activate_dark', goal: 12, shardReward: 60, oblivionReward: 70_000 },
   { id: 'weekly-bridges-8', text: 'Activate 8 Bridge attacks', kind: 'bridge_ain_soph_aur', goal: 8, shardReward: 70, oblivionReward: 80_000 },
+  { id: 'weekly-light-30', text: 'Play 30 Light cards', kind: 'play_light', goal: 30, shardReward: 55, oblivionReward: 65_000 },
+  { id: 'weekly-dark-24', text: 'Play 24 Dark cards', kind: 'play_dark', goal: 24, shardReward: 55, oblivionReward: 65_000 },
+  { id: 'weekly-soph-attacks-16', text: 'Activate 16 Soph Attacks', kind: 'activate_soph_attack', goal: 16, shardReward: 65, oblivionReward: 75_000 },
+  { id: 'weekly-stacks-60', text: 'Spend 60 Limitless Light Stacks', kind: 'spend_light_stacks', goal: 60, shardReward: 65, oblivionReward: 75_000 },
+  { id: 'weekly-divine-light-150000', text: 'Earn 150,000 Divine Light in one turn', kind: 'earn_oblivion_in_turn', goal: 150_000, shardReward: 80, oblivionReward: 90_000 },
   { id: 'weekly-bosses-3', text: 'Defeat 3 bosses', kind: 'win_boss', goal: 3, shardReward: 70, oblivionReward: 100_000 },
   { id: 'weekly-null-raid-1', text: 'Clear 1 Null Raid', kind: 'clear_null_raid', goal: 1, shardReward: 90, oblivionReward: 110_000 },
   { id: 'weekly-packs-4', text: 'Open 4 card packs', kind: 'open_packs', goal: 4, shardReward: 55, oblivionReward: 65_000 },
@@ -99,8 +108,8 @@ export interface QuestState {
   lastWeeklyRollWeek: number;
 }
 
-export const DAILY_QUEST_COUNT = 3;
-export const WEEKLY_QUEST_COUNT = 2;
+export const DAILY_QUEST_COUNT = 5;
+export const WEEKLY_QUEST_COUNT = 4;
 
 export function defaultQuestState(): QuestState {
   return {
@@ -126,9 +135,10 @@ function mulberry32(seed: number) {
   };
 }
 
-function pickN<T>(pool: T[], n: number, seed: number): T[] {
+function pickN<T extends { id: string }>(pool: T[], n: number, seed: number, excludedIds: ReadonlySet<string> = new Set()): T[] {
   const rng = mulberry32(seed);
-  const arr = [...pool];
+  const eligible = pool.filter(template => !excludedIds.has(template.id));
+  const arr = eligible.length >= n ? eligible : [...pool];
   // Fisher–Yates partial shuffle
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(rng() * (i + 1));
@@ -152,15 +162,15 @@ function instantiate(template: QuestTemplate, salt: string): QuestInstance {
   };
 }
 
-export function rollDailyQuests(dayIndex: number): QuestInstance[] {
+export function rollDailyQuests(dayIndex: number, previous: QuestInstance[] = []): QuestInstance[] {
   // Seed: prefix the day index so daily ≠ weekly seed space.
   const seed = dayIndex * 2654435761 + 1;
-  return pickN(DAILY_QUEST_POOL, DAILY_QUEST_COUNT, seed).map(t => instantiate(t, `d${dayIndex}`));
+  return pickN(DAILY_QUEST_POOL, DAILY_QUEST_COUNT, seed, new Set(previous.map(quest => quest.templateId))).map(t => instantiate(t, `d${dayIndex}`));
 }
 
-export function rollWeeklyQuests(weekIndex: number): QuestInstance[] {
+export function rollWeeklyQuests(weekIndex: number, previous: QuestInstance[] = []): QuestInstance[] {
   const seed = weekIndex * 2246822519 + 7;
-  return pickN(WEEKLY_QUEST_POOL, WEEKLY_QUEST_COUNT, seed).map(t => instantiate(t, `w${weekIndex}`));
+  return pickN(WEEKLY_QUEST_POOL, WEEKLY_QUEST_COUNT, seed, new Set(previous.map(quest => quest.templateId))).map(t => instantiate(t, `w${weekIndex}`));
 }
 
 const DAILY_RESET_HOUR = 12;
@@ -240,10 +250,10 @@ export function refreshQuestRotation(state: QuestState, timestamp: number): Ques
     ? { ...state, daily: hydratedDaily, weekly: hydratedWeekly }
     : state;
   if (state.lastDailyRollDay !== dayIndex || state.daily.length === 0) {
-    next = { ...next, daily: rollDailyQuests(dayIndex), lastDailyRollDay: dayIndex };
+    next = { ...next, daily: rollDailyQuests(dayIndex, state.daily), lastDailyRollDay: dayIndex };
   }
   if (state.lastWeeklyRollWeek !== weekIndex || state.weekly.length === 0) {
-    next = { ...next, weekly: rollWeeklyQuests(weekIndex), lastWeeklyRollWeek: weekIndex };
+    next = { ...next, weekly: rollWeeklyQuests(weekIndex, state.weekly), lastWeeklyRollWeek: weekIndex };
   }
   return next;
 }

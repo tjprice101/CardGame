@@ -49,10 +49,11 @@ export interface DarkCardDefinition {
   readonly artKey: string;
   readonly sophEffects: CardEffect[];
   readonly activationCost: StackCostDefinition;
-  readonly cooldownCardsPlayed: number;
+  readonly cooldownCardsPlayed?: number;
   readonly postActivationFate: 'hand' | 'deck' | 'discard';
   readonly allowHandCast: boolean;
   readonly sacrificeOblivionRate: number;
+  readonly persistent?: boolean;
 }
 
 export interface MainDeckBoardInstance {
