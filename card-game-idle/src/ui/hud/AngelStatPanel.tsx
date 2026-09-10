@@ -76,7 +76,7 @@ export default function AngelStatPanel() {
       {hasAnything ? (
         <>
           {turn.limitlessLightStacks > 0 && (
-            <div style={styles.stat}>LLS {formatNumber(turn.limitlessLightStacks)}</div>
+            <div style={styles.stat}>Limitless Light Stacks {formatNumber(turn.limitlessLightStacks)}</div>
           )}
           {turn.oblivionEarnedThisTurn > 0 && (
             <div style={styles.stat}>+{formatNumber(turn.oblivionEarnedThisTurn)} this turn</div>

@@ -156,7 +156,7 @@ export default function PendingEffectModal() {
     stateStyle?: React.CSSProperties,
   ): React.CSSProperties => ({
     ...styles.card,
-    ...getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, card.faceState),
+    ...getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, 'front'),
     ...(stateStyle ?? {}),
   });
 

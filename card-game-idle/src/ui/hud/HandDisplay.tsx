@@ -94,8 +94,8 @@ const styles: Record<string, React.CSSProperties> = {
     scrollbarGutter: 'stable',
   },
   card: {
-    width: 'clamp(104px, 8.2vw, 132px)',
-    height: 'clamp(148px, 20vh, 188px)',
+    width: 'clamp(126px, 8.8vw, 150px)',
+    height: 'clamp(180px, 24vh, 214px)',
     flex: '0 0 auto',
     background: warmTheme.surfaceStrong,
     border: `1px solid ${warmTheme.border}`,

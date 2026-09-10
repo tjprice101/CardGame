@@ -293,18 +293,18 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
         right: 0,
         transform: 'translateY(-100%)',
         pointerEvents: 'none',
-        padding: '4px 9px',
+        padding: '4px 11px',
         borderRadius: 999,
         border: '1px solid rgba(255,232,158,0.48)',
         background: 'rgba(35,24,18,0.78)',
         color: '#ffe89e',
         fontFamily: BODY_FONT,
-        fontSize: 10,
+        fontSize: 9,
         fontWeight: 700,
         letterSpacing: 0.4,
         boxShadow: '0 3px 12px rgba(0,0,0,0.24)',
       }}>
-        LLS {turn.limitlessLightStacks}
+        Limitless Light Stacks {turn.limitlessLightStacks}
       </div>
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
