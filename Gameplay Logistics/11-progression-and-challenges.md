@@ -4,6 +4,8 @@
 
 Neutrality packs draw from the live base Neutrality pool: 24 Light, 24 Dark, and 4 Ain Soph Aur cards. Pack purchase must generate all five rewards before currency is deducted. Awarded cards are added to collection, then the pack-opening modal displays them face-down for manual reveal.
 
+Starter accounts, new saves, and wiped saves start with zero currency balances: Divine Light, lifetime Divine Light counters, Aberrated Shards, Fracture Shards, Card-bane Light, Entropic Energy, and the legacy entropy compatibility field all begin at 0.
+
 `PackOpeningFlow.test.ts` verifies pool validity, five-card rewards, collection updates, and currency deduction.
 
 ## Collection Power

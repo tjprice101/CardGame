@@ -184,6 +184,8 @@ function enforceHandCap(s: Store): void {
 
 const defaultProgress: ProgressState = {
   oblivion: 0,
+  lifetimeOblivion: 0,
+  bestSingleTurnOblivion: 0,
   aberratedShards: 0,
   totalCardsPlayed: 0,
   collection: { ...STARTER_COLLECTION },
@@ -4037,14 +4039,20 @@ export const useStore = create<Store>()(
           op['oblivion'] = op['score'];
         }
         delete op['score'];
+        if (op['oblivion'] === undefined) op['oblivion'] = 0;
+        if (op['lifetimeOblivion'] === undefined) op['lifetimeOblivion'] = 0;
+        if (op['bestSingleTurnOblivion'] === undefined) op['bestSingleTurnOblivion'] = 0;
         delete op['totalTicksElapsed'];
         delete op['scoreBoostTicks'];
         delete op['scoreBoostMultiplier'];
         delete op['purchasedAscensionCosmetics'];
         if (op['aberratedShards'] === undefined) op['aberratedShards'] = 0;
+        if (op['cardbaneLight'] === undefined) op['cardbaneLight'] = 0;
+        if (op['fractureShards'] === undefined) op['fractureShards'] = 0;
         if (op['entropicEnergyBalance'] === undefined) {
           op['entropicEnergyBalance'] = (op['entropyBalance'] as number | undefined) ?? 0;
         }
+        if (op['entropyBalance'] === undefined) op['entropyBalance'] = 0;
         if (op['holoCollection'] === undefined) op['holoCollection'] = {};
         if (op['infiniteCollection'] === undefined) op['infiniteCollection'] = {};
         if (op['favoriteCollection'] === undefined) op['favoriteCollection'] = {};
@@ -4482,7 +4490,7 @@ export const useStore = create<Store>()(
 
     resetToDefault: () => {
       set(() => {
-        const nextState = { ...defaultGameState, startedAt: Date.now(), lastSavedAt: Date.now() };
+        const nextState = { ...cloneState(defaultGameState), startedAt: Date.now(), lastSavedAt: Date.now() };
         setUiPreferences(nextState.settings);
         return nextState;
       });

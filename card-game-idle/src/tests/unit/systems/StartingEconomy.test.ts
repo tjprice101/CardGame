@@ -1,0 +1,51 @@
+import { describe, expect, it } from 'vitest';
+import { defaultGameState, useStore } from '@/state/store';
+import type { GameState, ProgressState } from '@/types/game';
+
+const currencyFields = [
+  'oblivion',
+  'lifetimeOblivion',
+  'bestSingleTurnOblivion',
+  'aberratedShards',
+  'cardbaneLight',
+  'fractureShards',
+  'entropicEnergyBalance',
+  'entropyBalance',
+] as const satisfies ReadonlyArray<keyof ProgressState>;
+
+function resetStore(): void {
+  const baseState = JSON.parse(JSON.stringify(defaultGameState)) as GameState;
+  useStore.setState(state => ({ ...state, ...baseState }));
+}
+
+describe('starting economy', () => {
+  it('starts new default saves with zero currency balances', () => {
+    for (const field of currencyFields) {
+      expect(defaultGameState.progress[field], field).toBe(0);
+    }
+  });
+
+  it('resets wiped saves back to zero currency balances', () => {
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        oblivion: 100,
+        lifetimeOblivion: 200,
+        bestSingleTurnOblivion: 300,
+        aberratedShards: 400,
+        cardbaneLight: 500,
+        fractureShards: 600,
+        entropicEnergyBalance: 700,
+        entropyBalance: 800,
+      },
+    }));
+
+    useStore.getState().resetToDefault();
+
+    for (const field of currencyFields) {
+      expect(useStore.getState().progress[field], field).toBe(0);
+    }
+  });
+});
