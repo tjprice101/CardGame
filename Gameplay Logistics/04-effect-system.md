@@ -1,56 +1,55 @@
 # Effect System
 
-## Effects are tagged data
+Effects are serializable tagged data from `src/types/effects.ts`. They are interpreted by `src/systems/cards/CardEffectExecutor.ts` and displayed by `src/ui/cardStatSummary.ts`.
 
-`src/types/effects.ts` defines effect unions. An effect is a serializable object:
+## Why Effects Are Data
 
-```ts
-type ImmediateEffect =
-  | { type: 'draw'; value: number }
-  | { type: 'oblivion_flat'; value: number } // Legacy tag; player-facing text says Divine Light.
-  | { type: 'patience_gain_all'; value: number };
-```
+Effects must be save-safe, inspectable, testable, and readable. Do not put functions inside card definitions. A card definition should describe behavior; the executor and store perform behavior.
 
-The `type` property is the tag. A `switch (effect.type)` narrows the object to the correct fields.
+## Supported Effect Families
 
-## Why effects are not functions
+The executor currently handles:
 
-A function stored inside a card definition would be difficult to serialize, inspect, test, and convert into readable rules text. Tagged data solves all four problems:
+- Divine Light effects: `oblivion_flat`, `score_flat`, `score_multiplier`.
+- Draw/discard effects: `draw`, `discard_choice`, `discard_draw`.
+- Deck manipulation: `shuffle_discard`, `look_top_take`, `look_top_take_drop`, `look_top_take_type`, `search_deck_by_type`, `search_deck_distinct_types`.
+- Discard recovery: `salvage_by_type`, `salvage_by_type_count`, `salvage_any`, `salvage_by_id`.
+- Branching: `conditional`.
 
-- Save systems can store it as JSON.
-- The executor can interpret it consistently.
-- Tests can construct effects without booting the UI.
-- `src/ui/cardStatSummary.ts` can format the same data into English.
+The executor has an exhaustive switch. Adding an effect type without a handler should fail TypeScript.
 
-## The executor
+## Pending Effects
 
-`src/systems/cards/CardEffectExecutor.ts` is the interpreter. It receives a card and copies of the relevant turn, board, and deck state. It resolves each effect and returns a result such as:
+Some effects require player selection. The executor returns pending-effect objects for the UI and store to resolve:
 
-```ts
-{
-  canPlay: true,
-  turn,
-  board,
-  deck,
-  oblivionBonus, // Legacy result key; player-facing text says Divine Light.
-  pendingEffect,
-}
-```
+- `discard_choice`
+- `look_top_take`
+- `look_top_take_drop`
+- `look_top_take_type`
+- `search_deck`
+- `salvage`
+- `embrace_infinite`
 
-The store adopts the result into the Immer draft and queues `pendingEffect` when the effect requires player input.
+`PendingEffectModal` renders the selection. `store.resolvePending(selected)` validates IDs, counts, filters, and distinct-type constraints before mutating state.
 
-## Pending effects
+## Store Boundary
 
-Search, salvage, look-at-top, and discard-choice mechanics cannot finish in one synchronous function call. The executor returns a serializable pending-effect description. The UI opens a picker, then calls `resolvePending(selected)` in the store.
+The store remains responsible for whole-game lifecycle work:
 
-This is a continuation pattern: the state records what is waiting, the UI collects input, and the store resumes the rules with validated selections.
+- Moving cards between hand, board, draw pile, discard pile, and Extra Deck.
+- Spending Limitless Light Stacks.
+- Applying cooldowns.
+- Granting Divine Light through the central grant path.
+- Queueing pending effects.
+- Recomputing derived stats.
+- Emitting quest and mastery progress.
 
-## Dynamic effects
+Do not let UI components apply effect results directly.
 
-A few cards depend on live state. The project uses a sentinel value such as `value: 0` and computes the real value in a definition-specific runtime path. This keeps ordinary cards declarative while allowing Collection Power, board totals, or Patience to affect outcomes.
+## Atomicity Rules
 
-When adding a dynamic card, update both the authored definition and the executor branch. Otherwise the card may display one value and execute another.
+Costs should not be paid unless the action can resolve. Dark activation now applies the proposed post-cost turn to the executor and commits only if the executor returns `canPlay: true`. Summoning also validates and executes against a proposed next state before consuming materials.
 
-## Store boundary
+## Display Rules
 
-The executor handles effect interpretation, but the store remains responsible for lifecycle operations that require the whole game context: removing the physical card, advancing play counters, ticking durability, ticking set-ability cooldowns, syncing enigmas, and checking boss defeat.
+Card text should describe mechanics in player language. Use Divine Light in UI and docs even when internal keys still use `oblivion`. Format effect tags through `cardStatSummary.ts`; never leak snake_case tags to players.

@@ -17,9 +17,12 @@ import {
   selectOblivion,
   selectBoard,
   selectBossFight,
+  selectProgress,
 } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { resolveCardScaling } from '@/systems/cards/CardScaling';
+import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { formatNumber } from '@/utils/bignum';
 import { uiTypography } from '@/ui/theme';
 import type {
@@ -27,6 +30,7 @@ import type {
   AinSophAurInstance,
   LightCardDefinition,
   MainDeckBoardInstance,
+  StackCostDefinition,
 } from '@/types/cards';
 
 // ─── constants ───────────────────────────────────────────────────────────────
@@ -48,6 +52,13 @@ const C = {
   red:    { fg: '#f07878', bg: 'rgba(240,120,120,0.09)', br: 'rgba(240,120,120,0.25)' },
   dim:    { fg: 'rgba(244,244,248,0.45)', bg: 'rgba(255,255,255,0.04)', br: 'rgba(255,255,255,0.10)' },
 } as const;
+
+function previewStackCost(cost: StackCostDefinition | undefined, stacks: number): number {
+  if (!cost) return 0;
+  if (cost.kind === 'percentage') return Math.ceil(stacks * ((cost.value ?? 0) / 100));
+  if (cost.kind === 'range') return Math.max(0, cost.min ?? 0);
+  return Math.max(0, cost.value ?? 0);
+}
 
 // ─── sub-components ──────────────────────────────────────────────────────────
 
@@ -207,9 +218,34 @@ function SectionTitle({ label, accent }: { label: string; accent: string }) {
 function LightAttackRow({ instance, def }: {
   instance: MainDeckBoardInstance; def: LightCardDefinition;
 }) {
+  const turn = useStore(selectTurn);
+  const board = useStore(selectBoard);
+  const progress = useStore(selectProgress);
+  const scalingContext = {
+    limitlessLightStacks: turn.limitlessLightStacks,
+    asaFrontCount: board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length,
+    collectionPower: computeGlobalResonanceScore(progress),
+  };
   const ainCd = instance.attackCooldowns?.[def.ainAttack.id] ?? 0;
   const sophCd = instance.attackCooldowns?.[def.sophAttack.id] ?? 0;
   const isActive = instance.side === 'ain' && instance.faceState === 'front';
+  const sophCost = previewStackCost(def.sophAttack.stackCost, turn.limitlessLightStacks);
+  const attackRows = [
+    {
+      label: 'Ain Attack',
+      value: Math.max(0, Math.round(def.ainAttack.baseOblivion + resolveCardScaling(def.ainAttack.scaling, scalingContext))),
+      cd: ainCd,
+      ready: isActive && ainCd <= 0,
+      cost: 0,
+    },
+    {
+      label: 'Soph Attack',
+      value: Math.max(0, Math.round(def.sophAttack.baseOblivion + resolveCardScaling(def.sophAttack.scaling, scalingContext) + sophCost)),
+      cd: sophCd,
+      ready: isActive && sophCd <= 0 && turn.limitlessLightStacks >= sophCost,
+      cost: sophCost,
+    },
+  ];
 
   return (
     <div style={{
@@ -228,20 +264,17 @@ function LightAttackRow({ instance, def }: {
         </div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-        {[
-          { label: 'Ain Attack', base: def.ainAttack.baseOblivion, cd: ainCd, ready: isActive && ainCd <= 0 },
-          { label: 'Soph Attack', base: def.sophAttack.baseOblivion, cd: sophCd, ready: isActive && sophCd <= 0 },
-        ].map((a, i) => (
+        {attackRows.map((a, i) => (
           <div key={a.label} style={{
             padding: '10px 14px',
             borderLeft: i === 1 ? `1px solid ${C.dimLine}` : undefined,
           }}>
             <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>{a.label}</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: a.ready ? C.blue.fg : 'rgba(244,244,248,0.35)', fontFamily: DF }}>
-              {formatNumber(a.base)}
+              {formatNumber(a.value)}
             </div>
             <div style={{ fontSize: 9, color: a.ready ? C.green.fg : 'rgba(244,244,248,0.35)', marginTop: 4, fontFamily: BF }}>
-              {!isActive ? 'Flip to Ain first' : a.ready ? '● Ready' : `Cooldown: ${a.cd} cards`}
+              {!isActive ? 'Flip to Ain first' : a.cd > 0 ? `Cooldown: ${a.cd} cards` : turn.limitlessLightStacks < a.cost ? `Need ${a.cost} Stacks` : '● Ready'}
             </div>
           </div>
         ))}
@@ -251,10 +284,19 @@ function LightAttackRow({ instance, def }: {
 }
 
 function AsaBridgeRow({ instance, def }: { instance: AinSophAurInstance; def: AinSophAurDefinition }) {
+  const turn = useStore(selectTurn);
+  const board = useStore(selectBoard);
+  const progress = useStore(selectProgress);
   const bridge = def.bridgeAttack;
   if (!bridge) return null;
   const bridgeCd = instance.attackCooldowns?.[bridge.id] ?? 0;
-  const ready = bridgeCd <= 0;
+  const bridgeCost = previewStackCost(bridge.consumesStacks, turn.limitlessLightStacks);
+  const bridgeValue = Math.max(0, Math.round(bridge.baseOblivion + resolveCardScaling(bridge.scaling, {
+    limitlessLightStacks: turn.limitlessLightStacks,
+    asaFrontCount: board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length,
+    collectionPower: computeGlobalResonanceScore(progress),
+  }) + bridgeCost));
+  const ready = bridgeCd <= 0 && turn.limitlessLightStacks >= bridgeCost;
 
   return (
     <div style={{
@@ -278,12 +320,12 @@ function AsaBridgeRow({ instance, def }: { instance: AinSophAurInstance; def: Ai
         </div>
       </div>
       <div style={{ padding: '10px 14px' }}>
-        <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Base Divine Light</div>
+        <div style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase' as const, color: 'rgba(244,244,248,0.38)', fontFamily: DF, marginBottom: 4 }}>Current Divine Light</div>
         <div style={{ fontSize: 18, fontWeight: 800, color: ready ? C.gold.fg : 'rgba(244,244,248,0.35)', fontFamily: DF }}>
-          {formatNumber(bridge.baseOblivion)}
+          {formatNumber(bridgeValue)}
         </div>
         <div style={{ fontSize: 9, color: ready ? C.green.fg : 'rgba(244,244,248,0.35)', marginTop: 6, fontFamily: BF }}>
-          {ready ? '● Ready' : `Cooldown: ${bridgeCd} cards`}
+          {bridgeCd > 0 ? `Cooldown: ${bridgeCd} cards` : turn.limitlessLightStacks < bridgeCost ? `Need ${bridgeCost} Stacks` : '● Ready'}
         </div>
       </div>
     </div>
@@ -511,6 +553,13 @@ function AttacksTab() {
             tags={['front row only', 'highest base']}
           />
           <SourceCard
+            icon="+"
+            title="Summon Stack"
+            subtitle={`Every Ain Soph Aur grants +${AIN_SOPH_AUR_SUMMON_STACK_REWARD} Limitless Light Stack as soon as its summon resolves.`}
+            accent={C.gold}
+            tags={['on summon', 'stack gain']}
+          />
+          <SourceCard
             icon="◆"
             title="Summon Pressure"
             subtitle="Every Ain Soph Aur you hold on the front row also raises the Soph Attack and Bridge payouts of everything else on your board."
@@ -691,7 +740,7 @@ function TipsTab() {
       <TipCard
         rank={3}
         title={`Summon Ain Soph Aur Early  (${asaCount} / 4 up)`}
-        detail="Each Ain Soph Aur on the front row raises the payout of every Soph Attack and Bridge on your board, not just its own. Getting them out early compounds across the rest of the turn."
+        detail={`Each Ain Soph Aur on the front row raises every Soph Attack and Bridge payout, and each successful summon immediately grants +${AIN_SOPH_AUR_SUMMON_STACK_REWARD} Limitless Light Stack.`}
         accent={C.gold.fg}
       />
       <TipCard

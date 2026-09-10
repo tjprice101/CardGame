@@ -1,43 +1,45 @@
 # Progression And Challenges
 
-## Quests
+## Packs And Collection
 
-`src/systems/progression/quests.ts` owns quest templates, rotation, reset boundaries, and reward scaling. `src/ui/menus/QuestsModal.tsx` presents them.
+Neutrality packs draw from the live base Neutrality pool: 24 Light, 24 Dark, and 4 Ain Soph Aur cards. Pack purchase must generate all five rewards before currency is deducted. Awarded cards are added to collection, then the pack-opening modal displays them face-down for manual reveal.
 
-The current local reset schedule is:
-
-- Daily: 12:00 PM.
-- Weekly: Sunday at 8:00 PM.
-
-`getNextDailyResetAt` and `getNextWeeklyResetAt` calculate the next boundary. `formatQuestCountdown` turns the difference into UI text. The modal refreshes its displayed countdown once per second.
+`PackOpeningFlow.test.ts` verifies pool validity, five-card rewards, collection updates, and currency deduction.
 
 ## Collection Power
 
-Quest Divine Light is calculated at claim time, not permanently baked into the quest display:
+Collection Power comes from card mastery and is computed with `computeGlobalResonanceScore(progress)`. It scales Divine Light grants through the central grant path:
 
 ```text
-multiplier = min(3, 1 + max(0, resonanceScore) / 1000)
-reward = floor(baseReward * multiplier)
+multiplier = min(3, 1 + max(0, collectionPower) / 1000)
 ```
 
-`computeGlobalResonanceScore(progress)` supplies the current score. The Divine Light scaling helper applies the formula. This ensures collection growth affects future claims without retroactively changing a claimed reward.
+Attack previews should use the same Collection Power value as runtime payout calculation.
 
-Weekly quests grant both Divine Light and Shards. The store's `claimQuest` action is authoritative; the modal only previews the result.
+## Daily And Weekly Challenges
 
-## Rotation hydration
+`src/systems/progression/quests.ts` owns templates, rotation, reset boundaries, and reward scaling. The current counts are:
 
-`refreshQuestRotation` rehydrates existing quest instances from current templates without resetting current progress. This is useful when reward definitions change while a rotation is already active.
+- Daily: 5 active challenges.
+- Weekly: 4 active challenges.
+
+Rotations avoid repeating the previous rotation's template IDs when enough alternatives exist. The Challenges UI presents Daily and Weekly in independently scrollable columns.
+
+## Rarity Progression
+
+- Enigmatic cards come from Enigmas.
+- Eternal cards come from Eternity's Wake bosses.
+- Infinite cards are crafted in Infinitude from specific Eternal recipes.
+- Transcendent cards come from Null Raid progression.
+
+Achievements and unlock gates should distinguish those rarity sources instead of treating all premium cards as one bucket.
 
 ## Enigmas
 
-Enigmas are progression challenges evaluated against gameplay state. Some steps can complete during a boss run, so `syncEnigmaProgressFromBoard` checks board state during play. When a run restores the pre-run snapshot, the store merges the captured Enigma flags back in.
+Enigma progress can complete during a boss run. If a run restores a pre-run progress snapshot, the store must capture and merge Enigma flags so mid-run progress is not lost.
 
-`neutralizing-the-void` targets `boss-hollow-king` and retains the timed clear threshold of at least 1:30 remaining.
-
-## Boss HP
-
-Eternity's Wake uses a set-anchored HP curve. `FIRST_SET_FIRST_BOSS_HP = 97_031` is the +15% starting anchor, and the final HP multiplier chains the curve through later sets.
+`neutralizing-the-void` targets `boss-hollow-king` and retains its timed-clear requirement.
 
 ## Events
 
-The Wished Upon A Star end timestamp is centralized in `src/ui/eventWishedUponAStar/eventTimer.ts` and currently ends on November 1, 2026 at 8:00 PM EST. Centralizing the timestamp prevents the menu tile and event screen from disagreeing.
+Wished Upon A Star event timing is centralized in `src/ui/eventWishedUponAStar/eventTimer.ts`. Keep event timing in one place so tiles and event screens do not disagree.

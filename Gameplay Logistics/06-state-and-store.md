@@ -1,48 +1,50 @@
 # State And Store
 
-## The main store
+`src/state/store.ts` is the authoritative gameplay state machine. It owns deck zones, board slots, turn state, boss/raid context, progression, settings, and gameplay actions.
 
-`src/state/store.ts` is the main gameplay state machine. It owns the live deck, hand, discard pile, board, turn state, boss fight state, progression, and actions such as `playCard`, `summonAngel`, `activateSeraphimAttack`, and `resolvePending`.
+## Store Actions
 
-The store is created with Zustand. Actions use Immer drafts:
+Key card actions include:
 
-```ts
-set(state => {
-  state.board.frontSlots[slot] = instance;
-  state.turn.cardsPlayedThisTurn += 1;
-});
-```
+- `beginTurn()`
+- `toggleMulliganCard(instanceId)`
+- `confirmMulligan()`
+- `playCard(instanceId, side)` where `side` is `'soph'` or `'ain'`
+- `flipSoph(instanceId, 'flip' | 'sacrifice')`
+- `activateLightAinAttack(instanceId)`
+- `activateLightSophAttack(instanceId, spend?)`
+- `activateDark(instanceId)`
+- `summonAinSophAur(definitionId, materialInstanceIds, targetSlot)`
+- `activateAsaBridge(instanceId, spend?)`
+- `forceRemoveBoardCard(instanceId)`
+- `resolvePending(selected)`
 
-Immer records the mutations and produces a new immutable snapshot for subscribers.
+React components call these actions; they do not directly mutate gameplay state.
 
-## Why one gameplay store
+## State Categories
 
-Board, hand, turn counters, passive effects, boss HP, and progression are coupled. A card play can change all of them. One authoritative store prevents half-applied transactions such as removing a card from hand without awarding its effect.
+- Deck: `deckList`, `extraDeck`, `hand`, `drawPile`, `discardPile`.
+- Board: four front slots for Ain Soph Aur, four support/back slots for Light/Dark.
+- Turn: phase, cards played, Limitless Light Stacks, pending effects, cooldowns, mulligan state.
+- Progress: collection, holo collection, mastery, quests, achievements, enigmas, boss stats.
+- Settings: UI display preferences, controls, audio, accessibility.
 
-The social and multiplayer features use additional stores because chat, party membership, gifts, and invitations should not make the local board re-render.
+## Guard-First Transactions
 
-## State categories
+Every action validates phase, card existence, definition type, costs, cooldowns, and target slots before committing mutation. UI disabled states are convenience only; the store is the trust boundary.
 
-- **Deck state**: main deck, extra deck, hand, draw pile, discard pile.
-- **Board state**: five front slots and four back slots.
-- **Turn state**: phase, cards played, sequence multiplier, pending effect, cooldowns, Patience.
-- **Progress state**: collection, mastery, quests, enigmas, boss statistics, unlock-derived progression.
-- **Mode state**: normal play, boss fight, Null Raid, trial deck, PvP, or co-op context.
+Transactional examples:
 
-## Guard-first actions
+- Dark activation commits stack spending only after the effect can resolve.
+- Ain Soph Aur summoning validates materials, Extra Deck ownership, front-slot availability, and on-summon effects before consuming materials.
+- Force-removal works only during the playing phase.
 
-A store action should reject invalid requests before mutation:
+## Deck Invariants
 
-```ts
-if (turn.phase !== 'playing') return;
-const card = hand.find(...);
-if (!card) return;
-const definition = ScoreSystem.getDefinition(card.definitionId);
-if (!definition) return;
-```
+Ain Soph Aur cards belong in `deck.extraDeck`. If they leak into hand/draw/discard through old saves or cleanup, `enforceAngelExtraDeckInvariant` moves them back to the Extra Deck and can refill hand gaps.
 
-This protects state invariants at the mutation boundary. UI controls may be disabled, but the store must still validate because actions can be called from hotkeys, tests, replay-like flows, or multiplayer messages.
+Main-deck Light/Dark cards cycle through hand, draw pile, discard pile, and support board slots.
 
-## Selectors
+## Derived State
 
-React components should subscribe to the smallest useful slice of state. A board component should not subscribe to the entire store if it only needs board slots and one action. Stable fallback constants matter because returning a new array/object from a selector on every call can cause Zustand snapshot loops.
+Use `recompute(s)` after mutations that affect board or progression-derived stats. Collection Power comes from `computeGlobalResonanceScore(progress)` and scales all Divine Light grants through the central grant path.

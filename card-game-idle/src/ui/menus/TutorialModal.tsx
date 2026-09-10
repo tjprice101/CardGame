@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { uiTypography } from '@/ui/theme';
 import { RARITY_TIERS, SET_ENGINE_ENTRIES, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
-import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 
 interface Props {
   onClose: () => void;
@@ -264,6 +264,7 @@ function AttacksBody() {
         </div>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Ain Soph Aur</div>
+          <ListItem label="Summon">On summon, every Ain Soph Aur grants +{AIN_SOPH_AUR_SUMMON_STACK_REWARD} Limitless Light Stack.</ListItem>
           <ListItem label="Bridge">Each summon has one Bridge the Light attack with its own base, scaling, cooldown, and optional stack cost.</ListItem>
           <ListItem label="Triune">Scaling divides evenly among Limitless Light Stacks, summoned Ain Soph Aur, and Collection Power.</ListItem>
         </div>

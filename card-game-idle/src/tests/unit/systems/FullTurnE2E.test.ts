@@ -5,6 +5,7 @@ import { darkCards } from '@/data/cards/darkCards';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { AIN_SOPH_AUR_SUMMON_STACK_REWARD } from '@/systems/cards/AinSophRuntime';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import type { GameState, MainDeckBoardInstance } from '@/types/game';
 
@@ -147,11 +148,13 @@ describe('Full turn end-to-end', () => {
     });
 
     const divineLightBeforeSummon = useStore.getState().progress.oblivion;
+    const stacksBeforeSummon = useStore.getState().turn.limitlessLightStacks;
     useStore.getState().summonAinSophAur(asaDef.definitionId, materialIds, 0);
 
     const board = useStore.getState().board;
     expect(board.frontSlots[0]).toMatchObject({ type: 'AinSophAur', side: 'ain', faceState: 'front' });
     expect(useStore.getState().progress.oblivion).toBeGreaterThan(divineLightBeforeSummon);
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD);
     // Materials were consumed off the back row.
     for (let i = 0; i < materialCount; i++) {
       expect(board.backSlots[i]).toBeNull();

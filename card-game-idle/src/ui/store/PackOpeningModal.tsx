@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback, useEffect, useMemo, memo } from 'react';
+import { useState, useRef, useCallback, useMemo, memo } from 'react';
 import { gsap } from 'gsap';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { useStore, selectSettings } from '@/state/store';
 import {
   cardFacePalette,
   getCardBackBackgroundStyle,
@@ -9,9 +10,9 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
-import { getCardPreviewLines } from '@/ui/cardStatSummary';
+import { getCardPreviewLines, getCardPreviewText } from '@/ui/cardStatSummary';
+import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { warmTheme } from '@/ui/theme';
 import type { CardDefinition } from '@/types/cards';
 
@@ -284,11 +285,15 @@ interface CardTileProps {
   onClick: (idx: number) => void;
   /** Stagger the flip visually via CSS transition-delay (ms). */
   flipDelayMs: number;
+  showTopPanel: boolean;
+  showBottomPanel: boolean;
+  highlightRules: boolean;
 }
 
 const CardTile = memo(function CardTile({
-  idx, defId, def, rarity, isRevealed, isBest, isNew, faceMetrics, registerRef, onClick, flipDelayMs,
+  idx, defId, def, rarity, isRevealed, isBest, isNew, faceMetrics, registerRef, onClick, flipDelayMs, showTopPanel, showBottomPanel, highlightRules,
 }: CardTileProps) {
+  const previewText = def ? getCardPreviewText(def, 2) : '';
   return (
     <div
       style={{
@@ -332,8 +337,7 @@ const CardTile = memo(function CardTile({
           <div style={{ fontSize: 32, opacity: 0.3 }}>?</div>
         </div>
 
-        {/* Front face — heavy CardRulesDigest is only mounted once revealed,
-            which is the single biggest cost saver for bulk pack opens. */}
+        {/* Front face details mount only after reveal to keep bulk opens light. */}
         <div style={{
           ...cardFaceStyle,
           ...getCardFaceBackgroundStyle(def),
@@ -342,43 +346,46 @@ const CardTile = memo(function CardTile({
         }}>
           {isRevealed && (
             <>
-              <div style={getCardNameRibbonStyle('pack')}>
-                <div style={{ ...styles.cardType, fontSize: faceMetrics.typeSize }}>
-                  {getDisplayCardTypeLabel(def?.type ?? 'Card')}
-                </div>
-                <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def?.name ?? defId}</div>
-              </div>
-              <div style={getCardRulesPanelStyle('pack')}>
-                <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
-                  {def && (
-                    <CardRulesDigest
-                      card={def}
-                      variant="preview"
-                      maxSections={4}
-                      maxLinesPerSection={10}
-                      lineClamp={3}
-                      labelColor={cardFacePalette.textMuted}
-                      textColor={cardFacePalette.textSoft}
-                      sectionBackground="transparent"
-                      sectionBorder="transparent"
-                      lightBg={true}
-                    />
-                  )}
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
-                  <div style={{ ...styles.cardRarity, color: cardFacePalette.textMuted }}>{rarity}</div>
-                  {isNew && (
-                    <span className="anim-badge-bounce" style={{
-                      fontSize: 8,
-                      color: warmTheme.success,
-                      letterSpacing: 2,
-                      textTransform: 'uppercase',
-                      fontWeight: 'bold',
-                    }}>
-                      New
-                    </span>
-                  )}
-                </div>
+              <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
+                {showTopPanel && (
+                  <div style={getCardNameRibbonStyle('pack')}>
+                    <div style={{ ...styles.cardType, fontSize: faceMetrics.typeSize }}>
+                      {getDisplayCardTypeLabel(def?.type ?? 'Card')}
+                    </div>
+                    <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def?.name ?? defId}</div>
+                  </div>
+                )}
+                {showBottomPanel && (
+                  <div style={getCardRulesPanelStyle('pack')}>
+                    <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight }}>
+                      {highlightRulesText(previewText, { disabled: !highlightRules, compact: true, lightBg: true })}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 8 }}>
+                      <div style={{ ...styles.cardRarity, color: cardFacePalette.textMuted }}>{rarity}</div>
+                      {isNew && (
+                        <span className="anim-badge-bounce" style={{
+                          fontSize: 8,
+                          color: warmTheme.success,
+                          letterSpacing: 2,
+                          textTransform: 'uppercase',
+                          fontWeight: 'bold',
+                        }}>
+                          New
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {!showBottomPanel && isNew && (
+                  <div style={{
+                    position: 'absolute', right: 8, bottom: 8,
+                    padding: '3px 6px', borderRadius: 999,
+                    background: 'rgba(10,8,6,0.76)', color: warmTheme.success,
+                    fontSize: 8, letterSpacing: 1.5, textTransform: 'uppercase', fontWeight: 'bold',
+                  }}>
+                    New
+                  </div>
+                )}
               </div>
             </>
           )}
@@ -392,6 +399,10 @@ const RARITY_RANK: Record<string, number> = { Common: 0, Rare: 1, Epic: 2, Legen
 
 export default function PackOpeningModal({ cards, packName, newCards, onClose }: Props) {
   const faceMetrics = getCardFaceMetrics('pack');
+  const settings = useStore(selectSettings);
+  const cardArtDisplay = settings.cardArtDisplay ?? 'both';
+  const showTopPanel = cardArtDisplay === 'both' || cardArtDisplay === 'top-only';
+  const showBottomPanel = cardArtDisplay === 'both' || cardArtDisplay === 'bottom-only';
   // Use a Set<number> + a tick counter so each tile can shallow-compare its
   // `isRevealed` boolean prop and skip re-rendering when only siblings change.
   const [revealedSet, setRevealedSet] = useState<Set<number>>(() => new Set());
@@ -480,11 +491,6 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
     }
   }, [cards.length, rarities, triggerGlowBurst, bestIdx]);
 
-  useEffect(() => {
-    const revealTimer = window.setTimeout(revealAll, 420);
-    return () => window.clearTimeout(revealTimer);
-  }, [revealAll]);
-
   const allRevealed = allRevealedFlag || revealedSet.size === cards.length;
   // Best unrevealed (drives the pulsing border + "Reveal Best" label).
   let bestUnrevealedIdx = -1;
@@ -523,6 +529,9 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
                 registerRef={registerRef}
                 onClick={handleCardClick}
                 flipDelayMs={flipDelayMs}
+                showTopPanel={showTopPanel}
+                showBottomPanel={showBottomPanel}
+                highlightRules={settings.highlightRulesText !== false}
               />
             );
           })}

@@ -1,40 +1,29 @@
 # Save And Migrations
 
-## Why saves need versions
+## Why Saves Need Versions
 
-Players keep saves while the code evolves. Card IDs disappear, fields change shape, and mechanics are retired. A save version tells the loader which transformations still need to run.
+Players keep saves while the code evolves. Card IDs can disappear, fields can change shape, and mechanics can be retired. A save version tells the loader which transforms still need to run.
 
-`src/save/SaveManager.ts` currently uses `CURRENT_VERSION = 46`.
+`src/save/SaveManager.ts` owns versioning and migrations. Migrations must remain available for old saves.
 
-## Migration model
+## Current Compatibility Notes
 
-Conceptually:
+Player-facing terminology is Divine Light, but persisted/API keys still include `oblivion`, `lifetimeOblivion`, `bestSingleTurnOblivion`, and effect tags such as `oblivion_flat`. Do not rename those fields without a versioned migration and compatibility read/write path.
 
-```ts
-let progress = decode(rawSave);
-if (progress.version < 43) progress = migrateV43(progress);
-if (progress.version < 46) progress = migrateV46(progress);
-progress.version = CURRENT_VERSION;
-return progress;
-```
+Ain Soph Aur cards belong in `deck.extraDeck`; save cleanup and runtime invariants defensively move leaked Ain Soph Aur cards out of hand, draw pile, and discard pile.
 
-Migrations are sequential and should remain permanently available. A player may load a save from many versions ago.
+Current turn, board, hand, pending effects, and mulligan selection are ephemeral. Migration/sanitization may clear them to a safe idle state to avoid loading into an invalid old run.
 
-## v46 content cleanup
-
-The v46 migration removes retired Eternal card IDs from collections, holo collections, play counts, mastery claims, locks, favorites, saved decks, and extra decks. It deletes retired boss statistics, clears retired ability loadout references, and resets the retargeted `neutralizing-the-void` enigma.
-
-## Safe migration rules
+## Migration Rules
 
 - Treat old fields as optional.
-- Do not assume arrays exist or are well-formed.
-- Filter removed IDs rather than crashing on them.
-- Preserve unrelated player progress.
-- Bump the version only after the transform completes.
-- Test an old fixture and a current fixture.
+- Validate arrays before reading them.
+- Filter retired IDs instead of crashing.
+- Preserve unrelated progress.
+- Clear or normalize active turn state when old runtime fields cannot be trusted.
+- Bump the save version only after transforms complete.
+- Test old fixtures and current fixtures.
 
-## Runtime state versus progress
+## Progress Snapshots
 
-The current turn and board are ephemeral gameplay state. Collection, mastery, quests, enigmas, deck definitions, and unlock-derived information are long-lived progress. Save migrations primarily protect the latter, while active runs often have separate recovery rules.
-
-When a boss or trial run restores a pre-run progress snapshot, Enigma progress earned inside the run must be captured and merged afterward. Otherwise a successful mid-fight Enigma step disappears during restoration.
+Some runs restore pre-run progress snapshots, especially boss, trial, and raid flows. If gameplay can complete Enigma steps during such a run, capture Enigma progress before restoring and merge completion flags afterward.

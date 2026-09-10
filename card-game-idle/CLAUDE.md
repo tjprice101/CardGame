@@ -1,490 +1,94 @@
-# CLAUDE.md — Card Game Design Rules
+# CLAUDE.md - Card Game Design Rules
 
-> **Current terminology and engine override:** The primary currency is named **Divine Light** in all player-facing text. The legacy persisted/API field names `oblivion`, `lifetimeOblivion`, `bestSingleTurnOblivion`, `oblivion_flat`, and related event identifiers remain compatibility keys until a versioned save migration replaces them. Do not reintroduce the word Oblivion into new UI, card text, tutorial text, quests, achievements, or design docs.
+> **Current terminology:** The primary currency is named **Divine Light** in all player-facing text. Legacy persisted/API field names such as `oblivion`, `lifetimeOblivion`, `bestSingleTurnOblivion`, `oblivion_flat`, and related event identifiers remain compatibility keys until a versioned save migration replaces them. Do not reintroduce the word Oblivion into new UI, card text, tutorials, quests, achievements, or design docs.
 
-## Current Engine Snapshot (2026-09)
+This file is the AI-facing project brief. Read it before making design, balance, card, UI, save, or test changes.
 
-- Main Deck contains **Light and Dark only**.
-- Extra Deck contains **Ain Soph Aur only**. Ain Soph Aur cards are never placed in the Main Deck.
-- Soph is face-down and charging; Ain is face-up and active. At 5+ charge, a card flips to Ain and converts charge into Limitless Light Stacks, or can be sacrificed for Divine Light.
-- Light cards have Ain and Soph attacks. Dark cards provide utility. Ain Soph Aur cards summon to the front row from the Extra Deck and use Bridge the Light.
-- Every Divine Light gain, including sacrifice rewards and card effects, is scaled by Collection Power through the central grant path.
-- Rarity sources are separate: Enigmatic = Enigma rewards, Eternal = Eternity's Wake rewards, Infinite = Infinity-menu crafts, Transcendent = Null Raid progression.
+## Current Engine Snapshot
 
-This file governs how to approach all work on this project. It covers game design rules, balance philosophy, and UI/UX standards. Always read this before making design decisions or adding new content.
+- Main Deck contains **Light** and **Dark** cards only.
+- Extra Deck contains **Ain Soph Aur** cards only. Ain Soph Aur cards are never Main Deck cards.
+- Main-deck cards are placed into the four support/back slots. Left-click from hand places Soph; right-click from hand places Ain.
+- **Soph** cards are face-down and charge by +1 whenever any card is played from hand.
+- A Soph card is ready at `SOPH_FLIP_CHARGE_REQUIRED = 2`. At that point it can flip to Ain and bank its charge as Limitless Light Stacks, or be sacrificed for Divine Light.
+- **Ain** cards are face-up and active. Light cards can use Ain and Soph attacks. Dark cards can use their utility activation.
+- Dark utility activations are free unless the card is premium or unusually strong. Current policy: most base one-shot Dark cards cost 0; only two base Legendary utilities cost 1; Eternal costs 2; persistent Enigmatic costs 1; persistent Transcendent costs 3-4.
+- Ain Soph Aur cards summon from the Extra Deck to the four front slots by sacrificing any required count of occupied back-row cards. The requirement is `summonMaterialCount`, not exact card IDs.
+- Ain Soph Aur cards grant +1 Limitless Light Stack plus `onSummonEffects` when summoned, then use `bridgeAttack` for Bridge the Light.
+- Every Divine Light gain, including sacrifices, card effects, on-summon rewards, attacks, Bridge, quests, and pack flow, must route through the central grant path so Collection Power scaling applies consistently.
+- Rarity sources are distinct: Common/Rare/Epic/Legendary from packs, Enigmatic from Enigmas, Eternal from Eternity's Wake, Infinite from Infinitude crafting, Transcendent from Null Raid progression.
 
----
+## Core Loop
 
-## Game Overview
+The game is turn-based, not idle-tick based. A normal run is:
 
-A **turn-based card game**. Each turn the player draws a hand, plays cards to earn **Oblivion** (the primary currency), then ends the turn. The game loop is: play cards → earn Oblivion → spend Oblivion on card packs → open packs to expand collection → build a better deck → repeat.
+```text
+Begin Turn -> draw 5 -> mulligan -> play cards -> build Soph/Ain board -> attack/activate/summon -> end turn -> open packs -> improve decks
+```
 
-There is **no idle tick loop**. Oblivion is earned exclusively by playing cards. Seraphim and Angels on the board also fire **attacks** periodically as cards are played, dealing additional Oblivion.
-
----
-
-## Game Modes
-
-### Main Game
-The core loop: play turns, earn Oblivion, open packs, build a collection and deck.
-
-### Eternity's Wake
-A **boss challenge** mode. The player fights one boss per session using their current deck. Bosses have HP that is depleted by Oblivion earned during the fight. Completing a boss drops an **Eternal** rarity card. Bosses are per-set and unlock based on progression. Accessed from the main menu.
-
-### Infinitude
-A **crafting** mode. **Infinite** rarity cards are forged by consuming specific combinations of Eternal cards, defined by `InfiniteRecipe` entries in `src/data/cards/infiniteCards.ts`. Visibility is recipe-driven — a set's Infinite cards only appear in Infinitude if the recipes exist.
-
----
+The player earns Divine Light through card actions and spends it primarily on Neutrality packs. Packs award live base Neutrality cards from the 52-card base pool: 24 Light, 24 Dark, and 4 Ain Soph Aur.
 
 ## Board Layout
 
-```
-[ S0 ] [ S1 ] [ S2 ] [ S3 ] [ S4 ]   ← front row: 5 Seraphim/Angel slots
-   [ C0 ]  [ C1 ]  [ C2 ]  [ C3 ]    ← back row: 4 Cherubim slots, staggered
+```text
+front:   [A0] [A1] [A2] [A3]    Ain Soph Aur only
+support: [M0] [M1] [M2] [M3]    Main Deck Light/Dark, either Soph or Ain
 ```
 
-- **Front slots (5)**: hold Seraphim and Angels. Both go away at turn end — Seraphim to the discard pile, Angels simply cleared (they're extra-deck cards, not discarded). Angels must be re-summoned each turn.
-- **Back slots (4)**: hold Cherubim cards. Each Cherubim card has a **durability** counter; it expires to the discard when durability reaches 0. All Cherubim also go to discard at turn end.
-- `backSlots[i]` is adjacent to `frontSlots[i]` and `frontSlots[i+1]`.
-
----
+- Front slots hold summoned Ain Soph Aur cards.
+- Support/back slots hold main-deck Light/Dark cards.
+- Force-removing a main-deck field card sends it to discard.
+- Force-removing an Ain Soph Aur field card returns it to the Extra Deck.
+- End turn clears the board and hand; main-deck cards cycle through discard/draw, while Ain Soph Aur leakage is corrected back into the Extra Deck by the invariant path.
 
 ## Card Types
 
-| Type | Zone | Behavior |
+| Type | Zone | Runtime behavior |
 |---|---|---|
-| **Angel** | Extra deck | Summoned from extra deck when conditions met. Stays on board. Has attacks. |
-| **Seraphim** | Main deck | Placed to front row. On-play effect fires. Passive bonus + attack while on board. Discarded at turn end. |
-| **Cherubim** | Main deck | Placed to back row. Passive effect applies to adjacent front slots. Has durability. |
-| **Ophanim** | Main deck | Played from hand. Immediate effect. No board presence. |
+| Light | Main Deck | Can be placed Soph or Ain. Ain side has Ain Attack and Soph Attack. Soph side charges, flips, or sacrifices. |
+| Dark | Main Deck | Can be placed Soph or Ain. Ain side activates utility effects, then one-shot cards return to hand/deck/discard; persistent premium cards remain with cooldown. |
+| Ain Soph Aur | Extra Deck | Summons to front row by sacrificing a count of back-row cards. Uses Bridge the Light. |
 
-There are **no `cardSubtype` fields** on any card definition. There is **no `HeavenlyRetribution` type**. The four types above are the only valid `type` values.
+Do not add Seraphim, Cherubim, Ophanim, Angel, sequence, or old Patience-system dependencies back into live gameplay.
 
----
+## Inputs And UX
 
-## Rarity Tiers
+- Hand left-click: place main-deck card as Soph.
+- Hand right-click: place main-deck card as Ain.
+- Press `E`: swap hand view with Extra Deck view.
+- Extra Deck click: begin summon-material selection.
+- Field card left-click: open available action panel.
+- Field card right-click: open force-remove confirmation.
+- Hover details belong in the right-rail Card Inspector, not floating over the board or hand.
+- Pack opening starts face-down and waits for individual card clicks, Reveal All/Reveal Best, or Instant. It must never auto-reveal on a timer.
+- Card art should use the shared card-face style: art background plus top ribbon and bottom rules panel. Respect `settings.cardArtDisplay` everywhere a card face is shown.
 
-| Rarity | Source | Notes |
-|---|---|---|
-| Common | Card packs | Weak and simple |
-| Rare | Card packs | Noticeably stronger |
-| Epic | Card packs | Impactful and interesting |
-| Legendary | Card packs | Rare and dramatic |
-| Eternal | Eternity's Wake boss rewards | Much more powerful; Seraphim get higher patience thresholds and draws; Cherubim give more Patience per card |
-| Infinite | Crafted via Infinitude (consuming specific Eternals) | Apex power level; Seraphim get patienceThreshold 8+; Angels have `patience_double_all` in activated abilities |
+## Effects And Actions
 
-The surviving Neutrality Eternal cards are currently blank-slate placeholders: their description is `To be redesigned.`, their play/summon/activated effect arrays are empty, their passive bonus is zero, and their Patience threshold is unset. Attack shells and rarity/type metadata remain intact. The six retired cards are Eternal Vigil, Colossus Advent, Architect's Manifold, Paradox Throne, Void Exchequer, and Axiom Maw; do not reintroduce them without an explicit redesign.
+Cards are declarative data. Effects are serializable tagged objects from `src/types/effects.ts`, interpreted by `src/systems/cards/CardEffectExecutor.ts`. Store actions remain the authority for lifecycle changes such as moving cards, spending stacks, applying cooldowns, queuing pending choices, granting Divine Light, and recomputing derived state.
 
-Rarity is **feel-based**, not rule-based. No strict effect-type restrictions per tier (except Eternal/Infinite scale values appropriately).
+All new effect tags require:
 
----
+1. Type union entry.
+2. Executor case.
+3. Readable card-summary formatting.
+4. Pending-effect UI/store handling if player input is needed.
+5. Runtime tests.
 
-## Angel / Extra Deck System
+The executor uses an exhaustive switch; do not bypass it with ad hoc UI logic.
 
-- Angels are **not in the main deck**. They are held in a separate **extra deck** (up to 5 Angels, max 2 copies per definition).
-- Angels can be **summoned at any point during your turn** when summon conditions are met — no card draw required.
-- **Summon cost:** Each Angel lists specific Seraphim that must be on the board. When summoned, those Seraphim are sent to the discard pile. Seraphim recovered via salvage can be replayed and used again.
-- Multiple Angels can be active simultaneously (no hard cap beyond available front slots).
-- Angel summon does **not** count as playing a card — it does not decrement Cherubim durability.
-- Angels have `onSummonEffects`, an optional `activatedAbility` (fires after N cards played), and `primary`/`exalted` attack modes.
+## Testing Expectations
 
----
+Card and gameplay changes must preserve the executable audits:
 
-## Seraphim & Angel Attacks
+- `CardRuntimeWiring.test.ts`: every registered card lifecycle, attack, utility, summon, Bridge, cooldown, and failure guard.
+- `CardCatalog.test.ts`: catalog counts, registry exposure, playability, and cost policy.
+- `FullTurnE2E.test.ts`: turn, mulligan, summon, Bridge, and hand-cap flows.
+- `PackOpeningFlow.test.ts`: live Neutrality pack pool and collection awards.
+- `PackOpeningModalSource.test.ts`: pack modal does not auto-reveal.
 
-Seraphim and Angels have attack stats that fire periodically as cards are played during the turn.
+Run focused tests for the touched subsystem first, then `npm run build`, `npm run typecheck:tests`, and `npm test -- --run` when the change crosses card/runtime/UI boundaries.
 
-- **Seraphim attacks**: `unsynergized` and `synergized` modes. Synergized requires an Angel on board (or matching element Angel). `cooldownCards` sets how many cards must be played between attacks.
-- **Angel attacks**: `primary` and `exalted` modes. Exalted typically has a cost (discard N cards) and higher output.
-- Attack stats: `baseOblivion`, `cooldownCards`, `costs`, optional `requiresAngelOnBoard`.
-- **Attack cooldown floor**: always at least 1 card after firing to prevent immediate re-fire loops.
-- Seraphim unsynergized attacks always have an element-appropriate resource cost injected by `CardRegistry` (discard for Neutrality/Dark, resource spend for others).
-- Discard-cost attacks require explicit `paymentSelection` — the store does not auto-pick.
+## Save Compatibility
 
----
-
-## Cooldown Convention
-
-All cooldowns in the game — Seraphim/Angel attack cooldowns, card activated-ability gates, and **set ability cooldowns** — are measured in **cards played from hand**, not turns.
-
-- The shared helper `tickHandPlayCooldowns(s: Store)` in `src/state/store.ts` decrements all active set-ability cooldowns and must be called at every hand-play site alongside `tickCherubimDurability(s)`.
-- Per-play attack cooldowns are tracked on individual Seraphim/Angel instances as `cooldownCards`.
-- Set-ability cooldowns are tracked in `TurnState.setAbilityCooldowns: Record<abilityId, number>` (remaining plays).
-- Nothing ticks cooldowns at turn end — only hand plays tick them.
-
----
-
-## Set Ability System
-
-Each card set exposes four **hotkey-activated abilities** (default keys `1`–`4`) gated by set-scoped deck composition:
-
-| Slot | Gate | Requirement |
-|---|---|---|
-| 1 | Base | Any card of the set in the main deck |
-| 2 | Eternal | ≥1 Eternal card of the set in the main deck |
-| 3 | Infinite | ≥1 Infinite card of the set in the main deck |
-| 4 | Base, plus a runtime board check | Base deck-composition gate; additionally requires a Transcendent Angel of the set physically on the board right now |
-
-Gates are resolved per set via `SetEngineDefinition.membership` (`isEternal`/`isInfinite`/`isTranscendentAngel` predicates), so cross-set cards never satisfy another set's gates. `SetAbilityGate` is now only `'base' | 'eternal' | 'infinite'` — the old `'transcendent-angel'` gate value was removed; slot 4's on-board requirement is enforced purely at runtime in `activateSetAbility`, not as a deck-composition gate.
-
-**Neutrality abilities:**
-- Slot 1 — *Composed Advance* (Base, 3-hand-play CD): Grant +3 Patience to every front-row unit; reduce every attack cooldown on the board by 1 (no draw).
-- Slot 2 — *Vigil's Ledger* (Eternal, 5-hand-play CD): Units with ≥20 Patience get +5 Patience; draw 2 cards.
-- Slot 3 — *Recursive Calm* (Infinite, one-off): Consume all front-row Patience; gain Oblivion = totalPatience × 500 × min(3, 1 + resonanceScore/1000).
-- Slot 4 — *Aegis Uprising* (Base gate + on-board check, 12-hand-play CD, repeatable): Find lowest Patience on board; grant every unit that value × 3. Blocked with a toast unless a Transcendent Angel of the set is on the board right now (checked via `neutralitySet.membership.isTranscendentAngel` in `activateSetAbility`, store.ts). No extra-deck requirement anymore — only the physical board check.
-
-**Key files:**
-- `src/systems/sets/SetEngine.ts` — types (`SetAbilityDefinition`, `SetEngineDefinition`, `SetCardMembership`), registry (`registerSet`, `getSet`, `listSets`), gate resolution (`resolveActiveAbilitiesForDeck`, `resolveGatesForDeck(setId, deckList, extraDeck)` — now takes `setId` as first arg and returns an empty set + dev-warns for an unknown set id).
-- `src/systems/sets/neutrality/NeutralityAbilities.ts` — Neutrality set definition + four ability implementations.
-- `src/ui/hud/SetAbilityStrip.tsx` — in-game HUD strip showing 4 slots with hotkey, label, and cooldown state.
-- `src/main.tsx` — imports `NeutralityAbilities` as a side-effect to register the set at startup.
-- `KeybindActionId` in `src/types/game.ts` includes `activateSetAbility1`–`activateSetAbility4`; defaults `Digit1`–`Digit4`.
-- `SavedDeck.abilityLoadout?: Partial<Record<1|2|3|4, string>>` stores per-deck ability picks (save v41).
-- `TurnState.setAbilityCooldowns` / `setAbilityUsesRemaining` track cooldowns/one-off uses per ability id.
-
-**Adding a new set:** implement a `SetEngineDefinition`, call `registerSet`, import it from `main.tsx`. No store changes are needed unless the ability's effect requires a new pending-effect flow.
-
-## Enigmas — boss-fight progression persistence
-
-Enigma step progress (`ProgressState.enigmas.instances[id].stepsComplete`) can be flipped **mid-fight** by `syncEnigmaProgressFromBoard` — this matters because some board patterns (like Neutral Mystery's "3 Null + 2 Equilibrium Seraphim" step 4) are only assemblable *inside* a boss fight, trial deck, or null raid, never in the persistent overworld board. Call sites in `store.ts`: after `placeSeraphim`, and inside `playCard` in **both** the Seraphim-placement branch and the generic-card fallback branch (added so a Seraphim placed via `playCard`, not just via `placeSeraphim` directly, can also complete a step mid-turn — the Cherubim branch is intentionally excluded since back-row placement can't satisfy Neutral Mystery step 4).
-
-All four run-ending restore sites in `src/state/store.ts` (`completeBossFight`'s normal-victory path, `completeBossFight`'s null-raid path, `forfeitBossFight`'s null-raid branch, `endTrialDeck`) overwrite `s.progress` wholesale with a pre-run snapshot (`s.progress = saved.progress`). Without special handling this would **silently wipe** any enigma step flipped during the run. Each of these four sites now:
-1. Captures `cloneState(s.progress.enigmas.instances)` immediately before the restore.
-2. Restores `s.progress` as before.
-3. Calls `mergeFightEnigmaProgress(s.progress, capturedSnapshot, onStepFlipped)` — which OR's `stepsComplete[i]` flags (false→true only), takes `Math.max` of `currentStepIndex`, and adopts wholesale any enigma instance that didn't exist pre-run. Non-final-step flips fire an "Enigma Step Complete" toast via the callback (final-step toasts are left to the reward-claim flow).
-
-If you add a new run-ending restore point that touches `s.progress`, you must apply this same capture-then-merge pattern or any enigma flip made during that run will be lost.
-
-The `neutralizing-the-void` enigma now targets `boss-hollow-king` (The Hollow Queen). Both its timed-clear and ×3 HP steps retain the requirement to finish with at least 1:30 remaining. Save v46 resets in-flight progress for this enigma so the retargeted milestones can be earned cleanly.
-
----
-
-## Oblivion
-
-- **Oblivion** is the primary currency. Earned by playing cards and from Seraphim/Angel attacks. Spent in the Card Pack Store.
-- Base Oblivion per card scales from card text, board bonuses, and attack windows.
-
----
-
-## Naming Conventions
-
-**Set name vs. element key** — these are distinct and must not be confused:
-
-| Set Name | Element Key |
-|---|---|
-| Neutrality | `Neutrality` |
-
-- **Set name** is what players see in the UI. **Element key** is the internal value stored on card definitions.
-- Use `ELEMENT_SET_NAMES` from `src/data/elements.ts` to convert. Never display raw element keys to the player.
-
----
-
-## Current Sets & Their Mechanics
-
-Each set has a **distinct primary mechanic** that defines its strategic identity. Overlap is acceptable but the primary identity must remain clear.
-
-### Neutrality — "Patience / Stasis"
-- **Patience** is the sole mechanic. Seraphim with `patienceThreshold` defined auto-accumulate +1 Patience per card played from hand. Cherubim give additional Patience per card to adjacent front slots via the `cherubim_patience_per_card` passive.
-- **On attack**: each accumulated Patience stack is consumed for +15 Oblivion. If total stacks ≥ `patienceThreshold`, also draws `patienceThresholdDraw` cards.
-- Ophanim: draw/deck manipulation and Patience setup. Key effects: `patience_gain_all` (instant Patience burst for all Seraphim), `patience_double_all` (double all Patience).
-- Angels: mass Patience injection on summon; `patience_double_all` in activated abilities.
-- Beginner-friendly. Universal Synergy Angel activates all Seraphim regardless of element. Salvage loop enabled by Ophanim like Seraph Recall.
-- **Patience thresholds by rarity**: Common/Rare 3–4, Epic 5, Eternal 6, Infinite 8+.
-- **Patience per card by Cherubim rarity**: Common +1, Rare +2, Epic +3, Eternal +4–5, Infinite +6–8.
-- **Patience stack cap**: 150 per unit (enforced in `src/systems/cards/neutralityPatience.ts`).
-- **Live Neutrality effect types**: `patience_gain_all`, `patience_double_all`, `cherubim_patience_per_card`, `neutrality_equilibrium_starbound_cashout` (Transcendent only — `src/data/ascension/transcendentCards.ts`), `neutrality_equilibrium_tactical_spend`.
-- **Removed sub-systems (do NOT re-add)**: Patient Light, Equilibrium Sigils, Marked Cards, Linked Gain Bonus, Timer Pause, Uncapped Gains, Infinite Oblivion Signature tracking. Their TurnState fields, effect types, save state, UI panels, parsing rules, and card descriptions have been stripped. The Patience cap is fixed at 150; the Transcendent uncap path is gone. Any surviving references outside archived migrations are bugs.
-
-> **Note:** Only Neutrality is currently implemented. Additional sets will be introduced as the game expands.
-
----
-
-## Card Design Rules
-
-## Authoritative Current State
-
-This section supersedes older historical sections in this document when they conflict with the live `card-game-idle/src` implementation.
-
-### Currency terminology
-
-- The player-facing primary currency is **Divine Light**.
-- All new UI, card descriptions, tutorials, challenges, achievements, prompts, and design documentation must say Divine Light.
-- The live save/API compatibility identifiers still contain the former name: `progress.oblivion`, `lifetimeOblivion`, `bestSingleTurnOblivion`, `baseOblivion`, `sacrificeOblivionRate`, `oblivion_flat`, `oblivion:earned`, and related names. These are intentionally retained until a versioned save migration replaces them.
-- Every runtime Divine Light gain is routed through the central grant path and scales with Collection Power, including card effects, attacks, and Soph-card sacrifice rewards. Achievement and challenge rewards use the same Collection Power scaling rule.
-
-### Ain/Soph card architecture
-
-- The Main Deck contains Light and Dark cards only.
-- Ain Soph Aur cards are **never Main Deck cards**. They exist only in the Extra Deck and summon to the front row using back-row materials.
-- Soph is face-down and charging. Ain is face-up and active. At 5+ charge, the player flips to Ain for Limitless Light Stacks or sacrifices the card for Divine Light.
-- Light cards have Ain and Soph attacks. Dark cards are utility cards. Ain Soph Aur cards use Bridge the Light.
-- Triune scaling reads the Limitless Light Stack pool, front-row Ain Soph Aur count, and Collection Power.
-
-### Rarity sources
-
-- Common, Rare, Epic, and Legendary: normal card-pack rarities.
-- Enigmatic: Enigma reward cards.
-- Eternal: Eternity's Wake boss rewards.
-- Infinite: cards crafted through the Infinity/Infinitude menu only.
-- Transcendent: Null Raid progression, including shop cards and rare final-boss rewards.
-- Do not represent Transcendent cards as Infinite, or Enigmatic cards as Legendary-only rewards.
-
-### Completed content and systems
-
-- Neutrality has 25 Light, 25 Dark, and 12 Ain Soph Aur cards registered.
-- Nine Eternity's Wake Neutrality Eternal cards are playable Ain/Soph definitions and map to the existing boss reward ids.
-- Four Neutrality Transcendent cards are registered: one Light shop card, two Dark shop cards, and one rare Ain Soph Aur Null Raid reward.
-- Two Enigma reward cards are registered as Enigmatic Light/Dark cards; both existing Enigmas use Ain/Soph-era conditions.
-- Daily and weekly challenges use current actions: Light/Dark plays, Soph flips, stack spending, Ain attacks, Soph attacks, Dark activations, Ain Soph Aur summons, Bridge attacks, boss clears, Null Raid clears, and pack opens.
-- Achievements distinguish Infinity crafting, Eternal boss rewards, Enigmatic rewards, and Transcendent Null Raid ownership. Neutrality set completion uses current card prefixes, not retired Seraphim/Cherubim/Ophanim/Angel ids.
-- Supplied Neutrality card art and wide Eternity's Wake boss art are installed in `public/assets/card-backgrounds`; new Enigmatic and Transcendent art files are wired by exact card id.
-- Card stat panels show card-specific values in a fluid layout. Universal Ain/Soph rules live in the base tutorial instead of being repeated on every card.
-
-### Descriptions
-- Describe **only what the card does mechanically**. No strategic advice, tips, or flavor commentary.
-- **Do include** parenthetical clarifiers for ambiguous mechanics (e.g., "(including this one)" for self-counting effects).
-- **Do not include** phrases like: "Best played as…", "Save it for last", "Scales with…", "Requires board presence", "Better late/early in your turn", or any other play guidance.
-- Card descriptions are canonical display text. The `scripts/rewrite-card-source-descriptions.mts` script can regenerate them from `cardStatSummary.ts` helpers; keep `CardSourceTextAudit.test.ts` green.
-
-### Uniqueness
-- Every card in a set should feel **mechanically distinct**. Before adding a card, verify that no other card in the set does the same thing. Audit the full set card list, not just the rarity tier.
-
-### Seraphim Cards
-- Placed to the **front row** (up to 5 slots). Discarded at turn end.
-- Have an **on-play effect** (`onPlayEffects: ImmediateEffect[]`) and a **passive stat** while on board.
-- Have `unsynergized` and `synergized` attack blocks.
-- Valid `baseStats.bonusType` values:
-  - `oblivion_per_card` — flat Oblivion per card played while active
-  - `ophanim_bonus` — Oblivion whenever an Ophanim is played while active
-  - `oblivion_per_card` / `ophanim_bonus` / `cherubim_extra_plays` / `seeker_bonus`
-  - `cherubim_extra_plays` — extra Cherubim card plays per turn
-  - `seeker_bonus` — (legacy alias, functionally `ophanim_bonus`)
-- **Patience fields** (Neutrality Seraphim only):
-  - `patienceThreshold?: number` — if set, Seraphim auto-accumulates Patience; triggers bonus draw on attack when threshold is reached
-  - `patienceThresholdDraw?: number` — cards drawn when threshold is met on attack
-
-### Cherubim Cards
-- Placed to the **back row** (up to 4 slots, staggered). `backSlots[i]` is adjacent to `frontSlots[i]` and `frontSlots[i+1]`.
-- Have `maxDurability` (decrements by 1 per card played, including Cherubim placement). At 0 they expire to discard.
-- **Three effect layers:**
-  - `effects: CherubimPassiveEffect[]` — passive effects on adjacent front slots while active. Key types: `cherubim_adjacent_seraphim_bonus` (Oblivion boost to adjacent Seraphim attacks — used by non-Neutrality sets), `cherubim_patience_per_card` (Neutrality: adds Patience per card), `cherubim_resource_per_card`, `cherubim_draw_per_card`.
-  - `onPlayEffects?: ImmediateEffect[]` — fires immediately when the card is played (draw, Oblivion, salvage, etc.). Runs through `CardEffectExecutor`.
-  - `enthalpy?: CherubimRitualEffect[]` — **Enthalpic Ritual**: fires when placed. Handled by `fireCherubimRitual` in the store.
-  - `entropy?: CherubimRitualEffect[]` — **Entropic Ritual**: fires when durability reaches 0. Same handler.
-- **Ritual-specific effect types** (only valid in enthalpy/entropy):
-  - `search_adjacent_seraphim` — PendingEffect to search for Seraphim matching adjacent front slots.
-  - `cherubim_sacrifice_oblivion: { value }` — removes card from back slot immediately; optionally grants Oblivion.
-- Sacrifice cards: set `maxDurability: 1` and `effects: []`.
-- Cherubim on-play effects that create pending choices (`search_deck_by_type`, `salvage_any`, `look_top_take`, etc.) must explicitly propagate `result.pendingEffect` in both Cherubim play paths in `store.ts`.
-
-### Ophanim Cards
-- Played from hand. Immediate effect only. No board presence.
-- `type: 'Ophanim'` on all definitions. No `cardSubtype` field.
-- Effects via `effects: ImmediateEffect[]`. Processed by `CardEffectExecutor`.
-- **`patience_gain_all` and `patience_double_all`** are valid in Ophanim `effects` — the `playCard` handler in `store.ts` scans for them after the executor runs and applies them via `applyPatienceGainAll`/`applyPatienceDoubleAll`.
-
-### Dynamic Cards (Sentinel Pattern)
-Cards that scale dynamically use `value: 0` as a sentinel in their effect definition, and the actual computation lives in `CardEffectExecutor.ts` keyed by `definitionId`. When adding a new dynamic card, both files must be updated together.
-
----
-
-## Patience Mechanic (Neutrality)
-
-All patience logic lives in `src/state/store.ts`. The types are in `src/types/cards.ts` and `src/types/effects.ts`.
-
-### How It Works
-1. **Accumulation**: Every time a card is played, `applyCherubimPassiveEffects` fires. For each Seraphim with `patienceThreshold !== undefined`, it increments `patienceStacks` by 1. Adjacent Cherubim with `cherubim_patience_per_card` give additional stacks (so total = 1 + Cherubim bonus per card).
-2. **Attack payoff**: When a Seraphim or Angel fires an attack, all `patienceStacks` are consumed: `+patienceStacks × 15` Oblivion is added. If `patienceStacks >= patienceThreshold`, also draw `patienceThresholdDraw` cards. Stacks reset to 0 after attack.
-3. **Burst effects**: `patience_gain_all: N` — immediately adds N Patience to all active board units. `patience_double_all` — doubles all current Patience on the board.
-4. **Where handled**:
-   - `applyPatienceGainAll` and `applyPatienceDoubleAll` helpers in `store.ts`
-   - `applyCherubimPassiveEffects`: auto-accumulates +1 per card + Cherubim bonus
-   - `activateSeraphimAttack`: adds captured Patience × 15 Oblivion, resets stacks, triggers threshold draw
-   - `summonAngel` / `activateAngel`: call patience helpers after board update
-   - `playCard` (Seraphim branch): scans `def.onPlayEffects` for patience effects after executor runs
-   - `playCard` (Ophanim branch): scans `getDefinitionOnPlayEffects(def)` for patience effects after executor runs
-
-### Instance Fields
-- `SeraphimInstance.patienceStacks?: number`
-- `AngelInstance.patienceStacks?: number`
-
-### Definition Fields (SeraphimDefinition only)
-- `patienceThreshold?: number` — enables patience accumulation; threshold for bonus draw on attack
-- `patienceThresholdDraw?: number` — cards drawn when threshold is met
-
-## Removed Systems and Current Menu Gates
-
-- Wake Trials and Endless Gauntlet were fully removed. Do not reintroduce `trial` or `gauntlet` `BossFightKind` values, `weeklyTrialCompletions`, `gauntletBest`, or their UI/actions.
-- Ascension is dimmed and locked until the player owns 5 Infinite-rarity card copies. Infinitude is dimmed and locked until the player owns 5 Eternal-rarity card copies. Enigma is dimmed and locked until the player owns 1 Eternal-rarity card copy. Duplicate copies count; gates are derived from `progress.collection` and `CardRegistry`, never persisted as unlock flags.
-- Enigmas are presented by the standalone `src/ui/menus/EnigmaModal.tsx`; Daily and Weekly challenges remain in `QuestsModal.tsx`, whose visible title is "Challenges". The main-menu `?` icon was removed; the bottom-right Tutorial tile is the sole visible tutorial entry.
-- `SaveManager` v43 removes legacy trial/gauntlet progress and Weekly Trial title claims. A revoked equipped title is reset to `null`, leaving the player with the blank/default title.
-- Eternity's Wake boss music uses its own 5-track radio playlist with the same 1400 ms crossfade as the normal turn radio. The former trial/gauntlet track IDs are not valid `MusicTrackId` values.
-
-Neutrality card reworks must remain Patience-system-native. Do not replace Patience identity with generic draw chains or other unrelated templates.
-
----
-
-## Balance Philosophy
-
-- Balance is **feel-based and emergent**. No fixed time targets.
-- The early game (Neutrality starter deck) should feel **slow and humble**. Earning 1000 Oblivion should feel like a milestone.
-- Cards should feel increasingly impactful as the player builds their collection and deck — not from the very start.
-- **Never make starter cards feel overpowered.** Rares and Epics should be meaningfully stronger than Commons and feel like genuine upgrades.
-- Pack prices should feel **meaningful but achievable** — not a grind, not trivial.
-- **Eternal cards** are dramatically more powerful than Legendaries. **Infinite cards** are the apex — each one should feel like a culminating reward.
-
-### Current Economy Reference
-- Neutrality Pack: 200 Oblivion, 5 cards
-- Deck Builder unlocks at 15 unique collected cards
-- Deck size: exactly **50** main deck cards (max **4** copies per definition) + up to **5** Angels in the extra deck (max **2** copies per Angel definition)
-
----
-
-## UI/UX Standards
-
-### General
-- The visual theme is dark, mystical, and gold-accented. Background is near-black; text and borders use `#FFD700` (gold) as the primary highlight color.
-- Font family throughout: `Georgia, serif`.
-- All interactive elements must have visible hover/active feedback.
-
-### Card Display (Hand)
-- Cards in hand: **148×210px**. Name: 14px bold gold. Description: 11px, high-contrast white (`rgba(255,255,255,0.80)`). Type label: 10px, uppercase.
-- Hovering a card shows a **tooltip panel** (270px wide) above the hand with larger name (16px), full description (13px), and footer showing Element · Synergy stat (for Seraphim).
-- Card rules digest flows through `getCardSummarySections`/`getCardPreviewLines` in `src/ui/cardStatSummary.ts` and `src/ui/components/CardRulesDigest.tsx`. Prefer these over raw `description` in hover/menu UIs.
-- Do not show strategic tips or advice anywhere in the UI.
-
-### HUD Elements
-- **Oblivion display**: centered top, 36px, gold with glow. Shows sequence multiplier during a turn.
-- **Stat panel**: top-left, shows active synergies, Oblivion earned this turn, sequence multiplier, active Cherubim count.
-- **Set Engine Display**: `src/ui/hud/SetEngineDisplay.tsx` — surfaces the live set-engine readout. Data comes from `src/ui/setEngineSummary.ts` (`buildEngineSnapshot`, `ENGINE_ROLE_TEXT`, `SET_ENGINE_GUIDES`).
-- **Set Ability Strip**: `src/ui/hud/SetAbilityStrip.tsx` — four hotkey tiles (1–4) shown during the playing phase. Slots show gate, cooldown, and ready state. Clicking or pressing the hotkey calls `activateSetAbility(slot)` in the store.
-- **Turn controls**: bottom-right, large buttons.
-- **Deck status pills**: bottom-right, showing Deck / Discard / Hand counts.
-
-### Board Display
-- Front row: 5 slots. Empty slots show "Place Seraphim" prompt when a Seraphim is in hand.
-- Back row: 4 slots, staggered. Empty slots show "Place Cherubim" prompt when a Cherubim is in hand.
-- Cherubim slots display: card name + durability counter (color: purple >50%, orange >25%, red ≤25%).
-- Clicking an occupied Seraphim slot removes it to discard. Clicking an occupied Cherubim slot removes it to discard.
-
-### Card Store
-- Packs show name, element color dot, description, rarity distribution chips, cost, and card count.
-- Locked packs are visible but greyed out with a lock label — they signal future content.
-- Pack opening uses a click-to-reveal animation. All cards revealed → "Collect" button to close.
-- New cards (not previously in collection) are marked with a "✦ New!" badge.
-
-### Deck Builder
-- Locked until 15 unique cards are collected. Lock overlay explains the requirement with current progress.
-- **Two-pane shell** in `src/ui/deck/DeckBuilder.tsx` (redesigned; no more global tab strip / 4-section sidebar): header banner (title, deck name, radial progress rings for Main/Extra deck counts) → toolbar row (Load ▾ dropdown of saved decks with per-deck delete, Save As, Update, Fill Best, Clear) → validation banner → element filter chips → body split into a left **pool pane** (~60% width, virtualized card grid grouped by section) and a right **deck pane** (~40% width). There is no separate "Extra Deck" tab — Angel cards live in the pool alongside Seraphim/Cherubim/Ophanim and are added to the Extra Deck by the same click-to-add interaction.
-- The deck pane always shows an **Extra Deck strip** at the top (horizontally scrollable, click a card to remove one copy), followed by 3 sub-tabs: **Cards** (main deck list with +/- controls), **Abilities** (`DeckBuilderAbilitiesTab.tsx`), **Analyze** (`DeckBuilderAnalyzeTab.tsx` — merges the former separate Stats and Notes tabs: rarity/type breakdown always visible, notes editor is an expandable section below it). The standalone `DeckBuilderStatsTab.tsx`/`DeckBuilderNotesTab.tsx` files were deleted.
-- Below **1000px** viewport width the two panes stack vertically (pool above deck) instead of side-by-side.
-- Has two zones: **Main Deck** (50 cards, max 4 copies per definition, non-Angel cards only) and **Extra Deck** (up to 10 Angels, max 4 per definition — capped by owned copies).
-- Sections in the pool: **Angel** (adds to Extra Deck), **Seraphim**, **Ophanim**, **Cherubim** (no cardSubtype groupings).
-- Abilities tab (`DeckBuilderAbilitiesTab.tsx`) shows all 4 set-ability slots with their gate label/color/hint (`GATE_LABELS`/`GATE_COLORS`/`GATE_HINTS` keyed by `SetAbilityGate`, now only `'base' | 'eternal' | 'infinite'`) and lets the player assign `SavedDeck.abilityLoadout`.
-- Valid deck: exactly 50 main deck cards, max 4 copies of any definition. Extra deck: 0–10 Angels, max 4 copies per Angel definition (capped by owned copies).
-- Does **not** allow fewer than 50 main deck cards.
-- Main-deck size clamping lives in `DeckSystem.addDeckEntry`; DeckBuilder enforces the 50-card cap through that helper.
-- Boss fights (Eternity's Wake) load decks from `progress.savedDecks`; `saveCurrentDeck` must receive the edited `deckList` and `extraDeck` snapshot.
-- Card-info surfaces (Collection detail, DeckBuilder hover tooltip, HUD hand/board tooltips, boss/infinitude reward previews) no longer show "Action Class"/"Engine Role"/"{Type} Ability" sections — `CardEngineCallout.tsx` and its call sites were removed; only `CardRulesDigest` renders card rules text now. Collection detail's "How to Obtain" fallback shows tier-specific flavor text keyed by rarity/id prefix (`flavorObtain` in `CollectionCardDetail.tsx`).
-
-### Streamlined Card Summary Model
-
-`getCardSummarySections` in `src/ui/cardStatSummary.ts` emits at most four sections in this order: `Effect`, `Board`, `Attacks`, and `Summon`. The former Ability, Rules, On Play, On Board, Passive, Patience, Signature, On Summon, Awaken, Hooks, Mechanics, and Play sections are folded into that model. `Board` is omitted for zero-value passives, `Attacks` is limited to Seraphim and Angels, and `Summon` is Angel-only with materials, conditions, and signature information merged. Section titles are deduplicated case-insensitively. `getCardPreviewLines` and `CardRulesDigest` consume the same unified list.
-
-### Challenges and Timers
-
-- Daily challenges reset at 12:00 PM local time; weekly challenges reset Sunday at 8:00 PM local time.
-- `getNextDailyResetAt`, `getNextWeeklyResetAt`, and `formatQuestCountdown` in `src/systems/progression/quests.ts` provide the boundaries and countdown text. `QuestsModal.tsx` displays live one-second countdowns.
-- Daily and weekly Oblivion rewards scale at claim time with Collection Power: `floor(base * min(3, 1 + max(0, resonanceScore) / 1000))`. Weekly challenges award Oblivion and Shards together. `claimQuest` computes the current resonance score rather than trusting a stale displayed amount.
-
-### Wished Upon A Star
-
-The event ends November 1, 2026 at 8:00 PM EST. The shared timestamp and display label live in `src/ui/eventWishedUponAStar/eventTimer.ts`.
-
-### Eternity's Wake HP
-
-The set-anchored boss HP curve starts at `FIRST_SET_FIRST_BOSS_HP = 97_031`, approximately 15% above the previous anchor. The existing `SET_FINAL_HP_MULTIPLIER = 2.7` then carries the increase through later sets.
-
----
-
-## Key File Map
-
-| File | Purpose |
-|---|---|
-| `src/types/cards.ts` | Card definition and instance interfaces (SeraphimDefinition, CherubimDefinition, OphanimDefinition, AngelDefinition) |
-| `src/types/effects.ts` | ImmediateEffect, CherubimPassiveEffect, AngelEffect union types |
-| `src/state/store.ts` | All game state mutations: playCard, summonAngel, activateAngel, activateSeraphimAttack, patience helpers, set mechanics, `activateSetAbility`, `mergeFightEnigmaProgress` (boss-fight/trial-deck enigma persistence) |
-| `src/systems/cards/CardEffectExecutor.ts` | Executes ImmediateEffect arrays for Ophanim, Seraphim onPlayEffects, and Angel effects |
-| `src/systems/sets/SetEngine.ts` | Set ability types, registry, and gate resolution (`resolveActiveAbilitiesForDeck`) |
-| `src/systems/sets/neutrality/NeutralityAbilities.ts` | Neutrality set definition + four ability implementations; registers via `registerSet` |
-| `src/data/cards/neutralityCards.ts` | Base Neutrality Ophanim + Seraphim |
-| `src/data/cards/neutralityCherubimCards.ts` | Neutrality Cherubim |
-| `src/data/cards/neutralityAngel.ts` | Neutrality Angels |
-| `src/data/cards/eternalCards.ts` | Neutrality Eternal cards; `expansionEternalCards` for Null Raid reward Eternals |
-| `src/data/cards/infiniteCards.ts` | Neutrality Infinite cards + `InfiniteRecipe` definitions |
-| `src/data/enigmas/enigmaDefinitions.ts` | Enigma definitions (`ENIGMA_DEFINITIONS`). Neutral Mystery step 4 checks `!stepsComplete[3]` (not `currentStepIndex`) against strictly 3 Null Seraphim + 2 Equilibrium Seraphim on board. |
-| `src/systems/progression/EnigmaSystem.ts` | Enigma evaluation; `evaluateNeutralMysteryProgress`, `syncEnigmaProgressFromBoard` |
-| `src/ui/setEngineSummary.ts` | ENGINE_ROLE_TEXT, buildEngineSnapshot, SET_ENGINE_GUIDES per set |
-| `src/ui/hud/SetAbilityStrip.tsx` | In-game HUD strip for 4 set ability slots |
-| `src/ui/cardBackgrounds.ts` | Card art resolution; `CARD_BACKGROUND_FILE_OVERRIDES` for special cases |
-| `src/ui/eternitysWake/EternitysWake.tsx` | Eternity's Wake boss fight UI; `BOSS_ART_FILES` map |
-| `src/data/bosses/` | Boss definitions (`BossDefinition`, `BossCategory`, `BOSS_DEFINITIONS`) |
-| `src/cards/CardRegistry.ts` | Card lookup + alias resolution; `CardRegistry.getAll()` for runtime audits |
-| `src/save/SaveManager.ts` | Persistence; `CURRENT_VERSION = 46`; v46 removes retired cards/bosses and resets the retargeted Neutralizing the Void enigma |
-| `src/systems/progression/quests.ts` | Daily/weekly rotation, reset boundaries, countdown formatting, and Collection Power reward scaling |
-| `src/ui/eventWishedUponAStar/eventTimer.ts` | Shared Wished Upon A Star end timestamp and label |
-
----
-
-## Technical Constraints
-
-- **TypeScript strict mode**. No `any` types without justification.
-- **No new effect types** without updating `src/types/effects.ts`. New immediate effects that the `CardEffectExecutor` doesn't handle must also be wired into `store.ts` (see how `patience_gain_all`/`patience_double_all` are handled post-executor in all `playCard` branches and in `summonAngel`/`activateAngel`).
-- **No `dominant_stack_gain` on Neutrality cards**. That effect type is legacy; Neutrality now uses `patience_gain_all`.
-- **No `cherubim_adjacent_seraphim_bonus` on Neutrality Cherubim**. Neutrality Cherubim use `cherubim_patience_per_card` exclusively.
-- Dynamic scaling uses the `value: 0` sentinel pattern — see `CardEffectExecutor.ts` for existing examples.
-- Store mutations use Immer (`set(state => { state... })`). Always mutate draft state inside `set`.
-- `openPack` must capture `preOpenCollection` **before** calling `set()` to correctly track new cards.
-- **Search / Salvage / Look effects** produce `PendingEffect` variants (`search_deck`, `salvage`, `look_top_take_drop`, `look_top_take_type`) that require a **UI picker**. Resolved via store actions analogous to `discard_choice`. Always propagate `result.pendingEffect` in all card-play paths.
-- **Extra deck init**: `STARTER_EXTRA_DECK` from `StarterDeck.ts` populates the player's extra deck on game start.
-- **No `cardSubtype` field** exists on any card definition.
-- **Sequence multiplier timing**: For Ophanim cards, capture `prePlayChain = s.turn.chainMultiplier` before calling the executor, then pass it as `chainOverride` to `awardOblivionForCardPlay`. The executor increments the sequence before returning.
-- **`CherubimPassiveEffect`** is a separate union type from `CardEffect` and `ImmediateEffect`. Cherubim `effects` field is `CherubimPassiveEffect[]`, not `ImmediateEffect[]`.
-- **`tickCherubimDurability`** must be called after awarding Oblivion in all card-play paths.
-- **`tickHandPlayCooldowns`** must be called alongside `tickCherubimDurability` at every hand-play site. This is the canonical decrement point for all set-ability cooldowns.
-- **Attack cooldown floor**: Both Seraphim and Angel attack activations enforce a post-fire cooldown floor of 1 card minimum (before and after late-game identity reductions).
-- **Seraphim discard-cost attacks**: require explicit `paymentSelection`; store does not auto-pick. `BoardDisplay` opens a Seraphim discard picker modal before calling `activateSeraphimAttack`.
-- **Infinitude visibility**: recipe-driven via `INFINITE_RECIPES` in `infiniteCards.ts`. Eternity's Wake visibility: boss-data-driven via `BossCategory` + `mapPackToBossCategory` + `BOSS_DEFINITIONS`. Adding set cards alone will not surface them in those menus.
-- **`Embrace the Infinite`** button: available when `hand` has 40+ cards, phase is `playing`, and no pending effect. Does not require an empty draw pile.
-- **Card face art**: `public/assets/card-backgrounds/<element-folder>/`. `src/ui/cardBackgrounds.ts` resolves element-specific subfolders. Neutrality uses `neutrality/`. `CARD_BACKGROUND_FILE_OVERRIDES` handles special cases.
-- **Materialized balance overrides** may append extra effects (including draw) after base card definitions; runtime audits must use `CardRegistry.getAll()`, not raw source text.
-
-
----
-
-## Documentation Single Source of Truth
-
-### Card Effect Text Pipeline
-
-Card descriptions are **hand-authored** in source .ts files and kept in sync with canonical formatters via the regen script:
-
-`
-npx tsx scripts/regen-canonical-descriptions.mts
-`
-
-- Source files: src/data/cards/*.ts ? authoritative for card.description and ctivatedAbility.description.
-- src/data/cards/materializedCardBalance.ts ? **auto-generated**. Contains attack description, aseOblivion, and cooldownCards overrides for Seraphim/Angel attacks. **Do not hand-edit.**
-- src/data/cards/neutralityDocOverrides.ts ? intentional hand-authored overrides for Neutrality complex cards.
-- Canonical formatters live in src/ui/cardStatSummary.ts ? getCanonicalCardDescription, getCanonicalAttackDescription, getCanonicalActivatedAbilityDescription.
-
-### Root Markdown Docs
-
-Human-readable card effect documents for Neutrality live at `Card Effects/Neutrality/Neutrality Card Effects.md` (workspace root).
-
-### Tutorial / Resource Text
-
-All tutorial copy lives in:
-- src/data/tutorialContent.ts ? section metadata, set engine summaries, rarity tiers, card-born tier milestones.
-- src/data/resourceExplanations.ts ? per-resource short/long descriptions used by TutorialModal.
-
-src/ui/menus/TutorialModal.tsx is **pure presentation** — it imports from the data modules above and contains no hardcoded game text.
+Current player-facing mechanics may use old internal field names. Do not rename persisted fields like `oblivion` or effect tags like `oblivion_flat` without a versioned migration and compatibility read/write path. Save loading should tolerate old or malformed arrays, clear ephemeral active runs safely, and preserve long-lived progress.

@@ -1,43 +1,56 @@
 # UI And Card Text
 
-## React's role
+React renders state and dispatches store actions. It should not become a second rules engine.
 
-React components read state, render HTML/CSS, and dispatch store actions. They should not become alternate rule engines.
+## Shared Card Faces
 
-A button should call an action such as `playCard(instanceId)`; it should not independently remove the card, award Divine Light, or tick cooldowns.
+Card art across gameplay, pack opening, pending-choice modals, collection, deck builder, boss rewards, Infinitude, profiles, and other card surfaces should use the shared card-face helpers in `src/ui/cardBackgrounds.ts`:
 
-## Card rules digest
+- `getCardFaceBackgroundStyle`
+- `getDenseCardFaceBackgroundStyle`
+- `getCardNameRibbonStyle`
+- `getCardRulesPanelStyle`
 
-Many surfaces show cards: hand, board, collection detail, DeckBuilder, pack opening, boss rewards, Infinitude, and tooltips. They all converge on:
+Default card presentation is art plus top name/type ribbon plus bottom rules/effect panel. Respect `settings.cardArtDisplay` where the surface is a true card face.
+
+Avoid raw `<img>` overlays that cover holofoil, rarity, ribbon, or rules layers unless the image is explicitly kept behind a positioned content wrapper.
+
+## Card Text Pipeline
+
+Card rules are formatted through:
 
 - `src/ui/cardStatSummary.ts`
 - `getCardSummarySections`
 - `getCardPreviewLines`
+- `getCardPreviewText`
 - `src/ui/components/CardRulesDigest.tsx`
 
-The current summary model has at most four sections:
+Do not repeat rarity/type labels inside effect descriptions when structured card sections already show them. Preview card faces hide source text; detailed Card Stats can still show source.
 
-1. `Effect`
-2. `Board`, only when the passive bonus is nonzero
-3. `Attacks`, for Seraphim and Angels
-4. `Summon`, for Angels, including materials and conditions
+## Hover Details
 
-Duplicate section titles are removed case-insensitively. This prevents each UI from developing its own increasingly noisy card format.
+Card hover details belong in the right-rail Card Inspector (`src/ui/hud/CardInspectorPanel.tsx`). Do not add floating hover cards over the board or hand. The inspector is shared by normal turns, boss fights, Null Raids, and battleground overlays because they use the same HUD.
 
-## Why formatting is separate from execution
+## Pack Opening
 
-The executor needs to mutate/return gameplay state. The digest needs compact readable text. They share effect data but have different responsibilities. Do not put JSX inside an effect handler and do not make a component reimplement effect math just to display a number.
+Pack opening starts with all cards face-down. The modal must wait for one of these user actions:
 
-## Card text pipeline
+- Click an individual card.
+- Click Reveal All / Reveal Best.
+- Click Instant.
 
-1. Author card data and effects.
-2. Registry normalizes runtime data.
-3. Summary helpers interpret the definition for display.
-4. `CardRulesDigest` renders the sections.
-5. Card-facing surfaces reuse the digest.
+Do not add timed auto-reveal. `PackOpeningModalSource.test.ts` guards this behavior.
 
-Descriptions should state mechanics, not strategic advice. Generated or canonical text must remain synchronized with runtime behavior.
+## User-Facing Terminology
 
-## UI state boundaries
+Use:
 
-A modal can own temporary presentation state such as whether it is open or which tab is selected. Persistent game facts belong in Zustand. A picker can store the current selection locally, but submitting it must call the store's validation action.
+- Divine Light, not Oblivion.
+- Ain Soph Aur with spaces, not ASA or AinSophAur in display text.
+- Light, Dark, Soph, Ain, Limitless Light Stacks.
+
+Do not reintroduce retired Seraphim/Cherubim/Ophanim/Angel terminology for live card types.
+
+## Modals And Selection UI
+
+Selection modals can own temporary selected IDs locally. Submission must go through store actions such as `resolvePending`, `summonAinSophAur`, or `forceRemoveBoardCard`, which revalidate all IDs and counts.

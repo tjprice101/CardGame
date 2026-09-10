@@ -1,8 +1,12 @@
 import { CardRegistry } from '@/cards/CardRegistry';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { useStore, selectBoard, selectProgress, selectTurn } from '@/state/store';
+import { resolveCardScaling } from '@/systems/cards/CardScaling';
+import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { uiTypography, warmTheme } from '@/ui/theme';
+import type { StackCostDefinition } from '@/types/cards';
 
 interface CardInspectorPanelProps {
   definitionId: string | null;
@@ -14,17 +18,32 @@ const TYPE_COLORS: Record<string, string> = {
   AinSophAur: '#405f88',
 };
 
+function previewStackCost(cost: StackCostDefinition | undefined, stacks: number): number {
+  if (!cost) return 0;
+  if (cost.kind === 'percentage') return Math.ceil(stacks * ((cost.value ?? 0) / 100));
+  if (cost.kind === 'range') return Math.max(0, cost.min ?? 0);
+  return Math.max(0, cost.value ?? 0);
+}
+
 export default function CardInspectorPanel({ definitionId }: CardInspectorPanelProps) {
   const definition = definitionId ? CardRegistry.get(definitionId) : undefined;
+  const board = useStore(selectBoard);
+  const turn = useStore(selectTurn);
+  const progress = useStore(selectProgress);
+  const scalingContext = {
+    limitlessLightStacks: turn.limitlessLightStacks,
+    asaFrontCount: board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length,
+    collectionPower: computeGlobalResonanceScore(progress),
+  };
 
   return (
     <section
       aria-label="Card inspector"
       className="ornate-scroll"
       style={{
-        margin: '12px 18px 0',
-        minHeight: 142,
-        maxHeight: 'clamp(142px, 24vh, 230px)',
+        margin: '10px 14px 0',
+        minHeight: 126,
+        maxHeight: 'clamp(126px, 22vh, 198px)',
         overflowY: 'auto',
         flexShrink: 0,
         border: '1px solid rgba(244,244,248,0.16)',
@@ -35,7 +54,7 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
         boxShadow: definition
           ? '0 10px 26px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.5)'
           : 'inset 0 1px 0 rgba(255,255,255,0.04)',
-        padding: definition ? '12px 14px' : '18px 14px',
+        padding: definition ? '10px 12px' : '14px 12px',
         fontFamily: uiTypography.body,
       }}
     >
@@ -92,15 +111,37 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
             {definition.type === 'AinSophAur' && (
               <>
                 <span>Cost: {definition.summonMaterialCount} back-row material{definition.summonMaterialCount === 1 ? '' : 's'}</span>
-                {definition.bridgeAttack && (
-                  <span>{definition.bridgeAttack.name} · Divine Light {definition.bridgeAttack.baseOblivion} · Cooldown {definition.bridgeAttack.cooldownCards} cards</span>
-                )}
+                {definition.bridgeAttack && (() => {
+                  const cost = previewStackCost(definition.bridgeAttack.consumesStacks, turn.limitlessLightStacks);
+                  const projected = Math.max(0, Math.round(
+                    definition.bridgeAttack.baseOblivion
+                    + resolveCardScaling(definition.bridgeAttack.scaling, scalingContext)
+                    + cost,
+                  ));
+                  return (
+                    <span>{definition.bridgeAttack.name} · Now {projected} Divine Light{cost > 0 ? `, costs ${cost} Stacks` : ''} · Cooldown {definition.bridgeAttack.cooldownCards} cards</span>
+                  );
+                })()}
               </>
             )}
             {definition.type === 'Light' && (
               <>
-                <span>Ain Attack · Divine Light {definition.ainAttack.baseOblivion} · Cooldown {definition.ainAttack.cooldownCards} cards</span>
-                <span>Soph Attack · Divine Light {definition.sophAttack.baseOblivion} · Cooldown {definition.sophAttack.cooldownCards} cards</span>
+                {(() => {
+                  const projected = Math.max(0, Math.round(
+                    definition.ainAttack.baseOblivion
+                    + resolveCardScaling(definition.ainAttack.scaling, scalingContext),
+                  ));
+                  return <span>Ain Attack · Now {projected} Divine Light · Cooldown {definition.ainAttack.cooldownCards} cards</span>;
+                })()}
+                {(() => {
+                  const cost = previewStackCost(definition.sophAttack.stackCost, turn.limitlessLightStacks);
+                  const projected = Math.max(0, Math.round(
+                    definition.sophAttack.baseOblivion
+                    + resolveCardScaling(definition.sophAttack.scaling, scalingContext)
+                    + cost,
+                  ));
+                  return <span>Soph Attack · Now {projected} Divine Light{cost > 0 ? `, costs ${cost} Stacks` : ''} · Cooldown {definition.sophAttack.cooldownCards} cards</span>;
+                })()}
               </>
             )}
             {definition.type === 'Dark' && (

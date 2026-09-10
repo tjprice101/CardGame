@@ -36,7 +36,7 @@ const styles: Record<string, React.CSSProperties> = {
     position: 'absolute',
     bottom: 8,
     left: 0,
-    right: 'var(--angel-drawer-hand-offset, 348px)',
+    right: 'var(--angel-drawer-hand-offset, 308px)',
     zIndex: 70,
 
     display: 'flex',
@@ -83,7 +83,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   hand: {
     display: 'flex',
-    gap: 12,
+    gap: 10,
     pointerEvents: 'auto',
     position: 'relative',
     overflowX: 'auto',
@@ -342,7 +342,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
           .map(c => ({ instanceId: c.instanceId, definitionId: c.definitionId, finish: c.finish, faceState: c.faceState }));
   const hasActiveHandCards = viewCards.length > 0;
 
-  const handRightInset = 'var(--angel-drawer-hand-offset, 348px)';
+  const handRightInset = 'var(--angel-drawer-hand-offset, 308px)';
 
   const idleCards = idleShowcaseCards
     .map(card => ({ card, def: CardRegistry.get(card.definitionId) }))

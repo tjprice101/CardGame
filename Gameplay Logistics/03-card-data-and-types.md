@@ -1,99 +1,102 @@
 # Card Data And Types
 
-## Definitions versus instances
+`src/types/cards.ts` is the card contract. Current live gameplay has three card definition variants: `Light`, `Dark`, and `AinSophAur`.
 
-`src/types/cards.ts` defines two conceptual layers.
+## Definitions Versus Instances
 
-A **definition** is authored content:
+A definition is authored content: ID, type, rarity, name, description, art key, attacks, effects, costs, and summon data. Definitions live under `src/data/` and are resolved through `CardRegistry`.
+
+An instance is a physical copy in hand, draw pile, discard pile, or on the board. Instances carry runtime facts such as `instanceId`, `finish`, `side`, `faceState`, `limitlessCharge`, cooldown maps, and board slot indexes.
+
+Do not store runtime counters on definitions. Do not put authored rules only on instances.
+
+## Current Card Types
+
+| Type | Deck zone | Board zone | Runtime role |
+|---|---|---|---|
+| Light | Main Deck | Support/back row | Can enter as Soph or Ain. Ain side has Ain Attack and Soph Attack. Soph side charges, flips, or sacrifices. |
+| Dark | Main Deck | Support/back row | Can enter as Soph or Ain. Ain side activates utility effects. One-shot cards leave after activation; persistent premium cards remain with cooldown. |
+| AinSophAur | Extra Deck | Front row | Summoned by sacrificing a count of occupied back-row cards. Uses Bridge the Light. |
+
+Retired types such as Seraphim, Cherubim, Ophanim, and Angel are not live card types and should not be reintroduced.
+
+## Light Definitions
+
+Light cards require:
 
 ```ts
-interface SeraphimDefinition {
-  readonly definitionId: string;
-  readonly type: 'Seraphim';
-  readonly rarity: CardRarity;
-  readonly name: string;
-  readonly description: string;
-  readonly baseStats: SeraphimStats;
-  readonly attacks?: SeraphimAttackSet;
-  readonly onPlayEffects: CardEffect[];
-  readonly patienceThreshold?: number;
+interface LightCardDefinition {
+  definitionId: string;
+  type: 'Light';
+  rarity: CardRarity;
+  name: string;
+  description: string;
+  artKey: string;
+  ainAttack: LightAttackDefinition;
+  sophAttack: LightAttackDefinition;
+  onFlipEffects?: CardEffect[];
+  sacrificeOblivionRate: number;
 }
 ```
 
-An **instance** is a physical copy in a hand, deck, discard pile, or board:
+`baseOblivion` and `oblivion_flat` are legacy internal names. Player-facing text must say Divine Light.
+
+## Dark Definitions
+
+Dark cards require:
 
 ```ts
-interface SeraphimInstance {
-  readonly instanceId: string;
-  readonly definitionId: string;
-  readonly type: 'Seraphim';
-  readonly finish: CardFinish;
-  attackCooldowns: Record<string, number>;
-  boardSlot: 0 | 1 | 2 | 3 | 4 | null;
-  patienceStacks?: number;
+interface DarkCardDefinition {
+  definitionId: string;
+  type: 'Dark';
+  rarity: CardRarity;
+  name: string;
+  description: string;
+  artKey: string;
+  sophEffects: CardEffect[];
+  activationCost: StackCostDefinition;
+  cooldownCardsPlayed?: number;
+  postActivationFate: 'hand' | 'deck' | 'discard';
+  sacrificeOblivionRate: number;
+  persistent?: boolean;
 }
 ```
 
-The instance points to the definition by `definitionId`. It stores only runtime facts such as cooldowns, location, counters, and finish.
+Balance policy: ordinary one-shot Dark cards should usually cost 0 Limitless Light Stacks. Costs are reserved for premium, repeatable, or unusually high-impact effects.
 
-## Why use a discriminated union
+## Ain Soph Aur Definitions
 
-The four card types are represented by the literal field `type`:
-
-```ts
-type CardType = 'Ophanim' | 'Cherubim' | 'Seraphim' | 'Angel';
-type CardDefinition =
-  | OphanimDefinition
-  | CherubimDefinition
-  | SeraphimDefinition
-  | AngelDefinition;
-```
-
-This lets TypeScript narrow safely:
+Ain Soph Aur cards require:
 
 ```ts
-if (definition.type === 'Angel') {
-  definition.summonCost;
+interface AinSophAurDefinition {
+  definitionId: string;
+  type: 'AinSophAur';
+  rarity: CardRarity;
+  name: string;
+  description: string;
+  artKey: string;
+  summonMaterialCount: number;
+  onSummonEffects: CardEffect[];
+  bridgeAttack?: BridgeAttackDefinition;
 }
 ```
 
-Outside that branch, `summonCost` is not available. This is safer than a generic card object full of optional fields.
+`summonMaterialCount` is a count of any occupied back-row cards. It is not an exact-ID recipe. Do not add `summonCost` back without redesigning descriptions, UI, tests, and material selection.
 
-## Card roles
+## Rarity Sources
 
-- **Ophanim**: immediate hand-play effects; no board slot.
-- **Seraphim**: front-row unit; on-play effects, passive bonus, and two attack modes.
-- **Cherubim**: back-row unit; durability and adjacent-front-row passives.
-- **Angel**: extra-deck unit; summon materials, optional conditions, activated ability, and attacks.
+- Common/Rare/Epic/Legendary: card packs.
+- Enigmatic: Enigma rewards.
+- Eternal: Eternity's Wake boss rewards.
+- Infinite: Infinitude crafting.
+- Transcendent: Null Raid progression.
 
-## Attack data
+## Adding Cards
 
-Attacks are data too:
-
-```ts
-interface AttackDefinition<TLabel extends string = string> {
-  readonly id: string;
-  readonly label: TLabel;
-  readonly name: string;
-  readonly description: string;
-  /** Legacy field name; displayed to players as Divine Light. */
-  readonly baseOblivion: number;
-  readonly cooldownCards: number;
-  readonly costs?: AttackCost[];
-  readonly requiresAngelOnBoard?: boolean;
-}
-```
-
-The runtime reads this object to decide when an attack is ready, what it costs, and how much it awards. The UI reads the same object to show attack information.
-
-## How to add a card by hand
-
-1. Choose its type and rarity.
-2. Create a stable `definitionId`.
-3. Fill the required fields for that definition interface.
-4. Use existing effect types instead of inventing an inline function.
-5. Add it to the appropriate `src/data/cards/` export array.
-6. Verify that `CardRegistry.get(id)` resolves it.
-7. Add a behavior test and a card-summary test.
-
-Do not add `cardSubtype` fields or new card classes. The existing union is the contract.
+1. Add the definition to the appropriate data file.
+2. Use existing `CardEffect` tags when possible.
+3. Register it through `CardRegistry` source imports.
+4. Ensure art resolves through `cardBackgrounds.ts`.
+5. Update `cardStatSummary.ts` only if the display model needs a new section.
+6. Add or extend runtime coverage in `CardRuntimeWiring.test.ts` and catalog coverage in `CardCatalog.test.ts`.

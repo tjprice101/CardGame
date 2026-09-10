@@ -1,6 +1,7 @@
 import type { CardSide } from '@/types/cards';
 
 export const SOPH_FLIP_CHARGE_REQUIRED = 2;
+export const AIN_SOPH_AUR_SUMMON_STACK_REWARD = 1;
 
 export interface AinSophRuntimeCard {
   side?: CardSide;

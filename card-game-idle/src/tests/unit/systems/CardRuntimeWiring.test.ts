@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
-import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { enigmaRewardCards } from '@/data/cards/enigmaRewardCards';
@@ -308,10 +308,12 @@ describe('complete card runtime wiring', () => {
       }));
 
       const beforeSummon = useStore.getState().progress.oblivion;
+      const stacksBeforeSummon = useStore.getState().turn.limitlessLightStacks;
       useStore.getState().summonAinSophAur(definition.definitionId, materials.map(card => card.instanceId), 0);
       const summoned = useStore.getState().board.frontSlots[0];
       expect(summoned?.definitionId, definition.definitionId).toBe(definition.definitionId);
       expect(useStore.getState().progress.oblivion, `${definition.definitionId} summon`).toBeGreaterThan(beforeSummon);
+      expect(useStore.getState().turn.limitlessLightStacks, `${definition.definitionId} summon stack`).toBe(stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD);
 
       const beforeBridge = useStore.getState().progress.oblivion;
       const stacksBeforeBridge = useStore.getState().turn.limitlessLightStacks;

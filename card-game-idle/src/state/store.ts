@@ -19,7 +19,7 @@ import type { BattlegroundState, BattlegroundKind, BattlegroundOpponentProfile, 
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
-import { accrueSophCharges, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { accrueSophCharges, AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -1880,6 +1880,7 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
+        s.turn.limitlessLightStacks += AIN_SOPH_AUR_SUMMON_STACK_REWARD;
         queuePendingEffects(s.turn, result);
         grantOblivion(s, result.oblivionBonus);
         emitQuestProgressToProgress(s.progress, { kind: 'summon_ain_soph_aur', amount: 1 });

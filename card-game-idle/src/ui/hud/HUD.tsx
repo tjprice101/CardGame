@@ -134,7 +134,7 @@ function RightRail({ inspectedCardId }: { inspectedCardId: string | null }) {
       style={{
         position: 'absolute',
         right: 0, top: 0, bottom: 0,
-        width: 340,
+        width: 300,
         display: 'flex',
         flexDirection: 'column',
         background: 'linear-gradient(270deg, rgba(5,5,7,0.92) 0%, rgba(8,8,16,0.78) 100%)',
@@ -153,13 +153,13 @@ function RightRail({ inspectedCardId }: { inspectedCardId: string | null }) {
       }} />
 
       {/* Deck pills — clears the 52 px top bar; during boss fights also clears the boss panel (~200 px); during battlegrounds clears the slim BG strip (~52 px). */}
-      <div style={{ padding: `${inBossFight ? 252 : inBattleground ? 64 : 64}px 18px 0`, flexShrink: 0 }}>
+      <div style={{ padding: `${inBossFight ? 220 : inBattleground ? 58 : 58}px 14px 0`, flexShrink: 0 }}>
         <DeckStatus />
       </div>
 
       {/* Divider */}
       <div aria-hidden="true" style={{
-        height: 1, margin: '18px 20px 0', flexShrink: 0,
+        height: 1, margin: '12px 18px 0', flexShrink: 0,
         background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
       }} />
 
@@ -171,18 +171,18 @@ function RightRail({ inspectedCardId }: { inspectedCardId: string | null }) {
       }} />
 
       {/* Set engine reference — scrollable, expands to fill available space */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '14px 18px 4px', minHeight: 0 }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px 4px', minHeight: 0 }}>
         <SetEngineDisplay />
       </div>
 
       {/* Divider */}
       <div aria-hidden="true" style={{
-        height: 1, margin: '14px 20px', flexShrink: 0,
+        height: 1, margin: '10px 18px', flexShrink: 0,
         background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
       }} />
 
       {/* Turn controls — bottom-anchored */}
-      <div style={{ padding: '0 18px 22px', flexShrink: 0 }}>
+      <div style={{ padding: '0 14px 16px', flexShrink: 0 }}>
         <TurnControls />
       </div>
     </div>

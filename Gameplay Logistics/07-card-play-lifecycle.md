@@ -1,60 +1,71 @@
 # Card Play Lifecycle
 
-This is the most important hand-written workflow in the game.
+This guide describes the current Light/Dark/Ain Soph Aur runtime.
 
-## General sequence
+## Turn Start
 
-A valid play generally follows:
+`beginTurn()` prepares a turn, draws five cards, and enters mulligan unless a guided trial skips directly to play. `confirmMulligan()` swaps selected cards, refills the hand, and moves to `playing`.
 
-```text
-guard phase and card
-  -> resolve definition
-  -> place or execute card
-  -> recompute board relationships
-  -> award ordinary play Divine Light
-  -> apply passives
-  -> tick durability and hand-play cooldowns
-  -> execute card-specific effects
-  -> queue pending choices
-  -> remove card / record play
-  -> sync progression and enigmas
-  -> check boss defeat
-  -> recompute derived state
-```
+## Main-Deck Placement
 
-The exact order varies by card type because a Seraphim must exist on the board before adjacency and synergy can be calculated, while an Ophanim never enters a board slot.
+Hand controls are intentional:
 
-## Seraphim path
+- Left-click a Light or Dark card to place it face-down as Soph.
+- Right-click a Light or Dark card to place it face-up as Ain.
 
-In `playCard`:
+Both sides occupy support/back slots. Playing from hand increments `cardsPlayedThisTurn`, ticks hand-play cooldowns, advances tutorial guide state, and recomputes board state.
 
-1. Find an empty front slot.
-2. Construct a `SeraphimInstance` from the hand card.
-3. Place it in `frontSlots`.
-4. Recompute active synergy.
-5. Award ordinary play Divine Light.
-6. Apply Cherubim passives.
-7. Tick Cherubim durability.
-8. Tick set-ability cooldowns.
-9. Execute `onPlayEffects`.
-10. Adopt executor results and queue pending choices.
-11. Remove the physical card from hand.
-12. Record mastery/play statistics.
-13. Sync Enigma progress.
-14. Check the boss defeat condition.
+## Soph Lifecycle
 
-Placement precedes passives because a newly placed Seraphim may be adjacent to a Cherubim.
+Soph cards are face-down and charge whenever cards are played from hand. The threshold is `SOPH_FLIP_CHARGE_REQUIRED = 2`.
 
-## Cherubim path
+At 2+ charge, `flipSoph` can:
 
-A Cherubim is placed in a back slot, its durability is initialized, and its immediate effects execute. It counts as a card play for turn counters and cooldowns. The resulting pending effect must be propagated because searching or salvage can require a picker.
+- Flip to Ain, converting stored charge into Limitless Light Stacks.
+- Sacrifice the card, granting Divine Light based on `sacrificeOblivionRate` and moving it to discard.
 
-## Ophanim path
+Light `onFlipEffects` are supported through the effect executor if future Light cards define them.
 
-Dark utility cards resolve through the executor, then the store awards Divine Light when applicable, applies current board effects, ticks cooldowns, removes or relocates the card, records the play, and checks progression.
+## Ain Lifecycle
 
-## Why helpers are shared
+Ain cards are face-up and active.
 
-`tickCherubimDurability` and `tickHandPlayCooldowns` are called at every hand-play site. They are functions rather than duplicated inline code so a new play path cannot quietly diverge from the others.
+Light cards:
 
-Forgetting either call causes subtle bugs: Cherubim last too long, or hotkey set abilities never become ready.
+- `activateLightAinAttack` reads current Limitless Light Stacks, Ain Soph Aur count, and Collection Power for scaling.
+- `activateLightSophAttack` can spend stacks, but scaling reads the pre-spend pool so paying the cost does not shrink the payout.
+
+Dark cards:
+
+- `activateDark` spends its activation cost only if the utility can resolve.
+- One-shot Dark cards route to hand, draw deck, or discard based on `postActivationFate`.
+- Persistent Dark cards remain in the support row and receive `cooldownCardsPlayed`.
+
+## Ain Soph Aur Lifecycle
+
+Ain Soph Aur cards live in the Extra Deck and summon to front slots.
+
+Summoning requires:
+
+1. Playing phase.
+2. The card exists in the Extra Deck.
+3. An empty front slot.
+4. Exactly `summonMaterialCount` selected occupied back-row cards.
+5. On-summon effects can resolve.
+
+Materials are consumed only after validation succeeds. Every successful summon grants +1 Limitless Light Stack. On-summon effects grant Divine Light through the central grant path.
+
+Bridge the Light uses `activateAsaBridge`, applies optional stack costs, computes triune scaling, grants Divine Light, and starts cooldown.
+
+## Force Removal
+
+Right-click a field card to open force removal:
+
+- Main-deck Light/Dark cards go to discard.
+- Ain Soph Aur cards return to the Extra Deck.
+
+This is available only during playing phase and is blocked while choosing summon materials.
+
+## Pending Choices
+
+Effects that require selection create pending effects. `PendingEffectModal` collects choices, and `resolvePending` validates them before moving cards or executing resolution effects.

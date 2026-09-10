@@ -4,35 +4,35 @@ import { formatNumber } from '@/utils/bignum';
 const styles: Record<string, React.CSSProperties> = {
   panel: {
     position: 'absolute',
-    top: 64,
-    left: 16,
+    top: 60,
+    left: 14,
     background: 'rgba(5,5,7,0.72)',
     border: '1px solid rgba(244,244,248,0.1)',
-    borderRadius: 12,
-    padding: '12px 18px',
+    borderRadius: 10,
+    padding: '8px 10px',
     color: 'rgba(244,244,248,0.88)',
     fontFamily: '"Georgia", serif',
-    minWidth: 200,
+    minWidth: 136,
     backdropFilter: 'blur(8px)',
     pointerEvents: 'none',
     zIndex: 12,
     boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
   },
   title: {
-    fontSize: 11,
-    letterSpacing: 3,
+    fontSize: 9,
+    letterSpacing: 2,
     textTransform: 'uppercase',
     color: 'rgba(244,244,248,0.42)',
-    marginBottom: 8,
+    marginBottom: 5,
   },
   stat: {
-    fontSize: 13,
+    fontSize: 11,
     color: 'rgba(244,244,248,0.78)',
     marginTop: 4,
   },
   synergy: {
-    marginTop: 8,
-    fontSize: 12,
+    marginTop: 5,
+    fontSize: 10,
     color: 'rgba(200,220,255,0.88)',
   },
   empty: {
@@ -76,14 +76,14 @@ export default function AngelStatPanel() {
       {hasAnything ? (
         <>
           {turn.limitlessLightStacks > 0 && (
-            <div style={styles.stat}>{formatNumber(turn.limitlessLightStacks)} Limitless Light Stacks</div>
+            <div style={styles.stat}>LLS {formatNumber(turn.limitlessLightStacks)}</div>
           )}
           {turn.oblivionEarnedThisTurn > 0 && (
             <div style={styles.stat}>+{formatNumber(turn.oblivionEarnedThisTurn)} this turn</div>
           )}
           {asaCount > 0 && (
             <div style={styles.synergy}>
-              ✦ {asaCount} Ain Soph Aur summoned
+              ✦ {asaCount} Ain Soph Aur
             </div>
           )}
           {mainDeckCount > 0 && (

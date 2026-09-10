@@ -27,13 +27,13 @@ import type {
   MainDeckBoardInstance,
 } from '@/types/cards';
 
-const SLOT_W = 118;
-const SLOT_H = 168;
-const CHERUBIM_W = 104;
-const CHERUBIM_H = 148;
-const FRONT_ROW_GAP = 'clamp(12px, 1.4vw, 18px)';
+const SLOT_W = 126;
+const SLOT_H = 180;
+const CHERUBIM_W = 112;
+const CHERUBIM_H = 160;
+const FRONT_ROW_GAP = 'clamp(10px, 1.2vw, 16px)';
 const BACK_ROW_GAP = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
-const ROW_SEPARATION = 'clamp(14px, 2vh, 24px)';
+const ROW_SEPARATION = 'clamp(8px, 1.1vh, 16px)';
 const FRONT_FACE_METRICS = getCardFaceMetrics('board');
 const CHERUBIM_FACE_METRICS = getCardFaceMetrics('boardMini');
 const DISPLAY_FONT = uiTypography.display;
@@ -267,15 +267,15 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
     window.dispatchEvent(new CustomEvent('hr-attack-panel-open', { detail: isAttackPanelOpen }));
   }, [isAttackPanelOpen]);
 
-  const playfieldRightInset = 'var(--angel-drawer-hand-offset, 348px)';
+  const playfieldRightInset = 'var(--angel-drawer-hand-offset, 308px)';
 
   return (
     <div style={{
       position: 'absolute',
       left: 0,
       right: playfieldRightInset,
-      top: bossFight.mode === 'active' ? 'clamp(160px, 16vh, 215px)' : 'clamp(146px, 15.5vh, 218px)',
-      bottom: 'clamp(220px, 24vh, 300px)',
+      top: bossFight.mode === 'active' ? 'clamp(132px, 13vh, 188px)' : 'clamp(104px, 12vh, 150px)',
+      bottom: 'clamp(168px, 21vh, 224px)',
       marginInline: 'auto',
       pointerEvents: 'none',
       zIndex: 60,
@@ -283,26 +283,28 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
       flexDirection: 'column',
       alignItems: 'center',
       gap: 0,
-      overflowY: 'auto',
+      overflowY: 'visible',
       overflowX: 'visible',
       width: 'max-content',
     }}>
       <div style={{
+        position: 'absolute',
+        top: 0,
+        right: 0,
+        transform: 'translateY(-100%)',
         pointerEvents: 'none',
-        alignSelf: 'center',
-        marginBottom: 8,
-        padding: '7px 14px',
+        padding: '4px 9px',
         borderRadius: 999,
-        border: '1px solid rgba(255,232,158,0.58)',
-        background: 'rgba(35,24,18,0.86)',
+        border: '1px solid rgba(255,232,158,0.48)',
+        background: 'rgba(35,24,18,0.78)',
         color: '#ffe89e',
         fontFamily: BODY_FONT,
-        fontSize: 12,
+        fontSize: 10,
         fontWeight: 700,
-        letterSpacing: 0.5,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.28)',
+        letterSpacing: 0.4,
+        boxShadow: '0 3px 12px rgba(0,0,0,0.24)',
       }}>
-        Limitless Light Stacks: {turn.limitlessLightStacks}
+        LLS {turn.limitlessLightStacks}
       </div>
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>

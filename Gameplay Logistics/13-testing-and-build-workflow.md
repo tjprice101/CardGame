@@ -1,58 +1,57 @@
 # Testing And Build Workflow
 
-## Build
+Run commands from `card-game-idle/`.
 
-From `card-game-idle/`:
+## Commands
 
 ```powershell
 npm run build
-```
-
-This runs TypeScript project compilation and then the Vite production build. It catches type errors, invalid imports, and bundling failures.
-
-## Tests
-
-The project uses Vitest. Run the full suite with:
-
-```powershell
+npm run typecheck:tests
 npm test -- --run
 ```
 
-Run a focused test while changing one subsystem:
+For focused validation:
 
 ```powershell
-npm test -- --run src/tests/unit/systems/CardSummaryDigest.test.ts
+npm test -- --run src/tests/unit/systems/CardRuntimeWiring.test.ts
 ```
 
-## Test layers
+## Current Critical Test Files
 
-- **Type checking** catches invalid unions, missing fields, and incompatible store shapes.
-- **Unit tests** validate pure calculations such as summaries, quests, abilities, and Enigma evaluation.
-- **Store/system tests** validate action ordering and state transitions.
-- **Build validation** ensures the actual module graph can bundle.
+- `CardRuntimeWiring.test.ts`: exhaustive runtime coverage for registered card lifecycles, flips, sacrifices, Light attacks, Dark utilities, Ain Soph Aur summons, Bridge, costs, cooldowns, and atomic failure guards.
+- `CardCatalog.test.ts`: catalog counts, rarity/cost policies, registry exposure, playability checks.
+- `FullTurnE2E.test.ts`: turn start, mulligan, play, summon, Bridge, hand cap, rejection paths.
+- `GameplayEdgeCases.test.ts`: focused lifecycle edge cases including Soph/Ain placement and force removal.
+- `PackOpeningFlow.test.ts`: live pack pool and purchase awards.
+- `PackOpeningModalSource.test.ts`: pack opening must not auto-reveal.
+- `CardDescriptionAudit.test.ts`: authored descriptions and summary text do not leak internal tokens.
+- `CardBackgroundAssetAudit.test.ts`: card art references resolve.
 
-## How to write a gameplay test
+## Gameplay Test Rules
 
-1. Construct the smallest valid starting state.
-2. Resolve definitions through the same registry path as runtime code.
-3. Call the public store action or isolated system function.
-4. Assert state outcomes, not implementation details.
-5. Include invalid-action cases when the action crosses a trust boundary.
+1. Resolve definitions through `CardRegistry` when testing live behavior.
+2. Call public store actions unless testing a pure system function.
+3. Assert state outcomes: zone movement, resource changes, cooldowns, pending effects, and rejection safety.
+4. Include invalid-action cases for trust boundaries.
+5. Run focused tests before full validation.
 
-For card tests, use stable IDs and explicit `finish: 'normal'` fields in deck/extra-deck fixtures.
+## When To Add Tests
 
-## Debugging order
+Add or extend tests whenever you change:
 
-When a card behaves incorrectly:
+- Card definitions, effects, costs, rarity, or summon requirements.
+- Store action ordering or validation.
+- Pending-effect contracts.
+- Pack pools, reward generation, or collection writes.
+- Card UI that controls availability, costs, previews, or reveal timing.
 
-1. Is the source definition imported?
-2. Does `CardRegistry.get(id)` return it?
-3. Did normalization/materialized balance change it?
-4. Does the action choose the correct card-type branch?
-5. Does the executor handle every effect tag?
-6. Did the store propagate `pendingEffect`?
-7. Were durability and cooldown helpers called?
-8. Does the UI use the canonical summary instead of raw text?
-9. Is a save migration removing or reshaping the data?
+## Debugging Order
 
-This order follows the runtime pipeline and avoids guessing at the UI when the issue is actually data or state.
+1. Does `CardRegistry.get(id)` resolve?
+2. Does the definition contain the expected fields?
+3. Does the store action choose the correct branch?
+4. Does `CardEffectExecutor` handle every effect tag?
+5. Are pending effects queued and resolved?
+6. Are Divine Light, cooldowns, and card zones updated atomically?
+7. Does the UI disabled state match the store guard?
+8. Does the card face use shared summary/chrome helpers?

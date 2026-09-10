@@ -11,7 +11,7 @@ This folder explains how Card Game Idle is built and how to reason about the cod
 5. [05-card-registry.md](05-card-registry.md)
 6. [06-state-and-store.md](06-state-and-store.md)
 7. [07-card-play-lifecycle.md](07-card-play-lifecycle.md)
-8. [08-turns-attacks-and-patience.md](08-turns-attacks-and-patience.md)
+8. [08-turns-attacks-and-limitless-light.md](08-turns-attacks-and-limitless-light.md)
 9. [09-save-and-migrations.md](09-save-and-migrations.md)
 10. [10-ui-and-card-text.md](10-ui-and-card-text.md)
 11. [11-progression-and-challenges.md](11-progression-and-challenges.md)
