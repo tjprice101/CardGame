@@ -63,9 +63,9 @@ describe('Ain/Soph card catalog', () => {
 
   it('enables every Ain Soph Aur card only when its back-row materials and a front slot are available', () => {
     for (const card of ainSophAurCards) {
-      const matchingMaterials = card.summonCost.map((definitionId, index) => ({
+      const matchingMaterials = Array.from({ length: card.summonMaterialCount }, (_, index) => ({
         instanceId: `${card.definitionId}-material-${index}`,
-        definitionId,
+        definitionId: index % 2 === 0 ? lightCards[0].definitionId : darkCards[0].definitionId,
         type: 'Light' as const,
       }));
       const availableBoard = {
@@ -137,6 +137,27 @@ describe('Ain/Soph card catalog', () => {
       if (card.type !== 'Dark' || card.persistent) continue;
       expect(card.cooldownCardsPlayed, `${card.definitionId} should be a one-shot Dark card`).toBeUndefined();
     }
+  });
+
+  it('reserves Dark activation costs for premium effects', () => {
+    const paidBaseCards = darkCards
+      .filter(card => (card.activationCost.value ?? 0) > 0)
+      .map(card => [card.definitionId, card.activationCost.value]);
+    expect(paidBaseCards).toEqual([
+      ['dark-neutrality-22', 1],
+      ['dark-neutrality-23', 1],
+    ]);
+
+    const premiumCosts = new Map(
+      CardRegistry.getAll()
+        .filter((card): card is DarkCardDefinition => card.type === 'Dark' && !card.definitionId.startsWith('dark-neutrality-'))
+        .map(card => [card.definitionId, card.activationCost.value ?? 0]),
+    );
+    expect(premiumCosts.get('btei-temporal-ruin')).toBe(2);
+    expect(premiumCosts.get('btei-null-edict')).toBe(2);
+    expect(premiumCosts.get('enig-neutral-null-catechism')).toBe(1);
+    expect(premiumCosts.get('tx-neutral-null-catalyst')).toBe(3);
+    expect(premiumCosts.get('tx-neutral-void-reliquary')).toBe(4);
   });
 
   it('keeps authored attack values intentionally distinct across the catalog', () => {

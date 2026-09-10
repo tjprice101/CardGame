@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { uiTypography } from '@/ui/theme';
 import { RARITY_TIERS, SET_ENGINE_ENTRIES, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
+import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 
 interface Props {
   onClose: () => void;
@@ -235,9 +236,10 @@ function BoardBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Click Reference</div>
         <ListItem label="Hand">Left-click places a main-deck card face-down on its Soph side. Right-click places it face-up on its Ain side.</ListItem>
-        <ListItem label="Soph card">Click at 5+ charge to choose Flip to Ain or sacrifice it for Divine Light.</ListItem>
+        <ListItem label="Soph card">Click at {SOPH_FLIP_CHARGE_REQUIRED}+ charge to choose Flip to Ain or sacrifice it for Divine Light.</ListItem>
         <ListItem label="Ain card">Click to choose its attack or utility action when ready.</ListItem>
         <ListItem label="Extra Deck">Click an Ain Soph Aur, choose materials, then confirm the front-row summon.</ListItem>
+        <ListItem label="Field removal">Right-click any field card to open a confirmation that removes it. Main-deck cards go to discard; Ain Soph Aur cards return to the Extra Deck.</ListItem>
       </div>
     </>
   );
@@ -291,7 +293,7 @@ function PatienceBody() {
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Accumulation Rules</div>
         <ListItem label="Charge">Each card played adds charge to every face-down Soph card on the back row.</ListItem>
-        <ListItem label="Flip">At 5+ charge, flip a Soph card to Ain and convert its charge into Light Stacks.</ListItem>
+        <ListItem label="Flip">At {SOPH_FLIP_CHARGE_REQUIRED}+ charge, flip a Soph card to Ain and convert its charge into Light Stacks.</ListItem>
         <ListItem label="Spend">Soph Attacks, Dark activations, and some Bridge attacks spend stacks according to their card text.</ListItem>
         <ListItem label="Reset">The stack pool and board charges reset at the end of the turn.</ListItem>
       </div>

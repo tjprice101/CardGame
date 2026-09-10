@@ -4,6 +4,7 @@ import { lightCards } from '@/data/cards/lightCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import type { GameState, MainDeckBoardInstance } from '@/types/game';
 
@@ -87,18 +88,17 @@ describe('Full turn end-to-end', () => {
     const charged = board.backSlots[0] as MainDeckBoardInstance;
     expect(charged.limitlessCharge).toBeGreaterThanOrEqual(4);
 
-    // Top the card up to the flip threshold so the rest of the loop can run
-    // regardless of how many back slots happened to be free.
+    // Set the card to the canonical flip threshold.
     useStore.setState(state => {
       const slots = [...state.board.backSlots] as GameState['board']['backSlots'];
       const slot = slots[0] as MainDeckBoardInstance;
-      slots[0] = { ...slot, limitlessCharge: 5 };
+      slots[0] = { ...slot, limitlessCharge: SOPH_FLIP_CHARGE_REQUIRED };
       return { ...state, board: { ...state.board, backSlots: slots } };
     });
 
     // 3. Flip the charged card — its charge becomes Limitless Light Stacks.
     useStore.getState().flipSoph('e2e-light', 'flip');
-    expect(useStore.getState().turn.limitlessLightStacks).toBe(5);
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(SOPH_FLIP_CHARGE_REQUIRED);
     expect(useStore.getState().board.backSlots[0]).toMatchObject({ side: 'ain', faceState: 'front', limitlessCharge: 0 });
 
     // 4. Ain Attack reads stacks without consuming them.
@@ -130,7 +130,7 @@ describe('Full turn end-to-end', () => {
     resetStore();
 
     const asaDef = ainSophAurCards[0];
-    const materialCount = Math.max(1, asaDef.summonCost.length);
+    const materialCount = Math.max(1, asaDef.summonMaterialCount);
     const materialIds = Array.from({ length: materialCount }, (_, i) => `e2e-mat-${i}`);
 
     useStore.setState(state => {
@@ -163,7 +163,7 @@ describe('Full turn end-to-end', () => {
     expect(useStore.getState().progress.oblivion).toBeGreaterThan(oblivionBeforeBridge);
   });
 
-  it('rejects an Ain Soph Aur summon made with the wrong back-row material', () => {
+  it('accepts any back-row card as an Ain Soph Aur summon material', () => {
     resetStore();
     const asaDef = ainSophAurCards[0];
     const wrongMaterial = {
@@ -179,9 +179,9 @@ describe('Full turn end-to-end', () => {
 
     useStore.getState().summonAinSophAur(asaDef.definitionId, [wrongMaterial.instanceId], 0);
 
-    expect(useStore.getState().board.frontSlots[0]).toBeNull();
-    expect(useStore.getState().board.backSlots[0]?.instanceId).toBe(wrongMaterial.instanceId);
-    expect(useStore.getState().deck.extraDeck).toHaveLength(1);
+    expect(useStore.getState().board.frontSlots[0]?.definitionId).toBe(asaDef.definitionId);
+    expect(useStore.getState().board.backSlots[0]).toBeNull();
+    expect(useStore.getState().deck.extraDeck).toHaveLength(0);
   });
 
   it('rejects an Ain Soph Aur summon when the card is not in the Extra Deck', () => {
@@ -189,7 +189,7 @@ describe('Full turn end-to-end', () => {
     const asaDef = ainSophAurCards[0];
     const material = {
       ...activeLightSlot('owned-material', 0),
-      definitionId: asaDef.summonCost[0],
+      definitionId: lightCards[1].definitionId,
     };
     useStore.setState(state => ({
       ...state,

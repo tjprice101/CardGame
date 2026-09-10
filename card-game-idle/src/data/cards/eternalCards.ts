@@ -47,9 +47,9 @@ const dark = (
   type: 'Dark',
   rarity: 'Eternal',
   name,
-  description: `Resolve ${effect.type.replace(/_/g, ' ')} for 4 Limitless Light Stacks, then return this card to the ${fate}.`,
+  description: `Resolve ${effect.type.replace(/_/g, ' ')} for 2 Limitless Light Stacks, then return this card to the ${fate}.`,
   artKey,
-  sophEffects: [effect], activationCost: { kind: 'fixed', value: 4 },
+  sophEffects: [effect], activationCost: { kind: 'fixed', value: 2 },
   postActivationFate: fate,
   sacrificeOblivionRate: 85,
 });
@@ -68,7 +68,7 @@ const asa = (
   name,
   description: `Sacrifice ${materials} back-row cards to summon, then use Bridge the Light for a high triune Divine Light payout.`,
   artKey,
-  summonCost: Array.from({ length: materials }, (_, index) => `light-neutrality-${index + 1}`),
+  summonMaterialCount: materials,
   onSummonEffects: [{ type: 'oblivion_flat', value: 150 }],
   bridgeAttack: {
     id: `${definitionId}:bridge-the-light`, name: 'Bridge the Light',

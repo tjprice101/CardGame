@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings, selectBattleground, selectBossFight } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import {
   cardFacePalette,
@@ -13,12 +12,11 @@ import {
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
-import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { highlightRulesText } from '@/ui/text/highlightRulesText';
 import { warmTheme } from '@/ui/theme';
-import type { CardFinish, AinSophAurDefinition, DarkCardDefinition, LightCardDefinition } from '@/types/cards';
+import type { CardFinish } from '@/types/cards';
 
 const IDLE_SHOWCASE_SLOTS = 6;
 const IDLE_SHOWCASE_INTERVAL_MS = 2600;
@@ -27,16 +25,6 @@ interface IdleShowcaseCard {
   definitionId: string;
   finish: CardFinish;
 }
-
-const TYPE_COLORS: Record<string, string> = {
-  Seraphim: '#FFD700',
-  Ophanim:   '#c888f0',
-  Cherubim:    '#b87de8',
-  Angel:    '#FFD700',
-};
-
-const TOOLTIP_META_COLOR = 'rgba(58, 40, 24, 0.86)';
-const TOOLTIP_DETAIL_COLOR = 'rgba(52, 36, 20, 0.94)';
 
 const styles: Record<string, React.CSSProperties> = {
   overlay: {
@@ -150,54 +138,9 @@ const styles: Record<string, React.CSSProperties> = {
     WebkitBoxOrient: 'vertical',
     overflow: 'hidden',
   },
-  tooltip: {
-    position: 'absolute',
-    bottom: 242,
-    left: '50%',
-    width: 270,
-    background: 'linear-gradient(180deg, rgba(247, 239, 226, 0.995) 0%, rgba(235, 218, 190, 0.99) 100%)',
-    border: `1px solid ${warmTheme.borderStrong}`,
-    borderRadius: 14,
-    padding: '14px 16px',
-    pointerEvents: 'none',
-    zIndex: 90,
-    boxShadow: '0 22px 40px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.38)',
-    backdropFilter: 'blur(10px)',
-    fontFamily: 'Georgia, serif',
-  },
-  tooltipSubtype: {
-    fontSize: 9,
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    opacity: 0.55,
-    marginBottom: 4,
-  },
-  tooltipName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: warmTheme.accentDeep,
-    marginBottom: 8,
-    lineHeight: 1.2,
-  },
-  tooltipDesc: {
-    fontSize: 13,
-    color: warmTheme.text,
-    lineHeight: 1.6,
-    marginBottom: 10,
-  },
-  tooltipFooter: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-    alignItems: 'flex-start',
-    fontSize: 10,
-    opacity: 1,
-    color: TOOLTIP_META_COLOR,
-    lineHeight: 1.35,
-  },
 };
 
-export default function HandDisplay() {
+export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definitionId: string) => void }) {
   useThemeVersion();
   const faceMetrics = getCardFaceMetrics('hand');
   const deck = useStore(selectDeck);
@@ -363,7 +306,7 @@ export default function HandDisplay() {
       if (!def || def.type !== 'AinSophAur') return;
       // Hand off to BoardDisplay's material picker; it owns the back-row selection UI.
       window.dispatchEvent(new CustomEvent('asa-summon-request', {
-        detail: { definitionId: def.definitionId, required: Math.max(1, def.summonCost.length) },
+        detail: { definitionId: def.definitionId, required: Math.max(1, def.summonMaterialCount) },
       }));
       return;
     }
@@ -399,12 +342,6 @@ export default function HandDisplay() {
           .map(c => ({ instanceId: c.instanceId, definitionId: c.definitionId, finish: c.finish, faceState: c.faceState }));
   const hasActiveHandCards = viewCards.length > 0;
 
-  const hoveredDeckCard = hoveredId
-    ? (isExtraDeckView
-        ? viewCards.find(c => c.instanceId === hoveredId)
-        : hand.find(c => c.instanceId === hoveredId))
-    : null;
-  const hoveredDef = hoveredDeckCard ? CardRegistry.get(hoveredDeckCard.definitionId) : null;
   const handRightInset = 'var(--angel-drawer-hand-offset, 348px)';
 
   const idleCards = idleShowcaseCards
@@ -428,67 +365,6 @@ export default function HandDisplay() {
           textShadow: '0 0 12px rgba(200,160,255,0.8)',
         }}>
           MULLIGAN ? Click cards to swap them out
-        </div>
-      )}
-
-      {/* Tooltip ? positioned relative to overlay so it is never clipped by hand overflow */}
-      {hoveredDef && (
-        <div key={hoveredId} style={{ ...styles.tooltip, animation: 'tooltipFadeIn 0.18s ease both' }}>
-          <div style={{
-            ...styles.tooltipSubtype,
-            color: TYPE_COLORS[hoveredDef.type] ?? '#aaa',
-          }}>
-            {getDisplayCardTypeLabel(hoveredDef.type)}
-          </div>
-          <div style={styles.tooltipName}>{hoveredDef.name}</div>
-          <div style={styles.tooltipDesc}>
-            <CardRulesDigest
-              card={hoveredDef}
-              variant="preview"
-              maxSections={3}
-              maxLinesPerSection={10}
-              lineClamp={3}
-              labelColor="rgba(74, 48, 21, 0.82)"
-              textColor={warmTheme.accentDeep}
-              sectionBackground="transparent"
-              sectionBorder="transparent"              lightBg={true}            />
-          </div>
-          <div style={styles.tooltipFooter}>
-            <span style={{ color: SET_ACCENT }}>
-              {SET_LABEL}
-            </span>
-            {hoveredDef.type === 'AinSophAur' && (
-              <>
-                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                  Cost: {(hoveredDef as AinSophAurDefinition).summonCost.length} back-row material{(hoveredDef as AinSophAurDefinition).summonCost.length === 1 ? '' : 's'}
-                </span>
-                {(() => {
-                  const bridge = (hoveredDef as AinSophAurDefinition).bridgeAttack;
-                  if (!bridge) return null;
-                  return (
-                    <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                      {bridge.name} | Divine Light {bridge.baseOblivion} | Cooldown {bridge.cooldownCards} cards
-                    </span>
-                  );
-                })()}
-              </>
-            )}
-            {hoveredDef.type === 'Light' && (
-              <>
-                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                  Ain Attack - Divine Light {(hoveredDef as LightCardDefinition).ainAttack.baseOblivion} | Cooldown {(hoveredDef as LightCardDefinition).ainAttack.cooldownCards} cards
-                </span>
-                <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                  Soph Attack - Divine Light {(hoveredDef as LightCardDefinition).sophAttack.baseOblivion} | Cooldown {(hoveredDef as LightCardDefinition).sophAttack.cooldownCards} cards
-                </span>
-              </>
-            )}
-            {hoveredDef.type === 'Dark' && (
-              <span style={{ color: TOOLTIP_DETAIL_COLOR }}>
-                Ain utility · after use: {(hoveredDef as DarkCardDefinition).postActivationFate}
-              </span>
-            )}
-          </div>
         </div>
       )}
 
@@ -662,6 +538,10 @@ export default function HandDisplay() {
                 ...(!isPlayable ? { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.5)' } : {}),
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
                 ...(artOnlyMode ? { boxShadow: '0 0 0 2px rgba(255,255,255,0.65), 0 4px 16px rgba(0,0,0,0.5)' } : {}),
+                ...(isExtraDeckView && isPlayable ? {
+                  borderColor: 'rgba(255,255,255,0.96)',
+                  boxShadow: '0 0 0 2px rgba(255,255,255,0.9), 0 0 24px rgba(255,255,255,0.72), 0 8px 24px rgba(0,0,0,0.55)',
+                } : {}),
                 ...(isHovered && !attackPanelOpen && !selected && !isAnimatingOut && isPlayable && !isDragging ? {
                   transform: 'translateY(-16px) scale(1.025)',
                   boxShadow: artOnlyMode
@@ -675,7 +555,10 @@ export default function HandDisplay() {
                 e.preventDefault();
                 handleClick(deckCard.instanceId, 'ain');
               }}
-              onMouseEnter={() => setHoveredId(deckCard.instanceId)}
+              onMouseEnter={() => {
+                setHoveredId(deckCard.instanceId);
+                onHoverCard?.(deckCard.definitionId);
+              }}
               onMouseLeave={() => setHoveredId(null)}
               onDragStart={(e) => {
                 if (!isDraggable || !def) return;

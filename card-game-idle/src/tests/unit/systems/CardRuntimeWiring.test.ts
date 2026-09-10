@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
+import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { enigmaRewardCards } from '@/data/cards/enigmaRewardCards';
@@ -40,7 +41,7 @@ function chargedSophCard(definition: Extract<CardDefinition, { type: 'Light' | '
     ...activeMainDeckCard(definition, instanceId),
     side: 'soph' as const,
     faceState: 'back' as const,
-    limitlessCharge: 5,
+    limitlessCharge: SOPH_FLIP_CHARGE_REQUIRED,
   };
 }
 
@@ -85,7 +86,7 @@ describe('complete card runtime wiring', () => {
         faceState: 'front',
         limitlessCharge: 0,
       });
-      expect(useStore.getState().turn.limitlessLightStacks).toBe(5);
+      expect(useStore.getState().turn.limitlessLightStacks).toBe(SOPH_FLIP_CHARGE_REQUIRED);
 
       resetStore();
       useStore.setState(state => ({
@@ -240,7 +241,8 @@ describe('complete card runtime wiring', () => {
       const stacksBefore = useStore.getState().turn.limitlessLightStacks;
       useStore.getState().activateDark(instanceId);
       const state = useStore.getState();
-      expect(state.turn.limitlessLightStacks, definition.definitionId).toBeLessThan(stacksBefore);
+      const activationCost = definition.activationCost.kind === 'fixed' ? (definition.activationCost.value ?? 0) : 0;
+      expect(state.turn.limitlessLightStacks, definition.definitionId).toBe(stacksBefore - activationCost);
 
       if (definition.persistent) {
         expect(state.board.backSlots[0]?.instanceId).toBe(instanceId);
@@ -283,9 +285,9 @@ describe('complete card runtime wiring', () => {
 
   it('summons and activates Bridge the Light for every registered Ain Soph Aur card', () => {
     for (const definition of asaDefinitions) {
-      expect(new Set(definition.summonCost).size, `${definition.definitionId} material recipe`).toBe(definition.summonCost.length);
       resetStore();
-      const materials = definition.summonCost.map((definitionId, index) => {
+      const materials = Array.from({ length: definition.summonMaterialCount }, (_, index) => {
+        const definitionId = index % 2 === 0 ? lightCards[0].definitionId : darkCards[0].definitionId;
         const materialDefinition = CardRegistry.get(definitionId);
         if (!materialDefinition || (materialDefinition.type !== 'Light' && materialDefinition.type !== 'Dark')) {
           throw new Error(`${definition.definitionId} has invalid material ${definitionId}`);

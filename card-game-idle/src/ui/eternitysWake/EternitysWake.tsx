@@ -441,7 +441,7 @@ export default function EternitysWake({ onClose }: Props) {
                                 marginTop: 5,
                                 textAlign: 'center',
                               }}>
-                                Cost: {rewardDef.summonCost.length} materials
+                                Cost: {rewardDef.summonMaterialCount} materials
                               </div>
                             )}
                           </div>

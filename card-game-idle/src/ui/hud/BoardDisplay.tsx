@@ -1,5 +1,4 @@
 ﻿import { useState, useEffect, useRef } from 'react';
-import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import SetAbilityStrip from '@/ui/hud/SetAbilityStrip';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
@@ -16,8 +15,9 @@ import {
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
 import { uiTypography, warmTheme } from '@/ui/theme';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { SET_ACCENT } from '@/data/elements';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
+import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import type {
   LightCardDefinition,
@@ -88,7 +88,7 @@ function actionBtnStyle(border: string, background: string, color: string, disab
   };
 }
 
-export default function BoardDisplay() {
+export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitionId: string) => void }) {
   useThemeVersion();
   const board = useStore(selectBoard);
   const bossFight     = useStore(selectBossFight);
@@ -104,6 +104,7 @@ export default function BoardDisplay() {
     activateDark,
     activateAsaBridge,
     summonAinSophAur,
+    forceRemoveBoardCard,
   } = useStore.getState();
 
   // Seraphim/Cherubim/Angel are no longer registered card types; these flags stay
@@ -118,9 +119,9 @@ export default function BoardDisplay() {
   const [dragOverFront, setDragOverFront] = useState<number | null>(null);
   const [dragOverBack, setDragOverBack] = useState<number | null>(null);
   const [hoveredFrontSlot, setHoveredFrontSlot] = useState<number | null>(null);
-  const [hoveredBackSlot, setHoveredBackSlot] = useState<number | null>(null);
   const [attackPanelSlot, setAttackPanelSlot] = useState<number | null>(null);
   const [newActionSlot, setNewActionSlot] = useState<{ zone: 'front' | 'back'; index: 0 | 1 | 2 | 3 } | null>(null);
+  const [removeActionSlot, setRemoveActionSlot] = useState<{ zone: 'front' | 'back'; index: 0 | 1 | 2 | 3 } | null>(null);
   const [asaSummonRequest, setAsaSummonRequest] = useState<{ definitionId: string; required: number } | null>(null);
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
 
@@ -268,22 +269,6 @@ export default function BoardDisplay() {
 
   const playfieldRightInset = 'var(--angel-drawer-hand-offset, 348px)';
 
-  // Compute the hovered card definition for the immediate tooltip.
-  // Suppress tooltip when the attack panel is open to avoid overlap.
-  const boardHoveredCard =
-    attackPanelSlot === null
-      ? (hoveredFrontSlot !== null ? board.frontSlots[hoveredFrontSlot] : null) ??
-        (hoveredBackSlot !== null ? board.backSlots[hoveredBackSlot] : null)
-      : null;
-  const boardHoveredDef = boardHoveredCard ? CardRegistry.get(boardHoveredCard.definitionId) ?? null : null;
-
-  const BOARD_TOOLTIP_TYPE_COLORS: Record<string, string> = {
-    Seraphim: '#FFD700',
-    Ophanim: '#c888f0',
-    Cherubim: '#b87de8',
-    Angel: '#FFD700',
-  };
-
   return (
     <div style={{
       position: 'absolute',
@@ -319,53 +304,6 @@ export default function BoardDisplay() {
       }}>
         Limitless Light Stacks: {turn.limitlessLightStacks}
       </div>
-      {/* Immediate hover tooltip for board cards */}
-      {boardHoveredDef && (
-        <div style={{
-          position: 'fixed',
-          bottom: 200,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 270,
-          background: 'linear-gradient(180deg, rgba(247,239,226,0.995) 0%, rgba(235,218,190,0.99) 100%)',
-          border: '1px solid rgba(138,94,58,0.5)',
-          borderRadius: 14,
-          padding: '14px 16px',
-          pointerEvents: 'none',
-          zIndex: 90,
-          boxShadow: '0 22px 40px rgba(0,0,0,0.42), 0 0 0 1px rgba(255,255,255,0.38)',
-          backdropFilter: 'blur(10px)',
-          fontFamily: BODY_FONT,
-          animation: 'tooltipFadeIn 0.18s ease both',
-        }}>
-          <div style={{ fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', opacity: 0.55, marginBottom: 4, color: BOARD_TOOLTIP_TYPE_COLORS[boardHoveredDef.type] ?? '#aaa' }}>
-            {getDisplayCardTypeLabel(boardHoveredDef.type)}
-          </div>
-          <div style={{ fontSize: 16, fontWeight: 'bold', color: warmTheme.accentDeep, marginBottom: 8, lineHeight: 1.2 }}>
-            {boardHoveredDef.name}
-          </div>
-          <div style={{ fontSize: 13, color: warmTheme.text, lineHeight: 1.6, marginBottom: 10 }}>
-            <CardRulesDigest
-              card={boardHoveredDef}
-              variant="preview"
-              maxSections={3}
-              maxLinesPerSection={10}
-              lineClamp={3}
-              labelColor="rgba(74, 48, 21, 0.82)"
-              textColor={warmTheme.accentDeep}
-              sectionBackground="transparent"
-              sectionBorder="transparent"
-              lightBg={true}
-            />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-start', fontSize: 10, color: 'rgba(58, 40, 24, 0.86)', lineHeight: 1.35, marginTop: 6 }}>
-            <span style={{ color: SET_ACCENT }}>
-              {SET_LABEL ?? 'Neutrality'}
-            </span>
-          </div>
-        </div>
-      )}
-
       {canEmbraceInfinite && (
         <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
           <button
@@ -439,7 +377,8 @@ export default function BoardDisplay() {
             const asaDef = CardRegistry.get(slot.definitionId) as AinSophAurDefinition | undefined;
             const isHovered = hoveredFrontSlot === slotIndex;
             const isSelected = newActionSlot?.zone === 'front' && newActionSlot.index === slotIndex;
-            const isFocused = isHovered || isSelected;
+            const isRemoveSelected = removeActionSlot?.zone === 'front' && removeActionSlot.index === slotIndex;
+            const isFocused = isHovered || isSelected || isRemoveSelected;
             const focusPalette = getBoardFocusPalette('Neutrality');
             const asaElementColor = SET_ACCENT ?? warmTheme.accent;
             const scalingCtx = {
@@ -465,9 +404,18 @@ export default function BoardDisplay() {
                 key={slotIndex}
                 className={isNewlyPlaced ? 'anim-angel-summon-pop' : 'anim-angel-breath'}
                 onClick={() => { if (canPlay) setNewActionSlot(prev => (prev?.zone === 'front' && prev.index === slotIndex) ? null : { zone: 'front', index: slotIndex }); }}
-                onMouseEnter={() => setHoveredFrontSlot(slotIndex)}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  if (!canPlay) return;
+                  setNewActionSlot(null);
+                  setRemoveActionSlot({ zone: 'front', index: slotIndex });
+                }}
+                onMouseEnter={() => {
+                  setHoveredFrontSlot(slotIndex);
+                  onHoverCard?.(slot.definitionId);
+                }}
                 onMouseLeave={() => setHoveredFrontSlot(current => (current === slotIndex ? null : current))}
-                title={`${asaDef?.name ?? 'Ain Soph Aur'} ﾂｷ Bridge the Light`}
+                title={`${asaDef?.name ?? 'Ain Soph Aur'} · Left-click for actions · Right-click to force remove`}
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
@@ -532,6 +480,32 @@ export default function BoardDisplay() {
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setNewActionSlot(null); }}
+                      style={actionBtnStyle('rgba(150,150,150,0.5)', 'rgba(30,30,30,0.8)', '#ccc')}
+                    >Cancel</button>
+                  </div>
+                )}
+                {isRemoveSelected && (
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 21,
+                    background: 'rgba(18,3,6,0.95)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 7, padding: 8, borderRadius: 14,
+                  }}>
+                    <div style={{ fontSize: 9, color: '#f0b0b0', textAlign: 'center', lineHeight: 1.35 }}>
+                      Return this card to the Extra Deck?
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        forceRemoveBoardCard(slot.instanceId);
+                        setRemoveActionSlot(null);
+                      }}
+                      style={actionBtnStyle('rgba(235,90,105,0.7)', 'rgba(70,8,14,0.9)', '#ffb0b8')}
+                    >Force Remove</button>
+                    <button
+                      type="button"
+                      onClick={(event) => { event.stopPropagation(); setRemoveActionSlot(null); }}
                       style={actionBtnStyle('rgba(150,150,150,0.5)', 'rgba(30,30,30,0.8)', '#ccc')}
                     >Cancel</button>
                   </div>
@@ -660,19 +634,13 @@ export default function BoardDisplay() {
             const charge = mainCard.limitlessCharge ?? 0;
             const isSoph = mainCard.side === 'soph' && mainCard.faceState === 'back';
             const isAin = mainCard.side === 'ain' && mainCard.faceState === 'front';
-            const isReadyToFlip = isSoph && charge >= 5;
+            const isReadyToFlip = isSoph && charge >= SOPH_FLIP_CHARGE_REQUIRED;
             const isSelected = newActionSlot?.zone === 'back' && newActionSlot.index === backSlot;
+            const isRemoveSelected = removeActionSlot?.zone === 'back' && removeActionSlot.index === backSlot;
             const isMaterialMode = !!asaSummonRequest;
             const isMaterialSelected = isMaterialMode && selectedMaterialIds.includes(mainCard.instanceId);
-            const requestedAsa = asaSummonRequest ? CardRegistry.get(asaSummonRequest.definitionId) : undefined;
-            const requiredCopies = requestedAsa?.type === 'AinSophAur'
-              ? requestedAsa.summonCost.filter(definitionId => definitionId === mainCard.definitionId).length
-              : 0;
-            const selectedCopies = selectedMaterialIds.reduce((count, instanceId) => {
-              const selectedCard = board.backSlots.find(slot => slot?.instanceId === instanceId);
-              return count + (selectedCard?.definitionId === mainCard.definitionId ? 1 : 0);
-            }, 0);
-            const canSelectAsMaterial = isMaterialSelected || requiredCopies > selectedCopies;
+            const canSelectAsMaterial = isMaterialSelected
+              || (asaSummonRequest !== null && selectedMaterialIds.length < asaSummonRequest.required);
             const mainText = mainDef ? getCardPreviewText(mainDef, 2) : '';
             const mainDescMetrics = getAdaptiveDescriptionMetrics('boardMini', mainText);
             const mainElementColor = SET_ACCENT;
@@ -710,11 +678,15 @@ export default function BoardDisplay() {
                 style={{
                   width: CHERUBIM_W, height: CHERUBIM_H,
                   ...getCardFaceBackgroundStyle(mainDef, mainCard.finish, mainCard.faceState),
-                  border: `1px solid ${isMaterialSelected ? 'rgba(120,220,140,0.9)' : isReadyToFlip ? 'rgba(255,224,140,0.9)' : 'rgba(160,160,200,0.4)'}`,
+                  border: `1px solid ${isMaterialSelected ? 'rgba(120,220,140,0.95)' : isMaterialMode && canSelectAsMaterial ? 'rgba(255,255,255,0.95)' : isReadyToFlip ? 'rgba(255,224,140,0.9)' : 'rgba(160,160,200,0.4)'}`,
                   borderRadius: 12,
-                  boxShadow: isReadyToFlip
-                    ? `${warmTheme.glow}, 0 0 18px rgba(255,214,120,0.4)`
-                    : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
+                  boxShadow: isMaterialSelected
+                    ? '0 0 0 2px rgba(120,220,140,0.8), 0 0 24px rgba(120,220,140,0.58)'
+                    : isMaterialMode && canSelectAsMaterial
+                      ? '0 0 0 2px rgba(255,255,255,0.86), 0 0 24px rgba(255,255,255,0.65)'
+                      : isReadyToFlip
+                        ? `${warmTheme.glow}, 0 0 18px rgba(255,214,120,0.4)`
+                        : `${warmTheme.shadow}, ${cardFacePalette.shadow}`,
                   display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start',
                   fontFamily: BODY_FONT, pointerEvents: 'auto', cursor: isMaterialMode && !canSelectAsMaterial ? 'not-allowed' : 'pointer',
                   padding: 0, overflow: 'hidden', position: 'relative',
@@ -730,9 +702,16 @@ export default function BoardDisplay() {
                   }
                   setNewActionSlot(prev => (prev?.zone === 'back' && prev.index === backSlot) ? null : { zone: 'back', index: backSlot });
                 }}
-                onMouseEnter={() => setHoveredBackSlot(backSlot)}
-                onMouseLeave={() => setHoveredBackSlot(current => (current === backSlot ? null : current))}
-                title={`${mainDef?.name ?? mainCard.type} ﾂｷ ${isSoph ? `Charge ${charge}/5` : 'Active'}`}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  if (!canPlay || isMaterialMode) return;
+                  setNewActionSlot(null);
+                  setRemoveActionSlot({ zone: 'back', index: backSlot });
+                }}
+                onMouseEnter={() => {
+                  onHoverCard?.(mainCard.definitionId);
+                }}
+                title={`${mainDef?.name ?? mainCard.type} · ${isSoph ? `Charge ${charge}/${SOPH_FLIP_CHARGE_REQUIRED}` : 'Active'} · Right-click to force remove`}
               >
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${mainElementColor}cc, ${mainElementColor}, ${mainElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 <div style={getCardNameRibbonStyle('boardMini')}>
@@ -746,7 +725,7 @@ export default function BoardDisplay() {
                 <div style={getCardRulesPanelStyle('boardMini')}>
                   <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: isReadyToFlip ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center' }}>
                     {isSoph
-                      ? (isReadyToFlip ? 'Ready 窶・click to flip/sacrifice' : `Charge ${charge}/5`)
+                      ? (isReadyToFlip ? 'Ready · click to flip/sacrifice' : `Charge ${charge}/${SOPH_FLIP_CHARGE_REQUIRED}`)
                       : mainDef?.type === 'Light'
                         ? `Ain ${ainCooldown <= 0 ? 'Ready' : ainCooldown} ﾂｷ Soph ${sophCooldown <= 0 ? 'Ready' : sophCooldown}`
                         : mainDef?.persistent
@@ -798,7 +777,7 @@ export default function BoardDisplay() {
                     )}
                     {isSoph && !isReadyToFlip && (
                       <div style={{ fontSize: 9, color: 'rgba(220,220,240,0.8)', textAlign: 'center' }}>
-                        Needs {5 - charge} more card play{5 - charge !== 1 ? 's' : ''} to ready.
+                        Needs {SOPH_FLIP_CHARGE_REQUIRED - charge} more card play{SOPH_FLIP_CHARGE_REQUIRED - charge !== 1 ? 's' : ''} to ready.
                       </div>
                     )}
                     {isAin && mainDef?.type === 'Light' && (
@@ -827,11 +806,37 @@ export default function BoardDisplay() {
                         disabled={darkCooldown > 0 || turn.limitlessLightStacks < darkCost}
                         onClick={(e) => { e.stopPropagation(); activateDark(mainCard.instanceId); setNewActionSlot(null); }}
                         style={actionBtnStyle('rgba(200,160,255,0.6)', 'rgba(30,14,50,0.85)', '#c8a0ff', darkCooldown > 0 || turn.limitlessLightStacks < darkCost)}
-                      >Activate (-{darkCost} Stacks)</button>
+                      >{darkCost > 0 ? `Activate (-${darkCost} Stacks)` : 'Activate (No Stack Cost)'}</button>
                     )}
                     <button
                       type="button"
                       onClick={(e) => { e.stopPropagation(); setNewActionSlot(null); }}
+                      style={actionBtnStyle('rgba(150,150,150,0.5)', 'rgba(30,30,30,0.8)', '#ccc')}
+                    >Cancel</button>
+                  </div>
+                )}
+                {isRemoveSelected && !isMaterialMode && (
+                  <div style={{
+                    position: 'absolute', inset: 0, zIndex: 21,
+                    background: 'rgba(18,3,6,0.95)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    gap: 7, padding: 8, borderRadius: 12,
+                  }}>
+                    <div style={{ fontSize: 9, color: '#f0b0b0', textAlign: 'center', lineHeight: 1.35 }}>
+                      Send this card to the discard pile?
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        forceRemoveBoardCard(mainCard.instanceId);
+                        setRemoveActionSlot(null);
+                      }}
+                      style={actionBtnStyle('rgba(235,90,105,0.7)', 'rgba(70,8,14,0.9)', '#ffb0b8')}
+                    >Force Remove</button>
+                    <button
+                      type="button"
+                      onClick={(event) => { event.stopPropagation(); setRemoveActionSlot(null); }}
                       style={actionBtnStyle('rgba(150,150,150,0.5)', 'rgba(30,30,30,0.8)', '#ccc')}
                     >Cancel</button>
                   </div>

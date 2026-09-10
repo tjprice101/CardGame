@@ -12,6 +12,7 @@ import BoardDisplay from './BoardDisplay';
 import PendingEffectModal from './PendingEffectModal';
 import FlashOverlay from './FlashOverlay';
 import OblivionAcquisitionScreen from './OblivionAcquisitionScreen';
+import CardInspectorPanel from './CardInspectorPanel';
 
 /**
  * Top status bar — slim full-width chrome strip at the top of the arena.
@@ -123,7 +124,7 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
  * button anchored at the bottom. Returned to the right edge per user
  * request; widened to 260 px for breathing room vs the old 220 px.
  */
-function RightRail() {
+function RightRail({ inspectedCardId }: { inspectedCardId: string | null }) {
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
   const inBossFight = bossFight.mode === 'active';
@@ -162,6 +163,13 @@ function RightRail() {
         background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
       }} />
 
+      <CardInspectorPanel definitionId={inspectedCardId} />
+
+      <div aria-hidden="true" style={{
+        height: 1, margin: '12px 20px 0', flexShrink: 0,
+        background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
+      }} />
+
       {/* Set engine reference — scrollable, expands to fill available space */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '14px 18px 4px', minHeight: 0 }}>
         <SetEngineDisplay />
@@ -183,13 +191,14 @@ function RightRail() {
 
 export default function HUD() {
   const [showOblivionScreen, setShowOblivionScreen] = useState(false);
+  const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
   const battleground = useStore(selectBattleground);
   const inBattleground = battleground.mode === 'active';
 
   return (
     <>
       {/* Core play surfaces */}
-      <BoardDisplay />
+      <BoardDisplay onHoverCard={setInspectedCardId} />
       {/* ScoreDisplay overlaps the battleground pill — the BG bar already shows both scores */}
       {!inBattleground && <ScoreDisplay />}
       <AngelStatPanel />
@@ -198,10 +207,10 @@ export default function HUD() {
       <TopStatusBar onOpenOblivionScreen={() => setShowOblivionScreen(true)} />
 
       {/* Hand strip */}
-      <HandDisplay />
+      <HandDisplay onHoverCard={setInspectedCardId} />
 
       {/* Right control rail — deck pills / set-engines reference / turn button */}
-      <RightRail />
+      <RightRail inspectedCardId={inspectedCardId} />
 
       {/* Pending-effect modal — floats above everything */}
       <PendingEffectModal />

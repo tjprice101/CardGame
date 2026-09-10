@@ -1,3 +1,7 @@
+import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
+import { darkCards } from '@/data/cards/darkCards';
+import { lightCards } from '@/data/cards/lightCards';
+
 export interface PackDefinition {
   id: string;
   name: string;
@@ -13,23 +17,9 @@ export interface PackDefinition {
 }
 
 export const NEUTRALITY_PACK_POOL: string[] = [
-  // Commons (10)
-  'ser-neutral-null', 'ser-neutral-void',
-  'ophanim-neutral-null-seek', 'ophanim-neutral-seraph-recall',
-  'ophanim-neutral-neutral-cycle', 'ophanim-neutral-measured-seek',
-  'ophanim-neutral-void-surge', 'ophanim-neutral-still-pulse',
-  'cherubim-neutral-null-veil', 'cherubim-neutral-void-shroud',
-  'angel-neutral-beginning',
-  // Rares (11)
-  'ser-neutral-balance', 'ser-neutral-equilibrium',
-  'ophanim-neutral-chain-pulse', 'ophanim-neutral-cherubim-recall', 'ophanim-neutral-deep-seek',
-  'ophanim-neutral-grand-seek', 'ophanim-neutral-echo-pulse', 'ophanim-neutral-seraph-hunt',
-  'cherubim-neutral-balance-mantle', 'cherubim-neutral-equilibrium-ward', 'cherubim-neutral-null-fortify',
-  // Epics (4)
-  'ser-neutral-still', 'ophanim-neutral-nullfall',
-  'cherubim-neutral-still-shell', 'cherubim-neutral-void-amp',
-  // Legendaries (2)
-  'angel-neutral-presence', 'angel-neutral-equilibrium',
+  ...lightCards.map(card => card.definitionId),
+  ...darkCards.map(card => card.definitionId),
+  ...ainSophAurCards.map(card => card.definitionId),
 ];
 
 export const PACK_DEFINITIONS: PackDefinition[] = [

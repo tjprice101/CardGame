@@ -56,6 +56,7 @@ function formatScaling(expression: LightCardDefinition['ainAttack']['scaling']):
 
 function formatStackCost(cost: LightCardDefinition['sophAttack']['stackCost'] | DarkCardDefinition['activationCost']): string {
   if (!cost) return 'no stack cost';
+  if (cost.kind === 'fixed' && (cost.value ?? 0) === 0) return 'no stack cost';
   if (cost.kind === 'fixed') return `${formatExactValue(cost.value ?? 0)} Limitless Light Stack${cost.value === 1 ? '' : 's'}`;
   if (cost.kind === 'percentage') return `${formatExactValue(cost.value ?? 0)}% of current Limitless Light Stacks`;
   return `${formatExactValue(cost.min ?? 0)}-${formatExactValue(cost.max ?? cost.min ?? 0)} Limitless Light Stacks`;
@@ -269,7 +270,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     const bridge = asa.bridgeAttack;
     pushSummarySection(sections, 'Identity', ['Ain Soph Aur Extra Deck card']);
     pushSummarySection(sections, 'Summon', [
-      `Materials required: ${asa.summonCost.length || 'card-defined'}`,
+      `Materials required: ${asa.summonMaterialCount}`,
       ...(asa.onSummonEffects.length ? [`On summon: ${formatEffectsInline(asa.onSummonEffects, asa.definitionId)}`] : []),
     ]);
     if (bridge) {

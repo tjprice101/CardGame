@@ -106,7 +106,7 @@ export interface AinSophAurDefinition {
   readonly name: string;
   readonly description: string;
   readonly artKey: string;
-  readonly summonCost: string[];
+  readonly summonMaterialCount: number;
   readonly onSummonEffects: CardEffect[];
   readonly bridgeAttack?: {
     readonly id: string;

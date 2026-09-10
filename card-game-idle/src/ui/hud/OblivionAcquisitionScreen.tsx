@@ -19,6 +19,7 @@ import {
   selectBossFight,
 } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { formatNumber } from '@/utils/bignum';
 import { uiTypography } from '@/ui/theme';
 import type {
@@ -222,7 +223,7 @@ function LightAttackRow({ instance, def }: {
         <div>
           <div style={{ fontSize: 12, fontWeight: 700, color: C.blue.fg, fontFamily: DF }}>{def.name}</div>
           <div style={{ fontSize: 10, color: 'rgba(244,244,248,0.4)', fontFamily: BF, letterSpacing: 0.5 }}>
-            {isActive ? '✦ Ain side — attacks online' : `○ Soph side — charge ${instance.limitlessCharge ?? 0}/5`}
+            {isActive ? '✦ Ain side — attacks online' : `○ Soph side — charge ${instance.limitlessCharge ?? 0}/${SOPH_FLIP_CHARGE_REQUIRED}`}
           </div>
         </div>
       </div>
@@ -567,7 +568,7 @@ function BonusesTab() {
 
   const asaCount = board.frontSlots.filter(u => u?.type === 'AinSophAur').length;
   const chargedCount = board.backSlots.filter(
-    u => !!u && (u.limitlessCharge ?? 0) >= 5,
+    u => !!u && (u.limitlessCharge ?? 0) >= SOPH_FLIP_CHARGE_REQUIRED,
   ).length;
 
   return (
@@ -609,7 +610,7 @@ function BonusesTab() {
           <SourceCard
             icon="◇"
             title={`Cards Ready to Flip  (${chargedCount})`}
-            subtitle="Every card you play from hand adds +1 Limitless Charge to each face-down card on your board. At 5 charge a card can be flipped to its Ain side or sacrificed outright."
+            subtitle={`Every card you play from hand adds +1 Limitless Charge to each face-down card on your board. At ${SOPH_FLIP_CHARGE_REQUIRED} charge a card can be flipped to its Ain side or sacrificed outright.`}
             value={`${chargedCount}`}
             accent={chargedCount > 0 ? C.blue : C.dim}
             tags={['+1 per hand play', 'threshold 5']}
@@ -642,7 +643,7 @@ function TipsTab() {
 
   const asaCount = board.frontSlots.filter(u => u?.type === 'AinSophAur').length;
   const readyToFlip = board.backSlots.filter(
-    u => !!u && (u.limitlessCharge ?? 0) >= 5,
+    u => !!u && (u.limitlessCharge ?? 0) >= SOPH_FLIP_CHARGE_REQUIRED,
   ).length;
   const noStacks = turn.limitlessLightStacks === 0;
 

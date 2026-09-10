@@ -5,6 +5,7 @@
  * pile for the Guided walkthrough.
  */
 import type { TrialDeckDefinition } from '@/types/game';
+import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 
 export const NEUTRALITY_TUTORIAL_TRIAL_PACK_IDS = {
   starter: 'tutorial-neutrality-starter',
@@ -61,7 +62,7 @@ const neutralityTrial: TrialDeckDefinition = {
   guideSteps: [
     { cardDefinitionId: 'light-neutrality-1', hint: 'Left-click this Light card to place it face-down as Soph. Each hand play charges face-down Soph cards.' },
     { cardDefinitionId: 'dark-neutrality-1', hint: 'Left-click this Dark utility card to place it face-down as Soph. Keep building charge before choosing when to flip.' },
-    { cardDefinitionId: 'light-neutrality-2', hint: 'At 5+ charge, flip a Soph card to Ain and bank its charge as Limitless Light Stacks.' },
+    { cardDefinitionId: 'light-neutrality-2', hint: `At ${SOPH_FLIP_CHARGE_REQUIRED}+ charge, flip a Soph card to Ain and bank its charge as Limitless Light Stacks.` },
     { cardDefinitionId: 'light-neutrality-3', hint: 'Use an Ain Attack to earn Divine Light without spending your Light Stacks.' },
     { cardDefinitionId: 'dark-neutrality-2', hint: 'Dark cards provide utility. Follow the card text for its activation cost and destination.' },
     { cardDefinitionId: 'ain-soph-aur-neutrality-1', hint: 'Sacrifice the required back-row materials to summon The White Null from the Extra Deck.' },

@@ -322,18 +322,9 @@ export class CardEffectExecutor {
   ): boolean {
     if (def.type === 'AinSophAur') {
       if (!board) return true;
-      const summonCost = def.summonCost;
-      const costCount: Record<string, number> = {};
-      for (const id of summonCost) costCount[id] = (costCount[id] ?? 0) + 1;
-      const boardCount: Record<string, number> = {};
-      for (const slot of board.backSlots) {
-        if (slot) boardCount[slot.definitionId] = (boardCount[slot.definitionId] ?? 0) + 1;
-      }
-      for (const [id, needed] of Object.entries(costCount)) {
-        if ((boardCount[id] ?? 0) < needed) return false;
-      }
-
-      return board.frontSlots.some(slot => slot === null);
+      const occupiedBackSlots = board.backSlots.filter(Boolean).length;
+      return occupiedBackSlots >= def.summonMaterialCount
+        && board.frontSlots.some(slot => slot === null);
     }
 
     if (!board) return true;

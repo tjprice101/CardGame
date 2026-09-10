@@ -19,7 +19,7 @@ import type { BattlegroundState, BattlegroundKind, BattlegroundOpponentProfile, 
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
-import { accrueSophCharges } from '@/systems/cards/AinSophRuntime';
+import { accrueSophCharges, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -357,6 +357,7 @@ interface StoreActions {
   confirmMulligan: () => void;
   embraceInfinite: () => void;
   playCard: (instanceId: string, side?: 'soph' | 'ain') => void;
+  forceRemoveBoardCard: (instanceId: string) => void;
   flipSoph: (instanceId: string, mode: 'flip' | 'sacrifice') => void;
   activateLightAinAttack: (instanceId: string) => void;
   activateLightSophAttack: (instanceId: string, spend?: number) => void;
@@ -1824,18 +1825,8 @@ export const useStore = create<Store>()(
         if (!def || def.type !== 'AinSophAur') return;
         const uniqueIds = [...new Set(materialInstanceIds)];
         const materials = uniqueIds.map(id => s.board.backSlots.find(slot => slot?.instanceId === id));
-        const requiredMaterials = Math.max(1, def.summonCost.length);
+        const requiredMaterials = Math.max(1, def.summonMaterialCount);
         if (uniqueIds.length !== requiredMaterials || materials.some(material => !material)) return;
-        const selectedCounts: Record<string, number> = {};
-        for (const material of materials) {
-          if (!material) return;
-          selectedCounts[material.definitionId] = (selectedCounts[material.definitionId] ?? 0) + 1;
-        }
-        const requiredCounts: Record<string, number> = {};
-        for (const definitionId of def.summonCost) {
-          requiredCounts[definitionId] = (requiredCounts[definitionId] ?? 0) + 1;
-        }
-        if (Object.entries(requiredCounts).some(([definitionId, count]) => selectedCounts[definitionId] !== count)) return;
         const extraIndex = s.deck.extraDeck.findIndex(entry => entry.definitionId === definitionId);
         if (extraIndex === -1) return;
         const finish = s.deck.extraDeck[extraIndex].finish;
@@ -2154,6 +2145,31 @@ export const useStore = create<Store>()(
       });
     },
 
+    forceRemoveBoardCard: (instanceId) => {
+      set(s => {
+        if (s.turn.phase !== 'playing') return;
+
+        const frontIndex = s.board.frontSlots.findIndex(card => card?.instanceId === instanceId);
+        if (frontIndex !== -1) {
+          const card = s.board.frontSlots[frontIndex];
+          if (!card) return;
+          s.deck.extraDeck.push(createExtraDeckEntry(card.definitionId, card.finish));
+          s.board.frontSlots[frontIndex] = null;
+          recompute(s);
+          return;
+        }
+
+        const backIndex = s.board.backSlots.findIndex(card => card?.instanceId === instanceId);
+        if (backIndex === -1) return;
+        const card = s.board.backSlots[backIndex];
+        if (!card) return;
+        recordLossEvent(s, [{ definitionId: card.definitionId }], 'board');
+        s.deck.discardPile.push(toDeckCard(card));
+        s.board.backSlots[backIndex] = null;
+        recompute(s);
+      });
+    },
+
     flipSoph: (instanceId, mode) => {
       set(s => {
         if (s.turn.phase !== 'playing') return;
@@ -2162,7 +2178,7 @@ export const useStore = create<Store>()(
         const slot = s.board.backSlots[slotIndex];
         if (!slot || slot.side !== 'soph' || slot.faceState !== 'back') return;
         const charge = slot.limitlessCharge ?? 0;
-        if (charge < 5) return;
+        if (charge < SOPH_FLIP_CHARGE_REQUIRED) return;
         if (mode === 'flip') {
           slot.side = 'ain';
           slot.faceState = 'front';
@@ -2665,6 +2681,7 @@ export const useStore = create<Store>()(
       }
       const preOpen = { ...s.progress.collection };
       const drawn = PackSystem.open(pack);
+      if (drawn.length !== pack.cardsPerOpen) return null;
 
       set(state => {
         if (usesShards) {

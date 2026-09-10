@@ -49,6 +49,7 @@ export const darkCards: DarkCardDefinition[] = darkNames.map((name, index) => {
   ];
   const effects = utilityEffects[index];
   const effectText = effects.type === 'draw' ? `draw ${effects.value}` : effects.type.replace(/_/g, ' ');
+  const activationCost = index === 21 || index === 22 ? 1 : 0;
   return {
     definitionId: id,
     type: 'Dark',
@@ -57,7 +58,7 @@ export const darkCards: DarkCardDefinition[] = darkNames.map((name, index) => {
     description: `Activate from the Ain side of the board. Resolves ${effectText}.`,
     artKey: artKeys[index],
     sophEffects: [effects],
-    activationCost: { kind: 'fixed', value: 1 + (index % 6) },
+    activationCost: { kind: 'fixed', value: activationCost },
     postActivationFate: index % 3 === 0 ? 'hand' : index % 3 === 1 ? 'deck' : 'discard',
     sacrificeOblivionRate: 20 + index * 5,
   };

@@ -834,7 +834,7 @@ export default function DeckBuilder({ onClose }: Props) {
               </div>
               {isAngel && def.def.type === 'AinSophAur' && (
                 <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
-                  Cost: {(def.def as AinSophAurDefinition).summonCost.length} material{(def.def as AinSophAurDefinition).summonCost.length === 1 ? '' : 's'}
+                  Cost: {(def.def as AinSophAurDefinition).summonMaterialCount} material{(def.def as AinSophAurDefinition).summonMaterialCount === 1 ? '' : 's'}
                 </div>
               )}
             </div>

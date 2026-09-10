@@ -14,19 +14,19 @@ const transcendentDark: CardDefinition[] = [
 	{
 		definitionId: 'tx-neutral-null-catalyst', type: 'Dark', rarity: 'Transcendent', name: 'Null Catalyst',
 		description: 'Search a Light card and a Dark card. When activated from the board, this card remains in play and can be used again after its cooldown.', artKey: 'tx_neutral_null_catalyst',
-		sophEffects: [{ type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }], activationCost: { kind: 'fixed', value: 5 }, cooldownCardsPlayed: 3, postActivationFate: 'hand', sacrificeOblivionRate: 125, persistent: true,
+		sophEffects: [{ type: 'search_deck_distinct_types', filter: ['Light', 'Dark'], takePerType: 1 }], activationCost: { kind: 'fixed', value: 3 }, cooldownCardsPlayed: 3, postActivationFate: 'hand', sacrificeOblivionRate: 125, persistent: true,
 	},
 	{
 		definitionId: 'tx-neutral-void-reliquary', type: 'Dark', rarity: 'Transcendent', name: 'Void Reliquary',
 		description: 'Recover any card from the discard pile. This card remains in play after board activation and can be used again after its cooldown.', artKey: 'tx_neutral_void_reliquary',
-		sophEffects: [{ type: 'salvage_any' }], activationCost: { kind: 'fixed', value: 6 }, cooldownCardsPlayed: 4, postActivationFate: 'deck', sacrificeOblivionRate: 135, persistent: true,
+		sophEffects: [{ type: 'salvage_any' }], activationCost: { kind: 'fixed', value: 4 }, cooldownCardsPlayed: 4, postActivationFate: 'deck', sacrificeOblivionRate: 135, persistent: true,
 	},
 ];
 
 const transcendentAur: CardDefinition = {
 	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'Starbound Null Archangel',
 	description: 'Sacrifice 3 back-row cards to summon, then use Bridge the Light for an apex triune Divine Light payout.', artKey: 'tx_angel_starbound_null_archangel',
-	summonCost: ['light-neutrality-1', 'light-neutrality-2', 'dark-neutrality-1'], onSummonEffects: [{ type: 'oblivion_flat', value: 300 }],
+	summonMaterialCount: 3, onSummonEffects: [{ type: 'oblivion_flat', value: 300 }],
 	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '2400 base Divine Light with triune scaling; consumes 6 stacks.', baseOblivion: 2400, cooldownCards: 5, scaling: { kind: 'triune', amount: 1800 }, consumesStacks: { kind: 'fixed', value: 6 } },
 };
 
