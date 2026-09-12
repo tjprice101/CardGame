@@ -154,8 +154,8 @@ function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: s
         pointerEvents: 'none',
       }} />
 
-      {/* Deck pills — clears the 52 px top bar; during boss fights also clears the boss panel (~200 px); during battlegrounds clears the slim BG strip (~52 px). */}
-      <div style={{ padding: `${inBossFight ? 220 : inBattleground ? 58 : 58}px 14px 0`, flexShrink: 0 }}>
+      {/* Deck pills — clear the compact boss strip without pushing the board controls down. */}
+      <div style={{ padding: `${inBossFight ? 148 : inBattleground ? 58 : 58}px 14px 0`, flexShrink: 0 }}>
         <DeckStatus />
       </div>
 

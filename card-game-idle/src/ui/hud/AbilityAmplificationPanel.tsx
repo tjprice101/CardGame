@@ -4,10 +4,8 @@ import { useStore, selectProgress, selectTurn } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 
 const PLACEHOLDER_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1' fill='%23ffffff'/%3E%3C/svg%3E";
-const abilityIconUrl = (key: string) => key === 'whiteout-domain'
-  ? `${import.meta.env.BASE_URL}assets/ability-icons/whiteout-domain.png`
-  : `${import.meta.env.BASE_URL}assets/ability-icons/${key}.png`;
-const buffIconUrl = (key: string) => `${import.meta.env.BASE_URL}assets/buff-icons/${key.replace(/^buff_/, '').replace(/_/g, '-')}.png`;
+const abilityIconUrl = (key: string) => `${import.meta.env.BASE_URL}assets/ability-icons/${key}.png`;
+const buffIconUrl = abilityIconUrl;
 
 export default function AbilityAmplificationPanel() {
   const [, refresh] = useState(0);

@@ -5,7 +5,7 @@ import { uiTypography } from '@/ui/theme';
 
 interface Props { onClose: () => void; onEnterDungeon?: (dungeonId: string) => void }
 
-const rewardIconUrl = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.svg`;
+const rewardIconUrl = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.png`;
 
 export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const progress = useStore(selectProgress);

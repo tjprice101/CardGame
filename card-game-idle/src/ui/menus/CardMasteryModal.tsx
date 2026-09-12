@@ -69,10 +69,10 @@ function SystemInfoPanel() {
           color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8,
         }}>What is Card-born Tier?</div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
-          Playing a card from your hand adds <span style={{ color: P.accent, fontWeight: 700 }}>1 Card-light</span> to it.
-          Reach the eight milestones, from <em>Practiced</em> to <em>Infinite Bond</em>, to earn a claimable shard reward
-          and increase that card's <span style={{ color: P.gold, fontWeight: 700 }}>Resonance</span> contribution.
-          Card-light belongs to the card itself, so every copy helps you play it more often but shares the same Tier progress.
+          Each card played from your hand adds <span style={{ color: P.accent, fontWeight: 700 }}>1 Card-light</span> to that card's shared definition progress.
+          Reaching one of the eight milestones, from <em>Practiced</em> to <em>Infinite Bond</em>, creates a claimable Aberrated Shards reward
+          and updates that card's <span style={{ color: P.gold, fontWeight: 700 }}>Resonance</span> contribution.
+          Copies of the same card share one Card-born Tier progression.
         </div>
       </div>
 
@@ -81,8 +81,8 @@ function SystemInfoPanel() {
           Global Resonance Score
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
-          Each unique card contributes <span style={{ color: P.gold, fontWeight: 700 }}>Resonance pts</span> based on
-          its highest reached Tier — once per card, regardless of copies owned. All Resonance across all
+          Each unique card contributes <span style={{ color: P.gold, fontWeight: 700 }}>Resonance points</span> based on
+          its highest reached Tier, once per card regardless of copies owned. All Resonance across
           played cards sums into your <span style={{ color: P.accent, fontWeight: 700 }}> Global Resonance Score</span>,
           which feeds directly into your <span style={{ color: P.gold, fontWeight: 700 }}>Collection Power</span> multiplier
           — boosting every Divine Light gain for every turn you play.
@@ -138,16 +138,14 @@ function SystemInfoPanel() {
           Tier Progress from Boss Content
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body, marginBottom: 10 }}>
-          A completed boss fight, Wake Trial, or Endless Gauntlet run also grants
-          <span style={{ color: P.accent, fontWeight: 700 }}> Card-light to every card in your Main and Extra Deck</span>.
-          The result screen shows the exact award before you play.
+          Completing an Eternity's Wake boss fight also grants
+          <span style={{ color: P.accent, fontWeight: 700 }}> Card-light to every card in the participating Main and Extra Deck</span>.
+          The result screen shows the exact award before it is applied.
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           {([
-            ['Boss fights', 'Awards rise with the boss roster, starting around 3 Card-light per card and reaching the 20-card-light cap.'],
-            ['Wake Trials', 'Use the boss award with the trial reward multiplier, up to ×2 before the same 20-card-light cap.'],
-            ['Endless Gauntlet', 'Awards build with depth: 5 Card-light at first, then +6 per depth, up to 35 per card.'],
-            ['Established Tiers', 'A card already at a Tier gains +5% more Card-light for each Tier reached. T4 earns ×1.20; T7 earns ×1.35.'],
+            ['Boss fights', 'The award is based on the boss position and is capped at 20 Card-light per unique card.'],
+            ['Established Tiers', 'Cards with an established Tier receive 5% more boss-award Card-light per reached Tier.'],
           ] as [string, string][]).map(([label, body]) => (
             <div key={label} style={{
               padding: '7px 10px',
@@ -171,8 +169,7 @@ function SystemInfoPanel() {
         lineHeight: 1.6,
         fontFamily: uiTypography.body,
       }}>
-        💡 <strong style={{ color: P.accent }}>A long road, with shortcuts:</strong> Hand plays are the steady way to build Card-light.
-        Boss rewards help the cards you bring along, while higher Tiers give established cards a little more from every victory.
+        <strong style={{ color: P.accent }}>Card-light sources:</strong> Hand plays provide 1 Card-light per play. Eternity's Wake boss rewards add Card-light to each unique card in the participating deck.
       </div>
 
       <div>
@@ -180,10 +177,9 @@ function SystemInfoPanel() {
           Fracture Extra Copies
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
-          Got more copies than you need? Open <span style={{ color: P.gold, fontWeight: 700 }}>Fracture</span> from the main menu to turn
-          extra copies into Fracture Shards. Keep at least four copies of every card (and any copies you have locked); the rest can be
-          fractured. In the same menu, spend Fracture Shards <span style={{ color: P.accent, fontWeight: 700 }}>1:1 for Card-light</span>
-          on the card you choose.
+          Open <span style={{ color: P.gold, fontWeight: 700 }}>Fracture</span> from the main menu to turn eligible duplicate copies into Fracture Shards.
+          The menu retains the protected copies and locked copies shown there. Fracture Shards can be spent
+          <span style={{ color: P.accent, fontWeight: 700 }}> 1:1 for Card-light</span> on a selected card.
         </div>
       </div>
     </div>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { uiTypography } from '@/ui/theme';
 import { RARITY_TIERS, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
 import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { MASTERY_TIERS } from '@/systems/progression/cardMastery';
 
 interface Props {
   onClose: () => void;
@@ -432,6 +433,41 @@ function ModesBody() {
 }
 
 function CardBornTierBody() {
+  return (
+    <>
+      <div style={cardStyle}>
+        <div style={sectionHeadingStyle}>What is Card-born Tier?</div>
+        <div style={bodyTextStyle}>Each card played from your hand adds <Tag>1 Card-light</Tag> to that card definition's shared progress. The eight milestones provide claimable Aberrated Shards rewards and update the card's highest-tier <Tag>Resonance</Tag> contribution. Copies of the same card share one progression.</div>
+      </div>
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>The 8 Tiers</div>
+        {MASTERY_TIERS.map(tier => (
+          <div key={tier.tier} style={{ display: 'grid', gridTemplateColumns: '28px 110px 70px 1fr', gap: 10, padding: '6px 4px', alignItems: 'baseline' }}>
+            <div style={{ fontSize: 14, color: PALETTE.accent, textAlign: 'center' }}>{CARD_BORN_TIERS[tier.tier - 1]?.glyph ?? '◇'}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT }}>T{tier.tier} · {tier.label}</div>
+            <div style={{ fontSize: 11, color: PALETTE.inkSoft }}>{tier.threshold.toLocaleString()} Card-light</div>
+            <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>+{tier.shardReward} Aberrated Shards; +{tier.resonanceContribution} Resonance.</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Current Sources and Rewards</div>
+        <div style={bodyTextStyle}>Hand plays add 1 Card-light to the played card. Completed Eternity's Wake boss fights add Card-light to each unique card in the participating Main and Extra Deck, with awards based on boss position and capped at 20 per card. Tier rewards are claimed manually as Aberrated Shards.</div>
+      </div>
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Resonance and Collection Power</div>
+        <div style={bodyTextStyle}>Each unique card contributes the Resonance value of its highest reached Tier, regardless of copies owned. Total Resonance determines Collection Power, which amplifies Divine Light gains and contributes to Light attack and Ain Soph Aur Bridge scaling.</div>
+      </div>
+      <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Fracture Extra Copies</div>
+        <div style={bodyTextStyle}>The <Tag>Fracture</Tag> menu converts eligible duplicate copies into Fracture Shards while preserving protected and locked copies. Spend Fracture Shards <Tag>1:1 for Card-light</Tag> on a selected card.</div>
+      </div>
+    </>
+  );
+}
+
+/*
+function CardBornTierBody() {
   const tiers = CARD_BORN_TIERS;
 
   return (
@@ -467,11 +503,9 @@ function CardBornTierBody() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
         <div style={cardStyle}>
           <div style={sectionHeadingStyle}>Resonance</div>
-          <div style={bodyTextStyle}>
-            Each tier reached on a card permanently adds <Tag>Resonance points</Tag> to your global pool.
-            Resonance is your measure of investment across your entire card-born history — one point per
-            unique card per tier reached, regardless of how many copies you own.
-          </div>
+                    Each card played from your hand adds <Tag>1 Card-light</Tag> to that card's shared definition progress.
+                    The eight milestones, from Practiced to Infinite Bond, each provide a claimable Aberrated Shards reward
+                    and update that card's highest-tier <Tag>Resonance</Tag> contribution. Copies of the same card share one progression.
         </div>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Collection Power</div>
@@ -496,16 +530,15 @@ function CardBornTierBody() {
         <div style={sectionHeadingStyle}>Tier Progress from Boss Content</div>
         <div style={bodyTextStyle}>
           Completing Eternity's Wake boss fights awards{' '}
-          <Tag>Card-light to every card in your Main and Extra Deck</Tag>. This joins the Card-light earned
-          through hand plays. The result screen shows the exact award, which changes by mode:
-        </div>
+                      Each unique card contributes the Resonance value of its highest reached tier, regardless of how many copies you own.
+                      The values are listed in the Card-born Tier menu and are counted once per card definition.
         <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <ListItem label="Boss fights">Awards climb with each boss, from about 3 Card-light per card to the 20-card-light cap.</ListItem>
           <ListItem label="Established Tiers">Cards already at a Tier gain 5% more Card-light for every Tier reached. T4 earns ×1.20; T7 earns ×1.35.</ListItem>
         </div>
         <div style={{ ...bodyTextStyle, marginTop: 8, color: PALETTE.inkSoft }}>
-          Hand plays steadily build Card-light, and cleared challenges give the cards you bring a welcome boost.
-        </div>
+                      Your total Resonance determines the <Tag>Collection Power</Tag> multiplier, which amplifies Divine Light gains.
+                      Claim each tier milestone from
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
@@ -522,13 +555,15 @@ function CardBornTierBody() {
         <div style={sectionHeadingStyle}>Fracture Extra Copies</div>
         <div style={bodyTextStyle}>
           The <Tag>Fracture</Tag> menu lets you turn spare card copies into Fracture Shards. It always keeps
-          four copies of a card, along with any copies you have locked. Spend those shards in the same menu
-          to add <Tag>1 Card-light per shard</Tag> to the card you want to advance.
-        </div>
+                    Completing an Eternity's Wake boss fight awards{' '}
+                    <Tag>Card-light to each unique card in the participating Main and Extra Deck</Tag>. This is added to
+                    the Card-light earned through hand plays. The result screen shows the exact award:
       </div>
     </>
   );
 }
+
+*/
 
 function ProgressionBody() {
   return (
@@ -538,30 +573,23 @@ function ProgressionBody() {
         <div style={bodyTextStyle}>
           The secondary currency. Earned from <Tag>boss clears</Tag> (first-clear bonus + repeat bonus) and{' '}
           <Tag>daily logins</Tag>. Streak rewards scale across a 7-day cycle in the Daily Reward modal.
+          Card-born Tier milestones also provide Aberrated Shards, which must be claimed manually.
         </div>
       </div>
-
-      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+      <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Holofoil Workshop</div>
         <ListItem label="Purpose">Spend Aberrated Shards to permanently convert one owned normal copy of a card into a holofoil copy.</ListItem>
         <ListItem label="Effect">Holofoils are purely cosmetic &mdash; they're tracked separately in your collection and in deck-building.</ListItem>
         <ListItem label="Filters">The Workshop supports filter, sort, and "show convertible" toggles so you can plan upgrades.</ListItem>
       </div>
-
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card-born Tier</div>
-        <div style={bodyTextStyle}>
-          Every card you play accumulates Card-light mastery across <Tag>8 tiers</Tag> (Practiced → Infinite Bond).
-          Each tier grants <Tag>Resonance points</Tag> and a shard reward. Resonance feeds your{' '}
-          <Tag>Collection Power</Tag> multiplier, raising the Divine Light earned from attacks.
-          See the <Tag>Card-born Tier</Tag> section in this guide for the full breakdown.
+        <div style={bodyTextStyle}>Every hand play adds Card-light to that card definition. The Card-born Tier menu shows the eight thresholds, current progress, Resonance contribution, and claimable rewards.</div>
         </div>
-      </div>
-
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Profile, Titles &amp; Themes</div>
         <ListItem label="Profile">Set your display name and avatar from the Profile menu.</ListItem>
-        <ListItem label="Titles">Earned by defeating specific bosses or crafting specific Infinites. They show as epithets on your profile card.</ListItem>
+        <ListItem label="Titles">Earned by defeating specific bosses or crafting specific Infinites.</ListItem>
         <ListItem label="UI Theme">Switch between palette presets or save a custom theme from the Settings menu.</ListItem>
       </div>
     </>

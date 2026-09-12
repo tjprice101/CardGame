@@ -27,6 +27,7 @@
 - Ain Soph Aur summon requirements use `summonMaterials` clauses. Clauses may require types, specific definition IDs, and Ain/Soph sides; do not reduce them to an occupied-slot count.
 - Every successful Ain Soph Aur summon grants +1 Limitless Light Stack as a universal rule; do not duplicate this on individual card faces.
 - Three materialized abilities can be equipped per deck and activated through Ability Amplification: Neutralizing Inferno, Nullified Barricade, and Phantom Matrix.
+- Challenge economy targets approximately 52,500 base Divine Light across seven daily rotations and 100,000 base Divine Light across one weekly rotation. Collection Power scales the paid amount above the base target.
 - Null Horizon and Axiomatic Reversal require any Neutrality Eternal card; Whiteout Domain and Infinite Accord require any Neutrality Infinite card. These are high-cost endgame abilities, and only three abilities may be equipped at once.
 - Eternal and Infinite Light cards require distinct, authored Soph-placement effects. Premium ASA cards may require exact named Light or Dark materials; Phantom Matrix always bypasses materials.
 - Additional endgame abilities are Neutrality-specific: two unlock from owning any Neutrality Eternal card and two unlock from owning any Neutrality Infinite card. Do not count cards from another set for these gates.

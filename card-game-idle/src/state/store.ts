@@ -2492,8 +2492,8 @@ export const useStore = create<Store>()(
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
             s.turn.abilityCooldownUntil['neutralizing-inferno'] = Date.now() + 30_000;
           } else if (pending.sourceCard === 'ability:axiomatic-reversal') {
-            grantOblivion(s, 5_000);
-            s.deck = TurnSystem.drawCards(s.deck, 3);
+            grantOblivion(s, 50_000);
+            s.deck = TurnSystem.drawCards(s.deck, 1);
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
             s.turn.abilityCooldownUntil['axiomatic-reversal'] = Date.now() + 120_000;
           }

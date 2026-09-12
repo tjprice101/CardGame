@@ -203,7 +203,8 @@ describe('materialized ability runtime', () => {
     expect(useStore.getState().turn.pendingEffect?.count).toBe(2);
     const before = useStore.getState().progress.oblivion;
     useStore.getState().resolvePending(['reversal-a', 'reversal-b']);
-    expect(useStore.getState().progress.oblivion).toBeGreaterThan(before);
+    expect(useStore.getState().progress.oblivion - before).toBe(50_000);
+    expect(useStore.getState().deck.hand).toHaveLength(1);
     expect(useStore.getState().turn.abilityCooldownUntil?.['axiomatic-reversal']).toBeGreaterThan(Date.now());
   });
 

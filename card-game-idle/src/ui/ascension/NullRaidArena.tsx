@@ -79,13 +79,13 @@ export default function NullRaidArena() {
         top: 0, left: 0, right: 0,
         zIndex: 28,
         pointerEvents: 'auto',
-        padding: '12px 18px',
+        padding: '7px 14px',
         background: G.bg,
         borderBottom: `1px solid ${G.borderStrong}`,
-        boxShadow: `0 4px 32px rgba(140,80,255,0.40), 0 2px 8px rgba(0,0,0,0.70)`,
+        boxShadow: `0 4px 24px rgba(140,80,255,0.32), 0 2px 8px rgba(0,0,0,0.70)`,
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
+        gap: 6,
         fontFamily: uiTypography.body,
       }}
     >
@@ -191,12 +191,12 @@ export default function NullRaidArena() {
       </div>
 
       {/* Boss HP bar row */}
-      <div style={{ display: 'flex', gap: 14, alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'stretch' }}>
         {currentBossArtUrl && (
           <div
             style={{
-              width: 148,
-              height: 88,
+              width: 112,
+              height: 56,
               borderRadius: 8,
               border: `1px solid ${G.border}`,
               backgroundImage: `linear-gradient(180deg, rgba(10,4,16,0.08) 0%, rgba(10,4,16,0.42) 100%), url("${currentBossArtUrl}")`,

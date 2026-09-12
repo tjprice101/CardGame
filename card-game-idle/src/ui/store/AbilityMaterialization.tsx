@@ -17,7 +17,7 @@ export default function AbilityMaterialization() {
       <div style={{ maxWidth: 960, margin: '0 auto' }}>
         <div style={{ fontFamily: uiTypography.display, fontSize: 24, color: '#d8f0ff', letterSpacing: 1 }}>Ability Materialization</div>
         <div style={{ marginTop: 6, color: 'rgba(200,223,242,0.7)', fontSize: 12, lineHeight: 1.5 }}>
-          Materialize set abilities with Divine Light. Each ability can be purchased once and equipped in a three-slot deck loadout.
+          Materialize universal abilities with Divine Light. Purchase costs scale from 25,000 for foundational abilities to 450,000 for endgame abilities; each ability can be purchased once and equipped in a three-slot deck loadout.
         </div>
         <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
           {ABILITY_DEFINITIONS.map(ability => {

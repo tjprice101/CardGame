@@ -61,14 +61,14 @@ export const RARITY_TIERS: RarityTier[] = [
 // ---------------------------------------------------------------------------
 
 export const CARD_BORN_TIERS: CardBornTierEntry[] = [
-  { name: 'Practiced',     glyph: '◈', threshold: 25,     description: 'First steps. The card becomes familiar in your hands.' },
-  { name: 'Veteran',       glyph: '◆', threshold: 75,     description: 'Consistent use — you know this card\'s timing.' },
-  { name: 'Master',        glyph: '✦', threshold: 400,    description: 'Real commitment. The card has shaped your play.' },
-  { name: 'Eternal Bond',  glyph: '★', threshold: 1_500,  description: 'This card is a staple, deeply understood.' },
-  { name: 'Resonant',      glyph: '✵', threshold: 3_000,  description: 'Refined command — you push its limits each turn.' },
-  { name: 'Transcendent',  glyph: '✷', threshold: 6_000,  description: 'Near-peak. Rare few reach here.' },
-  { name: 'Ascendant',     glyph: '✸', threshold: 15_000, description: 'One of your defining cards. Profound familiarity.' },
-  { name: 'Infinite Bond', glyph: '∞', threshold: 30_000, description: 'The apex tier. You and this card are inseparable.' },
+  { name: 'Practiced',     glyph: '◈', threshold: 25,     description: 'The first Card-born Tier milestone.' },
+  { name: 'Veteran',       glyph: '◆', threshold: 75,     description: 'The second Card-born Tier milestone.' },
+  { name: 'Master',        glyph: '✦', threshold: 400,    description: 'The third Card-born Tier milestone.' },
+  { name: 'Eternal Bond',  glyph: '★', threshold: 1_500, description: 'The fourth Card-born Tier milestone.' },
+  { name: 'Resonant',      glyph: '✵', threshold: 3_000, description: 'The fifth Card-born Tier milestone.' },
+  { name: 'Transcendent',  glyph: '✷', threshold: 6_000, description: 'The sixth Card-born Tier milestone.' },
+  { name: 'Ascendant',     glyph: '✸', threshold: 15_000, description: 'The seventh Card-born Tier milestone.' },
+  { name: 'Infinite Bond', glyph: '∞', threshold: 30_000, description: 'The eighth and final Card-born Tier milestone.' },
 ];
 
 // ---------------------------------------------------------------------------

@@ -2,7 +2,7 @@ import { GARDEN_DUNGEONS, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDun
 import { useStore } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 
-const rewardIconUrl = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.svg`;
+const rewardIconUrl = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.png`;
 
 export default function GardenDungeonHUD() {
   const dungeonState = useStore(state => state.gardenDungeon);
@@ -20,16 +20,16 @@ export default function GardenDungeonHUD() {
     : 0;
 
   return (
-    <section style={{ position: 'absolute', top: 56, left: 18, right: 318, zIndex: 16, pointerEvents: 'auto', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.28)', background: 'linear-gradient(180deg, rgba(10,14,26,0.9), rgba(10,12,20,0.78))', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', color: '#eef4ff', fontFamily: uiTypography.body }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-        <div><div style={{ color: '#fff', fontFamily: uiTypography.display, fontSize: 15 }}>Valley of Null</div><div style={{ marginTop: 2, color: 'rgba(238,244,255,0.58)', fontSize: 10 }}>Encounter {dungeonState.encounterIndex + 1} / {dungeon.encounters.length} · {encounter.name}</div></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><img src={encounter.reward ? rewardIconUrl(encounter.reward.artAssetKey) : undefined} alt="" aria-hidden="true" width={28} height={28} style={{ width: 28, height: 28, objectFit: 'cover', borderRadius: 4 }} /><div style={{ color: dungeonState.timeRemainingSeconds <= 30 ? '#ffb0b0' : '#d8f0ff', fontSize: 12, fontVariantNumeric: 'tabular-nums' }}>Expedition {minutes}:{seconds}</div></div>
+    <section style={{ position: 'absolute', top: 58, left: 14, right: 314, zIndex: 16, pointerEvents: 'auto', padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.28)', background: 'linear-gradient(180deg, rgba(10,14,26,0.92), rgba(10,12,20,0.84))', boxShadow: '0 6px 18px rgba(0,0,0,0.3)', color: '#eef4ff', fontFamily: uiTypography.body }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, minHeight: 25 }}>
+        <div style={{ minWidth: 0 }}><div style={{ color: '#fff', fontFamily: uiTypography.display, fontSize: 13, lineHeight: 1.1 }}>Valley of Null <span style={{ color: 'rgba(238,244,255,0.58)', fontFamily: uiTypography.body, fontSize: 9, letterSpacing: 0 }}>· Encounter {dungeonState.encounterIndex + 1}/{dungeon.encounters.length} · {encounter.name}</span></div></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexShrink: 0 }}><img src={encounter.reward ? rewardIconUrl(encounter.reward.artAssetKey) : undefined} alt="" aria-hidden="true" width={22} height={22} style={{ width: 22, height: 22, objectFit: 'cover', borderRadius: 3 }} /><div style={{ color: dungeonState.timeRemainingSeconds <= 30 ? '#ffb0b0' : '#d8f0ff', fontSize: 11, fontVariantNumeric: 'tabular-nums' }}>Expedition {minutes}:{seconds}</div></div>
       </div>
-      <div style={{ marginTop: 8, height: 7, borderRadius: 999, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}><div style={{ width: `${hpPercent}%`, height: '100%', background: 'linear-gradient(90deg, #f4f4f8, #91bfff)', transition: 'width 0.25s ease' }} /></div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginTop: 5, color: 'rgba(238,244,255,0.6)', fontSize: 9 }}><span>Encounter HP {dungeonState.encounterHp.toLocaleString()} / {dungeonState.encounterMaxHp.toLocaleString()}</span><span>{encounter.reward ? `${GARDEN_REWARD_LABELS[encounter.reward.currency]} · ${Math.round(encounter.reward.chance * 100)}%` : 'No reward configured'}</span></div>
-      <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-        <button type="button" disabled={dungeonState.encounterHp > 0} onClick={resolveGardenEncounter} style={{ padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(255,255,255,0.5)', background: dungeonState.encounterHp <= 0 ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.05)', color: '#fff', cursor: dungeonState.encounterHp <= 0 ? 'pointer' : 'not-allowed', opacity: dungeonState.encounterHp <= 0 ? 1 : 0.45, fontSize: 10 }}>{dungeonState.encounterHp <= 0 ? 'Claim Reward' : 'Use your turn to defeat the encounter'}</button>
-        <button type="button" onClick={exitGardenDungeon} style={{ padding: '6px 10px', borderRadius: 5, border: '1px solid rgba(255,255,255,0.24)', background: 'transparent', color: 'rgba(238,244,255,0.72)', cursor: 'pointer', fontSize: 10 }}>Leave Expedition</button>
+      <div style={{ marginTop: 5, height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}><div style={{ width: `${hpPercent}%`, height: '100%', background: 'linear-gradient(90deg, #f4f4f8, #91bfff)', transition: 'width 0.25s ease' }} /></div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginTop: 3, color: 'rgba(238,244,255,0.6)', fontSize: 8 }}><span>HP {dungeonState.encounterHp.toLocaleString()} / {dungeonState.encounterMaxHp.toLocaleString()}</span><span>{encounter.reward ? `${GARDEN_REWARD_LABELS[encounter.reward.currency]} · ${Math.round(encounter.reward.chance * 100)}%` : 'No reward configured'}</span></div>
+      <div style={{ display: 'flex', gap: 6, marginTop: 5 }}>
+        <button type="button" disabled={dungeonState.encounterHp > 0} onClick={resolveGardenEncounter} style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.5)', background: dungeonState.encounterHp <= 0 ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.05)', color: '#fff', cursor: dungeonState.encounterHp <= 0 ? 'pointer' : 'not-allowed', opacity: dungeonState.encounterHp <= 0 ? 1 : 0.45, fontSize: 9 }}>{dungeonState.encounterHp <= 0 ? 'Claim Reward' : 'Defeat encounter with your turn'}</button>
+        <button type="button" onClick={exitGardenDungeon} style={{ padding: '4px 8px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.24)', background: 'transparent', color: 'rgba(238,244,255,0.72)', cursor: 'pointer', fontSize: 9 }}>Leave</button>
       </div>
     </section>
   );

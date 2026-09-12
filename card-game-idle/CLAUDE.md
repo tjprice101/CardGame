@@ -17,6 +17,7 @@ This file is the AI-facing project brief. Read it before making design, balance,
 - Ain Soph Aur cards grant +1 Limitless Light Stack plus `onSummonEffects` when summoned, then use `bridgeAttack` for Bridge the Light.
 - Light cards define a distinct `sophPlacementEffects` hook that resolves when placed face-down as Soph.
 - Three owned materialized abilities can be equipped per deck and activated through Ability Amplification: Neutralizing Inferno, Nullified Barricade, and Phantom Matrix.
+- Challenge economy baseline: five daily challenges per rotation total 7,500 base Divine Light, targeting approximately 52,500 across seven daily rotations; four weekly challenges total 100,000 base Divine Light. Collection Power can increase the final paid amount.
 - Four additional Neutrality abilities are available after ownership gates: Null Horizon and Axiomatic Reversal require any Neutrality Eternal; Whiteout Domain and Infinite Accord require any Neutrality Infinite. A deck still equips only three abilities.
 - Premium Light cards use distinct Soph-placement effects, and Eternal ASA cards use exact named-card summon materials. Phantom Matrix is exempt from all ASA materials.
 - Materialized abilities are Neutrality content. The first two additional endgame abilities require any owned Neutrality Eternal card; the next two require any owned Neutrality Infinite card. Other sets must not unlock them accidentally.
