@@ -35,7 +35,7 @@ interface LightCardDefinition {
   ainAttack: LightAttackDefinition;
   sophAttack: LightAttackDefinition;
   onFlipEffects?: CardEffect[];
-  sacrificeOblivionRate: number;
+  sacrificeStackRate: number;
 }
 ```
 
@@ -57,7 +57,7 @@ interface DarkCardDefinition {
   activationCost: StackCostDefinition;
   cooldownCardsPlayed?: number;
   postActivationFate: 'hand' | 'deck' | 'discard';
-  sacrificeOblivionRate: number;
+  sacrificeStackRate: number;
   persistent?: boolean;
 }
 ```

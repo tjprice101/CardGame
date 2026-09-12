@@ -97,11 +97,12 @@ describe('complete card runtime wiring', () => {
           backSlots: [chargedSophCard(definition, instanceId), null, null, null],
         },
       }));
-      const beforeSacrifice = useStore.getState().progress.oblivion;
+      const beforeSacrifice = useStore.getState();
       useStore.getState().flipSoph(instanceId, 'sacrifice');
       expect(useStore.getState().board.backSlots[0], `${definition.definitionId} sacrifice`).toBeNull();
       expect(useStore.getState().deck.discardPile.some(card => card.instanceId === instanceId)).toBe(true);
-      expect(useStore.getState().progress.oblivion).toBeGreaterThan(beforeSacrifice);
+      expect(useStore.getState().progress.oblivion).toBe(beforeSacrifice.progress.oblivion);
+      expect(useStore.getState().turn.limitlessLightStacks).toBeGreaterThan(beforeSacrifice.turn.limitlessLightStacks);
     }
   });
 
@@ -134,6 +135,24 @@ describe('complete card runtime wiring', () => {
         else useStore.getState().activateLightSophAttack(instanceId);
         expect(useStore.getState().progress.oblivion, `${definition.definitionId} ${attack} cooldown`).toBe(afterFirstAttack);
       }
+    }
+  });
+
+  it('executes the authored Soph placement effect for every registered Light card', () => {
+    for (const definition of lightDefinitions) {
+      resetStore();
+      const instanceId = `${definition.definitionId}-soph-placement`;
+      useStore.setState(state => ({
+        ...state,
+        turn: { ...state.turn, phase: 'playing' },
+        deck: { ...state.deck, hand: [deckCard(instanceId, definition.definitionId)] },
+      }));
+
+      const before = useStore.getState().progress.oblivion;
+      useStore.getState().playCard(instanceId, 'soph');
+      const state = useStore.getState();
+      expect(state.board.backSlots.some(card => card?.instanceId === instanceId), definition.definitionId).toBe(true);
+      expect(state.progress.oblivion, `${definition.definitionId} Soph placement`).toBeGreaterThan(before);
     }
   });
 

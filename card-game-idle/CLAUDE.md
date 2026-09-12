@@ -10,11 +10,13 @@ This file is the AI-facing project brief. Read it before making design, balance,
 - Extra Deck contains **Ain Soph Aur** cards only. Ain Soph Aur cards are never Main Deck cards.
 - Main-deck cards are placed into the four support/back slots. Left-click from hand places Soph; right-click from hand places Ain.
 - **Soph** cards are face-down and charge by +1 whenever any card is played from hand.
-- A Soph card is ready at `SOPH_FLIP_CHARGE_REQUIRED = 2`. At that point it can flip to Ain and bank its charge as Limitless Light Stacks, or be sacrificed for Divine Light.
+- A Soph card is ready at `SOPH_FLIP_CHARGE_REQUIRED = 2`. At that point it can flip to Ain and bank its charge as Limitless Light Stacks, or be sacrificed to convert a percentage of its charge into Limitless Light Stacks.
 - **Ain** cards are face-up and active. Light cards can use Ain and Soph attacks. Dark cards can use their utility activation.
 - Dark utility activations are free unless the card is premium or unusually strong. Current policy: most base one-shot Dark cards cost 0; only two base Legendary utilities cost 1; Eternal costs 2; persistent Enigmatic costs 1; persistent Transcendent costs 3-4.
-- Ain Soph Aur cards summon from the Extra Deck to the four front slots by sacrificing any required count of occupied back-row cards. The requirement is `summonMaterialCount`, not exact card IDs.
+- Ain Soph Aur cards summon from the Extra Deck to the four front slots using authored `summonMaterials` clauses. Clauses can require card types, specific IDs, and Ain/Soph sides; selected materials must satisfy every clause.
 - Ain Soph Aur cards grant +1 Limitless Light Stack plus `onSummonEffects` when summoned, then use `bridgeAttack` for Bridge the Light.
+- Light cards define a distinct `sophPlacementEffects` hook that resolves when placed face-down as Soph.
+- Three owned materialized abilities can be equipped per deck and activated through Ability Amplification: Neutralizing Inferno, Nullified Barricade, and Phantom Matrix.
 - Every Divine Light gain, including sacrifices, card effects, on-summon rewards, attacks, Bridge, quests, and pack flow, must route through the central grant path so Collection Power scaling applies consistently.
 - Rarity sources are distinct: Common/Rare/Epic/Legendary from packs, Enigmatic from Enigmas, Eternal from Eternity's Wake, Infinite from Infinitude crafting, Transcendent from Null Raid progression.
 

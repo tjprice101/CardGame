@@ -11,6 +11,7 @@ import {
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
+import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import {
   cardFacePalette,
   getCardArtTopBottomBorderOverlayStyleForCard,
@@ -441,7 +442,8 @@ export default function EternitysWake({ onClose }: Props) {
                                 marginTop: 5,
                                 textAlign: 'center',
                               }}>
-                                Cost: {rewardDef.summonMaterialCount} materials
+                                {getSummonRequirements(rewardDef.summonMaterials, rewardDef.summonMaterialCount)
+                                  .map((requirement, index) => <div key={`summon-requirement-${index}`}>Requires: {formatSummonRequirement(requirement)}</div>)}
                               </div>
                             )}
                           </div>

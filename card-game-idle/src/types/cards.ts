@@ -37,7 +37,8 @@ export interface LightCardDefinition {
   readonly ainAttack: LightAttackDefinition;
   readonly sophAttack: LightAttackDefinition;
   readonly onFlipEffects?: CardEffect[];
-  readonly sacrificeOblivionRate: number;
+  readonly sophPlacementEffects?: CardEffect[];
+  readonly sacrificeStackRate: number;
 }
 
 export interface DarkCardDefinition {
@@ -51,7 +52,7 @@ export interface DarkCardDefinition {
   readonly activationCost: StackCostDefinition;
   readonly cooldownCardsPlayed?: number;
   readonly postActivationFate: 'hand' | 'deck' | 'discard';
-  readonly sacrificeOblivionRate: number;
+  readonly sacrificeStackRate: number;
   readonly persistent?: boolean;
 }
 
@@ -99,6 +100,13 @@ export interface AinSophAurInstance {
   boardSlot: 0 | 1 | 2 | 3 | null;
 }
 
+export interface SummonRequirement {
+  readonly definitionIds?: string[];
+  readonly cardTypes?: Array<'Light' | 'Dark'>;
+  readonly side?: 'ain' | 'soph' | 'any';
+  readonly count: number;
+}
+
 export interface AinSophAurDefinition {
   readonly definitionId: string;
   readonly type: 'AinSophAur';
@@ -107,6 +115,7 @@ export interface AinSophAurDefinition {
   readonly description: string;
   readonly artKey: string;
   readonly summonMaterialCount: number;
+  readonly summonMaterials?: SummonRequirement[];
   readonly onSummonEffects: CardEffect[];
   readonly bridgeAttack?: {
     readonly id: string;

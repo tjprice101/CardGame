@@ -2,6 +2,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { useStore, selectBoard, selectProgress, selectTurn } from '@/state/store';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
+import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
@@ -110,13 +111,14 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, color: 'rgba(52,36,20,0.94)', fontSize: 9, lineHeight: 1.35 }}>
             {definition.type === 'AinSophAur' && (
               <>
-                <span>Cost: {definition.summonMaterialCount} back-row material{definition.summonMaterialCount === 1 ? '' : 's'}</span>
+                {getSummonRequirements(definition.summonMaterials, definition.summonMaterialCount).map((requirement, index) => (
+                  <span key={`${definition.definitionId}-summon-requirement-${index}`}>Requires: {formatSummonRequirement(requirement)} in the back row</span>
+                ))}
                 {definition.bridgeAttack && (() => {
                   const cost = previewStackCost(definition.bridgeAttack.consumesStacks, turn.limitlessLightStacks);
                   const projected = Math.max(0, Math.round(
                     definition.bridgeAttack.baseOblivion
-                    + resolveCardScaling(definition.bridgeAttack.scaling, scalingContext)
-                    + cost,
+                    + resolveCardScaling(definition.bridgeAttack.scaling, scalingContext),
                   ));
                   return (
                     <span>{definition.bridgeAttack.name} · Now {projected} Divine Light{cost > 0 ? `, costs ${cost} Stacks` : ''} · Cooldown {definition.bridgeAttack.cooldownCards} cards</span>

@@ -41,7 +41,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
 };
 
-export default function TurnControls() {
+export default function TurnControls({ onBeginTurn }: { onBeginTurn?: () => void }) {
   const turn = useStore(selectTurn);
   const deck = useStore(selectDeck);
   const { beginTurn, confirmMulligan, endTurn, endAndBeginAgain } = useStore.getState();
@@ -53,7 +53,7 @@ export default function TurnControls() {
       <div style={styles.container}>
         <button className="menu-tactile-btn"
           style={{ ...styles.btn, ...styles.primary, ...(!deckReady ? styles.disabled : {}) }}
-          onClick={beginTurn}
+          onClick={onBeginTurn ?? beginTurn}
         >
           Begin Turn
         </button>

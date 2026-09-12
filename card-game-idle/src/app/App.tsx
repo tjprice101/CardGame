@@ -3,6 +3,7 @@ import '@/styles/animations.css';
 import { GameEngine } from '@/core/engine/GameEngine';
 import HUD from '@/ui/hud/HUD';
 import { SfxManager } from '@/audio/SfxManager';
+import { uiTypography } from '@/ui/theme';
 const DeckBuilder = lazy(() => import('@/ui/deck/DeckBuilder'));
 const DeckViewer = lazy(() => import('@/ui/deck/DeckViewer'));
 const CardPackStore = lazy(() => import('@/ui/store/CardPackStore'));
@@ -171,6 +172,7 @@ export default function App() {
   const [showDeckViewer, setShowDeckViewer] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
   const [showEternitysWake, setShowEternitysWake] = useState(false);
   const [showBattleground, setShowBattleground] = useState(false);
   const [showCardBoundCoop, setShowCardBoundCoop] = useState(false);
@@ -215,6 +217,22 @@ export default function App() {
   const battleground = useStore(selectBattleground);
   const settings = useStore(selectSettings);
   const progress = useStore(selectProgress);
+
+  const requestBeginTurn = () => {
+    if (settings.skipTutorialPrompt) {
+      setScene('arena');
+      useStore.getState().beginTurn();
+      return;
+    }
+    setShowTutorialPrompt(true);
+  };
+
+  const beginTurnAfterPrompt = (skipPrompt: boolean) => {
+    if (skipPrompt) useStore.getState().updateSettings({ skipTutorialPrompt: true });
+    setShowTutorialPrompt(false);
+    setScene('arena');
+    useStore.getState().beginTurn();
+  };
   const lastSavedAt = useStore(s => s.lastSavedAt);
   const setPresenceActivity = useFriendsStore(s => s.setPresenceActivity);
   const socialAuthStatus = useSocialStore(s => s.status);
@@ -273,6 +291,12 @@ export default function App() {
     }, 250);
     return () => clearInterval(timerId);
   }, [battleground.mode]);
+
+  useEffect(() => {
+    if (!turn.divineFieldUntil && !turn.abilityCooldownUntil) return;
+    const timerId = setInterval(() => useStore.getState().tickAbilityTimers(Date.now()), 100);
+    return () => clearInterval(timerId);
+  }, [turn.divineFieldUntil, turn.abilityCooldownUntil]);
 
   // Battleground expiry watchdog: same idea as boss watchdog above.
   useEffect(() => {
@@ -721,18 +745,18 @@ export default function App() {
         }
       }
 
-      // Set ability hotkeys. Fire during playing phase only.
+      // Materialized ability hotkeys. Fire during playing phase only.
       const abilitySlotMap: Array<[string, 1 | 2 | 3]> = [
-        [controls.activateSetAbility1 ?? 'Digit1', 1],
-        [controls.activateSetAbility2 ?? 'Digit2', 2],
-        [controls.activateSetAbility3 ?? 'Digit3', 3],
+        [controls.activateAbility1 ?? 'Digit1', 1],
+        [controls.activateAbility2 ?? 'Digit2', 2],
+        [controls.activateAbility3 ?? 'Digit3', 3],
       ];
       for (const [code, slot] of abilitySlotMap) {
         if (e.code === code && !e.ctrlKey && !e.metaKey && !e.altKey) {
           const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showAscension;
           if (anyModalOpen) return;
           e.preventDefault();
-          useStore.getState().activateSetAbility(slot);
+          useStore.getState().activateAbility(slot);
           return;
         }
       }
@@ -858,7 +882,7 @@ export default function App() {
       {/* HUD overlay — only mounted in the arena scene. */}
       {!isMenuOpen && scene === 'arena' && (
         <HudShakeWrapper>
-          <HUD />
+          <HUD onRequestBeginTurn={requestBeginTurn} />
         </HudShakeWrapper>
       )}
 
@@ -883,10 +907,7 @@ export default function App() {
             onFracture={() => setShowFracture(true)}
             onSettings={() => setShowSettings(true)}
             onAscension={() => setShowAscension(true)}
-            onBeginTurn={() => {
-              setScene('arena');
-              useStore.getState().beginTurn();
-            }}
+            onBeginTurn={requestBeginTurn}
           />
         </Suspense>
       )}
@@ -1003,6 +1024,19 @@ export default function App() {
       )}
 
       {/* Tutorial modal */}
+      {showTutorialPrompt && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(4,4,8,0.72)', padding: 20 }}>
+          <div style={{ width: 'min(420px, 100%)', padding: 24, borderRadius: 12, border: '1px solid rgba(214,162,94,0.55)', background: 'rgba(20,18,24,0.98)', color: 'rgba(244,244,248,0.94)', fontFamily: uiTypography.body, boxShadow: '0 18px 60px rgba(0,0,0,0.55)' }}>
+            <div style={{ fontFamily: uiTypography.display, fontSize: 20, letterSpacing: 1, color: '#f7c04a' }}>Tutorial Review</div>
+            <div style={{ marginTop: 10, fontSize: 13, lineHeight: 1.5 }}>Have you reviewed the tutorial before beginning this turn?</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 20, justifyContent: 'flex-end' }}>
+              <button type="button" onClick={() => { setShowTutorialPrompt(false); setShowTutorial(true); }} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(214,162,94,0.55)', background: 'rgba(214,162,94,0.16)', color: '#f7c04a', cursor: 'pointer' }}>Open Tutorial</button>
+              <button type="button" onClick={() => beginTurnAfterPrompt(false)} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(244,244,248,0.3)', background: 'rgba(244,244,248,0.08)', color: 'rgba(244,244,248,0.9)', cursor: 'pointer' }}>Continue</button>
+              <button type="button" onClick={() => beginTurnAfterPrompt(true)} style={{ padding: '8px 12px', borderRadius: 6, border: '1px solid rgba(120,220,140,0.55)', background: 'rgba(120,220,140,0.14)', color: '#9be8a8', cursor: 'pointer' }}>Don't ask me again</button>
+            </div>
+          </div>
+        </div>
+      )}
       {showTutorial && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 31, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><TutorialModal

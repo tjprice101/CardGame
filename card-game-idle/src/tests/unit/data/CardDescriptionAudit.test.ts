@@ -13,6 +13,7 @@ import { getCardSummarySections, getCardPreviewLines } from '@/ui/cardStatSummar
 
 /** Internal effect tokens (snake_case identifiers) must never reach players. */
 const internalTokenPattern = /\b[a-z]+_[a-z][a-z0-9_]+\b/;
+const promotionalLanguagePattern = /\b(powerful|massive|high-impact|exceptional|strong)\b/i;
 
 describe('card description audit', () => {
   it('every card has a non-empty authored description', () => {
@@ -31,6 +32,14 @@ describe('card description audit', () => {
       .map(card => `${card.definitionId}: "${card.description}"`);
 
     expect(leaking, `Descriptions leaking internals:\n  ${leaking.join('\n  ')}`).toHaveLength(0);
+  });
+
+  it('keeps card descriptions objective and non-promotional', () => {
+    const leaking = CardRegistry.getAll()
+      .filter(card => promotionalLanguagePattern.test(card.description))
+      .map(card => `${card.definitionId}: "${card.description}"`);
+
+    expect(leaking, `Promotional card descriptions:\n  ${leaking.join('\n  ')}`).toHaveLength(0);
   });
 
   it('no summary section line leaks internal effect tokens or "undefined"', () => {

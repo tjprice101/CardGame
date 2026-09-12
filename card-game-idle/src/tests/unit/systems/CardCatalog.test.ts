@@ -28,14 +28,20 @@ describe('Ain/Soph card catalog', () => {
     for (const card of lightCards) {
       expect(card.ainAttack.cooldownCards).toBeGreaterThan(0);
       expect(card.sophAttack.cooldownCards).toBeGreaterThan(0);
-      expect(card.sacrificeOblivionRate).toBeGreaterThan(0);
+      expect(card.sacrificeStackRate).toBeGreaterThan(0);
     }
     for (const card of darkCards) {
       expect(card.persistent).not.toBe(true);
       expect(card.cooldownCardsPlayed).toBeUndefined();
-      expect(card.sacrificeOblivionRate).toBeGreaterThan(0);
+      expect(card.sacrificeStackRate).toBeGreaterThan(0);
       expect(card.postActivationFate).toMatch(/^(hand|deck|discard)$/);
     }
+  });
+
+  it('gives every Light card a distinct Soph placement effect pattern', () => {
+    const patterns = lightCards.map(card => JSON.stringify(card.sophPlacementEffects));
+    expect(new Set(patterns).size).toBeGreaterThan(1);
+    expect(lightCards.every(card => (card.sophPlacementEffects?.length ?? 0) > 0)).toBe(true);
   });
 
   it('renders complete stat panels and previews for every Neutrality card', () => {
@@ -67,6 +73,7 @@ describe('Ain/Soph card catalog', () => {
         instanceId: `${card.definitionId}-material-${index}`,
         definitionId: index % 2 === 0 ? lightCards[0].definitionId : darkCards[0].definitionId,
         type: 'Light' as const,
+        side: 'ain' as const,
       }));
       const availableBoard = {
         frontSlots: [null, null, null, null],
@@ -180,7 +187,7 @@ describe('Ain/Soph card catalog', () => {
       triples.push(JSON.stringify([
         card.cooldownCardsPlayed,
         card.activationCost.kind === 'fixed' ? card.activationCost.value : 0,
-        card.sacrificeOblivionRate,
+        card.sacrificeStackRate,
       ]));
     }
 

@@ -22,10 +22,11 @@
 - Main Deck: Light and Dark only.
 - Extra Deck: Ain Soph Aur only. Ain Soph Aur cards are never Main Deck cards.
 - Hand controls: left-click places a main-deck card as face-down Soph; right-click places a main-deck card as face-up Ain. Extra Deck cards use their summon flow, not Soph/Ain placement.
-- Soph is face-down and charging; Ain is face-up and active. `SOPH_FLIP_CHARGE_REQUIRED = 2`; at 2+ charge, flip Soph to Ain and convert its charge into Limitless Light Stacks, or sacrifice it for Divine Light.
+- Soph is face-down and charging; Ain is face-up and active. `SOPH_FLIP_CHARGE_REQUIRED = 2`; at 2+ charge, flip Soph to Ain and convert its charge into Limitless Light Stacks, or sacrifice it to convert a percentage of charge into Limitless Light Stacks.
 - Light cards have Ain and Soph attacks. Dark cards are utility cards. Ain Soph Aur cards summon to the front row from the Extra Deck and use Bridge the Light.
-- Ain Soph Aur summon requirements use `summonMaterialCount`; any occupied back-row Light/Dark card can be selected as material. Do not reintroduce exact-ID `summonCost` recipes.
+- Ain Soph Aur summon requirements use `summonMaterials` clauses. Clauses may require types, specific definition IDs, and Ain/Soph sides; do not reduce them to an occupied-slot count.
 - Every successful Ain Soph Aur summon grants +1 Limitless Light Stack as a universal rule; do not duplicate this on individual card faces.
+- Three materialized abilities can be equipped per deck and activated through Ability Amplification: Neutralizing Inferno, Nullified Barricade, and Phantom Matrix.
 - Dark activation-cost policy: ordinary one-shot Dark utilities should usually cost 0; reserve Limitless Light costs for premium/reusable/high-impact cards.
 - Every Divine Light gain, including sacrifice rewards and card effects, scales from Collection Power through the central grant path.
 - Rarities are distinct: normal rarities, Enigmatic (Enigma rewards), Eternal (Eternity's Wake rewards), Infinite (Infinity-menu crafting), and Transcendent (Null Raid progression).

@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
-import { getCardFaceBackgroundStyle } from '@/ui/cardBackgrounds';
+import { getCardFaceBackgroundStyle, getCardNameRibbonStyle, getCardRulesPanelStyle } from '@/ui/cardBackgrounds';
+import { getCardPreviewText } from '@/ui/cardStatSummary';
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -44,7 +45,24 @@ export default function DeckStatus() {
   const deck = useStore(selectDeck);
   const turn = useStore(selectTurn);
   const [openPile, setOpenPile] = useState<PileType | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const canInspectDeck = turn.phase === 'idle';
+
+  useEffect(() => {
+    if (!openPile) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpenPile(null);
+    };
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) setOpenPile(null);
+    };
+    window.addEventListener('keydown', closeOnEscape);
+    window.addEventListener('pointerdown', closeOnOutsidePointer);
+    return () => {
+      window.removeEventListener('keydown', closeOnEscape);
+      window.removeEventListener('pointerdown', closeOnOutsidePointer);
+    };
+  }, [openPile]);
 
   const pileEntries = useMemo(() => {
     if (!openPile) return [];
@@ -67,7 +85,7 @@ export default function DeckStatus() {
   }, [openPile, deck.drawPile, deck.discardPile, deck.hand]);
 
   return (
-    <div style={styles.container}>
+    <div ref={containerRef} style={styles.container}>
       <button
         style={{
           ...styles.pill,
@@ -154,6 +172,7 @@ export default function DeckStatus() {
                 <div key={entry.key} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <div
                     style={{
+                      position: 'relative',
                       height: 132,
                       borderRadius: 8,
                       border: `1px solid ${warmTheme.border}`,
@@ -162,7 +181,21 @@ export default function DeckStatus() {
                       ...getCardFaceBackgroundStyle(entry.def ?? null, entry.finish),
                     }}
                     title={`${entry.name} (${entry.type})`}
-                  />
+                  >
+                    <div style={getCardNameRibbonStyle('boardMini')}>
+                      <div style={{ fontSize: 7, color: 'rgba(244,244,248,0.62)', textTransform: 'uppercase', textAlign: 'center', letterSpacing: 0.7 }}>
+                        {entry.type}
+                      </div>
+                      <div style={{ fontSize: 9, color: 'rgba(244,244,248,0.92)', textAlign: 'center', lineHeight: 1.1, marginTop: 2 }}>
+                        {entry.name}
+                      </div>
+                    </div>
+                    <div style={getCardRulesPanelStyle('boardMini')}>
+                      <div style={{ fontSize: 7, color: 'rgba(244,244,248,0.78)', lineHeight: 1.2, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 4, overflow: 'hidden' }}>
+                        {entry.def ? getCardPreviewText(entry.def, 2) : ''}
+                      </div>
+                    </div>
+                  </div>
                   <div style={{ fontSize: 10, color: warmTheme.text, lineHeight: 1.2 }}>
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.name}</div>
                     <div style={{ color: warmTheme.textMuted, fontSize: 9 }}>

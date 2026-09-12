@@ -60,6 +60,6 @@ export const darkCards: DarkCardDefinition[] = darkNames.map((name, index) => {
     sophEffects: [effects],
     activationCost: { kind: 'fixed', value: activationCost },
     postActivationFate: index % 3 === 0 ? 'hand' : index % 3 === 1 ? 'deck' : 'discard',
-    sacrificeOblivionRate: 20 + index * 5,
+    sacrificeStackRate: 20 + index * 5,
   };
 });

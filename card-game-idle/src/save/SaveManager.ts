@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 48;
+export const CURRENT_VERSION = 49;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -995,6 +995,12 @@ const migrations: Record<number, Migration> = {
         if (!savedDeck || typeof savedDeck !== 'object') continue;
         (savedDeck as Record<string, unknown>).needsRebuild = true;
       }
+    }
+    return data;
+  },
+  49: (data) => {
+    if (data.progress && (!data.progress.ownedAbilities || typeof data.progress.ownedAbilities !== 'object')) {
+      data.progress.ownedAbilities = {};
     }
     return data;
   },

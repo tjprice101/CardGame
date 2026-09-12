@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { uiTypography } from '@/ui/theme';
-import { RARITY_TIERS, SET_ENGINE_ENTRIES, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
+import { RARITY_TIERS, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
 import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 
 interface Props {
@@ -236,7 +236,7 @@ function BoardBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Click Reference</div>
         <ListItem label="Hand">Left-click places a main-deck card face-down on its Soph side. Right-click places it face-up on its Ain side.</ListItem>
-        <ListItem label="Soph card">Click at {SOPH_FLIP_CHARGE_REQUIRED}+ charge to choose Flip to Ain or sacrifice it for Divine Light.</ListItem>
+        <ListItem label="Soph card">At {SOPH_FLIP_CHARGE_REQUIRED}+ charge, choose Flip to Ain or sacrifice it to convert part of the stored charge into Limitless Light Stacks.</ListItem>
         <ListItem label="Ain card">Click to choose its attack or utility action when ready.</ListItem>
         <ListItem label="Extra Deck">Click an Ain Soph Aur, choose materials, then confirm the front-row summon.</ListItem>
         <ListItem label="Field removal">Right-click any field card to open a confirmation that removes it. Main-deck cards go to discard; Ain Soph Aur cards return to the Extra Deck.</ListItem>
@@ -316,21 +316,22 @@ function PatienceBody() {
 }
 
 function SetsBody() {
-  const sets = SET_ENGINE_ENTRIES;
-
   return (
     <>
       <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>Set Engines</div>
+        <div style={sectionHeadingStyle}>Ability Amplification</div>
         <div style={bodyTextStyle}>
-          Each set has a distinctive engine. You can build a mono-set deck for clean synergy or mix sets for
-          cross-resource conversion. The in-game <Tag>Engine</Tag> panel always shows your current state for
-          whatever set you're playing.
+          Materialized abilities are purchased with Divine Light, equipped three at a time in the Deck Builder,
+          and activated from the in-turn Ability Amplification panel.
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
-        {sets.map(({ name, mechanic, body }) => (
+        {[
+          { name: 'Neutralizing Inferno', mechanic: 'Discard conversion', body: 'Discard one main-deck card to gain Divine Light equal to your current Limitless Light Stacks multiplied by 500. Cooldown: 30 seconds.' },
+          { name: 'Nullified Barricade', mechanic: 'Divine Field', body: 'Spend 5 Limitless Light Stacks to gain Divine Field for 60 seconds. Each card played during the field grants 50 Divine Light.' },
+          { name: 'Phantom Matrix', mechanic: 'Free summon', body: 'Spend 10 Limitless Light Stacks to select and free-summon an Ain Soph Aur from the Extra Deck.' },
+        ].map(({ name, mechanic, body }) => (
           <div key={name} style={{
             ...cardAltStyle,
             padding: '9px 11px',

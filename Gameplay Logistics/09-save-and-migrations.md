@@ -12,7 +12,7 @@ Player-facing terminology is Divine Light, but persisted/API keys still include 
 
 Ain Soph Aur cards belong in `deck.extraDeck`; save cleanup and runtime invariants defensively move leaked Ain Soph Aur cards out of hand, draw pile, and discard pile.
 
-Current turn, board, hand, pending effects, and mulligan selection are ephemeral. Migration/sanitization may clear them to a safe idle state to avoid loading into an invalid old run.
+Board, hand, pending effects, and mulligan selection are ephemeral. Materialized ability loadouts, ability cooldown timestamps, and Divine Field expiration are persisted runtime state and must survive End Turn and save/load. Migration/sanitization may clear other active turn state to a safe idle state.
 
 ## Migration Rules
 
@@ -22,6 +22,7 @@ Current turn, board, hand, pending effects, and mulligan selection are ephemeral
 - Preserve unrelated progress.
 - Clear or normalize active turn state when old runtime fields cannot be trusted.
 - Bump the save version only after transforms complete.
+- v49 initializes `progress.ownedAbilities` for saves created before Ability Materialization.
 - Test old fixtures and current fixtures.
 
 ## Progress Snapshots

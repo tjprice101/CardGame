@@ -35,7 +35,7 @@ Light cards have:
 Ain Soph Aur cards have:
 
 - On-summon stack gain: every successful summon grants +1 Limitless Light Stack.
-- Bridge the Light: optional stack cost, triune scaling, and cooldown.
+- Bridge the Light: optional stack cost, triune scaling, and cooldown. The consumed stack cost is deducted and is not added back to the Divine Light payout.
 
 Dark cards have utility activations rather than attacks. Persistent premium Dark cards use cooldowns; one-shot Dark cards leave the board after activation.
 

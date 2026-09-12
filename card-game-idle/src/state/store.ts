@@ -23,6 +23,7 @@ import { accrueSophCharges, AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_R
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
+import { getSummonRequirements, satisfiesSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import { PackSystem } from '@/systems/cards/PackSystem';
 import { getActiveCoopRng, useCoopSyncStore } from '@/state/coopSyncStore';
 import { useSocialStore } from '@/state/socialStore';
@@ -45,7 +46,6 @@ import {
   awardEnigmaReward,
 } from '@/systems/progression/EnigmaSystem';
 import { getEnigmaDefinition } from '@/data/enigmas/enigmaDefinitions';
-import { getSet, resolveActiveAbilitiesForDeck } from '@/systems/sets/SetEngine';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import {
   getAchievementShardReward,
@@ -94,6 +94,7 @@ import {
 import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
 
 import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrounds';
+import { ABILITY_REGISTRY } from '@/data/abilities/abilityDefinitions';
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
@@ -191,6 +192,7 @@ const defaultProgress: ProgressState = {
   collection: { ...STARTER_COLLECTION },
   holoCollection: {},
   infiniteCollection: {},
+  ownedAbilities: {},
   everCollection: { ...STARTER_COLLECTION },
   everHoloCollection: {},
   everInfiniteCollection: {},
@@ -272,6 +274,7 @@ const defaultSettings: SettingsState = {
   compactMode: false,
   instantPackReveal: false,
   highlightRulesText: true,
+  skipTutorialPrompt: false,
   controls: { ...DEFAULT_CONTROL_BINDINGS },
 };
 
@@ -346,7 +349,7 @@ export const defaultGameState: GameState = {
 // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Store type �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
 interface StoreActions {
-  summonAinSophAur: (definitionId: string, materialInstanceIds: string[], targetSlot: 0 | 1 | 2 | 3) => void;
+  summonAinSophAur: (definitionId: string, materialInstanceIds: string[], targetSlot: 0 | 1 | 2 | 3, freeSummon?: boolean) => void;
   initDeck: (deckList: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => void;
   saveDeckList: (deckList: DeckEntry[]) => void;
   saveCurrentDeck: (name: string, deckList?: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => string;
@@ -455,6 +458,9 @@ interface StoreActions {
   setActiveEnigma: (enigmaId: string) => void;
   sacrificeEnigmaOblivion: (enigmaId: string) => boolean;
   sacrificeShardsForEnigma: (enigmaId: string, amount: number) => boolean;
+  purchaseAbility: (abilityId: string) => boolean;
+  activateAbility: (slot: 1 | 2 | 3) => void;
+  tickAbilityTimers: (now?: number) => void;
   claimEnigmaReward: (enigmaId: string) => boolean;
   /** Engagement: claim a single quest. */
   claimQuest: (questId: string) => { shards: number; oblivion?: number } | null;
@@ -483,10 +489,8 @@ interface StoreActions {
   setCardLock: (definitionId: string, count: number) => void;
   /** Update a saved deck's player-authored how-to-play notes. */
   setDeckNotes: (deckId: string, notes: string) => void;
-  /** Update a saved deck's per-slot set-ability loadout. */
+  /** Update a saved deck's per-slot materialized ability loadout. */
   setDeckAbilityLoadout: (deckId: string, slot: 1 | 2 | 3, abilityId: string) => void;
-  /** Activate a set ability by hotkey slot (1 E). No-op if gated, on cooldown, or uses exhausted. */
-  activateSetAbility: (slot: 1 | 2 | 3) => void;
   /** Enqueue a transient toast notification. */
   enqueueToast: (message: string, kind?: 'info' | 'success' | 'warning' | 'reward', durationMs?: number) => void;
   /** Dismiss a toast notification by id. */
@@ -1606,7 +1610,12 @@ function endTurnInternal(s: Store): void {
       }
     }
   }
-  s.turn = { ...defaultTurn, phase: 'idle' };
+  s.turn = {
+    ...defaultTurn,
+    phase: 'idle',
+    abilityCooldownUntil: s.turn.abilityCooldownUntil,
+    divineFieldUntil: s.turn.divineFieldUntil,
+  };
   recompute(s);
 }
 
@@ -1820,7 +1829,7 @@ export const useStore = create<Store>()(
 
     refreshComputedStats: () => { set(s => { recompute(s); }); },
 
-    summonAinSophAur: (definitionId, materialInstanceIds, targetSlot) => {
+    summonAinSophAur: (definitionId, materialInstanceIds, targetSlot, freeSummon = false) => {
       set(s => {
         if (s.turn.phase !== 'playing' || s.board.frontSlots[targetSlot] !== null) return;
         const def = CardRegistry.get(definitionId);
@@ -1828,7 +1837,12 @@ export const useStore = create<Store>()(
         const uniqueIds = [...new Set(materialInstanceIds)];
         const materials = uniqueIds.map(id => s.board.backSlots.find(slot => slot?.instanceId === id));
         const requiredMaterials = Math.max(1, def.summonMaterialCount);
-        if (uniqueIds.length !== requiredMaterials || materials.some(material => !material)) return;
+        if (!freeSummon && (uniqueIds.length !== requiredMaterials || materials.some(material => !material))) return;
+        if (!freeSummon && !satisfiesSummonRequirements(
+          materials.filter((material): material is NonNullable<typeof material> => material !== undefined),
+          getSummonRequirements(def.summonMaterials, def.summonMaterialCount),
+        )) return;
+        if (freeSummon && s.turn.limitlessLightStacks < 10) return;
         const extraIndex = s.deck.extraDeck.findIndex(entry => entry.definitionId === definitionId);
         if (extraIndex === -1) return;
         const finish = s.deck.extraDeck[extraIndex].finish;
@@ -1864,7 +1878,7 @@ export const useStore = create<Store>()(
           ...s.deck,
           hand: [...s.deck.hand],
           drawPile: [...s.deck.drawPile],
-          discardPile: [...s.deck.discardPile, ...materials.map(material => toDeckCard(material!))],
+          discardPile: [...s.deck.discardPile, ...materials.filter((material): material is NonNullable<typeof material> => material !== undefined).map(material => toDeckCard(material))],
           deckList: [...s.deck.deckList],
           extraDeck: nextExtraDeck,
         };
@@ -1876,12 +1890,13 @@ export const useStore = create<Store>()(
         if (!result.canPlay) return;
 
         angelInstanceCounter += 1;
-        for (const material of materials) {
-          recordLossEvent(s, [{ definitionId: material!.definitionId }], 'board');
+        for (const material of materials.filter((entry): entry is NonNullable<typeof entry> => entry !== undefined)) {
+          recordLossEvent(s, [{ definitionId: material.definitionId }], 'board');
         }
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
+        if (freeSummon) s.turn.limitlessLightStacks -= 10;
         s.turn.limitlessLightStacks += AIN_SOPH_AUR_SUMMON_STACK_REWARD;
         queuePendingEffects(s.turn, result);
         grantOblivion(s, result.oblivionBonus);
@@ -2013,11 +2028,21 @@ export const useStore = create<Store>()(
           }
           for (const card of hand) s.deck.hand.push(card);
           // Skip mulligan in guided mode  Ego straight to playing
-          s.turn = { ...defaultTurn, phase: 'playing' };
+          s.turn = {
+            ...defaultTurn,
+            phase: 'playing',
+            abilityCooldownUntil: s.turn.abilityCooldownUntil,
+            divineFieldUntil: s.turn.divineFieldUntil,
+          };
           return;
         }
 
-        s.turn = { ...defaultTurn, phase: isGuidedTrial ? 'playing' : 'mulligan' };
+        s.turn = {
+          ...defaultTurn,
+          phase: isGuidedTrial ? 'playing' : 'mulligan',
+          abilityCooldownUntil: s.turn.abilityCooldownUntil,
+          divineFieldUntil: s.turn.divineFieldUntil,
+        };
         // Propagate equipped artifacts from the active saved deck into TurnState.
         const activeDeckForArtifacts = s.progress.savedDecks.find(d => d.id === s.progress.activeDeckId);
         s.turn.equippedArtifactIds = activeDeckForArtifacts?.equippedArtifacts?.slice() ?? [];
@@ -2136,8 +2161,35 @@ export const useStore = create<Store>()(
             attackCooldowns: {},
             backSlot: emptyBack as 0 | 1 | 2 | 3,
           };
-          s.board.backSlots[emptyBack] = boardCard;
-          s.deck.hand = s.deck.hand.filter(card => card.instanceId !== deckCard.instanceId);
+          const nextBackSlots = [...s.board.backSlots] as BoardState['backSlots'];
+          nextBackSlots[emptyBack] = boardCard;
+          const nextBoard: BoardState = {
+            ...s.board,
+            backSlots: nextBackSlots,
+            frontSlots: [...s.board.frontSlots],
+            activeBoardEffects: [...s.board.activeBoardEffects],
+          };
+          const nextDeck: DeckState = {
+            ...s.deck,
+            hand: s.deck.hand.filter(card => card.instanceId !== deckCard.instanceId),
+            drawPile: [...s.deck.drawPile],
+            discardPile: [...s.deck.discardPile],
+            deckList: [...s.deck.deckList],
+            extraDeck: [...s.deck.extraDeck],
+          };
+          const placementEffects = def.type === 'Light' ? def.sophPlacementEffects ?? [] : [];
+          const result = CardEffectExecutor.execute(deckCard, s.turn, nextBoard, nextDeck, false, {
+            effects: side === 'soph' ? placementEffects : [],
+            countAsPlay: false,
+            removeFromHand: false,
+          });
+          if (!result.canPlay) return;
+          s.board = result.board;
+          s.deck = result.deck;
+          s.turn = result.turn;
+          queuePendingEffects(s.turn, result);
+          grantOblivion(s, result.oblivionBonus);
+          if (s.turn.divineFieldUntil && s.turn.divineFieldUntil > Date.now()) grantOblivion(s, 50);
           s.turn.cardsPlayedThisTurn += 1;
           tickHandPlayCooldowns(s);
           recordCardPlay(s, deckCard.definitionId);
@@ -2212,7 +2264,7 @@ export const useStore = create<Store>()(
 
         const def = CardRegistry.get(slot.definitionId);
         if (!def || (def.type !== 'Light' && def.type !== 'Dark')) return;
-        grantOblivion(s, Math.round(charge * def.sacrificeOblivionRate));
+        s.turn.limitlessLightStacks += Math.max(1, Math.round(charge * def.sacrificeStackRate / 100));
         recordLossEvent(s, [{ definitionId: slot.definitionId }], 'board');
         s.deck.discardPile.push(toDeckCard(slot));
         s.board.backSlots[slotIndex] = null;
@@ -2258,7 +2310,7 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling + selectedSpend)));
+        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling)));
         emitQuestProgressToProgress(s.progress, { kind: 'activate_soph_attack', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
@@ -2330,7 +2382,7 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling + selectedSpend)));
+        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling)));
         emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
@@ -2393,6 +2445,10 @@ export const useStore = create<Store>()(
             s.deck = TurnSystem.drawCards(s.deck, parseInt(pending.sourceCard.split(':draw:')[1]));
           } else if (pending.sourceCard.includes(':draw_plus:')) {
             s.deck = TurnSystem.drawCards(s.deck, uniqueSelected.length + parseInt(pending.sourceCard.split(':draw_plus:')[1]));
+          } else if (pending.sourceCard === 'ability:neutralizing-inferno') {
+            grantOblivion(s, s.turn.limitlessLightStacks * 500);
+            if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+            s.turn.abilityCooldownUntil['neutralizing-inferno'] = Date.now() + 30_000;
           }
         } else if (pending.type === 'look_top_take') {
           if (selected.length === 0) {
@@ -3088,6 +3144,67 @@ export const useStore = create<Store>()(
       return true;
     },
 
+    purchaseAbility: (abilityId) => {
+      const ability = ABILITY_REGISTRY.get(abilityId);
+      if (!ability) return false;
+      const state = get();
+      if (state.progress.ownedAbilities?.[abilityId]) return false;
+      if (state.progress.oblivion < ability.purchaseCost) return false;
+      set(s => {
+        if (!s.progress.ownedAbilities) s.progress.ownedAbilities = {};
+        if (s.progress.ownedAbilities[abilityId] || s.progress.oblivion < ability.purchaseCost) return;
+        s.progress.oblivion -= ability.purchaseCost;
+        s.progress.ownedAbilities[abilityId] = true;
+      });
+      return true;
+    },
+
+    activateAbility: (slot) => {
+      const state = get();
+      if (state.turn.phase !== 'playing' || state.turn.pendingEffect) return;
+      const activeDeck = state.progress.savedDecks.find(deck => deck.id === state.progress.activeDeckId);
+      const abilityId = activeDeck?.abilityLoadout?.[slot];
+      const ability = abilityId ? ABILITY_REGISTRY.get(abilityId) : undefined;
+      if (!ability || !state.progress.ownedAbilities?.[ability.id]) return;
+      const now = Date.now();
+      if ((state.turn.abilityCooldownUntil?.[ability.id] ?? 0) > now) {
+        get().enqueueToast(`${ability.name} is on cooldown.`, 'warning', 2000);
+        return;
+      }
+      if (ability.id === 'neutralizing-inferno') {
+        if (!state.deck.hand.some(card => CardRegistry.get(card.definitionId)?.type !== 'AinSophAur')) return;
+        set(s => {
+          s.turn.pendingEffect = { type: 'discard_choice', count: 1, sourceCard: 'ability:neutralizing-inferno' };
+          s.turn.pendingEffectQueue = [];
+        });
+        return;
+      }
+      if (ability.id === 'nullified-barricade') {
+        if (state.turn.limitlessLightStacks < 5) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 5;
+          s.turn.divineFieldUntil = now + 60_000;
+        });
+        get().enqueueToast('Divine Field active for 60 seconds.', 'success', 2200);
+        return;
+      }
+      if (ability.id === 'phantom-matrix') {
+        if (state.turn.limitlessLightStacks < 10 || state.board.frontSlots.every(slot => slot !== null)) return;
+        window.dispatchEvent(new CustomEvent('asa-summon-request', {
+          detail: { definitionId: '', required: 0, requirements: [], freeSummon: true },
+        }));
+        window.dispatchEvent(new CustomEvent('asa-free-summon-request'));
+        return;
+      }
+      get().enqueueToast('Phantom Matrix requires an available ASA selection.', 'info', 2200);
+    },
+
+    tickAbilityTimers: (now = Date.now()) => {
+      set(s => {
+        if (s.turn.divineFieldUntil && s.turn.divineFieldUntil <= now) delete s.turn.divineFieldUntil;
+      });
+    },
+
     sacrificeShardsForEnigma: (enigmaId: string, amount: number) => {
       const state = get();
       const instance = state.progress.enigmas.instances[enigmaId];
@@ -3403,77 +3520,14 @@ export const useStore = create<Store>()(
         const d = s.progress.savedDecks.find(dk => dk.id === deckId);
         if (!d) return;
         if (!d.abilityLoadout) d.abilityLoadout = {};
+        if (!abilityId) {
+          delete d.abilityLoadout[slot];
+          return;
+        }
+        if (!s.progress.ownedAbilities?.[abilityId] || !ABILITY_REGISTRY.has(abilityId)) return;
+        if (Object.entries(d.abilityLoadout).some(([key, id]) => Number(key) !== slot && id === abilityId)) return;
         d.abilityLoadout[slot] = abilityId;
       });
-    },
-
-    activateSetAbility: (slot) => {
-      const state = get();
-      if (state.turn.phase !== 'playing') return;
-      if (state.turn.pendingEffect) return;
-
-      // Resolve the active deck's ability for this slot.
-      const activeDeck = state.progress.savedDecks.find(d => d.id === state.progress.activeDeckId);
-      if (!activeDeck) return;
-
-      const resolved = resolveActiveAbilitiesForDeck(
-        'Neutrality',
-        activeDeck.deckList,
-        activeDeck.extraDeck,
-        activeDeck.abilityLoadout as Partial<Record<1 | 2 | 3, string>> | undefined,
-      );
-      const ability = resolved[slot];
-      if (!ability) {
-        get().enqueueToast(`Ability slot ${slot}: gate not met for current deck.`, 'warning', 2500);
-        return;
-      }
-
-      // Aegis Uprising still requires its Transcendent Angel on the board.
-      if (ability.id === 'neutrality-signature-aegis-uprising') {
-        const neutralitySet = getSet('Neutrality');
-        const hasBoardAngel = !!neutralitySet && state.board.frontSlots.some(
-          u => u && u.type === 'AinSophAur' && neutralitySet.membership.isTranscendentAngel(u.definitionId),
-        );
-        if (!hasBoardAngel) {
-          get().enqueueToast('Requires a Transcendent Angel of this set on your board.', 'warning', 2500);
-          return;
-        }
-      }
-
-      // Check cooldown.
-      const cd = state.turn.setAbilityCooldowns ?? {};
-      if ((cd[ability.id] ?? 0) > 0) {
-        get().enqueueToast(`${ability.label} is on cooldown (${cd[ability.id]} plays).`, 'warning', 2000);
-        return;
-      }
-
-      // Check one-off uses.
-      if (ability.maxUsesPerRun !== undefined) {
-        const uses = state.turn.setAbilityUsesRemaining ?? {};
-        if (ability.id in uses && (uses[ability.id] ?? 0) <= 0) {
-          get().enqueueToast(`${ability.label} has already been used this run.`, 'warning', 2000);
-          return;
-        }
-      }
-
-      // Execute and write cooldown / use count.
-      set(s => {
-        ability.execute(s as unknown as import('@/types/game').GameState);
-
-        if (!s.turn.setAbilityCooldowns) s.turn.setAbilityCooldowns = {};
-        if (!s.turn.setAbilityUsesRemaining) s.turn.setAbilityUsesRemaining = {};
-
-        if (ability.cooldownCards > 0) {
-          s.turn.setAbilityCooldowns[ability.id] = ability.cooldownCards;
-        }
-
-        if (ability.maxUsesPerRun !== undefined) {
-          const prevUses = s.turn.setAbilityUsesRemaining[ability.id] ?? ability.maxUsesPerRun;
-          s.turn.setAbilityUsesRemaining[ability.id] = Math.max(0, prevUses - 1);
-        }
-      });
-
-      get().enqueueToast(`${ability.label} activated.`, 'success', 2000);
     },
 
     enqueueToast: (message, kind = 'info', durationMs) => {
@@ -4166,6 +4220,7 @@ export const useStore = create<Store>()(
           if (typeof dl['streak'] !== 'number') dl['streak'] = 0;
           if (typeof dl['totalClaims'] !== 'number') dl['totalClaims'] = 0;
         }
+        if (!op['ownedAbilities'] || typeof op['ownedAbilities'] !== 'object') op['ownedAbilities'] = {};
         if (loaded.settings === undefined) loaded.settings = { ...defaultSettings };
         const settings = loaded.settings as unknown as Record<string, unknown>;
         if (typeof settings['musicVolume'] !== 'number') settings['musicVolume'] = defaultSettings.musicVolume;
@@ -4178,6 +4233,7 @@ export const useStore = create<Store>()(
         if (typeof settings['compactMode'] !== 'boolean') settings['compactMode'] = defaultSettings.compactMode;
         if (typeof settings['instantPackReveal'] !== 'boolean') settings['instantPackReveal'] = defaultSettings.instantPackReveal;
         if (typeof settings['highlightRulesText'] !== 'boolean') settings['highlightRulesText'] = defaultSettings.highlightRulesText;
+        if (typeof settings['skipTutorialPrompt'] !== 'boolean') settings['skipTutorialPrompt'] = defaultSettings.skipTutorialPrompt;
         if (!settings['controls'] || typeof settings['controls'] !== 'object') {
           settings['controls'] = { ...DEFAULT_CONTROL_BINDINGS };
         } else {
@@ -4185,6 +4241,11 @@ export const useStore = create<Store>()(
             ...DEFAULT_CONTROL_BINDINGS,
             ...(settings['controls'] as Record<string, string>),
           };
+          const controls = settings['controls'] as Record<string, string>;
+          for (const [oldKey, newKey] of [['activateSetAbility1', 'activateAbility1'], ['activateSetAbility2', 'activateAbility2'], ['activateSetAbility3', 'activateAbility3']] as const) {
+            if (controls[newKey] === DEFAULT_CONTROL_BINDINGS[newKey] && controls[oldKey]) controls[newKey] = controls[oldKey];
+            delete controls[oldKey];
+          }
         }
         if (settings['cardThemePacks'] === undefined) {
           settings['cardThemePacks'] = { ...DEFAULT_CARD_THEME_PACKS };

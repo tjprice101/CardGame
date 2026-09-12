@@ -137,6 +137,8 @@ export interface TurnState {
    * is > 0 or absent (undefined treated as unlimited). Save v41.
    */
   setAbilityUsesRemaining?: Record<string, number>;
+  abilityCooldownUntil?: Record<string, number>;
+  divineFieldUntil?: number;
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────
@@ -153,8 +155,8 @@ export interface SavedDeck {
   /** Player-authored notes describing how the deck plays. Save v18. */
   notes?: string;
   /**
-  * Per-slot set-ability selection. Keys are ability slot indices 1–3;
-  * values are SetAbilityDefinition ids. Save v44.
+  * Three equipped materialized ability ids. Keys are ability slot indices 1–3.
+  * Save v43.
    */
   abilityLoadout?: Partial<Record<1 | 2 | 3, string>>;
 }
@@ -301,6 +303,8 @@ export interface ProgressState {
   };
   /** Social interaction counters used by social achievements/titles. Save v24. */
   socialStats?: SocialProgressStats;
+  /** Ability Materialization purchases. Ability id -> owned. Save v43. */
+  ownedAbilities?: Record<string, boolean>;
 }
 
 export interface PackOpenEntry {
@@ -360,6 +364,8 @@ export interface SettingsState {
   instantPackReveal?: boolean;
   /** Bold/color keywords inside card rules text. Save v15. Defaults to true. */
   highlightRulesText?: boolean;
+  /** Suppress the tutorial confirmation shown before beginning a turn. */
+  skipTutorialPrompt?: boolean;
   /**
    * Keyboard control mappings. Save v16. Values are KeyboardEvent.code strings
    * (e.g. 'KeyE', 'Slash', 'Escape'). Missing entries fall back to
@@ -375,9 +381,9 @@ export type KeybindActionId =
   | 'closeOverlay'
   | 'toggleRadioUi'
   | 'togglePartyUi'
-  | 'activateSetAbility1'
-  | 'activateSetAbility2'
-  | 'activateSetAbility3';
+  | 'activateAbility1'
+  | 'activateAbility2'
+  | 'activateAbility3';
 
 /** Default keyboard control bindings (KeyboardEvent.code values). */
 export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
@@ -386,9 +392,9 @@ export const DEFAULT_CONTROL_BINDINGS: Record<KeybindActionId, string> = {
   closeOverlay: 'Escape',
   toggleRadioUi: 'KeyR',
   togglePartyUi: 'KeyP',
-  activateSetAbility1: 'Digit1',
-  activateSetAbility2: 'Digit2',
-  activateSetAbility3: 'Digit3',
+  activateAbility1: 'Digit1',
+  activateAbility2: 'Digit2',
+  activateAbility3: 'Digit3',
 };
 
 export type UiLanguage = 'en' | 'es' | 'fr';

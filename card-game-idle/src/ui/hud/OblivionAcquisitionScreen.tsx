@@ -295,7 +295,7 @@ function AsaBridgeRow({ instance, def }: { instance: AinSophAurInstance; def: Ai
     limitlessLightStacks: turn.limitlessLightStacks,
     asaFrontCount: board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length,
     collectionPower: computeGlobalResonanceScore(progress),
-  }) + bridgeCost));
+  })));
   const ready = bridgeCd <= 0 && turn.limitlessLightStacks >= bridgeCost;
 
   return (
@@ -434,7 +434,7 @@ function OverviewTab() {
             { icon: '⚔',  label: 'Ain Attacks',       desc: 'Cooldown-gated attacks on flipped Light cards. Read your stacks without spending them.', accent: C.blue   },
             { icon: '✾',  label: 'Soph Attacks',      desc: 'Higher base payout, consumes Limitless Light Stacks measured before the cost is paid.',  accent: C.blue   },
             { icon: '✦',  label: 'Bridge the Light',  desc: 'Ain Soph Aur front-row attacks — the highest base payouts available.',                    accent: C.gold   },
-            { icon: '☠',  label: 'Sacrifice',         desc: 'Sacrifice a charged Soph card to convert its charge straight into Divine Light.',             accent: C.red    },
+            { icon: '☠',  label: 'Sacrifice',         desc: 'Sacrifice a charged Soph card to convert a percentage of its stored charge into Limitless Light Stacks.', accent: C.red    },
             { icon: '◈',  label: 'Collection Power',  desc: 'A permanent share of every attack’s scaling, earned by playing and mastering cards.',     accent: C.purple },
             { icon: '∞',  label: 'Limitless Light',   desc: 'Flip charged cards to bank stacks, then spend or scale off them the same turn.',          accent: C.green  },
           ].map(({ icon, label, desc, accent }) => (
@@ -666,8 +666,8 @@ function BonusesTab() {
           />
           <SourceCard
             icon="☠"
-            title="Sacrifice for Divine Light"
-            subtitle="Instead of flipping, discard a charged card to convert its stored charge straight into Divine Light at that card's own sacrifice rate. Best when you cannot use another attack this turn."
+            title="Sacrifice for Limitless Light Stacks"
+            subtitle="Instead of flipping, discard a charged card to convert a percentage of its stored charge into Limitless Light Stacks at that card's own sacrifice rate."
             accent={C.red}
             tags={['instant payout', 'no cooldown']}
           />
@@ -711,7 +711,7 @@ function TipsTab() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {readyToFlip > 0 && (
               <div style={{ fontSize: 12, color: 'rgba(244,244,248,0.72)', fontFamily: BF }}>
-                → <strong style={{ color: C.blue.fg }}>{readyToFlip} card{readyToFlip === 1 ? '' : 's'} ready to flip.</strong> Flip to bank the charge as Limitless Light Stacks, or sacrifice for immediate Divine Light.
+                → <strong style={{ color: C.blue.fg }}>{readyToFlip} card{readyToFlip === 1 ? '' : 's'} ready to flip.</strong> Flip to bank all stored charge, or sacrifice to convert part of it into Limitless Light Stacks.
               </div>
             )}
             {noStacks && (

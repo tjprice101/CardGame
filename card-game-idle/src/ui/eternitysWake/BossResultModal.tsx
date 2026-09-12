@@ -16,6 +16,7 @@ import {
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
+import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import { SfxManager } from '@/audio/SfxManager';
 
@@ -336,7 +337,8 @@ export default function BossResultModal() {
                         marginTop: 5,
                         textAlign: 'center',
                       }}>
-                        Cost: {rewardDef.summonMaterialCount} materials
+                        {getSummonRequirements(rewardDef.summonMaterials, rewardDef.summonMaterialCount)
+                          .map((requirement, index) => <div key={`summon-requirement-${index}`}>Requires: {formatSummonRequirement(requirement)}</div>)}
                       </div>
                     )}
                   </div>

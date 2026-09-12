@@ -1,4 +1,5 @@
 import type { LightCardDefinition } from '@/types/cards';
+import type { CardEffect } from '@/types/effects';
 
 const lightNames = [
   'Lumen Stag', 'Glasswing Sentinel', 'Dawn Warden', 'Nullfire Seraph', 'Axiom Herald',
@@ -22,6 +23,15 @@ export const lightCards: LightCardDefinition[] = lightNames.map((name, index) =>
   const sophBase = 110 + index * 42;
   const ainScale = 60 + (index % 6) * 15;
   const sophScale = 110 + (index % 7) * 20;
+  const sophPlacementPatterns: CardEffect[][] = [
+    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'draw', value: 1 }],
+    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'shuffle_discard' }],
+    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'discard_draw', discard: 1, draw: 1 }],
+    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'look_top_take', look: 2, take: 1 }],
+    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'look_top_take_type', look: 2, filter: ['Light'], take: 1 }],
+    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'salvage_by_type_count', filter: ['Light'], count: 1 }],
+  ];
+  const sophPlacementEffects = sophPlacementPatterns[index % 6];
   return {
     definitionId: id,
     type: 'Light',
@@ -44,6 +54,7 @@ export const lightCards: LightCardDefinition[] = lightNames.map((name, index) =>
       stackCost: { kind: 'fixed', value: 1 + (index % 5) },
       tags: ['light', 'soph-attack'],
     },
-    sacrificeOblivionRate: 18 + index * 4,
+    sophPlacementEffects,
+    sacrificeStackRate: 18 + index * 4,
   };
 });

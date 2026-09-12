@@ -180,7 +180,7 @@ export default function PendingEffectModal() {
           </div>
           {footerLabel && (
             <div style={{ fontSize: 11, fontWeight: 700, color: footerColor ?? cardFacePalette.textMuted, marginTop: 4, textAlign: 'center', fontFamily: BODY_FONT }}>
-              ✁E{footerLabel}
+              • {footerLabel}
             </div>
           )}
         </div>

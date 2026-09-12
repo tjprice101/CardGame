@@ -1,5 +1,4 @@
 ﻿import { useState, useEffect, useRef } from 'react';
-import SetAbilityStrip from '@/ui/hud/SetAbilityStrip';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
@@ -18,6 +17,7 @@ import { uiTypography, warmTheme } from '@/ui/theme';
 import { SET_ACCENT } from '@/data/elements';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { formatSummonRequirement, getSummonRequirements, matchesSummonRequirement } from '@/systems/cards/AinSophSummonRequirements';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import type {
   LightCardDefinition,
@@ -59,7 +59,7 @@ function renderPatienceBadge(stacks: number) {
       pointerEvents: 'none',
       boxShadow: '0 2px 8px rgba(0,0,0,0.28)',
     }}>
-      {`筮｡ ${stacks}`}
+      {`✦ ${stacks}`}
     </div>
   );
 }
@@ -104,6 +104,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
     activateDark,
     activateAsaBridge,
     summonAinSophAur,
+    playCard,
     forceRemoveBoardCard,
   } = useStore.getState();
 
@@ -122,14 +123,25 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
   const [attackPanelSlot, setAttackPanelSlot] = useState<number | null>(null);
   const [newActionSlot, setNewActionSlot] = useState<{ zone: 'front' | 'back'; index: 0 | 1 | 2 | 3 } | null>(null);
   const [removeActionSlot, setRemoveActionSlot] = useState<{ zone: 'front' | 'back'; index: 0 | 1 | 2 | 3 } | null>(null);
-  const [asaSummonRequest, setAsaSummonRequest] = useState<{ definitionId: string; required: number } | null>(null);
+  const [asaSummonRequest, setAsaSummonRequest] = useState<{
+    definitionId: string;
+    required: number;
+    requirements: import('@/types/cards').SummonRequirement[];
+    freeSummon?: boolean;
+  } | null>(null);
   const [selectedMaterialIds, setSelectedMaterialIds] = useState<string[]>([]);
 
   useEffect(() => {
     const handler = (e: Event) => {
-      const ce = e as CustomEvent<{ definitionId: string; required: number }>;
+      const ce = e as CustomEvent<{ definitionId: string; required: number; requirements?: import('@/types/cards').SummonRequirement[]; freeSummon?: boolean }>;
       if (!ce.detail) return;
-      setAsaSummonRequest(ce.detail);
+      const definition = ce.detail.definitionId ? CardRegistry.get(ce.detail.definitionId) : null;
+      if (ce.detail.definitionId && (!definition || definition.type !== 'AinSophAur')) return;
+      setAsaSummonRequest({
+        ...ce.detail,
+        requirements: ce.detail.requirements ?? (definition?.type === 'AinSophAur' ? getSummonRequirements(definition.summonMaterials, definition.summonMaterialCount) : []),
+        freeSummon: ce.detail.freeSummon,
+      });
       setSelectedMaterialIds([]);
     };
     window.addEventListener('asa-summon-request', handler);
@@ -274,7 +286,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
       position: 'absolute',
       left: 0,
       right: playfieldRightInset,
-      top: bossFight.mode === 'active' ? 'clamp(132px, 13vh, 188px)' : 'clamp(104px, 12vh, 150px)',
+      top: bossFight.mode === 'active' ? 'clamp(204px, 22vh, 250px)' : 'clamp(104px, 12vh, 150px)',
       bottom: 'clamp(168px, 21vh, 224px)',
       marginInline: 'auto',
       pointerEvents: 'none',
@@ -340,15 +352,21 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
           display: 'flex', gap: 12, alignItems: 'center', fontFamily: BODY_FONT,
         }}>
           <div style={{ fontSize: 11, color: '#cfe0ff' }}>
-            Select {asaSummonRequest.required} back-row material{asaSummonRequest.required !== 1 ? 's' : ''} to summon ({selectedMaterialIds.length}/{asaSummonRequest.required})
+            {asaSummonRequest.freeSummon && !asaSummonRequest.definitionId ? <div>Select an Ain Soph Aur from the Extra Deck.</div> : asaSummonRequest.freeSummon ? <div>Free summon: {CardRegistry.get(asaSummonRequest.definitionId)?.name ?? asaSummonRequest.definitionId}</div> : asaSummonRequest.requirements.map((requirement, index) => {
+              const selected = selectedMaterialIds
+                .map(id => board.backSlots.find(card => card?.instanceId === id))
+                .filter((card): card is MainDeckBoardInstance => card !== undefined)
+                .filter(card => matchesSummonRequirement(card, requirement)).length;
+              return <div key={`summon-requirement-${index}`}>{formatSummonRequirement(requirement)} ({selected}/{requirement.count})</div>;
+            })}
           </div>
           <button
             type="button"
-            disabled={selectedMaterialIds.length !== asaSummonRequest.required || board.frontSlots.every(s => s !== null)}
+            disabled={!asaSummonRequest.definitionId || selectedMaterialIds.length !== asaSummonRequest.required || board.frontSlots.every(s => s !== null)}
             onClick={() => {
               const targetSlot = board.frontSlots.findIndex(s => s === null);
               if (targetSlot !== -1) {
-                summonAinSophAur(asaSummonRequest.definitionId, selectedMaterialIds, targetSlot as 0 | 1 | 2 | 3);
+                summonAinSophAur(asaSummonRequest.definitionId, selectedMaterialIds, targetSlot as 0 | 1 | 2 | 3, asaSummonRequest.freeSummon);
               }
               setAsaSummonRequest(null);
               setSelectedMaterialIds([]);
@@ -391,7 +409,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             const bridgeCooldown = asaDef?.bridgeAttack ? (slot.attackCooldowns[asaDef.bridgeAttack.id] ?? 0) : 0;
             const bridgeCost = asaDef?.bridgeAttack?.consumesStacks ? previewStackCost(asaDef.bridgeAttack.consumesStacks, turn.limitlessLightStacks) : 0;
             const bridgePreview = asaDef?.bridgeAttack
-              ? Math.max(0, Math.round(asaDef.bridgeAttack.baseOblivion + resolveCardScaling(asaDef.bridgeAttack.scaling, scalingCtx) + bridgeCost))
+              ? Math.max(0, Math.round(asaDef.bridgeAttack.baseOblivion + resolveCardScaling(asaDef.bridgeAttack.scaling, scalingCtx)))
               : 0;
             const bridgeDisabled = bridgeCooldown > 0 || turn.limitlessLightStacks < bridgeCost;
             const bridgeActionLabel = bridgeCooldown > 0
@@ -552,13 +570,15 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
               }}
               onClick={() => handleFrontSlotClick(slotIndex)}
               onDragOver={(e) => {
-                if (!canPlay || !e.dataTransfer.types.includes('application/x-seraphim-card')) return;
+                if (!canPlay || !e.dataTransfer.types.includes('application/x-pantheon-card')) return;
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
                 setDragOverFront(slotIndex);
               }}
               onDragLeave={() => setDragOverFront(null)}
-              onDrop={() => {
+              onDrop={(event) => {
+                const instanceId = event.dataTransfer.getData('application/x-pantheon-card');
+                if (instanceId) playCard(instanceId, (event.dataTransfer.getData('application/x-pantheon-side') || 'soph') as 'soph' | 'ain');
                 setDragOverFront(null);
               }}
             >
@@ -587,7 +607,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                   }} />
                 </>
               )}
-              <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.4, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>笨ｦ</div>
+              <div style={{ fontSize: 20, color: glowColor, lineHeight: 1, opacity: hasSeraphimInHand ? 0.9 : 0.4, transition: 'opacity 0.2s, color 0.2s', animation: hasSeraphimInHand ? 'constellationGlimmer 3s ease-in-out infinite' : undefined }}>✦</div>
               <div style={{ fontSize: 7, color: glowColor, marginTop: 7, letterSpacing: 1.8, textTransform: 'uppercase', textAlign: 'center', opacity: hasSeraphimInHand ? 0.85 : 0.4, transition: 'opacity 0.2s, color 0.2s' }}>
                 {pendingAngelSummon ? 'Choose Angel Slot' : isDragTarget ? 'Drop Seraphim' : hasSeraphimInHand ? 'Click or Drop' : 'Empty'}
               </div>
@@ -597,7 +617,6 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
       </div>
 
       {/* Set Ability hotkey strip 窶・shows during playing phase */}
-      <SetAbilityStrip />
 
       {/* Zone separator with rank labels */}
       <div style={{
@@ -641,8 +660,9 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             const isRemoveSelected = removeActionSlot?.zone === 'back' && removeActionSlot.index === backSlot;
             const isMaterialMode = !!asaSummonRequest;
             const isMaterialSelected = isMaterialMode && selectedMaterialIds.includes(mainCard.instanceId);
+            const canMatchRequirement = asaSummonRequest?.requirements.some(requirement => matchesSummonRequirement(mainCard, requirement)) ?? false;
             const canSelectAsMaterial = isMaterialSelected
-              || (asaSummonRequest !== null && selectedMaterialIds.length < asaSummonRequest.required);
+              || (asaSummonRequest !== null && canMatchRequirement && selectedMaterialIds.length < asaSummonRequest.required);
             const mainText = mainDef ? getCardPreviewText(mainDef, 2) : '';
             const mainDescMetrics = getAdaptiveDescriptionMetrics('boardMini', mainText);
             const mainElementColor = SET_ACCENT;
@@ -718,7 +738,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${mainElementColor}cc, ${mainElementColor}, ${mainElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 <div style={getCardNameRibbonStyle('boardMini')}>
                   <div style={{ fontSize: CHERUBIM_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>
-                    {getDisplayCardTypeLabel(mainDef?.type ?? mainCard.type)} ﾂｷ {isSoph ? 'Soph' : 'Ain'}
+                    {getDisplayCardTypeLabel(mainDef?.type ?? mainCard.type)} | {isSoph ? 'Soph' : 'Ain'}
                   </div>
                   <div style={{ fontSize: CHERUBIM_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
                     {mainDef?.name ?? mainCard.definitionId}
@@ -729,7 +749,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                     {isSoph
                       ? (isReadyToFlip ? 'Ready · click to flip/sacrifice' : `Charge ${charge}/${SOPH_FLIP_CHARGE_REQUIRED}`)
                       : mainDef?.type === 'Light'
-                        ? `Ain ${ainCooldown <= 0 ? 'Ready' : ainCooldown} ﾂｷ Soph ${sophCooldown <= 0 ? 'Ready' : sophCooldown}`
+                        ? `Ain ${ainCooldown <= 0 ? 'Ready' : ainCooldown} | Soph ${sophCooldown <= 0 ? 'Ready' : sophCooldown}`
                         : mainDef?.persistent
                           ? `Recharge ${darkCooldown <= 0 ? 'Ready' : darkCooldown}`
                           : 'One-shot activation'}
@@ -774,7 +794,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                           type="button"
                           onClick={(e) => { e.stopPropagation(); flipSoph(mainCard.instanceId, 'sacrifice'); setNewActionSlot(null); }}
                           style={actionBtnStyle('rgba(220,100,100,0.5)', 'rgba(50,10,10,0.8)', '#e68d8d')}
-                        >Sacrifice (+{Math.round(charge * (mainDef?.sacrificeOblivionRate ?? 0))} Divine Light)</button>
+                        >Sacrifice (+{Math.max(1, Math.round(charge * (mainDef?.sacrificeStackRate ?? 0) / 100))} Stacks)</button>
                       </>
                     )}
                     {isSoph && !isReadyToFlip && (
@@ -876,13 +896,15 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
               }}
               onClick={() => handleBackSlotClick(backSlot)}
               onDragOver={(e) => {
-                if (!canPlay || !e.dataTransfer.types.includes('application/x-cherubim-card')) return;
+                if (!canPlay || !e.dataTransfer.types.includes('application/x-pantheon-card')) return;
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
                 setDragOverBack(backSlot);
               }}
               onDragLeave={() => setDragOverBack(null)}
-              onDrop={() => {
+              onDrop={(event) => {
+                const instanceId = event.dataTransfer.getData('application/x-pantheon-card');
+                if (instanceId) playCard(instanceId, (event.dataTransfer.getData('application/x-pantheon-side') || 'soph') as 'soph' | 'ain');
                 setDragOverBack(null);
               }}
             >
@@ -891,7 +913,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
               <div style={{ position: 'absolute', top: 5, right: 5, width: 8, height: 8, borderTop: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 5, left: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderLeft: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
               <div style={{ position: 'absolute', bottom: 5, right: 5, width: 8, height: 8, borderBottom: `1px solid ${cherubimGlow}`, borderRight: `1px solid ${cherubimGlow}`, borderRadius: 1, pointerEvents: 'none', transition: 'border-color 0.2s' }} />
-              <div style={{ fontSize: 15, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.85 : 0.38, transition: 'opacity 0.2s, color 0.2s', animation: hasCherubimInHand ? 'constellationGlimmer 3.5s ease-in-out infinite' : undefined }}>笨ｦ</div>
+              <div style={{ fontSize: 15, color: cherubimGlow, lineHeight: 1, opacity: hasCherubimInHand ? 0.85 : 0.38, transition: 'opacity 0.2s, color 0.2s', animation: hasCherubimInHand ? 'constellationGlimmer 3.5s ease-in-out infinite' : undefined }}>✦</div>
               <div style={{ fontSize: 6, color: cherubimGlow, marginTop: 5, letterSpacing: 1.5, textTransform: 'uppercase', opacity: hasCherubimInHand ? 0.8 : 0.38, transition: 'opacity 0.2s, color 0.2s' }}>
                 {isDragTarget ? 'Drop Cherubim' : hasCherubimInHand ? 'Click or Drop' : 'Empty'}
               </div>

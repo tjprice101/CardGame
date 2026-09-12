@@ -26,7 +26,7 @@ The application lives in `card-game-idle/`.
 - `social/`: account, friend, party, gift, chat, and cloud sync services.
 - `state/`: Zustand stores; `store.ts` is the gameplay authority.
 - `styles/`: global styles.
-- `systems/`: card effects, scaling, progression, scoring, quests, set engines.
+- `systems/`: card effects, scaling, progression, scoring, quests, and ability runtime systems.
 - `tests/`: Vitest tests.
 - `types/`: shared TypeScript contracts.
 - `ui/`: React HUD, menus, modals, deck builder, store, profile, and card faces.

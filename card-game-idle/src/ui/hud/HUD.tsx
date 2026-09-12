@@ -6,7 +6,7 @@ import ScoreDisplay from './ScoreDisplay';
 import AngelStatPanel from './AngelStatPanel';
 import HandDisplay from './HandDisplay';
 import DeckStatus from './DeckStatus';
-import SetEngineDisplay from './SetEngineDisplay';
+import AbilityAmplificationPanel from './AbilityAmplificationPanel';
 import TurnControls from './TurnControls';
 import BoardDisplay from './BoardDisplay';
 import PendingEffectModal from './PendingEffectModal';
@@ -78,23 +78,25 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
 
       {/* Right — Divine Light Acquisition button */}
       <button
+        className="divine-light-acquisition-button"
         onClick={onOpenOblivionScreen}
         title="Divine Light Acquisition — view all Divine Light sources"
         style={{
           marginLeft: 'auto',
           pointerEvents: 'auto',
           display: 'flex', alignItems: 'center', gap: 6,
-          padding: '5px 14px',
+          padding: '7px 16px',
           borderRadius: 999,
-          border: '1px solid rgba(247,192,74,0.35)',
-          background: 'linear-gradient(135deg, rgba(247,192,74,0.14) 0%, rgba(247,192,74,0.06) 100%)',
+          border: '1px solid rgba(247,192,74,0.62)',
+          background: 'linear-gradient(135deg, rgba(247,192,74,0.24) 0%, rgba(247,192,74,0.1) 100%)',
           color: '#f7c04a',
           fontFamily: uiTypography.display,
-          fontSize: 11,
+          fontSize: 12,
           fontWeight: 700,
           letterSpacing: 1.2,
           cursor: 'pointer',
-          boxShadow: '0 0 12px rgba(247,192,74,0.16)',
+          boxShadow: '0 0 18px rgba(247,192,74,0.28)',
+          animation: 'uiAuraPulse 2.4s ease-in-out infinite',
           transition: 'all 0.18s ease',
         }}
         onMouseEnter={e => {
@@ -105,9 +107,9 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
         }}
         onMouseLeave={e => {
           const b = e.currentTarget;
-          b.style.background = 'linear-gradient(135deg, rgba(247,192,74,0.14) 0%, rgba(247,192,74,0.06) 100%)';
-          b.style.boxShadow = '0 0 12px rgba(247,192,74,0.16)';
-          b.style.borderColor = 'rgba(247,192,74,0.35)';
+          b.style.background = 'linear-gradient(135deg, rgba(247,192,74,0.24) 0%, rgba(247,192,74,0.1) 100%)';
+          b.style.boxShadow = '0 0 18px rgba(247,192,74,0.28)';
+          b.style.borderColor = 'rgba(247,192,74,0.62)';
         }}
       >
         ◈ Divine Light
@@ -124,7 +126,7 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
  * button anchored at the bottom. Returned to the right edge per user
  * request; widened to 260 px for breathing room vs the old 220 px.
  */
-function RightRail({ inspectedCardId }: { inspectedCardId: string | null }) {
+function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: string | null; onRequestBeginTurn?: () => void }) {
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
   const inBossFight = bossFight.mode === 'active';
@@ -170,9 +172,9 @@ function RightRail({ inspectedCardId }: { inspectedCardId: string | null }) {
         background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.13), transparent)',
       }} />
 
-      {/* Set engine reference — scrollable, expands to fill available space */}
+      {/* Ability Amplification — scrollable, expands to fill available space */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px 4px', minHeight: 0 }}>
-        <SetEngineDisplay />
+        <AbilityAmplificationPanel />
       </div>
 
       {/* Divider */}
@@ -183,13 +185,13 @@ function RightRail({ inspectedCardId }: { inspectedCardId: string | null }) {
 
       {/* Turn controls — bottom-anchored */}
       <div style={{ padding: '0 14px 16px', flexShrink: 0 }}>
-        <TurnControls />
+        <TurnControls onBeginTurn={onRequestBeginTurn} />
       </div>
     </div>
   );
 }
 
-export default function HUD() {
+export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () => void }) {
   const [showOblivionScreen, setShowOblivionScreen] = useState(false);
   const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
   const battleground = useStore(selectBattleground);
@@ -210,7 +212,7 @@ export default function HUD() {
       <HandDisplay onHoverCard={setInspectedCardId} />
 
       {/* Right control rail — deck pills / set-engines reference / turn button */}
-      <RightRail inspectedCardId={inspectedCardId} />
+      <RightRail inspectedCardId={inspectedCardId} onRequestBeginTurn={onRequestBeginTurn} />
 
       {/* Pending-effect modal — floats above everything */}
       <PendingEffectModal />

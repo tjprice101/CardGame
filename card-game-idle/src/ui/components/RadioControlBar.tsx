@@ -160,7 +160,7 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
   };
 
   return (
-    <div style={barStyle} aria-hidden={!radioActive}>
+    <div className={radioActive ? 'radio-toast-enter' : 'radio-toast-exit'} style={barStyle} aria-hidden={!radioActive}>
       <div style={{
         position: 'absolute',
         left: 10,

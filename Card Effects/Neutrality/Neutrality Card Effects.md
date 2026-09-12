@@ -22,12 +22,21 @@ Premium Neutrality cards are awarded outside packs:
 Light cards can be placed as Soph or Ain.
 
 - Soph side: face-down, charges by +1 whenever a hand card is played.
-- At 2+ charge, Soph can flip to Ain and bank its charge as Limitless Light Stacks, or sacrifice for Divine Light.
+- At 2+ charge, Soph can flip to Ain and bank its charge as Limitless Light Stacks, or sacrifice to convert a percentage of its stored charge into Limitless Light Stacks.
+- Each Light card has a distinct Soph-placement effect that resolves when it is placed face-down.
 - Ain side: uses Ain Attack and Soph Attack.
 - Ain Attack reads stacks without spending them.
 - Soph Attack may spend stacks; payout uses the pre-spend stack pool.
 
 All Light attacks use authored base Divine Light, cooldown, and scaling data. Triune scaling reads Limitless Light Stacks, front-row Ain Soph Aur count, and Collection Power.
+
+## Ability System
+
+Ability Materialization contains three Neutrality abilities, each purchased once for 5,000 Divine Light. A deck may equip all three across slots 1-3. Ability Amplification displays and activates the equipped abilities during a turn.
+
+- Neutralizing Inferno discards one main-deck card and grants Divine Light equal to current Limitless Light Stacks multiplied by 500. It has a 30-second cooldown.
+- Nullified Barricade spends 5 Limitless Light Stacks to grant Divine Field for 60 seconds. Each card played during the field grants 50 Divine Light.
+- Phantom Matrix spends 10 Limitless Light Stacks and opens a player-selected free ASA summon from the Extra Deck.
 
 ## Dark Cards
 

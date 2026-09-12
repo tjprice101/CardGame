@@ -39,9 +39,9 @@ export default function ControlsSection() {
     { id: 'closeOverlay',  label: 'Close Overlay',          hint: 'Dismiss the topmost modal.' },
     { id: 'toggleRadioUi', label: 'Toggle Radio UI',        hint: 'Show or hide on-screen radio controls/toasts.' },
     { id: 'togglePartyUi', label: 'Toggle Party UI',        hint: 'Show or hide the Card-bound Co-op overlay.' },
-    { id: 'activateSetAbility1', label: 'Set Ability — Slot 1', hint: 'Activate your Base set ability (Composed Draw).' },
-    { id: 'activateSetAbility2', label: 'Set Ability — Slot 2', hint: 'Activate your Eternal set ability (Vigil\'s Ledger).' },
-    { id: 'activateSetAbility3', label: 'Set Ability — Slot 3', hint: 'Activate your third set ability.' },
+    { id: 'activateAbility1', label: 'Materialized Ability — Slot 1', hint: 'Activate the ability equipped in slot 1.' },
+    { id: 'activateAbility2', label: 'Materialized Ability — Slot 2', hint: 'Activate the ability equipped in slot 2.' },
+    { id: 'activateAbility3', label: 'Materialized Ability — Slot 3', hint: 'Activate the ability equipped in slot 3.' },
   ];
 
   function beginCapture(id: KeybindActionId) {

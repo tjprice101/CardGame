@@ -25,6 +25,7 @@
 .radio-toast-exit  { animation: radioSlideOut 0.38s cubic-bezier(0.55, 0, 1, 0.45) both; }
 html.reduced-motion .radio-toast-enter,
 html.reduced-motion .radio-toast-exit { animation: none; }
+html.reduced-motion .divine-light-acquisition-button { animation: none; }
 
 /* ── Accessible keyboard focus outline ── */
 :focus { outline: none; }

@@ -21,12 +21,14 @@ import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { AinSophAurDefinition, CardDefinition, CardFinish } from '@/types/cards';
+import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import DeckBuilderAbilitiesTab from '@/ui/deck/tabs/DeckBuilderAbilitiesTab';
 import DeckBuilderAnalyzeTab from '@/ui/deck/tabs/DeckBuilderAnalyzeTab';
 
 // Stable selector fallback: returning a fresh `{}` from a Zustand v5 selector
 // triggers the "getSnapshot should be cached" infinite-render loop.
 const EMPTY_CARD_LOCKS: Readonly<Record<string, number>> = Object.freeze({});
+const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({});
 
 const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
@@ -421,6 +423,7 @@ export default function DeckBuilder({ onClose }: Props) {
   const { initDeck, saveCurrentDeck, updateSavedDeck, loadSavedDeck, deleteSavedDeck } = useStore.getState();
   const currentDeck = useStore(selectDeck);
   const collection = useStore(s => s.progress.collection);
+  const ownedAbilities = useStore(s => s.progress.ownedAbilities ?? EMPTY_OWNED_ABILITIES);
   const holoCollection = useStore(s => s.progress.holoCollection);
   const cardLocks = useStore(s => s.progress.cardLocks ?? EMPTY_CARD_LOCKS);
   const setCardLock = useStore(s => s.setCardLock);
@@ -834,7 +837,8 @@ export default function DeckBuilder({ onClose }: Props) {
               </div>
               {isAngel && def.def.type === 'AinSophAur' && (
                 <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
-                  Cost: {(def.def as AinSophAurDefinition).summonMaterialCount} material{(def.def as AinSophAurDefinition).summonMaterialCount === 1 ? '' : 's'}
+                  {getSummonRequirements((def.def as AinSophAurDefinition).summonMaterials, (def.def as AinSophAurDefinition).summonMaterialCount)
+                    .map((requirement, index) => <div key={`summon-requirement-${index}`}>Requires: {formatSummonRequirement(requirement)}</div>)}
                 </div>
               )}
             </div>
@@ -1155,6 +1159,7 @@ export default function DeckBuilder({ onClose }: Props) {
               deckList={deckList}
               extraDeckList={extraDeckList}
               activeDeck={activeDeck}
+              ownedAbilities={ownedAbilities}
               setDeckAbilityLoadout={setDeckAbilityLoadout}
             />
           ) : subTab === 'analyze' ? (

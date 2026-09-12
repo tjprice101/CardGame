@@ -25,7 +25,7 @@ React components call these actions; they do not directly mutate gameplay state.
 
 - Deck: `deckList`, `extraDeck`, `hand`, `drawPile`, `discardPile`.
 - Board: four front slots for Ain Soph Aur, four support/back slots for Light/Dark.
-- Turn: phase, cards played, Limitless Light Stacks, pending effects, cooldowns, mulligan state.
+- Turn: phase, cards played, Limitless Light Stacks, pending effects, card cooldowns, persistent materialized-ability cooldown timestamps, Divine Field expiration, and mulligan state.
 - Progress: collection, holo collection, mastery, quests, achievements, enigmas, boss stats.
 - Settings: UI display preferences, controls, audio, accessibility.
 
@@ -37,6 +37,7 @@ Transactional examples:
 
 - Dark activation commits stack spending only after the effect can resolve.
 - Ain Soph Aur summoning validates materials, Extra Deck ownership, front-slot availability, and on-summon effects before consuming materials.
+- Materialized abilities are equipped in three saved-deck slots. Ability cooldowns and Divine Field persist across End Turn and are validated again by the store.
 - Force-removal works only during the playing phase.
 
 ## Deck Invariants

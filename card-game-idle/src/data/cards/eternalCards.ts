@@ -20,7 +20,7 @@ const light = (
   type: 'Light',
   rarity: 'Eternal',
   name,
-  description: 'A powerful two-attack card with strong triune scaling and a stack-consuming Soph burst.',
+  description: 'A two-attack card with triune scaling and a stack-consuming Soph attack.',
   artKey,
   ainAttack: {
     id: `${definitionId}:ain-attack`, label: 'Ain', name: 'Ain Attack',
@@ -33,7 +33,8 @@ const light = (
     cooldownCards: 4, scaling: { kind: 'triune', amount: scale + 80 },
     stackCost: { kind: 'fixed', value: 3 }, tags: ['eternal', 'soph-attack'],
   },
-  sacrificeOblivionRate: 80,
+  sophPlacementEffects: [{ type: 'oblivion_flat', value: 80 }],
+  sacrificeStackRate: 80,
 });
 
 const dark = (
@@ -51,7 +52,7 @@ const dark = (
   artKey,
   sophEffects: [effect], activationCost: { kind: 'fixed', value: 2 },
   postActivationFate: fate,
-  sacrificeOblivionRate: 85,
+  sacrificeStackRate: 85,
 });
 
 const asa = (
@@ -66,9 +67,12 @@ const asa = (
   type: 'AinSophAur',
   rarity: 'Eternal',
   name,
-  description: `Sacrifice ${materials} back-row cards to summon, then use Bridge the Light for a high triune Divine Light payout.`,
+  description: `Sacrifice ${materials} back-row cards to summon, then use Bridge the Light for a triune Divine Light payout.`,
   artKey,
   summonMaterialCount: materials,
+  summonMaterials: materials === 2
+    ? [{ cardTypes: ['Light'], count: 1 }, { cardTypes: ['Dark'], count: 1 }]
+    : [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }],
   onSummonEffects: [{ type: 'oblivion_flat', value: 150 }],
   bridgeAttack: {
     id: `${definitionId}:bridge-the-light`, name: 'Bridge the Light',

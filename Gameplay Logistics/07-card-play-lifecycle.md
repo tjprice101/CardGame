@@ -22,7 +22,7 @@ Soph cards are face-down and charge whenever cards are played from hand. The thr
 At 2+ charge, `flipSoph` can:
 
 - Flip to Ain, converting stored charge into Limitless Light Stacks.
-- Sacrifice the card, granting Divine Light based on `sacrificeOblivionRate` and moving it to discard.
+- Sacrifice the card, converting a percentage of stored charge into Limitless Light Stacks based on `sacrificeStackRate`, then moving it to discard.
 
 Light `onFlipEffects` are supported through the effect executor if future Light cards define them.
 

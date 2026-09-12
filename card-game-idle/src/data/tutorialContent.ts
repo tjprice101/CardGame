@@ -57,18 +57,6 @@ export const RARITY_TIERS: RarityTier[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// Set engines  (displayed in the Sets section)
-// ---------------------------------------------------------------------------
-
-export const SET_ENGINE_ENTRIES: SetEntry[] = [
-  {
-    name: 'Neutrality',
-    mechanic: 'Patience / Equilibrium',
-    body: 'Stockpile Patience on Seraphim, cash it out on attack, and layer Equilibrium Sigils for the Eternal/Infinite engine path.',
-  },
-];
-
-// ---------------------------------------------------------------------------
 // Card-born tier milestones
 // ---------------------------------------------------------------------------
 
@@ -93,7 +81,7 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
   { id: 'board',          label: 'Board & Cards',     title: 'The Board',                subtitle: 'Slots, card types, and click behavior.' },
   { id: 'attacks',        label: 'Ain / Soph',        title: 'Ain / Soph Combat',        subtitle: 'Charges, stacks, attacks, and Bridge the Light.' },
   { id: 'patience',       label: 'Light Stacks',      title: 'Limitless Light Stacks',   subtitle: 'The shared resource behind the Neutrality engine.' },
-  { id: 'sets',           label: 'Sets',              title: 'Set Engines',              subtitle: 'The mechanical identity of every set.' },
+  { id: 'sets',           label: 'Abilities',         title: 'Ability Amplification',    subtitle: 'Materialized abilities and their runtime effects.' },
   { id: 'rarities',       label: 'Rarities',          title: 'Rarity Tiers',             subtitle: 'From Common through Infinite.' },
   { id: 'modes',          label: 'Modes',             title: 'Wake, Infinitude & Packs', subtitle: 'Boss fights, crafting, and the store.' },
   { id: 'card-born-tier', label: 'Card-born Tier',    title: 'Card-born Tier',           subtitle: 'Card-light mastery, Resonance, and Collection Power.' },

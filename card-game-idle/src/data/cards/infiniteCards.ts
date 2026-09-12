@@ -19,11 +19,11 @@ export interface InfiniteRecipe {
 export const infiniteCards: LegacyCosmeticCard[] = [
   { definitionId: 'inf-oblivion-absolute', rarity: 'Infinite', name: 'The Absolute Null', description: 'Gain Divine Light scaled by your current Ain/Soph setup.', artKey: 'inf_oblivion_absolute' },
   { definitionId: 'inf-void-cascade', rarity: 'Infinite', name: 'The Cascade of the Hollow Sky', description: 'All Seraphim on board gain Patience.', artKey: 'inf_void_cascade' },
-  { definitionId: 'inf-genesis-throne', rarity: 'Infinite', name: 'The White Throne Before Beginning', description: 'Gain Divine Light through powerful Infinity-menu crafting.', artKey: 'inf_genesis_throne' },
-  { definitionId: 'inf-null-apex', rarity: 'Infinite', name: 'The Apex of Nothing', description: 'An apex Infinite card forged through the Infinity menu.', artKey: 'inf_null_apex' },
-  { definitionId: 'inf-entropic-crown', rarity: 'Infinite', name: 'The Crown of Unmaking', description: 'Gain Divine Light through powerful Infinity-menu crafting.', artKey: 'inf_entropic_crown' },
+  { definitionId: 'inf-genesis-throne', rarity: 'Infinite', name: 'The White Throne Before Beginning', description: 'Gain Divine Light through Infinity-menu crafting.', artKey: 'inf_genesis_throne' },
+  { definitionId: 'inf-null-apex', rarity: 'Infinite', name: 'The Apex of Nothing', description: 'An Infinite card forged through the Infinity menu.', artKey: 'inf_null_apex' },
+  { definitionId: 'inf-entropic-crown', rarity: 'Infinite', name: 'The Crown of Unmaking', description: 'Gain Divine Light through Infinity-menu crafting.', artKey: 'inf_entropic_crown' },
   { definitionId: 'inf-annihilation-field', rarity: 'Infinite', name: 'The Garden of Annihilation', description: 'On play: All Seraphim on board gain Patience; Shuffle discard into deck.', artKey: 'inf_annihilation_field' },
-  { definitionId: 'inf-sovereign-void', rarity: 'Infinite', name: 'The Sovereign Veil', description: 'An apex Infinite card forged through the Infinity menu.', artKey: 'inf_sovereign_void' },
+  { definitionId: 'inf-sovereign-void', rarity: 'Infinite', name: 'The Sovereign Veil', description: 'An Infinite card forged through the Infinity menu.', artKey: 'inf_sovereign_void' },
   { definitionId: 'inf-eternity-rupture', rarity: 'Infinite', name: 'The Rift of Outer Silence', description: 'On summon: All Seraphim gain Patience; shuffle the discard into the deck.', artKey: 'inf_eternity_rupture' },
 ];
 

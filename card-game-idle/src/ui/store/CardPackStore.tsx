@@ -9,7 +9,7 @@ import { useThemeVersion } from '@/ui/useThemeVersion';
 import PackOpeningModal from './PackOpeningModal';
 import CollectionViewer from './CollectionViewer';
 import HolofoilWorkshop from './HolofoilWorkshop';
-import CoreMechanicEngineModal from './CoreMechanicEngineModal';
+import AbilityMaterialization from './AbilityMaterialization';
 import { getSpotlightPackId, getSpotlightPackCost, SPOTLIGHT_DISCOUNT } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost, DAILY_DEAL_DISCOUNT } from '@/systems/progression/dailyDeal';
 
@@ -232,8 +232,7 @@ export default function CardPackStore({ onClose }: Props) {
   const packPityCounters = useStore(s => s.progress.packPityCounters ?? {});
   const [openingResult, setOpeningResult] = useState<{ cards: string[]; packName: string; newCards: Set<string> } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
-  const [coreEnginePackId, setCoreEnginePackId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'packs' | 'holofoils' | 'history'>('packs');
+  const [activeTab, setActiveTab] = useState<'packs' | 'holofoils' | 'history' | 'abilities'>('packs');
   const [focusPackId, setFocusPackId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<1 | 5 | 100>(1);
   const packRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -319,7 +318,6 @@ export default function CardPackStore({ onClose }: Props) {
 
     const artSrc = PACK_ART[pack.id];
     const displayName = pack.name.replace(/^\[EVENT\]\s*/, '');
-    const hasCoreMechanicGuide = !isLocked;
 
     return (
       <div
@@ -466,28 +464,6 @@ export default function CardPackStore({ onClose }: Props) {
             </div>
           </div>
         )}
-        {hasCoreMechanicGuide && (
-          <button
-            data-sfx="click"
-            onClick={() => setCoreEnginePackId(pack.id)}
-            style={{
-              padding: '7px 12px',
-              borderRadius: 8,
-              border: '1px solid rgba(120, 200, 140, 0.50)',
-              background: 'linear-gradient(180deg, rgba(60,140,80,0.28) 0%, rgba(40,100,60,0.28) 100%)',
-              color: '#8de8a8',
-              fontSize: 11,
-              fontWeight: 600,
-              fontFamily: uiTypography.body,
-              cursor: 'pointer',
-              letterSpacing: 1,
-              textAlign: 'center' as const,
-              width: '100%',
-            }}
-          >
-            Core Mechanic Engine
-          </button>
-        )}
       </div>
     );
   };
@@ -579,6 +555,17 @@ export default function CardPackStore({ onClose }: Props) {
         >
           History
         </button>
+        <button
+          style={{
+            ...styles.tabBtn,
+            ...(activeTab === 'abilities'
+              ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
+              : {}),
+          }}
+          onClick={() => setActiveTab('abilities')}
+        >
+          Abilities
+        </button>
       </div>
 
       {activeTab === 'packs' ? (
@@ -620,8 +607,10 @@ export default function CardPackStore({ onClose }: Props) {
         </div>
       ) : activeTab === 'holofoils' ? (
         <HolofoilWorkshop />
-      ) : (
+      ) : activeTab === 'history' ? (
         <PackHistoryPanel />
+      ) : (
+        <AbilityMaterialization />
       )}
 
       <div style={styles.footer}>
@@ -639,13 +628,6 @@ export default function CardPackStore({ onClose }: Props) {
 
       {showCollection && <CollectionViewer onClose={() => setShowCollection(false)} />}
 
-      {coreEnginePackId && (
-        <CoreMechanicEngineModal
-          packName={PACK_DEFINITIONS.find(p => p.id === coreEnginePackId)?.name.replace(/^\[EVENT\]\s*/, '') ?? coreEnginePackId}
-          cardPool={PACK_DEFINITIONS.find(p => p.id === coreEnginePackId)?.cardPool ?? []}
-          onClose={() => setCoreEnginePackId(null)}
-        />
-      )}
     </div>
   );
 }

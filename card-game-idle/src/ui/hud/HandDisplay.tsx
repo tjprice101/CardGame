@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, selectDeck, selectTurn, selectBoard, selectProgress, selectSettings, selectBattleground, selectBossFight } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
+import { getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 import {
   cardFacePalette,
   getAdaptiveDescriptionMetrics,
@@ -159,6 +160,8 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const dragSideRef = useRef<'soph' | 'ain'>('soph');
+  const [freeSummonSelection, setFreeSummonSelection] = useState(false);
   const [attackPanelOpen, setAttackPanelOpen] = useState(false);
   const [idleShowcaseCards, setIdleShowcaseCards] = useState<IdleShowcaseCard[]>([]);
   const [idleSwapState, setIdleSwapState] = useState<{ slot: number; phase: 'out' | 'in' } | null>(null);
@@ -178,6 +181,14 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
     }
     window.addEventListener('hr-toggle-extra-deck', onToggle);
     return () => window.removeEventListener('hr-toggle-extra-deck', onToggle);
+  }, []);
+  useEffect(() => {
+    const handler = () => {
+      setFreeSummonSelection(true);
+      setHandView('extraDeck');
+    };
+    window.addEventListener('asa-free-summon-request', handler);
+    return () => window.removeEventListener('asa-free-summon-request', handler);
   }, []);
   useEffect(() => { setHandView('hand'); }, [turn.phase]);
 
@@ -306,8 +317,14 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
       if (!def || def.type !== 'AinSophAur') return;
       // Hand off to BoardDisplay's material picker; it owns the back-row selection UI.
       window.dispatchEvent(new CustomEvent('asa-summon-request', {
-        detail: { definitionId: def.definitionId, required: Math.max(1, def.summonMaterialCount) },
+        detail: {
+          definitionId: def.definitionId,
+          required: Math.max(1, def.summonMaterialCount),
+          requirements: getSummonRequirements(def.summonMaterials, def.summonMaterialCount),
+          freeSummon: freeSummonSelection,
+        },
       }));
+      setFreeSummonSelection(false);
       return;
     }
     if (isMulligan) {
@@ -480,7 +497,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
             <span style={{
               marginLeft: 8, opacity: 0.55, fontSize: 9, letterSpacing: 1.5,
             }}>
-              {isExtraDeckView ? 'Click to summon · E: hand' : 'Left: Soph · Right: Ain · E: Extra Deck'}
+              {isExtraDeckView ? 'Click to summon · E: hand' : 'Left-Click: Soph · Right-Click: Ain · E: Extra Deck'}
             </span>
           </div>
         )}
@@ -562,13 +579,15 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
               onMouseLeave={() => setHoveredId(null)}
               onDragStart={(e) => {
                 if (!isDraggable || !def) return;
-                const mimeType = def.type === 'Light'
-                  ? 'application/x-seraphim-card'
-                  : 'application/x-cherubim-card';
-                e.dataTransfer.setData(mimeType, deckCard.instanceId);
+                e.dataTransfer.setData('application/x-pantheon-card', deckCard.instanceId);
+                e.dataTransfer.setData('application/x-pantheon-side', dragSideRef.current);
                 e.dataTransfer.effectAllowed = 'move';
                 setDraggingId(deckCard.instanceId);
                 setHoveredId(null);
+              }}
+              onMouseDown={(event) => {
+                if (event.button === 2) dragSideRef.current = 'ain';
+                else if (event.button === 0) dragSideRef.current = 'soph';
               }}
               onDragEnd={() => setDraggingId(null)}
             >

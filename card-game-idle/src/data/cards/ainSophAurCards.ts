@@ -23,9 +23,16 @@ export const ainSophAurCards: AinSophAurDefinition[] = names.map((name, index) =
     type: 'AinSophAur',
     rarity: rarities[index],
     name,
-    description: `Sacrifice ${1 + (index % 3)} back-row card${1 + (index % 3) === 1 ? '' : 's'} to summon, then use Bridge the Light for a powerful Divine Light payout.`,
+    description: `Sacrifice ${1 + (index % 3)} back-row card${1 + (index % 3) === 1 ? '' : 's'} to summon, then use Bridge the Light for a triune Divine Light payout.`,
     artKey: artKeys[index],
     summonMaterialCount: 1 + (index % 3),
+    summonMaterials: index === 0
+      ? [{ cardTypes: ['Light'], side: 'ain', count: 1 }]
+      : index === 1
+        ? [{ cardTypes: ['Light'], count: 1 }, { cardTypes: ['Dark'], count: 1 }]
+        : index === 2
+          ? [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }]
+          : [{ cardTypes: ['Light'], side: 'ain', count: 1 }],
     onSummonEffects: [{ type: 'oblivion_flat', value: 30 + index * 10 }],
     bridgeAttack: {
       id: `${id}:bridge-the-light`,

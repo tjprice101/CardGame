@@ -7,6 +7,7 @@ import type {
 import type { CardEffect, CardSubtypeFilter, EffectCondition } from '@/types/effects';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { formatDisplayCardText } from '@/ui/preferences';
+import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 
 export interface CardSummarySection {
   title: string;
@@ -48,7 +49,7 @@ function formatScaling(expression: LightCardDefinition['ainAttack']['scaling']):
     }
     case 'triune': {
       const perShare = formatExactValue(expression.amount);
-      return `+${perShare} triune scaling: Stacks / Ain Soph Aur / Collection Power`;
+      return `triune scaling across Limitless Light Stacks, Ain Soph Aur count, and Collection Power; ${perShare} is the full-share reference value`;
     }
     case 'custom': return `bespoke scaling (${expression.fnId})`;
   }
@@ -244,9 +245,14 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       `Cooldown: ${formatCount(light.sophAttack.cooldownCards, 'card played')}`,
     ]);
     pushSummarySection(sections, 'Charge', [
-      `Sacrifice: ${light.sacrificeOblivionRate} Divine Light per stored charge`,
+      `Sacrifice: ${light.sacrificeStackRate}% of stored charge in Limitless Light Stacks (minimum 1)`,
       ...(light.onFlipEffects?.length ? [`On flip: ${formatEffectsInline(light.onFlipEffects, light.definitionId)}`] : []),
     ]);
+    if (light.sophPlacementEffects?.length) {
+      pushSummarySection(sections, 'Soph Placement', [
+        formatEffectsInline(light.sophPlacementEffects, light.definitionId),
+      ]);
+    }
   }
 
   if (card.type === 'Dark') {
@@ -261,7 +267,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       ...(dark.persistent ? [`Cooldown: ${formatCount(dark.cooldownCardsPlayed ?? 1, 'card played')}`, 'Remains on board after activation'] : [`One-shot: returns to ${dark.postActivationFate} after activation`]),
     ]);
     pushSummarySection(sections, 'Charge', [
-      `Sacrifice: ${dark.sacrificeOblivionRate} Divine Light per stored charge`,
+      `Sacrifice: ${dark.sacrificeStackRate}% of stored charge in Limitless Light Stacks (minimum 1)`,
     ]);
   }
 
@@ -270,7 +276,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     const bridge = asa.bridgeAttack;
     pushSummarySection(sections, 'Identity', ['Ain Soph Aur Extra Deck card']);
     pushSummarySection(sections, 'Summon', [
-      `Materials required: ${asa.summonMaterialCount}`,
+      ...getSummonRequirements(asa.summonMaterials, asa.summonMaterialCount).map(requirement => `Requires: ${formatSummonRequirement(requirement)}`),
       ...(asa.onSummonEffects.length ? [`On summon: ${formatEffectsInline(asa.onSummonEffects, asa.definitionId)}`] : []),
     ]);
     if (bridge) {

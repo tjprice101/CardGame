@@ -3,6 +3,7 @@ import type { CardEffect } from '@/types/effects';
 import type { CardDefinition } from '@/types/cards';
 
 import { CardRegistry } from '../../cards/CardRegistry';
+import { canSatisfySummonRequirements, getSummonRequirements } from './AinSophSummonRequirements';
 
 import { getActiveCoopRng as _getActiveCoopRng } from '@/state/coopSyncStore';
 import { TurnSystem } from './TurnSystem';
@@ -169,13 +170,14 @@ export class CardEffectExecutor {
             const definition = CardRegistry.get(card.definitionId);
             return !!definition && effect.filter.includes(definition.type);
           });
-          if (matching.length === 0) return false;
-          pendingEffects.push({
-            type: 'salvage',
-            cards: matching,
-            filter: effect.filter,
-            count: Math.min(effect.count, matching.length),
-          });
+          if (matching.length > 0) {
+            pendingEffects.push({
+              type: 'salvage',
+              cards: matching,
+              filter: effect.filter,
+              count: Math.min(effect.count, matching.length),
+            });
+          }
           break;
         }
 
@@ -322,9 +324,11 @@ export class CardEffectExecutor {
   ): boolean {
     if (def.type === 'AinSophAur') {
       if (!board) return true;
-      const occupiedBackSlots = board.backSlots.filter(Boolean).length;
-      return occupiedBackSlots >= def.summonMaterialCount
-        && board.frontSlots.some(slot => slot === null);
+      const materials = board.backSlots.filter((slot): slot is NonNullable<typeof slot> => slot !== null);
+      return canSatisfySummonRequirements(
+        materials,
+        getSummonRequirements(def.summonMaterials, def.summonMaterialCount),
+      ) && board.frontSlots.some(slot => slot === null);
     }
 
     if (!board) return true;
