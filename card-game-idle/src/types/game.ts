@@ -140,6 +140,7 @@ export interface TurnState {
   setAbilityUsesRemaining?: Record<string, number>;
   abilityCooldownUntil?: Record<string, number>;
   divineFieldUntil?: number;
+  whiteoutDomainUntil?: number;
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────

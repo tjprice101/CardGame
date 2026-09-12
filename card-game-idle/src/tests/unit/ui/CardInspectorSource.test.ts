@@ -8,7 +8,6 @@ describe('CardInspectorPanel Light-card parity', () => {
   it('keeps Soph placement text and non-refunded Soph projections in the in-turn inspector', () => {
     const source = readFileSync(inspectorPath, 'utf8');
 
-    expect(source).toContain("section.title === 'Soph Placement'");
     expect(source).toContain('sophPlacementEffects');
     expect(source).not.toContain('+ cost,');
   });

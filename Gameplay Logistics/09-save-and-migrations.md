@@ -23,6 +23,7 @@ Board, hand, pending effects, and mulligan selection are ephemeral. Materialized
 - Clear or normalize active turn state when old runtime fields cannot be trusted.
 - Bump the save version only after transforms complete.
 - v49 initializes `progress.ownedAbilities` for saves created before Ability Materialization.
+- v50 initializes and sanitizes the Neutrality-specific Garden currencies and clears interrupted Garden runtime encounters.
 - Test old fixtures and current fixtures.
 
 ## Progress Snapshots

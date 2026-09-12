@@ -24,6 +24,12 @@ describe('Ain/Soph card catalog', () => {
     }
   });
 
+  it('gives every Eternal ASA an exact named-card material recipe', () => {
+    for (const card of CardRegistry.getAll().filter(definition => definition.type === 'AinSophAur' && definition.rarity === 'Eternal')) {
+      expect(card.summonMaterials?.some(requirement => (requirement.definitionIds?.length ?? 0) > 0), card.definitionId).toBe(true);
+    }
+  });
+
   it('gives every Light and Dark card bespoke runtime values', () => {
     for (const card of lightCards) {
       expect(card.ainAttack.cooldownCards).toBeGreaterThan(0);

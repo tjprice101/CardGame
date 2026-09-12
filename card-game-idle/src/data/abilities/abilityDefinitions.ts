@@ -8,6 +8,7 @@ export interface AbilityDefinition {
   readonly purchaseCost: number;
   readonly cooldownSeconds?: number;
   readonly stackCost?: number;
+  readonly ownershipGate?: 'anyNeutralityEternal' | 'anyNeutralityInfinite';
   readonly buff?: {
     readonly id: string;
     readonly name: string;
@@ -49,6 +50,64 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     purchaseCost: 5_000,
     stackCost: 10,
   },
+  {
+    id: 'null-horizon',
+    setId: 'Neutrality',
+    name: 'Null Horizon',
+    description: 'Spend 15 Limitless Light Stacks to reduce every active card cooldown by 2. Cost: 97,000 Divine Light.',
+    purchaseCost: 97_000,
+    stackCost: 15,
+    cooldownSeconds: 90,
+    ownershipGate: 'anyNeutralityEternal',
+  },
+  {
+    id: 'axiomatic-reversal',
+    setId: 'Neutrality',
+    name: 'Axiomatic Reversal',
+    description: 'Discard 2 cards to gain 5,000 Divine Light and draw 3 cards. Cost: 97,000 Divine Light.',
+    purchaseCost: 97_000,
+    cooldownSeconds: 120,
+    ownershipGate: 'anyNeutralityEternal',
+  },
+  {
+    id: 'whiteout-domain',
+    setId: 'Neutrality',
+    name: 'Whiteout Domain',
+    description: 'Spend 20 Limitless Light Stacks to gain Whiteout Domain for 45 seconds. Each card played during it grants 100 Divine Light.',
+    purchaseCost: 450_000,
+    stackCost: 20,
+    cooldownSeconds: 120,
+    ownershipGate: 'anyNeutralityInfinite',
+    buff: {
+      id: 'whiteout-domain',
+      name: 'Whiteout Domain',
+      durationSeconds: 45,
+      iconAssetKey: 'buff_whiteout_domain',
+      description: '+100 Divine Light per card played.',
+    },
+  },
+  {
+    id: 'infinite-accord',
+    setId: 'Neutrality',
+    name: 'Infinite Accord',
+    description: 'Spend 30 Limitless Light Stacks to restore all Light attack cooldowns and gain 10,000 Divine Light. Cost: 450,000 Divine Light.',
+    purchaseCost: 450_000,
+    stackCost: 30,
+    cooldownSeconds: 180,
+    ownershipGate: 'anyNeutralityInfinite',
+  },
 ];
 
 export const ABILITY_REGISTRY = new Map(ABILITY_DEFINITIONS.map(ability => [ability.id, ability]));
+
+export function meetsAbilityOwnershipGate(
+  ability: AbilityDefinition,
+  collection: Record<string, number>,
+  infiniteCollection: Record<string, number>,
+): boolean {
+  if (!ability.ownershipGate) return true;
+  if (ability.ownershipGate === 'anyNeutralityEternal') {
+    return Object.entries(collection).some(([definitionId, count]) => definitionId.startsWith('btei-') && count > 0);
+  }
+  return Object.entries(infiniteCollection).some(([definitionId, count]) => definitionId.startsWith('inf-') && count > 0);
+}

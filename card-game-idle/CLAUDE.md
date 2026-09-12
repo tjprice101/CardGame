@@ -17,6 +17,10 @@ This file is the AI-facing project brief. Read it before making design, balance,
 - Ain Soph Aur cards grant +1 Limitless Light Stack plus `onSummonEffects` when summoned, then use `bridgeAttack` for Bridge the Light.
 - Light cards define a distinct `sophPlacementEffects` hook that resolves when placed face-down as Soph.
 - Three owned materialized abilities can be equipped per deck and activated through Ability Amplification: Neutralizing Inferno, Nullified Barricade, and Phantom Matrix.
+- Four additional Neutrality abilities are available after ownership gates: Null Horizon and Axiomatic Reversal require any Neutrality Eternal; Whiteout Domain and Infinite Accord require any Neutrality Infinite. A deck still equips only three abilities.
+- Premium Light cards use distinct Soph-placement effects, and Eternal ASA cards use exact named-card summon materials. Phantom Matrix is exempt from all ASA materials.
+- Materialized abilities are Neutrality content. The first two additional endgame abilities require any owned Neutrality Eternal card; the next two require any owned Neutrality Infinite card. Other sets must not unlock them accidentally.
+- Garden of Cards and Valley of Null are Neutrality-specific. Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter are Neutrality materials and must not be treated as universal currencies for future sets.
 - Every Divine Light gain, including sacrifices, card effects, on-summon rewards, attacks, Bridge, quests, and pack flow, must route through the central grant path so Collection Power scaling applies consistently.
 - Rarity sources are distinct: Common/Rare/Epic/Legendary from packs, Enigmatic from Enigmas, Eternal from Eternity's Wake, Infinite from Infinitude crafting, Transcendent from Null Raid progression.
 

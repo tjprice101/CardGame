@@ -96,7 +96,7 @@ import {
 import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
 
 import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrounds';
-import { ABILITY_REGISTRY } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_REGISTRY, meetsAbilityOwnershipGate } from '@/data/abilities/abilityDefinitions';
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
@@ -1636,6 +1636,7 @@ function endTurnInternal(s: Store): void {
     phase: 'idle',
     abilityCooldownUntil: s.turn.abilityCooldownUntil,
     divineFieldUntil: s.turn.divineFieldUntil,
+    whiteoutDomainUntil: s.turn.whiteoutDomainUntil,
   };
   recompute(s);
 }
@@ -1917,7 +1918,14 @@ export const useStore = create<Store>()(
         s.turn = result.turn;
         s.board = result.board;
         s.deck = result.deck;
-        if (freeSummon) s.turn.limitlessLightStacks -= 10;
+        if (freeSummon) {
+          s.turn.limitlessLightStacks -= 10;
+          const phantomMatrix = ABILITY_REGISTRY.get('phantom-matrix');
+          if (phantomMatrix?.cooldownSeconds) {
+            if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+            s.turn.abilityCooldownUntil[phantomMatrix.id] = Date.now() + phantomMatrix.cooldownSeconds * 1000;
+          }
+        }
         s.turn.limitlessLightStacks += AIN_SOPH_AUR_SUMMON_STACK_REWARD;
         queuePendingEffects(s.turn, result);
         grantOblivion(s, result.oblivionBonus);
@@ -2058,6 +2066,7 @@ export const useStore = create<Store>()(
             phase: 'playing',
             abilityCooldownUntil: s.turn.abilityCooldownUntil,
             divineFieldUntil: s.turn.divineFieldUntil,
+            whiteoutDomainUntil: s.turn.whiteoutDomainUntil,
           };
           return;
         }
@@ -2067,6 +2076,7 @@ export const useStore = create<Store>()(
           phase: isGuidedTrial ? 'playing' : 'mulligan',
           abilityCooldownUntil: s.turn.abilityCooldownUntil,
           divineFieldUntil: s.turn.divineFieldUntil,
+          whiteoutDomainUntil: s.turn.whiteoutDomainUntil,
         };
         // Propagate equipped artifacts from the active saved deck into TurnState.
         const activeDeckForArtifacts = s.progress.savedDecks.find(d => d.id === s.progress.activeDeckId);
@@ -2215,6 +2225,7 @@ export const useStore = create<Store>()(
           queuePendingEffects(s.turn, result);
           grantOblivion(s, result.oblivionBonus);
           if (s.turn.divineFieldUntil && s.turn.divineFieldUntil > Date.now()) grantOblivion(s, 50);
+          if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil > Date.now()) grantOblivion(s, 100);
           s.turn.cardsPlayedThisTurn += 1;
           tickHandPlayCooldowns(s);
           recordCardPlay(s, deckCard.definitionId);
@@ -2480,6 +2491,11 @@ export const useStore = create<Store>()(
             grantOblivion(s, s.turn.limitlessLightStacks * 500);
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
             s.turn.abilityCooldownUntil['neutralizing-inferno'] = Date.now() + 30_000;
+          } else if (pending.sourceCard === 'ability:axiomatic-reversal') {
+            grantOblivion(s, 5_000);
+            s.deck = TurnSystem.drawCards(s.deck, 3);
+            if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+            s.turn.abilityCooldownUntil['axiomatic-reversal'] = Date.now() + 120_000;
           }
         } else if (pending.type === 'look_top_take') {
           if (selected.length === 0) {
@@ -3188,6 +3204,7 @@ export const useStore = create<Store>()(
       const ability = ABILITY_REGISTRY.get(abilityId);
       if (!ability) return false;
       const state = get();
+      if (!meetsAbilityOwnershipGate(ability, state.progress.collection, state.progress.infiniteCollection)) return false;
       if (state.progress.ownedAbilities?.[abilityId]) return false;
       if (state.progress.oblivion < ability.purchaseCost) return false;
       set(s => {
@@ -3260,6 +3277,7 @@ export const useStore = create<Store>()(
       const abilityId = activeDeck?.abilityLoadout?.[slot];
       const ability = abilityId ? ABILITY_REGISTRY.get(abilityId) : undefined;
       if (!ability || !state.progress.ownedAbilities?.[ability.id]) return;
+      if (!meetsAbilityOwnershipGate(ability, state.progress.collection, state.progress.infiniteCollection)) return;
       const now = Date.now();
       if ((state.turn.abilityCooldownUntil?.[ability.id] ?? 0) > now) {
         get().enqueueToast(`${ability.name} is on cooldown.`, 'warning', 2000);
@@ -3273,11 +3291,34 @@ export const useStore = create<Store>()(
         });
         return;
       }
+      if (ability.id === 'null-horizon') {
+        if (state.turn.limitlessLightStacks < 15) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 15;
+          for (const card of s.board.backSlots) {
+            if (!card) continue;
+            for (const id of Object.keys(card.attackCooldowns)) card.attackCooldowns[id] = Math.max(0, card.attackCooldowns[id] - 2);
+          }
+          if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+          s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
+        });
+        return;
+      }
+      if (ability.id === 'axiomatic-reversal') {
+        if (state.deck.hand.filter(card => CardRegistry.get(card.definitionId)?.type !== 'AinSophAur').length < 2) return;
+        set(s => {
+          s.turn.pendingEffect = { type: 'discard_choice', count: 2, sourceCard: 'ability:axiomatic-reversal' };
+          s.turn.pendingEffectQueue = [];
+        });
+        return;
+      }
       if (ability.id === 'nullified-barricade') {
         if (state.turn.limitlessLightStacks < 5) return;
         set(s => {
           s.turn.limitlessLightStacks -= 5;
           s.turn.divineFieldUntil = now + 60_000;
+          if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+          s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
         });
         get().enqueueToast('Divine Field active for 60 seconds.', 'success', 2200);
         return;
@@ -3290,12 +3331,38 @@ export const useStore = create<Store>()(
         window.dispatchEvent(new CustomEvent('asa-free-summon-request'));
         return;
       }
+      if (ability.id === 'whiteout-domain') {
+        if (state.turn.limitlessLightStacks < 20) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 20;
+          s.turn.whiteoutDomainUntil = now + 45_000;
+          if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+          s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
+        });
+        get().enqueueToast('Whiteout Domain active for 45 seconds.', 'success', 2200);
+        return;
+      }
+      if (ability.id === 'infinite-accord') {
+        if (state.turn.limitlessLightStacks < 30) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 30;
+          for (const card of s.board.backSlots) {
+            if (!card || card.type !== 'Light') continue;
+            for (const id of Object.keys(card.attackCooldowns)) delete card.attackCooldowns[id];
+          }
+          grantOblivion(s, 10_000);
+          if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+          s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
+        });
+        return;
+      }
       get().enqueueToast('Phantom Matrix requires an available ASA selection.', 'info', 2200);
     },
 
     tickAbilityTimers: (now = Date.now()) => {
       set(s => {
         if (s.turn.divineFieldUntil && s.turn.divineFieldUntil <= now) delete s.turn.divineFieldUntil;
+        if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil <= now) delete s.turn.whiteoutDomainUntil;
       });
     },
 

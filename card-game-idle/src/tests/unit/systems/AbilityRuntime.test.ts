@@ -135,4 +135,96 @@ describe('materialized ability runtime', () => {
     useStore.getState().loadSavedDeck(id);
     expect(useStore.getState().progress.activeDeckId).toBe(id);
   });
+
+  it('requires the correct Neutrality card tier for endgame ability purchases', () => {
+    resetStore();
+    useStore.setState(state => ({ ...state, progress: { ...state.progress, oblivion: 1_000_000 } }));
+    expect(useStore.getState().purchaseAbility('null-horizon')).toBe(false);
+    expect(useStore.getState().purchaseAbility('whiteout-domain')).toBe(false);
+
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        collection: { ...state.progress.collection, 'btei-voids-reaping': 1 },
+      },
+    }));
+    expect(useStore.getState().purchaseAbility('null-horizon')).toBe(true);
+    expect(useStore.getState().purchaseAbility('whiteout-domain')).toBe(false);
+
+    useStore.setState(state => ({
+      ...state,
+      progress: { ...state.progress, infiniteCollection: { 'inf-oblivion-absolute': 1 } },
+    }));
+    expect(useStore.getState().purchaseAbility('whiteout-domain')).toBe(true);
+  });
+
+  it('activates Null Horizon and Infinite Accord with their high stack costs', () => {
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        collection: { ...state.progress.collection, 'btei-voids-reaping': 1 },
+        infiniteCollection: { 'inf-oblivion-absolute': 1 },
+        ownedAbilities: { 'null-horizon': true, 'infinite-accord': true },
+        savedDecks: state.progress.savedDecks.map(deck => deck.id === state.progress.activeDeckId
+          ? { ...deck, abilityLoadout: { 1: 'null-horizon', 2: 'infinite-accord' } }
+          : deck),
+      },
+      turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 45 },
+    }));
+    useStore.getState().activateAbility(1);
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(30);
+    useStore.getState().activateAbility(2);
+    expect(useStore.getState().turn.limitlessLightStacks).toBe(0);
+    expect(useStore.getState().turn.abilityCooldownUntil?.['infinite-accord']).toBeGreaterThan(Date.now());
+  });
+
+  it('resolves Axiomatic Reversal through its two-card discard choice', () => {
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        collection: { ...state.progress.collection, 'btei-voids-reaping': 1 },
+        ownedAbilities: { 'axiomatic-reversal': true },
+        savedDecks: state.progress.savedDecks.map(deck => deck.id === state.progress.activeDeckId
+          ? { ...deck, abilityLoadout: { 1: 'axiomatic-reversal' } }
+          : deck),
+      },
+      turn: { ...state.turn, phase: 'playing' },
+      deck: { ...state.deck, hand: [
+        { instanceId: 'reversal-a', definitionId: 'light-neutrality-1', finish: 'normal' },
+        { instanceId: 'reversal-b', definitionId: 'light-neutrality-2', finish: 'normal' },
+      ] },
+    }));
+    useStore.getState().activateAbility(1);
+    expect(useStore.getState().turn.pendingEffect?.count).toBe(2);
+    const before = useStore.getState().progress.oblivion;
+    useStore.getState().resolvePending(['reversal-a', 'reversal-b']);
+    expect(useStore.getState().progress.oblivion).toBeGreaterThan(before);
+    expect(useStore.getState().turn.abilityCooldownUntil?.['axiomatic-reversal']).toBeGreaterThan(Date.now());
+  });
+
+  it('activates Whiteout Domain and applies its distinct timed field', () => {
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        infiniteCollection: { 'inf-oblivion-absolute': 1 },
+        ownedAbilities: { 'whiteout-domain': true },
+        savedDecks: state.progress.savedDecks.map(deck => deck.id === state.progress.activeDeckId
+          ? { ...deck, abilityLoadout: { 1: 'whiteout-domain' } }
+          : deck),
+      },
+      turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 20 },
+    }));
+    useStore.getState().activateAbility(1);
+    const state = useStore.getState();
+    expect(state.turn.whiteoutDomainUntil).toBeGreaterThan(Date.now());
+    expect(state.turn.limitlessLightStacks).toBe(0);
+    expect(state.turn.abilityCooldownUntil?.['whiteout-domain']).toBeGreaterThan(Date.now());
+  });
 });

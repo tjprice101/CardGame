@@ -305,13 +305,21 @@ describe('complete card runtime wiring', () => {
   it('summons and activates Bridge the Light for every registered Ain Soph Aur card', () => {
     for (const definition of asaDefinitions) {
       resetStore();
-      const materials = Array.from({ length: definition.summonMaterialCount }, (_, index) => {
-        const definitionId = index % 2 === 0 ? lightCards[0].definitionId : darkCards[0].definitionId;
+      const requirements = definition.summonMaterials ?? [{ count: definition.summonMaterialCount }];
+      const materialDefinitionIds = requirements.flatMap(requirement => Array.from({ length: requirement.count }, (_, index) => {
+        if (requirement.definitionIds?.[0]) return requirement.definitionIds[0];
+        if (requirement.cardTypes?.includes('Light') && !requirement.cardTypes.includes('Dark')) return lightCards[0].definitionId;
+        if (requirement.cardTypes?.includes('Dark') && !requirement.cardTypes.includes('Light')) return darkCards[0].definitionId;
+        return index % 2 === 0 ? lightCards[0].definitionId : darkCards[0].definitionId;
+      }));
+      const materials = materialDefinitionIds.map((definitionId, index) => {
         const materialDefinition = CardRegistry.get(definitionId);
         if (!materialDefinition || (materialDefinition.type !== 'Light' && materialDefinition.type !== 'Dark')) {
           throw new Error(`${definition.definitionId} has invalid material ${definitionId}`);
         }
-        return activeMainDeckCard(materialDefinition, `${definition.definitionId}-material-${index}`);
+        const requirement = requirements.find(candidate => candidate.definitionIds?.includes(definitionId));
+        const side = requirement?.side === 'soph' ? 'soph' : 'ain';
+        return { ...activeMainDeckCard(materialDefinition, `${definition.definitionId}-material-${index}`), side };
       });
       useStore.setState(state => ({
         ...state,

@@ -35,6 +35,7 @@ interface LightCardDefinition {
   ainAttack: LightAttackDefinition;
   sophAttack: LightAttackDefinition;
   onFlipEffects?: CardEffect[];
+  sophPlacementEffects?: CardEffect[];
   sacrificeStackRate: number;
 }
 ```

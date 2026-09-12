@@ -33,7 +33,13 @@ const light = (
     cooldownCards: 4, scaling: { kind: 'triune', amount: scale + 80 },
     stackCost: { kind: 'fixed', value: 3 }, tags: ['eternal', 'soph-attack'],
   },
-  sophPlacementEffects: [{ type: 'oblivion_flat', value: 80 }],
+  sophPlacementEffects: definitionId === 'btei-voids-reaping'
+    ? [{ type: 'oblivion_flat', value: 180 }, { type: 'draw', value: 1 }]
+    : definitionId === 'btei-convergence-of-eternity'
+      ? [{ type: 'oblivion_flat', value: 140 }, { type: 'look_top_take', look: 3, take: 1 }]
+      : definitionId === 'btei-omniscient-fracture'
+        ? [{ type: 'oblivion_flat', value: 160 }, { type: 'shuffle_discard' }]
+        : [{ type: 'oblivion_flat', value: 200 }, { type: 'look_top_take_type', look: 4, filter: ['Light', 'Dark'], take: 1 }],
   sacrificeStackRate: 80,
 });
 
@@ -70,9 +76,11 @@ const asa = (
   description: `Sacrifice ${materials} back-row cards to summon, then use Bridge the Light for a triune Divine Light payout.`,
   artKey,
   summonMaterialCount: materials,
-  summonMaterials: materials === 2
-    ? [{ cardTypes: ['Light'], count: 1 }, { cardTypes: ['Dark'], count: 1 }]
-    : [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }],
+  summonMaterials: definitionId === 'btei-axiom-of-oblivion'
+    ? [{ definitionIds: ['btei-voids-reaping'], count: 1 }, { definitionIds: ['btei-null-edict'], count: 1 }, { definitionIds: ['btei-temporal-ruin'], count: 1 }]
+    : definitionId === 'btei-sovereign-domain'
+      ? [{ definitionIds: ['btei-convergence-of-eternity'], count: 1 }, { definitionIds: ['btei-omniscient-fracture'], count: 1 }]
+      : [{ definitionIds: ['btei-neutrality-prime-equilibrium'], count: 1 }, { definitionIds: ['btei-null-edict'], count: 1 }],
   onSummonEffects: [{ type: 'oblivion_flat', value: 150 }],
   bridgeAttack: {
     id: `${definitionId}:bridge-the-light`, name: 'Bridge the Light',

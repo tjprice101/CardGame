@@ -26,6 +26,8 @@ At 2+ charge, `flipSoph` can:
 
 Light `onFlipEffects` are supported through the effect executor if future Light cards define them.
 
+Light `sophPlacementEffects` resolve when a Light card is placed face-down as Soph. Eternal and Infinite Light cards use these effects for stronger, card-specific placement identities.
+
 ## Ain Lifecycle
 
 Ain cards are face-up and active.

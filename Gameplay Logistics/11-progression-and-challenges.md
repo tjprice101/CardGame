@@ -1,3 +1,11 @@
+# Neutrality-Specific Progression
+
+Garden of Cards, Valley of Null, Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter currently belong exclusively to the Neutrality set. These are not universal progression currencies. Future sets must define their own dungeon rewards and material economies.
+
+Ability Materialization is also Neutrality-specific. The first two endgame abilities require any owned Neutrality Eternal card; the second two require any owned Neutrality Infinite card.
+
+The current catalog contains seven Neutrality abilities total. Only three may be equipped per deck. Null Horizon and Axiomatic Reversal are Eternal-gated; Whiteout Domain and Infinite Accord are Infinite-gated and use substantially higher endgame costs.
+
 # Progression And Challenges
 
 ## Packs And Collection
