@@ -17,7 +17,7 @@ describe('Garden of Cards dungeon runtime', () => {
     expect(getLinearEncounterHp(1, 1, 3, 10_000, 5_000)).toBe(20_000);
   });
 
-  it('completes Valley of Null encounters repeatedly and grants configured drops', () => {
+  it('completes Valley of Null encounters repeatedly and grants configured drops with victory popups', () => {
     resetStore();
     const dungeon = GARDEN_DUNGEONS[0];
     vi.spyOn(Math, 'random').mockReturnValue(0);
@@ -29,6 +29,12 @@ describe('Garden of Cards dungeon runtime', () => {
         gardenDungeon: { ...state.gardenDungeon, encounterHp: 0 },
       }));
       expect(useStore.getState().resolveGardenEncounter()).toBe(true);
+      expect(useStore.getState().gardenDungeon.phase).toBe('victory');
+      expect(useStore.getState().continueGardenDungeon()).toBe(true);
+      if (index < dungeon.encounters.length - 1) {
+        expect(useStore.getState().gardenDungeon.phase).toBe('active');
+        expect(useStore.getState().gardenDungeon.timeRemainingSeconds).toBe(300);
+      }
     }
     const firstRun = useStore.getState();
     expect(firstRun.gardenDungeon.phase).toBe('complete');
@@ -42,7 +48,7 @@ describe('Garden of Cards dungeon runtime', () => {
     vi.restoreAllMocks();
   });
 
-  it('auto-fails after five minutes without removing previously earned materials', () => {
+  it('triggers defeat phase after timeout without removing previously earned materials', () => {
     resetStore();
     const dungeon = GARDEN_DUNGEONS[0];
     useStore.setState(state => ({
@@ -53,8 +59,10 @@ describe('Garden of Cards dungeon runtime', () => {
     useStore.getState().tickGardenDungeonTimer(299);
     expect(useStore.getState().gardenDungeon.phase).toBe('active');
     useStore.getState().tickGardenDungeonTimer(1);
-    expect(useStore.getState().gardenDungeon.phase).toBe('idle');
+    expect(useStore.getState().gardenDungeon.phase).toBe('defeat');
     expect(useStore.getState().progress.nullifiedLattice).toBe(2);
+    useStore.getState().exitGardenDungeon();
+    expect(useStore.getState().gardenDungeon.phase).toBe('idle');
   });
 
   it('consumes one Eternal card and all material currencies atomically when crafting', () => {

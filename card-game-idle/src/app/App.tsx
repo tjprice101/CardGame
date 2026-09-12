@@ -37,6 +37,7 @@ const PartyHub = lazy(() => import('@/ui/social/PartyHub'));
 const BattlegroundLobby = lazy(() => import('@/ui/battleground/BattlegroundLobby'));
 const GardenOfCards = lazy(() => import('@/ui/garden/GardenOfCards'));
 const GardenDungeonHUD = lazy(() => import('@/ui/garden/GardenDungeonHUD'));
+const GardenResultModal = lazy(() => import('@/ui/garden/GardenResultModal'));
 const BattlegroundMatch = lazy(() => import('@/ui/battleground/BattlegroundMatch'));
 const BattlegroundRewards = lazy(() => import('@/ui/battleground/BattlegroundRewards'));
 const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/BattlegroundInviteModal'));
@@ -801,7 +802,8 @@ export default function App() {
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
   const bossResultVisible = bossFight.kind !== 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat');
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showBattleground || showGardenOfCards || showAscension || bossResultVisible;
+  const gardenResultVisible = gardenDungeon.phase === 'victory' || gardenDungeon.phase === 'defeat';
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showBattleground || showGardenOfCards || showAscension || bossResultVisible || gardenResultVisible;
 
   // When a combat session starts (including co-op launches), force-close
   // open overlays so both clients transition into the arena immediately.
@@ -1047,6 +1049,15 @@ export default function App() {
         <div style={{ position: 'absolute', inset: 0, zIndex: 80, pointerEvents: 'none' }}>
           <div style={{ pointerEvents: 'auto' }}>
             <Suspense fallback={null}><BossResultModal /></Suspense>
+          </div>
+        </div>
+      )}
+
+      {/* Garden dungeon result modal (victory / defeat) */}
+      {gardenResultVisible && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 85, pointerEvents: 'none' }}>
+          <div style={{ pointerEvents: 'auto' }}>
+            <Suspense fallback={null}><GardenResultModal /></Suspense>
           </div>
         </div>
       )}

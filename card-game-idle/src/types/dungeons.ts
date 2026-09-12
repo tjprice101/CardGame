@@ -22,7 +22,7 @@ export interface GardenDungeonDefinition {
 }
 
 export interface GardenDungeonState {
-  phase: 'idle' | 'active' | 'complete';
+  phase: 'idle' | 'active' | 'victory' | 'defeat' | 'complete';
   dungeonId: string | null;
   encounterIndex: number;
   encounterHp: number;

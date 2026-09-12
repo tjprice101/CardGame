@@ -473,6 +473,7 @@ interface StoreActions {
   grantGardenCurrency: (currency: 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter', amount?: number) => void;
   startGardenDungeon: (dungeonId: string) => boolean;
   resolveGardenEncounter: () => boolean;
+  continueGardenDungeon: () => boolean;
   exitGardenDungeon: () => void;
   tickGardenDungeonTimer: (deltaSeconds: number) => void;
   activateAbility: (slot: 1 | 2 | 3) => void;
@@ -3246,11 +3247,37 @@ export const useStore = create<Store>()(
       const dropped = encounter.reward && Math.random() < encounter.reward.chance ? encounter.reward.currency : null;
       set(s => {
         if (dropped) s.progress[dropped] += 1;
-        const nextIndex = s.gardenDungeon.encounterIndex + 1;
-        const nextEncounter = dungeon.encounters[nextIndex];
-        s.gardenDungeon = nextEncounter
-          ? { ...s.gardenDungeon, encounterIndex: nextIndex, encounterHp: nextEncounter.maxHp, encounterMaxHp: nextEncounter.maxHp, lastReward: dropped }
-          : { ...s.gardenDungeon, phase: 'complete', encounterHp: 0, lastReward: dropped };
+        s.gardenDungeon.phase = 'victory';
+        s.gardenDungeon.lastReward = dropped;
+      });
+      return true;
+    },
+
+    continueGardenDungeon: () => {
+      const state = get();
+      if (state.gardenDungeon.phase !== 'victory') return false;
+      const dungeon = GARDEN_DUNGEONS.find(entry => entry.id === state.gardenDungeon.dungeonId);
+      if (!dungeon) return false;
+      const nextIndex = state.gardenDungeon.encounterIndex + 1;
+      const nextEncounter = dungeon.encounters[nextIndex];
+      set(s => {
+        if (nextEncounter) {
+          s.gardenDungeon = {
+            ...s.gardenDungeon,
+            phase: 'active',
+            encounterIndex: nextIndex,
+            encounterHp: nextEncounter.maxHp,
+            encounterMaxHp: nextEncounter.maxHp,
+            timeRemainingSeconds: 300,
+            lastReward: null,
+          };
+        } else {
+          s.gardenDungeon = {
+            ...s.gardenDungeon,
+            phase: 'complete',
+            encounterHp: 0,
+          };
+        }
       });
       return true;
     },
@@ -3265,7 +3292,8 @@ export const useStore = create<Store>()(
         if (s.gardenDungeon.phase !== 'active') return;
         s.gardenDungeon.timeRemainingSeconds = Math.max(0, s.gardenDungeon.timeRemainingSeconds - deltaSeconds);
         if (s.gardenDungeon.timeRemainingSeconds <= 0) {
-          s.gardenDungeon = { ...defaultGardenDungeon, runCount: s.gardenDungeon.runCount, lastReward: s.gardenDungeon.lastReward };
+          s.gardenDungeon.phase = 'defeat';
+          s.gardenDungeon.timeRemainingSeconds = 0;
         }
       });
     },

@@ -95,20 +95,19 @@ export default function GardenDungeonHUD() {
           <button
             type="button"
             onClick={resolveGardenEncounter}
+            className="garden-pearlescent-btn"
             style={{
-              padding: '3px 10px',
+              padding: '3px 12px',
               borderRadius: 5,
-              border: '1px solid rgba(140,240,160,0.8)',
-              background: 'linear-gradient(180deg, rgba(30,100,50,0.9), rgba(15,60,30,0.95))',
-              color: '#b0ffc8',
+              color: '#000000',
               cursor: 'pointer',
               fontSize: 10,
               fontWeight: 'bold',
               letterSpacing: 0.5,
-              boxShadow: '0 0 12px rgba(100,255,140,0.4)',
+              textTransform: 'uppercase',
             }}
           >
-            Claim Reward
+            Claim Victory
           </button>
         )}
       </div>

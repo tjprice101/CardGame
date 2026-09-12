@@ -1639,6 +1639,71 @@ html.compact-mode .ui-panel-intro { padding: 14px 18px !important; }
   100% { transform: translate(-4px, -68px) scale(0.85); opacity: 0; }
 }
 
+/* Garden of Cards pearlescent rainbow border shimmer */
+@keyframes gardenPearlescentBorder {
+  0%   { background-position: 0% 50%; filter: hue-rotate(0deg); }
+  50%  { background-position: 100% 50%; filter: hue-rotate(180deg); }
+  100% { background-position: 0% 50%; filter: hue-rotate(360deg); }
+}
+
+@keyframes gardenWhitePulse {
+  0%, 100% { box-shadow: 0 0 14px rgba(255, 255, 255, 0.4), 0 0 28px rgba(180, 220, 255, 0.2); }
+  50%      { box-shadow: 0 0 24px rgba(255, 255, 255, 0.8), 0 0 44px rgba(220, 190, 255, 0.45); }
+}
+
+.garden-pearlescent-card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(14, 16, 24, 0.96) 0%, rgba(6, 8, 14, 0.98) 100%);
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.garden-pearlescent-card::before {
+  content: '';
+  position: absolute;
+  inset: -1.5px;
+  border-radius: inherit;
+  background: linear-gradient(115deg, #ffffff, #c4e0e5, #ffccd5, #e0c3fc, #8ec5fc, #ffffff);
+  background-size: 300% 300%;
+  animation: gardenPearlescentBorder 6s ease infinite;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.garden-pearlescent-btn {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 243, 250, 0.94) 100%);
+  color: #0b0d14;
+  font-weight: 700;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), 0 0 12px rgba(255, 255, 255, 0.5);
+  transition: all 0.18s ease;
+}
+
+.garden-pearlescent-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, #ffffff, #ffbbf0, #9bf0e1, #b5c7ff, #ffe39f, #ffffff);
+  background-size: 300% 300%;
+  animation: gardenPearlescentBorder 4s linear infinite;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.garden-pearlescent-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 20px rgba(255, 255, 255, 0.85);
+}
+
+.garden-pearlescent-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
 /* Cinematic title-card fade-in for the turn header */
 @keyframes turnHeaderFadeIn {
   0%   { opacity: 0; letter-spacing: 18px; filter: blur(6px); }
