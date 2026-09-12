@@ -3,6 +3,7 @@ import { useStore } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 
 const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({});
+const abilityIconUrl = (key: string) => `${import.meta.env.BASE_URL}assets/ability-icons/${key}.png`;
 
 export default function AbilityMaterialization() {
   const oblivion = useStore(state => state.progress.oblivion);
@@ -25,7 +26,7 @@ export default function AbilityMaterialization() {
             const gateMet = meetsAbilityOwnershipGate(ability, collection, infiniteCollection);
             return (
               <article key={ability.id} style={{ minHeight: 190, padding: 18, borderRadius: 10, border: `1px solid ${owned ? 'rgba(120,220,140,0.72)' : 'rgba(110,185,240,0.3)'}`, background: owned ? 'rgba(60,150,90,0.12)' : 'rgba(18,38,62,0.72)', boxShadow: owned ? '0 0 20px rgba(120,220,140,0.12)' : '0 10px 24px rgba(0,0,0,0.2)', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ color: owned ? '#9be8a8' : '#7dd4f8', fontFamily: uiTypography.display, fontSize: 17, letterSpacing: 0.6 }}>{ability.name}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: owned ? '#9be8a8' : '#7dd4f8', fontFamily: uiTypography.display, fontSize: 17, letterSpacing: 0.6 }}><img src={abilityIconUrl(ability.iconAssetKey)} alt="" aria-hidden="true" width={42} height={42} style={{ width: 42, height: 42, objectFit: 'cover', borderRadius: 7 }} />{ability.name}</div>
                 <div style={{ marginTop: 10, color: 'rgba(216,240,255,0.78)', fontSize: 11, lineHeight: 1.55, flex: 1 }}>{ability.description}</div>
                 <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                   <span style={{ color: '#f7c04a', fontSize: 11 }}>{ability.purchaseCost.toLocaleString()} Divine Light</span>

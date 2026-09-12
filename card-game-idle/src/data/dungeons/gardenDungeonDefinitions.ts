@@ -12,7 +12,7 @@ export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [
     name: 'Valley of Null',
     subtitle: 'A three-encounter material expedition',
     description: 'A repeatable introductory dungeon. Each encounter presents an independent chance to recover a material used in Infinite card construction.',
-    coverArt: `${import.meta.env.BASE_URL}assets/menu-backgrounds/neutrality%20infinite%20card%20first%20acquisition%20splash%20screen.png`,
+    coverArt: `${import.meta.env.BASE_URL}assets/dungeons/valley-of-null.png`,
     available: true,
     encounters: [
       { id: 'valley-of-null-1', name: 'The Quiet Descent', maxHp: 10_000, reward: { currency: 'nullifiedLattice', chance: 0.5 } },

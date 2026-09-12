@@ -8,6 +8,7 @@ export interface AbilityDefinition {
   readonly purchaseCost: number;
   readonly cooldownSeconds?: number;
   readonly stackCost?: number;
+  readonly iconAssetKey: string;
   readonly ownershipGate?: 'anyNeutralityEternal' | 'anyNeutralityInfinite';
   readonly buff?: {
     readonly id: string;
@@ -26,6 +27,7 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     description: 'Discard 1 card to gain Divine Light equal to your current Limitless Light Stacks multiplied by 500. Cooldown: 30 seconds.',
     purchaseCost: 5_000,
     cooldownSeconds: 30,
+    iconAssetKey: 'null-horizon',
   },
   {
     id: 'nullified-barricade',
@@ -34,6 +36,7 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     description: 'Spend 5 Limitless Light Stacks to gain Divine Field for 60 seconds. Each card played during Divine Field grants 50 Divine Light.',
     purchaseCost: 5_000,
     stackCost: 5,
+    iconAssetKey: 'whiteout-domain',
     buff: {
       id: 'divine-field',
       name: 'Divine Field',
@@ -49,6 +52,7 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     description: 'Spend 10 Limitless Light Stacks to free-summon any Ain Soph Aur from the Extra Deck.',
     purchaseCost: 5_000,
     stackCost: 10,
+    iconAssetKey: 'whiteout-domain',
   },
   {
     id: 'null-horizon',
@@ -59,6 +63,7 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     stackCost: 15,
     cooldownSeconds: 90,
     ownershipGate: 'anyNeutralityEternal',
+    iconAssetKey: 'null-horizon',
   },
   {
     id: 'axiomatic-reversal',
@@ -68,6 +73,7 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     purchaseCost: 97_000,
     cooldownSeconds: 120,
     ownershipGate: 'anyNeutralityEternal',
+    iconAssetKey: 'axiomatic-reversal',
   },
   {
     id: 'whiteout-domain',
@@ -78,6 +84,7 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     stackCost: 20,
     cooldownSeconds: 120,
     ownershipGate: 'anyNeutralityInfinite',
+    iconAssetKey: 'whiteout-domain',
     buff: {
       id: 'whiteout-domain',
       name: 'Whiteout Domain',
@@ -95,6 +102,7 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     stackCost: 30,
     cooldownSeconds: 180,
     ownershipGate: 'anyNeutralityInfinite',
+    iconAssetKey: 'infinite-accord',
   },
 ];
 
