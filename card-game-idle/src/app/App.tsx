@@ -845,8 +845,10 @@ export default function App() {
 
   // Unified Eternity's Wake background overlay during any active boss fight (matches selection menu).
   const showBossBackdrop = inBossFight && BOSS_DEFINITIONS.some(b => b.id === bossFight.activeBossId);
+  const showGardenBackdrop = gardenDungeon.phase === 'active';
   const showPartyShell = showCardBoundCoop || partyHubOpen || partyActiveId !== null || partyIncomingInvite !== null;
   const ETERNITYS_WAKE_BG = 'radial-gradient(circle at 50% -8%, rgba(255, 108, 108, 0.22) 0%, rgba(255, 108, 108, 0) 35%), radial-gradient(circle at 18% 86%, rgba(149, 62, 95, 0.22) 0%, rgba(149, 62, 95, 0) 44%), repeating-linear-gradient(126deg, rgba(255, 130, 130, 0.08) 0px, rgba(255, 130, 130, 0.08) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 24px), linear-gradient(180deg, rgba(8, 4, 12, 0.985) 0%, rgba(18, 9, 20, 0.985) 100%)';
+  const GARDEN_DUNGEON_BG = 'radial-gradient(circle at 50% -10%, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0) 45%), radial-gradient(circle at 50% 110%, rgba(180, 200, 230, 0.12) 0%, rgba(0, 0, 0, 0) 50%), repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0px, rgba(255, 255, 255, 0.035) 1px, rgba(0, 0, 0, 0) 1px, rgba(0, 0, 0, 0) 28px), linear-gradient(180deg, rgba(5, 6, 10, 0.99) 0%, rgba(9, 11, 17, 0.99) 100%)';
 
   return (
     <div
@@ -876,6 +878,22 @@ export default function App() {
             inset: 0,
             background: ETERNITYS_WAKE_BG,
             opacity: 0.92,
+            pointerEvents: 'none',
+            zIndex: 1,
+            transition: 'opacity 600ms ease',
+          }}
+        />
+      )}
+
+      {/* Unified Garden of Cards dungeon background, fades in during active expedition */}
+      {showGardenBackdrop && !isMenuOpen && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: GARDEN_DUNGEON_BG,
+            opacity: 0.95,
             pointerEvents: 'none',
             zIndex: 1,
             transition: 'opacity 600ms ease',

@@ -1,6 +1,6 @@
 ﻿import { useState, useEffect, useRef } from 'react';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
-import { useStore, selectBoard, selectBossFight, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
+import { useStore, selectBoard, selectBossFight, selectGardenDungeon, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
@@ -92,6 +92,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
   useThemeVersion();
   const board = useStore(selectBoard);
   const bossFight     = useStore(selectBossFight);
+  const gardenDungeon = useStore(selectGardenDungeon);
   const canEmbraceInfinite = useStore(selectCanEmbraceInfinite);
   const turn = useStore(selectTurn);
   const progress = useStore(selectProgress);
@@ -280,13 +281,14 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
   }, [isAttackPanelOpen]);
 
   const playfieldRightInset = 'var(--angel-drawer-hand-offset, 308px)';
+  const isSpecialBossMode = bossFight.mode === 'active' || gardenDungeon.phase === 'active';
 
   return (
     <div style={{
       position: 'absolute',
       left: 0,
       right: playfieldRightInset,
-      top: bossFight.mode === 'active' ? 'clamp(204px, 22vh, 250px)' : 'clamp(104px, 12vh, 150px)',
+      top: isSpecialBossMode ? 'clamp(156px, 17vh, 190px)' : 'clamp(104px, 12vh, 150px)',
       bottom: 'clamp(168px, 21vh, 224px)',
       marginInline: 'auto',
       pointerEvents: 'none',

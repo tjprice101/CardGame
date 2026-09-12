@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react';
-import { useStore, selectTurn, selectBossFight, selectBattleground } from '@/state/store';
+import { useStore, selectTurn, selectBossFight, selectGardenDungeon, selectBattleground } from '@/state/store';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { uiTypography } from '@/ui/theme';
 import ScoreDisplay from './ScoreDisplay';
@@ -24,13 +24,14 @@ import CardInspectorPanel from './CardInspectorPanel';
 function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => void }) {
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
+  const gardenDungeon = useStore(selectGardenDungeon);
 
-  // All cards are Neutrality; dominant element is always Neutrality.
-  const tint = SET_ACCENT;
-  const setName = SET_LABEL;
   const isBoss = bossFight.mode === 'active';
-  const tintCss = isBoss ? '#ff6b6b' : tint;
-  const phaseLabel = turn.phase === 'mulligan' ? 'Mulligan' : turn.phase === 'playing' ? 'Playing' : 'Idle';
+  const isGarden = gardenDungeon.phase === 'active';
+  const tint = SET_ACCENT;
+  const setName = isGarden ? 'Valley of Null' : SET_LABEL;
+  const tintCss = isGarden ? '#ffffff' : isBoss ? '#ff6b6b' : tint;
+  const phaseLabel = turn.phase === 'mulligan' ? 'Mulligan' : turn.phase === 'playing' ? (isGarden ? 'Expedition Turn' : 'Playing') : 'Idle';
 
   return (
     <div style={{
@@ -38,8 +39,10 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
       display: 'flex', alignItems: 'center',
       justifyContent: 'flex-start',
       padding: '0 22px',
-      background: 'linear-gradient(180deg, rgba(5,5,7,0.92) 0%, rgba(5,5,7,0.4) 75%, transparent 100%)',
-      borderBottom: `1px solid rgba(244,244,248,0.06)`,
+      background: isGarden
+        ? 'linear-gradient(180deg, rgba(3,4,7,0.96) 0%, rgba(6,8,12,0.6) 75%, transparent 100%)'
+        : 'linear-gradient(180deg, rgba(5,5,7,0.92) 0%, rgba(5,5,7,0.4) 75%, transparent 100%)',
+      borderBottom: isGarden ? '1px solid rgba(255,255,255,0.14)' : `1px solid rgba(244,244,248,0.06)`,
       pointerEvents: 'none',
       zIndex: 15,
       fontFamily: uiTypography.body,
@@ -54,23 +57,26 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
       >
         <span style={{
           fontFamily: uiTypography.display, fontSize: 14, letterSpacing: 5,
-          color: 'rgba(244,244,248,0.96)', textTransform: 'uppercase',
-          textShadow: `0 0 14px ${tintCss}66, 0 0 28px rgba(244,244,248,0.18)`,
+          color: '#ffffff', textTransform: 'uppercase',
+          textShadow: isGarden
+            ? '0 0 16px rgba(255,255,255,0.7), 0 0 28px rgba(200,220,255,0.3)'
+            : `0 0 14px ${tintCss}66, 0 0 28px rgba(244,244,248,0.18)`,
         }}>
           Turn {turn.turnNumber ?? 1}
         </span>
         <span style={{
-          width: 1, height: 14, background: 'rgba(244,244,248,0.25)',
+          width: 1, height: 14, background: isGarden ? 'rgba(255,255,255,0.4)' : 'rgba(244,244,248,0.25)',
         }} />
         <span style={{
           fontSize: 10, letterSpacing: 4, textTransform: 'uppercase',
-          color: 'rgba(244,244,248,0.6)',
+          color: isGarden ? 'rgba(255,255,255,0.85)' : 'rgba(244,244,248,0.6)',
         }}>
           {setName}
         </span>
         <span style={{
           fontSize: 10, letterSpacing: 3, textTransform: 'uppercase',
-          color: `${tintCss}cc`,
+          color: isGarden ? '#ffffff' : `${tintCss}cc`,
+          textShadow: isGarden ? '0 0 10px rgba(255,255,255,0.45)' : undefined,
         }}>
           · {phaseLabel}
         </span>
@@ -128,8 +134,10 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
  */
 function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: string | null; onRequestBeginTurn?: () => void }) {
   const bossFight = useStore(selectBossFight);
+  const gardenDungeon = useStore(selectGardenDungeon);
   const battleground = useStore(selectBattleground);
   const inBossFight = bossFight.mode === 'active';
+  const inGardenDungeon = gardenDungeon.phase === 'active';
   const inBattleground = battleground.mode === 'active';
   return (
     <div
@@ -154,8 +162,8 @@ function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: s
         pointerEvents: 'none',
       }} />
 
-      {/* Deck pills — clear the compact boss strip without pushing the board controls down. */}
-      <div style={{ padding: `${inBossFight ? 148 : inBattleground ? 58 : 58}px 14px 0`, flexShrink: 0 }}>
+      {/* Deck pills — clear the compact boss/dungeon strip without pushing the board controls down. */}
+      <div style={{ padding: `${inBossFight || inGardenDungeon ? 148 : inBattleground ? 58 : 58}px 14px 0`, flexShrink: 0 }}>
         <DeckStatus />
       </div>
 
@@ -195,14 +203,16 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
   const [showOblivionScreen, setShowOblivionScreen] = useState(false);
   const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
   const battleground = useStore(selectBattleground);
+  const gardenDungeon = useStore(selectGardenDungeon);
   const inBattleground = battleground.mode === 'active';
+  const inGardenDungeon = gardenDungeon.phase === 'active';
 
   return (
     <>
       {/* Core play surfaces */}
       <BoardDisplay onHoverCard={setInspectedCardId} />
-      {/* ScoreDisplay overlaps the battleground pill — the BG bar already shows both scores */}
-      {!inBattleground && <ScoreDisplay />}
+      {/* ScoreDisplay overlaps the battleground/garden banner — those headers already present score/timer/currencies */}
+      {!inBattleground && !inGardenDungeon && <ScoreDisplay />}
       <AngelStatPanel />
 
       {/* Top status bar — set · turn · phase */}

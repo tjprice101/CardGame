@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useStore, selectBoard, selectTurn, selectComputedStats, selectBossFight } from '@/state/store';
+import { useStore, selectBoard, selectTurn, selectComputedStats, selectBossFight, selectGardenDungeon } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 const styles: Record<string, React.CSSProperties> = {
   panel: {
@@ -47,6 +47,7 @@ export default function AngelStatPanel() {
   const turn = useStore(selectTurn);
   const stats = useStore(selectComputedStats);
   const bossFight = useStore(selectBossFight);
+  const gardenDungeon = useStore(selectGardenDungeon);
 
   // Single pass over board slots instead of separate .filter() calls.
   // Must be declared before any conditional return to satisfy Rules of Hooks.
@@ -64,9 +65,8 @@ export default function AngelStatPanel() {
     return { asaCount, mainDeckCount, ainCount, sophCount };
   }, [board.frontSlots, board.backSlots]);
 
-  // During an active boss fight the boss panel covers this area — hide to
-  // avoid visual clutter. Must come AFTER all hooks to satisfy Rules of Hooks.
-  if (bossFight.mode === 'active') return null;
+  // During active boss / expedition runs the top status panels cover this area — hide to avoid overlap.
+  if (bossFight.mode === 'active' || gardenDungeon.phase === 'active') return null;
 
   const hasAnything = asaCount > 0 || mainDeckCount > 0;
 

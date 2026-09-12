@@ -1,5 +1,5 @@
 ﻿import { useMemo } from 'react';
-import { useStore, selectBossFight } from '@/state/store';
+import { useStore, selectBossFight, selectGardenDungeon } from '@/state/store';
 import { SET_ACCENT } from '@/data/elements';
 
 /**
@@ -8,9 +8,11 @@ import { SET_ACCENT } from '@/data/elements';
  */
 export default function ArenaShell() {
   const bossFight = useStore(selectBossFight);
+  const gardenDungeon = useStore(selectGardenDungeon);
 
   const tint = SET_ACCENT;
   const isBossActive = bossFight.mode === 'active';
+  const isGardenActive = gardenDungeon.phase === 'active';
 
   // Parse hex → rgb components for nebula corner gradients.
   const tintRgb = useMemo(() => {
@@ -21,16 +23,30 @@ export default function ArenaShell() {
   }, [tint]);
 
   // Boss fight: corners shift to crimson + violet (collapsing-star palette).
-  const cornerA = isBossActive ? { r: 255, g: 70, b: 70 } : tintRgb;
-  const cornerB = isBossActive ? { r: 120, g: 60, b: 255 } : tintRgb;
-  const nebulaA = `radial-gradient(circle at 0% 0%, rgba(${cornerA.r},${cornerA.g},${cornerA.b},0.22) 0%, rgba(${cornerA.r},${cornerA.g},${cornerA.b},0.08) 40%, transparent 72%)`;
-  const nebulaB = `radial-gradient(circle at 100% 100%, rgba(${cornerB.r},${cornerB.g},${cornerB.b},0.18) 0%, rgba(${cornerB.r},${cornerB.g},${cornerB.b},0.06) 40%, transparent 72%)`;
+  // Garden dungeon: corners shift to monochrome bone-white + obsidian void radiance.
+  const cornerA = isGardenActive
+    ? { r: 245, g: 245, b: 255 }
+    : isBossActive
+      ? { r: 255, g: 70, b: 70 }
+      : tintRgb;
+  const cornerB = isGardenActive
+    ? { r: 180, g: 195, b: 220 }
+    : isBossActive
+      ? { r: 120, g: 60, b: 255 }
+      : tintRgb;
+  const nebulaA = `radial-gradient(circle at 0% 0%, rgba(${cornerA.r},${cornerA.g},${cornerA.b},${isGardenActive ? 0.28 : 0.22}) 0%, rgba(${cornerA.r},${cornerA.g},${cornerA.b},${isGardenActive ? 0.12 : 0.08}) 40%, transparent 72%)`;
+  const nebulaB = `radial-gradient(circle at 100% 100%, rgba(${cornerB.r},${cornerB.g},${cornerB.b},${isGardenActive ? 0.24 : 0.18}) 0%, rgba(${cornerB.r},${cornerB.g},${cornerB.b},${isGardenActive ? 0.09 : 0.06}) 40%, transparent 72%)`;
 
   // Altar floor halo — central elliptical pool of element-tinted light that
   // gives the void a "ground" so cards feel like they sit on a surface
-  // rather than floating in nothing. Boss fights swap to a crimson hot floor.
-  const altarRgb = isBossActive ? { r: 255, g: 80, b: 80 } : tintRgb;
-  const altarHalo = `radial-gradient(ellipse 64% 38% at 50% 50%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.18) 0%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.08) 38%, transparent 72%)`;
+  // rather than floating in nothing. Boss fights swap to a crimson hot floor,
+  // while Garden expeditions swap to a stark crystalline monochrome light pool.
+  const altarRgb = isGardenActive
+    ? { r: 250, g: 250, b: 255 }
+    : isBossActive
+      ? { r: 255, g: 80, b: 80 }
+      : tintRgb;
+  const altarHalo = `radial-gradient(ellipse 64% 38% at 50% 50%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},${isGardenActive ? 0.22 : 0.18}) 0%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},${isGardenActive ? 0.1 : 0.08}) 38%, transparent 72%)`;
 
   // Drifting cosmic motes — 8 deterministic seeds so positions don't reshuffle
   // every render. Spread across the central play area, faint, slow.
@@ -98,9 +114,11 @@ export default function ArenaShell() {
           band of light that suggests altitude separation between the rows. */}
       <div style={{
         position: 'absolute', top: '46%', left: '8%', right: '8%', height: 1,
-        background: `linear-gradient(90deg, transparent 0%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.35) 20%, rgba(244,244,248,0.5) 50%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.35) 80%, transparent 100%)`,
-        opacity: 0.55,
-        boxShadow: `0 0 14px rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.18)`,
+        background: isGardenActive
+          ? 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 20%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0.45) 80%, transparent 100%)'
+          : `linear-gradient(90deg, transparent 0%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.35) 20%, rgba(244,244,248,0.5) 50%, rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.35) 80%, transparent 100%)`,
+        opacity: isGardenActive ? 0.75 : 0.55,
+        boxShadow: isGardenActive ? '0 0 16px rgba(255,255,255,0.35)' : `0 0 14px rgba(${altarRgb.r},${altarRgb.g},${altarRgb.b},0.18)`,
       }} />
 
       {/* Element nebula — top-left corner bloom */}

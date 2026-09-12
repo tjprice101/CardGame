@@ -4739,6 +4739,7 @@ export const selectHand = (s: Store): DeckCard[] => s.deck.hand;
 export const selectPhase = (s: Store): TurnState['phase'] => s.turn.phase;
 export const selectExtraDeck = (s: Store): ExtraDeckEntry[] => s.deck.extraDeck;
 export const selectBossFight = (s: Store): BossFightState => s.bossFight;
+export const selectGardenDungeon = (s: Store): GardenDungeonState => s.gardenDungeon;
 export const selectBattleground = (s: Store): BattlegroundState => s.battleground;
 export const selectTrialDeck = (s: Store): TrialDeckState => s.trialDeck;
 export const selectProgress = (s: Store): ProgressState => s.progress;
