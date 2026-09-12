@@ -44,7 +44,7 @@ export default function GardenOfCards({ onClose }: Props) {
             <button type="button" onClick={() => move(1)} aria-label="Next dungeon" style={navStyle}>›</button>
           </div>
         </div>
-        <div ref={scrollerRef} onWheel={event => { if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) move(event.deltaY > 0 ? 1 : -1); }} style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '12px calc(50% - min(40vw, 330px)) 20px', scrollbarWidth: 'thin' }}>
+        <div ref={scrollerRef} style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '12px calc(50% - min(40vw, 330px)) 20px', scrollbarWidth: 'thin' }}>
           {GARDEN_DUNGEONS.map((dungeon, index) => (
             <button key={dungeon.id} type="button" onClick={() => { setSelectedIndex(index); scrollerRef.current?.children[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} style={{ flex: '0 0 min(80vw, 660px)', aspectRatio: '1.55', scrollSnapAlign: 'center', borderRadius: 12, border: index === selectedIndex ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.2)', background: `linear-gradient(180deg, rgba(8,10,18,0.12), rgba(8,10,18,0.86)), url("${dungeon.coverArt}") center / cover`, boxShadow: index === selectedIndex ? '0 0 0 2px rgba(255,255,255,0.15), 0 0 36px rgba(255,255,255,0.2)' : '0 12px 25px rgba(0,0,0,0.35)', color: '#fff', textAlign: 'left', padding: 24, cursor: 'pointer', opacity: dungeon.available ? 1 : 0.48, position: 'relative' }}>
               <span style={{ position: 'absolute', top: 16, right: 16, fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase' }}>{dungeon.available ? 'Available' : 'Coming soon'}</span>
