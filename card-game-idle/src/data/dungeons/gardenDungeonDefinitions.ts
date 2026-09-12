@@ -25,7 +25,7 @@ export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [
     name: 'Garden Archive',
     subtitle: 'A future dungeon',
     description: 'This dungeon is not yet available.',
-    coverArt: `${import.meta.env.BASE_URL}assets/menu-backgrounds/neutrality%20eternal%20card%20first%20acquisition%20splash%20screen.png`,
+    coverArt: `${import.meta.env.BASE_URL}assets/dungeons/garden-archive.png`,
     available: false,
     encounters: [],
   },

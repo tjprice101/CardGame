@@ -17,6 +17,7 @@ describe('ability and Garden asset wiring', () => {
       'public/assets/buff-icons/divine-field.png',
       'public/assets/buff-icons/whiteout-domain.png',
       'public/assets/dungeons/valley-of-null.png',
+      'public/assets/dungeons/garden-archive.png',
     ];
     expect(paths.filter(path => !existsSync(join(process.cwd(), path)))).toEqual([]);
   });
