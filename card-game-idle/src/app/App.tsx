@@ -36,6 +36,7 @@ const PartyInviteModal = lazy(() => import('@/ui/social/PartyInviteModal'));
 const PartyHub = lazy(() => import('@/ui/social/PartyHub'));
 const BattlegroundLobby = lazy(() => import('@/ui/battleground/BattlegroundLobby'));
 const GardenOfCards = lazy(() => import('@/ui/garden/GardenOfCards'));
+const GardenDungeonHUD = lazy(() => import('@/ui/garden/GardenDungeonHUD'));
 const BattlegroundMatch = lazy(() => import('@/ui/battleground/BattlegroundMatch'));
 const BattlegroundRewards = lazy(() => import('@/ui/battleground/BattlegroundRewards'));
 const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/BattlegroundInviteModal'));
@@ -228,6 +229,12 @@ export default function App() {
       return;
     }
     setShowTutorialPrompt(true);
+  };
+
+  const enterGardenDungeon = () => {
+    setShowGardenOfCards(false);
+    setScene('arena');
+    useStore.getState().beginTurn();
   };
 
   const beginTurnAfterPrompt = (skipPrompt: boolean) => {
@@ -794,7 +801,7 @@ export default function App() {
   const idlePhase = turn.phase === 'idle';
   const inBossFight = bossFight.mode === 'active';
   const bossResultVisible = bossFight.kind !== 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat');
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showBattleground || showAscension || bossResultVisible;
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showBattleground || showGardenOfCards || showAscension || bossResultVisible;
 
   // When a combat session starts (including co-op launches), force-close
   // open overlays so both clients transition into the arena immediately.
@@ -901,6 +908,9 @@ export default function App() {
           <HUD onRequestBeginTurn={requestBeginTurn} />
         </HudShakeWrapper>
       )}
+      {!isMenuOpen && scene === 'arena' && gardenDungeon.phase === 'active' && (
+        <Suspense fallback={null}><GardenDungeonHUD /></Suspense>
+      )}
 
       {/* Main menu hub — replaces the legacy scattered top-right nav clusters. */}
       {!isMenuOpen && scene === 'menu' && !inBossFight && battleground.mode !== 'active' && (
@@ -976,7 +986,7 @@ export default function App() {
 
       {showGardenOfCards && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
-          <Suspense fallback={null}><GardenOfCards onClose={() => setShowGardenOfCards(false)} /></Suspense>
+          <Suspense fallback={null}><GardenOfCards onClose={() => setShowGardenOfCards(false)} onEnterDungeon={enterGardenDungeon} /></Suspense>
         </div>
       )}
 

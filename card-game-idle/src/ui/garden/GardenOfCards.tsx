@@ -3,11 +3,11 @@ import { GARDEN_DUNGEONS, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDun
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 
-interface Props { onClose: () => void }
+interface Props { onClose: () => void; onEnterDungeon?: (dungeonId: string) => void }
 
-const PLACEHOLDER_ICON = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1' fill='%23ffffff'/%3E%3C/svg%3E";
+const rewardIconUrl = (assetKey: string) => `${import.meta.env.BASE_URL}assets/dungeons/items/${assetKey}.svg`;
 
-export default function GardenOfCards({ onClose }: Props) {
+export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const progress = useStore(selectProgress);
   const dungeonState = useStore(state => state.gardenDungeon);
   const startGardenDungeon = useStore(state => state.startGardenDungeon);
@@ -59,7 +59,7 @@ export default function GardenOfCards({ onClose }: Props) {
           <div style={{ display: 'grid', gap: 8 }}>
             {selected.encounters.map((encounter, index) => encounter.reward && (
               <div key={encounter.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-                <img src={PLACEHOLDER_ICON} alt="" width={28} height={28} style={{ width: 28, height: 28, borderRadius: 4, opacity: 0.8 }} />
+                <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" width={28} height={28} style={{ width: 28, height: 28, borderRadius: 4, opacity: 0.8 }} />
                 <div style={{ flex: 1 }}><div style={{ fontSize: 11 }}>Encounter {index + 1}: {encounter.name}</div><div style={{ color: 'rgba(238,244,255,0.52)', fontSize: 10 }}>Reward: {GARDEN_REWARD_LABELS[encounter.reward.currency]}</div></div>
                 <div style={{ color: '#fff', fontSize: 11 }}>{Math.round(encounter.reward.chance * 100)}% · Owned {progress[encounter.reward.currency] ?? 0}</div>
               </div>
@@ -76,7 +76,7 @@ export default function GardenOfCards({ onClose }: Props) {
               </div>
             </div>
           ) : (
-            <button type="button" disabled={!selected.available} onClick={() => startGardenDungeon(selected.id)} style={{ marginTop: 18, width: '100%', padding: '12px 16px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.7)', background: selected.available ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.05)', color: '#fff', cursor: selected.available ? 'pointer' : 'not-allowed', fontFamily: uiTypography.body, fontSize: 12 }}>{selected.available ? 'Enter Dungeon' : 'Unavailable'}</button>
+            <button type="button" disabled={!selected.available} onClick={() => { if (startGardenDungeon(selected.id)) onEnterDungeon?.(selected.id); }} style={{ marginTop: 18, width: '100%', padding: '12px 16px', borderRadius: 7, border: '1px solid rgba(255,255,255,0.7)', background: selected.available ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.05)', color: '#fff', cursor: selected.available ? 'pointer' : 'not-allowed', fontFamily: uiTypography.body, fontSize: 12 }}>{selected.available ? 'Enter Dungeon' : 'Unavailable'}</button>
           )}
           {dungeonState.phase === 'complete' && dungeonState.lastReward && (
             <div style={{ marginTop: 12, color: '#b9f5c5', fontSize: 11 }}>Run complete. Reward roll: {GARDEN_REWARD_LABELS[dungeonState.lastReward]}.</div>

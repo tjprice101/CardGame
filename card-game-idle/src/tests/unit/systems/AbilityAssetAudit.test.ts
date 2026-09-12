@@ -18,6 +18,9 @@ describe('ability and Garden asset wiring', () => {
       'public/assets/buff-icons/whiteout-domain.png',
       'public/assets/dungeons/valley-of-null.png',
       'public/assets/dungeons/garden-archive.png',
+      'public/assets/dungeons/items/nullified-lattice.svg',
+      'public/assets/dungeons/items/null-seared-light.svg',
+      'public/assets/dungeons/items/nullified-oblivion-matter.svg',
     ];
     expect(paths.filter(path => !existsSync(join(process.cwd(), path)))).toEqual([]);
   });

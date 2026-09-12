@@ -15,9 +15,9 @@ export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [
     coverArt: `${import.meta.env.BASE_URL}assets/dungeons/valley-of-null.png`,
     available: true,
     encounters: [
-      { id: 'valley-of-null-1', name: 'The Quiet Descent', maxHp: 10_000, reward: { currency: 'nullifiedLattice', chance: 0.5 } },
-      { id: 'valley-of-null-2', name: 'The Lattice Hollow', maxHp: 15_000, reward: { currency: 'nullSearedLight', chance: 0.25 } },
-      { id: 'valley-of-null-3', name: 'The Oblivion Basin', maxHp: 20_000, reward: { currency: 'nullifiedOblivionMatter', chance: 0.05 } },
+      { id: 'valley-of-null-1', name: 'The Quiet Descent', maxHp: 10_000, reward: { currency: 'nullifiedLattice', chance: 0.5, artAssetKey: 'nullified-lattice' } },
+      { id: 'valley-of-null-2', name: 'The Lattice Hollow', maxHp: 15_000, reward: { currency: 'nullSearedLight', chance: 0.25, artAssetKey: 'null-seared-light' } },
+      { id: 'valley-of-null-3', name: 'The Oblivion Basin', maxHp: 20_000, reward: { currency: 'nullifiedOblivionMatter', chance: 0.05, artAssetKey: 'nullified-oblivion-matter' } },
     ],
   },
   {

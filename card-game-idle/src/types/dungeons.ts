@@ -7,6 +7,7 @@ export interface GardenEncounterDefinition {
   readonly reward?: {
     readonly currency: GardenRewardCurrency;
     readonly chance: number;
+    readonly artAssetKey: string;
   };
 }
 
