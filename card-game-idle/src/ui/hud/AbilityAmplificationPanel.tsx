@@ -14,6 +14,9 @@ export default function AbilityAmplificationPanel() {
   const activateAbility = useStore(state => state.activateAbility);
   const activeDeck = progress.savedDecks.find(deck => deck.id === progress.activeDeckId);
   const loadout = activeDeck?.abilityLoadout ?? {};
+  const activeBuff = turn.divineFieldUntil && turn.divineFieldUntil > Date.now()
+    ? ABILITY_REGISTRY.get('nullified-barricade')?.buff
+    : undefined;
 
   return (
     <section style={{ color: 'rgba(244,244,248,0.9)', fontFamily: uiTypography.body }}>
@@ -36,9 +39,20 @@ export default function AbilityAmplificationPanel() {
           );
         })}
       </div>
-      {turn.divineFieldUntil && turn.divineFieldUntil > Date.now() && (
-        <div style={{ marginTop: 10, color: '#9be8a8', fontSize: 10 }}>Divine Field active: +50 Divine Light per card</div>
-      )}
+      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(110,185,240,0.22)' }}>
+        <div style={{ color: '#d8f0ff', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 0.8 }}>Active Buffs</div>
+        {activeBuff && turn.divineFieldUntil ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9, marginTop: 8, padding: 8, borderRadius: 7, border: '1px solid rgba(155,232,168,0.45)', background: 'rgba(60,150,90,0.12)' }}>
+            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3Crect width='1' height='1' fill='%239be8a8'/%3E%3C/svg%3E" alt="" aria-hidden="true" width={32} height={32} style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 5, opacity: 0.85 }} />
+            <div style={{ minWidth: 0 }}>
+              <div style={{ color: '#9be8a8', fontSize: 10 }}>{activeBuff.name}</div>
+              <div style={{ marginTop: 2, color: 'rgba(244,244,248,0.62)', fontSize: 9 }}>{Math.ceil(Math.max(0, turn.divineFieldUntil - Date.now()) / 1000)}s remaining · {activeBuff.description}</div>
+            </div>
+          </div>
+        ) : (
+          <div style={{ marginTop: 7, color: 'rgba(244,244,248,0.42)', fontSize: 9 }}>No active buffs.</div>
+        )}
+      </div>
     </section>
   );
 }

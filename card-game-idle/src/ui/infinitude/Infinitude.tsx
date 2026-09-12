@@ -14,6 +14,7 @@ import {
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getCardPreviewLines, getCardSummarySections } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
+import { GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
 
 const INFINITE_COLOR = '#e8e8f0';
 const INFINITE_GLOW = 'rgba(220, 224, 255, 0.55)';
@@ -82,7 +83,9 @@ export default function Infinitude({ onClose }: Props) {
   ), [resultDef]);
 
   function canCombine(recipe: InfiniteRecipe): boolean {
-    return recipe.ingredients.every(ing => (progress.collection[ing.definitionId] ?? 0) >= ing.count);
+    return recipe.ingredients.every(ing => ing.currency
+      ? progress[ing.currency] >= ing.count
+      : (progress.collection[ing.definitionId ?? ''] ?? 0) >= ing.count);
   }
 
   function handleCombine() {
@@ -271,22 +274,23 @@ export default function Infinitude({ onClose }: Props) {
                   <div style={styles.sectionHead}>
                     <span style={styles.sectionTitle}>Required Eternals</span>
                     <span style={styles.sectionMeta}>
-                      {selectedRecipe.ingredients.filter(ing =>
-                        (progress.collection[ing.definitionId] ?? 0) >= ing.count
+                      {selectedRecipe.ingredients.filter(ing => ing.currency
+                        ? progress[ing.currency] >= ing.count
+                        : (progress.collection[ing.definitionId ?? ''] ?? 0) >= ing.count
                       ).length} of {selectedRecipe.ingredients.length} ready
                     </span>
                   </div>
 
                   <div style={styles.ingredientsList}>
                     {selectedRecipe.ingredients.map(ing => {
-                      const ingDef = CardRegistry.get(ing.definitionId);
-                      const ingOwned = progress.collection[ing.definitionId] ?? 0;
+                      const ingDef = ing.definitionId ? CardRegistry.get(ing.definitionId) : null;
+                      const ingOwned = ing.currency ? progress[ing.currency] : progress.collection[ing.definitionId ?? ''] ?? 0;
                       const ingMet = ingOwned >= ing.count;
                       const pct = Math.min(1, ingOwned / ing.count);
                       return (
                         <div
-                          key={ing.definitionId}
-                          title={ingDef ? getCardPreviewLines(ingDef, 3).join('\n') : ing.definitionId}
+                          key={ing.currency ?? ing.definitionId}
+                          title={ingDef ? getCardPreviewLines(ingDef, 3).join('\n') : ing.currency ? GARDEN_REWARD_LABELS[ing.currency] : ing.definitionId}
                           style={styles.ingredientRow}
                         >
                           <div style={{ flex: 1, minWidth: 0 }}>
@@ -294,11 +298,11 @@ export default function Infinitude({ onClose }: Props) {
                               ...styles.ingredientName,
                               color: ingMet ? INFINITE_COLOR : 'rgba(225,225,245,0.62)',
                             }}>
-                              {ingDef?.name ?? ing.definitionId}
+                              {ingDef?.name ?? (ing.currency ? GARDEN_REWARD_LABELS[ing.currency] : ing.definitionId)}
                             </div>
                             {ingDef && (
                               <div style={styles.ingredientSub}>
-                                {ingDef.type} {'\u00B7'} {SET_LABEL}
+                                {ingDef ? `${ingDef.type} · ${SET_LABEL}` : 'Garden material'}
                               </div>
                             )}
                             <div style={styles.progBarTrack}>

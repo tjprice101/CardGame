@@ -42,6 +42,9 @@ describe('Ain/Soph card catalog', () => {
     const patterns = lightCards.map(card => JSON.stringify(card.sophPlacementEffects));
     expect(new Set(patterns).size).toBeGreaterThan(1);
     expect(lightCards.every(card => (card.sophPlacementEffects?.length ?? 0) > 0)).toBe(true);
+    for (const card of lightCards) {
+      expect(getCardSummarySections(card).some(section => section.title === 'Soph Placement'), card.definitionId).toBe(true);
+    }
   });
 
   it('renders complete stat panels and previews for every Neutrality card', () => {

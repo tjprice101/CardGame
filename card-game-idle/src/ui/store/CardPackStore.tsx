@@ -558,6 +558,10 @@ export default function CardPackStore({ onClose }: Props) {
         <button
           style={{
             ...styles.tabBtn,
+            padding: '10px 22px',
+            fontSize: 13,
+            fontWeight: 800,
+            boxShadow: '0 0 22px rgba(255,255,255,0.18)',
             ...(activeTab === 'abilities'
               ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
               : {}),

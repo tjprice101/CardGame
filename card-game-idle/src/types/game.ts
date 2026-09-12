@@ -2,6 +2,7 @@ import type { AinSophAurInstance, CardFinish, MainDeckBoardInstance } from './ca
 import type { ActiveBoardEffect, CardEffect, CardSubtypeFilter } from './effects';
 import type { BossFightState } from './bossFight';
 import type { BattlegroundState } from './battleground';
+import type { GardenDungeonState } from './dungeons';
 
 export interface EmberGroveEntry {
   definitionId: string;
@@ -215,6 +216,9 @@ export interface EnigmaState {
 
 export interface ProgressState {
   oblivion: number;
+  nullifiedLattice: number;
+  nullSearedLight: number;
+  nullifiedOblivionMatter: number;
   /** Total Oblivion ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
   lifetimeOblivion?: number;
   /** Highest Oblivion earned in a single turn. Used for Oblivion-Touched unlock. Save v22. */
@@ -458,6 +462,7 @@ export interface GameState {
   settings: SettingsState;
   bossFight: BossFightState;
   battleground: BattlegroundState;
+  gardenDungeon: GardenDungeonState;
   trialDeck: TrialDeckState;
   /**
    * In-memory only — set by the SaveManager when the on-disk envelope's

@@ -4,7 +4,8 @@ import type { LegacyCosmeticCard } from '@/data/cards/eternalCards';
 // Each Infinite card is forged by consuming exact copies of specific Eternal cards.
 
 export interface InfiniteIngredient {
-  definitionId: string; // Eternal card definitionId to consume
+  definitionId?: string; // Eternal card definitionId to consume
+  currency?: 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter';
   count: number;        // how many copies to consume
 }
 
@@ -30,7 +31,7 @@ export const infiniteCards: LegacyCosmeticCard[] = [
 // Combination recipes
 
 
-export const INFINITE_RECIPES: InfiniteRecipe[] = [
+const BASE_INFINITE_RECIPES: InfiniteRecipe[] = [
   {
     resultId: 'inf-oblivion-absolute',
     lore: 'When the four axioms of annihilation converge, nothing remains but the absolute void.',
@@ -109,3 +110,28 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = [
       { definitionId: 'btei-omniscient-fracture', count: 1 }],
   },
 ];
+
+const MATERIAL_COSTS = [
+  { nullifiedLattice: 24, nullSearedLight: 12, nullifiedOblivionMatter: 3 },
+  { nullifiedLattice: 28, nullSearedLight: 14, nullifiedOblivionMatter: 3 },
+  { nullifiedLattice: 32, nullSearedLight: 16, nullifiedOblivionMatter: 4 },
+  { nullifiedLattice: 36, nullSearedLight: 18, nullifiedOblivionMatter: 4 },
+  { nullifiedLattice: 40, nullSearedLight: 20, nullifiedOblivionMatter: 5 },
+  { nullifiedLattice: 44, nullSearedLight: 22, nullifiedOblivionMatter: 5 },
+  { nullifiedLattice: 48, nullSearedLight: 24, nullifiedOblivionMatter: 6 },
+  { nullifiedLattice: 52, nullSearedLight: 26, nullifiedOblivionMatter: 6 },
+] as const;
+
+export const INFINITE_RECIPES: InfiniteRecipe[] = BASE_INFINITE_RECIPES.map((recipe, index) => {
+  const eternal = recipe.ingredients.find(ingredient => ingredient.definitionId);
+  const materials = MATERIAL_COSTS[index] ?? MATERIAL_COSTS[MATERIAL_COSTS.length - 1];
+  return {
+    ...recipe,
+    ingredients: [
+      { definitionId: eternal?.definitionId ?? '', count: 1 },
+      { currency: 'nullifiedLattice', count: materials.nullifiedLattice },
+      { currency: 'nullSearedLight', count: materials.nullSearedLight },
+      { currency: 'nullifiedOblivionMatter', count: materials.nullifiedOblivionMatter },
+    ],
+  };
+});

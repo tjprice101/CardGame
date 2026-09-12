@@ -35,6 +35,7 @@ const MainMenuHub = lazy(() => import('@/ui/menu/MainMenuHub'));
 const PartyInviteModal = lazy(() => import('@/ui/social/PartyInviteModal'));
 const PartyHub = lazy(() => import('@/ui/social/PartyHub'));
 const BattlegroundLobby = lazy(() => import('@/ui/battleground/BattlegroundLobby'));
+const GardenOfCards = lazy(() => import('@/ui/garden/GardenOfCards'));
 const BattlegroundMatch = lazy(() => import('@/ui/battleground/BattlegroundMatch'));
 const BattlegroundRewards = lazy(() => import('@/ui/battleground/BattlegroundRewards'));
 const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/BattlegroundInviteModal'));
@@ -175,6 +176,7 @@ export default function App() {
   const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
   const [showEternitysWake, setShowEternitysWake] = useState(false);
   const [showBattleground, setShowBattleground] = useState(false);
+  const [showGardenOfCards, setShowGardenOfCards] = useState(false);
   const [showCardBoundCoop, setShowCardBoundCoop] = useState(false);
   const [showInfinitude, setShowInfinitude] = useState(false);
   const [showEventWuas, setShowEventWuas] = useState(false);
@@ -215,6 +217,7 @@ export default function App() {
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
+  const gardenDungeon = useStore(s => s.gardenDungeon);
   const settings = useStore(selectSettings);
   const progress = useStore(selectProgress);
 
@@ -297,6 +300,19 @@ export default function App() {
     const timerId = setInterval(() => useStore.getState().tickAbilityTimers(Date.now()), 100);
     return () => clearInterval(timerId);
   }, [turn.divineFieldUntil, turn.abilityCooldownUntil]);
+
+  useEffect(() => {
+    if (gardenDungeon.phase !== 'active') return;
+    let lastTickMs = Date.now();
+    const timerId = setInterval(() => {
+      const now = Date.now();
+      const elapsedSeconds = (now - lastTickMs) / 1000;
+      if (elapsedSeconds <= 0) return;
+      lastTickMs = now;
+      useStore.getState().tickGardenDungeonTimer(elapsedSeconds);
+    }, 250);
+    return () => clearInterval(timerId);
+  }, [gardenDungeon.phase]);
 
   // Battleground expiry watchdog: same idea as boss watchdog above.
   useEffect(() => {
@@ -893,7 +909,7 @@ export default function App() {
             onCardStore={() => setShowCardStore(true)}
             onCardBoundCoop={() => { setShowCardBoundCoop(true); usePartyStore.getState().openHub(); }}
             onEternitysWake={() => setShowEternitysWake(true)}
-            onBattleground={() => setShowBattleground(true)}
+            onBattleground={() => setShowGardenOfCards(true)}
             onInfinitude={() => setShowInfinitude(true)}
             onEventWishedUponAStar={() => setShowEventWuas(true)}
             onDeckViewer={() => setShowDeckViewer(true)}
@@ -955,6 +971,12 @@ export default function App() {
       {showBattleground && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
           <Suspense fallback={null}><BattlegroundLobby onClose={() => setShowBattleground(false)} /></Suspense>
+        </div>
+      )}
+
+      {showGardenOfCards && (
+        <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
+          <Suspense fallback={null}><GardenOfCards onClose={() => setShowGardenOfCards(false)} /></Suspense>
         </div>
       )}
 

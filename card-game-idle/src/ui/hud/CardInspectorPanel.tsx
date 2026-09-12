@@ -6,6 +6,7 @@ import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
+import { formatEffectsInline } from '@/ui/cardStatSummary';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import type { StackCostDefinition } from '@/types/cards';
 
@@ -99,7 +100,7 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
           <CardRulesDigest
             card={definition}
             variant="preview"
-            maxSections={3}
+            maxSections={definition.type === 'Light' ? 5 : 3}
             maxLinesPerSection={10}
             lineClamp={3}
             labelColor="rgba(74,48,21,0.82)"
@@ -108,6 +109,14 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
             sectionBorder="transparent"
             lightBg={true}
           />
+          {definition.type === 'Light' && (() => {
+            const placementEffects = definition.sophPlacementEffects ?? [];
+            return placementEffects.length > 0 ? (
+              <div style={{ marginTop: 7, paddingTop: 6, borderTop: '1px solid rgba(74,48,21,0.2)', color: 'rgba(52,36,20,0.94)', fontSize: 9, lineHeight: 1.35 }}>
+                <strong>Soph Placement:</strong> {formatEffectsInline(placementEffects, definition.definitionId)}
+              </div>
+            ) : null;
+          })()}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, color: 'rgba(52,36,20,0.94)', fontSize: 9, lineHeight: 1.35 }}>
             {definition.type === 'AinSophAur' && (
               <>
@@ -140,7 +149,7 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
                   const projected = Math.max(0, Math.round(
                     definition.sophAttack.baseOblivion
                     + resolveCardScaling(definition.sophAttack.scaling, scalingContext)
-                    + cost,
+                    ,
                   ));
                   return <span>Soph Attack · Now {projected} Divine Light{cost > 0 ? `, costs ${cost} Stacks` : ''} · Cooldown {definition.sophAttack.cooldownCards} cards</span>;
                 })()}

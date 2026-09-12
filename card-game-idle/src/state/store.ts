@@ -5,6 +5,8 @@ import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
   DeckState, EnigmaInstance, ExtraDeckEntry, GameState, PendingEffect, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
 } from '@/types/game';
+import type { GardenDungeonState } from '@/types/dungeons';
+import { GARDEN_DUNGEONS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import type {
   CardDefinition,
@@ -185,6 +187,9 @@ function enforceHandCap(s: Store): void {
 
 const defaultProgress: ProgressState = {
   oblivion: 0,
+  nullifiedLattice: 0,
+  nullSearedLight: 0,
+  nullifiedOblivionMatter: 0,
   lifetimeOblivion: 0,
   bestSingleTurnOblivion: 0,
   aberratedShards: 0,
@@ -260,6 +265,11 @@ const defaultProgress: ProgressState = {
     coopBossInvitesSent: 0,
     coopBossInvitesAccepted: 0,
   },
+};
+
+const defaultGardenDungeon: GardenDungeonState = {
+  phase: 'idle', dungeonId: null, encounterIndex: 0, encounterHp: 0,
+  encounterMaxHp: 0, timeRemainingSeconds: 0, runCount: 0, lastReward: null,
 };
 
 const defaultSettings: SettingsState = {
@@ -341,6 +351,7 @@ export const defaultGameState: GameState = {
   settings: defaultSettings,
   bossFight: defaultBossFight,
   battleground: { ...defaultBattleground } as BattlegroundState,
+  gardenDungeon: defaultGardenDungeon,
   trialDeck: { ...defaultTrialDeckState },
   saveTampered: false,
   toasts: [],
@@ -352,8 +363,8 @@ interface StoreActions {
   summonAinSophAur: (definitionId: string, materialInstanceIds: string[], targetSlot: 0 | 1 | 2 | 3, freeSummon?: boolean) => void;
   initDeck: (deckList: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => void;
   saveDeckList: (deckList: DeckEntry[]) => void;
-  saveCurrentDeck: (name: string, deckList?: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => string;
-  updateSavedDeck: (id: string, deckList: DeckEntry[], extraDeck?: ExtraDeckEntry[]) => void;
+  saveCurrentDeck: (name: string, deckList?: DeckEntry[], extraDeck?: ExtraDeckEntry[], abilityLoadout?: Partial<Record<1 | 2 | 3, string>>) => string;
+  updateSavedDeck: (id: string, deckList: DeckEntry[], extraDeck?: ExtraDeckEntry[], abilityLoadout?: Partial<Record<1 | 2 | 3, string>>) => void;
   loadSavedDeck: (id: string) => void;
   deleteSavedDeck: (id: string) => void;
   beginTurn: () => void;
@@ -459,6 +470,11 @@ interface StoreActions {
   sacrificeEnigmaOblivion: (enigmaId: string) => boolean;
   sacrificeShardsForEnigma: (enigmaId: string, amount: number) => boolean;
   purchaseAbility: (abilityId: string) => boolean;
+  grantGardenCurrency: (currency: 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter', amount?: number) => void;
+  startGardenDungeon: (dungeonId: string) => boolean;
+  resolveGardenEncounter: () => boolean;
+  exitGardenDungeon: () => void;
+  tickGardenDungeonTimer: (deltaSeconds: number) => void;
   activateAbility: (slot: 1 | 2 | 3) => void;
   tickAbilityTimers: (now?: number) => void;
   claimEnigmaReward: (enigmaId: string) => boolean;
@@ -1246,6 +1262,11 @@ function grantOblivion(s: Store, amount: number): void {
   emitQuestProgressToProgress(s.progress, { kind: 'earn_oblivion_in_turn', amount: 0, peak: s.turn.oblivionEarnedThisTurn });
 }
 
+function damageGardenEncounter(s: Store, amount: number): void {
+  if (s.gardenDungeon.phase !== 'active' || amount <= 0) return;
+  s.gardenDungeon.encounterHp = Math.max(0, s.gardenDungeon.encounterHp - Math.round(amount));
+}
+
 function isActiveEternityCoopBossFight(state: Pick<Store, 'bossFight'>): boolean {
   return state.bossFight.mode === 'active'
     && state.bossFight.kind === 'normal'
@@ -1927,7 +1948,7 @@ export const useStore = create<Store>()(
       set(s => { s.deck.deckList = cloneDeckList(deckList); });
     },
 
-    saveCurrentDeck: (name, deckList = get().deck.deckList, extraDeck = get().deck.extraDeck) => {
+    saveCurrentDeck: (name, deckList = get().deck.deckList, extraDeck = get().deck.extraDeck, abilityLoadout) => {
       const id = `deck_${Date.now()}`;
       const newDeck: SavedDeck = {
         id,
@@ -1935,6 +1956,7 @@ export const useStore = create<Store>()(
         deckList: cloneDeckList(deckList),
         extraDeck: cloneExtraDeck(extraDeck),
         isStarter: false,
+        ...(abilityLoadout && Object.keys(abilityLoadout).length > 0 ? { abilityLoadout: { ...abilityLoadout } } : {}),
       };
       set(s => {
         s.progress.savedDecks.push(newDeck);
@@ -1944,7 +1966,7 @@ export const useStore = create<Store>()(
       return id;
     },
 
-    updateSavedDeck: (id, deckList, extraDeck?) => {
+    updateSavedDeck: (id, deckList, extraDeck?, abilityLoadout?) => {
       set(s => {
         const deck = s.progress.savedDecks.find(d => d.id === id);
         if (deck && !deck.isStarter) {
@@ -1956,6 +1978,9 @@ export const useStore = create<Store>()(
 
           if (extraDeck !== undefined) {
             deck.extraDeck = nextExtraDeck;
+          }
+          if (abilityLoadout !== undefined) {
+            deck.abilityLoadout = Object.keys(abilityLoadout).length > 0 ? { ...abilityLoadout } : undefined;
           }
 
           if (s.progress.activeDeckId === id) {
@@ -2285,7 +2310,9 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling)));
+        const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
+        grantOblivion(s, payout);
+        damageGardenEncounter(s, payout);
         emitQuestProgressToProgress(s.progress, { kind: 'activate_ain_attack', amount: 1 });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
@@ -2310,7 +2337,9 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling)));
+        const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
+        grantOblivion(s, payout);
+        damageGardenEncounter(s, payout);
         emitQuestProgressToProgress(s.progress, { kind: 'activate_soph_attack', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
@@ -2382,7 +2411,9 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        grantOblivion(s, Math.max(0, Math.round(attack.baseOblivion + scaling)));
+        const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
+        grantOblivion(s, payout);
+        damageGardenEncounter(s, payout);
         emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
@@ -2885,14 +2916,18 @@ export const useStore = create<Store>()(
       const state = get();
       // Verify the player owns enough copies of each ingredient
       for (const ingredient of recipe.ingredients) {
-        const owned = state.progress.collection[ingredient.definitionId] ?? 0;
-        if (owned < ingredient.count) return `Missing copies for ${ingredient.definitionId}`;
+        if (ingredient.currency) {
+          if (state.progress[ingredient.currency] < ingredient.count) return `Missing ${ingredient.currency}: need ${ingredient.count}`;
+        } else if (ingredient.definitionId) {
+          const owned = state.progress.collection[ingredient.definitionId] ?? 0;
+          if (owned < ingredient.count) return `Missing copies for ${ingredient.definitionId}`;
+        }
       }
 
       // Block crafting if it would break any saved deck's ownership requirements.
       const simulatedCollection: Record<string, number> = { ...state.progress.collection };
       for (const ingredient of recipe.ingredients) {
-        simulatedCollection[ingredient.definitionId] = (simulatedCollection[ingredient.definitionId] ?? 0) - ingredient.count;
+        if (ingredient.definitionId) simulatedCollection[ingredient.definitionId] = (simulatedCollection[ingredient.definitionId] ?? 0) - ingredient.count;
       }
 
       for (const savedDeck of state.progress.savedDecks) {
@@ -2905,6 +2940,7 @@ export const useStore = create<Store>()(
         }
 
         for (const ingredient of recipe.ingredients) {
+          if (!ingredient.definitionId) continue;
           const required = requiredByDefinition[ingredient.definitionId] ?? 0;
           if (required <= 0) continue;
           const remaining = simulatedCollection[ingredient.definitionId] ?? 0;
@@ -2919,11 +2955,15 @@ export const useStore = create<Store>()(
       set(s => {
         // Consume ingredient copies
         for (const ingredient of recipe.ingredients) {
-          s.progress.collection[ingredient.definitionId] = (s.progress.collection[ingredient.definitionId] ?? 0) - ingredient.count;
-          // Also reduce holoCollection so it can't exceed total
-          const holoOwned = s.progress.holoCollection[ingredient.definitionId] ?? 0;
-          const totalAfter = s.progress.collection[ingredient.definitionId];
-          s.progress.holoCollection[ingredient.definitionId] = Math.min(holoOwned, totalAfter);
+          if (ingredient.currency) {
+            s.progress[ingredient.currency] -= ingredient.count;
+          } else if (ingredient.definitionId) {
+            s.progress.collection[ingredient.definitionId] = (s.progress.collection[ingredient.definitionId] ?? 0) - ingredient.count;
+            // Also reduce holoCollection so it can't exceed total
+            const holoOwned = s.progress.holoCollection[ingredient.definitionId] ?? 0;
+            const totalAfter = s.progress.collection[ingredient.definitionId];
+            s.progress.holoCollection[ingredient.definitionId] = Math.min(holoOwned, totalAfter);
+          }
         }
         // Grant the Infinite card
         s.progress.infiniteCollection[recipe.resultId] = (s.progress.infiniteCollection[recipe.resultId] ?? 0) + 1;
@@ -3157,6 +3197,60 @@ export const useStore = create<Store>()(
         s.progress.ownedAbilities[abilityId] = true;
       });
       return true;
+    },
+
+    grantGardenCurrency: (currency, amount = 1) => {
+      set(s => {
+        const value = Number.isFinite(amount) ? Math.max(0, Math.floor(amount)) : 0;
+        s.progress[currency] += value;
+      });
+    },
+
+    startGardenDungeon: (dungeonId) => {
+      const dungeon = GARDEN_DUNGEONS.find(entry => entry.id === dungeonId && entry.available);
+      const encounter = dungeon?.encounters[0];
+      if (!dungeon || !encounter) return false;
+      set(s => {
+        s.gardenDungeon = {
+          phase: 'active', dungeonId, encounterIndex: 0, encounterHp: encounter.maxHp,
+          encounterMaxHp: encounter.maxHp, timeRemainingSeconds: 300, runCount: s.gardenDungeon.runCount + 1, lastReward: null,
+        };
+      });
+      return true;
+    },
+
+    resolveGardenEncounter: () => {
+      const state = get();
+      if (state.gardenDungeon.phase !== 'active') return false;
+      const dungeon = GARDEN_DUNGEONS.find(entry => entry.id === state.gardenDungeon.dungeonId);
+      const encounter = dungeon?.encounters[state.gardenDungeon.encounterIndex];
+      if (!dungeon || !encounter) return false;
+      if (state.gardenDungeon.encounterHp > 0) return false;
+      const dropped = encounter.reward && Math.random() < encounter.reward.chance ? encounter.reward.currency : null;
+      set(s => {
+        if (dropped) s.progress[dropped] += 1;
+        const nextIndex = s.gardenDungeon.encounterIndex + 1;
+        const nextEncounter = dungeon.encounters[nextIndex];
+        s.gardenDungeon = nextEncounter
+          ? { ...s.gardenDungeon, encounterIndex: nextIndex, encounterHp: nextEncounter.maxHp, encounterMaxHp: nextEncounter.maxHp, lastReward: dropped }
+          : { ...s.gardenDungeon, phase: 'complete', encounterHp: 0, lastReward: dropped };
+      });
+      return true;
+    },
+
+    exitGardenDungeon: () => {
+      set(s => { s.gardenDungeon = { ...defaultGardenDungeon, runCount: s.gardenDungeon.runCount }; });
+    },
+
+    tickGardenDungeonTimer: (deltaSeconds) => {
+      if (!Number.isFinite(deltaSeconds) || deltaSeconds <= 0) return;
+      set(s => {
+        if (s.gardenDungeon.phase !== 'active') return;
+        s.gardenDungeon.timeRemainingSeconds = Math.max(0, s.gardenDungeon.timeRemainingSeconds - deltaSeconds);
+        if (s.gardenDungeon.timeRemainingSeconds <= 0) {
+          s.gardenDungeon = { ...defaultGardenDungeon, runCount: s.gardenDungeon.runCount, lastReward: s.gardenDungeon.lastReward };
+        }
+      });
     },
 
     activateAbility: (slot) => {
@@ -4221,6 +4315,13 @@ export const useStore = create<Store>()(
           if (typeof dl['totalClaims'] !== 'number') dl['totalClaims'] = 0;
         }
         if (!op['ownedAbilities'] || typeof op['ownedAbilities'] !== 'object') op['ownedAbilities'] = {};
+        for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter'] as const) {
+          if (typeof op[currency] !== 'number' || !Number.isFinite(op[currency]) || op[currency] < 0) op[currency] = 0;
+          else op[currency] = Math.floor(op[currency] as number);
+        }
+        if (!loaded.gardenDungeon || typeof loaded.gardenDungeon !== 'object') {
+          loaded.gardenDungeon = { ...defaultGardenDungeon };
+        }
         if (loaded.settings === undefined) loaded.settings = { ...defaultSettings };
         const settings = loaded.settings as unknown as Record<string, unknown>;
         if (typeof settings['musicVolume'] !== 'number') settings['musicVolume'] = defaultSettings.musicVolume;

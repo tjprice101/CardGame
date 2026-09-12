@@ -71,7 +71,7 @@ function formatSubtypeList(filters: ReadonlyArray<CardSubtypeFilter>): string {
   return `${names.slice(0, -1).join(', ')}, or ${names[names.length - 1]}`;
 }
 
-function formatEffectsInline(effects: CardEffect[], definitionId?: string): string {
+export function formatEffectsInline(effects: CardEffect[], definitionId?: string): string {
   const lines = formatEffectLines(effects, definitionId);
   if (lines.length === 0) return 'none';
   return lines.join('; ');

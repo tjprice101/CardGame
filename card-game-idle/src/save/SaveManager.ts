@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 49;
+export const CURRENT_VERSION = 50;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -1001,6 +1001,25 @@ const migrations: Record<number, Migration> = {
   49: (data) => {
     if (data.progress && (!data.progress.ownedAbilities || typeof data.progress.ownedAbilities !== 'object')) {
       data.progress.ownedAbilities = {};
+    }
+    return data;
+  },
+  50: (data) => {
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (!progress) return data;
+    for (const key of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter']) {
+      const value = progress[key];
+      progress[key] = typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+    }
+    const garden = (data as Partial<GameState>).gardenDungeon as Record<string, unknown> | undefined;
+    if (garden) {
+      garden.phase = 'idle';
+      garden.dungeonId = null;
+      garden.encounterIndex = 0;
+      garden.encounterHp = 0;
+      garden.encounterMaxHp = 0;
+      garden.timeRemainingSeconds = 0;
+      garden.lastReward = null;
     }
     return data;
   },

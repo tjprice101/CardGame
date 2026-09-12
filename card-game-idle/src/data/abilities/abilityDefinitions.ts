@@ -8,6 +8,13 @@ export interface AbilityDefinition {
   readonly purchaseCost: number;
   readonly cooldownSeconds?: number;
   readonly stackCost?: number;
+  readonly buff?: {
+    readonly id: string;
+    readonly name: string;
+    readonly durationSeconds: number;
+    readonly iconAssetKey: string;
+    readonly description: string;
+  };
 }
 
 export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
@@ -26,6 +33,13 @@ export const ABILITY_DEFINITIONS: readonly AbilityDefinition[] = [
     description: 'Spend 5 Limitless Light Stacks to gain Divine Field for 60 seconds. Each card played during Divine Field grants 50 Divine Light.',
     purchaseCost: 5_000,
     stackCost: 5,
+    buff: {
+      id: 'divine-field',
+      name: 'Divine Field',
+      durationSeconds: 60,
+      iconAssetKey: 'buff_divine_field',
+      description: '+50 Divine Light per card played.',
+    },
   },
   {
     id: 'phantom-matrix',

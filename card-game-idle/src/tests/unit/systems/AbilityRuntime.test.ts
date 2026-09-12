@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
+import { ABILITY_REGISTRY } from '@/data/abilities/abilityDefinitions';
 import type { GameState } from '@/types/game';
 
 function resetStore(): void {
@@ -101,5 +102,37 @@ describe('materialized ability runtime', () => {
     expect((events[0] as CustomEvent).detail).toMatchObject({ freeSummon: true, definitionId: '' });
     expect(useStore.getState().board.frontSlots[0]).toBeNull();
     expect(useStore.getState().turn.limitlessLightStacks).toBe(10);
+  });
+
+  it('free-summons an ASA without consuming materials', () => {
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 10 },
+      deck: { ...state.deck, extraDeck: [{ definitionId: 'ain-soph-aur-neutrality-1', finish: 'normal' }] },
+    }));
+    const beforeDiscard = useStore.getState().deck.discardPile.length;
+    const beforeBack = useStore.getState().board.backSlots.map(card => card?.instanceId ?? null);
+    useStore.getState().summonAinSophAur('ain-soph-aur-neutrality-1', [], 0, true);
+    const state = useStore.getState();
+    expect(state.board.frontSlots[0]?.definitionId).toBe('ain-soph-aur-neutrality-1');
+    expect(state.board.backSlots.map(card => card?.instanceId ?? null)).toEqual(beforeBack);
+    expect(state.deck.discardPile).toHaveLength(beforeDiscard);
+    expect(state.turn.limitlessLightStacks).toBe(1);
+    expect(ABILITY_REGISTRY.get('phantom-matrix')?.stackCost).toBe(10);
+  });
+
+  it('persists ability loadouts through new and existing deck saves', () => {
+    resetStore();
+    const deckList = useStore.getState().progress.savedDecks[0].deckList;
+    const extraDeck = useStore.getState().progress.savedDecks[0].extraDeck;
+    const loadout = { 1: 'neutralizing-inferno', 2: 'nullified-barricade' } as const;
+    const id = useStore.getState().saveCurrentDeck('Ability Test Deck', deckList, extraDeck, loadout);
+    expect(useStore.getState().progress.savedDecks.find(deck => deck.id === id)?.abilityLoadout).toEqual(loadout);
+
+    useStore.getState().updateSavedDeck(id, deckList, extraDeck, { 3: 'phantom-matrix' });
+    expect(useStore.getState().progress.savedDecks.find(deck => deck.id === id)?.abilityLoadout).toEqual({ 3: 'phantom-matrix' });
+    useStore.getState().loadSavedDeck(id);
+    expect(useStore.getState().progress.activeDeckId).toBe(id);
   });
 });

@@ -32,7 +32,7 @@ interface MainMenuHubProps {
   onSettings: () => void;
   /** Opens the Wished Upon A Star event landing page. */
   onEventWishedUponAStar?: () => void;
-  /** Opens the Battleground of the Card-born lobby. */
+  /** Opens the Garden of Cards dungeon menu. */
   onBattleground?: () => void;
   /** Opens the Ascension endgame mode hub. */
   onAscension?: () => void;
@@ -682,7 +682,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           />
         </div>
 
-        {/* Row: Battleground of the Card-born */}
+        {/* Row: Garden of Cards */}
         <div style={{ gridColumn: '1 / -1', transform: 'rotate(0.5deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.48))' }}>
           <TileButton
             theme={uiTheme}
@@ -700,9 +700,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         <div style={{ gridColumn: '1 / -1', transform: 'rotate(-0.4deg)', filter: 'drop-shadow(0 5px 16px rgba(0,20,60,0.50))' }}>
           <TileButton
             theme={uiTheme}
-            label="Battleground of the Card-born"
-            caption="3-min Divine Light race · PvP or CPU"
-            tone="cream"
+            label="Garden of Cards"
+            caption="Enter dungeons to recover materials for Infinite cards"
+            tone="primary"
             size="wide"
             onClick={props.onBattleground}
             clipPath="polygon(0 0, 100% 0, calc(100% - 20px) 100%, 0 100%)"

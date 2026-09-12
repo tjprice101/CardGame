@@ -707,14 +707,14 @@ export default function DeckBuilder({ onClose }: Props) {
 
   function handleSaveNew() {
     if (!newDeckName.trim() || !validation.valid) return;
-    saveCurrentDeck(newDeckName.trim(), deckList, extraDeckList);
+    saveCurrentDeck(newDeckName.trim(), deckList, extraDeckList, activeDeck?.abilityLoadout);
     setSaveMode(false);
     setNewDeckName('');
   }
 
   function handleUpdateCurrent() {
     if (!activeDeckId || isEditingStarter || !validation.valid) return;
-    updateSavedDeck(activeDeckId, deckList, extraDeckList);
+    updateSavedDeck(activeDeckId, deckList, extraDeckList, activeDeck?.abilityLoadout);
   }
 
   function handleStart() {
