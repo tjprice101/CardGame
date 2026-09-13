@@ -1,4 +1,4 @@
-import type { GameState, ProgressState } from '@/types/game';
+import type { EnigmaInstance, GameState, ProgressState } from '@/types/game';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ENIGMA_DEFINITIONS, getEnigmaDefinition, isNeutralMysteryAcquired } from '@/data/enigmas/enigmaDefinitions';
 
@@ -13,13 +13,13 @@ export function ensureEnigmaState(progress: ProgressState): void {
   }
 }
 
-export function ensureInstance(progress: ProgressState, enigmaId: string) {
+export function ensureInstance(progress: ProgressState, enigmaId: string): EnigmaInstance | null {
   ensureEnigmaState(progress);
   const definition = getEnigmaDefinition(enigmaId);
   if (!definition) return null;
   const existing = progress.enigmas.instances[enigmaId];
   if (existing) return existing;
-  const instance = {
+  const instance: EnigmaInstance = {
     id: enigmaId,
     status: 'locked' as const,
     currentStepIndex: 0,

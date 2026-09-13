@@ -1158,26 +1158,19 @@ function completeBossFight(s: Store, victory: boolean): void {
       // Neutralizing the Void  Eboss-victory enigma hooks.
       if (bossId === 'boss-eternal-null') {
         ensureEnigmaState(s.progress);
-        const ntvInstance = s.progress.enigmas.instances['neutralizing-the-void'];
-        if (!ntvInstance) {
-          // Step 0: unlock if won with ≥90s remaining.
-          if (fightTimeRemaining >= 90) {
-            const fresh = ensureInstance(s.progress, 'neutralizing-the-void');
-            if (fresh) {
-              fresh.status = 'acquired';
-              fresh.currentStepIndex = 1;
-              fresh.stepsComplete[0] = true;
-              if (!s.progress.enigmas.activeEnigmaId) s.progress.enigmas.activeEnigmaId = 'neutralizing-the-void';
-              pushRewardToast(s, 'Enigma Acquired: Neutralizing the Void');
-            }
-          }
-        } else if (ntvInstance.status === 'acquired' && !ntvInstance.stepsComplete[1]) {
-          // Step 1: clear ÁE-HP scaled variant.
-          if (capturedFightCount >= 3) {
-            ntvInstance.stepsComplete[1] = true;
-            ntvInstance.currentStepIndex = Math.max(ntvInstance.currentStepIndex, 2);
-            pushEnigmaStepToast(s, 'neutralizing-the-void', 1);
-          }
+        const ntvInstance = ensureInstance(s.progress, 'neutralizing-the-void');
+        if (ntvInstance?.status === 'locked' && fightTimeRemaining >= 90) {
+          ntvInstance.status = 'acquired';
+          ntvInstance.currentStepIndex = 1;
+          ntvInstance.stepsComplete[0] = true;
+          ntvInstance.acquiredAt = Date.now();
+          if (!s.progress.enigmas.activeEnigmaId) s.progress.enigmas.activeEnigmaId = 'neutralizing-the-void';
+          pushRewardToast(s, 'Enigma Acquired: Neutralizing the Void');
+        }
+        if (ntvInstance?.status === 'acquired' && !ntvInstance.stepsComplete[1] && capturedFightCount >= 3) {
+          ntvInstance.stepsComplete[1] = true;
+          ntvInstance.currentStepIndex = Math.max(ntvInstance.currentStepIndex, 2);
+          pushEnigmaStepToast(s, 'neutralizing-the-void', 1);
         }
       }
     }
@@ -1536,6 +1529,8 @@ function checkNtvMasteryTierStep(progress: ProgressState): void {
   if (!claims) return;
   const hasRequiredTier = Object.keys(claims).some(key => {
     if (!key.startsWith('btei-')) return false;
+    const definitionId = key.split('::')[0];
+    if (CardRegistry.get(definitionId)?.rarity !== 'Eternal') return false;
     const tierStr = key.split('::')[1];
     return tierStr !== undefined && parseInt(tierStr, 10) >= 4;
   });
@@ -1815,6 +1810,23 @@ function enforceAngelExtraDeckInvariant(deck: DeckState, options: { refillHand?:
   for (const card of drawn) deck.hand.push(card);
 }
 
+function reconcileLoadedExtraDeck(deck: DeckState, board: BoardState): void {
+  const occupiedByDefinition: Record<string, number> = {};
+  for (const card of board.frontSlots) {
+    if (!card || card.type !== 'AinSophAur') continue;
+    occupiedByDefinition[card.definitionId] = (occupiedByDefinition[card.definitionId] ?? 0) + 1;
+  }
+
+  const keptByDefinition: Record<string, number> = {};
+  deck.extraDeck = deck.extraDeck.filter(entry => {
+    const maxAvailable = Math.max(0, 4 - (occupiedByDefinition[entry.definitionId] ?? 0));
+    const kept = keptByDefinition[entry.definitionId] ?? 0;
+    if (kept >= maxAvailable) return false;
+    keptByDefinition[entry.definitionId] = kept + 1;
+    return true;
+  });
+}
+
 function reduceFrontlineAttackCooldowns(board: BoardState, amount: number): void {
   if (amount <= 0) return;
   for (const slot of board.frontSlots) {
@@ -1958,6 +1970,7 @@ export const useStore = create<Store>()(
         queuePendingEffects(s.turn, result);
         grantOblivion(s, result.oblivionBonus);
         emitQuestProgressToProgress(s.progress, { kind: 'summon_ain_soph_aur', amount: 1 });
+        syncEnigmaProgressFromBoard(s, true);
         recompute(s);
       });
     },
@@ -2203,7 +2216,7 @@ export const useStore = create<Store>()(
     },
     playCard: (instanceId, side = 'soph') => {
       set(s => {
-        if (s.turn.phase !== 'playing') return;
+        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null) return;
         const deckCard = s.deck.hand.find(c => c.instanceId === instanceId);
         if (!deckCard) return;
         const def = ScoreSystem.getDefinition(deckCard.definitionId);
@@ -4800,6 +4813,7 @@ export const useStore = create<Store>()(
         ensureDefaultStarterDeck(loaded);
 
         Object.assign(s, loaded);
+        reconcileLoadedExtraDeck(s.deck, s.board);
         setUiPreferences(s.settings);
         recompute(s);
         // Heal enigma progress that was stuck before Phase-0 evaluator fix shipped.

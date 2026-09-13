@@ -32,6 +32,27 @@ describe('Ain/Soph gameplay loop', () => {
     expect(board.backSlots[1]).toMatchObject({ type: 'Light', side: 'soph', faceState: 'back', limitlessCharge: 1 });
   });
 
+  it('ignores rapid card plays while a pending effect is awaiting resolution', () => {
+    resetStore();
+    const first = { instanceId: 'pending-first', definitionId: lightCards[0].definitionId, finish: 'normal' as const };
+    const second = { instanceId: 'pending-second', definitionId: lightCards[1].definitionId, finish: 'normal' as const };
+    useStore.setState(state => ({
+      ...state,
+      turn: {
+        ...state.turn,
+        phase: 'playing',
+        pendingEffect: { type: 'discard_choice', count: 1, sourceCard: 'test' },
+      },
+      deck: { ...state.deck, hand: [first, second] },
+    }));
+
+    useStore.getState().playCard(first.instanceId);
+    useStore.getState().playCard(second.instanceId);
+
+    expect(useStore.getState().deck.hand.map(card => card.instanceId)).toEqual([first.instanceId, second.instanceId]);
+    expect(useStore.getState().board.backSlots.every(slot => slot === null)).toBe(true);
+  });
+
   it('flips a charged Soph card into Ain and stores its charge as LLS', () => {
     resetStore();
     const card = { instanceId: 'light-flip', definitionId: lightCards[0].definitionId, finish: 'normal' as const };
@@ -177,6 +198,11 @@ describe('Ain/Soph gameplay loop', () => {
 
     expect(useStore.getState().board.backSlots[0]).toBeNull();
     expect(useStore.getState().board.frontSlots[0]).toMatchObject({ type: 'AinSophAur', side: 'ain', faceState: 'front' });
+    expect(useStore.getState().progress.enigmas.instances['neutral-mystery']).toMatchObject({
+      status: 'acquired',
+      currentStepIndex: 1,
+      stepsComplete: [true, false, false, false, false],
+    });
   });
 
   it('force-removes main-deck cards to discard and Ain Soph Aur cards to the Extra Deck', () => {
@@ -239,5 +265,23 @@ describe('Ain/Soph gameplay loop', () => {
 
     expect(useStore.getState().board.backSlots[0]?.instanceId).toBe(card.instanceId);
     expect(useStore.getState().deck.discardPile).toHaveLength(0);
+  });
+
+  it('does not restore occupied ASA copies into the available Extra Deck on load', () => {
+    resetStore();
+    const definition = ainSophAurCards[0];
+    const occupied = {
+      instanceId: 'loaded-asa', definitionId: definition.definitionId,
+      type: 'AinSophAur' as const, rarity: definition.rarity, finish: 'normal' as const,
+      faceState: 'front' as const, side: 'ain' as const, cardClass: 'ain-soph-aur' as const,
+      limitlessCharge: 0, attackCooldowns: {}, boardSlot: 0 as const,
+    };
+    const loaded = JSON.parse(JSON.stringify(useStore.getState())) as GameState;
+    loaded.board.frontSlots[0] = occupied;
+    loaded.deck.extraDeck = Array.from({ length: 4 }, () => ({ definitionId: definition.definitionId, finish: 'normal' as const }));
+
+    useStore.getState().loadState(loaded);
+
+    expect(useStore.getState().deck.extraDeck.filter(card => card.definitionId === definition.definitionId)).toHaveLength(3);
   });
 });
