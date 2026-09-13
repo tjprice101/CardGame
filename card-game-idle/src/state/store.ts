@@ -194,6 +194,7 @@ const defaultProgress: ProgressState = {
   bestSingleTurnOblivion: 0,
   aberratedShards: 0,
   totalCardsPlayed: 0,
+  totalPacksOpened: 0,
   collection: { ...STARTER_COLLECTION },
   holoCollection: {},
   infiniteCollection: {},
@@ -857,6 +858,8 @@ function recordPackOpen(progress: ProgressState, packId: string, tier: 'pack' | 
     const r = CardRegistry.get(defId)?.rarity ?? 'Common';
     rarityCounts[r] = (rarityCounts[r] ?? 0) + 1;
   }
+  const packsCount = tier === 'case' ? 10 : tier === 'box' ? 5 : 1;
+  progress.totalPacksOpened = (progress.totalPacksOpened ?? 0) + packsCount;
   if (!progress.packOpenHistory) progress.packOpenHistory = [];
   progress.packOpenHistory.unshift({ ts: Date.now(), packId, tier, rarityCounts });
   if (progress.packOpenHistory.length > 50) {
@@ -1881,7 +1884,7 @@ export const useStore = create<Store>()(
         if (s.turn.phase !== 'playing' || s.board.frontSlots[targetSlot] !== null) return;
         const def = CardRegistry.get(definitionId);
         if (!def || def.type !== 'AinSophAur') return;
-        const uniqueIds = [...new Set(materialInstanceIds)];
+        const uniqueIds = freeSummon ? [] : [...new Set(materialInstanceIds)];
         const materials = uniqueIds.map(id => s.board.backSlots.find(slot => slot?.instanceId === id));
         const requiredMaterials = Math.max(1, def.summonMaterialCount);
         if (!freeSummon && (uniqueIds.length !== requiredMaterials || materials.some(material => !material))) return;
@@ -2818,7 +2821,9 @@ export const useStore = create<Store>()(
           state.progress.oblivion -= baseCost;
         }
         for (const defId of drawn) {
-          addCollectionCard(state.progress, defId);
+          // Card packs have a 1% chance per card rolled to enter as holofoil
+          const isHolo = Math.random() < 0.01;
+          addCollectionCard(state.progress, defId, isHolo ? 'holo' : 'normal');
         }
         recordPackOpen(state.progress, packId, 'pack', drawn);
         emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 1 });
@@ -2860,7 +2865,8 @@ export const useStore = create<Store>()(
       set(state => {
         state.progress.oblivion -= cost;
         for (const defId of drawn) {
-          addCollectionCard(state.progress, defId);
+          const isHolo = Math.random() < 0.01;
+          addCollectionCard(state.progress, defId, isHolo ? 'holo' : 'normal');
         }
         state.progress.pityCounters[packId] = hasLegendary ? 0 : pityMisses + 1;
         recordPackOpen(state.progress, packId, 'box', drawn);
@@ -2901,7 +2907,8 @@ export const useStore = create<Store>()(
       set(state => {
         state.progress.oblivion -= cost;
         for (const defId of drawn) {
-          addCollectionCard(state.progress, defId);
+          const isHolo = Math.random() < 0.01;
+          addCollectionCard(state.progress, defId, isHolo ? 'holo' : 'normal');
         }
         recordPackOpen(state.progress, packId, 'case', drawn);
         emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 10 });

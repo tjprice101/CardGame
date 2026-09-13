@@ -105,3 +105,14 @@ export function getEverInfiniteTotal(progress: ProgressState): number {
   const merged = maxRecord(progress.everInfiniteCollection, progress.infiniteCollection);
   return sumValues(merged);
 }
+
+export function getTotalPacksOpened(progress: ProgressState): number {
+  if (typeof progress.totalPacksOpened === 'number' && Number.isFinite(progress.totalPacksOpened)) {
+    return progress.totalPacksOpened;
+  }
+  const historyPacks = (progress.packOpenHistory ?? []).reduce(
+    (sum, entry) => sum + (entry.tier === 'case' ? 10 : entry.tier === 'box' ? 5 : 1),
+    0,
+  );
+  return historyPacks;
+}

@@ -291,8 +291,8 @@ export default function HolofoilWorkshop() {
   return (
     <div style={styles.wrapper}>
       <div style={styles.intro}>
-        Spend Aberrated Shards to permanently convert one owned normal copy into a holofoil copy.
-        Holofoils are purely cosmetic and tracked separately in your collection and deck building.
+        Holofoils feature a deep inverted metallic finish with bright white highlights, pure black shading, and rich deep scarlet accents.
+        They are earned as a rare 1% drop from opening card packs. Below you can view all holofoil cards in your collection.
       </div>
 
       <div style={styles.filterBar}>

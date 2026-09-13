@@ -266,6 +266,8 @@ export interface ProgressState {
   lastCollectionViewedAt?: number;
   /** Rolling log of pack opens (most recent first, max 50). Save v14. */
   packOpenHistory?: PackOpenEntry[];
+  /** Lifetime total card packs opened/purchased (1 for single pack, 5 for box, 10 for case). Save v44. */
+  totalPacksOpened?: number;
   /** Artifact ids the player has purchased, mapped to total copies bought. Save v18 (was Record<string,true> in v17). */
   ownedArtifacts?: Record<string, number>;
   /** Universal Card-bane Light currency earned by dissolving cards. Save v18. */

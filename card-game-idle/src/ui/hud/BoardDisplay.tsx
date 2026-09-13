@@ -364,7 +364,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
           </div>
           <button
             type="button"
-            disabled={!asaSummonRequest.definitionId || selectedMaterialIds.length !== asaSummonRequest.required || board.frontSlots.every(s => s !== null)}
+            disabled={!asaSummonRequest.definitionId || (!asaSummonRequest.freeSummon && selectedMaterialIds.length !== asaSummonRequest.required) || board.frontSlots.every(s => s !== null)}
             onClick={() => {
               const targetSlot = board.frontSlots.findIndex(s => s === null);
               if (targetSlot !== -1) {

@@ -424,7 +424,8 @@ function ModesBody() {
         <div style={sectionHeadingStyle}>More Modes</div>
         <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards.</ListItem>
         <ListItem label="Fracture">Spend Fracture Shards to add Card-light to any card.</ListItem>
-        <ListItem label="Enigma">Enigma unlocks after you acquire 1 Eternal-rarity card.</ListItem>
+        <ListItem label="Enigma">Enigma unlocks after you buy or open 10 card packs.</ListItem>
+        <ListItem label="Eternity's Wake">Eternity's Wake unlocks after you acquire 3 unique Enigmatic cards.</ListItem>
         <ListItem label="Infinitude">Infinitude unlocks after you acquire 5 Eternal-rarity cards.</ListItem>
         <ListItem label="Ascension">Ascension unlocks after you acquire 5 Infinite-rarity cards.</ListItem>
       </div>
@@ -571,16 +572,15 @@ function ProgressionBody() {
       <div style={cardStyle}>
         <div style={sectionHeadingStyle}>Aberrated Shards</div>
         <div style={bodyTextStyle}>
-          The secondary currency. Earned from <Tag>boss clears</Tag> (first-clear bonus + repeat bonus) and{' '}
-          <Tag>daily logins</Tag>. Streak rewards scale across a 7-day cycle in the Daily Reward modal.
-          Card-born Tier milestones also provide Aberrated Shards, which must be claimed manually.
+          The secondary event and specialized pack currency. Earned from <Tag>boss clears</Tag> (first-clear bonus + repeat bonus),{' '}
+          <Tag>daily logins</Tag>, achievements, and Card-born Tier milestones. Spent on limited-time event packs (such as Wished Upon A Star).
         </div>
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Holofoil Workshop</div>
-        <ListItem label="Purpose">Spend Aberrated Shards to permanently convert one owned normal copy of a card into a holofoil copy.</ListItem>
-        <ListItem label="Effect">Holofoils are purely cosmetic &mdash; they're tracked separately in your collection and in deck-building.</ListItem>
-        <ListItem label="Filters">The Workshop supports filter, sort, and "show convertible" toggles so you can plan upgrades.</ListItem>
+        <div style={sectionHeadingStyle}>Holofoil Cards</div>
+        <ListItem label="Acquisition">Every card rolled when opening card packs in the Card Store has an innate 1% chance to drop as a holofoil.</ListItem>
+        <ListItem label="Visual Finish">Holofoils feature a deep, highly saturated inverted metallic finish with bright white highlights and deep scarlet accents.</ListItem>
+        <ListItem label="Collection">Holofoils are purely cosmetic &mdash; they are tracked separately in your collection and in deck-building.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card-born Tier</div>

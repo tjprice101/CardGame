@@ -94,11 +94,6 @@ export default function AbilityMaterialization() {
               Materialize universal abilities with Divine Light. Purchase costs scale from foundational to endgame; equipped abilities are universal across all decks.
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, padding: '6px 14px', borderRadius: 8, background: 'rgba(247,192,74,0.12)', border: '1px solid rgba(247,192,74,0.35)' }}>
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', letterSpacing: 1, textTransform: 'uppercase' }}>Available:</span>
-            <span style={{ fontFamily: uiTypography.display, fontSize: 16, color: '#f7c04a', fontWeight: 700 }}>{oblivion.toLocaleString()}</span>
-            <span style={{ fontSize: 11, color: '#f7c04a' }}>DL</span>
-          </div>
         </div>
 
         {/* Primary Set Sub-menu */}

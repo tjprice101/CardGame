@@ -77,9 +77,22 @@ export default function BossFightArena() {
     : 0;
 
   return (
-    <div
+    <section
       style={{
-        position: 'absolute', top: 52, left: 0, right: 0, zIndex: 25, pointerEvents: 'none',
+        position: 'absolute',
+        top: 54,
+        left: 14,
+        right: 'var(--angel-drawer-hand-offset, 308px)',
+        zIndex: 25,
+        pointerEvents: 'auto',
+        padding: '7px 12px',
+        borderRadius: 8,
+        border: `1px solid ${EW_PANEL_BORDER}`,
+        background: `linear-gradient(180deg, ${EW_PANEL_TINT} 0%, rgba(18,4,12,0.95) 100%)`,
+        boxShadow: '0 8px 24px rgba(0,0,0,0.5), 0 1px 0 rgba(255,80,80,0.2) inset',
+        color: '#eef4ff',
+        fontFamily: 'Georgia, serif',
+        animation: 'bossPanelSlideIn 0.8s cubic-bezier(0.22,0.61,0.36,1) both, accretionDiskGlow 3.6s ease-in-out infinite',
       }}
     >
       {/* Crimson chamber vignette overlay */}
@@ -93,71 +106,58 @@ export default function BossFightArena() {
         }}
       />
 
-      {/* Boss arena banner panel — cosmic cataclysm */}
-      <div
-        style={{
-          margin: '0 auto 0 160px', width: 'calc(100% - 220px)', maxWidth: 860,
-          background: `linear-gradient(180deg, ${EW_PANEL_TINT} 0%, rgba(8,2,14,0.97) 100%)`,
-          border: `1px solid ${EW_PANEL_BORDER}`,
-          borderRadius: '0 0 12px 12px',
-          padding: '4px 14px 6px',
-          display: 'flex', flexDirection: 'column', gap: 3,
-          pointerEvents: 'auto',
-          position: 'relative',
-          animation: 'bossPanelSlideIn 0.8s cubic-bezier(0.22,0.61,0.36,1) both, accretionDiskGlow 3.6s ease-in-out infinite',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Decorative top chrome accent — crimsoned at edges, star-white at centre */}
-        <div style={{
-          position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-          width: 180, height: 2,
-          background: `linear-gradient(90deg, transparent, ${EW_ACCENT}bb, rgba(244,244,248,0.9), ${EW_ACCENT}bb, transparent)`,
+      {/* Decorative top chrome accent — crimsoned at edges, star-white at centre */}
+      <div style={{
+        position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+        width: 180, height: 2,
+        background: `linear-gradient(90deg, transparent, ${EW_ACCENT}bb, rgba(244,244,248,0.9), ${EW_ACCENT}bb, transparent)`,
+        borderRadius: 2,
+        boxShadow: `0 0 12px ${EW_ACCENT}55`,
+      }} />
+
+      {/* Star-scatter micro-constellation on the panel void */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px)',
+        backgroundSize: '44px 44px',
+        opacity: 0.08,
+        animation: 'voidStarDrift 60s linear infinite',
+      }} />
+
+      {/* Low-HP meteor streaks */}
+      {lowHp && [0, 1, 2, 3, 4].map(n => (
+        <div key={n} style={{
+          position: 'absolute',
+          left: `${8 + n * 19}%`,
+          top: -8,
+          width: 2, height: 10,
           borderRadius: 2,
-          boxShadow: `0 0 12px ${EW_ACCENT}55`,
+          background: n % 2 === 0
+            ? 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,80,80,0.4) 100%)'
+            : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(200,100,255,0.4) 100%)',
+          boxShadow: `0 0 6px ${n % 2 === 0 ? 'rgba(255,80,80,0.8)' : 'rgba(180,100,255,0.8)'}`,
+          animation: `meteorFall ${1.6 + n * 0.3}s ease-in ${n * 0.28}s infinite`,
+          pointerEvents: 'none',
         }} />
+      ))}
 
-        {/* Star-scatter micro-constellation on the panel void */}
-        <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.7) 1px, transparent 1px)',
-          backgroundSize: '44px 44px',
-          opacity: 0.08,
-          animation: 'voidStarDrift 60s linear infinite',
-        }} />
-
-        {/* Low-HP meteor streaks */}
-        {lowHp && [0, 1, 2, 3, 4].map(n => (
-          <div key={n} style={{
-            position: 'absolute',
-            left: `${8 + n * 19}%`,
-            top: -8,
-            width: 2, height: 10,
-            borderRadius: 2,
-            background: n % 2 === 0
-              ? 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,80,80,0.4) 100%)'
-              : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, rgba(200,100,255,0.4) 100%)',
-            boxShadow: `0 0 6px ${n % 2 === 0 ? 'rgba(255,80,80,0.8)' : 'rgba(180,100,255,0.8)'}`,
-            animation: `meteorFall ${1.6 + n * 0.3}s ease-in ${n * 0.28}s infinite`,
-            pointerEvents: 'none',
-          }} />
-        ))}
-
-        {/* Header row: badge + boss name + timer */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-            <div style={{
-              fontSize: 14, fontWeight: 'bold', color: 'rgba(244,244,248,0.98)',
-              fontFamily: 'Georgia, serif',
-              letterSpacing: 3,
-              textShadow: `0 1px 4px rgba(0,0,0,0.9), 0 0 20px ${EW_ACCENT}88, 0 0 44px rgba(180,80,255,0.28)`,
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            }}>
-              {boss.name}
-            </div>
+      {/* Header row: Boss name + turn/total stats + timer */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, minWidth: 0 }}>
+          <div style={{
+            fontSize: 13, fontWeight: 'bold', color: 'rgba(244,244,248,0.98)',
+            fontFamily: 'Georgia, serif', letterSpacing: 2,
+            textShadow: `0 1px 4px rgba(0,0,0,0.9), 0 0 20px ${EW_ACCENT}88, 0 0 44px rgba(180,80,255,0.28)`,
+            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {boss.name}
           </div>
+          <div style={{ color: EW_TEXT_MUTED, fontSize: 10 }}>
+            THIS TURN: <span style={{ color: EW_GOLD, fontWeight: 'bold' }}>{turn.oblivionEarnedThisTurn.toLocaleString()}</span> · TOTAL: <span style={{ color: EW_TEXT }}>{bossFight.damageDealtThisFight.toLocaleString()}</span>
+          </div>
+        </div>
 
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           <div
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
@@ -170,7 +170,7 @@ export default function BossFightArena() {
           >
             <span style={{ fontSize: 8, color: EW_TEXT_MUTED, letterSpacing: 2 }}>TIME</span>
             <span style={{
-              fontSize: 17, color: 'rgba(244,244,248,0.98)', fontFamily: 'Georgia, serif', fontWeight: 'bold',
+              fontSize: 14, color: 'rgba(244,244,248,0.98)', fontFamily: 'Georgia, serif', fontWeight: 'bold',
               fontVariantNumeric: 'tabular-nums',
               textShadow: `0 0 14px ${timeColor}99, 0 1px 3px rgba(0,0,0,0.85)`,
               lineHeight: 1,
@@ -179,46 +179,24 @@ export default function BossFightArena() {
             </span>
           </div>
         </div>
-
-        <HpBar hpPercent={hpPercent} damageDealtPct={damageDealtPct} color={hpColor} lowHp={lowHp} />
-
-        {/* Card-break Meter — stagger the boss by Synergized Seraphim or Exalted Angel attacks */}
-        <CardBreakMeter
-          meter={bossFight.bossCardBreakMeter ?? 0}
-          freezeLeft={bossFight.bossCardBreakFreezeLeft ?? 0}
-          breakCount={bossFight.bossCardBreakCount ?? 0}
-        />
-
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6,
-          fontSize: 10, fontFamily: 'Georgia, serif',
-        }}>
-          <Stat label="BOSS HP" value={`${bossFight.bossCurrentHp.toLocaleString()} / ${bossFight.bossMaxHp.toLocaleString()}`} color={EW_TEXT} />
-          <Stat
-            label="THIS TURN"
-            value={turn.oblivionEarnedThisTurn.toLocaleString()}
-            color={EW_GOLD}
-            emphasize
-          />
-          <Stat label="TOTAL DEALT" value={bossFight.damageDealtThisFight.toLocaleString()} color={EW_TEXT_MUTED} align="right" />
-        </div>
-
-        {/* Timer bar */}
-        <div style={{
-          position: 'relative', height: 4, background: 'rgba(0,0,0,0.45)', borderRadius: 3, overflow: 'hidden',
-          border: '1px solid rgba(255,255,255,0.04)',
-        }}>
-          <div style={{
-            position: 'absolute', top: 0, left: 0, height: '100%',
-            width: `${timePercent * 100}%`,
-            background: `linear-gradient(90deg, ${timeColor}, ${timeColor}cc)`,
-            borderRadius: 3,
-            transition: 'width 1s linear, background 0.5s ease',
-            boxShadow: `0 0 10px ${timeColor}88`,
-          }} />
-        </div>
-
       </div>
+
+      {/* HP Bar row */}
+      <div style={{ marginTop: 6, display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ flex: 1, height: 7, borderRadius: 999, background: 'rgba(0,0,0,0.65)', border: `1px solid ${EW_PANEL_BORDER}`, overflow: 'hidden', position: 'relative' }}>
+          <HpBar hpPercent={hpPercent} damageDealtPct={damageDealtPct} color={hpColor} lowHp={lowHp} />
+        </div>
+        <div style={{ color: 'rgba(244,244,248,0.88)', fontSize: 10, fontVariantNumeric: 'tabular-nums', flexShrink: 0, minWidth: 110, textAlign: 'right' }}>
+          HP {bossFight.bossCurrentHp.toLocaleString()} / {bossFight.bossMaxHp.toLocaleString()}
+        </div>
+      </div>
+
+      {/* Card-break Meter — stagger the boss by Synergized Seraphim or Exalted Angel attacks */}
+      <CardBreakMeter
+        meter={bossFight.bossCardBreakMeter ?? 0}
+        freezeLeft={bossFight.bossCardBreakFreezeLeft ?? 0}
+        breakCount={bossFight.bossCardBreakCount ?? 0}
+      />
 
       {callout && (
         <div
@@ -240,7 +218,7 @@ export default function BossFightArena() {
           {callout.text}
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
@@ -324,27 +302,6 @@ function HpBar({
           }}
         />
       ))}
-    </div>
-  );
-}
-
-function Stat({ label, value, color, align, emphasize }: {
-  label: string;
-  value: string;
-  color: string;
-  align?: 'left' | 'right';
-  emphasize?: boolean;
-}) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: align === 'right' ? 'flex-end' : 'flex-start' }}>
-      <span style={{ fontSize: 8.5, letterSpacing: 1.4, color: EW_TEXT_MUTED }}>{label}</span>
-      <span style={{
-        color,
-        fontSize: emphasize ? 12 : 10,
-        fontWeight: emphasize ? 'bold' : 'normal',
-        fontVariantNumeric: 'tabular-nums',
-        textShadow: emphasize ? `0 0 10px ${color}88` : undefined,
-      }}>{value}</span>
     </div>
   );
 }

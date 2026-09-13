@@ -202,8 +202,10 @@ function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: s
 export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () => void }) {
   const [showOblivionScreen, setShowOblivionScreen] = useState(false);
   const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
+  const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
   const gardenDungeon = useStore(selectGardenDungeon);
+  const inBossFight = bossFight.mode === 'active';
   const inBattleground = battleground.mode === 'active';
   const inGardenDungeon = gardenDungeon.phase === 'active';
 
@@ -211,8 +213,8 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
     <>
       {/* Core play surfaces */}
       <BoardDisplay onHoverCard={setInspectedCardId} />
-      {/* ScoreDisplay overlaps the battleground/garden banner — those headers already present score/timer/currencies */}
-      {!inBattleground && !inGardenDungeon && <ScoreDisplay />}
+      {/* ScoreDisplay overlaps the boss/battleground/garden banner — those headers already present score/timer/currencies */}
+      {!inBattleground && !inGardenDungeon && !inBossFight && <ScoreDisplay />}
       <AngelStatPanel />
 
       {/* Top status bar — set · turn · phase */}

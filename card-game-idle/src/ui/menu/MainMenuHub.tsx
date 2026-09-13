@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { uiTypography, type UiPalette } from '@/ui/theme';
 import { useStore, selectDeck, selectProfile, selectProgress, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getEverCollectionCount, getTotalPacksOpened } from '@/systems/progression/ownershipHistory';
 import { resolveAvatar } from '@/data/profile/avatars';
 import { resolveTitleBadge } from '@/data/profile/titleBadges';
 import { DEFAULT_UI_THEME_ID, getEffectiveThemePalette, isThemeOscillating } from '@/data/profile/uiThemes';
@@ -357,6 +358,17 @@ export default function MainMenuHub(props: MainMenuHubProps) {
     }
     return counts;
   }, [progress.collection]);
+
+  const uniqueEnigmaticsOwned = useMemo(() => {
+    return CardRegistry.getAll().filter(
+      card => card.rarity === 'Enigmatic' && getEverCollectionCount(progress, card.definitionId) > 0
+    ).length;
+  }, [progress]);
+
+  const totalPacksOpened = useMemo(() => getTotalPacksOpened(progress), [progress]);
+
+  const eternitysWakeLocked = uniqueEnigmaticsOwned < 3;
+  const enigmaLocked = totalPacksOpened < 10;
   const infinitudeLocked = ownedByRarity.Eternal < 5;
   const ascensionLocked = ownedByRarity.Infinite < 5;
 
@@ -614,21 +626,21 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         <button
           className="menu-tactile-btn enigma-golden-shimmer"
           onClick={props.onEnigma}
-          disabled={ownedByRarity.Eternal < 1}
+          disabled={enigmaLocked}
           style={{
             width: 150, minHeight: 52, padding: '10px 14px', borderRadius: 8,
             border: '1px solid rgba(230, 190, 100, 0.7)',
             background: 'linear-gradient(120deg, #6b4a12 0%, #d9a441 30%, #f8dd7a 50%, #d9a441 70%, #6b4a12 100%)',
             color: '#1a1206', fontFamily: uiTypography.display, fontSize: 14,
             letterSpacing: 1.4, textAlign: 'left', textTransform: 'uppercase',
-            cursor: ownedByRarity.Eternal < 1 ? 'not-allowed' : 'pointer',
-            opacity: ownedByRarity.Eternal < 1 ? 0.45 : 1,
+            cursor: enigmaLocked ? 'not-allowed' : 'pointer',
+            opacity: enigmaLocked ? 0.45 : 1,
             backgroundSize: '200% 100%',
             boxShadow: '0 6px 18px rgba(0,0,0,0.4)',
           }}
         >
           <div>✦ Enigma</div>
-          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.78, textTransform: 'none' }}>{ownedByRarity.Eternal < 1 ? 'Locked — earn an Eternal card first' : 'Cosmic patterns of fate'}</div>
+          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.78, textTransform: 'none' }}>{enigmaLocked ? `Locked — buy ${totalPacksOpened}/10 card packs` : 'Cosmic patterns of fate'}</div>
         </button>
       </div>
 
@@ -665,9 +677,10 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           <TileButton
             theme={uiTheme}
             label={t('eternityWake') || "Eternity's Wake"}
-            caption="Story bosses & Eternal rewards"
+            caption={eternitysWakeLocked ? `Locked — Enigmatic cards ${uniqueEnigmaticsOwned}/3` : 'Story bosses & Eternal rewards'}
             size="half"
             onClick={props.onEternitysWake}
+            disabled={eternitysWakeLocked}
           />
         </div>
         <div style={{ gridColumn: 'span 3' }}>
