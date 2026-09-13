@@ -479,6 +479,46 @@ export default function CardMasteryModal({ onClose }: Props) {
           </div>
         </div>
 
+        {/* ── Collection Power Progress Banner ── */}
+        <div style={{
+          padding: '10px 32px',
+          background: withAlpha(P.panelStrong, 0.85),
+          borderBottom: `1px solid ${P.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 20,
+          flexShrink: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 230 }}>
+            <span style={{ color: P.gold, fontSize: 16 }}>✦</span>
+            <div>
+              <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: P.gold, fontFamily: uiTypography.display, fontWeight: 700 }}>
+                Next +0.01 Collection Power
+              </div>
+              <div style={{ fontSize: 11, color: P.textMuted, marginTop: 1 }}>
+                Current: <strong style={{ color: P.gold }}>×{(1 + computedStats.globalOblivionMult).toFixed(2)}</strong> → Target: <strong style={{ color: P.accent }}>×{(1 + computedStats.globalOblivionMult + 0.01).toFixed(2)}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 10, color: P.textMuted }}>
+              <span>Resonance Progress: <strong style={{ color: P.accent }}>{resonanceScore % 5} / 5 pts</strong></span>
+              <span style={{ color: P.textFaint }}>{5 - (resonanceScore % 5)} Resonance pt{5 - (resonanceScore % 5) !== 1 ? 's' : ''} needed</span>
+            </div>
+            <div style={{ height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: `1px solid ${withAlpha(P.border, 0.5)}`, overflow: 'hidden', position: 'relative' }}>
+              <div style={{
+                height: '100%',
+                width: `${((resonanceScore % 5) / 5 * 100).toFixed(1)}%`,
+                background: `linear-gradient(90deg, ${P.accentDeep}, ${P.gold})`,
+                boxShadow: `0 0 12px ${withAlpha(P.gold, 0.5)}`,
+                borderRadius: 999,
+                transition: 'width 0.4s ease',
+              }} />
+            </div>
+          </div>
+        </div>
+
         {/* ── Body: two-column when info open, full-width list otherwise ── */}
         <div style={{ display: 'flex', flex: 1, overflow: 'hidden', gap: 0 }}>
 

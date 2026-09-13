@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { GARDEN_DUNGEONS, GARDEN_MATERIAL_METADATA, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
@@ -13,7 +13,6 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const startGardenDungeon = useStore(state => state.startGardenDungeon);
   const resolveGardenEncounter = useStore(state => state.resolveGardenEncounter);
   const exitGardenDungeon = useStore(state => state.exitGardenDungeon);
-  const scrollerRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showInventory, setShowInventory] = useState(false);
   const selected = GARDEN_DUNGEONS[selectedIndex] ?? GARDEN_DUNGEONS[0];
@@ -33,27 +32,27 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   }, [progress]);
 
   const move = (direction: number) => {
-    const next = Math.max(0, Math.min(GARDEN_DUNGEONS.length - 1, selectedIndex + direction));
+    const next = (selectedIndex + direction + GARDEN_DUNGEONS.length) % GARDEN_DUNGEONS.length;
     setSelectedIndex(next);
-    scrollerRef.current?.children[next]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   };
 
   return (
-    <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.18), transparent 45%), linear-gradient(145deg, rgba(6,7,12,0.99), rgba(10,12,20,0.99))', color: '#ffffff', fontFamily: uiTypography.body, overflowY: 'auto' }}>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '26px clamp(18px, 5vw, 64px) 12px', maxWidth: 1180, margin: '0 auto' }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.18), transparent 45%), linear-gradient(145deg, rgba(6,7,12,0.99), rgba(10,12,20,0.99))', color: '#ffffff', fontFamily: uiTypography.body, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      {/* Top Header */}
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, padding: '16px 32px', borderBottom: '1px solid rgba(255,255,255,0.12)', flexShrink: 0 }}>
         <div>
-          <div style={{ fontFamily: uiTypography.display, fontSize: 28, letterSpacing: 2, textTransform: 'uppercase', color: '#ffffff', textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 35px rgba(200,225,255,0.5)' }}>Garden of Cards</div>
-          <div style={{ marginTop: 5, color: 'rgba(255,255,255,0.7)', fontSize: 12, letterSpacing: 0.5 }}>Dungeon expeditions and material recovery</div>
+          <div style={{ fontFamily: uiTypography.display, fontSize: 24, letterSpacing: 2, textTransform: 'uppercase', color: '#ffffff', textShadow: '0 0 20px rgba(255,255,255,0.8)' }}>Garden of Cards</div>
+          <div style={{ marginTop: 2, color: 'rgba(255,255,255,0.65)', fontSize: 11, letterSpacing: 0.5 }}>Dungeon expeditions & material recovery</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             type="button"
             onClick={() => setShowInventory(!showInventory)}
             className="garden-pearlescent-btn"
             style={{
-              padding: '8px 16px',
+              padding: '7px 14px',
               borderRadius: 8,
-              fontSize: 12,
+              fontSize: 11,
               letterSpacing: 1.2,
               textTransform: 'uppercase',
               color: '#000',
@@ -64,23 +63,36 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
             }}
           >
             <span>🎒</span>
-            <span>{showInventory ? 'Close Inventory' : `Inventory (${ownedMaterials.length})`}</span>
+            <span>{showInventory ? 'Dungeons' : `Inventory (${ownedMaterials.length})`}</span>
           </button>
-          <button type="button" onClick={onClose} aria-label="Close Garden of Cards" className="garden-pearlescent-btn" style={{ width: 34, height: 34, borderRadius: 8, color: '#000', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close Garden of Cards"
+            className="garden-pearlescent-btn"
+            style={{ width: 34, height: 34, borderRadius: 8, color: '#000', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            ×
+          </button>
         </div>
       </header>
-      <main style={{ maxWidth: 1180, margin: '0 auto', padding: '12px clamp(12px, 4vw, 48px) 48px' }}>
-        {showInventory && (
+
+      {/* Main Content Area */}
+      <main style={{ flex: 1, display: 'flex', padding: '20px 32px 24px', gap: 24, minHeight: 0, overflow: 'hidden' }}>
+        {showInventory ? (
+          /* Inventory View */
           <section
             className="garden-pearlescent-card"
             style={{
-              maxWidth: 760,
-              margin: '0 auto 20px',
+              flex: 1,
               padding: 24,
               borderRadius: 14,
+              display: 'flex',
+              flexDirection: 'column',
+              minHeight: 0,
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexShrink: 0 }}>
               <div>
                 <h2 style={{ margin: 0, fontFamily: uiTypography.display, fontSize: 20, letterSpacing: 1.5, color: '#ffffff', textTransform: 'uppercase' }}>
                   Garden Material Inventory
@@ -94,7 +106,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                 onClick={() => setShowInventory(false)}
                 className="garden-pearlescent-btn"
                 style={{
-                  padding: '4px 10px',
+                  padding: '5px 12px',
                   borderRadius: 6,
                   color: '#000',
                   fontSize: 11,
@@ -103,12 +115,12 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                   textTransform: 'uppercase',
                 }}
               >
-                Close
+                Back to Dungeons
               </button>
             </div>
 
             {ownedMaterials.length > 0 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+              <div style={{ flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14, alignContent: 'start', paddingRight: 4 }}>
                 {ownedMaterials.map(item => (
                   <div
                     key={item.key}
@@ -118,7 +130,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                       gap: 12,
                       padding: 14,
                       borderRadius: 10,
-                      background: 'rgba(255,255,255,0.06)',
+                      background: 'rgba(255,255,255,0.05)',
                       border: '1px solid rgba(255,255,255,0.18)',
                     }}
                   >
@@ -152,81 +164,219 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '24px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontStyle: 'italic' }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontStyle: 'italic' }}>
                 No dungeon materials currently owned. Complete encounters in the Valley of Null to recover materials.
               </div>
             )}
           </section>
-        )}
+        ) : (
+          /* Split Dungeon View */
+          <>
+            {/* Left Column: Dungeon Cover Card & Selector */}
+            <div style={{ width: 'min(440px, 38vw)', display: 'flex', flexDirection: 'column', gap: 14, flexShrink: 0 }}>
+              {/* Cover Card */}
+              <div
+                className="garden-pearlescent-card"
+                style={{
+                  borderRadius: 14,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  aspectRatio: '16/10',
+                  background: `linear-gradient(180deg, rgba(6,7,12,0.1), rgba(6,7,12,0.9)), url("${selected.coverArt}") center / cover`,
+                  boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  padding: 16,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', background: 'rgba(0,0,0,0.7)', border: '1px solid rgba(255,255,255,0.4)', padding: '3px 8px', borderRadius: 4, backdropFilter: 'blur(4px)' }}>
+                    {selected.available ? 'AVAILABLE' : 'COMING SOON'}
+                  </span>
+                </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-          <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', fontFamily: uiTypography.display }}>Select a dungeon</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button type="button" onClick={() => move(-1)} aria-label="Previous dungeon" className="garden-pearlescent-btn" style={navStyle}>‹</button>
-            <button type="button" onClick={() => move(1)} aria-label="Next dungeon" className="garden-pearlescent-btn" style={navStyle}>›</button>
-          </div>
-        </div>
-        <div ref={scrollerRef} style={{ display: 'flex', gap: 16, overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '12px calc(50% - min(40vw, 330px)) 20px', scrollbarWidth: 'thin' }}>
-          {GARDEN_DUNGEONS.map((dungeon, index) => (
-            <button
-              key={dungeon.id}
-              type="button"
-              onClick={() => { setSelectedIndex(index); scrollerRef.current?.children[index]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }}
-              className={index === selectedIndex ? 'garden-pearlescent-card' : ''}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <button
+                    type="button"
+                    onClick={() => move(-1)}
+                    aria-label="Previous dungeon"
+                    className="garden-pearlescent-btn"
+                    style={{ width: 32, height: 32, borderRadius: 6, color: '#000', cursor: 'pointer', fontSize: 18, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    ‹
+                  </button>
+                  <span style={{ fontFamily: uiTypography.display, fontSize: 22, letterSpacing: 1.5, textShadow: '0 0 16px rgba(255,255,255,0.9)', color: '#ffffff' }}>
+                    {selected.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => move(1)}
+                    aria-label="Next dungeon"
+                    className="garden-pearlescent-btn"
+                    style={{ width: 32, height: 32, borderRadius: 6, color: '#000', cursor: 'pointer', fontSize: 18, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    ›
+                  </button>
+                </div>
+              </div>
+
+              {/* Dungeon Pills Selector */}
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+                {GARDEN_DUNGEONS.map((dungeon, idx) => (
+                  <button
+                    key={dungeon.id}
+                    type="button"
+                    onClick={() => setSelectedIndex(idx)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: idx === selectedIndex ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.2)',
+                      background: idx === selectedIndex ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)',
+                      color: idx === selectedIndex ? '#ffffff' : 'rgba(255,255,255,0.6)',
+                      fontFamily: uiTypography.display,
+                      fontSize: 11,
+                      letterSpacing: 1,
+                      textTransform: 'uppercase',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {dungeon.name}
+                  </button>
+                ))}
+              </div>
+
+              {/* Action Box / Active Run Controls */}
+              {dungeonState.phase === 'active' && activeDungeon && activeEncounter ? (
+                <div style={{ padding: 14, borderRadius: 10, border: '1px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ color: '#ffffff', fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', fontFamily: uiTypography.display }}>
+                    Active expedition · Encounter {dungeonState.encounterIndex + 1} / {activeDungeon.encounters.length}
+                  </div>
+                  <div style={{ fontFamily: uiTypography.display, fontSize: 16, color: '#ffffff' }}>{activeEncounter.name}</div>
+                  <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>
+                    HP {dungeonState.encounterHp.toLocaleString()} / {dungeonState.encounterMaxHp.toLocaleString()} · {minutes}:{seconds}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                    <button
+                      type="button"
+                      disabled={dungeonState.encounterHp > 0}
+                      onClick={resolveGardenEncounter}
+                      className={dungeonState.encounterHp <= 0 ? 'garden-pearlescent-btn' : ''}
+                      style={{
+                        flex: 1,
+                        padding: '9px 12px',
+                        borderRadius: 8,
+                        border: '1px solid rgba(255,255,255,0.65)',
+                        background: dungeonState.encounterHp <= 0 ? undefined : 'rgba(255,255,255,0.06)',
+                        color: dungeonState.encounterHp <= 0 ? '#000' : 'rgba(255,255,255,0.45)',
+                        cursor: dungeonState.encounterHp <= 0 ? 'pointer' : 'not-allowed',
+                        fontFamily: uiTypography.body,
+                        fontSize: 11,
+                        textTransform: 'uppercase',
+                        letterSpacing: 1,
+                      }}
+                    >
+                      {dungeonState.encounterHp > 0 ? 'Defeat in battle' : 'Claim Reward'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={exitGardenDungeon}
+                      style={{
+                        padding: '9px 12px',
+                        borderRadius: 8,
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'transparent',
+                        color: 'rgba(255,255,255,0.85)',
+                        cursor: 'pointer',
+                        fontFamily: uiTypography.body,
+                        fontSize: 11,
+                        textTransform: 'uppercase',
+                      }}
+                    >
+                      Exit
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  disabled={!selected.available}
+                  onClick={() => { if (startGardenDungeon(selected.id)) onEnterDungeon?.(selected.id); }}
+                  className="garden-pearlescent-btn"
+                  style={{
+                    width: '100%',
+                    padding: '14px 18px',
+                    borderRadius: 10,
+                    cursor: selected.available ? 'pointer' : 'not-allowed',
+                    fontFamily: uiTypography.body,
+                    fontSize: 13,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                    color: '#000',
+                  }}
+                >
+                  {selected.available ? 'Enter Dungeon' : 'Unavailable'}
+                </button>
+              )}
+            </div>
+
+            {/* Right Column: Selected Dungeon Details */}
+            <section
+              className="garden-pearlescent-card"
               style={{
-                flex: '0 0 min(80vw, 660px)',
-                aspectRatio: '1.55',
-                scrollSnapAlign: 'center',
-                borderRadius: 14,
-                border: index === selectedIndex ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.2)',
-                background: `linear-gradient(180deg, rgba(6,7,12,0.1), rgba(6,7,12,0.88)), url("${dungeon.coverArt}") center / cover`,
-                boxShadow: index === selectedIndex ? '0 0 0 2px rgba(255,255,255,0.4), 0 0 40px rgba(255,255,255,0.3)' : '0 12px 25px rgba(0,0,0,0.45)',
-                color: '#fff',
-                textAlign: 'left',
+                flex: 1,
                 padding: 24,
-                cursor: 'pointer',
-                opacity: dungeon.available ? 1 : 0.48,
-                position: 'relative',
+                borderRadius: 14,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+                minHeight: 0,
+                overflowY: 'auto',
               }}
             >
-              <span style={{ position: 'absolute', top: 16, right: 16, fontSize: 9, letterSpacing: 1.5, textTransform: 'uppercase', background: 'rgba(0,0,0,0.65)', border: '1px solid rgba(255,255,255,0.4)', padding: '3px 8px', borderRadius: 4 }}>{dungeon.available ? 'Available' : 'Coming soon'}</span>
-              <span style={{ position: 'absolute', left: 24, bottom: 22, fontFamily: uiTypography.display, fontSize: 26, letterSpacing: 1.5, textShadow: '0 0 16px rgba(255,255,255,0.8)' }}>{dungeon.name}</span>
-            </button>
-          ))}
-        </div>
-        <section className="garden-pearlescent-card" style={{ maxWidth: 760, margin: '8px auto 0', padding: 26, borderRadius: 14 }}>
-          <h1 style={{ margin: 0, fontFamily: uiTypography.display, fontSize: 24, letterSpacing: 1.5, color: '#ffffff', textShadow: '0 0 16px rgba(255,255,255,0.6)' }}>{selected.name}</h1>
-          <div style={{ marginTop: 5, color: '#e0ecff', fontSize: 12 }}>{selected.subtitle}</div>
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 13, lineHeight: 1.6 }}>{selected.description}</p>
-          <div style={{ display: 'grid', gap: 8 }}>
-            {selected.encounters.map((encounter, index) => encounter.reward && (
-              <div key={encounter.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}>
-                <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" width={32} height={32} style={{ width: 32, height: 32, borderRadius: 6, border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.25)' }} />
-                <div style={{ flex: 1 }}><div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff' }}>Encounter {index + 1}: {encounter.name}</div><div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11 }}>Reward: {GARDEN_REWARD_LABELS[encounter.reward.currency]}</div></div>
-                <div style={{ color: '#ffffff', fontSize: 12, fontWeight: 600 }}>{Math.round(encounter.reward.chance * 100)}% · Owned {progress[encounter.reward.currency] ?? 0}</div>
+              <div>
+                <h1 style={{ margin: 0, fontFamily: uiTypography.display, fontSize: 24, letterSpacing: 1.5, color: '#ffffff', textShadow: '0 0 16px rgba(255,255,255,0.6)' }}>
+                  {selected.name}
+                </h1>
+                <div style={{ marginTop: 4, color: '#e0ecff', fontSize: 12 }}>{selected.subtitle}</div>
+                <p style={{ marginTop: 8, color: 'rgba(255,255,255,0.8)', fontSize: 12.5, lineHeight: 1.55 }}>{selected.description}</p>
               </div>
-            ))}
-          </div>
-          {dungeonState.phase === 'active' && activeDungeon && activeEncounter ? (
-            <div style={{ marginTop: 20, padding: 16, borderRadius: 10, border: '1px solid rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.07)' }}>
-              <div style={{ color: '#ffffff', fontSize: 11, letterSpacing: 1.5, textTransform: 'uppercase', fontFamily: uiTypography.display }}>Active expedition · Encounter {dungeonState.encounterIndex + 1} / {activeDungeon.encounters.length}</div>
-              <div style={{ marginTop: 8, fontFamily: uiTypography.display, fontSize: 20, color: '#ffffff' }}>{activeEncounter.name}</div>
-              <div style={{ marginTop: 4, color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Encounter HP {dungeonState.encounterHp.toLocaleString()} / {dungeonState.encounterMaxHp.toLocaleString()} · Time remaining {minutes}:{seconds}</div>
-              <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
-                <button type="button" disabled={dungeonState.encounterHp > 0} onClick={resolveGardenEncounter} className={dungeonState.encounterHp <= 0 ? 'garden-pearlescent-btn' : ''} style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.65)', background: dungeonState.encounterHp <= 0 ? undefined : 'rgba(255,255,255,0.06)', color: dungeonState.encounterHp <= 0 ? '#000' : 'rgba(255,255,255,0.45)', cursor: dungeonState.encounterHp <= 0 ? 'pointer' : 'not-allowed', fontFamily: uiTypography.body, fontSize: 12, textTransform: 'uppercase', letterSpacing: 1 }}>{dungeonState.encounterHp > 0 ? 'Defeat the encounter in battle' : 'Claim Encounter Reward'}</button>
-                <button type="button" onClick={exitGardenDungeon} style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)', background: 'transparent', color: 'rgba(255,255,255,0.85)', cursor: 'pointer', fontFamily: uiTypography.body, fontSize: 12, textTransform: 'uppercase' }}>Exit</button>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
+                <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', fontFamily: uiTypography.display }}>
+                  Expedition Encounters & Drops
+                </div>
+                <div style={{ display: 'grid', gap: 8 }}>
+                  {selected.encounters.map((encounter, index) => encounter.reward && (
+                    <div key={encounter.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}>
+                      <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" width={36} height={36} style={{ width: 36, height: 36, borderRadius: 6, border: '1px solid rgba(255,255,255,0.35)', boxShadow: '0 0 10px rgba(255,255,255,0.25)', flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#ffffff' }}>Encounter {index + 1}: {encounter.name}</div>
+                        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, marginTop: 1 }}>
+                          HP: {encounter.maxHp.toLocaleString()} · Drop: {GARDEN_REWARD_LABELS[encounter.reward.currency]}
+                        </div>
+                      </div>
+                      <div style={{ color: '#ffffff', fontSize: 12, fontWeight: 600, textAlign: 'right', flexShrink: 0 }}>
+                        <div>{Math.round(encounter.reward.chance * 100)}% chance</div>
+                        <div style={{ fontSize: 10, color: '#91bfff', marginTop: 1 }}>Owned: {progress[encounter.reward.currency] ?? 0}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ) : (
-            <button type="button" disabled={!selected.available} onClick={() => { if (startGardenDungeon(selected.id)) onEnterDungeon?.(selected.id); }} className="garden-pearlescent-btn" style={{ marginTop: 22, width: '100%', padding: '14px 18px', borderRadius: 10, cursor: selected.available ? 'pointer' : 'not-allowed', fontFamily: uiTypography.body, fontSize: 13, letterSpacing: 1.5, textTransform: 'uppercase' }}>{selected.available ? 'Enter Dungeon' : 'Unavailable'}</button>
-          )}
-          {dungeonState.phase === 'complete' && dungeonState.lastReward && (
-            <div style={{ marginTop: 14, color: '#ffffff', fontSize: 12, background: 'rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)' }}>Run complete. Reward roll: +1 {GARDEN_REWARD_LABELS[dungeonState.lastReward]}.</div>
-          )}
-        </section>
+
+              {dungeonState.phase === 'complete' && dungeonState.lastReward && (
+                <div style={{ color: '#ffffff', fontSize: 12, background: 'rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)' }}>
+                  Run complete. Reward roll: +1 {GARDEN_REWARD_LABELS[dungeonState.lastReward]}.
+                </div>
+              )}
+            </section>
+          </>
+        )}
       </main>
     </div>
   );
 }
-
-const navStyle: React.CSSProperties = { width: 34, height: 34, borderRadius: 8, color: '#000', cursor: 'pointer', fontSize: 20, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' };
