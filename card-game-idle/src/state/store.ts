@@ -186,11 +186,11 @@ function enforceHandCap(s: Store): void {
 }
 
 const defaultProgress: ProgressState = {
-  oblivion: 0,
+  oblivion: 5_000,
   nullifiedLattice: 0,
   nullSearedLight: 0,
   nullifiedOblivionMatter: 0,
-  lifetimeOblivion: 0,
+  lifetimeOblivion: 5_000,
   bestSingleTurnOblivion: 0,
   aberratedShards: 0,
   totalCardsPlayed: 0,

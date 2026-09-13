@@ -20,13 +20,16 @@ function resetStore(): void {
 }
 
 describe('starting economy', () => {
-  it('starts new default saves with zero currency balances', () => {
+  it('starts new default saves with starter grant Divine Light and zero for other currencies', () => {
+    expect(defaultGameState.progress.oblivion).toBe(5_000);
+    expect(defaultGameState.progress.lifetimeOblivion).toBe(5_000);
     for (const field of currencyFields) {
+      if (field === 'oblivion' || field === 'lifetimeOblivion') continue;
       expect(defaultGameState.progress[field], field).toBe(0);
     }
   });
 
-  it('resets wiped saves back to zero currency balances', () => {
+  it('resets wiped saves back to starter grant Divine Light and zero for other currencies', () => {
     resetStore();
     useStore.setState(state => ({
       ...state,
@@ -45,7 +48,10 @@ describe('starting economy', () => {
 
     useStore.getState().resetToDefault();
 
+    expect(useStore.getState().progress.oblivion).toBe(5_000);
+    expect(useStore.getState().progress.lifetimeOblivion).toBe(5_000);
     for (const field of currencyFields) {
+      if (field === 'oblivion' || field === 'lifetimeOblivion') continue;
       expect(useStore.getState().progress[field], field).toBe(0);
     }
   });

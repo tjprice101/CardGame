@@ -28,7 +28,7 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     name: 'Neutrality Pack',
     description: `Cards from the Neutrality set - balanced and beginner-friendly. Set size: ${NEUTRALITY_PACK_POOL.length} cards.`,
     setId: 'Neutrality',
-    cost: 10410,
+    cost: 6500,
     cardsPerOpen: 5,
     cardPool: NEUTRALITY_PACK_POOL,
     locked: false,

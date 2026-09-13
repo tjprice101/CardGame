@@ -143,7 +143,7 @@ export default function QuestsModal({ onClose }: Props) {
           <div>
             <div style={{ color: '#f0a24a', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 3 }}>✦ DAILY & WEEKLY OBJECTIVES</div>
             <h1 style={{ margin: '8px 0 4px', color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 34, letterSpacing: 1.5 }}>Challenges</h1>
-            <div style={{ color: 'rgba(240,230,210,0.72)', fontSize: 13 }}>Complete daily and weekly challenges for Divine Light and Aberrated Shards. Base rewards target approximately 50,000 Divine Light from daily challenges across seven days and 100,000 from weekly challenges.</div>
+            <div style={{ color: 'rgba(240,230,210,0.72)', fontSize: 13 }}>Complete daily and weekly challenges for Divine Light and Aberrated Shards. Base rewards target approximately 60,000 Divine Light from daily challenges across seven days and 100,000 from weekly challenges.</div>
             {readyCount > 0 && <div style={{ display: 'inline-block', marginTop: 12, padding: '5px 12px', borderRadius: 999, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, color: '#12070a', background: 'linear-gradient(180deg, #ffd88f 0%, #f0a24a 100%)', border: '1px solid rgba(255,209,138,0.7)', boxShadow: '0 6px 14px rgba(240,162,74,0.35)' }}>{readyCount} REWARD{readyCount === 1 ? '' : 'S'} READY</div>}
           </div>
           <button onClick={onClose} aria-label="Close Challenges" style={{ width: 42, height: 42, borderRadius: '50%', border: '1px solid rgba(240,209,138,0.4)', background: 'rgba(240,162,74,0.08)', color: '#f8f0de', fontSize: 18, cursor: 'pointer', fontFamily: uiTypography.display }}>✕</button>
