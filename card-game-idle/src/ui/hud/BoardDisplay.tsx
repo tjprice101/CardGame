@@ -464,13 +464,16 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                   <div style={{ fontSize: FRONT_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase', textAlign: 'center' }}>
                     Ain Soph Aur
                   </div>
-                  <div style={{ fontSize: FRONT_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.nameSize + 1, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
                     {asaDef?.name ?? 'Ain Soph Aur'}
                   </div>
                 </div>
                 <div style={getCardRulesPanelStyle('board')}>
                   <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: bridgeCooldown <= 0 ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center' }}>
-                    Bridge: {bridgeCooldown <= 0 ? 'Ready' : bridgeCooldown}
+                    Ain Attack: {bridgeCooldown <= 0 ? 'Ready' : 'Not Ready'}
+                  </div>
+                  <div style={{ fontSize: FRONT_FACE_METRICS.descSize, color: bridgeCooldown <= 0 ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 1, textTransform: 'uppercase', textAlign: 'center', marginTop: 2 }}>
+                    Soph Attack: {bridgeCooldown > 0 ? 'Not Ready' : bridgeCost > turn.limitlessLightStacks ? 'No Stacks' : 'Ready'}
                   </div>
                   <div style={{
                     fontSize: asaDescMetrics.fontSize,
@@ -740,21 +743,18 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${mainElementColor}cc, ${mainElementColor}, ${mainElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
                 <div style={getCardNameRibbonStyle('boardMini')}>
                   <div style={{ fontSize: CHERUBIM_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>
-                    {getDisplayCardTypeLabel(mainDef?.type ?? mainCard.type)} | {isSoph ? 'Soph' : 'Ain'}
+                    {getDisplayCardTypeLabel(mainDef?.type ?? mainCard.type)}
                   </div>
-                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.nameSize, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
+                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.nameSize + 1, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
                     {mainDef?.name ?? mainCard.definitionId}
                   </div>
                 </div>
                 <div style={getCardRulesPanelStyle('boardMini')}>
-                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: isReadyToFlip ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center' }}>
-                    {isSoph
-                      ? (isReadyToFlip ? 'Ready · click to flip/sacrifice' : `Charge ${charge}/${SOPH_FLIP_CHARGE_REQUIRED}`)
-                      : mainDef?.type === 'Light'
-                        ? `Ain ${ainCooldown <= 0 ? 'Ready' : ainCooldown} | Soph ${sophCooldown <= 0 ? 'Ready' : sophCooldown}`
-                        : mainDef?.persistent
-                          ? `Recharge ${darkCooldown <= 0 ? 'Ready' : darkCooldown}`
-                          : 'One-shot activation'}
+                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: ainCooldown <= 0 && isAin ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase' }}>
+                    Ain Attack: {mainDef?.type === 'Light' && isAin ? (ainCooldown <= 0 ? 'Ready' : 'Not Ready') : 'Not Ready'}
+                  </div>
+                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: sophCooldown <= 0 && isAin && turn.limitlessLightStacks >= sophCost ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase', marginTop: 2 }}>
+                    Soph Attack: {mainDef?.type === 'Light' && isAin ? (sophCooldown > 0 ? 'Not Ready' : turn.limitlessLightStacks < sophCost ? 'No Stacks' : 'Ready') : 'Not Ready'}
                   </div>
                   <div style={{
                     fontSize: mainDescMetrics.fontSize,

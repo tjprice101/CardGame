@@ -8,10 +8,10 @@ import { warmTheme, uiTypography } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import PackOpeningModal from './PackOpeningModal';
 import CollectionViewer from './CollectionViewer';
-import HolofoilWorkshop from './HolofoilWorkshop';
 import AbilityMaterialization from './AbilityMaterialization';
 import { getSpotlightPackId, getSpotlightPackCost, SPOTLIGHT_DISCOUNT } from '@/systems/progression/spotlightPack';
 import { getDailyDealPackId, getDailyDealCost, DAILY_DEAL_DISCOUNT } from '@/systems/progression/dailyDeal';
+import { getCardFaceBackgroundStyle, getCardFaceMetrics, getCardNameRibbonStyle } from '@/ui/cardBackgrounds';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#b8bcc6', Rare: '#7cbcff', Epic: '#c58bff', Legendary: '#ffd38a', Eternal: '#ff9f9f', Infinite: '#f2f4ff',
@@ -219,6 +219,71 @@ const styles: Record<string, React.CSSProperties> = {
   } as React.CSSProperties,
 };
 
+function BulkHolofoilResult(props: {
+  packName: string;
+  totalCards: number;
+  holoCards: Array<{ definitionId: string; count: number }>;
+  onClose: () => void;
+}) {
+  const metrics = getCardFaceMetrics('grid');
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, zIndex: 70, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 20, background: 'rgba(3, 5, 12, 0.92)', backdropFilter: 'blur(12px)',
+    }}>
+      <div style={{
+        width: 'min(900px, 96vw)', maxHeight: '88vh', overflowY: 'auto', padding: 28,
+        border: '1px solid rgba(255, 255, 255, 0.6)', borderRadius: 14,
+        background: 'linear-gradient(145deg, rgba(255,255,255,0.16), rgba(24,7,12,0.96) 42%, rgba(5,5,10,0.98))',
+        boxShadow: '0 0 55px rgba(255, 255, 255, 0.2), 0 18px 60px rgba(0,0,0,0.65)', color: '#fff',
+        fontFamily: uiTypography.body,
+      }}>
+        <div style={{ fontFamily: uiTypography.display, fontSize: 13, letterSpacing: 3, color: '#fff', textTransform: 'uppercase' }}>
+          Bulk Purchase Complete
+        </div>
+        <div style={{ marginTop: 8, fontFamily: uiTypography.display, fontSize: 28, letterSpacing: 1.2 }}>
+          {props.packName}
+        </div>
+        <div style={{ marginTop: 8, color: 'rgba(255,255,255,0.72)', fontSize: 13 }}>
+          {props.totalCards.toLocaleString()} cards were added to your collection.
+        </div>
+        <div style={{ marginTop: 24, fontFamily: uiTypography.display, fontSize: 12, letterSpacing: 2, color: '#ffced8', textTransform: 'uppercase' }}>
+          Holographic Cards Received
+        </div>
+        {props.holoCards.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 14, marginTop: 14 }}>
+            {props.holoCards.map(card => {
+              const definition = CardRegistry.get(card.definitionId);
+              return (
+                <div key={card.definitionId} style={{ position: 'relative', minHeight: 190, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.72)', background: '#111' }}>
+                  <div style={{ position: 'absolute', inset: 0, ...getCardFaceBackgroundStyle(definition), backgroundSize: 'cover' }} />
+                  <div style={{ position: 'relative', zIndex: 1, minHeight: 190, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 10, background: 'linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.76))' }}>
+                    <div style={getCardNameRibbonStyle('pack')}>
+                      <div style={{ fontSize: metrics.typeSize }}>{definition?.type ?? 'Card'}</div>
+                      <div style={{ fontSize: metrics.nameSize }}>{definition?.name ?? card.definitionId}</div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 8, color: '#fff' }}>
+                      <span style={{ fontSize: 10, letterSpacing: 1.3, textTransform: 'uppercase' }}>Holographic</span>
+                      <strong style={{ fontSize: 20 }}>×{card.count}</strong>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ marginTop: 14, padding: 20, border: '1px solid rgba(255,255,255,0.2)', borderRadius: 8, color: 'rgba(255,255,255,0.68)' }}>
+            No holographic cards were rolled in this purchase.
+          </div>
+        )}
+        <button type="button" onClick={props.onClose} style={{ marginTop: 24, padding: '10px 28px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.14)', color: '#fff', cursor: 'pointer', fontFamily: uiTypography.display, letterSpacing: 1 }}>
+          Continue
+        </button>
+      </div>
+    </div>
+  );
+}
+
 interface Props {
   onClose: () => void;
 }
@@ -231,8 +296,9 @@ export default function CardPackStore({ onClose }: Props) {
   const pityCounters = useStore(s => s.progress.pityCounters);
   const packPityCounters = useStore(s => s.progress.packPityCounters ?? {});
   const [openingResult, setOpeningResult] = useState<{ cards: string[]; packName: string; newCards: Set<string> } | null>(null);
+  const [bulkResult, setBulkResult] = useState<{ packName: string; totalCards: number; holoCards: Array<{ definitionId: string; count: number }> } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
-  const [activeTab, setActiveTab] = useState<'packs' | 'holofoils' | 'history' | 'abilities'>('packs');
+  const [activeTab, setActiveTab] = useState<'packs' | 'history' | 'abilities'>('packs');
   const [focusPackId, setFocusPackId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState<1 | 5 | 100>(1);
   const packRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -257,6 +323,7 @@ export default function CardPackStore({ onClose }: Props) {
 
   const handleOpen = (packId: string, tier: 'pack' | 'box' | 'case') => {
     const preOpenCollection = new Set(Object.keys(useStore.getState().progress.collection));
+    const preOpenHolofoilCounts = { ...useStore.getState().progress.holoCollection };
     const aggregated: string[] = [];
     for (let i = 0; i < quantity; i++) {
       const state = useStore.getState();
@@ -271,7 +338,17 @@ export default function CardPackStore({ onClose }: Props) {
       const tierLabel = tier === 'pack' ? 'Pack' : tier === 'box' ? 'Box' : 'Case';
       const newCards = new Set(aggregated.filter(id => !preOpenCollection.has(id)));
       const qtyLabel = quantity > 1 ? ` ×${quantity}` : '';
-      setOpeningResult({ cards: aggregated, packName: `${pack?.name ?? 'Pack'} ${tierLabel}${qtyLabel}`, newCards });
+      const packName = `${pack?.name ?? 'Pack'} ${tierLabel}${qtyLabel}`;
+      if (quantity > 1) {
+        const currentHolofoilCounts = useStore.getState().progress.holoCollection;
+        const holoCards = Object.entries(currentHolofoilCounts)
+          .map(([definitionId, count]) => ({ definitionId, count: Math.max(0, count - (preOpenHolofoilCounts[definitionId] ?? 0)) }))
+          .filter(card => card.count > 0)
+          .sort((a, b) => b.count - a.count || a.definitionId.localeCompare(b.definitionId));
+        setBulkResult({ packName, totalCards: aggregated.length, holoCards });
+      } else {
+        setOpeningResult({ cards: aggregated, packName, newCards });
+      }
     }
   };
 
@@ -536,17 +613,6 @@ export default function CardPackStore({ onClose }: Props) {
         <button
           style={{
             ...styles.tabBtn,
-            ...(activeTab === 'holofoils'
-              ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
-              : {}),
-          }}
-          onClick={() => setActiveTab('holofoils')}
-        >
-          Holofoils
-        </button>
-        <button
-          style={{
-            ...styles.tabBtn,
             ...(activeTab === 'history'
               ? { color: '#0c1e34', borderColor: 'rgba(88,170,218,0.70)', background: 'rgba(88,170,218,0.88)' }
               : {}),
@@ -581,6 +647,7 @@ export default function CardPackStore({ onClose }: Props) {
                 <div style={styles.helpItem}><strong>Pack:</strong> 5 cards.</div>
                 <div style={styles.helpItem}><strong>Box:</strong> 25 cards (5 packs), 2% discount, Legendary pity for that set.</div>
                 <div style={styles.helpItem}><strong>Case:</strong> 50 cards (10 packs), 4% discount, at least 1 guaranteed Legendary.</div>
+                <div style={styles.helpItem}><strong>Holofoil:</strong> Each rolled card has a 2% holofoil chance. Every Box and Case guarantees at least 1 holofoil.</div>
                 <div style={styles.helpItem}>
                   <strong>Legendary Box Pity:</strong> 2 no-Legendary Boxes in a set makes the next Box guaranteed.
                 </div>
@@ -609,8 +676,6 @@ export default function CardPackStore({ onClose }: Props) {
 
           </div>
         </div>
-      ) : activeTab === 'holofoils' ? (
-        <HolofoilWorkshop />
       ) : activeTab === 'history' ? (
         <PackHistoryPanel />
       ) : (
@@ -631,6 +696,15 @@ export default function CardPackStore({ onClose }: Props) {
       )}
 
       {showCollection && <CollectionViewer onClose={() => setShowCollection(false)} />}
+
+      {bulkResult && (
+        <BulkHolofoilResult
+          packName={bulkResult.packName}
+          totalCards={bulkResult.totalCards}
+          holoCards={bulkResult.holoCards}
+          onClose={() => setBulkResult(null)}
+        />
+      )}
 
     </div>
   );

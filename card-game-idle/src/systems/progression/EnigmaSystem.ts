@@ -63,13 +63,13 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
   const activeAinSophAurCount = state.board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length;
 
   // Step 3 (index 2): three charged Soph cards form the quiet field.
-  if (!instance.stepsComplete[2] && chargedSophCount >= 3) {
+  if (instance.stepsComplete[1] && !instance.stepsComplete[2] && chargedSophCount >= 3) {
     instance.stepsComplete[2] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 3);
   }
 
   // Step 4 (index 3): an active Light and Ain Soph Aur must coexist.
-  if (!instance.stepsComplete[3] && activeLightCount >= 1 && activeAinSophAurCount >= 1) {
+  if (instance.stepsComplete[2] && !instance.stepsComplete[3] && activeLightCount >= 1 && activeAinSophAurCount >= 1) {
     instance.stepsComplete[3] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
   }

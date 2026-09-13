@@ -30,7 +30,7 @@ import { PackSystem } from '@/systems/cards/PackSystem';
 import { getActiveCoopRng, useCoopSyncStore } from '@/state/coopSyncStore';
 import { useSocialStore } from '@/state/socialStore';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { canConvertCardToHolo, getCardFinishKey, getHolofoilConversionCost, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
+import { getCardFinishKey, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
 import { evaluateDailyLogin, getUtcDayIndex } from '@/systems/progression/dailyLogin';
 import {
@@ -387,7 +387,6 @@ interface StoreActions {
   openPack: (packId: string) => string[] | null;
   openBox: (packId: string) => string[] | null;
   openCase: (packId: string) => string[] | null;
-  convertCardToHolo: (definitionId: string) => boolean;
   toggleFavoriteCard: (definitionId: string, finish: CardFinish) => void;
   combineForInfinite: (recipe: import('@/data/cards/infiniteCards').InfiniteRecipe) => true | string;
   updateSettings: (patch: Partial<SettingsState>) => void;
@@ -469,7 +468,6 @@ interface StoreActions {
   claimDailyReward: () => { shards: number; streak: number } | null;
   setActiveEnigma: (enigmaId: string) => void;
   sacrificeEnigmaOblivion: (enigmaId: string) => boolean;
-  sacrificeShardsForEnigma: (enigmaId: string, amount: number) => boolean;
   purchaseAbility: (abilityId: string) => boolean;
   grantGardenCurrency: (currency: 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter', amount?: number) => void;
   startGardenDungeon: (dungeonId: string) => boolean;
@@ -867,6 +865,14 @@ function recordPackOpen(progress: ProgressState, packId: string, tier: 'pack' | 
   }
 }
 
+function rollPackHolofoils(drawn: string[], guaranteed: boolean): boolean[] {
+  const holoFlags = drawn.map(definitionId => isHoloOnlyCard(CardRegistry.get(definitionId)!) || Math.random() < 0.02);
+  if (guaranteed && drawn.length > 0 && !holoFlags.some(Boolean)) {
+    holoFlags[Math.floor(Math.random() * holoFlags.length)] = true;
+  }
+  return holoFlags;
+}
+
 function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEFINITIONS)[number], rewardCopies = 1): void {
   const priorClears = progress.bossClearCounts[boss.id] ?? 0;
   progress.bossClearCounts[boss.id] = priorClears + 1;
@@ -1172,6 +1178,7 @@ function completeBossFight(s: Store, victory: boolean): void {
           ntvInstance.currentStepIndex = Math.max(ntvInstance.currentStepIndex, 2);
           pushEnigmaStepToast(s, 'neutralizing-the-void', 1);
         }
+        checkNtvMasteryTierStep(s.progress);
       }
     }
   }
@@ -1521,10 +1528,10 @@ function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void 
   }
 }
 
-// Checks step 3 of Neutralizing the Void (card-born Tier ≥4); safe to call multiple times.
+// Checks the Card-born Tier 4 step of Neutralizing the Void; safe to call repeatedly.
 function checkNtvMasteryTierStep(progress: ProgressState): void {
   const instance = progress.enigmas?.instances['neutralizing-the-void'];
-  if (!instance || instance.stepsComplete[3] || !instance.stepsComplete[2]) return;
+  if (!instance || !instance.stepsComplete[1] || instance.stepsComplete[2]) return;
   const claims = progress.cardMasteryClaims as Record<string, unknown> | undefined;
   if (!claims) return;
   const hasRequiredTier = Object.keys(claims).some(key => {
@@ -1535,8 +1542,8 @@ function checkNtvMasteryTierStep(progress: ProgressState): void {
     return tierStr !== undefined && parseInt(tierStr, 10) >= 4;
   });
   if (hasRequiredTier) {
-    instance.stepsComplete[3] = true;
-    instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
+    instance.stepsComplete[2] = true;
+    instance.currentStepIndex = Math.max(instance.currentStepIndex, 3);
   }
 }
 
@@ -2271,6 +2278,7 @@ export const useStore = create<Store>()(
           tickHandPlayCooldowns(s);
           recordCardPlay(s, deckCard.definitionId);
           advanceTrialGuideStep(s, deckCard.definitionId);
+          syncEnigmaProgressFromBoard(s, false);
           recompute(s);
           return;
         }
@@ -2335,6 +2343,7 @@ export const useStore = create<Store>()(
             }
           }
           emitQuestProgressToProgress(s.progress, { kind: 'flip_soph', amount: 1 });
+          syncEnigmaProgressFromBoard(s, false);
           recompute(s);
           return;
         }
@@ -2833,10 +2842,9 @@ export const useStore = create<Store>()(
         } else {
           state.progress.oblivion -= baseCost;
         }
-        for (const defId of drawn) {
-          // Card packs have a 1% chance per card rolled to enter as holofoil
-          const isHolo = Math.random() < 0.01;
-          addCollectionCard(state.progress, defId, isHolo ? 'holo' : 'normal');
+        const holoFlags = rollPackHolofoils(drawn, false);
+        for (let i = 0; i < drawn.length; i += 1) {
+          addCollectionCard(state.progress, drawn[i], holoFlags[i] ? 'holo' : 'normal');
         }
         recordPackOpen(state.progress, packId, 'pack', drawn);
         emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 1 });
@@ -2877,9 +2885,9 @@ export const useStore = create<Store>()(
 
       set(state => {
         state.progress.oblivion -= cost;
-        for (const defId of drawn) {
-          const isHolo = Math.random() < 0.01;
-          addCollectionCard(state.progress, defId, isHolo ? 'holo' : 'normal');
+        const holoFlags = rollPackHolofoils(drawn, true);
+        for (let i = 0; i < drawn.length; i += 1) {
+          addCollectionCard(state.progress, drawn[i], holoFlags[i] ? 'holo' : 'normal');
         }
         state.progress.pityCounters[packId] = hasLegendary ? 0 : pityMisses + 1;
         recordPackOpen(state.progress, packId, 'box', drawn);
@@ -2919,31 +2927,14 @@ export const useStore = create<Store>()(
 
       set(state => {
         state.progress.oblivion -= cost;
-        for (const defId of drawn) {
-          const isHolo = Math.random() < 0.01;
-          addCollectionCard(state.progress, defId, isHolo ? 'holo' : 'normal');
+        const holoFlags = rollPackHolofoils(drawn, true);
+        for (let i = 0; i < drawn.length; i += 1) {
+          addCollectionCard(state.progress, drawn[i], holoFlags[i] ? 'holo' : 'normal');
         }
         recordPackOpen(state.progress, packId, 'case', drawn);
         emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 10 });
       });
       return drawn;
-    },
-
-    convertCardToHolo: (definitionId) => {
-      const state = get();
-      const definition = CardRegistry.get(definitionId);
-      const cost = getHolofoilConversionCost(definition, state.progress.holoCollection);
-      if (!canConvertCardToHolo(definition, state.progress.collection, state.progress.holoCollection)) return false;
-      if (cost === null || state.progress.aberratedShards < cost) return false;
-
-      set(s => {
-        s.progress.aberratedShards -= cost;
-        const currentHolo = s.progress.holoCollection[definitionId] ?? 0;
-        const totalOwned = s.progress.collection[definitionId] ?? 0;
-        s.progress.holoCollection[definitionId] = Math.min(totalOwned, currentHolo + 1);
-      });
-
-      return true;
     },
 
     toggleFavoriteCard: (definitionId, finish) => {
@@ -3469,29 +3460,6 @@ export const useStore = create<Store>()(
       });
     },
 
-    sacrificeShardsForEnigma: (enigmaId: string, amount: number) => {
-      const state = get();
-      const instance = state.progress.enigmas.instances[enigmaId];
-      if (!instance || instance.status === 'locked') return false;
-      if (state.progress.aberratedShards < amount) return false;
-
-      set(s => {
-        const target = s.progress.enigmas.instances[enigmaId];
-        if (!target || target.status === 'locked') return;
-        if (s.progress.aberratedShards < amount) return;
-        s.progress.aberratedShards -= amount;
-        // Step 2 of Neutralizing the Void (index 2).
-        if (enigmaId === 'neutralizing-the-void' && !target.stepsComplete[2]) {
-          target.stepsComplete[2] = true;
-          target.currentStepIndex = Math.max(target.currentStepIndex, 3);
-          pushEnigmaStepToast(s, enigmaId, 2);
-          // Retro-check step 3 (card mastery tier) immediately after step 2 unlocks.
-          checkNtvMasteryTierStep(s.progress);
-        }
-      });
-      return true;
-    },
-
     claimEnigmaReward: (enigmaId) => {
       const state = get();
       const instance = state.progress.enigmas.instances[enigmaId];
@@ -3510,7 +3478,7 @@ export const useStore = create<Store>()(
 
       if (enigmaId === 'neutralizing-the-void') {
         const ntv = get().progress.enigmas.instances['neutralizing-the-void'];
-        if (!ntv || !ntv.stepsComplete[3]) return false;
+        if (!ntv || !ntv.stepsComplete[2]) return false;
       }
 
       set(s => {

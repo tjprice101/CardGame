@@ -146,7 +146,8 @@ function OverviewBody() {
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Currencies</div>
           <ListItem label="Divine Light">Primary currency. Earned from card plays and attacks. Spent on card packs.</ListItem>
-          <ListItem label="Shards">Aberrated Shards. Earned from boss clears and daily logins. Spent to convert cards into holofoils.</ListItem>
+          <ListItem label="Shards">Aberrated Shards. Earned from boss clears and daily logins. Spend them on progression and rewards.</ListItem>
+            <ListItem label="Shards">Aberrated Shards. Earned from event progression and rewards. They are reserved for buying event Packs, Boxes, and Cases.</ListItem>
         </div>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Game Modes</div>
@@ -401,7 +402,7 @@ function ModesBody() {
         <div style={sectionHeadingStyle}>Eternity's Wake &mdash; Boss Fights</div>
         <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Divine Light you generate is dealt as damage instead of banked.</ListItem>
         <ListItem label="Categories">Bosses are organized by set &mdash; Neutrality, Pyroabyss, Heavenly Light, Thornbound Plains, and so on. Use the tab strip at the top of the Wake menu to switch.</ListItem>
-        <ListItem label="Rewards">First clear and repeat clears both grant Aberrated Shards and the boss's signature Eternal card. 60-second cooldown after any attempt.</ListItem>
+        <ListItem label="Rewards">First clear and repeat clears grant Aberrated Shards and the boss's signature Eternal card. Aberrated Shards are reserved for event Packs, Boxes, and Cases.</ListItem>
         <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
       </div>
 
@@ -578,9 +579,9 @@ function ProgressionBody() {
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Holofoil Cards</div>
-        <ListItem label="Acquisition">Every card rolled when opening card packs in the Card Store has an innate 1% chance to drop as a holofoil.</ListItem>
+        <ListItem label="Acquisition">Every card rolled in a single Pack has a 2% chance to drop as a holofoil. Boxes and Cases guarantee at least one holofoil.</ListItem>
         <ListItem label="Visual Finish">Holofoils feature a deep, highly saturated inverted metallic finish with bright white highlights and deep scarlet accents.</ListItem>
-        <ListItem label="Collection">Holofoils are purely cosmetic &mdash; they are tracked separately in your collection and in deck-building.</ListItem>
+        <ListItem label="Collection">Holofoils are purely cosmetic and are tracked separately in your collection and deck-building. They cannot be created with Aberrated Shards.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card-born Tier</div>

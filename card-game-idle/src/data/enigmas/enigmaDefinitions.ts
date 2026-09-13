@@ -7,7 +7,6 @@ export type EnigmaStepKind =
   | 'match_formation'
   | 'boss_victory_timed'
   | 'boss_victory_scaled'
-  | 'sacrifice_shards'
   | 'card_mastery_tier'
   | 'claim_reward';
 
@@ -50,20 +49,20 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       },
       {
         title: 'Sacrifice 50,000 Divine Light',
-        description: 'Spend 50,000 Divine Light to fuel the next seal.',
+        description: 'Use the Enigma panel to spend 50,000 Divine Light after Neutral Mystery is acquired.',
         kind: 'spend_oblivion',
         amount: 50_000,
       },
       {
-        title: 'Charge the Quiet Field',
-        description: 'Keep three face-down Soph cards at 3 or more Limitless Charge at the same time.',
+        title: 'Build the Quiet Field',
+        description: 'Have three face-down Soph cards with at least 3 Limitless Charge each on the back row at once.',
         kind: 'count_active_cards',
         amount: 3,
         targetDefinitionId: 'soph-charge-3',
       },
       {
         title: 'Seat the Convergence',
-        description: 'Have an Ain-side Light and an Ain Soph Aur active together.',
+        description: 'Have at least one Ain-side Light and one Ain Soph Aur active on the board at the same time.',
         kind: 'count_active_cards',
       },
       {
@@ -89,21 +88,15 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
         targetDefinitionId: 'boss-eternal-null',
       },
       {
-        title: 'Activate and Clear Eternal Vigil \u00d73 HP',
-        description: 'Defeat The Hollow Queen boss fight at \u00d73 HP scaling.',
+        title: 'Clear the Threefold Vigil',
+        description: 'Start The Eternal Null with the 3-fight challenge selected and complete the fight.',
         kind: 'boss_victory_scaled',
         amount: 3,
         targetDefinitionId: 'boss-eternal-null',
       },
       {
-        title: 'Sacrifice 2,500 Aberrated Shards',
-        description: 'Spend 2,500 Aberrated Shards to advance this seal.',
-        kind: 'sacrifice_shards',
-        amount: 2_500,
-      },
-      {
         title: 'Reach Card-born Tier 4',
-        description: 'Have at least one Eternal card reach Card-born Tier 4 or higher. Completing this retroactively counts.',
+        description: 'Claim Card-born Tier 4 or higher for an Eternal card. Progress already claimed counts when this step unlocks.',
         kind: 'card_mastery_tier',
         amount: 4,
       },

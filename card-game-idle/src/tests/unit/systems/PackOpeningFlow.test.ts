@@ -47,4 +47,23 @@ describe('Neutrality pack opening flow', () => {
     }
     expect(useStore.getState().progress.oblivion).toBeLessThan(currencyBefore);
   });
+
+  it('guarantees a holofoil in Boxes and Cases when no individual roll succeeds', () => {
+    resetStore();
+    useStore.setState(state => ({
+      ...state,
+      progress: { ...state.progress, oblivion: 100_000_000 },
+    }));
+    vi.spyOn(Math, 'random').mockReturnValue(0.99);
+
+    const beforeBox = Object.values(useStore.getState().progress.holoCollection).reduce((sum, count) => sum + count, 0);
+    expect(useStore.getState().openBox('pack-neutrality')).not.toBeNull();
+    const afterBox = Object.values(useStore.getState().progress.holoCollection).reduce((sum, count) => sum + count, 0);
+    expect(afterBox).toBeGreaterThan(beforeBox);
+
+    const beforeCase = afterBox;
+    expect(useStore.getState().openCase('pack-neutrality')).not.toBeNull();
+    const afterCase = Object.values(useStore.getState().progress.holoCollection).reduce((sum, count) => sum + count, 0);
+    expect(afterCase).toBeGreaterThan(beforeCase);
+  });
 });

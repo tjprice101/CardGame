@@ -10,7 +10,6 @@ export default function EnigmaModal({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const setActiveEnigma = useStore(s => s.setActiveEnigma);
   const sacrificeEnigmaOblivion = useStore(s => s.sacrificeEnigmaOblivion);
-  const sacrificeShardsForEnigma = useStore(s => s.sacrificeShardsForEnigma);
   const claimEnigmaReward = useStore(s => s.claimEnigmaReward);
   const definitions = useMemo(() => listEnigmaDefinitions(), []);
   const active = getActiveEnigmaInstance(progress);
@@ -37,7 +36,6 @@ export default function EnigmaModal({ onClose }: Props) {
             const currentStep = definition.steps[Math.min(instance?.currentStepIndex ?? 0, definition.steps.length - 1)];
             const canClaim = !locked && status !== 'completed' && (instance?.currentStepIndex ?? 0) >= definition.steps.length - 1 && !!instance?.stepsComplete[definition.steps.length - 2];
             const canOblivion = definition.id === 'neutral-mystery' && instance?.currentStepIndex === 1;
-            const canShards = definition.id === 'neutralizing-the-void' && instance?.currentStepIndex === 2 && !instance.stepsComplete[2];
             return (
               <section key={definition.id} onClick={() => { setActiveEnigma(definition.id); setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: 'pointer', opacity: locked ? 0.72 : 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
@@ -46,7 +44,6 @@ export default function EnigmaModal({ onClose }: Props) {
                 </div>
                 {expanded && !locked && <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>{definition.steps.map((step, index) => <div key={step.title} style={{ display: 'flex', gap: 10, color: instance?.stepsComplete[index] ? '#d5c3eb' : '#f8f0de' }}><b>{index + 1}.</b><div><div style={{ fontFamily: uiTypography.display }}>{step.title}</div><div style={{ fontSize: 12, marginTop: 2 }}>{step.description}</div></div></div>)}<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
                   {canOblivion && <button onClick={event => { event.stopPropagation(); sacrificeEnigmaOblivion(definition.id); }} disabled={progress.oblivion < 50000}>Sacrifice 50,000 Divine Light</button>}
-                  {canShards && <button onClick={event => { event.stopPropagation(); sacrificeShardsForEnigma(definition.id, 2500); }} disabled={(progress.aberratedShards ?? 0) < 2500}>Sacrifice 2,500 Shards</button>}
                   {canClaim && <button onClick={event => { event.stopPropagation(); claimEnigmaReward(definition.id); }}>Claim Reward</button>}
                 </div></div>}
               </section>
