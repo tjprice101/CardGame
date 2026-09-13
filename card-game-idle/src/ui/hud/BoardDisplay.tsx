@@ -27,13 +27,13 @@ import type {
   MainDeckBoardInstance,
 } from '@/types/cards';
 
-const SLOT_W = 126;
-const SLOT_H = 180;
-const CHERUBIM_W = 112;
-const CHERUBIM_H = 160;
-const FRONT_ROW_GAP = 'clamp(10px, 1.2vw, 16px)';
+const SLOT_W = 118;
+const SLOT_H = 166;
+const CHERUBIM_W = 104;
+const CHERUBIM_H = 146;
+const FRONT_ROW_GAP = 'clamp(8px, 1.1vw, 14px)';
 const BACK_ROW_GAP = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
-const ROW_SEPARATION = 'clamp(8px, 1.1vh, 16px)';
+const ROW_SEPARATION = 'clamp(6px, 0.9vh, 12px)';
 const FRONT_FACE_METRICS = getCardFaceMetrics('board');
 const CHERUBIM_FACE_METRICS = getCardFaceMetrics('boardMini');
 const DISPLAY_FONT = uiTypography.display;
@@ -288,8 +288,8 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
       position: 'absolute',
       left: 0,
       right: playfieldRightInset,
-      top: isSpecialBossMode ? 'clamp(156px, 17vh, 190px)' : 'clamp(104px, 12vh, 150px)',
-      bottom: 'clamp(168px, 21vh, 224px)',
+      top: isSpecialBossMode ? 'clamp(116px, 13vh, 136px)' : 'clamp(84px, 10vh, 110px)',
+      bottom: 'clamp(172px, 21vh, 200px)',
       marginInline: 'auto',
       pointerEvents: 'none',
       zIndex: 60,

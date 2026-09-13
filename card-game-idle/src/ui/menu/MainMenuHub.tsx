@@ -436,7 +436,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             fontFamily: uiTypography.body, fontSize: 11, letterSpacing: 1.4,
             color: uiTheme.textSoft, textTransform: 'uppercase', marginRight: 6,
           }}>
-            Pantheon · Idle
+            Pantheon
           </div>
           <ResourcePill glyph="◇" label="Cards" value={cards.toLocaleString()} tone="cool" theme={uiTheme} />
           <ResourcePill glyph="✦" label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} />

@@ -1215,11 +1215,27 @@ function grantOblivion(s: Store, amount: number): void {
   const collectionPowerMultiplier = Math.min(3, 1 + Math.max(0, collectionPower) / 1_000);
   amount = Math.floor(amount * collectionPowerMultiplier);
   if (amount <= 0) return;
+
+  // Innate +X% bonus Divine Light gain during any turn across all modes
+  // where X is equal to the number of ASA (Ain Soph Aur) cards currently on-board (Front Rank).
+  if (s.turn.phase === 'playing' || s.turn.phase === 'mulligan') {
+    const asaOnBoardCount = s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length;
+    if (asaOnBoardCount > 0) {
+      amount = Math.round(amount * (1 + (asaOnBoardCount / 100)));
+    }
+  }
+
   // Global Oblivion multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
   if (s.computedStats.globalOblivionMult > 0) {
     amount = Math.round(amount * (1 + s.computedStats.globalOblivionMult));
   }
   s.turn.oblivionEarnedThisTurn += amount;
+
+  // Damage Garden Dungeon encounter if active
+  if (s.gardenDungeon.phase === 'active') {
+    damageGardenEncounter(s, amount);
+  }
+
   if (s.bossFight.mode === 'active') {
     const isEternityCoopBoss = s.bossFight.kind === 'normal' && !!s.bossFight.coopSessionId;
     const canEmitCoopDamage = isEternityCoopBoss && useCoopSyncStore.getState().attached;
@@ -1571,6 +1587,14 @@ function endTurnInternal(s: Store): void {
       completeBossFight(s, false);
       return;
     }
+  }
+
+  // If ending turn while inside an active Garden Dungeon expedition, terminate the run completely.
+  if (s.gardenDungeon.phase !== 'idle') {
+    s.gardenDungeon = {
+      ...defaultGardenDungeon,
+      runCount: s.gardenDungeon.runCount,
+    };
   }
 
   // End turn hard-resets the board: every unit leaves play.
@@ -2324,7 +2348,6 @@ export const useStore = create<Store>()(
         });
         const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
         grantOblivion(s, payout);
-        damageGardenEncounter(s, payout);
         emitQuestProgressToProgress(s.progress, { kind: 'activate_ain_attack', amount: 1 });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
@@ -2351,7 +2374,6 @@ export const useStore = create<Store>()(
         });
         const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
         grantOblivion(s, payout);
-        damageGardenEncounter(s, payout);
         emitQuestProgressToProgress(s.progress, { kind: 'activate_soph_attack', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
@@ -2425,7 +2447,6 @@ export const useStore = create<Store>()(
         });
         const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
         grantOblivion(s, payout);
-        damageGardenEncounter(s, payout);
         emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
@@ -3271,6 +3292,21 @@ export const useStore = create<Store>()(
             timeRemainingSeconds: 300,
             lastReward: null,
           };
+          // Reset board and draw fresh opening hand for the next encounter
+          for (let i = 0; i < s.board.frontSlots.length; i++) s.board.frontSlots[i] = null;
+          for (let i = 0; i < s.board.backSlots.length; i++) s.board.backSlots[i] = null;
+          s.board.activeBoardEffects = [];
+          s.deck.discardPile.push(...s.deck.hand);
+          s.deck.hand = [];
+          if (s.deck.discardPile.length > 0) {
+            s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
+            s.deck.discardPile = [];
+          }
+          const { drawn, remaining } = DeckSystem.draw(s.deck.drawPile, 5);
+          s.deck.drawPile = remaining;
+          s.deck.hand = drawn;
+          s.turn = { ...defaultTurn, phase: 'playing' };
+          recompute(s);
         } else {
           s.gardenDungeon = {
             ...s.gardenDungeon,
@@ -3283,7 +3319,26 @@ export const useStore = create<Store>()(
     },
 
     exitGardenDungeon: () => {
-      set(s => { s.gardenDungeon = { ...defaultGardenDungeon, runCount: s.gardenDungeon.runCount }; });
+      set(s => {
+        s.gardenDungeon = {
+          ...defaultGardenDungeon,
+          runCount: s.gardenDungeon.runCount,
+        };
+        // Clean up any remaining in-run turn state so the player returns cleanly to menu
+        if (s.turn.phase !== 'idle' && s.bossFight.mode === 'idle' && s.battleground.mode === 'idle') {
+          for (let i = 0; i < s.board.frontSlots.length; i++) s.board.frontSlots[i] = null;
+          for (let i = 0; i < s.board.backSlots.length; i++) s.board.backSlots[i] = null;
+          s.board.activeBoardEffects = [];
+          s.deck.discardPile.push(...s.deck.hand);
+          s.deck.hand = [];
+          if (s.deck.discardPile.length > 0) {
+            s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
+            s.deck.discardPile = [];
+          }
+          s.turn = { ...defaultTurn, phase: 'idle' };
+          recompute(s);
+        }
+      });
     },
 
     tickGardenDungeonTimer: (deltaSeconds) => {

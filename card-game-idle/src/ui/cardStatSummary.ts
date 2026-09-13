@@ -49,7 +49,7 @@ function formatScaling(expression: LightCardDefinition['ainAttack']['scaling']):
     }
     case 'triune': {
       const perShare = formatExactValue(expression.amount);
-      return `triune scaling across Limitless Light Stacks, Ain Soph Aur count, and Collection Power; ${perShare} is the full-share reference value`;
+      return `scales with Collection Power; ${perShare} is the full-share reference value`;
     }
     case 'custom': return `bespoke scaling (${expression.fnId})`;
   }

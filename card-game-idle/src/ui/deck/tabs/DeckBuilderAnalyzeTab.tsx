@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme } from '@/ui/theme';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
+import type { DeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
 
 const RARITY_COLORS: Record<string, string> = {
   Common: '#777', Rare: '#5b9bd5', Epic: '#9b59b6',
@@ -24,6 +25,7 @@ interface Props {
   deckId: string | null;
   currentNotes: string;
   setDeckNotes: (deckId: string, notes: string) => void;
+  dpsProjection?: DeckDpsProjection;
 }
 
 type CardRow = { name: string; rarity: string; count: number; finish: string };
@@ -68,7 +70,7 @@ function renderSection(label: string, rows: CardRow[], accent: string): React.Re
  * Stats render first (always visible); Notes render below as an expandable
  * section so they stay one click away without needing a dedicated tab.
  */
-export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCards, deckStats, deckId, currentNotes, setDeckNotes }: Props) {
+export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCards, deckStats, deckId, currentNotes, setDeckNotes, dpsProjection }: Props) {
   const [notesOpen, setNotesOpen] = useState(false);
   const [draft, setDraft] = useState(currentNotes);
   const isDirty = draft !== currentNotes;
@@ -115,6 +117,31 @@ export default function DeckBuilderAnalyzeTab({ deckList, extraDeckList, totalCa
 
   return (
     <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', fontFamily: 'Georgia, serif' }}>
+      {/* 3-Minute Damage Projection Box */}
+      {dpsProjection && (
+        <div style={{
+          marginBottom: 16, padding: '12px 16px', borderRadius: 10,
+          background: 'linear-gradient(180deg, rgba(12,24,42,0.85) 0%, rgba(6,14,26,0.85) 100%)',
+          border: '1px solid rgba(110,185,240,0.3)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: '#7dd4f8', fontWeight: 700 }}>
+              Estimated 3-Minute Combat Damage
+            </div>
+            <div style={{ fontSize: 11, color: '#f7c04a', fontWeight: 700 }}>
+              {dpsProjection.threeMinuteDamage.toLocaleString()} DL <span style={{ fontSize: 10, color: 'rgba(200,223,242,0.7)', fontWeight: 400 }}>({dpsProjection.dps.toLocaleString()} DL/s)</span>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, fontSize: 9.5, color: 'rgba(200,223,242,0.75)' }}>
+            <div>• Light Attacks: <strong style={{ color: '#f0bd78' }}>{dpsProjection.lightAttackDamage.toLocaleString()}</strong></div>
+            <div>• Soph Attacks: <strong style={{ color: '#ffd38a' }}>{dpsProjection.sophAttackDamage.toLocaleString()}</strong></div>
+            <div>• ASA Bridge: <strong style={{ color: '#70c890' }}>{dpsProjection.asaBridgeDamage.toLocaleString()}</strong></div>
+            <div>• Abilities: <strong style={{ color: '#9be8a8' }}>{dpsProjection.abilityDamage.toLocaleString()}</strong></div>
+          </div>
+        </div>
+      )}
+
       {/* Overview row */}
       <div style={{
         display: 'flex', gap: 12, marginBottom: 16, padding: '10px 14px', borderRadius: 8,

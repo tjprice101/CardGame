@@ -208,13 +208,17 @@ describe('Full turn end-to-end', () => {
     expect(useStore.getState().deck.discardPile).toHaveLength(0);
   });
 
-  it('pays a Soph Attack cost without shrinking that attack\'s own payout', () => {
+  it('scales attack payouts with Collection Power and applies ASA bonus correctly', () => {
     resetStore();
 
-    // Two identical Light cards: one attacks at a high pool, one at a low pool.
+    // Two identical Light cards: one attacks at high Collection Power (via cardPlayCounts), one at low.
     useStore.setState(state => ({
       ...state,
-      turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 30 },
+      progress: {
+        ...state.progress,
+        cardPlayCounts: { 'light-neutrality-1': 1000 },
+      },
+      turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 5 },
       board: {
         ...state.board,
         backSlots: [activeLightSlot('e2e-high', 0), null, null, null],
@@ -227,6 +231,10 @@ describe('Full turn end-to-end', () => {
     resetStore();
     useStore.setState(state => ({
       ...state,
+      progress: {
+        ...state.progress,
+        cardPlayCounts: {},
+      },
       turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 5 },
       board: {
         ...state.board,
@@ -237,7 +245,7 @@ describe('Full turn end-to-end', () => {
     useStore.getState().activateLightSophAttack('e2e-low');
     const lowPayout = useStore.getState().progress.oblivion - beforeLow;
 
-    // A larger pre-spend pool must produce a strictly larger payout.
+    // A larger Collection Power must produce a strictly larger payout.
     expect(highPayout).toBeGreaterThan(lowPayout);
   });
 

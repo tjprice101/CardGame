@@ -22,8 +22,8 @@ export function resolveTriuneShares(context: CardScalingContext): {
   collectionShare: number;
 } {
   return {
-    stackShare: Math.max(0, context.limitlessLightStacks) / TRIUNE_STACK_REFERENCE,
-    asaShare: Math.max(0, context.asaFrontCount) / TRIUNE_ASA_REFERENCE,
+    stackShare: 0,
+    asaShare: 0,
     collectionShare: Math.max(0, context.collectionPower) / TRIUNE_COLLECTION_REFERENCE,
   };
 }
@@ -43,8 +43,9 @@ export function resolveCardScaling(expression: CardScalingExpr, context: CardSca
     case 'stepped':
       return (Math.floor(context[expression.reads] / expression.step) * expression.amount) + (expression.offset ?? 0);
     case 'triune': {
-      const { stackShare, asaShare, collectionShare } = resolveTriuneShares(context);
-      return expression.amount * (stackShare + asaShare + collectionShare);
+      // Attacks scale strictly off Collection Power.
+      const collectionShare = Math.max(0, context.collectionPower) / TRIUNE_COLLECTION_REFERENCE;
+      return expression.amount * collectionShare;
     }
     case 'custom': {
       const fn = customScalingFunctions.get(expression.fnId);

@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { GARDEN_DUNGEONS, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
+import { useMemo, useRef, useState } from 'react';
+import { GARDEN_DUNGEONS, GARDEN_MATERIAL_METADATA, GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 
@@ -15,11 +15,22 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const exitGardenDungeon = useStore(state => state.exitGardenDungeon);
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [showInventory, setShowInventory] = useState(false);
   const selected = GARDEN_DUNGEONS[selectedIndex] ?? GARDEN_DUNGEONS[0];
   const activeDungeon = dungeonState.dungeonId ? GARDEN_DUNGEONS.find(dungeon => dungeon.id === dungeonState.dungeonId) : null;
   const activeEncounter = activeDungeon?.encounters[dungeonState.encounterIndex];
   const minutes = Math.floor(dungeonState.timeRemainingSeconds / 60);
   const seconds = Math.floor(dungeonState.timeRemainingSeconds % 60).toString().padStart(2, '0');
+
+  const ownedMaterials = useMemo(() => {
+    return (Object.keys(GARDEN_MATERIAL_METADATA) as (keyof typeof GARDEN_MATERIAL_METADATA)[])
+      .map(key => ({
+        key,
+        count: progress[key] ?? 0,
+        meta: GARDEN_MATERIAL_METADATA[key],
+      }))
+      .filter(item => item.count > 0);
+  }, [progress]);
 
   const move = (direction: number) => {
     const next = Math.max(0, Math.min(GARDEN_DUNGEONS.length - 1, selectedIndex + direction));
@@ -34,9 +45,120 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
           <div style={{ fontFamily: uiTypography.display, fontSize: 28, letterSpacing: 2, textTransform: 'uppercase', color: '#ffffff', textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 35px rgba(200,225,255,0.5)' }}>Garden of Cards</div>
           <div style={{ marginTop: 5, color: 'rgba(255,255,255,0.7)', fontSize: 12, letterSpacing: 0.5 }}>Dungeon expeditions and material recovery</div>
         </div>
-        <button type="button" onClick={onClose} aria-label="Close Garden of Cards" className="garden-pearlescent-btn" style={{ width: 34, height: 34, borderRadius: 8, color: '#000', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            type="button"
+            onClick={() => setShowInventory(!showInventory)}
+            className="garden-pearlescent-btn"
+            style={{
+              padding: '8px 16px',
+              borderRadius: 8,
+              fontSize: 12,
+              letterSpacing: 1.2,
+              textTransform: 'uppercase',
+              color: '#000',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+            }}
+          >
+            <span>🎒</span>
+            <span>{showInventory ? 'Close Inventory' : `Inventory (${ownedMaterials.length})`}</span>
+          </button>
+          <button type="button" onClick={onClose} aria-label="Close Garden of Cards" className="garden-pearlescent-btn" style={{ width: 34, height: 34, borderRadius: 8, color: '#000', cursor: 'pointer', fontSize: 18, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+        </div>
       </header>
       <main style={{ maxWidth: 1180, margin: '0 auto', padding: '12px clamp(12px, 4vw, 48px) 48px' }}>
+        {showInventory && (
+          <section
+            className="garden-pearlescent-card"
+            style={{
+              maxWidth: 760,
+              margin: '0 auto 20px',
+              padding: 24,
+              borderRadius: 14,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <div>
+                <h2 style={{ margin: 0, fontFamily: uiTypography.display, fontSize: 20, letterSpacing: 1.5, color: '#ffffff', textTransform: 'uppercase' }}>
+                  Garden Material Inventory
+                </h2>
+                <div style={{ marginTop: 4, color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>
+                  Materials recovered from Garden of Cards expeditions used in crafting Infinite cards
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowInventory(false)}
+                className="garden-pearlescent-btn"
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 6,
+                  color: '#000',
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  letterSpacing: 1,
+                  textTransform: 'uppercase',
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            {ownedMaterials.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+                {ownedMaterials.map(item => (
+                  <div
+                    key={item.key}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: 14,
+                      borderRadius: 10,
+                      background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.18)',
+                    }}
+                  >
+                    <img
+                      src={rewardIconUrl(item.meta.artAssetKey)}
+                      alt={item.meta.name}
+                      width={44}
+                      height={44}
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 8,
+                        objectFit: 'cover',
+                        border: '1px solid rgba(255,255,255,0.4)',
+                        boxShadow: '0 0 14px rgba(255,255,255,0.3)',
+                        flexShrink: 0,
+                      }}
+                    />
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {item.meta.name}
+                      </div>
+                      <div style={{ marginTop: 2, color: '#91bfff', fontSize: 12, fontWeight: 700 }}>
+                        Owned: {item.count.toLocaleString()}
+                      </div>
+                      <div style={{ marginTop: 3, color: 'rgba(255,255,255,0.5)', fontSize: 9.5, lineHeight: 1.3 }}>
+                        {item.meta.description}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: '24px 16px', textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 12, fontStyle: 'italic' }}>
+                No dungeon materials currently owned. Complete encounters in the Valley of Null to recover materials.
+              </div>
+            )}
+          </section>
+        )}
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
           <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', fontFamily: uiTypography.display }}>Select a dungeon</div>
           <div style={{ display: 'flex', gap: 8 }}>

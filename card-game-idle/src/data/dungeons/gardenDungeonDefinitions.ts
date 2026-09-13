@@ -6,6 +6,24 @@ export const GARDEN_REWARD_LABELS: Record<GardenRewardCurrency, string> = {
   nullifiedOblivionMatter: 'Nullified Oblivion-matter',
 };
 
+export const GARDEN_MATERIAL_METADATA: Record<GardenRewardCurrency, { name: string; artAssetKey: string; description: string }> = {
+  nullifiedLattice: {
+    name: 'Nullified Lattice',
+    artAssetKey: 'nullified-lattice',
+    description: 'A crystalline equilibrium relic recovered from the Valley of Null. Used in Infinite card construction.',
+  },
+  nullSearedLight: {
+    name: 'Null-seared Light',
+    artAssetKey: 'null-seared-light',
+    description: 'A shard of pure light scorched along one facet by obsidian void fire. Used in Infinite card construction.',
+  },
+  nullifiedOblivionMatter: {
+    name: 'Nullified Oblivion-matter',
+    artAssetKey: 'nullified-oblivion-matter',
+    description: 'Dense faceted void matter stabilized inside a geometric shell. Used in Infinite card construction.',
+  },
+};
+
 export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [
   {
     id: 'valley-of-null',

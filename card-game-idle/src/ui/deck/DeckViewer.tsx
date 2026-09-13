@@ -1,8 +1,11 @@
-﻿import { useState } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { uiTypography } from '@/ui/theme';
+import { calculateDeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
+import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
+import { formatNumber } from '@/utils/bignum';
 import type { CardDefinition } from '@/types/cards';
 import type { SavedDeck } from '@/types/game';
 
@@ -66,11 +69,22 @@ interface Props { onClose: () => void; onOpenDeckBuilder: () => void }
 export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
   const savedDecks = useStore(s => s.progress.savedDecks);
   const activeDeckId = useStore(s => s.progress.activeDeckId);
+  const progress = useStore(s => s.progress);
   const { loadSavedDeck, deleteSavedDeck } = useStore.getState();
 
+  const collectionPower = useMemo(() => computeGlobalResonanceScore(progress), [progress]);
   const [selectedId, setSelectedId] = useState<string>(activeDeckId ?? savedDecks[0]?.id ?? '');
 
   const selectedDeck = savedDecks.find(d => d.id === selectedId) ?? null;
+  const selectedProjection = useMemo(() => {
+    if (!selectedDeck) return null;
+    return calculateDeckDpsProjection(
+      selectedDeck.deckList,
+      selectedDeck.extraDeck ?? [],
+      selectedDeck.abilityLoadout,
+      collectionPower,
+    );
+  }, [selectedDeck, collectionPower]);
 
   function handleLoad(deckId: string) {
     loadSavedDeck(deckId);
@@ -204,6 +218,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
               const isActive = deck.id === activeDeckId;
               const isSelected = deck.id === selectedId;
               const cardCount = deck.deckList.reduce((s, e) => s + e.copies, 0) + (deck.extraDeck?.length ?? 0);
+              const proj = calculateDeckDpsProjection(deck.deckList, deck.extraDeck ?? [], deck.abilityLoadout, collectionPower);
               return (
                 <div
                   key={deck.id}
@@ -233,8 +248,9 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                       </div>
                     )}
                   </div>
-                  <div style={{ fontSize: 11, color: P.textMuted, marginTop: 2 }}>
-                    {cardCount} cards
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11, color: P.textMuted, marginTop: 2 }}>
+                    <span>{cardCount} cards</span>
+                    <span style={{ color: '#f7c04a', fontSize: 10 }}>~{formatNumber(proj.threeMinuteDamage)} (3m)</span>
                   </div>
                 </div>
               );
@@ -278,6 +294,16 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                       {selectedDeck.name}
                     </div>
                     <div style={{ fontSize: 12, color: P.textMuted }}>{totalCards} cards</div>
+                    {selectedProjection && (
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 6, padding: '3px 10px', borderRadius: 6,
+                        background: 'rgba(5,14,24,0.65)', border: '1px solid rgba(110,185,240,0.3)',
+                      }}>
+                        <span style={{ fontSize: 9.5, color: 'rgba(200,223,242,0.7)', letterSpacing: 1, textTransform: 'uppercase' }}>3m DMG:</span>
+                        <span style={{ color: '#f7c04a', fontWeight: 700, fontSize: 12 }}>{selectedProjection.threeMinuteDamage.toLocaleString()}</span>
+                        <span style={{ color: '#7dd4f8', fontSize: 10 }}>({selectedProjection.dps.toLocaleString()} DL/s)</span>
+                      </div>
+                    )}
                     {!selectedDeck.isStarter && !isActive && (
                       <button
                         className="menu-tactile-btn"

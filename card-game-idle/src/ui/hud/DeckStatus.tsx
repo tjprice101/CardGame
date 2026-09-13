@@ -38,7 +38,7 @@ const styles: Record<string, React.CSSProperties> = {
   hint: { fontSize: 8, color: 'rgba(244,244,248,0.3)', letterSpacing: 0.7 },
 };
 
-type PileType = 'deck' | 'discard' | 'hand';
+type PileType = 'deck' | 'discard' | 'hand' | 'extra';
 
 export default function DeckStatus() {
   useThemeVersion();
@@ -70,11 +70,16 @@ export default function DeckStatus() {
       ? deck.drawPile
       : openPile === 'discard'
         ? deck.discardPile
-        : deck.hand;
+        : openPile === 'hand'
+          ? deck.hand
+          : deck.extraDeck;
     return source.map((c, idx) => {
       const def = CardRegistry.get(c.definitionId);
+      const key = 'instanceId' in c && typeof (c as { instanceId: string }).instanceId === 'string'
+        ? `${(c as { instanceId: string }).instanceId}-${idx}`
+        : `${c.definitionId}-${idx}`;
       return {
-        key: `${c.instanceId}-${idx}`,
+        key,
         definitionId: c.definitionId,
         name: def?.name ?? c.definitionId,
         type: def?.type ?? 'Card',
@@ -82,7 +87,7 @@ export default function DeckStatus() {
         def,
       };
     });
-  }, [openPile, deck.drawPile, deck.discardPile, deck.hand]);
+  }, [openPile, deck.drawPile, deck.discardPile, deck.hand, deck.extraDeck]);
 
   return (
     <div ref={containerRef} style={styles.container}>
@@ -106,12 +111,26 @@ export default function DeckStatus() {
         <span style={styles.hint}>click</span>
       </button>
       {turn.phase !== 'idle' && (
-        <button style={{ ...styles.pill, cursor: 'pointer' }} onClick={() => setOpenPile('hand')}>
-          <span style={styles.icon}>✋</span>
-          <span style={styles.count}>{deck.hand.length}</span>
-          <span style={styles.label}>Hand</span>
-          <span style={styles.hint}>click</span>
-        </button>
+        <>
+          <button style={{ ...styles.pill, cursor: 'pointer' }} onClick={() => setOpenPile('hand')}>
+            <span style={styles.icon}>✋</span>
+            <span style={styles.count}>{deck.hand.length}</span>
+            <span style={styles.label}>Hand</span>
+            <span style={styles.hint}>click</span>
+          </button>
+          <button
+            style={{ ...styles.pill, cursor: 'pointer', border: '1px solid rgba(180,160,255,0.35)' }}
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('hr-toggle-extra-deck'));
+            }}
+            title="Toggle Extra Deck view in hand strip (Hotkey: E)"
+          >
+            <span style={{ ...styles.icon, color: '#cfc8ff' }}>✦</span>
+            <span style={{ ...styles.count, color: '#cfc8ff' }}>{deck.extraDeck.length}</span>
+            <span style={{ ...styles.label, color: 'rgba(207,200,255,0.75)' }}>Extra</span>
+            <span style={{ ...styles.hint, color: 'rgba(207,200,255,0.5)' }}>[E] view</span>
+          </button>
+        </>
       )}
 
       {openPile && (openPile !== 'deck' || canInspectDeck) && (

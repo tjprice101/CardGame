@@ -22,6 +22,9 @@ import { isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
 import type { AinSophAurDefinition, CardDefinition, CardFinish } from '@/types/cards';
 import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
+import { calculateDeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
+import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
+import { formatNumber } from '@/utils/bignum';
 import DeckBuilderAbilitiesTab from '@/ui/deck/tabs/DeckBuilderAbilitiesTab';
 import DeckBuilderAnalyzeTab from '@/ui/deck/tabs/DeckBuilderAnalyzeTab';
 
@@ -448,6 +451,12 @@ export default function DeckBuilder({ onClose }: Props) {
   const [newDeckName, setNewDeckName] = useState('');
   const [loadMenuOpen, setLoadMenuOpen] = useState(false);
   const [subTab, setSubTab] = useState<'cards' | 'abilities' | 'analyze'>('cards');
+
+  const progress = useStore(s => s.progress);
+  const collectionPower = useMemo(() => computeGlobalResonanceScore(progress), [progress]);
+  const liveDpsProjection = useMemo(() => {
+    return calculateDeckDpsProjection(deckList, extraDeckList, activeDeck?.abilityLoadout, collectionPower);
+  }, [deckList, extraDeckList, activeDeck?.abilityLoadout, collectionPower]);
 
   // Card hover tooltip (1.5s delay)
   const [cardTooltip, setCardTooltip] = useState<{ card: CardDefinition; x: number; y: number } | null>(null);
@@ -888,7 +897,20 @@ export default function DeckBuilder({ onClose }: Props) {
             </div>
           )}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          {totalCards > 0 && (
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+              padding: '4px 12px', borderRadius: 8, background: 'rgba(5,14,24,0.65)', border: '1px solid rgba(78,160,220,0.25)',
+            }}>
+              <div style={{ fontSize: 9, letterSpacing: 1.2, textTransform: 'uppercase', color: 'rgba(200,223,242,0.6)' }}>
+                Est. 3-Min DMG
+              </div>
+              <div style={{ fontFamily: 'Georgia, serif', fontSize: 13, color: '#f7c04a', fontWeight: 700 }}>
+                {liveDpsProjection.threeMinuteDamage.toLocaleString()} <span style={{ fontSize: 10, color: '#7dd4f8', fontWeight: 400 }}>({liveDpsProjection.dps.toLocaleString()} DL/s)</span>
+              </div>
+            </div>
+          )}
           <ProgressRing
             value={totalCards} max={MAIN_DECK_SIZE}
             color={totalCards === MAIN_DECK_SIZE ? '#80e860' : totalCards > MAIN_DECK_SIZE ? '#e06060' : '#58aada'}
@@ -910,30 +932,34 @@ export default function DeckBuilder({ onClose }: Props) {
           </button>
           {loadMenuOpen && (
             <div style={styles.loadDropdownPanel} onMouseLeave={() => setLoadMenuOpen(false)}>
-              {savedDecks.map(sd => (
-                <div
-                  key={sd.id}
-                  style={{
-                    ...styles.loadDeckRow,
-                    ...(sd.id === activeDeckId ? { background: 'rgba(58,142,200,0.14)' } : {}),
-                  }}
-                >
-                  <div style={{ flex: 1, fontSize: 11, color: 'rgba(205,228,255,0.82)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} onClick={() => handleLoadSaved(sd.id)}>
-                    {sd.isStarter ? '🔒 ' : ''}{sd.name}
+              {savedDecks.map(sd => {
+                const proj = calculateDeckDpsProjection(sd.deckList, sd.extraDeck ?? [], sd.abilityLoadout, collectionPower);
+                return (
+                  <div
+                    key={sd.id}
+                    style={{
+                      ...styles.loadDeckRow,
+                      ...(sd.id === activeDeckId ? { background: 'rgba(58,142,200,0.14)' } : {}),
+                    }}
+                  >
+                    <div style={{ flex: 1, fontSize: 11, color: 'rgba(205,228,255,0.82)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }} onClick={() => handleLoadSaved(sd.id)}>
+                      <span>{sd.isStarter ? '🔒 ' : ''}{sd.name}</span>
+                      <span style={{ marginLeft: 6, fontSize: 9.5, color: '#f7c04a' }}>~{formatNumber(proj.threeMinuteDamage)} (3m)</span>
+                    </div>
+                    {!sd.isStarter && (
+                      <button
+                        className="menu-tactile-btn"
+                        style={{ ...styles.toolbarBtn, ...styles.toolbarBtnDanger, padding: '3px 8px', fontSize: 10 }}
+                        onClick={() => {
+                          if (window.confirm(`Delete deck "${sd.name}"? This cannot be undone.`)) deleteSavedDeck(sd.id);
+                        }}
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
-                  {!sd.isStarter && (
-                    <button
-                      className="menu-tactile-btn"
-                      style={{ ...styles.toolbarBtn, ...styles.toolbarBtnDanger, padding: '3px 8px', fontSize: 10 }}
-                      onClick={() => {
-                        if (window.confirm(`Delete deck "${sd.name}"? This cannot be undone.`)) deleteSavedDeck(sd.id);
-                      }}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -1171,6 +1197,7 @@ export default function DeckBuilder({ onClose }: Props) {
               deckId={activeDeckId ?? null}
               currentNotes={activeDeck?.notes ?? ''}
               setDeckNotes={setDeckNotes}
+              dpsProjection={liveDpsProjection}
             />
           ) : (
             <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px' }}>

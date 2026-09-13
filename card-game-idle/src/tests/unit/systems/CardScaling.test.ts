@@ -37,31 +37,18 @@ describe('CardScaling', () => {
     expect(() => resolveCardScaling({ kind: 'custom', fnId: 'test:missing' }, context)).toThrow('Unknown card scaling function');
   });
 
-  describe('triune scaling', () => {
+  describe('collection power scaling', () => {
     const zero: CardScalingContext = { limitlessLightStacks: 0, asaFrontCount: 0, collectionPower: 0 };
 
-    it('contributes nothing when every source is empty', () => {
+    it('contributes nothing when collection power is empty', () => {
       expect(resolveCardScaling({ kind: 'triune', amount: 300 }, zero)).toBe(0);
     });
 
-    it('weights all three sources evenly at their reference values', () => {
+    it('scales directly with collection power', () => {
       const expr = { kind: 'triune' as const, amount: 300 };
-      const stacksOnly = resolveCardScaling(expr, { ...zero, limitlessLightStacks: TRIUNE_STACK_REFERENCE });
-      const asaOnly = resolveCardScaling(expr, { ...zero, asaFrontCount: TRIUNE_ASA_REFERENCE });
       const collectionOnly = resolveCardScaling(expr, { ...zero, collectionPower: TRIUNE_COLLECTION_REFERENCE });
 
-      expect(stacksOnly).toBe(300);
-      expect(asaOnly).toBe(300);
       expect(collectionOnly).toBe(300);
-    });
-
-    it('sums the three shares additively', () => {
-      const result = resolveCardScaling({ kind: 'triune', amount: 300 }, {
-        limitlessLightStacks: TRIUNE_STACK_REFERENCE,
-        asaFrontCount: TRIUNE_ASA_REFERENCE,
-        collectionPower: TRIUNE_COLLECTION_REFERENCE,
-      });
-      expect(result).toBe(900);
     });
 
     it('never returns a negative bonus from negative inputs', () => {

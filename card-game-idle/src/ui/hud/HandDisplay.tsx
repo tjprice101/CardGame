@@ -35,7 +35,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   handWrapper: {
     position: 'absolute',
-    bottom: 8,
+    bottom: 4,
     left: 0,
     right: 'var(--angel-drawer-hand-offset, 308px)',
     zIndex: 70,
@@ -43,7 +43,7 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: 4,
+    gap: 2,
     pointerEvents: 'none',
     paddingLeft: 8,
     paddingRight: 8,
@@ -84,23 +84,23 @@ const styles: Record<string, React.CSSProperties> = {
   },
   hand: {
     display: 'flex',
-    gap: 10,
+    gap: 8,
     pointerEvents: 'auto',
     position: 'relative',
     overflowX: 'auto',
     overflowY: 'clip',
     maxWidth: '100%',
-    paddingBottom: 10,
-    paddingTop: 18,
+    paddingBottom: 4,
+    paddingTop: 2,
     scrollbarGutter: 'stable',
   },
   card: {
-    width: 'clamp(126px, 8.8vw, 150px)',
-    height: 'clamp(180px, 24vh, 214px)',
+    width: 'clamp(116px, 7.8vw, 136px)',
+    height: 'clamp(158px, 19vh, 186px)',
     flex: '0 0 auto',
     background: warmTheme.surfaceStrong,
     border: `1px solid ${warmTheme.border}`,
-    borderRadius: 14,
+    borderRadius: 12,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'stretch',
@@ -158,7 +158,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
   const artOnlyMode = cardArtDisplay === 'art-only';
   const { playCard, toggleMulliganCard } = useStore.getState();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [playingCardId, setPlayingCardId] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const dragSideRef = useRef<'soph' | 'ain'>('soph');
   const [freeSummonSelection, setFreeSummonSelection] = useState(false);
@@ -208,7 +207,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
   }, [attackPanelOpen]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--hand-strip-height', '220px');
+    document.documentElement.style.setProperty('--hand-strip-height', '190px');
   }, []);
 
   // Preload card art as soon as the hand changes so images are cached before
@@ -330,15 +329,11 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
     if (isMulligan) {
       toggleMulliganCard(instanceId);
     } else if (isPlaying) {
-      if (playingCardId) return;
-      const deckCard = hand.find(c => c.instanceId === instanceId);
-      const def = deckCard ? CardRegistry.get(deckCard.definitionId) : null;
-      if (def && !CardEffectExecutor.checkPlayable(def, hand.length, turn, board)) return;
-      setPlayingCardId(instanceId);
-      setTimeout(() => {
-        playCard(instanceId, side);
-        setPlayingCardId(null);
-      }, 260);
+      const state = useStore.getState();
+      const currentDeckCard = state.deck.hand.find(c => c.instanceId === instanceId);
+      const def = currentDeckCard ? CardRegistry.get(currentDeckCard.definitionId) : null;
+      if (!def || !CardEffectExecutor.checkPlayable(def, state.deck.hand.length, state.turn, state.board)) return;
+      playCard(instanceId, side);
     }
   }
 
@@ -464,7 +459,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
       <div
         style={{
           ...styles.handWrapper,
-          ['--hand-strip-height' as string]: '220px',
+          ['--hand-strip-height' as string]: '190px',
           right: handRightInset,
           opacity: showActiveHand ? 1 : 0,
           pointerEvents: showActiveHand ? 'none' : 'none',
@@ -472,32 +467,33 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
       >
         {isPlaying && !hasActiveHandCards && (
           <div style={{
-            color: warmTheme.textSoft, fontSize: 13, fontFamily: 'Georgia, serif',
-            background: warmTheme.surface, padding: '8px 18px', borderRadius: 20,
+            color: warmTheme.textSoft, fontSize: 12, fontFamily: 'Georgia, serif',
+            background: warmTheme.surface, padding: '6px 16px', borderRadius: 20,
             border: `1px solid ${warmTheme.border}`,
             boxShadow: warmTheme.glow,
-            marginBottom: 8,
+            marginBottom: 4,
           }}>
             {isExtraDeckView ? 'Extra Deck is empty' : 'Hand empty - End Turn to continue'}
           </div>
         )}
         {showActiveHand && (
           <div style={{
-            position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-            fontFamily: 'Georgia, serif', fontSize: 10, letterSpacing: 3,
-            textTransform: 'uppercase', padding: '4px 14px', borderRadius: 999,
-            background: isExtraDeckView ? 'rgba(20,12,40,0.88)' : 'rgba(5,5,7,0.82)',
-            color: isExtraDeckView ? '#cfc8ff' : 'rgba(244,244,248,0.82)',
-            border: `1px solid ${isExtraDeckView ? 'rgba(180,160,255,0.5)' : 'rgba(244,244,248,0.22)'}`,
-            boxShadow: isExtraDeckView ? '0 0 14px rgba(180,160,255,0.18)' : '0 0 14px rgba(244,244,248,0.06)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontFamily: 'Georgia, serif', fontSize: 9, letterSpacing: 2,
+            textTransform: 'uppercase', padding: '3px 12px', borderRadius: 999,
+            background: isExtraDeckView ? 'rgba(20,12,40,0.92)' : 'rgba(5,5,7,0.88)',
+            color: isExtraDeckView ? '#cfc8ff' : 'rgba(244,244,248,0.88)',
+            border: `1px solid ${isExtraDeckView ? 'rgba(180,160,255,0.45)' : 'rgba(244,244,248,0.18)'}`,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
             pointerEvents: 'auto',
             whiteSpace: 'nowrap',
+            marginBottom: 2,
           }}>
-            {isExtraDeckView ? `Extra Deck (${viewCards.length})` : `Hand (${viewCards.length})`}
-            <span style={{
-              marginLeft: 8, opacity: 0.55, fontSize: 9, letterSpacing: 1.5,
-            }}>
-              {isExtraDeckView ? 'Click to summon · E: hand' : 'Left-Click: Soph · Right-Click: Ain · E: Extra Deck'}
+            <span style={{ fontWeight: 700 }}>
+              {isExtraDeckView ? `Extra Deck (${viewCards.length})` : `Hand (${viewCards.length})`}
+            </span>
+            <span style={{ opacity: 0.55, fontSize: 8.5, letterSpacing: 1 }}>
+              {isExtraDeckView ? 'Click to summon · [E] Hand' : 'L-Click: Soph · R-Click: Ain · [E] Extra Deck'}
             </span>
           </div>
         )}
@@ -521,7 +517,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
           const def = CardRegistry.get(deckCard.definitionId);
           const selected = !isExtraDeckView && (turn.mulliganSelected ?? []).includes(deckCard.instanceId);
           const isHovered = hoveredId === deckCard.instanceId;
-          const isAnimatingOut = !isExtraDeckView && playingCardId === deckCard.instanceId;
           const isPlayable = isExtraDeckView
             ? (isPlaying && !!def && def.type === 'AinSophAur' && CardEffectExecutor.checkPlayable(def, 0, turn, board))
             : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board));
@@ -541,7 +536,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
             <div
               key={`${deckCard.instanceId}_${deckCard.definitionId}_${idx}`}
               className={[
-                isAnimatingOut ? 'anim-card-play-out' : undefined,
                 (deckCard.finish === 'holo' || def?.rarity === 'Infinite' || def?.rarity === 'Eternal')
                   ? `holofoil-live-card${def?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${def?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
                   : undefined,
@@ -559,7 +553,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
                   borderColor: 'rgba(255,255,255,0.96)',
                   boxShadow: '0 0 0 2px rgba(255,255,255,0.9), 0 0 24px rgba(255,255,255,0.72), 0 8px 24px rgba(0,0,0,0.55)',
                 } : {}),
-                ...(isHovered && !attackPanelOpen && !selected && !isAnimatingOut && isPlayable && !isDragging ? {
+                ...(isHovered && !attackPanelOpen && !selected && isPlayable && !isDragging ? {
                   transform: 'translateY(-16px) scale(1.025)',
                   boxShadow: artOnlyMode
                     ? '0 0 0 2px rgba(255,255,255,0.9), 0 12px 32px rgba(0,0,0,0.65)'
@@ -649,7 +643,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
               )}
 
               {/* Shimmer sweep on hover */}
-              {isHovered && !selected && !isAnimatingOut && isPlayable && (
+              {isHovered && !selected && isPlayable && (
                 <div style={{
                   position: 'absolute', inset: 0, overflow: 'hidden',
                   borderRadius: 10, pointerEvents: 'none',

@@ -216,7 +216,7 @@ const NEW_NEUTRALITY_ART: Record<'light' | 'dark' | 'asa', string[]> = {
   light: [
     'Lumen Stag.png', 'Glasswing Sentinel.png', 'Dawn Warden.png', 'Nullfire Seraph.png', 'Axiom Herald.png',
     'Stillwater Colossus.png', 'Horizon Lion.png', 'Crown of Morning.png', 'Veilbreaker.png', 'First Radiance.png',
-    'White Orchard Keeper.png', 'Paradox Knight.png', 'Solar Cantor.png', 'Pale Star Drake.png', 'Crown of Morning.png',
+    'White Orchard Keeper.png', 'Paradox Knight.png', 'Solar Cantor.png', 'Pale Star Drake.png', 'Measure of Dawn.png',
     'Equilibrium Titan.png', 'Lucent Pilgrim.png', 'Ain-bound Guardian.png', 'Quiet Sun.png', 'Origin Bearer.png',
     'Mirror Saint.png', 'Lightwell Watcher.png', 'Celestial Null.png', 'Last Horizon.png',
   ],
@@ -228,7 +228,7 @@ const NEW_NEUTRALITY_ART: Record<'light' | 'dark' | 'asa', string[]> = {
     'World Without Echo.png', 'Oblivion Key.png', 'The Patient Star.png', 'Absolute Archive.png',
   ],
   asa: [
-    'The White Null.png', 'The Axiom Below.png', 'The Paradox Crown.png', 'Stillwater Colossus.png',
+    'The White Null.png', 'The Axiom Below.png', 'The Paradox Crown.png', 'The Stillbreak.png',
   ],
 };
 

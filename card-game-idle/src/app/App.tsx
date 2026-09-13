@@ -310,7 +310,7 @@ export default function App() {
   }, [turn.divineFieldUntil, turn.abilityCooldownUntil]);
 
   useEffect(() => {
-    if (gardenDungeon.phase !== 'active') return;
+    if (scene !== 'arena' || gardenDungeon.phase !== 'active') return;
     let lastTickMs = Date.now();
     const timerId = setInterval(() => {
       const now = Date.now();
@@ -320,7 +320,7 @@ export default function App() {
       useStore.getState().tickGardenDungeonTimer(elapsedSeconds);
     }, 250);
     return () => clearInterval(timerId);
-  }, [gardenDungeon.phase]);
+  }, [scene, gardenDungeon.phase]);
 
   // Battleground expiry watchdog: same idea as boss watchdog above.
   useEffect(() => {
@@ -840,10 +840,16 @@ export default function App() {
   // Trial Deck sessions also keep arena active.
   useEffect(() => {
     if (scene === 'splash' || scene === 'title') return;
-    const inPlay = !idlePhase || inBossFight || battleground.mode === 'active';
+    const inGarden = gardenDungeon.phase === 'active';
+    const inPlay = !idlePhase || inBossFight || battleground.mode === 'active' || inGarden;
     if (inPlay && scene !== 'arena') setScene('arena');
-    else if (!inPlay && scene !== 'menu') setScene('menu');
-  }, [scene, idlePhase, inBossFight, battleground.mode]);
+    else if (!inPlay && scene !== 'menu') {
+      setScene('menu');
+      if (useStore.getState().gardenDungeon.phase !== 'idle') {
+        useStore.getState().exitGardenDungeon();
+      }
+    }
+  }, [scene, idlePhase, inBossFight, battleground.mode, gardenDungeon.phase]);
 
   // Unified Eternity's Wake background overlay during any active boss fight (matches selection menu).
   const showBossBackdrop = inBossFight && BOSS_DEFINITIONS.some(b => b.id === bossFight.activeBossId);
