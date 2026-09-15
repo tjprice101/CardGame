@@ -141,7 +141,7 @@ describe('Ain/Soph gameplay loop', () => {
   it('routes one-shot Dark cards away but keeps persistent Dark cards on the board with cooldowns', () => {
     resetStore();
     const oneShot = darkCards[0];
-    const persistent = enigmaRewardCards.find(card => card.type === 'Dark' && card.persistent);
+    const persistent = enigmaRewardCards.find(card => card.definitionId === 'enig-neutral-null-catechism');
     expect(persistent).toBeDefined();
 
     const makeBoardDark = (instanceId: string, definitionId: string, rarity: typeof oneShot.rarity) => ({
@@ -190,6 +190,7 @@ describe('Ain/Soph gameplay loop', () => {
     useStore.setState(state => ({
       ...state,
       turn: { ...state.turn, phase: 'playing' },
+      progress: { ...state.progress, totalPacksOpened: 10 },
       deck: { ...state.deck, extraDeck: [{ definitionId: ainSophAurCards[0].definitionId, finish: 'normal' as const }] },
       board: { ...state.board, backSlots: [material, null, null, null] },
     }));

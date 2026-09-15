@@ -35,8 +35,35 @@ export interface EnigmaDefinition {
 export const NEUTRAL_MYSTERY_ID = 'neutral-mystery';
 export const ENIGMA_REWARD_LIGHT_ID = 'enig-neutral-lumen-genesis';
 export const ENIGMA_REWARD_DARK_ID = 'enig-neutral-null-catechism';
+export const ENIGMA_REWARD_AMPLIFIER_ID = 'enig-neutral-amplifier-of-the-void';
+export const ENIGMA_REWARD_SURGEBLADE_ID = 'enig-neutral-null-born-surgeblade';
 
 export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
+  {
+    id: 'to-amplify-the-nullitude',
+    title: 'To Amplify the Nullitude',
+    hintText: 'Activate the Power of Null.',
+    steps: [
+      { title: 'Purchase a Neutrality Ability', description: 'Purchase any Neutrality ability from the Ability Store.', kind: 'acquire' },
+      { title: 'Activate the Power of Null', description: 'Activate any Neutrality ability 5 times in one turn.', kind: 'count_active_cards', amount: 5, targetDefinitionId: 'ability-activations-one-turn' },
+      { title: 'Complete the Ability Array', description: 'Fill all 3 ability slots in a deck and save it.', kind: 'match_formation', boardPattern: ['ability-slots-3'] },
+      { title: 'Nullify the Full Front Row', description: 'Use any Neutrality ability while all 4 front-row slots contain Ain Soph Aur cards.', kind: 'match_formation', boardPattern: ['ability-full-asa-front-row'] },
+      { title: 'Claim the Reward', description: 'Receive 3 copies of Amplifier of the Void.', kind: 'claim_reward' },
+    ],
+    rewards: [{ definitionId: ENIGMA_REWARD_AMPLIFIER_ID, copies: 3 }],
+  },
+  {
+    id: 'null-surged',
+    title: 'Null-surged',
+    hintText: 'Bring forth the Power of the Ain Soph Aur.',
+    steps: [
+      { title: 'Fill the Front Row', description: 'Fill all 4 front-row slots with Ain Soph Aur cards.', kind: 'acquire', boardPattern: ['asa-front-row-4'] },
+      { title: 'Summon Through Twin Lights', description: 'Summon 3 Ain Soph Aur cards while 2 Light cards are active.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'asa-summons-with-2-lights' },
+      { title: 'Bridge the Light', description: 'Perform Bridge the Light 10 times.', kind: 'count_active_cards', amount: 10, targetDefinitionId: 'bridge-attacks-10' },
+      { title: 'Claim the Reward', description: 'Receive 2 copies of Null-born Surgeblade.', kind: 'claim_reward' },
+    ],
+    rewards: [{ definitionId: ENIGMA_REWARD_SURGEBLADE_ID, copies: 2 }],
+  },
   {
     id: NEUTRAL_MYSTERY_ID,
     title: 'Neutral Mystery',
@@ -78,27 +105,33 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
   {
     id: 'neutralizing-the-void',
     title: 'Neutralizing the Void',
-    hintText: 'Break the Eternal Null quickly, then prove that mastery survives the silence.',
+    hintText: 'Open 10 card packs, then stabilize the Neutrality board before the void can answer.',
     steps: [
       {
         title: 'Acquire the Enigma',
-        description: 'Clear The Eternal Null boss fight with at least 1 minute and 30 seconds remaining on the clock.',
-        kind: 'boss_victory_timed',
-        amount: 90,
-        targetDefinitionId: 'boss-eternal-null',
+        description: 'Open 10 card packs. Enigma progress is unavailable until this threshold is reached.',
+        kind: 'acquire',
+        amount: 10,
       },
       {
-        title: 'Clear the Threefold Vigil',
-        description: 'Start The Eternal Null with the 3-fight challenge selected and complete the fight.',
-        kind: 'boss_victory_scaled',
+        title: 'Feed the Null 25,000 Divine Light',
+        description: 'Use the Enigma panel to spend 25,000 Divine Light after Neutralizing the Void is acquired.',
+        kind: 'spend_oblivion',
+        amount: 25_000,
+      },
+      {
+        title: 'Raise the Twin Lights',
+        description: 'Have two Light cards active on the Ain side of the back row at the same time.',
+        kind: 'count_active_cards',
+        amount: 2,
+        targetDefinitionId: 'ain-light-2',
+      },
+      {
+        title: 'Stabilize the Neutrality Field',
+        description: 'Keep two Ain-side Lights, one Ain Soph Aur, and three charged Soph cards active together.',
+        kind: 'match_formation',
         amount: 3,
-        targetDefinitionId: 'boss-eternal-null',
-      },
-      {
-        title: 'Reach Card-born Tier 4',
-        description: 'Claim Card-born Tier 4 or higher for an Eternal card. Progress already claimed counts when this step unlocks.',
-        kind: 'card_mastery_tier',
-        amount: 4,
+        boardPattern: ['ain-light-2', 'ain-soph-aur-1', 'soph-charge-3'],
       },
       {
         title: 'Claim the Reward',
@@ -130,6 +163,7 @@ export function createEnigmaInstance(id: string): EnigmaInstance {
     status: 'locked',
     currentStepIndex: 0,
     stepsComplete: new Array(definition?.steps.length ?? 0).fill(false),
+    progressCounters: {},
   };
 }
 

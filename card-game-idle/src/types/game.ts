@@ -103,6 +103,7 @@ export interface TurnState {
   strain: number;
   cherubimDrawFraction: number;
   cardsPlayedThisTurn: number;
+  neutralityAbilityActivationsThisTurn?: number;
   limitlessLightStacks: number;
   oblivionEarnedThisTurn: number;
   lastPlayedDefinitionId: string | null;
@@ -206,6 +207,7 @@ export interface EnigmaInstance {
   status: EnigmaStatus;
   currentStepIndex: number;
   stepsComplete: boolean[];
+  progressCounters?: Record<string, number>;
   acquiredAt?: number;
   completedAt?: number;
 }

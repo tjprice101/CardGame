@@ -1,6 +1,13 @@
 import type { EnigmaInstance, GameState, ProgressState } from '@/types/game';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { ENIGMA_DEFINITIONS, getEnigmaDefinition, isNeutralMysteryAcquired } from '@/data/enigmas/enigmaDefinitions';
+import { getTotalPacksOpened } from '@/systems/progression/ownershipHistory';
+
+export const ENIGMA_PACK_REQUIREMENT = 10;
+
+export function isEnigmaUnlocked(progress: ProgressState): boolean {
+  return getTotalPacksOpened(progress) >= ENIGMA_PACK_REQUIREMENT;
+}
 
 export interface EnigmaProgressResult {
   newlyAcquired: string[];
@@ -36,15 +43,23 @@ export function ensureNeutralMysteryInstance(progress: ProgressState) {
 export function evaluateEnigmaAcquisition(state: Pick<GameState, 'board' | 'progress'>): EnigmaProgressResult {
   ensureEnigmaState(state.progress);
   const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
+  if (!isEnigmaUnlocked(state.progress)) return result;
   const neutralMystery = ensureNeutralMysteryInstance(state.progress);
-  if (!neutralMystery) return result;
-  if (neutralMystery.status !== 'locked') return result;
-  if (!isNeutralMysteryAcquired(state.board)) return result;
+  const neutralizingVoid = ensureInstance(state.progress, 'neutralizing-the-void');
+  if (!neutralMystery || !neutralizingVoid) return result;
+  if (neutralMystery.status === 'locked' && isNeutralMysteryAcquired(state.board)) {
+    neutralMystery.status = 'acquired';
+    neutralMystery.currentStepIndex = 1;
+    neutralMystery.stepsComplete[0] = true;
+    result.newlyAcquired.push('neutral-mystery');
+  }
+  if (neutralizingVoid.status === 'locked') {
+    neutralizingVoid.status = 'acquired';
+    neutralizingVoid.currentStepIndex = 1;
+    neutralizingVoid.stepsComplete[0] = true;
+    result.newlyAcquired.push('neutralizing-the-void');
+  }
 
-  neutralMystery.status = 'acquired';
-  neutralMystery.currentStepIndex = 1;
-  neutralMystery.stepsComplete[0] = true;
-  result.newlyAcquired.push('neutral-mystery');
   return result;
 }
 
@@ -74,6 +89,28 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
   }
 
+  return result;
+}
+
+export function evaluateNeutralizingVoidProgress(state: Pick<GameState, 'board' | 'progress'>): EnigmaProgressResult {
+  ensureEnigmaState(state.progress);
+  const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
+  if (!isEnigmaUnlocked(state.progress)) return result;
+  const instance = state.progress.enigmas.instances['neutralizing-the-void'];
+  if (!instance || instance.status === 'locked') return result;
+
+  const ainLightCount = state.board.backSlots.filter(slot => slot?.type === 'Light' && slot.side === 'ain').length;
+  const asaCount = state.board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length;
+  const chargedSophCount = state.board.backSlots.filter(slot => !!slot && slot.side === 'soph' && slot.limitlessCharge >= 3).length;
+
+  if (instance.stepsComplete[1] && !instance.stepsComplete[2] && ainLightCount >= 2) {
+    instance.stepsComplete[2] = true;
+    instance.currentStepIndex = Math.max(instance.currentStepIndex, 3);
+  }
+  if (instance.stepsComplete[2] && !instance.stepsComplete[3] && ainLightCount >= 2 && asaCount >= 1 && chargedSophCount >= 3) {
+    instance.stepsComplete[3] = true;
+    instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
+  }
   return result;
 }
 

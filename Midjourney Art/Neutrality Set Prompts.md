@@ -22,6 +22,20 @@ monochrome black-and-white anime trading card illustration, strictly grayscale c
 monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, null catechism, an immense forbidden book floating open above a circular abyss, pages covered in blank geometric symbols, skeletal silver chains orbiting the tome, a faceless robed archivist kneeling beneath it, ruined library swallowed by a perfect black sphere, balanced centered composition, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
 ```
 
+### Amplifier of the Void | Enigma Reward | Dark | Enigmatic
+`definitionId: enig-neutral-amplifier-of-the-void`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, amplifier of the void, a forbidden dark amplification engine suspended above a face-down Soph card, the engine built from nested obsidian rings and white geometric apertures, multiple Limitless Charge sigils rising from the Soph card as vertical black-and-white energy columns, a faceless robed figure operating the mechanism with one hand, severe Neutrality cathedral laboratory swallowed by a circular void, recursive equations carved into floating stone plates, centered symmetrical composition, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
+### Null-born Surgeblade | Enigma Reward | Ain Soph Aur | Enigmatic
+`definitionId: enig-neutral-null-born-surgeblade`
+
+```
+monochrome black-and-white anime trading card illustration, strictly grayscale color palette only, zero saturation, absolutely no color anywhere in the image, pure obsidian black, bone white, and neutral gray tones exclusively, null-born surgeblade, an enigmatic Ain Soph Aur warrior forged from a colossal floating blade and a silent celestial armor shell, front-facing heroic stance with one hand gripping a long obsidian sword edged in white light, four angular halo fragments orbiting behind the figure, armor divided into balanced black glass and bone-white plates with blank geometric sigils, two Light and Dark card fragments hovering as custom offerings near the feet, an empty front-row altar of four circular slots beneath the warrior, ruined cosmic cathedral opening into a starless horizon, centered symmetrical apex composition, dramatic chiaroscuro, flat 2D cel-shaded anime illustration, crisp bold ink linework thick-to-thin, visible painterly brushwork shading, YuGiOh secret rare full-art card composition, Pokemon illustration-rare full-art card composition, subject fills 80 percent of the frame, sharp focus, ultra-detailed 4k linework, no watermark, no text, no logo --ar 2:3 --niji 6 --stylize 900 --no color, colorful, red, orange, yellow, green, blue, purple, pink, brown, tan, gold, bronze, sepia, warm tones, rainbow, saturation, multicolor
+```
+
 ### Starbound Glimmer | Transcendent | Light | Infinite
 `definitionId: tx-neutral-starbound-glimmer`
 

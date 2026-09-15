@@ -98,6 +98,8 @@ interface CardFaceMetrics {
 }
 
 const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
+  'enig-neutral-amplifier-of-the-void': 'Void Amplifier.png',
+  'enig-neutral-null-born-surgeblade': 'Void Surge.png',
   'tx-angel-starbound-null-archangel': 'Starbound Null Archangel.png',
   'tx-angel-pyro-first-ember': 'Starflame Cataclysm Archangel.png',
   'tx-sera-null-entropy': 'Null Entropy.png',

@@ -134,7 +134,7 @@ describe('Ain/Soph card catalog', () => {
     expect(eternal.every(card => card.rarity === 'Eternal')).toBe(true);
     expect(transcendent).toHaveLength(4);
     expect(transcendent.every(card => card.rarity === 'Transcendent')).toBe(true);
-    expect(enigmas).toHaveLength(2);
+    expect(enigmas).toHaveLength(4);
     expect(enigmas.every(card => card.rarity === 'Enigmatic')).toBe(true);
   });
 
@@ -144,6 +144,7 @@ describe('Ain/Soph card catalog', () => {
       .map(card => card.definitionId)
       .sort();
     expect(persistentDarkIds).toEqual([
+      'enig-neutral-amplifier-of-the-void',
       'enig-neutral-null-catechism',
       'tx-neutral-null-catalyst',
       'tx-neutral-void-reliquary',

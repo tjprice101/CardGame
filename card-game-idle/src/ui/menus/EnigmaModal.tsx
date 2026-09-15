@@ -52,7 +52,8 @@ export default function EnigmaModal({ onClose }: Props) {
             const isActive = (active?.id ?? progress.enigmas.activeEnigmaId) === definition.id;
             const currentStep = definition.steps[Math.min(instance?.currentStepIndex ?? 0, definition.steps.length - 1)];
             const canClaim = !locked && status !== 'completed' && (instance?.currentStepIndex ?? 0) >= definition.steps.length - 1 && !!instance?.stepsComplete[definition.steps.length - 2];
-            const canOblivion = definition.id === 'neutral-mystery' && instance?.currentStepIndex === 1;
+            const oblivionCost = definition.id === 'neutral-mystery' ? 50_000 : 25_000;
+            const canOblivion = (definition.id === 'neutral-mystery' || definition.id === 'neutralizing-the-void') && instance?.currentStepIndex === 1;
             return (
               <section key={definition.id} onClick={() => { setActiveEnigma(definition.id); setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: 'pointer', opacity: locked ? 0.72 : 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
@@ -78,25 +79,25 @@ export default function EnigmaModal({ onClose }: Props) {
                     <button
                       className="menu-tactile-btn"
                       onClick={event => { event.stopPropagation(); sacrificeEnigmaOblivion(definition.id); }}
-                      disabled={progress.oblivion < 50000}
+                      disabled={progress.oblivion < oblivionCost}
                       style={{
                         padding: '9px 20px',
                         borderRadius: 8,
                         border: '1px solid rgba(244, 207, 107, 0.7)',
-                        background: progress.oblivion < 50000
+                        background: progress.oblivion < oblivionCost
                           ? 'rgba(60, 45, 20, 0.5)'
                           : 'linear-gradient(135deg, rgba(217, 164, 65, 0.95) 0%, rgba(248, 221, 122, 0.95) 50%, rgba(184, 130, 32, 0.95) 100%)',
-                        color: progress.oblivion < 50000 ? 'rgba(250, 240, 222, 0.5)' : '#1a1206',
+                        color: progress.oblivion < oblivionCost ? 'rgba(250, 240, 222, 0.5)' : '#1a1206',
                         fontFamily: uiTypography.display,
                         fontSize: 12,
                         fontWeight: 'bold',
                         letterSpacing: 1.1,
                         textTransform: 'uppercase',
-                        cursor: progress.oblivion < 50000 ? 'not-allowed' : 'pointer',
-                        boxShadow: progress.oblivion < 50000 ? 'none' : '0 4px 14px rgba(244, 207, 107, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+                        cursor: progress.oblivion < oblivionCost ? 'not-allowed' : 'pointer',
+                        boxShadow: progress.oblivion < oblivionCost ? 'none' : '0 4px 14px rgba(244, 207, 107, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
                       }}
                     >
-                      Sacrifice 50,000 Divine Light
+                      Sacrifice {oblivionCost.toLocaleString()} Divine Light
                     </button>
                   )}
                   {canClaim && (

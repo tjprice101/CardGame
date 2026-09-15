@@ -255,8 +255,8 @@ function BulkHolofoilResult(props: {
             {props.holoCards.map(card => {
               const definition = CardRegistry.get(card.definitionId);
               return (
-                <div key={card.definitionId} style={{ position: 'relative', minHeight: 190, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.72)', background: '#111' }}>
-                  <div style={{ position: 'absolute', inset: 0, ...getCardFaceBackgroundStyle(definition), backgroundSize: 'cover' }} />
+                <div key={card.definitionId} className="holofoil-live-card" style={{ position: 'relative', minHeight: 190, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.92)', background: '#111' }}>
+                  <div style={{ position: 'absolute', inset: 0, ...getCardFaceBackgroundStyle(definition, 'holo'), backgroundSize: 'cover' }} />
                   <div style={{ position: 'relative', zIndex: 1, minHeight: 190, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 10, background: 'linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.76))' }}>
                     <div style={getCardNameRibbonStyle('pack')}>
                       <div style={{ fontSize: metrics.typeSize }}>{definition?.type ?? 'Card'}</div>
@@ -295,7 +295,7 @@ export default function CardPackStore({ onClose }: Props) {
   const collection = useStore(s => s.progress.collection);
   const pityCounters = useStore(s => s.progress.pityCounters);
   const packPityCounters = useStore(s => s.progress.packPityCounters ?? {});
-  const [openingResult, setOpeningResult] = useState<{ cards: string[]; packName: string; newCards: Set<string> } | null>(null);
+  const [openingResult, setOpeningResult] = useState<{ cards: string[]; packName: string; newCards: Set<string>; holoIndices: Set<number> } | null>(null);
   const [bulkResult, setBulkResult] = useState<{ packName: string; totalCards: number; holoCards: Array<{ definitionId: string; count: number }> } | null>(null);
   const [showCollection, setShowCollection] = useState(false);
   const [activeTab, setActiveTab] = useState<'packs' | 'history' | 'abilities'>('packs');
@@ -337,17 +337,31 @@ export default function CardPackStore({ onClose }: Props) {
       const pack = PACK_DEFINITIONS.find(p => p.id === packId);
       const tierLabel = tier === 'pack' ? 'Pack' : tier === 'box' ? 'Box' : 'Case';
       const newCards = new Set(aggregated.filter(id => !preOpenCollection.has(id)));
+      const currentHolofoilCounts = useStore.getState().progress.holoCollection;
+      const remainingHoloByDefinition = new Map(
+        Object.entries(currentHolofoilCounts).map(([definitionId, count]) => [
+          definitionId,
+          Math.max(0, count - (preOpenHolofoilCounts[definitionId] ?? 0)),
+        ]),
+      );
+      const holoIndices = new Set<number>();
+      aggregated.forEach((definitionId, index) => {
+        const remaining = remainingHoloByDefinition.get(definitionId) ?? 0;
+        if (remaining > 0) {
+          holoIndices.add(index);
+          remainingHoloByDefinition.set(definitionId, remaining - 1);
+        }
+      });
       const qtyLabel = quantity > 1 ? ` ×${quantity}` : '';
       const packName = `${pack?.name ?? 'Pack'} ${tierLabel}${qtyLabel}`;
       if (quantity > 1) {
-        const currentHolofoilCounts = useStore.getState().progress.holoCollection;
         const holoCards = Object.entries(currentHolofoilCounts)
           .map(([definitionId, count]) => ({ definitionId, count: Math.max(0, count - (preOpenHolofoilCounts[definitionId] ?? 0)) }))
           .filter(card => card.count > 0)
           .sort((a, b) => b.count - a.count || a.definitionId.localeCompare(b.definitionId));
         setBulkResult({ packName, totalCards: aggregated.length, holoCards });
       } else {
-        setOpeningResult({ cards: aggregated, packName, newCards });
+        setOpeningResult({ cards: aggregated, packName, newCards, holoIndices });
       }
     }
   };
@@ -691,6 +705,7 @@ export default function CardPackStore({ onClose }: Props) {
           cards={openingResult.cards}
           packName={openingResult.packName}
           newCards={openingResult.newCards}
+          holoIndices={openingResult.holoIndices}
           onClose={() => setOpeningResult(null)}
         />
       )}

@@ -35,16 +35,16 @@ import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/sys
 import { evaluateDailyLogin, getUtcDayIndex } from '@/systems/progression/dailyLogin';
 import {
   applyQuestProgress,
-  getScaledQuestOblivion,
   refreshQuestRotation,
   type QuestKind,
 } from '@/systems/progression/quests';
 import {
   ensureEnigmaState,
-  ensureInstance,
   ensureNeutralMysteryInstance,
   evaluateEnigmaAcquisition,
   evaluateNeutralMysteryProgress,
+  evaluateNeutralizingVoidProgress,
+  isEnigmaUnlocked,
   awardEnigmaReward,
 } from '@/systems/progression/EnigmaSystem';
 import { getEnigmaDefinition } from '@/data/enigmas/enigmaDefinitions';
@@ -138,6 +138,7 @@ const defaultTurn: TurnState = {
   strain: 0,
   cherubimDrawFraction: 0,
   cardsPlayedThisTurn: 0,
+  neutralityAbilityActivationsThisTurn: 0,
   limitlessLightStacks: 0,
   oblivionEarnedThisTurn: 0,
   lastPlayedDefinitionId: null,
@@ -1105,8 +1106,6 @@ function completeBossFight(s: Store, victory: boolean): void {
   // Capture per-fight bests BEFORE we restore the saved progress snapshot,
   // since we need the live (active) fight stats here.
   const elapsedSeconds = Math.max(0, Math.round(BOSS_FIGHT_ROUND_SECONDS - s.bossFight.fightTimeRemaining));
-  const fightTimeRemaining = s.bossFight.fightTimeRemaining;
-  const capturedFightCount = Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1));
   const fightDamageTotal = s.bossFight.damageDealtThisFight;
   // Capture the deck in use for mastery awards before state is restored.
   const fightDeckList = s.deck.deckList;
@@ -1161,25 +1160,6 @@ function completeBossFight(s: Store, victory: boolean): void {
         cardsTieredUp: masteryAward.cardsTieredUp,
       };
 
-      // Neutralizing the Void  Eboss-victory enigma hooks.
-      if (bossId === 'boss-eternal-null') {
-        ensureEnigmaState(s.progress);
-        const ntvInstance = ensureInstance(s.progress, 'neutralizing-the-void');
-        if (ntvInstance?.status === 'locked' && fightTimeRemaining >= 90) {
-          ntvInstance.status = 'acquired';
-          ntvInstance.currentStepIndex = 1;
-          ntvInstance.stepsComplete[0] = true;
-          ntvInstance.acquiredAt = Date.now();
-          if (!s.progress.enigmas.activeEnigmaId) s.progress.enigmas.activeEnigmaId = 'neutralizing-the-void';
-          pushRewardToast(s, 'Enigma Acquired: Neutralizing the Void');
-        }
-        if (ntvInstance?.status === 'acquired' && !ntvInstance.stepsComplete[1] && capturedFightCount >= 3) {
-          ntvInstance.stepsComplete[1] = true;
-          ntvInstance.currentStepIndex = Math.max(ntvInstance.currentStepIndex, 2);
-          pushEnigmaStepToast(s, 'neutralizing-the-void', 1);
-        }
-        checkNtvMasteryTierStep(s.progress);
-      }
     }
   }
 
@@ -1280,6 +1260,17 @@ function grantOblivion(s: Store, amount: number): void {
     s.battleground.myScore += amount;
   }
   emitQuestProgressToProgress(s.progress, { kind: 'earn_oblivion_in_turn', amount: 0, peak: s.turn.oblivionEarnedThisTurn });
+}
+
+function grantPersistentOblivion(s: Store, amount: number): number {
+  if (amount <= 0) return 0;
+  const collectionPower = computeGlobalResonanceScore(s.progress);
+  const scaledAmount = Math.floor(amount * Math.min(3, 1 + Math.max(0, collectionPower) / 1_000));
+  if (scaledAmount <= 0) return 0;
+  s.progress.oblivion += scaledAmount;
+  s.progress.lifetimeOblivion = (s.progress.lifetimeOblivion ?? 0) + scaledAmount;
+  eventBus.emit('oblivion:earned', { delta: scaledAmount, total: s.progress.oblivion });
+  return scaledAmount;
 }
 
 function damageGardenEncounter(s: Store, amount: number): void {
@@ -1514,6 +1505,57 @@ function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void 
   }
 
   evaluateNeutralMysteryProgress({ board: s.board, progress: s.progress });
+  evaluateNeutralizingVoidProgress({ board: s.board, progress: s.progress });
+
+  if (isEnigmaUnlocked(s.progress)) {
+    const amplifier = s.progress.enigmas.instances['to-amplify-the-nullitude'];
+    const surgeblade = s.progress.enigmas.instances['null-surged'];
+    const activeDeck = s.progress.savedDecks.find(deck => deck.id === s.progress.activeDeckId);
+    const ownedNeutralityAbility = Object.keys(s.progress.ownedAbilities ?? {}).some(id => ABILITY_REGISTRY.get(id)?.setId === 'Neutrality');
+    const allAbilitySlotsFilled = !!activeDeck?.abilityLoadout && [1, 2, 3].every(slot => !!activeDeck.abilityLoadout?.[slot as 1 | 2 | 3]);
+    const fullAsaFrontRow = s.board.frontSlots.every(slot => slot?.type === 'AinSophAur');
+
+    if (amplifier?.status === 'locked' && ownedNeutralityAbility) {
+      amplifier.status = 'acquired';
+      amplifier.currentStepIndex = 1;
+      amplifier.stepsComplete[0] = true;
+      amplifier.acquiredAt = Date.now();
+      pushRewardToast(s, 'Enigma Acquired: To Amplify the Nullitude');
+    }
+    if (amplifier?.status === 'acquired') {
+      amplifier.progressCounters ??= {};
+      if (amplifier.stepsComplete[1] === false && (s.turn.neutralityAbilityActivationsThisTurn ?? 0) >= 5) {
+        amplifier.stepsComplete[1] = true;
+        amplifier.currentStepIndex = Math.max(amplifier.currentStepIndex, 2);
+      }
+      if (amplifier.stepsComplete[1] && !amplifier.stepsComplete[2] && allAbilitySlotsFilled) {
+        amplifier.stepsComplete[2] = true;
+        amplifier.currentStepIndex = Math.max(amplifier.currentStepIndex, 3);
+      }
+      if (amplifier.stepsComplete[2] && !amplifier.stepsComplete[3] && fullAsaFrontRow) {
+        amplifier.stepsComplete[3] = true;
+        amplifier.currentStepIndex = Math.max(amplifier.currentStepIndex, 4);
+      }
+    }
+    if (surgeblade?.status === 'locked' && fullAsaFrontRow) {
+      surgeblade.status = 'acquired';
+      surgeblade.currentStepIndex = 1;
+      surgeblade.stepsComplete[0] = true;
+      surgeblade.acquiredAt = Date.now();
+      pushRewardToast(s, 'Enigma Acquired: Null-surged');
+    }
+    if (surgeblade?.status === 'acquired') {
+      surgeblade.progressCounters ??= {};
+      if (!surgeblade.stepsComplete[1] && (surgeblade.progressCounters.asaSummonsWithTwoLights ?? 0) >= 3) {
+        surgeblade.stepsComplete[1] = true;
+        surgeblade.currentStepIndex = Math.max(surgeblade.currentStepIndex, 2);
+      }
+      if (surgeblade.stepsComplete[1] && !surgeblade.stepsComplete[2] && (surgeblade.progressCounters.bridgeAttacks ?? 0) >= 10) {
+        surgeblade.stepsComplete[2] = true;
+        surgeblade.currentStepIndex = Math.max(surgeblade.currentStepIndex, 3);
+      }
+    }
+  }
 
   for (const [id, instance] of Object.entries(s.progress.enigmas.instances)) {
     const before = previousSteps.get(id) ?? [];
@@ -1525,25 +1567,6 @@ function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void 
         pushEnigmaStepToast(s, id, stepIndex);
       }
     }
-  }
-}
-
-// Checks the Card-born Tier 4 step of Neutralizing the Void; safe to call repeatedly.
-function checkNtvMasteryTierStep(progress: ProgressState): void {
-  const instance = progress.enigmas?.instances['neutralizing-the-void'];
-  if (!instance || !instance.stepsComplete[1] || instance.stepsComplete[2]) return;
-  const claims = progress.cardMasteryClaims as Record<string, unknown> | undefined;
-  if (!claims) return;
-  const hasRequiredTier = Object.keys(claims).some(key => {
-    if (!key.startsWith('btei-')) return false;
-    const definitionId = key.split('::')[0];
-    if (CardRegistry.get(definitionId)?.rarity !== 'Eternal') return false;
-    const tierStr = key.split('::')[1];
-    return tierStr !== undefined && parseInt(tierStr, 10) >= 4;
-  });
-  if (hasRequiredTier) {
-    instance.stepsComplete[2] = true;
-    instance.currentStepIndex = Math.max(instance.currentStepIndex, 3);
   }
 }
 
@@ -1977,6 +2000,14 @@ export const useStore = create<Store>()(
         queuePendingEffects(s.turn, result);
         grantOblivion(s, result.oblivionBonus);
         emitQuestProgressToProgress(s.progress, { kind: 'summon_ain_soph_aur', amount: 1 });
+        const activeAinLights = s.board.backSlots.filter(slot => slot?.type === 'Light' && slot.side === 'ain').length;
+        if (activeAinLights >= 2) {
+          const surgeblade = s.progress.enigmas.instances['null-surged'];
+          if (surgeblade) {
+            surgeblade.progressCounters ??= {};
+            surgeblade.progressCounters.asaSummonsWithTwoLights = (surgeblade.progressCounters.asaSummonsWithTwoLights ?? 0) + 1;
+          }
+        }
         syncEnigmaProgressFromBoard(s, true);
         recompute(s);
       });
@@ -2018,6 +2049,7 @@ export const useStore = create<Store>()(
         s.progress.savedDecks.push(newDeck);
         s.progress.activeDeckId = id;
         s.deck = createDeckState(newDeck.deckList, newDeck.extraDeck);
+        syncEnigmaProgressFromBoard(s, true);
       });
       return id;
     },
@@ -2042,6 +2074,7 @@ export const useStore = create<Store>()(
           if (s.progress.activeDeckId === id) {
             s.deck = createDeckState(nextDeckList, nextExtraDeck);
           }
+          syncEnigmaProgressFromBoard(s, true);
         }
       });
     },
@@ -2418,6 +2451,19 @@ export const useStore = create<Store>()(
         if (def.persistent && (darkSlot.attackCooldowns[cooldownKey] ?? 0) > 0) return;
         const cost = resolveStackCost(def.activationCost, s.turn.limitlessLightStacks);
         if (s.turn.limitlessLightStacks < cost) return;
+        if (def.definitionId === 'enig-neutral-amplifier-of-the-void') {
+          const sophTarget = s.board.backSlots
+            .filter(card => card?.side === 'soph')
+            .sort((a, b) => (b?.limitlessCharge ?? 0) - (a?.limitlessCharge ?? 0))[0];
+          if (!sophTarget || sophTarget.limitlessCharge <= 0) return;
+          const collectionPower = computeGlobalResonanceScore(s.progress);
+          const payout = Math.round(500 * sophTarget.limitlessCharge * Math.min(3, 1 + Math.max(0, collectionPower) / 1_000));
+          grantOblivion(s, payout);
+          darkSlot.attackCooldowns[cooldownKey] = Math.max(1, def.cooldownCardsPlayed ?? 1);
+          emitQuestProgressToProgress(s.progress, { kind: 'activate_dark', amount: 1 });
+          recompute(s);
+          return;
+        }
         const turnAfterCost = { ...s.turn, limitlessLightStacks: s.turn.limitlessLightStacks - cost };
         const result = CardEffectExecutor.execute(
           toDeckCard(slot),
@@ -2474,6 +2520,12 @@ export const useStore = create<Store>()(
         grantOblivion(s, payout);
         emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
+        const surgeblade = s.progress.enigmas.instances['null-surged'];
+        if (surgeblade) {
+          surgeblade.progressCounters ??= {};
+          surgeblade.progressCounters.bridgeAttacks = (surgeblade.progressCounters.bridgeAttacks ?? 0) + 1;
+          syncEnigmaProgressFromBoard(s, false);
+        }
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
     },
@@ -2809,7 +2861,7 @@ export const useStore = create<Store>()(
     // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Oblivion �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
     addOblivion: (delta) => {
-      set(s => { s.progress.oblivion += delta; });
+      set(s => { grantOblivion(s, delta); });
     },
 
     // Pack / collection
@@ -2848,6 +2900,7 @@ export const useStore = create<Store>()(
         }
         recordPackOpen(state.progress, packId, 'pack', drawn);
         emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 1 });
+        syncEnigmaProgressFromBoard(state, true);
       });
       return drawn.map(id => ({ id, isNew: !preOpen[id] })).map(x => x.id);
     },
@@ -2892,6 +2945,7 @@ export const useStore = create<Store>()(
         state.progress.pityCounters[packId] = hasLegendary ? 0 : pityMisses + 1;
         recordPackOpen(state.progress, packId, 'box', drawn);
         emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 5 });
+        syncEnigmaProgressFromBoard(state, true);
       });
       if (boxPityTriggered) {
         get().enqueueToast('Pity guarantee: Legendary card secured.', 'reward');
@@ -2933,6 +2987,7 @@ export const useStore = create<Store>()(
         }
         recordPackOpen(state.progress, packId, 'case', drawn);
         emitQuestProgressToProgress(state.progress, { kind: 'open_packs', amount: 10 });
+        syncEnigmaProgressFromBoard(state, true);
       });
       return drawn;
     },
@@ -3214,21 +3269,23 @@ export const useStore = create<Store>()(
 
     sacrificeEnigmaOblivion: (enigmaId) => {
       const state = get();
-      if (enigmaId !== 'neutral-mystery') return false;
+      if (!isEnigmaUnlocked(state.progress) || (enigmaId !== 'neutral-mystery' && enigmaId !== 'neutralizing-the-void')) return false;
       const instance = state.progress.enigmas.instances[enigmaId];
       if (!instance || instance.status === 'locked') return false;
       if (instance.currentStepIndex !== 1) return false;
-      if (state.progress.oblivion < 50_000) return false;
+      const cost = enigmaId === 'neutral-mystery' ? 50_000 : 25_000;
+      if (state.progress.oblivion < cost) return false;
 
       set(s => {
         const target = s.progress.enigmas.instances[enigmaId] ?? ensureNeutralMysteryInstance(s.progress);
         if (!target) return;
         if (target.currentStepIndex !== 1) return;
-        if (s.progress.oblivion < 50_000) return;
-        s.progress.oblivion -= 50_000;
+        if (s.progress.oblivion < cost) return;
+        s.progress.oblivion -= cost;
         target.stepsComplete[1] = true;
         target.currentStepIndex = 2;
         pushEnigmaStepToast(s, enigmaId, 1);
+        syncEnigmaProgressFromBoard(s, false);
       });
       return true;
     },
@@ -3245,6 +3302,7 @@ export const useStore = create<Store>()(
         if (s.progress.ownedAbilities[abilityId] || s.progress.oblivion < ability.purchaseCost) return;
         s.progress.oblivion -= ability.purchaseCost;
         s.progress.ownedAbilities[abilityId] = true;
+        syncEnigmaProgressFromBoard(s, true);
       });
       return true;
     },
@@ -3377,6 +3435,10 @@ export const useStore = create<Store>()(
         get().enqueueToast(`${ability.name} is on cooldown.`, 'warning', 2000);
         return;
       }
+      set(s => {
+        s.turn.neutralityAbilityActivationsThisTurn = (s.turn.neutralityAbilityActivationsThisTurn ?? 0) + 1;
+        syncEnigmaProgressFromBoard(s, true);
+      });
       if (ability.id === 'neutralizing-inferno') {
         if (!state.deck.hand.some(card => CardRegistry.get(card.definitionId)?.type !== 'AinSophAur')) return;
         set(s => {
@@ -3504,18 +3566,15 @@ export const useStore = create<Store>()(
       if (quest.claimed) return null;
       if (quest.progress < quest.goal) return null;
       const shardReward = quest.shardReward;
-      const resonanceScore = computeGlobalResonanceScore(s.progress);
-      const oblivionReward = getScaledQuestOblivion(quest.oblivionReward ?? 0, resonanceScore);
+      const baseOblivionReward = quest.oblivionReward ?? 0;
+      let oblivionReward = 0;
       set(state => {
         const list = state.progress.quests.daily.find(q => q.id === questId)
           ? state.progress.quests.daily
           : state.progress.quests.weekly;
         const q = list.find(qq => qq.id === questId);
         if (q) q.claimed = true;
-        if (oblivionReward > 0) {
-          state.progress.oblivion += oblivionReward;
-          state.progress.lifetimeOblivion = (state.progress.lifetimeOblivion ?? 0) + oblivionReward;
-        }
+        oblivionReward = grantPersistentOblivion(state, baseOblivionReward);
         if (shardReward > 0) {
           state.progress.aberratedShards += shardReward;
         }
@@ -3532,7 +3591,7 @@ export const useStore = create<Store>()(
       if (claims[achievementId]) return null;
       const shardReward = getAchievementShardReward(badge.group);
       const oblivionReward = getAchievementOblivionReward(badge.group);
-      const scaledOblivionReward = getScaledQuestOblivion(oblivionReward, computeGlobalResonanceScore(s.progress));
+      let scaledOblivionReward = 0;
       set(state => {
         latchUnlockedAchievements(state.progress);
         if (!state.progress.achievementClaims) state.progress.achievementClaims = {};
@@ -3540,10 +3599,7 @@ export const useStore = create<Store>()(
         state.progress.achievementUnlocks[achievementId] = true;
         state.progress.achievementClaims[achievementId] = true;
         state.progress.aberratedShards += shardReward;
-        if (scaledOblivionReward > 0) {
-          state.progress.oblivion += scaledOblivionReward;
-          state.progress.lifetimeOblivion = (state.progress.lifetimeOblivion ?? 0) + scaledOblivionReward;
-        }
+        scaledOblivionReward = grantPersistentOblivion(state, oblivionReward);
       });
       return { shards: shardReward, oblivion: scaledOblivionReward > 0 ? scaledOblivionReward : undefined };
     },
@@ -3560,7 +3616,6 @@ export const useStore = create<Store>()(
         if (!state.progress.cardMasteryClaims) state.progress.cardMasteryClaims = {};
         state.progress.cardMasteryClaims[claimKey] = true;
         state.progress.aberratedShards += tierDef.shardReward;
-        checkNtvMasteryTierStep(state.progress);
       });
       return { shards: tierDef.shardReward };
     },
@@ -3588,7 +3643,6 @@ export const useStore = create<Store>()(
         if (!state.progress.cardMasteryClaims) state.progress.cardMasteryClaims = {};
         for (const c of toClaim) state.progress.cardMasteryClaims[c.key] = true;
         state.progress.aberratedShards += totalShards;
-        checkNtvMasteryTierStep(state.progress);
       });
       return { shards: totalShards, tiersClaimed };
     },
@@ -3759,6 +3813,7 @@ export const useStore = create<Store>()(
         if (!s.progress.ownedAbilities?.[abilityId] || !ABILITY_REGISTRY.has(abilityId)) return;
         if (Object.entries(d.abilityLoadout).some(([key, id]) => Number(key) !== slot && id === abilityId)) return;
         d.abilityLoadout[slot] = abilityId;
+        syncEnigmaProgressFromBoard(s, true);
       });
     },
 

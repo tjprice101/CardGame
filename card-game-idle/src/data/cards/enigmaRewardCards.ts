@@ -1,6 +1,21 @@
-import type { DarkCardDefinition, LightCardDefinition } from '@/types/cards';
+import type { AinSophAurDefinition, DarkCardDefinition, LightCardDefinition } from '@/types/cards';
 
-export const enigmaRewardCards: Array<LightCardDefinition | DarkCardDefinition> = [
+export const enigmaRewardCards: Array<LightCardDefinition | DarkCardDefinition | AinSophAurDefinition> = [
+  {
+    definitionId: 'enig-neutral-amplifier-of-the-void', type: 'Dark', rarity: 'Enigmatic', name: 'Amplifier of the Void',
+    description: 'Choose a face-down Soph card on your field. Gain 500 Divine Light per Limitless Charge on it, scaled by Collection Power.',
+    artKey: 'void_amplifier',
+    sophEffects: [{ type: 'oblivion_flat', value: 500 }], activationCost: { kind: 'fixed', value: 0 },
+    cooldownCardsPlayed: 2, postActivationFate: 'hand', sacrificeStackRate: 70, persistent: true,
+  },
+  {
+    definitionId: 'enig-neutral-null-born-surgeblade', type: 'AinSophAur', rarity: 'Enigmatic', name: 'Null-born Surgeblade',
+    description: 'A custom-material Ain Soph Aur. Its Bridge the Light attack rewards a fully prepared Neutrality field.',
+    artKey: 'void_surge', summonMaterialCount: 2,
+    summonMaterials: [{ cardTypes: ['Light', 'Dark'], side: 'any', count: 2 }],
+    onSummonEffects: [{ type: 'oblivion_flat', value: 250 }],
+    bridgeAttack: { id: 'enig-neutral-null-born-surgeblade:bridge', name: 'Bridge the Light', description: 'Gain Divine Light with triune scaling.', baseOblivion: 900, cooldownCards: 2, scaling: { kind: 'triune', amount: 800 }, consumesStacks: { kind: 'fixed', value: 2 } },
+  } as AinSophAurDefinition,
   {
     definitionId: 'enig-neutral-lumen-genesis', type: 'Light', rarity: 'Enigmatic', name: 'Lumen Genesis',
     description: 'Two attacks with a low-cost Soph burst and triune scaling.',

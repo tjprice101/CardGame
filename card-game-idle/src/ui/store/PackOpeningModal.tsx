@@ -265,6 +265,7 @@ interface Props {
   cards: string[];
   packName: string;
   newCards: Set<string>;
+  holoIndices?: Set<number>;
   onClose: () => void;
 }
 
@@ -288,10 +289,11 @@ interface CardTileProps {
   showTopPanel: boolean;
   showBottomPanel: boolean;
   highlightRules: boolean;
+  isHolo: boolean;
 }
 
 const CardTile = memo(function CardTile({
-  idx, defId, def, rarity, isRevealed, isBest, isNew, faceMetrics, registerRef, onClick, flipDelayMs, showTopPanel, showBottomPanel, highlightRules,
+  idx, defId, def, rarity, isRevealed, isBest, isNew, faceMetrics, registerRef, onClick, flipDelayMs, showTopPanel, showBottomPanel, highlightRules, isHolo,
 }: CardTileProps) {
   const previewText = def ? getCardPreviewText(def, 2) : '';
   return (
@@ -338,12 +340,15 @@ const CardTile = memo(function CardTile({
         </div>
 
         {/* Front face details mount only after reveal to keep bulk opens light. */}
-        <div style={{
-          ...cardFaceStyle,
-          ...getCardFaceBackgroundStyle(def),
-          border: `2px solid ${RARITY_COLORS[rarity]}`,
-          transform: 'rotateY(180deg)',
-        }}>
+        <div
+          className={isHolo ? 'holofoil-live-card' : undefined}
+          style={{
+            ...cardFaceStyle,
+            ...getCardFaceBackgroundStyle(def, isHolo ? 'holo' : 'normal'),
+            border: `2px solid ${isHolo ? 'rgba(255, 255, 255, 0.95)' : RARITY_COLORS[rarity]}`,
+            transform: 'rotateY(180deg)',
+          }}
+        >
           {isRevealed && (
             <>
               <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -397,7 +402,7 @@ const CardTile = memo(function CardTile({
 
 const RARITY_RANK: Record<string, number> = { Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5 };
 
-export default function PackOpeningModal({ cards, packName, newCards, onClose }: Props) {
+export default function PackOpeningModal({ cards, packName, newCards, holoIndices = new Set(), onClose }: Props) {
   const faceMetrics = getCardFaceMetrics('pack');
   const settings = useStore(selectSettings);
   const cardArtDisplay = settings.cardArtDisplay ?? 'both';
@@ -532,6 +537,7 @@ export default function PackOpeningModal({ cards, packName, newCards, onClose }:
                 showTopPanel={showTopPanel}
                 showBottomPanel={showBottomPanel}
                 highlightRules={settings.highlightRulesText !== false}
+                isHolo={holoIndices.has(idx)}
               />
             );
           })}

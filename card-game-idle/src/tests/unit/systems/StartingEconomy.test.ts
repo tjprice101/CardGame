@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
 import type { GameState, ProgressState } from '@/types/game';
 import { ABILITY_DEFINITIONS } from '@/data/abilities/abilityDefinitions';
+import { lightCards } from '@/data/cards/lightCards';
 
 const currencyFields = [
   'oblivion',
@@ -54,6 +55,25 @@ describe('starting economy', () => {
       if (field === 'oblivion' || field === 'lifetimeOblivion') continue;
       expect(useStore.getState().progress[field], field).toBe(0);
     }
+  });
+
+  it('scales direct Divine Light grants from Collection Power', () => {
+    resetStore();
+    const definitionId = lightCards[0].definitionId;
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        cardPlayCounts: { [definitionId]: 1_500 },
+        oblivion: 0,
+        lifetimeOblivion: 0,
+      },
+    }));
+
+    useStore.getState().addOblivion(100);
+
+    expect(useStore.getState().progress.oblivion).toBe(102);
+    expect(useStore.getState().progress.lifetimeOblivion).toBe(102);
   });
 
   it('materializes each ability once for its exact Divine Light cost', () => {

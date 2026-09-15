@@ -33,6 +33,44 @@ import DeckBuilderAnalyzeTab from '@/ui/deck/tabs/DeckBuilderAnalyzeTab';
 const EMPTY_CARD_LOCKS: Readonly<Record<string, number>> = Object.freeze({});
 const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({});
 
+function DeferredCardArt({ src }: { src: string }) {
+  const hostRef = useRef<HTMLDivElement | null>(null);
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const node = hostRef.current;
+    if (!node || shouldLoad) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setShouldLoad(true);
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      if (!entries.some(entry => entry.isIntersecting)) return;
+      setShouldLoad(true);
+      observer.disconnect();
+    }, { rootMargin: '180px' });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldLoad]);
+
+  return (
+    <div ref={hostRef} aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
+      {shouldLoad && !failed && (
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
+          onError={() => setFailed(true)}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      )}
+    </div>
+  );
+}
+
 const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
 const EXTRA_DECK_SIZE = 10;
@@ -806,7 +844,7 @@ export default function DeckBuilder({ onClose }: Props) {
       <div key={def.key} style={styles.cardWithMeta}>
         <div
           className={def.finish === 'holo' || def.def.rarity === 'Infinite' || def.def.rarity === 'Eternal' || def.def.rarity === 'Enigmatic'
-            ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${def.def.rarity === 'Enigmatic' ? ' enigmatic-holo-violet-hover' : ''}`
+            ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${def.def.rarity === 'Enigmatic' ? ' enigmatic-holo-gold-hover' : ''}`
             : undefined}
           style={{
             ...styles.card,
@@ -819,16 +857,7 @@ export default function DeckBuilder({ onClose }: Props) {
           onMouseEnter={() => startTooltip(def.def)}
           onMouseLeave={clearTooltip}
         >
-          {artUrl && (
-            <img
-              src={artUrl}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              aria-hidden
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }}
-            />
-          )}
+          {artUrl && <DeferredCardArt src={artUrl} />}
           <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={getCardNameRibbonStyle('grid')}>
               <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
@@ -1083,7 +1112,7 @@ export default function DeckBuilder({ onClose }: Props) {
               getItemHeight={(row) => row.kind === 'heading' ? 44 : 214}
               topPadding={12}
               bottomPadding={24}
-              overscanPx={300}
+              overscanPx={160}
               viewportRef={cardPoolViewportRef}
               style={styles.cardPool}
               renderItem={(row) => {
@@ -1130,7 +1159,7 @@ export default function DeckBuilder({ onClose }: Props) {
                   <div
                     key={entry.key}
                     className={entry.finish === 'holo' || def.rarity === 'Infinite' || def.rarity === 'Eternal' || def.rarity === 'Enigmatic'
-                      ? `holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${def.rarity === 'Enigmatic' ? ' enigmatic-holo-violet-hover' : ''}`
+                      ? `holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${def.rarity === 'Enigmatic' ? ' enigmatic-holo-gold-hover' : ''}`
                       : undefined}
                     style={{
                       ...styles.extraStripCard,
