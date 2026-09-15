@@ -156,6 +156,11 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'btei-neutrality-prime-equilibrium': 'The Prime Judge of Silence.png',
   'enig-neutral-lumen-genesis': 'Lumen Genesis.png',
   'enig-neutral-null-catechism': 'Null Catechism.png',
+  'enig-causality-horizon-weaver': 'Horizon Weaver.png',
+  'enig-causality-ink-of-the-first-law': 'Ink of the First Law.png',
+  'enig-causality-archive-of-unmade-stars': 'Archive of Unmade Stars.png',
+  'enig-causality-black-sun-edict': 'Black Sun Edict.png',
+  'enig-causality-axiom-beyond-the-horizon': 'Axiom Beyond the Horizon.png',
   'tx-neutral-starbound-glimmer': 'Starbound Glimmer.png',
   'tx-neutral-null-catalyst': 'Null Catalyst.png',
   'tx-neutral-void-reliquary': 'Void Reliquary.png',
@@ -416,8 +421,9 @@ function getDenseCardFaceCacheKey(
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
 
-  if (card.definitionId.startsWith('light-causality-') || card.definitionId.startsWith('dark-causality-') || card.definitionId.startsWith('ain-soph-aur-causality-')) {
-    return `${CARD_BACKGROUND_ROOT}/causality/${encodeURI(`${card.name}.png`)}`;
+  if (card.definitionId.startsWith('light-causality-') || card.definitionId.startsWith('dark-causality-') || card.definitionId.startsWith('ain-soph-aur-causality-') || card.definitionId.startsWith('enig-causality-')) {
+    const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
+    return `${CARD_BACKGROUND_ROOT}/causality/${encodeURI(fileName)}`;
   }
 
   const newCatalogFallback = getNewNeutralityArt(card.definitionId);

@@ -2,6 +2,46 @@ import type { AinSophAurDefinition, DarkCardDefinition, LightCardDefinition } fr
 
 export const enigmaRewardCards: Array<LightCardDefinition | DarkCardDefinition | AinSophAurDefinition> = [
   {
+    definitionId: 'enig-causality-horizon-weaver', type: 'Light', rarity: 'Enigmatic', name: 'Horizon Weaver',
+    description: 'A living thread of the event horizon. Its first strike opens Cosmos; its second strike turns that Cosmos into Divine Light.',
+    artKey: 'enig_causality_horizon_weaver',
+    ainAttack: { id: 'enig-causality-horizon-weaver:ain-attack', label: 'Ain', name: 'First Thread', description: 'Gain Divine Light and generate 1 Limitless Cosmos.', baseOblivion: 620, cooldownCards: 3, scaling: { kind: 'triune', amount: 520 }, tags: ['enigma', 'causality', 'ain-attack'] },
+    sophAttack: { id: 'enig-causality-horizon-weaver:soph-attack', label: 'Soph', name: 'Second Thread', description: 'Convert 2 Limitless Cosmos into a larger Divine Light burst.', baseOblivion: 1_450, cooldownCards: 4, scaling: { kind: 'triune', amount: 980 }, stackCost: { kind: 'fixed', value: 2 }, tags: ['enigma', 'causality', 'soph-attack'] },
+    sophPlacementEffects: [{ type: 'cosmos_flat', value: 1 }, { type: 'oblivion_flat', value: 120 }],
+    sacrificeStackRate: 80,
+  },
+  {
+    definitionId: 'enig-causality-ink-of-the-first-law', type: 'Dark', rarity: 'Enigmatic', name: 'Ink of the First Law',
+    description: 'The first sentence written after the universe forgot its grammar. It taxes Cosmos to make the next contradiction permanent.',
+    artKey: 'enig_causality_ink_of_the_first_law',
+    sophEffects: [{ type: 'cosmos_flat', value: 2 }, { type: 'draw', value: 1 }], activationCost: { kind: 'fixed', value: 1 },
+    cooldownCardsPlayed: 3, postActivationFate: 'hand', sacrificeStackRate: 78, persistent: true,
+  },
+  {
+    definitionId: 'enig-causality-archive-of-unmade-stars', type: 'Light', rarity: 'Enigmatic', name: 'Archive of Unmade Stars',
+    description: 'A celestial archive that remembers every star that could have existed. Its placement records a fragment of the impossible.',
+    artKey: 'enig_causality_archive_of_unmade_stars',
+    ainAttack: { id: 'enig-causality-archive-of-unmade-stars:ain-attack', label: 'Ain', name: 'Catalog the Unborn', description: 'Gain Divine Light with increased Collection Power scaling.', baseOblivion: 1_050, cooldownCards: 4, scaling: { kind: 'triune', amount: 1_100 }, tags: ['enigma', 'causality', 'ain-attack'] },
+    sophAttack: { id: 'enig-causality-archive-of-unmade-stars:soph-attack', label: 'Soph', name: 'Open the Index', description: 'Gain a major Divine Light burst and generate Cosmos.', baseOblivion: 1_850, cooldownCards: 5, scaling: { kind: 'triune', amount: 1_350 }, stackCost: { kind: 'fixed', value: 3 }, tags: ['enigma', 'causality', 'soph-attack'] },
+    sophPlacementEffects: [{ type: 'oblivion_flat', value: 140 }, { type: 'cosmos_flat', value: 2 }],
+    sacrificeStackRate: 90,
+  },
+  {
+    definitionId: 'enig-causality-black-sun-edict', type: 'Dark', rarity: 'Enigmatic', name: 'Black Sun Edict',
+    description: 'A decree issued by a star at the instant of its erasure. It consumes the board\'s stored Cosmos to redirect the next horizon.',
+    artKey: 'enig_causality_black_sun_edict',
+    sophEffects: [{ type: 'shuffle_discard' }, { type: 'cosmos_flat', value: 3 }], activationCost: { kind: 'fixed', value: 2 },
+    postActivationFate: 'discard', sacrificeStackRate: 92,
+  },
+  {
+    definitionId: 'enig-causality-axiom-beyond-the-horizon', type: 'AinSophAur', rarity: 'Enigmatic', name: 'Axiom Beyond the Horizon',
+    description: 'The answer that exists beyond the event horizon. Its Bridge the Light attack rewards a board prepared by all three Causality families.',
+    artKey: 'enig_causality_axiom_beyond_the_horizon', summonMaterialCount: 3,
+    summonMaterials: [{ cardTypes: ['Light', 'Dark'], side: 'any', count: 3 }],
+    onSummonEffects: [{ type: 'oblivion_flat', value: 1_000 }, { type: 'cosmos_flat', value: 2 }],
+    bridgeAttack: { id: 'enig-causality-axiom-beyond-the-horizon:bridge', name: 'Bridge the Light', description: 'A horizon-breaking Divine Light payout with triune scaling.', baseOblivion: 2_400, cooldownCards: 4, scaling: { kind: 'triune', amount: 1_800 }, consumesStacks: { kind: 'fixed', value: 4 } },
+  } as AinSophAurDefinition,
+  {
     definitionId: 'enig-neutral-amplifier-of-the-void', type: 'Dark', rarity: 'Enigmatic', name: 'Amplifier of the Void',
     description: 'Choose a face-down Soph card on your field. Gain 500 Divine Light per Limitless Charge on it, scaled by Collection Power.',
     artKey: 'void_amplifier',

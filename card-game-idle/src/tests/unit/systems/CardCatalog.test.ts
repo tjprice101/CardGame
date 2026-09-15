@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { darkCards } from '@/data/cards/darkCards';
 import { lightCards } from '@/data/cards/lightCards';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
+import { getEnigmaDefinition } from '@/data/enigmas/enigmaDefinitions';
 import { getCardPreviewLines, getCardSummarySections } from '@/ui/cardStatSummary';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { CardRegistry } from '@/cards/CardRegistry';
@@ -12,6 +13,42 @@ describe('Ain/Soph card catalog', () => {
     expect(lightCards).toHaveLength(24);
     expect(darkCards).toHaveLength(24);
     expect(new Set([...lightCards, ...darkCards].map(card => card.definitionId)).size).toBe(48);
+  });
+
+  it('names and hints the five Causality Enigmas with their intended manuscript identity', () => {
+    const entries = new Map([
+      ['causality-first-horizon', { title: 'The First Horizon', hint: 'Own 5 unique Causality cards to open the manuscript’s first horizon.' }],
+      ['causality-black-ink', { title: 'Black Ink, White Star', hint: 'Pair opposing Causality forces and turn the void into a deliberate burn.' }],
+      ['causality-heavenly-archive', { title: 'The Heavenly Archive', hint: 'Gather Light, Dark, and ASA before the archive can index you.' }],
+      ['causality-collapsed-equation', { title: 'The Collapsed Equation', hint: 'Spend the manuscript’s full momentum and collapse it into a decisive turn.' }],
+      ['causality-unwritten-law', { title: 'The Unwritten Law', hint: 'Hold the event horizon and end the turn with enough Cosmos to rewrite the page.' }],
+    ]);
+
+    const definitions = [
+      'causality-first-horizon',
+      'causality-black-ink',
+      'causality-heavenly-archive',
+      'causality-collapsed-equation',
+      'causality-unwritten-law',
+    ].map(id => ({ id, definition: getEnigmaDefinition(id) }));
+
+    expect(definitions.filter(item => item.definition)).toHaveLength(5);
+    for (const [id, expected] of entries) {
+      const def = definitions.find(item => item.id === id)!.definition;
+      expect(def, `${id} should exist`).toBeDefined();
+      expect(def!.id).toBe(id);
+    }
+
+    const enigmaDefinitions = definitions;
+
+    expect(enigmaDefinitions.every(item => item.definition !== undefined)).toBe(true);
+    for (const [id, expected] of entries) {
+      const definition = enigmaDefinitions.find(item => item.id === id)!.definition!;
+      expect(definition.title).toBe(expected.title);
+      expect(definition.hintText).toBe(expected.hint);
+      expect(definition.steps.length).toBeGreaterThanOrEqual(3);
+      expect(definition.steps.every(step => !!step.title && !!step.description)).toBe(true);
+    }
   });
 
   it('contains four authored Extra Deck bridge definitions', () => {
@@ -148,6 +185,7 @@ describe('Ain/Soph card catalog', () => {
       'dark-causality-10',
       'dark-causality-4',
       'dark-causality-7',
+      'enig-causality-ink-of-the-first-law',
       'enig-neutral-amplifier-of-the-void',
       'enig-neutral-null-catechism',
       'tx-neutral-null-catalyst',
