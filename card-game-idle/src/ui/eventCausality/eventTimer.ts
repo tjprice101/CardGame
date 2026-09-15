@@ -1,5 +1,5 @@
-export const WUAS_EVENT_ENDS_LABEL = 'November 1, 2026 at 8:00 PM EST';
-export const WUAS_EVENT_ENDS_AT_MS = new Date('2026-11-01T20:00:00-05:00').getTime();
+export const CAUSALITY_EVENT_ENDS_LABEL = 'November 1, 2026 at 8:00 PM EST';
+export const CAUSALITY_EVENT_ENDS_AT_MS = new Date('2026-11-01T20:00:00-05:00').getTime();
 
 export interface EventCountdownParts {
   ended: boolean;
@@ -10,8 +10,8 @@ export interface EventCountdownParts {
   seconds: number;
 }
 
-export function getWuasEventCountdown(nowMs: number = Date.now()): EventCountdownParts {
-  const totalMs = Math.max(0, WUAS_EVENT_ENDS_AT_MS - nowMs);
+export function getCausalityEventCountdown(nowMs: number = Date.now()): EventCountdownParts {
+  const totalMs = Math.max(0, CAUSALITY_EVENT_ENDS_AT_MS - nowMs);
   const ended = totalMs <= 0;
   const totalSeconds = Math.floor(totalMs / 1000);
   const days = Math.floor(totalSeconds / 86400);

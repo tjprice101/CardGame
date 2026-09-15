@@ -26,6 +26,8 @@ export interface EnigmaStepDefinition {
 
 export interface EnigmaDefinition {
   id: string;
+  setId: 'Neutrality' | 'Causality';
+  minimumUniqueCards: number;
   title: string;
   hintText: string;
   steps: EnigmaStepDefinition[];
@@ -41,6 +43,8 @@ export const ENIGMA_REWARD_SURGEBLADE_ID = 'enig-neutral-null-born-surgeblade';
 export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
   {
     id: 'to-amplify-the-nullitude',
+    setId: 'Neutrality',
+    minimumUniqueCards: 5,
     title: 'To Amplify the Nullitude',
     hintText: 'Activate the Power of Null.',
     steps: [
@@ -54,6 +58,8 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
   },
   {
     id: 'null-surged',
+    setId: 'Neutrality',
+    minimumUniqueCards: 5,
     title: 'Null-surged',
     hintText: 'Bring forth the Power of the Ain Soph Aur.',
     steps: [
@@ -66,6 +72,8 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
   },
   {
     id: NEUTRAL_MYSTERY_ID,
+    setId: 'Neutrality',
+    minimumUniqueCards: 5,
     title: 'Neutral Mystery',
     hintText: 'Bring an Ain Soph Aur into the front row and let the hidden pattern begin.',
     steps: [
@@ -104,6 +112,8 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
   },
   {
     id: 'neutralizing-the-void',
+    setId: 'Neutrality',
+    minimumUniqueCards: 5,
     title: 'Neutralizing the Void',
     hintText: 'Open 10 card packs, then stabilize the Neutrality board before the void can answer.',
     steps: [
@@ -142,6 +152,76 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     rewards: [
       { definitionId: ENIGMA_REWARD_DARK_ID, copies: 1 },
     ],
+  },
+  {
+    id: 'causality-first-horizon',
+    setId: 'Causality',
+    minimumUniqueCards: 5,
+    title: 'The First Horizon',
+    hintText: 'Open the Causality manuscript and make its first horizon appear.',
+    steps: [
+      { title: 'Acquire the Enigma', description: 'Own 5 unique Causality cards.', kind: 'acquire', amount: 5 },
+      { title: 'Write the Horizon', description: 'Play 5 Causality cards in one turn.', kind: 'count_active_cards', amount: 5, targetDefinitionId: 'causality-plays-one-turn' },
+      { title: 'Generate Cosmos', description: 'Generate 3 Limitless Cosmos stacks through Causality card effects.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-cosmos-3' },
+      { title: 'Claim the Reward', description: 'Receive the first Causality reward.', kind: 'claim_reward' },
+    ],
+    rewards: [{ definitionId: 'light-causality-10', copies: 1 }],
+  },
+  {
+    id: 'causality-black-ink',
+    setId: 'Causality',
+    minimumUniqueCards: 5,
+    title: 'Black Ink, White Star',
+    hintText: 'Let the manuscript write itself in opposing forces.',
+    steps: [
+      { title: 'Acquire the Enigma', description: 'Own 5 unique Causality cards.', kind: 'acquire', amount: 5 },
+      { title: 'Place the Opposites', description: 'Have a Causality Light and Causality Dark card active together.', kind: 'match_formation', boardPattern: ['causality-light-1', 'causality-dark-1'] },
+      { title: 'Spend the Cosmos', description: 'Successfully consume 2 Limitless Cosmos stacks through Causality effects.', kind: 'count_active_cards', amount: 2, targetDefinitionId: 'causality-cosmos-spent-2' },
+      { title: 'Claim the Reward', description: 'Receive a manuscript-born reward.', kind: 'claim_reward' },
+    ],
+    rewards: [{ definitionId: 'dark-causality-10', copies: 1 }],
+  },
+  {
+    id: 'causality-heavenly-archive',
+    setId: 'Causality',
+    minimumUniqueCards: 5,
+    title: 'The Heavenly Archive',
+    hintText: 'Assemble a living archive from the three Causality card families.',
+    steps: [
+      { title: 'Acquire the Enigma', description: 'Own 5 unique Causality cards.', kind: 'acquire', amount: 5 },
+      { title: 'Open the Archive', description: 'Have a Causality Light, Dark, and Ain Soph Aur active during the same turn.', kind: 'match_formation', boardPattern: ['causality-light-1', 'causality-dark-1', 'causality-asa-1'] },
+      { title: 'Cross the Event Horizon', description: 'Perform 3 successful Bridge the Light attacks with a Causality ASA.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-bridge-3' },
+      { title: 'Claim the Reward', description: 'Claim the archive reward.', kind: 'claim_reward' },
+    ],
+    rewards: [{ definitionId: 'ain-soph-aur-causality-5', copies: 1 }],
+  },
+  {
+    id: 'causality-collapsed-equation',
+    setId: 'Causality',
+    minimumUniqueCards: 5,
+    title: 'The Collapsed Equation',
+    hintText: 'Collapse the manuscript into one decisive turn.',
+    steps: [
+      { title: 'Acquire the Enigma', description: 'Own 5 unique Causality cards.', kind: 'acquire', amount: 5 },
+      { title: 'Build the Equation', description: 'Play 10 Causality cards across two or more turns.', kind: 'count_active_cards', amount: 10, targetDefinitionId: 'causality-plays-10' },
+      { title: 'Cash Out the Horizon', description: 'Earn 10,000 Divine Light from Causality cards in one turn.', kind: 'count_active_cards', amount: 10_000, targetDefinitionId: 'causality-light-10k' },
+      { title: 'Claim the Reward', description: 'Claim the collapsed equation reward.', kind: 'claim_reward' },
+    ],
+    rewards: [{ definitionId: 'light-causality-9', copies: 1 }],
+  },
+  {
+    id: 'causality-unwritten-law',
+    setId: 'Causality',
+    minimumUniqueCards: 5,
+    title: 'The Unwritten Law',
+    hintText: 'Use every Causality card family before the page closes.',
+    steps: [
+      { title: 'Acquire the Enigma', description: 'Own 5 unique Causality cards.', kind: 'acquire', amount: 5 },
+      { title: 'Complete the Manuscript', description: 'Use a Causality Light, Dark, and ASA card in the same turn.', kind: 'match_formation', boardPattern: ['causality-light-1', 'causality-dark-1', 'causality-asa-1'] },
+      { title: 'Hold the Cosmos', description: 'End the turn with at least 5 Limitless Cosmos stacks.', kind: 'count_active_cards', amount: 5, targetDefinitionId: 'causality-cosmos-5' },
+      { title: 'Claim the Reward', description: 'Claim the final Causality manuscript reward.', kind: 'claim_reward' },
+    ],
+    rewards: [{ definitionId: 'dark-causality-9', copies: 1 }],
   },
 ];
 

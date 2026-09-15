@@ -1,6 +1,7 @@
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { lightCards } from '@/data/cards/lightCards';
+import { CAUSALITY_PACK_POOL } from '@/data/cards/causalityCards';
 
 export interface PackDefinition {
   id: string;
@@ -31,6 +32,17 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     cost: 6500,
     cardsPerOpen: 5,
     cardPool: NEUTRALITY_PACK_POOL,
+    locked: false,
+  },
+  {
+    id: 'pack-causality',
+    name: 'Causality Pack',
+    description: 'A black-and-white event-horizon manuscript set. Its cards author their own Limitless Cosmos mechanics.',
+    setId: 'Causality',
+    cost: 300,
+    currencyType: 'aberratedShards',
+    cardsPerOpen: 5,
+    cardPool: CAUSALITY_PACK_POOL,
     locked: false,
   },
 ];

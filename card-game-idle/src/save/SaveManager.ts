@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 50;
+export const CURRENT_VERSION = 51;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -1020,6 +1020,18 @@ const migrations: Record<number, Migration> = {
       garden.encounterMaxHp = 0;
       garden.timeRemainingSeconds = 0;
       garden.lastReward = null;
+    }
+    return data;
+  },
+  51: (data) => {
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (progress) {
+      // Retire legacy Wished Upon A Star runtime counters if an older build ever persisted them.
+      const turn = data.turn as unknown as Record<string, unknown> | undefined;
+      if (turn) {
+        for (const key of ['starlightCharges', 'dreamLattice', 'solarvexWardActive', 'starlaceAmplifierActive']) delete turn[key];
+      }
+      for (const key of ['wuasProgress', 'wishedUponAStar', 'wishedUponAStarCards', 'wuasCards']) delete progress[key];
     }
     return data;
   },

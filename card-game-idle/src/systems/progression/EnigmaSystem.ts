@@ -9,6 +9,21 @@ export function isEnigmaUnlocked(progress: ProgressState): boolean {
   return getTotalPacksOpened(progress) >= ENIGMA_PACK_REQUIREMENT;
 }
 
+function getDefinitionSetId(definitionId: string): 'Neutrality' | 'Causality' | null {
+  if (definitionId.startsWith('light-causality-') || definitionId.startsWith('dark-causality-') || definitionId.startsWith('ain-soph-aur-causality-')) return 'Causality';
+  if (definitionId.startsWith('light-neutrality-') || definitionId.startsWith('dark-neutrality-') || definitionId.startsWith('ain-soph-aur-neutrality-')) return 'Neutrality';
+  return null;
+}
+
+export function getUniqueOwnedCardsForSet(progress: ProgressState, setId: 'Neutrality' | 'Causality'): number {
+  return CardRegistry.getAll().filter(card => getDefinitionSetId(card.definitionId) === setId && (progress.collection[card.definitionId] ?? 0) > 0).length;
+}
+
+export function isEnigmaSetUnlocked(progress: ProgressState, enigmaId: string): boolean {
+  const definition = getEnigmaDefinition(enigmaId);
+  return !!definition && isEnigmaUnlocked(progress) && getUniqueOwnedCardsForSet(progress, definition.setId) >= definition.minimumUniqueCards;
+}
+
 export interface EnigmaProgressResult {
   newlyAcquired: string[];
   newlyCompleted: string[];
@@ -52,20 +67,20 @@ export function evaluateEnigmaAcquisition(state: Pick<GameState, 'board' | 'prog
   ensureEnigmaState(state.progress);
   const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
   if (!isEnigmaUnlocked(state.progress)) return result;
-  const neutralMystery = ensureNeutralMysteryInstance(state.progress);
-  const neutralizingVoid = ensureInstance(state.progress, 'neutralizing-the-void');
-  if (!neutralMystery || !neutralizingVoid) return result;
-  if (neutralMystery.status === 'locked' && isNeutralMysteryAcquired(state.board)) {
-    neutralMystery.status = 'acquired';
-    neutralMystery.currentStepIndex = 1;
-    neutralMystery.stepsComplete[0] = true;
-    result.newlyAcquired.push('neutral-mystery');
-  }
-  if (neutralizingVoid.status === 'locked') {
-    neutralizingVoid.status = 'acquired';
-    neutralizingVoid.currentStepIndex = 1;
-    neutralizingVoid.stepsComplete[0] = true;
-    result.newlyAcquired.push('neutralizing-the-void');
+  for (const definition of ENIGMA_DEFINITIONS) {
+    if (!isEnigmaSetUnlocked(state.progress, definition.id)) continue;
+    const instance = ensureInstance(state.progress, definition.id);
+    if (!instance || instance.status !== 'locked') continue;
+    const boardAcquired = definition.id === 'neutral-mystery' && isNeutralMysteryAcquired(state.board);
+    const abilityAcquired = definition.id === 'to-amplify-the-nullitude' && Object.keys(state.progress.ownedAbilities ?? {}).some(id => CardRegistry.get(id) === undefined ? false : id.startsWith('neutral'));
+    const frontRowAcquired = (definition.id === 'null-surged') && state.board.frontSlots.every(slot => slot?.type === 'AinSophAur');
+    const automaticAcquire = definition.id !== 'neutral-mystery' && definition.id !== 'to-amplify-the-nullitude' && definition.id !== 'null-surged';
+    if (!boardAcquired && !abilityAcquired && !frontRowAcquired && !automaticAcquire) continue;
+    instance.status = 'acquired';
+    instance.currentStepIndex = 1;
+    instance.stepsComplete[0] = true;
+    instance.acquiredAt = Date.now();
+    result.newlyAcquired.push(definition.id);
   }
 
   return result;
@@ -118,6 +133,54 @@ export function evaluateNeutralizingVoidProgress(state: Pick<GameState, 'board' 
     instance.stepsComplete[3] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
   }
+  return result;
+}
+
+export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' | 'progress'>): EnigmaProgressResult {
+  ensureEnigmaState(state.progress);
+  const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
+  if (!isEnigmaUnlocked(state.progress)) return result;
+
+  const activeCausalityLight = state.board.backSlots.some(slot => slot?.type === 'Light' && slot.definitionId.startsWith('light-causality-') && slot.side === 'ain');
+  const activeCausalityDark = state.board.backSlots.some(slot => slot?.type === 'Dark' && slot.definitionId.startsWith('dark-causality-') && slot.side === 'ain');
+  const activeCausalityAsa = state.board.frontSlots.some(slot => slot?.type === 'AinSophAur' && slot.definitionId.startsWith('ain-soph-aur-causality-'));
+  const activeCausalityCount = [...state.board.frontSlots, ...state.board.backSlots].filter(slot => slot?.definitionId.includes('causality')).length;
+
+  const update = (id: string, checks: boolean[]): void => {
+    const instance = state.progress.enigmas.instances[id];
+    if (!instance || instance.status === 'locked') return;
+    for (let index = 1; index < checks.length + 1; index += 1) {
+      if (instance.stepsComplete[index] || !instance.stepsComplete[index - 1] || !checks[index - 1]) continue;
+      instance.stepsComplete[index] = true;
+      instance.currentStepIndex = Math.max(instance.currentStepIndex, index + 1);
+    }
+  };
+
+  const firstHorizon = state.progress.enigmas.instances['causality-first-horizon'];
+  const blackInk = state.progress.enigmas.instances['causality-black-ink'];
+  const archive = state.progress.enigmas.instances['causality-heavenly-archive'];
+  const collapsed = state.progress.enigmas.instances['causality-collapsed-equation'];
+  const unwritten = state.progress.enigmas.instances['causality-unwritten-law'];
+  update('causality-first-horizon', [
+    (firstHorizon?.progressCounters?.causalityPlays ?? 0) >= 5,
+    (firstHorizon?.progressCounters?.cosmosGenerated ?? 0) >= 3,
+  ]);
+  update('causality-black-ink', [
+    activeCausalityLight && activeCausalityDark,
+    (blackInk?.progressCounters?.cosmosConsumed ?? 0) >= 2,
+  ]);
+  update('causality-heavenly-archive', [
+    activeCausalityLight && activeCausalityDark && activeCausalityAsa,
+    (archive?.progressCounters?.bridgeAttacks ?? 0) >= 3,
+  ]);
+  update('causality-collapsed-equation', [
+    (collapsed?.progressCounters?.causalityPlays ?? 0) >= 10,
+    (collapsed?.progressCounters?.cosmosGenerated ?? 0) >= 5,
+  ]);
+  update('causality-unwritten-law', [
+    activeCausalityCount >= 3,
+    (unwritten?.progressCounters?.cosmosHeldPeak ?? 0) >= 5,
+  ]);
   return result;
 }
 

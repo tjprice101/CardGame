@@ -125,7 +125,7 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'af-oph-cobalt-ember-wheel': 'Cobalt Ember Wheel.png',
   'af-oph-chromatic-ember-cluster': 'Chromatic Ember Cluster.png',
   'dfh-et-crimson-ember-rain': 'Crimson Ember-Rain.png',
-  // Wished Upon a Star fallback relinks for currently unexported exact filenames.
+  // Legacy fallback relinks for currently unexported exact filenames.
   'wuas-ser-seleniras-vigil': 'Starwarden Selenira.png',
   'wuas-cher-starlace-binding': 'Stargazer Token.png',
   'sv-infinite-polar-fission': 'Polar Cataclysm.png',
@@ -415,6 +415,10 @@ function getDenseCardFaceCacheKey(
 
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
+
+  if (card.definitionId.startsWith('light-causality-') || card.definitionId.startsWith('dark-causality-') || card.definitionId.startsWith('ain-soph-aur-causality-')) {
+    return `${CARD_BACKGROUND_ROOT}/causality/${encodeURI(`${card.name}.png`)}`;
+  }
 
   const newCatalogFallback = getNewNeutralityArt(card.definitionId);
 

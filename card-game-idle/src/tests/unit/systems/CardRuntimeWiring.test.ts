@@ -3,6 +3,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
+import { causalityCards } from '@/data/cards/causalityCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { enigmaRewardCards } from '@/data/cards/enigmaRewardCards';
 import { eternalCards } from '@/data/cards/eternalCards';
@@ -56,6 +57,7 @@ describe('complete card runtime wiring', () => {
       ...lightCards,
       ...darkCards,
       ...ainSophAurCards,
+      ...causalityCards,
       ...eternalCards,
       ...enigmaRewardCards,
       ...transcendentCardDefinitions,

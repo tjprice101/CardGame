@@ -574,7 +574,7 @@ function ProgressionBody() {
         <div style={sectionHeadingStyle}>Aberrated Shards</div>
         <div style={bodyTextStyle}>
           The secondary event and specialized pack currency. Earned from <Tag>boss clears</Tag> (first-clear bonus + repeat bonus),{' '}
-          <Tag>daily logins</Tag>, achievements, and Card-born Tier milestones. Spent on limited-time event packs (such as Wished Upon A Star).
+          <Tag>daily logins</Tag>, achievements, and Card-born Tier milestones. Spent on limited-time Causality event packs.
         </div>
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>

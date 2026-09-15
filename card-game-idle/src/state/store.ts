@@ -44,6 +44,7 @@ import {
   evaluateEnigmaAcquisition,
   evaluateNeutralMysteryProgress,
   evaluateNeutralizingVoidProgress,
+  evaluateCausalityEnigmaProgress,
   isEnigmaUnlocked,
   awardEnigmaReward,
 } from '@/systems/progression/EnigmaSystem';
@@ -140,6 +141,7 @@ const defaultTurn: TurnState = {
   cardsPlayedThisTurn: 0,
   neutralityAbilityActivationsThisTurn: 0,
   limitlessLightStacks: 0,
+  limitlessCosmosStacks: 0,
   oblivionEarnedThisTurn: 0,
   lastPlayedDefinitionId: null,
   turnNumber: 0,
@@ -938,6 +940,27 @@ function recordCardPlay(s: Store, definitionId: string): void {
   if (typeKind) {
     emitQuestProgressToProgress(s.progress, { kind: typeKind, amount: 1 });
   }
+  if (definitionId.startsWith('light-causality-') || definitionId.startsWith('dark-causality-') || definitionId.startsWith('ain-soph-aur-causality-')) {
+    for (const id of ['causality-first-horizon', 'causality-collapsed-equation']) {
+      const instance = s.progress.enigmas.instances[id];
+      if (instance?.status !== 'acquired') continue;
+      instance.progressCounters ??= {};
+      instance.progressCounters.causalityPlays = (instance.progressCounters.causalityPlays ?? 0) + 1;
+    }
+  }
+}
+
+function recordCausalityCosmosDelta(s: Store, delta: number): void {
+  if (delta === 0) return;
+  const key = delta > 0 ? 'cosmosGenerated' : 'cosmosConsumed';
+  const amount = Math.abs(delta);
+  for (const id of ['causality-first-horizon', 'causality-black-ink', 'causality-collapsed-equation', 'causality-unwritten-law']) {
+    const instance = s.progress.enigmas.instances[id];
+    if (instance?.status !== 'acquired') continue;
+    instance.progressCounters ??= {};
+    instance.progressCounters[key] = (instance.progressCounters[key] ?? 0) + amount;
+    if (key === 'cosmosGenerated') instance.progressCounters.cosmosHeldPeak = Math.max(instance.progressCounters.cosmosHeldPeak ?? 0, s.turn.limitlessCosmosStacks ?? 0);
+  }
 }
 
 // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Boss fight helpers �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
@@ -1483,7 +1506,7 @@ function pushEnigmaStepToast(s: Store, enigmaId: string, stepIndex: number): voi
   pushRewardToast(s, `Enigma Step Complete: ${definition.title} - ${step.title}`);
 }
 
-function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void {
+function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean): void {
   ensureEnigmaState(s.progress);
   ensureInstance(s.progress, 'to-amplify-the-nullitude');
   ensureInstance(s.progress, 'null-surged');
@@ -1492,22 +1515,21 @@ function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void 
     previousSteps.set(id, instance.stepsComplete.slice());
   }
 
-  if (checkAcquisition) {
-    const acquisition = evaluateEnigmaAcquisition({ board: s.board, progress: s.progress });
-    if (acquisition.newlyAcquired.length > 0) {
-      if (!s.progress.enigmas.activeEnigmaId) {
-        s.progress.enigmas.activeEnigmaId = acquisition.newlyAcquired[0] ?? null;
-      }
-      for (const enigmaId of acquisition.newlyAcquired) {
-        const instance = s.progress.enigmas.instances[enigmaId];
-        if (instance && !instance.acquiredAt) instance.acquiredAt = Date.now();
-        pushRewardToast(s, `Enigma Acquired: ${enigmaId === 'neutral-mystery' ? 'Neutral Mystery' : enigmaId}`);
-      }
+  const acquisition = evaluateEnigmaAcquisition({ board: s.board, progress: s.progress });
+  if (acquisition.newlyAcquired.length > 0) {
+    if (!s.progress.enigmas.activeEnigmaId) {
+      s.progress.enigmas.activeEnigmaId = acquisition.newlyAcquired[0] ?? null;
+    }
+    for (const enigmaId of acquisition.newlyAcquired) {
+      const instance = s.progress.enigmas.instances[enigmaId];
+      if (instance && !instance.acquiredAt) instance.acquiredAt = Date.now();
+      pushRewardToast(s, `Enigma Acquired: ${enigmaId}`);
     }
   }
 
   evaluateNeutralMysteryProgress({ board: s.board, progress: s.progress });
   evaluateNeutralizingVoidProgress({ board: s.board, progress: s.progress });
+  evaluateCausalityEnigmaProgress({ board: s.board, progress: s.progress });
 
   if (isEnigmaUnlocked(s.progress)) {
     const amplifier = s.progress.enigmas.instances['to-amplify-the-nullitude'];
@@ -2302,6 +2324,7 @@ export const useStore = create<Store>()(
             extraDeck: [...s.deck.extraDeck],
           };
           const placementEffects = def.type === 'Light' ? def.sophPlacementEffects ?? [] : [];
+          const cosmosBefore = s.turn.limitlessCosmosStacks ?? 0;
           const result = CardEffectExecutor.execute(deckCard, s.turn, nextBoard, nextDeck, false, {
             effects: side === 'soph' ? placementEffects : [],
             countAsPlay: false,
@@ -2311,6 +2334,7 @@ export const useStore = create<Store>()(
           s.board = result.board;
           s.deck = result.deck;
           s.turn = result.turn;
+          recordCausalityCosmosDelta(s, (s.turn.limitlessCosmosStacks ?? 0) - cosmosBefore);
           queuePendingEffects(s.turn, result);
           grantOblivion(s, result.oblivionBonus);
           if (s.turn.divineFieldUntil && s.turn.divineFieldUntil > Date.now()) grantOblivion(s, 50);
@@ -2472,6 +2496,7 @@ export const useStore = create<Store>()(
           recompute(s);
           return;
         }
+        const cosmosBefore = s.turn.limitlessCosmosStacks ?? 0;
         const turnAfterCost = { ...s.turn, limitlessLightStacks: s.turn.limitlessLightStacks - cost };
         const result = CardEffectExecutor.execute(
           toDeckCard(slot),
@@ -2483,6 +2508,7 @@ export const useStore = create<Store>()(
         );
         if (!result.canPlay) return;
         s.turn = result.turn;
+        recordCausalityCosmosDelta(s, (s.turn.limitlessCosmosStacks ?? 0) - cosmosBefore);
         s.board = result.board;
         s.deck = result.deck;
         queuePendingEffects(s.turn, result);
@@ -2533,6 +2559,13 @@ export const useStore = create<Store>()(
           surgeblade.progressCounters ??= {};
           surgeblade.progressCounters.bridgeAttacks = (surgeblade.progressCounters.bridgeAttacks ?? 0) + 1;
           syncEnigmaProgressFromBoard(s, false);
+        }
+        if (slot.definitionId.startsWith('ain-soph-aur-causality-')) {
+          const archive = s.progress.enigmas.instances['causality-heavenly-archive'];
+          if (archive?.status === 'acquired') {
+            archive.progressCounters ??= {};
+            archive.progressCounters.bridgeAttacks = (archive.progressCounters.bridgeAttacks ?? 0) + 1;
+          }
         }
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
@@ -4579,6 +4612,7 @@ export const useStore = create<Store>()(
         delete ot['prismaticEchoCascadeFloorPerToken'];
         delete ot['prismaticSentencingChainFloorBonus'];
         if (ot['oblivionEarnedThisTurn'] === undefined) ot['oblivionEarnedThisTurn'] = 0;
+        if (ot['limitlessCosmosStacks'] === undefined) ot['limitlessCosmosStacks'] = 0;
         if (ot['trail'] === undefined) ot['trail'] = 0;
         if (ot['strain'] === undefined) ot['strain'] = 0;
         if (ot['turnNumber'] === undefined) ot['turnNumber'] = 0;

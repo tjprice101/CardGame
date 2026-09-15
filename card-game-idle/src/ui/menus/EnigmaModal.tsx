@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
-import { listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
+import { getUniqueOwnedCardsForSet, listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
 import { getActiveEnigmaInstance } from '@/data/enigmas/enigmaDefinitions';
 
 interface Props { onClose: () => void; }
@@ -12,6 +12,10 @@ export default function EnigmaModal({ onClose }: Props) {
   const sacrificeEnigmaOblivion = useStore(s => s.sacrificeEnigmaOblivion);
   const claimEnigmaReward = useStore(s => s.claimEnigmaReward);
   const definitions = useMemo(() => listEnigmaDefinitions(), []);
+  const groupedDefinitions = useMemo(() => (['Neutrality', 'Causality'] as const).flatMap(setId => {
+    const entries = definitions.filter(definition => definition.setId === setId);
+    return entries.map((definition, index) => ({ definition, setId, firstInSet: index === 0 }));
+  }), [definitions]);
   const active = getActiveEnigmaInstance(progress);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -44,7 +48,8 @@ export default function EnigmaModal({ onClose }: Props) {
           >✕</button>
         </div>
         <div style={{ display: 'grid', gap: 14 }}>
-          {definitions.map(definition => {
+          {groupedDefinitions.map(entry => {
+            const definition = entry.definition;
             const instance = progress.enigmas.instances[definition.id];
             const status = instance?.status ?? 'locked';
             const locked = status === 'locked';
@@ -55,7 +60,14 @@ export default function EnigmaModal({ onClose }: Props) {
             const oblivionCost = definition.id === 'neutral-mystery' ? 50_000 : 25_000;
             const canOblivion = (definition.id === 'neutral-mystery' || definition.id === 'neutralizing-the-void') && instance?.currentStepIndex === 1;
             return (
-              <section key={definition.id} onClick={() => { setActiveEnigma(definition.id); setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: 'pointer', opacity: locked ? 0.72 : 1 }}>
+              <div key={definition.id}>
+                {entry.firstInSet && (
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, margin: '18px 2px 8px', paddingBottom: 7, borderBottom: '1px solid rgba(244,207,107,0.28)' }}>
+                    <div style={{ color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 12, letterSpacing: 2.2, textTransform: 'uppercase' }}>{entry.setId} Enigmas</div>
+                    <div style={{ color: '#d5c3eb', fontSize: 10, letterSpacing: 0.7 }}>{getUniqueOwnedCardsForSet(progress, entry.setId)}/5 unique cards</div>
+                  </div>
+                )}
+              <section onClick={() => { setActiveEnigma(definition.id); setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: 'pointer', opacity: locked ? 0.72 : 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                   <div><div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 20 }}>{definition.title}</div><div style={{ color: '#d5c3eb', marginTop: 4 }}>{locked ? definition.hintText : currentStep?.description ?? definition.hintText}</div></div>
                   <div style={{
@@ -125,6 +137,7 @@ export default function EnigmaModal({ onClose }: Props) {
                   )}
                 </div></div>}
               </section>
+              </div>
             );
           })}
         </div>

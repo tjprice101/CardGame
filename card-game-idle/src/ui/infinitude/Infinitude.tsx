@@ -65,8 +65,8 @@ export default function Infinitude({ onClose }: Props) {
 
   const visibleRecipes = useMemo(() => {
     const base = listFilter === 'event'
-      ? orderedRecipes.filter(e => e.recipe.resultId.startsWith('inf-wuas-'))
-      : orderedRecipes.filter(e => !e.recipe.resultId.startsWith('inf-wuas-'));
+      ? orderedRecipes.filter(e => e.recipe.resultId.startsWith('inf-causality-'))
+      : orderedRecipes.filter(e => !e.recipe.resultId.startsWith('inf-causality-'));
     if (!searchQuery.trim()) return base;
     const q = searchQuery.toLowerCase();
     return base.filter(e =>
@@ -103,8 +103,8 @@ export default function Infinitude({ onClose }: Props) {
   function switchFilter(tab: 'all' | 'event') {
     setListFilter(tab);
     const nextList = tab === 'event'
-      ? orderedRecipes.filter(e => e.recipe.resultId.startsWith('inf-wuas-'))
-      : orderedRecipes.filter(e => !e.recipe.resultId.startsWith('inf-wuas-'));
+      ? orderedRecipes.filter(e => e.recipe.resultId.startsWith('inf-causality-'))
+      : orderedRecipes.filter(e => !e.recipe.resultId.startsWith('inf-causality-'));
     if (!nextList.some(e => e.recipe.resultId === selectedRecipeId)) {
       setSelectedRecipeId(nextList[0]?.recipe.resultId ?? null);
     }

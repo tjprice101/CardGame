@@ -11,7 +11,7 @@ import { useStore } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { BOSS_DEFINITIONS, getBossDisplayHp } from '@/data/bosses/bossDefinitions';
-import { formatCountdown, getCausalityEventCountdown, CAUSALITY_EVENT_ENDS_LABEL } from '@/ui/eventWishedUponAStar/eventTimer';
+import { formatCountdown, getCausalityEventCountdown, CAUSALITY_EVENT_ENDS_LABEL } from '@/ui/eventCausality/eventTimer';
 
 interface Props {
   onClose: () => void;

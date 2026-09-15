@@ -20,6 +20,7 @@ const RARITY_COLORS: Record<string, string> = {
 const PACK_ART_BASE = `${import.meta.env.BASE_URL}assets/pack-art`;
 const PACK_ART: Record<string, string> = {
   'pack-neutrality': `${PACK_ART_BASE}/NeutralityPackArt.png`,
+  'pack-causality': `${import.meta.env.BASE_URL}assets/event-art/causality/Causality BANNER.png`,
 };
 
 const styles: Record<string, React.CSSProperties> = {

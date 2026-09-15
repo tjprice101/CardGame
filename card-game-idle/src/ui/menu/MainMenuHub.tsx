@@ -13,7 +13,7 @@ import {
   resolveMainMenuBackground,
   type MainMenuBackgroundEntry,
 } from '@/data/profile/mainMenuBackgrounds';
-import { formatCountdown, getWuasEventCountdown, WUAS_EVENT_ENDS_LABEL } from '@/ui/eventWishedUponAStar/eventTimer';
+import { formatCountdown, getCausalityEventCountdown, CAUSALITY_EVENT_ENDS_LABEL } from '@/ui/eventCausality/eventTimer';
 import { t } from '@/ui/preferences';
 
 interface MainMenuHubProps {
@@ -31,8 +31,8 @@ interface MainMenuHubProps {
   onFracture: () => void;
   onEnigma: () => void;
   onSettings: () => void;
-  /** Opens the Wished Upon A Star event landing page. */
-  onEventWishedUponAStar?: () => void;
+  /** Opens the Causality event landing page. */
+  onEventCausality?: () => void;
   /** Opens the Garden of Cards dungeon menu. */
   onBattleground?: () => void;
   /** Opens the Ascension endgame mode hub. */
@@ -420,7 +420,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const shards = Math.floor(progress.aberratedShards ?? 0);
   const oblivion = Math.floor(progress.oblivion ?? 0);
   const cards = ownedCardCopies;
-  const eventCountdown = formatCountdown(getWuasEventCountdown(eventNowMs));
+  const eventCountdown = formatCountdown(getCausalityEventCountdown(eventNowMs));
 
   return (
     <div
@@ -555,10 +555,10 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         display: 'flex', alignItems: 'flex-end', gap: 12,
         maxWidth: 'min(560px, 50vw)',
       }}>
-        {props.onEventWishedUponAStar && (
+        {props.onEventCausality && (
           <button
-            className="menu-tactile-btn wuas-event-shimmer"
-            onClick={props.onEventWishedUponAStar}
+            className="menu-tactile-btn causality-event-shimmer"
+            onClick={props.onEventCausality}
             style={{
               position: 'relative',
               width: 260,
@@ -582,13 +582,13 @@ export default function MainMenuHub(props: MainMenuHubProps) {
               fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.4,
             }}>LIMITED-TIME</div>
             <div style={{ marginTop: 22, fontFamily: uiTypography.display, fontSize: 18, letterSpacing: 1.6, textTransform: 'uppercase' }}>
-              Wished Upon A Star
+              Causality
             </div>
             <div style={{ marginTop: 4, fontSize: 11, opacity: 0.82, letterSpacing: 0.6, color: 'rgba(214, 224, 248, 0.95)' }}>
               Stellar Wish Event · Spend Aberrated Shards
             </div>
             <div style={{ marginTop: 8, fontSize: 10, letterSpacing: 1, color: '#d7b7ff', fontFamily: uiTypography.display }}>
-              Ends {WUAS_EVENT_ENDS_LABEL}
+              Ends {CAUSALITY_EVENT_ENDS_LABEL}
             </div>
             <div style={{ marginTop: 3, fontSize: 12, letterSpacing: 1.1, color: '#8de6ff', fontFamily: uiTypography.display }}>
               {eventCountdown}

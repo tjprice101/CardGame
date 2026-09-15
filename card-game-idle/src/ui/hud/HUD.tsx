@@ -13,6 +13,7 @@ import PendingEffectModal from './PendingEffectModal';
 import FlashOverlay from './FlashOverlay';
 import OblivionAcquisitionScreen from './OblivionAcquisitionScreen';
 import CardInspectorPanel from './CardInspectorPanel';
+import CardBornStacksPanel from './CardBornStacksPanel';
 
 /**
  * Top status bar — slim full-width chrome strip at the top of the arena.
@@ -213,6 +214,7 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
     <>
       {/* Core play surfaces */}
       <BoardDisplay onHoverCard={setInspectedCardId} />
+      <CardBornStacksPanel />
       {/* ScoreDisplay overlaps the boss/battleground/garden banner — those headers already present score/timer/currencies */}
       {!inBattleground && !inGardenDungeon && !inBossFight && <ScoreDisplay />}
       <AngelStatPanel />

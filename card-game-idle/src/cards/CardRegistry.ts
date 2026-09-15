@@ -7,6 +7,7 @@ import { darkCards } from '../data/cards/darkCards';
 import { eternalCards } from '../data/cards/eternalCards';
 import { enigmaRewardCards } from '../data/cards/enigmaRewardCards';
 import { transcendentCardDefinitions } from '../data/ascension/transcendentCards';
+import { causalityCards } from '../data/cards/causalityCards';
 import { ScoreSystem } from '../systems/scoring/ScoreSystem';
 import { formatDisplayCardText } from '../ui/preferences';
 
@@ -26,6 +27,7 @@ const SOURCE_DEFINITIONS: CardDefinition[] = [
   ...(eternalCards as unknown as CardDefinition[]),
   ...(enigmaRewardCards as unknown as CardDefinition[]),
   ...(transcendentCardDefinitions as unknown as CardDefinition[]),
+  ...(causalityCards as unknown as CardDefinition[]),
 ];
 
 function applyNeutralityDocOverride(def: CardDefinition): CardDefinition {

@@ -144,6 +144,10 @@ describe('Ain/Soph card catalog', () => {
       .map(card => card.definitionId)
       .sort();
     expect(persistentDarkIds).toEqual([
+      'dark-causality-1',
+      'dark-causality-10',
+      'dark-causality-4',
+      'dark-causality-7',
       'enig-neutral-amplifier-of-the-void',
       'enig-neutral-null-catechism',
       'tx-neutral-null-catalyst',

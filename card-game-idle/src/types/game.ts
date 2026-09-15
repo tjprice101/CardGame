@@ -105,6 +105,7 @@ export interface TurnState {
   cardsPlayedThisTurn: number;
   neutralityAbilityActivationsThisTurn?: number;
   limitlessLightStacks: number;
+  limitlessCosmosStacks?: number;
   oblivionEarnedThisTurn: number;
   lastPlayedDefinitionId: string | null;
   turnNumber?: number;

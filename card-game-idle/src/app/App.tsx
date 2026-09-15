@@ -13,7 +13,7 @@ const BossFightArena = lazy(() => import('@/ui/eternitysWake/BossFightArena'));
 const BossResultModal = lazy(() => import('@/ui/eternitysWake/BossResultModal'));
 const CardBoundCoopHub = lazy(() => import('@/ui/menu/CardBoundCoopHub'));
 const Infinitude = lazy(() => import('@/ui/infinitude/Infinitude'));
-const WishedUponAStarEvent = lazy(() => import('@/ui/eventWishedUponAStar/WishedUponAStarEvent'));
+const CausalityEvent = lazy(() => import('@/ui/eventCausality/CausalityEvent'));
 const TutorialModal = lazy(() => import('@/ui/menus/TutorialModal'));
 const PlayerInformationPage = lazy(() => import('@/ui/player/PlayerInformationPage'));
 const DailyRewardModal = lazy(() => import('@/ui/profile/DailyRewardModal'));
@@ -181,7 +181,7 @@ export default function App() {
   const [showGardenOfCards, setShowGardenOfCards] = useState(false);
   const [showCardBoundCoop, setShowCardBoundCoop] = useState(false);
   const [showInfinitude, setShowInfinitude] = useState(false);
-  const [showEventWuas, setShowEventWuas] = useState(false);
+  const [showCausalityEvent, setShowCausalityEvent] = useState(false);
   const [showPlayerInfo, setShowPlayerInfo] = useState(false);
   const [showDailyReward, setShowDailyReward] = useState(false);
   const [showQuests, setShowQuests] = useState(false);
@@ -736,7 +736,7 @@ export default function App() {
         if (showDeckBuilder) { setShowDeckBuilder(false); e.preventDefault(); return; }
         if (showCardStore) { setShowCardStore(false); e.preventDefault(); return; }
         if (showInfinitude) { setShowInfinitude(false); e.preventDefault(); return; }
-        if (showEventWuas) { setShowEventWuas(false); e.preventDefault(); return; }
+        if (showCausalityEvent) { setShowCausalityEvent(false); e.preventDefault(); return; }
         if (showEternitysWake) { setShowEternitysWake(false); e.preventDefault(); return; }
         if (showPlayerInfo) { setShowPlayerInfo(false); e.preventDefault(); return; }
         if (showQuests) { setShowQuests(false); e.preventDefault(); return; }
@@ -760,7 +760,7 @@ export default function App() {
       // an active turn is in play (mulligan OR playing), in regular or boss
       // fight modes.
       if (e.code === controls.swapExtraDeck && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showAscension;
+        const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showAscension;
         if (anyModalOpen) return;
         const phase = useStore.getState().turn.phase;
         if (phase === 'playing' || phase === 'mulligan') {
@@ -777,7 +777,7 @@ export default function App() {
       ];
       for (const [code, slot] of abilitySlotMap) {
         if (e.code === code && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showAscension;
+          const anyModalOpen = showTutorial || showSettings || showDeckViewer || showDeckBuilder || showCardStore || showInfinitude || showEternitysWake || showPlayerInfo || showDailyReward || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showAscension;
           if (anyModalOpen) return;
           e.preventDefault();
           useStore.getState().activateAbility(slot);
@@ -787,7 +787,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showEventWuas, showAscension, settings.controls]);
+  }, [showTutorial, showSettings, showDeckViewer, showDeckBuilder, showCardStore, showInfinitude, showEternitysWake, showPlayerInfo, showDailyReward, showQuests, showAchievements, showMastery, showEnigma, showCausalityEvent, showAscension, settings.controls]);
 
   useEffect(() => {
     if (!hasSeenSaveRef.current) {
@@ -803,7 +803,7 @@ export default function App() {
   const inBossFight = bossFight.mode === 'active';
   const bossResultVisible = bossFight.kind !== 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat');
   const gardenResultVisible = gardenDungeon.phase === 'victory' || gardenDungeon.phase === 'defeat';
-  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showEventWuas || showBattleground || showGardenOfCards || showAscension || bossResultVisible || gardenResultVisible;
+  const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showBattleground || showGardenOfCards || showAscension || bossResultVisible || gardenResultVisible;
 
   // When a combat session starts (including co-op launches), force-close
   // open overlays so both clients transition into the arena immediately.
@@ -822,7 +822,7 @@ export default function App() {
     setShowBattleground(false);
     setShowCardBoundCoop(false);
     setShowInfinitude(false);
-    setShowEventWuas(false);
+    setShowCausalityEvent(false);
     setShowPlayerInfo(false);
     setShowDailyReward(false);
     setShowQuests(false);
@@ -947,7 +947,7 @@ export default function App() {
             onEternitysWake={() => setShowEternitysWake(true)}
             onBattleground={() => setShowGardenOfCards(true)}
             onInfinitude={() => setShowInfinitude(true)}
-            onEventWishedUponAStar={() => setShowEventWuas(true)}
+            onEventCausality={() => setShowCausalityEvent(true)}
             onDeckViewer={() => setShowDeckViewer(true)}
             onTutorial={() => setShowTutorial(true)}
             onDeckBuilder={() => setShowDeckBuilder(true)}
@@ -1030,14 +1030,14 @@ export default function App() {
         </div>
       )}
 
-      {/* Wished Upon A Star event page */}
-      {showEventWuas && (
+      {/* Causality event page */}
+      {showCausalityEvent && (
         <div style={{ position: 'absolute', inset: 0, zIndex: 30, pointerEvents: 'auto' }}>
           <Suspense fallback={null}>
-            <WishedUponAStarEvent
-              onClose={() => setShowEventWuas(false)}
-              onCardStore={() => { setShowEventWuas(false); setShowCardStore(true); }}
-              onEternitysWake={() => { setShowEventWuas(false); setShowEternitysWake(true); }}
+            <CausalityEvent
+              onClose={() => setShowCausalityEvent(false)}
+              onCardStore={() => { setShowCausalityEvent(false); setShowCardStore(true); }}
+              onEternitysWake={() => { setShowCausalityEvent(false); setShowEternitysWake(true); }}
             />
           </Suspense>
         </div>

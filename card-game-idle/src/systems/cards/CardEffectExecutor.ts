@@ -97,6 +97,21 @@ export class CardEffectExecutor {
           break;
         }
 
+        case 'cosmos_flat':
+          mutableTurn.limitlessCosmosStacks = (mutableTurn.limitlessCosmosStacks ?? 0) + Math.max(0, effect.value);
+          break;
+
+        case 'convert_light_to_cosmos':
+          if (mutableTurn.limitlessLightStacks < effect.lightCost) return false;
+          mutableTurn.limitlessLightStacks -= effect.lightCost;
+          mutableTurn.limitlessCosmosStacks = (mutableTurn.limitlessCosmosStacks ?? 0) + Math.max(0, effect.cosmosGain);
+          break;
+
+        case 'consume_cosmos':
+          if ((mutableTurn.limitlessCosmosStacks ?? 0) < effect.value) return false;
+          mutableTurn.limitlessCosmosStacks = (mutableTurn.limitlessCosmosStacks ?? 0) - effect.value;
+          break;
+
         // ──────── Legacy score/power effects (Light compat → map to Oblivion) ────────
         case 'score_flat':
           oblivionBonus += effect.value * multiplier;

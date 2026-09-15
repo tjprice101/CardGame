@@ -115,6 +115,9 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
   if (!effect || typeof effect !== 'object' || !("type" in effect)) return 'Unknown effect';
   switch (effect.type) {
     case 'oblivion_flat': return `+${effect.value} Divine Light`;
+    case 'cosmos_flat': return `Gain ${formatCount(effect.value, 'Limitless Cosmos Stack')}`;
+    case 'convert_light_to_cosmos': return `Convert ${formatCount(effect.lightCost, 'Limitless Light Stack')} into ${formatCount(effect.cosmosGain, 'Limitless Cosmos Stack')}`;
+    case 'consume_cosmos': return `Consume ${formatCount(effect.value, 'Limitless Cosmos Stack')}`;
     case 'score_flat': return `+${effect.value} Divine Light`;
     case 'draw': return `Draw ${formatCount(effect.value, 'card')}`;
     case 'discard_choice': return `Choose and discard ${formatCount(effect.value, 'card')}`;
