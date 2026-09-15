@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
 import { useStore } from '@/state/store';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { getCardSetColor, getCardSetLabel } from '@/data/elements';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { getCardFaceBackgroundStyle, getCardBackBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
@@ -40,7 +40,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
 
   const isFavorite = favoriteCollection[`${card.definitionId}:${finish}`] ?? false;
   const packs = findPacksForCard(card.definitionId);
-  const elementColor = SET_ACCENT;
+  const elementColor = getCardSetColor(card.definitionId);
   const rarityColor = RARITY_COLORS[card.rarity] ?? '#888';
   const finishLabel = isHoloOnlyCard(card) ? 'Intrinsic Foil' : getCardFinishLabel(finish);
   const flavorObtain = card.rarity === 'Infinite'
@@ -202,7 +202,7 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
                 Element
               </div>
               <div style={{ fontSize: 14, color: elementColor, fontWeight: 500 }}>
-                {SET_LABEL}
+                {getCardSetLabel(card.definitionId)}
               </div>
             </div>
             <div>

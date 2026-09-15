@@ -2,7 +2,7 @@
 import type { CSSProperties } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { SET_ACCENT } from '@/data/elements';
 import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions';
 import { getCardFinishKey, getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import {
@@ -31,6 +31,12 @@ const RARITY_ORDER: Record<string, number> = {
 };
 
 const INFINITE_TYPE_ORDER = ['Light', 'Dark', 'AinSophAur'] as const;
+
+function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
+  if (definitionId.includes('causality')) return 'Causality';
+  if (definitionId.includes('neutral')) return 'Neutrality';
+  return null;
+}
 
 const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));
 const STORE_COLLECTION_SET_ORDER = STORE_PACK_ORDER.map(packId => {
@@ -158,7 +164,7 @@ export default function CollectionViewer({ onClose }: Props) {
   }), [categoryOrderRank, progress, recentlyAcquired, registryCards, sortMode]);
 
   const elements = useMemo(() => {
-    const availableCategories = new Set(['Neutrality']);
+    const availableCategories = new Set(['Neutrality', 'Causality']);
     const orderedCategories = STORE_COLLECTION_SET_ORDER.filter(category => availableCategories.has(category));
     const orderedCategorySet = new Set(orderedCategories);
     const remainingCategories = Array.from(availableCategories)
@@ -168,7 +174,7 @@ export default function CollectionViewer({ onClose }: Props) {
   }, []);
   const lowerSearch = searchText.trim().toLowerCase();
   const filtered = useMemo(() => allCards.filter(entry => {
-    if (activeElement !== 'All' && 'Neutrality' !== activeElement) return false;
+    if (activeElement !== 'All' && getCardSet(entry.card.definitionId) !== activeElement) return false;
     if (rarityFilter === 'Transcendent') {
       if (entry.card.rarity !== 'Transcendent') return false;
     } else if (rarityFilter !== 'All' && entry.card.rarity !== rarityFilter) {
@@ -473,8 +479,8 @@ export default function CollectionViewer({ onClose }: Props) {
       }}>
         {elements.map(el => {
           const isActive = activeElement === el;
-          const color = el === 'All' ? '#FFD700' : (SET_ACCENT);
-          const setName = el === 'All' ? 'All' : (SET_LABEL);
+          const color = el === 'All' ? '#FFD700' : (el === 'Causality' ? '#d66a52' : SET_ACCENT);
+          const setName = el;
           return (
             <button
               key={el}

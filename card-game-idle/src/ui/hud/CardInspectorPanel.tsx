@@ -1,5 +1,5 @@
 import { CardRegistry } from '@/cards/CardRegistry';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { SET_ACCENT, getCardSetLabel } from '@/data/elements';
 import { useStore, selectBoard, selectProgress, selectTurn } from '@/state/store';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
@@ -85,7 +85,7 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
             textTransform: 'uppercase',
             marginBottom: 3,
           }}>
-            {getDisplayCardTypeLabel(definition.type)} · {SET_LABEL}
+            {getDisplayCardTypeLabel(definition.type)} · {getCardSetLabel(definition.definitionId)}
           </div>
           <div style={{
             color: warmTheme.accentDeep,

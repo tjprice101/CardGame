@@ -2,7 +2,7 @@
 import { useStore, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { SET_ACCENT, SET_LABEL, getCardSetLabel } from '@/data/elements';
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
@@ -74,6 +74,12 @@ function DeferredCardArt({ src }: { src: string }) {
 const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
 const EXTRA_DECK_SIZE = 10;
+
+function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
+  if (definitionId.includes('causality')) return 'Causality';
+  if (definitionId.includes('neutral')) return 'Neutrality';
+  return null;
+}
 
 const RARITY_ORDER = { Common: 0, Rare: 1, Epic: 2, Legendary: 3 };
 // Built lazily per render so theme switches reflect immediately.
@@ -582,8 +588,8 @@ export default function DeckBuilder({ onClose }: Props) {
       }
       return variants;
     });
-    const availableElements = ['Neutrality'];
-    const filtered = ownedCards.filter(_d => elementFilter === null || elementFilter === 'Neutrality');
+    const availableElements = ['Neutrality', 'Causality'];
+    const filtered = ownedCards.filter(card => elementFilter === null || getCardSet(card.def.definitionId) === elementFilter);
 
     const byRarity = (a: CardVariantDisplay, b: CardVariantDisplay) => {
       const rarityDelta = (RARITY_ORDER[a.def.rarity as keyof typeof RARITY_ORDER] ?? 0) -
@@ -786,8 +792,8 @@ export default function DeckBuilder({ onClose }: Props) {
     for (const def of CardRegistry.getAll()) {
       // Skip Ain Soph Aur — they belong in the extra deck.
       if (def.type === 'AinSophAur') continue;
-      // Respect element filter if active.
-      if (elementFilter !== null && 'Neutrality' !== elementFilter) continue;
+      // Respect set filter if active.
+      if (elementFilter !== null && getCardSet(def.definitionId) !== elementFilter) continue;
       const ownedNormal = getOwnedCopiesForFinish(def, 'normal', collection, holoCollection);
       const ownedHolo = getOwnedCopiesForFinish(def, 'holo', collection, holoCollection);
       // Prefer holo first when ranking ties.
@@ -922,7 +928,7 @@ export default function DeckBuilder({ onClose }: Props) {
           {activeDeck && (
             <div style={styles.deckNameChip}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, flexShrink: 0 }} />
-              {activeDeck.isStarter ? '🔒 ' : ''}{activeDeck.name} · {SET_LABEL}
+              {activeDeck.isStarter ? '🔒 ' : ''}{activeDeck.name} · {deckList[0] ? getCardSetLabel(deckList[0].definitionId) : SET_LABEL}
             </div>
           )}
         </div>
@@ -1088,9 +1094,9 @@ export default function DeckBuilder({ onClose }: Props) {
             onClick={() => setElementFilter(el === elementFilter ? null : el)}
           >
             {elementFilter === el && (
-              <span style={{ width: 6, height: 6, borderRadius: '50%', background: SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: el === 'Causality' ? '#d66a52' : SET_ACCENT, display: 'inline-block', flexShrink: 0 }} />
             )}
-            {SET_LABEL}
+            {el}
           </button>
         ))}
       </div>
@@ -1102,7 +1108,7 @@ export default function DeckBuilder({ onClose }: Props) {
           {deckPoolRows.length === 0 ? (
             <div style={styles.cardPool}>
               <div style={styles.empty}>
-                {`No${elementFilter ? ` ${SET_LABEL}` : ''} cards in your collection yet.`}
+                {`No${elementFilter ? ` ${elementFilter}` : ''} cards in your collection yet.`}
               </div>
             </div>
           ) : (
@@ -1308,7 +1314,7 @@ export default function DeckBuilder({ onClose }: Props) {
             {cardTooltip.card.name}
           </div>
           <div style={{ fontSize: 10, color: 'rgba(234,217,192,0.6)', letterSpacing: 1, marginBottom: 10 }}>
-            {getDisplayCardTypeLabel(cardTooltip.card.type)} · <span style={{ color: RARITY_COLORS_DB[cardTooltip.card.rarity] ?? '#aaa' }}>{cardTooltip.card.rarity}</span> · {SET_LABEL}
+            {getDisplayCardTypeLabel(cardTooltip.card.type)} · <span style={{ color: RARITY_COLORS_DB[cardTooltip.card.rarity] ?? '#aaa' }}>{cardTooltip.card.rarity}</span> · {getCardSet(cardTooltip.card.definitionId) ?? SET_LABEL}
           </div>
           <CardRulesDigest
             card={cardTooltip.card}

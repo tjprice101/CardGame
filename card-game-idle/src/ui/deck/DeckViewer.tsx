@@ -1,7 +1,7 @@
 ﻿import { useState, useMemo } from 'react';
 import { useStore } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { SET_ACCENT, CARD_SET_COLORS } from '@/data/elements';
 import { uiTypography } from '@/ui/theme';
 import { calculateDeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
@@ -58,6 +58,12 @@ const RARITY_ORDER: Record<string, number> = {
   Common: 0, Rare: 1, Epic: 2, Legendary: 3, Eternal: 4, Infinite: 5,
 };
 
+function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
+  if (definitionId.includes('causality')) return 'Causality';
+  if (definitionId.includes('neutral')) return 'Neutrality';
+  return null;
+}
+
 type PreviewSection = {
   label: string;
   type: CardDefinition['type'];
@@ -74,6 +80,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
 
   const collectionPower = useMemo(() => computeGlobalResonanceScore(progress), [progress]);
   const [selectedId, setSelectedId] = useState<string>(activeDeckId ?? savedDecks[0]?.id ?? '');
+  const [setFilter, setSetFilter] = useState<'All' | 'Neutrality' | 'Causality'>('All');
 
   const selectedDeck = savedDecks.find(d => d.id === selectedId) ?? null;
   const selectedProjection = useMemo(() => {
@@ -111,7 +118,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
     (deck.extraDeck ?? []).forEach(e => push(e.definitionId, 1));
 
     const totalCards = deck.deckList.reduce((s, e) => s + e.copies, 0) + (deck.extraDeck?.length ?? 0);
-    const elements = new Set<string>(['Neutrality']);
+    const elements = new Set<string>();
     const rarityCounts: Record<string, number> = {};
     grouped.forEach(e => { rarityCounts[e.def.rarity] = (rarityCounts[e.def.rarity] ?? 0) + e.copies; });
 
@@ -119,13 +126,14 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
       label: TYPE_LABELS[typeKey],
       type: typeKey,
       entries: Array.from(grouped.values())
-        .filter(e => e.def.type === typeKey)
+        .filter(e => e.def.type === typeKey && (setFilter === 'All' || getCardSet(e.def.definitionId) === setFilter))
         .sort((a, b) => {
           const rd = (RARITY_ORDER[a.def.rarity] ?? 99) - (RARITY_ORDER[b.def.rarity] ?? 99);
           return rd !== 0 ? rd : a.def.name.localeCompare(b.def.name);
         }),
     })).filter(s => s.entries.length > 0);
 
+    grouped.forEach(e => { const set = getCardSet(e.def.definitionId); if (set) elements.add(set); });
     return { sections, totalCards, elements, rarityCounts };
   }
 
@@ -345,23 +353,26 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
                     )}
                   </div>
 
-                  {/* Element + rarity pill strip */}
+                  {/* Set filter + element and rarity summary */}
                   <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                    {(['All', 'Neutrality', 'Causality'] as const).map(setName => (
+                      <button key={setName} onClick={() => setSetFilter(setName)} style={{ padding: '3px 9px', borderRadius: 20, border: `1px solid ${setFilter === setName ? '#d66a52' : P.border}`, background: setFilter === setName ? 'rgba(214,106,82,0.16)' : 'transparent', color: setFilter === setName ? '#f0a080' : P.textMuted, fontSize: 11, cursor: 'pointer' }}>{setName}</button>
+                    ))}
                     {[...elements].map(el => (
                       <div key={el} style={{
                         display: 'flex', alignItems: 'center', gap: 5,
                         padding: '3px 9px', borderRadius: 20,
-                        border: `1px solid ${(SET_ACCENT)}44`,
-                        background: `${(SET_ACCENT)}11`,
+                        border: `1px solid ${(elements.has('Causality') ? CARD_SET_COLORS.Causality : SET_ACCENT)}44`,
+                        background: `${(elements.has('Causality') ? CARD_SET_COLORS.Causality : SET_ACCENT)}11`,
                         fontSize: 11,
                       }}>
                         <div style={{
                           width: 7, height: 7, borderRadius: '50%',
-                          background: SET_ACCENT,
-                          boxShadow: `0 0 5px ${SET_ACCENT}88`,
+                          background: elements.has('Causality') ? CARD_SET_COLORS.Causality : SET_ACCENT,
+                          boxShadow: `0 0 5px ${(elements.has('Causality') ? CARD_SET_COLORS.Causality : SET_ACCENT)}88`,
                         }} />
-                        <span style={{ color: SET_ACCENT }}>
-                          {SET_LABEL}
+                        <span style={{ color: elements.has('Causality') ? CARD_SET_COLORS.Causality : SET_ACCENT }}>
+                          {[...elements].join(' · ')}
                         </span>
                       </div>
                     ))}

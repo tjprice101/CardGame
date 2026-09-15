@@ -47,6 +47,24 @@ const distinctEverOwnedRarity = (p: ProgressState, rarity: string): number =>
 const socialCount = (p: ProgressState, key: keyof NonNullable<ProgressState['socialStats']>): number =>
   p.socialStats?.[key] ?? 0;
 
+const causalityCardIds = (): string[] => CardRegistry.getAll()
+  .map(card => card.definitionId)
+  .filter(id => id.startsWith('light-causality-') || id.startsWith('dark-causality-') || id.startsWith('ain-soph-aur-causality-'));
+
+const uniqueCausalityOwned = (p: ProgressState): number => causalityCardIds()
+  .filter(id => getEverCollectionCount(p, id) > 0).length;
+
+const causalityCardsPlayed = (p: ProgressState): number => causalityCardIds()
+  .reduce((total, id) => total + (p.cardPlayCounts?.[id] ?? 0), 0);
+
+const completedCausalityEnigmas = (p: ProgressState): number => [
+  'causality-first-horizon',
+  'causality-black-ink',
+  'causality-heavenly-archive',
+  'causality-collapsed-equation',
+  'causality-unwritten-law',
+].filter(id => p.enigmas?.instances[id]?.status === 'completed').length;
+
 // ── Static milestone titles ────────────────────────────────────────────────
 // All display text is title-cased and reads cleanly standalone under the
 // player's name (e.g. "Wanderer · The Newborn").
@@ -439,6 +457,35 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     isUnlocked: (p) => distinctEverOwnedRarity(p, 'Enigmatic') >= 2,
     group: 'milestone',
   },
+  // ── Causality milestones ────────────────────────────────────────────────
+  {
+    id: 'title-causality-cartographer',
+    text: 'Causality Cartographer',
+    description: 'Own 5 unique cards from the Causality set.',
+    isUnlocked: (p) => uniqueCausalityOwned(p) >= 5,
+    group: 'milestone',
+  },
+  {
+    id: 'title-event-horizon-scribe',
+    text: 'Event-Horizon Scribe',
+    description: 'Play 25 Causality cards.',
+    isUnlocked: (p) => causalityCardsPlayed(p) >= 25,
+    group: 'milestone',
+  },
+  {
+    id: 'title-causality-manuscript-reader',
+    text: 'Reader of the Causality Manuscript',
+    description: 'Complete your first Causality Enigma.',
+    isUnlocked: (p) => completedCausalityEnigmas(p) >= 1,
+    group: 'milestone',
+  },
+  {
+    id: 'title-causality-horizon-walker',
+    text: 'Horizon Walker',
+    description: 'Complete all 5 Causality Enigmas.',
+    isUnlocked: (p) => completedCausalityEnigmas(p) >= 5,
+    group: 'milestone',
+  },
   {
     id: 'title-entropic-ascendant',
     text: 'Entropic Ascendant',
@@ -680,6 +727,11 @@ const SET_SPECS: SetSpec[] = [
     category: 'Neutrality',
     title: 'Of the Quiet Center',
     prefixes: ['light-neutrality-', 'dark-neutrality-', 'ain-soph-aur-neutrality-', 'btei-'],
+  },
+  {
+    category: 'Causality' as BossCategory,
+    title: 'Of the Open Horizon',
+    prefixes: ['light-causality-', 'dark-causality-', 'ain-soph-aur-causality-'],
   },
 ];
 

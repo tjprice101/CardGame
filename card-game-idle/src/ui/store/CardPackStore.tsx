@@ -2,7 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/state/store';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { SET_ACCENT, SET_LABEL } from '@/data/elements';
+import { getCardSetColor } from '@/data/elements';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme, uiTypography } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
@@ -371,8 +371,8 @@ export default function CardPackStore({ onClose }: Props) {
     poolIds.filter(id => CardRegistry.get(id)?.rarity === rarity).length;
 
   const renderPackCard = (pack: typeof PACK_DEFINITIONS[0]) => {
-    const elementColor = SET_ACCENT;
-    const setName = SET_LABEL;
+    const elementColor = getCardSetColor(`${pack.setId.toLowerCase()}-`);
+    const setName = pack.setId;
     const isSpotlight = pack.id === getSpotlightPackId();
     const isDailyDeal = pack.id === getDailyDealPackId();
     // Daily Deal stacks first (cheaper), spotlight as fallback.

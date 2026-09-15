@@ -17,11 +17,11 @@ describe('Ain/Soph card catalog', () => {
 
   it('names and hints the five Causality Enigmas with their intended manuscript identity', () => {
     const entries = new Map([
-      ['causality-first-horizon', { title: 'The First Horizon', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
-      ['causality-black-ink', { title: 'Black Ink, White Star', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
-      ['causality-heavenly-archive', { title: 'The Heavenly Archive', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
-      ['causality-collapsed-equation', { title: 'The Collapsed Equation', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
-      ['causality-unwritten-law', { title: 'The Unwritten Law', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
+      ['causality-first-horizon', { title: 'The First Horizon', hint: 'Place a Causality Light card on the Ain side of the back row to reveal the first horizon.' }],
+      ['causality-black-ink', { title: 'Black Ink, White Star', hint: 'Place opposing Causality Light and Dark cards together on the Ain back row.' }],
+      ['causality-heavenly-archive', { title: 'The Heavenly Archive', hint: 'Play Eventide Archivist, Gravitic Testament, and Asterion of the Last Gate.' }],
+      ['causality-collapsed-equation', { title: 'The Collapsed Equation', hint: 'Fill three active Causality board positions at once to collapse the equation.' }],
+      ['causality-unwritten-law', { title: 'The Unwritten Law', hint: 'Hold 5 Limitless Cosmos stacks at once to write the unwritten law.' }],
     ]);
 
     const definitions = [
@@ -46,7 +46,7 @@ describe('Ain/Soph card catalog', () => {
       const definition = enigmaDefinitions.find(item => item.id === id)!.definition!;
       expect(definition.title).toBe(expected.title);
       expect(definition.hintText).toBe(expected.hint);
-      expect(definition.unlockHintText).toMatch(/unlock the manuscript/i);
+      expect(definition.hintText).not.toMatch(/5 unique Causality cards/i);
       expect(definition.steps.length).toBeGreaterThanOrEqual(3);
       expect(definition.steps.every(step => !!step.title && !!step.description)).toBe(true);
     }

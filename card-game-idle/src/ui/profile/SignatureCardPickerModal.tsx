@@ -30,6 +30,12 @@ const RARITY_COLORS: Record<string, string> = {
 
 const faceMetrics = getCardFaceMetrics('grid');
 
+function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
+  if (definitionId.includes('causality')) return 'Causality';
+  if (definitionId.includes('neutral')) return 'Neutrality';
+  return null;
+}
+
 interface SignatureCardRow {
   key: string;
   cards: NonNullable<ReturnType<typeof CardRegistry.get>>[];
@@ -39,6 +45,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
   const progress = useStore(selectProgress);
   const [search, setSearch] = useState('');
   const [rarityFilter, setRarityFilter] = useState<string>('All');
+  const [setFilter, setSetFilter] = useState<'All' | 'Neutrality' | 'Causality'>('All');
   const gridViewportRef = useRef<HTMLDivElement | null>(null);
   const [gridViewportWidth, setGridViewportWidth] = useState(0);
 
@@ -77,10 +84,11 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
     const q = search.toLowerCase();
     return ownedCards.filter(d => {
       if (rarityFilter !== 'All' && d!.rarity !== rarityFilter) return false;
+      if (setFilter !== 'All' && getCardSet(d!.definitionId) !== setFilter) return false;
       if (q && !d!.name.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [ownedCards, search, rarityFilter]);
+  }, [ownedCards, search, rarityFilter, setFilter]);
 
   const gridColumns = Math.max(1, Math.floor((gridViewportWidth + 10) / 126));
   const virtualRows = useMemo(() => {
@@ -176,6 +184,20 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
               margin: '10px 12px 10px 0',
             }}
           />
+          {(['All', 'Neutrality', 'Causality'] as const).map(setName => (
+            <button
+              key={setName}
+              onClick={() => setSetFilter(setName)}
+              style={{
+                padding: '0 12px', height: 42, border: 'none',
+                borderBottom: `3px solid ${setFilter === setName ? '#d66a52' : 'transparent'}`,
+                background: setFilter === setName ? 'rgba(214,106,82,0.1)' : 'transparent',
+                color: setFilter === setName ? '#f0a080' : 'rgba(234,217,192,0.55)',
+                fontSize: 10.5, cursor: 'pointer', fontFamily: 'Georgia, serif',
+                letterSpacing: 1.2, textTransform: 'uppercase', flexShrink: 0,
+              }}
+            >{setName}</button>
+          ))}
           {/* Rarity filter tabs */}
           {rarities.map(r => (
             <button
