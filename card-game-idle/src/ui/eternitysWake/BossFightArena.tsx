@@ -82,7 +82,7 @@ export default function BossFightArena() {
         position: 'absolute',
         top: 54,
         left: 14,
-        right: 'var(--angel-drawer-hand-offset, 308px)',
+        right: 'var(--angel-drawer-hand-offset, 278px)',
         zIndex: 25,
         pointerEvents: 'auto',
         padding: '7px 12px',

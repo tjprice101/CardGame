@@ -51,7 +51,7 @@ export default function EnigmaModal({ onClose }: Props) {
             const expanded = expandedId === definition.id;
             const isActive = (active?.id ?? progress.enigmas.activeEnigmaId) === definition.id;
             const currentStep = definition.steps[Math.min(instance?.currentStepIndex ?? 0, definition.steps.length - 1)];
-            const canClaim = !locked && status !== 'completed' && (instance?.currentStepIndex ?? 0) >= definition.steps.length - 1 && !!instance?.stepsComplete[definition.steps.length - 2];
+            const canClaim = !locked && status !== 'completed' && !!instance && instance.stepsComplete.slice(0, -1).every(Boolean);
             const oblivionCost = definition.id === 'neutral-mystery' ? 50_000 : 25_000;
             const canOblivion = (definition.id === 'neutral-mystery' || definition.id === 'neutralizing-the-void') && instance?.currentStepIndex === 1;
             return (

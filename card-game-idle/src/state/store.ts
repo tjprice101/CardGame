@@ -40,7 +40,7 @@ import {
 } from '@/systems/progression/quests';
 import {
   ensureEnigmaState,
-  ensureNeutralMysteryInstance,
+  ensureInstance,
   evaluateEnigmaAcquisition,
   evaluateNeutralMysteryProgress,
   evaluateNeutralizingVoidProgress,
@@ -1485,6 +1485,8 @@ function pushEnigmaStepToast(s: Store, enigmaId: string, stepIndex: number): voi
 
 function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void {
   ensureEnigmaState(s.progress);
+  ensureInstance(s.progress, 'to-amplify-the-nullitude');
+  ensureInstance(s.progress, 'null-surged');
   const previousSteps = new Map<string, boolean[]>();
   for (const [id, instance] of Object.entries(s.progress.enigmas.instances)) {
     previousSteps.set(id, instance.stepsComplete.slice());
@@ -1568,6 +1570,11 @@ function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void 
       }
     }
   }
+}
+
+function recordNeutralityAbilityActivation(s: Store): void {
+  s.turn.neutralityAbilityActivationsThisTurn = (s.turn.neutralityAbilityActivationsThisTurn ?? 0) + 1;
+  syncEnigmaProgressFromBoard(s, true);
 }
 
 function effectCanDraw(effect: CardEffect): boolean {
@@ -3261,7 +3268,8 @@ export const useStore = create<Store>()(
     setActiveEnigma: (enigmaId) => {
       set(s => {
         ensureEnigmaState(s.progress);
-        if (enigmaId === 'neutral-mystery') ensureNeutralMysteryInstance(s.progress);
+        if (!isEnigmaUnlocked(s.progress)) return;
+        ensureInstance(s.progress, enigmaId);
         if (!s.progress.enigmas.instances[enigmaId]) return;
         s.progress.enigmas.activeEnigmaId = enigmaId;
       });
@@ -3277,7 +3285,7 @@ export const useStore = create<Store>()(
       if (state.progress.oblivion < cost) return false;
 
       set(s => {
-        const target = s.progress.enigmas.instances[enigmaId] ?? ensureNeutralMysteryInstance(s.progress);
+        const target = s.progress.enigmas.instances[enigmaId] ?? ensureInstance(s.progress, enigmaId);
         if (!target) return;
         if (target.currentStepIndex !== 1) return;
         if (s.progress.oblivion < cost) return;
@@ -3285,7 +3293,7 @@ export const useStore = create<Store>()(
         target.stepsComplete[1] = true;
         target.currentStepIndex = 2;
         pushEnigmaStepToast(s, enigmaId, 1);
-        syncEnigmaProgressFromBoard(s, false);
+        syncEnigmaProgressFromBoard(s, true);
       });
       return true;
     },
@@ -3435,15 +3443,12 @@ export const useStore = create<Store>()(
         get().enqueueToast(`${ability.name} is on cooldown.`, 'warning', 2000);
         return;
       }
-      set(s => {
-        s.turn.neutralityAbilityActivationsThisTurn = (s.turn.neutralityAbilityActivationsThisTurn ?? 0) + 1;
-        syncEnigmaProgressFromBoard(s, true);
-      });
       if (ability.id === 'neutralizing-inferno') {
         if (!state.deck.hand.some(card => CardRegistry.get(card.definitionId)?.type !== 'AinSophAur')) return;
         set(s => {
           s.turn.pendingEffect = { type: 'discard_choice', count: 1, sourceCard: 'ability:neutralizing-inferno' };
           s.turn.pendingEffectQueue = [];
+          recordNeutralityAbilityActivation(s);
         });
         return;
       }
@@ -3457,6 +3462,7 @@ export const useStore = create<Store>()(
           }
           if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
           s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
+          recordNeutralityAbilityActivation(s);
         });
         return;
       }
@@ -3465,6 +3471,7 @@ export const useStore = create<Store>()(
         set(s => {
           s.turn.pendingEffect = { type: 'discard_choice', count: 2, sourceCard: 'ability:axiomatic-reversal' };
           s.turn.pendingEffectQueue = [];
+          recordNeutralityAbilityActivation(s);
         });
         return;
       }
@@ -3475,12 +3482,14 @@ export const useStore = create<Store>()(
           s.turn.divineFieldUntil = now + 60_000;
           if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
           s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
+          recordNeutralityAbilityActivation(s);
         });
         get().enqueueToast('Divine Field active for 60 seconds.', 'success', 2200);
         return;
       }
       if (ability.id === 'phantom-matrix') {
         if (state.turn.limitlessLightStacks < 10 || state.board.frontSlots.every(slot => slot !== null)) return;
+        set(s => { recordNeutralityAbilityActivation(s); });
         window.dispatchEvent(new CustomEvent('asa-summon-request', {
           detail: { definitionId: '', required: 0, requirements: [], freeSummon: true },
         }));
@@ -3494,6 +3503,7 @@ export const useStore = create<Store>()(
           s.turn.whiteoutDomainUntil = now + 45_000;
           if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
           s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
+          recordNeutralityAbilityActivation(s);
         });
         get().enqueueToast('Whiteout Domain active for 45 seconds.', 'success', 2200);
         return;
@@ -3509,6 +3519,7 @@ export const useStore = create<Store>()(
           grantOblivion(s, 10_000);
           if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
           s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
+          recordNeutralityAbilityActivation(s);
         });
         return;
       }
@@ -3524,24 +3535,15 @@ export const useStore = create<Store>()(
 
     claimEnigmaReward: (enigmaId) => {
       const state = get();
+      if (!isEnigmaUnlocked(state.progress)) return false;
       const instance = state.progress.enigmas.instances[enigmaId];
       if (!instance) return false;
       if (instance.status === 'completed') return false;
 
-      // Re-evaluate board progress before gating  Eheals saves stuck before the Phase-0 evaluator fix.
-      if (enigmaId === 'neutral-mystery') {
-        // Run inside set() so stepsComplete mutations are on a mutable Immer draft.
-        set(s => {
-          evaluateNeutralMysteryProgress({ board: s.board, progress: s.progress });
-        });
-        const refreshed = get().progress.enigmas.instances['neutral-mystery'];
-        if (!refreshed || !refreshed.stepsComplete[3]) return false;
-      }
-
-      if (enigmaId === 'neutralizing-the-void') {
-        const ntv = get().progress.enigmas.instances['neutralizing-the-void'];
-        if (!ntv || !ntv.stepsComplete[2]) return false;
-      }
+      set(s => { syncEnigmaProgressFromBoard(s, true); });
+      const refreshed = get().progress.enigmas.instances[enigmaId];
+      const finalStepIndex = (refreshed?.stepsComplete.length ?? 0) - 1;
+      if (!refreshed || refreshed.status === 'locked' || finalStepIndex < 1 || !refreshed.stepsComplete.slice(0, finalStepIndex).every(Boolean)) return false;
 
       set(s => {
         const target = s.progress.enigmas.instances[enigmaId];
@@ -4840,7 +4842,7 @@ export const useStore = create<Store>()(
         setUiPreferences(s.settings);
         recompute(s);
         // Heal enigma progress that was stuck before Phase-0 evaluator fix shipped.
-        syncEnigmaProgressFromBoard(s, false);
+        syncEnigmaProgressFromBoard(s, true);
       });
     },
 

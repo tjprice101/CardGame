@@ -501,7 +501,7 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   const transcendentFrameLayer =
     'linear-gradient(180deg, rgba(62, 0, 18, 0.98) 0%, rgba(118, 8, 30, 0.95) 8%, rgba(255, 245, 248, 0.24) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(255, 214, 226, 0.28) 90%, rgba(118, 8, 30, 0.95) 92%, rgba(62, 0, 18, 0.98) 100%)';
   const enigmaticFrameLayer =
-    'linear-gradient(180deg, rgba(32, 14, 58, 0.98) 0%, rgba(64, 30, 112, 0.95) 8%, rgba(250, 246, 255, 0.22) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(237, 226, 255, 0.28) 90%, rgba(64, 30, 112, 0.95) 92%, rgba(32, 14, 58, 0.98) 100%)';
+    'linear-gradient(180deg, rgba(8, 8, 10, 0.98) 0%, rgba(255, 255, 255, 0.94) 6%, rgba(210, 166, 42, 0.92) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(255, 220, 100, 0.9) 90%, rgba(255, 255, 255, 0.94) 94%, rgba(8, 8, 10, 0.98) 100%)';
 
   const transcendentLayers = [
     'linear-gradient(118deg, rgba(255,255,255,0.22) 0%, rgba(255, 222, 232, 0.18) 18%, rgba(255, 132, 164, 0.18) 42%, rgba(98, 0, 24, 0.2) 70%, rgba(255, 240, 245, 0.16) 100%)',
@@ -512,19 +512,19 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   ];
 
   const enigmaticLayers = [
-    'linear-gradient(116deg, rgba(255,255,255,0.18) 0%, rgba(225, 202, 255, 0.2) 22%, rgba(176, 118, 255, 0.26) 45%, rgba(80, 34, 140, 0.2) 70%, rgba(246, 238, 255, 0.18) 100%)',
-    'radial-gradient(ellipse at 20% 16%, rgba(255,255,255,0.34) 0%, rgba(241, 226, 255, 0.18) 26%, rgba(255,255,255,0) 56%)',
-    'linear-gradient(208deg, rgba(255,255,255,0) 20%, rgba(246, 232, 255, 0.24) 42%, rgba(182, 128, 255, 0.16) 56%, rgba(255,255,255,0) 74%)',
-    'linear-gradient(180deg, rgba(12, 6, 24, 0.08) 0%, rgba(12, 6, 24, 0.02) 52%, rgba(12, 6, 24, 0.12) 100%)',
+    'linear-gradient(116deg, rgba(255,255,255,0.34) 0%, rgba(16,16,18,0.38) 22%, rgba(255, 214, 74, 0.4) 45%, rgba(0,0,0,0.42) 70%, rgba(255,255,255,0.34) 100%)',
+    'radial-gradient(ellipse at 20% 16%, rgba(255,255,255,0.52) 0%, rgba(255, 220, 92, 0.25) 26%, rgba(255,255,255,0) 56%)',
+    'linear-gradient(208deg, rgba(255,255,255,0) 20%, rgba(255, 244, 190, 0.36) 42%, rgba(198, 145, 24, 0.24) 56%, rgba(255,255,255,0) 74%)',
+    'linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, rgba(255, 255, 255, 0.04) 52%, rgba(0, 0, 0, 0.22) 100%)',
   ];
 
   // Canonical holofoil overlay: muted pastel iridescence (pink/orange/purple/blue) at
   // overlay-blend, paired with a soft white sparkle and a diagonal sheen. Matches the
   // Holofoil Workshop preview look so every holo card across the game reads identically.
   const holoLayers = [
-    'linear-gradient(112deg, rgba(223, 94, 151, 0.3) 0%, rgba(232, 145, 118, 0.22) 16%, rgba(187, 105, 224, 0.28) 38%, rgba(102, 77, 191, 0.26) 56%, rgba(159, 116, 224, 0.3) 78%, rgba(226, 111, 162, 0.28) 100%)',
-    'radial-gradient(ellipse at 18% 16%, rgba(255,255,255,0.3) 0%, rgba(255, 230, 210, 0.18) 20%, rgba(214, 230, 255, 0.1) 34%, rgba(255,255,255,0) 60%)',
-    'linear-gradient(156deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.22) 32%, rgba(255,255,255,0.06) 46%, rgba(255,255,255,0.18) 62%, rgba(255,255,255,0.03) 76%, rgba(255,255,255,0) 88%)',
+    'linear-gradient(112deg, rgba(255,255,255,0.82) 0%, rgba(8,8,10,0.92) 16%, rgba(190,0,28,0.92) 34%, rgba(0,0,0,0.96) 52%, rgba(255,255,255,0.76) 70%, rgba(112,0,18,0.94) 86%, rgba(255,255,255,0.88) 100%)',
+    'radial-gradient(ellipse at 18% 16%, rgba(255,255,255,0.72) 0%, rgba(220,0,35,0.5) 20%, rgba(0,0,0,0.92) 48%, rgba(255,255,255,0) 70%)',
+    'repeating-linear-gradient(156deg, rgba(255,255,255,0.0) 0 12px, rgba(255,255,255,0.5) 14px 17px, rgba(150,0,22,0.7) 18px 24px, rgba(0,0,0,0.65) 25px 34px)',
   ];
   const holoBlendModes = ['overlay', 'screen', 'soft-light'];
   const isHoloOnly = finish === 'holo' && !isTranscendent && !isInfinite && !isEternal && !isEnigmatic;
@@ -547,8 +547,10 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
       ? 'rgba(244,246,255,0.96)'
       : isTranscendent
         ? 'rgba(255,246,249,0.97)'
+      : finish === 'holo'
+        ? 'rgba(255,255,255,0.98)'
       : isEnigmatic
-        ? 'rgba(248, 240, 255, 0.97)'
+        ? 'rgba(255, 252, 232, 0.98)'
       : isEternal
         ? 'rgba(246,230,248,0.96)'
         : CONSISTENT_CARD_TEXT,
@@ -556,8 +558,10 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
       ? 'rgba(236,240,255,0.92)'
       : isTranscendent
         ? 'rgba(255,232,240,0.94)'
+      : finish === 'holo'
+        ? 'rgba(255,230,230,0.94)'
       : isEnigmatic
-        ? 'rgba(236, 220, 255, 0.94)'
+        ? 'rgba(255, 238, 170, 0.94)'
       : isEternal
         ? 'rgba(238,214,244,0.92)'
         : CONSISTENT_CARD_TEXT_SOFT,
@@ -565,8 +569,10 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
       ? 'rgba(218,224,244,0.84)'
       : isTranscendent
         ? 'rgba(255,214,226,0.88)'
+      : finish === 'holo'
+        ? 'rgba(255,210,210,0.9)'
       : isEnigmatic
-        ? 'rgba(222, 198, 248, 0.88)'
+        ? 'rgba(255, 224, 120, 0.9)'
       : isEternal
         ? 'rgba(226,198,234,0.84)'
         : CONSISTENT_CARD_TEXT_MUTED,
@@ -574,8 +580,10 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
       ? infiniteRibbon
       : isTranscendent
         ? 'linear-gradient(180deg, rgba(66, 0, 16, 0.97) 0%, rgba(122, 10, 34, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255, 214, 226, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
+      : finish === 'holo'
+        ? 'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(10,10,12,0.98) 42%, rgba(170,0,24,0.98) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.2) 0 3px, rgba(0,0,0,0.2) 3px 9px, rgba(190,0,28,0.22) 9px 14px)'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(40, 16, 74, 0.97) 0%, rgba(78, 38, 132, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(232, 214, 255, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
+        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.96) 45%, rgba(213,166,36,0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,216,82,0.3) 50%, rgba(0,0,0,0.16) 100%)'
       : isEternal
         ? 'linear-gradient(180deg, rgba(16, 6, 34, 0.98) 0%, rgba(36, 14, 68, 0.97) 100%), linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(180, 32, 66, 0.16) 48%, rgba(255,255,255,0.02) 100%)'
         : theme.ribbon,
@@ -583,12 +591,14 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
       ? infinitePanel
       : isTranscendent
         ? 'linear-gradient(180deg, rgba(54, 0, 14, 0.96) 0%, rgba(102, 8, 30, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255, 204, 220, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
+      : finish === 'holo'
+        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.94) 48%, rgba(130,0,18,0.98) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0 2px, rgba(0,0,0,0.18) 2px 8px)'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(34, 14, 62, 0.96) 0%, rgba(66, 30, 108, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(226, 204, 255, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
+        ? 'linear-gradient(180deg, rgba(10,10,12,0.98) 0%, rgba(255,255,255,0.92) 48%, rgba(174,126,20,0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,218,90,0.2) 50%, rgba(0,0,0,0.12) 100%)'
       : isEternal
         ? 'linear-gradient(180deg, rgba(14, 6, 28, 0.97) 0%, rgba(28, 12, 54, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(188, 28, 62, 0.14) 50%, rgba(255,255,255,0.02) 100%)'
         : theme.panel,
-    '--card-face-border': isInfinite ? 'rgba(214,226,255,0.52)' : isTranscendent ? 'rgba(255, 126, 150, 0.72)' : isEnigmatic ? 'rgba(190, 138, 255, 0.7)' : isEternal ? 'rgba(210,92,132,0.56)' : theme.border,
+    '--card-face-border': finish === 'holo' ? 'rgba(255,255,255,0.92)' : isInfinite ? 'rgba(214,226,255,0.52)' : isTranscendent ? 'rgba(255, 126, 150, 0.72)' : isEnigmatic ? 'rgba(255, 220, 90, 0.9)' : isEternal ? 'rgba(210,92,132,0.56)' : theme.border,
     '--card-face-shadow': theme.shadow,
     '--card-face-ribbon-animation-name': isEternal && !isTranscendent ? 'eternalBarCrimsonPulse' : 'none',
     '--card-face-ribbon-animation-duration': isEternal && !isTranscendent ? '4.1s' : '0s',
@@ -718,7 +728,7 @@ export function getDenseCardFaceBackgroundStyle(
   const rarityFrameOverlay = isTranscendent
     ? 'linear-gradient(180deg, rgba(62, 0, 18, 0.98) 0%, rgba(118, 8, 30, 0.95) 8%, rgba(255, 238, 244, 0.18) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(255, 214, 226, 0.2) 90%, rgba(118, 8, 30, 0.95) 92%, rgba(62, 0, 18, 0.98) 100%)'
     : isEnigmatic
-    ? 'linear-gradient(180deg, rgba(32, 14, 58, 0.98) 0%, rgba(64, 30, 112, 0.95) 8%, rgba(250, 246, 255, 0.2) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(237, 226, 255, 0.24) 90%, rgba(64, 30, 112, 0.95) 92%, rgba(32, 14, 58, 0.98) 100%)'
+    ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.94) 8%, rgba(213,166,36,0.96) 11%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(255,220,90,0.9) 90%, rgba(255,255,255,0.94) 94%, rgba(8,8,10,0.98) 100%)'
     : isInfinite
     ? 'linear-gradient(180deg, rgba(4,4,8,0.96) 0%, rgba(10,10,14,0.95) 8%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 86%, rgba(10,10,14,0.95) 92%, rgba(4,4,8,0.96) 100%)'
     : isEternal
@@ -728,19 +738,19 @@ export function getDenseCardFaceBackgroundStyle(
   const rarityToneOverlay = isTranscendent
     ? 'linear-gradient(116deg, rgba(255,255,255,0.18) 0%, rgba(255, 224, 234, 0.18) 24%, rgba(255, 120, 154, 0.16) 50%, rgba(108, 0, 24, 0.18) 76%, rgba(255, 238, 244, 0.14) 100%)'
     : isEnigmatic
-    ? 'linear-gradient(116deg, rgba(255,255,255,0.18) 0%, rgba(225, 202, 255, 0.2) 22%, rgba(176, 118, 255, 0.26) 45%, rgba(80, 34, 140, 0.2) 70%, rgba(246, 238, 255, 0.18) 100%)'
+    ? 'linear-gradient(116deg, rgba(255,255,255,0.82) 0%, rgba(8,8,10,0.92) 22%, rgba(190,0,28,0.92) 45%, rgba(0,0,0,0.96) 70%, rgba(255,255,255,0.78) 100%)'
     : isInfinite
     ? 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(196,222,255,0.08) 34%, rgba(20,24,36,0.14) 100%)'
     : isEternal
       ? 'linear-gradient(135deg, rgba(184,78,124,0.26) 0%, rgba(124,34,94,0.18) 36%, rgba(18,10,28,0.24) 100%)'
       : finish === 'holo'
-        ? 'linear-gradient(112deg, rgba(223, 94, 151, 0.3) 0%, rgba(232, 145, 118, 0.22) 16%, rgba(187, 105, 224, 0.28) 38%, rgba(102, 77, 191, 0.26) 56%, rgba(159, 116, 224, 0.3) 78%, rgba(226, 111, 162, 0.28) 100%)'
+        ? 'linear-gradient(112deg, rgba(255,255,255,0.82) 0%, rgba(8,8,10,0.92) 16%, rgba(190,0,28,0.92) 34%, rgba(0,0,0,0.96) 52%, rgba(255,255,255,0.76) 70%, rgba(112,0,18,0.94) 86%, rgba(255,255,255,0.88) 100%)'
         : null;
 
   const sparkleOverlay = isTranscendent
     ? 'radial-gradient(circle at 32% 26%, rgba(255,255,255,0.92) 0 1px, rgba(255, 224, 236, 0.6) 1px 2px, rgba(255,255,255,0) 2.2px)'
     : isEnigmatic
-    ? 'radial-gradient(ellipse at 20% 16%, rgba(255,255,255,0.34) 0%, rgba(241, 226, 255, 0.18) 26%, rgba(255,255,255,0) 56%)'
+    ? 'radial-gradient(ellipse at 20% 16%, rgba(255,255,255,0.72) 0%, rgba(220,0,35,0.5) 26%, rgba(0,0,0,0.92) 54%, rgba(255,255,255,0) 72%)'
     : finish === 'holo'
       ? 'radial-gradient(ellipse at 18% 16%, rgba(255,255,255,0.3) 0%, rgba(255, 230, 210, 0.18) 20%, rgba(214, 230, 255, 0.1) 34%, rgba(255,255,255,0) 60%)'
     : null;
@@ -779,8 +789,10 @@ export function getDenseCardFaceBackgroundStyle(
       ? 'rgba(244,246,255,0.96)'
       : isTranscendent
         ? 'rgba(255,246,249,0.97)'
+      : finish === 'holo'
+        ? 'rgba(255,255,255,0.98)'
       : isEnigmatic
-        ? 'rgba(248, 240, 255, 0.97)'
+        ? 'rgba(255, 252, 232, 0.98)'
       : isEternal
         ? 'rgba(246,230,248,0.96)'
         : CONSISTENT_CARD_TEXT,
@@ -788,8 +800,10 @@ export function getDenseCardFaceBackgroundStyle(
       ? 'rgba(236,240,255,0.92)'
       : isTranscendent
         ? 'rgba(255,232,240,0.94)'
+      : finish === 'holo'
+        ? 'rgba(255,230,230,0.94)'
       : isEnigmatic
-        ? 'rgba(236, 220, 255, 0.94)'
+        ? 'rgba(255, 238, 170, 0.94)'
       : isEternal
         ? 'rgba(238,214,244,0.92)'
         : CONSISTENT_CARD_TEXT_SOFT,
@@ -797,8 +811,10 @@ export function getDenseCardFaceBackgroundStyle(
       ? 'rgba(218,224,244,0.84)'
       : isTranscendent
         ? 'rgba(255,214,226,0.88)'
+      : finish === 'holo'
+        ? 'rgba(255,210,210,0.9)'
       : isEnigmatic
-        ? 'rgba(222, 198, 248, 0.88)'
+        ? 'rgba(255, 224, 120, 0.9)'
       : isEternal
         ? 'rgba(226,198,234,0.84)'
         : CONSISTENT_CARD_TEXT_MUTED,
@@ -806,8 +822,10 @@ export function getDenseCardFaceBackgroundStyle(
       ? 'linear-gradient(180deg, rgba(12,12,16,0.95) 0%, rgba(24,24,30,0.94) 100%)'
       : isTranscendent
         ? 'linear-gradient(180deg, rgba(66, 0, 16, 0.97) 0%, rgba(122, 10, 34, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255, 214, 226, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
+      : finish === 'holo'
+        ? 'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(10,10,12,0.98) 42%, rgba(170,0,24,0.98) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.2) 0 3px, rgba(0,0,0,0.2) 3px 9px, rgba(190,0,28,0.22) 9px 14px)'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(40, 16, 74, 0.97) 0%, rgba(78, 38, 132, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(232, 214, 255, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
+        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.96) 45%, rgba(213,166,36,0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,216,82,0.3) 50%, rgba(0,0,0,0.16) 100%)'
       : isEternal
         ? 'linear-gradient(180deg, rgba(16, 6, 34, 0.98) 0%, rgba(36, 14, 68, 0.97) 100%), linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(180, 32, 66, 0.16) 48%, rgba(255,255,255,0.02) 100%)'
       : theme.ribbon,
@@ -815,12 +833,14 @@ export function getDenseCardFaceBackgroundStyle(
       ? 'linear-gradient(180deg, rgba(10,10,14,0.94) 0%, rgba(20,20,26,0.94) 100%)'
       : isTranscendent
         ? 'linear-gradient(180deg, rgba(54, 0, 14, 0.96) 0%, rgba(102, 8, 30, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255, 204, 220, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
+      : finish === 'holo'
+        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.94) 48%, rgba(130,0,18,0.98) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0 2px, rgba(0,0,0,0.18) 2px 8px)'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(34, 14, 62, 0.96) 0%, rgba(66, 30, 108, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(226, 204, 255, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
+        ? 'linear-gradient(180deg, rgba(10,10,12,0.98) 0%, rgba(255,255,255,0.92) 48%, rgba(174,126,20,0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,218,90,0.2) 50%, rgba(0,0,0,0.12) 100%)'
       : isEternal
         ? 'linear-gradient(180deg, rgba(14, 6, 28, 0.97) 0%, rgba(28, 12, 54, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(188, 28, 62, 0.14) 50%, rgba(255,255,255,0.02) 100%)'
       : theme.panel,
-    '--card-face-border': isInfinite ? 'rgba(214,226,255,0.52)' : isTranscendent ? 'rgba(255, 126, 150, 0.72)' : isEnigmatic ? 'rgba(190, 138, 255, 0.7)' : isEternal ? 'rgba(210,92,132,0.56)' : theme.border,
+    '--card-face-border': finish === 'holo' ? 'rgba(255,255,255,0.92)' : isInfinite ? 'rgba(214,226,255,0.52)' : isTranscendent ? 'rgba(255, 126, 150, 0.72)' : isEnigmatic ? 'rgba(255, 220, 90, 0.9)' : isEternal ? 'rgba(210,92,132,0.56)' : theme.border,
     '--card-face-shadow': theme.shadow,
     '--card-face-ribbon-animation-name': isEternal && !isTranscendent ? 'eternalBarCrimsonPulse' : 'none',
     '--card-face-ribbon-animation-duration': isEternal && !isTranscendent ? '4.1s' : '0s',

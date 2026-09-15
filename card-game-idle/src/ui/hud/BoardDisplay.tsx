@@ -27,10 +27,10 @@ import type {
   MainDeckBoardInstance,
 } from '@/types/cards';
 
-const SLOT_W = 118;
-const SLOT_H = 166;
-const CHERUBIM_W = 104;
-const CHERUBIM_H = 146;
+const SLOT_W = 138;
+const SLOT_H = 194;
+const CHERUBIM_W = 122;
+const CHERUBIM_H = 172;
 const FRONT_ROW_GAP = 'clamp(8px, 1.1vw, 14px)';
 const BACK_ROW_GAP = `calc(${FRONT_ROW_GAP} + ${SLOT_W - CHERUBIM_W}px)`;
 const ROW_SEPARATION = 'clamp(6px, 0.9vh, 12px)';
@@ -280,7 +280,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
     window.dispatchEvent(new CustomEvent('hr-attack-panel-open', { detail: isAttackPanelOpen }));
   }, [isAttackPanelOpen]);
 
-  const playfieldRightInset = 'var(--angel-drawer-hand-offset, 308px)';
+  const playfieldRightInset = 'var(--angel-drawer-hand-offset, 278px)';
   const isSpecialBossMode = bossFight.mode === 'active' || gardenDungeon.phase === 'active';
 
   return (

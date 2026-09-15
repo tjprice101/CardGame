@@ -25,7 +25,15 @@ export function ensureInstance(progress: ProgressState, enigmaId: string): Enigm
   const definition = getEnigmaDefinition(enigmaId);
   if (!definition) return null;
   const existing = progress.enigmas.instances[enigmaId];
-  if (existing) return existing;
+  if (existing) {
+    const steps = existing.stepsComplete ?? [];
+    if (steps.length !== definition.steps.length) {
+      existing.stepsComplete = definition.steps.map((_, index) => steps[index] === true);
+      existing.currentStepIndex = Math.min(existing.currentStepIndex, definition.steps.length - 1);
+    }
+    existing.progressCounters ??= {};
+    return existing;
+  }
   const instance: EnigmaInstance = {
     id: enigmaId,
     status: 'locked' as const,

@@ -5,7 +5,7 @@ const styles: Record<string, React.CSSProperties> = {
   container: {
     position: 'absolute',
     top: 58,
-    right: 'var(--angel-drawer-hand-offset, 308px)',
+    right: 'var(--angel-drawer-hand-offset, 278px)',
     textAlign: 'right',
     fontFamily: '"Georgia", serif',
     color: 'rgba(244,244,248,0.95)',

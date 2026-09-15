@@ -126,7 +126,7 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
 }
 
 /**
- * Right-side control rail — 260 px glass panel that hosts the three main
+ * Right-side control rail — compact 270 px glass panel that hosts the three main
  * HUD controls: deck-status pills at the top (padded past the 52 px bar),
  * the scrollable set-engine reference in the middle, and the turn-control
  * button anchored at the bottom. Returned to the right edge per user
@@ -144,7 +144,7 @@ function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: s
       style={{
         position: 'absolute',
         right: 0, top: 0, bottom: 0,
-        width: 300,
+        width: 270,
         display: 'flex',
         flexDirection: 'column',
         background: 'linear-gradient(270deg, rgba(5,5,7,0.92) 0%, rgba(8,8,16,0.78) 100%)',
