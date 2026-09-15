@@ -425,7 +425,7 @@ function ModesBody() {
         <div style={sectionHeadingStyle}>More Modes</div>
         <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards.</ListItem>
         <ListItem label="Fracture">Spend Fracture Shards to add Card-light to any card.</ListItem>
-        <ListItem label="Enigma">Enigma unlocks after you buy or open 10 card packs.</ListItem>
+        <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. Collect 5 unique cards from a set to find its Enigmas; each manuscript has another unlock requirement before its trials begin.</ListItem>
         <ListItem label="Eternity's Wake">Eternity's Wake unlocks after you acquire 3 unique Enigmatic cards.</ListItem>
         <ListItem label="Infinitude">Infinitude unlocks after you acquire 5 Eternal-rarity cards.</ListItem>
         <ListItem label="Ascension">Ascension unlocks after you acquire 5 Infinite-rarity cards.</ListItem>

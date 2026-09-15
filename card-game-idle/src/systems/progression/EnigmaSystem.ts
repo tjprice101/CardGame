@@ -21,6 +21,11 @@ export function getUniqueOwnedCardsForSet(progress: ProgressState, setId: 'Neutr
 
 export function isEnigmaSetUnlocked(progress: ProgressState, enigmaId: string): boolean {
   const definition = getEnigmaDefinition(enigmaId);
+  return !!definition && isEnigmaDiscovered(progress, enigmaId);
+}
+
+export function isEnigmaDiscovered(progress: ProgressState, enigmaId: string): boolean {
+  const definition = getEnigmaDefinition(enigmaId);
   return !!definition && isEnigmaUnlocked(progress) && getUniqueOwnedCardsForSet(progress, definition.setId) >= definition.minimumUniqueCards;
 }
 
@@ -63,7 +68,7 @@ export function ensureNeutralMysteryInstance(progress: ProgressState) {
   return ensureInstance(progress, 'neutral-mystery');
 }
 
-export function evaluateEnigmaAcquisition(state: Pick<GameState, 'board' | 'progress'>): EnigmaProgressResult {
+export function evaluateEnigmaAcquisition(state: Pick<GameState, 'board' | 'progress' | 'turn'>): EnigmaProgressResult {
   ensureEnigmaState(state.progress);
   const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
   if (!isEnigmaUnlocked(state.progress)) return result;
@@ -71,10 +76,28 @@ export function evaluateEnigmaAcquisition(state: Pick<GameState, 'board' | 'prog
     if (!isEnigmaSetUnlocked(state.progress, definition.id)) continue;
     const instance = ensureInstance(state.progress, definition.id);
     if (!instance || instance.status !== 'locked') continue;
+    const activeCausalityLight = state.board.backSlots.some(slot => slot?.type === 'Light' && slot.definitionId.startsWith('light-causality-') && slot.side === 'ain');
+    const activeCausalityDark = state.board.backSlots.some(slot => slot?.type === 'Dark' && slot.definitionId.startsWith('dark-causality-') && slot.side === 'ain');
+    const activeCausalityAsa = state.board.frontSlots.some(slot => slot?.type === 'AinSophAur' && slot.definitionId.startsWith('ain-soph-aur-causality-'));
+    const activeCausalityCount = [...state.board.frontSlots, ...state.board.backSlots].filter(slot => slot?.definitionId.includes('causality')).length;
+    const causalityUnlockConditionMet = definition.unlockCondition === 'causality-light'
+      ? activeCausalityLight
+      : definition.unlockCondition === 'causality-light-dark'
+        ? activeCausalityLight && activeCausalityDark
+        : definition.unlockCondition === 'causality-trinity'
+          ? activeCausalityLight && activeCausalityDark && activeCausalityAsa
+          : definition.unlockCondition === 'causality-three-active'
+            ? activeCausalityCount >= 3
+            : definition.unlockCondition === 'causality-cosmos'
+              ? (state.turn.limitlessCosmosStacks ?? 0) >= 5
+                : definition.unlockCondition === 'specific-cards'
+                  ? (definition.unlockCardIds ?? []).every(cardId => (state.progress.cardPlayCounts?.[cardId] ?? 0) >= 1)
+              : true;
     const boardAcquired = definition.id === 'neutral-mystery' && isNeutralMysteryAcquired(state.board);
     const abilityAcquired = definition.id === 'to-amplify-the-nullitude' && Object.keys(state.progress.ownedAbilities ?? {}).some(id => CardRegistry.get(id) === undefined ? false : id.startsWith('neutral'));
     const frontRowAcquired = (definition.id === 'null-surged') && state.board.frontSlots.every(slot => slot?.type === 'AinSophAur');
     const automaticAcquire = definition.id !== 'neutral-mystery' && definition.id !== 'to-amplify-the-nullitude' && definition.id !== 'null-surged';
+    if (definition.setId === 'Causality' && !causalityUnlockConditionMet) continue;
     if (!boardAcquired && !abilityAcquired && !frontRowAcquired && !automaticAcquire) continue;
     instance.status = 'acquired';
     instance.currentStepIndex = 1;

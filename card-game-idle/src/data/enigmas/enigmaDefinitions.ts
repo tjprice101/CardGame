@@ -10,6 +10,8 @@ export type EnigmaStepKind =
   | 'card_mastery_tier'
   | 'claim_reward';
 
+export type EnigmaUnlockCondition = 'causality-light' | 'causality-light-dark' | 'causality-trinity' | 'causality-three-active' | 'causality-cosmos' | 'specific-cards';
+
 export interface EnigmaRewardDefinition {
   definitionId: string;
   copies: number;
@@ -28,8 +30,11 @@ export interface EnigmaDefinition {
   id: string;
   setId: 'Neutrality' | 'Causality';
   minimumUniqueCards: number;
+  unlockCondition?: EnigmaUnlockCondition;
   title: string;
   hintText: string;
+  unlockHintText?: string;
+  unlockCardIds?: string[];
   steps: EnigmaStepDefinition[];
   rewards: EnigmaRewardDefinition[];
 }
@@ -163,9 +168,11 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     setId: 'Causality',
     minimumUniqueCards: 5,
     title: 'The First Horizon',
-    hintText: 'Own 5 unique Causality cards to open the manuscript’s first horizon.',
+    hintText: 'Find this manuscript after collecting 5 unique Causality cards.',
+    unlockHintText: 'Unlock the manuscript by placing a Causality Light card on the Ain side of the back row.',
+    unlockCondition: 'causality-light',
     steps: [
-      { title: 'Open the Manuscript', description: 'Own 5 unique Causality cards to awaken the first page of the event.', kind: 'acquire', amount: 5 },
+      { title: 'Find the Manuscript', description: 'The First Horizon was found after 5 unique Causality cards entered your collection.', kind: 'acquire', amount: 5 },
       { title: 'Write the Horizon', description: 'Play 5 Causality cards in a single turn to trace the opening line.', kind: 'count_active_cards', amount: 5, targetDefinitionId: 'causality-plays-one-turn' },
       { title: 'Raise the Cosmos', description: 'Generate 3 Limitless Cosmos stacks from Causality effects before the page can settle.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-cosmos-3' },
       { title: 'Claim the Reward', description: 'Receive the first luminous reward from the manuscript.', kind: 'claim_reward' },
@@ -177,9 +184,11 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     setId: 'Causality',
     minimumUniqueCards: 5,
     title: 'Black Ink, White Star',
-    hintText: 'Pair opposing Causality forces and turn the void into a deliberate burn.',
+    hintText: 'Find this manuscript after collecting 5 unique Causality cards.',
+    unlockHintText: 'Unlock the manuscript by placing opposing Causality Light and Dark cards together on the Ain back row.',
+    unlockCondition: 'causality-light-dark',
     steps: [
-      { title: 'Open the Contrast', description: 'Own 5 unique Causality cards to invite opposing light and shadow onto the board.', kind: 'acquire', amount: 5 },
+      { title: 'Find the Manuscript', description: 'Black Ink, White Star was found after 5 unique Causality cards entered your collection.', kind: 'acquire', amount: 5 },
       { title: 'Pair the Opposites', description: 'Have one Causality Light card and one Causality Dark card active together at once.', kind: 'match_formation', boardPattern: ['causality-light-1', 'causality-dark-1'] },
       { title: 'Burn Through the Void', description: 'Consume 2 Limitless Cosmos stacks through Causality effects to ignite the black ink.', kind: 'count_active_cards', amount: 2, targetDefinitionId: 'causality-cosmos-spent-2' },
       { title: 'Claim the Reward', description: 'Seal the contradiction and take the manuscript’s dark reward.', kind: 'claim_reward' },
@@ -191,9 +200,12 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     setId: 'Causality',
     minimumUniqueCards: 5,
     title: 'The Heavenly Archive',
-    hintText: 'Gather Light, Dark, and ASA before the archive can index you.',
+    hintText: 'Find this manuscript after collecting 5 unique Causality cards.',
+    unlockHintText: 'Unlock the manuscript by playing Eventide Archivist, Gravitic Testament, and Asterion of the Last Gate.',
+    unlockCondition: 'specific-cards',
+    unlockCardIds: ['light-causality-1', 'dark-causality-1', 'ain-soph-aur-causality-2'],
     steps: [
-      { title: 'Index the Collection', description: 'Own 5 unique Causality cards before the archive learns your name.', kind: 'acquire', amount: 5 },
+      { title: 'Find the Manuscript', description: 'The Heavenly Archive was found after 5 unique Causality cards entered your collection.', kind: 'acquire', amount: 5 },
       { title: 'Open the Archive', description: 'Have one Causality Light, one Causality Dark, and one Causality Ain Soph Aur active in the same turn.', kind: 'match_formation', boardPattern: ['causality-light-1', 'causality-dark-1', 'causality-asa-1'] },
       { title: 'Cross the Event Horizon', description: 'Perform 3 successful Bridge the Light attacks with Causality ASA cards to complete the archival pass.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-bridge-3' },
       { title: 'Claim the Reward', description: 'The archive accepts your sequence and grants the stored ascent.', kind: 'claim_reward' },
@@ -205,9 +217,11 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     setId: 'Causality',
     minimumUniqueCards: 5,
     title: 'The Collapsed Equation',
-    hintText: 'Spend the manuscript’s full momentum and collapse it into a decisive turn.',
+    hintText: 'Find this manuscript after collecting 5 unique Causality cards.',
+    unlockHintText: 'Unlock the manuscript by filling three active Causality board positions at once.',
+    unlockCondition: 'causality-three-active',
     steps: [
-      { title: 'Write the Equation', description: 'Own 5 unique Causality cards to set the coefficients of the final turn.', kind: 'acquire', amount: 5 },
+      { title: 'Find the Manuscript', description: 'The Collapsed Equation was found after 5 unique Causality cards entered your collection.', kind: 'acquire', amount: 5 },
       { title: 'Build the Equation', description: 'Play 10 Causality cards across the sequence to gather the full momentum of the page.', kind: 'count_active_cards', amount: 10, targetDefinitionId: 'causality-plays-10' },
       { title: 'Cash Out the Horizon', description: 'Earn 10,000 Divine Light from Causality card effects in a single decisive turn.', kind: 'count_active_cards', amount: 10_000, targetDefinitionId: 'causality-light-10k' },
       { title: 'Claim the Reward', description: 'Let the equation collapse into a single perfect resolution.', kind: 'claim_reward' },
@@ -219,9 +233,11 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     setId: 'Causality',
     minimumUniqueCards: 5,
     title: 'The Unwritten Law',
-    hintText: 'Hold the event horizon and end the turn with enough Cosmos to rewrite the page.',
+    hintText: 'Find this manuscript after collecting 5 unique Causality cards.',
+    unlockHintText: 'Unlock the manuscript by holding 5 Limitless Cosmos stacks at once.',
+    unlockCondition: 'causality-cosmos',
     steps: [
-      { title: 'Open the Final Page', description: 'Own 5 unique Causality cards to stand at the threshold of the final law.', kind: 'acquire', amount: 5 },
+      { title: 'Find the Manuscript', description: 'The Unwritten Law was found after 5 unique Causality cards entered your collection.', kind: 'acquire', amount: 5 },
       { title: 'Complete the Manuscript', description: 'Use a Causality Light card, a Causality Dark card, and a Causality ASA in the same turn.', kind: 'match_formation', boardPattern: ['causality-light-1', 'causality-dark-1', 'causality-asa-1'] },
       { title: 'Hold the Cosmos', description: 'End the turn with at least 5 Limitless Cosmos stacks to keep the event horizon open.', kind: 'count_active_cards', amount: 5, targetDefinitionId: 'causality-cosmos-5' },
       { title: 'Claim the Reward', description: 'Write the final law into the page and claim the last manuscript reward.', kind: 'claim_reward' },

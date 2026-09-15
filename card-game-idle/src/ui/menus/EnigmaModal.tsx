@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
-import { getUniqueOwnedCardsForSet, listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
+import { getUniqueOwnedCardsForSet, isEnigmaDiscovered, listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
 import { getActiveEnigmaInstance } from '@/data/enigmas/enigmaDefinitions';
 
 interface Props { onClose: () => void; }
@@ -26,7 +26,7 @@ export default function EnigmaModal({ onClose }: Props) {
           <div>
             <div style={{ color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 3 }}>✦ COSMIC PATTERNS</div>
             <h1 style={{ margin: '6px 0 4px', color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 32, letterSpacing: 1.5 }}>Enigma</h1>
-            <div style={{ color: '#d5c3eb', fontSize: 13 }}>Follow hidden milestones, unlock their steps, and claim their rewards.</div>
+            <div style={{ color: '#d5c3eb', fontSize: 13 }}>Find hidden manuscripts, unlock their trials, and claim their Enigmatic rewards.</div>
           </div>
           <button
             className="menu-tactile-btn"
@@ -52,7 +52,9 @@ export default function EnigmaModal({ onClose }: Props) {
             const definition = entry.definition;
             const instance = progress.enigmas.instances[definition.id];
             const status = instance?.status ?? 'locked';
+            const discovered = isEnigmaDiscovered(progress, definition.id);
             const locked = status === 'locked';
+            const foundButLocked = discovered && locked;
             const expanded = expandedId === definition.id;
             const isActive = (active?.id ?? progress.enigmas.activeEnigmaId) === definition.id;
             const currentStep = definition.steps[Math.min(instance?.currentStepIndex ?? 0, definition.steps.length - 1)];
@@ -67,9 +69,9 @@ export default function EnigmaModal({ onClose }: Props) {
                     <div style={{ color: '#d5c3eb', fontSize: 10, letterSpacing: 0.7 }}>{getUniqueOwnedCardsForSet(progress, entry.setId)}/5 unique cards</div>
                   </div>
                 )}
-              <section onClick={() => { setActiveEnigma(definition.id); setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: 'pointer', opacity: locked ? 0.72 : 1 }}>
+              <section onClick={() => { if (discovered) setActiveEnigma(definition.id); if (!locked) setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: discovered ? 'pointer' : 'default', opacity: locked ? 0.72 : 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                  <div><div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 20 }}>{definition.title}</div><div style={{ color: '#d5c3eb', marginTop: 4 }}>{locked ? definition.hintText : currentStep?.description ?? definition.hintText}</div></div>
+                  <div><div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 20 }}>{definition.title}</div><div style={{ color: '#d5c3eb', marginTop: 4 }}>{!discovered ? definition.hintText : foundButLocked ? (definition.unlockHintText ?? definition.hintText) : currentStep?.description ?? definition.hintText}</div></div>
                   <div style={{
                     color: status === 'completed' ? '#8de68d' : isActive ? '#f4cf6b' : 'rgba(213, 195, 235, 0.7)',
                     fontFamily: uiTypography.display,
@@ -83,7 +85,7 @@ export default function EnigmaModal({ onClose }: Props) {
                     alignSelf: 'flex-start',
                     boxShadow: isActive ? '0 0 10px rgba(244, 207, 107, 0.25)' : 'none',
                   }}>
-                    {status === 'completed' ? 'COMPLETED' : isActive ? 'ACTIVE' : 'INACTIVE'} {expanded ? '▾' : '▸'}
+                    {status === 'completed' ? 'COMPLETED' : foundButLocked ? 'FOUND · LOCKED' : isActive ? 'ACTIVE' : discovered ? 'FOUND' : 'HIDDEN'} {expanded ? '▾' : '▸'}
                   </div>
                 </div>
                 {expanded && !locked && <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>{definition.steps.map((step, index) => <div key={step.title} style={{ display: 'flex', gap: 10, color: instance?.stepsComplete[index] ? '#d5c3eb' : '#f8f0de' }}><b>{index + 1}.</b><div><div style={{ fontFamily: uiTypography.display }}>{step.title}</div><div style={{ fontSize: 12, marginTop: 2 }}>{step.description}</div></div></div>)}<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>

@@ -543,15 +543,6 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   const overlayCoreLayers = isTranscendent ? transcendentLayers : isEnigmatic ? enigmaticLayers : isInfinite ? infiniteLayers : isEternal ? eternalLayers : (finish === 'holo' ? holoLayers : []);
   const overlayLayers = [...frameLayers, ...overlayCoreLayers];
 
-  const infiniteRibbon = [
-    'linear-gradient(180deg, rgba(12,12,16,0.95) 0%, rgba(24,24,30,0.94) 100%)',
-    'repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.18) 0 1px, rgba(255,255,255,0) 1px 8px, rgba(255,255,255,0.1) 8px 9px, rgba(255,255,255,0) 9px 16px)',
-  ].join(', ');
-  const infinitePanel = [
-    'linear-gradient(180deg, rgba(10,10,14,0.94) 0%, rgba(20,20,26,0.94) 100%)',
-    'repeating-radial-gradient(circle at 54% 46%, rgba(255,255,255,0.12) 0 1px, rgba(255,255,255,0) 1px 7px, rgba(255,255,255,0.08) 7px 8px, rgba(255,255,255,0) 8px 14px)',
-  ].join(', ');
-
   const themeVars: CSSProperties & Record<string, string> = {
     '--card-face-text': isInfinite
       ? 'rgba(244,246,255,0.96)'
@@ -587,33 +578,33 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
         ? 'rgba(226,198,234,0.84)'
         : CONSISTENT_CARD_TEXT_MUTED,
     '--card-face-ribbon': isInfinite
-      ? infiniteRibbon
+      ? '#12151e'
       : isTranscendent
-        ? 'linear-gradient(180deg, rgba(66, 0, 16, 0.97) 0%, rgba(122, 10, 34, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255, 214, 226, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
+        ? '#720d2c'
       : finish === 'holo'
-        ? 'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.72) 20%, rgba(18,2,5,0.98) 55%, rgba(146,0,20,0.98) 100%)'
+        ? '#861326'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.9) 50%, rgba(201,151,30,0.98) 100%)'
+        ? '#b8861b'
       : isEternal
-        ? 'linear-gradient(180deg, rgba(16, 6, 34, 0.98) 0%, rgba(36, 14, 68, 0.97) 100%), linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(180, 32, 66, 0.16) 48%, rgba(255,255,255,0.02) 100%)'
+        ? '#32134f'
         : theme.ribbon,
     '--card-face-panel': isInfinite
-      ? infinitePanel
+      ? '#0d1018'
       : isTranscendent
-        ? 'linear-gradient(180deg, rgba(54, 0, 14, 0.96) 0%, rgba(102, 8, 30, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255, 204, 220, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
+        ? '#5f0a25'
       : finish === 'holo'
-        ? 'linear-gradient(180deg, rgba(12,2,5,0.98) 0%, rgba(255,255,255,0.86) 50%, rgba(112,0,15,0.98) 100%)'
+        ? '#650d1e'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(14,14,16,0.98) 0%, rgba(255,255,255,0.84) 50%, rgba(166,116,18,0.98) 100%)'
+        ? '#8f6814'
       : isEternal
-        ? 'linear-gradient(180deg, rgba(14, 6, 28, 0.97) 0%, rgba(28, 12, 54, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(188, 28, 62, 0.14) 50%, rgba(255,255,255,0.02) 100%)'
+        ? '#26103d'
         : theme.panel,
     '--card-face-border': finish === 'holo' ? 'rgba(255,255,255,0.92)' : isInfinite ? 'rgba(214,226,255,0.52)' : isTranscendent ? 'rgba(255, 126, 150, 0.72)' : isEnigmatic ? 'rgba(255, 220, 90, 0.9)' : isEternal ? 'rgba(210,92,132,0.56)' : theme.border,
     '--card-face-shadow': theme.shadow,
-    '--card-face-ribbon-animation-name': isEternal && !isTranscendent ? 'eternalBarCrimsonPulse' : 'none',
-    '--card-face-ribbon-animation-duration': isEternal && !isTranscendent ? '4.1s' : '0s',
-    '--card-face-panel-animation-name': isEternal && !isTranscendent ? 'eternalBarCrimsonPulse' : 'none',
-    '--card-face-panel-animation-duration': isEternal && !isTranscendent ? '4.1s' : '0s',
+    '--card-face-ribbon-animation-name': 'none',
+    '--card-face-ribbon-animation-duration': '0s',
+    '--card-face-panel-animation-name': 'none',
+    '--card-face-panel-animation-duration': '0s',
     '--card-face-animation-timing': 'ease-in-out',
     '--card-face-animation-iteration': 'infinite',
     '--card-face-animation-direction': 'alternate',

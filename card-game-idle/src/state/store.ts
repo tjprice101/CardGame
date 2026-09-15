@@ -1515,7 +1515,7 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean): void
     previousSteps.set(id, instance.stepsComplete.slice());
   }
 
-  const acquisition = evaluateEnigmaAcquisition({ board: s.board, progress: s.progress });
+  const acquisition = evaluateEnigmaAcquisition({ board: s.board, progress: s.progress, turn: s.turn });
   if (acquisition.newlyAcquired.length > 0) {
     if (!s.progress.enigmas.activeEnigmaId) {
       s.progress.enigmas.activeEnigmaId = acquisition.newlyAcquired[0] ?? null;

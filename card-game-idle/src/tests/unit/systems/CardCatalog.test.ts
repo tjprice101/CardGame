@@ -17,11 +17,11 @@ describe('Ain/Soph card catalog', () => {
 
   it('names and hints the five Causality Enigmas with their intended manuscript identity', () => {
     const entries = new Map([
-      ['causality-first-horizon', { title: 'The First Horizon', hint: 'Own 5 unique Causality cards to open the manuscript’s first horizon.' }],
-      ['causality-black-ink', { title: 'Black Ink, White Star', hint: 'Pair opposing Causality forces and turn the void into a deliberate burn.' }],
-      ['causality-heavenly-archive', { title: 'The Heavenly Archive', hint: 'Gather Light, Dark, and ASA before the archive can index you.' }],
-      ['causality-collapsed-equation', { title: 'The Collapsed Equation', hint: 'Spend the manuscript’s full momentum and collapse it into a decisive turn.' }],
-      ['causality-unwritten-law', { title: 'The Unwritten Law', hint: 'Hold the event horizon and end the turn with enough Cosmos to rewrite the page.' }],
+      ['causality-first-horizon', { title: 'The First Horizon', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
+      ['causality-black-ink', { title: 'Black Ink, White Star', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
+      ['causality-heavenly-archive', { title: 'The Heavenly Archive', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
+      ['causality-collapsed-equation', { title: 'The Collapsed Equation', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
+      ['causality-unwritten-law', { title: 'The Unwritten Law', hint: 'Find this manuscript after collecting 5 unique Causality cards.' }],
     ]);
 
     const definitions = [
@@ -46,9 +46,18 @@ describe('Ain/Soph card catalog', () => {
       const definition = enigmaDefinitions.find(item => item.id === id)!.definition!;
       expect(definition.title).toBe(expected.title);
       expect(definition.hintText).toBe(expected.hint);
+      expect(definition.unlockHintText).toMatch(/unlock the manuscript/i);
       expect(definition.steps.length).toBeGreaterThanOrEqual(3);
       expect(definition.steps.every(step => !!step.title && !!step.description)).toBe(true);
     }
+
+    const archive = getEnigmaDefinition('causality-heavenly-archive');
+    expect(archive?.unlockCondition).toBe('specific-cards');
+    expect(archive?.unlockCardIds).toEqual([
+      'light-causality-1',
+      'dark-causality-1',
+      'ain-soph-aur-causality-2',
+    ]);
   });
 
   it('contains four authored Extra Deck bridge definitions', () => {

@@ -640,7 +640,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           }}
         >
           <div>✦ Enigma</div>
-          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.78, textTransform: 'none' }}>{enigmaLocked ? `Locked — buy ${totalPacksOpened}/10 card packs` : 'Cosmic patterns of fate'}</div>
+          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.78, textTransform: 'none' }}>{enigmaLocked ? `Hidden — open ${totalPacksOpened}/10 card packs to search for manuscripts` : 'Find manuscripts, then unlock their trials'}</div>
         </button>
       </div>
 
