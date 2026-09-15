@@ -393,12 +393,12 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
             <div className="ornate-scroll" style={styles.idleShowcase}>
               {idleCards.map(({ card, def }, idx) => {
                 if (!def) return null;
-                const showHolo = card.finish === 'holo' || def.rarity === 'Infinite' || def.rarity === 'Eternal';
+                const showHolo = card.finish === 'holo' && def.rarity !== 'Infinite' && def.rarity !== 'Eternal' && def.rarity !== 'Transcendent' && def.rarity !== 'Enigmatic';
                 const previewText = getCardPreviewText(def, 2);
                 const descMetrics = getAdaptiveDescriptionMetrics('pack', previewText);
                 const cardClass = [
                   showHolo
-                    ? `holofoil-live-card${def.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${def.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                    ? 'holofoil-live-card'
                     : undefined,
                   idleSwapState?.slot === idx && idleSwapState.phase === 'out' ? 'anim-idle-staple-fade-out' : undefined,
                   idleSwapState?.slot === idx && idleSwapState.phase === 'in' ? 'anim-idle-staple-fade-in' : undefined,
@@ -536,8 +536,8 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
             <div
               key={`${deckCard.instanceId}_${deckCard.definitionId}_${idx}`}
               className={[
-                (deckCard.finish === 'holo' || def?.rarity === 'Infinite' || def?.rarity === 'Eternal')
-                  ? `holofoil-live-card${def?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${def?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                (deckCard.finish === 'holo' && def?.rarity !== 'Infinite' && def?.rarity !== 'Eternal' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic')
+                  ? 'holofoil-live-card'
                   : undefined,
                 isGuideHighlighted ? 'trial-guide-pulse' : undefined,
               ].filter(Boolean).join(' ') || undefined}

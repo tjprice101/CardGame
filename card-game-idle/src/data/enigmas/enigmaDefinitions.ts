@@ -128,10 +128,10 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       },
       {
         title: 'Stabilize the Neutrality Field',
-        description: 'Keep two Ain-side Lights, one Ain Soph Aur, and three charged Soph cards active together.',
+        description: 'Keep two Ain-side Lights and two charged Soph cards active together in the four-slot back row.',
         kind: 'match_formation',
-        amount: 3,
-        boardPattern: ['ain-light-2', 'ain-soph-aur-1', 'soph-charge-3'],
+        amount: 2,
+        boardPattern: ['ain-light-2', 'soph-charge-2'],
       },
       {
         title: 'Claim the Reward',

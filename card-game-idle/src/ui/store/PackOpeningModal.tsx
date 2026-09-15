@@ -341,7 +341,7 @@ const CardTile = memo(function CardTile({
 
         {/* Front face details mount only after reveal to keep bulk opens light. */}
         <div
-          className={isHolo ? 'holofoil-live-card' : undefined}
+          className={isHolo && def?.rarity !== 'Eternal' && def?.rarity !== 'Infinite' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic' ? 'holofoil-live-card' : undefined}
           style={{
             ...cardFaceStyle,
             ...getCardFaceBackgroundStyle(def, isHolo ? 'holo' : 'normal'),

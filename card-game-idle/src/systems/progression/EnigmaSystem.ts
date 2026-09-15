@@ -108,14 +108,13 @@ export function evaluateNeutralizingVoidProgress(state: Pick<GameState, 'board' 
   if (!instance || instance.status === 'locked') return result;
 
   const ainLightCount = state.board.backSlots.filter(slot => slot?.type === 'Light' && slot.side === 'ain').length;
-  const asaCount = state.board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length;
   const chargedSophCount = state.board.backSlots.filter(slot => !!slot && slot.side === 'soph' && slot.limitlessCharge >= 3).length;
 
   if (instance.stepsComplete[1] && !instance.stepsComplete[2] && ainLightCount >= 2) {
     instance.stepsComplete[2] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 3);
   }
-  if (instance.stepsComplete[2] && !instance.stepsComplete[3] && ainLightCount >= 2 && asaCount >= 1 && chargedSophCount >= 3) {
+  if (instance.stepsComplete[2] && !instance.stepsComplete[3] && ainLightCount >= 2 && chargedSophCount >= 2) {
     instance.stepsComplete[3] = true;
     instance.currentStepIndex = Math.max(instance.currentStepIndex, 4);
   }

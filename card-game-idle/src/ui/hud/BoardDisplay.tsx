@@ -699,8 +699,8 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             return (
               <div
                 key={backSlot}
-                className={(mainCard.finish === 'holo' || mainDef?.rarity === 'Infinite' || mainDef?.rarity === 'Eternal')
-                  ? `holofoil-live-card${mainDef?.rarity === 'Infinite' ? ' holofoil-live-card--infinite' : ''}${mainDef?.rarity === 'Eternal' ? ' holofoil-live-card--eternal' : ''}`
+                className={(mainCard.finish === 'holo' && mainDef?.rarity !== 'Infinite' && mainDef?.rarity !== 'Eternal' && mainDef?.rarity !== 'Transcendent' && mainDef?.rarity !== 'Enigmatic')
+                  ? 'holofoil-live-card'
                   : undefined}
                 style={{
                   width: CHERUBIM_W, height: CHERUBIM_H,

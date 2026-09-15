@@ -255,7 +255,7 @@ function BulkHolofoilResult(props: {
             {props.holoCards.map(card => {
               const definition = CardRegistry.get(card.definitionId);
               return (
-                <div key={card.definitionId} className="holofoil-live-card" style={{ position: 'relative', minHeight: 190, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.92)', background: '#111' }}>
+                <div key={card.definitionId} className={definition?.rarity === 'Common' || definition?.rarity === 'Rare' || definition?.rarity === 'Epic' || definition?.rarity === 'Legendary' ? 'holofoil-live-card' : undefined} style={{ position: 'relative', minHeight: 190, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.92)', background: '#111' }}>
                   <div style={{ position: 'absolute', inset: 0, ...getCardFaceBackgroundStyle(definition, 'holo'), backgroundSize: 'cover' }} />
                   <div style={{ position: 'relative', zIndex: 1, minHeight: 190, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: 10, background: 'linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.76))' }}>
                     <div style={getCardNameRibbonStyle('pack')}>

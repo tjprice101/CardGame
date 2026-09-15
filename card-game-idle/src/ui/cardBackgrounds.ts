@@ -581,9 +581,9 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
       : isTranscendent
         ? 'linear-gradient(180deg, rgba(66, 0, 16, 0.97) 0%, rgba(122, 10, 34, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255, 214, 226, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
       : finish === 'holo'
-        ? 'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(10,10,12,0.98) 42%, rgba(170,0,24,0.98) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.2) 0 3px, rgba(0,0,0,0.2) 3px 9px, rgba(190,0,28,0.22) 9px 14px)'
+        ? 'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.72) 20%, rgba(18,2,5,0.98) 55%, rgba(146,0,20,0.98) 100%)'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.96) 45%, rgba(213,166,36,0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,216,82,0.3) 50%, rgba(0,0,0,0.16) 100%)'
+        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.9) 50%, rgba(201,151,30,0.98) 100%)'
       : isEternal
         ? 'linear-gradient(180deg, rgba(16, 6, 34, 0.98) 0%, rgba(36, 14, 68, 0.97) 100%), linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(180, 32, 66, 0.16) 48%, rgba(255,255,255,0.02) 100%)'
         : theme.ribbon,
@@ -592,9 +592,9 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
       : isTranscendent
         ? 'linear-gradient(180deg, rgba(54, 0, 14, 0.96) 0%, rgba(102, 8, 30, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255, 204, 220, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
       : finish === 'holo'
-        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.94) 48%, rgba(130,0,18,0.98) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0 2px, rgba(0,0,0,0.18) 2px 8px)'
+        ? 'linear-gradient(180deg, rgba(12,2,5,0.98) 0%, rgba(255,255,255,0.86) 50%, rgba(112,0,15,0.98) 100%)'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(10,10,12,0.98) 0%, rgba(255,255,255,0.92) 48%, rgba(174,126,20,0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,218,90,0.2) 50%, rgba(0,0,0,0.12) 100%)'
+        ? 'linear-gradient(180deg, rgba(14,14,16,0.98) 0%, rgba(255,255,255,0.84) 50%, rgba(166,116,18,0.98) 100%)'
       : isEternal
         ? 'linear-gradient(180deg, rgba(14, 6, 28, 0.97) 0%, rgba(28, 12, 54, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(188, 28, 62, 0.14) 50%, rgba(255,255,255,0.02) 100%)'
         : theme.panel,
@@ -823,9 +823,9 @@ export function getDenseCardFaceBackgroundStyle(
       : isTranscendent
         ? 'linear-gradient(180deg, rgba(66, 0, 16, 0.97) 0%, rgba(122, 10, 34, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.08) 0%, rgba(255, 214, 226, 0.12) 50%, rgba(255,255,255,0.06) 100%)'
       : finish === 'holo'
-        ? 'linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(10,10,12,0.98) 42%, rgba(170,0,24,0.98) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.2) 0 3px, rgba(0,0,0,0.2) 3px 9px, rgba(190,0,28,0.22) 9px 14px)'
+        ? 'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.72) 20%, rgba(18,2,5,0.98) 55%, rgba(146,0,20,0.98) 100%)'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.96) 45%, rgba(213,166,36,0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.18) 0%, rgba(255,216,82,0.3) 50%, rgba(0,0,0,0.16) 100%)'
+        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.9) 50%, rgba(201,151,30,0.98) 100%)'
       : isEternal
         ? 'linear-gradient(180deg, rgba(16, 6, 34, 0.98) 0%, rgba(36, 14, 68, 0.97) 100%), linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(180, 32, 66, 0.16) 48%, rgba(255,255,255,0.02) 100%)'
       : theme.ribbon,
@@ -834,9 +834,9 @@ export function getDenseCardFaceBackgroundStyle(
       : isTranscendent
         ? 'linear-gradient(180deg, rgba(54, 0, 14, 0.96) 0%, rgba(102, 8, 30, 0.95) 100%), linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255, 204, 220, 0.08) 50%, rgba(255,255,255,0.03) 100%)'
       : finish === 'holo'
-        ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.94) 48%, rgba(130,0,18,0.98) 100%), repeating-linear-gradient(90deg, rgba(255,255,255,0.12) 0 2px, rgba(0,0,0,0.18) 2px 8px)'
+        ? 'linear-gradient(180deg, rgba(12,2,5,0.98) 0%, rgba(255,255,255,0.86) 50%, rgba(112,0,15,0.98) 100%)'
       : isEnigmatic
-        ? 'linear-gradient(180deg, rgba(10,10,12,0.98) 0%, rgba(255,255,255,0.92) 48%, rgba(174,126,20,0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,218,90,0.2) 50%, rgba(0,0,0,0.12) 100%)'
+        ? 'linear-gradient(180deg, rgba(14,14,16,0.98) 0%, rgba(255,255,255,0.84) 50%, rgba(166,116,18,0.98) 100%)'
       : isEternal
         ? 'linear-gradient(180deg, rgba(14, 6, 28, 0.97) 0%, rgba(28, 12, 54, 0.96) 100%), linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(188, 28, 62, 0.14) 50%, rgba(255,255,255,0.02) 100%)'
       : theme.panel,

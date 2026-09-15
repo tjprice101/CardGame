@@ -1544,6 +1544,7 @@ function syncEnigmaProgressFromBoard(s: Store, checkAcquisition: boolean): void 
       surgeblade.currentStepIndex = 1;
       surgeblade.stepsComplete[0] = true;
       surgeblade.acquiredAt = Date.now();
+      surgeblade.progressCounters = { asaSummonsWithTwoLights: 0, bridgeAttacks: 0 };
       pushRewardToast(s, 'Enigma Acquired: Null-surged');
     }
     if (surgeblade?.status === 'acquired') {
@@ -2008,7 +2009,7 @@ export const useStore = create<Store>()(
         grantOblivion(s, result.oblivionBonus);
         emitQuestProgressToProgress(s.progress, { kind: 'summon_ain_soph_aur', amount: 1 });
         const activeAinLights = s.board.backSlots.filter(slot => slot?.type === 'Light' && slot.side === 'ain').length;
-        if (activeAinLights >= 2) {
+        if (activeAinLights >= 2 && s.progress.enigmas.instances['null-surged']?.status === 'acquired') {
           const surgeblade = s.progress.enigmas.instances['null-surged'];
           if (surgeblade) {
             surgeblade.progressCounters ??= {};
