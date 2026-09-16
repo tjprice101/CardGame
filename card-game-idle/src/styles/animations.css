@@ -1790,3 +1790,63 @@ html.reduced-motion .trial-guide-pulse {
   animation: none !important;
   box-shadow: 0 0 0 3px rgba(100, 220, 130, 0.85) !important;
 }
+
+/* ── Shatter the Infinite Light ── */
+@keyframes shatterAmbientTwinkle {
+  0%, 100% { opacity: 0.12; transform: scale(0.75); }
+  50%      { opacity: 0.85; transform: scale(1.2); }
+}
+.shatter-ambient-star {
+  position: absolute;
+  border-radius: 999px;
+  background: #eaf3ff;
+  pointer-events: none;
+  will-change: opacity, transform;
+  animation-name: shatterAmbientTwinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@keyframes shatterStarLife {
+  0%   { opacity: 0;   transform: scale(0.35); color: #ff3b3b; text-shadow: 0 0 10px rgba(255, 60, 60, 0.9); }
+  14%  { opacity: 1;   transform: scale(1.05); color: #ff4a4a; text-shadow: 0 0 14px rgba(255, 70, 70, 0.95); }
+  55%  { opacity: 0.9; transform: scale(1);    color: #9fd3ff; text-shadow: 0 0 12px rgba(150, 200, 255, 0.8); }
+  100% { opacity: 0;   transform: scale(0.7);  color: #cfe9ff; text-shadow: 0 0 6px rgba(200, 230, 255, 0.4); }
+}
+.shatter-click-star {
+  position: absolute;
+  cursor: pointer;
+  user-select: none;
+  line-height: 1;
+  animation-name: shatterStarLife;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  will-change: opacity, transform, color;
+}
+@keyframes shatterTitlePop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.55); letter-spacing: 0.02em; }
+  55%  { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.shatter-title-text {
+  animation: shatterTitlePop 900ms cubic-bezier(0.16, 0.84, 0.44, 1) both;
+}
+@keyframes shatterCounterPulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.08); }
+}
+.shatter-counter-pulse {
+  animation: shatterCounterPulse 260ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .shatter-ambient-star,
+  .shatter-click-star,
+  .shatter-title-text,
+  .shatter-counter-pulse { animation: none !important; }
+}
+html.reduced-motion .shatter-ambient-star,
+html.reduced-motion .shatter-click-star,
+html.reduced-motion .shatter-title-text,
+html.reduced-motion .shatter-counter-pulse {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+}

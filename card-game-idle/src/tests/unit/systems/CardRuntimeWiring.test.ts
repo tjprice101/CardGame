@@ -18,6 +18,23 @@ function resetStore(): void {
   useStore.setState(state => ({ ...state, ...baseState }));
 }
 
+function countConditionalLightConversionCost(effects: Array<{ type: string; [key: string]: unknown }>): number {
+  let total = 0;
+  for (const effect of effects) {
+    if (effect.type === 'conditional') {
+      const thenEffects = Array.isArray((effect as { then?: unknown[] }).then)
+        ? (effect as { then: Array<{ type: string; lightCost?: number; value?: number }> }).then
+        : [];
+      total += countConditionalLightConversionCost(thenEffects as Array<{ type: string; [key: string]: unknown }>);
+      continue;
+    }
+    if (effect.type === 'convert_light_to_cosmos' && typeof effect.lightCost === 'number') {
+      total += effect.lightCost;
+    }
+  }
+  return total;
+}
+
 function deckCard(instanceId: string, definitionId: string): DeckCard {
   return { instanceId, definitionId, finish: 'normal' };
 }
@@ -189,6 +206,26 @@ describe('complete card runtime wiring', () => {
     }
   });
 
+  it('gives the standard Causality set a real Cosmos conversion and spend loop', () => {
+    const lightHasCosmosConversion = causalityCards.some(card =>
+      card.type === 'Light' && (card.sophPlacementEffects ?? []).some(effect => {
+        if (effect.type === 'conditional') {
+          return effect.then.some(subEffect => subEffect.type === 'convert_light_to_cosmos');
+        }
+        return effect.type === 'convert_light_to_cosmos';
+      }));
+    const darkHasCosmosSpend = causalityCards.some(card =>
+      card.type === 'Dark' && (card.sophEffects ?? []).some(effect => {
+        if (effect.type === 'conditional') {
+          return effect.then.some(subEffect => subEffect.type === 'consume_cosmos');
+        }
+        return effect.type === 'consume_cosmos';
+      }));
+
+    expect(lightHasCosmosConversion).toBe(true);
+    expect(darkHasCosmosSpend).toBe(true);
+  });
+
   it('executes the authored utility for every registered Dark card', () => {
     const drawPile = [
       deckCard('draw-light-1', 'light-neutrality-1'),
@@ -263,7 +300,8 @@ describe('complete card runtime wiring', () => {
       useStore.getState().activateDark(instanceId);
       const state = useStore.getState();
       const activationCost = definition.activationCost.kind === 'fixed' ? (definition.activationCost.value ?? 0) : 0;
-      expect(state.turn.limitlessLightStacks, definition.definitionId).toBe(stacksBefore - activationCost);
+      const conversionCost = countConditionalLightConversionCost(definition.sophEffects as Array<{ type: string; [key: string]: unknown }>);
+      expect(state.turn.limitlessLightStacks, definition.definitionId).toBe(stacksBefore - activationCost - conversionCost);
 
       if (definition.persistent) {
         expect(state.board.backSlots[0]?.instanceId).toBe(instanceId);
@@ -342,7 +380,10 @@ describe('complete card runtime wiring', () => {
       const summoned = useStore.getState().board.frontSlots[0];
       expect(summoned?.definitionId, definition.definitionId).toBe(definition.definitionId);
       expect(useStore.getState().progress.oblivion, `${definition.definitionId} summon`).toBeGreaterThan(beforeSummon);
-      expect(useStore.getState().turn.limitlessLightStacks, `${definition.definitionId} summon stack`).toBe(stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD);
+      const summonConversionCost = countConditionalLightConversionCost(definition.onSummonEffects as Array<{ type: string; [key: string]: unknown }>);
+      expect(useStore.getState().turn.limitlessLightStacks, `${definition.definitionId} summon stack`).toBe(
+        stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD - summonConversionCost,
+      );
 
       const beforeBridge = useStore.getState().progress.oblivion;
       const stacksBeforeBridge = useStore.getState().turn.limitlessLightStacks;

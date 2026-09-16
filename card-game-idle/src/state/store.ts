@@ -22,6 +22,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { accrueSophCharges, AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { canActivateShatterTheInfiniteLight, SHATTER_ACTIVE_MS, SHATTER_PRIME_MS, SHATTER_RESULT_MS } from '@/systems/cards/ShatterTheInfiniteLight';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -383,6 +384,9 @@ interface StoreActions {
   activateLightSophAttack: (instanceId: string, spend?: number) => void;
   activateDark: (instanceId: string) => void;
   activateAsaBridge: (instanceId: string, spend?: number) => void;
+  activateShatterTheInfiniteLight: () => void;
+  registerShatterInfinityStarHit: () => void;
+  tickShatterInfiniteLight: (nowMs?: number) => void;
   resolvePending: (selected: string[]) => void;
   endTurn: () => void;
   endAndBeginAgain: () => void;
@@ -1636,8 +1640,34 @@ function recordLossEvent(
   // All dead-set loss tracking removed
 }
 
+/**
+ * Resolves the aftermath of "Shatter the Infinite Light": clears the sequence,
+ * resets every board attack cooldown and this turn's card-play count (mirroring
+ * a fresh turn without discarding hand/board), and — if a boss-style encounter
+ * is active — immediately staggers it and restores its full clock/duration.
+ */
+function finishShatterInfiniteLight(s: Store): void {
+  s.turn.shatterInfiniteLight = null;
+  s.turn.cardsPlayedThisTurn = 0;
+  for (const slot of [...s.board.frontSlots, ...s.board.backSlots]) {
+    if (!slot) continue;
+    slot.attackCooldowns = {};
+  }
+  if (s.bossFight.mode === 'active') {
+    const fightSeconds = s.bossFight.kind === 'null_raid' ? NULL_RAID_ENCOUNTER_SECONDS : BOSS_FIGHT_ROUND_SECONDS;
+    s.bossFight.fightTimeRemaining = fightSeconds;
+    s.bossFight.bossCardBreakMeter = 0;
+    s.bossFight.bossCardBreakFreezeLeft = 0;
+    s.bossFight.bossCardBreakCount = (s.bossFight.bossCardBreakCount ?? 0) + 1;
+  }
+  if (s.battleground.mode === 'active') {
+    s.battleground.timeRemaining = 180;
+  }
+  recompute(s);
+}
+
 function endTurnInternal(s: Store): void {
-  if (s.turn.phase !== 'playing') return;
+  if (s.turn.phase !== 'playing' || s.turn.shatterInfiniteLight) return;
   // Boss fights are time-pressure encounters. Outside of active Eternity co-op,
   // manually ending a turn during a fight is an immediate failure.
   if (s.bossFight.mode === 'active') {
@@ -1953,7 +1983,7 @@ export const useStore = create<Store>()(
 
     summonAinSophAur: (definitionId, materialInstanceIds, targetSlot, freeSummon = false) => {
       set(s => {
-        if (s.turn.phase !== 'playing' || s.board.frontSlots[targetSlot] !== null) return;
+        if (s.turn.phase !== 'playing' || s.board.frontSlots[targetSlot] !== null || s.turn.shatterInfiniteLight) return;
         const def = CardRegistry.get(definitionId);
         if (!def || def.type !== 'AinSophAur') return;
         const uniqueIds = freeSummon ? [] : [...new Set(materialInstanceIds)];
@@ -2286,7 +2316,7 @@ export const useStore = create<Store>()(
     },
     playCard: (instanceId, side = 'soph') => {
       set(s => {
-        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null) return;
+        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null || s.turn.shatterInfiniteLight) return;
         const deckCard = s.deck.hand.find(c => c.instanceId === instanceId);
         if (!deckCard) return;
         const def = ScoreSystem.getDefinition(deckCard.definitionId);
@@ -2377,7 +2407,7 @@ export const useStore = create<Store>()(
 
     flipSoph: (instanceId, mode) => {
       set(s => {
-        if (s.turn.phase !== 'playing') return;
+        if (s.turn.phase !== 'playing' || s.turn.shatterInfiniteLight) return;
         const slotIndex = s.board.backSlots.findIndex(slot => slot?.instanceId === instanceId);
         if (slotIndex === -1) return;
         const slot = s.board.backSlots[slotIndex];
@@ -2425,6 +2455,7 @@ export const useStore = create<Store>()(
 
     activateLightAinAttack: (instanceId) => {
       set(s => {
+        if (s.turn.shatterInfiniteLight) return;
         const slot = s.board.backSlots.find(card => card?.instanceId === instanceId);
         if (!slot || slot.type !== 'Light' || slot.side !== 'ain' || slot.faceState !== 'front') return;
         const def = CardRegistry.get(slot.definitionId);
@@ -2445,6 +2476,7 @@ export const useStore = create<Store>()(
 
     activateLightSophAttack: (instanceId, spend) => {
       set(s => {
+        if (s.turn.shatterInfiniteLight) return;
         const slot = s.board.backSlots.find(card => card?.instanceId === instanceId);
         if (!slot || slot.type !== 'Light' || slot.side !== 'ain' || slot.faceState !== 'front') return;
         const def = CardRegistry.get(slot.definitionId);
@@ -2472,6 +2504,7 @@ export const useStore = create<Store>()(
 
     activateDark: (instanceId) => {
       set(s => {
+        if (s.turn.shatterInfiniteLight) return;
         const slotIndex = s.board.backSlots.findIndex(card => card?.instanceId === instanceId);
         if (slotIndex === -1) return;
         const slot = s.board.backSlots[slotIndex];
@@ -2533,6 +2566,7 @@ export const useStore = create<Store>()(
 
     activateAsaBridge: (instanceId, spend) => {
       set(s => {
+        if (s.turn.shatterInfiniteLight) return;
         const slot = s.board.frontSlots.find(card => card?.instanceId === instanceId);
         if (!slot || slot.type !== 'AinSophAur') return;
         const def = CardRegistry.get(slot.definitionId);
@@ -2568,6 +2602,52 @@ export const useStore = create<Store>()(
           }
         }
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
+      });
+    },
+
+    activateShatterTheInfiniteLight: () => {
+      set(s => {
+        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null || s.turn.shatterInfiniteLight) return;
+        if (s.bossFight.mode === 'active' && s.bossFight.kind !== 'normal' && s.bossFight.kind !== 'null_raid') return;
+        if (!canActivateShatterTheInfiniteLight(s.board)) return;
+        const now = Date.now();
+        s.turn.shatterInfiniteLight = {
+          phase: 'priming',
+          phaseEndsAt: now + SHATTER_PRIME_MS,
+          stacks: 0,
+          payout: 0,
+        };
+      });
+    },
+
+    registerShatterInfinityStarHit: () => {
+      set(s => {
+        const shatter = s.turn.shatterInfiniteLight;
+        if (!shatter || shatter.phase !== 'active') return;
+        shatter.stacks += 1;
+      });
+    },
+
+    tickShatterInfiniteLight: (nowMs = Date.now()) => {
+      set(s => {
+        const shatter = s.turn.shatterInfiniteLight;
+        if (!shatter || nowMs < shatter.phaseEndsAt) return;
+        if (shatter.phase === 'priming') {
+          shatter.phase = 'active';
+          shatter.phaseEndsAt = nowMs + SHATTER_ACTIVE_MS;
+          return;
+        }
+        if (shatter.phase === 'active') {
+          const rawAmount = shatter.stacks * 1_000;
+          const earnedBefore = s.turn.oblivionEarnedThisTurn;
+          if (rawAmount > 0) grantOblivion(s, rawAmount);
+          shatter.payout = s.turn.oblivionEarnedThisTurn - earnedBefore;
+          shatter.phase = 'result';
+          shatter.phaseEndsAt = nowMs + SHATTER_RESULT_MS;
+          checkBossDefeated(s);
+          return;
+        }
+        finishShatterInfiniteLight(s);
       });
     },
 
@@ -2829,7 +2909,7 @@ export const useStore = create<Store>()(
 
     endAndBeginAgain: () => {
       set(s => {
-        if (s.turn.phase !== 'playing') return;
+        if (s.turn.phase !== 'playing' || s.turn.shatterInfiniteLight) return;
         // Match End Turn behavior during boss encounters.
         if (s.bossFight.mode === 'active') {
           if (s.bossFight.kind === 'normal' && s.bossFight.coopSessionId) {
@@ -3455,7 +3535,7 @@ export const useStore = create<Store>()(
     tickGardenDungeonTimer: (deltaSeconds) => {
       if (!Number.isFinite(deltaSeconds) || deltaSeconds <= 0) return;
       set(s => {
-        if (s.gardenDungeon.phase !== 'active') return;
+        if (s.gardenDungeon.phase !== 'active' || s.turn.shatterInfiniteLight) return;
         s.gardenDungeon.timeRemainingSeconds = Math.max(0, s.gardenDungeon.timeRemainingSeconds - deltaSeconds);
         if (s.gardenDungeon.timeRemainingSeconds <= 0) {
           s.gardenDungeon.phase = 'defeat';
@@ -3562,6 +3642,7 @@ export const useStore = create<Store>()(
 
     tickAbilityTimers: (now = Date.now()) => {
       set(s => {
+        if (s.turn.shatterInfiniteLight) return;
         if (s.turn.divineFieldUntil && s.turn.divineFieldUntil <= now) delete s.turn.divineFieldUntil;
         if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil <= now) delete s.turn.whiteoutDomainUntil;
       });
@@ -3910,7 +3991,7 @@ export const useStore = create<Store>()(
 
     tickBattlegroundTimer: (deltaSeconds) => {
       set(s => {
-        if (s.battleground.mode !== 'active') return;
+        if (s.battleground.mode !== 'active' || s.turn.shatterInfiniteLight) return;
         const current = s.battleground.timeRemaining;
         if (typeof current !== 'number' || !Number.isFinite(current) || current <= 0) {
           completeBattlegroundFight(s);
@@ -4172,7 +4253,7 @@ export const useStore = create<Store>()(
 
     tickBossTimer: (deltaSeconds) => {
       set(s => {
-        if (s.bossFight.mode !== 'active') return;
+        if (s.bossFight.mode !== 'active' || s.turn.shatterInfiniteLight) return;
         // Fast-fail: any non-positive or invalid timer should immediately resolve as defeat.
         const current = s.bossFight.fightTimeRemaining;
         if (typeof current !== 'number' || !Number.isFinite(current) || current <= 0) {

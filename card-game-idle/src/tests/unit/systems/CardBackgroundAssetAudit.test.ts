@@ -2,7 +2,14 @@ import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
+import { infiniteCards } from '@/data/cards/infiniteCards';
+import {
+  getCardArtTopBottomBorderOverlayStyleForCard,
+  getCardBackgroundUrl,
+  getCardFaceBackgroundStyle,
+  getCardNameRibbonStyle,
+  getCardRulesPanelStyle,
+} from '@/ui/cardBackgrounds';
 
 function normalizeName(value: string): string {
   return value
@@ -48,5 +55,44 @@ describe('card background asset audit', () => {
     }
 
     expect(missing).toEqual([]);
+  });
+
+  it('keeps holofoil, Enigmatic, Eternal, Infinite, and Transcendent bars visually distinct', () => {
+    const byRarity = (rarity: 'Enigmatic' | 'Eternal' | 'Infinite' | 'Transcendent') => {
+      if (rarity === 'Infinite') return infiniteCards[0] as unknown as Parameters<typeof getCardFaceBackgroundStyle>[0];
+      const card = CardRegistry.getAll().find(candidate => candidate.rarity === rarity);
+      expect(card, `${rarity} card`).toBeDefined();
+      return card!;
+    };
+    const holoCard = CardRegistry.getAll().find(candidate =>
+      candidate.rarity !== 'Enigmatic'
+      && candidate.rarity !== 'Eternal'
+      && candidate.rarity !== 'Infinite'
+      && candidate.rarity !== 'Transcendent');
+    expect(holoCard).toBeDefined();
+
+    const treatments = [
+      getCardFaceBackgroundStyle(holoCard, 'holo'),
+      getCardFaceBackgroundStyle(byRarity('Enigmatic')),
+      getCardFaceBackgroundStyle(byRarity('Eternal')),
+      getCardFaceBackgroundStyle(byRarity('Infinite')),
+      getCardFaceBackgroundStyle(byRarity('Transcendent')),
+    ];
+    const ribbons = treatments.map(style => style['--card-face-ribbon']);
+    const panels = treatments.map(style => style['--card-face-panel']);
+    expect(new Set(ribbons).size).toBe(5);
+    expect(new Set(panels).size).toBe(5);
+    expect(ribbons[0]).toBe('#861326');
+    expect(ribbons[1]).toBe('#b8861b');
+    expect(ribbons[2]).toBe('#32134f');
+    expect(ribbons[3]).toBe('#12151e');
+    expect(ribbons[4]).toBe('#7a0f31');
+
+    expect(getCardNameRibbonStyle('grid').background).toContain('--card-face-ribbon');
+    expect(getCardRulesPanelStyle('grid').background).toContain('--card-face-panel');
+    const overlays = treatments.map((_, index) => getCardArtTopBottomBorderOverlayStyleForCard(
+      index === 0 ? holoCard : [byRarity('Enigmatic'), byRarity('Eternal'), byRarity('Infinite'), byRarity('Transcendent')][index - 1],
+    ).backgroundImage);
+    expect(new Set(overlays).size).toBe(5);
   });
 });

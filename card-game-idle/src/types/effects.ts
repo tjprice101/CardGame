@@ -28,7 +28,9 @@ export type ImmediateEffect =
 
 export type EffectCondition =
   | { type: 'cards_played_gte'; value: number }
-  | { type: 'first_card_this_turn' };
+  | { type: 'first_card_this_turn' }
+  | { type: 'light_stacks_gte'; value: number }
+  | { type: 'cosmos_gte'; value: number };
 
 export interface ConditionalEffect {
   type: 'conditional';

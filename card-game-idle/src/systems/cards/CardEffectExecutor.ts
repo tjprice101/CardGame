@@ -326,6 +326,8 @@ export class CardEffectExecutor {
     switch (condition.type) {
       case 'cards_played_gte':  return turn.cardsPlayedThisTurn >= condition.value;
       case 'first_card_this_turn': return turn.cardsPlayedThisTurn === 0;
+      case 'light_stacks_gte': return (turn.limitlessLightStacks ?? 0) >= condition.value;
+      case 'cosmos_gte': return (turn.limitlessCosmosStacks ?? 0) >= condition.value;
       default:
         return false;
     }

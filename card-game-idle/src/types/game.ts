@@ -143,6 +143,22 @@ export interface TurnState {
   abilityCooldownUntil?: Record<string, number>;
   divineFieldUntil?: number;
   whiteoutDomainUntil?: number;
+  /** Active "Shatter the Infinite Light" board-wipe attack sequence, if any. */
+  shatterInfiniteLight?: ShatterInfiniteLightState | null;
+}
+
+// ── Shatter the Infinite Light ────────────────────────────────────────────────
+
+export type ShatterInfiniteLightPhase = 'priming' | 'active' | 'result';
+
+export interface ShatterInfiniteLightState {
+  phase: ShatterInfiniteLightPhase;
+  /** Wall-clock timestamp (ms) at which the current phase should advance. */
+  phaseEndsAt: number;
+  /** Number of glowing stars clicked during the 'active' phase — "Limitless Infinity" stacks. */
+  stacks: number;
+  /** Divine Light granted once the 'active' phase resolves. */
+  payout: number;
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────

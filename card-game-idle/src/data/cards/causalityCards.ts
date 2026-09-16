@@ -19,6 +19,11 @@ const artKey = (type: 'light' | 'dark' | 'asa', index: number) => `causality_${t
 
 export const causalityLightCards: LightCardDefinition[] = LIGHT_NAMES.map((name, index) => {
   const id = `light-causality-${index + 1}`;
+  const conversionEffect: CardEffect = {
+    type: 'conditional',
+    condition: { type: 'light_stacks_gte', value: 2 },
+    then: [{ type: 'convert_light_to_cosmos', lightCost: 2, cosmosGain: 1 + Math.floor(index / 4) }],
+  };
   return {
     definitionId: id,
     type: 'Light',
@@ -41,7 +46,15 @@ export const causalityLightCards: LightCardDefinition[] = LIGHT_NAMES.map((name,
     },
     sophPlacementEffects: [
       { type: 'oblivion_flat', value: 20 + index * 8 } as CardEffect,
-      ...(index % 3 === 0 ? [{ type: 'cosmos_flat', value: 1 + Math.floor(index / 4) } as CardEffect] : []),
+      ...(index % 3 === 0
+        ? [conversionEffect, { type: 'cosmos_flat', value: 1 } as CardEffect]
+        : index % 3 === 1
+          ? [{ type: 'cosmos_flat', value: 1 + Math.floor(index / 4) } as CardEffect]
+          : [{
+              type: 'conditional',
+              condition: { type: 'light_stacks_gte', value: 3 },
+              then: [{ type: 'convert_light_to_cosmos', lightCost: 3, cosmosGain: 2 }],
+            } as CardEffect]),
     ],
     sacrificeStackRate: 22 + index * 3,
   };
@@ -49,6 +62,19 @@ export const causalityLightCards: LightCardDefinition[] = LIGHT_NAMES.map((name,
 
 export const causalityDarkCards: DarkCardDefinition[] = DARK_NAMES.map((name, index) => {
   const id = `dark-causality-${index + 1}`;
+  const spendEffect: CardEffect = {
+    type: 'conditional',
+    condition: { type: 'cosmos_gte', value: 1 },
+    then: [
+      { type: 'consume_cosmos', value: 1 },
+      { type: 'oblivion_flat', value: 120 + index * 20 },
+    ],
+  };
+  const conversionEffect: CardEffect = {
+    type: 'conditional',
+    condition: { type: 'light_stacks_gte', value: 2 },
+    then: [{ type: 'convert_light_to_cosmos', lightCost: 2, cosmosGain: 1 }],
+  };
   return {
     definitionId: id,
     type: 'Dark',
@@ -58,7 +84,18 @@ export const causalityDarkCards: DarkCardDefinition[] = DARK_NAMES.map((name, in
     artKey: artKey('dark', index),
     sophEffects: [
       index % 2 === 0 ? { type: 'draw', value: 1 } : { type: 'shuffle_discard' },
-      ...(index % 3 === 1 ? [{ type: 'cosmos_flat', value: 1 } as CardEffect] : []),
+      ...(index % 3 === 0
+        ? [spendEffect]
+        : index % 3 === 1
+          ? [conversionEffect]
+          : [
+              { type: 'cosmos_flat', value: 1 } as CardEffect,
+              {
+                type: 'conditional',
+                condition: { type: 'cosmos_gte', value: 1 },
+                then: [{ type: 'consume_cosmos', value: 1 }, { type: 'oblivion_flat', value: 150 + index * 18 }],
+              } as CardEffect,
+            ]),
     ],
     activationCost: { kind: 'fixed', value: index % 3 === 0 ? 1 : 0 },
     cooldownCardsPlayed: index % 3 === 0 ? 2 : undefined,
@@ -79,7 +116,14 @@ export const causalityAinSophAurCards: AinSophAurDefinition[] = ASA_NAMES.map((n
     artKey: artKey('asa', index),
     summonMaterialCount: 1,
     summonMaterials: [{ cardTypes: ['Light'], side: 'any', count: 1 }],
-    onSummonEffects: [{ type: 'oblivion_flat', value: 180 + index * 60 }],
+    onSummonEffects: [
+      { type: 'oblivion_flat', value: 180 + index * 60 },
+      ...(index % 2 === 0 ? [{
+        type: 'conditional',
+        condition: { type: 'light_stacks_gte', value: 2 },
+        then: [{ type: 'convert_light_to_cosmos', lightCost: 2, cosmosGain: 1 + Math.floor(index / 2) }],
+      } as CardEffect] : []),
+    ],
     bridgeAttack: {
       id: `${id}:bridge-the-light`, name: 'Bridge the Light',
       description: 'Bridge the event horizon for a Collection Power-scaled Divine Light payout.',

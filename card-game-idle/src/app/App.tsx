@@ -44,6 +44,7 @@ const BattlegroundInviteModal = lazy(() => import('@/ui/battleground/Battlegroun
 const CoopRaidInviteModal = lazy(() => import('@/ui/ascension/CoopRaidInviteModal'));
 const EternityBossCoopInviteModal = lazy(() => import('@/ui/eternitysWake/EternityBossCoopInviteModal'));
 const ArenaShell = lazy(() => import('@/ui/hud/ArenaShell'));
+const ShatterInfiniteLightOverlay = lazy(() => import('@/ui/hud/ShatterInfiniteLightOverlay'));
 import { warmTheme } from '@/ui/theme';
 import { applyEffectiveTheme, DEFAULT_UI_THEME_ID, isThemeOscillating } from '@/data/profile/uiThemes';
 import { useStore, selectTurn, selectBossFight, selectBattleground, selectSettings, selectProgress } from '@/state/store';
@@ -936,6 +937,11 @@ export default function App() {
       )}
       {!isMenuOpen && scene === 'arena' && gardenDungeon.phase === 'active' && (
         <Suspense fallback={null}><GardenDungeonHUD /></Suspense>
+      )}
+
+      {/* "Shatter the Infinite Light" full-screen cutscene/minigame */}
+      {scene === 'arena' && turn.shatterInfiniteLight && (
+        <Suspense fallback={null}><ShatterInfiniteLightOverlay /></Suspense>
       )}
 
       {/* Main menu hub — replaces the legacy scattered top-right nav clusters. */}

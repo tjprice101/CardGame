@@ -15,7 +15,7 @@ export default function CardBornStacksPanel() {
   return (
     <>
       <section style={{
-        position: 'absolute', left: 14, top: 72, zIndex: 45, width: 154,
+        position: 'absolute', left: 14, top: 108, zIndex: 45, width: 154,
         padding: '10px 12px', borderRadius: 10,
         border: '1px solid rgba(255,210,92,0.34)',
         background: 'linear-gradient(145deg, rgba(12,12,16,0.88), rgba(72,18,28,0.72))',

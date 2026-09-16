@@ -17,6 +17,7 @@ import { uiTypography, warmTheme } from '@/ui/theme';
 import { SET_ACCENT } from '@/data/elements';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
+import { canActivateShatterTheInfiniteLight } from '@/systems/cards/ShatterTheInfiniteLight';
 import { formatSummonRequirement, getSummonRequirements, matchesSummonRequirement } from '@/systems/cards/AinSophSummonRequirements';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import type {
@@ -104,6 +105,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
     activateLightSophAttack,
     activateDark,
     activateAsaBridge,
+    activateShatterTheInfiniteLight,
     summonAinSophAur,
     playCard,
     forceRemoveBoardCard,
@@ -115,6 +117,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
   const hasCherubimInHand = false;
   const canPlay = turn.phase === 'playing';
   const pendingAngelSummon = false;
+  const canShatterTheInfiniteLight = canPlay && !turn.shatterInfiniteLight && canActivateShatterTheInfiniteLight(board);
 
   const prevSlotsRef = useRef(board.frontSlots);
   const [lastPlacedInstanceId, setLastPlacedInstanceId] = useState<string | null>(null);
@@ -343,6 +346,33 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
           </button>
           <div style={{ fontSize: 10, color: 'rgba(107,63,24,0.74)', letterSpacing: 0.4 }}>
             Gain 50 Divine Light per card, keep 3, reshuffle the rest.
+          </div>
+        </div>
+      )}
+
+      {canShatterTheInfiniteLight && (
+        <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
+          <button
+            className="attack-embrace-button"
+            onClick={activateShatterTheInfiniteLight}
+            style={{
+              padding: '10px 22px',
+              borderRadius: 999,
+              border: '1px solid rgba(255,120,120,0.75)',
+              background: 'linear-gradient(180deg, rgba(28,10,10,0.96), rgba(10,4,6,0.96))',
+              color: '#ffb3a0',
+              fontSize: 13,
+              fontWeight: 'bold',
+              letterSpacing: 1.2,
+              fontFamily: BODY_FONT,
+              cursor: 'pointer',
+              boxShadow: '0 10px 26px rgba(255,80,80,0.28)',
+            }}
+          >
+            Shatter the Infinite Light
+          </button>
+          <div style={{ fontSize: 10, color: 'rgba(255,179,160,0.78)', letterSpacing: 0.4 }}>
+            Board fully bridged — unleash the finisher.
           </div>
         </div>
       )}
