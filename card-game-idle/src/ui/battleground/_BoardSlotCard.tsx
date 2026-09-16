@@ -6,10 +6,11 @@
 import { CardRegistry } from '@/cards/CardRegistry';
 import { SET_ACCENT } from '@/data/elements';
 import {
-  getCardFaceBackgroundStyle,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
   getCardFaceMetrics,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
 } from '@/ui/cardBackgrounds';
 import { uiTypography } from '@/ui/theme';
 import type { FrontSlot, BackSlot } from '@/types/game';
@@ -48,9 +49,7 @@ export function FrontSlotCard({ slot }: { slot: FrontSlot }) {
 
   return (
     <div
-      className={slot.finish === 'holo' && def?.rarity !== 'Infinite' && def?.rarity !== 'Eternal' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic'
-        ? 'holofoil-live-card'
-        : undefined}
+      className={getLiveCardShimmerClassName(def, slot.finish, slot.faceState)}
       style={{
         width: SLOT_W, height: SLOT_H,
         borderRadius: 14,
@@ -61,7 +60,7 @@ export function FrontSlotCard({ slot }: { slot: FrontSlot }) {
         flexDirection: 'column',
         position: 'relative',
         flexShrink: 0,
-        ...getCardFaceBackgroundStyle(def ?? undefined, slot.finish, slot.faceState),
+        ...getLiveCardFaceBackgroundStyle(def ?? undefined, slot.finish, slot.faceState),
       }}
     >
       {/* Element stripe */}
@@ -117,12 +116,11 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
 
   const def = CardRegistry.get(slot.definitionId);
   const elColor = SET_ACCENT;
+  const isFaceUp = slot.faceState !== 'back';
 
   return (
     <div
-      className={slot.finish === 'holo' && def?.rarity !== 'Infinite' && def?.rarity !== 'Eternal' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic'
-        ? 'holofoil-live-card'
-        : undefined}
+      className={getLiveCardShimmerClassName(def, slot.finish, slot.faceState)}
       style={{
         width: CHERUBIM_W, height: CHERUBIM_H,
         borderRadius: 12,
@@ -133,40 +131,43 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
         flexDirection: 'column',
         position: 'relative',
         flexShrink: 0,
-        ...getCardFaceBackgroundStyle(def ?? undefined, slot.finish, slot.faceState),
+        ...getLiveCardFaceBackgroundStyle(def ?? undefined, slot.finish, slot.faceState),
       }}
     >
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0, height: 3,
-        background: `linear-gradient(90deg, transparent, ${elColor}cc, ${elColor}, ${elColor}cc, transparent)`,
-        zIndex: 4, pointerEvents: 'none',
-      }} />
+      {isFaceUp && (
+        <>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: 3,
+            background: `linear-gradient(90deg, transparent, ${elColor}cc, ${elColor}, ${elColor}cc, transparent)`,
+            zIndex: 4, pointerEvents: 'none',
+          }} />
 
-      <div style={getCardNameRibbonStyle('boardMini')}>
-        <div style={{
-          fontSize: FMM.typeSize, color: '#5c3b2b', letterSpacing: 1,
-          textTransform: 'uppercase', textAlign: 'center', marginBottom: 1,
-          fontFamily: DISPLAY_FONT, fontWeight: 700,
-        }}>
-          {def?.type ?? 'Dark'}
-        </div>
-        <div style={{
-          fontSize: FMM.nameSize, fontWeight: 'bold', color: '#2b1a12',
-          textAlign: 'center', lineHeight: 1.15, fontFamily: DISPLAY_FONT,
-        }}>
-          {def?.name ?? slot.definitionId}
-        </div>
-      </div>
+          <div style={getCardNameRibbonStyle('boardMini')}>
+            <div style={{
+              fontSize: FMM.typeSize, color: '#5c3b2b', letterSpacing: 1,
+              textTransform: 'uppercase', textAlign: 'center', marginBottom: 1,
+              fontFamily: DISPLAY_FONT, fontWeight: 700,
+            }}>
+              {def?.type ?? 'Dark'}
+            </div>
+            <div style={{
+              fontSize: FMM.nameSize, fontWeight: 'bold', color: '#2b1a12',
+              textAlign: 'center', lineHeight: 1.15, fontFamily: DISPLAY_FONT,
+            }}>
+              {def?.name ?? slot.definitionId}
+            </div>
+          </div>
 
-      <div style={getCardRulesPanelStyle('boardMini')}>
-        <div style={{
-          fontSize: FMM.descSize, color: '#3a251b',
-          textAlign: 'center', fontFamily: BODY_FONT, opacity: 0.7,
-        }}>
-          
-          {slot.durability != null ? ` · ${slot.durability}` : ''}
-        </div>
-      </div>
+          <div style={getCardRulesPanelStyle('boardMini')}>
+            <div style={{
+              fontSize: FMM.descSize, color: '#3a251b',
+              textAlign: 'center', fontFamily: BODY_FONT, opacity: 0.7,
+            }}>
+              {slot.durability != null ? ` · ${slot.durability}` : ''}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

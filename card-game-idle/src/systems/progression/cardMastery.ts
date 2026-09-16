@@ -51,6 +51,24 @@ export interface MasteryRewardPreview {
 }
 
 export const MAX_MASTERY_PROGRESS_PER_CARD_BOSS = 20;
+export const COLLECTION_POWER_RESONANCE_SCALE = 1_000;
+export const RESONANCE_PER_COLLECTION_POWER_HUNDREDTH = COLLECTION_POWER_RESONANCE_SCALE / 100;
+
+export function getMaximumResonanceScore(): number {
+  const maximumContributionPerCard = MASTERY_TIERS.at(-1)?.resonanceContribution ?? 0;
+  return CardRegistry.getAll().length * maximumContributionPerCard;
+}
+
+export function getMaximumCollectionPowerMultiplier(): number {
+  return 1 + getMaximumResonanceScore() / COLLECTION_POWER_RESONANCE_SCALE;
+}
+
+export function getCollectionPowerMultiplier(resonanceScore: number): number {
+  return Math.min(
+    getMaximumCollectionPowerMultiplier(),
+    1 + Math.max(0, resonanceScore) / COLLECTION_POWER_RESONANCE_SCALE,
+  );
+}
 
 export function getBossBaseMasteryPerCard(bossIndex: number, totalBosses: number): number {
   const raw = Math.round(3 + (bossIndex / Math.max(1, totalBosses - 1)) * 32);
@@ -85,23 +103,14 @@ export function getResonanceContributionForCount(count: number): number {
   return contribution;
 }
 
-// Module-level memo: skip the full scan when cardPlayCounts hasn't changed.
-let _resonanceMemoRef: Record<string, number> | null = null;
-let _resonanceMemoScore = 0;
-
 export function computeGlobalResonanceScore(progress: ProgressState): number {
   const counts = progress.cardPlayCounts ?? {};
-  // Zustand/Immer creates a new object reference whenever cardPlayCounts changes.
-  // If the reference is the same as last time we computed, return the cached result.
-  if (counts === _resonanceMemoRef) return _resonanceMemoScore;
-  _resonanceMemoRef = counts;
   let score = 0;
   for (const definitionId of Object.keys(counts)) {
     const playCount = counts[definitionId] ?? 0;
     if (playCount <= 0) continue;
     score += getResonanceContributionForCount(playCount);
   }
-  _resonanceMemoScore = score;
   return score;
 }
 
@@ -147,16 +156,10 @@ export function previewMasteryReward(
     if (entry.resonanceGain > 0) cardsTieredUp += 1;
   }
 
-  // Resonance payout is global/universal per fight difficulty.
-  // It should not vary by deck composition or which cards are near tier breakpoints.
-  const guaranteedResonanceGain = entries.length > 0
-    ? Math.max(1, baseAmount)
-    : 0;
-
   return {
     uniqueCards: entries.length,
     totalAppliedProgress,
-    resonanceGain: guaranteedResonanceGain,
+    resonanceGain,
     cardsTieredUp,
     entries,
   };

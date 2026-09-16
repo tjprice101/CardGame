@@ -41,6 +41,23 @@ interface MainMenuHubProps {
   onBeginTurn: () => void;
 }
 
+type MenuSection = 'play' | 'collection' | 'progress';
+
+interface MenuAction {
+  id: string;
+  label: string;
+  caption: string;
+  eyebrow: string;
+  icon: string;
+  art: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  status?: string;
+  tone?: 'primary' | 'cream' | 'cream-dim';
+}
+
+const menuAsset = (relativePath: string): string => `${import.meta.env.BASE_URL}assets/${relativePath.split('/').map(encodeURIComponent).join('/')}`;
+
 /**
  * Daily atmosphere quote — refreshes by date so the same line lasts a day
  * but the screen still feels alive across sessions. Single source of truth
@@ -88,6 +105,8 @@ function TileButton(props: {
   badge?: { label: string; tone?: 'alert' | 'info' | 'gold' };
   /** Optional icon glyph */
   icon?: string;
+  selected?: boolean;
+  onPreview?: () => void;
 }) {
   const isPrimary = props.tone === 'primary';
   const dim = props.tone === 'cream-dim';
@@ -136,6 +155,8 @@ function TileButton(props: {
       className="menu-tactile-btn"
       onClick={props.onClick}
       disabled={props.disabled}
+      aria-pressed={props.selected}
+      onFocus={props.onPreview}
       style={{
         position: 'relative',
         display: 'flex',
@@ -143,8 +164,10 @@ function TileButton(props: {
         alignItems: 'flex-start',
         justifyContent: 'center',
         gap: 3,
-        border: `1px solid ${palette.border}`,
-        borderRadius: 10,
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: props.selected ? theme.accentSoft : palette.border,
+        borderRadius: 7,
         background: palette.glass,
         backdropFilter: 'blur(10px) saturate(1.3)',
         WebkitBackdropFilter: 'blur(10px) saturate(1.3)',
@@ -154,13 +177,14 @@ function TileButton(props: {
         cursor: props.disabled ? 'not-allowed' : 'pointer',
         opacity: props.disabled ? 0.38 : 1,
         overflow: 'hidden',
-        boxShadow: palette.boxShadow,
+        boxShadow: props.selected ? `0 0 0 1px ${theme.glow}, 0 10px 28px rgba(0,0,0,0.52)` : palette.boxShadow,
         transition: 'transform 160ms ease, filter 160ms ease, box-shadow 160ms ease, border-color 160ms ease',
         width: '100%',
         boxSizing: 'border-box',
         ...dims,
       }}
       onMouseEnter={(e) => {
+        props.onPreview?.();
         if (!props.disabled) {
           const btn = e.currentTarget;
           btn.style.filter = 'brightness(1.15) saturate(1.2)';
@@ -173,8 +197,8 @@ function TileButton(props: {
         const btn = e.currentTarget;
         btn.style.filter = '';
         btn.style.transform = '';
-        btn.style.borderColor = palette.border;
-        btn.style.boxShadow = palette.boxShadow;
+        btn.style.borderColor = props.selected ? theme.accentSoft : palette.border;
+        btn.style.boxShadow = props.selected ? `0 0 0 1px ${theme.glow}, 0 10px 28px rgba(0,0,0,0.52)` : palette.boxShadow;
       }}
     >
       {/* Specular reflection */}
@@ -373,6 +397,8 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const ascensionLocked = ownedByRarity.Infinite < 5;
 
   const [mounted, setMounted] = useState(false);
+  const [activeSection, setActiveSection] = useState<MenuSection>('play');
+  const [focusedActionId, setFocusedActionId] = useState('begin-turn');
   const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
   const [eventNowMs, setEventNowMs] = useState<number>(() => Date.now());
   const [menuBackgroundChoices, setMenuBackgroundChoices] = useState<MainMenuBackgroundEntry[]>([getDefaultMainMenuBackground()]);
@@ -422,8 +448,111 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const cards = ownedCardCopies;
   const eventCountdown = formatCountdown(getCausalityEventCountdown(eventNowMs));
 
+  const menuSections: Record<MenuSection, MenuAction[]> = {
+    play: [
+      {
+        id: 'begin-turn', label: 'Begin Turn', eyebrow: 'Active Deck', icon: '▶',
+        caption: canBeginTurn ? 'Take your current deck into the arena.' : 'Build a valid deck before entering the arena.',
+        status: canBeginTurn ? `${deck.deckList.reduce((sum, entry) => sum + entry.copies, 0)} cards ready` : 'Deck required',
+        art: mainMenuBackground.imageUrl, onClick: props.onBeginTurn, disabled: !canBeginTurn, tone: 'primary',
+      },
+      {
+        id: 'eternitys-wake', label: t('eternityWake') || "Eternity's Wake", eyebrow: 'Boss Campaign', icon: '✦',
+        caption: 'Challenge story bosses and claim their signature Eternal cards.',
+        status: eternitysWakeLocked ? `Requires 3 Enigmatic cards · ${uniqueEnigmaticsOwned}/3` : 'Available',
+        art: menuAsset('menu-backgrounds/neutrality eternal card first acquisition splash screen.png'),
+        onClick: props.onEternitysWake, disabled: eternitysWakeLocked,
+      },
+      {
+        id: 'coop', label: 'Card-bound Co-op', eyebrow: 'Multiplayer', icon: '◇',
+        caption: 'Form a party and challenge synchronized boss encounters.', status: 'Online parties',
+        art: menuAsset('card-backgrounds/neutrality/Starbound Null Archangel.png'), onClick: props.onCardBoundCoop,
+      },
+      {
+        id: 'garden', label: 'Garden of Cards', eyebrow: 'Expeditions', icon: '⌁',
+        caption: 'Enter material expeditions, dungeons, and the Valley of Null.', status: 'Expedition hub',
+        art: menuAsset('dungeons/garden-archive.png'), onClick: props.onBattleground, tone: 'primary',
+      },
+      {
+        id: 'ascension', label: 'Ascension', eyebrow: 'Endgame', icon: '△',
+        caption: 'Face high-tier trials and pursue Transcendent rewards.',
+        status: ascensionLocked ? `Requires 5 Infinite cards · ${ownedByRarity.Infinite}/5` : 'Available',
+        art: menuAsset('pack-art/ascension-imports/event-horizon-arbiter.png'), onClick: props.onAscension, disabled: ascensionLocked,
+      },
+    ],
+    collection: [
+      {
+        id: 'store', label: t('cardStore') || 'Card Store', eyebrow: 'Acquire', icon: '◇',
+        caption: 'Open packs and expand the possibilities of your collection.', status: `${shards.toLocaleString()} shards available`,
+        art: menuAsset('pack-art/NeutralityPackArt.png'), onClick: props.onCardStore, tone: 'primary',
+      },
+      {
+        id: 'deck-builder', label: noDecklist ? 'Create Deck' : 'Deck Builder', eyebrow: 'Construct', icon: '▤',
+        caption: 'Build, tune, analyze, and equip abilities for your active deck.', status: noDecklist ? 'No active deck' : 'Active deck ready',
+        art: menuAsset('card-backgrounds/neutrality/Absolute Archive.png'), onClick: props.onDeckBuilder,
+      },
+      {
+        id: 'deck-viewer', label: 'Deck Viewer', eyebrow: 'Archive', icon: '▥',
+        caption: 'Browse your complete deck library and saved configurations.', status: `${progress.savedDecks.length} saved deck${progress.savedDecks.length === 1 ? '' : 's'}`,
+        art: menuAsset('card-backgrounds/neutrality/Void Archive.png'), onClick: props.onDeckViewer,
+      },
+      {
+        id: 'infinitude', label: t('infinitude') || 'Infinitude', eyebrow: 'Forge', icon: '∞',
+        caption: 'Consume exact Eternal combinations to forge Infinite cards.',
+        status: infinitudeLocked ? `Requires 5 Eternal cards · ${ownedByRarity.Eternal}/5` : 'Forge available',
+        art: menuAsset('InfiniteCardsMenuArt.png'), onClick: props.onInfinitude, disabled: infinitudeLocked,
+      },
+      {
+        id: 'fracture', label: 'Fracture', eyebrow: 'Refine', icon: '✧',
+        caption: 'Convert duplicate cards into focused Card-light progression.', status: 'Resonance fast-track',
+        art: menuAsset('card-backgrounds/neutrality/The Fracture of Knowing.png'), onClick: props.onFracture,
+      },
+    ],
+    progress: [
+      {
+        id: 'challenges', label: 'Challenges', eyebrow: 'Daily & Weekly', icon: '✓',
+        caption: 'Complete rotating objectives for Divine Light and Shards.', status: 'Live objectives',
+        art: menuAsset('card-backgrounds/neutrality/Measured Path.png'), onClick: props.onQuests,
+      },
+      {
+        id: 'achievements', label: 'Achievements', eyebrow: 'Milestones', icon: '◆',
+        caption: 'Review permanent milestones and claim earned rewards.', status: 'Account progression',
+        art: menuAsset('card-backgrounds/neutrality/Crown of Morning.png'), onClick: props.onAchievements,
+      },
+      {
+        id: 'mastery', label: 'Card Mastery', eyebrow: 'Card-born Tier', icon: '✦',
+        caption: 'Track Card-light, tier milestones, Resonance, and Collection Power.', status: 'Permanent power',
+        art: menuAsset('card-backgrounds/neutrality/Measure of Dawn.png'), onClick: props.onMastery,
+      },
+      {
+        id: 'enigma', label: 'Enigma', eyebrow: 'Hidden Manuscripts', icon: '◈',
+        caption: 'Discover manuscripts and complete their concealed trials.',
+        status: enigmaLocked ? `Open card packs · ${totalPacksOpened}/10` : 'Manuscripts available',
+        art: menuAsset('card-backgrounds/neutrality/Enigmatic Card Backing.png'), onClick: props.onEnigma, disabled: enigmaLocked,
+      },
+      {
+        id: 'profile', label: 'Player Profile', eyebrow: 'Identity', icon: '◎',
+        caption: 'Manage your profile, social presence, save, and visual themes.', status: titleBadge?.text ?? 'Wanderer',
+        art: avatar.imageUrl ?? menuAsset('profile-pictures/classic-acolyte.png'), onClick: props.onPlayerInfo,
+      },
+      {
+        id: 'tutorial', label: 'How to Play', eyebrow: 'Reference', icon: '?',
+        caption: 'Review controls, card systems, combat, and progression rules.', status: 'Complete game guide',
+        art: menuAsset('card-backgrounds/neutrality/Axiom Reservoir.png'), onClick: props.onTutorial,
+      },
+    ],
+  };
+  const sectionActions = menuSections[activeSection];
+  const focusedAction = sectionActions.find(action => action.id === focusedActionId) ?? sectionActions[0];
+
+  const selectSection = (section: MenuSection) => {
+    setActiveSection(section);
+    setFocusedActionId(menuSections[section][0].id);
+  };
+
   return (
     <div
+      className="main-menu-hub"
       style={{
         position: 'absolute',
         inset: 0,
@@ -441,7 +570,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       }}
     >
       {/* ───────── Top ribbon ───────── */}
-      <div style={{
+      <div className="main-menu-topbar" style={{
         position: 'absolute', top: 0, left: 0, right: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '14px 22px',
@@ -465,7 +594,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       </div>
 
       {/* ───────── Left: identity card ───────── */}
-      <div style={{
+      <div className="main-menu-identity" style={{
         position: 'absolute',
         left: 'clamp(20px, 3vw, 56px)',
         top: '38%',
@@ -548,7 +677,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
       </div>
 
       {/* ───────── Bottom-left: news / event banners ───────── */}
-      <div style={{
+      <div className="main-menu-events" style={{
         position: 'absolute',
         left: 'clamp(20px, 3vw, 56px)',
         bottom: 'clamp(22px, 3vh, 38px)',
@@ -600,218 +729,64 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             }}>NEW ▶</div>
           </button>
         )}
-        <button
-          className="menu-tactile-btn"
-          onClick={props.onFracture}
-          style={{
-            width: 150, minHeight: 52,
-            padding: '10px 14px',
-            borderRadius: 8,
-            border: `1px solid ${uiTheme.border}`,
-            background: uiTheme.surfaceStrong,
-            color: uiTheme.text,
-            fontFamily: uiTypography.display,
-            fontSize: 14,
-            letterSpacing: 1.4,
-            textAlign: 'left',
-            textTransform: 'uppercase',
-            cursor: 'pointer',
-            backdropFilter: 'blur(6px)',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.35)',
-          }}
-        >
-          <div>Fracture</div>
-          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, color: uiTheme.textMuted, textTransform: 'none' }}>Resonance fast-track</div>
-        </button>
-        <button
-          className="menu-tactile-btn enigma-golden-shimmer"
-          onClick={props.onEnigma}
-          disabled={enigmaLocked}
-          style={{
-            width: 150, minHeight: 52, padding: '10px 14px', borderRadius: 8,
-            border: '1px solid rgba(230, 190, 100, 0.7)',
-            background: 'linear-gradient(120deg, #6b4a12 0%, #d9a441 30%, #f8dd7a 50%, #d9a441 70%, #6b4a12 100%)',
-            color: '#1a1206', fontFamily: uiTypography.display, fontSize: 14,
-            letterSpacing: 1.4, textAlign: 'left', textTransform: 'uppercase',
-            cursor: enigmaLocked ? 'not-allowed' : 'pointer',
-            opacity: enigmaLocked ? 0.45 : 1,
-            backgroundSize: '200% 100%',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.4)',
-          }}
-        >
-          <div>✦ Enigma</div>
-          <div style={{ fontFamily: uiTypography.body, fontSize: 10, letterSpacing: 0.6, opacity: 0.78, textTransform: 'none' }}>{enigmaLocked ? `Hidden — open ${totalPacksOpened}/10 card packs to search for manuscripts` : 'Find manuscripts, then unlock their trials'}</div>
-        </button>
       </div>
 
-      {/* ───────── Right: polished glass shard navigation cluster ───────── */}
-      <div style={{
+      {/* ───────── Right: focused command deck ───────── */}
+      <div className="main-menu-command-deck" style={{
         position: 'absolute',
         right: 'clamp(20px, 3vw, 56px)',
-        top: '74px',
+        top: '82px',
         bottom: 'clamp(22px, 3vh, 38px)',
-        width: 'min(640px, 52vw)',
-        display: 'grid',
-        gridTemplateColumns: 'repeat(6, 1fr)',
-        gridAutoRows: 'min-content',
-        gap: 9,
-        alignContent: 'start',
-        background: 'transparent',
+        width: 'min(650px, 52vw)',
+        display: 'flex', flexDirection: 'column', gap: 12,
+        padding: 14, boxSizing: 'border-box',
+        border: `1px solid ${uiTheme.border}`, borderRadius: 8,
+        background: `linear-gradient(155deg, ${uiTheme.surfaceStrong} 0%, ${uiTheme.surfaceMuted} 100%)`,
+        backdropFilter: 'blur(16px) saturate(1.12)',
+        WebkitBackdropFilter: 'blur(16px) saturate(1.12)',
+        boxShadow: '0 24px 70px rgba(0,0,0,0.52), inset 0 1px 0 rgba(255,255,255,0.14)',
       }}>
-        {/* Hero — Begin Turn */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Begin Turn"
-            caption={canBeginTurn ? 'Step into the arena' : 'Build a deck before beginning your turn.'}
-            tone="primary"
-            size="hero"
-            onClick={props.onBeginTurn}
-            disabled={!canBeginTurn}
-            meta={canBeginTurn ? <span style={{ opacity: 0.88, color: '#ffffff', fontWeight: 600 }}>Full Deck Ready</span> : undefined}
-          />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div>
+            <div style={{ color: uiTheme.textMuted, fontSize: 9, letterSpacing: 2.8, textTransform: 'uppercase' }}>Pantheon Navigation</div>
+            <div style={{ color: uiTheme.text, fontFamily: uiTypography.display, fontSize: 19, letterSpacing: 1.2, marginTop: 3 }}>Command Deck</div>
+          </div>
+          <div role="tablist" aria-label="Main menu sections" style={{ display: 'flex', gap: 4, padding: 3, border: `1px solid ${uiTheme.border}`, background: 'rgba(0,0,0,0.2)', borderRadius: 7 }}>
+            {([['play', 'Play'], ['collection', 'Collection'], ['progress', 'Progress']] as const).map(([section, label]) => (
+              <button key={section} role="tab" aria-selected={activeSection === section} className="menu-tactile-btn" onClick={() => selectSection(section)} style={{
+                padding: '7px 12px', borderRadius: 5,
+                border: activeSection === section ? `1px solid ${uiTheme.borderStrong}` : '1px solid transparent',
+                background: activeSection === section ? uiTheme.button : 'transparent',
+                color: activeSection === section ? '#fff' : uiTheme.textMuted,
+                fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.1, cursor: 'pointer',
+              }}>{label}</button>
+            ))}
+          </div>
         </div>
 
-        {/* Row: Eternity's Wake | Infinitude */}
-        <div style={{ gridColumn: 'span 3' }}>
-          <TileButton
-            theme={uiTheme}
-            label={t('eternityWake') || "Eternity's Wake"}
-            caption={eternitysWakeLocked ? `Locked — Enigmatic cards ${uniqueEnigmaticsOwned}/3` : 'Story bosses & Eternal rewards'}
-            size="half"
-            onClick={props.onEternitysWake}
-            disabled={eternitysWakeLocked}
-          />
-        </div>
-        <div style={{ gridColumn: 'span 3' }}>
-          <TileButton
-            theme={uiTheme}
-            label={t('infinitude') || 'Infinitude'}
-            caption={infinitudeLocked ? `Locked — Eternal cards ${ownedByRarity.Eternal}/5` : 'Infinite card crafting forge'}
-            size="half"
-            onClick={props.onInfinitude}
-            disabled={infinitudeLocked}
-          />
-        </div>
+        <button key={focusedAction.id} className="menu-tactile-btn main-menu-feature" onClick={focusedAction.onClick} disabled={focusedAction.disabled} style={{
+          position: 'relative', minHeight: 'clamp(150px, 24vh, 210px)', overflow: 'hidden',
+          borderRadius: 7, border: `1px solid ${uiTheme.borderStrong}`,
+          backgroundImage: `linear-gradient(90deg, rgba(5,7,14,0.96) 0%, rgba(5,7,14,0.78) 48%, rgba(5,7,14,0.22) 100%), linear-gradient(180deg, transparent 52%, rgba(3,4,9,0.9) 100%), url("${focusedAction.art}")`,
+          backgroundSize: 'cover', backgroundPosition: 'center', color: '#fff', textAlign: 'left',
+          padding: '20px 22px', cursor: focusedAction.disabled ? 'not-allowed' : 'pointer', opacity: focusedAction.disabled ? 0.68 : 1,
+          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08), 0 14px 34px rgba(0,0,0,0.45)',
+        }}>
+          <div style={{ position: 'relative', zIndex: 1, width: '58%', minWidth: 240, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+            <div style={{ fontSize: 9, color: uiTheme.accentSoft, letterSpacing: 2.4, textTransform: 'uppercase' }}>{focusedAction.eyebrow}</div>
+            <div style={{ fontFamily: uiTypography.display, fontSize: 27, letterSpacing: 1.2, lineHeight: 1.05, marginTop: 7, textShadow: '0 3px 18px rgba(0,0,0,0.9)' }}>{focusedAction.label}</div>
+            <div style={{ fontSize: 11, lineHeight: 1.5, color: 'rgba(255,255,255,0.78)', marginTop: 8 }}>{focusedAction.caption}</div>
+            <div style={{ marginTop: 14, padding: '5px 9px', borderLeft: `2px solid ${uiTheme.accentSoft}`, background: 'rgba(0,0,0,0.38)', color: focusedAction.disabled ? 'rgba(255,255,255,0.58)' : uiTheme.accentSoft, fontSize: 10, letterSpacing: 0.7 }}>
+              {focusedAction.disabled ? 'LOCKED · ' : ''}{focusedAction.status}
+            </div>
+          </div>
+          <span aria-hidden style={{ position: 'absolute', right: 18, bottom: 14, fontSize: 22, color: 'rgba(255,255,255,0.75)' }}>{focusedAction.disabled ? '◇' : '→'}</span>
+        </button>
 
-        {/* Row: Card-bound Co-op */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Card-bound Co-op"
-            caption="Multiplayer co-op boss raids"
-            tone="primary"
-            size="wide"
-            onClick={props.onCardBoundCoop}
-          />
-        </div>
-
-        {/* Row: Garden of Cards */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Garden of Cards"
-            caption="Material expeditions & dungeons"
-            tone="primary"
-            size="wide"
-            onClick={props.onBattleground}
-          />
-        </div>
-
-        {/* Row: Ascension */}
-        <div style={{ gridColumn: '1 / -1' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Ascension"
-            caption={ascensionLocked ? `Locked — Infinite cards ${ownedByRarity.Infinite}/5` : 'High-tier endgame trials'}
-            tone="primary"
-            size="wide"
-            onClick={props.onAscension}
-            disabled={ascensionLocked}
-          />
-        </div>
-
-        {/* Row: Card Store | Deck Builder | Deck Viewer */}
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton
-            theme={uiTheme}
-            label={t('cardStore') || 'Card Store'}
-            caption="Packs & collection expansion"
-            tone="primary"
-            size="wide"
-            onClick={props.onCardStore}
-          />
-        </div>
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton
-            theme={uiTheme}
-            label={noDecklist ? '+ Deck' : 'Deck Builder'}
-            caption="Construct & customize decks"
-            tone="cream"
-            size="wide"
-            onClick={props.onDeckBuilder}
-          />
-        </div>
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Deck Viewer"
-            caption="Browse full deck library"
-            tone="cream-dim"
-            size="wide"
-            onClick={props.onDeckViewer}
-          />
-        </div>
-
-        {/* Row: Challenges | Achievements | Card Mastery */}
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Challenges"
-            caption="Daily & weekly tasks"
-            size="half"
-            onClick={props.onQuests}
-          />
-        </div>
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Achievements"
-            caption="Milestones & shard rewards"
-            size="half"
-            onClick={props.onAchievements}
-          />
-        </div>
-        <div style={{ gridColumn: 'span 2' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Card Mastery"
-            caption="Card ranks & resonance"
-            size="half"
-            onClick={props.onMastery}
-          />
-        </div>
-
-        {/* Bottom row: Player Info | Tutorial */}
-        <div style={{ gridColumn: 'span 3' }}>
-          <TileButton
-            theme={uiTheme}
-            label="Player Profile"
-            caption="Profile · Social · Save"
-            tone="cream-dim"
-            size="small"
-            onClick={props.onPlayerInfo}
-          />
-        </div>
-        <div style={{ gridColumn: 'span 3' }}>
-          <TileButton
-            theme={uiTheme}
-            label="How to Play"
-            caption="Rules & mechanics guide"
-            tone="cream-dim"
-            size="small"
-            onClick={props.onTutorial}
-          />
+        <div className="main-menu-action-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 8, overflowY: 'auto', paddingRight: 2 }}>
+          {sectionActions.map(action => (
+            <TileButton key={action.id} theme={uiTheme} label={action.label} caption={action.status} icon={action.icon} tone={action.tone ?? 'cream-dim'} size="small" onClick={action.onClick} disabled={action.disabled} selected={focusedAction.id === action.id} onPreview={() => setFocusedActionId(action.id)} />
+          ))}
         </div>
       </div>
     </div>

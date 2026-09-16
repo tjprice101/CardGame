@@ -3,7 +3,7 @@ import { useStore, selectDeck, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { warmTheme } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
-import { getCardFaceBackgroundStyle, getCardNameRibbonStyle, getCardRulesPanelStyle } from '@/ui/cardBackgrounds';
+import { getCardNameRibbonStyle, getCardRulesPanelStyle, getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
 
 const styles: Record<string, React.CSSProperties> = {
@@ -190,9 +190,7 @@ export default function DeckStatus() {
               {pileEntries.map((entry) => (
                 <div key={entry.key} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <div
-                    className={entry.finish === 'holo' && entry.def?.rarity !== 'Infinite' && entry.def?.rarity !== 'Eternal' && entry.def?.rarity !== 'Transcendent' && entry.def?.rarity !== 'Enigmatic'
-                      ? 'holofoil-live-card'
-                      : undefined}
+                    className={getLiveCardShimmerClassName(entry.def, entry.finish)}
                     style={{
                       position: 'relative',
                       height: 132,
@@ -200,7 +198,7 @@ export default function DeckStatus() {
                       border: `1px solid ${warmTheme.border}`,
                       overflow: 'hidden',
                       background: warmTheme.surface,
-                      ...getCardFaceBackgroundStyle(entry.def ?? null, entry.finish),
+                      ...getLiveCardFaceBackgroundStyle(entry.def ?? null, entry.finish),
                     }}
                     title={`${entry.name} (${entry.type})`}
                   >

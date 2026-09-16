@@ -15,7 +15,7 @@ export default function CardBornStacksPanel() {
   return (
     <>
       <section style={{
-        position: 'absolute', left: 14, top: 108, zIndex: 45, width: 154,
+        width: 154, pointerEvents: 'auto',
         padding: '10px 12px', borderRadius: 10,
         border: '1px solid rgba(255,210,92,0.34)',
         background: 'linear-gradient(145deg, rgba(12,12,16,0.88), rgba(72,18,28,0.72))',
@@ -34,7 +34,7 @@ export default function CardBornStacksPanel() {
       </section>
 
       {showInfo && (
-        <div role="dialog" aria-modal="true" onClick={() => setShowInfo(false)} style={{ position: 'absolute', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.62)', padding: 20 }}>
+        <div role="dialog" aria-modal="true" onClick={() => setShowInfo(false)} style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.62)', padding: 20 }}>
           <div onClick={event => event.stopPropagation()} style={{ maxWidth: 420, padding: 22, borderRadius: 12, border: '1px solid rgba(255,220,120,0.55)', background: 'linear-gradient(145deg, #15151a, #3b111c)', color: '#fff7de', boxShadow: '0 16px 45px rgba(0,0,0,0.55)', fontFamily: uiTypography.body }}>
             <div style={{ fontFamily: uiTypography.display, fontSize: 16, letterSpacing: 1.8, color: '#ffe08a' }}>Card-born Stacks</div>
             <p style={{ fontSize: 12, lineHeight: 1.6, color: 'rgba(255,240,205,0.78)' }}>This panel contains counters created by cards from specialized sets. Causality cards can convert Limitless Light into Limitless Cosmos, grant Cosmos, or consume it for stronger effects. Cosmos resets when the turn ends.</p>

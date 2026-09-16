@@ -61,6 +61,7 @@ import {
   MASTERY_TIERS,
   applyMasteryReward,
   computeGlobalResonanceScore,
+  getCollectionPowerMultiplier,
   getBossFightMasteryPerCard,
   getMasteryClaimKey,
 } from '@/systems/progression/cardMastery';
@@ -537,13 +538,6 @@ interface StoreActions {
 
 type Store = GameState & StoreActions;
 
-/**
- * Tune this constant so a complete, fully-mastered collection reaches
- * approximately ÁE0 E0 total globalOblivionMult from resonance alone.
- * Lower value = stronger resonance; higher value = weaker.
- */
-const RESONANCE_SCALE_CONSTANT = 500;
-
 function getEntropicEnergyBalance(progress: ProgressState): number {
   return (progress.entropicEnergyBalance ?? progress.entropyBalance ?? 0);
 }
@@ -594,9 +588,7 @@ function recompute(state: Store): void {
   latchUnlockedAchievements(state.progress);
   state.computedStats = ScoreSystem.compute(state.board);
   const resonanceScore = computeGlobalResonanceScore(state.progress);
-  if (resonanceScore > 0) {
-    state.computedStats.globalDivineLightMult += resonanceScore / RESONANCE_SCALE_CONSTANT;
-  }
+  state.computedStats.globalDivineLightMult += getCollectionPowerMultiplier(resonanceScore) - 1;
   state.computedStats.resonanceScore = resonanceScore;
   eventBus.emit('board:recomputed', state.computedStats);
 }
@@ -1233,7 +1225,7 @@ function grantDivineLight(s: Store, amount: number, sourceDefinitionId?: string)
   // Every Divine Light source, including sacrifice rewards and card effects, scales
   // from the player's current Collection Power before downstream rewards resolve.
   const collectionPower = computeGlobalResonanceScore(s.progress);
-  const collectionPowerMultiplier = Math.min(3, 1 + Math.max(0, collectionPower) / 1_000);
+  const collectionPowerMultiplier = getCollectionPowerMultiplier(collectionPower);
   amount = Math.floor(amount * collectionPowerMultiplier);
   if (amount <= 0) return;
 
@@ -1246,10 +1238,6 @@ function grantDivineLight(s: Store, amount: number, sourceDefinitionId?: string)
     }
   }
 
-  // Global Divine Light multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
-  if (s.computedStats.globalDivineLightMult > 0) {
-    amount = Math.round(amount * (1 + s.computedStats.globalDivineLightMult));
-  }
   s.turn.divineLightEarnedThisTurn += amount;
   if (isCausalityDefinitionId(sourceDefinitionId)) {
     s.turn.causalityDivineLightThisTurn = (s.turn.causalityDivineLightThisTurn ?? 0) + amount;
@@ -1306,7 +1294,7 @@ function grantDivineLight(s: Store, amount: number, sourceDefinitionId?: string)
 function grantPersistentDivineLight(s: Store, amount: number): number {
   if (amount <= 0) return 0;
   const collectionPower = computeGlobalResonanceScore(s.progress);
-  const scaledAmount = Math.floor(amount * Math.min(3, 1 + Math.max(0, collectionPower) / 1_000));
+  const scaledAmount = Math.floor(amount * getCollectionPowerMultiplier(collectionPower));
   if (scaledAmount <= 0) return 0;
   s.progress.divineLight += scaledAmount;
   s.progress.lifetimeDivineLight = (s.progress.lifetimeDivineLight ?? 0) + scaledAmount;
@@ -2567,7 +2555,7 @@ export const useStore = create<Store>()(
             .sort((a, b) => (b?.limitlessCharge ?? 0) - (a?.limitlessCharge ?? 0))[0];
           if (!sophTarget || sophTarget.limitlessCharge <= 0) return;
           const collectionPower = computeGlobalResonanceScore(s.progress);
-          const payout = Math.round(500 * sophTarget.limitlessCharge * Math.min(3, 1 + Math.max(0, collectionPower) / 1_000));
+          const payout = Math.round(500 * sophTarget.limitlessCharge * getCollectionPowerMultiplier(collectionPower));
           grantDivineLight(s, payout);
           darkSlot.attackCooldowns[cooldownKey] = Math.max(1, def.cooldownCardsPlayed ?? 1);
           emitQuestProgressToProgress(s.progress, { kind: 'activate_dark', amount: 1 });

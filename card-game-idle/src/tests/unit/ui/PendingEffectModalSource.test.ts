@@ -8,7 +8,7 @@ describe('PendingEffectModal card faces', () => {
   it('renders selectable cards face-up instead of inheriting deck back-state', () => {
     const source = readFileSync(modalPath, 'utf8');
 
-    expect(source).toContain("getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, 'front')");
-    expect(source).not.toContain('getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, card.faceState)');
+    expect(source).toContain("getLiveCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, 'front')");
+    expect(source).not.toContain('getLiveCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, card.faceState)');
   });
 });

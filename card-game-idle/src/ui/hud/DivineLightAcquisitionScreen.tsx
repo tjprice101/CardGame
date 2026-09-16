@@ -434,6 +434,7 @@ function OverviewTab() {
             { icon: '⚔',  label: 'Ain Attacks',       desc: 'Cooldown-gated attacks on flipped Light cards. Read your stacks without spending them.', accent: C.blue   },
             { icon: '✾',  label: 'Soph Attacks',      desc: 'Higher base payout, consumes Limitless Light Stacks measured before the cost is paid.',  accent: C.blue   },
             { icon: '✦',  label: 'Bridge the Light',  desc: 'Ain Soph Aur front-row attacks — the highest base payouts available.',                    accent: C.gold   },
+            { icon: '✧',  label: 'Shatter the Infinite Light', desc: 'A fully bridged board unlocks a 10-second star-click finisher worth 1,000 base Divine Light per hit.', accent: C.red },
             { icon: '☠',  label: 'Sacrifice',         desc: 'Sacrifice a charged Soph card to convert a percentage of its stored charge into Limitless Light Stacks.', accent: C.red    },
             { icon: '◈',  label: 'Collection Power',  desc: 'A permanent share of every attack’s scaling, earned by playing and mastering cards.',     accent: C.purple },
             { icon: '∞',  label: 'Limitless Light',   desc: 'Flip charged cards to bank stacks, then spend or scale off them the same turn.',          accent: C.green  },
@@ -536,6 +537,28 @@ function AttacksTab() {
               No Light cards on the board — play one into a back slot to see live attack data.
             </div>
           )}
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: C.dimLine }} />
+
+      <div>
+        <SectionTitle label="Full-Board Finisher" accent={C.red.fg} />
+        <SourceCard
+          icon="✧"
+          title="Shatter the Infinite Light"
+          subtitle="Requires all four front slots to hold Ain Soph Aur and all four back-row Light or Dark cards to be flipped to Ain. After a full fade to black, click glowing stars for 10 seconds; each hit adds one Limitless Infinity stack worth 1,000 base Divine Light before Collection Power scaling. Timers pause during the sequence."
+          accent={C.red}
+          tags={['fully bridged', '10-second window', '1,000 per hit']}
+        />
+        <div style={{ marginTop: 10 }}>
+          <SourceCard
+            icon="↻"
+            title="Shatter Aftermath"
+            subtitle="The field and hand move to discard, the discard pile reshuffles into the draw pile, and Light Stacks and board effects clear. The turn does not advance and no replacement hand is drawn. In boss encounters, Shatter also staggers the boss and restores the full encounter clock."
+            accent={C.red}
+            tags={['board wipe', 'no turn advance', 'boss stagger']}
+          />
         </div>
       </div>
 
@@ -757,12 +780,18 @@ function TipsTab() {
       />
       <TipCard
         rank={6}
+        title="Cash Out a Fully Bridged Board"
+        detail="Four front-row Ain Soph Aur plus four back-row cards flipped to Ain unlock Shatter the Infinite Light. Click as many stars as possible, but plan for the field and your hand to be discarded with no replacement draw after the payout."
+        accent={C.red.fg}
+      />
+      <TipCard
+        rank={7}
         title="Place Dark Cards on the Side You Need"
         detail="Right-click a Dark card to place it face-up on Ain for immediate access to its utility. Left-click it onto Soph when you want it to accumulate charge first."
         accent={C.purple.fg}
       />
       <TipCard
-        rank={7}
+        rank={8}
         title="Grow Collection Power for a Permanent Floor"
         detail="Collection Power is one third of every attack's scaling and never resets. Playing and mastering more unique cards raises your baseline payout on every future turn, even before you build a board."
         accent={C.purple.fg}

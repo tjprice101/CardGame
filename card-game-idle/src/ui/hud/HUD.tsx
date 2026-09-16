@@ -214,10 +214,22 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
     <>
       {/* Core play surfaces */}
       <BoardDisplay onHoverCard={setInspectedCardId} />
-      <CardBornStacksPanel />
       {/* ScoreDisplay overlaps the boss/battleground/garden banner — those headers already present score/timer/currencies */}
       {!inBattleground && !inGardenDungeon && !inBossFight && <ScoreDisplay />}
-      <AngelStatPanel />
+      <div style={{
+        position: 'absolute',
+        top: inBossFight || inBattleground || inGardenDungeon ? 116 : 60,
+        left: 14,
+        zIndex: 45,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: 10,
+        pointerEvents: 'none',
+      }}>
+        <AngelStatPanel />
+        <CardBornStacksPanel />
+      </div>
 
       {/* Top status bar — set · turn · phase */}
       <TopStatusBar onOpenDivineLightScreen={() => setShowDivineLightScreen(true)} />

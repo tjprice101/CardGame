@@ -592,7 +592,14 @@ export default function EternitysWake({ onClose }: Props) {
                     <div style={{ fontSize: 11, color: 'rgba(255,107,107,0.5)' }}>No saved decks found.</div>
                   ) : (
                     progress.savedDecks.map(deck => {
-                      const rewardPreview = previewMasteryReward(progress, deck.deckList, deck.extraDeck ?? [], baseMasteryPerCard);
+                      const baseCardLightAward = baseMasteryPerCard * selectedFightCount;
+                      const rewardPreview = previewMasteryReward(progress, deck.deckList, deck.extraDeck ?? [], baseCardLightAward);
+                      const appliedAwards = rewardPreview.entries.map(entry => entry.appliedProgress);
+                      const minimumAward = appliedAwards.length > 0 ? Math.min(...appliedAwards) : 0;
+                      const maximumAward = appliedAwards.length > 0 ? Math.max(...appliedAwards) : 0;
+                      const cardLightLabel = minimumAward === maximumAward
+                        ? `+${minimumAward.toLocaleString()}`
+                        : `+${minimumAward.toLocaleString()}–${maximumAward.toLocaleString()}`;
                       return (
                         <div
                           key={deck.id}
@@ -613,7 +620,10 @@ export default function EternitysWake({ onClose }: Props) {
                                 {deck.deckList.length > 0 ? ` (${deck.deckList.reduce((a, e) => a + e.copies, 0)} cards)` : ''}
                               </div>
                               <div style={{ fontSize: 10, color: 'rgba(160,220,255,0.74)', marginTop: 3 }}>
-                                Awards +{rewardPreview.resonanceGain.toLocaleString()} Card-light for each card in your deck upon completion
+                                Awards {cardLightLabel} Card-light per unique card
+                                {rewardPreview.resonanceGain > 0
+                                  ? ` · ${rewardPreview.cardsTieredUp} tier up · +${rewardPreview.resonanceGain} Resonance`
+                                  : ' · Resonance rises when a card crosses its next Tier'}
                               </div>
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 134 }}>

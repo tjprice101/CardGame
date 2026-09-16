@@ -59,6 +59,18 @@ Materials are consumed only after validation succeeds. Every successful summon g
 
 Bridge the Light uses `activateAsaBridge`, applies optional stack costs, computes triune scaling, grants Divine Light, and starts cooldown.
 
+## Shatter The Infinite Light Lifecycle
+
+`canActivateShatterTheInfiniteLight` unlocks the finisher only when all four front slots contain Ain Soph Aur and all four back slots contain Light/Dark cards already flipped to `side: 'ain'` and `faceState: 'front'`.
+
+`activateShatterTheInfiniteLight` starts a three-phase sequence:
+
+1. `priming`: the arena fades completely to black for 1.1 seconds; attack visuals remain hidden.
+2. `active`: a 10-second starfield window accepts clicks. Each successful click adds one Limitless Infinity stack.
+3. `result`: each stack grants 1,000 base Divine Light through the central Collection Power-scaled grant path, followed by a 2.6-second result reveal.
+
+All gameplay mutations and encounter timers pause while the sequence is active. Resolution moves every field card and the entire hand to discard, reshuffles discard into the draw pile, clears Light Stacks and board effects, and resets cards played this turn. It does not advance the turn, open a mulligan, or draw a replacement hand. In boss encounters it also triggers a stagger and restores the full encounter duration; in Battleground it restores the timer to 180 seconds.
+
 ## Force Removal
 
 Right-click a field card to open force removal:

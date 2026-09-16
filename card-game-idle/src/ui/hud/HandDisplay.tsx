@@ -8,8 +8,9 @@ import {
   cardFacePalette,
   getAdaptiveDescriptionMetrics,
   getCardBackgroundUrl,
-  getCardFaceBackgroundStyle,
   getCardFaceMetrics,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
@@ -393,13 +394,10 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
             <div className="ornate-scroll" style={styles.idleShowcase}>
               {idleCards.map(({ card, def }, idx) => {
                 if (!def) return null;
-                const showHolo = card.finish === 'holo' && def.rarity !== 'Infinite' && def.rarity !== 'Eternal' && def.rarity !== 'Transcendent' && def.rarity !== 'Enigmatic';
                 const previewText = getCardPreviewText(def, 2);
                 const descMetrics = getAdaptiveDescriptionMetrics('pack', previewText);
                 const cardClass = [
-                  showHolo
-                    ? 'holofoil-live-card'
-                    : undefined,
+                  getLiveCardShimmerClassName(def, card.finish, 'front'),
                   idleSwapState?.slot === idx && idleSwapState.phase === 'out' ? 'anim-idle-staple-fade-out' : undefined,
                   idleSwapState?.slot === idx && idleSwapState.phase === 'in' ? 'anim-idle-staple-fade-in' : undefined,
                 ].filter(Boolean).join(' ');
@@ -410,7 +408,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
                     className={cardClass || undefined}
                     style={{
                       ...styles.idleCard,
-                      ...getCardFaceBackgroundStyle(def, showHolo ? 'holo' : 'normal'),
+                      ...getLiveCardFaceBackgroundStyle(def, card.finish),
                       ...(artOnlyMode ? { boxShadow: '0 0 0 2px rgba(255,255,255,0.7), 0 4px 16px rgba(0,0,0,0.5)' } : {}),
                     }}
                   >
@@ -536,15 +534,13 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
             <div
               key={`${deckCard.instanceId}_${deckCard.definitionId}_${idx}`}
               className={[
-                (deckCard.finish === 'holo' && def?.rarity !== 'Infinite' && def?.rarity !== 'Eternal' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic')
-                  ? 'holofoil-live-card'
-                  : undefined,
+                getLiveCardShimmerClassName(def, deckCard.finish, 'front'),
                 isGuideHighlighted ? 'trial-guide-pulse' : undefined,
               ].filter(Boolean).join(' ') || undefined}
               draggable={isDraggable}
               style={{
                 ...styles.card,
-                ...getCardFaceBackgroundStyle(def, deckCard.finish, 'front'),
+                ...getLiveCardFaceBackgroundStyle(def, deckCard.finish, 'front'),
                 ...(selected ? styles.cardMulligan : {}),
                 ...(!isPlayable ? { opacity: 0.35, cursor: 'not-allowed', filter: 'grayscale(0.5)' } : {}),
                 ...(isDragging ? { opacity: 0.45, transform: 'scale(0.97)' } : {}),
@@ -585,11 +581,6 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
               }}
               onDragEnd={() => setDraggingId(null)}
             >
-
-              {def && (() => {
-                const artUrl = getCardBackgroundUrl(def);
-                return artUrl ? <img src={artUrl} alt="" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} /> : null;
-              })()}
 
               <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
                 {showTopPanel && (

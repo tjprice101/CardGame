@@ -21,10 +21,12 @@ Starter accounts, new saves, and wiped saves start with zero currency balances: 
 Collection Power comes from card mastery and is computed with `computeGlobalResonanceScore(progress)`. It scales Divine Light grants through the central grant path:
 
 ```text
-multiplier = min(3, 1 + max(0, collectionPower) / 1000)
+maximum resonance = registered card count * highest-tier resonance contribution
+maximum multiplier = 1 + maximum resonance / 1000
+multiplier = min(maximum multiplier, 1 + max(0, resonance) / 1000)
 ```
 
-Attack previews should use the same Collection Power value as runtime payout calculation.
+The cap therefore rises automatically whenever cards are added to the registry. Attack previews should use the same Collection Power value as runtime payout calculation.
 
 ## Daily And Weekly Challenges
 

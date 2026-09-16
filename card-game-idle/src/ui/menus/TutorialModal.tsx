@@ -279,6 +279,18 @@ function AttacksBody() {
           not auto-pick &mdash; you choose exactly which cards to spend.
         </div>
       </div>
+
+      <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Shatter the Infinite Light</div>
+        <div style={bodyTextStyle}>
+          Fully bridge the board with four front-row Ain Soph Aur and four back-row Light or Dark cards already
+          flipped to Ain to unlock this finisher. The screen first fades completely to black, then opens a
+          10-second starfield. Each glowing star clicked creates one <Tag>Limitless Infinity</Tag> stack worth
+          1,000 base Divine Light before Collection Power scaling. Gameplay timers pause during the sequence.
+        </div>
+        <ListItem label="Aftermath">The field and hand go to discard, the discard pile reshuffles into the draw pile, and Light Stacks and board effects clear. The turn does not advance and no replacement hand is drawn.</ListItem>
+        <ListItem label="Boss fights">Shattering immediately staggers the boss and restores the encounter clock to its full duration.</ListItem>
+      </div>
     </>
   );
 }

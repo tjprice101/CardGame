@@ -684,6 +684,42 @@ select {
   animation: holoEtchShift 1.8s ease-in-out infinite alternate;
 }
 
+/* Live turn cards use one transform-only foil pass. Menu cards keep the richer
+   multi-layer treatment where many simultaneous repaints are less costly. */
+@keyframes liveCardShimmerSweep {
+  from { transform: translate3d(-52%, 0, 0) rotate(11deg); }
+  to   { transform: translate3d(52%, 0, 0) rotate(11deg); }
+}
+.live-card-shimmer {
+  isolation: isolate;
+}
+.live-card-shimmer::after {
+  content: '';
+  position: absolute;
+  z-index: 3;
+  top: -35%;
+  bottom: -35%;
+  left: -90%;
+  width: 72%;
+  pointer-events: none;
+  opacity: 0.42;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 34%, rgba(255,255,255,0.78) 50%, rgba(255,255,255,0.12) 66%, transparent 100%);
+  mix-blend-mode: screen;
+  will-change: transform;
+  animation: liveCardShimmerSweep 4.8s linear infinite;
+}
+.live-card-shimmer-eternal::after { background-color: rgba(180, 52, 112, 0.1); }
+.live-card-shimmer-infinite::after { background-color: rgba(190, 220, 255, 0.09); }
+.live-card-shimmer-enigmatic::after { background-color: rgba(255, 205, 74, 0.1); }
+.live-card-shimmer-transcendent::after { background-color: rgba(255, 72, 112, 0.12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .live-card-shimmer::after {
+    animation: none !important;
+    opacity: 0.18;
+  }
+}
+
 /* ── Ornate parchment scrollbar (global) ── */
 * {
   scrollbar-width: thin;
@@ -840,6 +876,10 @@ html.reduced-motion .holofoil-card {
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
+}
+html.reduced-motion .live-card-shimmer::after {
+  animation: none !important;
+  opacity: 0.18;
 }
 
 /* Eternity's Wake / Boss Fight dramatic UI */
@@ -1162,6 +1202,90 @@ html.reduced-motion .anim-ew-timer-pulse {
        responsive without overriding existing animations. ── */
 button:not(.menu-tactile-btn):not(.attack-screen-tile):not(.attack-cost-choice):not(.attack-modal-primary):not(.attack-modal-secondary):not(.attack-modal-close):not(.attack-embrace-button):not(.ui-cta-breath):not(.ui-tile-hover):not(.ui-chip) {
   transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 180ms ease, transform 140ms ease, filter 160ms ease;
+}
+
+/* ── Main menu command deck ── */
+@keyframes mainMenuFeatureReveal {
+  from { opacity: 0.35; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.main-menu-feature {
+  animation: mainMenuFeatureReveal 240ms ease-out both;
+}
+.main-menu-action-grid {
+  scrollbar-width: thin;
+}
+
+@media (max-width: 1100px) {
+  .main-menu-command-deck {
+    right: 18px !important;
+    width: min(590px, 58vw) !important;
+  }
+  .main-menu-identity {
+    left: 24px !important;
+    width: min(310px, 31vw) !important;
+  }
+  .main-menu-events {
+    left: 24px !important;
+    max-width: 32vw !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .main-menu-hub {
+    overflow-y: auto !important;
+    min-height: 920px;
+    background-attachment: fixed;
+  }
+  .main-menu-topbar {
+    padding: 10px 12px !important;
+  }
+  .main-menu-topbar > div:last-child > div:first-child {
+    display: none;
+  }
+  .main-menu-identity {
+    top: 72px !important;
+    left: 16px !important;
+    width: calc(100% - 32px) !important;
+    transform: none !important;
+  }
+  .main-menu-command-deck {
+    top: 240px !important;
+    left: 16px !important;
+    right: 16px !important;
+    bottom: auto !important;
+    width: auto !important;
+    min-height: 600px;
+  }
+  .main-menu-events {
+    top: 860px !important;
+    left: 16px !important;
+    bottom: auto !important;
+    max-width: calc(100% - 32px) !important;
+    padding-bottom: 24px;
+  }
+  .main-menu-events > button {
+    width: min(100%, 320px) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .main-menu-action-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .main-menu-feature > div {
+    width: 76% !important;
+    min-width: 0 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-menu-feature {
+    animation: none !important;
+  }
+}
+html.reduced-motion .main-menu-feature {
+  animation: none !important;
 }
 
 /* ── Artifacts menu: force font inheritance so buttons, inputs and other
@@ -1621,20 +1745,100 @@ html.reduced-motion .trial-guide-pulse {
 }
 
 /* ── Shatter the Infinite Light ── */
+@keyframes shatterFadeToBlack {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.shatter-priming-overlay {
+  animation: shatterFadeToBlack 850ms ease-out both;
+}
+@keyframes shatterStarfieldReveal {
+  from { opacity: 0; transform: scale(1.04); filter: brightness(0.25); }
+  to   { opacity: 1; transform: scale(1); filter: brightness(1); }
+}
+.shatter-starfield {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 28%, rgba(80, 45, 180, 0.24), transparent 25%),
+    radial-gradient(circle at 77% 67%, rgba(18, 130, 210, 0.2), transparent 28%),
+    radial-gradient(circle at 52% 46%, rgba(210, 40, 94, 0.11), transparent 34%),
+    linear-gradient(145deg, #020107 0%, #08051a 45%, #020914 72%, #000 100%);
+  animation: shatterStarfieldReveal 700ms ease-out both;
+}
+.shatter-starfield::before,
+.shatter-starfield::after {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.95) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(125,205,255,0.75) 0 0.7px, transparent 1.3px);
+  background-position: 0 0, 27px 39px;
+  background-size: 73px 67px, 109px 97px;
+  opacity: 0.38;
+  animation: shatterStarfieldDrift 18s linear infinite;
+}
+.shatter-starfield::after {
+  background-position: 41px 17px, 8px 61px;
+  background-size: 137px 127px, 83px 113px;
+  opacity: 0.24;
+  transform: rotate(17deg) scale(1.1);
+  animation-duration: 28s;
+  animation-direction: reverse;
+}
+@keyframes shatterStarfieldDrift {
+  from { translate: 0 0; }
+  to   { translate: 3% 5%; }
+}
+.shatter-starfield-nebula {
+  position: absolute;
+  inset: -18%;
+  background:
+    conic-gradient(from 115deg at 48% 52%, transparent 0 22%, rgba(108,68,220,0.12) 30%, transparent 41% 68%, rgba(20,156,222,0.1) 76%, transparent 86%),
+    radial-gradient(ellipse at center, rgba(255,255,255,0.055), transparent 52%);
+  filter: blur(24px);
+  animation: shatterNebulaTurn 24s ease-in-out infinite alternate;
+}
+@keyframes shatterNebulaTurn {
+  from { transform: rotate(-3deg) scale(1); }
+  to   { transform: rotate(5deg) scale(1.08); }
+}
 @keyframes shatterAmbientTwinkle {
-  0%, 100% { opacity: 0.12; transform: scale(0.75); }
-  50%      { opacity: 0.85; transform: scale(1.2); }
+  0%, 100% { opacity: 0.14; transform: scale(0.65) rotate(0deg); }
+  48%      { opacity: 1; transform: scale(1.35) rotate(35deg); }
 }
 .shatter-ambient-star {
   position: absolute;
   border-radius: 999px;
-  background: #eaf3ff;
+  background: currentColor;
+  box-shadow: 0 0 5px currentColor, 0 0 12px currentColor;
   pointer-events: none;
   will-change: opacity, transform;
   animation-name: shatterAmbientTwinkle;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
 }
+.shatter-ambient-star::before,
+.shatter-ambient-star::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 500%;
+  height: 1px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+  opacity: 0.65;
+}
+.shatter-ambient-star::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.shatter-ambient-star-depth-0 { opacity: 0.45; filter: blur(0.35px); }
+.shatter-ambient-star-depth-1 { z-index: 1; }
+.shatter-ambient-star-depth-2 { z-index: 2; box-shadow: 0 0 7px currentColor, 0 0 18px currentColor; }
 @keyframes shatterStarLife {
   0%   { opacity: 0;   transform: scale(0.35); color: #ff3b3b; text-shadow: 0 0 10px rgba(255, 60, 60, 0.9); }
   14%  { opacity: 1;   transform: scale(1.05); color: #ff4a4a; text-shadow: 0 0 14px rgba(255, 70, 70, 0.95); }
@@ -1643,6 +1847,8 @@ html.reduced-motion .trial-guide-pulse {
 }
 .shatter-click-star {
   position: absolute;
+  width: 1em;
+  height: 1em;
   cursor: pointer;
   user-select: none;
   line-height: 1;
@@ -1650,6 +1856,39 @@ html.reduced-motion .trial-guide-pulse {
   animation-timing-function: linear;
   animation-fill-mode: forwards;
   will-change: opacity, transform, color;
+}
+.shatter-click-star-rays {
+  position: absolute;
+  inset: -38%;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  box-shadow: 0 0 18px currentColor, inset 0 0 12px currentColor;
+  opacity: 0.46;
+  animation: shatterStarRays 1.15s linear infinite;
+}
+.shatter-click-star-rays::before,
+.shatter-click-star-rays::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 145%;
+  height: 2px;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(90deg, transparent, currentColor 45%, #fff 50%, currentColor 55%, transparent);
+}
+.shatter-click-star-rays::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+.shatter-click-star-core {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+@keyframes shatterStarRays {
+  to { transform: rotate(360deg); }
 }
 @keyframes shatterTitlePop {
   0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.55); letter-spacing: 0.02em; }
@@ -1667,13 +1906,25 @@ html.reduced-motion .trial-guide-pulse {
   animation: shatterCounterPulse 260ms ease-out;
 }
 @media (prefers-reduced-motion: reduce) {
+  .shatter-priming-overlay,
   .shatter-ambient-star,
   .shatter-click-star,
+  .shatter-click-star-rays,
+  .shatter-starfield,
+  .shatter-starfield::before,
+  .shatter-starfield::after,
+  .shatter-starfield-nebula,
   .shatter-title-text,
   .shatter-counter-pulse { animation: none !important; }
 }
+html.reduced-motion .shatter-priming-overlay,
 html.reduced-motion .shatter-ambient-star,
 html.reduced-motion .shatter-click-star,
+html.reduced-motion .shatter-click-star-rays,
+html.reduced-motion .shatter-starfield,
+html.reduced-motion .shatter-starfield::before,
+html.reduced-motion .shatter-starfield::after,
+html.reduced-motion .shatter-starfield-nebula,
 html.reduced-motion .shatter-title-text,
 html.reduced-motion .shatter-counter-pulse {
   animation-duration: 0.001ms !important;

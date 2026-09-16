@@ -25,6 +25,19 @@ This file is the AI-facing project brief. Read it before making design, balance,
 - Every Divine Light gain, including sacrifices, card effects, on-summon rewards, attacks, Bridge, quests, and pack flow, must route through the central grant path so Collection Power scaling applies consistently.
 - Rarity sources are distinct: Common/Rare/Epic/Legendary from packs, Enigmatic from Enigmas, Eternal from Eternity's Wake, Infinite from Infinitude crafting, Transcendent from Null Raid progression.
 
+## Latest Iteration Status
+
+This iteration focused on state consistency, usability, and math correctness around the Causality / Limitless Cosmos loop and the endgame Shatter finisher.
+
+- `Limitless Cosmos` is the current Causality turn-scoped resource. Causality cards are designed as a repeatable, beneficial loop: generate Cosmos, convert or bank it, and spend it to amplify utility or Divine Light gain without creating dead or punitive branches.
+- All Causality cards and earned reward cards are intentionally authored around the same loop, and their utility should be readable as a single system instead of isolated one-offs.
+- Card identity is treated as a one-source-of-truth across displays: collection, deck builder, store, pack view, board, and reward UI should all render the same card appearance and same authored text.
+- `Shatter the Light` now fully clears the board at the end of its finisher state, matching the expected wipe behavior, and its active window is tuned to 10 seconds with stars staying visible for a slightly longer duration.
+- Enigma tracking now evaluates actual turn-scoped conditions instead of false positives from lifetime counters, generic board presence, or stale progress. Neutrality and Causality enigma checks must match the real conditions required by the authored text.
+- Causality enigma rewards were increased to 3 copies per reward entry.
+- Player-facing summary text must remain natural language; do not leak internal tokens like `cosmos_gte` or raw snake_case into the UI.
+- The current repo validation state is the final pass recorded at the end of the iteration: `npm run typecheck:tests`, `npm test -- --run`, and `npm run build` completed successfully in the working tree.
+
 ## Core Loop
 
 The game is turn-based, not idle-tick based. A normal run is:

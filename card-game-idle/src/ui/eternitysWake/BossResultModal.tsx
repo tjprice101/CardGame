@@ -241,7 +241,7 @@ export default function BossResultModal() {
                 Card-light Awarded
               </span>
               <span style={{ fontSize: 18, fontWeight: 'bold', color: '#7de8a0', textShadow: '0 0 14px rgba(125,232,160,0.5)' }}>
-                Awards +{masteryPerCard} Card-light for each card in your deck upon completion.
+                Base +{masteryPerCard} Card-light per unique card. Established Tiers receive their mastery bonus.
               </span>
             </div>
           )}

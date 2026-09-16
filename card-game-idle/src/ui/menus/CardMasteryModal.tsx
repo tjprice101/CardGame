@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
-import { useStore, selectProgress, selectComputedStats } from '@/state/store';
+import { useStore, selectProgress } from '@/state/store';
 import { uiTypography, warmTheme } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { MASTERY_TIERS, computeGlobalResonanceScore, getMasteryClaimKey, listMasteryProgress } from '@/systems/progression/cardMastery';
+import { MASTERY_TIERS, RESONANCE_PER_COLLECTION_POWER_HUNDREDTH, computeGlobalResonanceScore, getCollectionPowerMultiplier, getMasteryClaimKey, getMaximumCollectionPowerMultiplier, listMasteryProgress } from '@/systems/progression/cardMastery';
 import type { MasteryView } from '@/systems/progression/cardMastery';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 
@@ -350,7 +350,6 @@ function withAlpha(color: unknown, alpha: number): string {
 export default function CardMasteryModal({ onClose }: Props) {
   const P = getThemePalette();
   const progress = useStore(selectProgress);
-  const computedStats = useStore(selectComputedStats);
   const claimCardMastery = useStore(s => s.claimCardMastery);
   const claimAllAvailableMastery = useStore(s => s.claimAllAvailableMastery);
   const [filter, setFilter] = useState<'all' | 'claimable' | 'in-progress'>('all');
@@ -360,6 +359,11 @@ export default function CardMasteryModal({ onClose }: Props) {
 
   // Global Resonance Score
   const resonanceScore = useMemo(() => computeGlobalResonanceScore(progress), [progress]);
+  const collectionPowerMultiplier = getCollectionPowerMultiplier(resonanceScore);
+  const maximumCollectionPowerMultiplier = getMaximumCollectionPowerMultiplier();
+  const atCollectionPowerCap = collectionPowerMultiplier >= maximumCollectionPowerMultiplier;
+  const resonanceProgress = resonanceScore % RESONANCE_PER_COLLECTION_POWER_HUNDREDTH;
+  const resonanceNeeded = RESONANCE_PER_COLLECTION_POWER_HUNDREDTH - resonanceProgress;
 
   const claimableSummary = useMemo(() => {
     let tiersClaimable = 0;
@@ -444,7 +448,7 @@ export default function CardMasteryModal({ onClose }: Props) {
 
           {/* Hero stats */}
           <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
-            <HeroStat label="Collection Power" value={`×${(1 + computedStats.globalDivineLightMult).toFixed(2)}`} accent={P.gold} />
+            <HeroStat label="Collection Power" value={`×${collectionPowerMultiplier.toFixed(2)}`} accent={P.gold} />
             <HeroStat label="Global Resonance" value={resonanceScore.toLocaleString()} accent={P.accent} sub="pts" />
             <HeroStat label="Cards Mastered" value={`${totalMastered}/${totalWithProgress}`} accent={P.success} />
             {claimableSummary.tiersClaimable > 0 && (
@@ -493,23 +497,27 @@ export default function CardMasteryModal({ onClose }: Props) {
             <span style={{ color: P.gold, fontSize: 16 }}>✦</span>
             <div>
               <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: P.gold, fontFamily: uiTypography.display, fontWeight: 700 }}>
-                Next +0.01 Collection Power
+                {atCollectionPowerCap ? 'Maximum Collection Power' : 'Next +0.01 Collection Power'}
               </div>
               <div style={{ fontSize: 11, color: P.textMuted, marginTop: 1 }}>
-                Current: <strong style={{ color: P.gold }}>×{(1 + computedStats.globalDivineLightMult).toFixed(2)}</strong> → Target: <strong style={{ color: P.accent }}>×{(1 + computedStats.globalDivineLightMult + 0.01).toFixed(2)}</strong>
+                {atCollectionPowerCap ? (
+                  <>Current: <strong style={{ color: P.gold }}>×{collectionPowerMultiplier.toFixed(2)}</strong> · Dynamic collection cap reached</>
+                ) : (
+                  <>Current: <strong style={{ color: P.gold }}>×{collectionPowerMultiplier.toFixed(2)}</strong> → Target: <strong style={{ color: P.accent }}>×{Math.min(maximumCollectionPowerMultiplier, collectionPowerMultiplier + 0.01).toFixed(2)}</strong></>
+                )}
               </div>
             </div>
           </div>
 
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 10, color: P.textMuted }}>
-              <span>Resonance Progress: <strong style={{ color: P.accent }}>{resonanceScore % 5} / 5 pts</strong></span>
-              <span style={{ color: P.textFaint }}>{5 - (resonanceScore % 5)} Resonance pt{5 - (resonanceScore % 5) !== 1 ? 's' : ''} needed</span>
+              <span>Resonance Progress: <strong style={{ color: P.accent }}>{atCollectionPowerCap ? 'Complete' : `${resonanceProgress} / ${RESONANCE_PER_COLLECTION_POWER_HUNDREDTH} pts`}</strong></span>
+              <span style={{ color: P.textFaint }}>{atCollectionPowerCap ? `Dynamic cap ×${maximumCollectionPowerMultiplier.toFixed(2)} reached` : `${resonanceNeeded} Resonance pt${resonanceNeeded !== 1 ? 's' : ''} needed · max ×${maximumCollectionPowerMultiplier.toFixed(2)} grows with the card pool`}</span>
             </div>
             <div style={{ height: 6, borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: `1px solid ${withAlpha(P.border, 0.5)}`, overflow: 'hidden', position: 'relative' }}>
               <div style={{
                 height: '100%',
-                width: `${((resonanceScore % 5) / 5 * 100).toFixed(1)}%`,
+                width: atCollectionPowerCap ? '100%' : `${((resonanceProgress / RESONANCE_PER_COLLECTION_POWER_HUNDREDTH) * 100).toFixed(1)}%`,
                 background: `linear-gradient(90deg, ${P.accentDeep}, ${P.gold})`,
                 boxShadow: `0 0 12px ${withAlpha(P.gold, 0.5)}`,
                 borderRadius: 999,

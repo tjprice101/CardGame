@@ -6,8 +6,9 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
   getAdaptiveDescriptionMetrics,
-  getCardFaceBackgroundStyle,
   getCardFaceMetrics,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
@@ -355,6 +356,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
           <button
             className="attack-embrace-button"
             onClick={activateShatterTheInfiniteLight}
+            title="Click stars for 10 seconds. Each is worth 1,000 base Divine Light; the field and hand are wiped afterward."
             style={{
               padding: '10px 22px',
               borderRadius: 999,
@@ -372,7 +374,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             Shatter the Infinite Light
           </button>
           <div style={{ fontSize: 10, color: 'rgba(255,179,160,0.78)', letterSpacing: 0.4 }}>
-            Board fully bridged — unleash the finisher.
+            Click stars for Divine Light, then wipe the field and hand.
           </div>
         </div>
       )}
@@ -454,7 +456,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             return (
               <div
                 key={slotIndex}
-                className={isNewlyPlaced ? 'anim-angel-summon-pop' : 'anim-angel-breath'}
+                className={[isNewlyPlaced ? 'anim-angel-summon-pop' : 'anim-angel-breath', getLiveCardShimmerClassName(asaDef, slot.finish, slot.faceState)].filter(Boolean).join(' ')}
                 onClick={() => { if (canPlay) setNewActionSlot(prev => (prev?.zone === 'front' && prev.index === slotIndex) ? null : { zone: 'front', index: slotIndex }); }}
                 onContextMenu={(event) => {
                   event.preventDefault();
@@ -471,7 +473,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                 style={{
                   width: SLOT_W,
                   height: SLOT_H,
-                  ...getCardFaceBackgroundStyle(asaDef, slot.finish, slot.faceState),
+                  ...getLiveCardFaceBackgroundStyle(asaDef, slot.finish, slot.faceState),
                   border: `2px solid ${isFocused ? focusPalette.rim : warmTheme.borderStrong}`,
                   borderRadius: 14,
                   boxShadow: isFocused
@@ -729,12 +731,10 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             return (
               <div
                 key={backSlot}
-                className={(mainCard.finish === 'holo' && mainDef?.rarity !== 'Infinite' && mainDef?.rarity !== 'Eternal' && mainDef?.rarity !== 'Transcendent' && mainDef?.rarity !== 'Enigmatic')
-                  ? 'holofoil-live-card'
-                  : undefined}
+                className={getLiveCardShimmerClassName(mainDef, mainCard.finish, mainCard.faceState)}
                 style={{
                   width: CHERUBIM_W, height: CHERUBIM_H,
-                  ...getCardFaceBackgroundStyle(mainDef, mainCard.finish, mainCard.faceState),
+                  ...getLiveCardFaceBackgroundStyle(mainDef, mainCard.finish, mainCard.faceState),
                   border: `1px solid ${isMaterialSelected ? 'rgba(120,220,140,0.95)' : isMaterialMode && canSelectAsMaterial ? 'rgba(255,255,255,0.95)' : isReadyToFlip ? 'rgba(255,224,140,0.9)' : 'rgba(160,160,200,0.4)'}`,
                   borderRadius: 12,
                   boxShadow: isMaterialSelected
@@ -770,36 +770,40 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
                 }}
                 title={`${mainDef?.name ?? mainCard.type} · ${isSoph ? `Charge ${charge}/${SOPH_FLIP_CHARGE_REQUIRED}` : 'Active'} · Right-click to force remove`}
               >
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${mainElementColor}cc, ${mainElementColor}, ${mainElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
-                <div style={getCardNameRibbonStyle('boardMini')}>
-                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>
-                    {getDisplayCardTypeLabel(mainDef?.type ?? mainCard.type)}
-                  </div>
-                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.nameSize + 1, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
-                    {mainDef?.name ?? mainCard.definitionId}
-                  </div>
-                </div>
-                <div style={getCardRulesPanelStyle('boardMini')}>
-                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: ainCooldown <= 0 && isAin ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase' }}>
-                    Ain Attack: {mainDef?.type === 'Light' && isAin ? (ainCooldown <= 0 ? 'Ready' : 'Not Ready') : 'Not Ready'}
-                  </div>
-                  <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: sophCooldown <= 0 && isAin && turn.limitlessLightStacks >= sophCost ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase', marginTop: 2 }}>
-                    Soph Attack: {mainDef?.type === 'Light' && isAin ? (sophCooldown > 0 ? 'Not Ready' : turn.limitlessLightStacks < sophCost ? 'No Stacks' : 'Ready') : 'Not Ready'}
-                  </div>
-                  <div style={{
-                    fontSize: mainDescMetrics.fontSize,
-                    color: cardFacePalette.textSoft,
-                    marginTop: 4,
-                    lineHeight: mainDescMetrics.lineHeight,
-                    textAlign: 'center',
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: mainDescMetrics.lineClamp,
-                    overflow: 'hidden',
-                  }}>
-                    {mainText}
-                  </div>
-                </div>
+                {isAin && (
+                  <>
+                    <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: `linear-gradient(90deg, transparent, ${mainElementColor}cc, ${mainElementColor}, ${mainElementColor}cc, transparent)`, pointerEvents: 'none', zIndex: 10 }} />
+                    <div style={getCardNameRibbonStyle('boardMini')}>
+                      <div style={{ fontSize: CHERUBIM_FACE_METRICS.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.2, textTransform: 'uppercase', textAlign: 'center' }}>
+                        {getDisplayCardTypeLabel(mainDef?.type ?? mainCard.type)}
+                      </div>
+                      <div style={{ fontSize: CHERUBIM_FACE_METRICS.nameSize + 1, fontWeight: 'bold', color: cardFacePalette.text, textAlign: 'center', lineHeight: 1.25, marginTop: 2 }}>
+                        {mainDef?.name ?? mainCard.definitionId}
+                      </div>
+                    </div>
+                    <div style={getCardRulesPanelStyle('boardMini')}>
+                      <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: ainCooldown <= 0 ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase' }}>
+                        Ain Attack: {mainDef?.type === 'Light' ? (ainCooldown <= 0 ? 'Ready' : 'Not Ready') : 'Not Ready'}
+                      </div>
+                      <div style={{ fontSize: CHERUBIM_FACE_METRICS.descSize, color: sophCooldown <= 0 && turn.limitlessLightStacks >= sophCost ? warmTheme.success : cardFacePalette.textMuted, letterSpacing: 0.4, textAlign: 'center', textTransform: 'uppercase', marginTop: 2 }}>
+                        Soph Attack: {mainDef?.type === 'Light' ? (sophCooldown > 0 ? 'Not Ready' : turn.limitlessLightStacks < sophCost ? 'No Stacks' : 'Ready') : 'Not Ready'}
+                      </div>
+                      <div style={{
+                        fontSize: mainDescMetrics.fontSize,
+                        color: cardFacePalette.textSoft,
+                        marginTop: 4,
+                        lineHeight: mainDescMetrics.lineHeight,
+                        textAlign: 'center',
+                        display: '-webkit-box',
+                        WebkitBoxOrient: 'vertical',
+                        WebkitLineClamp: mainDescMetrics.lineClamp,
+                        overflow: 'hidden',
+                      }}>
+                        {mainText}
+                      </div>
+                    </div>
+                  </>
+                )}
                 {charge > 0 && renderPatienceBadge(charge)}
                 {isMaterialMode && (
                   <div style={{

@@ -46,6 +46,16 @@
 - Card hover details belong in the right-rail Card Inspector, not floating over the board/hand. Pack opening waits for individual clicks, Reveal All/Reveal Best, or Instant; do not re-add timed auto-reveal.
 - Card faces across gameplay, pack opening, pending modals, collection, deck builder, rewards, and profile screens should use shared card-face helpers with top/bottom chrome and respect `settings.cardArtDisplay`.
 
+## Latest Iteration Status
+- The current Causality set is built around a repeatable `Limitless Cosmos` loop: generate, convert, hold, and spend Cosmos for utility and Divine Light gains. The deck should reward converting existing Limitless Light into useful Cosmos loops rather than creating dead or one-off payoffs.
+- All reward and board-view card appearances should share the same card source of truth so packs, collections, deck builders, and the board never show inconsistent variants of the same card.
+- `Shatter the Light` is now a proper finisher: when it resolves, it wipes the board as expected, and the active window is tuned to 10 seconds with slightly longer star visibility.
+- Enigma completion logic must be condition-driven and turn-scoped. Do not allow false positives from lifetime counters, generic board checks, or stale progress snapshots.
+- Neutrality and Causality enigma steps are expected to reflect the actual authored requirement text; if a condition is not met, the step must not complete.
+- Causality enigma reward copies are set to 3 per reward.
+- Player-facing stat summary text must be formatted as natural language and must never leak raw effect tags or snake_case field names.
+- Current known-good validation state from the iteration: `npm run typecheck:tests`, `npm test -- --run`, and `npm run build` all completed successfully in the working tree.
+
 ## Required Regression Coverage
 - Card/runtime edits must keep `CardRuntimeWiring.test.ts`, `CardCatalog.test.ts`, and `FullTurnE2E.test.ts` meaningful.
 - Pack edits must keep `PackOpeningFlow.test.ts` and `PackOpeningModalSource.test.ts` passing.

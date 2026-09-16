@@ -3,7 +3,7 @@ import { useStore, selectTurn, selectDivineLight } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 import { uiTypography } from '@/ui/theme';
 
-const AMBIENT_STAR_COUNT = 60;
+const AMBIENT_STAR_COUNT = 120;
 const MAX_CONCURRENT_CLICK_STARS = 9;
 const CLICK_STAR_SPAWN_MS = 260;
 const CLICK_STAR_LIFE_MS = 1700;
@@ -21,11 +21,13 @@ interface AmbientStar {
   size: number;
   duration: number;
   delay: number;
+  hue: number;
+  depth: number;
 }
 
 /**
- * Full-screen "Shatter the Infinite Light" cutscene: fades to black, opens a
- * 5-second window to click fading red→blue stars ("Limitless Infinity"
+ * Full-screen "Shatter the Infinite Light" cutscene: fades fully to black,
+ * then opens a 10-second window to click fading red→blue stars ("Limitless Infinity"
  * stacks), then fades to white with a payout reveal. Purely presentational —
  * all phase timing/payout math lives in the store (`tickShatterInfiniteLight`).
  */
@@ -95,6 +97,8 @@ export default function ShatterInfiniteLightOverlay() {
       size: 1 + Math.random() * 2.4,
       duration: 1.8 + Math.random() * 2.6,
       delay: -Math.random() * 4,
+      hue: 185 + Math.random() * 105,
+      depth: Math.floor(Math.random() * 3),
     }))
   ), []);
 
@@ -107,7 +111,6 @@ export default function ShatterInfiniteLightOverlay() {
 
   const secondsLeft = Math.max(0, (shatter.phaseEndsAt - Date.now()) / 1000);
   const backgroundColor = phase === 'result' ? '#f4f2ea' : '#000000';
-  const backgroundOpacity = phase === 'priming' ? 1 : phase === 'active' ? 1 : 1;
   const showCounters = phase === 'active' || phase === 'result';
   const showStars = phase === 'active';
 
@@ -118,27 +121,33 @@ export default function ShatterInfiniteLightOverlay() {
         inset: 0,
         zIndex: 950,
         backgroundColor,
-        opacity: backgroundOpacity,
         transition: 'background-color 900ms ease',
         pointerEvents: 'auto',
         overflow: 'hidden',
         userSelect: 'none',
       }}
+      className={phase === 'priming' ? 'shatter-priming-overlay' : undefined}
     >
-      {phase !== 'result' && ambientStars.map((star, index) => (
-        <div
-          key={index}
-          className="shatter-ambient-star"
-          style={{
-            left: `${star.x}%`,
-            top: `${star.y}%`,
-            width: star.size,
-            height: star.size,
-            animationDuration: `${star.duration}s`,
-            animationDelay: `${star.delay}s`,
-          }}
-        />
-      ))}
+      {showStars && (
+        <div className="shatter-starfield" aria-hidden="true">
+          <div className="shatter-starfield-nebula" />
+          {ambientStars.map((star, index) => (
+            <div
+              key={index}
+              className={`shatter-ambient-star shatter-ambient-star-depth-${star.depth}`}
+              style={{
+                left: `${star.x}%`,
+                top: `${star.y}%`,
+                width: star.size,
+                height: star.size,
+                color: `hsl(${star.hue} 100% 84%)`,
+                animationDuration: `${star.duration}s`,
+                animationDelay: `${star.delay}s`,
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       {showStars && clickStars.map(star => (
         <div
@@ -152,7 +161,8 @@ export default function ShatterInfiniteLightOverlay() {
             animationDuration: `${CLICK_STAR_LIFE_MS}ms`,
           }}
         >
-          ✦
+          <span className="shatter-click-star-rays" aria-hidden="true" />
+          <span className="shatter-click-star-core">✦</span>
         </div>
       ))}
 

@@ -1,5 +1,6 @@
 import type { CardDefinition } from '@/types/cards';
 import { CardRegistry } from '@/cards/CardRegistry';
+import { getCollectionPowerMultiplier } from '@/systems/progression/cardMastery';
 
 /**
  * Quest system — daily and weekly engine-flavored objectives.
@@ -74,9 +75,7 @@ const QUEST_TEMPLATES_BY_ID = new Map(
   [...DAILY_QUEST_POOL, ...WEEKLY_QUEST_POOL].map(template => [template.id, template]),
 );
 
-export function getCollectionPowerMultiplier(resonanceScore: number): number {
-  return Math.min(3, 1 + Math.max(0, resonanceScore) / 1000);
-}
+export { getCollectionPowerMultiplier };
 
 export function getScaledQuestDivineLight(baseReward: number, resonanceScore: number): number {
   return Math.floor(Math.max(0, baseReward) * getCollectionPowerMultiplier(resonanceScore));

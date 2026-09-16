@@ -79,7 +79,7 @@ export const TUTORIAL_SECTIONS: TutorialSection[] = [
   { id: 'overview',       label: 'Overview',         title: 'How To Play',              subtitle: 'The game loop, currencies, and modes.' },
   { id: 'turn-flow',      label: 'Turn Flow',         title: 'Turn Flow',                subtitle: 'Begin → Mulligan → Play → End.' },
   { id: 'board',          label: 'Board & Cards',     title: 'The Board',                subtitle: 'Slots, card types, and click behavior.' },
-  { id: 'attacks',        label: 'Ain / Soph',        title: 'Ain / Soph Combat',        subtitle: 'Charges, stacks, attacks, and Bridge the Light.' },
+  { id: 'attacks',        label: 'Ain / Soph',        title: 'Ain / Soph Combat',        subtitle: 'Charges, attacks, Bridge the Light, and the full-board finisher.' },
   { id: 'patience',       label: 'Light Stacks',      title: 'Limitless Light Stacks',   subtitle: 'The shared resource behind the Neutrality engine.' },
   { id: 'sets',           label: 'Abilities',         title: 'Ability Amplification',    subtitle: 'Materialized abilities and their runtime effects.' },
   { id: 'rarities',       label: 'Rarities',          title: 'Rarity Tiers',             subtitle: 'From Common through Infinite.' },

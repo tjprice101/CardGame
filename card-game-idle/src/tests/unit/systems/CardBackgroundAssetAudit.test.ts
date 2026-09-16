@@ -7,6 +7,8 @@ import {
   getCardArtTopBottomBorderOverlayStyleForCard,
   getCardBackgroundUrl,
   getCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
@@ -94,5 +96,32 @@ describe('card background asset audit', () => {
       index === 0 ? holoCard : [byRarity('Enigmatic'), byRarity('Eternal'), byRarity('Infinite'), byRarity('Transcendent')][index - 1],
     ).backgroundImage);
     expect(new Set(overlays).size).toBe(5);
+  });
+
+  it('uses one cached, lightweight live treatment for every foil rarity', () => {
+    const cards = CardRegistry.getAll();
+    const base = cards.find(card => !['Enigmatic', 'Eternal', 'Infinite', 'Transcendent'].includes(card.rarity));
+    expect(base).toBeDefined();
+
+    const cases = [
+      { card: base!, finish: 'holo' as const, className: 'live-card-shimmer-holo' },
+      { card: cards.find(card => card.rarity === 'Enigmatic')!, finish: 'normal' as const, className: 'live-card-shimmer-enigmatic' },
+      { card: cards.find(card => card.rarity === 'Eternal')!, finish: 'normal' as const, className: 'live-card-shimmer-eternal' },
+      { card: infiniteCards[0], finish: 'normal' as const, className: 'live-card-shimmer-infinite' },
+      { card: cards.find(card => card.rarity === 'Transcendent')!, finish: 'normal' as const, className: 'live-card-shimmer-transcendent' },
+    ];
+
+    for (const entry of cases) {
+      expect(entry.card).toBeDefined();
+      const first = getLiveCardFaceBackgroundStyle(entry.card, entry.finish, 'front');
+      const second = getLiveCardFaceBackgroundStyle(entry.card, entry.finish, 'front');
+      expect(second).toBe(first);
+      expect(first.animationName).toBeUndefined();
+      expect(first.backgroundImage).toContain(getCardBackgroundUrl(entry.card));
+      expect(getLiveCardShimmerClassName(entry.card, entry.finish, 'front')).toContain(entry.className);
+    }
+
+    expect(getLiveCardShimmerClassName(base, 'holo', 'back')).toBeUndefined();
+    expect(getLiveCardFaceBackgroundStyle(base, 'holo', 'back').backgroundImage).toContain('Card%20Backing.png');
   });
 });

@@ -3,9 +3,6 @@ import { useStore, selectBoard, selectTurn, selectComputedStats, selectBossFight
 import { formatNumber } from '@/utils/bignum';
 const styles: Record<string, React.CSSProperties> = {
   panel: {
-    position: 'absolute',
-    top: 60,
-    left: 14,
     background: 'rgba(5,5,7,0.72)',
     border: '1px solid rgba(244,244,248,0.1)',
     borderRadius: 10,
@@ -15,7 +12,6 @@ const styles: Record<string, React.CSSProperties> = {
     minWidth: 136,
     backdropFilter: 'blur(8px)',
     pointerEvents: 'none',
-    zIndex: 12,
     boxShadow: '0 8px 24px rgba(0,0,0,0.45)',
   },
   title: {

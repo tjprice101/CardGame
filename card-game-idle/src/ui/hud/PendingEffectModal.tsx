@@ -3,8 +3,9 @@ import { useStore, selectTurn, selectDeck } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
-  getCardFaceBackgroundStyle,
   getCardFaceMetrics,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
@@ -156,14 +157,12 @@ export default function PendingEffectModal() {
     stateStyle?: React.CSSProperties,
   ): React.CSSProperties => ({
     ...styles.card,
-    ...getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, 'front'),
+    ...getLiveCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, 'front'),
     ...(stateStyle ?? {}),
   });
   const buildCardClassName = (card: Pick<DeckCard, 'definitionId' | 'finish' | 'faceState'>): string | undefined => {
     const def = CardRegistry.get(card.definitionId);
-    return card.finish === 'holo' && def?.rarity !== 'Infinite' && def?.rarity !== 'Eternal' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic'
-      ? 'holofoil-live-card'
-      : undefined;
+    return getLiveCardShimmerClassName(def, card.finish, 'front');
   };
 
   const renderCardFace = (

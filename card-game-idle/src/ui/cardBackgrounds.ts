@@ -401,6 +401,7 @@ function mergeAnimationStyles(...styles: CSSProperties[]): CSSProperties {
 
 const DENSE_CARD_FACE_STYLE_CACHE = new Map<string, CSSProperties>();
 const DENSE_CARD_FACE_STYLE_CACHE_VERSION = 'dense-face-v4-transcedence-precedence';
+const LIVE_CARD_FACE_STYLE_CACHE = new Map<string, CSSProperties>();
 
 function getDenseCardFaceCacheKey(
   card: CardDefinition | null | undefined,
@@ -686,6 +687,41 @@ export function getDenseCardFaceBackgroundStyle(
   const style = getCardFaceBackgroundStyle(card, finish, faceState, skipImage);
   DENSE_CARD_FACE_STYLE_CACHE.set(cacheKey, style);
   return style;
+}
+
+export function getLiveCardFaceBackgroundStyle(
+  card: CardDefinition | null | undefined,
+  finish: CardFinish = 'normal',
+  faceState: CardFaceState = 'front',
+  skipImage = false,
+): CSSProperties {
+  const cacheKey = `live::${getDenseCardFaceCacheKey(card, finish, faceState)}::${skipImage ? 'noimg' : 'img'}`;
+  const cached = LIVE_CARD_FACE_STYLE_CACHE.get(cacheKey);
+  if (cached) return cached;
+
+  const style = { ...getDenseCardFaceBackgroundStyle(card, finish, faceState, skipImage) };
+  delete style.animationName;
+  delete style.animationDuration;
+  delete style.animationTimingFunction;
+  delete style.animationIterationCount;
+  delete style.animationDirection;
+  delete style.animationDelay;
+  LIVE_CARD_FACE_STYLE_CACHE.set(cacheKey, style);
+  return style;
+}
+
+export function getLiveCardShimmerClassName(
+  card: CardDefinition | null | undefined,
+  finish: CardFinish = 'normal',
+  faceState: CardFaceState = 'front',
+): string | undefined {
+  if (!card || faceState === 'back') return undefined;
+  if (card.rarity === 'Transcendent') return 'live-card-shimmer live-card-shimmer-transcendent';
+  if (card.rarity === 'Enigmatic') return 'live-card-shimmer live-card-shimmer-enigmatic';
+  if (card.rarity === 'Infinite') return 'live-card-shimmer live-card-shimmer-infinite';
+  if (card.rarity === 'Eternal') return 'live-card-shimmer live-card-shimmer-eternal';
+  if (finish === 'holo') return 'live-card-shimmer live-card-shimmer-holo';
+  return undefined;
 }
 
 export function getCardFaceMetrics(variant: CardFaceVariant) {

@@ -1,5 +1,6 @@
 import { CardRegistry } from '@/cards/CardRegistry';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
+import { getCollectionPowerMultiplier } from '@/systems/progression/cardMastery';
 import { ABILITY_REGISTRY } from '@/data/abilities/abilityDefinitions';
 import type { LightCardDefinition, AinSophAurDefinition } from '@/types/cards';
 import type { DeckEntry, ExtraDeckEntry } from '@/types/game';
@@ -92,7 +93,7 @@ export function calculateDeckDpsProjection(
   };
 
   // Collection Power Multiplier from store.ts grantDivineLight: min(3, 1 + collectionPower / 1000)
-  const collectionPowerMult = Math.min(3, 1 + Math.max(0, collectionPower) / 1000);
+  const collectionPowerMult = getCollectionPowerMultiplier(collectionPower);
   // Innate +1% Divine Light gain per active ASA on Front Rank
   const asaTurnBonusMult = 1 + (estimatedAsaActive / 100);
   // Combined DL scaling multiplier applied to all DL sources
