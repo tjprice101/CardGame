@@ -12,7 +12,7 @@ export interface EventPayloads {
   'seraphim:attacked': { slot: number; attackId: string; amount: number };
   'angel:summoned': { definitionId: string; slot: number };
   'angel:attacked': { slot: number; attackId: string; amount: number };
-  'oblivion:earned': { delta: number; total: number };
+  'divine-light:earned': { delta: number; total: number };
   'boss:damaged': { delta: number; remaining: number };
   'boss:cardbreak': { count: number };
   'boss:defeated': { bossId: string; victory: boolean };

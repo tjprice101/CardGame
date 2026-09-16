@@ -3,7 +3,7 @@ import type { BoardState } from '@/types/game';
 /** Fade-to-black priming beat before the click window opens. */
 export const SHATTER_PRIME_MS = 1100;
 /** Length of the glowing-star click window. */
-export const SHATTER_ACTIVE_MS = 5000;
+export const SHATTER_ACTIVE_MS = 10000;
 /** Fade-to-white + "Shattered!!" payout beat before the board returns to normal. */
 export const SHATTER_RESULT_MS = 2600;
 

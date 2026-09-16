@@ -12,7 +12,7 @@ export interface ExecutionResult {
   deck: DeckState;
   turn: TurnState;
   board: BoardState;
-  oblivionBonus: number;    // direct Oblivion bonus from card effects (beyond chain calc)
+  divineLightBonus: number;    // direct Divine Light bonus from card effects (beyond chain calc)
   pendingEffect: PendingEffect | null;
   pendingEffects: PendingEffect[];
   canPlay: boolean;         // false if radiance_spend failed
@@ -46,7 +46,7 @@ export class CardEffectExecutor {
   ): ExecutionResult {
     const def = CardRegistry.get(deckCard.definitionId);
     if (!def) {
-      return { deck, turn, board, oblivionBonus: 0, pendingEffect: null, pendingEffects: [], canPlay: true };
+      return { deck, turn, board, divineLightBonus: 0, pendingEffect: null, pendingEffects: [], canPlay: true };
     }
 
     // Every live call site (Light/Dark/AinSophAur) passes options.effects explicitly;
@@ -62,10 +62,10 @@ export class CardEffectExecutor {
     // with live Zustand state rather than from within an Immer set() draft).
     let mutableTurn: TurnState = {
       ...turn,
-      neutralityNextAttackOblivionByInstance: turn.neutralityNextAttackOblivionByInstance ? { ...turn.neutralityNextAttackOblivionByInstance } : turn.neutralityNextAttackOblivionByInstance,
+      neutralityNextAttackDivineLightByInstance: turn.neutralityNextAttackDivineLightByInstance ? { ...turn.neutralityNextAttackDivineLightByInstance } : turn.neutralityNextAttackDivineLightByInstance,
     };
     let mutableBoard = cloneBoard(board);
-    let oblivionBonus = 0;
+    let divineLightBonus = 0;
     const pendingEffects: PendingEffect[] = [];
 
     const multiplier = 1;
@@ -80,7 +80,7 @@ export class CardEffectExecutor {
     function processEffect(effect: CardEffect): boolean {
       switch (effect.type) {
         // �E�E�E��E�E�E��E�E�E��E�E�E� Oblivion effects �E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E��E�E�E�
-        case 'oblivion_flat': {
+        case 'divine_light_flat': {
           let val = effect.value * multiplier;
           // Oblivion Pulse — +10 per card played this turn (including this one)
           if (deckCard.definitionId === 'ophanim-neutral-chain-pulse') {
@@ -91,9 +91,9 @@ export class CardEffectExecutor {
             val = (mutableTurn.cardsPlayedThisTurn + 1) * 15 * multiplier;
           }
           // Pyroabyss base cards now resolve exclusively from authored typed effects
-          // (pyro_heat_* / conditional / draw / oblivion_flat) in source definitions.
+          // (pyro_heat_* / conditional / draw / divine_light_flat) in source definitions.
           // Light sentinel cards removed — Phase 1 rework.
-          oblivionBonus += val;
+          divineLightBonus += val;
           break;
         }
 
@@ -112,14 +112,18 @@ export class CardEffectExecutor {
           mutableTurn.limitlessCosmosStacks = (mutableTurn.limitlessCosmosStacks ?? 0) - effect.value;
           break;
 
+        case 'light_stacks_flat':
+          mutableTurn.limitlessLightStacks = (mutableTurn.limitlessLightStacks ?? 0) + Math.max(0, effect.value);
+          break;
+
         // ──────── Legacy score/power effects (Light compat → map to Oblivion) ────────
         case 'score_flat':
-          oblivionBonus += effect.value * multiplier;
+          divineLightBonus += effect.value * multiplier;
           break;
 
         case 'score_multiplier':
-          // Add N% of this turn's accumulated Oblivion as a flat bonus on this play.
-          oblivionBonus += Math.round(mutableTurn.oblivionEarnedThisTurn * effect.value * multiplier / 100);
+          // Add N% of this turn's accumulated Divine Light as a flat bonus on this play.
+          divineLightBonus += Math.round(mutableTurn.divineLightEarnedThisTurn * effect.value * multiplier / 100);
           break;
 
         case 'draw': {
@@ -281,7 +285,7 @@ export class CardEffectExecutor {
     for (const effect of effects) {
       const ok = processEffect(effect);
       if (!ok) {
-        return { deck, turn, board, oblivionBonus: 0, pendingEffect: null, pendingEffects: [], canPlay: false };
+        return { deck, turn, board, divineLightBonus: 0, pendingEffect: null, pendingEffects: [], canPlay: false };
       }
     }
 
@@ -311,7 +315,7 @@ export class CardEffectExecutor {
       deck: mutableDeck,
       turn: mutableTurn,
       board: mutableBoard,
-      oblivionBonus,
+      divineLightBonus,
       pendingEffect: pendingEffects[0] ?? null,
       pendingEffects,
       canPlay: true,

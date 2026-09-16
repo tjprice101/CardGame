@@ -7,10 +7,11 @@ export type BoardEffect =
 export type CardSubtypeFilter = 'AinSophAur' | 'Light' | 'Dark';
 
 export type ImmediateEffect =
-  | { type: 'oblivion_flat'; value: number }
+  | { type: 'divine_light_flat'; value: number }
   | { type: 'cosmos_flat'; value: number }
   | { type: 'convert_light_to_cosmos'; lightCost: number; cosmosGain: number }
   | { type: 'consume_cosmos'; value: number }
+  | { type: 'light_stacks_flat'; value: number }
   | { type: 'score_flat'; value: number }
   | { type: 'draw'; value: number }
   | { type: 'discard_choice'; value: number }

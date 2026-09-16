@@ -53,7 +53,7 @@ import { getEnigmaDefinition } from '@/data/enigmas/enigmaDefinitions';
 import { getBossRewardMultiplier } from '@/systems/progression/featuredBoss';
 import {
   getAchievementShardReward,
-  getAchievementOblivionReward,
+  getAchievementDivineLightReward,
   isAchievementUnlocked,
 } from '@/systems/progression/achievements';
 import { ensureOwnershipHistory, getEverCollectionCount, getEverHoloCount, seedEverOwned, syncCardOwnershipHistory } from '@/systems/progression/ownershipHistory';
@@ -143,7 +143,9 @@ const defaultTurn: TurnState = {
   neutralityAbilityActivationsThisTurn: 0,
   limitlessLightStacks: 0,
   limitlessCosmosStacks: 0,
-  oblivionEarnedThisTurn: 0,
+  causalityCardsPlayedThisTurn: 0,
+  causalityDivineLightThisTurn: 0,
+  divineLightEarnedThisTurn: 0,
   lastPlayedDefinitionId: null,
   turnNumber: 0,
   mulliganSelected: [],
@@ -152,7 +154,7 @@ const defaultTurn: TurnState = {
   lastResolvedSubtype: null,
   cherubimSummonedThisTurn: 0,
   lastFiredSeraphimAttackMode: null,
-  lastFiredSeraphimAttackOblivion: 0,
+  lastFiredSeraphimAttackDivineLight: 0,
   equippedArtifactIds: [],
   setAbilityCooldowns: {},
   setAbilityUsesRemaining: {},
@@ -190,12 +192,12 @@ function enforceHandCap(s: Store): void {
 }
 
 const defaultProgress: ProgressState = {
-  oblivion: 5_000,
+  divineLight: 5_000,
   nullifiedLattice: 0,
   nullSearedLight: 0,
   nullifiedOblivionMatter: 0,
-  lifetimeOblivion: 5_000,
-  bestSingleTurnOblivion: 0,
+  lifetimeDivineLight: 5_000,
+  bestSingleTurnDivineLight: 0,
   aberratedShards: 0,
   totalCardsPlayed: 0,
   totalPacksOpened: 0,
@@ -342,7 +344,7 @@ const defaultTrialDeckState: TrialDeckState = {
   guidedDeckOrder: [],
   guideComplete: false,
   turnCount: 0,
-  trialOblivionTotal: 0,
+  trialDivineLightTotal: 0,
 };
 
 export const defaultGameState: GameState = {
@@ -390,7 +392,7 @@ interface StoreActions {
   resolvePending: (selected: string[]) => void;
   endTurn: () => void;
   endAndBeginAgain: () => void;
-  addOblivion: (delta: number) => void;
+  addDivineLight: (delta: number) => void;
   openPack: (packId: string) => string[] | null;
   openBox: (packId: string) => string[] | null;
   openCase: (packId: string) => string[] | null;
@@ -474,7 +476,7 @@ interface StoreActions {
   startNullRaid: (raidId: string, savedDeckId: string) => boolean;
   claimDailyReward: () => { shards: number; streak: number } | null;
   setActiveEnigma: (enigmaId: string) => void;
-  sacrificeEnigmaOblivion: (enigmaId: string) => boolean;
+  sacrificeEnigmaDivineLight: (enigmaId: string) => boolean;
   purchaseAbility: (abilityId: string) => boolean;
   grantGardenCurrency: (currency: 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter', amount?: number) => void;
   startGardenDungeon: (dungeonId: string) => boolean;
@@ -486,9 +488,9 @@ interface StoreActions {
   tickAbilityTimers: (now?: number) => void;
   claimEnigmaReward: (enigmaId: string) => boolean;
   /** Engagement: claim a single quest. */
-  claimQuest: (questId: string) => { shards: number; oblivion?: number } | null;
+  claimQuest: (questId: string) => { shards: number; divineLight?: number } | null;
   /** Engagement: claim an unlocked achievement (one-shot). */
-  claimAchievement: (achievementId: string) => { shards: number; oblivion?: number } | null;
+  claimAchievement: (achievementId: string) => { shards: number; divineLight?: number } | null;
   /** Engagement: claim a reached card-mastery tier (one-shot per tier). */
   claimCardMastery: (definitionId: string, tier: number) => { shards: number } | null;
   /** Quick-claim all currently available mastery tiers. Returns aggregate shard reward & tiers claimed. */
@@ -593,7 +595,7 @@ function recompute(state: Store): void {
   state.computedStats = ScoreSystem.compute(state.board);
   const resonanceScore = computeGlobalResonanceScore(state.progress);
   if (resonanceScore > 0) {
-    state.computedStats.globalOblivionMult += resonanceScore / RESONANCE_SCALE_CONSTANT;
+    state.computedStats.globalDivineLightMult += resonanceScore / RESONANCE_SCALE_CONSTANT;
   }
   state.computedStats.resonanceScore = resonanceScore;
   eventBus.emit('board:recomputed', state.computedStats);
@@ -944,7 +946,8 @@ function recordCardPlay(s: Store, definitionId: string): void {
   if (typeKind) {
     emitQuestProgressToProgress(s.progress, { kind: typeKind, amount: 1 });
   }
-  if (definitionId.startsWith('light-causality-') || definitionId.startsWith('dark-causality-') || definitionId.startsWith('ain-soph-aur-causality-')) {
+  if (isCausalityDefinitionId(definitionId)) {
+    s.turn.causalityCardsPlayedThisTurn = (s.turn.causalityCardsPlayedThisTurn ?? 0) + 1;
     for (const id of ['causality-first-horizon', 'causality-collapsed-equation']) {
       const instance = s.progress.enigmas.instances[id];
       if (instance?.status !== 'acquired') continue;
@@ -952,6 +955,14 @@ function recordCardPlay(s: Store, definitionId: string): void {
       instance.progressCounters.causalityPlays = (instance.progressCounters.causalityPlays ?? 0) + 1;
     }
   }
+}
+
+function isCausalityDefinitionId(definitionId: string | undefined | null): boolean {
+  return !!definitionId && (
+    definitionId.startsWith('light-causality-')
+    || definitionId.startsWith('dark-causality-')
+    || definitionId.startsWith('ain-soph-aur-causality-')
+  );
 }
 
 function recordCausalityCosmosDelta(s: Store, delta: number): void {
@@ -1217,9 +1228,9 @@ function completeBossFight(s: Store, victory: boolean): void {
   recompute(s);
 }
 
-function grantOblivion(s: Store, amount: number): void {
+function grantDivineLight(s: Store, amount: number, sourceDefinitionId?: string): void {
   if (amount <= 0) return;
-  // Every Oblivion source, including sacrifice rewards and card effects, scales
+  // Every Divine Light source, including sacrifice rewards and card effects, scales
   // from the player's current Collection Power before downstream rewards resolve.
   const collectionPower = computeGlobalResonanceScore(s.progress);
   const collectionPowerMultiplier = Math.min(3, 1 + Math.max(0, collectionPower) / 1_000);
@@ -1235,11 +1246,14 @@ function grantOblivion(s: Store, amount: number): void {
     }
   }
 
-  // Global Oblivion multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
-  if (s.computedStats.globalOblivionMult > 0) {
-    amount = Math.round(amount * (1 + s.computedStats.globalOblivionMult));
+  // Global Divine Light multiplier from cherubim_global_oblivion_mult passives (additive, all sources).
+  if (s.computedStats.globalDivineLightMult > 0) {
+    amount = Math.round(amount * (1 + s.computedStats.globalDivineLightMult));
   }
-  s.turn.oblivionEarnedThisTurn += amount;
+  s.turn.divineLightEarnedThisTurn += amount;
+  if (isCausalityDefinitionId(sourceDefinitionId)) {
+    s.turn.causalityDivineLightThisTurn = (s.turn.causalityDivineLightThisTurn ?? 0) + amount;
+  }
 
   // Damage Garden Dungeon encounter if active
   if (s.gardenDungeon.phase === 'active') {
@@ -1278,25 +1292,25 @@ function grantOblivion(s: Store, amount: number): void {
       checkBossDefeated(s);
     }
   } else {
-    s.progress.oblivion += amount;
-    s.progress.lifetimeOblivion = (s.progress.lifetimeOblivion ?? 0) + amount;
-    eventBus.emit('oblivion:earned', { delta: amount, total: s.progress.oblivion });
+    s.progress.divineLight += amount;
+    s.progress.lifetimeDivineLight = (s.progress.lifetimeDivineLight ?? 0) + amount;
+    eventBus.emit('divine-light:earned', { delta: amount, total: s.progress.divineLight });
   }
   // Also track battleground score when a match is active.
   if (s.battleground.mode === 'active') {
     s.battleground.myScore += amount;
   }
-  emitQuestProgressToProgress(s.progress, { kind: 'earn_oblivion_in_turn', amount: 0, peak: s.turn.oblivionEarnedThisTurn });
+  emitQuestProgressToProgress(s.progress, { kind: 'earn_divine_light_in_turn', amount: 0, peak: s.turn.divineLightEarnedThisTurn });
 }
 
-function grantPersistentOblivion(s: Store, amount: number): number {
+function grantPersistentDivineLight(s: Store, amount: number): number {
   if (amount <= 0) return 0;
   const collectionPower = computeGlobalResonanceScore(s.progress);
   const scaledAmount = Math.floor(amount * Math.min(3, 1 + Math.max(0, collectionPower) / 1_000));
   if (scaledAmount <= 0) return 0;
-  s.progress.oblivion += scaledAmount;
-  s.progress.lifetimeOblivion = (s.progress.lifetimeOblivion ?? 0) + scaledAmount;
-  eventBus.emit('oblivion:earned', { delta: scaledAmount, total: s.progress.oblivion });
+  s.progress.divineLight += scaledAmount;
+  s.progress.lifetimeDivineLight = (s.progress.lifetimeDivineLight ?? 0) + scaledAmount;
+  eventBus.emit('divine-light:earned', { delta: scaledAmount, total: s.progress.divineLight });
   return scaledAmount;
 }
 
@@ -1533,7 +1547,7 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean): void
 
   evaluateNeutralMysteryProgress({ board: s.board, progress: s.progress });
   evaluateNeutralizingVoidProgress({ board: s.board, progress: s.progress });
-  evaluateCausalityEnigmaProgress({ board: s.board, progress: s.progress });
+  evaluateCausalityEnigmaProgress({ board: s.board, progress: s.progress, turn: s.turn });
 
   if (isEnigmaUnlocked(s.progress)) {
     const amplifier = s.progress.enigmas.instances['to-amplify-the-nullitude'];
@@ -1560,10 +1574,10 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean): void
         amplifier.stepsComplete[2] = true;
         amplifier.currentStepIndex = Math.max(amplifier.currentStepIndex, 3);
       }
-      if (amplifier.stepsComplete[2] && !amplifier.stepsComplete[3] && fullAsaFrontRow) {
-        amplifier.stepsComplete[3] = true;
-        amplifier.currentStepIndex = Math.max(amplifier.currentStepIndex, 4);
-      }
+      // Step 4 ("Nullify the Full Front Row") requires actually activating an
+      // ability while the front row is full — checked in
+      // recordNeutralityAbilityActivation, not here, so it can't complete from
+      // an unrelated board mutation (e.g. summoning the 4th ASA card).
     }
     if (surgeblade?.status === 'locked' && fullAsaFrontRow) {
       surgeblade.status = 'acquired';
@@ -1601,6 +1615,14 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean): void
 
 function recordNeutralityAbilityActivation(s: Store): void {
   s.turn.neutralityAbilityActivationsThisTurn = (s.turn.neutralityAbilityActivationsThisTurn ?? 0) + 1;
+  const amplifier = s.progress.enigmas.instances['to-amplify-the-nullitude'];
+  if (amplifier?.status === 'acquired' && amplifier.stepsComplete[2] && !amplifier.stepsComplete[3]) {
+    const fullAsaFrontRow = s.board.frontSlots.every(slot => slot?.type === 'AinSophAur');
+    if (fullAsaFrontRow) {
+      amplifier.stepsComplete[3] = true;
+      amplifier.currentStepIndex = Math.max(amplifier.currentStepIndex, 4);
+    }
+  }
   syncEnigmaProgressFromBoard(s, true);
 }
 
@@ -1642,17 +1664,40 @@ function recordLossEvent(
 
 /**
  * Resolves the aftermath of "Shatter the Infinite Light": clears the sequence,
- * resets every board attack cooldown and this turn's card-play count (mirroring
- * a fresh turn without discarding hand/board), and — if a boss-style encounter
- * is active — immediately staggers it and restores its full clock/duration.
+ * wipes the board and hand exactly like a turn ending (every unit to discard,
+ * hand discarded and reshuffled in), resets cooldowns/stacks, and — if a
+ * boss-style encounter is active — immediately staggers it and restores its
+ * full clock/duration.
  */
 function finishShatterInfiniteLight(s: Store): void {
   s.turn.shatterInfiniteLight = null;
   s.turn.cardsPlayedThisTurn = 0;
-  for (const slot of [...s.board.frontSlots, ...s.board.backSlots]) {
-    if (!slot) continue;
-    slot.attackCooldowns = {};
+
+  for (let i = 0; i < s.board.frontSlots.length; i++) {
+    const slot = s.board.frontSlots[i];
+    if (slot) {
+      recordLossEvent(s, [{ definitionId: slot.definitionId }], 'board');
+      s.deck.discardPile.push(toDeckCard(slot));
+    }
+    (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[i] = null;
   }
+  for (let i = 0; i < s.board.backSlots.length; i++) {
+    const card = s.board.backSlots[i];
+    if (!card) continue;
+    recordLossEvent(s, [{ definitionId: card.definitionId }], 'board');
+    s.deck.discardPile.push(toDeckCard(card));
+    s.board.backSlots[i] = null;
+  }
+  recordLossEvent(s, s.deck.hand.map(card => ({ definitionId: card.definitionId })), 'discard');
+  for (const card of s.deck.hand) s.deck.discardPile.push(card);
+  s.deck.hand = [];
+  if (s.deck.discardPile.length > 0) {
+    s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
+    s.deck.discardPile = [];
+  }
+  s.board.activeBoardEffects = [];
+  s.turn.limitlessLightStacks = 0;
+
   if (s.bossFight.mode === 'active') {
     const fightSeconds = s.bossFight.kind === 'null_raid' ? NULL_RAID_ENCOUNTER_SECONDS : BOSS_FIGHT_ROUND_SECONDS;
     s.bossFight.fightTimeRemaining = fightSeconds;
@@ -1717,13 +1762,13 @@ function endTurnInternal(s: Store): void {
     (slot as any).side = 'soph';
   }
   s.turn.limitlessLightStacks = 0;
-  if (s.turn.oblivionEarnedThisTurn > (s.progress.bestSingleTurnOblivion ?? 0)) {
-    s.progress.bestSingleTurnOblivion = s.turn.oblivionEarnedThisTurn;
+  if (s.turn.divineLightEarnedThisTurn > (s.progress.bestSingleTurnDivineLight ?? 0)) {
+    s.progress.bestSingleTurnDivineLight = s.turn.divineLightEarnedThisTurn;
   }
   // ── Trial Deck tracking ────────────────────────────────────────────────────
   if (s.trialDeck.mode === 'active') {
     s.trialDeck.turnCount = (s.trialDeck.turnCount ?? 0) + 1;
-    s.trialDeck.trialOblivionTotal = (s.trialDeck.trialOblivionTotal ?? 0) + (s.turn.oblivionEarnedThisTurn ?? 0);
+    s.trialDeck.trialDivineLightTotal = (s.trialDeck.trialDivineLightTotal ?? 0) + (s.turn.divineLightEarnedThisTurn ?? 0);
     // Guided mode: mark complete when all guide steps have been played
     if (s.trialDeck.trialMode === 'guided' && !s.trialDeck.guideComplete) {
       // Tutorial lanes sync their guide progression to completed turns so each
@@ -2058,7 +2103,7 @@ export const useStore = create<Store>()(
         }
         s.turn.limitlessLightStacks += AIN_SOPH_AUR_SUMMON_STACK_REWARD;
         queuePendingEffects(s.turn, result);
-        grantOblivion(s, result.oblivionBonus);
+        grantDivineLight(s, result.divineLightBonus, def.definitionId);
         emitQuestProgressToProgress(s.progress, { kind: 'summon_ain_soph_aur', amount: 1 });
         const activeAinLights = s.board.backSlots.filter(slot => slot?.type === 'Light' && slot.side === 'ain').length;
         if (activeAinLights >= 2 && s.progress.enigmas.instances['null-surged']?.status === 'acquired') {
@@ -2289,7 +2334,7 @@ export const useStore = create<Store>()(
         const handSnapshot = [...s.deck.hand];
         const drawCapableCards = handSnapshot.filter(card => cardCanDraw(card.definitionId));
         const wasBossFight = s.bossFight.mode === 'active';
-        grantOblivion(s, handSnapshot.length * 50);
+        grantDivineLight(s, handSnapshot.length * 50);
         checkBossDefeated(s);
         if (wasBossFight && s.bossFight.mode !== 'active') return;
 
@@ -2366,9 +2411,9 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           recordCausalityCosmosDelta(s, (s.turn.limitlessCosmosStacks ?? 0) - cosmosBefore);
           queuePendingEffects(s.turn, result);
-          grantOblivion(s, result.oblivionBonus);
-          if (s.turn.divineFieldUntil && s.turn.divineFieldUntil > Date.now()) grantOblivion(s, 50);
-          if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil > Date.now()) grantOblivion(s, 100);
+          grantDivineLight(s, result.divineLightBonus, deckCard.definitionId);
+          if (s.turn.divineFieldUntil && s.turn.divineFieldUntil > Date.now()) grantDivineLight(s, 50);
+          if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil > Date.now()) grantDivineLight(s, 100);
           s.turn.cardsPlayedThisTurn += 1;
           tickHandPlayCooldowns(s);
           recordCardPlay(s, deckCard.definitionId);
@@ -2434,7 +2479,7 @@ export const useStore = create<Store>()(
               s.board = result.board;
               s.deck = result.deck;
               queuePendingEffects(s.turn, result);
-              grantOblivion(s, result.oblivionBonus);
+              grantDivineLight(s, result.divineLightBonus, def.definitionId);
             }
           }
           emitQuestProgressToProgress(s.progress, { kind: 'flip_soph', amount: 1 });
@@ -2467,8 +2512,8 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
-        grantOblivion(s, payout);
+        const payout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        grantDivineLight(s, payout, def.definitionId);
         emitQuestProgressToProgress(s.progress, { kind: 'activate_ain_attack', amount: 1 });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
       });
@@ -2494,8 +2539,8 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
-        grantOblivion(s, payout);
+        const payout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        grantDivineLight(s, payout, def.definitionId);
         emitQuestProgressToProgress(s.progress, { kind: 'activate_soph_attack', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         slot.attackCooldowns[attack.id] = attack.cooldownCards;
@@ -2523,7 +2568,7 @@ export const useStore = create<Store>()(
           if (!sophTarget || sophTarget.limitlessCharge <= 0) return;
           const collectionPower = computeGlobalResonanceScore(s.progress);
           const payout = Math.round(500 * sophTarget.limitlessCharge * Math.min(3, 1 + Math.max(0, collectionPower) / 1_000));
-          grantOblivion(s, payout);
+          grantDivineLight(s, payout);
           darkSlot.attackCooldowns[cooldownKey] = Math.max(1, def.cooldownCardsPlayed ?? 1);
           emitQuestProgressToProgress(s.progress, { kind: 'activate_dark', amount: 1 });
           recompute(s);
@@ -2545,7 +2590,7 @@ export const useStore = create<Store>()(
         s.board = result.board;
         s.deck = result.deck;
         queuePendingEffects(s.turn, result);
-        grantOblivion(s, result.oblivionBonus);
+        grantDivineLight(s, result.divineLightBonus, def.definitionId);
         const resolvedSlot = s.board.backSlots[slotIndex];
         if (!resolvedSlot || resolvedSlot.instanceId !== instanceId) return;
         if (def.persistent) {
@@ -2584,8 +2629,8 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        const payout = Math.max(0, Math.round(attack.baseOblivion + scaling));
-        grantOblivion(s, payout);
+        const payout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        grantDivineLight(s, payout, def.definitionId);
         emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
         emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
         const surgeblade = s.progress.enigmas.instances['null-surged'];
@@ -2639,9 +2684,9 @@ export const useStore = create<Store>()(
         }
         if (shatter.phase === 'active') {
           const rawAmount = shatter.stacks * 1_000;
-          const earnedBefore = s.turn.oblivionEarnedThisTurn;
-          if (rawAmount > 0) grantOblivion(s, rawAmount);
-          shatter.payout = s.turn.oblivionEarnedThisTurn - earnedBefore;
+          const earnedBefore = s.turn.divineLightEarnedThisTurn;
+          if (rawAmount > 0) grantDivineLight(s, rawAmount);
+          shatter.payout = s.turn.divineLightEarnedThisTurn - earnedBefore;
           shatter.phase = 'result';
           shatter.phaseEndsAt = nowMs + SHATTER_RESULT_MS;
           checkBossDefeated(s);
@@ -2708,11 +2753,11 @@ export const useStore = create<Store>()(
           } else if (pending.sourceCard.includes(':draw_plus:')) {
             s.deck = TurnSystem.drawCards(s.deck, uniqueSelected.length + parseInt(pending.sourceCard.split(':draw_plus:')[1]));
           } else if (pending.sourceCard === 'ability:neutralizing-inferno') {
-            grantOblivion(s, s.turn.limitlessLightStacks * 500);
+            grantDivineLight(s, s.turn.limitlessLightStacks * 500);
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
             s.turn.abilityCooldownUntil['neutralizing-inferno'] = Date.now() + 30_000;
           } else if (pending.sourceCard === 'ability:axiomatic-reversal') {
-            grantOblivion(s, 50_000);
+            grantDivineLight(s, 50_000);
             s.deck = TurnSystem.drawCards(s.deck, 1);
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
             s.turn.abilityCooldownUntil['axiomatic-reversal'] = Date.now() + 120_000;
@@ -2877,7 +2922,7 @@ export const useStore = create<Store>()(
           s.turn = result.turn;
           s.board = result.board;
           s.deck = result.deck;
-          grantOblivion(s, result.oblivionBonus);
+          grantDivineLight(s, result.divineLightBonus);
           pendingQueue.push(...(result.pendingEffects ?? (result.pendingEffect ? [result.pendingEffect] : [])));
         }
 
@@ -2981,8 +3026,8 @@ export const useStore = create<Store>()(
 
     // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Oblivion �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
-    addOblivion: (delta) => {
-      set(s => { grantOblivion(s, delta); });
+    addDivineLight: (delta) => {
+      set(s => { grantDivineLight(s, delta); });
     },
 
     // Pack / collection
@@ -2990,8 +3035,8 @@ export const useStore = create<Store>()(
     openPack: (packId) => {
       const s = get();
       const pack = PACK_DEFINITIONS.find(p => p.id === packId);
-      const isLocked = pack?.oblivionUnlock !== undefined
-        ? s.progress.oblivion < pack.oblivionUnlock
+      const isLocked = pack?.divineLightUnlock !== undefined
+        ? s.progress.divineLight < pack.divineLightUnlock
         : pack?.locked;
       if (!pack || isLocked) return null;
       const usesShards = (pack as typeof pack & { currencyType?: string }).currencyType === 'aberratedShards';
@@ -3003,7 +3048,7 @@ export const useStore = create<Store>()(
       if (usesShards) {
         if (s.progress.aberratedShards < baseCost) return null;
       } else {
-        if (s.progress.oblivion < baseCost) return null;
+        if (s.progress.divineLight < baseCost) return null;
       }
       const preOpen = { ...s.progress.collection };
       const drawn = PackSystem.open(pack);
@@ -3013,7 +3058,7 @@ export const useStore = create<Store>()(
         if (usesShards) {
           state.progress.aberratedShards -= baseCost;
         } else {
-          state.progress.oblivion -= baseCost;
+          state.progress.divineLight -= baseCost;
         }
         const holoFlags = rollPackHolofoils(drawn, false);
         for (let i = 0; i < drawn.length; i += 1) {
@@ -3029,12 +3074,12 @@ export const useStore = create<Store>()(
     openBox: (packId) => {
       const s = get();
       const pack = PACK_DEFINITIONS.find(p => p.id === packId);
-      const isLocked = pack?.oblivionUnlock !== undefined
-        ? s.progress.oblivion < pack.oblivionUnlock
+      const isLocked = pack?.divineLightUnlock !== undefined
+        ? s.progress.divineLight < pack.divineLightUnlock
         : pack?.locked;
       if (!pack || isLocked) return null;
       const cost = Math.round(pack.cost * 5 * 0.98);
-      if (s.progress.oblivion < cost) return null;
+      if (s.progress.divineLight < cost) return null;
       const pityMisses = s.progress.pityCounters[packId] ?? 0;
       const drawn: string[] = [];
       for (let i = 0; i < 5; i++) {
@@ -3058,7 +3103,7 @@ export const useStore = create<Store>()(
       }
 
       set(state => {
-        state.progress.oblivion -= cost;
+        state.progress.divineLight -= cost;
         const holoFlags = rollPackHolofoils(drawn, true);
         for (let i = 0; i < drawn.length; i += 1) {
           addCollectionCard(state.progress, drawn[i], holoFlags[i] ? 'holo' : 'normal');
@@ -3077,12 +3122,12 @@ export const useStore = create<Store>()(
     openCase: (packId) => {
       const s = get();
       const pack = PACK_DEFINITIONS.find(p => p.id === packId);
-      const isLocked = pack?.oblivionUnlock !== undefined
-        ? s.progress.oblivion < pack.oblivionUnlock
+      const isLocked = pack?.divineLightUnlock !== undefined
+        ? s.progress.divineLight < pack.divineLightUnlock
         : pack?.locked;
       if (!pack || isLocked) return null;
       const cost = Math.round(Math.round(pack.cost * 5 * 0.98) * 2 * 0.96);
-      if (s.progress.oblivion < cost) return null;
+      if (s.progress.divineLight < cost) return null;
       const drawn: string[] = [];
       for (let i = 0; i < 10; i++) {
         drawn.push(...PackSystem.open(pack));
@@ -3101,7 +3146,7 @@ export const useStore = create<Store>()(
       }
 
       set(state => {
-        state.progress.oblivion -= cost;
+        state.progress.divineLight -= cost;
         const holoFlags = rollPackHolofoils(drawn, true);
         for (let i = 0; i < drawn.length; i += 1) {
           addCollectionCard(state.progress, drawn[i], holoFlags[i] ? 'holo' : 'normal');
@@ -3389,21 +3434,21 @@ export const useStore = create<Store>()(
       });
     },
 
-    sacrificeEnigmaOblivion: (enigmaId) => {
+    sacrificeEnigmaDivineLight: (enigmaId) => {
       const state = get();
       if (!isEnigmaUnlocked(state.progress) || (enigmaId !== 'neutral-mystery' && enigmaId !== 'neutralizing-the-void')) return false;
       const instance = state.progress.enigmas.instances[enigmaId];
       if (!instance || instance.status === 'locked') return false;
       if (instance.currentStepIndex !== 1) return false;
       const cost = enigmaId === 'neutral-mystery' ? 50_000 : 25_000;
-      if (state.progress.oblivion < cost) return false;
+      if (state.progress.divineLight < cost) return false;
 
       set(s => {
         const target = s.progress.enigmas.instances[enigmaId] ?? ensureInstance(s.progress, enigmaId);
         if (!target) return;
         if (target.currentStepIndex !== 1) return;
-        if (s.progress.oblivion < cost) return;
-        s.progress.oblivion -= cost;
+        if (s.progress.divineLight < cost) return;
+        s.progress.divineLight -= cost;
         target.stepsComplete[1] = true;
         target.currentStepIndex = 2;
         pushEnigmaStepToast(s, enigmaId, 1);
@@ -3418,11 +3463,11 @@ export const useStore = create<Store>()(
       const state = get();
       if (!meetsAbilityOwnershipGate(ability, state.progress.collection, state.progress.infiniteCollection)) return false;
       if (state.progress.ownedAbilities?.[abilityId]) return false;
-      if (state.progress.oblivion < ability.purchaseCost) return false;
+      if (state.progress.divineLight < ability.purchaseCost) return false;
       set(s => {
         if (!s.progress.ownedAbilities) s.progress.ownedAbilities = {};
-        if (s.progress.ownedAbilities[abilityId] || s.progress.oblivion < ability.purchaseCost) return;
-        s.progress.oblivion -= ability.purchaseCost;
+        if (s.progress.ownedAbilities[abilityId] || s.progress.divineLight < ability.purchaseCost) return;
+        s.progress.divineLight -= ability.purchaseCost;
         s.progress.ownedAbilities[abilityId] = true;
         syncEnigmaProgressFromBoard(s, true);
       });
@@ -3630,7 +3675,7 @@ export const useStore = create<Store>()(
             if (!card || card.type !== 'Light') continue;
             for (const id of Object.keys(card.attackCooldowns)) delete card.attackCooldowns[id];
           }
-          grantOblivion(s, 10_000);
+          grantDivineLight(s, 10_000);
           if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
           s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
           recordNeutralityAbilityActivation(s);
@@ -3683,20 +3728,20 @@ export const useStore = create<Store>()(
       if (quest.claimed) return null;
       if (quest.progress < quest.goal) return null;
       const shardReward = quest.shardReward;
-      const baseOblivionReward = quest.oblivionReward ?? 0;
-      let oblivionReward = 0;
+      const baseDivineLightReward = quest.divineLightReward ?? 0;
+      let divineLightReward = 0;
       set(state => {
         const list = state.progress.quests.daily.find(q => q.id === questId)
           ? state.progress.quests.daily
           : state.progress.quests.weekly;
         const q = list.find(qq => qq.id === questId);
         if (q) q.claimed = true;
-        oblivionReward = grantPersistentOblivion(state, baseOblivionReward);
+        divineLightReward = grantPersistentDivineLight(state, baseDivineLightReward);
         if (shardReward > 0) {
           state.progress.aberratedShards += shardReward;
         }
       });
-      return { shards: shardReward, oblivion: oblivionReward > 0 ? oblivionReward : undefined };
+      return { shards: shardReward, divineLight: divineLightReward > 0 ? divineLightReward : undefined };
     },
 
     claimAchievement: (achievementId) => {
@@ -3707,8 +3752,8 @@ export const useStore = create<Store>()(
       const claims = s.progress.achievementClaims ?? {};
       if (claims[achievementId]) return null;
       const shardReward = getAchievementShardReward(badge.group);
-      const oblivionReward = getAchievementOblivionReward(badge.group);
-      let scaledOblivionReward = 0;
+      const divineLightReward = getAchievementDivineLightReward(badge.group);
+      let scaledDivineLightReward = 0;
       set(state => {
         latchUnlockedAchievements(state.progress);
         if (!state.progress.achievementClaims) state.progress.achievementClaims = {};
@@ -3716,9 +3761,9 @@ export const useStore = create<Store>()(
         state.progress.achievementUnlocks[achievementId] = true;
         state.progress.achievementClaims[achievementId] = true;
         state.progress.aberratedShards += shardReward;
-        scaledOblivionReward = grantPersistentOblivion(state, oblivionReward);
+        scaledDivineLightReward = grantPersistentDivineLight(state, divineLightReward);
       });
-      return { shards: shardReward, oblivion: scaledOblivionReward > 0 ? scaledOblivionReward : undefined };
+      return { shards: shardReward, divineLight: scaledDivineLightReward > 0 ? scaledDivineLightReward : undefined };
     },
 
     claimCardMastery: (definitionId, tier) => {
@@ -4412,7 +4457,7 @@ export const useStore = create<Store>()(
           guidedDeckOrder: trialMode === 'guided' ? def.guidedDeckOrder : [],
           guideComplete: false,
           turnCount: 0,
-          trialOblivionTotal: 0,
+          trialDivineLightTotal: 0,
         };
 
         recompute(s);
@@ -4451,7 +4496,7 @@ export const useStore = create<Store>()(
           guidedDeckOrder: def.guidedDeckOrder,
           guideComplete: false,
           turnCount: 0,
-          trialOblivionTotal: 0,
+          trialDivineLightTotal: 0,
         };
 
         recompute(s);
@@ -4491,15 +4536,27 @@ export const useStore = create<Store>()(
           (loaded.progress as { collection: Record<string, number> }).collection = rec;
         }
 
-        // Migrate progress: score �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� oblivion
+        // Migrate progress: legacy score/oblivion fields -> divineLight naming
         const op = loaded.progress as unknown as Record<string, unknown>;
-        if (op['score'] !== undefined && op['oblivion'] === undefined) {
-          op['oblivion'] = op['score'];
+        if (op['score'] !== undefined && op['oblivion'] === undefined && op['divineLight'] === undefined) {
+          op['divineLight'] = op['score'];
+        }
+        if (op['oblivion'] !== undefined && op['divineLight'] === undefined) {
+          op['divineLight'] = op['oblivion'];
         }
         delete op['score'];
-        if (op['oblivion'] === undefined) op['oblivion'] = 0;
-        if (op['lifetimeOblivion'] === undefined) op['lifetimeOblivion'] = 0;
-        if (op['bestSingleTurnOblivion'] === undefined) op['bestSingleTurnOblivion'] = 0;
+        delete op['oblivion'];
+        if (op['divineLight'] === undefined) op['divineLight'] = 0;
+        if (op['lifetimeOblivion'] !== undefined && op['lifetimeDivineLight'] === undefined) {
+          op['lifetimeDivineLight'] = op['lifetimeOblivion'];
+        }
+        delete op['lifetimeOblivion'];
+        if (op['lifetimeDivineLight'] === undefined) op['lifetimeDivineLight'] = 0;
+        if (op['bestSingleTurnOblivion'] !== undefined && op['bestSingleTurnDivineLight'] === undefined) {
+          op['bestSingleTurnDivineLight'] = op['bestSingleTurnOblivion'];
+        }
+        delete op['bestSingleTurnOblivion'];
+        if (op['bestSingleTurnDivineLight'] === undefined) op['bestSingleTurnDivineLight'] = 0;
         delete op['totalTicksElapsed'];
         delete op['scoreBoostTicks'];
         delete op['scoreBoostMultiplier'];
@@ -4692,7 +4749,11 @@ export const useStore = create<Store>()(
         delete ot['undyingVigilActive'];
         delete ot['prismaticEchoCascadeFloorPerToken'];
         delete ot['prismaticSentencingChainFloorBonus'];
-        if (ot['oblivionEarnedThisTurn'] === undefined) ot['oblivionEarnedThisTurn'] = 0;
+        if (ot['oblivionEarnedThisTurn'] !== undefined && ot['divineLightEarnedThisTurn'] === undefined) {
+          ot['divineLightEarnedThisTurn'] = ot['oblivionEarnedThisTurn'];
+        }
+        delete ot['oblivionEarnedThisTurn'];
+        if (ot['divineLightEarnedThisTurn'] === undefined) ot['divineLightEarnedThisTurn'] = 0;
         if (ot['limitlessCosmosStacks'] === undefined) ot['limitlessCosmosStacks'] = 0;
         if (ot['trail'] === undefined) ot['trail'] = 0;
         if (ot['strain'] === undefined) ot['strain'] = 0;
@@ -4975,7 +5036,7 @@ export const useStore = create<Store>()(
 // �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E� Selectors �E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E��E�E�E�E�E�E�E�E�E�E�E�E�E�E�E�
 
 export const selectComputedStats = (s: Store): ComputedBoardStats => s.computedStats;
-export const selectOblivion = (s: Store): number => s.progress.oblivion;
+export const selectDivineLight = (s: Store): number => s.progress.divineLight;
 export const selectBoard = (s: Store): BoardState => s.board;
 export const selectDeck = (s: Store): DeckState => s.deck;
 export const selectTurn = (s: Store): TurnState => s.turn;

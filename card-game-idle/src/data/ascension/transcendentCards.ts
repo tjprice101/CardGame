@@ -5,9 +5,9 @@ const transcendentLight: CardDefinition = {
 	name: 'Starbound Glimmer',
 	description: 'Two attacks with triune scaling and a stack-consuming Soph burst.',
 	artKey: 'tx_neutral_starbound_glimmer',
-	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'Ain Attack', description: '1250 base Divine Light with triune scaling.', baseOblivion: 1250, cooldownCards: 4, scaling: { kind: 'triune', amount: 900 }, tags: ['transcendent', 'ain-attack'] },
-	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Soph Attack', description: '1900 base Divine Light with triune scaling; consumes 5 stacks.', baseOblivion: 1900, cooldownCards: 5, scaling: { kind: 'triune', amount: 1200 }, stackCost: { kind: 'fixed', value: 5 }, tags: ['transcendent', 'soph-attack'] },
-	sophPlacementEffects: [{ type: 'oblivion_flat', value: 140 }],
+	ainAttack: { id: 'tx-neutral-starbound-glimmer:ain-attack', label: 'Ain', name: 'Ain Attack', description: '1250 base Divine Light with triune scaling.', baseDivineLight: 1250, cooldownCards: 4, scaling: { kind: 'triune', amount: 900 }, tags: ['transcendent', 'ain-attack'] },
+	sophAttack: { id: 'tx-neutral-starbound-glimmer:soph-attack', label: 'Soph', name: 'Soph Attack', description: '1900 base Divine Light with triune scaling; consumes 5 stacks.', baseDivineLight: 1900, cooldownCards: 5, scaling: { kind: 'triune', amount: 1200 }, stackCost: { kind: 'fixed', value: 5 }, tags: ['transcendent', 'soph-attack'] },
+	sophPlacementEffects: [{ type: 'divine_light_flat', value: 140 }],
 	sacrificeStackRate: 120,
 };
 
@@ -27,9 +27,9 @@ const transcendentDark: CardDefinition[] = [
 const transcendentAur: CardDefinition = {
 	definitionId: 'tx-angel-starbound-null-archangel', type: 'AinSophAur', rarity: 'Transcendent', name: 'Starbound Null Archangel',
 	description: 'Sacrifice 3 back-row cards to summon, then use Bridge the Light for a triune Divine Light payout.', artKey: 'tx_angel_starbound_null_archangel',
-	summonMaterialCount: 3, onSummonEffects: [{ type: 'oblivion_flat', value: 300 }],
+	summonMaterialCount: 3, onSummonEffects: [{ type: 'divine_light_flat', value: 300 }],
 	summonMaterials: [{ cardTypes: ['Light'], count: 2 }, { cardTypes: ['Dark'], count: 1 }],
-	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '2400 base Divine Light with triune scaling; consumes 6 stacks.', baseOblivion: 2400, cooldownCards: 5, scaling: { kind: 'triune', amount: 1800 }, consumesStacks: { kind: 'fixed', value: 6 } },
+	bridgeAttack: { id: 'tx-angel-starbound-null-archangel:bridge-the-light', name: 'Bridge the Light', description: '2400 base Divine Light with triune scaling; consumes 6 stacks.', baseDivineLight: 2400, cooldownCards: 5, scaling: { kind: 'triune', amount: 1800 }, consumesStacks: { kind: 'fixed', value: 6 } },
 };
 
 export const transcendentCardDefinitions: CardDefinition[] = [transcendentLight, ...transcendentDark, transcendentAur];

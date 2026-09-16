@@ -5,9 +5,9 @@ import { ABILITY_DEFINITIONS } from '@/data/abilities/abilityDefinitions';
 import { lightCards } from '@/data/cards/lightCards';
 
 const currencyFields = [
-  'oblivion',
-  'lifetimeOblivion',
-  'bestSingleTurnOblivion',
+  'divineLight',
+  'lifetimeDivineLight',
+  'bestSingleTurnDivineLight',
   'aberratedShards',
   'cardbaneLight',
   'fractureShards',
@@ -22,10 +22,10 @@ function resetStore(): void {
 
 describe('starting economy', () => {
   it('starts new default saves with starter grant Divine Light and zero for other currencies', () => {
-    expect(defaultGameState.progress.oblivion).toBe(5_000);
-    expect(defaultGameState.progress.lifetimeOblivion).toBe(5_000);
+    expect(defaultGameState.progress.divineLight).toBe(5_000);
+    expect(defaultGameState.progress.lifetimeDivineLight).toBe(5_000);
     for (const field of currencyFields) {
-      if (field === 'oblivion' || field === 'lifetimeOblivion') continue;
+      if (field === 'divineLight' || field === 'lifetimeDivineLight') continue;
       expect(defaultGameState.progress[field], field).toBe(0);
     }
   });
@@ -36,9 +36,9 @@ describe('starting economy', () => {
       ...state,
       progress: {
         ...state.progress,
-        oblivion: 100,
-        lifetimeOblivion: 200,
-        bestSingleTurnOblivion: 300,
+        divineLight: 100,
+        lifetimeDivineLight: 200,
+        bestSingleTurnDivineLight: 300,
         aberratedShards: 400,
         cardbaneLight: 500,
         fractureShards: 600,
@@ -49,10 +49,10 @@ describe('starting economy', () => {
 
     useStore.getState().resetToDefault();
 
-    expect(useStore.getState().progress.oblivion).toBe(5_000);
-    expect(useStore.getState().progress.lifetimeOblivion).toBe(5_000);
+    expect(useStore.getState().progress.divineLight).toBe(5_000);
+    expect(useStore.getState().progress.lifetimeDivineLight).toBe(5_000);
     for (const field of currencyFields) {
-      if (field === 'oblivion' || field === 'lifetimeOblivion') continue;
+      if (field === 'divineLight' || field === 'lifetimeDivineLight') continue;
       expect(useStore.getState().progress[field], field).toBe(0);
     }
   });
@@ -65,15 +65,15 @@ describe('starting economy', () => {
       progress: {
         ...state.progress,
         cardPlayCounts: { [definitionId]: 1_500 },
-        oblivion: 0,
-        lifetimeOblivion: 0,
+        divineLight: 0,
+        lifetimeDivineLight: 0,
       },
     }));
 
-    useStore.getState().addOblivion(100);
+    useStore.getState().addDivineLight(100);
 
-    expect(useStore.getState().progress.oblivion).toBe(102);
-    expect(useStore.getState().progress.lifetimeOblivion).toBe(102);
+    expect(useStore.getState().progress.divineLight).toBe(102);
+    expect(useStore.getState().progress.lifetimeDivineLight).toBe(102);
   });
 
   it('materializes each ability once for its exact Divine Light cost', () => {
@@ -81,14 +81,14 @@ describe('starting economy', () => {
     const ability = ABILITY_DEFINITIONS[0];
     useStore.setState(state => ({
       ...state,
-      progress: { ...state.progress, oblivion: ability.purchaseCost + 250 },
+      progress: { ...state.progress, divineLight: ability.purchaseCost + 250 },
     }));
 
     expect(useStore.getState().purchaseAbility(ability.id)).toBe(true);
-    expect(useStore.getState().progress.oblivion).toBe(250);
+    expect(useStore.getState().progress.divineLight).toBe(250);
     expect(useStore.getState().progress.ownedAbilities?.[ability.id]).toBe(true);
     expect(useStore.getState().purchaseAbility(ability.id)).toBe(false);
-    expect(useStore.getState().progress.oblivion).toBe(250);
+    expect(useStore.getState().progress.divineLight).toBe(250);
   });
 
   it('rejects ability materialization when Divine Light is insufficient', () => {

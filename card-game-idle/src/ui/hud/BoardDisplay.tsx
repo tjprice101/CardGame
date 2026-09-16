@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
 import { useStore, selectBoard, selectBossFight, selectGardenDungeon, selectCanEmbraceInfinite, selectProgress, selectTurn } from '@/state/store';
 import { useThemeVersion } from '@/ui/useThemeVersion';
@@ -441,7 +441,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             const bridgeCooldown = asaDef?.bridgeAttack ? (slot.attackCooldowns[asaDef.bridgeAttack.id] ?? 0) : 0;
             const bridgeCost = asaDef?.bridgeAttack?.consumesStacks ? previewStackCost(asaDef.bridgeAttack.consumesStacks, turn.limitlessLightStacks) : 0;
             const bridgePreview = asaDef?.bridgeAttack
-              ? Math.max(0, Math.round(asaDef.bridgeAttack.baseOblivion + resolveCardScaling(asaDef.bridgeAttack.scaling, scalingCtx)))
+              ? Math.max(0, Math.round(asaDef.bridgeAttack.baseDivineLight + resolveCardScaling(asaDef.bridgeAttack.scaling, scalingCtx)))
               : 0;
             const bridgeDisabled = bridgeCooldown > 0 || turn.limitlessLightStacks < bridgeCost;
             const bridgeActionLabel = bridgeCooldown > 0
@@ -717,9 +717,9 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
             if (mainDef?.type === 'Light' && isAin) {
               ainCooldown = mainCard.attackCooldowns[mainDef.ainAttack.id] ?? 0;
               sophCooldown = mainCard.attackCooldowns[mainDef.sophAttack.id] ?? 0;
-              ainPreview = Math.max(0, Math.round(mainDef.ainAttack.baseOblivion + resolveCardScaling(mainDef.ainAttack.scaling, scalingCtx)));
+              ainPreview = Math.max(0, Math.round(mainDef.ainAttack.baseDivineLight + resolveCardScaling(mainDef.ainAttack.scaling, scalingCtx)));
               sophCost = mainDef.sophAttack.stackCost ? previewStackCost(mainDef.sophAttack.stackCost, turn.limitlessLightStacks) : 0;
-              sophPreview = Math.max(0, Math.round(mainDef.sophAttack.baseOblivion + resolveCardScaling(mainDef.sophAttack.scaling, scalingCtx) + sophCost));
+              sophPreview = Math.max(0, Math.round(mainDef.sophAttack.baseDivineLight + resolveCardScaling(mainDef.sophAttack.scaling, scalingCtx) + sophCost));
             }
             if (mainDef?.type === 'Dark' && isAin) {
               darkCooldown = mainDef.persistent ? (mainCard.attackCooldowns[`${mainDef.definitionId}:activation`] ?? 0) : 0;

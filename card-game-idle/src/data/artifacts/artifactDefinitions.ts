@@ -27,7 +27,7 @@ export const ARTIFACT_DEFINITIONS: ArtifactDefinition[] = [
     name: 'Patience Surge',
     description: 'When a Light attack resolves, gain +150 bonus Divine Light. The release is worth the wait.',
     powderCost: T2,
-    effects: [{ type: 'patience_attack_oblivion_bonus', value: 150 }],
+    effects: [{ type: 'patience_attack_divine_light_bonus', value: 150 }],
   },
   {
     id: 'artifact-neutrality-t3',

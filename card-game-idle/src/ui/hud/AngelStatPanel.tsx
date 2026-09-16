@@ -78,8 +78,8 @@ export default function AngelStatPanel() {
           {turn.limitlessLightStacks > 0 && (
             <div style={styles.stat}>Limitless Light Stacks {formatNumber(turn.limitlessLightStacks)}</div>
           )}
-          {turn.oblivionEarnedThisTurn > 0 && (
-            <div style={styles.stat}>+{formatNumber(turn.oblivionEarnedThisTurn)} this turn</div>
+          {turn.divineLightEarnedThisTurn > 0 && (
+            <div style={styles.stat}>+{formatNumber(turn.divineLightEarnedThisTurn)} this turn</div>
           )}
           {asaCount > 0 && (
             <div style={styles.synergy}>
@@ -94,9 +94,9 @@ export default function AngelStatPanel() {
               {ainCount} Ain · {sophCount} Soph
             </div>
           )}
-          {stats.globalOblivionMult > 0 && (
+          {stats.globalDivineLightMult > 0 && (
             <div style={{ ...styles.synergy, color: '#8f74a9' }}>
-              Collection Power ×{(1 + stats.globalOblivionMult).toFixed(2)}
+              Collection Power ×{(1 + stats.globalDivineLightMult).toFixed(2)}
             </div>
           )}
         </>

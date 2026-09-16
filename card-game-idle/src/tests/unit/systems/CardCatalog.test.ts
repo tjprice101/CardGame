@@ -64,7 +64,7 @@ describe('Ain/Soph card catalog', () => {
     expect(ainSophAurCards).toHaveLength(4);
     expect(new Set(ainSophAurCards.map(card => card.definitionId)).size).toBe(4);
     for (const card of ainSophAurCards) {
-      expect(card.bridgeAttack?.baseOblivion).toBeGreaterThan(0);
+      expect(card.bridgeAttack?.baseDivineLight).toBeGreaterThan(0);
       expect(card.bridgeAttack?.cooldownCards).toBeGreaterThan(0);
       expect(card.onSummonEffects.length).toBeGreaterThan(0);
     }
@@ -233,12 +233,12 @@ describe('Ain/Soph card catalog', () => {
 
     for (const card of lightCards) {
       triples.push(JSON.stringify([
-        card.ainAttack.baseOblivion,
+        card.ainAttack.baseDivineLight,
         card.ainAttack.scaling.kind === 'triune' ? card.ainAttack.scaling.amount : 0,
         card.ainAttack.cooldownCards,
       ]));
       triples.push(JSON.stringify([
-        card.sophAttack.baseOblivion,
+        card.sophAttack.baseDivineLight,
         card.sophAttack.scaling.kind === 'triune' ? card.sophAttack.scaling.amount : 0,
         card.sophAttack.cooldownCards,
       ]));
@@ -255,7 +255,7 @@ describe('Ain/Soph card catalog', () => {
     for (const card of ainSophAurCards) {
       expect(card.bridgeAttack).toBeDefined();
       triples.push(JSON.stringify([
-        card.bridgeAttack!.baseOblivion,
+        card.bridgeAttack!.baseDivineLight,
         card.bridgeAttack!.scaling.kind === 'triune' ? card.bridgeAttack!.scaling.amount : 0,
         card.bridgeAttack!.cooldownCards,
       ]));

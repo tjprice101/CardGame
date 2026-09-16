@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   AVATARS,
   AVATAR_BY_ID,
@@ -31,7 +31,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 
 function baseProgress(overrides: Partial<ProgressState> = {}): ProgressState {
   return {
-    oblivion: 0,
+    divineLight: 0,
     aberratedShards: 0,
     totalCardsPlayed: 0,
     collection: {},
@@ -87,7 +87,7 @@ describe('avatar registry', () => {
   });
 
   it('unlocks Eternal at 1,000,000 oblivion', () => {
-    const p = baseProgress({ oblivion: 1_000_000, bestSingleTurnOblivion: 10_000 });
+    const p = baseProgress({ divineLight: 1_000_000, bestSingleTurnDivineLight: 10_000 });
     expect(isAvatarUnlocked('avatar-eternal', p)).toBe(true);
     expect(isAvatarUnlocked('avatar-oblivion-touched', p)).toBe(true);
   });
@@ -101,7 +101,7 @@ describe('avatar registry', () => {
   });
 
   it('resolveAvatar returns the requested avatar when unlocked', () => {
-    const p = baseProgress({ oblivion: 1_000_000 });
+    const p = baseProgress({ divineLight: 1_000_000 });
     expect(resolveAvatar('avatar-eternal', p).id).toBe('avatar-eternal');
   });
 
@@ -112,9 +112,9 @@ describe('avatar registry', () => {
   });
 
   it('keeps avatars unlocked after requirements are no longer met once latched', () => {
-    const p = baseProgress({ bestSingleTurnOblivion: 10_000 });
+    const p = baseProgress({ bestSingleTurnDivineLight: 10_000 });
     latchUnlockedAvatars(p);
-    p.bestSingleTurnOblivion = 0;
+    p.bestSingleTurnDivineLight = 0;
 
     expect(isAvatarUnlocked('pic-classic-oblivion-touched', p)).toBe(true);
     expect(isAvatarUnlocked('avatar-oblivion-touched', p)).toBe(true);

@@ -30,10 +30,10 @@ describe('Neutrality pack opening flow', () => {
     const pack = PACK_DEFINITIONS.find(definition => definition.id === 'pack-neutrality')!;
     useStore.setState(state => ({
       ...state,
-      progress: { ...state.progress, oblivion: 1_000_000 },
+      progress: { ...state.progress, divineLight: 1_000_000 },
     }));
     const collectionBefore = { ...useStore.getState().progress.collection };
-    const currencyBefore = useStore.getState().progress.oblivion;
+    const currencyBefore = useStore.getState().progress.divineLight;
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
 
     const rewards = useStore.getState().openPack(pack.id);
@@ -45,14 +45,14 @@ describe('Neutrality pack opening flow', () => {
     for (const definitionId of rewards!) {
       expect(useStore.getState().progress.collection[definitionId]).toBe((collectionBefore[definitionId] ?? 0) + 1);
     }
-    expect(useStore.getState().progress.oblivion).toBeLessThan(currencyBefore);
+    expect(useStore.getState().progress.divineLight).toBeLessThan(currencyBefore);
   });
 
   it('guarantees a holofoil in Boxes and Cases when no individual roll succeeds', () => {
     resetStore();
     useStore.setState(state => ({
       ...state,
-      progress: { ...state.progress, oblivion: 100_000_000 },
+      progress: { ...state.progress, divineLight: 100_000_000 },
     }));
     vi.spyOn(Math, 'random').mockReturnValue(0.99);
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useStore, selectOblivion } from '@/state/store';
+import { useStore, selectDivineLight } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -39,24 +39,24 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function ScoreDisplay() {
-  const oblivion = useStore(selectOblivion);
-  const prevRef = useRef(oblivion);
+  const divineLight = useStore(selectDivineLight);
+  const prevRef = useRef(divineLight);
   const [popping, setPopping] = useState(false);
 
   useEffect(() => {
-    if (oblivion !== prevRef.current) {
-      prevRef.current = oblivion;
+    if (divineLight !== prevRef.current) {
+      prevRef.current = divineLight;
       setPopping(false);
       requestAnimationFrame(() => setPopping(true));
       const t = setTimeout(() => setPopping(false), 280);
       return () => clearTimeout(t);
     }
-  }, [oblivion]);
+  }, [divineLight]);
 
   return (
     <div className={popping ? 'anim-score-pop' : undefined} style={styles.container}>
       <div style={styles.label}>Divine Light</div>
-      <div style={styles.score}>{formatNumber(oblivion)}</div>
+      <div style={styles.score}>{formatNumber(divineLight)}</div>
     </div>
   );
 }

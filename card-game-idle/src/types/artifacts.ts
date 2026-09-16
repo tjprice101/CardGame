@@ -9,7 +9,7 @@ export type ArtifactTier = 'basic' | 'advanced' | 'apex';
 export type ArtifactEffectType =
   // Neutrality — Patience-system-native
   | 'patience_gain_bonus'             // +N Patience gained per card played to each Seraphim
-  | 'patience_attack_oblivion_bonus'  // +N flat Oblivion when a Seraphim fires with >= threshold Patience
+  | 'patience_attack_divine_light_bonus'  // +N flat Divine Light when a Seraphim fires with >= threshold Patience
   | 'patience_threshold_reduction'    // Seraphim Patience threshold reduced by N (min 1)
 
   // Pyroabyss

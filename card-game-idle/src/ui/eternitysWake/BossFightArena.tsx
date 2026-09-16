@@ -30,7 +30,7 @@ export default function BossFightArena() {
   const bossFight = useStore(selectBossFight);
   const turn = useStore(selectTurn);
 
-  const damageThisTurn = turn.oblivionEarnedThisTurn;
+  const damageThisTurn = turn.divineLightEarnedThisTurn;
   const currentLabel = motivationalLabel(damageThisTurn);
   const [callout, setCallout] = useState<{ key: number; text: string } | null>(null);
   const lastLabelRef = useRef<string | null>(null);
@@ -153,7 +153,7 @@ export default function BossFightArena() {
             {boss.name}
           </div>
           <div style={{ color: EW_TEXT_MUTED, fontSize: 10 }}>
-            THIS TURN: <span style={{ color: EW_GOLD, fontWeight: 'bold' }}>{turn.oblivionEarnedThisTurn.toLocaleString()}</span> · TOTAL: <span style={{ color: EW_TEXT }}>{bossFight.damageDealtThisFight.toLocaleString()}</span>
+            THIS TURN: <span style={{ color: EW_GOLD, fontWeight: 'bold' }}>{turn.divineLightEarnedThisTurn.toLocaleString()}</span> · TOTAL: <span style={{ color: EW_TEXT }}>{bossFight.damageDealtThisFight.toLocaleString()}</span>
           </div>
         </div>
 

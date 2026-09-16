@@ -478,7 +478,7 @@ export default function PlayerInformationPage({
 
           {/* Emblem stat pillars */}
           <div style={S.heroStats}>
-            <EmblemStat label="Divine Light" value={progress.oblivion.toLocaleString()} />
+            <EmblemStat label="Divine Light" value={progress.divineLight.toLocaleString()} />
             <div style={S.emblemDivider} />
             <EmblemStat label="Shards" value={progress.aberratedShards.toLocaleString()} />
             <div style={S.emblemDivider} />
@@ -700,7 +700,7 @@ function ProfileTab(props: {
           <StatMedallion label="Bosses Felled" value={`${totalBossClears}`} sub={`${distinctBosses} unique`} />
           <StatMedallion label="Login Streak" value={`${dailyLogin.streak}d`} sub={`${dailyLogin.totalClaims} claims`} />
           <StatMedallion label="Titles Unlocked" value={`${unlockedTitlesCount} / ${titlesTotal}`} />
-          <StatMedallion label="Divine Light" value={progress.oblivion.toLocaleString()} />
+          <StatMedallion label="Divine Light" value={progress.divineLight.toLocaleString()} />
         </div>
       </GlassCard>
 

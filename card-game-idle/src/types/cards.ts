@@ -80,7 +80,7 @@ export interface AttackDefinition<TLabel extends string = string> {
   readonly label: TLabel;
   readonly name: string;
   readonly description: string;
-  readonly baseOblivion: number;
+  readonly baseDivineLight: number;
   readonly cooldownCards: number;
   readonly costs?: AttackCost[];
   readonly tags?: string[];
@@ -121,7 +121,7 @@ export interface AinSophAurDefinition {
     readonly id: string;
     readonly name: string;
     readonly description: string;
-    readonly baseOblivion: number;
+    readonly baseDivineLight: number;
     readonly cooldownCards: number;
     readonly scaling: CardScalingExpr;
     readonly consumesStacks?: StackCostDefinition;

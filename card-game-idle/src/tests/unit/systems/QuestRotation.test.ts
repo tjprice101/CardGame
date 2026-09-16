@@ -27,7 +27,7 @@ describe('challenge rotation', () => {
   it('targets approximately 50,000 daily and 100,000 weekly base Divine Light', () => {
     const daily = Array.from({ length: 7 }, (_, day) => rollDailyQuests(20_000 + day)).flat();
     const weekly = rollWeeklyQuests(3_000);
-    expect(daily.reduce((total, quest) => total + (quest.oblivionReward ?? 0), 0)).toBe(DAILY_CHALLENGE_DIVINE_LIGHT_TARGET);
-    expect(weekly.reduce((total, quest) => total + (quest.oblivionReward ?? 0), 0)).toBe(WEEKLY_CHALLENGE_DIVINE_LIGHT_TARGET);
+    expect(daily.reduce((total, quest) => total + (quest.divineLightReward ?? 0), 0)).toBe(DAILY_CHALLENGE_DIVINE_LIGHT_TARGET);
+    expect(weekly.reduce((total, quest) => total + (quest.divineLightReward ?? 0), 0)).toBe(WEEKLY_CHALLENGE_DIVINE_LIGHT_TARGET);
   });
 });

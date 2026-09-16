@@ -33,12 +33,12 @@ describe('materialized ability runtime', () => {
       ] },
     }));
 
-    const before = useStore.getState().progress.oblivion;
+    const before = useStore.getState().progress.divineLight;
     useStore.getState().activateAbility(1);
     expect(useStore.getState().turn.pendingEffect?.type).toBe('discard_choice');
     useStore.getState().resolvePending(['inferno-card']);
     const after = useStore.getState();
-    expect(after.progress.oblivion).toBeGreaterThan(before);
+    expect(after.progress.divineLight).toBeGreaterThan(before);
     expect(after.turn.abilityCooldownUntil?.['neutralizing-inferno']).toBeGreaterThan(Date.now());
   });
 
@@ -51,9 +51,9 @@ describe('materialized ability runtime', () => {
 
     const card = { instanceId: 'field-card', definitionId: 'light-neutrality-1', finish: 'normal' as const };
     useStore.setState(state => ({ ...state, deck: { ...state.deck, hand: [card] } }));
-    const before = useStore.getState().progress.oblivion;
+    const before = useStore.getState().progress.divineLight;
     useStore.getState().playCard(card.instanceId, 'ain');
-    expect(useStore.getState().progress.oblivion).toBeGreaterThan(before);
+    expect(useStore.getState().progress.divineLight).toBeGreaterThan(before);
   });
 
   it('expires Divine Field when the timer reaches its saved timestamp', () => {
@@ -138,7 +138,7 @@ describe('materialized ability runtime', () => {
 
   it('requires the correct Neutrality card tier for endgame ability purchases', () => {
     resetStore();
-    useStore.setState(state => ({ ...state, progress: { ...state.progress, oblivion: 1_000_000 } }));
+    useStore.setState(state => ({ ...state, progress: { ...state.progress, divineLight: 1_000_000 } }));
     expect(useStore.getState().purchaseAbility('null-horizon')).toBe(false);
     expect(useStore.getState().purchaseAbility('whiteout-domain')).toBe(false);
 
@@ -201,9 +201,9 @@ describe('materialized ability runtime', () => {
     }));
     useStore.getState().activateAbility(1);
     expect(useStore.getState().turn.pendingEffect?.count).toBe(2);
-    const before = useStore.getState().progress.oblivion;
+    const before = useStore.getState().progress.divineLight;
     useStore.getState().resolvePending(['reversal-a', 'reversal-b']);
-    expect(useStore.getState().progress.oblivion - before).toBe(50_000);
+    expect(useStore.getState().progress.divineLight - before).toBe(50_000);
     expect(useStore.getState().deck.hand).toHaveLength(1);
     expect(useStore.getState().turn.abilityCooldownUntil?.['axiomatic-reversal']).toBeGreaterThan(Date.now());
   });

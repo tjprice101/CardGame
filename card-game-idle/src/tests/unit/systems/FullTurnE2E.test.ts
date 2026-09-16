@@ -103,24 +103,24 @@ describe('Full turn end-to-end', () => {
     expect(useStore.getState().board.backSlots[0]).toMatchObject({ side: 'ain', faceState: 'front', limitlessCharge: 0 });
 
     // 4. Ain Attack reads stacks without consuming them.
-    const oblivionBeforeAin = useStore.getState().progress.oblivion;
+    const oblivionBeforeAin = useStore.getState().progress.divineLight;
     const stacksBeforeAin = useStore.getState().turn.limitlessLightStacks;
     useStore.getState().activateLightAinAttack('e2e-light');
-    expect(useStore.getState().progress.oblivion).toBeGreaterThan(oblivionBeforeAin);
+    expect(useStore.getState().progress.divineLight).toBeGreaterThan(oblivionBeforeAin);
     expect(useStore.getState().turn.limitlessLightStacks).toBe(stacksBeforeAin);
 
     // 5. Soph Attack consumes stacks but still pays out.
-    const oblivionBeforeSoph = useStore.getState().progress.oblivion;
+    const oblivionBeforeSoph = useStore.getState().progress.divineLight;
     useStore.getState().activateLightSophAttack('e2e-light');
-    expect(useStore.getState().progress.oblivion).toBeGreaterThan(oblivionBeforeSoph);
+    expect(useStore.getState().progress.divineLight).toBeGreaterThan(oblivionBeforeSoph);
     expect(useStore.getState().turn.limitlessLightStacks).toBeLessThan(stacksBeforeAin);
 
     // 6. End the turn — everything except Oblivion resets.
-    const oblivionBeforeEnd = useStore.getState().progress.oblivion;
+    const oblivionBeforeEnd = useStore.getState().progress.divineLight;
     useStore.getState().endTurn();
 
     const after = useStore.getState();
-    expect(after.progress.oblivion).toBe(oblivionBeforeEnd);
+    expect(after.progress.divineLight).toBe(oblivionBeforeEnd);
     expect(after.turn.limitlessLightStacks).toBe(0);
     expect(after.deck.hand).toHaveLength(0);
     expect(after.board.frontSlots.every(slot => slot === null)).toBe(true);
@@ -147,13 +147,13 @@ describe('Full turn end-to-end', () => {
       };
     });
 
-    const divineLightBeforeSummon = useStore.getState().progress.oblivion;
+    const divineLightBeforeSummon = useStore.getState().progress.divineLight;
     const stacksBeforeSummon = useStore.getState().turn.limitlessLightStacks;
     useStore.getState().summonAinSophAur(asaDef.definitionId, materialIds, 0);
 
     const board = useStore.getState().board;
     expect(board.frontSlots[0]).toMatchObject({ type: 'AinSophAur', side: 'ain', faceState: 'front' });
-    expect(useStore.getState().progress.oblivion).toBeGreaterThan(divineLightBeforeSummon);
+    expect(useStore.getState().progress.divineLight).toBeGreaterThan(divineLightBeforeSummon);
     expect(useStore.getState().turn.limitlessLightStacks).toBe(stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD);
     // Materials were consumed off the back row.
     for (let i = 0; i < materialCount; i++) {
@@ -161,9 +161,9 @@ describe('Full turn end-to-end', () => {
     }
 
     const asaInstance = board.frontSlots[0]!;
-    const oblivionBeforeBridge = useStore.getState().progress.oblivion;
+    const oblivionBeforeBridge = useStore.getState().progress.divineLight;
     useStore.getState().activateAsaBridge(asaInstance.instanceId);
-    expect(useStore.getState().progress.oblivion).toBeGreaterThan(oblivionBeforeBridge);
+    expect(useStore.getState().progress.divineLight).toBeGreaterThan(oblivionBeforeBridge);
   });
 
   it('accepts any back-row card as an Ain Soph Aur summon material', () => {
@@ -224,9 +224,9 @@ describe('Full turn end-to-end', () => {
         backSlots: [activeLightSlot('e2e-high', 0), null, null, null],
       },
     }));
-    const beforeHigh = useStore.getState().progress.oblivion;
+    const beforeHigh = useStore.getState().progress.divineLight;
     useStore.getState().activateLightSophAttack('e2e-high');
-    const highPayout = useStore.getState().progress.oblivion - beforeHigh;
+    const highPayout = useStore.getState().progress.divineLight - beforeHigh;
 
     resetStore();
     useStore.setState(state => ({
@@ -241,9 +241,9 @@ describe('Full turn end-to-end', () => {
         backSlots: [activeLightSlot('e2e-low', 0), null, null, null],
       },
     }));
-    const beforeLow = useStore.getState().progress.oblivion;
+    const beforeLow = useStore.getState().progress.divineLight;
     useStore.getState().activateLightSophAttack('e2e-low');
-    const lowPayout = useStore.getState().progress.oblivion - beforeLow;
+    const lowPayout = useStore.getState().progress.divineLight - beforeLow;
 
     // A larger Collection Power must produce a strictly larger payout.
     expect(highPayout).toBeGreaterThan(lowPayout);

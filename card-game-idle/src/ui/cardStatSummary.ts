@@ -106,6 +106,10 @@ function formatCondition(condition: EffectCondition): string {
       return 'this is the first card you played this turn';
     case 'cards_played_gte':
       return `you have played ${condition.value}+ cards this turn`;
+    case 'light_stacks_gte':
+      return `you have ${condition.value}+ Limitless Light Stacks`;
+    case 'cosmos_gte':
+      return `you have ${condition.value}+ Limitless Cosmos Stacks`;
     default:
       return `${(condition as { type: string; value?: number }).type.replace(/_/g, ' ')} ${'value' in (condition as { value?: number }) ? (condition as { value?: number }).value ?? '' : ''}`.trim();
   }
@@ -114,10 +118,11 @@ function formatCondition(condition: EffectCondition): string {
 function formatEffect(effect: CardEffect, definitionId?: string): string {
   if (!effect || typeof effect !== 'object' || !("type" in effect)) return 'Unknown effect';
   switch (effect.type) {
-    case 'oblivion_flat': return `+${effect.value} Divine Light`;
+    case 'divine_light_flat': return `+${effect.value} Divine Light`;
     case 'cosmos_flat': return `Gain ${formatCount(effect.value, 'Limitless Cosmos Stack')}`;
     case 'convert_light_to_cosmos': return `Convert ${formatCount(effect.lightCost, 'Limitless Light Stack')} into ${formatCount(effect.cosmosGain, 'Limitless Cosmos Stack')}`;
     case 'consume_cosmos': return `Consume ${formatCount(effect.value, 'Limitless Cosmos Stack')}`;
+    case 'light_stacks_flat': return `Gain ${formatCount(effect.value, 'Limitless Light Stack')}`;
     case 'score_flat': return `+${effect.value} Divine Light`;
     case 'draw': return `Draw ${formatCount(effect.value, 'card')}`;
     case 'discard_choice': return `Choose and discard ${formatCount(effect.value, 'card')}`;
@@ -238,14 +243,14 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
       'Light creature',
     ]);
     pushSummarySection(sections, 'Ain Attack', [
-      `${light.ainAttack.baseOblivion} base Divine Light`,
+      `${light.ainAttack.baseDivineLight} base Divine Light`,
       `${formatScaling(light.ainAttack.scaling)}; no stack cost`,
-      `Cooldown: ${formatCount(light.ainAttack.cooldownCards, 'card played')}`,
+      `Cooldown: ${formatCount(light.ainAttack.cooldownCards, 'card played', 'cards played')}`,
     ]);
     pushSummarySection(sections, 'Soph Attack', [
-      `${light.sophAttack.baseOblivion} base Divine Light`,
+      `${light.sophAttack.baseDivineLight} base Divine Light`,
       `${formatScaling(light.sophAttack.scaling)}; costs ${formatStackCost(light.sophAttack.stackCost)}`,
-      `Cooldown: ${formatCount(light.sophAttack.cooldownCards, 'card played')}`,
+      `Cooldown: ${formatCount(light.sophAttack.cooldownCards, 'card played', 'cards played')}`,
     ]);
     pushSummarySection(sections, 'Charge', [
       `Sacrifice: ${light.sacrificeStackRate}% of stored charge in Limitless Light Stacks (minimum 1)`,
@@ -267,7 +272,7 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     pushSummarySection(sections, 'Utility', [formatEffectsInline(dark.sophEffects, dark.definitionId)]);
     pushSummarySection(sections, 'Activation', [
       `Cost: ${formatStackCost(dark.activationCost)}`,
-      ...(dark.persistent ? [`Cooldown: ${formatCount(dark.cooldownCardsPlayed ?? 1, 'card played')}`, 'Remains on board after activation'] : [`One-shot: returns to ${dark.postActivationFate} after activation`]),
+      ...(dark.persistent ? [`Cooldown: ${formatCount(dark.cooldownCardsPlayed ?? 1, 'card played', 'cards played')}`, 'Remains on board after activation'] : [`One-shot: returns to ${dark.postActivationFate} after activation`]),
     ]);
     pushSummarySection(sections, 'Charge', [
       `Sacrifice: ${dark.sacrificeStackRate}% of stored charge in Limitless Light Stacks (minimum 1)`,
@@ -284,9 +289,9 @@ export function getCardSummarySections(card: CardDefinition, options?: CardSumma
     ]);
     if (bridge) {
       pushSummarySection(sections, 'Bridge the Light', [
-        `${bridge.baseOblivion} base Divine Light`,
+        `${bridge.baseDivineLight} base Divine Light`,
         `${formatScaling(bridge.scaling)}${bridge.consumesStacks ? `; costs ${formatStackCost(bridge.consumesStacks)}` : '; does not consume stacks'}`,
-        `Cooldown: ${formatCount(bridge.cooldownCards, 'card played')}`,
+        `Cooldown: ${formatCount(bridge.cooldownCards, 'card played', 'cards played')}`,
       ]);
     }
   }

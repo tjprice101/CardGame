@@ -32,10 +32,11 @@ const RARITY_ORDER: Record<string, number> = {
 
 const INFINITE_TYPE_ORDER = ['Light', 'Dark', 'AinSophAur'] as const;
 
-function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
-  if (definitionId.includes('causality')) return 'Causality';
-  if (definitionId.includes('neutral')) return 'Neutrality';
-  return null;
+function getCardSet(definitionId: string): 'Neutrality' | 'Causality' {
+  // Only Causality cards are explicitly namespaced; every other card (including
+  // Eternal/Infinite/Transcendent/Enigma ids that don't literally contain
+  // "neutral", e.g. `btei-axiom-of-oblivion`) belongs to Neutrality.
+  return definitionId.includes('causality') ? 'Causality' : 'Neutrality';
 }
 
 const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));
@@ -263,25 +264,18 @@ export default function CollectionViewer({ onClose }: Props) {
     const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
     const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
     const artUrl = owned > 0 ? getCardBackgroundUrl(card) : null;
-    let cardSurfaceStyle = owned > 0
+    const cardSurfaceStyle = owned > 0
       ? getDenseCardFaceBackgroundStyle(card, finish, 'front', true)
       : (isLockedStandardHolo
         ? getLockedHoloCardBackStyle(card)
         : getCardBackBackgroundStyle(card, { dimmed: false }));
-
-    if (isTranscendent) {
-      const baseImage = typeof cardSurfaceStyle.backgroundImage === 'string' ? cardSurfaceStyle.backgroundImage : '';
-      const baseBlend = typeof cardSurfaceStyle.backgroundBlendMode === 'string' ? cardSurfaceStyle.backgroundBlendMode : '';
-      cardSurfaceStyle = {
-        ...cardSurfaceStyle,
-        backgroundImage: `linear-gradient(132deg, rgba(95, 10, 6, 0.56) 0%, rgba(158, 26, 12, 0.42) 26%, rgba(214, 152, 44, 0.44) 62%, rgba(120, 24, 8, 0.52) 100%)${baseImage ? `, ${baseImage}` : ''}`,
-        backgroundBlendMode: `screen${baseBlend ? `, ${baseBlend}` : ''}`,
-      };
-    }
+    const showHolofoilShimmer = owned > 0 && finish === 'holo'
+      && card.rarity !== 'Infinite' && card.rarity !== 'Eternal' && card.rarity !== 'Transcendent' && card.rarity !== 'Enigmatic';
 
     return (
       <div
         key={entry.key}
+        className={showHolofoilShimmer ? 'holofoil-menu-card' : undefined}
         onClick={() => setSelectedCard({ card, finish, owned })}
         style={{
           width: 148,
@@ -593,19 +587,23 @@ export default function CollectionViewer({ onClose }: Props) {
       </div>
 
       {/* Card grid */}
-      {filtered.length === 0 ? (
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px 24px',
-          color: 'rgba(190,215,245,0.72)',
-          fontStyle: 'italic',
-        }}>
-          No cards match the current filters.
-        </div>
-      ) : (
+      <div style={{ flex: 1, position: 'relative' }}>
+        {filtered.length === 0 && (
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px 24px',
+            color: 'rgba(190,215,245,0.72)',
+            fontStyle: 'italic',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }}>
+            No cards match the current filters.
+          </div>
+        )}
         <VirtualizedList
           items={virtualRows}
           getItemKey={(row) => row.key}
@@ -614,7 +612,7 @@ export default function CollectionViewer({ onClose }: Props) {
           topPadding={20}
           bottomPadding={24}
           viewportRef={gridViewportRef}
-          style={{ flex: 1 }}
+          style={{ height: '100%' }}
           renderItem={(row) => {
             if (row.kind === 'heading') {
               return (
@@ -659,7 +657,7 @@ export default function CollectionViewer({ onClose }: Props) {
             );
           }}
         />
-      )}
+      </div>
     </div>
     </>
   );

@@ -9,12 +9,12 @@ export interface PackDefinition {
   description: string;
   setId: string;
   cost: number;
-  /** Currency used to purchase this pack. Legacy serialized value 'oblivion' means Divine Light. */
-  currencyType?: 'oblivion' | 'aberratedShards';
+  /** Currency used to purchase this pack. */
+  currencyType?: 'divineLight' | 'aberratedShards';
   cardsPerOpen: number;
   cardPool: string[];
   locked: boolean;
-  oblivionUnlock?: number;  // legacy field name: total Divine Light milestone required to unlock
+  divineLightUnlock?: number;  // total Divine Light milestone required to unlock
 }
 
 export const NEUTRALITY_PACK_POOL: string[] = [

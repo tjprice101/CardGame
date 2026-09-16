@@ -116,7 +116,7 @@ export default function TrialDeckSummaryModal({ packName, onConfirm, onClose }: 
 
   const isTutorialTurn = isNeutralityTutorialTrialPackId(trialDeck.packId);
   const turnCount = trialDeck.turnCount ?? 0;
-  const oblivionTotal = Math.floor(trialDeck.trialOblivionTotal ?? 0);
+  const divineLightTotal = Math.floor(trialDeck.trialDivineLightTotal ?? 0);
 
   return (
     <div style={styles.backdrop} onClick={onClose}>
@@ -133,7 +133,7 @@ export default function TrialDeckSummaryModal({ packName, onConfirm, onClose }: 
           </div>
           <div style={styles.statCard}>
             <div style={styles.statLabel}>Divine Light Scored</div>
-            <div style={styles.statValue}>{oblivionTotal.toLocaleString()}</div>
+            <div style={styles.statValue}>{divineLightTotal.toLocaleString()}</div>
           </div>
         </div>
 

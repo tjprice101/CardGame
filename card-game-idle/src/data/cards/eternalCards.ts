@@ -24,22 +24,22 @@ const light = (
   artKey,
   ainAttack: {
     id: `${definitionId}:ain-attack`, label: 'Ain', name: 'Ain Attack',
-    description: `${baseAin} base Divine Light with triune scaling.`, baseOblivion: baseAin,
+    description: `${baseAin} base Divine Light with triune scaling.`, baseDivineLight: baseAin,
     cooldownCards: 3, scaling: { kind: 'triune', amount: scale }, tags: ['eternal', 'ain-attack'],
   },
   sophAttack: {
     id: `${definitionId}:soph-attack`, label: 'Soph', name: 'Soph Attack',
-    description: `${baseSoph} base Divine Light with triune scaling; consumes 3 stacks.`, baseOblivion: baseSoph,
+    description: `${baseSoph} base Divine Light with triune scaling; consumes 3 stacks.`, baseDivineLight: baseSoph,
     cooldownCards: 4, scaling: { kind: 'triune', amount: scale + 80 },
     stackCost: { kind: 'fixed', value: 3 }, tags: ['eternal', 'soph-attack'],
   },
   sophPlacementEffects: definitionId === 'btei-voids-reaping'
-    ? [{ type: 'oblivion_flat', value: 180 }, { type: 'draw', value: 1 }]
+    ? [{ type: 'divine_light_flat', value: 180 }, { type: 'draw', value: 1 }]
     : definitionId === 'btei-convergence-of-eternity'
-      ? [{ type: 'oblivion_flat', value: 140 }, { type: 'look_top_take', look: 3, take: 1 }]
+      ? [{ type: 'divine_light_flat', value: 140 }, { type: 'look_top_take', look: 3, take: 1 }]
       : definitionId === 'btei-omniscient-fracture'
-        ? [{ type: 'oblivion_flat', value: 160 }, { type: 'shuffle_discard' }]
-        : [{ type: 'oblivion_flat', value: 200 }, { type: 'look_top_take_type', look: 4, filter: ['Light', 'Dark'], take: 1 }],
+        ? [{ type: 'divine_light_flat', value: 160 }, { type: 'shuffle_discard' }]
+        : [{ type: 'divine_light_flat', value: 200 }, { type: 'look_top_take_type', look: 4, filter: ['Light', 'Dark'], take: 1 }],
   sacrificeStackRate: 80,
 });
 
@@ -66,7 +66,7 @@ const asa = (
   name: string,
   artKey: string,
   materials: number,
-  baseOblivion: number,
+  baseDivineLight: number,
   scale: number,
 ): AinSophAurDefinition => ({
   definitionId,
@@ -81,10 +81,10 @@ const asa = (
     : definitionId === 'btei-sovereign-domain'
       ? [{ definitionIds: ['btei-convergence-of-eternity'], count: 1 }, { definitionIds: ['btei-omniscient-fracture'], count: 1 }]
       : [{ definitionIds: ['btei-neutrality-prime-equilibrium'], count: 1 }, { definitionIds: ['btei-null-edict'], count: 1 }],
-  onSummonEffects: [{ type: 'oblivion_flat', value: 150 }],
+  onSummonEffects: [{ type: 'divine_light_flat', value: 150 }],
   bridgeAttack: {
     id: `${definitionId}:bridge-the-light`, name: 'Bridge the Light',
-    description: `${baseOblivion} base Divine Light with triune scaling.`, baseOblivion,
+    description: `${baseDivineLight} base Divine Light with triune scaling.`, baseDivineLight,
     cooldownCards: 4, scaling: { kind: 'triune', amount: scale },
     consumesStacks: { kind: 'fixed', value: 4 },
   },

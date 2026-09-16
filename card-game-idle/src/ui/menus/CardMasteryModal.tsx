@@ -444,7 +444,7 @@ export default function CardMasteryModal({ onClose }: Props) {
 
           {/* Hero stats */}
           <div style={{ display: 'flex', gap: 12, flexShrink: 0 }}>
-            <HeroStat label="Collection Power" value={`×${(1 + computedStats.globalOblivionMult).toFixed(2)}`} accent={P.gold} />
+            <HeroStat label="Collection Power" value={`×${(1 + computedStats.globalDivineLightMult).toFixed(2)}`} accent={P.gold} />
             <HeroStat label="Global Resonance" value={resonanceScore.toLocaleString()} accent={P.accent} sub="pts" />
             <HeroStat label="Cards Mastered" value={`${totalMastered}/${totalWithProgress}`} accent={P.success} />
             {claimableSummary.tiersClaimable > 0 && (
@@ -496,7 +496,7 @@ export default function CardMasteryModal({ onClose }: Props) {
                 Next +0.01 Collection Power
               </div>
               <div style={{ fontSize: 11, color: P.textMuted, marginTop: 1 }}>
-                Current: <strong style={{ color: P.gold }}>×{(1 + computedStats.globalOblivionMult).toFixed(2)}</strong> → Target: <strong style={{ color: P.accent }}>×{(1 + computedStats.globalOblivionMult + 0.01).toFixed(2)}</strong>
+                Current: <strong style={{ color: P.gold }}>×{(1 + computedStats.globalDivineLightMult).toFixed(2)}</strong> → Target: <strong style={{ color: P.accent }}>×{(1 + computedStats.globalDivineLightMult + 0.01).toFixed(2)}</strong>
               </div>
             </div>
           </div>

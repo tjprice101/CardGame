@@ -110,8 +110,8 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
           }}
         >
           <div
-            className={finish === 'holo' || card.rarity === 'Infinite' || card.rarity === 'Eternal' || card.rarity === 'Transcendent' || card.rarity === 'Enigmatic'
-              ? `holofoil-menu-card${card.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${card.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${card.rarity === 'Transcendent' ? ' transcendent-holo-gold-hover' : ''}${card.rarity === 'Enigmatic' ? ' enigmatic-holo-gold-hover' : ''}`
+            className={finish === 'holo' && card.rarity !== 'Infinite' && card.rarity !== 'Eternal' && card.rarity !== 'Transcendent' && card.rarity !== 'Enigmatic'
+              ? 'holofoil-menu-card'
               : undefined}
             style={{
               width: '100%',

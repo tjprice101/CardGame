@@ -32,7 +32,7 @@ function getGateRequirementLabel(gate?: 'anyNeutralityEternal' | 'anyNeutralityI
 }
 
 export default function AbilityMaterialization() {
-  const oblivion = useStore(state => state.progress.oblivion);
+  const divineLight = useStore(state => state.progress.divineLight);
   const ownedAbilities = useStore(state => state.progress.ownedAbilities ?? EMPTY_OWNED_ABILITIES);
   const collection = useStore(state => state.progress.collection);
   const infiniteCollection = useStore(state => state.progress.infiniteCollection);
@@ -259,7 +259,7 @@ export default function AbilityMaterialization() {
         <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
           {filteredAbilities.map(ability => {
             const owned = ownedAbilities[ability.id] === true;
-            const affordable = oblivion >= ability.purchaseCost;
+            const affordable = divineLight >= ability.purchaseCost;
             const gateMet = meetsAbilityOwnershipGate(ability, collection, infiniteCollection);
             const gateLabel = getGateRequirementLabel(ability.ownershipGate);
             const tier = getAbilityTier(ability);

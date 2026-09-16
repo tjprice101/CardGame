@@ -277,9 +277,6 @@ export default function BossResultModal() {
                 justifyContent: 'center',
               }}>
                 <div
-                  className={rewardDef.rarity === 'Infinite' || rewardDef.rarity === 'Eternal' || rewardDef.rarity === 'Enigmatic'
-                    ? `holofoil-menu-card${rewardDef.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${rewardDef.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${rewardDef.rarity === 'Enigmatic' ? ' enigmatic-holo-gold-hover' : ''}`
-                    : undefined}
                   style={{
                     width: REWARD_FACE_WIDTH,
                     height: REWARD_FACE_HEIGHT,

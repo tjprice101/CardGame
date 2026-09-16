@@ -24,12 +24,12 @@ export const lightCards: LightCardDefinition[] = lightNames.map((name, index) =>
   const ainScale = 60 + (index % 6) * 15;
   const sophScale = 110 + (index % 7) * 20;
   const sophPlacementPatterns: CardEffect[][] = [
-    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'draw', value: 1 }],
-    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'shuffle_discard' }],
-    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'discard_draw', discard: 1, draw: 1 }],
-    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'look_top_take', look: 2, take: 1 }],
-    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'look_top_take_type', look: 2, filter: ['Light'], take: 1 }],
-    [{ type: 'oblivion_flat', value: 5 + index * 3 }, { type: 'salvage_by_type_count', filter: ['Light'], count: 1 }],
+    [{ type: 'divine_light_flat', value: 5 + index * 3 }, { type: 'draw', value: 1 }],
+    [{ type: 'divine_light_flat', value: 5 + index * 3 }, { type: 'shuffle_discard' }],
+    [{ type: 'divine_light_flat', value: 5 + index * 3 }, { type: 'discard_draw', discard: 1, draw: 1 }],
+    [{ type: 'divine_light_flat', value: 5 + index * 3 }, { type: 'look_top_take', look: 2, take: 1 }],
+    [{ type: 'divine_light_flat', value: 5 + index * 3 }, { type: 'look_top_take_type', look: 2, filter: ['Light'], take: 1 }],
+    [{ type: 'divine_light_flat', value: 5 + index * 3 }, { type: 'salvage_by_type_count', filter: ['Light'], count: 1 }],
   ];
   const sophPlacementEffects = sophPlacementPatterns[index % 6];
   return {
@@ -42,14 +42,14 @@ export const lightCards: LightCardDefinition[] = lightNames.map((name, index) =>
     ainAttack: {
       id: `${id}:ain-attack`, label: 'Ain', name: 'Ain Attack',
       description: `${ainBase} base Divine Light; +${ainScale} scaled across Limitless Light Stack pool, front-row Ain Soph Aur count, and Collection Power.`,
-      baseOblivion: ainBase, cooldownCards: 1 + (index % 4),
+      baseDivineLight: ainBase, cooldownCards: 1 + (index % 4),
       scaling: { kind: 'triune', amount: ainScale },
       tags: ['light', 'ain-attack'],
     },
     sophAttack: {
       id: `${id}:soph-attack`, label: 'Soph', name: 'Soph Attack',
       description: `${sophBase} base Divine Light; +${sophScale} scaled across Limitless Light Stack pool, front-row Ain Soph Aur count, and Collection Power; consumes ${1 + (index % 5)} stacks.`,
-      baseOblivion: sophBase, cooldownCards: 2 + (index % 6),
+      baseDivineLight: sophBase, cooldownCards: 2 + (index % 6),
       scaling: { kind: 'triune', amount: sophScale },
       stackCost: { kind: 'fixed', value: 1 + (index % 5) },
       tags: ['light', 'soph-attack'],

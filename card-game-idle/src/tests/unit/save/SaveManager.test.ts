@@ -208,7 +208,7 @@ describe('SaveManager integrity', () => {
           phase: 'playing',
           cardsPlayedThisTurn: 4,
           limitlessLightStacks: 2,
-          oblivionEarnedThisTurn: 99,
+          divineLightEarnedThisTurn: 99,
           mulliganSelected: ['0'],
           pendingEffect: { id: 'legacy-effect' },
           pendingEffectQueue: [{ id: 'legacy-effect-2' }],
@@ -232,7 +232,7 @@ describe('SaveManager integrity', () => {
       expect(result!.state.turn.phase).toBe('idle');
       expect(result!.state.turn.cardsPlayedThisTurn).toBe(0);
       expect(result!.state.turn.limitlessLightStacks).toBe(0);
-      expect(result!.state.turn.oblivionEarnedThisTurn).toBe(0);
+      expect(result!.state.turn.divineLightEarnedThisTurn).toBe(0);
       expect(result!.state.turn.mulliganSelected).toEqual([]);
       expect(result!.state.turn.pendingEffect).toBeNull();
       expect(result!.state.turn.pendingEffectQueue).toEqual([]);

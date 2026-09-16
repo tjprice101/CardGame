@@ -159,6 +159,12 @@ export default function PendingEffectModal() {
     ...getCardFaceBackgroundStyle(CardRegistry.get(card.definitionId), card.finish, 'front'),
     ...(stateStyle ?? {}),
   });
+  const buildCardClassName = (card: Pick<DeckCard, 'definitionId' | 'finish' | 'faceState'>): string | undefined => {
+    const def = CardRegistry.get(card.definitionId);
+    return card.finish === 'holo' && def?.rarity !== 'Infinite' && def?.rarity !== 'Eternal' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic'
+      ? 'holofoil-live-card'
+      : undefined;
+  };
 
   const renderCardFace = (
     card: Pick<DeckCard, 'definitionId' | 'finish' | 'faceState'>,
@@ -225,6 +231,7 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
+                  className={buildCardClassName(c)}
                   style={buildCardStyle(c, isSel ? styles.cardSelected : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
@@ -278,6 +285,7 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
+                  className={buildCardClassName(c)}
                   style={buildCardStyle(c, isKept ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
@@ -331,6 +339,7 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
+                  className={buildCardClassName(c)}
                   style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
@@ -424,7 +433,7 @@ export default function PendingEffectModal() {
                   ? buildCardStyle(c, { border: '2px solid rgba(255,200,80,0.8)', boxShadow: '0 0 14px rgba(255,200,80,0.35)', transform: 'translateY(-4px)' as const })
                   : buildCardStyle(c);
               return (
-                <div key={c.instanceId} style={cardStyle} onClick={() => handleClick(c.instanceId)}>
+                <div key={c.instanceId} className={buildCardClassName(c)} style={cardStyle} onClick={() => handleClick(c.instanceId)}>
                   {renderCardFace(c, isTake ? 'Take' : isDrop ? 'Return' : undefined, isTake ? warmTheme.success : 'rgba(255,200,80,0.92)')}
                 </div>
               );
@@ -464,6 +473,7 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
+                  className={buildCardClassName(c)}
                   style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
@@ -521,6 +531,7 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
+                  className={buildCardClassName(c)}
                   style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >
@@ -612,6 +623,7 @@ export default function PendingEffectModal() {
               return (
                 <div
                   key={c.instanceId}
+                  className={buildCardClassName(c)}
                   style={buildCardStyle(c, isTake ? styles.cardTake : undefined)}
                   onClick={() => toggleCard(c.instanceId)}
                 >

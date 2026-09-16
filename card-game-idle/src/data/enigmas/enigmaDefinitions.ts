@@ -176,7 +176,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       { title: 'Raise the Cosmos', description: 'Generate 3 Limitless Cosmos stacks from Causality effects before the page can settle.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-cosmos-3' },
       { title: 'Claim the Reward', description: 'Receive the first luminous reward from the manuscript.', kind: 'claim_reward' },
     ],
-    rewards: [{ definitionId: ENIGMA_REWARD_HORIZON_WEAVER_ID, copies: 1 }],
+    rewards: [{ definitionId: ENIGMA_REWARD_HORIZON_WEAVER_ID, copies: 3 }],
   },
   {
     id: 'causality-black-ink',
@@ -191,7 +191,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       { title: 'Burn Through the Void', description: 'Consume 2 Limitless Cosmos stacks through Causality effects to ignite the black ink.', kind: 'count_active_cards', amount: 2, targetDefinitionId: 'causality-cosmos-spent-2' },
       { title: 'Claim the Reward', description: 'Seal the contradiction and take the manuscript’s dark reward.', kind: 'claim_reward' },
     ],
-    rewards: [{ definitionId: ENIGMA_REWARD_INK_OF_THE_FIRST_LAW_ID, copies: 1 }],
+    rewards: [{ definitionId: ENIGMA_REWARD_INK_OF_THE_FIRST_LAW_ID, copies: 3 }],
   },
   {
     id: 'causality-heavenly-archive',
@@ -207,7 +207,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       { title: 'Cross the Event Horizon', description: 'Perform 3 successful Bridge the Light attacks with Causality ASA cards to complete the archival pass.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-bridge-3' },
       { title: 'Claim the Reward', description: 'The archive accepts your sequence and grants the stored ascent.', kind: 'claim_reward' },
     ],
-    rewards: [{ definitionId: ENIGMA_REWARD_AXIOM_BEYOND_THE_HORIZON_ID, copies: 1 }],
+    rewards: [{ definitionId: ENIGMA_REWARD_AXIOM_BEYOND_THE_HORIZON_ID, copies: 3 }],
   },
   {
     id: 'causality-collapsed-equation',
@@ -222,7 +222,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       { title: 'Cash Out the Horizon', description: 'Earn 10,000 Divine Light from Causality card effects in a single decisive turn.', kind: 'count_active_cards', amount: 10_000, targetDefinitionId: 'causality-light-10k' },
       { title: 'Claim the Reward', description: 'Let the equation collapse into a single perfect resolution.', kind: 'claim_reward' },
     ],
-    rewards: [{ definitionId: ENIGMA_REWARD_ARCHIVE_OF_UNMADE_STARS_ID, copies: 1 }],
+    rewards: [{ definitionId: ENIGMA_REWARD_ARCHIVE_OF_UNMADE_STARS_ID, copies: 3 }],
   },
   {
     id: 'causality-unwritten-law',
@@ -237,7 +237,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
       { title: 'Hold the Cosmos', description: 'End the turn with at least 5 Limitless Cosmos stacks to keep the event horizon open.', kind: 'count_active_cards', amount: 5, targetDefinitionId: 'causality-cosmos-5' },
       { title: 'Claim the Reward', description: 'Write the final law into the page and claim the last manuscript reward.', kind: 'claim_reward' },
     ],
-    rewards: [{ definitionId: ENIGMA_REWARD_BLACK_SUN_EDICT_ID, copies: 1 }],
+    rewards: [{ definitionId: ENIGMA_REWARD_BLACK_SUN_EDICT_ID, copies: 3 }],
   },
 ];
 

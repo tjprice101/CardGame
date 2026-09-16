@@ -849,8 +849,8 @@ export default function DeckBuilder({ onClose }: Props) {
     return (
       <div key={def.key} style={styles.cardWithMeta}>
         <div
-          className={def.finish === 'holo' || def.def.rarity === 'Infinite' || def.def.rarity === 'Eternal' || def.def.rarity === 'Enigmatic'
-            ? `holofoil-menu-card${def.def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${def.def.rarity === 'Enigmatic' ? ' enigmatic-holo-gold-hover' : ''}`
+          className={def.finish === 'holo' && def.def.rarity !== 'Infinite' && def.def.rarity !== 'Eternal' && def.def.rarity !== 'Transcendent' && def.def.rarity !== 'Enigmatic'
+            ? 'holofoil-menu-card'
             : undefined}
           style={{
             ...styles.card,
@@ -1164,8 +1164,8 @@ export default function DeckBuilder({ onClose }: Props) {
                 return (
                   <div
                     key={entry.key}
-                    className={entry.finish === 'holo' || def.rarity === 'Infinite' || def.rarity === 'Eternal' || def.rarity === 'Enigmatic'
-                      ? `holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${def.rarity === 'Enigmatic' ? ' enigmatic-holo-gold-hover' : ''}`
+                    className={entry.finish === 'holo' && def.rarity !== 'Infinite' && def.rarity !== 'Eternal' && def.rarity !== 'Transcendent' && def.rarity !== 'Enigmatic'
+                      ? 'holofoil-menu-card'
                       : undefined}
                     style={{
                       ...styles.extraStripCard,

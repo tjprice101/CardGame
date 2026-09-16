@@ -78,7 +78,7 @@ export const SET_PROFILE_BY_ELEMENT: Map<SetId, SetProfile> = new Map(
  * These are universal primitives used by all sets.
  */
 export const UNIVERSAL_EFFECT_PREFIXES: string[] = [
-  'oblivion_flat',
+  'divine_light_flat',
   'score_flat',
   'draw',
   'discard_choice',

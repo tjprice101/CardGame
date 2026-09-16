@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useStore, selectTurn, selectBossFight, selectGardenDungeon, selectBattleground } from '@/state/store';
 import { SET_ACCENT, SET_LABEL } from '@/data/elements';
 import { uiTypography } from '@/ui/theme';
@@ -11,7 +11,7 @@ import TurnControls from './TurnControls';
 import BoardDisplay from './BoardDisplay';
 import PendingEffectModal from './PendingEffectModal';
 import FlashOverlay from './FlashOverlay';
-import OblivionAcquisitionScreen from './OblivionAcquisitionScreen';
+import DivineLightAcquisitionScreen from './DivineLightAcquisitionScreen';
 import CardInspectorPanel from './CardInspectorPanel';
 import CardBornStacksPanel from './CardBornStacksPanel';
 
@@ -22,7 +22,7 @@ import CardBornStacksPanel from './CardBornStacksPanel';
  * Engines, How-to-Play, future menu items). Center is reserved for the
  * floating ScoreDisplay which sits behind this bar at top-center.
  */
-function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => void }) {
+function TopStatusBar({ onOpenDivineLightScreen }: { onOpenDivineLightScreen: () => void }) {
   const turn = useStore(selectTurn);
   const bossFight = useStore(selectBossFight);
   const gardenDungeon = useStore(selectGardenDungeon);
@@ -86,7 +86,7 @@ function TopStatusBar({ onOpenOblivionScreen }: { onOpenOblivionScreen: () => vo
       {/* Right — Divine Light Acquisition button */}
       <button
         className="divine-light-acquisition-button"
-        onClick={onOpenOblivionScreen}
+        onClick={onOpenDivineLightScreen}
         title="Divine Light Acquisition — view all Divine Light sources"
         style={{
           marginLeft: 'auto',
@@ -201,7 +201,7 @@ function RightRail({ inspectedCardId, onRequestBeginTurn }: { inspectedCardId: s
 }
 
 export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () => void }) {
-  const [showOblivionScreen, setShowOblivionScreen] = useState(false);
+  const [showDivineLightScreen, setShowDivineLightScreen] = useState(false);
   const [inspectedCardId, setInspectedCardId] = useState<string | null>(null);
   const bossFight = useStore(selectBossFight);
   const battleground = useStore(selectBattleground);
@@ -220,7 +220,7 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
       <AngelStatPanel />
 
       {/* Top status bar — set · turn · phase */}
-      <TopStatusBar onOpenOblivionScreen={() => setShowOblivionScreen(true)} />
+      <TopStatusBar onOpenDivineLightScreen={() => setShowDivineLightScreen(true)} />
 
       {/* Hand strip */}
       <HandDisplay onHoverCard={setInspectedCardId} />
@@ -237,8 +237,8 @@ export default function HUD({ onRequestBeginTurn }: { onRequestBeginTurn?: () =>
       <FlashOverlay />
 
       {/* Divine Light Acquisition reference screen */}
-      {showOblivionScreen && (
-        <OblivionAcquisitionScreen onClose={() => setShowOblivionScreen(false)} />
+      {showDivineLightScreen && (
+        <DivineLightAcquisitionScreen onClose={() => setShowDivineLightScreen(false)} />
       )}
     </>
   );

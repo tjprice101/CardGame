@@ -1,6 +1,6 @@
 /**
- * OblivionAcquisitionScreen — full-screen reference overlay explaining every
- * source of Oblivion in the game.  Opened via the ◈ button in TopStatusBar.
+ * DivineLightAcquisitionScreen — full-screen reference overlay explaining every
+ * source of divineLight in the game.  Opened via the ◈ button in TopStatusBar.
  *
  * Four tabs:
  *   Overview  – live board stats (earned this turn, active bonuses)
@@ -14,7 +14,7 @@ import {
   useStore,
   selectTurn,
   selectComputedStats,
-  selectOblivion,
+  selectDivineLight,
   selectBoard,
   selectBossFight,
   selectProgress,
@@ -233,14 +233,14 @@ function LightAttackRow({ instance, def }: {
   const attackRows = [
     {
       label: 'Ain Attack',
-      value: Math.max(0, Math.round(def.ainAttack.baseOblivion + resolveCardScaling(def.ainAttack.scaling, scalingContext))),
+      value: Math.max(0, Math.round(def.ainAttack.baseDivineLight + resolveCardScaling(def.ainAttack.scaling, scalingContext))),
       cd: ainCd,
       ready: isActive && ainCd <= 0,
       cost: 0,
     },
     {
       label: 'Soph Attack',
-      value: Math.max(0, Math.round(def.sophAttack.baseOblivion + resolveCardScaling(def.sophAttack.scaling, scalingContext) + sophCost)),
+      value: Math.max(0, Math.round(def.sophAttack.baseDivineLight + resolveCardScaling(def.sophAttack.scaling, scalingContext) + sophCost)),
       cd: sophCd,
       ready: isActive && sophCd <= 0 && turn.limitlessLightStacks >= sophCost,
       cost: sophCost,
@@ -291,7 +291,7 @@ function AsaBridgeRow({ instance, def }: { instance: AinSophAurInstance; def: Ai
   if (!bridge) return null;
   const bridgeCd = instance.attackCooldowns?.[bridge.id] ?? 0;
   const bridgeCost = previewStackCost(bridge.consumesStacks, turn.limitlessLightStacks);
-  const bridgeValue = Math.max(0, Math.round(bridge.baseOblivion + resolveCardScaling(bridge.scaling, {
+  const bridgeValue = Math.max(0, Math.round(bridge.baseDivineLight + resolveCardScaling(bridge.scaling, {
     limitlessLightStacks: turn.limitlessLightStacks,
     asaFrontCount: board.frontSlots.filter(slot => slot?.type === 'AinSophAur').length,
     collectionPower: computeGlobalResonanceScore(progress),
@@ -335,7 +335,7 @@ function AsaBridgeRow({ instance, def }: { instance: AinSophAurInstance; def: Ai
 // ─── tab content ─────────────────────────────────────────────────────────────
 
 function OverviewTab() {
-  const oblivion = useStore(selectOblivion);
+  const divineLight = useStore(selectDivineLight);
   const turn     = useStore(selectTurn);
   const stats    = useStore(selectComputedStats);
   const board    = useStore(selectBoard);
@@ -344,15 +344,15 @@ function OverviewTab() {
   const filledFront = board.frontSlots.filter(Boolean).length;
   const filledBack  = board.backSlots.filter(Boolean).length;
   const totalFilled = filledFront + filledBack;
-  const globalMult  = stats.globalOblivionMult;
+  const globalMult  = stats.globalDivineLightMult;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
       {/* Live stat pills */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' as const }}>
-        <StatPill label="Total Divine Light" value={oblivion} accent={C.gold.fg} glow />
-        <StatPill label="Earned This Turn" value={turn.oblivionEarnedThisTurn ?? 0} accent={C.blue.fg} />
+        <StatPill label="Total Divine Light" value={divineLight} accent={C.gold.fg} glow />
+        <StatPill label="Earned This Turn" value={turn.divineLightEarnedThisTurn ?? 0} accent={C.blue.fg} />
         <StatPill label="Limitless Light" value={`${formatNumber(turn.limitlessLightStacks)} Stacks`} accent={C.green.fg} />
         <StatPill label="Board Slots" value={`${totalFilled}/9 Filled`} accent={C.green.fg} />
       </div>
@@ -644,10 +644,10 @@ function BonusesTab() {
           />
           <SourceCard
             icon="◈"
-            title={`Collection Power  ×${(1 + stats.globalOblivionMult).toFixed(2)}`}
+            title={`Collection Power  ×${(1 + stats.globalDivineLightMult).toFixed(2)}`}
             subtitle="Earned permanently by playing and mastering cards. Contributes the final third of every attack's scaling, so it raises your damage floor on every turn regardless of board state."
-            value={`×${(1 + stats.globalOblivionMult).toFixed(2)}`}
-            accent={stats.globalOblivionMult > 0 ? C.purple : C.dim}
+            value={`×${(1 + stats.globalDivineLightMult).toFixed(2)}`}
+            accent={stats.globalDivineLightMult > 0 ? C.purple : C.dim}
             tags={['permanent', 'cross-turn', 'applied last']}
           />
         </div>
@@ -773,7 +773,7 @@ function TipsTab() {
 
 // ─── main component ──────────────────────────────────────────────────────────
 
-export interface OblivionAcquisitionScreenProps {
+export interface DivineLightAcquisitionScreenProps {
   onClose: () => void;
 }
 
@@ -786,7 +786,7 @@ const TABS: Array<{ id: Tab; label: string; accent: string }> = [
   { id: 'tips',     label: 'Tips',      accent: C.purple.fg },
 ];
 
-export default function OblivionAcquisitionScreen({ onClose }: OblivionAcquisitionScreenProps) {
+export default function DivineLightAcquisitionScreen({ onClose }: DivineLightAcquisitionScreenProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
 
   // ESC to close

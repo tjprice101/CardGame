@@ -3,7 +3,7 @@ import type { GameState } from '@/types/game';
 import { createSaveStorage, type SaveStorage } from './storage';
 import { signEnvelope, verifyEnvelope } from './integrity';
 
-export const CURRENT_VERSION = 51;
+export const CURRENT_VERSION = 52;
 const AUTO_SAVE_INTERVAL_MS = 120_000;
 const EXPORT_MAGIC = 'PANTHEON1:';
 // Legacy export prefix from before the Pantheon rename. Accepted on import
@@ -983,7 +983,8 @@ const migrations: Record<number, Migration> = {
       turn.phase = 'idle';
       turn.cardsPlayedThisTurn = 0;
       turn.limitlessLightStacks = 0;
-      turn.oblivionEarnedThisTurn = 0;
+      turn.divineLightEarnedThisTurn = 0;
+      delete turn.oblivionEarnedThisTurn;
       turn.mulliganSelected = [];
       turn.pendingEffect = null;
       turn.pendingEffectQueue = [];
@@ -1032,6 +1033,39 @@ const migrations: Record<number, Migration> = {
         for (const key of ['starlightCharges', 'dreamLattice', 'solarvexWardActive', 'starlaceAmplifierActive']) delete turn[key];
       }
       for (const key of ['wuasProgress', 'wishedUponAStar', 'wishedUponAStarCards', 'wuasCards']) delete progress[key];
+    }
+    return data;
+  },
+  52: (data) => {
+    // Rename the "oblivion" scoring/currency concept to "divineLight" internally.
+    const progress = data.progress as unknown as Record<string, unknown> | undefined;
+    if (progress) {
+      if (progress['oblivion'] !== undefined && progress['divineLight'] === undefined) {
+        progress['divineLight'] = progress['oblivion'];
+      }
+      delete progress['oblivion'];
+      if (progress['lifetimeOblivion'] !== undefined && progress['lifetimeDivineLight'] === undefined) {
+        progress['lifetimeDivineLight'] = progress['lifetimeOblivion'];
+      }
+      delete progress['lifetimeOblivion'];
+      if (progress['bestSingleTurnOblivion'] !== undefined && progress['bestSingleTurnDivineLight'] === undefined) {
+        progress['bestSingleTurnDivineLight'] = progress['bestSingleTurnOblivion'];
+      }
+      delete progress['bestSingleTurnOblivion'];
+    }
+    const turn = data.turn as unknown as Record<string, unknown> | undefined;
+    if (turn) {
+      if (turn['oblivionEarnedThisTurn'] !== undefined && turn['divineLightEarnedThisTurn'] === undefined) {
+        turn['divineLightEarnedThisTurn'] = turn['oblivionEarnedThisTurn'];
+      }
+      delete turn['oblivionEarnedThisTurn'];
+    }
+    const trialDeck = data.trialDeck as unknown as Record<string, unknown> | undefined;
+    if (trialDeck) {
+      if (trialDeck['trialOblivionTotal'] !== undefined && trialDeck['trialDivineLightTotal'] === undefined) {
+        trialDeck['trialDivineLightTotal'] = trialDeck['trialOblivionTotal'];
+      }
+      delete trialDeck['trialOblivionTotal'];
     }
     return data;
   },

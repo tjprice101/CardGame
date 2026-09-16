@@ -126,7 +126,7 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
                 {definition.bridgeAttack && (() => {
                   const cost = previewStackCost(definition.bridgeAttack.consumesStacks, turn.limitlessLightStacks);
                   const projected = Math.max(0, Math.round(
-                    definition.bridgeAttack.baseOblivion
+                    definition.bridgeAttack.baseDivineLight
                     + resolveCardScaling(definition.bridgeAttack.scaling, scalingContext),
                   ));
                   return (
@@ -139,7 +139,7 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
               <>
                 {(() => {
                   const projected = Math.max(0, Math.round(
-                    definition.ainAttack.baseOblivion
+                    definition.ainAttack.baseDivineLight
                     + resolveCardScaling(definition.ainAttack.scaling, scalingContext),
                   ));
                   return <span>Ain Attack · Now {projected} Divine Light · Cooldown {definition.ainAttack.cooldownCards} cards</span>;
@@ -147,7 +147,7 @@ export default function CardInspectorPanel({ definitionId }: CardInspectorPanelP
                 {(() => {
                   const cost = previewStackCost(definition.sophAttack.stackCost, turn.limitlessLightStacks);
                   const projected = Math.max(0, Math.round(
-                    definition.sophAttack.baseOblivion
+                    definition.sophAttack.baseDivineLight
                     + resolveCardScaling(definition.sophAttack.scaling, scalingContext)
                     ,
                   ));

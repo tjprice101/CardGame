@@ -393,7 +393,6 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
   if (!def) return null;
   return (
     <div
-      className={`holofoil-menu-card${def.rarity === 'Infinite' ? ' infinite-holo-bw-hover' : ''}${def.rarity === 'Eternal' ? ' eternal-holo-red-hover' : ''}${def.rarity === 'Enigmatic' ? ' enigmatic-holo-gold-hover' : ''}`}
       title={getCardPreviewLines(def, 4).join('\n')}
       style={{
         width: 'clamp(260px, 22vw, 380px)',

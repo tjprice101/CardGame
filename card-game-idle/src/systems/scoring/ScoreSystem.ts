@@ -8,7 +8,7 @@ export class ScoreSystem {
     return {
       asaSummoned: asaCount,
       mainDeckOnBoard: backCount,
-      globalOblivionMult: 0,
+      globalDivineLightMult: 0,
     };
   }
 

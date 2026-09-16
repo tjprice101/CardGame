@@ -10,7 +10,7 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function makeProgress(overrides: Partial<ProgressState['dailyLogin']> = {}): ProgressState {
   return {
-    oblivion: 0,
+    divineLight: 0,
     aberratedShards: 0,
     totalCardsPlayed: 0,
     collection: {},

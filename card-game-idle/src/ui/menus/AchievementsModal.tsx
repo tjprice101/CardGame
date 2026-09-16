@@ -445,8 +445,8 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
         display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2,
       }}>
         <span>+{a.shardReward} ◈</span>
-        {a.oblivionReward > 0 && (
-          <span style={{ fontSize: 11, color: withAlpha(P.accentGold, 0.9), fontFamily: uiTypography.body }}>+{a.oblivionReward.toLocaleString()} Divine Light</span>
+        {a.divineLightReward > 0 && (
+          <span style={{ fontSize: 11, color: withAlpha(P.accentGold, 0.9), fontFamily: uiTypography.body }}>+{a.divineLightReward.toLocaleString()} Divine Light</span>
         )}
       </div>
 

@@ -18,7 +18,7 @@ export type QuestKind =
   | 'activate_dark'
   | 'bridge_ain_soph_aur'
   | 'spend_light_stacks'
-  | 'earn_oblivion_in_turn'
+  | 'earn_divine_light_in_turn'
   | 'win_boss'
   | 'clear_null_raid'
   | 'open_packs';
@@ -35,39 +35,39 @@ export interface QuestTemplate {
   /** Aberrated Shard reward, paid in addition to any Oblivion reward. */
   shardReward: number;
   /** Base Oblivion reward before Collection Power scaling. */
-  oblivionReward?: number;
+  divineLightReward?: number;
 }
 
 const DAILY_QUEST_POOL: QuestTemplate[] = [
-  { id: 'daily-any-cards-12', text: 'Play 12 cards', kind: 'play_cards', goal: 12, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-light-5', text: 'Play 5 Light cards', kind: 'play_light', goal: 5, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-dark-4', text: 'Play 4 Dark cards', kind: 'play_dark', goal: 4, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-flip-2', text: 'Flip 2 Soph cards to Ain', kind: 'flip_soph', goal: 2, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-stack-spend-8', text: 'Spend 8 Limitless Light Stacks', kind: 'spend_light_stacks', goal: 8, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-summon-asa-1', text: 'Summon 1 Ain Soph Aur', kind: 'summon_ain_soph_aur', goal: 1, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-attack-3', text: 'Activate 3 Light attacks', kind: 'activate_ain_attack', goal: 3, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-soph-attack-2', text: 'Activate 2 Soph Attacks', kind: 'activate_soph_attack', goal: 2, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-dark-activation-2', text: 'Resolve 2 Dark activations', kind: 'activate_dark', goal: 2, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-bridge-1', text: 'Activate 1 Bridge attack', kind: 'bridge_ain_soph_aur', goal: 1, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-divine-light-15000', text: 'Earn 15,000 Divine Light in one turn', kind: 'earn_oblivion_in_turn', goal: 15_000, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-pack-1', text: 'Open 1 card pack', kind: 'open_packs', goal: 1, shardReward: 0, oblivionReward: 1_725 },
-  { id: 'daily-boss-1', text: 'Defeat 1 boss', kind: 'win_boss', goal: 1, shardReward: 0, oblivionReward: 1_725 },
+  { id: 'daily-any-cards-12', text: 'Play 12 cards', kind: 'play_cards', goal: 12, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-light-5', text: 'Play 5 Light cards', kind: 'play_light', goal: 5, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-dark-4', text: 'Play 4 Dark cards', kind: 'play_dark', goal: 4, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-flip-2', text: 'Flip 2 Soph cards to Ain', kind: 'flip_soph', goal: 2, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-stack-spend-8', text: 'Spend 8 Limitless Light Stacks', kind: 'spend_light_stacks', goal: 8, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-summon-asa-1', text: 'Summon 1 Ain Soph Aur', kind: 'summon_ain_soph_aur', goal: 1, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-attack-3', text: 'Activate 3 Light attacks', kind: 'activate_ain_attack', goal: 3, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-soph-attack-2', text: 'Activate 2 Soph Attacks', kind: 'activate_soph_attack', goal: 2, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-dark-activation-2', text: 'Resolve 2 Dark activations', kind: 'activate_dark', goal: 2, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-bridge-1', text: 'Activate 1 Bridge attack', kind: 'bridge_ain_soph_aur', goal: 1, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-divine-light-15000', text: 'Earn 15,000 Divine Light in one turn', kind: 'earn_divine_light_in_turn', goal: 15_000, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-pack-1', text: 'Open 1 card pack', kind: 'open_packs', goal: 1, shardReward: 0, divineLightReward: 1_725 },
+  { id: 'daily-boss-1', text: 'Defeat 1 boss', kind: 'win_boss', goal: 1, shardReward: 0, divineLightReward: 1_725 },
 ];
 
 const WEEKLY_QUEST_POOL: QuestTemplate[] = [
-  { id: 'weekly-any-cards-60', text: 'Play 60 cards this week', kind: 'play_cards', goal: 60, shardReward: 50, oblivionReward: 25_000 },
-  { id: 'weekly-flips-10', text: 'Flip 10 Soph cards to Ain', kind: 'flip_soph', goal: 10, shardReward: 55, oblivionReward: 25_000 },
-  { id: 'weekly-summons-5', text: 'Summon 5 Ain Soph Aur', kind: 'summon_ain_soph_aur', goal: 5, shardReward: 70, oblivionReward: 25_000 },
-  { id: 'weekly-dark-activations-12', text: 'Resolve 12 Dark activations', kind: 'activate_dark', goal: 12, shardReward: 60, oblivionReward: 25_000 },
-  { id: 'weekly-bridges-8', text: 'Activate 8 Bridge attacks', kind: 'bridge_ain_soph_aur', goal: 8, shardReward: 70, oblivionReward: 25_000 },
-  { id: 'weekly-light-30', text: 'Play 30 Light cards', kind: 'play_light', goal: 30, shardReward: 55, oblivionReward: 25_000 },
-  { id: 'weekly-dark-24', text: 'Play 24 Dark cards', kind: 'play_dark', goal: 24, shardReward: 55, oblivionReward: 25_000 },
-  { id: 'weekly-soph-attacks-16', text: 'Activate 16 Soph Attacks', kind: 'activate_soph_attack', goal: 16, shardReward: 65, oblivionReward: 25_000 },
-  { id: 'weekly-stacks-60', text: 'Spend 60 Limitless Light Stacks', kind: 'spend_light_stacks', goal: 60, shardReward: 65, oblivionReward: 25_000 },
-  { id: 'weekly-divine-light-150000', text: 'Earn 150,000 Divine Light in one turn', kind: 'earn_oblivion_in_turn', goal: 150_000, shardReward: 80, oblivionReward: 25_000 },
-  { id: 'weekly-bosses-3', text: 'Defeat 3 bosses', kind: 'win_boss', goal: 3, shardReward: 70, oblivionReward: 25_000 },
-  { id: 'weekly-null-raid-1', text: 'Clear 1 Null Raid', kind: 'clear_null_raid', goal: 1, shardReward: 90, oblivionReward: 25_000 },
-  { id: 'weekly-packs-4', text: 'Open 4 card packs', kind: 'open_packs', goal: 4, shardReward: 55, oblivionReward: 25_000 },
+  { id: 'weekly-any-cards-60', text: 'Play 60 cards this week', kind: 'play_cards', goal: 60, shardReward: 50, divineLightReward: 25_000 },
+  { id: 'weekly-flips-10', text: 'Flip 10 Soph cards to Ain', kind: 'flip_soph', goal: 10, shardReward: 55, divineLightReward: 25_000 },
+  { id: 'weekly-summons-5', text: 'Summon 5 Ain Soph Aur', kind: 'summon_ain_soph_aur', goal: 5, shardReward: 70, divineLightReward: 25_000 },
+  { id: 'weekly-dark-activations-12', text: 'Resolve 12 Dark activations', kind: 'activate_dark', goal: 12, shardReward: 60, divineLightReward: 25_000 },
+  { id: 'weekly-bridges-8', text: 'Activate 8 Bridge attacks', kind: 'bridge_ain_soph_aur', goal: 8, shardReward: 70, divineLightReward: 25_000 },
+  { id: 'weekly-light-30', text: 'Play 30 Light cards', kind: 'play_light', goal: 30, shardReward: 55, divineLightReward: 25_000 },
+  { id: 'weekly-dark-24', text: 'Play 24 Dark cards', kind: 'play_dark', goal: 24, shardReward: 55, divineLightReward: 25_000 },
+  { id: 'weekly-soph-attacks-16', text: 'Activate 16 Soph Attacks', kind: 'activate_soph_attack', goal: 16, shardReward: 65, divineLightReward: 25_000 },
+  { id: 'weekly-stacks-60', text: 'Spend 60 Limitless Light Stacks', kind: 'spend_light_stacks', goal: 60, shardReward: 65, divineLightReward: 25_000 },
+  { id: 'weekly-divine-light-150000', text: 'Earn 150,000 Divine Light in one turn', kind: 'earn_divine_light_in_turn', goal: 150_000, shardReward: 80, divineLightReward: 25_000 },
+  { id: 'weekly-bosses-3', text: 'Defeat 3 bosses', kind: 'win_boss', goal: 3, shardReward: 70, divineLightReward: 25_000 },
+  { id: 'weekly-null-raid-1', text: 'Clear 1 Null Raid', kind: 'clear_null_raid', goal: 1, shardReward: 90, divineLightReward: 25_000 },
+  { id: 'weekly-packs-4', text: 'Open 4 card packs', kind: 'open_packs', goal: 4, shardReward: 55, divineLightReward: 25_000 },
 ];
 
 const QUEST_TEMPLATES_BY_ID = new Map(
@@ -78,7 +78,7 @@ export function getCollectionPowerMultiplier(resonanceScore: number): number {
   return Math.min(3, 1 + Math.max(0, resonanceScore) / 1000);
 }
 
-export function getScaledQuestOblivion(baseReward: number, resonanceScore: number): number {
+export function getScaledQuestDivineLight(baseReward: number, resonanceScore: number): number {
   return Math.floor(Math.max(0, baseReward) * getCollectionPowerMultiplier(resonanceScore));
 }
 
@@ -95,7 +95,7 @@ export interface QuestInstance {
   /** Aberrated Shard reward, paid in addition to any Oblivion reward. */
   shardReward: number;
   /** Base Oblivion reward before Collection Power scaling. */
-  oblivionReward?: number;
+  divineLightReward?: number;
   claimed: boolean;
 }
 
@@ -159,7 +159,7 @@ function instantiate(template: QuestTemplate, salt: string): QuestInstance {
     goal: template.goal,
     progress: 0,
     shardReward: template.shardReward,
-    oblivionReward: template.oblivionReward,
+    divineLightReward: template.divineLightReward,
     claimed: false,
   };
 }
@@ -240,9 +240,9 @@ export function refreshQuestRotation(state: QuestState, timestamp: number): Ques
     const hydrated = quests.map(quest => {
     const template = QUEST_TEMPLATES_BY_ID.get(quest.templateId);
     if (!template) return quest;
-    if (quest.shardReward === template.shardReward && quest.oblivionReward === template.oblivionReward) return quest;
+    if (quest.shardReward === template.shardReward && quest.divineLightReward === template.divineLightReward) return quest;
     changed = true;
-    return { ...quest, shardReward: template.shardReward, oblivionReward: template.oblivionReward };
+    return { ...quest, shardReward: template.shardReward, divineLightReward: template.divineLightReward };
     });
     return changed ? hydrated : quests;
   };
@@ -273,7 +273,7 @@ export interface QuestProgressEvent {
   amount: number;
   /** @deprecated element targeting removed; field kept for back-compat but ignored for play_cards. */
   element?: string;
-  /** For 'earn_oblivion_in_turn': the achieved value, used as a peak (not summed). */
+  /** For 'earn_divine_light_in_turn': the achieved value, used as a peak (not summed). */
   peak?: number;
 }
 

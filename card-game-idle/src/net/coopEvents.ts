@@ -32,7 +32,7 @@ export type CoopEvent = CoopEventBase & (
         boardCount: number;
         handCount: number;
         deckCount: number;
-        oblivion: number;
+        divineLight: number;
       };
     }
   | {

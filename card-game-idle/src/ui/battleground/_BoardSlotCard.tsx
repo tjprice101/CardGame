@@ -48,6 +48,9 @@ export function FrontSlotCard({ slot }: { slot: FrontSlot }) {
 
   return (
     <div
+      className={slot.finish === 'holo' && def?.rarity !== 'Infinite' && def?.rarity !== 'Eternal' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic'
+        ? 'holofoil-live-card'
+        : undefined}
       style={{
         width: SLOT_W, height: SLOT_H,
         borderRadius: 14,
@@ -117,6 +120,9 @@ export function BackSlotCard({ slot }: { slot: BackSlot }) {
 
   return (
     <div
+      className={slot.finish === 'holo' && def?.rarity !== 'Infinite' && def?.rarity !== 'Eternal' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic'
+        ? 'holofoil-live-card'
+        : undefined}
       style={{
         width: CHERUBIM_W, height: CHERUBIM_H,
         borderRadius: 12,

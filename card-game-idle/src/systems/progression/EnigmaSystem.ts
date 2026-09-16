@@ -159,7 +159,7 @@ export function evaluateNeutralizingVoidProgress(state: Pick<GameState, 'board' 
   return result;
 }
 
-export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' | 'progress'>): EnigmaProgressResult {
+export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' | 'progress' | 'turn'>): EnigmaProgressResult {
   ensureEnigmaState(state.progress);
   const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
   if (!isEnigmaUnlocked(state.progress)) return result;
@@ -167,7 +167,7 @@ export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' |
   const activeCausalityLight = state.board.backSlots.some(slot => slot?.type === 'Light' && slot.definitionId.startsWith('light-causality-') && slot.side === 'ain');
   const activeCausalityDark = state.board.backSlots.some(slot => slot?.type === 'Dark' && slot.definitionId.startsWith('dark-causality-') && slot.side === 'ain');
   const activeCausalityAsa = state.board.frontSlots.some(slot => slot?.type === 'AinSophAur' && slot.definitionId.startsWith('ain-soph-aur-causality-'));
-  const activeCausalityCount = [...state.board.frontSlots, ...state.board.backSlots].filter(slot => slot?.definitionId.includes('causality')).length;
+  const activeCausalityTrinity = activeCausalityLight && activeCausalityDark && activeCausalityAsa;
 
   const update = (id: string, checks: boolean[]): void => {
     const instance = state.progress.enigmas.instances[id];
@@ -183,9 +183,11 @@ export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' |
   const blackInk = state.progress.enigmas.instances['causality-black-ink'];
   const archive = state.progress.enigmas.instances['causality-heavenly-archive'];
   const collapsed = state.progress.enigmas.instances['causality-collapsed-equation'];
-  const unwritten = state.progress.enigmas.instances['causality-unwritten-law'];
   update('causality-first-horizon', [
-    (firstHorizon?.progressCounters?.causalityPlays ?? 0) >= 5,
+    // "Play 5 Causality cards in a single turn" — must use the turn-scoped
+    // counter (reset every turn end), never the lifetime `causalityPlays`
+    // counter shared with causality-collapsed-equation below.
+    (state.turn.causalityCardsPlayedThisTurn ?? 0) >= 5,
     (firstHorizon?.progressCounters?.cosmosGenerated ?? 0) >= 3,
   ]);
   update('causality-black-ink', [
@@ -193,16 +195,21 @@ export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' |
     (blackInk?.progressCounters?.cosmosConsumed ?? 0) >= 2,
   ]);
   update('causality-heavenly-archive', [
-    activeCausalityLight && activeCausalityDark && activeCausalityAsa,
+    activeCausalityTrinity,
     (archive?.progressCounters?.bridgeAttacks ?? 0) >= 3,
   ]);
   update('causality-collapsed-equation', [
     (collapsed?.progressCounters?.causalityPlays ?? 0) >= 10,
-    (collapsed?.progressCounters?.cosmosGenerated ?? 0) >= 5,
+    // "Earn 10,000 Divine Light from Causality card effects in a single
+    // decisive turn" — must check the actual turn-scoped Divine Light total,
+    // not an unrelated Cosmos counter.
+    (state.turn.causalityDivineLightThisTurn ?? 0) >= 10_000,
   ]);
   update('causality-unwritten-law', [
-    activeCausalityCount >= 3,
-    (unwritten?.progressCounters?.cosmosHeldPeak ?? 0) >= 5,
+    // "Use a Causality Light, Dark, and ASA in the same turn" requires the
+    // actual trinity, not just any 3 causality board positions filled.
+    activeCausalityTrinity,
+    (state.turn.limitlessCosmosStacks ?? 0) >= 5,
   ]);
   return result;
 }

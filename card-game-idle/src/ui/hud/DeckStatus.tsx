@@ -190,6 +190,9 @@ export default function DeckStatus() {
               {pileEntries.map((entry) => (
                 <div key={entry.key} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   <div
+                    className={entry.finish === 'holo' && entry.def?.rarity !== 'Infinite' && entry.def?.rarity !== 'Eternal' && entry.def?.rarity !== 'Transcendent' && entry.def?.rarity !== 'Enigmatic'
+                      ? 'holofoil-live-card'
+                      : undefined}
                     style={{
                       position: 'relative',
                       height: 132,

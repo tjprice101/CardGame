@@ -91,7 +91,7 @@ export function calculateDeckDpsProjection(
     collectionPower: Math.max(0, collectionPower),
   };
 
-  // Collection Power Multiplier from store.ts grantOblivion: min(3, 1 + collectionPower / 1000)
+  // Collection Power Multiplier from store.ts grantDivineLight: min(3, 1 + collectionPower / 1000)
   const collectionPowerMult = Math.min(3, 1 + Math.max(0, collectionPower) / 1000);
   // Innate +1% Divine Light gain per active ASA on Front Rank
   const asaTurnBonusMult = 1 + (estimatedAsaActive / 100);
@@ -147,7 +147,7 @@ export function calculateDeckDpsProjection(
     // A. Ain Attack Modeling
     // Ain Attack takes 1 placement to enter Ain side, plus ainCd card placements to reset cooldown.
     const scaledAin = resolveCardScaling(lightDef.ainAttack.scaling, scalingContext);
-    const singleAinHit = (lightDef.ainAttack.baseOblivion + scaledAin) * totalDlMultiplier;
+    const singleAinHit = (lightDef.ainAttack.baseDivineLight + scaledAin) * totalDlMultiplier;
     const ainCd = lightDef.ainAttack.cooldownCards ?? 1;
     // Harsher cooldown: cycle time is max(ainCd + 1, MAX_BACK_ROW_SLOTS)
     const ainCyclePlacements = Math.max(ainCd + 1, MAX_BACK_ROW_SLOTS);
@@ -157,7 +157,7 @@ export function calculateDeckDpsProjection(
     // B. Soph Attack Modeling
     // Soph Attack requires placing on Soph side + 2 charge placements + sophCd card placements to reset cooldown.
     const scaledSoph = resolveCardScaling(lightDef.sophAttack.scaling, scalingContext);
-    const singleSophHit = (lightDef.sophAttack.baseOblivion + scaledSoph) * totalDlMultiplier;
+    const singleSophHit = (lightDef.sophAttack.baseDivineLight + scaledSoph) * totalDlMultiplier;
     const sophCd = lightDef.sophAttack.cooldownCards ?? 2;
     const sophCyclePlacements = Math.max(1 + SOPH_CHARGE_PLACEMENTS_REQUIRED + sophCd, MAX_BACK_ROW_SLOTS + 2);
     const sophExecutions = (placementsOfThisCard * 2.5) / sophCyclePlacements;
@@ -166,7 +166,7 @@ export function calculateDeckDpsProjection(
     // C. Soph Placement Triggers
     if (lightDef.sophPlacementEffects && lightDef.sophPlacementEffects.length > 0) {
       for (const effect of lightDef.sophPlacementEffects) {
-        if (effect.type === 'oblivion_flat') {
+        if (effect.type === 'divine_light_flat') {
           placementDamage += effect.value * totalDlMultiplier * placementsOfThisCard;
         }
       }
@@ -182,7 +182,7 @@ export function calculateDeckDpsProjection(
 
     if (asaDef.bridgeAttack) {
       const scaledBridge = resolveCardScaling(asaDef.bridgeAttack.scaling, scalingContext);
-      const singleBridgeHit = (asaDef.bridgeAttack.baseOblivion + scaledBridge) * totalDlMultiplier;
+      const singleBridgeHit = (asaDef.bridgeAttack.baseDivineLight + scaledBridge) * totalDlMultiplier;
       const bridgeCd = asaDef.bridgeAttack.cooldownCards ?? 2;
       // Remaining placements after ASA is summoned
       const remainingPlacementsAfterSummon = Math.max(1, safePlacementBudget - (asaDef.summonMaterialCount + 1));
@@ -193,7 +193,7 @@ export function calculateDeckDpsProjection(
 
     if (asaDef.onSummonEffects) {
       for (const effect of asaDef.onSummonEffects) {
-        if (effect.type === 'oblivion_flat') {
+        if (effect.type === 'divine_light_flat') {
           placementDamage += effect.value * totalDlMultiplier * 2; // ~2 summons per 3-min fight
         }
       }

@@ -120,7 +120,7 @@ describe('complete card runtime wiring', () => {
       useStore.getState().flipSoph(instanceId, 'sacrifice');
       expect(useStore.getState().board.backSlots[0], `${definition.definitionId} sacrifice`).toBeNull();
       expect(useStore.getState().deck.discardPile.some(card => card.instanceId === instanceId)).toBe(true);
-      expect(useStore.getState().progress.oblivion).toBe(beforeSacrifice.progress.oblivion);
+      expect(useStore.getState().progress.divineLight).toBe(beforeSacrifice.progress.divineLight);
       expect(useStore.getState().turn.limitlessLightStacks).toBeGreaterThan(beforeSacrifice.turn.limitlessLightStacks);
     }
   });
@@ -139,20 +139,20 @@ describe('complete card runtime wiring', () => {
           },
         }));
 
-        const before = useStore.getState().progress.oblivion;
+        const before = useStore.getState().progress.divineLight;
         if (attack === 'ain') useStore.getState().activateLightAinAttack(instanceId);
         else useStore.getState().activateLightSophAttack(instanceId);
 
         const state = useStore.getState();
-        expect(state.progress.oblivion, `${definition.definitionId} ${attack}`).toBeGreaterThan(before);
+        expect(state.progress.divineLight, `${definition.definitionId} ${attack}`).toBeGreaterThan(before);
         expect(state.board.backSlots[0]?.attackCooldowns[attack === 'ain' ? definition.ainAttack.id : definition.sophAttack.id]).toBeGreaterThan(0);
         if (attack === 'soph' && definition.sophAttack.stackCost) {
           expect(state.turn.limitlessLightStacks).toBeLessThan(1_000);
         }
-        const afterFirstAttack = state.progress.oblivion;
+        const afterFirstAttack = state.progress.divineLight;
         if (attack === 'ain') useStore.getState().activateLightAinAttack(instanceId);
         else useStore.getState().activateLightSophAttack(instanceId);
-        expect(useStore.getState().progress.oblivion, `${definition.definitionId} ${attack} cooldown`).toBe(afterFirstAttack);
+        expect(useStore.getState().progress.divineLight, `${definition.definitionId} ${attack} cooldown`).toBe(afterFirstAttack);
       }
     }
   });
@@ -167,11 +167,11 @@ describe('complete card runtime wiring', () => {
         deck: { ...state.deck, hand: [deckCard(instanceId, definition.definitionId)] },
       }));
 
-      const before = useStore.getState().progress.oblivion;
+      const before = useStore.getState().progress.divineLight;
       useStore.getState().playCard(instanceId, 'soph');
       const state = useStore.getState();
       expect(state.board.backSlots.some(card => card?.instanceId === instanceId), definition.definitionId).toBe(true);
-      expect(state.progress.oblivion, `${definition.definitionId} Soph placement`).toBeGreaterThan(before);
+      expect(state.progress.divineLight, `${definition.definitionId} Soph placement`).toBeGreaterThan(before);
     }
   });
 
@@ -200,7 +200,7 @@ describe('complete card runtime wiring', () => {
       useStore.getState().activateLightSophAttack(instanceId);
 
       const after = useStore.getState();
-      expect(after.progress.oblivion, definition.definitionId).toBe(before.progress.oblivion);
+      expect(after.progress.divineLight, definition.definitionId).toBe(before.progress.divineLight);
       expect(after.turn.limitlessLightStacks).toBe(requiredStacks - 1);
       expect(after.board.backSlots[0]?.attackCooldowns[definition.sophAttack.id]).toBeUndefined();
     }
@@ -261,7 +261,7 @@ describe('complete card runtime wiring', () => {
       expect(result.canPlay, definition.definitionId).toBe(true);
       const changed = JSON.stringify(result.deck) !== beforeDeck
         || result.pendingEffects.length > 0
-        || result.oblivionBonus > 0;
+        || result.divineLightBonus > 0;
       expect(changed, `${definition.definitionId} must produce a runtime result`).toBe(true);
     }
   });
@@ -374,28 +374,28 @@ describe('complete card runtime wiring', () => {
         },
       }));
 
-      const beforeSummon = useStore.getState().progress.oblivion;
+      const beforeSummon = useStore.getState().progress.divineLight;
       const stacksBeforeSummon = useStore.getState().turn.limitlessLightStacks;
       useStore.getState().summonAinSophAur(definition.definitionId, materials.map(card => card.instanceId), 0);
       const summoned = useStore.getState().board.frontSlots[0];
       expect(summoned?.definitionId, definition.definitionId).toBe(definition.definitionId);
-      expect(useStore.getState().progress.oblivion, `${definition.definitionId} summon`).toBeGreaterThan(beforeSummon);
+      expect(useStore.getState().progress.divineLight, `${definition.definitionId} summon`).toBeGreaterThan(beforeSummon);
       const summonConversionCost = countConditionalLightConversionCost(definition.onSummonEffects as Array<{ type: string; [key: string]: unknown }>);
       expect(useStore.getState().turn.limitlessLightStacks, `${definition.definitionId} summon stack`).toBe(
         stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD - summonConversionCost,
       );
 
-      const beforeBridge = useStore.getState().progress.oblivion;
+      const beforeBridge = useStore.getState().progress.divineLight;
       const stacksBeforeBridge = useStore.getState().turn.limitlessLightStacks;
       useStore.getState().activateAsaBridge(summoned!.instanceId);
-      expect(useStore.getState().progress.oblivion, `${definition.definitionId} Bridge`).toBeGreaterThan(beforeBridge);
+      expect(useStore.getState().progress.divineLight, `${definition.definitionId} Bridge`).toBeGreaterThan(beforeBridge);
       expect(useStore.getState().board.frontSlots[0]?.attackCooldowns[definition.bridgeAttack!.id]).toBeGreaterThan(0);
       if (definition.bridgeAttack?.consumesStacks) {
         expect(useStore.getState().turn.limitlessLightStacks).toBeLessThan(stacksBeforeBridge);
       }
-      const afterFirstBridge = useStore.getState().progress.oblivion;
+      const afterFirstBridge = useStore.getState().progress.divineLight;
       useStore.getState().activateAsaBridge(summoned!.instanceId);
-      expect(useStore.getState().progress.oblivion, `${definition.definitionId} Bridge cooldown`).toBe(afterFirstBridge);
+      expect(useStore.getState().progress.divineLight, `${definition.definitionId} Bridge cooldown`).toBe(afterFirstBridge);
     }
   });
 });

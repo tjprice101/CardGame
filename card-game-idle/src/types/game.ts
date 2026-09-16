@@ -30,8 +30,8 @@ export interface ComputedBoardStats {
   asaSummoned: number;
   /** Main Deck cards currently occupying back-row slots. */
   mainDeckOnBoard: number;
-  /** Additive % bonus applied to ALL Oblivion grants (driven by Collection Power resonance). */
-  globalOblivionMult: number;
+  /** Additive % bonus applied to ALL Divine Light grants (driven by Collection Power resonance). */
+  globalDivineLightMult: number;
   /** Global resonance score — sum of each card's highest reached mastery-tier contribution. Exposed for UI gating. */
   resonanceScore?: number;
 }
@@ -106,7 +106,9 @@ export interface TurnState {
   neutralityAbilityActivationsThisTurn?: number;
   limitlessLightStacks: number;
   limitlessCosmosStacks?: number;
-  oblivionEarnedThisTurn: number;
+  causalityCardsPlayedThisTurn?: number;
+  causalityDivineLightThisTurn?: number;
+  divineLightEarnedThisTurn: number;
   lastPlayedDefinitionId: string | null;
   turnNumber?: number;
   mulliganSelected: string[];
@@ -123,11 +125,11 @@ export interface TurnState {
   seraphimPlayedThisTurn?: number;
 
   lastShuffleSubtypeCounts?: Partial<Record<CardSubtypeFilter, number>>;
-  neutralityNextAttackOblivionByInstance?: Record<string, number>;
+  neutralityNextAttackDivineLightByInstance?: Record<string, number>;
 
   cherubimConditionalMult?: number; // multiplier from cherubim_conditional_buff passives, applied per card play
   lastFiredSeraphimAttackMode?: 'unsynergized' | 'synergized' | null;
-  lastFiredSeraphimAttackOblivion?: number;
+  lastFiredSeraphimAttackDivineLight?: number;
   /** Artifact ids equipped on the active deck; populated at game start from SavedDeck.equippedArtifacts. */
   equippedArtifactIds?: string[];
   /**
@@ -235,14 +237,14 @@ export interface EnigmaState {
 }
 
 export interface ProgressState {
-  oblivion: number;
+  divineLight: number;
   nullifiedLattice: number;
   nullSearedLight: number;
   nullifiedOblivionMatter: number;
-  /** Total Oblivion ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
-  lifetimeOblivion?: number;
-  /** Highest Oblivion earned in a single turn. Used for Oblivion-Touched unlock. Save v22. */
-  bestSingleTurnOblivion?: number;
+  /** Total Divine Light ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
+  lifetimeDivineLight?: number;
+  /** Highest Divine Light earned in a single turn. Used for Oblivion-Touched unlock. Save v22. */
+  bestSingleTurnDivineLight?: number;
   aberratedShards: number;
   totalCardsPlayed: number;
   collection: Record<string, number>;         // definitionId ↁEtotal copy count owned
@@ -467,8 +469,8 @@ export interface TrialDeckState {
   guideComplete: boolean;
   /** Number of turns completed in this trial session. */
   turnCount: number;
-  /** Running total of Oblivion scored across all trial turns. */
-  trialOblivionTotal: number;
+  /** Running total of Divine Light scored across all trial turns. */
+  trialDivineLightTotal: number;
 }
 
 // ── Root game state ───────────────────────────────────────────────────────────

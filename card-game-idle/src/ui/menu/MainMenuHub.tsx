@@ -418,7 +418,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   );
 
   const shards = Math.floor(progress.aberratedShards ?? 0);
-  const oblivion = Math.floor(progress.oblivion ?? 0);
+  const divineLight = Math.floor(progress.divineLight ?? 0);
   const cards = ownedCardCopies;
   const eventCountdown = formatCountdown(getCausalityEventCountdown(eventNowMs));
 
@@ -460,7 +460,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
           </div>
           <ResourcePill glyph="◇" label="Cards" value={cards.toLocaleString()} tone="cool" theme={uiTheme} />
           <ResourcePill glyph="✦" label="Shards" value={shards.toLocaleString()} tone="crimson" theme={uiTheme} />
-          <ResourcePill glyph="⬡" label="Divine Light" value={oblivion.toLocaleString()} tone="gold" theme={uiTheme} />
+          <ResourcePill glyph="⬡" label="Divine Light" value={divineLight.toLocaleString()} tone="gold" theme={uiTheme} />
         </div>
       </div>
 

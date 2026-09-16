@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useStore, selectTurn, selectOblivion } from '@/state/store';
+import { useStore, selectTurn, selectDivineLight } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 import { uiTypography } from '@/ui/theme';
 
 const AMBIENT_STAR_COUNT = 60;
 const MAX_CONCURRENT_CLICK_STARS = 9;
 const CLICK_STAR_SPAWN_MS = 260;
-const CLICK_STAR_LIFE_MS = 1500;
+const CLICK_STAR_LIFE_MS = 1700;
 
 interface ClickStar {
   id: number;
@@ -31,7 +31,7 @@ interface AmbientStar {
  */
 export default function ShatterInfiniteLightOverlay() {
   const turn = useStore(selectTurn);
-  const oblivion = useStore(selectOblivion);
+  const divineLight = useStore(selectDivineLight);
   const shatter = turn.shatterInfiniteLight;
 
   const [clickStars, setClickStars] = useState<ClickStar[]>([]);
@@ -175,7 +175,7 @@ export default function ShatterInfiniteLightOverlay() {
             Divine Light
           </div>
           <div style={{ fontFamily: uiTypography.display, fontSize: 34, fontWeight: 700, letterSpacing: 1 }}>
-            {formatNumber(oblivion)}
+            {formatNumber(divineLight)}
           </div>
           <div
             className={stackPulse ? 'shatter-counter-pulse' : undefined}

@@ -448,7 +448,7 @@ export function getCardBackgroundUrl(card: CardDefinition | null | undefined): s
   return `${CARD_BACKGROUND_ROOT}/neutrality/${encodeURI(fileName)}`;
 }
 
-export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal', faceState: CardFaceState = 'front'): CSSProperties {
+export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefined, finish: CardFinish = 'normal', faceState: CardFaceState = 'front', skipImage = false): CSSProperties {
   const theme = getCardThemePackStyle(card);
   const isBackFace = faceState === 'back';
   const isTranscendent = isTranscendentCard(card);
@@ -457,13 +457,10 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
   const isEnigmatic = card?.rarity === 'Enigmatic';
   const isPackHolo = finish === 'holo' && !isTranscendent && !isInfinite && !isEternal && !isEnigmatic;
   if (isBackFace) {
-    const backUrl = getCardBackUrl(card);
+    const backStyle = getCardBackBackgroundStyle(card, { dimmed: false });
     return {
-      backgroundImage: backUrl ? `url("${backUrl}")` : theme.baseGradient,
+      ...backStyle,
       backgroundColor: warmTheme.surfaceStrong,
-      backgroundPosition: 'center',
-      backgroundSize: 'cover',
-      backgroundRepeat: 'no-repeat',
       boxShadow: cardFacePalette.shadow,
     };
   }
@@ -487,8 +484,8 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
         : {};
   const animStyle = mergeAnimationStyles(tierAnimationStyle, holofoilStyle);
 
-  const imageUrl = getCardBackgroundUrl(card);
-  const fallbackImageUrl = getCardBackUrl(card);
+  const imageUrl = skipImage ? null : getCardBackgroundUrl(card);
+  const fallbackImageUrl = skipImage ? null : getCardBackUrl(card);
 
   const infiniteFrameLayer =
     'linear-gradient(180deg, rgba(4,4,8,0.96) 0%, rgba(10,10,14,0.95) 8%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 86%, rgba(10,10,14,0.95) 92%, rgba(4,4,8,0.96) 100%)';
@@ -684,177 +681,9 @@ export function getDenseCardFaceBackgroundStyle(
   const cached = DENSE_CARD_FACE_STYLE_CACHE.get(cacheKey);
   if (cached) return cached;
 
-  const theme = getCardThemePackStyle(card);
-  const isBackFace = faceState === 'back';
-  const isTranscendent = isTranscendentCard(card);
-  const isInfinite = card?.rarity === 'Infinite';
-  const isEternal = card?.rarity === 'Eternal';
-  const isEnigmatic = card?.rarity === 'Enigmatic';
-  const isPackHolo = finish === 'holo' && !isTranscendent && !isInfinite && !isEternal && !isEnigmatic;
-  const tierAnimationStyle = isTranscendent && card
-    ? getTranscendentFoilAnimationStyle(card.definitionId)
-    : isEnigmatic && card
-      ? getHolofoilAnimationStyle(card.definitionId)
-    : isInfinite
-      ? getInfiniteGlassAnimationStyle()
-      : isEternal
-        ? getEternalGlassAnimationStyle()
-        : {};
-  const holofoilAnimationStyle = isPackHolo && card
-    ? getHolofoilAnimationStyle(card.definitionId)
-    : {};
-  const animStyle = mergeAnimationStyles(tierAnimationStyle, holofoilAnimationStyle);
-
-  if (isBackFace) {
-    const backStyle = getCardBackBackgroundStyle(card, { dimmed: false });
-    const style: CSSProperties = {
-      ...backStyle,
-      backgroundColor: warmTheme.surfaceStrong,
-      boxShadow: cardFacePalette.shadow,
-    };
-    DENSE_CARD_FACE_STYLE_CACHE.set(cacheKey, style);
-    return style;
-  }
-
-  const imageLayers: string[] = [];
-  if (!skipImage) {
-    const imageUrl = getCardBackgroundUrl(card);
-    const fallbackImageUrl = getCardBackUrl(card);
-    if (imageUrl) imageLayers.push(`url("${imageUrl}")`);
-    if (fallbackImageUrl && fallbackImageUrl !== imageUrl) imageLayers.push(`url("${fallbackImageUrl}")`);
-  }
-
-  const tintLayers = [
-    `radial-gradient(circle at 78% 14%, ${theme.highlight} 0%, rgba(255,255,255,0) 38%)`,
-  ];
-
-  const rarityFrameOverlay = isTranscendent
-    ? 'linear-gradient(180deg, rgba(62, 0, 18, 0.98) 0%, rgba(118, 8, 30, 0.95) 8%, rgba(255, 238, 244, 0.18) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(255, 214, 226, 0.2) 90%, rgba(118, 8, 30, 0.95) 92%, rgba(62, 0, 18, 0.98) 100%)'
-    : isEnigmatic
-    ? 'linear-gradient(180deg, rgba(8,8,10,0.98) 0%, rgba(255,255,255,0.94) 8%, rgba(213,166,36,0.96) 11%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(255,220,90,0.9) 90%, rgba(255,255,255,0.94) 94%, rgba(8,8,10,0.98) 100%)'
-    : isInfinite
-    ? 'linear-gradient(180deg, rgba(4,4,8,0.96) 0%, rgba(10,10,14,0.95) 8%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 86%, rgba(10,10,14,0.95) 92%, rgba(4,4,8,0.96) 100%)'
-    : isEternal
-      ? 'linear-gradient(180deg, rgba(20,10,34,0.97) 0%, rgba(30,16,50,0.96) 8%, rgba(176,42,58,0.32) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(176,42,58,0.36) 90%, rgba(30,16,50,0.96) 92%, rgba(20,10,34,0.97) 100%)'
-      : null;
-
-  const rarityToneOverlay = isTranscendent
-    ? 'linear-gradient(116deg, rgba(255,255,255,0.18) 0%, rgba(255, 224, 234, 0.18) 24%, rgba(255, 120, 154, 0.16) 50%, rgba(108, 0, 24, 0.18) 76%, rgba(255, 238, 244, 0.14) 100%)'
-    : isEnigmatic
-    ? 'linear-gradient(116deg, rgba(255,255,255,0.78) 0%, rgba(34,26,8,0.9) 22%, rgba(255,214,74,0.9) 45%, rgba(72,48,8,0.92) 70%, rgba(255,246,190,0.78) 100%)'
-    : isInfinite
-    ? 'linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(196,222,255,0.08) 34%, rgba(20,24,36,0.14) 100%)'
-    : isEternal
-      ? 'linear-gradient(135deg, rgba(184,78,124,0.26) 0%, rgba(124,34,94,0.18) 36%, rgba(18,10,28,0.24) 100%)'
-      : finish === 'holo'
-        ? 'linear-gradient(112deg, rgba(255,255,255,0.82) 0%, rgba(8,8,10,0.92) 16%, rgba(190,0,28,0.92) 34%, rgba(0,0,0,0.96) 52%, rgba(255,255,255,0.76) 70%, rgba(112,0,18,0.94) 86%, rgba(255,255,255,0.88) 100%)'
-        : null;
-
-  const sparkleOverlay = isTranscendent
-    ? 'radial-gradient(circle at 32% 26%, rgba(255,255,255,0.92) 0 1px, rgba(255, 224, 236, 0.6) 1px 2px, rgba(255,255,255,0) 2.2px)'
-    : isEnigmatic
-    ? 'radial-gradient(ellipse at 20% 16%, rgba(255,255,255,0.72) 0%, rgba(255,220,92,0.5) 26%, rgba(34,24,6,0.9) 54%, rgba(255,255,255,0) 72%)'
-    : finish === 'holo'
-      ? 'radial-gradient(ellipse at 18% 16%, rgba(255,255,255,0.3) 0%, rgba(255, 230, 210, 0.18) 20%, rgba(214, 230, 255, 0.1) 34%, rgba(255,255,255,0) 60%)'
-    : null;
-
-  const holoSheenOverlay = !isTranscendent && !isInfinite && !isEternal && !isEnigmatic && finish === 'holo'
-    ? 'linear-gradient(156deg, rgba(255,255,255,0) 14%, rgba(255,255,255,0.22) 32%, rgba(255,255,255,0.06) 46%, rgba(255,255,255,0.18) 62%, rgba(255,255,255,0.03) 76%, rgba(255,255,255,0) 88%)'
-    : null;
-
-  const backgroundLayers = [
-    ...(rarityFrameOverlay ? [rarityFrameOverlay] : []),
-    ...(rarityToneOverlay ? [rarityToneOverlay] : []),
-    ...(sparkleOverlay ? [sparkleOverlay] : []),
-    ...(holoSheenOverlay ? [holoSheenOverlay] : []),
-    ...tintLayers,
-    ...(imageLayers.length > 0 ? imageLayers : [theme.baseGradient]),
-  ];
-
-  const backgroundBlendMode = [
-    ...(rarityFrameOverlay ? ['normal'] : []),
-    ...(rarityToneOverlay ? [isPackHolo ? 'overlay' : 'screen'] : []),
-    ...(sparkleOverlay ? ['screen'] : []),
-    ...(holoSheenOverlay ? ['soft-light'] : []),
-    'overlay',
-    ...(imageLayers.length > 0 ? imageLayers.map(() => 'normal') : ['normal']),
-  ].join(', ');
-
-  const style: CSSProperties = {
-    backgroundImage: backgroundLayers.join(', '),
-    backgroundColor: warmTheme.surfaceStrong,
-    backgroundPosition: Array(backgroundLayers.length).fill('center').join(', '),
-    backgroundSize: Array(backgroundLayers.length).fill('cover').join(', '),
-    backgroundRepeat: 'no-repeat',
-    backgroundBlendMode,
-    boxShadow: cardFacePalette.shadow,
-    '--card-face-text': isInfinite
-      ? 'rgba(244,246,255,0.96)'
-      : isTranscendent
-        ? 'rgba(255,246,249,0.97)'
-      : isEnigmatic
-        ? 'rgba(255, 252, 232, 0.98)'
-      : isEternal
-        ? 'rgba(246,230,248,0.96)'
-      : isPackHolo
-        ? 'rgba(255,255,255,0.98)'
-        : CONSISTENT_CARD_TEXT,
-    '--card-face-text-soft': isInfinite
-      ? 'rgba(236,240,255,0.92)'
-      : isTranscendent
-        ? 'rgba(255,232,240,0.94)'
-      : isEnigmatic
-        ? 'rgba(255, 238, 170, 0.94)'
-      : isEternal
-        ? 'rgba(238,214,244,0.92)'
-      : isPackHolo
-        ? 'rgba(255,230,230,0.94)'
-        : CONSISTENT_CARD_TEXT_SOFT,
-    '--card-face-text-muted': isInfinite
-      ? 'rgba(218,224,244,0.84)'
-      : isTranscendent
-        ? 'rgba(255,214,226,0.88)'
-      : isEnigmatic
-        ? 'rgba(255, 224, 120, 0.9)'
-      : isEternal
-        ? 'rgba(226,198,234,0.84)'
-      : isPackHolo
-        ? 'rgba(255,210,210,0.9)'
-        : CONSISTENT_CARD_TEXT_MUTED,
-    '--card-face-ribbon': isInfinite
-      ? '#12151e'
-      : isTranscendent
-        ? '#7a0f31'
-      : isEnigmatic
-        ? '#b8861b'
-      : isEternal
-        ? '#32134f'
-      : isPackHolo
-        ? '#861326'
-        : theme.ribbon,
-    '--card-face-panel': isInfinite
-      ? '#0d1018'
-      : isTranscendent
-        ? '#5f0a25'
-      : isEnigmatic
-        ? '#8f6814'
-      : isEternal
-        ? '#26103d'
-      : isPackHolo
-        ? '#650d1e'
-        : theme.panel,
-    '--card-face-border': isInfinite ? 'rgba(214,226,255,0.52)' : isTranscendent ? 'rgba(255, 209, 126, 0.9)' : isEnigmatic ? 'rgba(255, 220, 90, 0.9)' : isEternal ? 'rgba(210,92,132,0.56)' : isPackHolo ? 'rgba(255,255,255,0.92)' : theme.border,
-    '--card-face-shadow': theme.shadow,
-    '--card-face-ribbon-animation-name': 'none',
-    '--card-face-ribbon-animation-duration': '0s',
-    '--card-face-panel-animation-name': 'none',
-    '--card-face-panel-animation-duration': '0s',
-    '--card-face-animation-timing': 'ease-in-out',
-    '--card-face-animation-iteration': 'infinite',
-    '--card-face-animation-direction': 'alternate',
-    ...animStyle,
-  } as CSSProperties;
-
+  // Single source of truth: identical composition to getCardFaceBackgroundStyle,
+  // just memoized for cheap reuse in large virtualized grids.
+  const style = getCardFaceBackgroundStyle(card, finish, faceState, skipImage);
   DENSE_CARD_FACE_STYLE_CACHE.set(cacheKey, style);
   return style;
 }

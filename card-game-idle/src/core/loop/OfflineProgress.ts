@@ -8,7 +8,7 @@ export interface OfflineProgressResult {
   offlineTicks: number;
   efficiency: number;
   scoreGained: number;
-  oblivionGained: number;
+  divineLightGained: number;
 }
 
 export class OfflineProgress {
@@ -38,7 +38,7 @@ export class OfflineProgress {
       offlineTicks,
       efficiency,
       scoreGained,
-      oblivionGained: scoreGained,
+      divineLightGained: scoreGained,
     };
   }
 }

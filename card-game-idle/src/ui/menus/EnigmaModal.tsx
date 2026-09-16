@@ -9,7 +9,7 @@ interface Props { onClose: () => void; }
 export default function EnigmaModal({ onClose }: Props) {
   const progress = useStore(selectProgress);
   const setActiveEnigma = useStore(s => s.setActiveEnigma);
-  const sacrificeEnigmaOblivion = useStore(s => s.sacrificeEnigmaOblivion);
+  const sacrificeEnigmaDivineLight = useStore(s => s.sacrificeEnigmaDivineLight);
   const claimEnigmaReward = useStore(s => s.claimEnigmaReward);
   const definitions = useMemo(() => listEnigmaDefinitions(), []);
   const groupedDefinitions = useMemo(() => (['Neutrality', 'Causality'] as const).flatMap(setId => {
@@ -59,8 +59,8 @@ export default function EnigmaModal({ onClose }: Props) {
             const isActive = (active?.id ?? progress.enigmas.activeEnigmaId) === definition.id;
             const currentStep = definition.steps[Math.min(instance?.currentStepIndex ?? 0, definition.steps.length - 1)];
             const canClaim = !locked && status !== 'completed' && !!instance && instance.stepsComplete.slice(0, -1).every(Boolean);
-            const oblivionCost = definition.id === 'neutral-mystery' ? 50_000 : 25_000;
-            const canOblivion = (definition.id === 'neutral-mystery' || definition.id === 'neutralizing-the-void') && instance?.currentStepIndex === 1;
+            const divineLightCost = definition.id === 'neutral-mystery' ? 50_000 : 25_000;
+            const canSacrificeForEnigma = (definition.id === 'neutral-mystery' || definition.id === 'neutralizing-the-void') && instance?.currentStepIndex === 1;
             return (
               <div key={definition.id}>
                 {entry.firstInSet && (
@@ -89,29 +89,29 @@ export default function EnigmaModal({ onClose }: Props) {
                   </div>
                 </div>
                 {expanded && !locked && <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>{definition.steps.map((step, index) => <div key={step.title} style={{ display: 'flex', gap: 10, color: instance?.stepsComplete[index] ? '#d5c3eb' : '#f8f0de' }}><b>{index + 1}.</b><div><div style={{ fontFamily: uiTypography.display }}>{step.title}</div><div style={{ fontSize: 12, marginTop: 2 }}>{step.description}</div></div></div>)}<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
-                  {canOblivion && (
+                  {canSacrificeForEnigma && (
                     <button
                       className="menu-tactile-btn"
-                      onClick={event => { event.stopPropagation(); sacrificeEnigmaOblivion(definition.id); }}
-                      disabled={progress.oblivion < oblivionCost}
+                      onClick={event => { event.stopPropagation(); sacrificeEnigmaDivineLight(definition.id); }}
+                      disabled={progress.divineLight < divineLightCost}
                       style={{
                         padding: '9px 20px',
                         borderRadius: 8,
                         border: '1px solid rgba(244, 207, 107, 0.7)',
-                        background: progress.oblivion < oblivionCost
+                        background: progress.divineLight < divineLightCost
                           ? 'rgba(60, 45, 20, 0.5)'
                           : 'linear-gradient(135deg, rgba(217, 164, 65, 0.95) 0%, rgba(248, 221, 122, 0.95) 50%, rgba(184, 130, 32, 0.95) 100%)',
-                        color: progress.oblivion < oblivionCost ? 'rgba(250, 240, 222, 0.5)' : '#1a1206',
+                        color: progress.divineLight < divineLightCost ? 'rgba(250, 240, 222, 0.5)' : '#1a1206',
                         fontFamily: uiTypography.display,
                         fontSize: 12,
                         fontWeight: 'bold',
                         letterSpacing: 1.1,
                         textTransform: 'uppercase',
-                        cursor: progress.oblivion < oblivionCost ? 'not-allowed' : 'pointer',
-                        boxShadow: progress.oblivion < oblivionCost ? 'none' : '0 4px 14px rgba(244, 207, 107, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+                        cursor: progress.divineLight < divineLightCost ? 'not-allowed' : 'pointer',
+                        boxShadow: progress.divineLight < divineLightCost ? 'none' : '0 4px 14px rgba(244, 207, 107, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
                       }}
                     >
-                      Sacrifice {oblivionCost.toLocaleString()} Divine Light
+                      Sacrifice {divineLightCost.toLocaleString()} Divine Light
                     </button>
                   )}
                   {canClaim && (

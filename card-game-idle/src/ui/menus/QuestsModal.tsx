@@ -5,7 +5,7 @@ import {
   getNextDailyResetAt,
   getNextWeeklyResetAt,
   getCollectionPowerMultiplier,
-  getScaledQuestOblivion,
+  getScaledQuestDivineLight,
   refreshQuestRotation,
   isQuestComplete,
   type QuestInstance,
@@ -42,7 +42,7 @@ const KIND_LABEL: Record<string, string> = {
   summon_ain_soph_aur: 'Summon Ain Soph Aur', flip_soph: 'Flip Soph',
   activate_ain_attack: 'Ain Attack', activate_soph_attack: 'Soph Attack',
   activate_dark: 'Dark activation', bridge_ain_soph_aur: 'Bridge attack',
-  spend_light_stacks: 'Spend Light Stacks', earn_oblivion_in_turn: 'Earn Divine Light',
+  spend_light_stacks: 'Spend Light Stacks', earn_divine_light_in_turn: 'Earn Divine Light',
   open_packs: 'Open packs', win_boss: 'Defeat bosses', clear_null_raid: 'Clear Null Raid',
 };
 
@@ -52,8 +52,8 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
   const progressPct = Math.min(100, Math.round((quest.progress / Math.max(1, quest.goal)) * 100));
   const claimable = complete && !quest.claimed;
   const rewardParts = [] as string[];
-  if (quest.oblivionReward) {
-    rewardParts.push(`+${getScaledQuestOblivion(quest.oblivionReward, resonanceScore).toLocaleString()} Divine Light`);
+  if (quest.divineLightReward) {
+    rewardParts.push(`+${getScaledQuestDivineLight(quest.divineLightReward, resonanceScore).toLocaleString()} Divine Light`);
   }
   if (quest.shardReward) rewardParts.push(`+${quest.shardReward} Aberrated Shards`);
   const rewardText = rewardParts.join(' · ') || 'Reward';
@@ -84,7 +84,7 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
       </div>
       <div style={{ position: 'relative', marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <span style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.1, textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, color: theme.accentSoft, background: theme.chipBg, border: `1px solid ${theme.chipBorder}` }}>
-          {rewardText}{quest.oblivionReward ? ` · ×${collectionPower.toFixed(2)} Collection Power` : ''}
+          {rewardText}{quest.divineLightReward ? ` · ×${collectionPower.toFixed(2)} Collection Power` : ''}
         </span>
         <button onClick={onClaim} disabled={!claimable} style={{
           fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', padding: '7px 16px', borderRadius: 8, cursor: claimable ? 'pointer' : 'default',

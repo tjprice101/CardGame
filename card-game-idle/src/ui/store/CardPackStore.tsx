@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/state/store';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
@@ -291,7 +291,7 @@ interface Props {
 
 export default function CardPackStore({ onClose }: Props) {
   useThemeVersion();
-  const oblivion = useStore(s => s.progress.oblivion);
+  const divineLight = useStore(s => s.progress.divineLight);
   const shards = useStore(s => s.progress.aberratedShards);
   const collection = useStore(s => s.progress.collection);
   const pityCounters = useStore(s => s.progress.pityCounters);
@@ -393,8 +393,8 @@ export default function CardPackStore({ onClose }: Props) {
     const packsUntilEpicPity = Math.max(0, packEpicPityThreshold - packPityMisses);
 
     // Compute effective locked state from oblivionUnlock milestone
-    const isLocked = pack.oblivionUnlock !== undefined
-      ? oblivion < pack.oblivionUnlock
+    const isLocked = pack.divineLightUnlock !== undefined
+      ? divineLight < pack.divineLightUnlock
       : pack.locked;
 
     const usesShards = (pack as typeof pack & { currencyType?: string }).currencyType === 'aberratedShards';
@@ -474,10 +474,10 @@ export default function CardPackStore({ onClose }: Props) {
 
         {isLocked ? (
           <div style={styles.lockedLabel}>
-            {pack.oblivionUnlock !== undefined ? (
+            {pack.divineLightUnlock !== undefined ? (
               <>
                 <div style={{ marginBottom: 4 }}>
-                  🔒 {setName} — Unlocks at {pack.oblivionUnlock.toLocaleString()} Divine Light
+                  🔒 {setName} — Unlocks at {pack.divineLightUnlock.toLocaleString()} Divine Light
                 </div>
               </>
             ) : '🔒 Coming Soon'}
@@ -487,7 +487,7 @@ export default function CardPackStore({ onClose }: Props) {
             {tiers.map(({ tier, label, cards, cost, discount }) => {
               const totalCost = cost * quantity;
               const totalCards = cards * quantity;
-              const canAfford = usesShards ? shards >= totalCost : oblivion >= totalCost;
+              const canAfford = usesShards ? shards >= totalCost : divineLight >= totalCost;
               return (
                 <button
                   key={tier}
@@ -565,7 +565,7 @@ export default function CardPackStore({ onClose }: Props) {
       <div style={{ ...styles.header, position: 'relative' }}>
         <div className="ui-title-glow" style={styles.title}>Card Store</div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
-          <div style={styles.score}>Divine Light: {Math.floor(oblivion).toLocaleString()}</div>
+          <div style={styles.score}>Divine Light: {Math.floor(divineLight).toLocaleString()}</div>
           <div style={styles.score}>Aberrated Shards: {shards.toLocaleString()}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4 }}>
             <div style={styles.collectionBar}>{Object.keys(collection).length} unique cards collected</div>
