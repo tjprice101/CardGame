@@ -34,7 +34,10 @@ This iteration focused on state consistency, usability, and math correctness aro
 - `Limitless Cosmos` is the current Causality turn-scoped resource. Causality cards are designed as a repeatable, beneficial loop: generate Cosmos, convert or bank it, and spend it to amplify utility or Divine Light gain without creating dead or punitive branches.
 - All Causality cards and earned reward cards are intentionally authored around the same loop, and their utility should be readable as a single system instead of isolated one-offs.
 - Card identity is treated as a one-source-of-truth across displays. Live turn cards use `getLiveCardFaceBackgroundStyle` and `getLiveCardShimmerClassName`; hand and board share identical composed art and foil layers, with one lightweight shimmer animation. Face-down Soph cards render only their backing plus state badges.
-- `Shatter the Infinite Light` fades fully to black for 1.1 seconds before revealing its detailed active starfield. The 10-second click window awards one Limitless Infinity stack per star and 1,000 base Divine Light per stack before Collection Power. Resolution wipes field and hand, reshuffles discard, clears turn resources, does not draw or advance the turn, and staggers active bosses while restoring their clock.
+- Light and Bridge attacks use the shared `AttackSequence` minigame. Ain: three deterministic stars, 3 seconds, ×2/×3/×4. Soph: centered floating card, five stars, 4 seconds, ×1.5–×5.5. Bridge: white priming, ordered three-to-five-star inverted constellation, Soph multiplier ladder. Layouts are deterministic per definition/mode, payouts resolve once through the store, and gameplay timers pause.
+- `Shatter the Infinite Light` fades fully to black for 1.1 seconds before revealing its detailed active starfield. The 10-second click window awards one Limitless Infinity stack per star and 1,000 base Divine Light per stack before Collection Power. Resolution returns front-row Ain Soph Aur to the Extra Deck, returns back-row and discarded cards to the draw pile, preserves the hand, clears turn resources without advancing the turn, and staggers active bosses while restoring their clock.
+- Causality has five endgame Eternity's Wake bosses/Eternal rewards, five registered playable Infinite cards with recipes restricted to those Eternals and Rift materials, and the four-encounter Rift of Causality Garden dungeon.
+- Rift materials are Seed of Causality, Causal Bloom, Shattered Causal Transcript, and Heart of Causality. Their generated art should replace the temporary files at the already-wired final filenames.
 - The turn HUD stacks Board and Card-born Stacks in one left-side rail. The main menu is a responsive Command Deck organized into Play, Collection, and Progress, with one contextual artwork banner and a reduced set of visible actions.
 - Enigma tracking now evaluates actual turn-scoped conditions instead of false positives from lifetime counters, generic board presence, or stale progress. Neutrality and Causality enigma checks must match the real conditions required by the authored text.
 - Causality enigma rewards were increased to 3 copies per reward entry.
@@ -112,6 +115,8 @@ Card and gameplay changes must preserve the executable audits:
 - `PackOpeningModalSource.test.ts`: pack modal does not auto-reveal.
 - `CardBackgroundAssetAudit.test.ts` and `LiveCardFaceSource.test.ts`: assets resolve and live hand/board foil composition remains unified.
 - `CardMasteryProgress.test.ts`: Resonance tier crossings, canonical Collection Power scaling, registry-derived maximum, and truthful boss reward previews.
+- `AttackSequence.test.ts`: deterministic layouts, multipliers, timers, delayed payout, and cooldown application.
+- `CausalityEndgame.test.ts`: five bosses/rewards, five restricted Infinite recipes, Rift encounter HP, materials, and drop rates.
 
 Run focused tests for the touched subsystem first, then `npm run build`, `npm run typecheck:tests`, and `npm test -- --run` when the change crosses card/runtime/UI boundaries.
 

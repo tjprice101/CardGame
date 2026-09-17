@@ -36,7 +36,7 @@ export default function AttackSequenceOverlay() {
   const remaining = Math.max(0, sequence.phaseEndsAt - Date.now());
   const duration = active ? getAttackSequenceDuration(sequence.kind) : 1;
   const progress = active ? 1 - remaining / duration : result ? 1 : 0;
-  const washOpacity = active ? Math.min(0.86, progress * 0.8) : result ? 0.92 : 0;
+  const washOpacity = active ? Math.min(0.9, progress * 0.86) : result ? (bridge ? 0.94 : 1) : 0;
   const title = sequence.kind === 'ain' ? 'Ain Attack' : sequence.kind === 'soph' ? 'Soph Attack' : 'Bridge the Light';
 
   return (
@@ -47,7 +47,16 @@ export default function AttackSequenceOverlay() {
     }}>
       {sequence.phase !== 'priming' && (
         <div className={bridge ? 'attack-sequence-field attack-sequence-field-inverted' : 'attack-sequence-field'}>
-          {AMBIENT_STARS.map(star => <i key={star.id} style={{ left: `${star.x}%`, top: `${star.y}%`, width: star.size, height: star.size, animationDelay: `${star.delay}s` }} />)}
+          <div className="attack-sequence-nebula" />
+          <div className="attack-sequence-orbit attack-sequence-orbit-a" />
+          <div className="attack-sequence-orbit attack-sequence-orbit-b" />
+          {AMBIENT_STARS.map(star => (
+            <i
+              key={star.id}
+              className={`shatter-ambient-star shatter-ambient-star-depth-${star.id % 3}`}
+              style={{ left: `${star.x}%`, top: `${star.y}%`, width: star.size, height: star.size, animationDelay: `${star.delay}s`, animationDuration: `${1.8 + (star.id % 7) * 0.35}s` }}
+            />
+          ))}
         </div>
       )}
 
@@ -82,23 +91,45 @@ export default function AttackSequenceOverlay() {
             onClick={() => useStore.getState().registerAttackSequenceStarHit(star.id)}
             className={bridge ? 'attack-sequence-star attack-sequence-star-bridge' : 'attack-sequence-star'}
             style={{ left: `${star.x}%`, top: `${star.y}%`, opacity: clicked ? 0 : available ? 1 : 0.45 }}
-          >✦</button>
+          >
+            <span className="attack-sequence-star-halo" aria-hidden="true" />
+            <span className="attack-sequence-star-rays" aria-hidden="true" />
+            <span className="attack-sequence-star-core">✦</span>
+          </button>
         );
       })}
 
-      <div style={{ position: 'absolute', top: 24, left: '50%', transform: 'translateX(-50%)', textAlign: 'center', color: bridge ? '#16050b' : '#fff9e8', fontFamily: uiTypography.display, textShadow: bridge ? '0 0 14px rgba(255,40,90,0.38)' : '0 0 18px rgba(255,220,120,0.65)' }}>
-        <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase' }}>{title}</div>
-        {active && <div style={{ fontSize: 30, marginTop: 5 }}>{(remaining / 1_000).toFixed(1)}s</div>}
-        {active && <div style={{ fontSize: 13, marginTop: 3 }}>{sequence.clickedStarIds.length} / {sequence.stars.length} stars</div>}
+      <div className={active ? 'attack-sequence-counter shatter-counter-pulse' : 'attack-sequence-counter'} style={{ color: bridge ? '#16050b' : '#fff9e8', textShadow: bridge ? '0 0 14px rgba(255,40,90,0.38)' : '0 0 18px rgba(255,220,120,0.65)' }}>
+        <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.78 }}>{title}</div>
+        {active && <div style={{ fontSize: 34, marginTop: 5, fontWeight: 800 }}>{(remaining / 1_000).toFixed(1)}s</div>}
+        {active && <div style={{ fontSize: 14, marginTop: 4, letterSpacing: 1.5 }}>✦ {sequence.clickedStarIds.length} / {sequence.stars.length}</div>}
       </div>
 
       {result && (
-        <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', color: bridge ? '#18030a' : '#fff', fontFamily: uiTypography.display, textAlign: 'center' }}>
-          <div><div style={{ fontSize: 48, letterSpacing: 3 }}>×{sequence.multiplier.toFixed(1).replace('.0', '')}</div><div style={{ marginTop: 8, fontSize: 18 }}>+{sequence.payout.toLocaleString()} Divine Light</div></div>
-        </div>
+        <>
+          <div
+            className="shatter-title-text"
+            style={{
+              position: 'absolute', top: '50%', left: '50%', zIndex: 2,
+              fontFamily: uiTypography.display, fontSize: 76, fontWeight: 900,
+              color: '#0c0a06', letterSpacing: 4,
+              textShadow: '0 0 22px rgba(214,162,94,0.55), 0 0 46px rgba(214,162,94,0.3)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {sequence.kind === 'ain' ? 'Ain Attack!!' : sequence.kind === 'soph' ? 'Soph Attack!!' : 'Bridged!!'}
+          </div>
+          <div style={{
+            position: 'absolute', top: 'calc(50% + 64px)', left: '50%', zIndex: 2,
+            transform: 'translateX(-50%)', fontFamily: uiTypography.display,
+            fontSize: 20, color: '#4a3418', letterSpacing: 1.5, whiteSpace: 'nowrap',
+          }}>
+            ×{sequence.multiplier.toFixed(1).replace('.0', '')} · +{sequence.payout.toLocaleString()} Divine Light
+          </div>
+        </>
       )}
 
-      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: bridge ? '#000' : '#fff', opacity: washOpacity, transition: 'opacity 80ms linear' }} />
+      <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: bridge ? '#000' : '#fff', opacity: washOpacity, transition: 'opacity 80ms linear' }} />
     </div>
   );
 }

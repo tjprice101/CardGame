@@ -53,11 +53,11 @@ describe('attack star sequences', () => {
     useStore.getState().tickAttackSequence(priming.phaseEndsAt + 1);
     useStore.getState().registerAttackSequenceStarHit(0);
     useStore.getState().registerAttackSequenceStarHit(1);
+    expect(useStore.getState().turn.attackSequence?.phase).toBe('active');
     useStore.getState().registerAttackSequenceStarHit(2);
-    const active = useStore.getState().turn.attackSequence!;
-    useStore.getState().tickAttackSequence(active.phaseEndsAt + 1);
 
     const result = useStore.getState().turn.attackSequence!;
+    expect(result.phase).toBe('result');
     expect(result.multiplier).toBe(4);
     expect(result.payout).toBe(result.basePayout * 4);
     expect(useStore.getState().turn.divineLightEarnedThisTurn - before).toBe(result.payout);

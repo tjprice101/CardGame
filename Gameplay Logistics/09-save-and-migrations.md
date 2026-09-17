@@ -14,6 +14,8 @@ Ain Soph Aur cards belong in `deck.extraDeck`; save cleanup and runtime invarian
 
 Board, hand, pending effects, and mulligan selection are ephemeral. Materialized ability loadouts, ability cooldown timestamps, and Divine Field expiration are persisted runtime state and must survive End Turn and save/load. Migration/sanitization may clear other active turn state to a safe idle state.
 
+Garden material progress includes the Neutrality currencies plus `seedOfCausality`, `causalBloom`, `shatteredCausalTranscript`, and `heartOfCausality`. Missing values from older saves must normalize to zero before dungeon rewards or Infinite crafting mutate them. `turn.attackSequence` is ephemeral and should never be resumed from an untrusted interrupted save.
+
 ## Migration Rules
 
 - Treat old fields as optional.

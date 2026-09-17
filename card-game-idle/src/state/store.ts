@@ -2638,13 +2638,17 @@ export const useStore = create<Store>()(
     },
 
     registerAttackSequenceStarHit: (starId) => {
+      let completed = false;
       set(s => {
         const sequence = s.turn.attackSequence;
         if (!sequence || sequence.phase !== 'active' || sequence.clickedStarIds.includes(starId)) return;
         if (!sequence.stars.some(star => star.id === starId)) return;
         if (sequence.kind === 'bridge' && starId !== sequence.clickedStarIds.length) return;
         sequence.clickedStarIds.push(starId);
+        completed = sequence.clickedStarIds.length === sequence.stars.length;
+        if (completed) sequence.phaseEndsAt = Date.now();
       });
+      if (completed) get().tickAttackSequence(Date.now());
     },
 
     tickAttackSequence: (nowMs = Date.now()) => {

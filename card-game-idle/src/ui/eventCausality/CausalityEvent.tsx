@@ -73,7 +73,7 @@ export default function CausalityEvent({ onClose, onCardStore, onEternitysWake }
   const eventCountdown = formatCountdown(getCausalityEventCountdown(nowMs));
 
   const causalityPack = PACK_DEFINITIONS.find(p => p.id === 'pack-causality');
-  const causalityBosses = BOSS_DEFINITIONS.filter(_b => false);
+  const causalityBosses = BOSS_DEFINITIONS.filter(boss => boss.category === 'Causality');
 
   return (
     <div style={{ ...overlay, background: C.background }}>

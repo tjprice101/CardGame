@@ -158,6 +158,14 @@ function OverviewBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Attack Star Sequences</div>
+        <ListItem label="Ain Attack">The screen fades to black. Click three card-specific gold-to-white stars within 3 seconds for ×2, ×3, or ×4 attack payout.</ListItem>
+        <ListItem label="Soph Attack">The attacking card floats at center while five card-specific stars appear. Click them within 4 seconds for ×1.5 through ×5.5.</ListItem>
+        <ListItem label="Bridge the Light">The screen fades to white. Follow the red-pink path through an ordered white-and-black constellation; correct hits use the Soph multiplier ladder.</ListItem>
+        <ListItem label="Stable layouts">Every copy of the same card uses the same stars for that attack, while different cards and attack modes use different layouts.</ListItem>
+      </div>
+
+      <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Quick Keys</div>
         <div style={bodyTextStyle}>
           <Tag>?</Tag> opens this tutorial. <Tag>Esc</Tag> closes the topmost menu. <Tag>E</Tag> swaps your
@@ -415,7 +423,12 @@ function ModesBody() {
         <ListItem label="Format">One boss per session, 3-minute timer, single turn. All Divine Light you generate is dealt as damage instead of banked.</ListItem>
         <ListItem label="Categories">Bosses are organized by set &mdash; Neutrality, Pyroabyss, Heavenly Light, Thornbound Plains, and so on. Use the tab strip at the top of the Wake menu to switch.</ListItem>
         <ListItem label="Rewards">First clear and repeat clears grant Aberrated Shards and the boss's signature Eternal card. Aberrated Shards are reserved for event Packs, Boxes, and Cases.</ListItem>
+        <ListItem label="Causality Wake">The Causality filter contains five endgame-heavy bosses, each with a unique Causality Eternal reward.</ListItem>
         <ListItem label="Tier Progress">On completion, this mode awards +X <Tag>Card-light</Tag> for each card in your deck (and Extra Deck). Higher-tier bosses give more, up to 20 Card-light per card. The displayed amount is the base; each card also receives an extra +5% per Tier it has already reached.</ListItem>
+      </div>
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Rift of Causality</div>
+        <div style={bodyTextStyle}>The Causality Garden filter opens a four-encounter endgame expedition. Its rewards are Seed of Causality, Causal Bloom, Shattered Causal Transcript, and Heart of Causality. These materials combine only with Causality Eternal cards to forge five Causality Infinite cards.</div>
       </div>
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>

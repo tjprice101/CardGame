@@ -24,7 +24,9 @@ These are explanatory documents, not runtime source files. When behavior changes
 
 - Causality is now treated as a coherent `Limitless Cosmos` engine: cards are authored to generate, convert, hold, and spend Cosmos in a beneficial loop, with the deck encouraging conversion from Limitless Light into stronger ongoing utility and Divine Light payoffs.
 - Enigma tracking was corrected to use actual condition checks instead of generic board presence or lifetime counters. This applies to Neutrality and Causality enigmas alike.
-- `Shatter the Infinite Light` now fades fully to black before revealing a detailed 10-second starfield. Its payout, board/hand wipe, no-redraw aftermath, timer pause, and boss stagger behavior are documented in guides 07 and 08.
+- Ain, Soph, and Bridge attacks now use deterministic card-specific star sequences with delayed store-owned payout; Shatter uses its existing 10-second starfield. Their timers, multipliers, fades, and pause rules are documented in guides 07 and 08.
+- Shatter now preserves the hand, returns front cards to the Extra Deck, and returns back-row/discard cards to the draw pile while retaining boss stagger and clock restoration.
+- Causality endgame now includes five Wake bosses/Eternal rewards, five playable Infinite recipes, and Rift of Causality with four materials. Art prompts and final replacement filenames are in `Midjourney Art/Causality Endgame Expansion Prompts.md`.
 - Live card appearance is unified through `getLiveCardFaceBackgroundStyle` and `getLiveCardShimmerClassName`: hand and board use identical art/foil composition, live foils use one lightweight shimmer, and face-down cards show only their backing plus state badges.
 - Collection Power uses `1 + Resonance / 1000`, is applied once, and has a registry-derived natural maximum that rises automatically as cards are added.
 - The main menu now uses a responsive Play / Collection / Progress Command Deck with a single contextual art banner instead of presenting every destination at once.

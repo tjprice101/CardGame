@@ -57,7 +57,9 @@ Summoning requires:
 
 Materials are consumed only after validation succeeds. Every successful summon grants +1 Limitless Light Stack. On-summon effects grant Divine Light through the central grant path.
 
-Bridge the Light uses `activateAsaBridge`, applies optional stack costs, computes triune scaling, grants Divine Light, and starts cooldown.
+Bridge the Light uses `activateAsaBridge` to validate and reserve optional stack costs and compute triune scaling. The resulting `attackSequence` grants Divine Light and starts cooldown only after the ordered constellation resolves.
+
+Attack actions now reserve costs and create `turn.attackSequence`; payout and cooldown are committed only when the sequence reaches result. `AttackSequenceOverlay` owns presentation while `registerAttackSequenceStarHit` and `tickAttackSequence` revalidate star IDs/order and resolve the award once.
 
 ## Shatter The Infinite Light Lifecycle
 
@@ -69,7 +71,7 @@ Bridge the Light uses `activateAsaBridge`, applies optional stack costs, compute
 2. `active`: a 10-second starfield window accepts clicks. Each successful click adds one Limitless Infinity stack.
 3. `result`: each stack grants 1,000 base Divine Light through the central Collection Power-scaled grant path, followed by a 2.6-second result reveal.
 
-All gameplay mutations and encounter timers pause while the sequence is active. Resolution moves every field card and the entire hand to discard, reshuffles discard into the draw pile, clears Light Stacks and board effects, and resets cards played this turn. It does not advance the turn, open a mulligan, or draw a replacement hand. In boss encounters it also triggers a stagger and restores the full encounter duration; in Battleground it restores the timer to 180 seconds.
+All gameplay mutations and encounter timers pause while the sequence is active. Resolution returns front-row Ain Soph Aur to the Extra Deck, returns back-row and discarded cards to the shuffled draw pile, preserves the hand, clears Light Stacks and board effects, and resets cards played this turn. It does not advance the turn or open a mulligan. In boss encounters it also triggers a stagger and restores the full encounter duration; in Battleground it restores the timer to 180 seconds.
 
 ## Force Removal
 
