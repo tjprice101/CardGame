@@ -584,7 +584,7 @@ export default function CollectionViewer({ onClose }: Props) {
       </div>
 
       {/* Card grid */}
-      <div style={{ flex: 1, position: 'relative' }}>
+      <div style={{ flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden' }}>
         {filtered.length === 0 && (
           <div style={{
             position: 'absolute',
@@ -609,7 +609,7 @@ export default function CollectionViewer({ onClose }: Props) {
           topPadding={20}
           bottomPadding={24}
           viewportRef={gridViewportRef}
-          style={{ height: '100%' }}
+          style={{ height: '100%', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}
           renderItem={(row) => {
             if (row.kind === 'heading') {
               return (

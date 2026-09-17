@@ -64,4 +64,10 @@ describe('live card face rendering', () => {
       expect(source, relativePath).not.toContain('holofoil-live-card');
     }
   });
+
+  it('keeps the Collection virtual list inside a bounded wheelable flex viewport', () => {
+    const collectionSource = readFileSync(collectionPath, 'utf8');
+    expect(collectionSource).toContain("flex: 1, minHeight: 0, position: 'relative', overflow: 'hidden'");
+    expect(collectionSource).toContain("style={{ height: '100%', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}");
+  });
 });

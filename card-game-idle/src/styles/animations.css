@@ -643,14 +643,12 @@ select {
   animation: gamePatternDrift 42s linear infinite;
 }
 
-/* Live turn cards use one transform-only foil pass. Menu cards keep the richer
-   multi-layer treatment where many simultaneous repaints are less costly. */
-@keyframes liveCardShimmerSweep {
-  0%   { transform: translate3d(0, 0, 0) rotate(11deg); opacity: 0; }
-  16%  { opacity: 0.38; }
-  52%  { opacity: 0.58; }
-  84%  { opacity: 0.38; }
-  100% { transform: translate3d(270%, 0, 0) rotate(11deg); opacity: 0; }
+/* One canonical animated foil field. The moving layer covers the whole face;
+   there is intentionally no generic white diagonal beam. */
+@keyframes liveCardFoilField {
+  0% { background-position: 0% 0%, 100% 0%, 0% 50%; transform: scale(1.02) rotate(-1deg); }
+  50% { background-position: 100% 52%, 0% 48%, 55% 100%; transform: scale(1.08) rotate(1deg); }
+  100% { background-position: 0% 100%, 100% 100%, 100% 40%; transform: scale(1.02) rotate(-1deg); }
 }
 .live-card-shimmer {
   isolation: isolate;
@@ -659,26 +657,37 @@ select {
   content: '';
   position: absolute;
   z-index: 3;
-  top: -35%;
-  bottom: -35%;
-  left: -90%;
-  width: 72%;
+  inset: -8%;
   pointer-events: none;
-  opacity: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.12) 34%, rgba(255,255,255,0.78) 50%, rgba(255,255,255,0.12) 66%, transparent 100%);
-  mix-blend-mode: screen;
-  will-change: transform;
-  animation: liveCardShimmerSweep 4.2s ease-in-out infinite;
+  opacity: 0.64;
+  background-image:
+    linear-gradient(122deg, rgba(255,255,255,0.08), rgba(255,255,255,0.42) 28%, rgba(0,0,0,0.5) 47%, rgba(255,255,255,0.08) 64%, rgba(0,0,0,0.52)),
+    radial-gradient(ellipse at 22% 18%, rgba(255,255,255,0.4), rgba(255,255,255,0) 46%),
+    repeating-linear-gradient(148deg, rgba(255,255,255,0) 0 13px, rgba(255,255,255,0.16) 15px 18px, rgba(0,0,0,0.22) 20px 29px);
+  background-size: 220% 220%, 180% 180%, 140% 140%;
+  background-blend-mode: difference, overlay, soft-light;
+  mix-blend-mode: overlay;
+  will-change: background-position, transform;
+  animation: liveCardFoilField 5.8s ease-in-out infinite;
 }
-.live-card-shimmer-eternal::after { background-color: rgba(180, 52, 112, 0.1); }
-.live-card-shimmer-infinite::after { background-color: rgba(190, 220, 255, 0.09); }
-.live-card-shimmer-enigmatic::after { background-color: rgba(255, 205, 74, 0.1); }
-.live-card-shimmer-transcendent::after { background-color: rgba(255, 72, 112, 0.12); }
+.live-card-shimmer-holo::after {
+  background-image: linear-gradient(122deg, rgba(255,255,255,0.3), rgba(8,8,10,0.86) 24%, rgba(190,8,34,0.82) 45%, rgba(0,0,0,0.92) 66%, rgba(255,255,255,0.24)), radial-gradient(ellipse at 20% 18%, rgba(255,255,255,0.45), rgba(184,0,30,0.35) 34%, rgba(0,0,0,0.72) 72%), repeating-linear-gradient(148deg, rgba(255,255,255,0) 0 12px, rgba(255,255,255,0.28) 14px 17px, rgba(150,0,22,0.62) 19px 26px, rgba(0,0,0,0.62) 28px 36px);
+}
+.live-card-shimmer-enigmatic::after {
+  background-image: linear-gradient(122deg, rgba(255,255,255,0.36), rgba(8,8,10,0.82) 25%, rgba(226,166,34,0.88) 46%, rgba(0,0,0,0.9) 67%, rgba(255,255,255,0.28)), radial-gradient(ellipse at 20% 18%, rgba(255,255,255,0.5), rgba(218,163,34,0.4) 34%, rgba(0,0,0,0.72) 72%), repeating-linear-gradient(148deg, rgba(255,255,255,0) 0 12px, rgba(255,231,130,0.3) 14px 17px, rgba(180,125,18,0.6) 19px 26px, rgba(0,0,0,0.62) 28px 36px);
+}
+.live-card-shimmer-eternal::after {
+  background-image: linear-gradient(122deg, rgba(255,210,232,0.22), rgba(22,5,24,0.86) 25%, rgba(174,38,98,0.86) 46%, rgba(40,7,42,0.92) 67%, rgba(236,146,202,0.2)), radial-gradient(ellipse at 20% 18%, rgba(255,184,222,0.4), rgba(146,24,84,0.4) 34%, rgba(16,4,20,0.78) 72%), repeating-linear-gradient(148deg, rgba(255,255,255,0) 0 12px, rgba(255,178,220,0.2) 14px 17px, rgba(128,18,76,0.62) 19px 26px, rgba(20,3,24,0.64) 28px 36px);
+}
+.live-card-shimmer-infinite::after {
+  background-image: linear-gradient(122deg, rgba(255,255,255,0.32), rgba(5,7,12,0.9) 22%, rgba(35,200,220,0.72) 39%, rgba(210,48,180,0.72) 54%, rgba(8,8,14,0.92) 72%, rgba(255,255,255,0.26)), radial-gradient(ellipse at 20% 18%, rgba(255,255,255,0.42), rgba(40,180,224,0.28) 28%, rgba(170,30,180,0.3) 52%, rgba(0,0,0,0.76) 78%), repeating-linear-gradient(148deg, rgba(255,255,255,0) 0 12px, rgba(120,244,255,0.22) 14px 17px, rgba(226,72,194,0.42) 19px 25px, rgba(0,0,0,0.62) 28px 36px);
+}
+.live-card-shimmer-transcendent::after { background-image: linear-gradient(122deg, rgba(255,210,226,0.28), rgba(64,0,22,0.86) 28%, rgba(246,54,112,0.78) 50%, rgba(64,0,22,0.9) 72%, rgba(255,235,242,0.24)), radial-gradient(ellipse at 20% 18%, rgba(255,255,255,0.4), rgba(255,50,110,0.36) 38%, rgba(20,0,8,0.78) 76%), repeating-linear-gradient(148deg, rgba(255,255,255,0) 0 12px, rgba(255,160,192,0.22) 14px 17px, rgba(128,0,38,0.58) 19px 26px, rgba(30,0,12,0.64) 28px 36px); }
 
 @media (prefers-reduced-motion: reduce) {
   .live-card-shimmer::after {
     animation: none !important;
-    opacity: 0.18;
+    opacity: 0.52;
   }
 }
 
