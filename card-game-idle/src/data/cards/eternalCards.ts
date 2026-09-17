@@ -100,5 +100,31 @@ export const eternalCards: CardDefinition[] = [
   light('btei-omniscient-fracture', 'The Fracture of Knowing', 'btei_omniscient_fracture', 980, 1350, 820),
   asa('btei-neutrality-void-throne', 'The Throne of Equilibrium', 'btei_neutrality_void_throne', 2, 1550, 1120),
   light('btei-neutrality-prime-equilibrium', 'The Prime Judge of Silence', 'btei_neutrality_prime_equilibrium', 1050, 1400, 900),
+  {
+    ...light('btei-causality-first-cause', 'The First Cause Unwritten', 'causality_eternal_first_cause', 2200, 3400, 1900),
+    description: 'A pearlescent lawgiver that opens the Cosmos before consequence can answer.',
+    sophPlacementEffects: [{ type: 'cosmos_flat', value: 4 }, { type: 'divine_light_flat', value: 650 }],
+  },
+  {
+    ...light('btei-causality-last-horizon', 'The Last Horizon Remembered', 'causality_eternal_last_horizon', 2600, 3900, 2200),
+    description: 'A chromatic horizon that converts prepared Light into an impossible final archive.',
+    sophPlacementEffects: [{ type: 'conditional', condition: { type: 'light_stacks_gte', value: 3 }, then: [{ type: 'convert_light_to_cosmos', lightCost: 3, cosmosGain: 6 }] }],
+  },
+  {
+    ...dark('btei-causality-ink-sovereign', 'Sovereign Ink of the Black Sun', 'causality_eternal_ink_sovereign', { type: 'conditional', condition: { type: 'cosmos_gte', value: 2 }, then: [{ type: 'consume_cosmos', value: 2 }, { type: 'draw', value: 3 }, { type: 'light_stacks_flat', value: 8 }] }, 'hand'),
+    description: 'Consume 2 Limitless Cosmos to draw 3 cards and gain 8 Limitless Light Stacks, then return this card to hand.',
+    persistent: true, cooldownCardsPlayed: 4,
+  },
+  {
+    ...dark('btei-causality-chromatic-verdict', 'Chromatic Verdict of Elsewhen', 'causality_eternal_chromatic_verdict', { type: 'conditional', condition: { type: 'cosmos_gte', value: 3 }, then: [{ type: 'consume_cosmos', value: 3 }, { type: 'divine_light_flat', value: 7_500 }, { type: 'shuffle_discard' }] }, 'deck'),
+    description: 'Consume 3 Limitless Cosmos for 7,500 base Divine Light and shuffle discard into the deck.',
+  },
+  {
+    ...asa('btei-causality-pearl-engine', 'Pearlescent Engine Beyond Sequence', 'causality_eternal_pearl_engine', 2, 5200, 3100),
+    description: 'Sacrifice The First Cause Unwritten and Sovereign Ink of the Black Sun to summon this chromatic apex.',
+    summonMaterials: [{ definitionIds: ['btei-causality-first-cause'], count: 1 }, { definitionIds: ['btei-causality-ink-sovereign'], count: 1 }],
+    onSummonEffects: [{ type: 'cosmos_flat', value: 5 }, { type: 'divine_light_flat', value: 1_500 }],
+    bridgeAttack: { id: 'btei-causality-pearl-engine:bridge-the-light', name: 'Bridge the Light', description: '5,200 base Divine Light with extreme triune scaling.', baseDivineLight: 5_200, cooldownCards: 3, scaling: { kind: 'triune', amount: 3_100 }, consumesStacks: { kind: 'fixed', value: 5 } },
+  },
 ] as const;
 

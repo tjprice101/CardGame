@@ -39,7 +39,7 @@ function buildSetAnchoredBossHpCurve(bosses: BossBlueprint[]): number[] {
     const setSize = setEnd - cursor + 1;
     const setFirstHp = previousSetFinalHp == null
       ? FIRST_SET_FIRST_BOSS_HP
-      : roundBossHp(previousSetFinalHp * 0.5);
+      : roundBossHp(previousSetFinalHp * (currentCategory === 'Causality' ? 4 : 0.5));
     const setFinalHp = roundBossHp(setFirstHp * SET_FINAL_HP_MULTIPLIER);
 
     const orderedSetIndices = Array.from({ length: setSize }, (_, offset) => cursor + offset)
@@ -117,6 +117,12 @@ const BOSS_BLUEPRINTS: BossBlueprint[] = [
   // Neutrality expansion (5 new)
   createBoss(10, 'boss-neutrality-equilibrium-rex', 'Equilibrium Rex', 'Neutrality', 'btei-neutrality-void-throne', 'Perfect balance weaponized: all extremes collapse into overwhelming force.', 'boss_neutrality_equilibrium_rex'),
   createBoss(11, 'boss-neutrality-prime-judge', 'Prime Judge of Silence', 'Neutrality', 'btei-neutrality-prime-equilibrium', 'The final arbiter of Neutrality, where every action is answered twice.', 'boss_neutrality_prime_judge'),
+
+  createBoss(12, 'boss-causality-first-author', 'The First Author', 'Causality', 'btei-causality-first-cause', 'It writes the cause before the battle can invent an effect.', 'boss_causality_first_author'),
+  createBoss(13, 'boss-causality-meridian-eater', 'The Meridian Eater', 'Causality', 'btei-causality-last-horizon', 'A chromatic beast consuming every horizon that could contain it.', 'boss_causality_meridian_eater'),
+  createBoss(14, 'boss-causality-black-sun-scribe', 'Scribe of the Black Sun', 'Causality', 'btei-causality-ink-sovereign', 'Its ink records defeat across futures the player has not entered yet.', 'boss_causality_black_sun_scribe'),
+  createBoss(15, 'boss-causality-elsewhen-judge', 'The Elsewhen Judge', 'Causality', 'btei-causality-chromatic-verdict', 'Every verdict arrives from a different timeline and all are final.', 'boss_causality_elsewhen_judge'),
+  createBoss(16, 'boss-causality-pearl-core', 'The Pearlescent Core', 'Causality', 'btei-causality-pearl-engine', 'The living event horizon at the heart of every possible manuscript.', 'boss_causality_pearl_core'),
 ];
 
 const BOSS_SCALED_HP_BY_INDEX = buildSetAnchoredBossHpCurve(BOSS_BLUEPRINTS);

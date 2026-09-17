@@ -55,3 +55,11 @@ Enigma progress can complete during a boss run. If a run restores a pre-run prog
 ## Events
 
 Wished Upon A Star event timing is centralized in `src/ui/eventWishedUponAStar/eventTimer.ts`. Keep event timing in one place so tiles and event screens do not disagree.
+
+## Causality Endgame
+
+- Eternity's Wake includes a Causality filter with five endgame bosses. The first exceeds one million HP and the category rises through its own anchored curve.
+- Each boss awards one unique, registered Causality Eternal card.
+- Rift of Causality is a four-encounter Garden dungeon using the same five-minute encounter timer as Valley of Null. Its 80,000 HP opening encounter is four times Valley's final encounter.
+- Rift materials are Seed of Causality (50%), Causal Bloom (40%), Shattered Causal Transcript (30%), and Heart of Causality (10%).
+- Five playable Causality Infinite cards have recipes containing only Causality Eternal rewards and those four Rift materials.

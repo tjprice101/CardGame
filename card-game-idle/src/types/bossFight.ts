@@ -1,6 +1,6 @@
 import type { BoardState, DeckState, ProgressState, SettingsState, TurnState } from './game';
 
-export type BossCategory = 'Neutrality';
+export type BossCategory = 'Neutrality' | 'Causality';
 
 export interface BossDefinition {
   id: string;

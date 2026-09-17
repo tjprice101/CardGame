@@ -17,12 +17,14 @@ This file is the AI-facing project brief. Read it before making design, balance,
 - Ain Soph Aur cards grant +1 Limitless Light Stack plus `onSummonEffects` when summoned, then use `bridgeAttack` for Bridge the Light.
 - Light cards define a distinct `sophPlacementEffects` hook that resolves when placed face-down as Soph.
 - Three owned materialized abilities can be equipped per deck and activated through Ability Amplification: Neutralizing Inferno, Nullified Barricade, and Phantom Matrix.
+- `Card Effects/Causality/Causality Ability Drafts.md` contains three proposed Causality abilities. They remain design-only and must not be exposed by the ability registry, store, deck loadout, or UI until their full implementation is requested and validated.
 - Challenge economy baseline: five daily challenges per rotation total 7,500 base Divine Light, targeting approximately 52,500 across seven daily rotations; four weekly challenges total 100,000 base Divine Light. Collection Power can increase the final paid amount.
 - Four additional Neutrality abilities are available after ownership gates: Null Horizon and Axiomatic Reversal require any Neutrality Eternal; Whiteout Domain and Infinite Accord require any Neutrality Infinite. A deck still equips only three abilities.
 - Premium Light cards use distinct Soph-placement effects, and Eternal ASA cards use exact named-card summon materials. Phantom Matrix is exempt from all ASA materials.
 - Materialized abilities are Neutrality content. The first two additional endgame abilities require any owned Neutrality Eternal card; the next two require any owned Neutrality Infinite card. Other sets must not unlock them accidentally.
 - Garden of Cards and Valley of Null are Neutrality-specific. Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter are Neutrality materials and must not be treated as universal currencies for future sets.
-- Every Divine Light gain, including sacrifices, card effects, on-summon rewards, attacks, Bridge, quests, and pack flow, must route through the central grant path so Collection Power scaling applies consistently.
+- Every Divine Light gain, including sacrifices, card effects, on-summon rewards, attacks, Bridge, quests, and pack flow, must route through the central grant path so Collection Power scaling applies exactly once.
+- Collection Power is `1 + Resonance / 1000`. Its cap is the natural maximum `1 + (registered card count * 320) / 1000`, so registering new cards automatically raises it. Card-light does not directly increase Collection Power; it advances one card toward a Card-born Tier, and Resonance changes only when that tier threshold is crossed.
 - Rarity sources are distinct: Common/Rare/Epic/Legendary from packs, Enigmatic from Enigmas, Eternal from Eternity's Wake, Infinite from Infinitude crafting, Transcendent from Null Raid progression.
 
 ## Latest Iteration Status
@@ -31,8 +33,9 @@ This iteration focused on state consistency, usability, and math correctness aro
 
 - `Limitless Cosmos` is the current Causality turn-scoped resource. Causality cards are designed as a repeatable, beneficial loop: generate Cosmos, convert or bank it, and spend it to amplify utility or Divine Light gain without creating dead or punitive branches.
 - All Causality cards and earned reward cards are intentionally authored around the same loop, and their utility should be readable as a single system instead of isolated one-offs.
-- Card identity is treated as a one-source-of-truth across displays: collection, deck builder, store, pack view, board, and reward UI should all render the same card appearance and same authored text.
-- `Shatter the Light` now fully clears the board at the end of its finisher state, matching the expected wipe behavior, and its active window is tuned to 10 seconds with stars staying visible for a slightly longer duration.
+- Card identity is treated as a one-source-of-truth across displays. Live turn cards use `getLiveCardFaceBackgroundStyle` and `getLiveCardShimmerClassName`; hand and board share identical composed art and foil layers, with one lightweight shimmer animation. Face-down Soph cards render only their backing plus state badges.
+- `Shatter the Infinite Light` fades fully to black for 1.1 seconds before revealing its detailed active starfield. The 10-second click window awards one Limitless Infinity stack per star and 1,000 base Divine Light per stack before Collection Power. Resolution wipes field and hand, reshuffles discard, clears turn resources, does not draw or advance the turn, and staggers active bosses while restoring their clock.
+- The turn HUD stacks Board and Card-born Stacks in one left-side rail. The main menu is a responsive Command Deck organized into Play, Collection, and Progress, with one contextual artwork banner and a reduced set of visible actions.
 - Enigma tracking now evaluates actual turn-scoped conditions instead of false positives from lifetime counters, generic board presence, or stale progress. Neutrality and Causality enigma checks must match the real conditions required by the authored text.
 - Causality enigma rewards were increased to 3 copies per reward entry.
 - Player-facing summary text must remain natural language; do not leak internal tokens like `cosmos_gte` or raw snake_case into the UI.
@@ -82,6 +85,7 @@ Do not add Seraphim, Cherubim, Ophanim, Angel, sequence, or old Patience-system 
 - Hover details belong in the right-rail Card Inspector, not floating over the board or hand.
 - Pack opening starts face-down and waits for individual card clicks, Reveal All/Reveal Best, or Instant. It must never auto-reveal on a timer.
 - Card art should use the shared card-face style: art background plus top ribbon and bottom rules panel. Respect `settings.cardArtDisplay` everywhere a card face is shown.
+- Face-down cards are the exception: show only the canonical card backing and state badges. Do not render front-face ribbons or rules panels on a back face.
 
 ## Effects And Actions
 
@@ -106,6 +110,8 @@ Card and gameplay changes must preserve the executable audits:
 - `FullTurnE2E.test.ts`: turn, mulligan, summon, Bridge, and hand-cap flows.
 - `PackOpeningFlow.test.ts`: live Neutrality pack pool and collection awards.
 - `PackOpeningModalSource.test.ts`: pack modal does not auto-reveal.
+- `CardBackgroundAssetAudit.test.ts` and `LiveCardFaceSource.test.ts`: assets resolve and live hand/board foil composition remains unified.
+- `CardMasteryProgress.test.ts`: Resonance tier crossings, canonical Collection Power scaling, registry-derived maximum, and truthful boss reward previews.
 
 Run focused tests for the touched subsystem first, then `npm run build`, `npm run typecheck:tests`, and `npm test -- --run` when the change crosses card/runtime/UI boundaries.
 

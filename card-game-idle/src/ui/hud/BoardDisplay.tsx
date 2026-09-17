@@ -351,34 +351,6 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
         </div>
       )}
 
-      {canShatterTheInfiniteLight && (
-        <div style={{ marginBottom: 14, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, pointerEvents: 'auto' }}>
-          <button
-            className="attack-embrace-button"
-            onClick={activateShatterTheInfiniteLight}
-            title="Click stars for 10 seconds. Each is worth 1,000 base Divine Light; the field and hand are wiped afterward."
-            style={{
-              padding: '10px 22px',
-              borderRadius: 999,
-              border: '1px solid rgba(255,120,120,0.75)',
-              background: 'linear-gradient(180deg, rgba(28,10,10,0.96), rgba(10,4,6,0.96))',
-              color: '#ffb3a0',
-              fontSize: 13,
-              fontWeight: 'bold',
-              letterSpacing: 1.2,
-              fontFamily: BODY_FONT,
-              cursor: 'pointer',
-              boxShadow: '0 10px 26px rgba(255,80,80,0.28)',
-            }}
-          >
-            Shatter the Infinite Light
-          </button>
-          <div style={{ fontSize: 10, color: 'rgba(255,179,160,0.78)', letterSpacing: 0.4 }}>
-            Click stars for Divine Light, then wipe the field and hand.
-          </div>
-        </div>
-      )}
-
       {asaSummonRequest && (
         <div style={{
           pointerEvents: 'auto', marginBottom: 8, padding: '8px 16px', borderRadius: 10,
@@ -663,12 +635,25 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
         gap: 10,
         marginTop: 'clamp(6px, 1vh, 12px)',
         marginBottom: 2,
-        pointerEvents: 'none',
+        pointerEvents: canShatterTheInfiniteLight ? 'auto' : 'none',
         animation: 'boardZoneEntrance 0.5s ease both',
       }}>
         <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(244,244,248,0.22))' }} />
         <div style={{ fontSize: 8, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(244,244,248,0.55)', fontFamily: BODY_FONT, whiteSpace: 'nowrap' }}>Front Rank</div>
         <div style={{ flex: 2, height: 1, background: 'rgba(244,244,248,0.1)', boxShadow: '0 0 8px rgba(244,244,248,0.06)' }} />
+        {canShatterTheInfiniteLight && (
+          <button
+            className="attack-embrace-button"
+            onClick={activateShatterTheInfiniteLight}
+            title="Click stars for 10 seconds. Front cards return to the Extra Deck; back-row and discard cards return to the draw pile; your hand is kept."
+            style={{
+              padding: '7px 16px', borderRadius: 999, border: '1px solid rgba(255,120,120,0.75)',
+              background: 'linear-gradient(180deg, rgba(28,10,10,0.96), rgba(10,4,6,0.96))', color: '#ffb3a0',
+              fontSize: 10, fontWeight: 'bold', letterSpacing: 1, fontFamily: BODY_FONT, cursor: 'pointer',
+              boxShadow: '0 0 22px rgba(255,80,80,0.32)', whiteSpace: 'nowrap',
+            }}
+          >Shatter the Infinite Light</button>
+        )}
         <div style={{ fontSize: 8, letterSpacing: 4, textTransform: 'uppercase', color: 'rgba(200,160,255,0.65)', fontFamily: BODY_FONT, whiteSpace: 'nowrap' }}>Support</div>
         <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(244,244,248,0.22), transparent)' }} />
       </div>

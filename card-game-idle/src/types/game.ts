@@ -147,6 +147,32 @@ export interface TurnState {
   whiteoutDomainUntil?: number;
   /** Active "Shatter the Infinite Light" board-wipe attack sequence, if any. */
   shatterInfiniteLight?: ShatterInfiniteLightState | null;
+  /** Active interactive attack cutscene for Light attacks or Bridge the Light. */
+  attackSequence?: AttackSequenceState | null;
+}
+
+export type AttackSequenceKind = 'ain' | 'soph' | 'bridge';
+export type AttackSequencePhase = 'priming' | 'active' | 'result';
+
+export interface AttackSequenceStar {
+  id: number;
+  x: number;
+  y: number;
+}
+
+export interface AttackSequenceState {
+  kind: AttackSequenceKind;
+  phase: AttackSequencePhase;
+  phaseEndsAt: number;
+  cardInstanceId: string;
+  cardDefinitionId: string;
+  cardFinish: CardFinish;
+  stars: AttackSequenceStar[];
+  clickedStarIds: number[];
+  basePayout: number;
+  payout: number;
+  multiplier: number;
+  stackSpend: number;
 }
 
 // ── Shatter the Infinite Light ────────────────────────────────────────────────
@@ -241,6 +267,10 @@ export interface ProgressState {
   nullifiedLattice: number;
   nullSearedLight: number;
   nullifiedOblivionMatter: number;
+  seedOfCausality: number;
+  causalBloom: number;
+  shatteredCausalTranscript: number;
+  heartOfCausality: number;
   /** Total Divine Light ever earned (never decremented when spending). Used for unlock conditions. Save v22. */
   lifetimeDivineLight?: number;
   /** Highest Divine Light earned in a single turn. Used for Oblivion-Touched unlock. Save v22. */

@@ -61,6 +61,11 @@ const BOSS_ART_FILES: Record<string, { folder: string; file: string }> = {
   boss_neutrality_equilibrium_rex: { folder: 'neutrality', file: 'Equilibrium Rex Boss Art.png' },
   boss_neutrality_axiom_maw: { folder: 'neutrality', file: 'Axiom Maw.png' },
   boss_neutrality_prime_judge: { folder: 'neutrality', file: 'Prime Judge of Silence Boss Art.png' },
+  boss_causality_first_author: { folder: 'causality', file: 'The First Author Boss Art.png' },
+  boss_causality_meridian_eater: { folder: 'causality', file: 'The Meridian Eater Boss Art.png' },
+  boss_causality_black_sun_scribe: { folder: 'causality', file: 'Scribe of the Black Sun Boss Art.png' },
+  boss_causality_elsewhen_judge: { folder: 'causality', file: 'The Elsewhen Judge Boss Art.png' },
+  boss_causality_pearl_core: { folder: 'causality', file: 'The Pearlescent Core Boss Art.png' },
 };
 
 function getBossArtUrl(keyArt: string): string | null {
@@ -71,8 +76,8 @@ function getBossArtUrl(keyArt: string): string | null {
   return artData ? `${BOSS_ART_ROOT}/${artData.folder}/${encodeURI(artData.file)}` : null;
 }
 
-function mapPackToBossCategory(_packId: string, _packElement: string): BossCategory {
-  return 'Neutrality';
+function mapPackToBossCategory(packId: string, packElement: string): BossCategory {
+  return packId === 'pack-causality' || packElement === 'Causality' ? 'Causality' : 'Neutrality';
 }
 
 const PACK_BY_ID = new Map(PACK_DEFINITIONS.map(pack => [pack.id, pack] as const));

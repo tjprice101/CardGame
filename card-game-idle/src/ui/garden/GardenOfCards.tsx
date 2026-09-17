@@ -14,8 +14,10 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const resolveGardenEncounter = useStore(state => state.resolveGardenEncounter);
   const exitGardenDungeon = useStore(state => state.exitGardenDungeon);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [category, setCategory] = useState<'Neutrality' | 'Causality'>('Neutrality');
   const [showInventory, setShowInventory] = useState(false);
-  const selected = GARDEN_DUNGEONS[selectedIndex] ?? GARDEN_DUNGEONS[0];
+  const visibleDungeons = GARDEN_DUNGEONS.filter(dungeon => dungeon.category === category);
+  const selected = visibleDungeons[selectedIndex] ?? visibleDungeons[0] ?? GARDEN_DUNGEONS[0];
   const activeDungeon = dungeonState.dungeonId ? GARDEN_DUNGEONS.find(dungeon => dungeon.id === dungeonState.dungeonId) : null;
   const activeEncounter = activeDungeon?.encounters[dungeonState.encounterIndex];
   const minutes = Math.floor(dungeonState.timeRemainingSeconds / 60);
@@ -32,7 +34,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   }, [progress]);
 
   const move = (direction: number) => {
-    const next = (selectedIndex + direction + GARDEN_DUNGEONS.length) % GARDEN_DUNGEONS.length;
+    const next = (selectedIndex + direction + visibleDungeons.length) % visibleDungeons.length;
     setSelectedIndex(next);
   };
 
@@ -172,6 +174,9 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
         ) : (
           /* Split Dungeon View */
           <>
+            <div style={{ position: 'absolute', top: 76, left: 32, display: 'flex', gap: 6, zIndex: 2 }}>
+              {(['Neutrality', 'Causality'] as const).map(value => <button key={value} className="menu-tactile-btn" onClick={() => { setCategory(value); setSelectedIndex(0); }} style={{ padding: '6px 12px', borderRadius: 999, border: `1px solid ${category === value ? '#fff' : 'rgba(255,255,255,0.25)'}`, background: category === value ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.25)', color: '#fff', cursor: 'pointer' }}>{value}</button>)}
+            </div>
             {/* Left Column: Dungeon Cover Card & Selector */}
             <div style={{ width: 'min(440px, 38vw)', display: 'flex', flexDirection: 'column', gap: 14, flexShrink: 0 }}>
               {/* Cover Card */}

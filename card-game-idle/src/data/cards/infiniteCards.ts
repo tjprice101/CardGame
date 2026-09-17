@@ -1,11 +1,12 @@
 import type { LegacyCosmeticCard } from '@/data/cards/eternalCards';
+import type { GardenRewardCurrency } from '@/types/dungeons';
 
 // Combination recipe system
 // Each Infinite card is forged by consuming exact copies of specific Eternal cards.
 
 export interface InfiniteIngredient {
   definitionId?: string; // Eternal card definitionId to consume
-  currency?: 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter';
+  currency?: GardenRewardCurrency;
   count: number;        // how many copies to consume
 }
 
@@ -26,6 +27,11 @@ export const infiniteCards: LegacyCosmeticCard[] = [
   { definitionId: 'inf-annihilation-field', rarity: 'Infinite', name: 'The Garden of Annihilation', description: 'On play: All Seraphim on board gain Patience; Shuffle discard into deck.', artKey: 'inf_annihilation_field' },
   { definitionId: 'inf-sovereign-void', rarity: 'Infinite', name: 'The Sovereign Veil', description: 'An Infinite card forged through the Infinity menu.', artKey: 'inf_sovereign_void' },
   { definitionId: 'inf-eternity-rupture', rarity: 'Infinite', name: 'The Rift of Outer Silence', description: 'On summon: All Seraphim gain Patience; shuffle the discard into the deck.', artKey: 'inf_eternity_rupture' },
+  { definitionId: 'inf-causality-origin-script', rarity: 'Infinite', name: 'Origin Script of Every Tomorrow', description: 'Generate an immense Cosmos reserve.', artKey: 'inf_causality_origin_script' },
+  { definitionId: 'inf-causality-chromatic-horizon', rarity: 'Infinite', name: 'Chromatic Horizon Without End', description: 'Convert Light into an endless event horizon.', artKey: 'inf_causality_chromatic_horizon' },
+  { definitionId: 'inf-causality-law-eater', rarity: 'Infinite', name: 'Law-Eater of the Pearl Void', description: 'Consume Cosmos for an overwhelming utility burst.', artKey: 'inf_causality_law_eater' },
+  { definitionId: 'inf-causality-archive-reborn', rarity: 'Infinite', name: 'Archive Reborn in Chromatic Ink', description: 'Rewrite every card family from the archive.', artKey: 'inf_causality_archive_reborn' },
+  { definitionId: 'inf-causality-heart-beyond-all', rarity: 'Infinite', name: 'Heart Beyond All Causality', description: 'Bridge every possible future at once.', artKey: 'inf_causality_heart_beyond_all' },
 ];
 
 // Combination recipes
@@ -122,7 +128,15 @@ const MATERIAL_COSTS = [
   { nullifiedLattice: 52, nullSearedLight: 26, nullifiedOblivionMatter: 6 },
 ] as const;
 
-export const INFINITE_RECIPES: InfiniteRecipe[] = BASE_INFINITE_RECIPES.map((recipe, index) => {
+const CAUSALITY_INFINITE_RECIPES: InfiniteRecipe[] = [
+  { resultId: 'inf-causality-origin-script', lore: 'The first cause survives every revision.', ingredients: [{ definitionId: 'btei-causality-first-cause', count: 2 }, { definitionId: 'btei-causality-ink-sovereign', count: 1 }, { currency: 'seedOfCausality', count: 24 }, { currency: 'causalBloom', count: 12 }] },
+  { resultId: 'inf-causality-chromatic-horizon', lore: 'A horizon refracted through futures too numerous to name.', ingredients: [{ definitionId: 'btei-causality-last-horizon', count: 2 }, { definitionId: 'btei-causality-chromatic-verdict', count: 1 }, { currency: 'causalBloom', count: 18 }, { currency: 'shatteredCausalTranscript', count: 8 }] },
+  { resultId: 'inf-causality-law-eater', lore: 'It consumes the law and leaves only the exception.', ingredients: [{ definitionId: 'btei-causality-ink-sovereign', count: 2 }, { definitionId: 'btei-causality-first-cause', count: 1 }, { currency: 'seedOfCausality', count: 30 }, { currency: 'heartOfCausality', count: 2 }] },
+  { resultId: 'inf-causality-archive-reborn', lore: 'Every discarded future returns in chromatic ink.', ingredients: [{ definitionId: 'btei-causality-chromatic-verdict', count: 2 }, { definitionId: 'btei-causality-last-horizon', count: 1 }, { currency: 'shatteredCausalTranscript', count: 12 }, { currency: 'heartOfCausality', count: 2 }] },
+  { resultId: 'inf-causality-heart-beyond-all', lore: 'At the center of the rift, every cause has the same heart.', ingredients: [{ definitionId: 'btei-causality-pearl-engine', count: 2 }, { definitionId: 'btei-causality-first-cause', count: 1 }, { definitionId: 'btei-causality-last-horizon', count: 1 }, { currency: 'seedOfCausality', count: 40 }, { currency: 'causalBloom', count: 24 }, { currency: 'shatteredCausalTranscript', count: 16 }, { currency: 'heartOfCausality', count: 5 }] },
+];
+
+const NEUTRALITY_INFINITE_RECIPES: InfiniteRecipe[] = BASE_INFINITE_RECIPES.map((recipe, index) => {
   const eternal = recipe.ingredients.find(ingredient => ingredient.definitionId);
   const materials = MATERIAL_COSTS[index] ?? MATERIAL_COSTS[MATERIAL_COSTS.length - 1];
   return {
@@ -135,3 +149,5 @@ export const INFINITE_RECIPES: InfiniteRecipe[] = BASE_INFINITE_RECIPES.map((rec
     ],
   };
 });
+
+export const INFINITE_RECIPES: InfiniteRecipe[] = [...NEUTRALITY_INFINITE_RECIPES, ...CAUSALITY_INFINITE_RECIPES];

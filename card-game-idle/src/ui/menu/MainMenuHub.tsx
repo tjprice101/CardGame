@@ -58,6 +58,26 @@ interface MenuAction {
 
 const menuAsset = (relativePath: string): string => `${import.meta.env.BASE_URL}assets/${relativePath.split('/').map(encodeURIComponent).join('/')}`;
 
+const MAIN_MENU_BANNER_ART = {
+  beginTurn: menuAsset('menu-banners/begin-turn.png'),
+  eternitysWake: menuAsset('menu-banners/eternitys-wake.png'),
+  cardBoundCoop: menuAsset('menu-banners/card-bound-coop.png'),
+  gardenOfCards: menuAsset('menu-banners/garden-of-cards.png'),
+  ascension: menuAsset('menu-banners/ascension.png'),
+  cardStore: menuAsset('menu-banners/card-store.png'),
+  deckBuilder: menuAsset('menu-banners/deck-builder.png'),
+  deckViewer: menuAsset('menu-banners/deck-viewer.png'),
+  infinitude: menuAsset('InfiniteCardsMenuArt.png'),
+  fracture: menuAsset('menu-banners/fracture.png'),
+  challenges: menuAsset('menu-banners/challenges.png'),
+  achievements: menuAsset('menu-banners/achievements.png'),
+  cardMastery: menuAsset('menu-banners/card-mastery.png'),
+  enigma: menuAsset('menu-banners/enigma.png'),
+  playerProfileFallback: menuAsset('menu-banners/player-profile.png'),
+  howToPlay: menuAsset('menu-banners/how-to-play.png'),
+  causalityEvent: menuAsset('event-art/causality/Causality BANNER.png'),
+} as const;
+
 /**
  * Daily atmosphere quote — refreshes by date so the same line lasts a day
  * but the screen still feels alive across sessions. Single source of truth
@@ -454,91 +474,91 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         id: 'begin-turn', label: 'Begin Turn', eyebrow: 'Active Deck', icon: '▶',
         caption: canBeginTurn ? 'Take your current deck into the arena.' : 'Build a valid deck before entering the arena.',
         status: canBeginTurn ? `${deck.deckList.reduce((sum, entry) => sum + entry.copies, 0)} cards ready` : 'Deck required',
-        art: mainMenuBackground.imageUrl, onClick: props.onBeginTurn, disabled: !canBeginTurn, tone: 'primary',
+        art: MAIN_MENU_BANNER_ART.beginTurn, onClick: props.onBeginTurn, disabled: !canBeginTurn, tone: 'primary',
       },
       {
         id: 'eternitys-wake', label: t('eternityWake') || "Eternity's Wake", eyebrow: 'Boss Campaign', icon: '✦',
         caption: 'Challenge story bosses and claim their signature Eternal cards.',
         status: eternitysWakeLocked ? `Requires 3 Enigmatic cards · ${uniqueEnigmaticsOwned}/3` : 'Available',
-        art: menuAsset('menu-backgrounds/neutrality eternal card first acquisition splash screen.png'),
+        art: MAIN_MENU_BANNER_ART.eternitysWake,
         onClick: props.onEternitysWake, disabled: eternitysWakeLocked,
       },
       {
         id: 'coop', label: 'Card-bound Co-op', eyebrow: 'Multiplayer', icon: '◇',
         caption: 'Form a party and challenge synchronized boss encounters.', status: 'Online parties',
-        art: menuAsset('card-backgrounds/neutrality/Starbound Null Archangel.png'), onClick: props.onCardBoundCoop,
+        art: MAIN_MENU_BANNER_ART.cardBoundCoop, onClick: props.onCardBoundCoop,
       },
       {
         id: 'garden', label: 'Garden of Cards', eyebrow: 'Expeditions', icon: '⌁',
         caption: 'Enter material expeditions, dungeons, and the Valley of Null.', status: 'Expedition hub',
-        art: menuAsset('dungeons/garden-archive.png'), onClick: props.onBattleground, tone: 'primary',
+        art: MAIN_MENU_BANNER_ART.gardenOfCards, onClick: props.onBattleground, tone: 'primary',
       },
       {
         id: 'ascension', label: 'Ascension', eyebrow: 'Endgame', icon: '△',
         caption: 'Face high-tier trials and pursue Transcendent rewards.',
         status: ascensionLocked ? `Requires 5 Infinite cards · ${ownedByRarity.Infinite}/5` : 'Available',
-        art: menuAsset('pack-art/ascension-imports/event-horizon-arbiter.png'), onClick: props.onAscension, disabled: ascensionLocked,
+        art: MAIN_MENU_BANNER_ART.ascension, onClick: props.onAscension, disabled: ascensionLocked,
       },
     ],
     collection: [
       {
         id: 'store', label: t('cardStore') || 'Card Store', eyebrow: 'Acquire', icon: '◇',
         caption: 'Open packs and expand the possibilities of your collection.', status: `${shards.toLocaleString()} shards available`,
-        art: menuAsset('pack-art/NeutralityPackArt.png'), onClick: props.onCardStore, tone: 'primary',
+        art: MAIN_MENU_BANNER_ART.cardStore, onClick: props.onCardStore, tone: 'primary',
       },
       {
         id: 'deck-builder', label: noDecklist ? 'Create Deck' : 'Deck Builder', eyebrow: 'Construct', icon: '▤',
         caption: 'Build, tune, analyze, and equip abilities for your active deck.', status: noDecklist ? 'No active deck' : 'Active deck ready',
-        art: menuAsset('card-backgrounds/neutrality/Absolute Archive.png'), onClick: props.onDeckBuilder,
+        art: MAIN_MENU_BANNER_ART.deckBuilder, onClick: props.onDeckBuilder,
       },
       {
         id: 'deck-viewer', label: 'Deck Viewer', eyebrow: 'Archive', icon: '▥',
         caption: 'Browse your complete deck library and saved configurations.', status: `${progress.savedDecks.length} saved deck${progress.savedDecks.length === 1 ? '' : 's'}`,
-        art: menuAsset('card-backgrounds/neutrality/Void Archive.png'), onClick: props.onDeckViewer,
+        art: MAIN_MENU_BANNER_ART.deckViewer, onClick: props.onDeckViewer,
       },
       {
         id: 'infinitude', label: t('infinitude') || 'Infinitude', eyebrow: 'Forge', icon: '∞',
         caption: 'Consume exact Eternal combinations to forge Infinite cards.',
         status: infinitudeLocked ? `Requires 5 Eternal cards · ${ownedByRarity.Eternal}/5` : 'Forge available',
-        art: menuAsset('InfiniteCardsMenuArt.png'), onClick: props.onInfinitude, disabled: infinitudeLocked,
+        art: MAIN_MENU_BANNER_ART.infinitude, onClick: props.onInfinitude, disabled: infinitudeLocked,
       },
       {
         id: 'fracture', label: 'Fracture', eyebrow: 'Refine', icon: '✧',
         caption: 'Convert duplicate cards into focused Card-light progression.', status: 'Resonance fast-track',
-        art: menuAsset('card-backgrounds/neutrality/The Fracture of Knowing.png'), onClick: props.onFracture,
+        art: MAIN_MENU_BANNER_ART.fracture, onClick: props.onFracture,
       },
     ],
     progress: [
       {
         id: 'challenges', label: 'Challenges', eyebrow: 'Daily & Weekly', icon: '✓',
         caption: 'Complete rotating objectives for Divine Light and Shards.', status: 'Live objectives',
-        art: menuAsset('card-backgrounds/neutrality/Measured Path.png'), onClick: props.onQuests,
+        art: MAIN_MENU_BANNER_ART.challenges, onClick: props.onQuests,
       },
       {
         id: 'achievements', label: 'Achievements', eyebrow: 'Milestones', icon: '◆',
         caption: 'Review permanent milestones and claim earned rewards.', status: 'Account progression',
-        art: menuAsset('card-backgrounds/neutrality/Crown of Morning.png'), onClick: props.onAchievements,
+        art: MAIN_MENU_BANNER_ART.achievements, onClick: props.onAchievements,
       },
       {
         id: 'mastery', label: 'Card Mastery', eyebrow: 'Card-born Tier', icon: '✦',
         caption: 'Track Card-light, tier milestones, Resonance, and Collection Power.', status: 'Permanent power',
-        art: menuAsset('card-backgrounds/neutrality/Measure of Dawn.png'), onClick: props.onMastery,
+        art: MAIN_MENU_BANNER_ART.cardMastery, onClick: props.onMastery,
       },
       {
         id: 'enigma', label: 'Enigma', eyebrow: 'Hidden Manuscripts', icon: '◈',
         caption: 'Discover manuscripts and complete their concealed trials.',
         status: enigmaLocked ? `Open card packs · ${totalPacksOpened}/10` : 'Manuscripts available',
-        art: menuAsset('card-backgrounds/neutrality/Enigmatic Card Backing.png'), onClick: props.onEnigma, disabled: enigmaLocked,
+        art: MAIN_MENU_BANNER_ART.enigma, onClick: props.onEnigma, disabled: enigmaLocked,
       },
       {
         id: 'profile', label: 'Player Profile', eyebrow: 'Identity', icon: '◎',
         caption: 'Manage your profile, social presence, save, and visual themes.', status: titleBadge?.text ?? 'Wanderer',
-        art: avatar.imageUrl ?? menuAsset('profile-pictures/classic-acolyte.png'), onClick: props.onPlayerInfo,
+        art: avatar.imageUrl ?? MAIN_MENU_BANNER_ART.playerProfileFallback, onClick: props.onPlayerInfo,
       },
       {
         id: 'tutorial', label: 'How to Play', eyebrow: 'Reference', icon: '?',
         caption: 'Review controls, card systems, combat, and progression rules.', status: 'Complete game guide',
-        art: menuAsset('card-backgrounds/neutrality/Axiom Reservoir.png'), onClick: props.onTutorial,
+        art: MAIN_MENU_BANNER_ART.howToPlay, onClick: props.onTutorial,
       },
     ],
   };
@@ -695,7 +715,9 @@ export default function MainMenuHub(props: MainMenuHubProps) {
               padding: '12px 16px 14px',
               borderRadius: 6,
               border: '1px solid rgba(138, 221, 255, 0.72)',
-              background: 'radial-gradient(circle at 12% 0%, rgba(141, 230, 255, 0.28) 0%, rgba(141, 230, 255, 0) 40%), radial-gradient(circle at 86% 110%, rgba(178, 126, 255, 0.3) 0%, rgba(178, 126, 255, 0) 50%), linear-gradient(140deg, rgba(8,14,36,0.95) 0%, rgba(14,10,42,0.95) 52%, rgba(6,10,30,0.98) 100%)',
+              backgroundImage: `linear-gradient(90deg, rgba(8,14,36,0.96) 0%, rgba(8,14,36,0.78) 62%, rgba(8,14,36,0.28) 100%), url("${MAIN_MENU_BANNER_ART.causalityEvent}")`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
               color: '#eef4ff',
               fontFamily: uiTypography.body,
               textAlign: 'left',

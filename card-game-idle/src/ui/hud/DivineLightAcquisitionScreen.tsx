@@ -555,7 +555,7 @@ function AttacksTab() {
           <SourceCard
             icon="↻"
             title="Shatter Aftermath"
-            subtitle="The field and hand move to discard, the discard pile reshuffles into the draw pile, and Light Stacks and board effects clear. The turn does not advance and no replacement hand is drawn. In boss encounters, Shatter also staggers the boss and restores the full encounter clock."
+            subtitle="Front-row Ain Soph Aur return to the Extra Deck; back-row and discarded cards return to the draw pile; your hand is preserved. Light Stacks and board effects clear without advancing the turn. Boss encounters are staggered and regain their full clock."
             accent={C.red}
             tags={['board wipe', 'no turn advance', 'boss stagger']}
           />
@@ -781,7 +781,7 @@ function TipsTab() {
       <TipCard
         rank={6}
         title="Cash Out a Fully Bridged Board"
-        detail="Four front-row Ain Soph Aur plus four back-row cards flipped to Ain unlock Shatter the Infinite Light. Click as many stars as possible, but plan for the field and your hand to be discarded with no replacement draw after the payout."
+        detail="Four front-row Ain Soph Aur plus four back-row cards flipped to Ain unlock Shatter the Infinite Light. Click as many stars as possible; afterward your hand is preserved while field and discard cards return to their decks."
         accent={C.red.fg}
       />
       <TipCard

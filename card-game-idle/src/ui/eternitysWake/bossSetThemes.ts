@@ -55,6 +55,11 @@ export const BOSS_SET_THEMES: Record<BossCategory, BossSetTheme> = {
     text: LIGHT_TEXT,
     textMuted: LIGHT_TEXT_MUTED,
   },
+  'Causality': {
+    background: 'radial-gradient(circle at 72% 12%, rgba(80,240,255,0.22), transparent 38%), radial-gradient(circle at 18% 92%, rgba(255,35,90,0.2), transparent 42%), linear-gradient(180deg, #070611 0%, #16091c 52%, #03050b 100%)',
+    accent: '#68e9ff', accentSoft: '#ff6d9d', pulseInner: 'rgba(104,233,255,1)', pulseOuter: 'rgba(255,49,95,1)',
+    panelBorder: 'rgba(104,233,255,0.55)', panelTint: 'rgba(16,9,28,0.94)', text: '#f4f7ff', textMuted: 'rgba(220,225,244,0.78)',
+  },
 };
 
 

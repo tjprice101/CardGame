@@ -620,6 +620,7 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
 
 const CATEGORY_TITLE_OVERRIDES: Record<BossCategory, { text: string; description: string }> = {
   'Neutrality': { text: 'Arbiter of Neutrality', description: 'Defeat every Neutrality boss in Eternity\'s Wake.' },
+  'Causality': { text: 'Author Beyond Causality', description: 'Defeat every Causality boss in Eternity\'s Wake.' },
 };
 
 function buildCategoryClearTitles(): TitleBadgeDefinition[] {

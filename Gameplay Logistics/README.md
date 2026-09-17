@@ -24,7 +24,11 @@ These are explanatory documents, not runtime source files. When behavior changes
 
 - Causality is now treated as a coherent `Limitless Cosmos` engine: cards are authored to generate, convert, hold, and spend Cosmos in a beneficial loop, with the deck encouraging conversion from Limitless Light into stronger ongoing utility and Divine Light payoffs.
 - Enigma tracking was corrected to use actual condition checks instead of generic board presence or lifetime counters. This applies to Neutrality and Causality enigmas alike.
-- `Shatter the Light` now wipes the board correctly when the finisher resolves, and its active duration was lengthened to 10 seconds with slightly longer star persistence.
-- The card appearance source of truth is now consistent across all display surfaces. Collections, deck builders, pack openings, board placement, and reward screens should all present the same card face and art treatment.
+- `Shatter the Infinite Light` now fades fully to black before revealing a detailed 10-second starfield. Its payout, board/hand wipe, no-redraw aftermath, timer pause, and boss stagger behavior are documented in guides 07 and 08.
+- Live card appearance is unified through `getLiveCardFaceBackgroundStyle` and `getLiveCardShimmerClassName`: hand and board use identical art/foil composition, live foils use one lightweight shimmer, and face-down cards show only their backing plus state badges.
+- Collection Power uses `1 + Resonance / 1000`, is applied once, and has a registry-derived natural maximum that rises automatically as cards are added.
+- The main menu now uses a responsive Play / Collection / Progress Command Deck with a single contextual art banner instead of presenting every destination at once.
+- Board statistics and Card-born Stacks share a flow-positioned left HUD rail so variable panel height cannot create overlap.
+- The three abilities in `Card Effects/Causality/Causality Ability Drafts.md` remain design-only and are not part of the runtime ability registry.
 - Reward copy counts for Causality enigma rewards were increased to 3.
 - The most recent validation pass in the working tree completed with `npm run typecheck:tests`, `npm test -- --run`, and `npm run build` all succeeding.

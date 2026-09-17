@@ -6,7 +6,6 @@ import { SET_ACCENT, SET_LABEL, getCardSetLabel } from '@/data/elements';
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
-  getCardBackgroundUrl,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -32,44 +31,6 @@ import DeckBuilderAnalyzeTab from '@/ui/deck/tabs/DeckBuilderAnalyzeTab';
 // triggers the "getSnapshot should be cached" infinite-render loop.
 const EMPTY_CARD_LOCKS: Readonly<Record<string, number>> = Object.freeze({});
 const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({});
-
-function DeferredCardArt({ src }: { src: string }) {
-  const hostRef = useRef<HTMLDivElement | null>(null);
-  const [shouldLoad, setShouldLoad] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  useEffect(() => {
-    const node = hostRef.current;
-    if (!node || shouldLoad) return;
-    if (typeof IntersectionObserver === 'undefined') {
-      setShouldLoad(true);
-      return;
-    }
-    const observer = new IntersectionObserver((entries) => {
-      if (!entries.some(entry => entry.isIntersecting)) return;
-      setShouldLoad(true);
-      observer.disconnect();
-    }, { rootMargin: '180px' });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [shouldLoad]);
-
-  return (
-    <div ref={hostRef} aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-      {shouldLoad && !failed && (
-        <img
-          src={src}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          fetchPriority="low"
-          onError={() => setFailed(true)}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
-      )}
-    </div>
-  );
-}
 
 const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
@@ -844,8 +805,6 @@ export default function DeckBuilder({ onClose }: Props) {
       ? count < owned && totalForDefinition < cap && extraDeckList.length < EXTRA_DECK_SIZE
       : !(count >= owned || totalForDefinition >= cap);
     const previewText = getCardPreviewLines(def.def, isAngel ? 3 : 2).join(' ');
-    const artUrl = getCardBackgroundUrl(def.def);
-
     return (
       <div key={def.key} style={styles.cardWithMeta}>
         <div
@@ -854,7 +813,7 @@ export default function DeckBuilder({ onClose }: Props) {
             : undefined}
           style={{
             ...styles.card,
-            ...getDenseCardFaceBackgroundStyle(def.def, def.finish, 'front', true),
+            ...getDenseCardFaceBackgroundStyle(def.def, def.finish, 'front'),
             ...(count > 0 ? styles.cardAdded : {}),
             ...((isAngel ? (count === 0 && !canAdd) : !canAdd) ? styles.cardFull : {}),
           }}
@@ -863,7 +822,6 @@ export default function DeckBuilder({ onClose }: Props) {
           onMouseEnter={() => startTooltip(def.def)}
           onMouseLeave={clearTooltip}
         >
-          {artUrl && <DeferredCardArt src={artUrl} />}
           <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={getCardNameRibbonStyle('grid')}>
               <div style={{ ...styles.cardSubtype, color: cardFacePalette.textMuted, fontSize: faceMetrics.typeSize }}>
@@ -1160,7 +1118,6 @@ export default function DeckBuilder({ onClose }: Props) {
               {extraDeckEntries.map(entry => {
                 const def = CardRegistry.get(entry.definitionId);
                 if (!def) return null;
-                const artUrl = getCardBackgroundUrl(def);
                 return (
                   <div
                     key={entry.key}
@@ -1169,21 +1126,11 @@ export default function DeckBuilder({ onClose }: Props) {
                       : undefined}
                     style={{
                       ...styles.extraStripCard,
-                      ...getDenseCardFaceBackgroundStyle(def, entry.finish, 'front', true),
+                      ...getDenseCardFaceBackgroundStyle(def, entry.finish, 'front'),
                     }}
                     title={`${def.name} ×${entry.copies} — click to remove one`}
                     onClick={() => removeCard(entry.definitionId, entry.finish)}
                   >
-                    {artUrl && (
-                      <img
-                        src={artUrl}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        aria-hidden
-                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', zIndex: 0, pointerEvents: 'none' }}
-                      />
-                    )}
                     {entry.copies > 1 && (
                       <div style={{ position: 'absolute', zIndex: 1, bottom: 2, right: 2, fontSize: 9, fontWeight: 'bold', color: '#3a1800', background: '#f8d878', borderRadius: '50%', width: 14, height: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         {entry.copies}

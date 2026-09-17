@@ -288,7 +288,7 @@ function AttacksBody() {
           10-second starfield. Each glowing star clicked creates one <Tag>Limitless Infinity</Tag> stack worth
           1,000 base Divine Light before Collection Power scaling. Gameplay timers pause during the sequence.
         </div>
-        <ListItem label="Aftermath">The field and hand go to discard, the discard pile reshuffles into the draw pile, and Light Stacks and board effects clear. The turn does not advance and no replacement hand is drawn.</ListItem>
+        <ListItem label="Aftermath">Front-row Ain Soph Aur return to the Extra Deck. Back-row and discarded cards return to the draw pile, while your current hand is preserved. Light Stacks and board effects clear without advancing the turn.</ListItem>
         <ListItem label="Boss fights">Shattering immediately staggers the boss and restores the encounter clock to its full duration.</ListItem>
       </div>
     </>
@@ -470,7 +470,7 @@ function CardBornTierBody() {
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Resonance and Collection Power</div>
-        <div style={bodyTextStyle}>Each unique card contributes the Resonance value of its highest reached Tier, regardless of copies owned. Total Resonance determines Collection Power, which amplifies Divine Light gains and contributes to Light attack and Ain Soph Aur Bridge scaling.</div>
+        <div style={bodyTextStyle}>Each unique card contributes the Resonance value of its highest reached Tier, regardless of copies owned. Card-light advances the card toward its next Tier; Resonance increases only when that milestone is crossed. Every 10 Resonance adds +0.01 Collection Power through the formula 1 + Resonance / 1,000. The natural maximum assumes every registered card has reached Infinite Bond, so adding cards to the game automatically raises the cap. Collection Power amplifies Divine Light gains and contributes to Light attack and Ain Soph Aur Bridge scaling.</div>
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Fracture Extra Copies</div>

@@ -1,4 +1,5 @@
-export type GardenRewardCurrency = 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter';
+export type GardenRewardCurrency = 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter'
+  | 'seedOfCausality' | 'causalBloom' | 'shatteredCausalTranscript' | 'heartOfCausality';
 
 export interface GardenEncounterDefinition {
   readonly id: string;
@@ -19,6 +20,7 @@ export interface GardenDungeonDefinition {
   readonly coverArt: string;
   readonly encounters: readonly GardenEncounterDefinition[];
   readonly available: boolean;
+  readonly category: 'Neutrality' | 'Causality';
 }
 
 export interface GardenDungeonState {

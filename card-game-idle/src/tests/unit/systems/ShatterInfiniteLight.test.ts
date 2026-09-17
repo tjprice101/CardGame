@@ -82,12 +82,13 @@ describe('Shatter the Infinite Light', () => {
     expect(useStore.getState().board.backSlots[0]).not.toBeNull();
   });
 
-  it('walks priming -> active -> result, awards payout, wipes the board, and resets the boss encounter', () => {
+  it('walks priming -> active -> result, preserves hand, restores deck zones, and resets the boss encounter', () => {
     resetStore();
     const { frontSlots, backSlots } = buildFullShatterBoard();
     useStore.setState(state => ({
       ...state,
       turn: { ...state.turn, phase: 'playing', cardsPlayedThisTurn: 7, limitlessLightStacks: 12 },
+      deck: { ...state.deck, hand: [{ instanceId: 'kept-hand', definitionId: lightCards[0].definitionId, finish: 'normal' }], discardPile: [{ instanceId: 'old-discard', definitionId: darkCards[0].definitionId, finish: 'normal' }], extraDeck: [] },
       board: { frontSlots: frontSlots as any, backSlots: backSlots as any, activeBoardEffects: [] },
       bossFight: {
         ...state.bossFight,
@@ -132,8 +133,10 @@ describe('Shatter the Infinite Light', () => {
     }
     expect(finalState.board.activeBoardEffects).toEqual([]);
     expect(finalState.deck.discardPile).toEqual([]);
-    expect(finalState.deck.hand).toEqual([]);
-    expect(finalState.deck.drawPile.length).toBe(drawPileBefore + 8);
+    expect(finalState.deck.hand.map(card => card.instanceId)).toEqual(['kept-hand']);
+    expect(finalState.deck.drawPile.length).toBe(drawPileBefore + 5);
+    expect(finalState.deck.extraDeck).toHaveLength(4);
+    expect(finalState.deck.extraDeck.map(card => card.definitionId).sort()).toEqual(frontSlots.map(card => card.definitionId).sort());
     expect(finalState.bossFight.fightTimeRemaining).toBeGreaterThan(4);
     expect(finalState.bossFight.bossCardBreakCount).toBe(1);
   });

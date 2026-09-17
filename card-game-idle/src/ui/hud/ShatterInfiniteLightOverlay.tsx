@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore, selectTurn, selectDivineLight } from '@/state/store';
 import { formatNumber } from '@/utils/bignum';
 import { uiTypography } from '@/ui/theme';
+import { SHATTER_ACTIVE_MS } from '@/systems/cards/ShatterTheInfiniteLight';
 
 const AMBIENT_STAR_COUNT = 120;
 const MAX_CONCURRENT_CLICK_STARS = 9;
@@ -113,6 +114,9 @@ export default function ShatterInfiniteLightOverlay() {
   const backgroundColor = phase === 'result' ? '#f4f2ea' : '#000000';
   const showCounters = phase === 'active' || phase === 'result';
   const showStars = phase === 'active';
+  const activeWashOpacity = phase === 'active'
+    ? Math.min(0.84, (1 - Math.max(0, secondsLeft * 1_000) / SHATTER_ACTIVE_MS) * 0.8)
+    : 0;
 
   return (
     <div
@@ -236,6 +240,10 @@ export default function ShatterInfiniteLightOverlay() {
         >
           +{formatNumber(shatter.payout)} Divine Light
         </div>
+      )}
+
+      {phase === 'active' && (
+        <div aria-hidden style={{ position: 'absolute', inset: 0, background: '#fff', opacity: activeWashOpacity, pointerEvents: 'none', transition: 'opacity 100ms linear' }} />
       )}
     </div>
   );

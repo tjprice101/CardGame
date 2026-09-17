@@ -38,4 +38,7 @@ The application lives in `card-game-idle/`.
 - Card visuals/text: `src/ui/cardBackgrounds.ts`, `src/ui/cardStatSummary.ts`, `src/ui/components/CardRulesDigest.tsx`.
 - Pack issues: `src/data/packs/packDefinitions.ts`, `src/systems/cards/PackSystem.ts`, `src/ui/store/PackOpeningModal.tsx`, store `openPack`/`openBox`/`openCase`.
 - Turn HUD issues: `src/ui/hud/BoardDisplay.tsx`, `HandDisplay.tsx`, `HUD.tsx`, `CardInspectorPanel.tsx`.
+- Turn HUD information rail: `HUD.tsx` flow-stacks `AngelStatPanel` and `CardBornStacksPanel` with a fixed gap; child panels must not independently assign overlapping top/left coordinates.
+- Main-menu navigation: `src/ui/menu/MainMenuHub.tsx` owns the responsive Play / Collection / Progress Command Deck, contextual feature artwork, lock messaging, profile identity, resources, and event banner.
+- Live card rendering: `src/ui/cardBackgrounds.ts` owns `getLiveCardFaceBackgroundStyle` and `getLiveCardShimmerClassName`; all in-turn card surfaces use these instead of composing their own art or foil layers.
 - Save issues: `src/save/SaveManager.ts`.

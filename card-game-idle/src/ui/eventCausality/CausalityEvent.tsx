@@ -198,11 +198,11 @@ export default function CausalityEvent({ onClose, onCardStore, onEternitysWake }
             <div style={{ marginTop: 24, padding: '14px 18px', borderRadius: 10, border: `1px solid ${C.border}`, background: C.panelStrong }}>
               <div style={{ fontSize: 13, fontFamily: uiTypography.display, letterSpacing: 1, color: C.text, marginBottom: 6 }}>Key Synergies</div>
               <ul style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.8, paddingLeft: 20, margin: 0 }}>
-                <li><strong>Early setup cards</strong> should be used to raise Starlight and Dream before you commit your burst pieces.</li>
-                <li><strong>Board passives</strong> that add Starlight per card played are strongest when deployed before long play chains.</li>
-                <li><strong>Dream-preserve effects</strong> enable multi-turn planning by carrying part of your setup into the next turn.</li>
-                <li><strong>Star Crown cards</strong> usually perform best in two phases: bank first, then spend/cash out in a dedicated finish turn.</li>
-                <li><strong>Causality finishers</strong> are most efficient after your board is established and the required Cosmos counters are ready.</li>
+                <li><strong>Light cards</strong> generate Limitless Cosmos directly or convert prepared Limitless Light into a larger Cosmos reserve.</li>
+                <li><strong>Dark cards</strong> consume held Cosmos for Divine Light, draw utility, or renewed Limitless Light Stacks.</li>
+                <li><strong>Ain Soph Aur cards</strong> either extend the conversion line or cash out Cosmos through a stronger board payoff.</li>
+                <li><strong>Sequence deliberately:</strong> build Limitless Light, convert it, then spend Cosmos only after the required condition is secured.</li>
+                <li><strong>Card-born Stacks</strong> are turn-scoped and reset when the turn ends, so unused Cosmos is lost.</li>
                 <li><strong>If a card text conflicts with this guide</strong>, the card text is authoritative and should be treated as the source of truth.</li>
               </ul>
             </div>

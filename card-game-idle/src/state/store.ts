@@ -23,6 +23,7 @@ import { ScoreSystem } from '@/systems/scoring/ScoreSystem';
 import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { accrueSophCharges, AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { canActivateShatterTheInfiniteLight, SHATTER_ACTIVE_MS, SHATTER_PRIME_MS, SHATTER_RESULT_MS } from '@/systems/cards/ShatterTheInfiniteLight';
+import { ATTACK_SEQUENCE_PRIME_MS, ATTACK_SEQUENCE_RESULT_MS, getAttackSequenceDuration, getAttackSequenceMultiplier, getAttackSequenceStars } from '@/systems/cards/AttackSequence';
 import { resolveCardScaling } from '@/systems/cards/CardScaling';
 import { TurnSystem } from '@/systems/cards/TurnSystem';
 import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
@@ -197,6 +198,10 @@ const defaultProgress: ProgressState = {
   nullifiedLattice: 0,
   nullSearedLight: 0,
   nullifiedOblivionMatter: 0,
+  seedOfCausality: 0,
+  causalBloom: 0,
+  shatteredCausalTranscript: 0,
+  heartOfCausality: 0,
   lifetimeDivineLight: 5_000,
   bestSingleTurnDivineLight: 0,
   aberratedShards: 0,
@@ -387,6 +392,8 @@ interface StoreActions {
   activateLightSophAttack: (instanceId: string, spend?: number) => void;
   activateDark: (instanceId: string) => void;
   activateAsaBridge: (instanceId: string, spend?: number) => void;
+  registerAttackSequenceStarHit: (starId: number) => void;
+  tickAttackSequence: (nowMs?: number) => void;
   activateShatterTheInfiniteLight: () => void;
   registerShatterInfinityStarHit: () => void;
   tickShatterInfiniteLight: (nowMs?: number) => void;
@@ -479,7 +486,7 @@ interface StoreActions {
   setActiveEnigma: (enigmaId: string) => void;
   sacrificeEnigmaDivineLight: (enigmaId: string) => boolean;
   purchaseAbility: (abilityId: string) => boolean;
-  grantGardenCurrency: (currency: 'nullifiedLattice' | 'nullSearedLight' | 'nullifiedOblivionMatter', amount?: number) => void;
+  grantGardenCurrency: (currency: import('@/types/dungeons').GardenRewardCurrency, amount?: number) => void;
   startGardenDungeon: (dungeonId: string) => boolean;
   resolveGardenEncounter: () => boolean;
   continueGardenDungeon: () => boolean;
@@ -1652,8 +1659,8 @@ function recordLossEvent(
 
 /**
  * Resolves the aftermath of "Shatter the Infinite Light": clears the sequence,
- * wipes the board and hand exactly like a turn ending (every unit to discard,
- * hand discarded and reshuffled in), resets cooldowns/stacks, and — if a
+ * returns front-row ASA cards to the Extra Deck, returns back-row and discard
+ * cards to the draw pile while preserving the hand, resets cooldowns/stacks, and — if a
  * boss-style encounter is active — immediately staggers it and restores its
  * full clock/duration.
  */
@@ -1665,7 +1672,7 @@ function finishShatterInfiniteLight(s: Store): void {
     const slot = s.board.frontSlots[i];
     if (slot) {
       recordLossEvent(s, [{ definitionId: slot.definitionId }], 'board');
-      s.deck.discardPile.push(toDeckCard(slot));
+      s.deck.extraDeck.push({ definitionId: slot.definitionId, finish: slot.finish });
     }
     (s.board.frontSlots as Array<(typeof s.board.frontSlots)[number]>)[i] = null;
   }
@@ -1673,16 +1680,14 @@ function finishShatterInfiniteLight(s: Store): void {
     const card = s.board.backSlots[i];
     if (!card) continue;
     recordLossEvent(s, [{ definitionId: card.definitionId }], 'board');
-    s.deck.discardPile.push(toDeckCard(card));
+    s.deck.drawPile.push(toDeckCard(card));
     s.board.backSlots[i] = null;
   }
-  recordLossEvent(s, s.deck.hand.map(card => ({ definitionId: card.definitionId })), 'discard');
-  for (const card of s.deck.hand) s.deck.discardPile.push(card);
-  s.deck.hand = [];
   if (s.deck.discardPile.length > 0) {
-    s.deck.drawPile = DeckSystem.reshuffleDiscard(s.deck.drawPile, s.deck.discardPile);
+    s.deck.drawPile.push(...s.deck.discardPile);
     s.deck.discardPile = [];
   }
+  s.deck.drawPile = DeckSystem.shuffle(s.deck.drawPile);
   s.board.activeBoardEffects = [];
   s.turn.limitlessLightStacks = 0;
 
@@ -1700,7 +1705,7 @@ function finishShatterInfiniteLight(s: Store): void {
 }
 
 function endTurnInternal(s: Store): void {
-  if (s.turn.phase !== 'playing' || s.turn.shatterInfiniteLight) return;
+  if (s.turn.phase !== 'playing' || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
   // Boss fights are time-pressure encounters. Outside of active Eternity co-op,
   // manually ending a turn during a fight is an immediate failure.
   if (s.bossFight.mode === 'active') {
@@ -2016,7 +2021,7 @@ export const useStore = create<Store>()(
 
     summonAinSophAur: (definitionId, materialInstanceIds, targetSlot, freeSummon = false) => {
       set(s => {
-        if (s.turn.phase !== 'playing' || s.board.frontSlots[targetSlot] !== null || s.turn.shatterInfiniteLight) return;
+        if (s.turn.phase !== 'playing' || s.board.frontSlots[targetSlot] !== null || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         const def = CardRegistry.get(definitionId);
         if (!def || def.type !== 'AinSophAur') return;
         const uniqueIds = freeSummon ? [] : [...new Set(materialInstanceIds)];
@@ -2349,7 +2354,7 @@ export const useStore = create<Store>()(
     },
     playCard: (instanceId, side = 'soph') => {
       set(s => {
-        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null || s.turn.shatterInfiniteLight) return;
+        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         const deckCard = s.deck.hand.find(c => c.instanceId === instanceId);
         if (!deckCard) return;
         const def = ScoreSystem.getDefinition(deckCard.definitionId);
@@ -2440,7 +2445,7 @@ export const useStore = create<Store>()(
 
     flipSoph: (instanceId, mode) => {
       set(s => {
-        if (s.turn.phase !== 'playing' || s.turn.shatterInfiniteLight) return;
+        if (s.turn.phase !== 'playing' || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         const slotIndex = s.board.backSlots.findIndex(slot => slot?.instanceId === instanceId);
         if (slotIndex === -1) return;
         const slot = s.board.backSlots[slotIndex];
@@ -2488,7 +2493,7 @@ export const useStore = create<Store>()(
 
     activateLightAinAttack: (instanceId) => {
       set(s => {
-        if (s.turn.shatterInfiniteLight) return;
+        if (s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         const slot = s.board.backSlots.find(card => card?.instanceId === instanceId);
         if (!slot || slot.type !== 'Light' || slot.side !== 'ain' || slot.faceState !== 'front') return;
         const def = CardRegistry.get(slot.definitionId);
@@ -2500,16 +2505,19 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        const payout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
-        grantDivineLight(s, payout, def.definitionId);
-        emitQuestProgressToProgress(s.progress, { kind: 'activate_ain_attack', amount: 1 });
-        slot.attackCooldowns[attack.id] = attack.cooldownCards;
+        const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        s.turn.attackSequence = {
+          kind: 'ain', phase: 'priming', phaseEndsAt: Date.now() + ATTACK_SEQUENCE_PRIME_MS,
+          cardInstanceId: slot.instanceId, cardDefinitionId: def.definitionId, cardFinish: slot.finish,
+          stars: getAttackSequenceStars(def.definitionId, 'ain'), clickedStarIds: [],
+          basePayout, payout: 0, multiplier: 1, stackSpend: 0,
+        };
       });
     },
 
     activateLightSophAttack: (instanceId, spend) => {
       set(s => {
-        if (s.turn.shatterInfiniteLight) return;
+        if (s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         const slot = s.board.backSlots.find(card => card?.instanceId === instanceId);
         if (!slot || slot.type !== 'Light' || slot.side !== 'ain' || slot.faceState !== 'front') return;
         const def = CardRegistry.get(slot.definitionId);
@@ -2527,17 +2535,19 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        const payout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
-        grantDivineLight(s, payout, def.definitionId);
-        emitQuestProgressToProgress(s.progress, { kind: 'activate_soph_attack', amount: 1 });
-        emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
-        slot.attackCooldowns[attack.id] = attack.cooldownCards;
+        const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        s.turn.attackSequence = {
+          kind: 'soph', phase: 'priming', phaseEndsAt: Date.now() + ATTACK_SEQUENCE_PRIME_MS,
+          cardInstanceId: slot.instanceId, cardDefinitionId: def.definitionId, cardFinish: slot.finish,
+          stars: getAttackSequenceStars(def.definitionId, 'soph'), clickedStarIds: [],
+          basePayout, payout: 0, multiplier: 1, stackSpend: selectedSpend,
+        };
       });
     },
 
     activateDark: (instanceId) => {
       set(s => {
-        if (s.turn.shatterInfiniteLight) return;
+        if (s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         const slotIndex = s.board.backSlots.findIndex(card => card?.instanceId === instanceId);
         if (slotIndex === -1) return;
         const slot = s.board.backSlots[slotIndex];
@@ -2617,30 +2627,71 @@ export const useStore = create<Store>()(
           asaFrontCount: s.board.frontSlots.filter(card => card?.type === 'AinSophAur').length,
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
-        const payout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
-        grantDivineLight(s, payout, def.definitionId);
-        emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
-        emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: selectedSpend });
-        const surgeblade = s.progress.enigmas.instances['null-surged'];
-        if (surgeblade) {
-          surgeblade.progressCounters ??= {};
-          surgeblade.progressCounters.bridgeAttacks = (surgeblade.progressCounters.bridgeAttacks ?? 0) + 1;
-          syncEnigmaProgressFromBoard(s, false);
+        const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        s.turn.attackSequence = {
+          kind: 'bridge', phase: 'priming', phaseEndsAt: Date.now() + ATTACK_SEQUENCE_PRIME_MS,
+          cardInstanceId: slot.instanceId, cardDefinitionId: def.definitionId, cardFinish: slot.finish,
+          stars: getAttackSequenceStars(def.definitionId, 'bridge'), clickedStarIds: [],
+          basePayout, payout: 0, multiplier: 1, stackSpend: selectedSpend,
+        };
+      });
+    },
+
+    registerAttackSequenceStarHit: (starId) => {
+      set(s => {
+        const sequence = s.turn.attackSequence;
+        if (!sequence || sequence.phase !== 'active' || sequence.clickedStarIds.includes(starId)) return;
+        if (!sequence.stars.some(star => star.id === starId)) return;
+        if (sequence.kind === 'bridge' && starId !== sequence.clickedStarIds.length) return;
+        sequence.clickedStarIds.push(starId);
+      });
+    },
+
+    tickAttackSequence: (nowMs = Date.now()) => {
+      set(s => {
+        const sequence = s.turn.attackSequence;
+        if (!sequence || nowMs < sequence.phaseEndsAt) return;
+        if (sequence.phase === 'priming') {
+          sequence.phase = 'active';
+          sequence.phaseEndsAt = nowMs + getAttackSequenceDuration(sequence.kind);
+          return;
         }
-        if (slot.definitionId.startsWith('ain-soph-aur-causality-')) {
-          const archive = s.progress.enigmas.instances['causality-heavenly-archive'];
-          if (archive?.status === 'acquired') {
-            archive.progressCounters ??= {};
-            archive.progressCounters.bridgeAttacks = (archive.progressCounters.bridgeAttacks ?? 0) + 1;
+        if (sequence.phase === 'active') {
+          sequence.multiplier = getAttackSequenceMultiplier(sequence.kind, sequence.clickedStarIds.length);
+          sequence.payout = Math.round(sequence.basePayout * sequence.multiplier);
+          const frontSlot = s.board.frontSlots.find(card => card?.instanceId === sequence.cardInstanceId);
+          const backSlot = s.board.backSlots.find(card => card?.instanceId === sequence.cardInstanceId);
+          const slot = frontSlot ?? backSlot;
+          const def = CardRegistry.get(sequence.cardDefinitionId);
+          if (slot && def) {
+            const earnedBefore = s.turn.divineLightEarnedThisTurn;
+            grantDivineLight(s, sequence.payout, def.definitionId);
+            sequence.payout = s.turn.divineLightEarnedThisTurn - earnedBefore;
+            if (sequence.kind === 'ain' && def.type === 'Light') {
+              slot.attackCooldowns[def.ainAttack.id] = def.ainAttack.cooldownCards;
+              emitQuestProgressToProgress(s.progress, { kind: 'activate_ain_attack', amount: 1 });
+            } else if (sequence.kind === 'soph' && def.type === 'Light') {
+              slot.attackCooldowns[def.sophAttack.id] = def.sophAttack.cooldownCards;
+              emitQuestProgressToProgress(s.progress, { kind: 'activate_soph_attack', amount: 1 });
+              emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: sequence.stackSpend });
+            } else if (sequence.kind === 'bridge' && def.type === 'AinSophAur' && def.bridgeAttack) {
+              slot.attackCooldowns[def.bridgeAttack.id] = def.bridgeAttack.cooldownCards;
+              emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
+              emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: sequence.stackSpend });
+            }
           }
+          sequence.phase = 'result';
+          sequence.phaseEndsAt = nowMs + ATTACK_SEQUENCE_RESULT_MS;
+          checkBossDefeated(s);
+          return;
         }
-        slot.attackCooldowns[attack.id] = attack.cooldownCards;
+        s.turn.attackSequence = null;
       });
     },
 
     activateShatterTheInfiniteLight: () => {
       set(s => {
-        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null || s.turn.shatterInfiniteLight) return;
+        if (s.turn.phase !== 'playing' || s.turn.pendingEffect !== null || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         if (s.bossFight.mode === 'active' && s.bossFight.kind !== 'normal' && s.bossFight.kind !== 'null_raid') return;
         if (!canActivateShatterTheInfiniteLight(s.board)) return;
         const now = Date.now();
@@ -3568,7 +3619,7 @@ export const useStore = create<Store>()(
     tickGardenDungeonTimer: (deltaSeconds) => {
       if (!Number.isFinite(deltaSeconds) || deltaSeconds <= 0) return;
       set(s => {
-        if (s.gardenDungeon.phase !== 'active' || s.turn.shatterInfiniteLight) return;
+        if (s.gardenDungeon.phase !== 'active' || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         s.gardenDungeon.timeRemainingSeconds = Math.max(0, s.gardenDungeon.timeRemainingSeconds - deltaSeconds);
         if (s.gardenDungeon.timeRemainingSeconds <= 0) {
           s.gardenDungeon.phase = 'defeat';
@@ -3579,7 +3630,7 @@ export const useStore = create<Store>()(
 
     activateAbility: (slot) => {
       const state = get();
-      if (state.turn.phase !== 'playing' || state.turn.pendingEffect) return;
+      if (state.turn.phase !== 'playing' || state.turn.pendingEffect || state.turn.attackSequence) return;
       const activeDeck = state.progress.savedDecks.find(deck => deck.id === state.progress.activeDeckId);
       const abilityId = activeDeck?.abilityLoadout?.[slot];
       const ability = abilityId ? ABILITY_REGISTRY.get(abilityId) : undefined;
@@ -3675,7 +3726,7 @@ export const useStore = create<Store>()(
 
     tickAbilityTimers: (now = Date.now()) => {
       set(s => {
-        if (s.turn.shatterInfiniteLight) return;
+        if (s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         if (s.turn.divineFieldUntil && s.turn.divineFieldUntil <= now) delete s.turn.divineFieldUntil;
         if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil <= now) delete s.turn.whiteoutDomainUntil;
       });
@@ -4024,7 +4075,7 @@ export const useStore = create<Store>()(
 
     tickBattlegroundTimer: (deltaSeconds) => {
       set(s => {
-        if (s.battleground.mode !== 'active' || s.turn.shatterInfiniteLight) return;
+        if (s.battleground.mode !== 'active' || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         const current = s.battleground.timeRemaining;
         if (typeof current !== 'number' || !Number.isFinite(current) || current <= 0) {
           completeBattlegroundFight(s);
@@ -4286,7 +4337,7 @@ export const useStore = create<Store>()(
 
     tickBossTimer: (deltaSeconds) => {
       set(s => {
-        if (s.bossFight.mode !== 'active' || s.turn.shatterInfiniteLight) return;
+        if (s.bossFight.mode !== 'active' || s.turn.shatterInfiniteLight || s.turn.attackSequence) return;
         // Fast-fail: any non-positive or invalid timer should immediately resolve as defeat.
         const current = s.bossFight.fightTimeRemaining;
         if (typeof current !== 'number' || !Number.isFinite(current) || current <= 0) {
@@ -4670,7 +4721,7 @@ export const useStore = create<Store>()(
           if (typeof dl['totalClaims'] !== 'number') dl['totalClaims'] = 0;
         }
         if (!op['ownedAbilities'] || typeof op['ownedAbilities'] !== 'object') op['ownedAbilities'] = {};
-        for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter'] as const) {
+        for (const currency of ['nullifiedLattice', 'nullSearedLight', 'nullifiedOblivionMatter', 'seedOfCausality', 'causalBloom', 'shatteredCausalTranscript', 'heartOfCausality'] as const) {
           if (typeof op[currency] !== 'number' || !Number.isFinite(op[currency]) || op[currency] < 0) op[currency] = 0;
           else op[currency] = Math.floor(op[currency] as number);
         }

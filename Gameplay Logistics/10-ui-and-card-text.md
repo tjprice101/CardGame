@@ -8,12 +8,22 @@ Card art across gameplay, pack opening, pending-choice modals, collection, deck 
 
 - `getCardFaceBackgroundStyle`
 - `getDenseCardFaceBackgroundStyle`
+- `getLiveCardFaceBackgroundStyle`
+- `getLiveCardShimmerClassName`
 - `getCardNameRibbonStyle`
 - `getCardRulesPanelStyle`
 
 Default card presentation is art plus top name/type ribbon plus bottom rules/effect panel. Respect `settings.cardArtDisplay` where the surface is a true card face.
 
-Avoid raw `<img>` overlays that cover holofoil, rarity, ribbon, or rules layers unless the image is explicitly kept behind a positioned content wrapper.
+Live turn surfaces must use the live helpers so hand, board, Battleground, pile inspectors, and pending choices share one composed artwork and rarity treatment. Standard holo, Eternal, Infinite, Enigmatic, and Transcendent cards use one lightweight transform-only shimmer during play; do not restore per-card filter/background-position animation stacks.
+
+Face-down Soph cards render only the canonical card backing plus state badges such as charge. They do not render the front-face name ribbon, effect panel, rarity overlay, or shimmer. Avoid raw `<img>` overlays that create a second artwork layer or sit above foil effects.
+
+## Turn HUD And Main Menu
+
+`HUD.tsx` owns a shared left-side information rail. `AngelStatPanel` and `CardBornStacksPanel` participate in its column layout with a fixed gap; do not give those children independent absolute top positions.
+
+`MainMenuHub.tsx` uses a responsive Command Deck organized into Play, Collection, and Progress. It shows one artwork-backed contextual destination and only the active category's actions. All destinations and lock requirements must remain reachable, and theme colors remain profile-driven.
 
 ## Card Text Pipeline
 

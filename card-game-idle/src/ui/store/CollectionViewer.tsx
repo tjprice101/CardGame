@@ -8,7 +8,6 @@ import { getCardFinishKey, getCardFinishLabel, isHoloOnlyCard } from '@/systems/
 import {
   cardFacePalette,
   getDenseCardFaceBackgroundStyle,
-  getCardBackgroundUrl,
   getCardBackBackgroundStyle,
   getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
@@ -263,9 +262,8 @@ export default function CollectionViewer({ onClose }: Props) {
     const isTranscendent = card.rarity === 'Transcendent';
     const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
     const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
-    const artUrl = owned > 0 ? getCardBackgroundUrl(card) : null;
     const cardSurfaceStyle = owned > 0
-      ? getDenseCardFaceBackgroundStyle(card, finish, 'front', true)
+      ? getDenseCardFaceBackgroundStyle(card, finish, 'front')
       : (isLockedStandardHolo
         ? getLockedHoloCardBackStyle(card)
         : getCardBackBackgroundStyle(card, { dimmed: false }));
@@ -306,7 +304,6 @@ export default function CollectionViewer({ onClose }: Props) {
         }}
         title={owned > 0 ? getCardPreviewLines(card, 4).join('\n') : 'Card not discovered'}
       >
-        {artUrl && <img src={artUrl} alt="" loading="lazy" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
         {isNew && (
           <div style={{
             position: 'absolute',

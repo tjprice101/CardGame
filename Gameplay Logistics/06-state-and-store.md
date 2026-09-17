@@ -48,4 +48,6 @@ Main-deck Light/Dark cards cycle through hand, draw pile, discard pile, and supp
 
 ## Derived State
 
-Use `recompute(s)` after mutations that affect board or progression-derived stats. Collection Power comes from `computeGlobalResonanceScore(progress)` and scales all Divine Light grants through the central grant path.
+Use `recompute(s)` after mutations that affect board or progression-derived stats. Card-light is stored per definition in `progress.cardPlayCounts`; Resonance changes only when that count crosses a Card-born Tier. `computeGlobalResonanceScore(progress)` deliberately recalculates from current counts instead of memoizing by object reference, because mastery awards can mutate the same count record before an immediate recompute.
+
+Collection Power uses `1 + Resonance / 1000` and scales every Divine Light grant exactly once through the central grant path. Its defensive maximum is derived from `CardRegistry.getAll().length * 320`, so the cap expands automatically with the registered card pool.

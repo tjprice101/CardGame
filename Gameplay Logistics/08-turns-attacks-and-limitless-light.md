@@ -49,6 +49,14 @@ Triune scaling reads three sources:
 
 UI previews and runtime grants should use the same `resolveCardScaling` inputs.
 
+## Interactive Attack Sequences
+
+- Ain Attack fades to black, then presents three deterministic gold-to-white stars for 3 seconds. One, two, or three hits multiply the attack by ×2, ×3, or ×4.
+- Soph Attack floats the attacking card at center during the black fade and presents five stars for 4 seconds. Hits scale from ×1.5 through ×5.5.
+- Bridge the Light fades to white and uses a card-specific ordered constellation of three to five white/black stars connected by red-pink lines. Correct hits use the Soph multiplier ladder.
+- Layouts are seeded by card definition and attack kind: every copy of one card shares a layout, while different cards and modes differ.
+- Ain and Soph wash toward white as time expires; Bridge washes toward black. Board actions and encounter timers pause until resolution.
+
 ## Shatter The Infinite Light
 
 Shatter the Infinite Light is the full-board finisher. It becomes available only when all four front slots contain Ain Soph Aur and all four support slots contain Light/Dark cards already flipped to their active Ain side.
@@ -57,8 +65,8 @@ Shatter the Infinite Light is the full-board finisher. It becomes available only
 - The active phase lasts 10 seconds. Each clicked glowing star adds one Limitless Infinity stack.
 - Resolution grants `stacks * 1,000` base Divine Light through the normal Collection Power-scaled grant path.
 - Board actions, cooldown ticks, and encounter timers pause for the whole sequence.
-- Resolution sends the field and hand to discard, reshuffles discard into the draw pile, and clears Limitless Light Stacks and board effects.
-- The current turn remains active, but no replacement hand is drawn and no mulligan begins.
+- Resolution returns front-row Ain Soph Aur to the Extra Deck, returns back-row and discarded cards to the draw pile, preserves the hand, and clears Limitless Light Stacks and board effects.
+- The current turn remains active and no mulligan begins.
 - During a boss encounter, resolution also triggers a Card-Break stagger and restores the encounter clock to its full duration. Battleground time resets to 180 seconds.
 
 The three phases and durations live in `src/systems/cards/ShatterTheInfiniteLight.ts`. Store actions and aftermath resolution live in `src/state/store.ts`; the cutscene and click targets live in `src/ui/hud/ShatterInfiniteLightOverlay.tsx`.

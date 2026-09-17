@@ -14,7 +14,7 @@
 
 ## Retired content and current unlock rules
 - Wake Trials and Endless Gauntlet are removed. Do not add `onOpenWakeTrials`, `onOpenEndlessGauntlet`, `startWakeTrial`, `startEndlessGauntlet`, `recordGauntletRun`, `trial`/`gauntlet` boss kinds, `weeklyTrialCompletions`, or `gauntletBest` back into live code.
-- Main-menu gates are derived from duplicate-inclusive collection counts: 5 Infinite copies unlock Ascension, 5 Eternal copies unlock Infinitude, and 1 Eternal copy unlocks Enigma. Locked tiles remain visible but dimmed.
+- Main-menu gates use their live progression sources: 5 Infinite copies unlock Ascension, 5 Eternal copies unlock Infinitude, and opening 10 card packs unlocks Enigma. Locked destinations remain visible with their current requirement.
 - Enigma UI belongs in `EnigmaModal`; Daily and Weekly challenges belong in the visible Challenges surface. Do not render an `EnigmasPanel` inside the Challenges modal.
 - Neutrality design must be Ain/Soph-system-native. Avoid generic draw/chain templates when reworking Neutrality cards.
 
@@ -27,13 +27,15 @@
 - Ain Soph Aur summon requirements use `summonMaterials` clauses. Clauses may require types, specific definition IDs, and Ain/Soph sides; do not reduce them to an occupied-slot count.
 - Every successful Ain Soph Aur summon grants +1 Limitless Light Stack as a universal rule; do not duplicate this on individual card faces.
 - Three materialized abilities can be equipped per deck and activated through Ability Amplification: Neutralizing Inferno, Nullified Barricade, and Phantom Matrix.
+- The proposed Causality abilities in `Card Effects/Causality/Causality Ability Drafts.md` are not implemented. Do not add them to runtime definitions, loadouts, or player-facing UI piecemeal.
 - Challenge economy targets approximately 52,500 base Divine Light across seven daily rotations and 100,000 base Divine Light across one weekly rotation. Collection Power scales the paid amount above the base target.
 - Null Horizon and Axiomatic Reversal require any Neutrality Eternal card; Whiteout Domain and Infinite Accord require any Neutrality Infinite card. These are high-cost endgame abilities, and only three abilities may be equipped at once.
 - Eternal and Infinite Light cards require distinct, authored Soph-placement effects. Premium ASA cards may require exact named Light or Dark materials; Phantom Matrix always bypasses materials.
 - Additional endgame abilities are Neutrality-specific: two unlock from owning any Neutrality Eternal card and two unlock from owning any Neutrality Infinite card. Do not count cards from another set for these gates.
 - Garden of Cards, Valley of Null, and their currencies are Neutrality-specific. Future sets must define separate currencies, dungeon rewards, and gates unless an intentional thematic overlap is authored.
 - Dark activation-cost policy: ordinary one-shot Dark utilities should usually cost 0; reserve Limitless Light costs for premium/reusable/high-impact cards.
-- Every Divine Light gain, including sacrifice rewards and card effects, scales from Collection Power through the central grant path.
+- Every Divine Light gain, including sacrifice rewards and card effects, scales from Collection Power exactly once through the central grant path.
+- Collection Power uses `1 + Resonance / 1000`, with a dynamic natural cap derived from every registered card's maximum 320 Resonance contribution. Never restore a fixed ×3 cap. Card-light is mastery XP and changes Resonance only when a Card-born Tier threshold is crossed.
 - Rarities are distinct: normal rarities, Enigmatic (Enigma rewards), Eternal (Eternity's Wake rewards), Infinite (Infinity-menu crafting), and Transcendent (Null Raid progression).
 
 ## Completed Systems Snapshot
@@ -44,12 +46,14 @@
 - Universal Ain/Soph rules are documented in the base tutorial; card stat panels should show only card-specific values.
 - Supplied Neutrality card art and wide Eternity's Wake boss art live under `public/assets/card-backgrounds` and are covered by the asset audit.
 - Card hover details belong in the right-rail Card Inspector, not floating over the board/hand. Pack opening waits for individual clicks, Reveal All/Reveal Best, or Instant; do not re-add timed auto-reveal.
-- Card faces across gameplay, pack opening, pending modals, collection, deck builder, rewards, and profile screens should use shared card-face helpers with top/bottom chrome and respect `settings.cardArtDisplay`.
+- Card faces across gameplay, pack opening, pending modals, collection, deck builder, rewards, and profile screens should use shared card-face helpers. Live turn surfaces specifically use `getLiveCardFaceBackgroundStyle` and `getLiveCardShimmerClassName`, with one lightweight shimmer and identical hand/board composition. Face-down cards show only their backing plus state badges; front-face chrome must not render.
 
 ## Latest Iteration Status
 - The current Causality set is built around a repeatable `Limitless Cosmos` loop: generate, convert, hold, and spend Cosmos for utility and Divine Light gains. The deck should reward converting existing Limitless Light into useful Cosmos loops rather than creating dead or one-off payoffs.
 - All reward and board-view card appearances should share the same card source of truth so packs, collections, deck builders, and the board never show inconsistent variants of the same card.
-- `Shatter the Light` is now a proper finisher: when it resolves, it wipes the board as expected, and the active window is tuned to 10 seconds with slightly longer star visibility.
+- `Shatter the Infinite Light` has a 1.1-second full-black priming beat followed by a detailed 10-second clickable starfield. Each click is one Limitless Infinity stack worth 1,000 base Divine Light before Collection Power. It pauses gameplay, wipes field and hand without a replacement draw or turn advance, and staggers bosses while restoring their clock.
+- The main menu uses the responsive Play / Collection / Progress Command Deck in `MainMenuHub.tsx`; preserve its contextual artwork, visible lock requirements, and complete destination coverage.
+- The Board panel and Card-born Stacks panel belong in the shared left-side HUD rail and must remain flow-positioned rather than independently absolutely positioned.
 - Enigma completion logic must be condition-driven and turn-scoped. Do not allow false positives from lifetime counters, generic board checks, or stale progress snapshots.
 - Neutrality and Causality enigma steps are expected to reflect the actual authored requirement text; if a condition is not met, the step must not complete.
 - Causality enigma reward copies are set to 3 per reward.

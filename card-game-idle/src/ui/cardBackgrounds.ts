@@ -161,6 +161,16 @@ const CARD_BACKGROUND_FILE_OVERRIDES: Record<string, string> = {
   'enig-causality-archive-of-unmade-stars': 'Archive of Unmade Stars.png',
   'enig-causality-black-sun-edict': 'Black Sun Edict.png',
   'enig-causality-axiom-beyond-the-horizon': 'Axiom Beyond the Horizon.png',
+  'btei-causality-first-cause': 'The First Cause Unwritten.png',
+  'btei-causality-last-horizon': 'The Last Horizon Remembered.png',
+  'btei-causality-ink-sovereign': 'Sovereign Ink of the Black Sun.png',
+  'btei-causality-chromatic-verdict': 'Chromatic Verdict of Elsewhen.png',
+  'btei-causality-pearl-engine': 'Pearlescent Engine Beyond Sequence.png',
+  'inf-causality-origin-script': 'Origin Script of Every Tomorrow.png',
+  'inf-causality-chromatic-horizon': 'Chromatic Horizon Without End.png',
+  'inf-causality-law-eater': 'Law-Eater of the Pearl Void.png',
+  'inf-causality-archive-reborn': 'Archive Reborn in Chromatic Ink.png',
+  'inf-causality-heart-beyond-all': 'Heart Beyond All Causality.png',
   'tx-neutral-starbound-glimmer': 'Starbound Glimmer.png',
   'tx-neutral-null-catalyst': 'Null Catalyst.png',
   'tx-neutral-void-reliquary': 'Void Reliquary.png',
@@ -422,7 +432,7 @@ function getDenseCardFaceCacheKey(
 export function getCardBackgroundUrl(card: CardDefinition | null | undefined): string | null {
   if (!card) return null;
 
-  if (card.definitionId.startsWith('light-causality-') || card.definitionId.startsWith('dark-causality-') || card.definitionId.startsWith('ain-soph-aur-causality-') || card.definitionId.startsWith('enig-causality-')) {
+  if (card.definitionId.includes('causality')) {
     const fileName = CARD_BACKGROUND_FILE_OVERRIDES[card.definitionId] ?? `${card.name}.png`;
     return `${CARD_BACKGROUND_ROOT}/causality/${encodeURI(fileName)}`;
   }

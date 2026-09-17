@@ -25,7 +25,9 @@ npm test -- --run src/tests/unit/systems/CardRuntimeWiring.test.ts
 - `PackOpeningFlow.test.ts`: live pack pool and purchase awards.
 - `PackOpeningModalSource.test.ts`: pack opening must not auto-reveal.
 - `CardDescriptionAudit.test.ts`: authored descriptions and summary text do not leak internal tokens.
-- `CardBackgroundAssetAudit.test.ts`: card art references resolve.
+- `CardBackgroundAssetAudit.test.ts`: card art references resolve and each live foil rarity receives the shared lightweight treatment.
+- `LiveCardFaceSource.test.ts`: hand and board use the same live face and shimmer helpers; hand must not reintroduce a separate raw artwork layer.
+- `CardMasteryProgress.test.ts`: same-record tier crossings refresh Resonance, Collection Power uses the canonical scale, the maximum follows the registry, and previews distinguish Card-light from Resonance.
 
 ## Gameplay Test Rules
 
