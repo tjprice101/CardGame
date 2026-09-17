@@ -77,6 +77,7 @@ const styles: Record<string, React.CSSProperties> = {
     width: 104,
     aspectRatio: '0.73',
     background: warmTheme.surface,
+    position: 'relative',
     border: `1px solid rgba(121, 84, 50, 0.45)`,
     borderRadius: 8,
     display: 'flex',

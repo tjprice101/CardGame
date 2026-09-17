@@ -11,5 +11,7 @@ describe('Garden of Cards selectors', () => {
     expect(source).not.toContain('visibleDungeons.map((dungeon, idx)');
     expect(source).not.toContain('GARDEN_DUNGEONS.map((dungeon, idx)');
     expect(source).toContain('disabled={visibleDungeons.length <= 1}');
+    expect(source).toContain("position: 'relative', zIndex: 5");
+    expect(source).toContain("position: 'relative', zIndex: 6");
   });
 });

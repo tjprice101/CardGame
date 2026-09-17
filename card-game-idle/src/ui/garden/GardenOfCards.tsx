@@ -178,15 +178,20 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
             {/* Left Column: Dungeon Cover Card & Selector */}
             <div style={{ width: 'min(440px, 38vw)', display: 'flex', flexDirection: 'column', gap: 14, flexShrink: 0 }}>
               {/* Set filter */}
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, position: 'relative', zIndex: 5 }}>
                 {(['Neutrality', 'Causality'] as const).map(value => (
                   <button
                     key={value}
                     type="button"
                     className="menu-tactile-btn"
-                    onClick={() => { setCategory(value); setSelectedIndex(0); }}
+                    onClick={() => {
+                      if (category === value) return;
+                      setCategory(value);
+                      setSelectedIndex(0);
+                    }}
                     style={{
                       flex: 1, padding: '8px 14px', borderRadius: 8,
+                      position: 'relative', zIndex: 6,
                       border: `1px solid ${category === value ? '#fff' : 'rgba(255,255,255,0.25)'}`,
                       background: category === value ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.25)',
                       color: category === value ? '#fff' : 'rgba(255,255,255,0.62)',

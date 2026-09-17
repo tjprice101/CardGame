@@ -651,7 +651,9 @@ select {
   100% { background-position: 0% 100%, 100% 100%, 100% 40%; transform: scale(1.02) rotate(-1deg); }
 }
 .live-card-shimmer {
+  position: relative;
   isolation: isolate;
+  contain: paint;
 }
 .live-card-shimmer::after {
   content: '';
