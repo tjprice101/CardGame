@@ -16,7 +16,9 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [category, setCategory] = useState<'Neutrality' | 'Causality'>('Neutrality');
   const [showInventory, setShowInventory] = useState(false);
-  const visibleDungeons = GARDEN_DUNGEONS.filter(dungeon => dungeon.category === category);
+  const visibleDungeons = GARDEN_DUNGEONS
+    .filter(dungeon => dungeon.category === category)
+    .sort((left, right) => Number(left.id === 'garden-archive') - Number(right.id === 'garden-archive'));
   const selected = visibleDungeons[selectedIndex] ?? visibleDungeons[0] ?? GARDEN_DUNGEONS[0];
   const activeDungeon = dungeonState.dungeonId ? GARDEN_DUNGEONS.find(dungeon => dungeon.id === dungeonState.dungeonId) : null;
   const activeEncounter = activeDungeon?.encounters[dungeonState.encounterIndex];
@@ -174,11 +176,48 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
         ) : (
           /* Split Dungeon View */
           <>
-            <div style={{ position: 'absolute', top: 76, left: 32, display: 'flex', gap: 6, zIndex: 2 }}>
-              {(['Neutrality', 'Causality'] as const).map(value => <button key={value} className="menu-tactile-btn" onClick={() => { setCategory(value); setSelectedIndex(0); }} style={{ padding: '6px 12px', borderRadius: 999, border: `1px solid ${category === value ? '#fff' : 'rgba(255,255,255,0.25)'}`, background: category === value ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.25)', color: '#fff', cursor: 'pointer' }}>{value}</button>)}
-            </div>
             {/* Left Column: Dungeon Cover Card & Selector */}
             <div style={{ width: 'min(440px, 38vw)', display: 'flex', flexDirection: 'column', gap: 14, flexShrink: 0 }}>
+              {/* Set filter */}
+              <div style={{ display: 'flex', gap: 8 }}>
+                {(['Neutrality', 'Causality'] as const).map(value => (
+                  <button
+                    key={value}
+                    type="button"
+                    className="menu-tactile-btn"
+                    onClick={() => { setCategory(value); setSelectedIndex(0); }}
+                    style={{
+                      flex: 1, padding: '8px 14px', borderRadius: 8,
+                      border: `1px solid ${category === value ? '#fff' : 'rgba(255,255,255,0.25)'}`,
+                      background: category === value ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.25)',
+                      color: category === value ? '#fff' : 'rgba(255,255,255,0.62)',
+                      fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.2,
+                      textTransform: 'uppercase', cursor: 'pointer',
+                    }}
+                  >{value}</button>
+                ))}
+              </div>
+
+              {/* Filtered dungeon selector */}
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+                {visibleDungeons.map((dungeon, idx) => (
+                  <button
+                    key={dungeon.id}
+                    type="button"
+                    onClick={() => setSelectedIndex(idx)}
+                    style={{
+                      flex: 1, padding: '8px 12px', borderRadius: 8,
+                      border: idx === selectedIndex ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.2)',
+                      background: idx === selectedIndex ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)',
+                      color: idx === selectedIndex ? '#ffffff' : 'rgba(255,255,255,0.6)',
+                      fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1,
+                      textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >{dungeon.name}</button>
+                ))}
+              </div>
+
               {/* Cover Card */}
               <div
                 className="garden-pearlescent-card"
@@ -205,9 +244,10 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                   <button
                     type="button"
                     onClick={() => move(-1)}
+                    disabled={visibleDungeons.length <= 1}
                     aria-label="Previous dungeon"
                     className="garden-pearlescent-btn"
-                    style={{ width: 32, height: 32, borderRadius: 6, color: '#000', cursor: 'pointer', fontSize: 18, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: 32, height: 32, borderRadius: 6, color: '#000', cursor: visibleDungeons.length <= 1 ? 'default' : 'pointer', opacity: visibleDungeons.length <= 1 ? 0.35 : 1, fontSize: 18, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     ‹
                   </button>
@@ -217,41 +257,14 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                   <button
                     type="button"
                     onClick={() => move(1)}
+                    disabled={visibleDungeons.length <= 1}
                     aria-label="Next dungeon"
                     className="garden-pearlescent-btn"
-                    style={{ width: 32, height: 32, borderRadius: 6, color: '#000', cursor: 'pointer', fontSize: 18, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    style={{ width: 32, height: 32, borderRadius: 6, color: '#000', cursor: visibleDungeons.length <= 1 ? 'default' : 'pointer', opacity: visibleDungeons.length <= 1 ? 0.35 : 1, fontSize: 18, fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                   >
                     ›
                   </button>
                 </div>
-              </div>
-
-              {/* Dungeon Pills Selector */}
-              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
-                {GARDEN_DUNGEONS.map((dungeon, idx) => (
-                  <button
-                    key={dungeon.id}
-                    type="button"
-                    onClick={() => setSelectedIndex(idx)}
-                    style={{
-                      flex: 1,
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      border: idx === selectedIndex ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.2)',
-                      background: idx === selectedIndex ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)',
-                      color: idx === selectedIndex ? '#ffffff' : 'rgba(255,255,255,0.6)',
-                      fontFamily: uiTypography.display,
-                      fontSize: 11,
-                      letterSpacing: 1,
-                      textTransform: 'uppercase',
-                      cursor: 'pointer',
-                      whiteSpace: 'nowrap',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    {dungeon.name}
-                  </button>
-                ))}
               </div>
 
               {/* Action Box / Active Run Controls */}

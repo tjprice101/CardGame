@@ -11,9 +11,9 @@ import {
 
 describe('attack star sequences', () => {
   it('uses the authored duration and multiplier tables', () => {
-    expect(getAttackSequenceDuration('ain')).toBe(3_000);
-    expect(getAttackSequenceDuration('soph')).toBe(4_000);
-    expect(getAttackSequenceDuration('bridge')).toBe(4_000);
+    expect(getAttackSequenceDuration('ain')).toBe(2_000);
+    expect(getAttackSequenceDuration('soph')).toBe(3_000);
+    expect(getAttackSequenceDuration('bridge')).toBe(3_000);
     expect([0, 1, 2, 3].map(hits => getAttackSequenceMultiplier('ain', hits))).toEqual([1, 2, 3, 4]);
     expect([0, 1, 2, 3, 4, 5].map(hits => getAttackSequenceMultiplier('soph', hits))).toEqual([1, 1.5, 2.5, 3.5, 4.5, 5.5]);
   });

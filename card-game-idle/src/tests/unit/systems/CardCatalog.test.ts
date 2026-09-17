@@ -174,36 +174,24 @@ describe('Ain/Soph card catalog', () => {
     const all = CardRegistry.getAll();
     const eternal = all.filter(card => card.definitionId.startsWith('btei-'));
     const transcendent = all.filter(card => card.definitionId.startsWith('tx-'));
-    const enigmas = all.filter(card => card.definitionId.startsWith('enig-neutral-'));
+    const enigmas = all.filter(card => card.definitionId.startsWith('enig-'));
 
-    expect(eternal).toHaveLength(9);
+    expect(eternal).toHaveLength(14);
     expect(eternal.every(card => card.rarity === 'Eternal')).toBe(true);
     expect(transcendent).toHaveLength(4);
     expect(transcendent.every(card => card.rarity === 'Transcendent')).toBe(true);
-    expect(enigmas).toHaveLength(4);
+    expect(enigmas).toHaveLength(9);
     expect(enigmas.every(card => card.rarity === 'Enigmatic')).toBe(true);
   });
 
-  it('reserves Dark cooldowns for the three persistent utility cards', () => {
-    const persistentDarkIds = CardRegistry.getAll()
-      .filter((card): card is Extract<typeof card, { type: 'Dark' }> => card.type === 'Dark' && card.persistent)
-      .map(card => card.definitionId)
-      .sort();
-    expect(persistentDarkIds).toEqual([
-      'dark-causality-1',
-      'dark-causality-10',
-      'dark-causality-4',
-      'dark-causality-7',
-      'enig-causality-ink-of-the-first-law',
-      'enig-neutral-amplifier-of-the-void',
-      'enig-neutral-null-catechism',
-      'tx-neutral-null-catalyst',
-      'tx-neutral-void-reliquary',
-    ]);
-
+  it('gives persistent Dark utilities cooldowns and keeps one-shot cards immediate', () => {
     for (const card of CardRegistry.getAll()) {
-      if (card.type !== 'Dark' || card.persistent) continue;
-      expect(card.cooldownCardsPlayed, `${card.definitionId} should be a one-shot Dark card`).toBeUndefined();
+      if (card.type !== 'Dark') continue;
+      if (card.persistent) {
+        expect(card.cooldownCardsPlayed, `${card.definitionId} persistent cooldown`).toBeGreaterThan(0);
+      } else {
+        expect(card.cooldownCardsPlayed, `${card.definitionId} should be a one-shot Dark card`).toBeUndefined();
+      }
     }
   });
 

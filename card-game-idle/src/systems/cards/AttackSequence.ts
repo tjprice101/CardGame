@@ -1,10 +1,10 @@
 import type { AttackSequenceKind, AttackSequenceStar } from '@/types/game';
 
-export const ATTACK_SEQUENCE_PRIME_MS = 900;
-export const ATTACK_SEQUENCE_RESULT_MS = 1_600;
+export const ATTACK_SEQUENCE_PRIME_MS = 650;
+export const ATTACK_SEQUENCE_RESULT_MS = 1_200;
 
 export function getAttackSequenceDuration(kind: AttackSequenceKind): number {
-  return kind === 'ain' ? 3_000 : 4_000;
+  return kind === 'ain' ? 2_000 : 3_000;
 }
 
 export function getAttackSequenceStarCount(kind: AttackSequenceKind, definitionId: string): number {

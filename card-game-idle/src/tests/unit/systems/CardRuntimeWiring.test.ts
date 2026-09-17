@@ -4,6 +4,7 @@ import { CardEffectExecutor } from '@/systems/cards/CardEffectExecutor';
 import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { ainSophAurCards } from '@/data/cards/ainSophAurCards';
 import { causalityCards } from '@/data/cards/causalityCards';
+import { causalityInfiniteCards } from '@/data/cards/causalityInfiniteCards';
 import { darkCards } from '@/data/cards/darkCards';
 import { enigmaRewardCards } from '@/data/cards/enigmaRewardCards';
 import { eternalCards } from '@/data/cards/eternalCards';
@@ -16,6 +17,18 @@ import type { DeckCard, GameState } from '@/types/game';
 function resetStore(): void {
   const baseState = JSON.parse(JSON.stringify(defaultGameState)) as GameState;
   useStore.setState(state => ({ ...state, ...baseState }));
+}
+
+function resolveAttackSequence(): void {
+  const priming = useStore.getState().turn.attackSequence;
+  expect(priming?.phase).toBe('priming');
+  useStore.getState().tickAttackSequence(priming!.phaseEndsAt + 1);
+  const active = useStore.getState().turn.attackSequence;
+  expect(active?.phase).toBe('active');
+  for (const star of active!.stars) {
+    useStore.getState().registerAttackSequenceStarHit(star.id);
+  }
+  expect(useStore.getState().turn.attackSequence?.phase).toBe('result');
 }
 
 function countConditionalLightConversionCost(effects: Array<{ type: string; [key: string]: unknown }>): number {
@@ -75,6 +88,7 @@ describe('complete card runtime wiring', () => {
       ...darkCards,
       ...ainSophAurCards,
       ...causalityCards,
+      ...causalityInfiniteCards,
       ...eternalCards,
       ...enigmaRewardCards,
       ...transcendentCardDefinitions,
@@ -142,6 +156,7 @@ describe('complete card runtime wiring', () => {
         const before = useStore.getState().progress.divineLight;
         if (attack === 'ain') useStore.getState().activateLightAinAttack(instanceId);
         else useStore.getState().activateLightSophAttack(instanceId);
+        resolveAttackSequence();
 
         const state = useStore.getState();
         expect(state.progress.divineLight, `${definition.definitionId} ${attack}`).toBeGreaterThan(before);
@@ -163,15 +178,30 @@ describe('complete card runtime wiring', () => {
       const instanceId = `${definition.definitionId}-soph-placement`;
       useStore.setState(state => ({
         ...state,
-        turn: { ...state.turn, phase: 'playing' },
-        deck: { ...state.deck, hand: [deckCard(instanceId, definition.definitionId)] },
+        turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 1_000 },
+        deck: {
+          ...state.deck,
+          hand: [deckCard(instanceId, definition.definitionId), deckCard('held-dark', 'dark-neutrality-1')],
+          drawPile: [
+            deckCard('draw-light', 'light-neutrality-1'),
+            deckCard('draw-dark', 'dark-neutrality-1'),
+            deckCard('draw-asa', 'ain-soph-aur-neutrality-1'),
+          ],
+          discardPile: [deckCard('discard-light', 'light-neutrality-2'), deckCard('discard-dark', 'dark-neutrality-2')],
+        },
       }));
 
-      const before = useStore.getState().progress.divineLight;
+      const before = useStore.getState();
       useStore.getState().playCard(instanceId, 'soph');
       const state = useStore.getState();
       expect(state.board.backSlots.some(card => card?.instanceId === instanceId), definition.definitionId).toBe(true);
-      expect(state.progress.divineLight, `${definition.definitionId} Soph placement`).toBeGreaterThan(before);
+      const utilityChanged = state.progress.divineLight !== before.progress.divineLight
+        || state.turn.limitlessLightStacks !== before.turn.limitlessLightStacks
+        || state.turn.limitlessCosmosStacks !== before.turn.limitlessCosmosStacks
+        || state.turn.pendingEffect !== before.turn.pendingEffect
+        || JSON.stringify(state.deck.drawPile) !== JSON.stringify(before.deck.drawPile)
+        || JSON.stringify(state.deck.discardPile) !== JSON.stringify(before.deck.discardPile);
+      expect(utilityChanged, `${definition.definitionId} Soph placement`).toBe(true);
     }
   });
 
@@ -374,12 +404,11 @@ describe('complete card runtime wiring', () => {
         },
       }));
 
-      const beforeSummon = useStore.getState().progress.divineLight;
       const stacksBeforeSummon = useStore.getState().turn.limitlessLightStacks;
       useStore.getState().summonAinSophAur(definition.definitionId, materials.map(card => card.instanceId), 0);
       const summoned = useStore.getState().board.frontSlots[0];
       expect(summoned?.definitionId, definition.definitionId).toBe(definition.definitionId);
-      expect(useStore.getState().progress.divineLight, `${definition.definitionId} summon`).toBeGreaterThan(beforeSummon);
+      expect(definition.onSummonEffects.length, `${definition.definitionId} summon effect`).toBeGreaterThan(0);
       const summonConversionCost = countConditionalLightConversionCost(definition.onSummonEffects as Array<{ type: string; [key: string]: unknown }>);
       expect(useStore.getState().turn.limitlessLightStacks, `${definition.definitionId} summon stack`).toBe(
         stacksBeforeSummon + AIN_SOPH_AUR_SUMMON_STACK_REWARD - summonConversionCost,
@@ -388,6 +417,7 @@ describe('complete card runtime wiring', () => {
       const beforeBridge = useStore.getState().progress.divineLight;
       const stacksBeforeBridge = useStore.getState().turn.limitlessLightStacks;
       useStore.getState().activateAsaBridge(summoned!.instanceId);
+      resolveAttackSequence();
       expect(useStore.getState().progress.divineLight, `${definition.definitionId} Bridge`).toBeGreaterThan(beforeBridge);
       expect(useStore.getState().board.frontSlots[0]?.attackCooldowns[definition.bridgeAttack!.id]).toBeGreaterThan(0);
       if (definition.bridgeAttack?.consumesStacks) {

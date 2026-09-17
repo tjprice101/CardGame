@@ -1751,6 +1751,9 @@ html.reduced-motion .trial-guide-pulse {
 @keyframes attackSequenceFadeBlack { from { opacity: 0; background: transparent; } to { opacity: 1; background: #000; } }
 @keyframes attackSequenceFadeWhite { from { opacity: 0; background: transparent; } to { opacity: 1; background: #f8f7f2; } }
 @keyframes attackSequenceCardFloat { from { translate: 0 -6px; } to { translate: 0 7px; } }
+@keyframes attackSequenceSolarPulse { 0%,100% { scale: .86; opacity: .2; } 50% { scale: 1.08; opacity: .52; } }
+@keyframes attackSequenceVortexSpin { to { transform: rotate(360deg); } }
+@keyframes attackSequenceBandRush { from { background-position: 0 0, 0 0; } to { background-position: 180px -120px, -220px 160px; } }
 .attack-sequence-field { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(circle at 50% 45%, rgba(86,58,18,0.2), transparent 40%), linear-gradient(145deg, #020107, #0b071b 48%, #020914 78%, #000); animation: shatterStarfieldReveal 700ms ease-out both; }
 .attack-sequence-field::before, .attack-sequence-field::after { content: ''; position: absolute; inset: -18%; background-image: radial-gradient(circle, rgba(255,246,205,0.9) 0 1px, transparent 1.7px), radial-gradient(circle, rgba(255,201,82,0.7) 0 0.7px, transparent 1.3px); background-size: 71px 67px, 107px 97px; background-position: 0 0, 29px 41px; opacity: 0.36; animation: shatterStarfieldDrift 20s linear infinite; }
 .attack-sequence-field::after { opacity: 0.2; transform: rotate(16deg) scale(1.1); animation-direction: reverse; animation-duration: 29s; }
@@ -1758,6 +1761,17 @@ html.reduced-motion .trial-guide-pulse {
 .attack-sequence-field-inverted::before, .attack-sequence-field-inverted::after { filter: invert(1); opacity: 0.24; }
 .attack-sequence-nebula { position: absolute; inset: -18%; background: conic-gradient(from 118deg at 50% 50%, transparent 0 20%, rgba(255,190,58,0.12) 30%, transparent 42% 68%, rgba(205,220,255,0.1) 78%, transparent 88%); filter: blur(25px); animation: shatterNebulaTurn 22s ease-in-out infinite alternate; }
 .attack-sequence-field-inverted .attack-sequence-nebula { background: conic-gradient(from 118deg at 50% 50%, transparent 0 20%, rgba(255,40,95,0.16) 30%, transparent 43% 67%, rgba(15,10,20,0.12) 78%, transparent 88%); }
+.attack-sequence-field-ain { background: radial-gradient(circle at 50% 50%, rgba(255,210,72,.28), transparent 20%), radial-gradient(circle at 50% 50%, rgba(255,255,255,.1), transparent 48%), linear-gradient(145deg,#020107,#130b19 55%,#03040b); }
+.attack-sequence-field-ain .attack-sequence-nebula { background: conic-gradient(from 0deg at 50% 50%, transparent 0 7%, rgba(255,213,80,.2) 8% 10%, transparent 11% 22%, rgba(255,247,210,.12) 23% 25%, transparent 26% 100%); filter: blur(8px); animation-duration: 12s; }
+.attack-sequence-field-soph { background: radial-gradient(ellipse at 50% 50%, rgba(255,236,176,.16), transparent 22%), radial-gradient(circle at 25% 28%, rgba(150,90,230,.18), transparent 32%), radial-gradient(circle at 78% 72%, rgba(255,170,60,.16), transparent 28%), linear-gradient(155deg,#020107,#10071d 48%,#020611); }
+.attack-sequence-field-soph .attack-sequence-nebula { background: repeating-conic-gradient(from 20deg at 50% 50%, rgba(255,255,255,0) 0 12deg, rgba(255,212,112,.12) 13deg 14deg, rgba(255,255,255,0) 15deg 29deg); filter: blur(3px); animation: attackSequenceVortexSpin 24s linear infinite; }
+.attack-sequence-field-bridge { background: radial-gradient(circle at 50% 50%, rgba(255,49,95,.15), transparent 30%), linear-gradient(135deg,#fff 0%,#e7e3e9 48%,#fff 100%); }
+.attack-sequence-signature { position:absolute; left:50%; top:50%; translate:-50% -50%; font-size:42vmin; line-height:1; color:rgba(255,218,95,.08); text-shadow:0 0 80px rgba(255,210,80,.22); pointer-events:none; animation:attackSequenceSolarPulse 3.2s ease-in-out infinite; }
+.attack-sequence-field-soph .attack-sequence-signature { color:rgba(205,160,255,.08); animation:attackSequenceVortexSpin 20s linear infinite; }
+.attack-sequence-field-bridge .attack-sequence-signature { color:rgba(20,10,18,.07); text-shadow:0 0 70px rgba(255,49,95,.18); }
+.attack-sequence-energy-bands { position:absolute; inset:-20%; opacity:.25; background-image:repeating-linear-gradient(118deg,transparent 0 38px,rgba(255,218,100,.2) 40px,transparent 43px 82px),repeating-linear-gradient(62deg,transparent 0 55px,rgba(190,215,255,.12) 57px,transparent 60px 110px); animation:attackSequenceBandRush 8s linear infinite; }
+.attack-sequence-field-soph .attack-sequence-energy-bands { opacity:.32; filter:blur(1px); }
+.attack-sequence-field-bridge .attack-sequence-energy-bands { opacity:.18; filter:invert(1); }
 .attack-sequence-orbit { position: absolute; left: 50%; top: 50%; border: 1px solid rgba(255,220,130,0.12); border-radius: 50%; translate: -50% -50%; pointer-events: none; animation: shatterStarRays 28s linear infinite; }
 .attack-sequence-orbit-a { width: 68vmin; height: 68vmin; }
 .attack-sequence-orbit-b { width: 92vmin; height: 42vmin; animation-direction: reverse; animation-duration: 34s; }
@@ -1771,6 +1785,9 @@ html.reduced-motion .trial-guide-pulse {
 .attack-sequence-star-rays { position: absolute; inset: -48%; background: linear-gradient(90deg, transparent 48%, currentColor 49.5% 50.5%, transparent 52%), linear-gradient(0deg, transparent 48%, currentColor 49.5% 50.5%, transparent 52%); opacity: 0.58; animation: shatterStarRays 3.2s linear infinite reverse; }
 .attack-sequence-star-core { position: absolute; inset: 0; display: grid; place-items: center; filter: drop-shadow(0 0 8px currentColor); }
 .attack-sequence-star-bridge { color: #fff; -webkit-text-stroke: 2px #ff315f; filter: drop-shadow(0 0 6px #000) drop-shadow(0 0 13px #ff315f); }
+.attack-sequence-overlay-ain .attack-sequence-star { filter: drop-shadow(0 0 10px #ffbd38) drop-shadow(0 0 28px rgba(255,242,185,.9)); }
+.attack-sequence-overlay-soph .attack-sequence-star { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 28px rgba(196,146,255,.75)); }
+.attack-sequence-soph-card::before { content:''; position:absolute; inset:-28px; z-index:-1; border:1px solid rgba(255,220,130,.55); border-radius:50%; box-shadow:0 0 35px rgba(180,120,255,.45),inset 0 0 25px rgba(255,215,100,.28); animation:shatterStarRays 7s linear infinite; }
 @keyframes attackSequenceStarGoldWhite { from { color: #ffc53d; filter: drop-shadow(0 0 8px #ffaf1f); } to { color: #fff; filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 20px #ffd66c); } }
 @keyframes shatterFadeToBlack {
   from { opacity: 0; }

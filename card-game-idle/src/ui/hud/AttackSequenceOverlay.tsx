@@ -44,12 +44,16 @@ export default function AttackSequenceOverlay() {
       position: 'fixed', inset: 0, zIndex: 940, overflow: 'hidden', pointerEvents: 'auto', userSelect: 'none',
       background: bridge ? '#f8f7f2' : '#000',
       animation: bridge ? 'attackSequenceFadeWhite 900ms ease-out both' : 'attackSequenceFadeBlack 900ms ease-out both',
-    }}>
+    }} className={`attack-sequence-overlay attack-sequence-overlay-${sequence.kind}`}>
       {sequence.phase !== 'priming' && (
-        <div className={bridge ? 'attack-sequence-field attack-sequence-field-inverted' : 'attack-sequence-field'}>
+        <div className={`attack-sequence-field attack-sequence-field-${sequence.kind}${bridge ? ' attack-sequence-field-inverted' : ''}`}>
           <div className="attack-sequence-nebula" />
           <div className="attack-sequence-orbit attack-sequence-orbit-a" />
           <div className="attack-sequence-orbit attack-sequence-orbit-b" />
+          <div className="attack-sequence-signature" aria-hidden="true">
+            {sequence.kind === 'ain' ? '✦' : sequence.kind === 'soph' ? '◇' : '∞'}
+          </div>
+          <div className="attack-sequence-energy-bands" aria-hidden="true" />
           {AMBIENT_STARS.map(star => (
             <i
               key={star.id}
@@ -71,7 +75,7 @@ export default function AttackSequenceOverlay() {
       )}
 
       {sequence.kind === 'soph' && card && (
-        <div className={getLiveCardShimmerClassName(card, sequence.cardFinish)} style={{
+        <div className={`attack-sequence-soph-card ${getLiveCardShimmerClassName(card, sequence.cardFinish) ?? ''}`} style={{
           position: 'absolute', left: '50%', top: '50%', width: 176, aspectRatio: '148 / 204',
           transform: 'translate(-50%, -50%)', borderRadius: 14, overflow: 'hidden', opacity: 0.78,
           ...getLiveCardFaceBackgroundStyle(card, sequence.cardFinish),
