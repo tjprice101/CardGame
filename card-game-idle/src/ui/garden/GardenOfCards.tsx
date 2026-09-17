@@ -66,7 +66,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
             }}
           >
             <span>🎒</span>
-            <span>{showInventory ? 'Dungeons' : `Archive (${ownedMaterials.length})`}</span>
+            <span>{showInventory ? 'Dungeons' : `Inventory (${ownedMaterials.length})`}</span>
           </button>
           <button
             type="button"

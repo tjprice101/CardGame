@@ -63,10 +63,21 @@ export default function AttackSequenceOverlay() {
 
       {bridge && active && (
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+          <defs>
+            <marker id="bridge-path-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="3.5" markerHeight="3.5" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#c4144f" />
+            </marker>
+          </defs>
           {sequence.stars.slice(1).map((star, index) => {
             const previous = sequence.stars[index];
             const reached = sequence.clickedStarIds.length > index;
-            return <line key={star.id} x1={previous.x} y1={previous.y} x2={star.x} y2={star.y} stroke={reached ? '#ff315f' : 'rgba(255,55,100,0.52)'} strokeWidth={reached ? 0.7 : 0.38} vectorEffect="non-scaling-stroke" />;
+            const next = sequence.clickedStarIds.length === index;
+            return (
+              <g key={star.id}>
+                <line x1={previous.x} y1={previous.y} x2={star.x} y2={star.y} stroke="rgba(96,10,42,0.3)" strokeWidth={next ? 3.2 : 1.8} vectorEffect="non-scaling-stroke" />
+                <line x1={previous.x} y1={previous.y} x2={star.x} y2={star.y} stroke={reached ? '#8b1748' : next ? '#d01858' : 'rgba(112,20,60,0.58)'} strokeWidth={next ? 1.25 : reached ? 0.9 : 0.62} strokeDasharray={next ? undefined : '3 3'} markerEnd={next ? 'url(#bridge-path-arrow)' : undefined} vectorEffect="non-scaling-stroke" />
+              </g>
+            );
           })}
         </svg>
       )}
@@ -97,6 +108,7 @@ export default function AttackSequenceOverlay() {
             <span className="attack-sequence-star-halo" aria-hidden="true" />
             <span className="attack-sequence-star-rays" aria-hidden="true" />
             <span className="attack-sequence-star-core">✦</span>
+            {bridge && <span className="attack-sequence-star-order">{index + 1}</span>}
           </button>
         );
       })}
@@ -114,8 +126,8 @@ export default function AttackSequenceOverlay() {
             style={{
               position: 'absolute', top: '50%', left: '50%', zIndex: 2,
               fontFamily: uiTypography.display, fontSize: 76, fontWeight: 900,
-              color: '#0c0a06', letterSpacing: 4,
-              textShadow: '0 0 22px rgba(214,162,94,0.55), 0 0 46px rgba(214,162,94,0.3)',
+              color: bridge ? '#54132e' : '#0c0a06', letterSpacing: 4,
+              textShadow: bridge ? '0 0 22px rgba(210,54,112,0.52), 0 0 46px rgba(255,112,170,0.28)' : '0 0 22px rgba(214,162,94,0.55), 0 0 46px rgba(214,162,94,0.3)',
               whiteSpace: 'nowrap',
             }}
           >
@@ -124,14 +136,14 @@ export default function AttackSequenceOverlay() {
           <div style={{
             position: 'absolute', top: 'calc(50% + 64px)', left: '50%', zIndex: 2,
             transform: 'translateX(-50%)', fontFamily: uiTypography.display,
-            fontSize: 20, color: '#4a3418', letterSpacing: 1.5, whiteSpace: 'nowrap',
+            fontSize: 20, color: bridge ? '#8d3157' : '#4a3418', letterSpacing: 1.5, whiteSpace: 'nowrap',
           }}>
             ×{sequence.multiplier.toFixed(1).replace('.0', '')} · +{sequence.payout.toLocaleString()} Divine Light
           </div>
         </>
       )}
 
-      <div aria-hidden className={result ? `attack-sequence-result-wash${bridge ? ' attack-sequence-result-wash-bridge' : ''}` : ''} style={{ opacity: washOpacity, background: bridge ? '#000' : '#fff' }} />
+      <div aria-hidden className={result ? `attack-sequence-result-wash${bridge ? ' attack-sequence-result-wash-bridge' : ''}` : ''} style={{ opacity: washOpacity, background: bridge ? '#f8f7f2' : '#fff' }} />
     </div>
   );
 }

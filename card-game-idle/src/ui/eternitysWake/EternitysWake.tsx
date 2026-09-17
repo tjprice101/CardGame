@@ -281,7 +281,7 @@ export default function EternitysWake({ onClose }: Props) {
               opacity: onCooldown || lockedByProgress ? 0.65 : 1,
             }}>
               {displayBossArtUrl && (
-                <div className={rewardDef ? getLiveCardShimmerClassName(rewardDef, 'normal', 'front') : undefined} style={{
+                <div style={{
                   height: 156,
                   borderRadius: 10,
                   border: '1px solid rgba(255,107,107,0.28)',
@@ -387,6 +387,7 @@ export default function EternitysWake({ onClose }: Props) {
                         justifyContent: 'center',
                       }}>
                         <div
+                          className={getLiveCardShimmerClassName(rewardDef, 'normal', 'front')}
                           style={{
                             width: REWARD_FACE_WIDTH,
                             height: REWARD_FACE_HEIGHT,
