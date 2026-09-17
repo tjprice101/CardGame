@@ -23,6 +23,116 @@ function equip(abilityId: string): void {
 }
 
 describe('materialized ability runtime', () => {
+  it('requires the complete base Causality collection and escalates Eternal/Infinite gates', () => {
+    resetStore();
+    useStore.setState(state => ({ ...state, progress: { ...state.progress, divineLight: 75_000_000 } }));
+    expect(useStore.getState().purchaseAbility('causality-author-first-cause')).toBe(false);
+
+    const baseCausalityIds = [
+      ...Array.from({ length: 10 }, (_, index) => `light-causality-${index + 1}`),
+      ...Array.from({ length: 10 }, (_, index) => `dark-causality-${index + 1}`),
+      ...Array.from({ length: 5 }, (_, index) => `ain-soph-aur-causality-${index + 1}`),
+    ];
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        collection: Object.fromEntries(baseCausalityIds.map(id => [id, 1])),
+      },
+    }));
+    expect(useStore.getState().purchaseAbility('causality-author-first-cause')).toBe(true);
+    expect(useStore.getState().purchaseAbility('causality-causal-cartography')).toBe(true);
+    expect(useStore.getState().purchaseAbility('causality-pearlescent-mandate')).toBe(false);
+
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        collection: { ...state.progress.collection, 'btei-causality-first-cause': 1 },
+      },
+    }));
+    expect(useStore.getState().purchaseAbility('causality-pearlescent-mandate')).toBe(true);
+    expect(useStore.getState().purchaseAbility('causality-final-cause')).toBe(false);
+
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        infiniteCollection: { ...state.progress.infiniteCollection, 'inf-causality-origin-script': 1 },
+      },
+    }));
+    expect(useStore.getState().purchaseAbility('causality-final-cause')).toBe(true);
+    expect(useStore.getState().purchaseAbility('causality-infinite-manuscript')).toBe(true);
+  });
+
+  it('activates the Causality engine and persists its equipped loadout', () => {
+    resetStore();
+    const abilityId = 'causality-author-first-cause';
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+          collection: {
+            ...Object.fromEntries([
+              ...Array.from({ length: 10 }, (_, index) => [`light-causality-${index + 1}`, 1]),
+              ...Array.from({ length: 10 }, (_, index) => [`dark-causality-${index + 1}`, 1]),
+              ...Array.from({ length: 5 }, (_, index) => [`ain-soph-aur-causality-${index + 1}`, 1]),
+            ]),
+          },
+        ownedAbilities: { [abilityId]: true },
+        savedDecks: state.progress.savedDecks.map(deck => deck.id === state.progress.activeDeckId
+          ? { ...deck, abilityLoadout: { 1: abilityId } }
+          : deck),
+      },
+      turn: { ...state.turn, phase: 'playing', limitlessLightStacks: 4, limitlessCosmosStacks: 0 },
+    }));
+
+    const beforeCooldown = useStore.getState().turn.abilityCooldownUntil?.[abilityId] ?? 0;
+    useStore.getState().activateAbility(1);
+    const after = useStore.getState();
+    expect(after.turn.limitlessLightStacks).toBe(0);
+    expect(after.turn.limitlessCosmosStacks).toBe(4);
+    expect(after.turn.abilityCooldownUntil?.[abilityId]).toBeGreaterThan(beforeCooldown);
+
+    const savedDeck = after.progress.savedDecks.find(deck => deck.id === after.progress.activeDeckId)!;
+    expect(savedDeck.abilityLoadout?.[1]).toBe(abilityId);
+  });
+
+  it('atomically cashes out Infinite Causality and refreshes only Causality cooldowns', () => {
+    resetStore();
+    const abilityId = 'causality-final-cause';
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        infiniteCollection: { 'inf-causality-origin-script': 1 },
+        ownedAbilities: { [abilityId]: true },
+        savedDecks: state.progress.savedDecks.map(deck => deck.id === state.progress.activeDeckId
+          ? { ...deck, abilityLoadout: { 1: abilityId } }
+          : deck),
+      },
+      turn: { ...state.turn, phase: 'playing', limitlessCosmosStacks: 8 },
+      board: {
+        ...state.board,
+        backSlots: [
+          { instanceId: 'causal-light', definitionId: 'light-causality-1', type: 'Light', rarity: 'Rare', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: { 'causal-attack': 4 }, backSlot: 0 },
+          { instanceId: 'neutral-light', definitionId: 'light-neutrality-1', type: 'Light', rarity: 'Common', finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: { 'neutral-attack': 4 }, backSlot: 1 },
+          null,
+          null,
+        ],
+      },
+    }));
+
+    const before = useStore.getState().progress.divineLight;
+    useStore.getState().activateAbility(1);
+    const after = useStore.getState();
+    expect(after.turn.limitlessCosmosStacks).toBe(0);
+    expect(after.progress.divineLight).toBeGreaterThan(before);
+    expect(after.board.backSlots[0]?.attackCooldowns['causal-attack']).toBe(2);
+    expect(after.board.backSlots[1]?.attackCooldowns['neutral-attack']).toBe(4);
+    expect(after.turn.abilityCooldownUntil?.[abilityId]).toBeGreaterThan(Date.now());
+  });
+
   it('resolves Neutralizing Inferno through discard selection', () => {
     resetStore();
     equip('neutralizing-inferno');

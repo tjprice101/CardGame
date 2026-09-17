@@ -6,7 +6,7 @@ import { uiTypography } from '@/ui/theme';
 const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({});
 const abilityIconUrl = (key: string) => `${import.meta.env.BASE_URL}assets/ability-icons/${key}.png`;
 
-type SetFilter = 'all' | 'Neutrality';
+type SetFilter = 'all' | 'Neutrality' | 'Causality';
 type TierFilter = 'all' | 'foundational' | 'eternal' | 'infinite';
 type TypeFilter = 'all' | 'buff' | 'instant' | 'summon' | 'utility';
 type OwnershipFilter = 'all' | 'unowned' | 'owned';
@@ -21,13 +21,16 @@ function getAbilityTier(ability: AbilityDefinition): 'foundational' | 'eternal' 
 function getAbilityType(ability: AbilityDefinition): 'buff' | 'instant' | 'summon' | 'utility' {
   if (ability.buff) return 'buff';
   if (ability.id === 'phantom-matrix') return 'summon';
-  if (ability.id === 'null-horizon') return 'utility';
+  if (ability.id === 'null-horizon' || ability.id.includes('causality-')) return 'utility';
   return 'instant';
 }
 
-function getGateRequirementLabel(gate?: 'anyNeutralityEternal' | 'anyNeutralityInfinite'): string | null {
+function getGateRequirementLabel(gate?: AbilityDefinition['ownershipGate']): string | null {
   if (gate === 'anyNeutralityEternal') return 'Requires Eternal Neutrality card';
   if (gate === 'anyNeutralityInfinite') return 'Requires Infinite Neutrality card';
+  if (gate === 'allCausalityBase') return 'Requires every base Causality card';
+  if (gate === 'anyCausalityEternal') return 'Requires any Causality Eternal card';
+  if (gate === 'anyCausalityInfinite') return 'Requires any Causality Infinite card';
   return null;
 }
 
@@ -98,7 +101,7 @@ export default function AbilityMaterialization() {
 
         {/* Primary Set Sub-menu */}
         <div style={{ marginTop: 18, display: 'flex', gap: 8, borderBottom: '1px solid rgba(110,185,240,0.22)', paddingBottom: 10 }}>
-          {(['Neutrality', 'all'] as const).map(setName => (
+          {(['Neutrality', 'Causality', 'all'] as const).map(setName => (
             <button
               key={setName}
               type="button"

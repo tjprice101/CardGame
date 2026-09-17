@@ -3645,6 +3645,90 @@ export const useStore = create<Store>()(
         get().enqueueToast(`${ability.name} is on cooldown.`, 'warning', 2000);
         return;
       }
+      const reduceCausalityCooldowns = (s: Store, amount: number, refresh = false) => {
+        for (const card of [...s.board.backSlots, ...s.board.frontSlots]) {
+          if (!card?.definitionId.includes('causality')) continue;
+          for (const cooldownId of Object.keys(card.attackCooldowns)) {
+            if (refresh) delete card.attackCooldowns[cooldownId];
+            else card.attackCooldowns[cooldownId] = Math.max(0, card.attackCooldowns[cooldownId] - amount);
+          }
+        }
+      };
+      const stampAbilityCooldown = (s: Store) => {
+        if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
+        s.turn.abilityCooldownUntil[ability.id] = now + (ability.cooldownSeconds ?? 0) * 1000;
+      };
+      if (ability.id === 'causality-author-first-cause') {
+        if (state.turn.limitlessLightStacks < 4) return;
+        set(s => {
+          const wasEmpty = (s.turn.limitlessCosmosStacks ?? 0) === 0;
+          s.turn.limitlessLightStacks -= 4;
+          s.turn.limitlessCosmosStacks = (s.turn.limitlessCosmosStacks ?? 0) + 3 + (wasEmpty ? 1 : 0);
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
+      if (ability.id === 'causality-causal-cartography') {
+        if (state.turn.limitlessLightStacks < 6) return;
+        set(s => {
+          s.turn.limitlessLightStacks -= 6;
+          s.turn.limitlessCosmosStacks = (s.turn.limitlessCosmosStacks ?? 0) + 4;
+          const drawn = DeckSystem.draw(s.deck.drawPile, 3);
+          s.deck.drawPile = drawn.remaining;
+          s.deck.hand.push(...drawn.drawn);
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
+      if (ability.id === 'causality-pearlescent-mandate') {
+        if ((state.turn.limitlessCosmosStacks ?? 0) < 6) return;
+        set(s => {
+          s.turn.limitlessCosmosStacks = (s.turn.limitlessCosmosStacks ?? 0) - 6;
+          s.turn.limitlessLightStacks += 12;
+          reduceCausalityCooldowns(s, 2);
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
+      if (ability.id === 'causality-archive-elsewhen') {
+        if ((state.turn.limitlessCosmosStacks ?? 0) < 8) return;
+        set(s => {
+          s.turn.limitlessCosmosStacks = (s.turn.limitlessCosmosStacks ?? 0) - 8;
+          const drawn = DeckSystem.draw(s.deck.drawPile, 5);
+          s.deck.drawPile = drawn.remaining;
+          s.deck.hand.push(...drawn.drawn);
+          for (const type of ['Light', 'Dark', 'AinSophAur'] as const) {
+            const index = s.deck.drawPile.findIndex(card => CardRegistry.get(card.definitionId)?.type === type);
+            if (index >= 0) s.deck.hand.push(...s.deck.drawPile.splice(index, 1));
+          }
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
+      if (ability.id === 'causality-final-cause') {
+        const cosmos = state.turn.limitlessCosmosStacks ?? 0;
+        if (cosmos < 5) return;
+        set(s => {
+          s.turn.limitlessCosmosStacks = 0;
+          grantDivineLight(s, cosmos * 1_500);
+          reduceCausalityCooldowns(s, Math.min(5, Math.floor(cosmos / 3)));
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
+      if (ability.id === 'causality-infinite-manuscript') {
+        if ((state.turn.limitlessCosmosStacks ?? 0) < 12) return;
+        set(s => {
+          s.turn.limitlessCosmosStacks = (s.turn.limitlessCosmosStacks ?? 0) - 12;
+          const drawn = DeckSystem.draw(s.deck.drawPile, 5);
+          s.deck.drawPile = drawn.remaining;
+          s.deck.hand.push(...drawn.drawn);
+          reduceCausalityCooldowns(s, 0, true);
+          grantDivineLight(s, 75_000);
+          stampAbilityCooldown(s);
+        });
+        return;
+      }
       if (ability.id === 'neutralizing-inferno') {
         if (!state.deck.hand.some(card => CardRegistry.get(card.definitionId)?.type !== 'AinSophAur')) return;
         set(s => {
