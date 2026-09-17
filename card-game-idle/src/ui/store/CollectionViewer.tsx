@@ -7,7 +7,8 @@ import { PACK_DEFINITIONS, STORE_PACK_ORDER } from '@/data/packs/packDefinitions
 import { getCardFinishKey, getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import {
   cardFacePalette,
-  getDenseCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardBackBackgroundStyle,
   getCardArtTopBottomBorderOverlayStyleForCard,
   getCardFaceMetrics,
@@ -263,17 +264,16 @@ export default function CollectionViewer({ onClose }: Props) {
     const previewText = owned > 0 ? getCardPreviewLines(card, 3).join(' ') : '???';
     const finishLabel = isHoloOnlyCard(card) ? null : getCardFinishLabel(finish);
     const cardSurfaceStyle = owned > 0
-      ? getDenseCardFaceBackgroundStyle(card, finish, 'front')
+      ? getLiveCardFaceBackgroundStyle(card, finish, 'front')
       : (isLockedStandardHolo
         ? getLockedHoloCardBackStyle(card)
         : getCardBackBackgroundStyle(card, { dimmed: false }));
-    const showHolofoilShimmer = owned > 0 && finish === 'holo'
-      && card.rarity !== 'Infinite' && card.rarity !== 'Eternal' && card.rarity !== 'Transcendent' && card.rarity !== 'Enigmatic';
+    const shimmerClassName = owned > 0 ? getLiveCardShimmerClassName(card, finish, 'front') : undefined;
 
     return (
       <div
         key={entry.key}
-        className={showHolofoilShimmer ? 'holofoil-menu-card' : undefined}
+        className={shimmerClassName}
         onClick={() => setSelectedCard({ card, finish, owned })}
         style={{
           width: 148,

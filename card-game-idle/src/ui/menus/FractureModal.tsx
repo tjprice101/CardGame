@@ -3,7 +3,7 @@ import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { MASTERY_TIERS, getMasteryClaimKey } from '@/systems/progression/cardMastery';
-import { getDenseCardFaceBackgroundStyle, getCardBackgroundUrl } from '@/ui/cardBackgrounds';
+import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import type { CardRarity } from '@/types/cards';
 import { STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
@@ -320,9 +320,9 @@ export default function FractureModal({ onClose }: Props) {
                     }}
                   >
                     {/* Tiny card art */}
-                    <div style={{
+                    <div className={getLiveCardShimmerClassName(CardRegistry.get(row.id), 'normal', 'front')} style={{
                       width: 32, height: 42, borderRadius: 4, flexShrink: 0,
-                      ...getDenseCardFaceBackgroundStyle(CardRegistry.get(row.id)!),
+                      ...getLiveCardFaceBackgroundStyle(CardRegistry.get(row.id)!, 'normal', 'front'),
                       border: `1px solid ${withAlpha(rarityColor, 0.5)}`,
                     }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -362,17 +362,16 @@ export default function FractureModal({ onClose }: Props) {
             <>
               {/* Card art + name header */}
               <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
-                <div style={{
+                <div className={getLiveCardShimmerClassName(selectedDef, 'normal', 'front')} style={{
                   width: 90, height: 126, borderRadius: 10, flexShrink: 0,
                   position: 'relative', overflow: 'hidden',
-                  ...getDenseCardFaceBackgroundStyle(selectedDef, 'normal', 'front', true),
+                  ...getLiveCardFaceBackgroundStyle(selectedDef, 'normal', 'front'),
                   border: `2px solid ${withAlpha(RARITY_COLOR[selectedRow.rarity] ?? P.accent, 0.7)}`,
                   boxShadow: justFractured
                     ? `0 0 0 3px ${withAlpha(P.accent, 0.6)}, 0 0 30px ${withAlpha(P.accent, 0.5)}`
                     : `0 4px 20px rgba(0,0,0,0.6)`,
                   transition: 'box-shadow 0.3s',
                 }}>
-                  {getCardBackgroundUrl(selectedDef) && <img src={getCardBackgroundUrl(selectedDef)!} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 18, fontFamily: uiTypography.display, color: P.text, letterSpacing: 1 }}>{selectedDef.name}</div>

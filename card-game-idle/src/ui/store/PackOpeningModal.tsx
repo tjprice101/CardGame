@@ -5,7 +5,8 @@ import { useStore, selectSettings } from '@/state/store';
 import {
   cardFacePalette,
   getCardBackBackgroundStyle,
-  getCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -341,10 +342,10 @@ const CardTile = memo(function CardTile({
 
         {/* Front face details mount only after reveal to keep bulk opens light. */}
         <div
-          className={isHolo && def?.rarity !== 'Eternal' && def?.rarity !== 'Infinite' && def?.rarity !== 'Transcendent' && def?.rarity !== 'Enigmatic' ? 'holofoil-live-card' : undefined}
+          className={def ? getLiveCardShimmerClassName(def, isHolo ? 'holo' : 'normal', 'front') : undefined}
           style={{
             ...cardFaceStyle,
-            ...getCardFaceBackgroundStyle(def, isHolo ? 'holo' : 'normal'),
+            ...getLiveCardFaceBackgroundStyle(def, isHolo ? 'holo' : 'normal', 'front'),
             border: `2px solid ${isHolo ? 'rgba(255, 255, 255, 0.95)' : RARITY_COLORS[rarity]}`,
             transform: 'rotateY(180deg)',
           }}

@@ -29,7 +29,8 @@ import ProfilePictureModal from '@/ui/profile/ProfilePictureModal';
 import SignatureCardPickerModal from '@/ui/profile/SignatureCardPickerModal';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
-  getCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
   cardFacePalette,
@@ -820,11 +821,12 @@ function ProfileTab(props: {
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'center' }}>
                 <button
                   onClick={() => onPickSignatureCard(i)}
+                  className={def ? getLiveCardShimmerClassName(def, 'normal', 'front') : undefined}
                   title={def ? `Change: ${def.name}` : `Pick card for slot ${i + 1}`}
                   style={{
                     width: 90, height: 124, borderRadius: 12,
                     border: def ? `1px solid ${rarityColor}55` : `1px dashed ${warmTheme.border}`,
-                    ...(def ? getCardFaceBackgroundStyle(def, 'normal') : {}),
+                    ...(def ? getLiveCardFaceBackgroundStyle(def, 'normal', 'front') : {}),
                     backgroundColor: def ? warmTheme.surfaceStrong : warmTheme.surface,
                     position: 'relative',
                     display: 'flex', flexDirection: 'column', alignItems: 'stretch',

@@ -4,11 +4,11 @@ import { warmTheme } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
-  getDenseCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
-  getCardBackgroundUrl,
 } from '@/ui/cardBackgrounds';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
@@ -250,10 +250,11 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
                   return (
                     <div
                       key={d.definitionId}
+                      className={getLiveCardShimmerClassName(d, 'normal', 'front')}
                       onClick={() => onPick(d.definitionId)}
                       style={{
                         width: 116, height: 160,
-                        ...getDenseCardFaceBackgroundStyle(d, 'normal', 'front', true),
+                        ...getLiveCardFaceBackgroundStyle(d, 'normal', 'front'),
                         backgroundColor: warmTheme.surfaceStrong,
                         border: `1px solid ${rarityColor}55`,
                         borderRadius: 12,
@@ -273,7 +274,6 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
                       }}
                       title={`${d.name} · ${d.rarity}`}
                     >
-                      {getCardBackgroundUrl(d) && <img src={getCardBackgroundUrl(d)!} alt="" loading="lazy" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
                       <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
                         <div style={getCardNameRibbonStyle('grid')}>
                           <div style={{

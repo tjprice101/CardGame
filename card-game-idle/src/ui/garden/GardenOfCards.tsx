@@ -17,8 +17,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
   const [category, setCategory] = useState<'Neutrality' | 'Causality'>('Neutrality');
   const [showInventory, setShowInventory] = useState(false);
   const visibleDungeons = GARDEN_DUNGEONS
-    .filter(dungeon => dungeon.category === category)
-    .sort((left, right) => Number(left.id === 'garden-archive') - Number(right.id === 'garden-archive'));
+    .filter(dungeon => dungeon.category === category && dungeon.id !== 'garden-archive');
   const selected = visibleDungeons[selectedIndex] ?? visibleDungeons[0] ?? GARDEN_DUNGEONS[0];
   const activeDungeon = dungeonState.dungeonId ? GARDEN_DUNGEONS.find(dungeon => dungeon.id === dungeonState.dungeonId) : null;
   const activeEncounter = activeDungeon?.encounters[dungeonState.encounterIndex];
@@ -67,7 +66,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
             }}
           >
             <span>🎒</span>
-            <span>{showInventory ? 'Dungeons' : `Inventory (${ownedMaterials.length})`}</span>
+            <span>{showInventory ? 'Dungeons' : `Archive (${ownedMaterials.length})`}</span>
           </button>
           <button
             type="button"
@@ -99,10 +98,10 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexShrink: 0 }}>
               <div>
                 <h2 style={{ margin: 0, fontFamily: uiTypography.display, fontSize: 20, letterSpacing: 1.5, color: '#ffffff', textTransform: 'uppercase' }}>
-                  Garden Material Inventory
+                  Garden Archive
                 </h2>
                 <div style={{ marginTop: 4, color: 'rgba(255,255,255,0.65)', fontSize: 11 }}>
-                  Materials recovered from Garden of Cards expeditions used in crafting Infinite cards
+                  A shared record of materials recovered from Neutrality and Causality expeditions.
                 </div>
               </div>
               <button
@@ -169,7 +168,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
               </div>
             ) : (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13, fontStyle: 'italic' }}>
-                No dungeon materials currently owned. Complete encounters in the Valley of Null to recover materials.
+                No materials have been recovered yet. Complete expeditions in either faction to begin filling the Garden Archive.
               </div>
             )}
           </section>
@@ -198,24 +197,8 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                 ))}
               </div>
 
-              {/* Filtered dungeon selector */}
-              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
-                {visibleDungeons.map((dungeon, idx) => (
-                  <button
-                    key={dungeon.id}
-                    type="button"
-                    onClick={() => setSelectedIndex(idx)}
-                    style={{
-                      flex: 1, padding: '8px 12px', borderRadius: 8,
-                      border: idx === selectedIndex ? '1px solid rgba(255,255,255,0.9)' : '1px solid rgba(255,255,255,0.2)',
-                      background: idx === selectedIndex ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)',
-                      color: idx === selectedIndex ? '#ffffff' : 'rgba(255,255,255,0.6)',
-                      fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1,
-                      textTransform: 'uppercase', cursor: 'pointer', whiteSpace: 'nowrap',
-                      transition: 'all 0.15s ease',
-                    }}
-                  >{dungeon.name}</button>
-                ))}
+              <div style={{ color: 'rgba(255,255,255,0.55)', fontSize: 10, letterSpacing: 1.1, textTransform: 'uppercase' }}>
+                {category} expedition
               </div>
 
               {/* Cover Card */}

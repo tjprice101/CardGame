@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectTurn } from '@/state/store';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
-import { getAttackSequenceDuration } from '@/systems/cards/AttackSequence';
 import { uiTypography } from '@/ui/theme';
 
 const AMBIENT_STARS = Array.from({ length: 90 }, (_, index) => ({
@@ -34,16 +33,14 @@ export default function AttackSequenceOverlay() {
   const active = sequence.phase === 'active';
   const result = sequence.phase === 'result';
   const remaining = Math.max(0, sequence.phaseEndsAt - Date.now());
-  const duration = active ? getAttackSequenceDuration(sequence.kind) : 1;
-  const progress = active ? 1 - remaining / duration : result ? 1 : 0;
-  const washOpacity = active ? Math.min(0.9, progress * 0.86) : result ? (bridge ? 0.94 : 1) : 0;
+  const washOpacity = result ? 1 : 0;
   const title = sequence.kind === 'ain' ? 'Ain Attack' : sequence.kind === 'soph' ? 'Soph Attack' : 'Bridge the Light';
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 940, overflow: 'hidden', pointerEvents: 'auto', userSelect: 'none',
       background: bridge ? '#f8f7f2' : '#000',
-      animation: bridge ? 'attackSequenceFadeWhite 900ms ease-out both' : 'attackSequenceFadeBlack 900ms ease-out both',
+      animation: bridge ? undefined : 'attackSequenceFadeBlack 900ms ease-out both',
     }} className={`attack-sequence-overlay attack-sequence-overlay-${sequence.kind}`}>
       {sequence.phase !== 'priming' && (
         <div className={`attack-sequence-field attack-sequence-field-${sequence.kind}${bridge ? ' attack-sequence-field-inverted' : ''}`}>
@@ -87,6 +84,7 @@ export default function AttackSequenceOverlay() {
       {active && sequence.stars.map((star, index) => {
         const clicked = sequence.clickedStarIds.includes(star.id);
         const available = !bridge || index === sequence.clickedStarIds.length;
+        if (clicked) return null;
         return (
           <button
             key={star.id}
@@ -94,7 +92,7 @@ export default function AttackSequenceOverlay() {
             disabled={clicked || !available}
             onClick={() => useStore.getState().registerAttackSequenceStarHit(star.id)}
             className={bridge ? 'attack-sequence-star attack-sequence-star-bridge' : 'attack-sequence-star'}
-            style={{ left: `${star.x}%`, top: `${star.y}%`, opacity: clicked ? 0 : available ? 1 : 0.45 }}
+            style={{ left: `${star.x}%`, top: `${star.y}%`, opacity: available ? 1 : 0.45 }}
           >
             <span className="attack-sequence-star-halo" aria-hidden="true" />
             <span className="attack-sequence-star-rays" aria-hidden="true" />
@@ -133,7 +131,7 @@ export default function AttackSequenceOverlay() {
         </>
       )}
 
-      <div aria-hidden style={{ position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none', background: bridge ? '#000' : '#fff', opacity: washOpacity, transition: 'opacity 80ms linear' }} />
+      <div aria-hidden className={result ? `attack-sequence-result-wash${bridge ? ' attack-sequence-result-wash-bridge' : ''}` : ''} style={{ opacity: washOpacity, background: bridge ? '#000' : '#fff' }} />
     </div>
   );
 }

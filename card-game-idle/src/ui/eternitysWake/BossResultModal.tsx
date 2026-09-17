@@ -9,9 +9,9 @@ import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import {
   cardFacePalette,
   getCardArtTopBottomBorderOverlayStyleForCard,
-  getCardBackgroundUrl,
   getCardFaceMetrics,
-  getDenseCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
@@ -277,10 +277,11 @@ export default function BossResultModal() {
                 justifyContent: 'center',
               }}>
                 <div
+                  className={getLiveCardShimmerClassName(rewardDef, 'normal', 'front')}
                   style={{
                     width: REWARD_FACE_WIDTH,
                     height: REWARD_FACE_HEIGHT,
-                    ...getDenseCardFaceBackgroundStyle(rewardDef, 'normal', 'front', true),
+                    ...getLiveCardFaceBackgroundStyle(rewardDef, 'normal', 'front'),
                     borderRadius: 10,
                     border: `1px solid ${VICTORY_ACCENT}55`,
                     position: 'relative',
@@ -290,7 +291,6 @@ export default function BossResultModal() {
                     alignItems: 'stretch',
                   }}
                 >
-                  {getCardBackgroundUrl(rewardDef) && <img src={getCardBackgroundUrl(rewardDef)!} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
                   <div style={getCardArtTopBottomBorderOverlayStyleForCard(rewardDef)} />
                   <div style={getCardNameRibbonStyle('grid')}>
                     <div style={{

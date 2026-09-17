@@ -6,7 +6,8 @@ import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   cardFacePalette,
-  getCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -394,6 +395,7 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
   return (
     <div
       title={getCardPreviewLines(def, 4).join('\n')}
+      className={getLiveCardShimmerClassName(def, 'holo', 'front')}
       style={{
         width: 'clamp(260px, 22vw, 380px)',
         height: 'clamp(370px, 31vw, 540px)',
@@ -405,7 +407,7 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
         display: 'flex',
         flexDirection: 'column',
         position: 'relative',
-        ...getCardFaceBackgroundStyle(def, 'holo'),
+        ...getLiveCardFaceBackgroundStyle(def, 'holo', 'front'),
       }}
     >
       <div style={getCardNameRibbonStyle('grid')}>

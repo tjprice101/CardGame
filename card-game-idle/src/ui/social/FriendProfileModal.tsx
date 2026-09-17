@@ -15,7 +15,8 @@ import type { RealtimeChannel } from '@supabase/supabase-js';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import {
-  getCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
   cardFacePalette,
@@ -214,10 +215,10 @@ export default function FriendProfileModal({ profile, online, currentActivity, o
               {sigCards.map((def, i) => {
                 const color = def ? (RARITY_COLOR[def.rarity] ?? warmTheme.textMuted) : warmTheme.border;
                 return (
-                  <div key={i} style={{
+                  <div key={i} className={def ? getLiveCardShimmerClassName(def, 'normal', 'front') : undefined} style={{
                     height: 164, borderRadius: 10,
                     border: `1px solid ${def ? `${color}66` : warmTheme.border}`,
-                    ...(def ? getCardFaceBackgroundStyle(def, 'normal') : {}),
+                    ...(def ? getLiveCardFaceBackgroundStyle(def, 'normal', 'front') : {}),
                     background: def ? warmTheme.surfaceStrong : 'rgba(0,0,0,0.18)',
                     display: 'flex', flexDirection: 'column', alignItems: 'center',
                     justifyContent: 'space-between',

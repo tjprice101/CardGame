@@ -2,7 +2,7 @@
 import { useStore } from '@/state/store';
 import { getCardSetColor, getCardSetLabel } from '@/data/elements';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
-import { getCardFaceBackgroundStyle, getCardBackBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
+import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName, getCardBackBackgroundStyle, getCardArtTopBottomBorderOverlayStyleForCard } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardFinishLabel, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { warmTheme } from '@/ui/theme';
@@ -110,13 +110,11 @@ export default function CollectionCardDetail({ card, finish, owned, onClose, act
           }}
         >
           <div
-            className={finish === 'holo' && card.rarity !== 'Infinite' && card.rarity !== 'Eternal' && card.rarity !== 'Transcendent' && card.rarity !== 'Enigmatic'
-              ? 'holofoil-menu-card'
-              : undefined}
+            className={getLiveCardShimmerClassName(card, finish, 'front')}
             style={{
               width: '100%',
               aspectRatio: '148 / 204',
-              ...(owned > 0 ? getCardFaceBackgroundStyle(card, finish) : getCardBackBackgroundStyle(card, { dimmed: false })),
+              ...(owned > 0 ? getLiveCardFaceBackgroundStyle(card, finish, 'front') : getCardBackBackgroundStyle(card, { dimmed: false })),
               backgroundColor: warmTheme.surfaceStrong,
               borderRadius: 14,
               position: 'relative',

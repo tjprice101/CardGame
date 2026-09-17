@@ -8,7 +8,7 @@ import {
 } from '@/data/ascension/nullRaidDefinitions';
 import { uiTypography } from '@/ui/theme';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { getCardFaceBackgroundStyle } from '@/ui/cardBackgrounds';
+import { getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 
 const G = {
   bg: 'linear-gradient(160deg, #060310 0%, #040210 55%, #020108 100%)',
@@ -260,14 +260,14 @@ export default function NullRaidResults() {
                       transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
                     }}
                   >
-                    <div style={{
+                    <div className={rolled && hit && angelDef ? getLiveCardShimmerClassName(angelDef, 'normal', 'front') : undefined} style={{
                       width: 92,
                       height: 128,
                       borderRadius: 10,
                       border: `1px solid ${rolled ? (hit ? 'rgba(255,208,138,0.35)' : 'rgba(150,100,255,0.18)') : 'rgba(255,208,138,0.18)'}`,
                       ...(rolled && hit && angelDef
                         ? {
-                            ...getCardFaceBackgroundStyle(angelDef, 'normal', 'front'),
+                            ...getLiveCardFaceBackgroundStyle(angelDef, 'normal', 'front'),
                             backgroundSize: '100% 100%',
                           }
                         : {

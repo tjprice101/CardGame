@@ -5,7 +5,8 @@ import { DeckSystem } from '@/systems/cards/DeckSystem';
 import { SET_ACCENT, SET_LABEL, getCardSetLabel } from '@/data/elements';
 import {
   cardFacePalette,
-  getDenseCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
@@ -808,12 +809,10 @@ export default function DeckBuilder({ onClose }: Props) {
     return (
       <div key={def.key} style={styles.cardWithMeta}>
         <div
-          className={def.finish === 'holo' && def.def.rarity !== 'Infinite' && def.def.rarity !== 'Eternal' && def.def.rarity !== 'Transcendent' && def.def.rarity !== 'Enigmatic'
-            ? 'holofoil-menu-card'
-            : undefined}
+          className={getLiveCardShimmerClassName(def.def, def.finish, 'front')}
           style={{
             ...styles.card,
-            ...getDenseCardFaceBackgroundStyle(def.def, def.finish, 'front'),
+            ...getLiveCardFaceBackgroundStyle(def.def, def.finish, 'front'),
             ...(count > 0 ? styles.cardAdded : {}),
             ...((isAngel ? (count === 0 && !canAdd) : !canAdd) ? styles.cardFull : {}),
           }}
@@ -1121,12 +1120,10 @@ export default function DeckBuilder({ onClose }: Props) {
                 return (
                   <div
                     key={entry.key}
-                    className={entry.finish === 'holo' && def.rarity !== 'Infinite' && def.rarity !== 'Eternal' && def.rarity !== 'Transcendent' && def.rarity !== 'Enigmatic'
-                      ? 'holofoil-menu-card'
-                      : undefined}
+                    className={getLiveCardShimmerClassName(def, entry.finish, 'front')}
                     style={{
                       ...styles.extraStripCard,
-                      ...getDenseCardFaceBackgroundStyle(def, entry.finish, 'front'),
+                      ...getLiveCardFaceBackgroundStyle(def, entry.finish, 'front'),
                     }}
                     title={`${def.name} ×${entry.copies} — click to remove one`}
                     onClick={() => removeCard(entry.definitionId, entry.finish)}

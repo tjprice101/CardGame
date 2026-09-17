@@ -17,7 +17,8 @@ import {
   getCardArtTopBottomBorderOverlayStyleForCard,
   getCardBackgroundUrl,
   getCardFaceMetrics,
-  getDenseCardFaceBackgroundStyle,
+  getLiveCardFaceBackgroundStyle,
+  getLiveCardShimmerClassName,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
 } from '@/ui/cardBackgrounds';
@@ -270,8 +271,7 @@ export default function EternitysWake({ onClose }: Props) {
           const hpScale = selectedFightCount === 1 ? 1 : selectedFightCount === 2 ? 2.5 : 3.5;
           const scaledPreviewHp = Math.round(getBossDisplayHp(progress, boss) * hpScale);
           // Card preview always uses the reward card's own art — consistent with what the player earns.
-          const rewardFaceStyle = rewardDef ? getDenseCardFaceBackgroundStyle(rewardDef, 'normal', 'front', true) : {};
-          const rewardArtUrl = rewardDef ? getCardBackgroundUrl(rewardDef) : null;
+          const rewardFaceStyle = rewardDef ? getLiveCardFaceBackgroundStyle(rewardDef, 'normal', 'front') : {};
 
           return (
             <div key={boss.id} className={onCooldown || lockedByProgress ? undefined : 'ui-tile-hover'} style={{
@@ -281,7 +281,7 @@ export default function EternitysWake({ onClose }: Props) {
               opacity: onCooldown || lockedByProgress ? 0.65 : 1,
             }}>
               {displayBossArtUrl && (
-                <div style={{
+                <div className={rewardDef ? getLiveCardShimmerClassName(rewardDef, 'normal', 'front') : undefined} style={{
                   height: 156,
                   borderRadius: 10,
                   border: '1px solid rgba(255,107,107,0.28)',
@@ -400,7 +400,6 @@ export default function EternitysWake({ onClose }: Props) {
                             alignItems: 'stretch',
                           }}
                         >
-                          {rewardArtUrl && <img src={rewardArtUrl} alt="" loading="eager" decoding="async" aria-hidden style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0, pointerEvents: 'none' }} />}
                           <div style={getCardArtTopBottomBorderOverlayStyleForCard(rewardDef)} />
                           <div style={getCardNameRibbonStyle('grid')}>
                             <div style={{

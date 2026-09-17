@@ -6,6 +6,18 @@ const handPath = join(process.cwd(), 'src/ui/hud/HandDisplay.tsx');
 const boardPath = join(process.cwd(), 'src/ui/hud/BoardDisplay.tsx');
 const collectionPath = join(process.cwd(), 'src/ui/store/CollectionViewer.tsx');
 const deckBuilderPath = join(process.cwd(), 'src/ui/deck/DeckBuilder.tsx');
+const previewPaths = [
+  'src/ui/store/CollectionCardDetail.tsx',
+  'src/ui/store/PackOpeningModal.tsx',
+  'src/ui/store/CardPackStore.tsx',
+  'src/ui/infinitude/Infinitude.tsx',
+  'src/ui/eternitysWake/EternitysWake.tsx',
+  'src/ui/eternitysWake/BossResultModal.tsx',
+  'src/ui/menus/FractureModal.tsx',
+  'src/ui/profile/SignatureCardPickerModal.tsx',
+  'src/ui/player/PlayerInformationPage.tsx',
+  'src/ui/social/FriendProfileModal.tsx',
+];
 
 describe('live card face rendering', () => {
   it('uses the same composed art and shimmer helpers in hand and on board', () => {
@@ -31,13 +43,25 @@ describe('live card face rendering', () => {
     const collectionSource = readFileSync(collectionPath, 'utf8');
     const deckBuilderSource = readFileSync(deckBuilderPath, 'utf8');
 
-    expect(collectionSource).toContain("getDenseCardFaceBackgroundStyle(card, finish, 'front')");
-    expect(collectionSource).not.toContain("getDenseCardFaceBackgroundStyle(card, finish, 'front', true)");
+    expect(collectionSource).toContain("getLiveCardFaceBackgroundStyle(card, finish, 'front')");
+    expect(collectionSource).toContain('getLiveCardShimmerClassName');
+    expect(collectionSource).not.toContain('holofoil-menu-card');
     expect(collectionSource).not.toContain('const artUrl = owned > 0 ? getCardBackgroundUrl(card)');
 
-    expect(deckBuilderSource).toContain("getDenseCardFaceBackgroundStyle(def.def, def.finish, 'front')");
-    expect(deckBuilderSource).toContain("getDenseCardFaceBackgroundStyle(def, entry.finish, 'front')");
-    expect(deckBuilderSource).not.toContain("getDenseCardFaceBackgroundStyle(def.def, def.finish, 'front', true)");
+    expect(deckBuilderSource).toContain("getLiveCardFaceBackgroundStyle(def.def, def.finish, 'front')");
+    expect(deckBuilderSource).toContain("getLiveCardFaceBackgroundStyle(def, entry.finish, 'front')");
+    expect(deckBuilderSource).toContain('getLiveCardShimmerClassName');
+    expect(deckBuilderSource).not.toContain('holofoil-menu-card');
     expect(deckBuilderSource).not.toContain('DeferredCardArt');
+  });
+
+  it('keeps every preview surface on the same canonical foil path', () => {
+    for (const relativePath of previewPaths) {
+      const source = readFileSync(join(process.cwd(), relativePath), 'utf8');
+      expect(source, relativePath).toContain('getLiveCardFaceBackgroundStyle');
+      expect(source, relativePath).toContain('getLiveCardShimmerClassName');
+      expect(source, relativePath).not.toContain('holofoil-menu-card');
+      expect(source, relativePath).not.toContain('holofoil-live-card');
+    }
   });
 });

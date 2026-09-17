@@ -643,47 +643,6 @@ select {
   animation: gamePatternDrift 42s linear infinite;
 }
 
-/* ── Gameplay & Menu Holofoil: Deep inverted metallic white, black & deep scarlet.
-   Single source of truth — identical always-on shimmer whether the card is on
-   the board, in hand, in a pack, or browsed in the Collection/Deck Builder. ── */
-.holofoil-live-card,
-.holofoil-menu-card {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
-
-.holofoil-live-card::before,
-.holofoil-menu-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.88;
-  background-image:
-    linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(10,2,4,0.92) 25%, rgba(180,12,32,0.85) 50%, rgba(5,1,2,0.95) 75%, rgba(255,255,255,0.92) 100%),
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.95) 0%, rgba(180,12,32,0.7) 35%, rgba(0,0,0,0.9) 70%),
-    repeating-linear-gradient(45deg, rgba(255,255,255,0.2) 0px, rgba(255,255,255,0.2) 2px, rgba(160,10,25,0.3) 2px, rgba(160,10,25,0.3) 6px);
-  background-size: 220% 210%, 180% 180%, 100% 100%;
-  mix-blend-mode: difference;
-  animation: holoLivePulse 2.1s ease-in-out infinite alternate;
-}
-
-.holofoil-live-card::after,
-.holofoil-menu-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.72;
-  background-image:
-    linear-gradient(160deg, rgba(255,255,255,0.85) 0%, rgba(140,8,24,0.6) 35%, rgba(0,0,0,0.8) 65%, rgba(255,255,255,0.75) 100%),
-    radial-gradient(circle at 80% 80%, rgba(200,20,40,0.8) 0%, rgba(255,255,255,0.6) 40%, rgba(0,0,0,0.85) 80%);
-  background-size: 200% 200%, 160% 160%;
-  mix-blend-mode: overlay;
-  animation: holoEtchShift 1.8s ease-in-out infinite alternate;
-}
-
 /* Live turn cards use one transform-only foil pass. Menu cards keep the richer
    multi-layer treatment where many simultaneous repaints are less costly. */
 @keyframes liveCardShimmerSweep {
@@ -873,13 +832,6 @@ html.reduced-motion .anim-backdrop-fade,
 html.reduced-motion .anim-screen-fade-in,
 html.reduced-motion .anim-screen-fade-out,
 html.reduced-motion .anim-screen-black-fade,
-html.reduced-motion .holofoil-live-card,
-html.reduced-motion .holofoil-menu-card,
-html.reduced-motion .holofoil-card {
-  animation-duration: 0.001ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.001ms !important;
-}
 html.reduced-motion .live-card-shimmer::after {
   animation: none !important;
   opacity: 0.18;
@@ -1779,12 +1731,16 @@ html.reduced-motion .trial-guide-pulse {
 .attack-sequence-field .shatter-ambient-star { background: #fff4c7; color: #ffd66c; }
 .attack-sequence-field-inverted .shatter-ambient-star { background: #17131a; color: #ff315f; box-shadow: 0 0 5px #17131a, 0 0 12px rgba(255,49,95,0.4); }
 .attack-sequence-counter { position: absolute; z-index: 2; top: 24px; left: 50%; transform: translateX(-50%); text-align: center; font-family: Georgia, serif; }
-.attack-sequence-star { position: absolute; z-index: 3; translate: -50% -50%; width: 68px; height: 68px; border: 0; background: transparent; color: #ffd25f; font-size: 48px; line-height: 1; cursor: pointer; animation: attackSequenceStarGoldWhite 1.1s ease-in-out infinite alternate, shatterTitlePop 540ms cubic-bezier(0.16,0.84,0.44,1) both; transition: opacity 140ms ease, scale 140ms ease; }
+.attack-sequence-star { position: absolute; z-index: 3; translate: -50% -50%; width: 46px; height: 46px; border: 0; background: transparent; color: #ffd25f; font-size: 32px; line-height: 1; cursor: pointer; animation: attackSequenceStarGoldWhite 1.1s ease-in-out infinite alternate, shatterTitlePop 540ms cubic-bezier(0.16,0.84,0.44,1) both; transition: opacity 140ms ease, scale 140ms ease; }
 .attack-sequence-star:hover:not(:disabled) { scale: 1.2; }
 .attack-sequence-star-halo { position: absolute; inset: -24%; border: 1px solid currentColor; border-radius: 50%; opacity: 0.44; box-shadow: 0 0 18px currentColor, inset 0 0 12px currentColor; animation: shatterStarRays 1.4s linear infinite; }
 .attack-sequence-star-rays { position: absolute; inset: -48%; background: linear-gradient(90deg, transparent 48%, currentColor 49.5% 50.5%, transparent 52%), linear-gradient(0deg, transparent 48%, currentColor 49.5% 50.5%, transparent 52%); opacity: 0.58; animation: shatterStarRays 3.2s linear infinite reverse; }
 .attack-sequence-star-core { position: absolute; inset: 0; display: grid; place-items: center; filter: drop-shadow(0 0 8px currentColor); }
 .attack-sequence-star-bridge { color: #fff; -webkit-text-stroke: 2px #ff315f; filter: drop-shadow(0 0 6px #000) drop-shadow(0 0 13px #ff315f); }
+.attack-sequence-result-wash { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; animation: attackSequenceResultWash 520ms ease-out both; }
+.attack-sequence-result-wash-bridge { animation-name: attackSequenceResultWashBridge; }
+@keyframes attackSequenceResultWash { from { opacity: 0; } 35% { opacity: 1; } to { opacity: 1; } }
+@keyframes attackSequenceResultWashBridge { from { opacity: 0; } 35% { opacity: 1; } to { opacity: 1; } }
 .attack-sequence-overlay-ain .attack-sequence-star { filter: drop-shadow(0 0 10px #ffbd38) drop-shadow(0 0 28px rgba(255,242,185,.9)); }
 .attack-sequence-overlay-soph .attack-sequence-star { filter: drop-shadow(0 0 10px #fff) drop-shadow(0 0 28px rgba(196,146,255,.75)); }
 .attack-sequence-soph-card::before { content:''; position:absolute; inset:-28px; z-index:-1; border:1px solid rgba(255,220,130,.55); border-radius:50%; box-shadow:0 0 35px rgba(180,120,255,.45),inset 0 0 25px rgba(255,215,100,.28); animation:shatterStarRays 7s linear infinite; }
