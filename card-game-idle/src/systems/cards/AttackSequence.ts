@@ -14,10 +14,10 @@ export function getAttackSequenceStarCount(kind: AttackSequenceKind, definitionI
 }
 
 export function getAttackSequenceMultiplier(kind: AttackSequenceKind, hits: number, orbitScore = 0): number {
-  const orbitBonus = Math.min(2.5, Math.max(0, orbitScore));
-  if (hits <= 0) return 1;
-  if (kind === 'ain') return Math.min(6.5, hits + 1 + orbitBonus);
-  return Math.min(8, hits + 0.5 + orbitBonus);
+  const orbitBonus = Math.max(0, orbitScore);
+  if (hits <= 0) return 1 + orbitBonus;
+  if (kind === 'ain') return hits + 1 + orbitBonus;
+  return hits + 0.5 + orbitBonus;
 }
 
 export function getAttackSequenceStars(

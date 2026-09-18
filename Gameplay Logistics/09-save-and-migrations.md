@@ -25,7 +25,7 @@ Garden material progress includes the Neutrality currencies plus `seedOfCausalit
 - Clear or normalize active turn state when old runtime fields cannot be trusted.
 - Bump the save version only after transforms complete.
 - v49 initializes `progress.ownedAbilities` for saves created before Ability Materialization.
-- v50 initializes and sanitizes the Neutrality-specific Garden currencies and clears interrupted Garden runtime encounters.
+- v50 initializes and sanitizes Garden material currencies and clears interrupted Garden runtime encounters. Garden now includes Neutrality and Causality material fields.
 - Test old fixtures and current fixtures.
 
 ## Progress Snapshots

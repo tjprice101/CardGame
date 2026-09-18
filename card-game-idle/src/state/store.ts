@@ -2665,21 +2665,32 @@ export const useStore = create<Store>()(
         const dx = x - 0.5;
         const dy = y - 0.5;
         const radius = Math.hypot(dx, dy);
-        if (radius < 0.08 || radius > 0.5) return;
+        if (radius < 0.12 || radius > 0.48) return;
         const angle = Math.atan2(dy, dx);
         const previous = sequence.lastPointerAngle;
         if (previous === undefined) {
           sequence.lastPointerAngle = angle;
+          sequence.lastPointerRadius = radius;
           sequence.pointerStartedAt = nowMs;
           return;
         }
         let delta = angle - previous;
         while (delta > Math.PI) delta -= Math.PI * 2;
         while (delta < -Math.PI) delta += Math.PI * 2;
-        const elapsed = Math.max(16, nowMs - (sequence.pointerStartedAt ?? nowMs));
-        const turnsPerSecond = Math.abs(delta) / (elapsed / 1000);
-        sequence.orbitScore = Math.min(2.5, (sequence.orbitScore ?? 0) + Math.min(0.12, turnsPerSecond * 0.008));
+        const absDelta = Math.abs(delta);
+        const radialDelta = Math.abs(radius - (sequence.lastPointerRadius ?? radius));
+        const direction = delta >= 0 ? 1 : -1;
+        const consistentDirection = sequence.pointerOrbitDirection === direction;
+        sequence.pointerOrbitDirection = direction;
+        sequence.pointerOrbitStreak = consistentDirection ? (sequence.pointerOrbitStreak ?? 0) + 1 : 1;
+        const elapsed = Math.max(8, nowMs - (sequence.pointerStartedAt ?? nowMs - 16));
+        const radiansPerSecond = absDelta / (elapsed / 1000);
+        const circularMotion = absDelta >= 0.035 && absDelta <= 0.95 && radialDelta <= 0.08 && (sequence.pointerOrbitStreak ?? 0) >= 3;
+        if (circularMotion) {
+          sequence.orbitScore = (sequence.orbitScore ?? 0) + radiansPerSecond * 0.018;
+        }
         sequence.lastPointerAngle = angle;
+        sequence.lastPointerRadius = radius;
         sequence.pointerStartedAt = nowMs;
       });
     },

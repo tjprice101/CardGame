@@ -537,9 +537,8 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     'linear-gradient(180deg, rgba(0, 0, 0, 0.16) 0%, rgba(255, 255, 255, 0.04) 52%, rgba(0, 0, 0, 0.22) 100%)',
   ];
 
-  // Canonical holofoil overlay: muted pastel iridescence (pink/orange/purple/blue) at
-  // overlay-blend, paired with a soft white sparkle and a diagonal sheen. Matches the
-  // Holofoil Workshop preview look so every holo card across the game reads identically.
+  // Canonical base-pack holofoil overlay: inverted black, red, and white metallic layers.
+  // Enigmatic, Eternal, and Infinite cards use their own intrinsic rarity layers above.
   const holoLayers = [
     'linear-gradient(112deg, rgba(255,255,255,0.82) 0%, rgba(8,8,10,0.92) 16%, rgba(190,0,28,0.92) 34%, rgba(0,0,0,0.96) 52%, rgba(255,255,255,0.76) 70%, rgba(112,0,18,0.94) 86%, rgba(255,255,255,0.88) 100%)',
     'radial-gradient(ellipse at 18% 16%, rgba(255,255,255,0.72) 0%, rgba(220,0,35,0.5) 20%, rgba(0,0,0,0.92) 48%, rgba(255,255,255,0) 70%)',

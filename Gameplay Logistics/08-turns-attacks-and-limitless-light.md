@@ -51,11 +51,11 @@ UI previews and runtime grants should use the same `resolveCardScaling` inputs.
 
 ## Interactive Attack Sequences
 
-- Ain Attack fades to black, then presents three deterministic gold-to-white stars for 3 seconds. One, two, or three hits multiply the attack by ×2, ×3, or ×4.
-- Soph Attack floats the attacking card at center during the black fade and presents five stars for 4 seconds. Hits scale from ×1.5 through ×5.5.
-- Bridge the Light fades to white and uses a card-specific ordered constellation of three to five white/black stars connected by red-pink lines. Correct hits use the Soph multiplier ladder.
-- Layouts are seeded by card definition and attack kind: every copy of one card shares a layout, while different cards and modes differ.
-- Ain and Soph wash toward white as time expires; Bridge washes toward black. Board actions and encounter timers pause until resolution.
+- Ain, Soph, and Bridge attacks use a central OSU-style cursor orbit. Move the pointer in sustained circular motion around the center ring to build orbit power before the timer expires.
+- Orbit power is uncapped and feeds directly into the final multiplier. Faster clean rotations can keep increasing payout; random movement, straight-line movement, jitter, and direction changes do not score.
+- Ain and Soph use the dark attack field. Soph also floats the attacking card at center. Bridge uses the white inverted field with red-pink celestial guidance and keeps the result screen white.
+- Deterministic star/constellation data remains as visual guidance and compatibility data, but the primary scoring action is circular pointer motion.
+- Payouts resolve once through the store when the sequence reaches result. Board actions and encounter timers pause until resolution.
 
 ## Shatter The Infinite Light
 
@@ -70,6 +70,10 @@ Shatter the Infinite Light is the full-board finisher. It becomes available only
 - During a boss encounter, resolution also triggers a Card-Break stagger and restores the encounter clock to its full duration. Battleground time resets to 180 seconds.
 
 The three phases and durations live in `src/systems/cards/ShatterTheInfiniteLight.ts`. Store actions and aftermath resolution live in `src/state/store.ts`; the cutscene and click targets live in `src/ui/hud/ShatterInfiniteLightOverlay.tsx`.
+
+## Boss HP Baseline
+
+Eternity's Wake HP starts from `calculateNeutralityBossBaseline()` in `src/systems/bossDifficulty.ts`. The baseline reads the strongest available base Neutrality Light and Ain Soph Aur attacks, estimates both no-input and perfect-execution three-minute output under the current attack system, and places the first boss between those envelopes. The set-anchored boss curve then scales from that starting point, with Causality retaining its endgame category multiplier.
 
 ## Collection Power
 

@@ -158,7 +158,7 @@ function OverviewBody() {
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Attack Star Sequences</div>
+        <div style={sectionHeadingStyle}>Attack Orbit Sequences</div>
         <ListItem label="Ain Attack">The screen fades to black. Click three card-specific gold-to-white stars within 3 seconds for ×2, ×3, or ×4 attack payout.</ListItem>
         <ListItem label="Soph Attack">The attacking card floats at center while five card-specific stars appear. Click them within 4 seconds for ×1.5 through ×5.5.</ListItem>
         <ListItem label="Bridge the Light">The screen fades to white. Follow the red-pink path through an ordered white-and-black constellation; correct hits use the Soph multiplier ladder.</ListItem>
@@ -344,7 +344,7 @@ function SetsBody() {
         <div style={sectionHeadingStyle}>Ability Amplification</div>
         <div style={bodyTextStyle}>
           Materialized abilities are purchased with Divine Light, equipped three at a time in the Deck Builder,
-          and activated from the in-turn Ability Amplification panel.
+          and activated from the in-turn Ability Amplification panel. The shop has Neutrality and Causality filters; Causality abilities unlock from full base Causality ownership, Causality Eternal ownership, and Causality Infinite ownership.
         </div>
       </div>
 
@@ -448,7 +448,7 @@ function ModesBody() {
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>More Modes</div>
-        <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards.</ListItem>
+        <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards. Claim every weekly reward to consume that rotation into one Super Weekly boss challenge.</ListItem>
         <ListItem label="Fracture">Spend Fracture Shards to add Card-light to any card.</ListItem>
         <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. Collect 5 unique cards from a set to find its Enigmas; each manuscript has another unlock requirement before its trials begin.</ListItem>
         <ListItem label="Eternity's Wake">Eternity's Wake unlocks after you acquire 3 unique Enigmatic cards.</ListItem>
@@ -605,7 +605,7 @@ function ProgressionBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Holofoil Cards</div>
         <ListItem label="Acquisition">Every card rolled in a single Pack has a 2% chance to drop as a holofoil. Boxes and Cases guarantee at least one holofoil.</ListItem>
-        <ListItem label="Visual Finish">Holofoils feature a deep, highly saturated inverted metallic finish with bright white highlights and deep scarlet accents.</ListItem>
+        <ListItem label="Visual Finish">Holofoils use source-specific full-card metallic treatments: base pack foils use black/red/white, Enigma uses black/white/gold, Eternal uses purple-red, and Infinite uses chromatic black/white.</ListItem>
         <ListItem label="Collection">Holofoils are purely cosmetic and are tracked separately in your collection and deck-building. They cannot be created with Aberrated Shards.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>

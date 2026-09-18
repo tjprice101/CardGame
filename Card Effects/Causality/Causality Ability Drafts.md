@@ -1,16 +1,22 @@
-# Causality Ability Drafts
+# Causality Ability Notes
 
-> Design draft only. These abilities are not registered, purchasable, equipped, or implemented in the runtime.
+> Current status: Causality materialized abilities are implemented, registered, purchasable, equippable in saved deck loadouts, and executable through Ability Amplification. This file preserves the original design direction and explains how the live implementation maps to it.
 
 ## Package Direction
 
-These three foundational abilities form a complete Causality arc:
+The first draft proposed three foundational abilities forming a Causality arc:
 
 1. **Author the First Cause** converts Limitless Light into an opening Cosmos reserve.
 2. **Unwritten Margin** changes how one chosen Causality card handles that reserve.
 3. **Final Cause** cashes out a developed Cosmos pool for Divine Light and renewed actions.
 
-All three are intended for the existing Ability Amplification slots. Draft purchase cost is 25,000 Divine Light each, matching foundational Neutrality abilities. Cooldowns are measured in real time, as they are for the current materialized ability system.
+The live implementation expands that arc into six endgame Causality abilities in `src/data/abilities/abilityDefinitions.ts`:
+
+1. **Author the First Cause** and **Causal Cartography** require at least one copy of every base Causality card and cost 250,000 Divine Light each.
+2. **Pearlescent Mandate** and **Archive of Elsewhen** require any Causality Eternal card and cost 2,500,000 Divine Light each.
+3. **Final Cause** and **Infinite Manuscript** require any Causality Infinite card and cost 25,000,000 Divine Light each.
+
+All six use the existing Ability Amplification slots. A saved deck can equip any three owned materialized abilities, regardless of set, but ownership gates remain set-specific.
 
 ## Author the First Cause
 
@@ -94,11 +100,11 @@ Example with 8 Limitless Light Stacks and no Cosmos:
 
 The sequence rewards planning without making any ability mandatory: First Cause accelerates entry, Unwritten Margin improves one authored card line, and Final Cause provides a clean exit from the resource loop.
 
-## Future Implementation Requirements
+## Runtime Implementation Notes
 
-- Extend ability definitions with a Causality ownership/set gate and a `cosmosCost` or custom-cost representation.
-- Add instance-scoped, turn-expiring card modification state for Unwritten Margin.
-- Route generated and consumed Cosmos through the existing Causality progress counters where appropriate.
-- Apply Final Cause's payout through the central Divine Light grant function.
-- Add dedicated ability icons, activation validation, tooltips, toasts, save migration defaults, and focused tests.
-- Decide whether ability-generated Cosmos advances Enigma objectives before implementation; the draft defaults to **no**.
+- Ability definitions support Causality ownership gates plus `cosmosCost` and `consumesAllCosmos` fields.
+- Store activation branches validate phase, ownership, resource costs, cooldowns, and target state before mutating resources.
+- Divine Light payouts route through the central grant path so Collection Power applies exactly once.
+- Causality ability icons are wired under `public/assets/ability-icons/`.
+- Focused coverage lives in `src/tests/unit/systems/AbilityRuntime.test.ts` and `src/tests/unit/systems/AbilityAssetAudit.test.ts`.
+- The original **Unwritten Margin** card-instance rewrite effect is not the live implementation; **Causal Cartography** is the second base Causality ability instead.

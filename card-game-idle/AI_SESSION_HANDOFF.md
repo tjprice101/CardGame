@@ -15,17 +15,19 @@ Fresh validation was run on the current working tree:
 - The player-facing primary currency remains Divine Light.
 - Causality is designed around a repeatable Limitless Cosmos loop: generate, convert, hold, and spend Cosmos for utility and Divine Light gain.
 - The Causality deck should reward conversion from Limitless Light into useful Cosmos payoff lines rather than dead one-off effects.
-- The three Causality abilities in `Card Effects/Causality/Causality Ability Drafts.md` are design-only. They are not registered, purchasable, equippable, or executable. Do not describe them as implemented until definitions, state, validation, UI, assets, saves, and tests are wired.
-- Card appearance is a single source of truth. Live turn surfaces use `getLiveCardFaceBackgroundStyle` plus `getLiveCardShimmerClassName`; hand and board share the same composed art/foil layers. Live foils use one lightweight shimmer, and face-down Soph cards show only the card backing plus state badges, never front-face name/rules chrome.
-- Ain, Soph, and Bridge attacks now resolve through `AttackSequence`: deterministic per-definition star layouts, delayed validated payout, paused encounter timers, and progressive end-of-timer screen wash. Ain uses three stars over 3 seconds for ×2–×4; Soph uses five stars over 4 seconds for ×1.5–×5.5 and floats the card at center; Bridge uses an ordered three-to-five-star inverted constellation with the Soph multiplier ladder.
+- Causality materialized abilities are implemented and live in the ability registry/shop: Author the First Cause, Causal Cartography, Pearlescent Mandate, Archive of Elsewhen, Final Cause, and Infinite Manuscript. They use the existing three-slot saved deck loadout, Causality ownership gates, Cosmos/Light Stack costs, cooldown timestamps, and focused runtime tests.
+- Card appearance is a single source of truth. Live turn surfaces use `getLiveCardFaceBackgroundStyle` plus `getLiveCardShimmerClassName`; hand, board, collection, deck builder, rewards, pending-search modals, and profile cards share the same composed art/foil layers. Holofoil animation is a full-card inverted metallic field, never a basic white line. Face-down Soph cards show only the card backing plus state badges, never front-face name/rules chrome.
+- Ain, Soph, and Bridge attacks resolve through `AttackSequence`: store-owned delayed payout, paused encounter timers, and central OSU-style cursor orbit scoring. Orbit power increases only from sustained circular pointer motion around the center, is uncapped, and contributes directly to the attack multiplier. Legacy deterministic star/constellation data remains as visual guidance and a compatibility path.
 - `Shatter the Infinite Light` uses a true 1.1-second fade to black before its detailed 10-second starfield. Each Limitless Infinity stack grants 1,000 base Divine Light before Collection Power. Resolution returns front-row Ain Soph Aur to the Extra Deck, returns back-row and discarded cards to the draw pile, preserves the hand, clears stacks/effects without advancing the turn, and staggers bosses while restoring their clock.
 - Causality endgame content is implemented: five Eternity's Wake bosses and Eternal rewards, five playable Infinite cards with Causality-only recipes, and the four-encounter Rift of Causality dungeon with four dedicated materials.
-- Final art filenames are wired for all new Causality cards, bosses, Rift cover, and materials. Temporary existing-art copies prevent missing assets; replace them in place with outputs from `Midjourney Art/Causality Endgame Expansion Prompts.md`.
+- Final art filenames are wired for all new Causality cards, bosses, Rift cover, materials, ability icons, profile pictures, and Causality splash slots. Loose generated Causality art has been moved into runtime folders when present.
+- Causality art prompts should use the splotched black-and-white illuminated-manuscript ink look as the current norm: distressed parchment/black ink, cobalt/navy/violet/cyan/magenta accents, dry-brush/splatter texture, and circular celestial-mechanical forms. Keep Causality-specific event-horizon/manuscript ideas for Causality; future sets may define their own aesthetic.
 - Board information and Card-born Stacks share one left-side vertical HUD rail with layout-driven spacing.
 - Collection Power is `1 + Resonance / 1000`, applied once. Its natural maximum is derived from `CardRegistry.getAll().length * 320`, so adding registered cards raises the cap automatically. Card-light is per-card XP; Resonance changes only when a Card-born Tier is crossed.
 - The main menu uses a responsive Command Deck with Play, Collection, and Progress sections. One contextual artwork banner is featured at a time; all destinations remain available through their category and locked destinations stay visible with requirements.
 - Enigma tracking is condition-based and turn-scoped; false positives from generic board presence or lifetime counters are not allowed.
 - Causality enigma reward copies are set to 3 per reward.
+- Challenges include Super Weekly: after all four weekly challenges are completed and claimed, the rotation can be consumed into one deterministic Eternity's Wake boss objective. Defeating the target completes it and awards extra shards plus an additional boss reward card copy.
 - UI summary text must stay in natural language and must not leak internal tokens or snake_case fields.
 
 ## Important files to read first
@@ -42,8 +44,10 @@ Fresh validation was run on the current working tree:
 - `src/systems/progression/cardMastery.ts`
 - `src/ui/cardBackgrounds.ts`
 - `src/ui/menu/MainMenuHub.tsx`
-- `Card Effects/Causality/Causality Ability Drafts.md`
+- `src/data/abilities/abilityDefinitions.ts`
 - `src/ui/cardStatSummary.ts`
+- `Midjourney Art/Causality Ability Icon Prompts.md`
+- `Midjourney Art/Causality Progression Rewards Prompts.md`
 
 ## Working rules for future chats
 

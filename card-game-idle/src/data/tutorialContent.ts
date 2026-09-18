@@ -53,7 +53,7 @@ export const RARITY_TIERS: RarityTier[] = [
   { name: 'Legendary', source: 'Card packs',                   description: 'Dramatic, deck-defining plays.' },
   { name: 'Eternal',  source: "Eternity's Wake boss drops",    description: 'Apex Ain/Soph cards with stronger attacks, deeper utility, and bespoke bridge effects.' },
   { name: 'Infinite', source: 'Infinitude crafting',           description: 'Apex tier. Forged by consuming specific Eternals, with the strongest Ain/Soph scaling.' },
-  { name: 'Enigmatic', source: 'Enigma rewards',               description: 'Quest-like reward cards with shimmering purple-white holofoil treatment.' },
+  { name: 'Enigmatic', source: 'Enigma rewards',               description: 'Quest-like reward cards with their own black, white, and golden metallic foil treatment.' },
 ];
 
 // ---------------------------------------------------------------------------

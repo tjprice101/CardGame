@@ -9,7 +9,7 @@ import {
   getAttackSequenceStars,
 } from '@/systems/cards/AttackSequence';
 
-describe('attack star sequences', () => {
+describe('attack orbit sequences', () => {
   it('uses the authored duration and multiplier tables', () => {
     expect(getAttackSequenceDuration('ain')).toBe(2_000);
     expect(getAttackSequenceDuration('soph')).toBe(3_000);
@@ -62,5 +62,55 @@ describe('attack star sequences', () => {
     expect(result.payout).toBe(result.basePayout * 4);
     expect(useStore.getState().turn.divineLightEarnedThisTurn - before).toBe(result.payout);
     expect(useStore.getState().board.backSlots[0]?.attackCooldowns[definition.ainAttack.id]).toBe(definition.ainAttack.cooldownCards);
+  });
+
+  it('tracks cursor orbit power without a hard cap', () => {
+    const base = structuredClone(defaultGameState) as GameState;
+    const definition = lightCards[0];
+    const instanceId = 'attack-sequence-orbit-light';
+    base.turn.phase = 'playing';
+    base.board.backSlots[0] = {
+      instanceId, definitionId: definition.definitionId, type: 'Light', rarity: definition.rarity,
+      finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0,
+    };
+    useStore.setState(state => ({ ...state, ...base }));
+
+    useStore.getState().activateLightAinAttack(instanceId);
+    const priming = useStore.getState().turn.attackSequence!;
+    useStore.getState().tickAttackSequence(priming.phaseEndsAt + 1);
+    for (let sample = 0; sample < 120; sample += 1) {
+      const angle = sample * 0.55;
+      useStore.getState().registerAttackSequencePointer(
+        0.5 + Math.cos(angle) * 0.24,
+        0.5 + Math.sin(angle) * 0.24,
+        priming.phaseEndsAt + 1 + sample * 12,
+      );
+    }
+
+    const sequence = useStore.getState().turn.attackSequence!;
+    expect(sequence.orbitScore).toBeGreaterThan(2.5);
+    expect(getAttackSequenceMultiplier('ain', 0, sequence.orbitScore)).toBeGreaterThan(3.5);
+  });
+
+  it('does not reward non-circular pointer movement', () => {
+    const base = structuredClone(defaultGameState) as GameState;
+    const definition = lightCards[0];
+    const instanceId = 'attack-sequence-linear-light';
+    base.turn.phase = 'playing';
+    base.board.backSlots[0] = {
+      instanceId, definitionId: definition.definitionId, type: 'Light', rarity: definition.rarity,
+      finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0,
+    };
+    useStore.setState(state => ({ ...state, ...base }));
+
+    useStore.getState().activateLightAinAttack(instanceId);
+    const priming = useStore.getState().turn.attackSequence!;
+    useStore.getState().tickAttackSequence(priming.phaseEndsAt + 1);
+    for (let sample = 0; sample < 80; sample += 1) {
+      const x = 0.2 + (sample % 20) * 0.03;
+      useStore.getState().registerAttackSequencePointer(x, 0.5, priming.phaseEndsAt + 1 + sample * 12);
+    }
+
+    expect(useStore.getState().turn.attackSequence?.orbitScore ?? 0).toBe(0);
   });
 });

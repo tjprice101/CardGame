@@ -1,10 +1,8 @@
-# Neutrality-Specific Progression
+# Set-Specific Progression
 
-Garden of Cards, Valley of Null, Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter currently belong exclusively to the Neutrality set. These are not universal progression currencies. Future sets must define their own dungeon rewards and material economies.
+Garden of Cards is set-filtered. Valley of Null, Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter belong to Neutrality. Rift of Causality, Seed of Causality, Causal Bloom, Shattered Causal Transcript, and Heart of Causality belong to Causality. These material economies are not interchangeable.
 
-Ability Materialization is also Neutrality-specific. The first two endgame abilities require any owned Neutrality Eternal card; the second two require any owned Neutrality Infinite card.
-
-The current catalog contains seven Neutrality abilities total. Only three may be equipped per deck. Null Horizon and Axiomatic Reversal are Eternal-gated; Whiteout Domain and Infinite Accord are Infinite-gated and use substantially higher endgame costs.
+Ability Materialization contains Neutrality and Causality set filters. Decks still equip only three abilities total. Neutrality has seven abilities with Eternal and Infinite ownership gates. Causality has six endgame abilities: two require every base Causality card, two require any Causality Eternal card, and two require any Causality Infinite card.
 
 # Progression And Challenges
 
@@ -37,6 +35,8 @@ The cap therefore rises automatically whenever cards are added to the registry. 
 
 Rotations avoid repeating the previous rotation's template IDs when enough alternatives exist. The Challenges UI presents Daily and Weekly in independently scrollable columns.
 
+After all four weekly challenge rewards are claimed, the weekly rotation can be consumed into one Super Weekly Challenge. It targets a deterministic Eternity's Wake boss for that week. Defeating the target boss completes the Super Weekly and awards bonus Aberrated Shards plus an additional copy of that boss's reward card.
+
 ## Rarity Progression
 
 - Enigmatic cards come from Enigmas.
@@ -63,3 +63,5 @@ Wished Upon A Star event timing is centralized in `src/ui/eventWishedUponAStar/e
 - Rift of Causality is a four-encounter Garden dungeon using the same five-minute encounter timer as Valley of Null. Its 80,000 HP opening encounter is four times Valley's final encounter.
 - Rift materials are Seed of Causality (50%), Causal Bloom (40%), Shattered Causal Transcript (30%), and Heart of Causality (10%).
 - Five playable Causality Infinite cards have recipes containing only Causality Eternal rewards and those four Rift materials.
+- Causality progression rewards include titles/achievements, profile pictures, reward themes, and Eternal/Infinite splash slots.
+- Causality Midjourney prompts should use the splotched illuminated-ink look as the current norm: distressed parchment, heavy black dry-brush and splatter texture, cobalt/navy/violet/cyan/magenta accents, and circular celestial-mechanical forms. Keep Causality-specific event-horizon/manuscript concepts in Causality prompts; future sets may define a different visual style.

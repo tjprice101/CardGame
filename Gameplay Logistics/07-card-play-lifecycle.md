@@ -57,9 +57,9 @@ Summoning requires:
 
 Materials are consumed only after validation succeeds. Every successful summon grants +1 Limitless Light Stack. On-summon effects grant Divine Light through the central grant path.
 
-Bridge the Light uses `activateAsaBridge` to validate and reserve optional stack costs and compute triune scaling. The resulting `attackSequence` grants Divine Light and starts cooldown only after the ordered constellation resolves.
+Bridge the Light uses `activateAsaBridge` to validate and reserve optional stack costs and compute triune scaling. The resulting `attackSequence` grants Divine Light and starts cooldown only after the central cursor-orbit sequence resolves.
 
-Attack actions now reserve costs and create `turn.attackSequence`; payout and cooldown are committed only when the sequence reaches result. `AttackSequenceOverlay` owns presentation while `registerAttackSequenceStarHit` and `tickAttackSequence` revalidate star IDs/order and resolve the award once.
+Attack actions now reserve costs and create `turn.attackSequence`; payout and cooldown are committed only when the sequence reaches result. `AttackSequenceOverlay` owns presentation while `registerAttackSequencePointer` scores sustained circular pointer motion around the center. Orbit power is uncapped, but straight lines, jitter, and direction changes do not score. `registerAttackSequenceStarHit` remains only as a compatibility path for deterministic star guidance/tests.
 
 ## Shatter The Infinite Light Lifecycle
 

@@ -17,7 +17,7 @@ Premium Neutrality cards are awarded outside packs:
 - Transcendent: Null Raid progression.
 - Infinite: Infinitude crafts.
 
-Garden of Cards and its Valley of Null dungeon are Neutrality-specific. Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter are Neutrality crafting materials, not universal currencies for future card sets.
+Valley of Null is the Neutrality Garden expedition. Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter are Neutrality crafting materials, not universal currencies for future card sets.
 
 ## Light Cards
 
