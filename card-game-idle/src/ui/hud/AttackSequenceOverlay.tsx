@@ -35,13 +35,22 @@ export default function AttackSequenceOverlay() {
   const remaining = Math.max(0, sequence.phaseEndsAt - Date.now());
   const washOpacity = result ? 1 : 0;
   const title = sequence.kind === 'ain' ? 'Ain Attack' : sequence.kind === 'soph' ? 'Soph Attack' : 'Bridge the Light';
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!active) return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    useStore.getState().registerAttackSequencePointer(
+      (event.clientX - rect.left) / rect.width,
+      (event.clientY - rect.top) / rect.height,
+      Date.now(),
+    );
+  };
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 940, overflow: 'hidden', pointerEvents: 'auto', userSelect: 'none',
       background: bridge ? '#f8f7f2' : '#000',
       animation: bridge ? undefined : 'attackSequenceFadeBlack 900ms ease-out both',
-    }} className={`attack-sequence-overlay attack-sequence-overlay-${sequence.kind}`}>
+    }} onPointerMove={handlePointerMove} className={`attack-sequence-overlay attack-sequence-overlay-${sequence.kind}`}>
       {sequence.phase !== 'priming' && (
         <div className={`attack-sequence-field attack-sequence-field-${sequence.kind}${bridge ? ' attack-sequence-field-inverted' : ''}`}>
           <div className="attack-sequence-nebula" />
@@ -92,31 +101,20 @@ export default function AttackSequenceOverlay() {
         }} />
       )}
 
-      {active && sequence.stars.map((star, index) => {
-        const clicked = sequence.clickedStarIds.includes(star.id);
-        const available = !bridge || index === sequence.clickedStarIds.length;
-        if (clicked) return null;
-        return (
-          <button
-            key={star.id}
-            aria-label={`${title} star ${index + 1}`}
-            disabled={clicked || !available}
-            onClick={() => useStore.getState().registerAttackSequenceStarHit(star.id)}
-            className={bridge ? 'attack-sequence-star attack-sequence-star-bridge' : 'attack-sequence-star'}
-            style={{ left: `${star.x}%`, top: `${star.y}%`, opacity: available ? 1 : 0.45 }}
-          >
-            <span className="attack-sequence-star-halo" aria-hidden="true" />
-            <span className="attack-sequence-star-rays" aria-hidden="true" />
-            <span className="attack-sequence-star-core">✦</span>
-            {bridge && <span className="attack-sequence-star-order">{index + 1}</span>}
-          </button>
-        );
-      })}
+      {active && sequence.stars.map((star, index) => (
+        <i
+          key={star.id}
+          aria-hidden="true"
+          className={bridge ? 'attack-sequence-star-guide attack-sequence-star-guide-bridge' : 'attack-sequence-star-guide'}
+          style={{ left: `${star.x}%`, top: `${star.y}%`, opacity: 0.28 + index * 0.06 }}
+        >{bridge ? index + 1 : '·'}</i>
+      ))}
+      {active && <div className={`attack-sequence-orbit-target${bridge ? ' attack-sequence-orbit-target-bridge' : ''}`} aria-hidden="true"><span /><span /><span /></div>}
 
       <div className={active ? 'attack-sequence-counter shatter-counter-pulse' : 'attack-sequence-counter'} style={{ color: bridge ? '#16050b' : '#fff9e8', textShadow: bridge ? '0 0 14px rgba(255,40,90,0.38)' : '0 0 18px rgba(255,220,120,0.65)' }}>
         <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.78 }}>{title}</div>
         {active && <div style={{ fontSize: 34, marginTop: 5, fontWeight: 800 }}>{(remaining / 1_000).toFixed(1)}s</div>}
-        {active && <div style={{ fontSize: 14, marginTop: 4, letterSpacing: 1.5 }}>✦ {sequence.clickedStarIds.length} / {sequence.stars.length}</div>}
+        {active && <div style={{ fontSize: 14, marginTop: 4, letterSpacing: 1.5 }}>◌ {(sequence.orbitScore ?? 0).toFixed(1)} orbit power</div>}
       </div>
 
       {result && (

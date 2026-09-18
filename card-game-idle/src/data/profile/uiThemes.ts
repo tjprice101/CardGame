@@ -242,10 +242,17 @@ const BASE_RARITIES = new Set(['Common', 'Rare', 'Epic', 'Legendary']);
 
 const SET_LABELS: Record<string, string> = {
   Neutrality: 'Neutrality',
+  Causality: 'Causality',
 };
 
 const ELEMENT_THEME_PALETTE: Record<string, UiPalette> = {
   Neutrality: NEUTRALITY,
+  Causality: makePalette({
+    appBackground: 'radial-gradient(circle at 50% -10%, #24114a 0%, rgba(36,17,74,0) 55%), linear-gradient(180deg, #090612 0%, #1a0d28 48%, #05030b 100%)',
+    surface: 'rgba(28, 14, 44, 0.94)', surfaceStrong: 'rgba(44, 20, 66, 0.97)', surfaceMuted: 'rgba(18, 8, 30, 0.9)',
+    border: 'rgba(104, 233, 255, 0.34)', borderStrong: 'rgba(255, 80, 145, 0.64)', text: '#f2efff', textSoft: 'rgba(242,239,255,0.88)', textMuted: 'rgba(220,210,245,0.7)', textFaint: 'rgba(220,210,245,0.5)',
+    accent: '#68e9ff', accentSoft: '#ff6d9d', accentDeep: '#190b2c', button: 'linear-gradient(180deg, #8ff2ff 0%, #c14b87 100%)', glow: '0 12px 30px rgba(104,233,255,0.26)',
+  }),
 };
 
 type ParsedColor = { r: number; g: number; b: number; a: number };
@@ -368,8 +375,7 @@ function getThemeSetSpecs(): ThemeSetSpec[] {
   const cards = CardRegistry.getAll();
 
   for (const card of cards) {
-    // All remaining cards belong to the Neutrality set
-    const setId = 'Neutrality';
+    const setId = card.definitionId.includes('causality') ? 'Causality' : 'Neutrality';
 
     let spec = grouped.get(setId);
     if (!spec) {

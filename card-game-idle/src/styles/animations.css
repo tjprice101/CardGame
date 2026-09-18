@@ -1748,6 +1748,14 @@ html.reduced-motion .trial-guide-pulse {
 .attack-sequence-star-rays { position: absolute; inset: -48%; background: linear-gradient(90deg, transparent 48%, currentColor 49.5% 50.5%, transparent 52%), linear-gradient(0deg, transparent 48%, currentColor 49.5% 50.5%, transparent 52%); opacity: 0.58; animation: shatterStarRays 3.2s linear infinite reverse; }
 .attack-sequence-star-core { position: absolute; inset: 0; display: grid; place-items: center; filter: drop-shadow(0 0 8px currentColor); }
 .attack-sequence-star-bridge { color: #fff; -webkit-text-stroke: 2px #ff315f; filter: drop-shadow(0 0 6px #000) drop-shadow(0 0 13px #ff315f); }
+.attack-sequence-star-guide { position: absolute; z-index: 2; translate: -50% -50%; color: rgba(255,220,130,0.82); font: 700 22px/1 Georgia, serif; text-shadow: 0 0 12px currentColor; pointer-events: none; }
+.attack-sequence-star-guide-bridge { color: rgba(196,20,79,0.8); font-size: 13px; }
+.attack-sequence-orbit-target { position: absolute; z-index: 3; left: 50%; top: 52%; width: min(34vw, 360px); aspect-ratio: 1; translate: -50% -50%; border: 2px solid rgba(255,213,105,0.46); border-radius: 50%; pointer-events: none; box-shadow: 0 0 22px rgba(255,190,50,0.18), inset 0 0 28px rgba(255,190,50,0.1); animation: attackOrbitTargetPulse 1.8s ease-in-out infinite; }
+.attack-sequence-orbit-target span { position: absolute; inset: 12%; border: 1px solid rgba(255,255,255,0.24); border-radius: 50%; transform: rotate(48deg) skewX(18deg); }
+.attack-sequence-orbit-target span:nth-child(2) { transform: rotate(-48deg) skewX(18deg); }
+.attack-sequence-orbit-target span:nth-child(3) { inset: 38%; border-color: rgba(255,235,170,0.55); }
+.attack-sequence-orbit-target-bridge { border-color: rgba(196,20,79,0.5); box-shadow: 0 0 26px rgba(196,20,79,0.18), inset 0 0 28px rgba(196,20,79,0.1); }
+@keyframes attackOrbitTargetPulse { 0%,100% { scale: .96; opacity: .72; } 50% { scale: 1.03; opacity: 1; } }
 .attack-sequence-star-order { position: absolute; z-index: 2; right: -7px; bottom: -5px; min-width: 17px; height: 17px; padding: 0 3px; border: 1px solid #c4144f; border-radius: 999px; background: rgba(255,248,242,0.95); color: #8d1747; font: 700 10px/15px Georgia, serif; text-align: center; -webkit-text-stroke: 0; box-shadow: 0 1px 7px rgba(83,8,38,0.28); }
 .attack-sequence-result-wash { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; animation: attackSequenceResultWash 520ms ease-out both; }
 .attack-sequence-result-wash-bridge { animation-name: attackSequenceResultWashBridge; }

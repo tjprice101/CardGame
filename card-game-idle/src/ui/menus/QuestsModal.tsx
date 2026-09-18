@@ -8,10 +8,12 @@ import {
   getScaledQuestDivineLight,
   refreshQuestRotation,
   isQuestComplete,
+  isSuperWeeklyReady,
   type QuestInstance,
 } from '@/systems/progression/quests';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { uiTypography } from '@/ui/theme';
+import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 
 interface Props { onClose: () => void; }
 type Cadence = 'daily' | 'weekly';
@@ -124,12 +126,16 @@ export default function QuestsModal({ onClose }: Props) {
   const [now, setNow] = useState(() => Date.now());
   const progress = useStore(selectProgress);
   const claimQuest = useStore(s => s.claimQuest);
+  const activateSuperWeekly = useStore(s => s.activateSuperWeekly);
   const resonanceScore = computeGlobalResonanceScore(progress);
   const view = useMemo(() => refreshQuestRotation({
     daily: progress.quests.daily.map(q => ({ ...q })), weekly: progress.quests.weekly.map(q => ({ ...q })),
     lastDailyRollDay: progress.quests.lastDailyRollDay, lastWeeklyRollWeek: progress.quests.lastWeeklyRollWeek,
   }, now), [progress.quests, now]);
   const readyCount = [...view.daily, ...view.weekly].filter(q => isQuestComplete(q) && !q.claimed).length;
+  const superWeekly = view.superWeekly;
+  const superBoss = superWeekly ? BOSS_DEFINITIONS.find(boss => boss.id === superWeekly.bossId) : null;
+  const superReady = isSuperWeeklyReady(view);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000);
@@ -158,6 +164,17 @@ export default function QuestsModal({ onClose }: Props) {
             <ChallengeColumn cadence="weekly" quests={view.weekly} resonanceScore={resonanceScore} onClaim={claimQuest} />
           </div>
         </div>
+        {superWeekly && (
+          <section style={{ marginTop: 24, padding: 20, borderRadius: 18, border: '1px solid rgba(255,205,100,0.58)', background: 'radial-gradient(circle at 85% 0%, rgba(255,170,60,0.22), transparent 48%), linear-gradient(145deg, rgba(46,25,12,0.96), rgba(18,12,10,0.98))', boxShadow: '0 0 26px rgba(255,170,60,0.16)' }}>
+            <div style={{ color: '#ffd88f', fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>SUPER WEEKLY CHALLENGE</div>
+            <h2 style={{ margin: '6px 0 5px', color: '#fff1cf', fontFamily: uiTypography.display, fontSize: 24 }}>Defeat {superBoss?.name ?? 'the featured boss'}</h2>
+            <div style={{ color: 'rgba(255,235,200,0.74)', fontSize: 13, lineHeight: 1.5 }}>Complete and claim every weekly challenge, then consume the rotation to unlock one high-stakes Eternity&apos;s Wake boss objective.</div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginTop: 16, flexWrap: 'wrap' }}>
+              <span style={{ color: '#ffd88f', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.2 }}>{superWeekly.completed ? 'COMPLETED' : superWeekly.active ? 'ACTIVE · CHALLENGE THE BOSS' : superReady ? 'READY TO ACTIVATE' : 'CLAIM ALL WEEKLY REWARDS FIRST'}</span>
+              {!superWeekly.active && !superWeekly.completed && <button onClick={() => activateSuperWeekly()} disabled={!superReady} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(255,216,143,0.7)', background: superReady ? 'linear-gradient(180deg, #ffd88f, #e18d35)' : 'rgba(255,255,255,0.08)', color: superReady ? '#241208' : 'rgba(255,235,200,0.45)', cursor: superReady ? 'pointer' : 'not-allowed', fontFamily: uiTypography.display, letterSpacing: 1.1, textTransform: 'uppercase' }}>Consume Weekly Challenges</button>}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

@@ -13,10 +13,11 @@ export function getAttackSequenceStarCount(kind: AttackSequenceKind, definitionI
   return 3 + (hashString(`${definitionId}:bridge-count`) % 3);
 }
 
-export function getAttackSequenceMultiplier(kind: AttackSequenceKind, hits: number): number {
+export function getAttackSequenceMultiplier(kind: AttackSequenceKind, hits: number, orbitScore = 0): number {
+  const orbitBonus = Math.min(2.5, Math.max(0, orbitScore));
   if (hits <= 0) return 1;
-  if (kind === 'ain') return Math.min(4, hits + 1);
-  return Math.min(5.5, hits + 0.5);
+  if (kind === 'ain') return Math.min(6.5, hits + 1 + orbitBonus);
+  return Math.min(8, hits + 0.5 + orbitBonus);
 }
 
 export function getAttackSequenceStars(

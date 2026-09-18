@@ -487,6 +487,20 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     group: 'milestone',
   },
   {
+    id: 'title-causality-architect',
+    text: 'Architect of Elsewhen',
+    description: 'Own every base Causality card.',
+    isUnlocked: (p) => uniqueCausalityOwned(p) >= 25,
+    group: 'milestone',
+  },
+  {
+    id: 'title-causality-infinite',
+    text: 'Infinite Cause',
+    description: 'Own any Causality Infinite card.',
+    isUnlocked: (p) => CardRegistry.getAll().some(card => card.definitionId.startsWith('inf-causality-') && getEverInfiniteCount(p, card.definitionId) > 0),
+    group: 'infinite',
+  },
+  {
     id: 'title-entropic-ascendant',
     text: 'Entropic Ascendant',
     description: 'Hold 10,000 Entropic Energy at once.',

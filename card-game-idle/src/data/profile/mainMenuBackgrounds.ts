@@ -27,6 +27,7 @@ let cachedPromise: Promise<MainMenuBackgroundEntry[]> | null = null;
 const REWARD_THEME_FILE_STEMS: Record<string, string> = {
   neutrality: 'neutrality',
   'infinite-cards': 'infinite cards',
+  causality: 'causality',
 };
 
 function getBundledRewardArtUrl(themeId: string): string | null {
@@ -81,6 +82,7 @@ function inferRewardThemeUnlock(name: string): { themeId?: string; hint?: string
 function buildRewardBackgroundSlots(): MainMenuBackgroundEntry[] {
   const setRank: Record<string, number> = {
     Neutrality: 0,
+    Causality: 1,
   };
 
   const rewardThemes = UI_THEMES

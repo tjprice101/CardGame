@@ -1,6 +1,7 @@
 import type { CardDefinition } from '@/types/cards';
 import { CardRegistry } from '@/cards/CardRegistry';
 import { getCollectionPowerMultiplier } from '@/systems/progression/cardMastery';
+import { BOSS_DEFINITIONS } from '@/data/bosses/bossDefinitions';
 
 /**
  * Quest system — daily and weekly engine-flavored objectives.
@@ -105,6 +106,14 @@ export interface QuestState {
   lastDailyRollDay: number;
   /** Local Sunday-reset week index of last weekly roll. */
   lastWeeklyRollWeek: number;
+  superWeekly?: SuperWeeklyChallenge;
+}
+
+export interface SuperWeeklyChallenge {
+  weekIndex: number;
+  bossId: string;
+  active: boolean;
+  completed: boolean;
 }
 
 export const DAILY_QUEST_COUNT = 5;
@@ -118,6 +127,7 @@ export function defaultQuestState(): QuestState {
     weekly: [],
     lastDailyRollDay: -1,
     lastWeeklyRollWeek: -1,
+    superWeekly: undefined,
   };
 }
 
@@ -254,9 +264,29 @@ export function refreshQuestRotation(state: QuestState, timestamp: number): Ques
     next = { ...next, daily: rollDailyQuests(dayIndex, state.daily), lastDailyRollDay: dayIndex };
   }
   if (state.lastWeeklyRollWeek !== weekIndex || state.weekly.length === 0) {
-    next = { ...next, weekly: rollWeeklyQuests(weekIndex, state.weekly), lastWeeklyRollWeek: weekIndex };
+    const bosses = BOSS_DEFINITIONS.filter(boss => boss.category === 'Neutrality');
+    const boss = bosses[Math.abs(weekIndex) % Math.max(1, bosses.length)];
+    next = {
+      ...next,
+      weekly: rollWeeklyQuests(weekIndex, state.weekly),
+      lastWeeklyRollWeek: weekIndex,
+      superWeekly: boss ? { weekIndex, bossId: boss.id, active: false, completed: false } : undefined,
+    };
+  }
+  if (!next.superWeekly || next.superWeekly.weekIndex !== weekIndex) {
+    const bosses = BOSS_DEFINITIONS.filter(boss => boss.category === 'Neutrality');
+    const boss = bosses[Math.abs(weekIndex) % Math.max(1, bosses.length)];
+    if (boss) next = { ...next, superWeekly: { weekIndex, bossId: boss.id, active: false, completed: false } };
   }
   return next;
+}
+
+export function isSuperWeeklyReady(state: QuestState): boolean {
+  return state.weekly.length > 0
+    && state.weekly.every(quest => quest.claimed)
+    && !!state.superWeekly
+    && !state.superWeekly.active
+    && !state.superWeekly.completed;
 }
 
 /**

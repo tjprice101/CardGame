@@ -74,6 +74,9 @@ const _eternalIds = Object.freeze(
 const ET_NEUTRALITY = Object.freeze(
   eternalCards.filter(c => c.definitionId.startsWith('btei-')).map(c => c.definitionId),
 );
+const CAUSALITY_INFINITE_IDS = Object.freeze(
+  CardRegistry.getAll().filter(c => c.definitionId.startsWith('inf-causality-')).map(c => c.definitionId),
+);
 
 export const DEFAULT_AVATAR_ID = 'pic-classic-acolyte';
 
@@ -192,6 +195,25 @@ export const AVATARS: AvatarDefinition[] = [
     imageUrl: '/assets/profile-pictures/master-infinitude.png',
     description: 'Forge every card available through the Infinitude recipe system.',
     isUnlocked: (p: ProgressState) => INF_ALL_CORE.every(id => getEverInfiniteCount(p, id) > 0),
+  },
+  {
+    id: 'pic-sigil-causality',
+    name: 'Causality Sigil',
+    glyph: '◈',
+    imageUrl: '/assets/profile-pictures/sigil-causality.png',
+    description: 'Forge any Causality Infinite card.',
+    isUnlocked: _sigilByIds(CAUSALITY_INFINITE_IDS),
+  },
+  {
+    id: 'pic-master-causality',
+    name: 'Causality Master',
+    glyph: '◌',
+    imageUrl: '/assets/profile-pictures/master-causality.png',
+    description: 'Own every Causality base card and Causality Eternal card.',
+    isUnlocked: (p: ProgressState) => {
+      const ids = CardRegistry.getAll().filter(card => card.definitionId.includes('causality-') && card.rarity !== 'Infinite').map(card => card.definitionId);
+      return ids.every(id => _owns(id, p));
+    },
   },
 
   // ── Classic Achievement Avatars ──────────────────────────────────────────

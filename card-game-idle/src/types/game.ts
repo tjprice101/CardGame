@@ -173,6 +173,10 @@ export interface AttackSequenceState {
   payout: number;
   multiplier: number;
   stackSpend: number;
+  /** Cursor-orbit performance from the OSU-style central attack interaction. */
+  orbitScore?: number;
+  lastPointerAngle?: number;
+  pointerStartedAt?: number;
 }
 
 // ── Shatter the Infinite Light ────────────────────────────────────────────────

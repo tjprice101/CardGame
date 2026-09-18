@@ -393,6 +393,7 @@ interface StoreActions {
   activateDark: (instanceId: string) => void;
   activateAsaBridge: (instanceId: string, spend?: number) => void;
   registerAttackSequenceStarHit: (starId: number) => void;
+  registerAttackSequencePointer: (x: number, y: number, nowMs?: number) => void;
   tickAttackSequence: (nowMs?: number) => void;
   activateShatterTheInfiniteLight: () => void;
   registerShatterInfinityStarHit: () => void;
@@ -497,6 +498,7 @@ interface StoreActions {
   claimEnigmaReward: (enigmaId: string) => boolean;
   /** Engagement: claim a single quest. */
   claimQuest: (questId: string) => { shards: number; divineLight?: number } | null;
+  activateSuperWeekly: () => string | null;
   /** Engagement: claim an unlocked achievement (one-shot). */
   claimAchievement: (achievementId: string) => { shards: number; divineLight?: number } | null;
   /** Engagement: claim a reached card-mastery tier (one-shot per tier). */
@@ -887,6 +889,12 @@ function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEF
   const base = priorClears === 0 ? boss.firstClearShards : boss.repeatClearShards;
   const mult = getBossRewardMultiplier(boss.id);
   progress.aberratedShards += Math.round(base * mult);
+  if (progress.quests.superWeekly?.active && progress.quests.superWeekly.bossId === boss.id) {
+    progress.quests.superWeekly.active = false;
+    progress.quests.superWeekly.completed = true;
+    progress.aberratedShards += 250;
+    addCollectionCard(progress, boss.rewardCardId, 'holo');
+  }
   const copies = Math.max(1, Math.min(3, Math.floor(rewardCopies)));
   for (let i = 0; i < copies; i += 1) {
     addCollectionCard(progress, boss.rewardCardId, 'holo');
@@ -2650,6 +2658,31 @@ export const useStore = create<Store>()(
       });
       if (completed) get().tickAttackSequence(Date.now());
     },
+    registerAttackSequencePointer: (x, y, nowMs = Date.now()) => {
+      set(s => {
+        const sequence = s.turn.attackSequence;
+        if (!sequence || sequence.phase !== 'active') return;
+        const dx = x - 0.5;
+        const dy = y - 0.5;
+        const radius = Math.hypot(dx, dy);
+        if (radius < 0.08 || radius > 0.5) return;
+        const angle = Math.atan2(dy, dx);
+        const previous = sequence.lastPointerAngle;
+        if (previous === undefined) {
+          sequence.lastPointerAngle = angle;
+          sequence.pointerStartedAt = nowMs;
+          return;
+        }
+        let delta = angle - previous;
+        while (delta > Math.PI) delta -= Math.PI * 2;
+        while (delta < -Math.PI) delta += Math.PI * 2;
+        const elapsed = Math.max(16, nowMs - (sequence.pointerStartedAt ?? nowMs));
+        const turnsPerSecond = Math.abs(delta) / (elapsed / 1000);
+        sequence.orbitScore = Math.min(2.5, (sequence.orbitScore ?? 0) + Math.min(0.12, turnsPerSecond * 0.008));
+        sequence.lastPointerAngle = angle;
+        sequence.pointerStartedAt = nowMs;
+      });
+    },
 
     tickAttackSequence: (nowMs = Date.now()) => {
       set(s => {
@@ -2661,7 +2694,7 @@ export const useStore = create<Store>()(
           return;
         }
         if (sequence.phase === 'active') {
-          sequence.multiplier = getAttackSequenceMultiplier(sequence.kind, sequence.clickedStarIds.length);
+          sequence.multiplier = getAttackSequenceMultiplier(sequence.kind, sequence.clickedStarIds.length, sequence.orbitScore ?? 0);
           sequence.payout = Math.round(sequence.basePayout * sequence.multiplier);
           const frontSlot = s.board.frontSlots.find(card => card?.instanceId === sequence.cardInstanceId);
           const backSlot = s.board.backSlots.find(card => card?.instanceId === sequence.cardInstanceId);
@@ -3869,6 +3902,18 @@ export const useStore = create<Store>()(
         }
       });
       return { shards: shardReward, divineLight: divineLightReward > 0 ? divineLightReward : undefined };
+    },
+
+    activateSuperWeekly: () => {
+      const state = get();
+      const superWeekly = state.progress.quests.superWeekly;
+      if (!superWeekly || superWeekly.active || superWeekly.completed) return null;
+      if (!state.progress.quests.weekly.length || !state.progress.quests.weekly.every(quest => quest.claimed)) return null;
+      set(s => {
+        if (!s.progress.quests.superWeekly) return;
+        s.progress.quests.superWeekly.active = true;
+      });
+      return superWeekly.bossId;
     },
 
     claimAchievement: (achievementId) => {
