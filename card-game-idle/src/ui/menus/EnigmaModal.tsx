@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
-import { CardRegistry } from '@/cards/CardRegistry';
-import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
-import { getEnigmaRewardCards, getUniqueOwnedCardsForSet, isEnigmaDiscovered, listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
+import { getUniqueOwnedCardsForSet, isEnigmaDiscovered, listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
 import { getActiveEnigmaInstance } from '@/data/enigmas/enigmaDefinitions';
 
 interface Props { onClose: () => void; }
@@ -25,9 +23,7 @@ function getEnigmaAccent(id: string) {
 }
 
 function getEnigmaArtUrl(id: string): string {
-  const rewardId = getEnigmaRewardCards(id)[0]?.definitionId;
-  const reward = rewardId ? CardRegistry.get(rewardId) : null;
-  return getCardBackgroundUrl(reward) ?? `${import.meta.env.BASE_URL}assets/menu-banners/enigma.png`;
+  return `${import.meta.env.BASE_URL}assets/enigma-banners/${encodeURIComponent(id)}.png`;
 }
 
 export default function EnigmaModal({ onClose }: Props) {
