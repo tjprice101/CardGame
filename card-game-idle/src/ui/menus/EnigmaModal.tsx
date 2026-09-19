@@ -33,15 +33,20 @@ export default function EnigmaModal({ onClose }: Props) {
   const claimEnigmaReward = useStore(s => s.claimEnigmaReward);
   const definitions = useMemo(() => listEnigmaDefinitions(), []);
   const groupedDefinitions = useMemo(() => (['Neutrality', 'Causality'] as const).flatMap(setId => {
-    const entries = definitions.filter(definition => definition.setId === setId);
+    const entries = definitions.filter(definition => definition.setId === setId && progress.enigmas.instances[definition.id]?.status !== 'completed');
     return entries.map((definition, index) => ({ definition, setId, firstInSet: index === 0 }));
-  }), [definitions]);
+  }), [definitions, progress.enigmas.instances]);
   const active = getActiveEnigmaInstance(progress);
   const unlockedDefinitions = useMemo(
-    () => definitions.filter(definition => isEnigmaDiscovered(progress, definition.id)),
+    () => definitions.filter(definition => isEnigmaDiscovered(progress, definition.id) && progress.enigmas.instances[definition.id]?.status !== 'completed'),
     [definitions, progress],
   );
-  const lockedOnDefinition = definitions.find(definition => definition.id === progress.enigmas.activeEnigmaId) ?? null;
+  const archivedDefinitions = useMemo(
+    () => definitions.filter(definition => progress.enigmas.instances[definition.id]?.status === 'completed'),
+    [definitions, progress.enigmas.instances],
+  );
+  const lockedOnDefinition = definitions.find(definition => definition.id === progress.enigmas.activeEnigmaId && progress.enigmas.instances[definition.id]?.status !== 'completed') ?? null;
+  const [view, setView] = useState<'active' | 'archive'>('active');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
@@ -72,7 +77,34 @@ export default function EnigmaModal({ onClose }: Props) {
             }}
           >✕</button>
         </div>
-        {lockedOnDefinition && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: 18, padding: 5, borderRadius: 10, background: 'rgba(20,12,30,0.72)', border: '1px solid rgba(244,207,107,0.22)' }}>
+          {(['active', 'archive'] as const).map(tab => (
+            <button key={tab} type="button" onClick={() => setView(tab)} style={{ flex: 1, padding: '9px 14px', borderRadius: 7, border: `1px solid ${view === tab ? '#f4cf6b' : 'transparent'}`, background: view === tab ? 'rgba(244,207,107,0.16)' : 'transparent', color: view === tab ? '#fff0d1' : '#d5c3eb', fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.8, textTransform: 'uppercase', cursor: 'pointer' }}>
+              {tab === 'active' ? 'Active Manuscripts' : `Enigmatic Archive${archivedDefinitions.length ? ` · ${archivedDefinitions.length}` : ''}`}
+            </button>
+          ))}
+        </div>
+        {view === 'archive' && (
+          <section style={{ display: 'grid', gap: 14, marginBottom: 18 }}>
+            <div style={{ minHeight: 150, padding: '22px 24px', borderRadius: 15, border: '1px solid rgba(244,207,107,0.58)', backgroundImage: `linear-gradient(90deg, rgba(12,8,20,0.96), rgba(26,14,34,0.72), rgba(12,8,20,0.28)), url("${import.meta.env.BASE_URL}assets/enigma-banners/enigmatic-archive.png")`, backgroundPosition: 'center', backgroundSize: 'cover', boxShadow: '0 0 28px rgba(244,207,107,0.18)' }}>
+              <div style={{ color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase' }}>THE ENIGMATIC ARCHIVE</div>
+              <div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 27, letterSpacing: 1.2, marginTop: 7 }}>Claimed Manuscripts</div>
+              <div style={{ color: '#d5c3eb', fontSize: 12, marginTop: 5 }}>A preserved record of every Enigma whose final reward has been claimed.</div>
+            </div>
+            {archivedDefinitions.length === 0 && <div style={{ color: '#d5c3eb', fontSize: 12, padding: 18, borderRadius: 12, border: '1px solid rgba(244,207,107,0.22)', background: 'rgba(35,18,48,0.55)' }}>Completed enigmas will be preserved here after their final reward is claimed.</div>}
+            {archivedDefinitions.map(definition => (
+              <article key={definition.id} style={{ overflow: 'hidden', borderRadius: 14, border: `1px solid ${getEnigmaAccent(definition.id).accent}66`, background: 'rgba(35,18,48,0.72)', boxShadow: `0 0 22px ${getEnigmaAccent(definition.id).glow}` }}>
+                <div style={{ minHeight: 130, padding: 18, backgroundImage: `linear-gradient(90deg, rgba(11,8,20,0.94), rgba(20,12,30,0.60)), url("${getEnigmaArtUrl(definition.id)}")`, backgroundPosition: 'center', backgroundSize: 'cover' }}>
+                  <div style={{ color: getEnigmaAccent(definition.id).accent, fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 2.5, textTransform: 'uppercase' }}>ARCHIVED · REWARD CLAIMED</div>
+                  <div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 23, marginTop: 6 }}>{definition.title}</div>
+                  <div style={{ color: '#d5c3eb', fontSize: 11, marginTop: 5 }}>{getEnigmaAccent(definition.id).subtitle}</div>
+                </div>
+                <div style={{ display: 'grid', gap: 8, padding: 16 }}>{definition.steps.map((step, index) => <div key={`${definition.id}-${index}`} style={{ display: 'flex', gap: 10, color: '#d5c3eb', fontSize: 12 }}><b style={{ color: '#8de68d' }}>✓</b><div><div style={{ color: '#fff0d1', fontFamily: uiTypography.display }}>{step.title}</div><div style={{ marginTop: 2 }}>{step.description}</div></div></div>)}</div>
+              </article>
+            ))}
+          </section>
+        )}
+        {view === 'active' && lockedOnDefinition && (
           <section style={{
             position: 'relative', overflow: 'hidden', minHeight: 210, marginBottom: 18,
             borderRadius: 16, border: `1px solid ${getEnigmaAccent(lockedOnDefinition.id).accent}88`,
@@ -92,7 +124,7 @@ export default function EnigmaModal({ onClose }: Props) {
             </div>
           </section>
         )}
-        <div style={{ marginBottom: 22 }}>
+        <div style={{ display: view === 'active' ? undefined : 'none', marginBottom: 22 }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 9 }}>
             <div style={{ color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 2.4, textTransform: 'uppercase' }}>Unlocked Manuscripts</div>
             <div style={{ color: '#d5c3eb', fontSize: 10 }}>{unlockedDefinitions.length} available · choose one to lock on</div>
@@ -114,7 +146,7 @@ export default function EnigmaModal({ onClose }: Props) {
             </div>
           ) : <div style={{ color: '#d5c3eb', fontSize: 12, padding: '14px 0' }}>Unlock a manuscript by meeting its discovery requirements.</div>}
         </div>
-        <div style={{ display: 'grid', gap: 14 }}>
+        <div style={{ display: view === 'active' ? 'grid' : 'none', gap: 14 }}>
           {groupedDefinitions.map(entry => {
             const definition = entry.definition;
             const instance = progress.enigmas.instances[definition.id];

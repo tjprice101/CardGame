@@ -3620,7 +3620,7 @@ export const useStore = create<Store>()(
         ensureEnigmaState(s.progress);
         if (!isEnigmaUnlocked(s.progress)) return;
         ensureInstance(s.progress, enigmaId);
-        if (!s.progress.enigmas.instances[enigmaId]) return;
+        if (!s.progress.enigmas.instances[enigmaId] || s.progress.enigmas.instances[enigmaId].status === 'completed') return;
         s.progress.enigmas.activeEnigmaId = enigmaId;
       });
     },
@@ -3988,6 +3988,7 @@ export const useStore = create<Store>()(
         target.stepsComplete[lastStep] = true;
         target.currentStepIndex = Math.max(target.currentStepIndex, target.stepsComplete.length);
         target.completedAt = Date.now();
+        if (s.progress.enigmas.activeEnigmaId === enigmaId) s.progress.enigmas.activeEnigmaId = null;
         const title = enigmaId === 'neutral-mystery' ? 'Neutral Mystery' : enigmaId === 'neutralizing-the-void' ? 'Neutralizing the Void' : enigmaId;
         pushRewardToast(s, `Enigma Complete: ${title}`);
       });
