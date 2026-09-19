@@ -889,9 +889,14 @@ function awardBossVictoryRewards(progress: ProgressState, boss: (typeof BOSS_DEF
   const base = priorClears === 0 ? boss.firstClearShards : boss.repeatClearShards;
   const mult = getBossRewardMultiplier(boss.id);
   progress.aberratedShards += Math.round(base * mult);
-  if (progress.quests.superWeekly?.active && progress.quests.superWeekly.bossId === boss.id) {
-    progress.quests.superWeekly.active = false;
-    progress.quests.superWeekly.completed = true;
+  const superWeeklies = progress.quests.superWeeklies ?? (progress.quests.superWeekly ? [progress.quests.superWeekly] : []);
+  const matchingSuperWeeklies = superWeeklies.filter(challenge => challenge.active && challenge.bossId === boss.id);
+  if (matchingSuperWeeklies.length > 0) {
+    for (const challenge of matchingSuperWeeklies) {
+      challenge.active = false;
+      challenge.completed = true;
+    }
+    progress.quests.superWeeklies = superWeeklies;
     progress.aberratedShards += 250;
     addCollectionCard(progress, boss.rewardCardId, 'holo');
   }
@@ -3917,14 +3922,18 @@ export const useStore = create<Store>()(
 
     activateSuperWeekly: () => {
       const state = get();
-      const superWeekly = state.progress.quests.superWeekly;
-      if (!superWeekly || superWeekly.active || superWeekly.completed) return null;
-      if (!state.progress.quests.weekly.length || !state.progress.quests.weekly.every(quest => quest.claimed)) return null;
+      const refreshed = refreshQuestRotation(state.progress.quests, Date.now());
+      const superWeeklies = refreshed.superWeeklies ?? (refreshed.superWeekly ? [refreshed.superWeekly] : []);
+      if (refreshed !== state.progress.quests) {
+        set(s => { s.progress.quests = refreshed; });
+      }
+      if (superWeeklies.length !== 2 || superWeeklies.some(challenge => challenge.active || challenge.completed)) return null;
+      if (!refreshed.weekly.length || !refreshed.weekly.every(quest => quest.claimed)) return null;
       set(s => {
-        if (!s.progress.quests.superWeekly) return;
-        s.progress.quests.superWeekly.active = true;
+        const current = s.progress.quests.superWeeklies ?? [];
+        for (const challenge of current) challenge.active = true;
       });
-      return superWeekly.bossId;
+      return superWeeklies.map(challenge => challenge.bossId).join(',');
     },
 
     claimAchievement: (achievementId) => {

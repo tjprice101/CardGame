@@ -30,6 +30,7 @@ export interface TitleBadgeDefinition {
   isUnlocked: (progress: ProgressState) => boolean;
   /** Bucket used by the profile UI for grouping. */
   group: TitleBadgeGroup;
+  imageAssetKey?: string;
 }
 
 const totalBossClears = (counts: Record<string, number>): number =>
@@ -464,6 +465,7 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     description: 'Own 5 unique cards from the Causality set.',
     isUnlocked: (p) => uniqueCausalityOwned(p) >= 5,
     group: 'milestone',
+    imageAssetKey: 'causality-cartographer',
   },
   {
     id: 'title-event-horizon-scribe',
@@ -471,6 +473,7 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     description: 'Play 25 Causality cards.',
     isUnlocked: (p) => causalityCardsPlayed(p) >= 25,
     group: 'milestone',
+    imageAssetKey: 'event-horizon-scribe',
   },
   {
     id: 'title-causality-manuscript-reader',
@@ -492,13 +495,15 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     description: 'Own every base Causality card.',
     isUnlocked: (p) => uniqueCausalityOwned(p) >= 25,
     group: 'milestone',
+    imageAssetKey: 'architect-of-elsewhen',
   },
   {
     id: 'title-causality-infinite',
     text: 'Infinite Cause',
     description: 'Own any Causality Infinite card.',
     isUnlocked: (p) => CardRegistry.getAll().some(card => card.definitionId.startsWith('inf-causality-') && getEverInfiniteCount(p, card.definitionId) > 0),
-    group: 'infinite',
+    group: 'milestone',
+    imageAssetKey: 'infinite-cause',
   },
   {
     id: 'title-entropic-ascendant',

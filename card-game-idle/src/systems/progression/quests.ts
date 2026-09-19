@@ -107,6 +107,7 @@ export interface QuestState {
   /** Local Sunday-reset week index of last weekly roll. */
   lastWeeklyRollWeek: number;
   superWeekly?: SuperWeeklyChallenge;
+  superWeeklies?: SuperWeeklyChallenge[];
 }
 
 export interface SuperWeeklyChallenge {
@@ -265,28 +266,33 @@ export function refreshQuestRotation(state: QuestState, timestamp: number): Ques
   }
   if (state.lastWeeklyRollWeek !== weekIndex || state.weekly.length === 0) {
     const bosses = BOSS_DEFINITIONS.filter(boss => boss.category === 'Neutrality');
-    const boss = bosses[Math.abs(weekIndex) % Math.max(1, bosses.length)];
+    const firstBoss = bosses[Math.abs(weekIndex * 2) % Math.max(1, bosses.length)];
+    const secondBoss = bosses[Math.abs(weekIndex * 2 + 1) % Math.max(1, bosses.length)];
     next = {
       ...next,
       weekly: rollWeeklyQuests(weekIndex, state.weekly),
       lastWeeklyRollWeek: weekIndex,
-      superWeekly: boss ? { weekIndex, bossId: boss.id, active: false, completed: false } : undefined,
+      superWeeklies: [firstBoss, secondBoss].filter((boss, index, list) => boss && list.findIndex(item => item?.id === boss.id) === index).map(boss => ({ weekIndex, bossId: boss!.id, active: false, completed: false })),
     };
   }
-  if (!next.superWeekly || next.superWeekly.weekIndex !== weekIndex) {
+  if ((!next.superWeeklies || next.superWeeklies.length === 0) && next.superWeekly && next.superWeekly.weekIndex === weekIndex) {
+    next = { ...next, superWeeklies: [next.superWeekly] };
+  }
+  if (!next.superWeeklies || next.superWeeklies.length < 2 || next.superWeeklies.some(challenge => challenge.weekIndex !== weekIndex)) {
     const bosses = BOSS_DEFINITIONS.filter(boss => boss.category === 'Neutrality');
-    const boss = bosses[Math.abs(weekIndex) % Math.max(1, bosses.length)];
-    if (boss) next = { ...next, superWeekly: { weekIndex, bossId: boss.id, active: false, completed: false } };
+    const firstBoss = bosses[Math.abs(weekIndex * 2) % Math.max(1, bosses.length)];
+    const secondBoss = bosses[Math.abs(weekIndex * 2 + 1) % Math.max(1, bosses.length)];
+    if (firstBoss && secondBoss) next = { ...next, superWeeklies: [firstBoss, secondBoss].map(boss => ({ weekIndex, bossId: boss.id, active: false, completed: false })) };
   }
   return next;
 }
 
 export function isSuperWeeklyReady(state: QuestState): boolean {
+  const challenges = state.superWeeklies ?? (state.superWeekly ? [state.superWeekly] : []);
   return state.weekly.length > 0
     && state.weekly.every(quest => quest.claimed)
-    && !!state.superWeekly
-    && !state.superWeekly.active
-    && !state.superWeekly.completed;
+    && challenges.length === 2
+    && challenges.every(challenge => !challenge.active && !challenge.completed);
 }
 
 /**

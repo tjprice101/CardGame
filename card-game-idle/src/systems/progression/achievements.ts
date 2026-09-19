@@ -33,6 +33,7 @@ export interface AchievementView {
   claimed: boolean;
   shardReward: number;
   divineLightReward: number;
+  imageAssetKey?: string;
 }
 
 export function getAchievementShardReward(group: TitleBadgeDefinition['group']): number {
@@ -63,6 +64,7 @@ export function listAchievements(progress: ProgressState): AchievementView[] {
       claimed: !!claims[badge.id],
       shardReward: getAchievementShardReward(badge.group),
       divineLightReward: getAchievementDivineLightReward(badge.group),
+      imageAssetKey: badge.imageAssetKey,
     };
   });
 }

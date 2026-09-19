@@ -133,8 +133,7 @@ export default function QuestsModal({ onClose }: Props) {
     lastDailyRollDay: progress.quests.lastDailyRollDay, lastWeeklyRollWeek: progress.quests.lastWeeklyRollWeek,
   }, now), [progress.quests, now]);
   const readyCount = [...view.daily, ...view.weekly].filter(q => isQuestComplete(q) && !q.claimed).length;
-  const superWeekly = view.superWeekly;
-  const superBoss = superWeekly ? BOSS_DEFINITIONS.find(boss => boss.id === superWeekly.bossId) : null;
+  const superWeeklies = view.superWeeklies ?? (view.superWeekly ? [view.superWeekly] : []);
   const superReady = isSuperWeeklyReady(view);
 
   useEffect(() => {
@@ -164,14 +163,18 @@ export default function QuestsModal({ onClose }: Props) {
             <ChallengeColumn cadence="weekly" quests={view.weekly} resonanceScore={resonanceScore} onClaim={claimQuest} />
           </div>
         </div>
-        {superWeekly && (
+        {superWeeklies.length > 0 && (
           <section style={{ marginTop: 24, padding: 20, borderRadius: 18, border: '1px solid rgba(255,205,100,0.58)', background: 'radial-gradient(circle at 85% 0%, rgba(255,170,60,0.22), transparent 48%), linear-gradient(145deg, rgba(46,25,12,0.96), rgba(18,12,10,0.98))', boxShadow: '0 0 26px rgba(255,170,60,0.16)' }}>
             <div style={{ color: '#ffd88f', fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 2.8, textTransform: 'uppercase' }}>SUPER WEEKLY CHALLENGE</div>
-            <h2 style={{ margin: '6px 0 5px', color: '#fff1cf', fontFamily: uiTypography.display, fontSize: 24 }}>Defeat {superBoss?.name ?? 'the featured boss'}</h2>
-            <div style={{ color: 'rgba(255,235,200,0.74)', fontSize: 13, lineHeight: 1.5 }}>Complete and claim every weekly challenge, then consume the rotation to unlock one high-stakes Eternity&apos;s Wake boss objective.</div>
+            <h2 style={{ margin: '6px 0 5px', color: '#fff1cf', fontFamily: uiTypography.display, fontSize: 24 }}>Two Boss Objectives</h2>
+            <div style={{ color: 'rgba(255,235,200,0.74)', fontSize: 13, lineHeight: 1.5 }}>Complete and claim every weekly challenge, then consume the rotation to unlock two high-stakes Eternity&apos;s Wake boss objectives.</div>
+            <div style={{ display: 'grid', gap: 8, marginTop: 12 }}>{superWeeklies.map(challenge => {
+              const boss = BOSS_DEFINITIONS.find(entry => entry.id === challenge.bossId);
+              return <div key={challenge.bossId} style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid rgba(255,216,143,0.22)', background: 'rgba(0,0,0,0.18)', color: '#ffe8b0', fontFamily: uiTypography.display, fontSize: 12 }}>{boss?.name ?? challenge.bossId} <span style={{ color: 'rgba(255,235,200,0.58)', marginLeft: 8 }}>{challenge.completed ? 'Completed' : challenge.active ? 'Active' : 'Locked'}</span></div>;
+            })}</div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginTop: 16, flexWrap: 'wrap' }}>
-              <span style={{ color: '#ffd88f', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.2 }}>{superWeekly.completed ? 'COMPLETED' : superWeekly.active ? 'ACTIVE · CHALLENGE THE BOSS' : superReady ? 'READY TO ACTIVATE' : 'CLAIM ALL WEEKLY REWARDS FIRST'}</span>
-              {!superWeekly.active && !superWeekly.completed && <button onClick={() => activateSuperWeekly()} disabled={!superReady} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(255,216,143,0.7)', background: superReady ? 'linear-gradient(180deg, #ffd88f, #e18d35)' : 'rgba(255,255,255,0.08)', color: superReady ? '#241208' : 'rgba(255,235,200,0.45)', cursor: superReady ? 'pointer' : 'not-allowed', fontFamily: uiTypography.display, letterSpacing: 1.1, textTransform: 'uppercase' }}>Consume Weekly Challenges</button>}
+              <span style={{ color: '#ffd88f', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.2 }}>{superWeeklies.every(challenge => challenge.completed) ? 'COMPLETED' : superWeeklies.some(challenge => challenge.active) ? 'ACTIVE · CHALLENGE THE BOSSES' : superReady ? 'READY TO ACTIVATE' : 'CLAIM ALL WEEKLY REWARDS FIRST'}</span>
+              {!superWeeklies.some(challenge => challenge.active || challenge.completed) && <button onClick={() => activateSuperWeekly()} disabled={!superReady} style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid rgba(255,216,143,0.7)', background: superReady ? 'linear-gradient(180deg, #ffd88f, #e18d35)' : 'rgba(255,255,255,0.08)', color: superReady ? '#241208' : 'rgba(255,235,200,0.45)', cursor: superReady ? 'pointer' : 'not-allowed', fontFamily: uiTypography.display, letterSpacing: 1.1, textTransform: 'uppercase' }}>Consume Weekly Challenges</button>}
             </div>
           </section>
         )}

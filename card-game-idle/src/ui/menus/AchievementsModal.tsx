@@ -411,7 +411,7 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
       boxShadow: a.unlocked && !a.claimed ? `0 2px 16px ${withAlpha(gc, 0.14)}` : 'none',
       transition: 'all 0.2s',
     }}>
-      {/* State badge */}
+      {/* State badge / optional Causality artwork */}
       <div style={{
         width: 36, height: 36, borderRadius: 10, flexShrink: 0,
         background: a.claimed ? withAlpha(P.success, 0.14) : a.unlocked ? withAlpha(gc, 0.16) : withAlpha(P.text, 0.05),
@@ -420,7 +420,7 @@ function AchievementRow({ achievement: a, onClaim, groupColor }: {
         fontSize: 16, color: a.claimed ? P.success : a.unlocked ? gc : P.textFaint,
         textShadow: a.unlocked && !a.claimed ? `0 0 16px ${withAlpha(gc, 0.4)}` : 'none',
       }}>
-        {a.claimed ? '✓' : a.unlocked ? '★' : '🔒'}
+        {a.imageAssetKey ? <img src={`${import.meta.env.BASE_URL}assets/achievement-icons/${a.imageAssetKey}.png`} alt="" width={28} height={28} style={{ width: 28, height: 28, objectFit: 'cover', borderRadius: 7, opacity: a.unlocked ? 1 : 0.5 }} /> : a.claimed ? '✓' : a.unlocked ? '★' : '🔒'}
       </div>
 
       {/* Text */}

@@ -24,7 +24,8 @@ describe('Causality progression rewards and difficulty baseline', () => {
   it('creates a deterministic Super Weekly boss target and gates readiness on all claims', () => {
     const timestamp = Date.UTC(2026, 0, 7, 21);
     const rotated = refreshQuestRotation({ ...baseQuestState(true), lastWeeklyRollWeek: getQuestWeekIndex(timestamp) }, timestamp);
-    expect(rotated.superWeekly?.bossId).toMatch(/^boss-/);
+    expect(rotated.superWeeklies).toHaveLength(2);
+    expect(rotated.superWeeklies?.every(challenge => challenge.bossId.startsWith('boss-'))).toBe(true);
     expect(isSuperWeeklyReady(rotated)).toBe(true);
     expect(isSuperWeeklyReady({ ...rotated, weekly: rotated.weekly.map(quest => ({ ...quest, claimed: false })) })).toBe(false);
   });
