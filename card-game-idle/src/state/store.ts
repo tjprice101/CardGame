@@ -962,6 +962,7 @@ function recordCardPlay(s: Store, definitionId: string): void {
   if (isCausalityDefinitionId(definitionId)) {
     s.turn.causalityCardsPlayedThisTurn = (s.turn.causalityCardsPlayedThisTurn ?? 0) + 1;
     for (const id of ['causality-first-horizon', 'causality-collapsed-equation']) {
+      if (s.progress.enigmas.activeEnigmaId !== id) continue;
       const instance = s.progress.enigmas.instances[id];
       if (instance?.status !== 'acquired') continue;
       instance.progressCounters ??= {};
@@ -983,6 +984,7 @@ function recordCausalityCosmosDelta(s: Store, delta: number): void {
   const key = delta > 0 ? 'cosmosGenerated' : 'cosmosConsumed';
   const amount = Math.abs(delta);
   for (const id of ['causality-first-horizon', 'causality-black-ink', 'causality-collapsed-equation', 'causality-unwritten-law']) {
+    if (s.progress.enigmas.activeEnigmaId !== id) continue;
     const instance = s.progress.enigmas.instances[id];
     if (instance?.status !== 'acquired') continue;
     instance.progressCounters ??= {};
@@ -1574,7 +1576,7 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean, endin
       amplifier.acquiredAt = Date.now();
       pushRewardToast(s, 'Enigma Acquired: To Amplify the Nullitude');
     }
-    if (amplifier?.status === 'acquired') {
+    if (amplifier?.status === 'acquired' && s.progress.enigmas.activeEnigmaId === 'to-amplify-the-nullitude') {
       amplifier.progressCounters ??= {};
       if (amplifier.stepsComplete[1] === false && (s.turn.neutralityAbilityActivationsThisTurn ?? 0) >= 5) {
         amplifier.stepsComplete[1] = true;
@@ -1597,7 +1599,7 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean, endin
       surgeblade.progressCounters = { asaSummonsWithTwoLights: 0, bridgeAttacks: 0 };
       pushRewardToast(s, 'Enigma Acquired: Null-surged');
     }
-    if (surgeblade?.status === 'acquired') {
+    if (surgeblade?.status === 'acquired' && s.progress.enigmas.activeEnigmaId === 'null-surged') {
       surgeblade.progressCounters ??= {};
       if (!surgeblade.stepsComplete[1] && (surgeblade.progressCounters.asaSummonsWithTwoLights ?? 0) >= 3) {
         surgeblade.stepsComplete[1] = true;
@@ -1626,7 +1628,7 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean, endin
 function recordNeutralityAbilityActivation(s: Store): void {
   s.turn.neutralityAbilityActivationsThisTurn = (s.turn.neutralityAbilityActivationsThisTurn ?? 0) + 1;
   const amplifier = s.progress.enigmas.instances['to-amplify-the-nullitude'];
-  if (amplifier?.status === 'acquired' && amplifier.stepsComplete[2] && !amplifier.stepsComplete[3]) {
+  if (amplifier?.status === 'acquired' && s.progress.enigmas.activeEnigmaId === 'to-amplify-the-nullitude' && amplifier.stepsComplete[2] && !amplifier.stepsComplete[3]) {
     const fullAsaFrontRow = s.board.frontSlots.every(slot => slot?.type === 'AinSophAur');
     if (fullAsaFrontRow) {
       amplifier.stepsComplete[3] = true;
@@ -2116,7 +2118,7 @@ export const useStore = create<Store>()(
         grantDivineLight(s, result.divineLightBonus, def.definitionId);
         emitQuestProgressToProgress(s.progress, { kind: 'summon_ain_soph_aur', amount: 1 });
         const activeAinLights = s.board.backSlots.filter(slot => slot?.type === 'Light' && slot.side === 'ain').length;
-        if (activeAinLights >= 2 && s.progress.enigmas.instances['null-surged']?.status === 'acquired') {
+        if (activeAinLights >= 2 && s.progress.enigmas.activeEnigmaId === 'null-surged' && s.progress.enigmas.instances['null-surged']?.status === 'acquired') {
           const surgeblade = s.progress.enigmas.instances['null-surged'];
           if (surgeblade) {
             surgeblade.progressCounters ??= {};
@@ -2744,7 +2746,7 @@ export const useStore = create<Store>()(
               emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: sequence.stackSpend });
               for (const id of ['null-surged', 'causality-heavenly-archive']) {
                 const instance = s.progress.enigmas.instances[id];
-                if (instance?.status !== 'acquired') continue;
+                if (instance?.status !== 'acquired' || s.progress.enigmas.activeEnigmaId !== id) continue;
                 if (id === 'null-surged' || def.definitionId.startsWith('ain-soph-aur-causality-')) {
                   instance.progressCounters ??= {};
                   instance.progressCounters.bridgeAttacks = (instance.progressCounters.bridgeAttacks ?? 0) + 1;

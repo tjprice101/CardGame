@@ -1,10 +1,34 @@
 import { useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
-import { getUniqueOwnedCardsForSet, isEnigmaDiscovered, listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
+import { CardRegistry } from '@/cards/CardRegistry';
+import { getCardBackgroundUrl } from '@/ui/cardBackgrounds';
+import { getEnigmaRewardCards, getUniqueOwnedCardsForSet, isEnigmaDiscovered, listEnigmaDefinitions } from '@/systems/progression/EnigmaSystem';
 import { getActiveEnigmaInstance } from '@/data/enigmas/enigmaDefinitions';
 
 interface Props { onClose: () => void; }
+
+const ENIGMA_ACCENTS: Record<string, { accent: string; glow: string; subtitle: string }> = {
+  'to-amplify-the-nullitude': { accent: '#f5b85c', glow: 'rgba(245,184,92,0.38)', subtitle: 'The Nullitude Manuscript' },
+  'null-surged': { accent: '#9cd7ff', glow: 'rgba(113,190,255,0.34)', subtitle: 'The Surgeborn Manuscript' },
+  'neutral-mystery': { accent: '#d6a4ff', glow: 'rgba(190,117,255,0.32)', subtitle: 'The Quiet Manuscript' },
+  'neutralizing-the-void': { accent: '#91a8d8', glow: 'rgba(91,126,206,0.34)', subtitle: 'The Nullification Manuscript' },
+  'causality-first-horizon': { accent: '#71e8f2', glow: 'rgba(55,218,229,0.34)', subtitle: 'The First Horizon Manuscript' },
+  'causality-black-ink': { accent: '#e58cff', glow: 'rgba(210,87,255,0.34)', subtitle: 'The Contradiction Manuscript' },
+  'causality-heavenly-archive': { accent: '#f2d27e', glow: 'rgba(245,195,87,0.34)', subtitle: 'The Archive Manuscript' },
+  'causality-collapsed-equation': { accent: '#ff8b9e', glow: 'rgba(255,93,119,0.34)', subtitle: 'The Equation Manuscript' },
+  'causality-unwritten-law': { accent: '#a7a3ff', glow: 'rgba(120,116,255,0.34)', subtitle: 'The Unwritten Manuscript' },
+};
+
+function getEnigmaAccent(id: string) {
+  return ENIGMA_ACCENTS[id] ?? { accent: '#f4cf6b', glow: 'rgba(244,207,107,0.32)', subtitle: 'Hidden Manuscript' };
+}
+
+function getEnigmaArtUrl(id: string): string {
+  const rewardId = getEnigmaRewardCards(id)[0]?.definitionId;
+  const reward = rewardId ? CardRegistry.get(rewardId) : null;
+  return getCardBackgroundUrl(reward) ?? `${import.meta.env.BASE_URL}assets/menu-banners/enigma.png`;
+}
 
 export default function EnigmaModal({ onClose }: Props) {
   const progress = useStore(selectProgress);
@@ -17,6 +41,11 @@ export default function EnigmaModal({ onClose }: Props) {
     return entries.map((definition, index) => ({ definition, setId, firstInSet: index === 0 }));
   }), [definitions]);
   const active = getActiveEnigmaInstance(progress);
+  const unlockedDefinitions = useMemo(
+    () => definitions.filter(definition => isEnigmaDiscovered(progress, definition.id)),
+    [definitions, progress],
+  );
+  const lockedOnDefinition = definitions.find(definition => definition.id === progress.enigmas.activeEnigmaId) ?? null;
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
@@ -46,6 +75,48 @@ export default function EnigmaModal({ onClose }: Props) {
               boxShadow: '0 4px 14px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.25)',
             }}
           >✕</button>
+        </div>
+        {lockedOnDefinition && (
+          <section style={{
+            position: 'relative', overflow: 'hidden', minHeight: 210, marginBottom: 18,
+            borderRadius: 16, border: `1px solid ${getEnigmaAccent(lockedOnDefinition.id).accent}88`,
+            backgroundImage: `linear-gradient(90deg, rgba(11,8,20,0.98) 0%, rgba(20,12,30,0.82) 48%, rgba(8,8,16,0.30) 100%), url("${getEnigmaArtUrl(lockedOnDefinition.id)}")`,
+            backgroundPosition: 'center', backgroundSize: 'cover',
+            boxShadow: `0 0 32px ${getEnigmaAccent(lockedOnDefinition.id).glow}`,
+            padding: 24,
+          }}>
+            <div style={{ position: 'relative', maxWidth: 650 }}>
+              <div style={{ color: getEnigmaAccent(lockedOnDefinition.id).accent, fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 3, textTransform: 'uppercase' }}>LOCKED-ON MANUSCRIPT</div>
+              <div style={{ color: '#fff3d4', fontFamily: uiTypography.display, fontSize: 30, letterSpacing: 1.2, marginTop: 6 }}>{lockedOnDefinition.title}</div>
+              <div style={{ color: '#d9c9e8', fontSize: 12, marginTop: 5 }}>{getEnigmaAccent(lockedOnDefinition.id).subtitle} · Progress advances only for the selected Enigma.</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 18 }}>
+                <span style={{ padding: '6px 10px', borderRadius: 7, color: getEnigmaAccent(lockedOnDefinition.id).accent, border: `1px solid ${getEnigmaAccent(lockedOnDefinition.id).accent}66`, background: 'rgba(0,0,0,0.26)', fontSize: 10, letterSpacing: 1.2, textTransform: 'uppercase' }}>Active Focus</span>
+                <span style={{ padding: '6px 10px', borderRadius: 7, color: '#e7dced', border: '1px solid rgba(231,220,237,0.22)', background: 'rgba(0,0,0,0.22)', fontSize: 10 }}>{lockedOnDefinition.steps.length} steps · {lockedOnDefinition.rewards.length} reward line</span>
+              </div>
+            </div>
+          </section>
+        )}
+        <div style={{ marginBottom: 22 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 12, marginBottom: 9 }}>
+            <div style={{ color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 2.4, textTransform: 'uppercase' }}>Unlocked Manuscripts</div>
+            <div style={{ color: '#d5c3eb', fontSize: 10 }}>{unlockedDefinitions.length} available · choose one to lock on</div>
+          </div>
+          {unlockedDefinitions.length > 0 ? (
+            <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 5 }}>
+              {unlockedDefinitions.map(definition => {
+                const accent = getEnigmaAccent(definition.id);
+                const selected = definition.id === lockedOnDefinition?.id;
+                const instance = progress.enigmas.instances[definition.id];
+                const complete = instance?.status === 'completed';
+                return <button key={definition.id} type="button" onClick={() => { setActiveEnigma(definition.id); setExpandedId(definition.id); }} style={{
+                  flex: '0 0 220px', minHeight: 112, padding: 13, borderRadius: 12, textAlign: 'left', cursor: 'pointer',
+                  border: `1px solid ${selected ? accent.accent : 'rgba(244,207,107,0.25)'}`,
+                  backgroundImage: `linear-gradient(135deg, rgba(12,8,22,0.95), rgba(35,18,48,0.72)), url("${getEnigmaArtUrl(definition.id)}")`,
+                  backgroundPosition: 'center', backgroundSize: 'cover', boxShadow: selected ? `0 0 18px ${accent.glow}` : 'none',
+                }}><div style={{ color: accent.accent, fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 1.4, textTransform: 'uppercase' }}>{selected ? 'Locked On' : complete ? 'Completed' : 'Select Focus'}</div><div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 15, marginTop: 7, lineHeight: 1.15 }}>{definition.title}</div><div style={{ color: '#d5c3eb', fontSize: 10, marginTop: 8 }}>{definition.setId} · {definition.steps.length} steps</div></button>;
+              })}
+            </div>
+          ) : <div style={{ color: '#d5c3eb', fontSize: 12, padding: '14px 0' }}>Unlock a manuscript by meeting its discovery requirements.</div>}
         </div>
         <div style={{ display: 'grid', gap: 14 }}>
           {groupedDefinitions.map(entry => {

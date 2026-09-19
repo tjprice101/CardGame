@@ -61,7 +61,7 @@
 - Daily login rewards use a persistent monthly catch-up calendar. Card-born thresholds are 9, 26, 140, 525, 1,050, 2,100, 5,250, and 10,500 Card-light.
 - The main menu uses the responsive Play / Collection / Progress Command Deck in `MainMenuHub.tsx`; preserve its contextual artwork, visible lock requirements, and complete destination coverage.
 - The Board panel and Card-born Stacks panel belong in the shared left-side HUD rail and must remain flow-positioned rather than independently absolutely positioned.
-- Enigma completion logic must be condition-driven and scope-aware. One-turn, simultaneous, and end-turn requirements must use their exact runtime boundary; cumulative requirements must use persisted counters and expose progress trackers in `EnigmaModal`. Do not allow false positives from lifetime counters, generic board checks, or stale snapshots.
+- Enigma completion logic must be condition-driven, scope-aware, and lock-on driven. The player selects one unlocked manuscript in `EnigmaModal`, and only that Enigma advances. One-turn, simultaneous, and end-turn requirements must use their exact runtime boundary; cumulative requirements must use persisted counters and expose progress trackers. Do not allow false positives from lifetime counters, generic board checks, or stale snapshots.
 - Neutrality and Causality enigma steps are expected to reflect the actual authored requirement text; if a condition is not met, the step must not complete.
 - Causality enigma reward copies are set to 3 per reward.
 - `Amplifier of the Void` draws 2 cards, grants 3 Limitless Light Stacks, and conditionally grants 1,500 Divine Light when the resulting stack pool is at least 5.

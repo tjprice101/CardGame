@@ -44,7 +44,7 @@ This iteration focused on state consistency, usability, and math correctness aro
 - Daily login rewards use a persistent monthly calendar with catch-up claims; missed days do not reset progress. Rewards include shards, base cards, holofoil cards, and Card-light for owned cards.
 - Card-born thresholds are reduced by 65%: 9, 26, 140, 525, 1,050, 2,100, 5,250, and 10,500 Card-light.
 - The turn HUD stacks Board and Card-born Stacks in one left-side rail. The main menu is a responsive Command Deck organized into Play, Collection, and Progress, with one contextual artwork banner and a reduced set of visible actions.
-- Enigma tracking evaluates the authored scope exactly: “in one turn,” “at once,” and “at end of turn” are turn/board-bound checks, while cumulative goals use persisted `progressCounters` and show live progress trackers in `EnigmaModal`. Do not complete steps from lifetime counters, generic board presence, or stale snapshots.
+- Enigma tracking is lock-on driven: the player selects one unlocked manuscript in `EnigmaModal`, and only that selected Enigma advances. The authored scope is exact: “in one turn,” “at once,” and “at end of turn” are turn/board-bound checks, while cumulative goals use persisted `progressCounters` and show live progress trackers. Do not complete steps from lifetime counters, generic board presence, or stale snapshots.
 - `Amplifier of the Void` is a persistent free Enigmatic Dark utility that draws 2, grants 3 Limitless Light Stacks, and grants 1,500 Divine Light when the post-activation pool reaches 5 stacks.
 - Causality enigma rewards were increased to 3 copies per reward entry.
 - Player-facing summary text must remain natural language; do not leak internal tokens like `cosmos_gte` or raw snake_case into the UI.

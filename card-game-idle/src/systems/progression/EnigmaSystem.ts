@@ -111,6 +111,7 @@ export function evaluateEnigmaAcquisition(state: Pick<GameState, 'board' | 'prog
 
 export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 'progress'>): EnigmaProgressResult {
   ensureEnigmaState(state.progress);
+  if (state.progress.enigmas.activeEnigmaId !== 'neutral-mystery') return { newlyAcquired: [], newlyCompleted: [] };
   const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
   const instance = ensureNeutralMysteryInstance(state.progress);
   if (!instance || instance.status === 'locked') return result;
@@ -140,6 +141,7 @@ export function evaluateNeutralMysteryProgress(state: Pick<GameState, 'board' | 
 
 export function evaluateNeutralizingVoidProgress(state: Pick<GameState, 'board' | 'progress'>): EnigmaProgressResult {
   ensureEnigmaState(state.progress);
+  if (state.progress.enigmas.activeEnigmaId !== 'neutralizing-the-void') return { newlyAcquired: [], newlyCompleted: [] };
   const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
   if (!isEnigmaUnlocked(state.progress)) return result;
   const instance = state.progress.enigmas.instances['neutralizing-the-void'];
@@ -170,6 +172,7 @@ export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' |
   const activeCausalityTrinity = activeCausalityLight && activeCausalityDark && activeCausalityAsa;
 
   const update = (id: string, checks: boolean[]): void => {
+    if (state.progress.enigmas.activeEnigmaId !== id) return;
     const instance = state.progress.enigmas.instances[id];
     if (!instance || instance.status === 'locked') return;
     for (let index = 1; index < checks.length + 1; index += 1) {
