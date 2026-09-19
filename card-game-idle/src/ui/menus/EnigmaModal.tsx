@@ -57,10 +57,16 @@ export default function EnigmaModal({ onClose }: Props) {
             const foundButLocked = discovered && locked;
             const expanded = expandedId === definition.id;
             const isActive = (active?.id ?? progress.enigmas.activeEnigmaId) === definition.id;
-            const currentStep = definition.steps[Math.min(instance?.currentStepIndex ?? 0, definition.steps.length - 1)];
-            const canClaim = !locked && status !== 'completed' && !!instance && instance.stepsComplete.slice(0, -1).every(Boolean);
+            const completedSteps = definition.steps.map((_, index) => status === 'completed' || instance?.stepsComplete?.[index] === true);
+            const currentStep = status === 'completed'
+              ? null
+              : definition.steps[Math.min(instance?.currentStepIndex ?? 0, definition.steps.length - 1)];
+            const currentTrackedValue = currentStep?.progressCounterKey ? instance?.progressCounters?.[currentStep.progressCounterKey] ?? 0 : null;
+            const currentTrackedTarget = currentStep?.amount ?? 0;
+            const canClaim = !locked && status !== 'completed' && !!instance && completedSteps.slice(0, -1).every(Boolean);
             const divineLightCost = definition.id === 'neutral-mystery' ? 50_000 : 25_000;
             const canSacrificeForEnigma = (definition.id === 'neutral-mystery' || definition.id === 'neutralizing-the-void') && instance?.currentStepIndex === 1;
+            const stepsExpanded = expanded || status === 'completed';
             return (
               <div key={definition.id}>
                 {entry.firstInSet && (
@@ -71,7 +77,7 @@ export default function EnigmaModal({ onClose }: Props) {
                 )}
               <section onClick={() => { if (discovered) setActiveEnigma(definition.id); if (!locked) setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: discovered ? 'pointer' : 'default', opacity: locked ? 0.72 : 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                  <div><div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 20 }}>{definition.title}</div><div style={{ color: '#d5c3eb', marginTop: 4 }}>{!discovered ? definition.hintText : foundButLocked ? (definition.unlockHintText ?? definition.hintText) : currentStep?.description ?? definition.hintText}</div></div>
+                  <div><div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 20 }}>{definition.title}</div><div style={{ color: '#d5c3eb', marginTop: 4 }}>{!discovered ? definition.hintText : foundButLocked ? (definition.unlockHintText ?? definition.hintText) : status === 'completed' ? 'All Enigma steps complete. Reward claimed.' : currentStep?.description ?? definition.hintText}</div>{currentTrackedValue !== null && <div style={{ color: '#f4cf6b', fontSize: 11, marginTop: 7 }}>{currentStep?.progressCounterLabel}: {Math.min(currentTrackedValue, currentTrackedTarget).toLocaleString()} / {currentTrackedTarget.toLocaleString()}</div>}</div>
                   <div style={{
                     color: status === 'completed' ? '#8de68d' : isActive ? '#f4cf6b' : 'rgba(213, 195, 235, 0.7)',
                     fontFamily: uiTypography.display,
@@ -85,10 +91,14 @@ export default function EnigmaModal({ onClose }: Props) {
                     alignSelf: 'flex-start',
                     boxShadow: isActive ? '0 0 10px rgba(244, 207, 107, 0.25)' : 'none',
                   }}>
-                    {status === 'completed' ? 'COMPLETED' : foundButLocked ? 'FOUND · LOCKED' : isActive ? 'ACTIVE' : discovered ? 'FOUND' : 'HIDDEN'} {expanded ? '▾' : '▸'}
+                    {status === 'completed' ? 'COMPLETED' : foundButLocked ? 'FOUND · LOCKED' : isActive ? 'ACTIVE' : discovered ? 'FOUND' : 'HIDDEN'} {stepsExpanded ? '▾' : '▸'}
                   </div>
                 </div>
-                {expanded && !locked && <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>{definition.steps.map((step, index) => <div key={step.title} style={{ display: 'flex', gap: 10, color: instance?.stepsComplete[index] ? '#d5c3eb' : '#f8f0de' }}><b>{index + 1}.</b><div><div style={{ fontFamily: uiTypography.display }}>{step.title}</div><div style={{ fontSize: 12, marginTop: 2 }}>{step.description}</div></div></div>)}<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
+                {stepsExpanded && !locked && <div style={{ display: 'grid', gap: 8, marginTop: 16 }}>{definition.steps.map((step, index) => {
+                  const trackedValue = step.progressCounterKey ? instance?.progressCounters?.[step.progressCounterKey] ?? 0 : null;
+                  const trackedTarget = step.amount ?? 0;
+                  return <div key={step.title} style={{ display: 'flex', gap: 10, color: completedSteps[index] ? '#d5c3eb' : '#f8f0de' }}><b>{completedSteps[index] ? '✓' : `${index + 1}.`}</b><div style={{ flex: 1 }}><div style={{ fontFamily: uiTypography.display }}>{step.title}</div><div style={{ fontSize: 12, marginTop: 2 }}>{step.description}</div>{trackedValue !== null && <div style={{ marginTop: 6, color: '#f4cf6b', fontSize: 11 }}>{step.progressCounterLabel}: {Math.min(trackedValue, trackedTarget).toLocaleString()} / {trackedTarget.toLocaleString()}<div style={{ height: 4, marginTop: 4, borderRadius: 999, background: 'rgba(255,255,255,0.12)', overflow: 'hidden' }}><div style={{ height: '100%', width: `${Math.min(100, (trackedValue / Math.max(1, trackedTarget)) * 100)}%`, background: 'linear-gradient(90deg, #f4cf6b, #fff0b0)', borderRadius: 999 }} /></div></div>}</div></div>;
+                })}<div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 12 }}>
                   {canSacrificeForEnigma && (
                     <button
                       className="menu-tactile-btn"

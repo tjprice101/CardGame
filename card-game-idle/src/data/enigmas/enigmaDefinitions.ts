@@ -24,6 +24,8 @@ export interface EnigmaStepDefinition {
   amount?: number;
   boardPattern?: string[];
   targetDefinitionId?: string;
+  progressCounterKey?: string;
+  progressCounterLabel?: string;
 }
 
 export interface EnigmaDefinition {
@@ -74,8 +76,8 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     hintText: 'Bring forth the Power of the Ain Soph Aur.',
     steps: [
       { title: 'Fill the Front Row', description: 'Fill all 4 front-row slots with Ain Soph Aur cards.', kind: 'acquire', boardPattern: ['asa-front-row-4'] },
-      { title: 'Summon Through Twin Lights', description: 'Summon 3 Ain Soph Aur cards while 2 Light cards are active.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'asa-summons-with-2-lights' },
-      { title: 'Bridge the Light', description: 'Perform Bridge the Light 10 times.', kind: 'count_active_cards', amount: 10, targetDefinitionId: 'bridge-attacks-10' },
+      { title: 'Summon Through Twin Lights', description: 'Summon 3 Ain Soph Aur cards while 2 Light cards are active.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'asa-summons-with-2-lights', progressCounterKey: 'asaSummonsWithTwoLights', progressCounterLabel: 'Twin-light summons' },
+      { title: 'Bridge the Light', description: 'Perform Bridge the Light 10 times.', kind: 'count_active_cards', amount: 10, targetDefinitionId: 'bridge-attacks-10', progressCounterKey: 'bridgeAttacks', progressCounterLabel: 'Bridge attacks' },
       { title: 'Claim the Reward', description: 'Receive 2 copies of Null-born Surgeblade.', kind: 'claim_reward' },
     ],
     rewards: [{ definitionId: ENIGMA_REWARD_SURGEBLADE_ID, copies: 2 }],
@@ -173,7 +175,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     steps: [
       { title: 'Reveal the First Horizon', description: 'Place a Causality Light card on the Ain side of the back row.', kind: 'acquire', boardPattern: ['causality-light-ain'] },
       { title: 'Write the Horizon', description: 'Play 5 Causality cards in a single turn to trace the opening line.', kind: 'count_active_cards', amount: 5, targetDefinitionId: 'causality-plays-one-turn' },
-      { title: 'Raise the Cosmos', description: 'Generate 3 Limitless Cosmos stacks from Causality effects before the page can settle.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-cosmos-3' },
+      { title: 'Raise the Cosmos', description: 'Generate 3 Limitless Cosmos stacks from Causality effects before the page can settle.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-cosmos-3', progressCounterKey: 'cosmosGenerated', progressCounterLabel: 'Cosmos generated' },
       { title: 'Claim the Reward', description: 'Receive the first luminous reward from the manuscript.', kind: 'claim_reward' },
     ],
     rewards: [{ definitionId: ENIGMA_REWARD_HORIZON_WEAVER_ID, copies: 3 }],
@@ -188,7 +190,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     steps: [
       { title: 'Write the Contradiction', description: 'Place opposing Causality Light and Dark cards together on the Ain back row.', kind: 'acquire', boardPattern: ['causality-light-ain', 'causality-dark-ain'] },
       { title: 'Pair the Opposites', description: 'Have one Causality Light card and one Causality Dark card active together at once.', kind: 'match_formation', boardPattern: ['causality-light-1', 'causality-dark-1'] },
-      { title: 'Burn Through the Void', description: 'Consume 2 Limitless Cosmos stacks through Causality effects to ignite the black ink.', kind: 'count_active_cards', amount: 2, targetDefinitionId: 'causality-cosmos-spent-2' },
+      { title: 'Burn Through the Void', description: 'Consume 2 Limitless Cosmos stacks through Causality effects to ignite the black ink.', kind: 'count_active_cards', amount: 2, targetDefinitionId: 'causality-cosmos-spent-2', progressCounterKey: 'cosmosConsumed', progressCounterLabel: 'Cosmos consumed' },
       { title: 'Claim the Reward', description: 'Seal the contradiction and take the manuscript’s dark reward.', kind: 'claim_reward' },
     ],
     rewards: [{ definitionId: ENIGMA_REWARD_INK_OF_THE_FIRST_LAW_ID, copies: 3 }],
@@ -204,7 +206,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     steps: [
       { title: 'Open the Archive', description: 'Play Eventide Archivist, Gravitic Testament, and Asterion of the Last Gate at least once each.', kind: 'acquire', targetDefinitionId: 'specific-causality-cards' },
       { title: 'Open the Archive', description: 'Have one Causality Light, one Causality Dark, and one Causality Ain Soph Aur active in the same turn.', kind: 'match_formation', boardPattern: ['causality-light-1', 'causality-dark-1', 'causality-asa-1'] },
-      { title: 'Cross the Event Horizon', description: 'Perform 3 successful Bridge the Light attacks with Causality ASA cards to complete the archival pass.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-bridge-3' },
+      { title: 'Cross the Event Horizon', description: 'Perform 3 successful Bridge the Light attacks with Causality ASA cards to complete the archival pass.', kind: 'count_active_cards', amount: 3, targetDefinitionId: 'causality-bridge-3', progressCounterKey: 'bridgeAttacks', progressCounterLabel: 'Causality Bridge attacks' },
       { title: 'Claim the Reward', description: 'The archive accepts your sequence and grants the stored ascent.', kind: 'claim_reward' },
     ],
     rewards: [{ definitionId: ENIGMA_REWARD_AXIOM_BEYOND_THE_HORIZON_ID, copies: 3 }],
@@ -218,7 +220,7 @@ export const ENIGMA_DEFINITIONS: EnigmaDefinition[] = [
     unlockCondition: 'causality-three-active',
     steps: [
       { title: 'Collapse the Equation', description: 'Fill three active Causality board positions at once.', kind: 'acquire', amount: 3, boardPattern: ['causality-three-active'] },
-      { title: 'Build the Equation', description: 'Play 10 Causality cards across the sequence to gather the full momentum of the page.', kind: 'count_active_cards', amount: 10, targetDefinitionId: 'causality-plays-10' },
+      { title: 'Build the Equation', description: 'Play 10 Causality cards across the sequence to gather the full momentum of the page.', kind: 'count_active_cards', amount: 10, targetDefinitionId: 'causality-plays-10', progressCounterKey: 'causalityPlays', progressCounterLabel: 'Causality cards played' },
       { title: 'Cash Out the Horizon', description: 'Earn 10,000 Divine Light from Causality card effects in a single decisive turn.', kind: 'count_active_cards', amount: 10_000, targetDefinitionId: 'causality-light-10k' },
       { title: 'Claim the Reward', description: 'Let the equation collapse into a single perfect resolution.', kind: 'claim_reward' },
     ],

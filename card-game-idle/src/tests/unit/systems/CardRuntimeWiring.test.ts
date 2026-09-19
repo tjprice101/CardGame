@@ -296,6 +296,29 @@ describe('complete card runtime wiring', () => {
     }
   });
 
+  it('gives Amplifier of the Void its draw-and-threshold payoff', () => {
+    const definition = CardRegistry.get('enig-neutral-amplifier-of-the-void');
+    expect(definition?.type).toBe('Dark');
+    if (!definition || definition.type !== 'Dark') return;
+
+    const result = CardEffectExecutor.execute(
+      deckCard('amplifier-source', definition.definitionId),
+      { ...structuredClone(defaultGameState.turn), phase: 'playing', limitlessLightStacks: 2 },
+      structuredClone(defaultGameState.board),
+      {
+        ...structuredClone(defaultGameState.deck),
+        drawPile: [deckCard('draw-1', 'light-neutrality-1'), deckCard('draw-2', 'dark-neutrality-1')],
+      },
+      false,
+      { effects: definition.sophEffects, countAsPlay: false, removeFromHand: false },
+    );
+
+    expect(result.canPlay).toBe(true);
+    expect(result.deck.hand).toHaveLength(2);
+    expect(result.turn.limitlessLightStacks).toBe(5);
+    expect(result.divineLightBonus).toBe(1_500);
+  });
+
   it('activates every registered Dark card through its board lifecycle', () => {
     for (const definition of darkDefinitions.filter(card => card.definitionId !== 'enig-neutral-amplifier-of-the-void')) {
       resetStore();

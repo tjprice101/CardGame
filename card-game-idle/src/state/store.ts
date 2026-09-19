@@ -397,6 +397,7 @@ interface StoreActions {
   tickAttackSequence: (nowMs?: number) => void;
   activateShatterTheInfiniteLight: () => void;
   registerShatterInfinityStarHit: () => void;
+  registerShatterInfinityPointer: (x: number, y: number) => void;
   tickShatterInfiniteLight: (nowMs?: number) => void;
   resolvePending: (selected: string[]) => void;
   endTurn: () => void;
@@ -1532,7 +1533,7 @@ function pushEnigmaStepToast(s: Store, enigmaId: string, stepIndex: number): voi
   pushRewardToast(s, `Enigma Step Complete: ${definition.title} - ${step.title}`);
 }
 
-function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean): void {
+function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean, endingTurn = false): void {
   ensureEnigmaState(s.progress);
   ensureInstance(s.progress, 'to-amplify-the-nullitude');
   ensureInstance(s.progress, 'null-surged');
@@ -1549,13 +1550,14 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean): void
     for (const enigmaId of acquisition.newlyAcquired) {
       const instance = s.progress.enigmas.instances[enigmaId];
       if (instance && !instance.acquiredAt) instance.acquiredAt = Date.now();
-      pushRewardToast(s, `Enigma Acquired: ${enigmaId}`);
+      const title = getEnigmaDefinition(enigmaId)?.title ?? enigmaId;
+      pushRewardToast(s, `Enigma Acquired: ${title}`);
     }
   }
 
   evaluateNeutralMysteryProgress({ board: s.board, progress: s.progress });
   evaluateNeutralizingVoidProgress({ board: s.board, progress: s.progress });
-  evaluateCausalityEnigmaProgress({ board: s.board, progress: s.progress, turn: s.turn });
+  evaluateCausalityEnigmaProgress({ board: s.board, progress: s.progress, turn: s.turn }, endingTurn);
 
   if (isEnigmaUnlocked(s.progress)) {
     const amplifier = s.progress.enigmas.instances['to-amplify-the-nullitude'];
@@ -1735,6 +1737,8 @@ function endTurnInternal(s: Store): void {
       runCount: s.gardenDungeon.runCount,
     };
   }
+
+  syncEnigmaProgressFromBoard(s, false, true);
 
   // End turn hard-resets the board: every unit leaves play.
   for (let i = 0; i < s.board.frontSlots.length; i++) {
@@ -2685,14 +2689,21 @@ export const useStore = create<Store>()(
         const absDelta = Math.abs(delta);
         const radialDelta = Math.abs(radius - (sequence.lastPointerRadius ?? radius));
         const direction = delta >= 0 ? 1 : -1;
-        const consistentDirection = sequence.pointerOrbitDirection === direction;
+        const consistentDirection = sequence.pointerOrbitDirection === undefined || sequence.pointerOrbitDirection === direction;
         sequence.pointerOrbitDirection = direction;
         sequence.pointerOrbitStreak = consistentDirection ? (sequence.pointerOrbitStreak ?? 0) + 1 : 1;
         const elapsed = Math.max(8, nowMs - (sequence.pointerStartedAt ?? nowMs - 16));
         const radiansPerSecond = absDelta / (elapsed / 1000);
         const circularMotion = absDelta >= 0.035 && absDelta <= 0.95 && radialDelta <= 0.08 && (sequence.pointerOrbitStreak ?? 0) >= 3;
         if (circularMotion) {
-          sequence.orbitScore = (sequence.orbitScore ?? 0) + radiansPerSecond * 0.018;
+          sequence.pointerOrbitAccumulated = (sequence.pointerOrbitAccumulated ?? 0) + absDelta;
+          const completedTurns = Math.floor((sequence.pointerOrbitAccumulated ?? 0) / (Math.PI * 2));
+          if (completedTurns > 0) {
+            sequence.pointerOrbitAccumulated = (sequence.pointerOrbitAccumulated ?? 0) - completedTurns * Math.PI * 2;
+            sequence.orbitScore = (sequence.orbitScore ?? 0) + completedTurns * (1 + radiansPerSecond * 0.06);
+          }
+        } else if (!consistentDirection) {
+          sequence.pointerOrbitAccumulated = 0;
         }
         sequence.lastPointerAngle = angle;
         sequence.lastPointerRadius = radius;
@@ -2731,6 +2742,15 @@ export const useStore = create<Store>()(
               slot.attackCooldowns[def.bridgeAttack.id] = def.bridgeAttack.cooldownCards;
               emitQuestProgressToProgress(s.progress, { kind: 'bridge_ain_soph_aur', amount: 1 });
               emitQuestProgressToProgress(s.progress, { kind: 'spend_light_stacks', amount: sequence.stackSpend });
+              for (const id of ['null-surged', 'causality-heavenly-archive']) {
+                const instance = s.progress.enigmas.instances[id];
+                if (instance?.status !== 'acquired') continue;
+                if (id === 'null-surged' || def.definitionId.startsWith('ain-soph-aur-causality-')) {
+                  instance.progressCounters ??= {};
+                  instance.progressCounters.bridgeAttacks = (instance.progressCounters.bridgeAttacks ?? 0) + 1;
+                }
+              }
+              syncEnigmaProgressFromBoard(s, true);
             }
           }
           sequence.phase = 'result';
@@ -2762,6 +2782,42 @@ export const useStore = create<Store>()(
         const shatter = s.turn.shatterInfiniteLight;
         if (!shatter || shatter.phase !== 'active') return;
         shatter.stacks += 1;
+      });
+    },
+
+    registerShatterInfinityPointer: (x, y) => {
+      set(s => {
+        const shatter = s.turn.shatterInfiniteLight;
+        if (!shatter || shatter.phase !== 'active') return;
+        const dx = x - 0.5;
+        const dy = y - 0.5;
+        const radius = Math.hypot(dx, dy);
+        if (radius < 0.12 || radius > 0.48) return;
+        const angle = Math.atan2(dy, dx);
+        if (shatter.lastPointerAngle === undefined) {
+          shatter.lastPointerAngle = angle;
+          shatter.lastPointerRadius = radius;
+          return;
+        }
+        let delta = angle - shatter.lastPointerAngle;
+        while (delta > Math.PI) delta -= Math.PI * 2;
+        while (delta < -Math.PI) delta += Math.PI * 2;
+        const absDelta = Math.abs(delta);
+        const direction = delta >= 0 ? 1 : -1;
+        const radialDelta = Math.abs(radius - (shatter.lastPointerRadius ?? radius));
+        const consistentDirection = shatter.pointerOrbitDirection === undefined || shatter.pointerOrbitDirection === direction;
+        if (!consistentDirection) shatter.pointerOrbitAccumulated = 0;
+        shatter.pointerOrbitDirection = direction;
+        if (absDelta >= 0.035 && absDelta <= 0.95 && radialDelta <= 0.08 && consistentDirection) {
+          shatter.pointerOrbitAccumulated = (shatter.pointerOrbitAccumulated ?? 0) + absDelta;
+          const completedTurns = Math.floor((shatter.pointerOrbitAccumulated ?? 0) / (Math.PI * 2));
+          if (completedTurns > 0) {
+            shatter.pointerOrbitAccumulated = (shatter.pointerOrbitAccumulated ?? 0) - completedTurns * Math.PI * 2;
+            shatter.stacks += completedTurns;
+          }
+        }
+        shatter.lastPointerAngle = angle;
+        shatter.lastPointerRadius = radius;
       });
     },
 
@@ -2854,6 +2910,22 @@ export const useStore = create<Store>()(
             if (!s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil = {};
             s.turn.abilityCooldownUntil['axiomatic-reversal'] = Date.now() + 120_000;
           }
+        } else if (pending.type === 'opposite_exchange') {
+          if (selected.length !== 2 || new Set(selected).size !== 2) return;
+          const handCard = pending.handCards.find(card => selected.includes(card.instanceId));
+          const deckCard = pending.deckCards.find(card => selected.includes(card.instanceId));
+          if (!handCard || !deckCard) return;
+          const handType = CardRegistry.get(handCard.definitionId)?.type;
+          const deckType = CardRegistry.get(deckCard.definitionId)?.type;
+          if (!handType || !deckType || handType === deckType || !['Light', 'Dark'].includes(handType) || !['Light', 'Dark'].includes(deckType)) return;
+          if (!s.deck.hand.some(card => card.instanceId === handCard.instanceId) || !s.deck.drawPile.some(card => card.instanceId === deckCard.instanceId)) return;
+          s.deck.hand = s.deck.hand.filter(card => card.instanceId !== handCard.instanceId);
+          s.deck.drawPile = s.deck.drawPile.filter(card => card.instanceId !== deckCard.instanceId);
+          s.deck.hand.push(deckCard);
+          s.deck.drawPile.push(handCard);
+          s.deck.drawPile = DeckSystem.shuffle(s.deck.drawPile);
+          resolvedSubtype = deckType;
+          resolvedCardInstanceId = deckCard.instanceId;
         } else if (pending.type === 'look_top_take') {
           if (selected.length === 0) {
             s.deck.drawPile = [...s.deck.drawPile.slice(pending.cards.length), ...pending.cards];
@@ -3955,8 +4027,12 @@ export const useStore = create<Store>()(
       if (superWeeklies.length !== 2 || superWeeklies.some(challenge => challenge.active || challenge.completed)) return null;
       if (!refreshed.weekly.length || !refreshed.weekly.every(quest => quest.claimed)) return null;
       set(s => {
-        const current = s.progress.quests.superWeeklies ?? [];
-        for (const challenge of current) challenge.active = true;
+        s.progress.quests.superWeeklies = superWeeklies.map(challenge => ({
+          ...challenge,
+          active: true,
+          completed: false,
+        }));
+        s.progress.quests.superWeekly = undefined;
       });
       return superWeeklies.map(challenge => challenge.bossId).join(',');
     },

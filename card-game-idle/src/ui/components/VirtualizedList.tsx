@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react';
 
 interface VirtualizedListProps<T> {
   items: readonly T[];
@@ -40,10 +40,11 @@ export default function VirtualizedList<T>({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(0);
 
-  useEffect(() => {
+  const setViewportNode = useCallback((node: HTMLDivElement | null) => {
+    internalViewportRef.current = node;
     if (!viewportRef) return;
-    if (typeof viewportRef === 'function') viewportRef(internalViewportRef.current);
-    else viewportRef.current = internalViewportRef.current;
+    if (typeof viewportRef === 'function') viewportRef(node);
+    else viewportRef.current = node;
   }, [viewportRef]);
 
   useEffect(() => {
@@ -110,7 +111,7 @@ export default function VirtualizedList<T>({
 
   return (
     <div
-      ref={internalViewportRef}
+      ref={setViewportNode}
       style={{
         ...style,
         overflowY: 'auto',

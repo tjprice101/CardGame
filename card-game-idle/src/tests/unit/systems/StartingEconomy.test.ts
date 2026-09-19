@@ -72,8 +72,8 @@ describe('starting economy', () => {
 
     useStore.getState().addDivineLight(100);
 
-    expect(useStore.getState().progress.divineLight).toBe(102);
-    expect(useStore.getState().progress.lifetimeDivineLight).toBe(102);
+    expect(useStore.getState().progress.divineLight).toBe(104);
+    expect(useStore.getState().progress.lifetimeDivineLight).toBe(104);
   });
 
   it('materializes each ability once for its exact Divine Light cost', () => {

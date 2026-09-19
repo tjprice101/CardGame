@@ -35,7 +35,11 @@ The cap therefore rises automatically whenever cards are added to the registry. 
 
 Rotations avoid repeating the previous rotation's template IDs when enough alternatives exist. The Challenges UI presents Daily and Weekly in independently scrollable columns.
 
-After all four weekly challenge rewards are claimed, the weekly rotation can be consumed into one Super Weekly Challenge. It targets a deterministic Eternity's Wake boss for that week. Defeating the target boss completes the Super Weekly and awards bonus Aberrated Shards plus an additional copy of that boss's reward card.
+After all four weekly challenge rewards are claimed, the weekly rotation can be consumed into two Super Weekly Challenges. They target two deterministic Eternity's Wake bosses for that week. Each target completes independently and awards bonus Aberrated Shards plus an additional copy of that boss's reward card.
+
+## Monthly Login Calendar
+
+The login reward surface is a persistent monthly gacha-style calendar track. Missing a day never resets progress: every past unclaimed day remains available for catch-up. The track mixes Aberrated Shards, base-card copies, holofoil base-card copies, and Card-light grants applied to all currently owned cards.
 
 ## Rarity Progression
 
@@ -48,7 +52,9 @@ Achievements and unlock gates should distinguish those rarity sources instead of
 
 ## Enigmas
 
-Enigma progress can complete during a boss run. If a run restores a pre-run progress snapshot, the store must capture and merge Enigma flags so mid-run progress is not lost.
+Enigma progress can complete during a boss run. If a run restores a pre-run progress snapshot, the store must capture and merge Enigma flags and cumulative progress counters so mid-run progress is not lost. Requirements explicitly scoped to one turn, a simultaneous board state, or the end of a turn must not complete outside that scope. Non-turn goals such as Causality card plays, Cosmos generated/consumed, Bridge attacks, and Twin-light summons use persisted counters shown as live trackers in the Enigma panel.
+
+The `Amplifier of the Void` reward is a persistent free Dark utility: it draws 2 cards, grants 3 Limitless Light Stacks, and grants 1,500 Divine Light when the resulting stack pool is at least 5.
 
 `neutralizing-the-void` targets `boss-hollow-king` and retains its timed-clear requirement.
 
@@ -65,3 +71,4 @@ Wished Upon A Star event timing is centralized in `src/ui/eventWishedUponAStar/e
 - Five playable Causality Infinite cards have recipes containing only Causality Eternal rewards and those four Rift materials.
 - Causality progression rewards include titles/achievements, profile pictures, reward themes, and Eternal/Infinite splash slots.
 - Causality Midjourney prompts should use the splotched illuminated-ink look as the current norm: distressed parchment, heavy black dry-brush and splatter texture, cobalt/navy/violet/cyan/magenta accents, and circular celestial-mechanical forms. Keep Causality-specific event-horizon/manuscript concepts in Causality prompts; future sets may define a different visual style.
+- Silent Exchange is a Neutrality Dark utility: exchange one Light or Dark card from hand for one opposite-type card from the deck, then shuffle the returned card into the deck.

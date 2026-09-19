@@ -59,7 +59,7 @@ Materials are consumed only after validation succeeds. Every successful summon g
 
 Bridge the Light uses `activateAsaBridge` to validate and reserve optional stack costs and compute triune scaling. The resulting `attackSequence` grants Divine Light and starts cooldown only after the central cursor-orbit sequence resolves.
 
-Attack actions now reserve costs and create `turn.attackSequence`; payout and cooldown are committed only when the sequence reaches result. `AttackSequenceOverlay` owns presentation while `registerAttackSequencePointer` scores sustained circular pointer motion around the center. Orbit power is uncapped, but straight lines, jitter, and direction changes do not score. `registerAttackSequenceStarHit` remains only as a compatibility path for deterministic star guidance/tests.
+Attack actions now reserve costs and create `turn.attackSequence`; payout and cooldown are committed only when the sequence reaches result. `AttackSequenceOverlay` owns presentation while `registerAttackSequencePointer` scores sustained circular pointer motion around the center. Orbit power is uncapped, but straight lines, jitter, and direction changes do not score. A score requires a full consistent revolution.
 
 ## Shatter The Infinite Light Lifecycle
 
@@ -68,7 +68,7 @@ Attack actions now reserve costs and create `turn.attackSequence`; payout and co
 `activateShatterTheInfiniteLight` starts a three-phase sequence:
 
 1. `priming`: the arena fades completely to black for 1.1 seconds; attack visuals remain hidden.
-2. `active`: a 10-second starfield window accepts clicks. Each successful click adds one Limitless Infinity stack.
+2. `active`: a 10-second event-horizon orbit field tracks pointer movement. Each full, consistent circle around the core adds one Limitless Infinity stack; straight, random, or reversing movement does not score.
 3. `result`: each stack grants 1,000 base Divine Light through the central Collection Power-scaled grant path, followed by a 2.6-second result reveal.
 
 All gameplay mutations and encounter timers pause while the sequence is active. Resolution returns front-row Ain Soph Aur to the Extra Deck, returns back-row and discarded cards to the shuffled draw pile, preserves the hand, clears Light Stacks and board effects, and resets cards played this turn. It does not advance the turn or open a mulligan. In boss encounters it also triggers a stagger and restores the full encounter duration; in Battleground it restores the timer to 180 seconds.

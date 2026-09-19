@@ -4,6 +4,7 @@ import type { BossDefinition, BossCategory } from '@/types/bossFight';
 import { calculateNeutralityBossBaseline } from '@/systems/bossDifficulty';
 
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
+export const BOSS_HP_SCALE = 3.2;
 
 // Re-anchored for the post-hidden-multiplier combat baseline.
 const FIRST_SET_FIRST_BOSS_HP = calculateNeutralityBossBaseline().recommendedFirstBossHp;
@@ -160,7 +161,7 @@ export function getBossDisplayHp(_progress: ProgressState, boss: BossDefinition)
 
 export const BOSS_DEFINITIONS: BossDefinition[] = BOSS_BLUEPRINTS.map((boss, index, bosses) => ({
   ...boss,
-  hp: BOSS_SCALED_HP_BY_INDEX[index] ?? getScaledBossHp(index, bosses.length),
+  hp: Math.round((BOSS_SCALED_HP_BY_INDEX[index] ?? getScaledBossHp(index, bosses.length)) * BOSS_HP_SCALE),
 }));
 
 function getBossProgressionWeight(boss: BossDefinition): number {

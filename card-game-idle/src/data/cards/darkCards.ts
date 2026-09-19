@@ -33,7 +33,7 @@ export const darkCards: DarkCardDefinition[] = darkNames.map((name, index) => {
     { type: 'look_top_take_type', look: 5, filter: ['Light'], take: 1 },
     { type: 'salvage_by_type_count', filter: ['Light'], count: 1 },
     { type: 'search_deck_by_type', filter: ['Dark'] },
-    { type: 'discard_choice', value: 1 },
+    { type: 'exchange_hand_for_opposite' },
     { type: 'draw', value: 2 },
     { type: 'shuffle_discard' },
     { type: 'look_top_take', look: 5, take: 2 },
@@ -48,7 +48,7 @@ export const darkCards: DarkCardDefinition[] = darkNames.map((name, index) => {
     { type: 'discard_draw', discard: 1, draw: 3 },
   ];
   const effects = utilityEffects[index];
-  const effectText = effects.type === 'draw' ? `draw ${effects.value}` : effects.type.replace(/_/g, ' ');
+  const effectText = effects.type === 'exchange_hand_for_opposite' ? 'exchange 1 Light or Dark card in hand for an opposite-type card from your deck' : effects.type === 'draw' ? `draw ${effects.value}` : effects.type.replace(/_/g, ' ');
   const activationCost = index === 21 || index === 22 ? 1 : 0;
   return {
     definitionId: id,

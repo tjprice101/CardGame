@@ -313,6 +313,51 @@ export default function PendingEffectModal() {
     );
   }
 
+  if (pending.type === 'opposite_exchange') {
+    const selectedHandId = selected.find(id => pending.handCards.some(card => card.instanceId === id));
+    const selectedDeckId = selected.find(id => pending.deckCards.some(card => card.instanceId === id));
+    const selectedHandType = selectedHandId
+      ? CardRegistry.get(pending.handCards.find(card => card.instanceId === selectedHandId)?.definitionId ?? '')?.type
+      : null;
+    const eligibleDeckCards = selectedHandType
+      ? pending.deckCards.filter(card => CardRegistry.get(card.definitionId)?.type !== selectedHandType)
+      : pending.deckCards;
+    const canConfirm = !!selectedHandId && !!selectedDeckId;
+
+    return (
+      <div className="anim-backdrop-fade" style={backdropStyle}>
+        <div className="anim-panel-slide-up" style={styles.panel}>
+          <div style={styles.title}>Silent Exchange</div>
+          <div style={styles.subtitle}>Choose one Light or Dark card from your hand, then take one opposite-type card from your deck. Your returned card is shuffled into the deck.</div>
+          <div style={{ ...styles.cardGrid, display: 'grid', gridTemplateColumns: '1fr 1fr', alignItems: 'start' }}>
+            <div>
+              <div style={{ ...styles.info, marginBottom: 8 }}>Return from hand</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 9 }}>
+                {pending.handCards.map(card => {
+                  const chosen = selectedHandId === card.instanceId;
+                  return <div key={card.instanceId} className={buildCardClassName(card)} style={buildCardStyle(card, chosen ? styles.cardSelected : undefined)} onClick={() => setSelected(chosen ? [] : [card.instanceId])}>{renderCardFace(card, chosen ? 'Return' : undefined, warmTheme.danger)}</div>;
+                })}
+              </div>
+            </div>
+            <div>
+              <div style={{ ...styles.info, marginBottom: 8 }}>Take opposite type from deck</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 9 }}>
+                {eligibleDeckCards.map(card => {
+                  const chosen = selectedDeckId === card.instanceId;
+                  return <div key={card.instanceId} className={buildCardClassName(card)} style={buildCardStyle(card, chosen ? styles.cardTake : undefined)} onClick={() => selectedHandId && setSelected([selectedHandId, card.instanceId])}>{renderCardFace(card, chosen ? 'Take' : undefined, warmTheme.success)}</div>;
+                })}
+              </div>
+            </div>
+          </div>
+          <div style={styles.footer}>
+            <div style={styles.info}>{canConfirm ? 'Opposite types selected.' : 'Select a hand card, then an opposite-type deck card.'}</div>
+            <button className="menu-tactile-btn" style={{ ...styles.confirmBtn, ...(canConfirm ? styles.confirmBtnEnabled : styles.confirmDisabled) }} onClick={canConfirm ? confirm : undefined}>Confirm Exchange</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (pending.type === 'look_top_take') {
     const maxTake = pending.take;
 

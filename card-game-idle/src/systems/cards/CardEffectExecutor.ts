@@ -144,6 +144,21 @@ export class CardEffectExecutor {
           });
           break;
 
+        case 'exchange_hand_for_opposite': {
+          const handCards = mutableDeck.hand.filter(card => {
+            const definition = CardRegistry.get(card.definitionId);
+            return definition?.type === 'Light' || definition?.type === 'Dark';
+          });
+          const deckCards = mutableDeck.drawPile.filter(card => {
+            const definition = CardRegistry.get(card.definitionId);
+            return definition?.type === 'Light' || definition?.type === 'Dark';
+          });
+          if (handCards.length > 0 && deckCards.length > 0) {
+            pendingEffects.push({ type: 'opposite_exchange', handCards, deckCards });
+          }
+          break;
+        }
+
         case 'shuffle_discard':
           mutableDeck = TurnSystem.shuffleDiscard(mutableDeck);
           break;

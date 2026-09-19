@@ -22,10 +22,10 @@ describe('Card mastery Resonance and Collection Power', () => {
   const definitionId = 'light-neutrality-1';
 
   it('recalculates Resonance after the same count record crosses a tier', () => {
-    const progress = progressWithCount(definitionId, 24);
+    const progress = progressWithCount(definitionId, 8);
     expect(computeGlobalResonanceScore(progress)).toBe(0);
 
-    progress.cardPlayCounts[definitionId] = 25;
+    progress.cardPlayCounts[definitionId] = 9;
     expect(computeGlobalResonanceScore(progress)).toBe(1);
   });
 
@@ -45,7 +45,7 @@ describe('Card mastery Resonance and Collection Power', () => {
   });
 
   it('keeps the store display multiplier on the canonical scaling formula', () => {
-    const progress = progressWithCount(definitionId, 1_500);
+    const progress = progressWithCount(definitionId, 525);
     useStore.setState(state => ({ ...state, progress }));
     useStore.getState().refreshComputedStats();
 
@@ -60,7 +60,7 @@ describe('Card mastery Resonance and Collection Power', () => {
     expect(noTierPreview.resonanceGain).toBe(0);
     expect(noTierPreview.cardsTieredUp).toBe(0);
 
-    const crossingTier = progressWithCount(definitionId, 24);
+    const crossingTier = progressWithCount(definitionId, 8);
     const tierPreview = applyMasteryReward(crossingTier, [{ definitionId }], [], 3);
     expect(tierPreview.resonanceGain).toBe(1);
     expect(tierPreview.cardsTieredUp).toBe(1);

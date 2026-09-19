@@ -127,6 +127,7 @@ function formatEffect(effect: CardEffect, definitionId?: string): string {
     case 'draw': return `Draw ${formatCount(effect.value, 'card')}`;
     case 'discard_choice': return `Choose and discard ${formatCount(effect.value, 'card')}`;
     case 'discard_draw': return `Discard ${formatCount(effect.discard, 'card')}, then draw ${formatCount(effect.draw, 'card')}`;
+    case 'exchange_hand_for_opposite': return 'Exchange 1 Light or Dark card in hand for an opposite-type card from your deck';
     case 'shuffle_discard': return 'Shuffle discard into deck';
     case 'look_top_take': return `Look at the top ${formatCount(effect.look, 'card')}, take ${formatCount(effect.take, 'card')}, and put the rest on the bottom`;
     case 'look_top_take_drop': return `Look at the top ${formatCount(effect.look, 'card')}, take ${formatCount(effect.take, 'card')}, put ${formatCount(effect.drop, 'card')} on the bottom, and discard the rest`;

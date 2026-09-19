@@ -42,9 +42,9 @@ export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [
     available: true,
     category: 'Neutrality',
     encounters: [
-      { id: 'valley-of-null-1', name: 'The Quiet Descent', maxHp: 10_000, reward: { currency: 'nullifiedLattice', chance: 0.5, artAssetKey: 'nullified-lattice' } },
-      { id: 'valley-of-null-2', name: 'The Lattice Hollow', maxHp: 15_000, reward: { currency: 'nullSearedLight', chance: 0.25, artAssetKey: 'null-seared-light' } },
-      { id: 'valley-of-null-3', name: 'The Oblivion Basin', maxHp: 20_000, reward: { currency: 'nullifiedOblivionMatter', chance: 0.05, artAssetKey: 'nullified-oblivion-matter' } },
+      { id: 'valley-of-null-1', name: 'The Quiet Descent', maxHp: 32_000, reward: { currency: 'nullifiedLattice', chance: 0.5, artAssetKey: 'nullified-lattice' } },
+      { id: 'valley-of-null-2', name: 'The Lattice Hollow', maxHp: 48_000, reward: { currency: 'nullSearedLight', chance: 0.25, artAssetKey: 'null-seared-light' } },
+      { id: 'valley-of-null-3', name: 'The Oblivion Basin', maxHp: 64_000, reward: { currency: 'nullifiedOblivionMatter', chance: 0.05, artAssetKey: 'nullified-oblivion-matter' } },
     ],
   },
   {
@@ -66,10 +66,10 @@ export const GARDEN_DUNGEONS: readonly GardenDungeonDefinition[] = [
     available: true,
     category: 'Causality',
     encounters: [
-      { id: 'rift-of-causality-1', name: 'Valley of Causality', maxHp: 80_000, reward: { currency: 'seedOfCausality', chance: 0.5, artAssetKey: 'seed-of-causality' } },
-      { id: 'rift-of-causality-2', name: 'Entrance of the Rift', maxHp: 125_000, reward: { currency: 'causalBloom', chance: 0.4, artAssetKey: 'causal-bloom' } },
-      { id: 'rift-of-causality-3', name: 'Journey Through Causality', maxHp: 190_000, reward: { currency: 'shatteredCausalTranscript', chance: 0.3, artAssetKey: 'shattered-causal-transcript' } },
-      { id: 'rift-of-causality-4', name: 'Core of Causality', maxHp: 300_000, reward: { currency: 'heartOfCausality', chance: 0.1, artAssetKey: 'heart-of-causality' } },
+      { id: 'rift-of-causality-1', name: 'Valley of Causality', maxHp: 256_000, reward: { currency: 'seedOfCausality', chance: 0.5, artAssetKey: 'seed-of-causality' } },
+      { id: 'rift-of-causality-2', name: 'Entrance of the Rift', maxHp: 400_000, reward: { currency: 'causalBloom', chance: 0.4, artAssetKey: 'causal-bloom' } },
+      { id: 'rift-of-causality-3', name: 'Journey Through Causality', maxHp: 608_000, reward: { currency: 'shatteredCausalTranscript', chance: 0.3, artAssetKey: 'shattered-causal-transcript' } },
+      { id: 'rift-of-causality-4', name: 'Core of Causality', maxHp: 960_000, reward: { currency: 'heartOfCausality', chance: 0.1, artAssetKey: 'heart-of-causality' } },
     ],
   },
 ];

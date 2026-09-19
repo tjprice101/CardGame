@@ -3,6 +3,7 @@ import { refreshQuestRotation, isSuperWeeklyReady, getQuestWeekIndex, type Quest
 import { calculateNeutralityBossBaseline } from '@/systems/bossDifficulty';
 import { TITLE_BADGES } from '@/data/profile/titleBadges';
 import { AVATARS } from '@/data/profile/avatars';
+import { useStore } from '@/state/store';
 
 const baseQuestState = (weeklyClaimed = false): QuestState => ({
   daily: [],
@@ -28,6 +29,22 @@ describe('Causality progression rewards and difficulty baseline', () => {
     expect(rotated.superWeeklies?.every(challenge => challenge.bossId.startsWith('boss-'))).toBe(true);
     expect(isSuperWeeklyReady(rotated)).toBe(true);
     expect(isSuperWeeklyReady({ ...rotated, weekly: rotated.weekly.map(quest => ({ ...quest, claimed: false })) })).toBe(false);
+  });
+
+  it('persists both Super Weekly targets when consuming claimed weekly challenges', () => {
+    const now = Date.now();
+    const quests = { ...baseQuestState(true), lastWeeklyRollWeek: getQuestWeekIndex(now) };
+    useStore.setState(state => ({
+      ...state,
+      progress: { ...state.progress, quests },
+    }));
+
+    const targetIds = useStore.getState().activateSuperWeekly();
+    const active = useStore.getState().progress.quests.superWeeklies ?? [];
+
+    expect(targetIds?.split(',')).toHaveLength(2);
+    expect(active).toHaveLength(2);
+    expect(active.every(challenge => challenge.active && !challenge.completed)).toBe(true);
   });
 
   it('registers Causality profile and title rewards', () => {

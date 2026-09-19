@@ -22,14 +22,14 @@ export interface MasteryTier {
 }
 
 export const MASTERY_TIERS: MasteryTier[] = [
-  { tier: 1, threshold: 25,     shardReward: 10,    label: 'Practiced',     resonanceContribution: 1   },
-  { tier: 2, threshold: 75,     shardReward: 25,    label: 'Veteran',       resonanceContribution: 3   },
-  { tier: 3, threshold: 400,    shardReward: 75,    label: 'Master',        resonanceContribution: 8   },
-  { tier: 4, threshold: 1_500,  shardReward: 200,   label: 'Eternal Bond',  resonanceContribution: 20  },
-  { tier: 5, threshold: 3_000,  shardReward: 400,   label: 'Resonant',      resonanceContribution: 40  },
-  { tier: 6, threshold: 6_000,  shardReward: 700,   label: 'Transcendent',  resonanceContribution: 80  },
-  { tier: 7, threshold: 15_000, shardReward: 1_200, label: 'Ascendant',     resonanceContribution: 160 },
-  { tier: 8, threshold: 30_000, shardReward: 2_000, label: 'Infinite Bond', resonanceContribution: 320 },
+  { tier: 1, threshold: 9,      shardReward: 10,    label: 'Practiced',     resonanceContribution: 1   },
+  { tier: 2, threshold: 26,     shardReward: 25,    label: 'Veteran',       resonanceContribution: 3   },
+  { tier: 3, threshold: 140,    shardReward: 75,    label: 'Master',        resonanceContribution: 8   },
+  { tier: 4, threshold: 525,    shardReward: 200,   label: 'Eternal Bond',  resonanceContribution: 20  },
+  { tier: 5, threshold: 1_050,  shardReward: 400,   label: 'Resonant',      resonanceContribution: 40  },
+  { tier: 6, threshold: 2_100,  shardReward: 700,   label: 'Transcendent',  resonanceContribution: 80  },
+  { tier: 7, threshold: 5_250,  shardReward: 1_200, label: 'Ascendant',     resonanceContribution: 160 },
+  { tier: 8, threshold: 10_500, shardReward: 2_000, label: 'Infinite Bond', resonanceContribution: 320 },
 ];
 
 export interface MasteryRewardEntry {

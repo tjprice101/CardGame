@@ -140,4 +140,28 @@ describe('Shatter the Infinite Light', () => {
     expect(finalState.bossFight.fightTimeRemaining).toBeGreaterThan(4);
     expect(finalState.bossFight.bossCardBreakCount).toBe(1);
   });
+
+  it('awards Shatter stacks only for completed circular cursor revolutions', () => {
+    resetStore();
+    const { frontSlots, backSlots } = buildFullShatterBoard();
+    useStore.setState(state => ({
+      ...state,
+      turn: { ...state.turn, phase: 'playing' },
+      board: { frontSlots: frontSlots as any, backSlots: backSlots as any, activeBoardEffects: [] },
+    }));
+    const before = Date.now();
+    useStore.getState().activateShatterTheInfiniteLight();
+    useStore.getState().tickShatterInfiniteLight(before + SHATTER_PRIME_MS + 1);
+
+    for (let sample = 0; sample < 40; sample += 1) {
+      useStore.getState().registerShatterInfinityPointer(0.72, sample % 2 === 0 ? 0.28 : 0.72);
+    }
+    expect(useStore.getState().turn.shatterInfiniteLight?.stacks).toBe(0);
+
+    for (let sample = 0; sample <= 34; sample += 1) {
+      const angle = sample * (Math.PI * 2 / 32);
+      useStore.getState().registerShatterInfinityPointer(0.5 + Math.cos(angle) * 0.24, 0.5 + Math.sin(angle) * 0.24);
+    }
+    expect(useStore.getState().turn.shatterInfiniteLight?.stacks).toBeGreaterThan(0);
+  });
 });

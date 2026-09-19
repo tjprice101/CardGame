@@ -131,6 +131,8 @@ export default function QuestsModal({ onClose }: Props) {
   const view = useMemo(() => refreshQuestRotation({
     daily: progress.quests.daily.map(q => ({ ...q })), weekly: progress.quests.weekly.map(q => ({ ...q })),
     lastDailyRollDay: progress.quests.lastDailyRollDay, lastWeeklyRollWeek: progress.quests.lastWeeklyRollWeek,
+    superWeekly: progress.quests.superWeekly ? { ...progress.quests.superWeekly } : undefined,
+    superWeeklies: progress.quests.superWeeklies?.map(challenge => ({ ...challenge })),
   }, now), [progress.quests, now]);
   const readyCount = [...view.daily, ...view.weekly].filter(q => isQuestComplete(q) && !q.claimed).length;
   const superWeeklies = view.superWeeklies ?? (view.superWeekly ? [view.superWeekly] : []);

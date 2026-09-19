@@ -16,6 +16,7 @@ export type ImmediateEffect =
   | { type: 'draw'; value: number }
   | { type: 'discard_choice'; value: number }
   | { type: 'discard_draw'; discard: number; draw: number }
+  | { type: 'exchange_hand_for_opposite' }
   | { type: 'shuffle_discard' }
   | { type: 'look_top_take'; look: number; take: number }
   | { type: 'look_top_take_drop'; look: number; take: number; drop: number }

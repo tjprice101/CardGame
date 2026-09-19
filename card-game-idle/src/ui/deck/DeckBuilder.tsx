@@ -138,12 +138,14 @@ const styles: Record<string, React.CSSProperties> = {
   sectionCount: { fontSize: 9, color: 'rgba(205,228,255,0.52)', letterSpacing: 1.2 },
   cardWithMeta: {
     width: 116,
+    flex: '0 0 116px',
     display: 'flex',
     flexDirection: 'column',
     gap: 3,
   },
   card: {
     width: 116, height: 164,
+    flex: '0 0 116px',
     background: 'rgba(4, 8, 18, 0.90)',
     border: '1px solid rgba(72,128,190,0.32)', borderRadius: 12, cursor: 'pointer',
     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
@@ -1096,7 +1098,7 @@ export default function DeckBuilder({ onClose }: Props) {
                   );
                 }
                 return (
-                  <div style={{ display: 'flex', gap: 10, padding: '0 4px 24px', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', flexWrap: 'nowrap', gap: 10, padding: '0 4px 24px', alignItems: 'flex-start', minWidth: 0 }}>
                     {row.entries?.map((entry) => renderPoolCard(entry, row.sectionLabel))}
                   </div>
                 );

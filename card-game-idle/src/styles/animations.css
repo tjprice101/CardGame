@@ -1750,12 +1750,24 @@ html.reduced-motion .trial-guide-pulse {
 .attack-sequence-star-bridge { color: #fff; -webkit-text-stroke: 2px #ff315f; filter: drop-shadow(0 0 6px #000) drop-shadow(0 0 13px #ff315f); }
 .attack-sequence-star-guide { position: absolute; z-index: 2; translate: -50% -50%; color: rgba(255,220,130,0.82); font: 700 22px/1 Georgia, serif; text-shadow: 0 0 12px currentColor; pointer-events: none; }
 .attack-sequence-star-guide-bridge { color: rgba(196,20,79,0.8); font-size: 13px; }
-.attack-sequence-orbit-target { position: absolute; z-index: 3; left: 50%; top: 52%; width: min(34vw, 360px); aspect-ratio: 1; translate: -50% -50%; border: 2px solid rgba(255,213,105,0.46); border-radius: 50%; pointer-events: none; box-shadow: 0 0 22px rgba(255,190,50,0.18), inset 0 0 28px rgba(255,190,50,0.1); animation: attackOrbitTargetPulse 1.8s ease-in-out infinite; }
-.attack-sequence-orbit-target span { position: absolute; inset: 12%; border: 1px solid rgba(255,255,255,0.24); border-radius: 50%; transform: rotate(48deg) skewX(18deg); }
-.attack-sequence-orbit-target span:nth-child(2) { transform: rotate(-48deg) skewX(18deg); }
-.attack-sequence-orbit-target span:nth-child(3) { inset: 38%; border-color: rgba(255,235,170,0.55); }
+.attack-sequence-orbit-target { position: absolute; z-index: 3; left: 50%; top: 52%; width: min(34vw, 360px); aspect-ratio: 1; translate: -50% -50%; border: 2px solid rgba(255,213,105,0.46); border-radius: 50%; pointer-events: none; box-shadow: 0 0 22px rgba(255,190,50,0.18), inset 0 0 28px rgba(255,190,50,0.1); animation: attackOrbitTargetPulse 1.8s ease-in-out infinite; display: grid; place-items: center; }
+.attack-sequence-orbit-target span { color: #fff5cb; font: 700 clamp(32px, 5vw, 66px)/1 Georgia, serif; text-shadow: 0 0 16px #ffd25f, 0 0 36px rgba(255,190,50,0.7); }
 .attack-sequence-orbit-target-bridge { border-color: rgba(196,20,79,0.5); box-shadow: 0 0 26px rgba(196,20,79,0.18), inset 0 0 28px rgba(196,20,79,0.1); }
 @keyframes attackOrbitTargetPulse { 0%,100% { scale: .96; opacity: .72; } 50% { scale: 1.03; opacity: 1; } }
+.shatter-orbit-field { position:absolute; z-index:3; left:50%; top:52%; width:min(64vw,760px); aspect-ratio:1; translate:-50% -50%; pointer-events:none; }
+.shatter-orbit-ring { position:absolute; inset:0; border-radius:50%; border:2px solid rgba(255,122,142,.3); box-shadow:0 0 30px rgba(255,54,88,.18),inset 0 0 38px rgba(255,54,88,.11); animation:shatterOrbitSpin 11s linear infinite; }
+.shatter-orbit-ring-outer { border-style:dashed; border-width:3px; animation-duration:18s; }
+.shatter-orbit-ring-mid { inset:15%; border-color:rgba(255,219,178,.42); transform:rotateX(62deg); animation-direction:reverse; animation-duration:10s; }
+.shatter-orbit-ring-inner { inset:31%; border-color:rgba(255,244,214,.58); border-width:1px; animation-duration:6s; }
+.shatter-orbit-streak { position:absolute; left:50%; top:50%; width:50%; height:2px; transform-origin:0 50%; background:linear-gradient(90deg,rgba(255,245,220,.92),rgba(255,66,108,.55),transparent); filter:drop-shadow(0 0 8px #ff6b81); animation:shatterOrbitSpin 3.2s linear infinite; }
+.shatter-orbit-streak-a { transform:rotate(18deg); }
+.shatter-orbit-streak-b { transform:rotate(198deg); animation-direction:reverse; animation-duration:4.1s; }
+.shatter-orbit-target { position:absolute; left:50%; top:50%; translate:-50% -50%; width:31%; aspect-ratio:1; border:2px solid rgba(255,220,190,.76); border-radius:50%; display:grid; place-items:center; color:#fff9df; font:700 clamp(44px,8vw,104px)/1 Georgia,serif; text-shadow:0 0 18px #fff,0 0 46px #ff6b81,0 0 88px rgba(255,48,86,.92); box-shadow:0 0 34px rgba(255,242,210,.68),0 0 96px rgba(255,48,86,.48),inset 0 0 42px rgba(255,92,116,.34); animation:shatterCorePulse 1.05s ease-in-out infinite alternate; overflow:hidden; }
+.shatter-orbit-star-rays { position:absolute; inset:-48%; background:linear-gradient(90deg,transparent 48.5%,rgba(255,247,220,.9) 49.5% 50.5%,transparent 51.5%),linear-gradient(0deg,transparent 48.5%,rgba(255,95,120,.8) 49.5% 50.5%,transparent 51.5%); animation:shatterOrbitSpin 4s linear infinite; }
+.shatter-orbit-star-core { position:relative; z-index:1; }
+.shatter-collapse-wash { position:absolute; inset:0; z-index:4; background:radial-gradient(circle at 50% 52%,rgba(255,255,255,.96) 0%,rgba(255,228,226,.72) 18%,rgba(255,116,142,.26) 38%,rgba(255,255,255,0) 72%); transition:opacity 100ms linear; }
+@keyframes shatterOrbitSpin { to { rotate:360deg; } }
+@keyframes shatterCorePulse { from { scale:.92; } to { scale:1.12; } }
 .attack-sequence-star-order { position: absolute; z-index: 2; right: -7px; bottom: -5px; min-width: 17px; height: 17px; padding: 0 3px; border: 1px solid #c4144f; border-radius: 999px; background: rgba(255,248,242,0.95); color: #8d1747; font: 700 10px/15px Georgia, serif; text-align: center; -webkit-text-stroke: 0; box-shadow: 0 1px 7px rgba(83,8,38,0.28); }
 .attack-sequence-result-wash { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; animation: attackSequenceResultWash 520ms ease-out both; }
 .attack-sequence-result-wash-bridge { animation-name: attackSequenceResultWashBridge; }

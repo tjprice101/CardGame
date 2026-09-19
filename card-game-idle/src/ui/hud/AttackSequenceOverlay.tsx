@@ -56,9 +56,7 @@ export default function AttackSequenceOverlay() {
           <div className="attack-sequence-nebula" />
           <div className="attack-sequence-orbit attack-sequence-orbit-a" />
           <div className="attack-sequence-orbit attack-sequence-orbit-b" />
-          <div className="attack-sequence-signature" aria-hidden="true">
-            {sequence.kind === 'ain' ? '✦' : sequence.kind === 'soph' ? '◇' : '∞'}
-          </div>
+          <div className="attack-sequence-signature" aria-hidden="true">✦</div>
           <div className="attack-sequence-energy-bands" aria-hidden="true" />
           {AMBIENT_STARS.map(star => (
             <i
@@ -68,27 +66,6 @@ export default function AttackSequenceOverlay() {
             />
           ))}
         </div>
-      )}
-
-      {bridge && active && (
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-          <defs>
-            <marker id="bridge-path-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="3.5" markerHeight="3.5" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#c4144f" />
-            </marker>
-          </defs>
-          {sequence.stars.slice(1).map((star, index) => {
-            const previous = sequence.stars[index];
-            const reached = sequence.clickedStarIds.length > index;
-            const next = sequence.clickedStarIds.length === index;
-            return (
-              <g key={star.id}>
-                <line x1={previous.x} y1={previous.y} x2={star.x} y2={star.y} stroke="rgba(96,10,42,0.3)" strokeWidth={next ? 3.2 : 1.8} vectorEffect="non-scaling-stroke" />
-                <line x1={previous.x} y1={previous.y} x2={star.x} y2={star.y} stroke={reached ? '#8b1748' : next ? '#d01858' : 'rgba(112,20,60,0.58)'} strokeWidth={next ? 1.25 : reached ? 0.9 : 0.62} strokeDasharray={next ? undefined : '3 3'} markerEnd={next ? 'url(#bridge-path-arrow)' : undefined} vectorEffect="non-scaling-stroke" />
-              </g>
-            );
-          })}
-        </svg>
       )}
 
       {sequence.kind === 'soph' && card && (
@@ -109,12 +86,13 @@ export default function AttackSequenceOverlay() {
           style={{ left: `${star.x}%`, top: `${star.y}%`, opacity: 0.28 + index * 0.06 }}
         >{bridge ? index + 1 : '·'}</i>
       ))}
-      {active && <div className={`attack-sequence-orbit-target${bridge ? ' attack-sequence-orbit-target-bridge' : ''}`} aria-hidden="true"><span /><span /><span /></div>}
+      {active && <div className={`attack-sequence-orbit-target${bridge ? ' attack-sequence-orbit-target-bridge' : ''}`} aria-hidden="true"><span>✦</span></div>}
 
       <div className={active ? 'attack-sequence-counter shatter-counter-pulse' : 'attack-sequence-counter'} style={{ color: bridge ? '#16050b' : '#fff9e8', textShadow: bridge ? '0 0 14px rgba(255,40,90,0.38)' : '0 0 18px rgba(255,220,120,0.65)' }}>
         <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.78 }}>{title}</div>
         {active && <div style={{ fontSize: 34, marginTop: 5, fontWeight: 800 }}>{(remaining / 1_000).toFixed(1)}s</div>}
         {active && <div style={{ fontSize: 14, marginTop: 4, letterSpacing: 1.5 }}>◌ {(sequence.orbitScore ?? 0).toFixed(1)} orbit power</div>}
+        {active && <div style={{ marginTop: 8, fontSize: 10, letterSpacing: 1.2, opacity: 0.7 }}>Trace smooth circles around the star to raise your multiplier</div>}
       </div>
 
       {result && (

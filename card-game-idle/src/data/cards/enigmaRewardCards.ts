@@ -43,9 +43,13 @@ export const enigmaRewardCards: Array<LightCardDefinition | DarkCardDefinition |
   } as AinSophAurDefinition,
   {
     definitionId: 'enig-neutral-amplifier-of-the-void', type: 'Dark', rarity: 'Enigmatic', name: 'Amplifier of the Void',
-    description: 'Choose a face-down Soph card on your field. Gain 500 Divine Light per Limitless Charge on it, scaled by Collection Power.',
+    description: 'Draw 2 cards and gain 3 Limitless Light Stacks. If you hold at least 5 stacks after this activation, gain an additional 1,500 Divine Light.',
     artKey: 'void_amplifier',
-    sophEffects: [{ type: 'divine_light_flat', value: 500 }], activationCost: { kind: 'fixed', value: 0 },
+    sophEffects: [
+      { type: 'draw', value: 2 },
+      { type: 'light_stacks_flat', value: 3 },
+      { type: 'conditional', condition: { type: 'light_stacks_gte', value: 5 }, then: [{ type: 'divine_light_flat', value: 1_500 }] },
+    ], activationCost: { kind: 'fixed', value: 0 },
     cooldownCardsPlayed: 2, postActivationFate: 'hand', sacrificeStackRate: 70, persistent: true,
   },
   {

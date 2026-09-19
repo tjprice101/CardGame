@@ -5,17 +5,6 @@ import { uiTypography } from '@/ui/theme';
 import { SHATTER_ACTIVE_MS } from '@/systems/cards/ShatterTheInfiniteLight';
 
 const AMBIENT_STAR_COUNT = 120;
-const MAX_CONCURRENT_CLICK_STARS = 9;
-const CLICK_STAR_SPAWN_MS = 260;
-const CLICK_STAR_LIFE_MS = 1700;
-
-interface ClickStar {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-}
-
 interface AmbientStar {
   x: number;
   y: number;
@@ -37,8 +26,6 @@ export default function ShatterInfiniteLightOverlay() {
   const divineLight = useStore(selectDivineLight);
   const shatter = turn.shatterInfiniteLight;
 
-  const [clickStars, setClickStars] = useState<ClickStar[]>([]);
-  const nextStarId = useRef(0);
   const [stackPulse, setStackPulse] = useState(false);
   const prevStacksRef = useRef(shatter?.stacks ?? 0);
 
@@ -51,33 +38,6 @@ export default function ShatterInfiniteLightOverlay() {
       useStore.getState().tickShatterInfiniteLight(Date.now());
     }, 100);
     return () => clearInterval(id);
-  }, [phase]);
-
-  // Spawn glowing click-targets only during the active clicking window.
-  useEffect(() => {
-    if (phase !== 'active') return;
-    const id = setInterval(() => {
-      setClickStars(current => {
-        if (current.length >= MAX_CONCURRENT_CLICK_STARS) return current;
-        const id = nextStarId.current++;
-        const star: ClickStar = {
-          id,
-          x: 6 + Math.random() * 88,
-          y: 10 + Math.random() * 78,
-          size: 26 + Math.random() * 22,
-        };
-        setTimeout(() => {
-          setClickStars(cur => cur.filter(s => s.id !== id));
-        }, CLICK_STAR_LIFE_MS);
-        return [...current, star];
-      });
-    }, CLICK_STAR_SPAWN_MS);
-    return () => clearInterval(id);
-  }, [phase]);
-
-  // Clear any leftover clickable stars once the window closes.
-  useEffect(() => {
-    if (phase !== 'active') setClickStars([]);
   }, [phase]);
 
   useEffect(() => {
@@ -105,9 +65,13 @@ export default function ShatterInfiniteLightOverlay() {
 
   if (!shatter) return null;
 
-  const handleStarClick = (id: number) => {
-    setClickStars(current => current.filter(s => s.id !== id));
-    useStore.getState().registerShatterInfinityStarHit();
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (phase !== 'active') return;
+    const rect = event.currentTarget.getBoundingClientRect();
+    useStore.getState().registerShatterInfinityPointer(
+      (event.clientX - rect.left) / rect.width,
+      (event.clientY - rect.top) / rect.height,
+    );
   };
 
   const secondsLeft = Math.max(0, (shatter.phaseEndsAt - Date.now()) / 1000);
@@ -130,6 +94,7 @@ export default function ShatterInfiniteLightOverlay() {
         overflow: 'hidden',
         userSelect: 'none',
       }}
+      onPointerMove={handlePointerMove}
       className={phase === 'priming' ? 'shatter-priming-overlay' : undefined}
     >
       {showStars && (
@@ -153,22 +118,16 @@ export default function ShatterInfiniteLightOverlay() {
         </div>
       )}
 
-      {showStars && clickStars.map(star => (
-        <div
-          key={star.id}
-          className="shatter-click-star"
-          onClick={() => handleStarClick(star.id)}
-          style={{
-            left: `${star.x}%`,
-            top: `${star.y}%`,
-            fontSize: star.size,
-            animationDuration: `${CLICK_STAR_LIFE_MS}ms`,
-          }}
-        >
-          <span className="shatter-click-star-rays" aria-hidden="true" />
-          <span className="shatter-click-star-core">✦</span>
+      {showStars && (
+        <div className="shatter-orbit-field" aria-hidden="true">
+          <div className="shatter-orbit-ring shatter-orbit-ring-outer" />
+          <div className="shatter-orbit-ring shatter-orbit-ring-mid" />
+          <div className="shatter-orbit-ring shatter-orbit-ring-inner" />
+          <div className="shatter-orbit-streak shatter-orbit-streak-a" />
+          <div className="shatter-orbit-streak shatter-orbit-streak-b" />
+          <div className="shatter-orbit-target"><span className="shatter-orbit-star-rays" /><span className="shatter-orbit-star-core">✦</span></div>
         </div>
-      ))}
+      )}
 
       {showCounters && (
         <div
@@ -202,6 +161,7 @@ export default function ShatterInfiniteLightOverlay() {
               {secondsLeft.toFixed(1)}s
             </div>
           )}
+          {phase === 'active' && <div style={{ fontFamily: uiTypography.display, fontSize: 10, marginTop: 6, letterSpacing: 1.1, color: '#ffd7c4' }}>Complete smooth circles around the core to fracture infinity</div>}
         </div>
       )}
 
@@ -242,9 +202,7 @@ export default function ShatterInfiniteLightOverlay() {
         </div>
       )}
 
-      {phase === 'active' && (
-        <div aria-hidden style={{ position: 'absolute', inset: 0, background: '#fff', opacity: activeWashOpacity, pointerEvents: 'none', transition: 'opacity 100ms linear' }} />
-      )}
+      {phase === 'active' && <div aria-hidden className="shatter-collapse-wash" style={{ opacity: activeWashOpacity, pointerEvents: 'none' }} />}
     </div>
   );
 }

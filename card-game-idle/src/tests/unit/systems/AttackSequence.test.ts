@@ -113,4 +113,25 @@ describe('attack orbit sequences', () => {
 
     expect(useStore.getState().turn.attackSequence?.orbitScore ?? 0).toBe(0);
   });
+
+  it('does not reward vertical back-and-forth movement', () => {
+    const base = structuredClone(defaultGameState) as GameState;
+    const definition = lightCards[0];
+    const instanceId = 'attack-sequence-vertical-light';
+    base.turn.phase = 'playing';
+    base.board.backSlots[0] = {
+      instanceId, definitionId: definition.definitionId, type: 'Light', rarity: definition.rarity,
+      finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0,
+    };
+    useStore.setState(state => ({ ...state, ...base }));
+
+    useStore.getState().activateLightAinAttack(instanceId);
+    const priming = useStore.getState().turn.attackSequence!;
+    useStore.getState().tickAttackSequence(priming.phaseEndsAt + 1);
+    for (let sample = 0; sample < 80; sample += 1) {
+      useStore.getState().registerAttackSequencePointer(0.72, sample % 2 === 0 ? 0.28 : 0.72, priming.phaseEndsAt + 1 + sample * 12);
+    }
+
+    expect(useStore.getState().turn.attackSequence?.orbitScore ?? 0).toBe(0);
+  });
 });

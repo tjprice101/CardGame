@@ -93,6 +93,7 @@ export type PendingEffect =
       sourceInstanceId?: string;
       resolutionEffects?: CardEffect[];
     }
+  | { type: 'opposite_exchange'; handCards: DeckCard[]; deckCards: DeckCard[]; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'salvage'; cards: DeckCard[]; filter: CardSubtypeFilter[] | null; count: number; sourceDefinitionId?: string; sourceInstanceId?: string; resolutionEffects?: CardEffect[] }
   | { type: 'embrace_infinite'; cards: DeckCard[]; allCards: DeckCard[]; keep: number };
 
@@ -180,6 +181,7 @@ export interface AttackSequenceState {
   pointerStartedAt?: number;
   pointerOrbitDirection?: 1 | -1;
   pointerOrbitStreak?: number;
+  pointerOrbitAccumulated?: number;
 }
 
 // ── Shatter the Infinite Light ────────────────────────────────────────────────
@@ -194,6 +196,10 @@ export interface ShatterInfiniteLightState {
   stacks: number;
   /** Divine Light granted once the 'active' phase resolves. */
   payout: number;
+  lastPointerAngle?: number;
+  lastPointerRadius?: number;
+  pointerOrbitDirection?: 1 | -1;
+  pointerOrbitAccumulated?: number;
 }
 
 // ── Saved Decks ───────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@ import { uiTypography } from '@/ui/theme';
 import { RARITY_TIERS, CARD_BORN_TIERS, TUTORIAL_SECTIONS } from '@/data/tutorialContent';
 import { AIN_SOPH_AUR_SUMMON_STACK_REWARD, SOPH_FLIP_CHARGE_REQUIRED } from '@/systems/cards/AinSophRuntime';
 import { MASTERY_TIERS } from '@/systems/progression/cardMastery';
+import { ABILITY_DEFINITIONS } from '@/data/abilities/abilityDefinitions';
 
 interface Props {
   onClose: () => void;
@@ -147,7 +148,6 @@ function OverviewBody() {
           <div style={sectionHeadingStyle}>Currencies</div>
           <ListItem label="Divine Light">Primary currency. Earned from card plays and attacks. Spent on card packs.</ListItem>
           <ListItem label="Shards">Aberrated Shards. Earned from boss clears and daily logins. Spend them on progression and rewards.</ListItem>
-            <ListItem label="Shards">Aberrated Shards. Earned from event progression and rewards. They are reserved for buying event Packs, Boxes, and Cases.</ListItem>
         </div>
         <div style={cardAltStyle}>
           <div style={sectionHeadingStyle}>Game Modes</div>
@@ -159,10 +159,10 @@ function OverviewBody() {
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Attack Orbit Sequences</div>
-        <ListItem label="Ain Attack">The screen fades to black. Click three card-specific gold-to-white stars within 3 seconds for ×2, ×3, or ×4 attack payout.</ListItem>
-        <ListItem label="Soph Attack">The attacking card floats at center while five card-specific stars appear. Click them within 4 seconds for ×1.5 through ×5.5.</ListItem>
-        <ListItem label="Bridge the Light">The screen fades to white. Follow the red-pink path through an ordered white-and-black constellation; correct hits use the Soph multiplier ladder.</ListItem>
-        <ListItem label="Stable layouts">Every copy of the same card uses the same stars for that attack, while different cards and attack modes use different layouts.</ListItem>
+        <ListItem label="Ain / Soph">The attacking card appears in a central orbit field. Move the cursor in a complete, consistent circle around the center target to build revolution-only payout.</ListItem>
+        <ListItem label="Bridge the Light">Bridge uses the same central orbit language while its Ain Soph Aur constellation remains part of the presentation. Complete revolutions are the scoring input.</ListItem>
+        <ListItem label="No star clicks">There are no clickable stars or ordered hit paths. Straight lines, jitter, direction reversals, and random movement do not score.</ListItem>
+        <ListItem label="Stable payout">Orbit score is uncapped and committed by the store when the sequence resolves. Attack cost, cooldown, and payout are applied atomically at resolution.</ListItem>
       </div>
 
       <div style={{ ...cardStyle, marginTop: 10 }}>
@@ -293,8 +293,9 @@ function AttacksBody() {
         <div style={bodyTextStyle}>
           Fully bridge the board with four front-row Ain Soph Aur and four back-row Light or Dark cards already
           flipped to Ain to unlock this finisher. The screen first fades completely to black, then opens a
-          10-second starfield. Each glowing star clicked creates one <Tag>Limitless Infinity</Tag> stack worth
-          1,000 base Divine Light before Collection Power scaling. Gameplay timers pause during the sequence.
+          10-second event-horizon orbit field. Each full, consistent cursor revolution around the core creates one
+          <Tag>Limitless Infinity</Tag> stack worth 1,000 base Divine Light before Collection Power scaling.
+          Gameplay timers pause during the sequence.
         </div>
         <ListItem label="Aftermath">Front-row Ain Soph Aur return to the Extra Deck. Back-row and discarded cards return to the draw pile, while your current hand is preserved. Light Stacks and board effects clear without advancing the turn.</ListItem>
         <ListItem label="Boss fights">Shattering immediately staggers the boss and restores the encounter clock to its full duration.</ListItem>
@@ -349,12 +350,8 @@ function SetsBody() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
-        {[
-          { name: 'Neutralizing Inferno', mechanic: 'Discard conversion', body: 'Discard one main-deck card to gain Divine Light equal to your current Limitless Light Stacks multiplied by 500. Cooldown: 30 seconds.' },
-          { name: 'Nullified Barricade', mechanic: 'Divine Field', body: 'Spend 5 Limitless Light Stacks to gain Divine Field for 60 seconds. Each card played during the field grants 50 Divine Light.' },
-          { name: 'Phantom Matrix', mechanic: 'Free summon', body: 'Spend 10 Limitless Light Stacks to select and free-summon an Ain Soph Aur from the Extra Deck.' },
-        ].map(({ name, mechanic, body }) => (
-          <div key={name} style={{
+        {ABILITY_DEFINITIONS.map(ability => (
+          <div key={ability.id} style={{
             ...cardAltStyle,
             padding: '9px 11px',
           }}>
@@ -364,7 +361,7 @@ function SetsBody() {
               color: PALETTE.inkDeep,
               fontFamily: DISPLAY_FONT,
               letterSpacing: 0.4,
-            }}>{name}</div>
+            }}>{ability.name}</div>
             <div style={{
               fontSize: 10.5,
               letterSpacing: 1,
@@ -373,8 +370,8 @@ function SetsBody() {
               fontWeight: 700,
               marginTop: 1,
               marginBottom: 4,
-            }}>{mechanic}</div>
-            <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>{body}</div>
+            }}>{ability.setId} ability</div>
+            <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>{ability.description}</div>
           </div>
         ))}
       </div>
@@ -448,9 +445,12 @@ function ModesBody() {
 
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>More Modes</div>
-        <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards. Claim every weekly reward to consume that rotation into one Super Weekly boss challenge.</ListItem>
+        <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards. Claim every weekly reward to consume that rotation into two Super Weekly boss challenges.</ListItem>
         <ListItem label="Fracture">Spend Fracture Shards to add Card-light to any card.</ListItem>
-        <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. Collect 5 unique cards from a set to find its Enigmas; each manuscript has another unlock requirement before its trials begin.</ListItem>
+        <ListItem label="Monthly Login">The login calendar persists for the month. Missed days remain available for catch-up and never reset claimed progress. Rewards include Shards, base cards, holofoil cards, and Card-light for owned cards.</ListItem>
+        <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. Collect 5 unique cards from a set to find its Enigmas; each manuscript has another unlock requirement before its trials begin. Cumulative goals show live trackers on the manuscript card, while requirements that say “in one turn,” “at once,” or “at end of turn” only complete in that exact scope.</ListItem>
+        <ListItem label="Amplifier of the Void">This Enigmatic Dark reward draws 2 cards and grants 3 Limitless Light Stacks. If you hold at least 5 stacks after activation, it also grants 1,500 Divine Light.</ListItem>
+        <ListItem label="Silent Exchange">This Neutrality Dark utility exchanges one Light or Dark card from hand for one opposite-type card from the deck, then shuffles the returned card into the deck.</ListItem>
         <ListItem label="Eternity's Wake">Eternity's Wake unlocks after you acquire 3 unique Enigmatic cards.</ListItem>
         <ListItem label="Infinitude">Infinitude unlocks after you acquire 5 Eternal-rarity cards.</ListItem>
         <ListItem label="Ascension">Ascension unlocks after you acquire 5 Infinite-rarity cards.</ListItem>
@@ -493,105 +493,6 @@ function CardBornTierBody() {
   );
 }
 
-/*
-function CardBornTierBody() {
-  const tiers = CARD_BORN_TIERS;
-
-  return (
-    <>
-      <div style={cardStyle}>
-        <div style={sectionHeadingStyle}>What is Card-born Tier?</div>
-        <div style={bodyTextStyle}>
-          Playing a card from your hand adds <Tag>1 Card-light</Tag> to it. Across{' '}
-          <Tag>8 tiers</Tag> — from Practiced to Infinite Bond — each milestone grants{' '}
-          <Tag>Resonance points</Tag> and a shard reward you can claim. Resonance feeds your{' '}
-          <Tag>Collection Power</Tag> multiplier, strengthening Divine Light earned from attacks.
-          Copies share Card-light progress, but having more copies makes it easier to bring that card into play.
-        </div>
-      </div>
-
-      <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>The 8 Tiers</div>
-        {tiers.map(({ name, glyph, threshold, description }, i) => (
-          <div key={name} style={{
-            display: 'grid', gridTemplateColumns: '28px 110px 70px 1fr',
-            gap: 10, padding: '6px 4px',
-            borderBottom: i < tiers.length - 1 ? `1px solid ${PALETTE.borderSoft}` : 'none',
-            alignItems: 'baseline',
-          }}>
-            <div style={{ fontSize: 14, color: PALETTE.accent, textAlign: 'center' }}>{glyph}</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: PALETTE.inkDeep, fontFamily: DISPLAY_FONT }}>{name}</div>
-            <div style={{ fontSize: 11, color: PALETTE.inkSoft }}>{threshold.toLocaleString()} Card-light</div>
-            <div style={{ ...bodyTextStyle, fontSize: 11.5, lineHeight: 1.5 }}>{description}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 10 }}>
-        <div style={cardStyle}>
-          <div style={sectionHeadingStyle}>Resonance</div>
-                    Each card played from your hand adds <Tag>1 Card-light</Tag> to that card's shared definition progress.
-                    The eight milestones, from Practiced to Infinite Bond, each provide a claimable Aberrated Shards reward
-                    and update that card's highest-tier <Tag>Resonance</Tag> contribution. Copies of the same card share one progression.
-        </div>
-        <div style={cardAltStyle}>
-          <div style={sectionHeadingStyle}>Collection Power</div>
-          <div style={bodyTextStyle}>
-            Your total Resonance fuels the <Tag>Collection Power</Tag> multiplier — a passive bonus that
-            amplifies all Divine Light earned from attacks. Claim each tier milestone from
-            the <Tag>Card-born Tier</Tag> screen to bank its shard reward.
-          </div>
-          <div style={{ ...bodyTextStyle, marginTop: 8 }}>
-            Collection Power is also one of the three scaling sources behind every Light card's{' '}
-            <Tag>Ain Attack</Tag> and <Tag>Soph Attack</Tag>, and every Ain Soph Aur{' '}
-            <Tag>Bridge the Light</Tag>. Each attack's scaling bonus is split evenly across{' '}
-            <Tag>Limitless Light Stacks</Tag>, <Tag>summoned Ain Soph Aur</Tag>, and{' '}
-            <Tag>Collection Power</Tag> — so a deep collection raises your damage floor even on turns
-            where you build few stacks or summon nothing. Stacks are measured before an attack spends
-            them, so paying a Soph Attack's cost never reduces that attack's own payout.
-          </div>
-        </div>
-      </div>
-
-      <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Tier Progress from Boss Content</div>
-        <div style={bodyTextStyle}>
-          Completing Eternity's Wake boss fights awards{' '}
-                      Each unique card contributes the Resonance value of its highest reached tier, regardless of how many copies you own.
-                      The values are listed in the Card-born Tier menu and are counted once per card definition.
-        <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <ListItem label="Boss fights">Awards climb with each boss, from about 3 Card-light per card to the 20-card-light cap.</ListItem>
-          <ListItem label="Established Tiers">Cards already at a Tier gain 5% more Card-light for every Tier reached. T4 earns ×1.20; T7 earns ×1.35.</ListItem>
-        </div>
-        <div style={{ ...bodyTextStyle, marginTop: 8, color: PALETTE.inkSoft }}>
-                      Your total Resonance determines the <Tag>Collection Power</Tag> multiplier, which amplifies Divine Light gains.
-                      Claim each tier milestone from
-      </div>
-
-      <div style={{ ...cardAltStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Shard Rewards</div>
-        <div style={bodyTextStyle}>
-          Completing a tier milestone shows a <Tag>Claim</Tag> button in the Card-born Tier screen. You must
-          manually claim each reward — they do not auto-collect. Use the filter toolbar (All / Claimable /
-          In Progress) to find your pending milestones quickly. After claiming, the Claim All button at the
-          top lets you sweep the rest in one click.
-        </div>
-      </div>
-
-      <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Fracture Extra Copies</div>
-        <div style={bodyTextStyle}>
-          The <Tag>Fracture</Tag> menu lets you turn spare card copies into Fracture Shards. It always keeps
-                    Completing an Eternity's Wake boss fight awards{' '}
-                    <Tag>Card-light to each unique card in the participating Main and Extra Deck</Tag>. This is added to
-                    the Card-light earned through hand plays. The result screen shows the exact award:
-      </div>
-    </>
-  );
-}
-
-*/
-
 function ProgressionBody() {
   return (
     <>
@@ -607,6 +508,10 @@ function ProgressionBody() {
         <ListItem label="Acquisition">Every card rolled in a single Pack has a 2% chance to drop as a holofoil. Boxes and Cases guarantee at least one holofoil.</ListItem>
         <ListItem label="Visual Finish">Holofoils use source-specific full-card metallic treatments: base pack foils use black/red/white, Enigma uses black/white/gold, Eternal uses purple-red, and Infinite uses chromatic black/white.</ListItem>
         <ListItem label="Collection">Holofoils are purely cosmetic and are tracked separately in your collection and deck-building. They cannot be created with Aberrated Shards.</ListItem>
+      </div>
+      <div style={{ ...cardAltStyle, marginTop: 10 }}>
+        <div style={sectionHeadingStyle}>Monthly Login Calendar</div>
+        <div style={bodyTextStyle}>Login rewards follow a persistent monthly track. Missing a day does not reset anything: unclaimed days stay available. Rewards include Aberrated Shards, base cards, holofoil cards, and Card-light for every card you currently own.</div>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card-born Tier</div>

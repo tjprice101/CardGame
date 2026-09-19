@@ -17,13 +17,15 @@ export interface PackDefinition {
   divineLightUnlock?: number;  // total Divine Light milestone required to unlock
 }
 
+export const NON_EVENT_PACK_COST_SCALE = 3.2;
+
 export const NEUTRALITY_PACK_POOL: string[] = [
   ...lightCards.map(card => card.definitionId),
   ...darkCards.map(card => card.definitionId),
   ...ainSophAurCards.map(card => card.definitionId),
 ];
 
-export const PACK_DEFINITIONS: PackDefinition[] = [
+const BASE_PACK_DEFINITIONS: PackDefinition[] = [
   {
     id: 'pack-neutrality',
     name: 'Neutrality Pack',
@@ -46,5 +48,11 @@ export const PACK_DEFINITIONS: PackDefinition[] = [
     locked: false,
   },
 ];
+
+export const PACK_DEFINITIONS: PackDefinition[] = BASE_PACK_DEFINITIONS.map(pack => (
+  pack.currencyType === 'aberratedShards'
+    ? pack
+    : { ...pack, cost: Math.round(pack.cost * NON_EVENT_PACK_COST_SCALE) }
+));
 
 export const STORE_PACK_ORDER = PACK_DEFINITIONS.map(pack => pack.id);

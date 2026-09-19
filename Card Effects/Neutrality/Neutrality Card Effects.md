@@ -34,11 +34,15 @@ All Light attacks use authored base Divine Light, cooldown, and scaling data. Tr
 
 ## Ability System
 
-Ability Materialization contains three Neutrality abilities, each purchased once for 5,000 Divine Light. A deck may equip all three across slots 1-3. Ability Amplification displays and activates the equipped abilities during a turn.
+Ability Materialization contains seven Neutrality abilities with authored purchase costs and ownership gates. A deck may equip three across slots 1-3. Ability Amplification displays and activates the equipped abilities during a turn.
 
 - Neutralizing Inferno discards one main-deck card and grants Divine Light equal to current Limitless Light Stacks multiplied by 500. It has a 30-second cooldown.
 - Nullified Barricade spends 5 Limitless Light Stacks to grant Divine Field for 60 seconds. Each card played during the field grants 50 Divine Light.
 - Phantom Matrix spends 10 Limitless Light Stacks and opens a player-selected free ASA summon from the Extra Deck.
+- Null Horizon spends 15 Limitless Light Stacks to reduce every active card cooldown by 2.
+- Axiomatic Reversal discards 2 cards to grant 50,000 Divine Light and draw 1 card.
+- Whiteout Domain spends 20 Limitless Light Stacks to grant its 45-second card-play bonus.
+- Infinite Accord spends 30 Limitless Light Stacks to restore Light attack cooldowns and grant 10,000 Divine Light.
 
 ## Dark Cards
 
@@ -54,7 +58,9 @@ Activation-cost policy:
 - Most base one-shot Dark utilities cost 0 Limitless Light Stacks.
 - Strong base Legendary utilities may cost 1.
 - Eternal Dark cards currently cost 2.
-- Persistent Enigmatic utility currently costs 1.
+- Persistent Enigmatic utilities are authored individually; Amplifier of the Void costs 0 and remains on the board with cooldown.
+
+Amplifier of the Void draws 2 cards and grants 3 Limitless Light Stacks. If the post-activation pool reaches 5 stacks, it grants an additional 1,500 Divine Light.
 - Persistent Transcendent utilities currently cost 3-4.
 
 Dark activations are atomic: if a target-dependent effect cannot resolve, stacks are not spent and the card stays in place.

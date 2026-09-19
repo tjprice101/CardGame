@@ -258,13 +258,14 @@ function getNewNeutralityArt(definitionId: string): string | undefined {
 
 const CARD_BACK_ASSET_BY_ELEMENT: Partial<Record<string, { folder: string; file: string }>> = {
   Neutrality: { folder: 'neutrality', file: 'Neutrality Card Backing.png' },
+  Causality: { folder: 'causality', file: 'Causality Card-backing.png' },
   AinSophAur: { folder: 'neutrality', file: 'Neutrality Card Backing.png' },
 };
 
 const INFINITE_CARD_BACK_ASSET = { folder: 'infinite', file: 'Infinity Cards Card Back.png' };
 const ETERNAL_CARD_BACK_ASSET = { folder: 'eternal', file: 'Eternal Cards Card Back.png' };
 const ENIGMATIC_CARD_BACK_ASSET = { folder: 'neutrality', file: 'Enigmatic Card Backing.png' };
-const TRANSCENDENT_CARD_BACK_ASSET = { folder: 'infinite', file: 'Infinity Cards Card Back.png' };
+const TRANSCENDENT_CARD_BACK_ASSET = { folder: 'infinite', file: 'Transcendant Card-backing.png' };
 
 const BTEI_FOLDER_BY_PREFIX: ReadonlyArray<{ prefix: string; folder: string }> = [
   { prefix: 'btei-bgi-', folder: 'black-glass-inferno' },
@@ -297,7 +298,10 @@ function getCardBackUrl(card: CardDefinition | null | undefined): string | null 
     return `${CARD_BACKGROUND_ROOT}/${ENIGMATIC_CARD_BACK_ASSET.folder}/${encodeURI(ENIGMATIC_CARD_BACK_ASSET.file)}`;
   }
 
-  const asset = CARD_BACK_ASSET_BY_ELEMENT[card.type === 'AinSophAur' ? 'AinSophAur' : 'Neutrality'];
+  const element = card.definitionId.includes('causality')
+    ? 'Causality'
+    : card.type === 'AinSophAur' ? 'AinSophAur' : 'Neutrality';
+  const asset = CARD_BACK_ASSET_BY_ELEMENT[element];
   if (!asset) return null;
   return `${CARD_BACKGROUND_ROOT}/${asset.folder}/${encodeURI(asset.file)}`;
 }

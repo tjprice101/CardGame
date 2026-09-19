@@ -159,7 +159,7 @@ export function evaluateNeutralizingVoidProgress(state: Pick<GameState, 'board' 
   return result;
 }
 
-export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' | 'progress' | 'turn'>): EnigmaProgressResult {
+export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' | 'progress' | 'turn'>, endingTurn = false): EnigmaProgressResult {
   ensureEnigmaState(state.progress);
   const result: EnigmaProgressResult = { newlyAcquired: [], newlyCompleted: [] };
   if (!isEnigmaUnlocked(state.progress)) return result;
@@ -209,7 +209,7 @@ export function evaluateCausalityEnigmaProgress(state: Pick<GameState, 'board' |
     // "Use a Causality Light, Dark, and ASA in the same turn" requires the
     // actual trinity, not just any 3 causality board positions filled.
     activeCausalityTrinity,
-    (state.turn.limitlessCosmosStacks ?? 0) >= 5,
+    endingTurn && (state.turn.limitlessCosmosStacks ?? 0) >= 5,
   ]);
   return result;
 }
