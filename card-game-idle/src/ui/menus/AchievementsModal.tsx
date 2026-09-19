@@ -147,34 +147,36 @@ export default function AchievementsModal({ onClose }: Props) {
           padding: '22px 32px 18px',
           borderBottom: `1px solid ${P.border}`,
           display: 'flex', alignItems: 'center', gap: 24, flexShrink: 0,
-          backgroundImage: `linear-gradient(90deg, ${P.overlayStrong}, rgba(30,12,24,0.78), rgba(30,12,24,0.35)), url("${import.meta.env.BASE_URL}assets/menu-banners/achievements.png")`,
+          backgroundImage: `linear-gradient(90deg, rgba(10,5,14,0.98) 0%, rgba(28,10,24,0.94) 38%, rgba(30,12,24,0.72) 68%, rgba(20,12,24,0.46) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/achievements.png")`,
           backgroundPosition: 'right center', backgroundSize: 'cover',
           boxShadow: `0 8px 28px rgba(0,0,0,0.32), inset 0 -1px 0 ${P.accentGlowColor}`,
         }}>
           <div style={{ flex: 1 }}>
             <div style={{
               fontSize: 10, letterSpacing: 3.5, textTransform: 'uppercase',
-              color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 6,
+              color: P.accentGold, fontFamily: uiTypography.display, marginBottom: 6,
+              textShadow: '0 1px 3px rgba(0,0,0,0.9)',
             }}>
               MILESTONES
             </div>
             <div className="ui-title-glow" style={{
               fontSize: 32, fontWeight: 700, letterSpacing: 1.5,
-              color: P.accent, fontFamily: uiTypography.display,
-              textShadow: `0 0 40px ${P.accentGlowColor}, 0 2px 8px rgba(0,0,0,0.6)`,
+              color: '#fff2f5', fontFamily: uiTypography.display,
+              textShadow: `0 0 28px ${P.accentGlowColor}, 0 2px 8px rgba(0,0,0,0.95)`,
             }}>
               Achievements
             </div>
             <div style={{
-              fontSize: 13, color: P.textMuted, marginTop: 5,
+              fontSize: 13, color: '#f7e8ed', marginTop: 5,
               letterSpacing: 0.3, lineHeight: 1.4,
+              textShadow: '0 1px 4px rgba(0,0,0,0.95)',
             }}>
               Track cards played, bosses defeated, and collections completed.
             </div>
           </div>
 
           {/* Hero stats — emblem pillars */}
-          <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 20, borderLeft: `1px solid ${P.border}`, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', padding: '7px 8px 7px 16px', borderLeft: `1px solid ${P.borderStrong}`, borderRadius: 10, background: 'rgba(8,4,12,0.68)', boxShadow: '0 6px 18px rgba(0,0,0,0.28)', flexShrink: 0 }}>
             <AchievStat icon="❖" label="Unlocked" value={`${summary.unlocked}`} sub={`/ ${summary.total}`} accent={P.accent} />
             <div style={{ width: 1, height: 30, background: P.border, flexShrink: 0 }} />
             <AchievStat icon="✓" label="Rewards Claimed" value={`${summary.claimed}`} sub="collected" accent={P.success} />
@@ -190,8 +192,8 @@ export default function AchievementsModal({ onClose }: Props) {
             onClick={onClose}
             style={{
               width: 42, height: 42, borderRadius: '50%', cursor: 'pointer',
-              background: withAlpha(P.accentDeep, 0.08), border: `1px solid ${P.border}`,
-              color: P.textMuted, fontSize: 16, display: 'flex', alignItems: 'center',
+              background: 'rgba(8,4,12,0.72)', border: `1px solid ${P.borderStrong}`,
+              color: '#fff2f5', fontSize: 16, display: 'flex', alignItems: 'center',
               justifyContent: 'center', flexShrink: 0, transition: 'all 0.18s ease', padding: 0,
             }}
           >
@@ -366,18 +368,19 @@ function AchievStat({ icon, label, value, sub, accent, pulse }: {
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', alignItems: 'center',
-      padding: '6px 20px', gap: 4,
+      padding: '7px 16px', gap: 4,
       boxShadow: pulse ? `0 0 24px ${withAlpha(accent, 0.2)}` : 'none',
     }}>
       <div style={{
         fontSize: 8, letterSpacing: 3, textTransform: 'uppercase',
-        color: withAlpha(accent, 0.66), fontWeight: 400, whiteSpace: 'nowrap',
+        color: '#f7e8ed', fontWeight: 600, whiteSpace: 'nowrap',
         fontFamily: uiTypography.display,
+        textShadow: '0 1px 3px rgba(0,0,0,0.9)',
       }}>{icon} {label}</div>
       <div style={{
-        fontSize: 22, fontWeight: 600, letterSpacing: 0.5, color: accent,
+        fontSize: 22, fontWeight: 700, letterSpacing: 0.5, color: '#ffffff',
         fontVariantNumeric: 'tabular-nums',
-        textShadow: `0 0 20px ${withAlpha(accent, 0.35)}`,
+        textShadow: `0 0 16px ${withAlpha(accent, 0.55)}, 0 1px 3px rgba(0,0,0,0.95)`,
         fontFamily: uiTypography.display,
       }}>
         {value}

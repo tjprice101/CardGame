@@ -32,6 +32,7 @@ export default function AttackSequenceOverlay() {
   const bridge = sequence.kind === 'bridge';
   const active = sequence.phase === 'active';
   const result = sequence.phase === 'result';
+  const orbitProgress = Math.min(0.999, Math.max(0, (sequence.pointerOrbitAccumulated ?? 0) / (Math.PI * 2)));
   const remaining = Math.max(0, sequence.phaseEndsAt - Date.now());
   const washOpacity = result ? 1 : 0;
   const title = sequence.kind === 'ain' ? 'Ain Attack' : sequence.kind === 'soph' ? 'Soph Attack' : 'Bridge the Light';
@@ -92,7 +93,8 @@ export default function AttackSequenceOverlay() {
         <div style={{ fontSize: 11, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.78 }}>{title}</div>
         {active && <div style={{ fontSize: 34, marginTop: 5, fontWeight: 800 }}>{(remaining / 1_000).toFixed(1)}s</div>}
         {active && <div style={{ fontSize: 14, marginTop: 4, letterSpacing: 1.5 }}>◌ {(sequence.orbitScore ?? 0).toFixed(1)} orbit power</div>}
-        {active && <div style={{ marginTop: 8, fontSize: 10, letterSpacing: 1.2, opacity: 0.7 }}>Trace smooth circles around the star to raise your multiplier</div>}
+        {active && <div style={{ marginTop: 4, fontSize: 10, letterSpacing: 1.1, color: bridge ? '#9b5874' : '#ffd98c' }}>Next revolution: {Math.round(orbitProgress * 100)}%</div>}
+        {active && <div style={{ marginTop: 8, fontSize: 10, letterSpacing: 1.2, opacity: 0.7 }}>Trace a smooth, steady circle around the core; completed revolutions increase payout.</div>}
       </div>
 
       {result && (
