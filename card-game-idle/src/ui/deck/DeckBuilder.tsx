@@ -122,10 +122,10 @@ const styles: Record<string, React.CSSProperties> = {
     background: 'rgba(78,160,220,0.16)',
   },
   body: { display: 'flex', flex: 1, overflow: 'hidden' },
-  poolPane: { flex: '1 1 60%', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 },
-  cardPool: { flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 0 },
+  poolPane: { flex: '1 1 auto', display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 },
+  cardPool: { flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 0 },
   deckPane: {
-    flex: '1 1 40%', minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    flex: '0 0 420px', minWidth: 380, display: 'flex', flexDirection: 'column', overflow: 'hidden',
     borderLeft: '1px solid rgba(72,128,190,0.24)',
     background: 'linear-gradient(180deg, rgba(3, 6, 14, 0.82) 0%, rgba(4, 8, 18, 0.78) 100%)',
     boxShadow: 'inset 2px 0 18px rgba(0,0,0,0.40)',
@@ -137,15 +137,15 @@ const styles: Record<string, React.CSSProperties> = {
   sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2.5, textTransform: 'uppercase' },
   sectionCount: { fontSize: 9, color: 'rgba(205,228,255,0.52)', letterSpacing: 1.2 },
   cardWithMeta: {
-    width: 116,
-    flex: '0 0 116px',
+    width: 148,
+    flex: '0 0 148px',
     display: 'flex',
     flexDirection: 'column',
     gap: 3,
   },
   card: {
-    width: 116, height: 164,
-    flex: '0 0 116px',
+    width: 148, height: 204,
+    flex: '0 0 148px',
     background: 'rgba(4, 8, 18, 0.90)',
     border: '1px solid rgba(72,128,190,0.32)', borderRadius: 12, cursor: 'pointer',
     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
@@ -214,13 +214,13 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4,
   },
   extraStripCard: {
-    flex: '0 0 auto', width: 52, height: 74, borderRadius: 8,
+    flex: '0 0 auto', width: 70, height: 96, borderRadius: 10,
     border: '1px solid rgba(112,200,144,0.45)',
     background: 'rgba(4,8,18,0.9)',
     position: 'relative', overflow: 'hidden', cursor: 'pointer',
   },
   extraStripEmptySlot: {
-    flex: '0 0 auto', width: 52, height: 74, borderRadius: 8,
+    flex: '0 0 auto', width: 70, height: 96, borderRadius: 10,
     border: '1px dashed rgba(72,128,190,0.30)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     color: 'rgba(190,215,245,0.28)', fontSize: 16,
@@ -605,7 +605,7 @@ export default function DeckBuilder({ onClose }: Props) {
   );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
   const validation = DeckSystem.validate(deckList);
-  const poolColumns = Math.max(1, Math.floor((cardPoolViewportWidth + 10) / 126));
+  const poolColumns = Math.max(1, Math.floor((cardPoolViewportWidth + 10) / 158));
   const deckPoolRows = useMemo(() => {
     const rows: DeckPoolVirtualRow[] = [];
     const pushCardRows = (entries: CardVariantDisplay[], prefix: string, sectionLabel: string) => {
@@ -1075,7 +1075,7 @@ export default function DeckBuilder({ onClose }: Props) {
             <VirtualizedList
               items={deckPoolRows}
               getItemKey={(row) => row.key}
-              getItemHeight={(row) => row.kind === 'heading' ? 44 : 214}
+              getItemHeight={(row) => row.kind === 'heading' ? 48 : 250}
               topPadding={12}
               bottomPadding={24}
               overscanPx={160}

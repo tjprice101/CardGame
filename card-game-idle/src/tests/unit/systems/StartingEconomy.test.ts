@@ -76,6 +76,31 @@ describe('starting economy', () => {
     expect(useStore.getState().progress.lifetimeDivineLight).toBe(104);
   });
 
+  it('scales persistent Divine Light rewards from Collection Power', () => {
+    resetStore();
+    const definitionId = lightCards[0].definitionId;
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        cardPlayCounts: { [definitionId]: 1_500 },
+        divineLight: 0,
+        lifetimeDivineLight: 0,
+        quests: {
+          ...state.progress.quests,
+          daily: [{
+            id: 'daily-persistent-scale', templateId: 'daily-persistent-scale', text: 'Test reward', kind: 'play_cards',
+            goal: 1, progress: 1, shardReward: 0, divineLightReward: 100, claimed: false,
+          }],
+        },
+      },
+    }));
+
+    expect(useStore.getState().claimQuest('daily-persistent-scale')?.divineLight).toBe(104);
+    expect(useStore.getState().progress.divineLight).toBe(104);
+    expect(useStore.getState().progress.lifetimeDivineLight).toBe(104);
+  });
+
   it('materializes each ability once for its exact Divine Light cost', () => {
     resetStore();
     const ability = ABILITY_DEFINITIONS[0];
