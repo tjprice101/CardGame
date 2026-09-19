@@ -5,6 +5,7 @@ import { CardRegistry } from '@/cards/CardRegistry';
 import { MASTERY_TIERS, RESONANCE_PER_COLLECTION_POWER_HUNDREDTH, computeGlobalResonanceScore, getCollectionPowerMultiplier, getMasteryClaimKey, getMaximumCollectionPowerMultiplier, listMasteryProgress } from '@/systems/progression/cardMastery';
 import type { MasteryView } from '@/systems/progression/cardMastery';
 import VirtualizedList from '@/ui/components/VirtualizedList';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
 
 interface Props {
   onClose: () => void;
@@ -228,7 +229,7 @@ function MasteryCardRow({ m, claimCardMastery, progress }: {
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{def.name}</div>
           <div style={{ fontSize: 10, color: P.textMuted, marginTop: 1 }}>
-            {def.rarity} · {def.type}
+            {def.rarity} · {getDisplayCardTypeLabel(def.type)}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 12, alignItems: 'baseline', flexShrink: 0 }}>

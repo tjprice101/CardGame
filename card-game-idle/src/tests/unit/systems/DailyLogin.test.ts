@@ -105,13 +105,13 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     expect(result.pendingReward.shards).toBe(60);
   });
 
-  it('resets the streak when a day is skipped', () => {
+  it('preserves the monthly track when a day is skipped', () => {
     const result = evaluateDailyLogin(
       makeProgress({ lastClaimedDayIndex: today - 5, streak: 6 }),
       now,
     );
     expect(result.claimable).toBe(true);
-    expect(result.pendingStreak).toBe(1);
+    expect(result.pendingStreak).toBe(6);
     expect(result.previousStreak).toBe(6);
   });
 });

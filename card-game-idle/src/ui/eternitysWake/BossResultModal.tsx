@@ -357,7 +357,7 @@ export default function BossResultModal() {
                     {rewardDef.name}
                   </div>
                   <div style={{ fontSize: 11, color: RARITY_COLORS[rewardDef.rarity] ?? EW_TEXT_MUTED, letterSpacing: 1 }}>
-                    {rewardDef.rarity} · {rewardDef.type}
+                    {rewardDef.rarity} · {getDisplayCardTypeLabel(rewardDef.type)}
                   </div>
                 </div>
 

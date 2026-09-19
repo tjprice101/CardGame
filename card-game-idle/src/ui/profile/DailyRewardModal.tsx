@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
-import { evaluateDailyLogin, dailyRewardForStreak } from '@/systems/progression/dailyLogin';
+import { evaluateDailyLogin, getMonthlyTrackDays, getMonthlyTrackKey, monthlyRewardForDay } from '@/systems/progression/dailyLogin';
 
 interface Props {
   onClose: () => void;
@@ -13,22 +13,19 @@ export default function DailyRewardModal({ onClose }: Props) {
 
   const evalResult = useMemo(() => evaluateDailyLogin(progress), [progress]);
 
-  // Render seven-day reward track so the player sees what is coming up.
-  const track = useMemo(
-    () => Array.from({ length: 7 }, (_, i) => ({
-      day: i + 1,
-      reward: dailyRewardForStreak(i + 1),
-    })),
-    [],
-  );
+  const now = Date.now();
+  const trackKey = getMonthlyTrackKey(now);
+  const daysInMonth = getMonthlyTrackDays(now);
+  const claimedDays = progress.dailyLogin.monthlyTrackKey === trackKey ? (progress.dailyLogin.monthlyClaimedDays ?? []) : [];
+  const track = useMemo(() => Array.from({ length: daysInMonth }, (_, i) => ({ day: i + 1, reward: monthlyRewardForDay(i + 1, now) })), [daysInMonth, now]);
 
   function handleClaim() {
     const result = claimDailyReward();
     if (result) onClose();
   }
 
-  const pendingDay = evalResult.pendingStreak;
-  const pendingShards = evalResult.pendingReward.shards;
+  const pendingDay = evalResult.monthlyDay ?? new Date(now).getUTCDate();
+  const pendingReward = evalResult.monthlyReward;
 
   return (
     <div style={{
@@ -54,15 +51,13 @@ export default function DailyRewardModal({ onClose }: Props) {
           fontSize: 18, fontWeight: 'bold', color: warmTheme.text,
           letterSpacing: 2, textAlign: 'center', marginBottom: 6,
         }}>
-          Daily Login Reward
+          Monthly Login Calendar
         </div>
         <div style={{
           fontSize: 12, color: warmTheme.textMuted, textAlign: 'center',
           marginBottom: 18, fontStyle: 'italic',
         }}>
-          {evalResult.previousStreak > 0 && pendingDay > evalResult.previousStreak
-            ? `Streak continues — Day ${pendingDay}`
-            : `Welcome back — Day ${pendingDay} of a new streak`}
+          A persistent reward track. Missed days remain available and never reset your progress.
         </div>
 
         {/* Reward track */}
@@ -71,7 +66,7 @@ export default function DailyRewardModal({ onClose }: Props) {
           marginBottom: 20,
         }}>
           {track.map(({ day, reward }) => {
-            const claimed = day < pendingDay;
+            const claimed = claimedDays.includes(day);
             const isToday = day === pendingDay;
             return (
               <div key={day} style={{
@@ -93,7 +88,8 @@ export default function DailyRewardModal({ onClose }: Props) {
                   fontSize: 13, fontWeight: 'bold',
                   color: warmTheme.text,
                   marginTop: 2,
-                }}>{reward.shards}</div>
+                }}>{reward.kind === 'shards' ? `✦${reward.amount}` : reward.kind === 'card' ? `${reward.holo ? '◆' : '▣'} ×${reward.amount}` : '✚ ALL'}</div>
+                <div style={{ fontSize: 8, color: warmTheme.textMuted, marginTop: 3, lineHeight: 1.1 }}>{reward.kind === 'mastery_all_owned' ? 'Mastery' : reward.kind === 'card' ? (reward.holo ? 'Holo card' : 'Card') : 'Shards'}</div>
               </div>
             );
           })}
@@ -107,13 +103,13 @@ export default function DailyRewardModal({ onClose }: Props) {
           borderRadius: 10, textAlign: 'center',
         }}>
           <div style={{ fontSize: 11, color: warmTheme.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>
-            Today's Reward
+            Next Unclaimed Reward · Day {pendingDay}
           </div>
           <div style={{
             fontSize: 26, fontWeight: 'bold',
             color: warmTheme.text, marginTop: 4,
           }}>
-            ✦ {pendingShards} Aberrated Shards
+            {pendingReward?.label ?? 'Already claimed for this month'}
           </div>
         </div>
 

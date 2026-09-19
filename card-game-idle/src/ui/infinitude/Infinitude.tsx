@@ -16,6 +16,7 @@ import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import { getCardPreviewLines, getCardSummarySections } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
 import { GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
 
 const INFINITE_COLOR = '#e8e8f0';
 const INFINITE_GLOW = 'rgba(220, 224, 255, 0.55)';
@@ -240,7 +241,7 @@ export default function Infinitude({ onClose }: Props) {
                   </div>
                   <div style={styles.detailIntro}>
                     <div style={styles.cardEyebrow}>
-                      {resultDef.type} {'\u00B7'} {SET_LABEL} {'\u00B7'} Infinite
+                      {getDisplayCardTypeLabel(resultDef.type)} {'\u00B7'} {SET_LABEL} {'\u00B7'} Infinite
                     </div>
                     <h1 style={styles.cardTitle}>{resultDef.name}</h1>
                     <div style={styles.ownedNote}>
@@ -303,7 +304,7 @@ export default function Infinitude({ onClose }: Props) {
                             </div>
                             {ingDef && (
                               <div style={styles.ingredientSub}>
-                                {ingDef ? `${ingDef.type} · ${SET_LABEL}` : 'Garden material'}
+                                {ingDef ? `${getDisplayCardTypeLabel(ingDef.type)} · ${SET_LABEL}` : 'Garden material'}
                               </div>
                             )}
                             <div style={styles.progBarTrack}>
@@ -412,7 +413,7 @@ function InfiniteCardFace({ def }: { def: CardDefinition }) {
     >
       <div style={getCardNameRibbonStyle('grid')}>
         <div style={{ fontSize: previewFaceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>
-          {def.type} {'\u00B7'} {SET_LABEL} {'\u00B7'} Infinite
+          {getDisplayCardTypeLabel(def.type)} {'\u00B7'} {SET_LABEL} {'\u00B7'} Infinite
         </div>
         <div style={{ fontSize: previewFaceMetrics.nameSize, fontWeight: 'bold', color: cardFacePalette.text, lineHeight: 1.25, marginTop: 3 }}>
           {def.name}

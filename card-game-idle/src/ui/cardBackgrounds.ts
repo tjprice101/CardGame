@@ -504,10 +504,10 @@ export function getCardFaceBackgroundStyle(card: CardDefinition | null | undefin
     'linear-gradient(180deg, rgba(20,10,34,0.97) 0%, rgba(30,16,50,0.96) 8%, rgba(176,42,58,0.32) 10%, rgba(0,0,0,0) 16%, rgba(0,0,0,0) 84%, rgba(176,42,58,0.36) 90%, rgba(30,16,50,0.96) 92%, rgba(20,10,34,0.97) 100%)';
 
   const infiniteLayers = [
-    'linear-gradient(125deg, rgba(255,255,255,0.22) 0%, rgba(196,222,255,0.12) 24%, rgba(255,255,255,0.05) 48%, rgba(24,28,38,0.14) 74%, rgba(255,255,255,0.14) 100%)',
-    'radial-gradient(ellipse at 22% 14%, rgba(255,255,255,0.24) 0%, rgba(190,220,255,0.12) 22%, rgba(0,0,0,0) 48%)',
-    'linear-gradient(215deg, rgba(255,255,255,0) 22%, rgba(255,255,255,0.28) 44%, rgba(255,255,255,0.08) 56%, rgba(255,255,255,0) 72%)',
-    'linear-gradient(180deg, rgba(10,10,14,0.08) 0%, rgba(10,10,14,0.02) 52%, rgba(10,10,14,0.12) 100%)',
+    'linear-gradient(125deg, rgba(255,255,255,0.34) 0%, rgba(8,8,12,0.78) 22%, rgba(238,242,248,0.16) 42%, rgba(8,8,12,0.9) 66%, rgba(255,255,255,0.28) 100%)',
+    'radial-gradient(ellipse at 22% 14%, rgba(255,255,255,0.34) 0%, rgba(16,16,24,0.36) 28%, rgba(0,0,0,0) 52%)',
+    'linear-gradient(215deg, rgba(255,255,255,0) 18%, rgba(255,255,255,0.34) 40%, rgba(20,20,28,0.18) 52%, rgba(255,255,255,0) 72%)',
+    'radial-gradient(circle at 72% 64%, rgba(255,70,190,0.14) 0 1px, rgba(70,230,255,0.13) 1.5px 2px, rgba(255,210,70,0) 3px)',
   ];
 
   const eternalLayers = [

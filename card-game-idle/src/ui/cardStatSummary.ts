@@ -6,7 +6,7 @@ import type {
 } from '@/types/cards';
 import type { CardEffect, CardSubtypeFilter, EffectCondition } from '@/types/effects';
 import { CardRegistry } from '@/cards/CardRegistry';
-import { formatDisplayCardText } from '@/ui/preferences';
+import { formatDisplayCardText, getDisplayCardTypeLabel } from '@/ui/preferences';
 import { formatSummonRequirement, getSummonRequirements } from '@/systems/cards/AinSophSummonRequirements';
 
 export interface CardSummarySection {
@@ -335,7 +335,7 @@ export function getCardPreviewText(card: CardDefinition, limit = 3): string {
 export function getCardFullStatLines(card: CardDefinition): string[] {
   const lines: string[] = [
     `${card.name}`,
-    `${card.type} | ${card.rarity}`,
+    `${getDisplayCardTypeLabel(card.type)} | ${card.rarity}`,
   ];
 
   const sections = getCardSummarySections(card, { abilityTextMode: 'canonical' });

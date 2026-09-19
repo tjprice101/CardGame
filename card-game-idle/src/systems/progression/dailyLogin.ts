@@ -1,6 +1,38 @@
 import type { ProgressState } from '@/types/game';
+import { CardRegistry } from '@/cards/CardRegistry';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+export type MonthlyLoginReward =
+  | { kind: 'shards'; amount: number; label: string }
+  | { kind: 'card'; definitionId: string; amount: number; holo: boolean; label: string }
+  | { kind: 'mastery_all_owned'; amount: number; label: string };
+
+export function getMonthlyTrackKey(timestamp: number): string {
+  const date = new Date(timestamp);
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
+}
+
+export function getMonthlyTrackDays(timestamp: number): number {
+  const date = new Date(timestamp);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 0)).getUTCDate();
+}
+
+const baseCardIds = () => CardRegistry.getAll()
+  .filter(card => ['Common', 'Rare', 'Epic', 'Legendary'].includes(card.rarity) && !card.definitionId.includes('causality'))
+  .map(card => card.definitionId);
+
+export function monthlyRewardForDay(day: number, timestamp: number = Date.now()): MonthlyLoginReward {
+  const cards = baseCardIds();
+  if (day % 7 === 0) {
+    return { kind: 'mastery_all_owned', amount: 3, label: '+3 Card-light to every owned card' };
+  }
+  if (day === 1 || day === 15 || day === 28) {
+    const definitionId = cards[(day * 17 + new Date(timestamp).getUTCMonth()) % Math.max(1, cards.length)] ?? 'light-neutrality-1';
+    return { kind: 'card', definitionId, amount: day === 28 ? 2 : 1, holo: day === 28, label: `${day === 28 ? 'Holofoil ' : ''}base card ×${day === 28 ? 2 : 1}` };
+  }
+  return { kind: 'shards', amount: 20 + day * 5, label: `+${20 + day * 5} Aberrated Shards` };
+}
 
 /**
  * Returns the UTC day index (number of days since the Unix epoch).
@@ -39,6 +71,9 @@ export interface DailyLoginEvaluation {
   previousStreak: number;
   /** Reward that will be granted if claimed now. */
   pendingReward: { shards: number; tier: number };
+  monthlyTrackKey?: string;
+  monthlyDay?: number;
+  monthlyReward?: MonthlyLoginReward;
 }
 
 /**
@@ -59,6 +94,16 @@ export function evaluateDailyLogin(
   const today = getUtcDayIndex(now);
   const lastDay = dl.lastClaimedDayIndex;
   const previousStreak = dl.streak;
+  const trackKey = getMonthlyTrackKey(now);
+  const dayOfMonth = new Date(now).getUTCDate();
+  const claimedDays = dl.monthlyTrackKey === trackKey
+    ? (dl.monthlyClaimedDays ?? [])
+    : dl.monthlyTrackKey === undefined && lastDay === today
+      ? [dayOfMonth]
+      : [];
+  const monthlyClaimableDay = dl.monthlyTrackKey === undefined && lastDay === today
+    ? undefined
+    : Array.from({ length: dayOfMonth }, (_, index) => index + 1).find(day => !claimedDays.includes(day));
 
   if (lastDay < 0) {
     return {
@@ -66,21 +111,24 @@ export function evaluateDailyLogin(
       pendingStreak: 1,
       previousStreak: 0,
       pendingReward: dailyRewardForStreak(1),
+      monthlyTrackKey: trackKey, monthlyDay: monthlyClaimableDay, monthlyReward: monthlyClaimableDay ? monthlyRewardForDay(monthlyClaimableDay, now) : undefined,
     };
   }
   if (lastDay === today) {
     return {
-      claimable: false,
+      claimable: monthlyClaimableDay !== undefined,
       pendingStreak: previousStreak,
       previousStreak,
       pendingReward: dailyRewardForStreak(previousStreak),
+      monthlyTrackKey: trackKey, monthlyDay: monthlyClaimableDay, monthlyReward: monthlyClaimableDay ? monthlyRewardForDay(monthlyClaimableDay, now) : undefined,
     };
   }
-  const pendingStreak = lastDay === today - 1 ? previousStreak + 1 : 1;
+  const pendingStreak = lastDay === today - 1 ? previousStreak + 1 : previousStreak;
   return {
     claimable: true,
     pendingStreak,
     previousStreak,
     pendingReward: dailyRewardForStreak(pendingStreak),
+    monthlyTrackKey: trackKey, monthlyDay: monthlyClaimableDay, monthlyReward: monthlyClaimableDay ? monthlyRewardForDay(monthlyClaimableDay, now) : undefined,
   };
 }

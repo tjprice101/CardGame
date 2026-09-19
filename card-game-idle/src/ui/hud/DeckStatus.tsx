@@ -5,6 +5,7 @@ import { warmTheme } from '@/ui/theme';
 import { useThemeVersion } from '@/ui/useThemeVersion';
 import { getCardNameRibbonStyle, getCardRulesPanelStyle, getLiveCardFaceBackgroundStyle, getLiveCardShimmerClassName } from '@/ui/cardBackgrounds';
 import { getCardPreviewText } from '@/ui/cardStatSummary';
+import { getDisplayCardTypeLabel } from '@/ui/preferences';
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -200,11 +201,11 @@ export default function DeckStatus() {
                       background: warmTheme.surface,
                       ...getLiveCardFaceBackgroundStyle(entry.def ?? null, entry.finish),
                     }}
-                    title={`${entry.name} (${entry.type})`}
+                    title={`${entry.name} (${getDisplayCardTypeLabel(entry.type)})`}
                   >
                     <div style={getCardNameRibbonStyle('boardMini')}>
                       <div style={{ fontSize: 7, color: 'rgba(244,244,248,0.62)', textTransform: 'uppercase', textAlign: 'center', letterSpacing: 0.7 }}>
-                        {entry.type}
+                        {getDisplayCardTypeLabel(entry.type)}
                       </div>
                       <div style={{ fontSize: 9, color: 'rgba(244,244,248,0.92)', textAlign: 'center', lineHeight: 1.1, marginTop: 2 }}>
                         {entry.name}
@@ -219,7 +220,7 @@ export default function DeckStatus() {
                   <div style={{ fontSize: 10, color: warmTheme.text, lineHeight: 1.2 }}>
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{entry.name}</div>
                     <div style={{ color: warmTheme.textMuted, fontSize: 9 }}>
-                      {entry.type} · {entry.finish}
+                        {getDisplayCardTypeLabel(entry.type)} · {entry.finish}
                     </div>
                   </div>
                 </div>

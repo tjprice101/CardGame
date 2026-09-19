@@ -34,7 +34,7 @@ import { useSocialStore } from '@/state/socialStore';
 import { PACK_DEFINITIONS } from '@/data/packs/packDefinitions';
 import { getCardFinishKey, isHoloOnlyCard } from '@/systems/progression/HolofoilSystem';
 import { STARTER_DECK_LIST, STARTER_EXTRA_DECK, STARTER_COLLECTION } from '@/systems/progression/StarterDeck';
-import { evaluateDailyLogin, getUtcDayIndex } from '@/systems/progression/dailyLogin';
+import { evaluateDailyLogin, getUtcDayIndex, getMonthlyTrackKey } from '@/systems/progression/dailyLogin';
 import {
   applyQuestProgress,
   refreshQuestRotation,
@@ -483,7 +483,7 @@ interface StoreActions {
   startNullRaidProveYourself: (raidId: string, savedDeckId: string) => boolean;
   /** Begin a Null Raid run. Validates cooldown, Prove Yourself unlock, and idle state. */
   startNullRaid: (raidId: string, savedDeckId: string) => boolean;
-  claimDailyReward: () => { shards: number; streak: number } | null;
+  claimDailyReward: () => { shards: number; streak: number; monthlyReward?: import('@/systems/progression/dailyLogin').MonthlyLoginReward } | null;
   setActiveEnigma: (enigmaId: string) => void;
   sacrificeEnigmaDivineLight: (enigmaId: string) => boolean;
   purchaseAbility: (abilityId: string) => boolean;
@@ -3512,8 +3512,33 @@ export const useStore = create<Store>()(
         s.progress.dailyLogin.streak = evalResult.pendingStreak;
         s.progress.dailyLogin.totalClaims += 1;
         s.progress.aberratedShards += evalResult.pendingReward.shards;
+        const trackKey = evalResult.monthlyTrackKey ?? getMonthlyTrackKey(Date.now());
+        const day = evalResult.monthlyDay;
+        if (day) {
+          if (s.progress.dailyLogin.monthlyTrackKey !== trackKey) {
+            s.progress.dailyLogin.monthlyTrackKey = trackKey;
+            s.progress.dailyLogin.monthlyClaimedDays = [];
+          }
+          const claimed = s.progress.dailyLogin.monthlyClaimedDays ?? [];
+          if (!claimed.includes(day)) claimed.push(day);
+          s.progress.dailyLogin.monthlyClaimedDays = claimed;
+          const reward = evalResult.monthlyReward;
+          if (reward?.kind === 'shards') s.progress.aberratedShards += reward.amount;
+          if (reward?.kind === 'card') {
+            for (let copy = 0; copy < reward.amount; copy += 1) {
+              addCollectionCard(s.progress, reward.definitionId, reward.holo ? 'holo' : 'normal');
+            }
+          }
+          if (reward?.kind === 'mastery_all_owned') {
+            for (const definitionId of Object.keys(s.progress.collection)) {
+              if ((s.progress.collection[definitionId] ?? 0) > 0) {
+                s.progress.cardPlayCounts[definitionId] = (s.progress.cardPlayCounts[definitionId] ?? 0) + reward.amount;
+              }
+            }
+          }
+        }
       });
-      return { shards: evalResult.pendingReward.shards, streak: evalResult.pendingStreak };
+      return { shards: evalResult.pendingReward.shards, streak: evalResult.pendingStreak, monthlyReward: evalResult.monthlyReward };
     },
 
     setActiveEnigma: (enigmaId) => {

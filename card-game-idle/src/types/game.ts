@@ -412,6 +412,10 @@ export interface DailyLoginState {
   streak: number;
   /** Total number of daily rewards ever claimed. */
   totalClaims: number;
+  /** Current monthly login track key, formatted as YYYY-MM in UTC. */
+  monthlyTrackKey?: string;
+  /** Calendar days already claimed in the current monthly track. */
+  monthlyClaimedDays?: number[];
 }
 
 export interface SettingsState {

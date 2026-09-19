@@ -465,7 +465,7 @@ export default function EternitysWake({ onClose }: Props) {
                         <div style={{ fontSize: 10, color: 'rgba(255,150,150,0.5)', letterSpacing: 1 }}>REWARD CARD</div>
                         <div style={{ fontSize: 13, color: '#ff6b6b', marginTop: 1, fontWeight: 'bold', lineHeight: 1.15 }}>{rewardDisplayName}</div>
                         <div style={{ fontSize: 10, color: RARITY_COLORS[rewardDef.rarity], marginTop: 1 }}>
-                          {rewardDef.rarity} · {rewardDef.type}
+                          {rewardDef.rarity} · {getDisplayCardTypeLabel(rewardDef.type)}
                         </div>
                         <div style={{ marginTop: 2 }}>
                           <CardRulesDigest
