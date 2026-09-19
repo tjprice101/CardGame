@@ -162,7 +162,8 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
           padding: 'clamp(18px,2vw,28px) clamp(28px,3vw,52px) clamp(14px,1.6vw,20px)',
           borderBottom: `1px solid ${P.borderStrong}`,
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          background: 'rgba(0,0,0,0.35)',
+          background: `linear-gradient(90deg, rgba(2,6,14,0.96) 0%, rgba(4,10,22,0.78) 58%, rgba(4,10,22,0.42) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/deck-viewer-archive.png") right center / cover`,
+          boxShadow: '0 8px 28px rgba(0,0,0,0.36), inset 0 -1px 0 rgba(114,202,245,0.12)',
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
@@ -175,7 +176,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
               lineHeight: 1.1,
             }}
           >
-            DECK VIEWER
+            <span style={{ display: 'block', fontSize: 9, letterSpacing: 3, marginBottom: 6, color: P.accentDeep }}>MANUSCRIPT ARCHIVE</span>DECK VIEWER
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ height: 1, width: 60, background: `linear-gradient(90deg, ${P.accentDeep}80, transparent)` }} />

@@ -192,6 +192,7 @@ export default function App() {
   const [showMastery, setShowMastery] = useState(false);
   const [showFracture, setShowFracture] = useState(false);
   const [showAscension, setShowAscension] = useState(false);
+  const [mainMenuSection, setMainMenuSection] = useState<'play' | 'collection' | 'progress'>('play');
   const [showAutosaveIndicator, setShowAutosaveIndicator] = useState(false);
   // Radio state — main menu
   const radioActiveRef = useRef(false);
@@ -952,23 +953,24 @@ export default function App() {
       {!isMenuOpen && scene === 'menu' && !inBossFight && battleground.mode !== 'active' && (
         <Suspense fallback={null}>
           <MainMenuHub
-            onCardStore={() => setShowCardStore(true)}
-            onCardBoundCoop={() => { setShowCardBoundCoop(true); usePartyStore.getState().openHub(); }}
-            onEternitysWake={() => setShowEternitysWake(true)}
-            onBattleground={() => setShowGardenOfCards(true)}
-            onInfinitude={() => setShowInfinitude(true)}
-            onEventCausality={() => setShowCausalityEvent(true)}
-            onDeckViewer={() => setShowDeckViewer(true)}
-            onTutorial={() => setShowTutorial(true)}
-            onDeckBuilder={() => setShowDeckBuilder(true)}
-            onPlayerInfo={() => setShowPlayerInfo(true)}
-            onQuests={() => setShowQuests(true)}
-            onEnigma={() => setShowEnigma(true)}
-            onAchievements={() => setShowAchievements(true)}
-            onMastery={() => setShowMastery(true)}
-            onFracture={() => setShowFracture(true)}
-            onSettings={() => setShowSettings(true)}
-            onAscension={() => setShowAscension(true)}
+            initialSection={mainMenuSection}
+            onCardStore={() => { setMainMenuSection('collection'); setShowCardStore(true); }}
+            onCardBoundCoop={() => { setMainMenuSection('play'); setShowCardBoundCoop(true); usePartyStore.getState().openHub(); }}
+            onEternitysWake={() => { setMainMenuSection('play'); setShowEternitysWake(true); }}
+            onBattleground={() => { setMainMenuSection('play'); setShowGardenOfCards(true); }}
+            onInfinitude={() => { setMainMenuSection('collection'); setShowInfinitude(true); }}
+            onEventCausality={() => { setMainMenuSection('play'); setShowCausalityEvent(true); }}
+            onDeckViewer={() => { setMainMenuSection('collection'); setShowDeckViewer(true); }}
+            onTutorial={() => { setMainMenuSection('progress'); setShowTutorial(true); }}
+            onDeckBuilder={() => { setMainMenuSection('collection'); setShowDeckBuilder(true); }}
+            onPlayerInfo={() => { setMainMenuSection('progress'); setShowPlayerInfo(true); }}
+            onQuests={() => { setMainMenuSection('progress'); setShowQuests(true); }}
+            onEnigma={() => { setMainMenuSection('progress'); setShowEnigma(true); }}
+            onAchievements={() => { setMainMenuSection('progress'); setShowAchievements(true); }}
+            onMastery={() => { setMainMenuSection('progress'); setShowMastery(true); }}
+            onFracture={() => { setMainMenuSection('collection'); setShowFracture(true); }}
+            onSettings={() => { setMainMenuSection('progress'); setShowSettings(true); }}
+            onAscension={() => { setMainMenuSection('play'); setShowAscension(true); }}
             onBeginTurn={requestBeginTurn}
           />
         </Suspense>

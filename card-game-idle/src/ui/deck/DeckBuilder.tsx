@@ -65,14 +65,14 @@ const styles: Record<string, React.CSSProperties> = {
   header: {
     padding: '16px 24px', borderBottom: '1px solid rgba(72,128,190,0.32)',
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
-    background: 'linear-gradient(180deg, rgba(4, 8, 18, 0.92) 0%, rgba(6, 11, 22, 0.70) 100%)',
+        background: `linear-gradient(90deg, rgba(4,8,18,0.96) 0%, rgba(6,11,22,0.82) 58%, rgba(6,11,22,0.40) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/deck-builder-worktable.png") right center / cover`,
     boxShadow: '0 1px 0 rgba(78,148,210,0.18), 0 4px 22px rgba(0,0,0,0.55)',
     gap: 16, flexWrap: 'wrap',
   },
   title: {
-    fontSize: 22, fontWeight: 'bold', color: '#7dd4f8',
+    fontSize: 26, fontWeight: 'bold', color: '#f4cf6b',
     letterSpacing: 3, textTransform: 'uppercase',
-    textShadow: '0 0 36px rgba(88,180,235,0.55), 0 2px 8px rgba(0,0,0,0.9)',
+    textShadow: '0 0 36px rgba(244,207,107,0.40), 0 2px 8px rgba(0,0,0,0.9)',
     lineHeight: 1,
   },
   deckNameChip: {
@@ -883,6 +883,7 @@ export default function DeckBuilder({ onClose }: Props) {
       {/* Header banner */}
       <div className="ui-shimmer-band" style={styles.header}>
         <div>
+          <div style={{ color: '#f4cf6b', fontFamily: 'Georgia, serif', fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE DECK MANUSCRIPT</div>
           <div className="ui-title-glow" style={styles.title}>Deck Builder</div>
           {activeDeck && (
             <div style={styles.deckNameChip}>

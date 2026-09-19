@@ -500,7 +500,7 @@ const migrations: Record<number, Migration> = {
     return data;
   },
   34: (data) => {
-    // v34 adds fractureShards currency (Fracture mechanic feeds Card-Born Tiers).
+    // v34 adds the legacy-backed Card-light Shards currency for Card-born Tier progress.
     if (data.progress && data.progress.fractureShards == null) {
       data.progress.fractureShards = 0;
     }

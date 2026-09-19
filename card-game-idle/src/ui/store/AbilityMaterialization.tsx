@@ -88,11 +88,12 @@ export default function AbilityMaterialization() {
   }, [selectedSet, selectedTier, selectedType, selectedOwnership, searchQuery, sortBy, ownedAbilities]);
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: '22px clamp(16px, 4vw, 48px) 32px', color: '#c8dff2', fontFamily: uiTypography.body }}>
+    <div style={{ flex: 1, overflowY: 'auto', padding: '22px clamp(16px, 4vw, 48px) 32px', color: '#c8dff2', fontFamily: uiTypography.body, background: 'linear-gradient(90deg, rgba(7,11,22,0.96), rgba(7,11,22,0.78)), url("' + import.meta.env.BASE_URL + 'assets/menu-banners/updated/ability-materialization-archive.png") center / cover, radial-gradient(circle at 85% 4%, rgba(213,164,255,0.16), transparent 32%), linear-gradient(180deg, #070b16 0%, #0a1020 100%)' }}>
       <div style={{ maxWidth: 1040, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
           <div>
-            <div style={{ fontFamily: uiTypography.display, fontSize: 24, color: '#d8f0ff', letterSpacing: 1 }}>Ability Materialization</div>
+            <div style={{ color: '#d5a4ff', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE AMPLIFICATION ARCHIVE</div>
+            <div style={{ fontFamily: uiTypography.display, fontSize: 28, color: '#fff0d1', letterSpacing: 1.5, textShadow: '0 0 24px rgba(213,164,255,0.35)' }}>Ability Materialization</div>
             <div style={{ marginTop: 4, color: 'rgba(200,223,242,0.7)', fontSize: 12, lineHeight: 1.5 }}>
               Materialize universal abilities with Divine Light. Purchase costs scale from foundational to endgame; equipped abilities are universal across all decks.
             </div>

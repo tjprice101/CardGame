@@ -10,7 +10,7 @@ Ability Materialization contains Neutrality and Causality set filters. Decks sti
 
 Neutrality packs draw from the live base Neutrality pool: 24 Light, 24 Dark, and 4 Ain Soph Aur cards. Pack purchase must generate all five rewards before currency is deducted. Awarded cards are added to collection, then the pack-opening modal displays them face-down for manual reveal.
 
-Starter accounts, new saves, and wiped saves start with zero currency balances: Divine Light, lifetime Divine Light counters, Aberrated Shards, Fracture Shards, Card-bane Light, Entropic Energy, and the legacy entropy compatibility field all begin at 0.
+Starter accounts, new saves, and wiped saves start with zero currency balances: Divine Light, lifetime Divine Light counters, Aberrated Shards, Card-light Shards, Card-bane Light, Entropic Energy, and the legacy entropy compatibility field all begin at 0. The persisted `fractureShards` key remains for save compatibility only.
 
 `PackOpeningFlow.test.ts` verifies pool validity, five-card rewards, collection updates, and currency deduction.
 
@@ -71,6 +71,6 @@ Wished Upon A Star event timing is centralized in `src/ui/eventWishedUponAStar/e
 - Five playable Causality Infinite cards have recipes containing only Causality Eternal rewards and those four Rift materials.
 - Causality progression rewards include titles/achievements, profile pictures, reward themes, and Eternal/Infinite splash slots.
 - Causality Midjourney prompts should use the splotched illuminated-ink look as the current norm: distressed parchment, heavy black dry-brush and splatter texture, cobalt/navy/violet/cyan/magenta accents, and circular celestial-mechanical forms. Keep Causality-specific event-horizon/manuscript concepts in Causality prompts; future sets may define a different visual style.
-- Enigma manuscript banner prompts use the same exact format as `Midjourney Art/Splotched Ink Replacement Prompts.md`: shared visual language and parameters followed by one named fenced prompt per Enigma and a shared negative prompt. The treatment stays consistent while each Enigma remains visually unique.
+- Enigma manuscript banners and progression currency prompts are consolidated in `Midjourney Art/Splotched Art Updated Prompts.md`, using shared visual language and parameters followed by named fenced prompts and one shared negative prompt. The treatment stays consistent while each asset remains visually unique.
 - Do not use invented gameplay terms as the main visual instruction in Midjourney prompts. Translate Ain Soph Aur, Soph, Light, and Dark into recognizable real-world visual equivalents as documented in the canonical Splotched Ink prompt guide.
 - Silent Exchange is a Neutrality Dark utility: exchange one Light or Dark card from hand for one opposite-type card from the deck, then shuffle the returned card into the deck.

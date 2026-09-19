@@ -39,5 +39,6 @@ These are explanatory documents, not runtime source files. When behavior changes
 - Causality reward titles/achievements, profile pictures, reward themes, splash slots, and art prompts are implemented. Causality art prompts should follow the splotched illuminated-ink reference style unless a future set defines its own aesthetic.
 - Enigma banner prompts follow the canonical `Midjourney Art/Splotched Ink Replacement Prompts.md` structure and style. Keep the shared high-contrast splotched ink treatment, but make each manuscript banner unique in subject, composition, symbol language, and controlled accent palette.
 - Enigma and future Midjourney prompts must translate invented gameplay terms into recognizable visual language: winged celestial guardian for Ain Soph Aur, face-down charged sigil for Soph, radiant ivory energy for Light, and obsidian cosmic force for Dark.
+- The duplicate-copy refinement screen is named **Card-light Resonance**. Its resource is **Card-light Shards**; retain the legacy `fractureShards` save key internally for compatibility, but never expose the old name in player-facing text.
 - Reward copy counts for Causality enigma rewards were increased to 3.
 - The most recent validation pass in the working tree completed with `npm run typecheck:tests`, `npm test -- --run`, and `npm run build` all succeeding.

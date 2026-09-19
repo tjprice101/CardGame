@@ -42,9 +42,10 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     flexShrink: 0,
-    background: 'rgba(9, 12, 16, 0.42)',
+    background: `linear-gradient(90deg, rgba(3,8,18,0.96) 0%, rgba(5,12,24,0.82) 58%, rgba(5,12,24,0.48) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/card-store-archive.png") right center / cover`,
+    boxShadow: '0 8px 26px rgba(0,0,0,0.32), inset 0 -1px 0 rgba(180,220,255,0.08)',
   },
-  title: { fontSize: 20, fontWeight: 'bold', color: '#7dd4f8', letterSpacing: 2, textShadow: '0 0 28px rgba(88,180,235,0.55), 0 2px 6px rgba(0,0,0,0.8)' },
+  title: { fontSize: 26, fontWeight: 'bold', color: '#f4cf6b', letterSpacing: 2.5, textShadow: '0 0 28px rgba(244,207,107,0.42), 0 2px 6px rgba(0,0,0,0.8)' },
   score: { fontSize: 13, color: 'rgba(210,235,255,0.82)' },
   body: {
     flex: 1,
@@ -563,7 +564,11 @@ export default function CardPackStore({ onClose }: Props) {
   return (
     <div className="ui-panel-intro" style={{ ...styles.overlay, ['--ui-accent' as any]: '240, 189, 120', ['--ui-accent-soft' as any]: '250, 224, 184' } as React.CSSProperties}>
       <div style={{ ...styles.header, position: 'relative' }}>
-        <div className="ui-title-glow" style={styles.title}>Card Store</div>
+        <div>
+          <div style={{ color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE CELESTIAL ARCHIVE</div>
+          <div className="ui-title-glow" style={styles.title}>Card Store</div>
+          <div style={{ color: 'rgba(220,232,250,0.66)', fontSize: 11, marginTop: 4 }}>Open sealed collections and trace new card identities.</div>
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
           <div style={styles.score}>Divine Light: {Math.floor(divineLight).toLocaleString()}</div>
           <div style={styles.score}>Aberrated Shards: {shards.toLocaleString()}</div>

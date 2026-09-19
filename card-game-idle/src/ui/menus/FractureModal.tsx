@@ -138,7 +138,7 @@ export default function FractureModal({ onClose }: Props) {
     if (!selectedId) return;
     const gained = fractureCard(selectedId, count);
     if (gained > 0) {
-      setFlashMsg(`+${gained} Fracture Shards`);
+      setFlashMsg(`+${gained} Card-light Shards`);
       setJustFractured(true);
       setTimeout(() => { setFlashMsg(null); setJustFractured(false); }, 1400);
     }
@@ -167,7 +167,7 @@ export default function FractureModal({ onClose }: Props) {
   return (
     <div style={{
       position: 'absolute', inset: 0, zIndex: 35,
-      background: 'linear-gradient(160deg, #0a1320 0%, #101c2d 50%, #15243a 100%)',
+      background: `linear-gradient(160deg, rgba(7,10,20,0.96) 0%, rgba(12,19,34,0.94) 50%, rgba(20,28,46,0.92) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/card-light-resonance.png") center / cover`,
       display: 'flex', flexDirection: 'column', fontFamily: uiTypography.body,
       color: P.text,
     }}>
@@ -176,18 +176,18 @@ export default function FractureModal({ onClose }: Props) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '18px 28px 14px',
         borderBottom: `1px solid ${P.border}`,
-        background: withAlpha(P.panel, 0.96),
+        background: `linear-gradient(90deg, rgba(20,31,50,0.96), rgba(32,50,71,0.84)), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/card-light-resonance.png") right center / cover`,
         backdropFilter: 'blur(8px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           <div>
             <div style={{ fontSize: 18, letterSpacing: 2.5, textTransform: 'uppercase', fontFamily: uiTypography.display, color: P.text }}>
-              Fracture
+              Card-light Resonance
             </div>
             <div style={{ fontSize: 11, color: P.textMuted, letterSpacing: 1, marginTop: 2 }}>
               {menuMode === 'fracture'
-                ? 'Destroy duplicate copies for shards'
-                : 'Spend shards to increase Card-light'}
+                ? 'Refine duplicate copies into resonance shards'
+                : 'Spend Card-light Shards to increase Card-light'}
             </div>
           </div>
           {/* Global shard counter */}
@@ -200,7 +200,7 @@ export default function FractureModal({ onClose }: Props) {
             <span style={{ fontSize: 16, color: P.accent }}>✦</span>
             <div>
               <div style={{ fontSize: 16, fontFamily: uiTypography.display, color: P.accent }}>{fractureShards.toLocaleString()}</div>
-              <div style={{ fontSize: 9, color: P.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>Fracture Shards</div>
+              <div style={{ fontSize: 9, color: P.textMuted, letterSpacing: 1, textTransform: 'uppercase' }}>Card-light Shards</div>
             </div>
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function FractureModal({ onClose }: Props) {
                 color: menuMode === 'fracture' ? P.accent : P.textMuted,
                 cursor: 'pointer', letterSpacing: 1,
               }}
-            >Fracture Menu</button>
+            >Card-light Resonance</button>
             <button
               type="button"
               onClick={() => setMenuMode('shards')}
@@ -231,7 +231,7 @@ export default function FractureModal({ onClose }: Props) {
                 color: menuMode === 'shards' ? P.accent : P.textMuted,
                 cursor: 'pointer', letterSpacing: 1,
               }}
-            >Shard Menu</button>
+            >Card-light Shards</button>
           </div>
           <button
             type="button"
@@ -263,17 +263,17 @@ export default function FractureModal({ onClose }: Props) {
           borderBottom: `1px solid ${P.border}`,
           fontSize: 12, color: P.textMuted, lineHeight: 1.7,
         }}>
-          <span style={{ color: P.accent, fontWeight: 700 }}>Fracture Menu</span> displays cards currently available to fracture.{' '}
+          <span style={{ color: P.accent, fontWeight: 700 }}>Card-light Resonance</span> displays cards currently available for refinement.{' '}
           <span style={{ color: P.accent, fontWeight: 700 }}>Shard Menu</span> displays every owned card so you can route Card-light exactly where you want.{' '}
           Fracturing gives{' '}
-          <span style={{ color: P.accent }}>Fracture Shards</span> based on its rarity —{' '}
+          <span style={{ color: P.accent }}>Card-light Shards</span> based on its rarity —{' '}
           Common <span style={{ color: RARITY_COLOR.Common }}>1</span>,{' '}
           Rare <span style={{ color: RARITY_COLOR.Rare }}>3</span>,{' '}
           Epic <span style={{ color: RARITY_COLOR.Epic }}>7</span>,{' '}
           Legendary <span style={{ color: RARITY_COLOR.Legendary }}>12</span>,{' '}
           Eternal <span style={{ color: RARITY_COLOR.Eternal }}>22</span>,{' '}
           Infinite <span style={{ color: RARITY_COLOR.Infinite }}>35</span>.{' '}
-          Shards pool universally. <span style={{ color: P.accent, fontWeight: 700 }}>Spend Shards</span> to inject Card-light directly into any card — advancing it toward Card-Born Tier milestones and their Resonance rewards,{' '}
+          Shards pool universally. <span style={{ color: P.accent, fontWeight: 700 }}>Spend Card-light Shards</span> to inject Card-light directly into any card — advancing it toward Card-born Tier milestones and their Resonance rewards,{' '}
           exactly as if you had played that card that many times.
         </div>
       )}
@@ -292,7 +292,7 @@ export default function FractureModal({ onClose }: Props) {
             display: 'flex', alignItems: 'center', gap: 10,
           }}>
             <div style={{ fontSize: 11, color: P.textMuted, letterSpacing: 0.6 }}>
-              {menuMode === 'fracture' ? 'Available to Fracture' : 'All Owned Cards'}
+              {menuMode === 'fracture' ? 'Available for Refinement' : 'All Owned Cards'}
             </div>
             <div style={{ marginLeft: 'auto', fontSize: 10, color: P.textMuted }}>{activeRows.length} cards</div>
           </div>
@@ -355,8 +355,8 @@ export default function FractureModal({ onClose }: Props) {
           {!selectedRow || !selectedDef ? (
             <div style={{ margin: 'auto', color: P.textMuted, fontSize: 13, textAlign: 'center' }}>
               {menuMode === 'fracture'
-                ? 'No cards are currently available to fracture'
-                : 'Select a card to spend shards'}
+                ? 'No cards are currently available for refinement'
+                : 'Select a card to spend Card-light Shards'}
             </div>
           ) : (
             <>
@@ -383,7 +383,7 @@ export default function FractureModal({ onClose }: Props) {
                   </div>
                   {menuMode === 'fracture' && (
                     <div style={{ fontSize: 11, color: P.textMuted }}>
-                      Shard yield per fracture: <span style={{ color: P.accent }}>+{selectedRow.shardYield}</span>
+                      Card-light Shard yield: <span style={{ color: P.accent }}>+{selectedRow.shardYield}</span>
                     </div>
                   )}
 
@@ -405,7 +405,7 @@ export default function FractureModal({ onClose }: Props) {
               {menuMode === 'fracture' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: P.textMuted }}>
-                    Fracture duplicates
+                    Refine duplicate copies
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {FRACTURE_PRESETS.map((preset) => {
@@ -518,10 +518,10 @@ export default function FractureModal({ onClose }: Props) {
               {menuMode === 'shards' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   <div style={{ fontSize: 10, letterSpacing: 1.5, textTransform: 'uppercase', color: P.textMuted }}>
-                    Spend Fracture Shards as Card-light
+                    Spend Card-light Shards as Card-light
                   </div>
                   <div style={{ fontSize: 11, color: P.textMuted }}>
-                    Pool: <span style={{ color: P.accent }}>✦ {fractureShards.toLocaleString()} shards</span>
+                    Pool: <span style={{ color: P.accent }}>✦ {fractureShards.toLocaleString()} Card-light Shards</span>
                   </div>
 
                   {/* Preset buttons */}

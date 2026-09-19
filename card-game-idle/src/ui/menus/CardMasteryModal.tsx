@@ -175,11 +175,11 @@ function SystemInfoPanel() {
 
       <div>
         <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: P.accentDeep, fontFamily: uiTypography.display, marginBottom: 8 }}>
-          Fracture Extra Copies
+          Card-light Resonance
         </div>
         <div style={{ fontSize: 13, color: P.text, lineHeight: 1.65, fontFamily: uiTypography.body }}>
-          Open <span style={{ color: P.gold, fontWeight: 700 }}>Fracture</span> from the main menu to turn eligible duplicate copies into Fracture Shards.
-          The menu retains the protected copies and locked copies shown there. Fracture Shards can be spent
+          Open <span style={{ color: P.gold, fontWeight: 700 }}>Card-light Resonance</span> from the main menu to turn eligible duplicate copies into Card-light Shards.
+          The menu retains the protected copies and locked copies shown there. Card-light Shards can be spent
           <span style={{ color: P.accent, fontWeight: 700 }}> 1:1 for Card-light</span> on a selected card.
         </div>
       </div>

@@ -446,7 +446,7 @@ function ModesBody() {
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>More Modes</div>
         <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards. Claim every weekly reward to consume that rotation into two Super Weekly boss challenges.</ListItem>
-        <ListItem label="Fracture">Spend Fracture Shards to add Card-light to any card.</ListItem>
+        <ListItem label="Card-light Resonance">Refine eligible duplicate copies into Card-light Shards, then spend them 1:1 to add Card-light to any card.</ListItem>
         <ListItem label="Monthly Login">The login calendar persists for the month. Missed days remain available for catch-up and never reset claimed progress. Rewards include Shards, base cards, holofoil cards, and Card-light for owned cards.</ListItem>
         <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. Collect 5 unique cards from a set to find its Enigmas; each manuscript has another unlock requirement before its trials begin. Lock on to one unlocked manuscript to advance it; only the selected Enigma progresses. Cumulative goals show live trackers on its banner, while requirements that say “in one turn,” “at once,” or “at end of turn” only complete in that exact scope.</ListItem>
         <ListItem label="Amplifier of the Void">This Enigmatic Dark reward draws 2 cards and grants 3 Limitless Light Stacks. If you hold at least 5 stacks after activation, it also grants 1,500 Divine Light.</ListItem>
@@ -486,8 +486,8 @@ function CardBornTierBody() {
         <div style={bodyTextStyle}>Each unique card contributes the Resonance value of its highest reached Tier, regardless of copies owned. Card-light advances the card toward its next Tier; Resonance increases only when that milestone is crossed. Every 10 Resonance adds +0.01 Collection Power through the formula 1 + Resonance / 1,000. The natural maximum assumes every registered card has reached Infinite Bond, so adding cards to the game automatically raises the cap. Collection Power amplifies Divine Light gains and contributes to Light attack and Ain Soph Aur Bridge scaling.</div>
       </div>
       <div style={{ ...cardStyle, marginTop: 10 }}>
-        <div style={sectionHeadingStyle}>Fracture Extra Copies</div>
-        <div style={bodyTextStyle}>The <Tag>Fracture</Tag> menu converts eligible duplicate copies into Fracture Shards while preserving protected and locked copies. Spend Fracture Shards <Tag>1:1 for Card-light</Tag> on a selected card.</div>
+        <div style={sectionHeadingStyle}>Card-light Resonance</div>
+        <div style={bodyTextStyle}>The <Tag>Card-light Resonance</Tag> menu converts eligible duplicate copies into Card-light Shards while preserving protected and locked copies. Spend Card-light Shards <Tag>1:1 for Card-light</Tag> on a selected card.</div>
       </div>
     </>
   );

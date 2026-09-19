@@ -17,6 +17,7 @@ import { formatCountdown, getCausalityEventCountdown, CAUSALITY_EVENT_ENDS_LABEL
 import { t } from '@/ui/preferences';
 
 interface MainMenuHubProps {
+  initialSection?: MenuSection;
   onCardStore: () => void;
   onCardBoundCoop: () => void;
   onEternitysWake: () => void;
@@ -417,7 +418,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
   const ascensionLocked = ownedByRarity.Infinite < 5;
 
   const [mounted, setMounted] = useState(false);
-  const [activeSection, setActiveSection] = useState<MenuSection>('play');
+  const [activeSection, setActiveSection] = useState<MenuSection>(props.initialSection ?? 'play');
   const [focusedActionId, setFocusedActionId] = useState('begin-turn');
   const [themeNowMs, setThemeNowMs] = useState<number>(() => Date.now());
   const [eventNowMs, setEventNowMs] = useState<number>(() => Date.now());
@@ -523,7 +524,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         art: MAIN_MENU_BANNER_ART.infinitude, onClick: props.onInfinitude, disabled: infinitudeLocked,
       },
       {
-        id: 'fracture', label: 'Fracture', eyebrow: 'Refine', icon: '✧',
+        id: 'fracture', label: 'Card-light Resonance', eyebrow: 'Refine', icon: '✧',
         caption: 'Convert duplicate cards into focused Card-light progression.', status: 'Resonance fast-track',
         art: MAIN_MENU_BANNER_ART.fracture, onClick: props.onFracture,
       },

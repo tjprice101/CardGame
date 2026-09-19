@@ -17,7 +17,7 @@ import {
 } from '@/ui/cardBackgrounds';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
 import { getCardPreviewLines } from '@/ui/cardStatSummary';
-import { warmTheme } from '@/ui/theme';
+import { uiTypography, warmTheme } from '@/ui/theme';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getEverCollectionCount, getEverHoloCount, getEverInfiniteCount } from '@/systems/progression/ownershipHistory';
 import CollectionCardDetail from './CollectionCardDetail';
@@ -435,11 +435,12 @@ export default function CollectionViewer({ onClose }: Props) {
       <div style={{
         padding: '16px 24px', borderBottom: `1px solid ${warmTheme.border}`,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
-        background: 'rgba(9, 14, 20, 0.4)',
+        background: `linear-gradient(90deg, rgba(4,8,18,0.96) 0%, rgba(8,12,24,0.82) 60%, rgba(8,12,24,0.42) 100%), url("${import.meta.env.BASE_URL}assets/menu-banners/updated/collection-archive.png") right center / cover`,
+        boxShadow: '0 8px 28px rgba(0,0,0,0.34), inset 0 -1px 0 rgba(244,207,107,0.12)',
       }}>
         <div>
           <div style={{ fontSize: 20, fontWeight: 'bold', color: '#58aada', letterSpacing: 2 }}>
-            Collection
+            <><span style={{ display: 'block', color: '#f4cf6b', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE CARD ARCHIVE</span>Collection</>
           </div>
           <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.72)', marginTop: 3 }}>
             {totalOwned} / {totalCards} unique cards discovered

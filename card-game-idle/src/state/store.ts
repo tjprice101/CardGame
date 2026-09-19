@@ -513,9 +513,9 @@ interface StoreActions {
   setCompactMode: (enabled: boolean) => void;
   /** Toggle keyword highlighting inside card rules text. */
   setHighlightRulesText: (enabled: boolean) => void;
-  /** Fracture one duplicate copy of a card into Fracture Shards (rarity-scaled). Returns shards gained or 0 if not fracturable. */
+  /** Refine one duplicate copy of a card into Card-light Shards (rarity-scaled). Returns shards gained or 0 if not refinable. */
   fractureCard: (definitionId: string, count?: number) => number;
-  /** Spend Fracture Shards as Card-light for a chosen card (1:1 into cardPlayCounts). Returns shards actually spent. */
+  /** Spend Card-light Shards as Card-light for a chosen card (1:1 into cardPlayCounts). Returns shards actually spent. */
   spendFractureShards: (targetDefinitionId: string, amount: number) => number;
   /** Dissolve one copy of a card into universal Card-bane Light. Returns false if player doesn't own a copy. */
   dissolveCard: (definitionId: string) => boolean;
