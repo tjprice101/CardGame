@@ -147,6 +147,9 @@ export default function AchievementsModal({ onClose }: Props) {
           padding: '22px 32px 18px',
           borderBottom: `1px solid ${P.border}`,
           display: 'flex', alignItems: 'center', gap: 24, flexShrink: 0,
+          backgroundImage: `linear-gradient(90deg, ${P.overlayStrong}, rgba(30,12,24,0.78), rgba(30,12,24,0.35)), url("${import.meta.env.BASE_URL}assets/menu-banners/achievements.png")`,
+          backgroundPosition: 'right center', backgroundSize: 'cover',
+          boxShadow: `0 8px 28px rgba(0,0,0,0.32), inset 0 -1px 0 ${P.accentGlowColor}`,
         }}>
           <div style={{ flex: 1 }}>
             <div style={{

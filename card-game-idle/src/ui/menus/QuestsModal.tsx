@@ -146,7 +146,7 @@ export default function QuestsModal({ onClose }: Props) {
   return (
     <div onClick={onClose} role="dialog" aria-modal="true" className="ui-panel-intro" style={{ position: 'absolute', inset: 0, zIndex: 50, overflowY: 'auto', padding: '32px 28px 60px', background: 'radial-gradient(circle at 20% -10%, rgba(240,162,74,0.14), transparent 45%), radial-gradient(circle at 80% -10%, rgba(124,176,240,0.14), transparent 45%), linear-gradient(180deg, #10121e 0%, #0a0c14 100%)', color: '#f8f0de', fontFamily: uiTypography.body }}>
       <div onClick={event => event.stopPropagation()} style={{ maxWidth: 1100, margin: '0 auto' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(240,209,138,0.28)', paddingBottom: 20, marginBottom: 24 }}>
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', border: '1px solid rgba(240,209,138,0.34)', borderRadius: 16, padding: '22px 24px', marginBottom: 24, backgroundImage: 'linear-gradient(90deg, rgba(16,11,24,0.96), rgba(24,18,34,0.80), rgba(16,12,22,0.35)), url("' + import.meta.env.BASE_URL + 'assets/menu-banners/challenges.png")', backgroundPosition: 'right center', backgroundSize: 'cover', boxShadow: '0 10px 30px rgba(0,0,0,0.30), inset 0 -1px 0 rgba(255,216,143,0.18)' }}>
           <div>
             <div style={{ color: '#f0a24a', fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 3 }}>✦ DAILY & WEEKLY OBJECTIVES</div>
             <h1 style={{ margin: '8px 0 4px', color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 34, letterSpacing: 1.5 }}>Challenges</h1>
