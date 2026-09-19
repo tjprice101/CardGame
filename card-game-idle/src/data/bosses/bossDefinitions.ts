@@ -1,13 +1,12 @@
 import { CardRegistry } from '@/cards/CardRegistry';
 import type { ProgressState } from '@/types/game';
 import type { BossDefinition, BossCategory } from '@/types/bossFight';
-import { calculateNeutralityBossBaseline } from '@/systems/bossDifficulty';
 
 export const BOSS_FIGHT_ROUND_SECONDS = 180;
-export const BOSS_HP_SCALE = 3.2;
+export const BOSS_HP_SCALE = 1;
 
 // Re-anchored for the post-hidden-multiplier combat baseline.
-const FIRST_SET_FIRST_BOSS_HP = calculateNeutralityBossBaseline().recommendedFirstBossHp;
+const FIRST_SET_FIRST_BOSS_HP = 100_000;
 const SET_FINAL_HP_MULTIPLIER = 2.7;
 function roundBossHp(value: number): number {
   if (value >= 10_000_000) return Math.round(value / 25_000) * 25_000;

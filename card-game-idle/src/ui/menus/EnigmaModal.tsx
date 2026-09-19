@@ -50,7 +50,7 @@ export default function EnigmaModal({ onClose }: Props) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
-    <div onClick={onClose} role="dialog" aria-modal="true" style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'radial-gradient(circle at 50% 0%, rgba(244,207,107,0.18), transparent 42%), #14101f', color: '#f8f0de', overflowY: 'auto', padding: 28, fontFamily: uiTypography.body }}>
+    <div onClick={onClose} onWheel={event => event.stopPropagation()} role="dialog" aria-modal="true" style={{ position: 'absolute', inset: 0, zIndex: 50, background: 'radial-gradient(circle at 50% 0%, rgba(244,207,107,0.18), transparent 42%), #14101f', color: '#f8f0de', overflowY: 'auto', overscrollBehaviorY: 'contain', WebkitOverflowScrolling: 'touch', padding: 28, fontFamily: uiTypography.body }}>
       <div onClick={event => event.stopPropagation()} style={{ maxWidth: 980, margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid rgba(244,207,107,0.35)', paddingBottom: 18, marginBottom: 18 }}>
           <div>

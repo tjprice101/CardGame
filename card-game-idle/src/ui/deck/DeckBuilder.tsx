@@ -309,6 +309,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 interface Props { onClose: () => void }
+type BuilderSurface = 'library' | 'deck' | 'abilities' | 'analyze';
 
 interface CardVariantDisplay {
   key: string;
@@ -458,7 +459,7 @@ export default function DeckBuilder({ onClose }: Props) {
   const [saveMode, setSaveMode] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
   const [loadMenuOpen, setLoadMenuOpen] = useState(false);
-  const [subTab, setSubTab] = useState<'cards' | 'abilities' | 'analyze'>('cards');
+  const [surface, setSurface] = useState<BuilderSurface>('library');
 
   const progress = useStore(s => s.progress);
   const collectionPower = useMemo(() => computeGlobalResonanceScore(progress), [progress]);
@@ -1061,10 +1062,29 @@ export default function DeckBuilder({ onClose }: Props) {
         ))}
       </div>
 
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 20px', flexShrink: 0, background: 'rgba(3,6,14,0.86)', borderBottom: '1px solid rgba(244,207,107,0.18)' }}>
+        <div style={{ color: 'rgba(205,228,255,0.48)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', marginRight: 8 }}>Workspace</div>
+        {([
+          ['library', 'Card Library'],
+          ['deck', 'Deck Composition'],
+          ['abilities', 'Abilities'],
+          ['analyze', 'Analyze'],
+        ] as const).map(([id, label]) => (
+          <button key={id} type="button" className="menu-tactile-btn" onClick={() => setSurface(id)} style={{
+            padding: '7px 14px', borderRadius: 7, border: `1px solid ${surface === id ? 'rgba(244,207,107,0.78)' : 'rgba(72,128,190,0.28)'}`,
+            background: surface === id ? 'rgba(244,207,107,0.15)' : 'rgba(5,14,24,0.54)', color: surface === id ? '#f4cf6b' : 'rgba(205,228,255,0.68)',
+            fontFamily: 'Georgia, serif', fontSize: 10, letterSpacing: 1.1, textTransform: 'uppercase', cursor: 'pointer',
+          }}>{label}</button>
+        ))}
+        <div style={{ marginLeft: 'auto', color: 'rgba(205,228,255,0.45)', fontSize: 10 }}>
+          {surface === 'library' ? 'Select cards to add them to your active deck.' : surface === 'deck' ? 'Tune copies, Extra Deck, and saved configuration.' : surface === 'abilities' ? 'Equip three abilities to the active deck.' : 'Inspect damage, costs, and deck composition.'}
+        </div>
+      </div>
+
       {/* Two-pane body: pool (left/top) + deck (right/bottom) */}
       <div ref={bodyRef} style={{ ...styles.body, flexDirection: isNarrow ? 'column' : 'row' }}>
         {/* Pool pane */}
-        <div style={{ ...styles.poolPane, flex: isNarrow ? '1 1 55%' : styles.poolPane.flex }}>
+        <div style={{ ...styles.poolPane, display: surface === 'library' ? 'flex' : 'none', flex: isNarrow ? '1 1 55%' : styles.poolPane.flex }}>
           {deckPoolRows.length === 0 ? (
             <div style={styles.cardPool}>
               <div style={styles.empty}>
@@ -1109,7 +1129,7 @@ export default function DeckBuilder({ onClose }: Props) {
         </div>
 
         {/* Deck pane */}
-        <div style={styles.deckPane}>
+        <div style={{ ...styles.deckPane, display: surface === 'library' ? 'none' : 'flex', flex: surface === 'deck' ? '1 1 auto' : '1 1 auto', minWidth: isNarrow ? 0 : 380 }}>
           {/* Extra Deck strip — always visible, the sole Extra Deck surface */}
           <div style={styles.extraStripWrap}>
             <div style={styles.extraStripHeader}>
@@ -1146,23 +1166,7 @@ export default function DeckBuilder({ onClose }: Props) {
           </div>
 
           {/* Sub-tabs: Cards · Abilities · Analyze */}
-          <div style={styles.subTabStrip}>
-            {(['cards', 'abilities', 'analyze'] as const).map(tab => {
-              const LABELS: Record<string, string> = { cards: 'Cards', abilities: 'Abilities', analyze: 'Analyze' };
-              return (
-                <button
-                  key={tab}
-                  className="menu-tactile-btn"
-                  style={{ ...styles.subTabBtn, ...(subTab === tab ? styles.subTabBtnActive : {}) } as React.CSSProperties}
-                  onClick={() => setSubTab(tab)}
-                >
-                  {LABELS[tab]}
-                </button>
-              );
-            })}
-          </div>
-
-          {subTab === 'abilities' ? (
+          {surface === 'abilities' ? (
             <DeckBuilderAbilitiesTab
               deckList={deckList}
               extraDeckList={extraDeckList}
@@ -1170,7 +1174,7 @@ export default function DeckBuilder({ onClose }: Props) {
               ownedAbilities={ownedAbilities}
               setDeckAbilityLoadout={setDeckAbilityLoadout}
             />
-          ) : subTab === 'analyze' ? (
+          ) : surface === 'analyze' ? (
             <DeckBuilderAnalyzeTab
               deckList={deckList}
               extraDeckList={extraDeckList}
@@ -1181,7 +1185,7 @@ export default function DeckBuilder({ onClose }: Props) {
               setDeckNotes={setDeckNotes}
               dpsProjection={liveDpsProjection}
             />
-          ) : (
+          ) : surface === 'deck' ? (
             <div style={{ flex: 1, overflowY: 'auto', padding: '10px 14px' }}>
               {deckList.length === 0 && (
                 <div style={{ fontSize: 12, color: 'rgba(232, 215, 191, 0.6)', textAlign: 'center', marginTop: 16 }}>
@@ -1208,16 +1212,16 @@ export default function DeckBuilder({ onClose }: Props) {
                 );
               })}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
       <div style={styles.footer}>
         <div style={{ fontSize: 11, color: 'rgba(190,215,245,0.5)' }}>
-          {activeDeck?.notes && activeDeck.notes.trim().length > 0 && subTab !== 'analyze' && (
+          {activeDeck?.notes && activeDeck.notes.trim().length > 0 && surface !== 'analyze' && (
             <button
               className="menu-tactile-btn"
-              onClick={() => setSubTab('analyze')}
+              onClick={() => setSurface('analyze')}
               style={{ background: 'transparent', border: 'none', color: 'rgba(190,215,245,0.55)', cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 11 }}
             >
               📝 This deck has notes — view in Analyze

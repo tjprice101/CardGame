@@ -2699,10 +2699,13 @@ export const useStore = create<Store>()(
         const circularMotion = absDelta >= 0.035 && absDelta <= 0.95 && radialDelta <= 0.08 && (sequence.pointerOrbitStreak ?? 0) >= 3;
         if (circularMotion) {
           sequence.pointerOrbitAccumulated = (sequence.pointerOrbitAccumulated ?? 0) + absDelta;
+          // Attack power rises continuously while the cursor traces a valid
+          // circle. Keep the accumulator separately for revolution tracking,
+          // but do not wait for a full revolution before showing power.
+          sequence.orbitScore = (sequence.orbitScore ?? 0) + (absDelta / (Math.PI * 2)) * (1 + radiansPerSecond * 0.06);
           const completedTurns = Math.floor((sequence.pointerOrbitAccumulated ?? 0) / (Math.PI * 2));
           if (completedTurns > 0) {
             sequence.pointerOrbitAccumulated = (sequence.pointerOrbitAccumulated ?? 0) - completedTurns * Math.PI * 2;
-            sequence.orbitScore = (sequence.orbitScore ?? 0) + completedTurns * (1 + radiansPerSecond * 0.06);
           }
         } else if (!consistentDirection) {
           sequence.pointerOrbitAccumulated = 0;
