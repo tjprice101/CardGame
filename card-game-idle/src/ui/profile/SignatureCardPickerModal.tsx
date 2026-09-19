@@ -12,6 +12,7 @@ import {
 } from '@/ui/cardBackgrounds';
 import VirtualizedList from '@/ui/components/VirtualizedList';
 import { getDisplayCardTypeLabel } from '@/ui/preferences';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 
 interface Props {
   slotIndex: number;
@@ -85,7 +86,10 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
     return ownedCards.filter(d => {
       if (rarityFilter !== 'All' && d!.rarity !== rarityFilter) return false;
       if (setFilter !== 'All' && getCardSet(d!.definitionId) !== setFilter) return false;
-      if (q && !d!.name.toLowerCase().includes(q)) return false;
+      if (q) {
+        const searchable = [d!.name, d!.definitionId, d!.type, d!.rarity, getCardSet(d!.definitionId) ?? '', getCardPreviewLines(d!, 8).join(' ')].join(' ').toLowerCase();
+        if (!searchable.includes(q)) return false;
+      }
       return true;
     });
   }, [ownedCards, search, rarityFilter, setFilter]);

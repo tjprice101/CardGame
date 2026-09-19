@@ -184,8 +184,15 @@ export default function CollectionViewer({ onClose }: Props) {
     if (ownedFilter === 'owned' && entry.owned <= 0) return false;
     if (ownedFilter === 'missing' && entry.owned > 0) return false;
     if (lowerSearch) {
-      const hay = `${entry.card.name} ${entry.card.type ?? ''} ${entry.card.rarity}`.toLowerCase();
-      if (!hay.includes(lowerSearch)) return false;
+      const searchable = [
+        entry.card.name,
+        entry.card.definitionId,
+        entry.card.type ?? '',
+        entry.card.rarity,
+        getCardSet(entry.card.definitionId),
+        getCardPreviewLines(entry.card, 8).join(' '),
+      ].join(' ').toLowerCase();
+      if (!searchable.includes(lowerSearch)) return false;
     }
     return true;
   }), [activeElement, allCards, lowerSearch, ownedFilter, rarityFilter]);

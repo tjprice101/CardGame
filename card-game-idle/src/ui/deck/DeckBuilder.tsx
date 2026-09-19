@@ -456,6 +456,7 @@ export default function DeckBuilder({ onClose }: Props) {
     activeDeck?.extraDeck ? [...activeDeck.extraDeck] : (currentDeck.extraDeck ? [...currentDeck.extraDeck] : [])
   );
   const [elementFilter, setElementFilter] = useState<string | null>(null);
+  const [cardSearch, setCardSearch] = useState('');
   const [saveMode, setSaveMode] = useState(false);
   const [newDeckName, setNewDeckName] = useState('');
   const [loadMenuOpen, setLoadMenuOpen] = useState(false);
@@ -554,7 +555,20 @@ export default function DeckBuilder({ onClose }: Props) {
       return variants;
     });
     const availableElements = ['Neutrality', 'Causality'];
-    const filtered = ownedCards.filter(card => elementFilter === null || getCardSet(card.def.definitionId) === elementFilter);
+    const query = cardSearch.trim().toLowerCase();
+    const filtered = ownedCards.filter(card => {
+      if (elementFilter !== null && getCardSet(card.def.definitionId) !== elementFilter) return false;
+      if (!query) return true;
+      const searchable = [
+        card.def.name,
+        card.def.definitionId,
+        card.def.type,
+        card.def.rarity,
+        getCardSetLabel(card.def.definitionId),
+        getCardPreviewLines(card.def, 8).join(' '),
+      ].join(' ').toLowerCase();
+      return searchable.includes(query);
+    });
 
     const byRarity = (a: CardVariantDisplay, b: CardVariantDisplay) => {
       const rarityDelta = (RARITY_ORDER[a.def.rarity as keyof typeof RARITY_ORDER] ?? 0) -
@@ -572,7 +586,7 @@ export default function DeckBuilder({ onClose }: Props) {
       angelSection: filtered.filter(d => d.def.type === 'AinSophAur').sort(byRarity),
       availableElements,
     };
-  }, [collection, holoCollection, elementFilter]);
+  }, [cardSearch, collection, holoCollection, elementFilter]);
 
   const deckMap = new Map<string, number>(deckList.map(e => [getVariantKey(e.definitionId, e.finish), e.copies]));
   const deckDefinitionCountMap = useMemo(() => {
@@ -1036,6 +1050,13 @@ export default function DeckBuilder({ onClose }: Props) {
 
       {/* Element filter */}
       <div style={styles.filterBar}>
+        <input
+          value={cardSearch}
+          onChange={event => setCardSearch(event.target.value)}
+          placeholder="Search cards, effects, rarity, keywords..."
+          aria-label="Search cards"
+          style={{ flex: '1 1 260px', minWidth: 220, maxWidth: 390, height: 28, boxSizing: 'border-box', padding: '0 10px', borderRadius: 7, border: '1px solid rgba(244,207,107,0.34)', background: 'rgba(5,10,20,0.78)', color: '#f4f0e8', fontFamily: 'Georgia, serif', fontSize: 11, outline: 'none' }}
+        />
         <button className="menu-tactile-btn"
           style={{ ...styles.filterBtn, ...(elementFilter === null ? styles.filterBtnActive : {}) }}
           onClick={() => setElementFilter(null)}

@@ -6,6 +6,7 @@ import { uiTypography } from '@/ui/theme';
 import { calculateDeckDpsProjection } from '@/systems/cards/DeckDpsCalculator';
 import { computeGlobalResonanceScore } from '@/systems/progression/cardMastery';
 import { formatNumber } from '@/utils/bignum';
+import { getCardPreviewLines } from '@/ui/cardStatSummary';
 import type { CardDefinition } from '@/types/cards';
 import type { SavedDeck } from '@/types/game';
 
@@ -81,6 +82,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
   const collectionPower = useMemo(() => computeGlobalResonanceScore(progress), [progress]);
   const [selectedId, setSelectedId] = useState<string>(activeDeckId ?? savedDecks[0]?.id ?? '');
   const [setFilter, setSetFilter] = useState<'All' | 'Neutrality' | 'Causality'>('All');
+  const [cardSearch, setCardSearch] = useState('');
 
   const selectedDeck = savedDecks.find(d => d.id === selectedId) ?? null;
   const selectedProjection = useMemo(() => {
@@ -91,7 +93,7 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
       selectedDeck.abilityLoadout,
       collectionPower,
     );
-  }, [selectedDeck, collectionPower]);
+  }, [cardSearch, selectedDeck, collectionPower, setFilter]);
 
   function handleLoad(deckId: string) {
     loadSavedDeck(deckId);
@@ -126,7 +128,12 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
       label: TYPE_LABELS[typeKey],
       type: typeKey,
       entries: Array.from(grouped.values())
-        .filter(e => e.def.type === typeKey && (setFilter === 'All' || getCardSet(e.def.definitionId) === setFilter))
+        .filter(e => {
+          if (e.def.type !== typeKey || (setFilter !== 'All' && getCardSet(e.def.definitionId) !== setFilter)) return false;
+          const query = cardSearch.trim().toLowerCase();
+          if (!query) return true;
+          return [e.def.name, e.def.definitionId, e.def.type, e.def.rarity, getCardSet(e.def.definitionId) ?? '', getCardPreviewLines(e.def, 8).join(' ')].join(' ').toLowerCase().includes(query);
+        })
         .sort((a, b) => {
           const rd = (RARITY_ORDER[a.def.rarity] ?? 99) - (RARITY_ORDER[b.def.rarity] ?? 99);
           return rd !== 0 ? rd : a.def.name.localeCompare(b.def.name);
@@ -356,6 +363,13 @@ export default function DeckViewer({ onClose, onOpenDeckBuilder }: Props) {
 
                   {/* Set filter + element and rarity summary */}
                   <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+                    <input
+                      value={cardSearch}
+                      onChange={event => setCardSearch(event.target.value)}
+                      placeholder="Search cards, effects, rarity..."
+                      aria-label="Search deck cards"
+                      style={{ flex: '1 1 220px', minWidth: 190, maxWidth: 300, padding: '5px 9px', borderRadius: 7, border: `1px solid ${P.borderStrong}`, background: 'rgba(2,6,14,0.78)', color: P.text, fontSize: 11, outline: 'none' }}
+                    />
                     {(['All', 'Neutrality', 'Causality'] as const).map(setName => (
                       <button key={setName} onClick={() => setSetFilter(setName)} style={{ padding: '3px 9px', borderRadius: 20, border: `1px solid ${setFilter === setName ? '#d66a52' : P.border}`, background: setFilter === setName ? 'rgba(214,106,82,0.16)' : 'transparent', color: setFilter === setName ? '#f0a080' : P.textMuted, fontSize: 11, cursor: 'pointer' }}>{setName}</button>
                     ))}
