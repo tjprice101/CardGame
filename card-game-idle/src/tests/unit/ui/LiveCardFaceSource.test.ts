@@ -71,6 +71,12 @@ describe('live card face rendering', () => {
     expect(collectionSource).toContain("style={{ height: '100%', minHeight: 0, overscrollBehavior: 'contain', touchAction: 'pan-y' }}");
   });
 
+  it('hides Collection face chrome for undiscovered cards', () => {
+    const collectionSource = readFileSync(collectionPath, 'utf8');
+    expect(collectionSource).toContain("{owned > 0 && <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />}");
+    expect(collectionSource).toContain("{owned > 0 && <div style={{ position: 'relative', zIndex: 1");
+  });
+
   it("keeps Eternity's Wake foil animation on the reward card only", () => {
     const source = readFileSync(join(process.cwd(), 'src/ui/eternitysWake/EternitysWake.tsx'), 'utf8');
     expect(source).toContain("className={getLiveCardShimmerClassName(rewardDef, 'normal', 'front')}");

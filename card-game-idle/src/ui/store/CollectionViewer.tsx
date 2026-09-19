@@ -359,9 +359,9 @@ export default function CollectionViewer({ onClose }: Props) {
           </button>
         )}
 
-        <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />
+        {owned > 0 && <div style={getCardArtTopBottomBorderOverlayStyleForCard(card)} />}
 
-        <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {owned > 0 && <div style={{ position: 'relative', zIndex: 1, flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={getCardNameRibbonStyle('grid')}>
             <div style={{ fontSize: faceMetrics.typeSize, color: cardFacePalette.textMuted, letterSpacing: 1.4, textTransform: 'uppercase', textAlign: 'center', marginBottom: 4 }}>
               {finishLabel ? `${getDisplayCardTypeLabel(card.type)} · ${finishLabel}` : getDisplayCardTypeLabel(card.type)}
@@ -405,7 +405,7 @@ export default function CollectionViewer({ onClose }: Props) {
               <span>{owned > 0 ? `×${owned} discovered` : 'Not discovered'}</span>
             </div>
           </div>
-        </div>
+        </div>}
       </div>
     );
   };
