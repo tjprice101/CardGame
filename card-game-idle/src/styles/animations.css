@@ -65,7 +65,6 @@ select {
 .causality-event-shimmer {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(8,10,24,0.92) 0%, rgba(18,22,44,0.95) 50%, rgba(8,10,24,0.92) 100%) !important;
 }
 .causality-event-shimmer::after {
   content: '';
