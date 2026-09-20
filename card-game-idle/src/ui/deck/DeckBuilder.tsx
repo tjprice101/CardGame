@@ -36,7 +36,9 @@ const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({
 const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
 const EXTRA_DECK_SIZE = 10;
-const CARD_LIBRARY_ROW_HEIGHT = 250;
+const CARD_LIBRARY_CARD_WIDTH = 160;
+const CARD_LIBRARY_CARD_HEIGHT = 220;
+const CARD_LIBRARY_ROW_HEIGHT = 302;
 
 function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
   if (definitionId.includes('causality')) return 'Causality';
@@ -138,15 +140,15 @@ const styles: Record<string, React.CSSProperties> = {
   sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2.5, textTransform: 'uppercase' },
   sectionCount: { fontSize: 9, color: 'rgba(205,228,255,0.52)', letterSpacing: 1.2 },
   cardWithMeta: {
-    width: 128,
-    flex: '0 0 128px',
+    width: CARD_LIBRARY_CARD_WIDTH,
+    flex: `0 0 ${CARD_LIBRARY_CARD_WIDTH}px`,
     display: 'flex',
     flexDirection: 'column',
     gap: 3,
   },
   card: {
-    width: 128, height: 176,
-    flex: '0 0 128px',
+    width: CARD_LIBRARY_CARD_WIDTH, height: CARD_LIBRARY_CARD_HEIGHT,
+    flex: `0 0 ${CARD_LIBRARY_CARD_WIDTH}px`,
     background: 'rgba(4, 8, 18, 0.90)',
     border: '1px solid rgba(72,128,190,0.32)', borderRadius: 12, cursor: 'pointer',
     display: 'flex', flexDirection: 'column', alignItems: 'stretch',

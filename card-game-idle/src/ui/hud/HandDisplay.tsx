@@ -516,7 +516,7 @@ export default function HandDisplay({ onHoverCard }: { onHoverCard?: (definition
           const selected = !isExtraDeckView && (turn.mulliganSelected ?? []).includes(deckCard.instanceId);
           const isHovered = hoveredId === deckCard.instanceId;
           const isPlayable = isExtraDeckView
-            ? (isPlaying && !!def && def.type === 'AinSophAur' && CardEffectExecutor.checkPlayable(def, 0, turn, board))
+            ? (isPlaying && !!def && def.type === 'AinSophAur' && (freeSummonSelection || CardEffectExecutor.checkPlayable(def, 0, turn, board)))
             : (!isPlaying || !def || CardEffectExecutor.checkPlayable(def, hand.length, turn, board));
           const previewText = def ? getCardPreviewText(def, 2) : 'Card data unavailable';
           const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);

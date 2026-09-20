@@ -770,7 +770,7 @@ export function getCardRulesPanelStyle(variant: CardFaceVariant): CSSProperties 
   const maxHeights: Partial<Record<CardFaceVariant, string>> = {
     hand: '32%',
     pack: '34%',
-    grid: '34%',
+    grid: '42%',
     board: '36%',
     boardMini: '36%',
   };

@@ -987,6 +987,7 @@ export default function App() {
             onEnigma={() => { setMainMenuSection('progress'); setShowEnigma(true); }}
             onAchievements={() => { setMainMenuSection('progress'); setShowAchievements(true); }}
             onMastery={() => { setMainMenuSection('progress'); setShowMastery(true); }}
+            onDailyCalendar={() => { setMainMenuSection('progress'); setShowDailyReward(true); }}
             onFracture={() => { setMainMenuSection('collection'); setShowFracture(true); }}
             onSettings={() => { setMainMenuSection('progress'); setShowSettings(true); }}
             onAscension={() => { setMainMenuSection('play'); setShowAscension(true); }}

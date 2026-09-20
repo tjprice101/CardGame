@@ -377,7 +377,7 @@ export default function BoardDisplay({ onHoverCard }: { onHoverCard?: (definitio
               setAsaSummonRequest(null);
               setSelectedMaterialIds([]);
             }}
-            style={actionBtnStyle('rgba(140,220,140,0.6)', 'rgba(20,50,20,0.85)', '#8de68d', selectedMaterialIds.length !== asaSummonRequest.required)}
+            style={actionBtnStyle('rgba(140,220,140,0.6)', 'rgba(20,50,20,0.85)', '#8de68d', !asaSummonRequest.freeSummon && selectedMaterialIds.length !== asaSummonRequest.required)}
           >Confirm Summon</button>
           <button
             type="button"

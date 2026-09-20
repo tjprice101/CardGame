@@ -158,6 +158,9 @@ export default function BossFightArena() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 6, background: 'rgba(50, 110, 76, 0.28)', border: '1px solid rgba(141, 230, 141, 0.55)', color: '#b9ffbf', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap', boxShadow: '0 0 12px rgba(100, 220, 130, 0.18)' }}>
+            <span aria-hidden="true">✦</span> {turn.limitlessLightStacks.toLocaleString()} Light Stacks
+          </div>
           <div
             style={{
               display: 'flex', alignItems: 'center', gap: 5,

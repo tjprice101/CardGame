@@ -29,6 +29,7 @@ interface MainMenuHubProps {
   onQuests: () => void;
   onAchievements: () => void;
   onMastery: () => void;
+  onDailyCalendar: () => void;
   onFracture: () => void;
   onEnigma: () => void;
   onSettings: () => void;
@@ -76,7 +77,7 @@ const MAIN_MENU_BANNER_ART = {
   enigma: menuAsset('menu-banners/enigma.png'),
   playerProfileFallback: menuAsset('menu-banners/player-profile.png'),
   howToPlay: menuAsset('menu-banners/how-to-play.png'),
-  causalityEvent: menuAsset('event-art/causality/Causality BANNER.png'),
+  causalityEvent: menuAsset('event-art/causality/Causality Event Banner.png'),
 } as const;
 
 /**
@@ -544,6 +545,11 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         id: 'mastery', label: 'Card Mastery', eyebrow: 'Card-born Tier', icon: '✦',
         caption: 'Track Card-light, tier milestones, Resonance, and Collection Power.', status: 'Permanent power',
         art: MAIN_MENU_BANNER_ART.cardMastery, onClick: props.onMastery,
+      },
+      {
+        id: 'daily-calendar', label: 'Login Calendar', eyebrow: 'Monthly Rewards', icon: '▦',
+        caption: 'Review every monthly reward and claim the next available day.', status: 'Open calendar',
+        art: MAIN_MENU_BANNER_ART.cardMastery, onClick: props.onDailyCalendar,
       },
       {
         id: 'enigma', label: 'Enigma', eyebrow: 'Hidden Manuscripts', icon: '◈',
