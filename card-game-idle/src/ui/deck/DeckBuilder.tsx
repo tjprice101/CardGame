@@ -36,6 +36,7 @@ const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({
 const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
 const EXTRA_DECK_SIZE = 10;
+const CARD_LIBRARY_ROW_HEIGHT = 250;
 
 function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
   if (definitionId.includes('causality')) return 'Causality';
@@ -1116,9 +1117,9 @@ export default function DeckBuilder({ onClose }: Props) {
             <VirtualizedList
               items={deckPoolRows}
               getItemKey={(row) => row.key}
-              getItemHeight={(row) => row.kind === 'heading' ? 48 : 222}
+              getItemHeight={(row) => row.kind === 'heading' ? 48 : CARD_LIBRARY_ROW_HEIGHT}
               topPadding={12}
-              bottomPadding={24}
+              bottomPadding={64}
               overscanPx={160}
               viewportRef={cardPoolViewportRef}
               style={styles.cardPool}
