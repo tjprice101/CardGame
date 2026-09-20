@@ -38,14 +38,14 @@ export default function EnigmaModal({ onClose }: Props) {
   }), [definitions, progress.enigmas.instances]);
   const active = getActiveEnigmaInstance(progress);
   const unlockedDefinitions = useMemo(
-    () => definitions.filter(definition => isEnigmaDiscovered(progress, definition.id) && progress.enigmas.instances[definition.id]?.status !== 'completed'),
+    () => definitions.filter(definition => progress.enigmas.instances[definition.id]?.status === 'acquired'),
     [definitions, progress],
   );
   const archivedDefinitions = useMemo(
     () => definitions.filter(definition => progress.enigmas.instances[definition.id]?.status === 'completed'),
     [definitions, progress.enigmas.instances],
   );
-  const lockedOnDefinition = definitions.find(definition => definition.id === progress.enigmas.activeEnigmaId && progress.enigmas.instances[definition.id]?.status !== 'completed') ?? null;
+  const lockedOnDefinition = definitions.find(definition => definition.id === progress.enigmas.activeEnigmaId && progress.enigmas.instances[definition.id]?.status === 'acquired') ?? null;
   const [view, setView] = useState<'active' | 'archive'>('active');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -154,6 +154,7 @@ export default function EnigmaModal({ onClose }: Props) {
             const discovered = isEnigmaDiscovered(progress, definition.id);
             const locked = status === 'locked';
             const foundButLocked = discovered && locked;
+            const canLockOn = status === 'acquired';
             const expanded = expandedId === definition.id;
             const isActive = (active?.id ?? progress.enigmas.activeEnigmaId) === definition.id;
             const completedSteps = definition.steps.map((_, index) => status === 'completed' || instance?.stepsComplete?.[index] === true);
@@ -174,7 +175,7 @@ export default function EnigmaModal({ onClose }: Props) {
                     <div style={{ color: '#d5c3eb', fontSize: 10, letterSpacing: 0.7 }}>{getUniqueOwnedCardsForSet(progress, entry.setId)}/5 unique cards</div>
                   </div>
                 )}
-              <section onClick={() => { if (discovered) setActiveEnigma(definition.id); if (!locked) setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: discovered ? 'pointer' : 'default', opacity: locked ? 0.72 : 1 }}>
+              <section onClick={() => { if (canLockOn) setActiveEnigma(definition.id); if (!locked) setExpandedId(expanded ? null : definition.id); }} style={{ border: `1px solid ${isActive ? '#f4cf6b' : 'rgba(244,207,107,0.4)'}`, background: locked ? 'rgba(70,50,8,0.5)' : 'rgba(58,38,88,0.72)', padding: 18, borderRadius: 12, cursor: canLockOn ? 'pointer' : 'default', opacity: locked ? 0.72 : 1 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                   <div><div style={{ color: '#fff0d1', fontFamily: uiTypography.display, fontSize: 20 }}>{definition.title}</div><div style={{ color: '#d5c3eb', marginTop: 4 }}>{!discovered ? definition.hintText : foundButLocked ? (definition.unlockHintText ?? definition.hintText) : status === 'completed' ? 'All Enigma steps complete. Reward claimed.' : currentStep?.description ?? definition.hintText}</div>{currentTrackedValue !== null && <div style={{ color: '#f4cf6b', fontSize: 11, marginTop: 7 }}>{currentStep?.progressCounterLabel}: {Math.min(currentTrackedValue, currentTrackedTarget).toLocaleString()} / {currentTrackedTarget.toLocaleString()}</div>}</div>
                   <div style={{

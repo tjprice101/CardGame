@@ -1547,9 +1547,6 @@ function syncEnigmaProgressFromBoard(s: Store, _checkAcquisition: boolean, endin
 
   const acquisition = evaluateEnigmaAcquisition({ board: s.board, progress: s.progress, turn: s.turn });
   if (acquisition.newlyAcquired.length > 0) {
-    if (!s.progress.enigmas.activeEnigmaId) {
-      s.progress.enigmas.activeEnigmaId = acquisition.newlyAcquired[0] ?? null;
-    }
     for (const enigmaId of acquisition.newlyAcquired) {
       const instance = s.progress.enigmas.instances[enigmaId];
       if (instance && !instance.acquiredAt) instance.acquiredAt = Date.now();
@@ -3642,7 +3639,7 @@ export const useStore = create<Store>()(
         ensureEnigmaState(s.progress);
         if (!isEnigmaUnlocked(s.progress)) return;
         ensureInstance(s.progress, enigmaId);
-        if (!s.progress.enigmas.instances[enigmaId] || s.progress.enigmas.instances[enigmaId].status === 'completed') return;
+        if (s.progress.enigmas.instances[enigmaId]?.status !== 'acquired') return;
         s.progress.enigmas.activeEnigmaId = enigmaId;
       });
     },

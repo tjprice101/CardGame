@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   getUtcDayIndex,
+  getMonthlyTrackKey,
   dailyRewardForStreak,
   evaluateDailyLogin,
 } from '@/systems/progression/dailyLogin';
@@ -87,14 +88,14 @@ describe('dailyLogin.evaluateDailyLogin', () => {
 
   it('returns not claimable when already claimed today', () => {
     const result = evaluateDailyLogin(
-      makeProgress({ lastClaimedDayIndex: today, streak: 3 }),
+      makeProgress({ lastClaimedDayIndex: today, streak: 3, monthlyTrackKey: getMonthlyTrackKey(now), monthlyClaimedDays: [1] }),
       now,
     );
     expect(result.claimable).toBe(false);
     expect(result.pendingStreak).toBe(3);
     expect(result.previousStreak).toBe(3);
-    expect(result.monthlyDay).toBeUndefined();
-    expect(result.monthlyReward).toBeUndefined();
+    expect(result.monthlyDay).toBe(2);
+    expect(result.monthlyReward).toBeDefined();
   });
 
   it('does not reopen a legacy save that claimed today before monthly tracking existed', () => {

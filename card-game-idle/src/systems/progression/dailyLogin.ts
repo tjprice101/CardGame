@@ -118,7 +118,10 @@ export function evaluateDailyLogin(
   }
   if (lastDay === today) {
     return {
-      claimable: monthlyClaimableDay !== undefined,
+      // A daily login can only be claimed once per UTC day. The monthly
+      // track may still show a catch-up reward, but it cannot be claimed
+      // again until the next real login day.
+      claimable: false,
       pendingStreak: previousStreak,
       previousStreak,
       pendingReward: dailyRewardForStreak(previousStreak),

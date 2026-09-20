@@ -670,13 +670,12 @@ export default function App() {
   useEffect(() => {
     if (!saveHydrated) return;
     const progress = useStore.getState().progress;
-    setShowDailyReward(evaluateDailyLogin(progress).claimable);
-  }, [
-    saveHydrated,
-    progress.dailyLogin.lastClaimedDayIndex,
-    progress.dailyLogin.monthlyTrackKey,
-    progress.dailyLogin.monthlyClaimedDays?.join(','),
-  ]);
+    // The calendar is a persistent account surface, not only a claim popup.
+    // Show it for already-claimed and legacy saves too so every user gets the
+    // complete monthly track and its current state.
+    void evaluateDailyLogin(progress);
+    setShowDailyReward(true);
+  }, [saveHydrated]);
 
   // Re-check daily login bonus when user signs in for the first time this session.
   // The page may have been loaded while the player was unauthenticated (title screen),
@@ -691,9 +690,8 @@ export default function App() {
     // Only trigger when transitioning INTO authenticated state.
     if (saveHydrated && socialAuthStatus === 'authenticated' && prev !== 'authenticated') {
       const progress = useStore.getState().progress;
-      if (evaluateDailyLogin(progress).claimable) {
-        setShowDailyReward(true);
-      }
+      void evaluateDailyLogin(progress);
+      setShowDailyReward(true);
     }
     // Clean up the chat panel and subscription only on a real sign-out or
     // account switch — i.e. when the previously-known user id is gone or
