@@ -671,7 +671,12 @@ export default function App() {
     if (!saveHydrated) return;
     const progress = useStore.getState().progress;
     setShowDailyReward(evaluateDailyLogin(progress).claimable);
-  }, [saveHydrated]);
+  }, [
+    saveHydrated,
+    progress.dailyLogin.lastClaimedDayIndex,
+    progress.dailyLogin.monthlyTrackKey,
+    progress.dailyLogin.monthlyClaimedDays?.join(','),
+  ]);
 
   // Re-check daily login bonus when user signs in for the first time this session.
   // The page may have been loaded while the player was unauthenticated (title screen),

@@ -107,6 +107,16 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     expect(result.monthlyReward).toBeUndefined();
   });
 
+  it('does not treat an empty current-month ledger as an unclaimed Day 1 reward', () => {
+    const result = evaluateDailyLogin(
+      makeProgress({ lastClaimedDayIndex: today, streak: 3, monthlyTrackKey: '1970-01', monthlyClaimedDays: [] }),
+      now,
+    );
+    expect(result.claimable).toBe(false);
+    expect(result.monthlyDay).toBeUndefined();
+    expect(result.monthlyReward).toBeUndefined();
+  });
+
   it('continues the streak when claiming on the next day', () => {
     const result = evaluateDailyLogin(
       makeProgress({ lastClaimedDayIndex: today - 1, streak: 4 }),

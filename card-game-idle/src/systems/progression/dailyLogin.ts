@@ -96,12 +96,14 @@ export function evaluateDailyLogin(
   const previousStreak = dl.streak;
   const trackKey = getMonthlyTrackKey(now);
   const dayOfMonth = new Date(now).getUTCDate();
+  const monthlyLedgerMissing = !dl.monthlyClaimedDays || dl.monthlyClaimedDays.length === 0;
+  const legacyAlreadyClaimedToday = lastDay === today && monthlyLedgerMissing;
   const claimedDays = dl.monthlyTrackKey === trackKey
-    ? (dl.monthlyClaimedDays ?? [])
+    ? (legacyAlreadyClaimedToday ? [dayOfMonth] : (dl.monthlyClaimedDays ?? []))
     : dl.monthlyTrackKey === undefined && lastDay === today
       ? [dayOfMonth]
       : [];
-  const monthlyClaimableDay = dl.monthlyTrackKey === undefined && lastDay === today
+  const monthlyClaimableDay = legacyAlreadyClaimedToday
     ? undefined
     : Array.from({ length: dayOfMonth }, (_, index) => index + 1).find(day => !claimedDays.includes(day));
 
