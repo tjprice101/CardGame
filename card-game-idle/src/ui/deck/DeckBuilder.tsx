@@ -10,6 +10,7 @@ import {
   getCardFaceMetrics,
   getCardNameRibbonStyle,
   getCardRulesPanelStyle,
+  getAdaptiveDescriptionMetrics,
 } from '@/ui/cardBackgrounds';
 import CardRulesDigest from '@/ui/components/CardRulesDigest';
 import VirtualizedList from '@/ui/components/VirtualizedList';
@@ -36,9 +37,9 @@ const EMPTY_OWNED_ABILITIES: Readonly<Record<string, boolean>> = Object.freeze({
 const NARROW_BREAKPOINT = 1000;
 const MAIN_DECK_SIZE = 50;
 const EXTRA_DECK_SIZE = 10;
-const CARD_LIBRARY_CARD_WIDTH = 176;
-const CARD_LIBRARY_CARD_HEIGHT = 242;
-const CARD_LIBRARY_ROW_HEIGHT = 324;
+const CARD_LIBRARY_CARD_WIDTH = 196;
+const CARD_LIBRARY_CARD_HEIGHT = 270;
+const CARD_LIBRARY_ROW_HEIGHT = 352;
 
 function getCardSet(definitionId: string): 'Neutrality' | 'Causality' | null {
   if (definitionId.includes('causality')) return 'Causality';
@@ -826,6 +827,7 @@ export default function DeckBuilder({ onClose }: Props) {
       ? count < owned && totalForDefinition < cap && extraDeckList.length < EXTRA_DECK_SIZE
       : !(count >= owned || totalForDefinition >= cap);
     const previewText = getCardPreviewLines(def.def, 2).join(' ');
+    const descMetrics = getAdaptiveDescriptionMetrics('hand', previewText);
     return (
       <div key={def.key} style={styles.cardWithMeta}>
         <div
@@ -847,13 +849,13 @@ export default function DeckBuilder({ onClose }: Props) {
                 {(() => {
                   const baseLabel = isAngel ? 'Ain Soph Aur' : getDisplayCardTypeLabel(def.def.type);
                   const finishLabel = getFinishLabel(def.def, def.finish);
-                  return finishLabel ? `${baseLabel} · ${finishLabel}` : baseLabel;
+                  return finishLabel === 'Holofoil' ? `${baseLabel} · Holofoil` : baseLabel;
                 })()}
               </div>
-              <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
+              <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize, display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 2, overflow: 'hidden' }}>{def.def.name}</div>
             </div>
             <div style={getCardRulesPanelStyle('hand')}>
-              <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 2 }}>
+              <div style={{ ...styles.cardDesc, fontSize: descMetrics.fontSize, lineHeight: descMetrics.lineHeight, WebkitLineClamp: descMetrics.lineClamp }}>
                 {previewText}
               </div>
               {isAngel && def.def.type === 'AinSophAur' && (

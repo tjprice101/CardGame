@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useStore, selectProgress } from '@/state/store';
 import { warmTheme } from '@/ui/theme';
 import { evaluateDailyLogin, getMonthlyTrackDays, getMonthlyTrackKey, monthlyRewardForDay } from '@/systems/progression/dailyLogin';
+import { getNextDailyResetAt, formatQuestCountdown } from '@/systems/progression/quests';
 import { CardRegistry } from '@/cards/CardRegistry';
 import {
   getLiveCardFaceBackgroundStyle,
@@ -23,6 +24,13 @@ export default function DailyRewardModal({ onClose }: Props) {
   const claimDailyReward = useStore(s => s.claimDailyReward);
 
   const evalResult = useMemo(() => evaluateDailyLogin(progress), [progress]);
+
+  const [nowTick, setNowTick] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowTick(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const nextResetCountdown = formatQuestCountdown(getNextDailyResetAt(nowTick) - nowTick);
 
   const now = Date.now();
   const trackKey = getMonthlyTrackKey(now);
@@ -73,14 +81,14 @@ export default function DailyRewardModal({ onClose }: Props) {
       ['--ui-accent' as any]: '255, 215, 110',
       ['--ui-accent-soft' as any]: '255, 235, 175',
     } as React.CSSProperties}>
-      <header style={{ width: 'min(1380px, 100%)', boxSizing: 'border-box', padding: '22px clamp(22px, 4vw, 56px) 12px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20 }}>
+      <header style={{ width: 'min(1380px, 100%)', boxSizing: 'border-box', padding: '12px clamp(22px, 4vw, 56px) 8px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 20 }}>
         <div>
-          <div style={{ color: warmTheme.accentSoft, fontSize: 11, letterSpacing: 4, textTransform: 'uppercase' }}>Monthly Expedition</div>
-          <h1 className="ui-title-glow" style={{ margin: '5px 0 3px', fontSize: 'clamp(26px, 3.5vw, 44px)', letterSpacing: 2 }}>Login Calendar</h1>
-          <div style={{ color: warmTheme.textMuted, fontSize: 12 }}>Every day remains available until claimed. Your progress never resets.</div>
+          <div style={{ color: warmTheme.accentSoft, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase' }}>Monthly Expedition</div>
+          <h1 className="ui-title-glow" style={{ margin: '3px 0 2px', fontSize: 'clamp(18px, 2.2vw, 26px)', letterSpacing: 1.4 }}>Login Calendar</h1>
+          <div style={{ color: warmTheme.textMuted, fontSize: 10 }}>Every day remains available until claimed. Your progress never resets.</div>
         </div>
-        <div style={{ textAlign: 'right', color: warmTheme.textMuted, fontSize: 12 }}>
-          <div style={{ color: warmTheme.text, fontSize: 20, fontWeight: 'bold' }}>{monthLabel}</div>
+        <div style={{ textAlign: 'right', color: warmTheme.textMuted, fontSize: 10 }}>
+          <div style={{ color: warmTheme.text, fontSize: 14, fontWeight: 'bold' }}>{monthLabel}</div>
           <div>{claimedDays.length} / {daysInMonth} claimed</div>
         </div>
       </header>
@@ -143,14 +151,14 @@ export default function DailyRewardModal({ onClose }: Props) {
         </div>
       </main>
 
-      <footer style={{ width: 'min(1380px, 100%)', boxSizing: 'border-box', padding: '10px clamp(22px, 4vw, 56px) 14px', borderTop: `1px solid ${warmTheme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap', background: 'rgba(8, 7, 14, 0.72)' }}>
+      <footer style={{ width: 'min(1380px, 100%)', boxSizing: 'border-box', padding: '8px clamp(22px, 4vw, 56px) 10px', borderTop: `1px solid ${warmTheme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18, flexWrap: 'wrap', background: 'rgba(8, 7, 14, 0.72)' }}>
         <div>
-          <div style={{ color: warmTheme.textMuted, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase' }}>{canClaim ? `Next unclaimed reward · Day ${pendingDay}` : 'Today’s reward is already claimed'}</div>
-          <div style={{ color: warmTheme.text, fontSize: 20, fontWeight: 'bold', marginTop: 4 }}>{pendingReward?.label ?? 'Come back tomorrow for the next reward.'}</div>
+          <div style={{ color: warmTheme.textMuted, fontSize: 9, letterSpacing: 1, textTransform: 'uppercase' }}>{canClaim ? `Next unclaimed reward · Day ${pendingDay}` : `Next reset in ${nextResetCountdown}`}</div>
+          <div style={{ color: warmTheme.text, fontSize: 14, fontWeight: 'bold', marginTop: 2 }}>{pendingReward?.label ?? "Today's reward is already claimed."}</div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={onClose} className="menu-tactile-btn" style={{ padding: '12px 26px', background: 'transparent', border: `1px solid ${warmTheme.border}`, borderRadius: 8, color: warmTheme.textMuted, cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 13 }}>Close Calendar</button>
-          <button onClick={handleClaim} data-sfx="claim" className="menu-tactile-btn" style={{ padding: '12px 32px', background: warmTheme.button, border: `1px solid ${warmTheme.borderStrong}`, borderRadius: 8, color: warmTheme.text, cursor: canClaim ? 'pointer' : 'default', fontWeight: 'bold', opacity: canClaim ? 1 : 0.5, fontFamily: 'Georgia, serif', fontSize: 14, letterSpacing: 1 }} disabled={!canClaim}>{canClaim ? 'Claim Reward' : 'Claimed'}</button>
+          <button onClick={onClose} className="menu-tactile-btn" style={{ padding: '9px 22px', background: 'transparent', border: `1px solid ${warmTheme.border}`, borderRadius: 8, color: warmTheme.textMuted, cursor: 'pointer', fontFamily: 'Georgia, serif', fontSize: 12 }}>Close Calendar</button>
+          <button onClick={handleClaim} data-sfx="claim" className="menu-tactile-btn" style={{ padding: '9px 26px', background: warmTheme.button, border: `1px solid ${warmTheme.borderStrong}`, borderRadius: 8, color: warmTheme.text, cursor: canClaim ? 'pointer' : 'default', fontWeight: 'bold', opacity: canClaim ? 1 : 0.5, fontFamily: 'Georgia, serif', fontSize: 13, letterSpacing: 1 }} disabled={!canClaim}>{canClaim ? 'Claim Reward' : 'Claimed'}</button>
         </div>
       </footer>
     </div>

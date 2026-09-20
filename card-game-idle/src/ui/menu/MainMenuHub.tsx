@@ -709,7 +709,7 @@ export default function MainMenuHub(props: MainMenuHubProps) {
         left: 'clamp(20px, 3vw, 56px)',
         bottom: 'clamp(22px, 3vh, 38px)',
         display: 'flex', alignItems: 'flex-end', gap: 12,
-        maxWidth: 'min(560px, 50vw)',
+        maxWidth: 'min(900px, 68vw)',
       }}>
         {props.onEventCausality && (
           <button
@@ -717,10 +717,10 @@ export default function MainMenuHub(props: MainMenuHubProps) {
             onClick={props.onEventCausality}
             style={{
               position: 'relative',
-              width: 260,
-              minHeight: 132,
-              padding: '12px 16px 14px',
-              borderRadius: 6,
+              width: 585,
+              minHeight: 297,
+              padding: '27px 36px 32px',
+              borderRadius: 14,
               border: '1px solid rgba(138, 221, 255, 0.72)',
               backgroundImage: `linear-gradient(90deg, rgba(8,14,36,0.96) 0%, rgba(8,14,36,0.78) 62%, rgba(8,14,36,0.28) 100%), url("${MAIN_MENU_BANNER_ART.causalityEvent}")`,
               backgroundSize: 'cover',
@@ -728,32 +728,32 @@ export default function MainMenuHub(props: MainMenuHubProps) {
               color: '#eef4ff',
               fontFamily: uiTypography.body,
               textAlign: 'left',
-              boxShadow: '0 14px 34px rgba(83, 176, 255, 0.25)',
+              boxShadow: '0 32px 77px rgba(83, 176, 255, 0.25)',
               cursor: 'pointer',
               overflow: 'hidden',
             }}
           >
             <div style={{
-              position: 'absolute', top: 8, left: 10,
-              padding: '2px 7px', borderRadius: 3,
+              position: 'absolute', top: 18, left: 23,
+              padding: '4px 16px', borderRadius: 7,
               background: 'rgba(255, 125, 185, 0.9)', color: '#fff',
-              fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.4,
+              fontFamily: uiTypography.display, fontSize: 23, letterSpacing: 3,
             }}>LIMITED-TIME</div>
-            <div style={{ marginTop: 22, fontFamily: uiTypography.display, fontSize: 18, letterSpacing: 1.6, textTransform: 'uppercase' }}>
+            <div style={{ marginTop: 50, fontFamily: uiTypography.display, fontSize: 40, letterSpacing: 3.6, textTransform: 'uppercase' }}>
               Causality
             </div>
-            <div style={{ marginTop: 4, fontSize: 11, opacity: 0.82, letterSpacing: 0.6, color: 'rgba(214, 224, 248, 0.95)' }}>
+            <div style={{ marginTop: 9, fontSize: 25, opacity: 0.82, letterSpacing: 1.4, color: 'rgba(214, 224, 248, 0.95)' }}>
               Stellar Wish Event · Spend Aberrated Shards
             </div>
-            <div style={{ marginTop: 8, fontSize: 10, letterSpacing: 1, color: '#d7b7ff', fontFamily: uiTypography.display }}>
+            <div style={{ marginTop: 18, fontSize: 23, letterSpacing: 2.3, color: '#d7b7ff', fontFamily: uiTypography.display }}>
               Ends {CAUSALITY_EVENT_ENDS_LABEL}
             </div>
-            <div style={{ marginTop: 3, fontSize: 12, letterSpacing: 1.1, color: '#8de6ff', fontFamily: uiTypography.display }}>
+            <div style={{ marginTop: 7, fontSize: 27, letterSpacing: 2.5, color: '#8de6ff', fontFamily: uiTypography.display }}>
               {eventCountdown}
             </div>
             <div style={{
-              position: 'absolute', bottom: 8, right: 12,
-              fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.4,
+              position: 'absolute', bottom: 18, right: 27,
+              fontFamily: uiTypography.display, fontSize: 23, letterSpacing: 3,
               color: '#8de6ff',
             }}>NEW ▶</div>
           </button>
