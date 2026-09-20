@@ -366,7 +366,10 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
                         </div>
                       </div>
                       <div style={{ color: '#ffffff', fontSize: 12, fontWeight: 600, textAlign: 'right', flexShrink: 0 }}>
-                        <div>{Math.round(encounter.reward.chance * 100)}% chance</div>
+                        <div>Guaranteed +{index === selected.encounters.length - 1 ? 4 : 3}</div>
+                        {index < selected.encounters.length - 1 && (
+                          <div style={{ fontSize: 10, color: '#91bfff', marginTop: 1 }}>+1 next material</div>
+                        )}
                         <div style={{ fontSize: 10, color: '#91bfff', marginTop: 1 }}>Owned: {progress[encounter.reward.currency] ?? 0}</div>
                       </div>
                     </div>
@@ -376,7 +379,7 @@ export default function GardenOfCards({ onClose, onEnterDungeon }: Props) {
 
               {dungeonState.phase === 'complete' && dungeonState.lastReward && (
                 <div style={{ color: '#ffffff', fontSize: 12, background: 'rgba(255,255,255,0.08)', padding: '10px 14px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)' }}>
-                  Run complete. Reward roll: +1 {GARDEN_REWARD_LABELS[dungeonState.lastReward]}.
+                  Run complete. Final encounter reward: +4 {GARDEN_REWARD_LABELS[dungeonState.lastReward]}.
                 </div>
               )}
             </section>

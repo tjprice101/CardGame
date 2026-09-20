@@ -213,7 +213,7 @@ export default function CollectionViewer({ onClose }: Props) {
   const visibleOwned = useMemo(() => filtered.filter(card => card.owned > 0).length, [filtered]);
   const visibleTotal = filtered.length;
   const isFilteringActive = activeElement !== 'All' || rarityFilter !== 'All' || ownedFilter !== 'all' || lowerSearch.length > 0;
-  const gridColumns = Math.max(1, Math.floor((gridViewportWidth + 10) / 158));
+  const gridColumns = Math.max(1, Math.floor((gridViewportWidth + 10) / 138));
 
   const virtualRows = useMemo(() => {
     const rows: CollectionVirtualRow[] = [];
@@ -222,7 +222,7 @@ export default function CollectionViewer({ onClose }: Props) {
         rows.push({
           key: `${prefix}-${index}`,
           kind: 'cards',
-          height: 214,
+          height: 186,
           entries: entries.slice(index, index + gridColumns),
         });
       }
@@ -283,14 +283,14 @@ export default function CollectionViewer({ onClose }: Props) {
         className={shimmerClassName}
         onClick={() => setSelectedCard({ card, finish, owned })}
         style={{
-          width: 148,
+          width: 128,
           ...cardSurfaceStyle,
           backgroundColor: warmTheme.surfaceStrong,
           border: owned > 0
             ? (isTranscendent ? '1px solid rgba(224, 174, 72, 0.86)' : `1px solid ${rarityColor}55`)
             : `1px solid ${warmTheme.border}`,
           borderRadius: 12,
-          height: 204,
+          height: 176,
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',

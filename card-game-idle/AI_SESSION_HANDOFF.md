@@ -32,7 +32,9 @@ Fresh validation was run on the current working tree:
 - `Amplifier of the Void` is a persistent free Enigmatic Dark utility: draw 2 cards, gain 3 Limitless Light Stacks, then gain 1,500 Divine Light if the post-activation stack pool is at least 5.
 - Causality enigma reward copies are set to 3 per reward.
 - Challenges include two Super Weeklies: after all four weekly challenges are completed and claimed, the rotation can be consumed into two deterministic Eternity's Wake boss objectives. Each target completes independently and awards extra shards plus an additional boss reward card copy. Daily rewards are a persistent monthly catch-up calendar with shard, card, holofoil, and owned-card Card-light rewards.
-- Card-born thresholds are reduced by 65%: 9, 26, 140, 525, 1,050, 2,100, 5,250, and 10,500 Card-light.
+- Card-born thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
+- Causality ability tiers follow ownership gates, not purchase-price heuristics: Author the First Cause and Causal Cartography are Foundational; Pearlescent Mandate and Archive of Elsewhen are Eternal; Final Cause and Infinite Manuscript are Infinite.
+- Every card-browser menu must preserve a complete card-shaped face at its canonical aspect ratio. Shrink cards or restructure the menu into submenus before allowing card art, name ribbons, or rules panels to crop, squash, or overflow.
 - UI summary text must stay in natural language and must not leak internal tokens or snake_case fields.
 
 ## Important files to read first

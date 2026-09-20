@@ -36,13 +36,12 @@ describe('Causality endgame content', () => {
     }
   });
 
-  it('defines the four Rift encounters and exact drop rates', () => {
+  it('defines the four Rift encounters and their guaranteed reward materials', () => {
     const valley = GARDEN_DUNGEONS.find(dungeon => dungeon.id === 'valley-of-null')!;
     const rift = GARDEN_DUNGEONS.find(dungeon => dungeon.id === 'rift-of-causality')!;
     expect(rift.category).toBe('Causality');
     expect(rift.encounters).toHaveLength(4);
     expect(rift.encounters[0]!.maxHp).toBeGreaterThanOrEqual(valley.encounters.at(-1)!.maxHp * 4);
-    expect(rift.encounters.map(encounter => encounter.reward?.chance)).toEqual([0.5, 0.4, 0.3, 0.1]);
     expect(rift.encounters.map(encounter => encounter.reward?.currency)).toEqual([
       'seedOfCausality', 'causalBloom', 'shatteredCausalTranscript', 'heartOfCausality',
     ]);

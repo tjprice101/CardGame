@@ -5,7 +5,7 @@ import type {
   BoardState, ComputedBoardStats, DeckCard, DeckEntry,
   DeckState, EnigmaInstance, ExtraDeckEntry, GameState, PendingEffect, ProgressState, SavedDeck, SettingsState, TurnState, TrialDeckState,
 } from '@/types/game';
-import type { GardenDungeonState } from '@/types/dungeons';
+import type { GardenDungeonState, GardenRewardCurrency } from '@/types/dungeons';
 import { GARDEN_DUNGEONS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { DEFAULT_CONTROL_BINDINGS } from '@/types/game';
 import type {
@@ -100,7 +100,7 @@ import {
 import { TRANSCENDENT_SHOP_IDS } from '@/data/ascension/transcendentCards';
 
 import { DEFAULT_MAIN_MENU_BACKGROUND_ID } from '@/data/profile/mainMenuBackgrounds';
-import { ABILITY_REGISTRY, meetsAbilityOwnershipGate } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_REGISTRY, getAbilityMaterialCost, meetsAbilityOwnershipGate } from '@/data/abilities/abilityDefinitions';
 
 const EMBRACE_INFINITE_MIN_HAND = 40;
 
@@ -282,7 +282,7 @@ const defaultProgress: ProgressState = {
 
 const defaultGardenDungeon: GardenDungeonState = {
   phase: 'idle', dungeonId: null, encounterIndex: 0, encounterHp: 0,
-  encounterMaxHp: 0, timeRemainingSeconds: 0, runCount: 0, lastReward: null,
+  encounterMaxHp: 0, timeRemainingSeconds: 0, runCount: 0, lastReward: null, lastRewards: {},
 };
 
 const defaultSettings: SettingsState = {
@@ -502,6 +502,7 @@ interface StoreActions {
   activateSuperWeekly: () => string | null;
   /** Engagement: claim an unlocked achievement (one-shot). */
   claimAchievement: (achievementId: string) => { shards: number; divineLight?: number } | null;
+  claimAllAchievements: () => { count: number; shards: number; divineLight: number };
   /** Engagement: claim a reached card-mastery tier (one-shot per tier). */
   claimCardMastery: (definitionId: string, tier: number) => { shards: number } | null;
   /** Quick-claim all currently available mastery tiers. Returns aggregate shard reward & tiers claimed. */
@@ -1029,6 +1030,13 @@ function completeBossFight(s: Store, victory: boolean): void {
 
   const kind = s.bossFight.kind ?? 'normal';
   const damageFirstMinute = s.bossFight.damageDealtFirstMinute ?? 0;
+  const activeFightCount = Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1));
+  const activeBossHp = s.bossFight.bossCurrentHp;
+  const activeBossMaxHp = s.bossFight.bossMaxHp;
+  const activeDamageDealt = s.bossFight.damageDealtThisFight;
+  const activeCoopPartySize = s.bossFight.coopPartySize ?? 1;
+  const activeCoopSessionId = s.bossFight.coopSessionId;
+  const activeCoopRole = s.bossFight.coopRole;
   const saved = s.bossFight.savedGameState;
   let rewardSummary: BossFightState['rewardSummary'] = null;
 
@@ -1183,7 +1191,7 @@ function completeBossFight(s: Store, victory: boolean): void {
     const boss = BOSS_DEFINITIONS.find(b => b.id === bossId);
     if (boss) {
       const priorShards = s.progress.aberratedShards;
-      const rewardCopies = kind === 'normal' ? Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1)) : 1;
+      const rewardCopies = kind === 'normal' ? activeFightCount : 1;
       awardBossVictoryRewards(s.progress, boss, rewardCopies);
       // Boss Codex personal-best tracking (save v13+).
       if (!s.progress.bossCodex) s.progress.bossCodex = {};
@@ -1202,7 +1210,7 @@ function completeBossFight(s: Store, victory: boolean): void {
         bossIdx,
         BOSS_DEFINITIONS.length,
       );
-      const normalFightCount = kind === 'normal' ? Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1)) : 1;
+      const normalFightCount = kind === 'normal' ? activeFightCount : 1;
       const masteryPerCard = baseMasteryPerCard * normalFightCount;
       const masteryAward = applyMasteryReward(s.progress, fightDeckList, fightExtraDeck, masteryPerCard);
       rewardSummary = {
@@ -1216,28 +1224,21 @@ function completeBossFight(s: Store, victory: boolean): void {
     }
   }
 
-  const finalHp = s.bossFight.bossCurrentHp;
-  const damageDealt = s.bossFight.damageDealtThisFight;
-  const maxHp = s.bossFight.bossMaxHp;
-  const coopPartySize = s.bossFight.coopPartySize ?? 1;
-  const fightCount = Math.max(1, Math.min(3, s.bossFight.fightCount ?? 1));
-  const coopSessionId = s.bossFight.coopSessionId;
-  const coopRole = s.bossFight.coopRole;
   s.bossFight = {
     mode: victory ? 'victory' : 'defeat',
     activeBossId: bossId,
-    bossCurrentHp: finalHp,
-    bossMaxHp: maxHp,
-    damageDealtThisFight: damageDealt,
+    bossCurrentHp: activeBossHp,
+    bossMaxHp: activeBossMaxHp,
+    damageDealtThisFight: activeDamageDealt,
     damageDealtFirstMinute: damageFirstMinute,
     fightTimeRemaining: 0,
     cooldowns: newCooldowns,
     savedGameState: null,
     kind,
-    coopPartySize,
-    fightCount,
-    coopSessionId,
-    coopRole,
+    coopPartySize: activeCoopPartySize,
+    fightCount: activeFightCount,
+    coopSessionId: activeCoopSessionId,
+    coopRole: activeCoopRole,
     rewardSummary,
   };
   recompute(s);
@@ -1681,7 +1682,20 @@ function recordLossEvent(
  * boss-style encounter is active — immediately staggers it and restores its
  * full clock/duration.
  */
-function finishShatterInfiniteLight(s: Store): void {
+function shiftTurnAbsoluteTimers(s: Store, pauseStartedAt: number, resumedAt: number): void {
+  const pausedFor = Math.max(0, resumedAt - pauseStartedAt);
+  if (pausedFor <= 0) return;
+  for (const abilityId of Object.keys(s.turn.abilityCooldownUntil ?? {})) {
+    const deadline = s.turn.abilityCooldownUntil?.[abilityId] ?? 0;
+    if (deadline > pauseStartedAt && s.turn.abilityCooldownUntil) s.turn.abilityCooldownUntil[abilityId] = deadline + pausedFor;
+  }
+  if (s.turn.divineFieldUntil && s.turn.divineFieldUntil > pauseStartedAt) s.turn.divineFieldUntil += pausedFor;
+  if (s.turn.whiteoutDomainUntil && s.turn.whiteoutDomainUntil > pauseStartedAt) s.turn.whiteoutDomainUntil += pausedFor;
+}
+
+function finishShatterInfiniteLight(s: Store, resumedAt: number): void {
+  const pauseStartedAt = s.turn.shatterInfiniteLight?.pauseStartedAt;
+  if (pauseStartedAt !== undefined) shiftTurnAbsoluteTimers(s, pauseStartedAt, resumedAt);
   s.turn.shatterInfiniteLight = null;
   s.turn.cardsPlayedThisTurn = 0;
 
@@ -2525,8 +2539,9 @@ export const useStore = create<Store>()(
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
         const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        const now = Date.now();
         s.turn.attackSequence = {
-          kind: 'ain', phase: 'priming', phaseEndsAt: Date.now() + ATTACK_SEQUENCE_PRIME_MS,
+          kind: 'ain', phase: 'priming', phaseEndsAt: now + ATTACK_SEQUENCE_PRIME_MS, pauseStartedAt: now,
           cardInstanceId: slot.instanceId, cardDefinitionId: def.definitionId, cardFinish: slot.finish,
           stars: getAttackSequenceStars(def.definitionId, 'ain'), clickedStarIds: [],
           basePayout, payout: 0, multiplier: 1, stackSpend: 0,
@@ -2555,8 +2570,9 @@ export const useStore = create<Store>()(
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
         const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        const now = Date.now();
         s.turn.attackSequence = {
-          kind: 'soph', phase: 'priming', phaseEndsAt: Date.now() + ATTACK_SEQUENCE_PRIME_MS,
+          kind: 'soph', phase: 'priming', phaseEndsAt: now + ATTACK_SEQUENCE_PRIME_MS, pauseStartedAt: now,
           cardInstanceId: slot.instanceId, cardDefinitionId: def.definitionId, cardFinish: slot.finish,
           stars: getAttackSequenceStars(def.definitionId, 'soph'), clickedStarIds: [],
           basePayout, payout: 0, multiplier: 1, stackSpend: selectedSpend,
@@ -2647,8 +2663,9 @@ export const useStore = create<Store>()(
           collectionPower: computeGlobalResonanceScore(s.progress),
         });
         const basePayout = Math.max(0, Math.round(attack.baseDivineLight + scaling));
+        const now = Date.now();
         s.turn.attackSequence = {
-          kind: 'bridge', phase: 'priming', phaseEndsAt: Date.now() + ATTACK_SEQUENCE_PRIME_MS,
+          kind: 'bridge', phase: 'priming', phaseEndsAt: now + ATTACK_SEQUENCE_PRIME_MS, pauseStartedAt: now,
           cardInstanceId: slot.instanceId, cardDefinitionId: def.definitionId, cardFinish: slot.finish,
           stars: getAttackSequenceStars(def.definitionId, 'bridge'), clickedStarIds: [],
           basePayout, payout: 0, multiplier: 1, stackSpend: selectedSpend,
@@ -2763,6 +2780,7 @@ export const useStore = create<Store>()(
           checkBossDefeated(s);
           return;
         }
+        shiftTurnAbsoluteTimers(s, sequence.pauseStartedAt, nowMs);
         s.turn.attackSequence = null;
       });
     },
@@ -2776,6 +2794,7 @@ export const useStore = create<Store>()(
         s.turn.shatterInfiniteLight = {
           phase: 'priming',
           phaseEndsAt: now + SHATTER_PRIME_MS,
+          pauseStartedAt: now,
           stacks: 0,
           payout: 0,
         };
@@ -2845,7 +2864,7 @@ export const useStore = create<Store>()(
           checkBossDefeated(s);
           return;
         }
-        finishShatterInfiniteLight(s);
+        finishShatterInfiniteLight(s, nowMs);
       });
     },
 
@@ -3657,11 +3676,15 @@ export const useStore = create<Store>()(
       const state = get();
       if (!meetsAbilityOwnershipGate(ability, state.progress.collection, state.progress.infiniteCollection)) return false;
       if (state.progress.ownedAbilities?.[abilityId]) return false;
-      if (state.progress.divineLight < ability.purchaseCost) return false;
+      const materialCost = getAbilityMaterialCost(ability);
+      if (Object.entries(materialCost).some(([currency, amount]) => state.progress[currency as GardenRewardCurrency] < (amount ?? 0))) return false;
       set(s => {
         if (!s.progress.ownedAbilities) s.progress.ownedAbilities = {};
-        if (s.progress.ownedAbilities[abilityId] || s.progress.divineLight < ability.purchaseCost) return;
-        s.progress.divineLight -= ability.purchaseCost;
+        if (s.progress.ownedAbilities[abilityId]) return;
+        if (Object.entries(materialCost).some(([currency, amount]) => s.progress[currency as GardenRewardCurrency] < (amount ?? 0))) return;
+        for (const [currency, amount] of Object.entries(materialCost) as Array<[GardenRewardCurrency, number]>) {
+          s.progress[currency] -= amount;
+        }
         s.progress.ownedAbilities[abilityId] = true;
         syncEnigmaProgressFromBoard(s, true);
       });
@@ -3695,11 +3718,18 @@ export const useStore = create<Store>()(
       const encounter = dungeon?.encounters[state.gardenDungeon.encounterIndex];
       if (!dungeon || !encounter) return false;
       if (state.gardenDungeon.encounterHp > 0) return false;
-      const dropped = encounter.reward && Math.random() < encounter.reward.chance ? encounter.reward.currency : null;
+      const mainReward = encounter.reward?.currency ?? null;
+      const nextReward = dungeon.encounters[state.gardenDungeon.encounterIndex + 1]?.reward?.currency ?? null;
+      const rewards: Partial<Record<GardenRewardCurrency, number>> = {};
+      if (mainReward) rewards[mainReward] = nextReward ? 3 : 4;
+      if (nextReward) rewards[nextReward] = (rewards[nextReward] ?? 0) + 1;
       set(s => {
-        if (dropped) s.progress[dropped] += 1;
+        for (const [currency, amount] of Object.entries(rewards) as Array<[GardenRewardCurrency, number]>) {
+          s.progress[currency] += amount;
+        }
         s.gardenDungeon.phase = 'victory';
-        s.gardenDungeon.lastReward = dropped;
+        s.gardenDungeon.lastReward = mainReward;
+        s.gardenDungeon.lastRewards = rewards;
       });
       return true;
     },
@@ -3721,6 +3751,7 @@ export const useStore = create<Store>()(
             encounterMaxHp: nextEncounter.maxHp,
             timeRemainingSeconds: 300,
             lastReward: null,
+            lastRewards: {},
           };
           // Reset board and draw fresh opening hand for the next encounter
           for (let i = 0; i < s.board.frontSlots.length; i++) s.board.frontSlots[i] = null;
@@ -4063,6 +4094,29 @@ export const useStore = create<Store>()(
         scaledDivineLightReward = grantPersistentDivineLight(state, divineLightReward);
       });
       return { shards: shardReward, divineLight: scaledDivineLightReward > 0 ? scaledDivineLightReward : undefined };
+    },
+
+    claimAllAchievements: () => {
+      let count = 0;
+      let shards = 0;
+      let divineLight = 0;
+      set(state => {
+        latchUnlockedAchievements(state.progress);
+        state.progress.achievementClaims ??= {};
+        state.progress.achievementUnlocks ??= {};
+        for (const badge of TITLE_BADGES) {
+          if (!isAchievementUnlocked(state.progress, badge.id) || state.progress.achievementClaims[badge.id]) continue;
+          const shardReward = getAchievementShardReward(badge.group);
+          const lightReward = getAchievementDivineLightReward(badge.group);
+          state.progress.achievementUnlocks[badge.id] = true;
+          state.progress.achievementClaims[badge.id] = true;
+          state.progress.aberratedShards += shardReward;
+          shards += shardReward;
+          divineLight += grantPersistentDivineLight(state, lightReward);
+          count += 1;
+        }
+      });
+      return { count, shards, divineLight };
     },
 
     claimCardMastery: (definitionId, tier) => {

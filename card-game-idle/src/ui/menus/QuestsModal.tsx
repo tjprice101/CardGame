@@ -86,7 +86,9 @@ function QuestCard({ quest, cadence, resonanceScore, onClaim }: { quest: QuestIn
       </div>
       <div style={{ position: 'relative', marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <span style={{ fontFamily: uiTypography.display, fontSize: 10, letterSpacing: 1.1, textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999, color: theme.accentSoft, background: theme.chipBg, border: `1px solid ${theme.chipBorder}` }}>
-          {rewardText}{quest.divineLightReward ? ` · ×${collectionPower.toFixed(2)} Collection Power` : ''}
+          {quest.divineLightReward
+            ? `${rewardText} (${quest.divineLightReward.toLocaleString()} base Divine Light × ${collectionPower.toFixed(2)} Collection Power)`
+            : rewardText}
         </span>
         <button onClick={onClaim} disabled={!claimable} style={{
           fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 1.6, textTransform: 'uppercase', padding: '7px 16px', borderRadius: 8, cursor: claimable ? 'pointer' : 'default',

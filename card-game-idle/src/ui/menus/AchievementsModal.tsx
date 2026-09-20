@@ -78,6 +78,7 @@ export default function AchievementsModal({ onClose }: Props) {
   const P = getThemePalette();
   const progress = useStore(selectProgress);
   const claimAchievement = useStore(s => s.claimAchievement);
+  const claimAllAchievements = useStore(s => s.claimAllAchievements);
   const groupColors: Record<string, string> = {
     milestone: warmTheme.accent,
     boss: warmTheme.danger,
@@ -187,6 +188,20 @@ export default function AchievementsModal({ onClose }: Props) {
               </>
             )}
           </div>
+
+          {summary.unlocked > summary.claimed && (
+            <button
+              type="button"
+              onClick={claimAllAchievements}
+              style={{
+                height: 38, padding: '0 16px', borderRadius: 7, cursor: 'pointer',
+                border: `1px solid ${P.borderStrong}`, background: P.accentDeep,
+                color: P.text, fontFamily: uiTypography.display, fontSize: 11, letterSpacing: 0.8,
+              }}
+            >
+              Claim All
+            </button>
+          )}
 
           <button
             onClick={onClose}

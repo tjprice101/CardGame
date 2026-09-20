@@ -137,15 +137,15 @@ const styles: Record<string, React.CSSProperties> = {
   sectionLabel: { fontSize: 10, fontWeight: 'bold', letterSpacing: 2.5, textTransform: 'uppercase' },
   sectionCount: { fontSize: 9, color: 'rgba(205,228,255,0.52)', letterSpacing: 1.2 },
   cardWithMeta: {
-    width: 148,
-    flex: '0 0 148px',
+    width: 128,
+    flex: '0 0 128px',
     display: 'flex',
     flexDirection: 'column',
     gap: 3,
   },
   card: {
-    width: 148, height: 204,
-    flex: '0 0 148px',
+    width: 128, height: 176,
+    flex: '0 0 128px',
     background: 'rgba(4, 8, 18, 0.90)',
     border: '1px solid rgba(72,128,190,0.32)', borderRadius: 12, cursor: 'pointer',
     display: 'flex', flexDirection: 'column', alignItems: 'stretch',
@@ -620,7 +620,7 @@ export default function DeckBuilder({ onClose }: Props) {
   );
   const totalCards = deckList.reduce((sum, e) => sum + e.copies, 0);
   const validation = DeckSystem.validate(deckList);
-  const poolColumns = Math.max(1, Math.floor((cardPoolViewportWidth + 10) / 158));
+  const poolColumns = Math.max(1, Math.floor((cardPoolViewportWidth + 10) / 138));
   const deckPoolRows = useMemo(() => {
     const rows: DeckPoolVirtualRow[] = [];
     const pushCardRows = (entries: CardVariantDisplay[], prefix: string, sectionLabel: string) => {
@@ -1116,7 +1116,7 @@ export default function DeckBuilder({ onClose }: Props) {
             <VirtualizedList
               items={deckPoolRows}
               getItemKey={(row) => row.key}
-              getItemHeight={(row) => row.kind === 'heading' ? 48 : 250}
+              getItemHeight={(row) => row.kind === 'heading' ? 48 : 222}
               topPadding={12}
               bottomPadding={24}
               overscanPx={160}

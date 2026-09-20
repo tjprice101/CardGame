@@ -18,87 +18,24 @@ The live implementation expands that arc into six endgame Causality abilities in
 
 All six use the existing Ability Amplification slots. A saved deck can equip any three owned materialized abilities, regardless of set, but ownership gates remain set-specific.
 
-## Author the First Cause
+## Live Ability Tiers
 
-**Tier:** Foundational  
-**Purchase Cost:** 25,000 Divine Light  
-**Activation Cost:** 4 Limitless Light Stacks  
-**Cooldown:** 35 seconds
+### Foundational
 
-**Rules Text:** Convert 4 Limitless Light Stacks into 3 Limitless Cosmos. If you had no Limitless Cosmos before this ability resolved, gain 1 additional Limitless Cosmos.
+- **Author the First Cause** — 250,000 Divine Light; requires every base Causality card. Spend 4 Limitless Light Stacks to gain 3 Limitless Cosmos, plus 1 more if the Cosmos pool began empty. Cooldown: 35 seconds.
+- **Causal Cartography** — 250,000 Divine Light; requires every base Causality card. Spend 6 Limitless Light Stacks to gain 4 Limitless Cosmos and draw 3 cards. Cooldown: 55 seconds.
 
-**Role:** Engine starter.
+### Eternal
 
-This gives Causality decks a deliberate way to open their Cosmos loop without replacing card-based generation. The empty-pool bonus rewards using it as the first written cause, while later activations settle at the less efficient 4-to-3 conversion rate.
+- **Pearlescent Mandate** — 2,500,000 Divine Light; requires any Causality Eternal card. Spend 6 Limitless Cosmos to reduce active Causality card cooldowns by 2 and gain 12 Limitless Light Stacks. Cooldown: 100 seconds.
+- **Archive of Elsewhen** — 2,500,000 Divine Light; requires any Causality Eternal card. Spend 8 Limitless Cosmos to draw 5 cards and recover one Light, one Dark, and one Ain Soph Aur card from the deck. Cooldown: 150 seconds.
 
-**Guardrails:**
+### Infinite
 
-- Requires at least 4 Limitless Light Stacks.
-- Checks the Cosmos pool before paying or granting resources.
-- The empty-pool bonus applies only when starting from exactly 0 Cosmos.
-- Does not trigger card-play, card-effect, or Cosmos-generation bonuses unless those systems explicitly include ability-generated Cosmos in the future.
+- **Final Cause** — 25,000,000 Divine Light; requires any Causality Infinite card. Consume all Limitless Cosmos, requiring at least 5, to gain 1,500 Divine Light per Cosmos stack and reduce active Causality cooldowns by up to 5. Cooldown: 180 seconds.
+- **Infinite Manuscript** — 25,000,000 Divine Light; requires any Causality Infinite card. Spend 12 Limitless Cosmos to draw 5 cards, refresh active Causality card cooldowns, and gain 75,000 Divine Light. Cooldown: 240 seconds.
 
-**Icon Direction:** A white quill touching the edge of a black event horizon, with four small Light marks collapsing into three violet-white stars.
-
-## Unwritten Margin
-
-**Tier:** Foundational  
-**Purchase Cost:** 25,000 Divine Light  
-**Activation Cost:** 2 Limitless Cosmos  
-**Cooldown:** 60 seconds
-
-**Rules Text:** Spend 2 Limitless Cosmos, then choose 1 Causality card in your hand. The next time that card resolves a Cosmos effect this turn, double Cosmos it generates or reduce Cosmos it consumes by 1, to a minimum cost of 0. The modification is then removed.
-
-**Role:** Precision setup and rule manipulation.
-
-This is the set's signature decision ability. It can enlarge a future generation step or protect the Cosmos reserve during a payoff, but it cannot do both. Choosing the card in advance creates a visible commitment and keeps the effect from becoming a generic global multiplier.
-
-**Guardrails:**
-
-- Can target only a Causality main-deck card currently in hand.
-- The chosen card receives one pending modification, consumed by its first Cosmos-generating or Cosmos-consuming effect.
-- Generated Cosmos is doubled after all printed conditions pass.
-- A reduced cost can reach 0, but the original `cosmos_gte` condition must still be satisfied before the effect resolves.
-- The modification expires at turn end and is lost if the chosen card leaves the hand without being played.
-- Copies with the same definition ID are tracked by card instance, preventing the player from modifying every copy at once.
-
-**Icon Direction:** An open black-and-white manuscript with one glowing line erased from the left page and rewritten as a branching constellation on the right.
-
-## Final Cause
-
-**Tier:** Foundational  
-**Purchase Cost:** 25,000 Divine Light  
-**Activation Cost:** All Limitless Cosmos; requires at least 5  
-**Cooldown:** 120 seconds
-
-**Rules Text:** Consume all Limitless Cosmos. Gain 1,000 base Divine Light for each stack consumed, then reduce every active Causality card cooldown by 1 for every 3 stacks consumed, up to a maximum reduction of 3. Divine Light gained scales with Collection Power. 
-
-**Role:** Cosmos cashout and closing sequence.
-
-Final Cause turns a mature Cosmos reserve into an immediate payout while reopening a limited number of attacks and persistent utilities. Spending the entire pool makes timing consequential: activating early gives a smaller payout and cooldown reduction, while waiting risks ending the turn with unused Cosmos.
-
-**Guardrails:**
-
-- Cannot activate below 5 Limitless Cosmos.
-- Divine Light uses the central grant path and therefore receives Collection Power scaling once, never twice.
-- Cooldown reduction is `min(3, floor(consumed Cosmos / 3))` cards played.
-- Affected actions are limited to active Causality Light attacks, persistent Dark utilities, and Ain Soph Aur Bridge the Light attacks.
-- Cooldowns cannot be reduced below 0.
-- The ability does not refresh itself or reduce real-time Ability Amplification cooldowns.
-
-**Icon Direction:** A radiant manuscript ring collapsing into a black stellar core, with numbered orbit lines snapping backward around three card-shaped fragments.
-
-## Intended Sequence
-
-Example with 8 Limitless Light Stacks and no Cosmos:
-
-1. Activate **Author the First Cause**: spend 4 Light and gain 4 Cosmos because the pool began empty.
-2. Generate at least 3 more Cosmos through Causality cards.
-3. Use **Unwritten Margin** on a planned Cosmos spender, leaving at least 5 Cosmos afterward.
-4. Resolve that card's altered Cosmos effect.
-5. Activate **Final Cause** to consume the remaining pool, gain its scaled Divine Light payout, and reduce active Causality card cooldowns.
-
-The sequence rewards planning without making any ability mandatory: First Cause accelerates entry, Unwritten Margin improves one authored card line, and Final Cause provides a clean exit from the resource loop.
+The Ability Materialization UI derives these tiers from ownership gates, not price thresholds. Divine Light payouts use the central grant path and receive Collection Power scaling exactly once.
 
 ## Runtime Implementation Notes
 
@@ -107,4 +44,4 @@ The sequence rewards planning without making any ability mandatory: First Cause 
 - Divine Light payouts route through the central grant path so Collection Power applies exactly once.
 - Causality ability icons are wired under `public/assets/ability-icons/`.
 - Focused coverage lives in `src/tests/unit/systems/AbilityRuntime.test.ts` and `src/tests/unit/systems/AbilityAssetAudit.test.ts`.
-- The original **Unwritten Margin** card-instance rewrite effect is not the live implementation; **Causal Cartography** is the second base Causality ability instead.
+- The retired **Unwritten Margin** draft is not part of the live registry.

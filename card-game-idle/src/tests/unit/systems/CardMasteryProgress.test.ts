@@ -25,7 +25,7 @@ describe('Card mastery Resonance and Collection Power', () => {
     const progress = progressWithCount(definitionId, 8);
     expect(computeGlobalResonanceScore(progress)).toBe(0);
 
-    progress.cardPlayCounts[definitionId] = 9;
+    progress.cardPlayCounts[definitionId] = 10;
     expect(computeGlobalResonanceScore(progress)).toBe(1);
   });
 
@@ -45,7 +45,7 @@ describe('Card mastery Resonance and Collection Power', () => {
   });
 
   it('keeps the store display multiplier on the canonical scaling formula', () => {
-    const progress = progressWithCount(definitionId, 525);
+    const progress = progressWithCount(definitionId, 125);
     useStore.setState(state => ({ ...state, progress }));
     useStore.getState().refreshComputedStats();
 

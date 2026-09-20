@@ -12,6 +12,7 @@ export default function GardenDungeonHUD() {
 
   const dungeon = GARDEN_DUNGEONS.find(entry => entry.id === dungeonState.dungeonId);
   const encounter = dungeon?.encounters[dungeonState.encounterIndex];
+  const nextReward = dungeon?.encounters[dungeonState.encounterIndex + 1]?.reward?.currency;
   if (!dungeon || !encounter) return null;
   const minutes = Math.floor(dungeonState.timeRemainingSeconds / 60);
   const seconds = Math.floor(dungeonState.timeRemainingSeconds % 60).toString().padStart(2, '0');
@@ -48,7 +49,7 @@ export default function GardenDungeonHUD() {
           {encounter.reward && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '2px 7px', borderRadius: 5, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)' }}>
               <img src={rewardIconUrl(encounter.reward.artAssetKey)} alt="" aria-hidden="true" width={18} height={18} style={{ width: 18, height: 18, objectFit: 'cover', borderRadius: 3 }} />
-              <span style={{ fontSize: 9, color: '#d8f0ff' }}>{GARDEN_REWARD_LABELS[encounter.reward.currency]} ({Math.round(encounter.reward.chance * 100)}%)</span>
+              <span style={{ fontSize: 9, color: '#d8f0ff' }}>+{nextReward ? 3 : 4} {GARDEN_REWARD_LABELS[encounter.reward.currency]}{nextReward ? ` · +1 ${GARDEN_REWARD_LABELS[nextReward]}` : ''}</span>
             </div>
           )}
           <div style={{

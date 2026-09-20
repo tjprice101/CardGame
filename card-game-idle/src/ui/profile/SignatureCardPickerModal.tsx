@@ -94,7 +94,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
     });
   }, [ownedCards, search, rarityFilter, setFilter]);
 
-  const gridColumns = Math.max(1, Math.floor((gridViewportWidth + 10) / 126));
+  const gridColumns = Math.max(1, Math.floor((gridViewportWidth + 10) / 138));
   const virtualRows = useMemo(() => {
     const rows: SignatureCardRow[] = [];
     for (let index = 0; index < filtered.length; index += gridColumns) {
@@ -241,7 +241,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
           <VirtualizedList
             items={virtualRows}
             getItemKey={(row) => row.key}
-            getItemHeight={() => 170}
+            getItemHeight={() => 186}
             topPadding={18}
             bottomPadding={24}
             overscanPx={420}
@@ -257,7 +257,7 @@ export default function SignatureCardPickerModal({ slotIndex, onClose, onPick }:
                       className={getLiveCardShimmerClassName(d, 'normal', 'front')}
                       onClick={() => onPick(d.definitionId)}
                       style={{
-                        width: 116, height: 160,
+                        width: 128, height: 176,
                         ...getLiveCardFaceBackgroundStyle(d, 'normal', 'front'),
                         backgroundColor: warmTheme.surfaceStrong,
                         border: `1px solid ${rarityColor}55`,

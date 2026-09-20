@@ -36,6 +36,7 @@ function withAlpha(color: string, alpha: number): string {
 
 interface Props {
   radioActive: boolean;
+  visible?: boolean;
   paused: boolean;
   currentTrack: RadioTrackInfo | null;
   onPausedChange: (p: boolean) => void;
@@ -115,7 +116,7 @@ function IconRadio() {
   );
 }
 
-export default function RadioControlBar({ radioActive, paused, currentTrack, onPausedChange, onPause, onResume, onSkip, placement = 'menu' }: Props) {
+export default function RadioControlBar({ radioActive, visible = true, paused, currentTrack, onPausedChange, onPause, onResume, onSkip, placement = 'menu' }: Props) {
   useThemeVersion();
   const G = {
     panelTop: withAlpha(warmTheme.surfaceStrong, 0.92),
@@ -147,7 +148,7 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
   }, [onSkip]);
 
   const barStyle: React.CSSProperties = {
-    ...(radioActive ? BAR : BAR_HIDDEN),
+    ...(radioActive && visible ? BAR : BAR_HIDDEN),
     background: `linear-gradient(135deg, ${G.panelTop} 0%, ${G.panelBottom} 100%)`,
     border: `1px solid ${G.border}`,
     boxShadow: `${G.glow}, 0 4px 24px ${withAlpha(warmTheme.shadow, 0.75)}, inset 0 1px 0 ${withAlpha(G.accentSoft, 0.18)}`,
@@ -160,7 +161,7 @@ export default function RadioControlBar({ radioActive, paused, currentTrack, onP
   };
 
   return (
-    <div className={radioActive ? 'radio-toast-enter' : 'radio-toast-exit'} style={barStyle} aria-hidden={!radioActive}>
+    <div className={radioActive && visible ? 'radio-toast-enter' : 'radio-toast-exit'} style={barStyle} aria-hidden={!radioActive || !visible}>
       <div style={{
         position: 'absolute',
         left: 10,

@@ -66,6 +66,10 @@ const completedCausalityEnigmas = (p: ProgressState): number => [
   'causality-unwritten-law',
 ].filter(id => p.enigmas?.instances[id]?.status === 'completed').length;
 
+const totalGardenMaterials = (p: ProgressState): number =>
+  (p.nullifiedLattice ?? 0) + (p.nullSearedLight ?? 0) + (p.nullifiedOblivionMatter ?? 0)
+  + (p.seedOfCausality ?? 0) + (p.causalBloom ?? 0) + (p.shatteredCausalTranscript ?? 0) + (p.heartOfCausality ?? 0);
+
 // ── Static milestone titles ────────────────────────────────────────────────
 // All display text is title-cased and reads cleanly standalone under the
 // player's name (e.g. "Wanderer · The Newborn").
@@ -589,33 +593,33 @@ const MILESTONE_TITLES: TitleBadgeDefinition[] = [
     isUnlocked: (p) => socialCount(p, 'coopBossInvitesAccepted') >= 3,
     group: 'milestone',
   },
-  // ── Silly milestones ────────────────────────────────────────────────────
+  // ── Garden and ability progression ──────────────────────────────────────
   {
-    id: 'title-chaos-pigeon',
-    text: 'Chaos Pigeon',
-    description: 'Send 3 friend requests.',
-    isUnlocked: (p) => socialCount(p, 'friendRequestsSent') >= 3,
+    id: 'title-garden-initiate',
+    text: 'Garden Initiate',
+    description: 'Recover your first Garden material bundle.',
+    isUnlocked: (p) => totalGardenMaterials(p) >= 3,
     group: 'milestone',
   },
   {
-    id: 'title-loot-goblin',
-    text: 'Loot Goblin Supreme',
-    description: 'Open 30 total packs/boxes/cases.',
-    isUnlocked: (p) => (p.packOpenHistory ?? []).length >= 30,
+    id: 'title-garden-provisioner',
+    text: 'Garden Provisioner',
+    description: 'Hold 100 Garden materials across both expeditions.',
+    isUnlocked: (p) => totalGardenMaterials(p) >= 100,
     group: 'milestone',
   },
   {
-    id: 'title-midnight-deck-gremlin',
-    text: 'Midnight Deck Gremlin',
-    description: 'Save at least 12 decks.',
-    isUnlocked: (p) => p.savedDecks.length >= 12,
+    id: 'title-first-materialization',
+    text: 'First Materialization',
+    description: 'Materialize your first ability with Garden materials.',
+    isUnlocked: (p) => Object.values(p.ownedAbilities ?? {}).filter(Boolean).length >= 1,
     group: 'milestone',
   },
   {
-    id: 'title-signature-showoff',
-    text: 'Signature Showoff',
-    description: 'Fill all 5 Signature Card slots.',
-    isUnlocked: (p) => (p.profile.signatureCardIds?.filter(Boolean).length ?? 0) >= 5,
+    id: 'title-ability-arsenal',
+    text: 'Keeper of the Arsenal',
+    description: 'Materialize 6 abilities.',
+    isUnlocked: (p) => Object.values(p.ownedAbilities ?? {}).filter(Boolean).length >= 6,
     group: 'milestone',
   },
   {

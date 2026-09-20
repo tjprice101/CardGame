@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
-import { ABILITY_REGISTRY } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_REGISTRY, getAbilityTier } from '@/data/abilities/abilityDefinitions';
 import type { GameState } from '@/types/game';
 
 function resetStore(): void {
@@ -23,6 +23,15 @@ function equip(abilityId: string): void {
 }
 
 describe('materialized ability runtime', () => {
+  it('classifies Causality ability tiers from ownership gates', () => {
+    expect(getAbilityTier(ABILITY_REGISTRY.get('causality-author-first-cause')!)).toBe('foundational');
+    expect(getAbilityTier(ABILITY_REGISTRY.get('causality-causal-cartography')!)).toBe('foundational');
+    expect(getAbilityTier(ABILITY_REGISTRY.get('causality-pearlescent-mandate')!)).toBe('eternal');
+    expect(getAbilityTier(ABILITY_REGISTRY.get('causality-archive-elsewhen')!)).toBe('eternal');
+    expect(getAbilityTier(ABILITY_REGISTRY.get('causality-final-cause')!)).toBe('infinite');
+    expect(getAbilityTier(ABILITY_REGISTRY.get('causality-infinite-manuscript')!)).toBe('infinite');
+  });
+
   it('requires the complete base Causality collection and escalates Eternal/Infinite gates', () => {
     resetStore();
     useStore.setState(state => ({ ...state, progress: { ...state.progress, divineLight: 75_000_000 } }));

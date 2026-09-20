@@ -17,6 +17,8 @@ Default card presentation is art plus top name/type ribbon plus bottom rules/eff
 
 Live turn surfaces must use the live helpers so hand, board, Battleground, pile inspectors, and pending choices share one composed artwork and rarity treatment. Standard holo, Eternal, Infinite, Enigmatic, and Transcendent cards use one lightweight transform-only shimmer during play; do not restore per-card filter/background-position animation stacks.
 
+Every menu that browses cards must preserve the complete card aspect ratio, artwork, name ribbon, and rules panel. Shrink cards or split crowded workflows into dedicated submenus before allowing clipping, squashing, or overflow. The surrounding menu adapts to cards; cards do not deform to rescue the menu layout.
+
 Face-down Soph cards render only the canonical card backing plus state badges such as charge. They do not render the front-face name ribbon, effect panel, rarity overlay, or shimmer. Avoid raw `<img>` overlays that create a second artwork layer or sit above foil effects.
 
 ## Turn HUD And Main Menu

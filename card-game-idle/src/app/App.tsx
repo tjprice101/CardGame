@@ -210,6 +210,8 @@ export default function App() {
   const [turnRadioActive, setTurnRadioActive] = useState(false);
   const [turnRadioCurrentTrack, setTurnRadioCurrentTrack] = useState<import('@/audio/MainTurnRadio').RadioTrackInfo | null>(null);
   const [hideRadioUi, setHideRadioUi] = useState(false);
+  const [radioUiAutoHidden, setRadioUiAutoHidden] = useState(false);
+  const radioUiHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const partyOverlayHidden = usePartyStore(s => s.overlayHidden);
   const partyHubOpen = usePartyStore(s => s.hubOpen);
   const partyActiveId = usePartyStore(s => s.activePartyId);
@@ -720,6 +722,7 @@ export default function App() {
 
       // Global radio-UI toggle (default R): show/hide radio widgets without stopping playback.
       if (e.code === controls.toggleRadioUi && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        setRadioUiAutoHidden(false);
         setHideRadioUi(v => !v);
         e.preventDefault();
         return;
@@ -807,6 +810,23 @@ export default function App() {
   const bossResultVisible = bossFight.kind !== 'null_raid' && (bossFight.mode === 'victory' || bossFight.mode === 'defeat');
   const gardenResultVisible = gardenDungeon.phase === 'victory' || gardenDungeon.phase === 'defeat';
   const isMenuOpen = showDeckBuilder || showCardStore || showDeckViewer || showSettings || showTutorial || showEternitysWake || showInfinitude || showPlayerInfo || showQuests || showAchievements || showMastery || showEnigma || showCausalityEvent || showBattleground || showGardenOfCards || showAscension || bossResultVisible || gardenResultVisible;
+  const radioScreenVisible = (scene === 'menu' && !isMenuOpen && radioActive)
+    || (scene === 'arena' && !inBossFight && !isMenuOpen && turnRadioActive);
+
+  useEffect(() => {
+    if (radioUiHideTimerRef.current) clearTimeout(radioUiHideTimerRef.current);
+    if (!radioScreenVisible) {
+      setRadioUiAutoHidden(false);
+      return;
+    }
+    setRadioUiAutoHidden(false);
+    radioUiHideTimerRef.current = setTimeout(() => setRadioUiAutoHidden(true), 4_000);
+    return () => {
+      if (radioUiHideTimerRef.current) clearTimeout(radioUiHideTimerRef.current);
+    };
+  }, [radioScreenVisible]);
+
+  const radioUiVisible = !hideRadioUi && !radioUiAutoHidden;
 
   // When a combat session starts (including co-op launches), force-close
   // open overlays so both clients transition into the arena immediately.
@@ -1218,11 +1238,12 @@ export default function App() {
       {/* Main menu radio — now-playing toast and control bar (home menu only, hidden when any submenu is open) */}
       {scene === 'menu' && !isMenuOpen && !hideRadioUi && (
         <>
-          <Suspense fallback={null}><RadioNowPlaying nowPlaying={nowPlayingEvent} /></Suspense>
+          <Suspense fallback={null}><RadioNowPlaying nowPlaying={nowPlayingEvent} visible={radioUiVisible} /></Suspense>
           <Suspense fallback={null}>
             <RadioControlBar
               placement="menu"
               radioActive={radioActive}
+              visible={radioUiVisible}
               paused={radioPaused}
               currentTrack={radioCurrentTrack}
               onPausedChange={setRadioPaused}
@@ -1236,11 +1257,12 @@ export default function App() {
       {/* Main turn radio — now-playing toast and control bar (arena, non-boss fights only) */}
       {scene === 'arena' && !inBossFight && !isMenuOpen && !hideRadioUi && (
         <>
-          <Suspense fallback={null}><RadioNowPlaying nowPlaying={turnNowPlayingEvent} /></Suspense>
+          <Suspense fallback={null}><RadioNowPlaying nowPlaying={turnNowPlayingEvent} visible={radioUiVisible} /></Suspense>
           <Suspense fallback={null}>
             <RadioControlBar
               placement="arena"
               radioActive={turnRadioActive}
+              visible={radioUiVisible}
               paused={turnRadioPaused}
               currentTrack={turnRadioCurrentTrack}
               onPausedChange={setTurnRadioPaused}

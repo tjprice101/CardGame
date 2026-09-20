@@ -2,7 +2,7 @@
 
 Garden of Cards is set-filtered. Valley of Null, Nullified Lattice, Null-seared Light, and Nullified Oblivion-matter belong to Neutrality. Rift of Causality, Seed of Causality, Causal Bloom, Shattered Causal Transcript, and Heart of Causality belong to Causality. These material economies are not interchangeable.
 
-Ability Materialization contains Neutrality and Causality set filters. Decks still equip only three abilities total. Neutrality has seven abilities with Eternal and Infinite ownership gates. Causality has six endgame abilities: two require every base Causality card, two require any Causality Eternal card, and two require any Causality Infinite card.
+Ability Materialization contains Neutrality and Causality set filters. Decks still equip only three abilities total. Neutrality has seven abilities with Eternal and Infinite ownership gates. Causality has six gate-defined abilities: Author the First Cause and Causal Cartography are Foundational; Pearlescent Mandate and Archive of Elsewhen are Eternal; Final Cause and Infinite Manuscript are Infinite.
 
 # Progression And Challenges
 
@@ -17,6 +17,8 @@ Starter accounts, new saves, and wiped saves start with zero currency balances: 
 ## Collection Power
 
 Collection Power comes from card mastery and is computed with `computeGlobalResonanceScore(progress)`. It scales Divine Light grants through the central grant path:
+
+Card-born Tier thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
 
 ```text
 maximum resonance = registered card count * highest-tier resonance contribution

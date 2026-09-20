@@ -45,7 +45,8 @@ This iteration focused on state consistency, usability, and math correctness aro
 - Midjourney vocabulary rule: do not rely on invented terms such as Ain, Soph, Ain Soph Aur, Light, or Dark as visual instructions. Translate them to real-world equivalents such as winged celestial guardian, face-down charged sigil, radiant ivory energy, and obsidian cosmic force. Use game terms only as labels, filenames, or minimal context.
 - Weekly challenges can be consumed into two Super Weeklies after all four weekly rewards are claimed. Each targets a deterministic Eternity's Wake boss and grants extra rewards on victory.
 - Daily login rewards use a persistent monthly calendar with catch-up claims; missed days do not reset progress. Rewards include shards, base cards, holofoil cards, and Card-light for owned cards.
-- Card-born thresholds are reduced by 65%: 9, 26, 140, 525, 1,050, 2,100, 5,250, and 10,500 Card-light.
+- Card-born thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
+- Causality ability tiers are gate-defined: Author the First Cause and Causal Cartography are Foundational; Pearlescent Mandate and Archive of Elsewhen are Eternal; Final Cause and Infinite Manuscript are Infinite. Never infer Causality tiers from their much larger purchase prices.
 - The turn HUD stacks Board and Card-born Stacks in one left-side rail. The main menu is a responsive Command Deck organized into Play, Collection, and Progress, with one contextual artwork banner and a reduced set of visible actions.
 - Enigma tracking is lock-on driven: the player selects one unlocked manuscript in `EnigmaModal`, and only that selected Enigma advances. The authored scope is exact: “in one turn,” “at once,” and “at end of turn” are turn/board-bound checks, while cumulative goals use persisted `progressCounters` and show live progress trackers. Do not complete steps from lifetime counters, generic board presence, or stale snapshots.
 - `Amplifier of the Void` is a persistent free Enigmatic Dark utility that draws 2, grants 3 Limitless Light Stacks, and grants 1,500 Divine Light when the post-activation pool reaches 5 stacks.
@@ -97,6 +98,7 @@ Do not add Seraphim, Cherubim, Ophanim, Angel, sequence, or old Patience-system 
 - Hover details belong in the right-rail Card Inspector, not floating over the board or hand.
 - Pack opening starts face-down and waits for individual card clicks, Reveal All/Reveal Best, or Instant. It must never auto-reveal on a timer.
 - Card art should use the shared card-face style: art background plus top ribbon and bottom rules panel. Respect `settings.cardArtDisplay` everywhere a card face is shown.
+- Card-browser menus must display complete, proportional card faces. If the available panel cannot fit them, shrink the cards or split the workflow into submenus; never crop or squash the card face, artwork, name ribbon, or rules panel to preserve a surrounding layout.
 - Face-down cards are the exception: show only the canonical card backing and state badges. Do not render front-face ribbons or rules panels on a back face.
 
 ## Effects And Actions

@@ -7,7 +7,6 @@ export interface GardenEncounterDefinition {
   readonly maxHp: number;
   readonly reward?: {
     readonly currency: GardenRewardCurrency;
-    readonly chance: number;
     readonly artAssetKey: string;
   };
 }
@@ -32,4 +31,5 @@ export interface GardenDungeonState {
   timeRemainingSeconds: number;
   runCount: number;
   lastReward: GardenRewardCurrency | null;
+  lastRewards?: Partial<Record<GardenRewardCurrency, number>>;
 }

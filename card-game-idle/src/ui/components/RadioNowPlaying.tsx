@@ -17,12 +17,13 @@ export interface NowPlayingEvent {
 
 interface Props {
   nowPlaying: NowPlayingEvent | null;
+  visible?: boolean;
 }
 
 const HOLD_MS = 5200;
 const EXIT_MS = 400;
 
-export default function RadioNowPlaying({ nowPlaying }: Props) {
+export default function RadioNowPlaying({ nowPlaying, visible = true }: Props) {
   useThemeVersion();
   const G = {
     iceBlue: warmTheme.accent,
@@ -48,6 +49,12 @@ export default function RadioNowPlaying({ nowPlaying }: Props) {
     if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
     if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
 
+    if (!visible) {
+      setPhase('exit');
+      exitTimerRef.current = setTimeout(() => setPhase('hidden'), EXIT_MS);
+      return;
+    }
+
     setDisplayTrack(nowPlaying.track);
     setPhase('enter');
 
@@ -60,7 +67,7 @@ export default function RadioNowPlaying({ nowPlaying }: Props) {
       if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
       if (exitTimerRef.current) clearTimeout(exitTimerRef.current);
     };
-  }, [nowPlaying?.epoch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [nowPlaying?.epoch, visible]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (phase === 'hidden' || !displayTrack) return null;
 

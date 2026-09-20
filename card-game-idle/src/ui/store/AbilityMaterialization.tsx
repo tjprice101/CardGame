@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { ABILITY_DEFINITIONS, meetsAbilityOwnershipGate, type AbilityDefinition } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_DEFINITIONS, getAbilityMaterialCost, getAbilityTier, meetsAbilityOwnershipGate, type AbilityDefinition } from '@/data/abilities/abilityDefinitions';
+import { GARDEN_REWARD_LABELS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { useStore } from '@/state/store';
 import { uiTypography } from '@/ui/theme';
 
@@ -11,12 +12,6 @@ type TierFilter = 'all' | 'foundational' | 'eternal' | 'infinite';
 type TypeFilter = 'all' | 'buff' | 'instant' | 'summon' | 'utility';
 type OwnershipFilter = 'all' | 'unowned' | 'owned';
 type SortOption = 'cost-asc' | 'cost-desc' | 'name-asc' | 'tier';
-
-function getAbilityTier(ability: AbilityDefinition): 'foundational' | 'eternal' | 'infinite' {
-  if (ability.ownershipGate === 'anyNeutralityInfinite' || ability.purchaseCost >= 400_000) return 'infinite';
-  if (ability.ownershipGate === 'anyNeutralityEternal' || ability.purchaseCost >= 90_000) return 'eternal';
-  return 'foundational';
-}
 
 function getAbilityType(ability: AbilityDefinition): 'buff' | 'instant' | 'summon' | 'utility' {
   if (ability.buff) return 'buff';
@@ -35,10 +30,10 @@ function getGateRequirementLabel(gate?: AbilityDefinition['ownershipGate']): str
 }
 
 export default function AbilityMaterialization() {
-  const divineLight = useStore(state => state.progress.divineLight);
-  const ownedAbilities = useStore(state => state.progress.ownedAbilities ?? EMPTY_OWNED_ABILITIES);
-  const collection = useStore(state => state.progress.collection);
-  const infiniteCollection = useStore(state => state.progress.infiniteCollection);
+  const progress = useStore(state => state.progress);
+  const ownedAbilities = progress.ownedAbilities ?? EMPTY_OWNED_ABILITIES;
+  const collection = progress.collection;
+  const infiniteCollection = progress.infiniteCollection;
   const purchaseAbility = useStore(state => state.purchaseAbility);
 
   const [selectedSet, setSelectedSet] = useState<SetFilter>('Neutrality');
@@ -76,8 +71,9 @@ export default function AbilityMaterialization() {
 
       return true;
     }).sort((a, b) => {
-      if (sortBy === 'cost-asc') return a.purchaseCost - b.purchaseCost;
-      if (sortBy === 'cost-desc') return b.purchaseCost - a.purchaseCost;
+      const totalCost = (ability: AbilityDefinition) => Object.values(getAbilityMaterialCost(ability)).reduce((sum, amount) => sum + (amount ?? 0), 0);
+      if (sortBy === 'cost-asc') return totalCost(a) - totalCost(b);
+      if (sortBy === 'cost-desc') return totalCost(b) - totalCost(a);
       if (sortBy === 'name-asc') return a.name.localeCompare(b.name);
       if (sortBy === 'tier') {
         const tierRank = { foundational: 1, eternal: 2, infinite: 3 };
@@ -95,7 +91,7 @@ export default function AbilityMaterialization() {
             <div style={{ color: '#d5a4ff', fontFamily: uiTypography.display, fontSize: 9, letterSpacing: 3, textTransform: 'uppercase', marginBottom: 5 }}>THE AMPLIFICATION ARCHIVE</div>
             <div style={{ fontFamily: uiTypography.display, fontSize: 28, color: '#fff0d1', letterSpacing: 1.5, textShadow: '0 0 24px rgba(213,164,255,0.35)' }}>Ability Materialization</div>
             <div style={{ marginTop: 4, color: 'rgba(200,223,242,0.7)', fontSize: 12, lineHeight: 1.5 }}>
-              Materialize universal abilities with Divine Light. Purchase costs scale from foundational to endgame; equipped abilities are universal across all decks.
+              Materialize universal abilities with Garden materials from their associated set. Higher tiers require progressively rarer materials.
             </div>
           </div>
         </div>
@@ -135,9 +131,9 @@ export default function AbilityMaterialization() {
               <span style={{ fontSize: 10, color: 'rgba(200,223,242,0.6)', letterSpacing: 1, textTransform: 'uppercase', marginRight: 4 }}>Tier:</span>
               {[
                 { id: 'all', label: 'All Tiers' },
-                { id: 'foundational', label: 'Foundational (25k)' },
-                { id: 'eternal', label: 'Eternal Tier (97k)' },
-                { id: 'infinite', label: 'Infinite Tier (450k)' },
+                { id: 'foundational', label: 'Foundational' },
+                { id: 'eternal', label: 'Eternal Tier' },
+                { id: 'infinite', label: 'Infinite Tier' },
               ].map(tier => (
                 <button
                   key={tier.id}
@@ -263,7 +259,8 @@ export default function AbilityMaterialization() {
         <div style={{ marginTop: 18, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 14 }}>
           {filteredAbilities.map(ability => {
             const owned = ownedAbilities[ability.id] === true;
-            const affordable = divineLight >= ability.purchaseCost;
+            const materialCost = Object.entries(getAbilityMaterialCost(ability));
+            const affordable = materialCost.every(([currency, amount]) => progress[currency as keyof typeof GARDEN_REWARD_LABELS] >= (amount ?? 0));
             const gateMet = meetsAbilityOwnershipGate(ability, collection, infiniteCollection);
             const gateLabel = getGateRequirementLabel(ability.ownershipGate);
             const tier = getAbilityTier(ability);
@@ -340,8 +337,8 @@ export default function AbilityMaterialization() {
 
                 {/* Purchase footer */}
                 <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingTop: 10, borderTop: '1px solid rgba(110,185,240,0.14)' }}>
-                  <span style={{ color: '#f7c04a', fontSize: 11, fontWeight: 600 }}>
-                    {ability.purchaseCost.toLocaleString()} DL
+                  <span style={{ color: '#f7c04a', fontSize: 10, fontWeight: 600, lineHeight: 1.45 }}>
+                    {materialCost.map(([currency, amount]) => `${amount} ${GARDEN_REWARD_LABELS[currency as keyof typeof GARDEN_REWARD_LABELS]}`).join(' · ')}
                   </span>
                   <button
                     type="button"

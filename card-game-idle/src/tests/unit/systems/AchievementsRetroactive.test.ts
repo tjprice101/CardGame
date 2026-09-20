@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { defaultGameState } from '@/state/store';
+import { defaultGameState, useStore } from '@/state/store';
+import type { GameState } from '@/types/game';
 import {
   isAchievementUnlocked,
   listAchievements,
@@ -46,5 +47,18 @@ describe('achievements retroactive unlocking', () => {
     progress.collection['inf-oblivion-absolute'] = 1;
 
     expect(isAchievementUnlocked(progress, 'title-first-infinite')).toBe(false);
+  });
+
+  it('claims every unlocked reward in one atomic action', () => {
+    const base = structuredClone(defaultGameState) as GameState;
+    base.progress.totalCardsPlayed = 50;
+    useStore.setState(state => ({ ...state, ...base }));
+
+    const result = useStore.getState().claimAllAchievements();
+    expect(result.count).toBeGreaterThanOrEqual(3);
+    expect(result.shards).toBeGreaterThan(0);
+    expect(result.divineLight).toBeGreaterThan(0);
+    expect(summarizeAchievements(useStore.getState().progress).claimed).toBe(result.count);
+    expect(useStore.getState().claimAllAchievements().count).toBe(0);
   });
 });

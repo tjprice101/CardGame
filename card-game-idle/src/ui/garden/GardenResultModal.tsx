@@ -30,8 +30,8 @@ export default function GardenResultModal() {
   const dungeon = GARDEN_DUNGEONS.find(d => d.id === gardenDungeon.dungeonId);
   const encounter = dungeon?.encounters[gardenDungeon.encounterIndex];
   const isFinalEncounter = dungeon ? gardenDungeon.encounterIndex >= dungeon.encounters.length - 1 : false;
-  const rewardKey = gardenDungeon.lastReward;
-  const rewardLabel = rewardKey ? GARDEN_REWARD_LABELS[rewardKey] : null;
+  const rewards = Object.entries(gardenDungeon.lastRewards ?? {})
+    .filter((entry): entry is [keyof typeof GARDEN_REWARD_LABELS, number] => entry[1] > 0);
 
   return (
     <div
@@ -150,34 +150,44 @@ export default function GardenResultModal() {
             <div style={{ fontSize: 10, letterSpacing: 2, textTransform: 'uppercase', color: 'rgba(255,255,255,0.5)' }}>
               Encounter Reward
             </div>
-            {rewardLabel && rewardKey && encounter?.reward ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <img
-                  src={rewardIconUrl(encounter.reward.artAssetKey)}
-                  alt={rewardLabel}
-                  width={40}
-                  height={40}
-                  style={{
-                    width: 40,
-                    height: 40,
-                    objectFit: 'cover',
-                    borderRadius: 8,
-                    border: '1px solid rgba(255,255,255,0.4)',
-                    boxShadow: '0 0 14px rgba(255,255,255,0.3)',
-                  }}
-                />
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 14 }}>
-                    +1 {rewardLabel}
-                  </div>
-                  <div style={{ color: 'rgba(238,244,255,0.55)', fontSize: 11 }}>
-                    Total Owned: {progress[rewardKey] ?? 0}
-                  </div>
-                </div>
+            {rewards.length > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 18 }}>
+                {rewards.map(([rewardKey, amount]) => {
+                  const rewardLabel = GARDEN_REWARD_LABELS[rewardKey];
+                  const rewardDefinition = dungeon?.encounters.find(item => item.reward?.currency === rewardKey)?.reward;
+                  return (
+                    <div key={rewardKey} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      {rewardDefinition && (
+                        <img
+                          src={rewardIconUrl(rewardDefinition.artAssetKey)}
+                          alt={rewardLabel}
+                          width={40}
+                          height={40}
+                          style={{
+                            width: 40,
+                            height: 40,
+                            objectFit: 'cover',
+                            borderRadius: 8,
+                            border: '1px solid rgba(255,255,255,0.4)',
+                            boxShadow: '0 0 14px rgba(255,255,255,0.3)',
+                          }}
+                        />
+                      )}
+                      <div style={{ textAlign: 'left' }}>
+                        <div style={{ color: '#ffffff', fontWeight: 700, fontSize: 14 }}>
+                          +{amount} {rewardLabel}
+                        </div>
+                        <div style={{ color: 'rgba(238,244,255,0.55)', fontSize: 11 }}>
+                          Total Owned: {progress[rewardKey] ?? 0}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div style={{ color: 'rgba(238,244,255,0.5)', fontSize: 12 }}>
-                No material dropped this encounter.
+                No material reward is configured for this encounter.
               </div>
             )}
           </div>

@@ -1,4 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { ABILITY_REGISTRY, getAbilityMaterialCost } from '@/data/abilities/abilityDefinitions';
 import { GARDEN_DUNGEONS } from '@/data/dungeons/gardenDungeonDefinitions';
 import { INFINITE_RECIPES } from '@/data/cards/infiniteCards';
 import { defaultGameState, useStore } from '@/state/store';
@@ -17,10 +18,9 @@ describe('Garden of Cards dungeon runtime', () => {
     expect(getLinearEncounterHp(1, 1, 3, 10_000, 5_000)).toBe(20_000);
   });
 
-  it('completes Valley of Null encounters repeatedly and grants configured drops with victory popups', () => {
+  it('grants three current and one next material per encounter, then four on the final encounter', () => {
     resetStore();
     const dungeon = GARDEN_DUNGEONS[0];
-    vi.spyOn(Math, 'random').mockReturnValue(0);
 
     expect(useStore.getState().startGardenDungeon(dungeon.id)).toBe(true);
     for (let index = 0; index < dungeon.encounters.length; index += 1) {
@@ -30,6 +30,12 @@ describe('Garden of Cards dungeon runtime', () => {
       }));
       expect(useStore.getState().resolveGardenEncounter()).toBe(true);
       expect(useStore.getState().gardenDungeon.phase).toBe('victory');
+      if (index < dungeon.encounters.length - 1) {
+        expect(useStore.getState().gardenDungeon.lastRewards).toEqual({
+          [dungeon.encounters[index].reward!.currency]: 3,
+          [dungeon.encounters[index + 1].reward!.currency]: 1,
+        });
+      }
       expect(useStore.getState().continueGardenDungeon()).toBe(true);
       if (index < dungeon.encounters.length - 1) {
         expect(useStore.getState().gardenDungeon.phase).toBe('active');
@@ -38,14 +44,35 @@ describe('Garden of Cards dungeon runtime', () => {
     }
     const firstRun = useStore.getState();
     expect(firstRun.gardenDungeon.phase).toBe('complete');
-    expect(firstRun.progress.nullifiedLattice).toBe(1);
-    expect(firstRun.progress.nullSearedLight).toBe(1);
-    expect(firstRun.progress.nullifiedOblivionMatter).toBe(1);
+    expect(firstRun.progress.nullifiedLattice).toBe(3);
+    expect(firstRun.progress.nullSearedLight).toBe(4);
+    expect(firstRun.progress.nullifiedOblivionMatter).toBe(5);
+    expect(firstRun.gardenDungeon.lastRewards).toEqual({ nullifiedOblivionMatter: 4 });
     expect(firstRun.gardenDungeon.runCount).toBe(1);
 
     expect(useStore.getState().startGardenDungeon(dungeon.id)).toBe(true);
     expect(useStore.getState().gardenDungeon.runCount).toBe(2);
-    vi.restoreAllMocks();
+  });
+
+  it('purchases abilities atomically with Garden materials and no Divine Light', () => {
+    resetStore();
+    const ability = ABILITY_REGISTRY.get('neutralizing-inferno')!;
+    const materialCost = getAbilityMaterialCost(ability);
+    useStore.setState(state => ({
+      ...state,
+      progress: {
+        ...state.progress,
+        divineLight: 123_456,
+        nullifiedLattice: materialCost.nullifiedLattice ?? 0,
+        nullSearedLight: materialCost.nullSearedLight ?? 0,
+      },
+    }));
+
+    expect(useStore.getState().purchaseAbility(ability.id)).toBe(true);
+    expect(useStore.getState().progress.divineLight).toBe(123_456);
+    expect(useStore.getState().progress.nullifiedLattice).toBe(0);
+    expect(useStore.getState().progress.nullSearedLight).toBe(0);
+    expect(useStore.getState().progress.ownedAbilities?.[ability.id]).toBe(true);
   });
 
   it('triggers defeat phase after timeout without removing previously earned materials', () => {

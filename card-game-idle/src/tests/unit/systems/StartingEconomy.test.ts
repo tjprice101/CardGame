@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { defaultGameState, useStore } from '@/state/store';
 import type { GameState, ProgressState } from '@/types/game';
-import { ABILITY_DEFINITIONS } from '@/data/abilities/abilityDefinitions';
+import { ABILITY_DEFINITIONS, getAbilityMaterialCost } from '@/data/abilities/abilityDefinitions';
 import { lightCards } from '@/data/cards/lightCards';
 
 const currencyFields = [
@@ -64,7 +64,7 @@ describe('starting economy', () => {
       ...state,
       progress: {
         ...state.progress,
-        cardPlayCounts: { [definitionId]: 1_500 },
+        cardPlayCounts: { [definitionId]: 250 },
         divineLight: 0,
         lifetimeDivineLight: 0,
       },
@@ -83,7 +83,7 @@ describe('starting economy', () => {
       ...state,
       progress: {
         ...state.progress,
-        cardPlayCounts: { [definitionId]: 1_500 },
+        cardPlayCounts: { [definitionId]: 250 },
         divineLight: 0,
         lifetimeDivineLight: 0,
         quests: {
@@ -101,22 +101,26 @@ describe('starting economy', () => {
     expect(useStore.getState().progress.lifetimeDivineLight).toBe(104);
   });
 
-  it('materializes each ability once for its exact Divine Light cost', () => {
+  it('materializes each ability once for its exact Garden material cost', () => {
     resetStore();
     const ability = ABILITY_DEFINITIONS[0];
+    const materialCost = getAbilityMaterialCost(ability);
     useStore.setState(state => ({
       ...state,
-      progress: { ...state.progress, divineLight: ability.purchaseCost + 250 },
+      progress: { ...state.progress, divineLight: 250, ...materialCost },
     }));
 
     expect(useStore.getState().purchaseAbility(ability.id)).toBe(true);
     expect(useStore.getState().progress.divineLight).toBe(250);
+    for (const currency of Object.keys(materialCost)) {
+      expect(useStore.getState().progress[currency as keyof ProgressState]).toBe(0);
+    }
     expect(useStore.getState().progress.ownedAbilities?.[ability.id]).toBe(true);
     expect(useStore.getState().purchaseAbility(ability.id)).toBe(false);
     expect(useStore.getState().progress.divineLight).toBe(250);
   });
 
-  it('rejects ability materialization when Divine Light is insufficient', () => {
+  it('rejects ability materialization when Garden materials are insufficient', () => {
     resetStore();
     const ability = ABILITY_DEFINITIONS[0];
     expect(useStore.getState().purchaseAbility(ability.id)).toBe(false);

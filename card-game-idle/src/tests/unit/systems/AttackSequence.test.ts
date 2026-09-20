@@ -64,6 +64,43 @@ describe('attack orbit sequences', () => {
     expect(useStore.getState().board.backSlots[0]?.attackCooldowns[definition.ainAttack.id]).toBe(definition.ainAttack.cooldownCards);
   });
 
+  it('pauses wall-clock ability cooldowns and buffs for the full attack sequence', () => {
+    const base = structuredClone(defaultGameState) as GameState;
+    const definition = lightCards[0];
+    const instanceId = 'attack-sequence-timer-pause';
+    base.turn.phase = 'playing';
+    base.board.backSlots[0] = {
+      instanceId, definitionId: definition.definitionId, type: 'Light', rarity: definition.rarity,
+      finish: 'normal', side: 'ain', faceState: 'front', limitlessCharge: 0, attackCooldowns: {}, backSlot: 0,
+    };
+    useStore.setState(state => ({ ...state, ...base }));
+
+    useStore.getState().activateLightAinAttack(instanceId);
+    const priming = useStore.getState().turn.attackSequence!;
+    const originalDeadline = priming.pauseStartedAt + 60_000;
+    useStore.setState(state => ({
+      ...state,
+      turn: {
+        ...state.turn,
+        abilityCooldownUntil: { test: originalDeadline },
+        divineFieldUntil: originalDeadline,
+        whiteoutDomainUntil: originalDeadline,
+      },
+    }));
+
+    useStore.getState().tickAttackSequence(priming.phaseEndsAt + 1);
+    const active = useStore.getState().turn.attackSequence!;
+    useStore.getState().tickAttackSequence(active.phaseEndsAt + 1);
+    const result = useStore.getState().turn.attackSequence!;
+    const resumedAt = result.phaseEndsAt + 1;
+    useStore.getState().tickAttackSequence(resumedAt);
+
+    const pausedFor = resumedAt - priming.pauseStartedAt;
+    expect(useStore.getState().turn.abilityCooldownUntil?.test).toBe(originalDeadline + pausedFor);
+    expect(useStore.getState().turn.divineFieldUntil).toBe(originalDeadline + pausedFor);
+    expect(useStore.getState().turn.whiteoutDomainUntil).toBe(originalDeadline + pausedFor);
+  });
+
   it('tracks cursor orbit power without a hard cap', () => {
     const base = structuredClone(defaultGameState) as GameState;
     const definition = lightCards[0];

@@ -165,6 +165,7 @@ export interface AttackSequenceState {
   kind: AttackSequenceKind;
   phase: AttackSequencePhase;
   phaseEndsAt: number;
+  pauseStartedAt: number;
   cardInstanceId: string;
   cardDefinitionId: string;
   cardFinish: CardFinish;
@@ -192,6 +193,7 @@ export interface ShatterInfiniteLightState {
   phase: ShatterInfiniteLightPhase;
   /** Wall-clock timestamp (ms) at which the current phase should advance. */
   phaseEndsAt: number;
+  pauseStartedAt: number;
   /** Number of glowing stars clicked during the 'active' phase — "Limitless Infinity" stacks. */
   stacks: number;
   /** Divine Light granted once the 'active' phase resolves. */

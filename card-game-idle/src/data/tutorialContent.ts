@@ -61,14 +61,14 @@ export const RARITY_TIERS: RarityTier[] = [
 // ---------------------------------------------------------------------------
 
 export const CARD_BORN_TIERS: CardBornTierEntry[] = [
-  { name: 'Practiced',     glyph: '◈', threshold: 9,      description: 'The first Card-born Tier milestone.' },
-  { name: 'Veteran',       glyph: '◆', threshold: 26,     description: 'The second Card-born Tier milestone.' },
-  { name: 'Master',        glyph: '✦', threshold: 140,    description: 'The third Card-born Tier milestone.' },
-  { name: 'Eternal Bond',  glyph: '★', threshold: 525,    description: 'The fourth Card-born Tier milestone.' },
-  { name: 'Resonant',      glyph: '✵', threshold: 1_050,  description: 'The fifth Card-born Tier milestone.' },
-  { name: 'Transcendent',  glyph: '✷', threshold: 2_100,  description: 'The sixth Card-born Tier milestone.' },
-  { name: 'Ascendant',     glyph: '✸', threshold: 5_250,  description: 'The seventh Card-born Tier milestone.' },
-  { name: 'Infinite Bond', glyph: '∞', threshold: 10_500, description: 'The eighth and final Card-born Tier milestone.' },
+  { name: 'Practiced',     glyph: '◈', threshold: 10,    description: 'The first Card-born Tier milestone.' },
+  { name: 'Veteran',       glyph: '◆', threshold: 25,    description: 'The second Card-born Tier milestone.' },
+  { name: 'Master',        glyph: '✦', threshold: 50,    description: 'The third Card-born Tier milestone.' },
+  { name: 'Eternal Bond',  glyph: '★', threshold: 125,   description: 'The fourth Card-born Tier milestone.' },
+  { name: 'Resonant',      glyph: '✵', threshold: 250,   description: 'The fifth Card-born Tier milestone.' },
+  { name: 'Transcendent',  glyph: '✷', threshold: 625,   description: 'The sixth Card-born Tier milestone.' },
+  { name: 'Ascendant',     glyph: '✸', threshold: 1_250, description: 'The seventh Card-born Tier milestone.' },
+  { name: 'Infinite Bond', glyph: '∞', threshold: 2_500, description: 'The eighth and final Card-born Tier milestone.' },
 ];
 
 // ---------------------------------------------------------------------------
