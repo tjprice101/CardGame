@@ -825,7 +825,7 @@ export default function DeckBuilder({ onClose }: Props) {
     const canAdd = isAngel
       ? count < owned && totalForDefinition < cap && extraDeckList.length < EXTRA_DECK_SIZE
       : !(count >= owned || totalForDefinition >= cap);
-    const previewText = getCardPreviewLines(def.def, isAngel ? 3 : 2).join(' ');
+    const previewText = getCardPreviewLines(def.def, 2).join(' ');
     return (
       <div key={def.key} style={styles.cardWithMeta}>
         <div
@@ -853,11 +853,11 @@ export default function DeckBuilder({ onClose }: Props) {
               <div style={{ ...styles.cardName, fontSize: faceMetrics.nameSize }}>{def.def.name}</div>
             </div>
             <div style={getCardRulesPanelStyle('grid')}>
-              <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: isAngel ? 3 : 2 }}>
+              <div style={{ ...styles.cardDesc, fontSize: faceMetrics.descSize, lineHeight: faceMetrics.descLineHeight, WebkitLineClamp: 2 }}>
                 {previewText}
               </div>
               {isAngel && def.def.type === 'AinSophAur' && (
-                <div style={{ fontSize: 7, color: cardFacePalette.textMuted, marginTop: 5, textAlign: 'center' }}>
+                <div style={{ fontSize: 6.5, color: cardFacePalette.textMuted, marginTop: 3, textAlign: 'center', display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 1, overflow: 'hidden' }}>
                   {getSummonRequirements((def.def as AinSophAurDefinition).summonMaterials, (def.def as AinSophAurDefinition).summonMaterialCount)
                     .map((requirement, index) => <div key={`summon-requirement-${index}`}>Requires: {formatSummonRequirement(requirement)}</div>)}
                 </div>

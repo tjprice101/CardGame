@@ -7,7 +7,7 @@ This file is the compact source of truth for the current project state. Use it f
 Fresh validation was run on the current working tree:
 
 - `npm run typecheck:tests` ✅
-- `npm test -- --run` ✅ (full suite was last verified before the latest focused Enigma regression additions)
+- Focused validation is green for the latest work: Enigma lock-on, daily login, Garden, Wake, attack sequences, Shatter, Phantom Matrix selection, card backgrounds, and builds. Two older `AbilityRuntime` assertions still expect the removed Divine Light ability-purchase economy; do not treat those stale expectations as the current contract.
 - `npm run build` ✅
 
 ## Current design state
@@ -35,6 +35,14 @@ Fresh validation was run on the current working tree:
 - Card-born thresholds are 10, 25, 50, 125, 250, 625, 1,250, and 2,500 Card-light.
 - Causality ability tiers follow ownership gates, not purchase-price heuristics: Author the First Cause and Causal Cartography are Foundational; Pearlescent Mandate and Archive of Elsewhen are Eternal; Final Cause and Infinite Manuscript are Infinite.
 - Every card-browser menu must preserve a complete card-shaped face at its canonical aspect ratio. Shrink cards or restructure the menu into submenus before allowing card art, name ribbons, or rules panels to crop, squash, or overflow.
+- Front-facing card art is never art-only: every front face includes the shared top name/type ribbon and bottom rules panel. Face-down collection/back views are the intentional exception. Use the shared card-face helpers instead of bespoke cropped markup.
+- Deck Builder library cards use a stable proportional `160x220` face with virtualized row height reserved for the card, ownership label, and lock controls.
+- The monthly Login Calendar is a full-screen reusable Main Menu > Progress surface. It shows the complete current month without an inner scrollbar, uses Aberrated Shards and Card-light Shards resource icons, and renders actual awarded card art/name for card rewards. Existing saves can reopen it.
+- Daily login claims are limited to one successful claim per UTC day. Monthly missed days remain queued for future login days; legacy saves with missing/empty monthly ledgers must not reopen as fresh Day 1 claims.
+- Enigma discovery is passive: an opening riddle changes an instance to `acquired` without auto-focusing it. Only an acquired Enigma can be locked on, and only the locked-on Enigma advances beyond its opening condition. Discovered-but-locked enigmas remain visible but non-focusable.
+- Phantom Matrix is a true free-summon path: while its picker is active every Ain Soph Aur stays vibrant/selectable, zero materials are required or consumed, and normal ASA summons remain material-bound.
+- Eternity's Wake and Garden health-bar overlays show the live Limitless Light Stack count directly. Attack sequences/Shatter pause encounter timers and absolute cooldown/buff deadlines.
+- Main Menu Causality event art is wired to `public/assets/event-art/causality/Causality Event Banner.png`; move loose generated art into runtime folders after wiring.
 - UI summary text must stay in natural language and must not leak internal tokens or snake_case fields.
 
 ## Important files to read first

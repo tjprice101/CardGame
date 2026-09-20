@@ -50,13 +50,13 @@ const CARD_FACE_METRICS_BASE: Record<CardFaceVariant, {
     descLines: 3,
   },
   grid: {
-    ribbonPadding: '5px 8px 4px',
-    panelPadding: '5px 8px 6px',
+    ribbonPadding: '4px 8px 3px',
+    panelPadding: '4px 8px 5px',
     typeSize: 6,
-    nameSize: 8,
+    nameSize: 9,
     descSize: 7,
-    descLineHeight: 1.35,
-    descLines: 3,
+    descLineHeight: 1.3,
+    descLines: 2,
   },
   compact: {
     ribbonPadding: '6px 7px 5px',
@@ -770,7 +770,7 @@ export function getCardRulesPanelStyle(variant: CardFaceVariant): CSSProperties 
   const maxHeights: Partial<Record<CardFaceVariant, string>> = {
     hand: '32%',
     pack: '34%',
-    grid: '42%',
+    grid: '30%',
     board: '36%',
     boardMini: '36%',
   };

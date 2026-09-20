@@ -447,8 +447,9 @@ function ModesBody() {
         <div style={sectionHeadingStyle}>More Modes</div>
         <ListItem label="Challenges">Daily and weekly challenges provide rotating rewards. Claim every weekly reward to consume that rotation into two Super Weekly boss challenges.</ListItem>
         <ListItem label="Card-light Resonance">Refine eligible duplicate copies into Card-light Shards, then spend them 1:1 to add Card-light to any card.</ListItem>
-        <ListItem label="Monthly Login">The login calendar persists for the month. Missed days remain available for catch-up and never reset claimed progress. Rewards include Shards, base cards, holofoil cards, and Card-light for owned cards.</ListItem>
-        <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. Collect 5 unique cards from a set to find its Enigmas; each manuscript has another unlock requirement before its trials begin. Lock on to one unlocked manuscript to advance it; only the selected Enigma progresses. Cumulative goals show live trackers on its banner, while requirements that say “in one turn,” “at once,” or “at end of turn” only complete in that exact scope.</ListItem>
+        <ListItem label="Monthly Login">Open Login Calendar from Main Menu → Progress at any time. The full month is shown with Aberrated Shards, Card-light Shards, and actual card artwork for each reward. Missed days remain queued, but only one daily reward can be claimed per UTC day.</ListItem>
+        <ListItem label="Enigma">After 10 packs, the Enigma menu lets you search for manuscripts. An opening riddle passively unlocks a manuscript without focusing it. Only an acquired manuscript can be locked on, and only the selected Enigma progresses. Cumulative goals show live trackers, while requirements that say “in one turn,” “at once,” or “at end of turn” only complete in that exact scope.</ListItem>
+        <ListItem label="Phantom Matrix">Phantom Matrix opens a free-summon picker. Every Ain Soph Aur stays bright and selectable; choose any ASA and confirm without selecting or spending materials. Normal ASA summons still use their authored materials.</ListItem>
         <ListItem label="Amplifier of the Void">This Enigmatic Dark reward draws 2 cards and grants 3 Limitless Light Stacks. If you hold at least 5 stacks after activation, it also grants 1,500 Divine Light.</ListItem>
         <ListItem label="Silent Exchange">This Neutrality Dark utility exchanges one Light or Dark card from hand for one opposite-type card from the deck, then shuffles the returned card into the deck.</ListItem>
         <ListItem label="Eternity's Wake">Eternity's Wake unlocks after you acquire 3 unique Enigmatic cards.</ListItem>
@@ -506,12 +507,12 @@ function ProgressionBody() {
       <div style={{ ...cardStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Holofoil Cards</div>
         <ListItem label="Acquisition">Every card rolled in a single Pack has a 2% chance to drop as a holofoil. Boxes and Cases guarantee at least one holofoil.</ListItem>
-        <ListItem label="Visual Finish">Holofoils use source-specific full-card metallic treatments: base pack foils use black/red/white, Enigma uses black/white/gold, Eternal uses purple-red, and Infinite uses chromatic black/white.</ListItem>
+        <ListItem label="Visual Finish">Every front-facing card includes its complete top type/name ribbon, artwork, and bottom rules panel. Holofoils use source-specific full-card metallic treatments: base pack foils use black/red/white, Enigma uses black/white/gold, Eternal uses purple-red, and Infinite uses chromatic black/white. Face-down collection/back views intentionally show only the back.</ListItem>
         <ListItem label="Collection">Holofoils are purely cosmetic and are tracked separately in your collection and deck-building. They cannot be created with Aberrated Shards.</ListItem>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Monthly Login Calendar</div>
-        <div style={bodyTextStyle}>Login rewards follow a persistent monthly track. Missing a day does not reset anything: unclaimed days stay available. Rewards include Aberrated Shards, base cards, holofoil cards, and Card-light for every card you currently own.</div>
+        <div style={bodyTextStyle}>Login rewards follow a persistent full-screen monthly track available from Main Menu → Progress → Login Calendar. Every day is displayed at once with its actual reward icon or card artwork. Missing a day does not reset anything: unclaimed days stay queued, but the account can claim only one daily reward per UTC day.</div>
       </div>
       <div style={{ ...cardAltStyle, marginTop: 10 }}>
         <div style={sectionHeadingStyle}>Card-born Tier</div>
