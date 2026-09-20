@@ -664,18 +664,14 @@ export default function App() {
     unlockedTitlesRef.current = currentlyUnlocked;
   }, [progress, saveHydrated]);
 
-  // Surface the daily login reward modal once after engine init when claimable.
-  // Runs once on mount; if the player is mid-fight or has a menu open we still
-  // queue it — the modal renders above with its own z-index.
+  // Surface the daily login reward only after the saved state has hydrated.
+  // Checking the default state first can incorrectly open Day 1 for an existing
+  // save that already claimed today's reward.
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      const progress = useStore.getState().progress;
-      if (evaluateDailyLogin(progress).claimable) {
-        setShowDailyReward(true);
-      }
-    }, 900);
-    return () => window.clearTimeout(timer);
-  }, []);
+    if (!saveHydrated) return;
+    const progress = useStore.getState().progress;
+    setShowDailyReward(evaluateDailyLogin(progress).claimable);
+  }, [saveHydrated]);
 
   // Re-check daily login bonus when user signs in for the first time this session.
   // The page may have been loaded while the player was unauthenticated (title screen),
@@ -688,7 +684,7 @@ export default function App() {
     prevSocialStatusRef.current = socialAuthStatus;
     prevSocialUserIdRef.current = socialUserId;
     // Only trigger when transitioning INTO authenticated state.
-    if (socialAuthStatus === 'authenticated' && prev !== 'authenticated') {
+    if (saveHydrated && socialAuthStatus === 'authenticated' && prev !== 'authenticated') {
       const progress = useStore.getState().progress;
       if (evaluateDailyLogin(progress).claimable) {
         setShowDailyReward(true);
@@ -703,7 +699,7 @@ export default function App() {
     if (prevUserId && prevUserId !== socialUserId) {
       useMessagesStore.getState().fullyClose();
     }
-  }, [socialAuthStatus, socialUserId]);
+  }, [saveHydrated, socialAuthStatus, socialUserId]);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {

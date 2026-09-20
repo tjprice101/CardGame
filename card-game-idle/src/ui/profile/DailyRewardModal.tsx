@@ -26,6 +26,7 @@ export default function DailyRewardModal({ onClose }: Props) {
 
   const pendingDay = evalResult.monthlyDay ?? new Date(now).getUTCDate();
   const pendingReward = evalResult.monthlyReward;
+  const canClaim = evalResult.claimable && pendingReward !== undefined;
 
   return (
     <div style={{
@@ -138,10 +139,12 @@ export default function DailyRewardModal({ onClose }: Props) {
               border: `1px solid ${warmTheme.borderStrong}`,
               borderRadius: 8,
               color: warmTheme.text,
-              cursor: 'pointer', fontWeight: 'bold',
+              cursor: canClaim ? 'pointer' : 'default', fontWeight: 'bold',
+              opacity: canClaim ? 1 : 0.55,
               fontFamily: 'Georgia, serif', fontSize: 14, letterSpacing: 1,
             }}
-          >Claim Reward</button>
+            disabled={!canClaim}
+          >{canClaim ? 'Claim Reward' : 'Already Claimed'}</button>
         </div>
       </div>
     </div>

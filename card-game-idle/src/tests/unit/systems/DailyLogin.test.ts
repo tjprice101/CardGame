@@ -93,6 +93,18 @@ describe('dailyLogin.evaluateDailyLogin', () => {
     expect(result.claimable).toBe(false);
     expect(result.pendingStreak).toBe(3);
     expect(result.previousStreak).toBe(3);
+    expect(result.monthlyDay).toBeUndefined();
+    expect(result.monthlyReward).toBeUndefined();
+  });
+
+  it('does not reopen a legacy save that claimed today before monthly tracking existed', () => {
+    const result = evaluateDailyLogin(
+      makeProgress({ lastClaimedDayIndex: today, streak: 3, monthlyTrackKey: undefined }),
+      now,
+    );
+    expect(result.claimable).toBe(false);
+    expect(result.monthlyDay).toBeUndefined();
+    expect(result.monthlyReward).toBeUndefined();
   });
 
   it('continues the streak when claiming on the next day', () => {
